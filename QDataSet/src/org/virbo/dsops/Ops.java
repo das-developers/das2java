@@ -3017,7 +3017,11 @@ public class Ops {
     }
 
     /**
-     * create a labels dataset for tagging rows of a dataset.
+     * create a labels dataset for tagging rows of a dataset.  If the context
+     * has been used already, including "default", then the EnumerationUnit
+     * for the data will be preserved.  labels(["red","green","blue"],"default")
+     * will always return an equivalent (and comparable) result during a session.
+     *
      * Example:
      * <tt>dep1= labels( ["X","Y","Z"], "GSM" )</tt>
      * @param labels
@@ -3025,7 +3029,17 @@ public class Ops {
      * @return rank 1 QDataSet
      */
     public static QDataSet labels(String[] labels, String context) {
-        EnumerationUnits u = new EnumerationUnits(context);
+        EnumerationUnits u;
+        try {
+            Units uu= Units.getByName(context);
+            if ( uu!=null && uu instanceof EnumerationUnits ) {
+                u= (EnumerationUnits)uu;
+            } else {
+                u = new EnumerationUnits(context);
+            }
+        } catch ( IllegalArgumentException ex ) {
+            u = new EnumerationUnits(context);
+        }
         SDataSet result = SDataSet.createRank1(labels.length);
         for (int i = 0; i < labels.length; i++) {
             Datum d = u.createDatum(labels[i]);
@@ -3038,7 +3052,7 @@ public class Ops {
     /**
      * create a labels dataset for tagging rows of a dataset.
      * Example:
-     * <tt>dep1= labels( ["X","Y","Z"], "GSM" )</tt>
+     * <tt>dep1= labels( ["red","greed","blue"] )</tt>
      * @param labels
      * @return rank 1 QDataSet
      */
