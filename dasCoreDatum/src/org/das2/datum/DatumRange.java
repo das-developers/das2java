@@ -30,7 +30,7 @@ public class DatumRange implements Comparable {
             //throw new IllegalArgumentException( "s2 is fill" ) ;
         }
         this.s1=s1;
-        this.s2=s2;
+        this.s2=s2.convertTo(s1.getUnits());
     }
     
     /**
