@@ -332,8 +332,12 @@ public class TimeParser {
 
             if ( qualifiers[i]!=null ) {
                 String[] ss2= qualifiers[i].split(";");
+                if ( ss2.length==1 && ss2[0].split(",").length>1 ) {
+                    System.err.println( "maybe semicolons instead of commas");
+                }
                 for ( int i2=0; i2<ss2.length; i2++ ) {
                     String qual= ss2[i2];
+                    
                     Pattern p= Pattern.compile("cadence=(\\d+)");
                     Matcher m= p.matcher(qual);
                     if ( m.matches() ) {
@@ -356,9 +360,13 @@ public class TimeParser {
                         //FieldHandler fh= (FieldHandler) fieldHandlers.get(name);
                         //fh.handleValue( val, context, timeWidth );
                         if ( name.equals("Y") ) context.year= Integer.parseInt(val);
-                        if ( name.equals("m") ) context.month= Integer.parseInt(val);
-                        if ( name.equals("d") ) context.day= Integer.parseInt(val);
-                        if ( name.equals("j") ) context.doy= Integer.parseInt(val);
+                        else if ( name.equals("m") ) context.month= Integer.parseInt(val);
+                        else if ( name.equals("d") ) context.day= Integer.parseInt(val);
+                        else if ( name.equals("j") ) context.doy= Integer.parseInt(val);
+                        else if ( name.equals("H") ) context.hour= Integer.parseInt(val);
+                        else if ( name.equals("M") ) context.minute= Integer.parseInt(val);
+                        else if ( name.equals("S") ) context.seconds= Integer.parseInt(val);
+                        else throw new IllegalArgumentException("unrecognized/unsupported field: "+name + " in "+qual );
                     }
                 }
             }
@@ -414,9 +422,22 @@ public class TimeParser {
     }
 
     /**
+     * provide standard means of indicating this appears to be a spec.
+     * @param spec
+     * @return
+     */
+    public static boolean isSpec(String spec) {
+        if ( spec.contains("%Y")||spec.contains("%y") ) return true;
+        if ( spec.contains(";Y=") ) return true;
+        if ( spec.contains(",Y=") ) return true; //yay, sloppy specs!
+        return false;
+    }
+
+    /**
      * <pre>
      *  %[fieldLength]<1-char code>  or
      *  %[fieldLength]{<code>}
+     *  %[fieldLength]{<code>;qualifiers}
      *
      *  fieldLength=0 --> makes field length indeterminate, deliminator must follow.
      *
@@ -431,6 +452,10 @@ public class TimeParser {
      *  %S     2-digit second
      *  %{milli}  3-digit milliseconds
      *  %{ignore} skip this field
+     *
+     * Qualifiers:
+     *    span=<int>
+     *    Y=2004  Also for Y,m,d,H,M,S
      *  </pre>
      *
      */
