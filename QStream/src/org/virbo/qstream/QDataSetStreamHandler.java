@@ -179,6 +179,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                 joinParent= n.getAttribute("joinId");
 
                 NodeList values= (NodeList) xpath.evaluate("values", n, XPathConstants.NODESET );
+                if ( values.getLength()==0 ) {
+                    throw new IllegalArgumentException("no values node in "+n.getNodeName() + " " +n.getAttribute("id") );
+                }
+
                 for ( int iv= 0; iv<values.getLength(); iv++ ) {
                     Element vn= (Element)values.item(iv);
                     DDataSet inlineDs= null;
@@ -266,7 +270,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 if ( tt==null && isInline ) {
                     tt= new AsciiTransferType( 10, true ); // kludge because we need something
                 }
-                if ( tt==null && joinChildren!=null ) {
+                if ( tt==null && joinChildren!=null && joinChildren.length()>0 ) {
                     tt= new AsciiTransferType( 10, true ); // kludge because we need something
                 }
                 if (tt == null ) {
