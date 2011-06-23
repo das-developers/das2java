@@ -85,6 +85,14 @@ public abstract class FileSystem  {
         }
     }
 
+    public static FileSystem create( String s ) throws FileSystemOfflineException, UnknownHostException {
+        try {
+            return create( new URI(s), new NullProgressMonitor() );
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    
     /**
      *
      * @param root
