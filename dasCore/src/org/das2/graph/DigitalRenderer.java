@@ -18,6 +18,7 @@ import org.das2.DasException;
 import org.virbo.dataset.DataSetUtil;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DefaultDatumFormatter;
@@ -44,31 +45,15 @@ public class DigitalRenderer extends Renderer {
      * @return
      */
     public static QDataSet doAutorange( QDataSet ds ) {
-        QDataSet xrange, yrange;
 
-        if ( SemanticOps.isTableDataSet(ds) ) {
+        QDataSet xds;
+        QDataSet yds;
 
-            QDataSet xds= SemanticOps.xtagsDataSet(ds);
-            QDataSet yds= SemanticOps.ytagsDataSet(ds);
+        xds= SemanticOps.xtagsDataSet(ds);
+        yds= SemanticOps.ytagsDataSet(ds);
 
-            xrange= Ops.extent(xds);
-            yrange= Ops.extent(yds);
-
-        } else if ( ds.rank()==1 ) {
-
-            QDataSet yds= ds;
-            QDataSet xds= SemanticOps.xtagsDataSet(ds);
-
-            xrange= Ops.extent(xds);
-            yrange= Ops.extent(yds);
-
-        } else {
-            return null;
-
-        }
-
-        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
-        yrange= Ops.rescaleRange( yrange, -0.1, 1.1 );
+        QDataSet xrange= doRange( xds );
+        QDataSet yrange= doRange( yds );
 
         JoinDataSet bds= new JoinDataSet(2);
         bds.join(xrange);
@@ -76,6 +61,20 @@ public class DigitalRenderer extends Renderer {
 
         return bds;
 
+    }
+
+    private static QDataSet doRange( QDataSet xds ) {
+        QDataSet xrange= Ops.extent(xds);
+        if ( xrange.value(1)==xrange.value(0) ) {
+            if ( !"log".equals( xrange.property(QDataSet.SCALE_TYPE)) ) {
+                xrange= DDataSet.wrap( new double[] { xrange.value(0)-1, xrange.value(1)+1 } ).setUnits( SemanticOps.getUnits(xrange) );
+            } else {
+                xrange= DDataSet.wrap( new double[] { xrange.value(0)/10, xrange.value(1)*10 } ).setUnits( SemanticOps.getUnits(xrange) );
+            }
+        }
+        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
+        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
+        return xrange;
     }
 
     protected Color color = Color.BLACK;
