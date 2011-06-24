@@ -173,6 +173,18 @@ public class TimeParser {
         return true;
     }
 
+    char startTimeOnly= 0;
+
+    /**
+     * true if the flag (startTimeOnly) was set in the spec. This is a hint to clients (FileStorageModel) using the time that
+     * it shouldn't infer that the time is bounded.
+     * @return
+     */
+    public boolean isStartTimeOnly() {
+        return ( startTimeOnly>0 );
+    }
+
+
     /**
      * create a new TimeParser.  
      * @param formatString
@@ -258,7 +270,7 @@ public class TimeParser {
 
         lsd = -1;
         int lsdMult= 1;
-
+//TODO: We want to add $Y_1XX/$j/WAV_$Y$jT$(H,span=5)$M$S_REC_V01.PKT
         context= new TimeStruct();
         context.year = 0;
         context.month = 1;
@@ -328,7 +340,7 @@ public class TimeParser {
                 }
             }
 
-            int resolution=1;
+            int span=1;
 
             if ( qualifiers[i]!=null ) {
                 String[] ss2= qualifiers[i].split(";");
@@ -341,17 +353,20 @@ public class TimeParser {
                     Pattern p= Pattern.compile("cadence=(\\d+)");
                     Matcher m= p.matcher(qual);
                     if ( m.matches() ) {
-                        resolution= Integer.parseInt( m.group(1) );
+                        span= Integer.parseInt( m.group(1) );
                     }
                     p= Pattern.compile("resolution=(\\d+)");
                     m= p.matcher(qual);
                     if ( m.matches() ) {
-                        resolution= Integer.parseInt( m.group(1) );
+                        span= Integer.parseInt( m.group(1) );
                     }
                     p= Pattern.compile("span=(\\d+)");
                     m= p.matcher(qual);
                     if ( m.matches() ) {
-                        resolution= Integer.parseInt( m.group(1) );
+                        span= Integer.parseInt( m.group(1) );
+                    }
+                    if ( qual.equals("startTimeOnly") ) {
+                        startTimeOnly= fc[i].charAt(0);
                     }
                     int idx= qual.indexOf("=");
                     if ( idx==1 ) {
@@ -374,7 +389,7 @@ public class TimeParser {
             if (handler < 100) {
                 if (precision[handler] > lsd) {
                     lsd = precision[handler];
-                    lsdMult= resolution;
+                    lsdMult= span;
                 }
             }
 
