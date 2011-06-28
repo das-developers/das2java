@@ -129,7 +129,11 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         if (properties.containsKey(name)) {
             return properties.get(name);
         } else {
-            return ds.property(name,index);
+            if ( DataSetUtil.isInheritedProperty(name) ) {
+                return ds.property(name,index);
+            } else {
+                return null;
+            }
         }
     }
 

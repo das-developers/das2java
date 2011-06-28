@@ -128,7 +128,11 @@ public class Slice1DataSet extends AbstractDataSet {
         if (properties.containsKey(name)) {
             return properties.get(name);
         } else {
-            return ds.property(name);
+            if ( DataSetUtil.isInheritedProperty(name) ) {
+                return ds.property(name);
+            } else {
+                return null;
+            }
         }
     }
 
