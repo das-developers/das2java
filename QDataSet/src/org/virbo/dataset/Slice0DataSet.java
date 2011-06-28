@@ -72,8 +72,14 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
                         context.putProperty( QDataSet.NAME, "slice0" );
                         DataSetUtil.addContext( this, context );
                     }
+                    putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0,index) ); //TODO: discovered this problem with autoplot-test013, where DEPEND_0 is a string.  Oops.  We'll try to get the same result for now.
                 }
             }
+            putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_1,index)); //TODO: QDataSet.DEPENDNAME_1,etc
+            putProperty( QDataSet.BINS_0, ds.property(QDataSet.BINS_0,index) );
+            putProperty( QDataSet.BINS_1, ds.property(QDataSet.BINS_1,index) );
+            putProperty( QDataSet.BUNDLE_0, ds.property(QDataSet.BUNDLE_0,index) );
+            putProperty( QDataSet.BUNDLE_1, ds.property(QDataSet.BUNDLE_1,index) );
         }
         putProperty( QDataSet.JOIN_0, null );
         
