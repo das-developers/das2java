@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -43,6 +45,7 @@ public class SimpleStreamFormatter {
     Map<PlaneDescriptor, QDataSet> planeToDataSet;
     boolean asciiTypes = true;
     boolean isBigEndian = true; //ByteOrder.nativeOrder() .equals( ByteOrder.BIG_ENDIAN );
+    private static final Logger logger= Logger.getLogger("autoplot.qstream");
 
     Document getNewDocument() {
         try {
@@ -231,6 +234,8 @@ public class SimpleStreamFormatter {
             QDataSet ds, int streamRank) {
         Element qdatasetElement = document.createElement("qdataset");
         qdatasetElement.setAttribute("id", nameFor(ds));
+
+        logger.log( Level.FINE, "writing qdataset {0}", nameFor(ds));
 
         if ( isJoin(ds) ){
             qdatasetElement.setAttribute("rank", "" + ds.rank() );
