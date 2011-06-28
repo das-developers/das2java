@@ -76,10 +76,13 @@ public class Slice1DataSet extends AbstractDataSet {
         }
 
 
+        putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0) );
         putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_2) );
         putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_3) );
 
+        putProperty( QDataSet.BUNDLE_0, ds.property(QDataSet.BUNDLE_0) );
         putProperty( QDataSet.BUNDLE_1, null );
+        putProperty( QDataSet.BINS_0, ds.property( QDataSet.BINS_0 ) );
         putProperty( QDataSet.BINS_1, null );
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
@@ -119,8 +122,6 @@ public class Slice1DataSet extends AbstractDataSet {
     }
 
     /**
-     * TODO: this is danger code, because we grab the property from the original dataset.  The bug I ran into is it was getting WEIGHTS
-     * from the parent, which had the wrong dimensionality.
      * @param name
      * @return
      */
@@ -135,8 +136,6 @@ public class Slice1DataSet extends AbstractDataSet {
             }
         }
     }
-
-    //TODO: consider higher-rank properties
 
     public int length() {
         return ds.length();

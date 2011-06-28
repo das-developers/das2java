@@ -48,8 +48,16 @@ public class Slice3DataSet extends AbstractDataSet {
             }
         }
 
+        putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0) );
+        putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_1) );
+        putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_2) );
         putProperty( QDataSet.DEPEND_3, null );
 
+        putProperty( QDataSet.BUNDLE_0, ds.property( QDataSet.BUNDLE_0 ) );
+        putProperty( QDataSet.BUNDLE_1, ds.property( QDataSet.BUNDLE_1 ) );
+        putProperty( QDataSet.BINS_0, ds.property( QDataSet.BINS_0 ) );
+        putProperty( QDataSet.BINS_1, ds.property( QDataSet.BINS_1 ) );
+        
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             String prop= "PLANE_"+i;
             QDataSet plane0= (QDataSet) ds.property( prop );
@@ -90,8 +98,6 @@ public class Slice3DataSet extends AbstractDataSet {
             
         }
     }
-
-    //TODO: consider higher-rank properties
 
     public int length() {
         return ds.length();
