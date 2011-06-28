@@ -76,6 +76,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
                 }
             }
             putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_1,index)); //TODO: QDataSet.DEPENDNAME_1,etc
+            putProperty( QDataSet.RENDER_TYPE, ds.property(QDataSet.RENDER_TYPE,index)); //kludge for autoplot test030_002, we use this to unbundle.
             putProperty( QDataSet.BINS_0, ds.property(QDataSet.BINS_0,index) );
             putProperty( QDataSet.BINS_1, ds.property(QDataSet.BINS_1,index) );
             putProperty( QDataSet.BUNDLE_0, ds.property(QDataSet.BUNDLE_0,index) );
