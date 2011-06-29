@@ -1034,7 +1034,11 @@ public class DataSetOps {
                 dep0.putProperty( QDataSet.CADENCE, cadence );
                 ((MutablePropertyDataSet)fillDs).putProperty( QDataSet.DEPEND_0, dep0 );
             } else if ( cmd.equals("|transpose") ) {
-                fillDs= Ops.transpose(fillDs);
+                if ( fillDs.rank()==2 ) {
+                    fillDs= Ops.transpose(fillDs);
+                } else {
+                    System.err.println("unable to transpose dataset, not rank 2"); //TODO: error handling
+                }
             } else if ( cmd.startsWith("|fftWindow" ) ) {
                 int size= s.nextInt();
                 fillDs= Ops.fftWindow(fillDs, size);
