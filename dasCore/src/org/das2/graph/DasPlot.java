@@ -1237,6 +1237,29 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public String getTitle() {
         return plotTitle;
     }
+
+    public static final String PROP_CONTEXT= "context";
+    
+    /**
+     * convenient place to put the plot context.  The context is used to
+     * store the timerange when there is no axis for it, for example, to
+     * show the state of data during a range.  This may change to a QDataSet
+     * to provide several context dimensions.
+     */
+    DatumRange context= null;
+
+    public DatumRange getContext() {
+        return context;
+    }
+
+    public void setContext(DatumRange context) {
+        DatumRange old= this.context;
+        this.context = context;
+        firePropertyChange( PROP_CONTEXT, old, context );
+    }
+
+
+
     private List<Renderer> renderers = null;
 
     public DasAxis getXAxis() {
