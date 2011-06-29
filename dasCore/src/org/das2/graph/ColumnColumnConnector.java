@@ -170,49 +170,31 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         g.draw( gp );
 
     }
-    
+
     protected void paintComponent(Graphics g1) {
 
         if ( ! topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() ) ) {
-            //kludge for context plots
-
+            //context plots
             // check to see if bottom panel is slice of top
-            Matcher m= Pattern.compile(".*!c(.*=)?(.+)").matcher(bottomPlot.getTitle());
-            boolean isContext= m.matches();
+            DatumRange contextRange;
+            contextRange= bottomPlot.getContext(); //TODO: this is not a closed-loop system.  We should indicate timerange found in dataset.
+            boolean isContext= contextRange!=null;
             if ( isContext ) {
-                try {
-                    if ( m.groupCount()>1 && m.group(2).length()>15 ) { //15-> yyyy-mm-ddThh:mm
-                        Datum context= topPlot.getXAxis().getUnits().parse(m.group(2));
-                        Graphics2D g2=(Graphics2D)g1.create();
-                        paintBottomContext( g2, context );
-                        g2.dispose();
-                        return;
-                    } else {
-                        return;
-                    }
-                } catch ( ParseException ex ) {
-                    ex.printStackTrace();
-                    return;
-                }
+                 Datum context= contextRange.min();
+                 Graphics2D g2=(Graphics2D)g1.create();
+                 paintBottomContext( g2, context );
+                 g2.dispose();
+                 return;
 
             } else {
-                m= Pattern.compile(".*!c(.*=)?(.+)").matcher(topPlot.getTitle());
-                isContext= m.matches();
+                contextRange= topPlot.getContext();
+                isContext= contextRange!=null;
                 if ( isContext ) {
-                    try {
-                        if ( m.groupCount()>1 && m.group(2).length()>15 ) {
-                            Datum context= bottomPlot.getXAxis().getUnits().parse(m.group(2));
-                            Graphics2D g2=(Graphics2D)g1.create();
-                            paintTopContext( g2, context );
-                            g2.dispose();
-                            return;
-                        } else {
-                            return;
-                        }
-                    } catch ( ParseException ex ) {
-                        ex.printStackTrace();
-                        return;
-                    }
+                    Datum context= contextRange.min();
+                    Graphics2D g2=(Graphics2D)g1.create();
+                    paintTopContext( g2, context );
+                    g2.dispose();
+                    return;
                 } else {
                     return;
                 }
