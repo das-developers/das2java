@@ -910,7 +910,12 @@ public class AsciiParser {
      */
     public static final FieldParser DOUBLE_PARSER = new FieldParser() {
         public final double parseField(String field, int columnIndex) {
-            return Double.parseDouble(field);
+            if ( field.length()==1 ) {
+                double d= field.charAt(0)-'0';  // bugfix '+' caused exception http://www.dartmouth.edu/~rdenton/Data/DentonTakahashiGOES1980-1991MassDensityWithHeader.txt?skipLines=91&depend0=FractionlYear&column=AE
+                return ( d<0 || d>9 ) ? Double.NaN : d;
+            } else {
+                return Double.parseDouble(field);
+            }
         }
     };
     /**
@@ -1165,6 +1170,8 @@ public class AsciiParser {
                         index= m.start();
                         if ( qend==-1 ) {
                             fields[ifield]= input.substring(index0, index);
+                        } else if ( qend<index0 ) {
+                            return false; //TODO: when does this happen?  http://www.dartmouth.edu/~rdenton/Data/DentonTakahashiGOES1980-1991MassDensityWithHeader.txt?skipLines=91&depend0=FractionlYear&column=AE
                         } else {
                             fields[ifield]= input.substring(index0, qend).replaceAll("\"\"", "\"");
                             qend=-1;
