@@ -668,6 +668,10 @@ public class FileStorageModelNew {
             }
         }
 
+        if ( this.timeParser.isStartTimeOnly() ) {
+            this.startTimeOnly= true;
+        }
+
         this.regex= timeParser.getRegex();
         this.pattern= Pattern.compile(regex);
         if ( template.endsWith(".gz") ) {
@@ -677,6 +681,19 @@ public class FileStorageModelNew {
             this.gzpattern= Pattern.compile(regex+"\\.gz");
         }
     }
+
+    /**
+     * The filename time only contains the start time of the interval, the end of the interval
+     * is only bounded by the next file.
+     */
+    protected boolean startTimeOnly = false;
+
+    /**
+     * limit on the length of files with startTimeOnly set.
+     * e.g. $Y$m$d_$(H,startTimeOnly)$M means that the files should be much less that one hour long
+     *
+     */
+    protected Datum implicitTimeDelta= null;
 
     private FileStorageModelNew( FileStorageModelNew parent, FileSystem root, String template ) {
         this( parent, root, template, null, null );
