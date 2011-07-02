@@ -71,6 +71,12 @@ public class Datum implements Comparable {
         if ( value==null ) throw new IllegalArgumentException("value is null");
         this.value = value;
         this.units = units;
+        if ( UnitsUtil.isTimeLocation(this.units) ) {
+            int mjd1958= UnitsConverter.getConverter(units,Units.mj1958).convert( value ).intValue();
+            if ( mjd1958 < -714781 ) { // year 0001
+                throw new IllegalArgumentException( "invalid time: mjd1958="+mjd1958 );
+            }
+        }
         this.resolution= resolution;
         this.formatter = formatter;
     }
