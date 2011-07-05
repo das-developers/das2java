@@ -127,8 +127,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     public void setUserDatumFormatter(DatumFormatter userDatumFormatter) {
+        DatumFormatter old= this.userDatumFormatter;
         this.userDatumFormatter = userDatumFormatter;
-        updateTickV();
+        if ( old!=userDatumFormatter ) updateTickV();
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 resize();
@@ -1486,6 +1487,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public synchronized void updateTickV() {
         if (!valueIsAdjusting()) {
             if ( getTickLabelFont()==null ) return;
+            //if ( getCanvas()==null || getCanvas().getHeight()==0 ) return;
+            //if ( ( isHorizontal() ? getColumn().getWidth() : getRow().getHeight() ) < 2 ) return; // canvas is not sized yet
             if ( useDomainDivider ) {
                 updateDomainDivider();
             } else {
@@ -3477,6 +3480,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
          * @param g
          */
         protected void paintComponent(Graphics g) {
+            if ( getCanvas().isPrintingThread() ) return;
             if (hover || pressed) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setColor(Color.white);
