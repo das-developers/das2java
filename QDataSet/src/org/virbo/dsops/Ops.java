@@ -392,16 +392,23 @@ public class Ops {
     }
     /**
      * return a dataset with each element negated.
+     * If available, Units must be ratiometric units, like "5 km" or dimensionless,
+     * and not ordinal or time location units.
      * @param ds1
      * @return
      */
     public static QDataSet negate(QDataSet ds1) {
-        return applyUnaryOp(ds1, new UnaryOp() {
-
+        Units u= SemanticOps.getUnits(ds1);
+        if ( !UnitsUtil.isRatioMeasurement(u) ) {
+            throw new IllegalArgumentException("Units are not ratiometric units");
+        }
+        MutablePropertyDataSet mpds= applyUnaryOp(ds1, new UnaryOp() {
             public double op(double d1) {
                 return -d1;
             }
         });
+        mpds.putProperty(QDataSet.UNITS,u);
+        return mpds;
     }
 
     /**
