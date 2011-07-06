@@ -40,7 +40,17 @@ public class TimeLocationUnits extends LocationUnits {
     
     public TimeLocationUnits( String id, String description, Units offsetUnits, Basis basis ) {
         super(id,description,offsetUnits,basis);
+        if ( id.equals("us2000") ) {
+            vmin= -3.15569088E16;
+            vmax= 2.208987072E17;
+        } else {
+            vmin= Double.NaN;
+            vmax= Double.NaN;
+        }
     }
+
+    double vmin;
+    double vmax;
 
     public DatumFormatterFactory getDatumFormatterFactory() {
         return TimeDatumFormatterFactory.getInstance();
@@ -52,6 +62,48 @@ public class TimeLocationUnits extends LocationUnits {
     
     public String getTimeZone() {
         return "UT";
+    }
+
+    /**
+     * we can't calculate these until the converters are registered, so we delay this,
+     * accepting the cost of doing a check each time isFill is called.
+     * Note we don't bother making this synchronized--it should be safe.
+     */
+    private void calculateRange() {
+        vmin= Units.us2000.convertDoubleTo(this,Units.us2000.vmin); // DANGER: assumes Units.us2000 is initialized before this.
+        vmax= Units.us2000.convertDoubleTo(this,Units.us2000.vmax);
+    }
+
+    @Override
+    public boolean isFill( double value ) {
+        if ( Double.isNaN(vmin) ) calculateRange();
+        return value<vmin || value>vmax || Double.isNaN(value);
+    }
+    @Override
+    public boolean isFill( float value ) { 
+        if ( Double.isNaN(vmin) ) calculateRange();
+        return value<vmin || value>vmax || Float.isNaN(value);
+    }
+    @Override
+    public boolean isFill( long value ) { 
+        if ( Double.isNaN(vmin) ) calculateRange();
+        return value<vmin || value>vmax;
+    }
+    @Override
+    public boolean isFill( int value ) { 
+        if ( Double.isNaN(vmin) ) calculateRange();
+        return value<vmin || value>vmax;
+    }
+
+    /**
+     * test if the double represents a valid datum in the context of this unit.
+     *
+     * @return true if the data is not fill.
+     */
+    @Override
+    public boolean isValid( double value ) {
+        if ( Double.isNaN(vmin) ) calculateRange();
+        return value>=vmin && value<=vmax && !Double.isNaN(value);
     }
           
 }
