@@ -49,7 +49,11 @@ class AsciiTimeTransferType extends AsciiTransferType {
     public void write(double d, ByteBuffer buffer) {
         try {
             String s;
-            s= formatter.format(units.createDatum(d));
+            if ( units.isFill(d) ) {
+                s= "**************************************************".substring(0,sizeBytes);
+            } else {
+                s= formatter.format(units.createDatum(d));
+            }
             byte[] bak = s.getBytes("US-ASCII");
             int c = Math.min(s.length(), sizeBytes-1 );
             buffer.put(bak, 0, c);
