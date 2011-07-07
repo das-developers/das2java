@@ -19,6 +19,7 @@ import org.das2.util.monitor.SubTaskMonitor;
 import org.das2.datum.TimeParser;
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.*;
@@ -286,6 +287,9 @@ public class FileStorageModelNew {
         Map<String,String> extra= new HashMap();
 
         for ( int i=0; i<fileSystems.length; i++ ) {
+            if ( monitor.isCancelled() ) {
+                throw new InterruptedIOException("cancel pressed");
+            }
             monitor.setTaskProgress(i*10);
 //            This is a nice trick for debugging when there is recursion and NullProgressMonitor is not passed in.
 //            if ( !( monitor instanceof NullProgressMonitor ) ) {
@@ -461,6 +465,9 @@ public class FileStorageModelNew {
         if ( names.length>0 ) monitor.setTaskSize( names.length * 10 );
         monitor.started();
         for ( int i=0; i<names.length; i++ ) {
+            if ( monitor.isCancelled() ) {
+                throw new InterruptedIOException("cancel pressed");
+            }
             try {
                 FileObject o= root.getFileObject( names[i] );
                 if ( o.exists() ) {
@@ -478,6 +485,13 @@ public class FileStorageModelNew {
         return files;
     }
 
+    /**
+     * Get the files for the range, using versioning info ($v,etc).
+     * @param targetRange
+     * @param monitor
+     * @return
+     * @throws IOException
+     */
     public File[] getBestFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
         String[] names= getNamesFor( targetRange, true, monitor );
         File[] files= new File[names.length];
@@ -487,6 +501,9 @@ public class FileStorageModelNew {
         if ( names.length>0 ) monitor.setTaskSize( names.length * 10 );
         monitor.started();
         for ( int i=0; i<names.length; i++ ) {
+            if ( monitor.isCancelled() ) {
+                throw new InterruptedIOException("cancel pressed");
+            }
             try {
                 FileObject o= root.getFileObject( names[i] );
                 if ( o.exists() ) {
