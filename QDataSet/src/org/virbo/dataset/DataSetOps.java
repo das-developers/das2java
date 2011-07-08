@@ -824,10 +824,10 @@ public class DataSetOps {
                 if ( bundle1!=null && bundle1.rank()>1 ) {
                     throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
                 } else {
-                    Units u= SemanticOps.getUnits( bundle1 );
-                    if ( !( u instanceof EnumerationUnits ) ) {
-                        throw new IllegalArgumentException("dataset is not a bundle, and units of DEPEND_1 are not enumeration");
-                    }
+//                    Units u= SemanticOps.getUnits( bundle1 );
+//                    if ( !( u instanceof EnumerationUnits ) ) {
+//                        throw new IllegalArgumentException("dataset is not a bundle, and units of DEPEND_1 are not enumeration");
+//                    }
                 }
             }
             bundle= bundle1;
@@ -862,7 +862,7 @@ public class DataSetOps {
             Units enumunits= (Units) bundle.property(QDataSet.UNITS);
             if ( enumunits==null ) enumunits= Units.dimensionless;
             String label=  String.valueOf(enumunits.createDatum(bundle.value(ib)));
-            result.putProperty(QDataSet.NAME, label ); //TODO: make safe java-identifier eg: org.virbo.dsops.Ops.safeName(label)
+            result.putProperty(QDataSet.NAME, Ops.safeName(label) ); //TODO: make safe java-identifier eg: org.virbo.dsops.Ops.safeName(label)
             result.putProperty(QDataSet.LABEL, label );
             return result;
         } else if ( bundle.rank()==2 ) {
