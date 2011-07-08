@@ -65,6 +65,7 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.io.IOException;
@@ -273,7 +274,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             throw new IllegalArgumentException("not supported: "+legendPosition);
         }
 
-        return mrect;
+        Rectangle axisBounds= DasDevicePosition.toRectangle( getRow(), getColumn() );
+        axisBounds.width= Math.max( axisBounds.width, mrect.width ); // don't limit width because of outside NE
+        Rectangle2D rr= mrect.createIntersection(axisBounds);
+
+        return new Rectangle( (int)rr.getX(),(int)rr.getY(),(int)rr.getWidth(),(int)rr.getHeight() );
     }
 
 
@@ -336,6 +341,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             }
             msgy += mrect.getHeight();
             mrect.add(imgBounds);
+            if ( msgy > getRow().bottom() ) break;
             le.bounds = mrect;
         }
 
