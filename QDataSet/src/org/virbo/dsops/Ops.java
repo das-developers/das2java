@@ -3116,6 +3116,13 @@ public class Ops {
         return result;
     }
 
+    /**
+     * change the dimensionality of the elements of the QUBE dataset.  For example,
+     *   convert [1,2,3,4,5,6] to [[1,2],[3,4],[5,6]].
+     * @param ds
+     * @param qube the dimensions of the result dataset.
+     * @return
+     */
     public static QDataSet reform(QDataSet ds, int[] qube) {
         QubeDataSetIterator it0 = new QubeDataSetIterator(ds);
         DDataSet result = DDataSet.create(qube);
@@ -3126,9 +3133,10 @@ public class Ops {
             double v = it0.getValue(ds);
             it1.putValue(result, v);
         }
-        if ( !it0.hasNext() || !it1.hasNext()  ) {
+        if ( it0.hasNext() != it1.hasNext()  ) {
             throw new IllegalArgumentException("reform fails because different number of elements: "+it0+ " -> " + it1);
         }
+        DataSetUtil.copyDimensionProperties( ds, result );
         return result;
     }
 
