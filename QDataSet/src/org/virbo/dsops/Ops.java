@@ -3120,11 +3120,14 @@ public class Ops {
         QubeDataSetIterator it0 = new QubeDataSetIterator(ds);
         DDataSet result = DDataSet.create(qube);
         QubeDataSetIterator it1 = new QubeDataSetIterator(result);
-        while (it0.hasNext()) {
+        while (it0.hasNext() && it1.hasNext() ) {
             it0.next();
             it1.next();
             double v = it0.getValue(ds);
             it1.putValue(result, v);
+        }
+        if ( !it0.hasNext() || !it1.hasNext()  ) {
+            throw new IllegalArgumentException("reform fails because different number of elements: "+it0+ " -> " + it1);
         }
         return result;
     }
