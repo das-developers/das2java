@@ -998,6 +998,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     private void updateTCADataSet() {
         QFunction ltcaFunction= this.tcaFunction;
+        if ( ltcaFunction==null ) return;
+        
         logger.fine("updateTCADataSet");
         double[] tickV = getTickV().tickV.toDoubleArray(getUnits());
         Datum data_minimum;
