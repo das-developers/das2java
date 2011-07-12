@@ -314,6 +314,7 @@ public class AsciiHeadersParser {
                                 bd.addDataSet( name, ids, idims, elementNames, labels );
                             } else {
                                 if ( jo1.has("VALUES") ) {
+                                    logger.log( Level.FINE, "missing START_COLUMN element, {0} must be a DEPEND_1 dataset", name );
                                     QDataSet vv= getDataSet( jo1, jo1.getJSONArray("VALUES"), idims );
                                     //TODO: we have to ignore ELEMENT_NAMES and ELEMENT_LABELS for now, there's no place in QDataSet for them.
                                     bd.addDataSet( name, vv );
