@@ -1719,7 +1719,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
 
-        boolean drawBounds= true;
+        boolean drawBounds= false;
         if ( drawBounds ) {
             Rectangle b= getAxisBounds();
             g.setColor( Color.GREEN );
