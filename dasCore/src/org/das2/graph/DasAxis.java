@@ -1490,7 +1490,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             //if ( getCanvas()==null || getCanvas().getHeight()==0 ) return;
             //if ( ( isHorizontal() ? getColumn().getWidth() : getRow().getHeight() ) < 2 ) return; // canvas is not sized yet
             if ( useDomainDivider ) {
-                updateDomainDivider();
+                updateDomainDivider(); //TODO: doesn't consider width of TCAs.
             } else {
                 this.majorTicksDomainDivider= null;
             }
@@ -1507,6 +1507,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         updateTickVLinear();
                     }
                 }
+                if (drawTca && tcaFunction != null) {
+                    updateTCADataSet();
+                }
+
                 firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
             }
             repaint();
