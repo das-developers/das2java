@@ -336,7 +336,7 @@ public class AsciiParser {
                         if ( n!=null ) fieldLabels[j]= n;
                     }
                 } else {
-                    throw new IllegalArgumentException("rich header buffer not the same length as the dataset");
+                    throw new IllegalArgumentException( String.format( "rich header buffer not the same length as the dataset (%d!=%d)", Integer.valueOf(bundleDescriptor.length()), Integer.valueOf(fieldNames.length) ) );
                 }
             } catch (ParseException ex) {
                 Logger.getLogger(AsciiParser.class.getName()).log(Level.SEVERE, null, ex);
