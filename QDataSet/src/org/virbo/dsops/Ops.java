@@ -3121,7 +3121,7 @@ public class Ops {
      *   convert [1,2,3,4,5,6] to [[1,2],[3,4],[5,6]].
      * @param ds
      * @param qube the dimensions of the result dataset.
-     * @return
+     * @return a new dataset with the specified dimensions, and the properties (e.g. UNITS) of the input dataset.
      */
     public static QDataSet reform(QDataSet ds, int[] qube) {
         QubeDataSetIterator it0 = new QubeDataSetIterator(ds);
