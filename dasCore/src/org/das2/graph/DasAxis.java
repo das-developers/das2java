@@ -1719,6 +1719,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
 
+        boolean drawBounds= true;
+        if ( drawBounds ) {
+            Rectangle b= getAxisBounds();
+            g.setColor( Color.GREEN );
+            g.draw( new Rectangle( b.x, b.y, b.width-1, b.height-1 ) );
+        }
+
         g.dispose();
         getDasMouseInputAdapter().paint(graphics);
 
@@ -1982,7 +1989,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         if (getOrientation() == BOTTOM && drawTca && tcaData != null) {
             offset += tcaData.length(0) * (tickLabelFont.getSize() + getLineSpacing());
-            offset += tickLabelFont.getSize() + getLineSpacing();
         }
         return offset;
     }
@@ -2077,7 +2083,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             throw new RuntimeException( ex );
         }
 
-        if (Math.abs(tcaValue - value.doubleValue(getUnits())) > limit) {
+        if (Math.abs(tcaValue - value.doubleValue(getUnits())) > limit) { //TODO:suspicious
             return;
         }
 
