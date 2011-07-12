@@ -157,6 +157,9 @@ public class NumberUnits extends Units {
                 if ( s.endsWith(this.getId()) ) { //TODO: bug Units.seconds.parse("1 days"), Units.seconds.parse("1 microseconds"),
                     s= s.substring(0,s.length()-this.getId().length());
                 }
+                if ( s.length()==0 ) {
+                    throw new ParseException("String contains no numeric part to parse into Datum",0);
+                }
                 String[] ss= s.split("\\s+");
                 if ( ss.length==1 && !s.startsWith("N") && !s.startsWith("n") && Character.isLetter(s.charAt(s.length()-1)) ) {   // "1hr", watch for nan
                     for ( int i=s.length()-1; i>=0; i-- ) {  // find the last number.
