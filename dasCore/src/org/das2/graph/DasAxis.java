@@ -997,6 +997,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private void updateTCADataSet() {
+        QFunction ltcaFunction= this.tcaFunction;
         logger.fine("updateTCADataSet");
         double[] tickV = getTickV().tickV.toDoubleArray(getUnits());
         Datum data_minimum;
@@ -1012,11 +1013,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             iinterval = (data_maximum.subtract(data_minimum)).divide(tickV.length - 1);
         }
         data_maximum = data_maximum.add(iinterval);
-        final Datum interval = iinterval;
         tcaData = null;
 
         JoinDataSet ltcaData= new JoinDataSet(2);
-        ArrayDataSet ex= ArrayDataSet.copy( tcaFunction.exampleInput() );
+        ArrayDataSet ex= ArrayDataSet.copy( ltcaFunction.exampleInput() );
         QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
         Units tcaUnits;
         if ( bds==null ) {
@@ -1025,7 +1025,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else {
             tcaUnits= (Units)bds.property( QDataSet.UNITS, 0 );
         }
-        UnitsConverter uc= UnitsConverter.getConverter( getUnits(), tcaUnits );
+
+        UnitsConverter uc;
+        if ( !getUnits().isConvertableTo(tcaUnits) ) {
+            System.err.println("tca units are not convertable");
+            return;
+        }
+        uc= UnitsConverter.getConverter( getUnits(), tcaUnits );
 
         DDataSet dep0= DDataSet.createRank1(tickV.length);
         dep0.putProperty(QDataSet.UNITS,getUnits());
@@ -1034,7 +1040,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         for ( int i=0; i<tickV.length; i++ ) {
             ex.putValue( 0,uc.convert(tickV[i]) );
-            QDataSet ticks= this.tcaFunction.value(ex);
+            QDataSet ticks= ltcaFunction.value(ex);
             if ( outDescriptor==null ) {
                 outDescriptor= (QDataSet) ticks.property(QDataSet.BUNDLE_0);
             }
