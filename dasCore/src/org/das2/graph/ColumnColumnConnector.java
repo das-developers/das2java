@@ -16,6 +16,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
 import javax.swing.event.MouseInputAdapter;
 import org.das2.DasApplication;
+import org.das2.datum.Units;
 
 /**
  * draws lines connecting two DasPlots, one on top of the other, typically used
@@ -178,7 +179,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
             // check to see if bottom panel is slice of top
             DatumRange contextRange;
             contextRange= bottomPlot.getContext(); //TODO: this is not a closed-loop system.  We should indicate timerange found in dataset.
-            boolean isContext= contextRange!=null;
+            boolean isContext= contextRange!=null && topPlot.getXAxis().getUnits().isConvertableTo( contextRange.getUnits() );
             if ( isContext ) {
                  Datum context= contextRange.min();
                  Graphics2D g2=(Graphics2D)g1.create();
@@ -188,7 +189,6 @@ public class ColumnColumnConnector extends DasCanvasComponent {
 
             } else {
                 contextRange= topPlot.getContext();
-                isContext= contextRange!=null;
                 if ( isContext ) {
                     Datum context= contextRange.min();
                     Graphics2D g2=(Graphics2D)g1.create();
