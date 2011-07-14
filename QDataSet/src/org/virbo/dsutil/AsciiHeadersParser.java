@@ -263,7 +263,8 @@ public class AsciiHeadersParser {
                 if ( jsonName.equals( QDataSet.USER_PROPERTIES ) ) {
                     Map<String,Object> val= new HashMap();
                     calcUserProperties( jo1,val );
-                    continue;
+                    bd.putProperty( jsonName,val );
+                    continue; 
                 }
                 int[] idims;
                 if ( !jo1.has(PROP_DIMENSION) ) {
@@ -425,7 +426,9 @@ public class AsciiHeadersParser {
             }
         }
 
+        Map<String,Object> props= DataSetUtil.getProperties( bd, DataSetUtil.globalProperties(), null );
         bd= bd.resortDataSets( dsToPosition );
+        DataSetUtil.putProperties( props, bd );
 
         for ( Entry<String,Integer> ee: dsToPosition.entrySet() ) {
             int i= ee.getValue();
