@@ -278,12 +278,15 @@ public class AsciiHeadersParser {
                             idims[j]= ((JSONArray)dims).getInt(j);
                         }
                     } else if ( dims instanceof Integer ) {
-                        idims= new int[ (Integer)dims ];
+                        idims= new int[ 1 ];
+                        idims[0]= (Integer)dims;
                     } else {
                         throw new IllegalArgumentException( "Expected array for DIMENSION in "+ jsonName );
                     }
                 }
-                if ( idims.length>1 ) throw new IllegalArgumentException("only rank 2 datasets supported, DIMENSION len="+ idims.length );
+                if ( idims.length>1 ) {
+                    throw new IllegalArgumentException("only rank 2 datasets supported, DIMENSION len="+ idims.length );
+                }
                 int total= idims.length==0 ? 1 : idims[0];
                 for ( int j=1;j<idims.length; j++) {
                     total*= idims[j];
@@ -786,7 +789,7 @@ public class AsciiHeadersParser {
                      for ( ; props.hasNext(); ) {
                          String prop= (String) props.next();
                          Object sv= propsj.get(prop);
-                         if ( prop.equals("DIMENSION") || prop.equals("START_COLUMN") || prop.equals("ELEMENT_NAMES") ) {
+                         if ( prop.equals( PROP_DIMENSION ) || prop.equals( "START_COLUMN") || prop.equals("ELEMENT_NAMES") ) {
                              if ( prop.equals("ELEMENT_NAMES") && sv instanceof JSONArray ) {
                                  String[] ss= toStringArray( (JSONArray)sv );
                                  for ( int i=0; i<ss.length; i++ ) {
