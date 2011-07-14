@@ -891,6 +891,7 @@ public class DataSetOps {
             if ( bundleDs instanceof BundleDataSet ) {
                 QDataSet r= ((BundleDataSet)bundleDs).unbundle(j);
                 return r;
+
             } else {
                 MutablePropertyDataSet result=null;
                 // DataSetOps.slice1(bundleDs,offsets[j]); // this results in error message saying "we're not going to do this correctly, use unbundle instead", oops...
@@ -905,6 +906,14 @@ public class DataSetOps {
                     Object v= bundle.property( names1[i], j );
                     if ( v!=null ) {
                         result.putProperty( names1[i], v );
+                    }
+                }
+                // allow unindexed properties to define property for all bundled datasets, for example USER_PROPERTIES or FILL
+                Map<String,Object> props3= DataSetUtil.getProperties(bundle, DataSetUtil.globalProperties(), null );
+                for ( String ss: props3.keySet() ) {
+                    Object vv= result.property( ss );
+                    if ( vv==null ) {
+                        result.putProperty( ss, props3.get(ss) );
                     }
                 }
                 return result;
@@ -930,6 +939,16 @@ public class DataSetOps {
                     props.put(ss,null);
                 }
             }
+
+            // allow unindexed properties to define property for all bundled datasets, for example USER_PROPERTIES or FILL
+            Map<String,Object> props3= DataSetUtil.getProperties(bundle, DataSetUtil.globalProperties(), null );
+            for ( String ss: props3.keySet() ) {
+                Object vv= props.get( ss );
+                if ( vv==null ) {
+                    props.put( ss, props3.get(ss) );
+                }
+            }
+
             Object o;
             o= bundle.property(QDataSet.ELEMENT_NAME,j);
             if ( o!=null ) props.put( QDataSet.NAME, o );
