@@ -823,6 +823,12 @@ public class AsciiHeadersParser {
                                 uu.createDatum( joa.getString(i) );
                             }
                             bd.putProperty( QDataSet.UNITS, ids, uu );
+                         } else if ( prop.equals( "LABEL" ) ) {
+                            if ( bd.length(ids)>0 ) {
+                                bd.putProperty( QDataSet.ELEMENT_LABEL, ids, sv );
+                            } else {
+                                bd.putProperty( QDataSet.LABEL, ids, sv );
+                            }
                          } else {
                             if ( sv instanceof JSONArray || sv instanceof JSONObject ) {
                                 System.err.println("invalid value for property "+prop+ ": "+sv );
