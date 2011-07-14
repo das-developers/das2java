@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.datum.TimeParser;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
@@ -789,6 +790,11 @@ public class AsciiParser {
                 System.err.println("Parsing Rich JSON Header...");
                 bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames() );
                 builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
+                //move dimensionless properties to the dataset.
+                Map<String,Object> props= DataSetUtil.getProperties( bundleDescriptor, DataSetUtil.globalProperties(), null );
+                for ( String k: props.keySet() ) {
+                    builder.putProperty( k, props.get(k) );
+                }
 
                 for ( int j=0; j<bundleDescriptor.length(); j++ ) {
                     Units u= (Units) bundleDescriptor.property( QDataSet.UNITS, j );
