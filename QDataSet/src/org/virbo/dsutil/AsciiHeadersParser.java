@@ -9,8 +9,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -108,7 +111,10 @@ public class AsciiHeadersParser {
      *    a. I like this for structure tag names "UNITS:"
      *    b. I'd discourage this for string values, because they might be interpreted as numbers.  UNITS:"1e2 nT"
      * 2. equals (and other characters) can be used instead of COLONs.  UNITS="1e2 nT"
-     * 
+     *
+     * TODO: We see that it's misguided to have all this preprocessing done, since it limits
+     * who can process these headers.  Many if all of the features here are going to be removed.
+     *
      * @param s
      * @return
      */
@@ -213,6 +219,21 @@ public class AsciiHeadersParser {
         return result;
     }
 
+    private static void calcUserProperties( JSONObject jo, Map<String,Object> result ) throws JSONException {
+        String[] names= JSONObject.getNames(jo);
+        for ( int i=0; i<names.length; i++ ) {
+            Object val= jo.get(names[i]);
+            if ( val instanceof JSONObject ) {
+                Map child= new HashMap();
+                calcUserProperties( (JSONObject)jo, child );
+            } else if ( val instanceof JSONArray ) {
+                result.put( names[i], ((JSONArray)val) ); //TODO: convert this
+            } else {
+                result.put( names[i], val );
+            }
+        }
+    }
+
     /**
      * calculate the bundle descriptor, possibly folding together columns to create
      * high rank datasets.
@@ -230,6 +251,8 @@ public class AsciiHeadersParser {
 
         int ids= 0; // index of the dataset in the bundleDescriptor.
 
+        Map<JSONObject, String> messages= new LinkedHashMap();
+
         String[] names= JSONObject.getNames(jo);
         for ( int ivar=0; ivar<names.length; ivar++ ) {
             String jsonName= names[ivar];
@@ -237,6 +260,11 @@ public class AsciiHeadersParser {
             logger.log( Level.FINE, "processing name[{0}]={1}", new Object[]{ivar, jsonName});
             try {
                 JSONObject jo1= jo.getJSONObject(jsonName);
+                if ( jsonName.equals( QDataSet.USER_PROPERTIES ) ) {
+                    Map<String,Object> val= new HashMap();
+                    calcUserProperties( jo1,val );
+                    continue;
+                }
                 int[] idims;
                 if ( !jo1.has(PROP_DIMENSION) ) {
                     idims= new int[0];
@@ -361,7 +389,7 @@ public class AsciiHeadersParser {
                                 bd.addDataSet( name, getDataSet( jo1, jo1.getJSONArray("VALUES"), idims ) );
                                 continue;
                             } else {
-                                throw new IllegalArgumentException("Couldn't find column starting with: "+lookFor);
+                                messages.put(jo1,"Couldn't find column starting with: "+lookFor);
                             }
                         }
                     }
@@ -376,7 +404,7 @@ public class AsciiHeadersParser {
                         for ( int j=0; j<total;j++ ) {
                             if ( snames[icol+j]!=null ) {
                                 // it might be nice to allow two variables to use a column. (e.g. virtual variables)
-                                throw new IllegalArgumentException("column "+(icol+j)+" is already used by "+snames[icol+j]+", cannot be used by " +name );
+                                messages.put(jo1,"column "+(icol+j)+" is already used by "+snames[icol+j]+", cannot be used by " +name );
                             }
                             snames[icol+j]= name;
                         }
@@ -385,6 +413,12 @@ public class AsciiHeadersParser {
 
             } catch ( JSONException ex ) {
                 ex.printStackTrace();
+            }
+        }
+
+        if ( messages.size()>0 ) {
+            for ( JSONObject jo1: messages.keySet() ) {
+                System.err.println(""+messages.get(jo1) );
             }
         }
 
