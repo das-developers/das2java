@@ -275,6 +275,17 @@ public class DataSetUtil {
     }
 
     /**
+     * properties that describe the dataset itself, rather than those of a dimension
+     * or structural properties.
+     * @return
+     */
+    public static String[] globalProperties() {
+        return new String[] {
+            QDataSet.USER_PROPERTIES, QDataSet.VERSION, QDataSet.METADATA, QDataSet.METADATA_MODEL, QDataSet.SOURCE,
+        };
+    }
+
+    /**
      * true if the property is one that is global and is relevant throughout the
      * dataset, such as a title or the units.
      *    property( "TITLE",0,0 ) often returns property("TITLE"), but
@@ -326,9 +337,23 @@ public class DataSetUtil {
      * @return
      */
     public static Map<String,Object> getDimensionProperties( QDataSet ds, Map<String,Object> def ) {
-        if ( def==null ) def= new LinkedHashMap();
+        return getProperties( ds, dimensionProperties(), def );
+    }
 
-        String[] names = dimensionProperties();
+    /**
+     * return the properties listed, using the defaults if provided.
+     * See dimensionProperties(), globalProperties().
+     * @param ds dataset source of the properties.
+     * @param names array of names
+     * @param def defaults, or null if no defaults are to be used.
+     * @return map of the properties.
+     */
+    public static Map<String,Object> getProperties( QDataSet ds, String[] names, Map def ) {
+        if ( def==null ) {
+            def= new LinkedHashMap();
+        } else {
+            def= new LinkedHashMap( def );
+        }
 
         for (int i = 0; i < names.length; i++) {
             Object val= ds.property(names[i]);
