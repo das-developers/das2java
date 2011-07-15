@@ -893,6 +893,7 @@ public final class AutoHistogram {
                 dep0.value(imax) + cadence.value() } );
             }
             result.putProperty( QDataSet.BINS_0, "min,max" );
+            result.putProperty( QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
         }
         return result;
     }
