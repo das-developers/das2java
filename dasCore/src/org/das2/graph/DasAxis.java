@@ -1722,7 +1722,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     if ( bds==null ) {
                         idlt.setString( g, "???" );
                     } else {
-                        idlt.setString( g, (String) bds.property( QDataSet.LABEL, i ) );
+                        String label=  (String) bds.property( QDataSet.LABEL, i ) ;
+                        if ( label==null ) {
+                            idlt.setString( g, "????" ); // This shouldn't happen, but does...  We need to check earlier
+                        } else {
+                            idlt.setString( g, label );
+                        }
                     }
                     width = (int) Math.floor(idlt.getWidth() + 0.5);
                     leftEdge = rightEdge - width;
