@@ -2519,7 +2519,7 @@ public class Ops {
     }
 
     /**
-     * returns rank 1 QDataSet range relative to this, where 0. is the minimum, and 1. is the maximum.
+     * returns rank 1 QDataSet range relative to range "dr", where 0. is the minimum, and 1. is the maximum.
      * For example rescaleRange(ds,1,2) is scanNext, rescaleRange(ds,0.5,1.5) is zoomOut.
      * @param dr a QDataSet with bins and with nonzero width.
      * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is
@@ -2544,6 +2544,7 @@ public class Ops {
         result.putValue( 0, dr.value(0) + w*min );
         result.putValue( 1, dr.value(0) + w*max );
 
+        DataSetUtil.copyDimensionProperties( dr, result );
         return result;
     }
 
