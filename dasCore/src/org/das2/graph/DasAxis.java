@@ -1786,6 +1786,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int DMax = getColumn().getDMaximum();
             int DMin = getColumn().getDMinimum();
 
+            Font labelFont = getTickLabelFont(); // put back in after null pointer exception
+
             TickVDescriptor ticks = getTickV();
 
             if (bottomLine) {
