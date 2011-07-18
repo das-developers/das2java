@@ -5,6 +5,7 @@
 
 package org.das2.datum.format;
 
+import java.util.IllegalFormatException;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
@@ -19,6 +20,7 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
 
     private String format;
     private boolean units;
+    private boolean integer;
 
     /**
      * create a new instance based on the Java format string.
@@ -31,7 +33,14 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
         }
         this.format= formatStr;
         this.units= units;
-        String s= String.format( format, 0. );  // try it out to catch errors early.
+
+        String s;
+        try {
+            s= String.format( format, 0. );
+        }  catch ( IllegalFormatException ex ) {
+            s= String.format( format, 0 );
+            integer= true;
+        }
     }
 
     @Override
@@ -49,7 +58,11 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
         if ( UnitsUtil.isTimeLocation( datum.getUnits() ) ) {
             throw new IllegalArgumentException("times not formatted");
         } else {
-            return String.format( format, datum.doubleValue(units) );
+            if ( integer ) {
+                return String.format( format, (int)datum.doubleValue(units) );
+            } else {
+                return String.format( format, datum.doubleValue(units) );
+            }
         }
     }
 
