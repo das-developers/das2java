@@ -14,6 +14,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
+import org.das2.datum.format.FormatStringFormatter;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -72,8 +73,15 @@ public class QDataSetTableModel extends AbstractTableModel {
                 }
                 for (int k = 0; k < n; k++) {
                     units[i] = (Units) bundle1.property(QDataSet.UNITS, j);
-                    df[i]= units[i].getDatumFormatterFactory().defaultFormatter();
+                    if ( units[i]==null ) units[i]= Units.dimensionless;
+                    String format= (String)bundle1.property(QDataSet.FORMAT, j);
+                    if ( format==null ) {
+                        df[i]= units[i].getDatumFormatterFactory().defaultFormatter();
+                    } else {
+                        df[i]= getDataFormatter( format, units[i] );
+                    }
                     labels[i] = (String) bundle1.property(QDataSet.LABEL, j);
+                    if ( labels[i]==null ) labels[i]= (String) bundle1.property(QDataSet.NAME, j);
                     i++;
                 }
             }
@@ -108,6 +116,23 @@ public class QDataSetTableModel extends AbstractTableModel {
             if ( labels[i]==null ) {
                 labels[i]= "col "+i;
             }
+        }
+    }
+    
+    /**
+     * copied from AsciiTableDataSourceFormat.
+     * @param df
+     * @param u
+     * @return
+     */
+    private DatumFormatter getDataFormatter( String df, Units u ) {
+        try {
+            if ( !df.contains("%") ) df= "%"+df;
+            //TODO: would be nice if we could verify formatter.  I had %f5.2 instead of %5.2f and it wasn't telling me.
+            return new FormatStringFormatter( df, false );
+        } catch ( RuntimeException ex ) {
+            ex.printStackTrace();
+            return u.getDatumFormatterFactory().defaultFormatter();
         }
     }
 
