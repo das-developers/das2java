@@ -95,6 +95,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final String PROP_OPPOSITE_AXIS_VISIBLE = "oppositeAxisVisible";
     public static final String PROP_BOUNDS = "bounds";
 
+    private static final int MAX_TCA_LINES=10; // maximum number of TCA lines
     /*
      * PUBLIC CONSTANT DECLARATIONS
      */
@@ -1717,7 +1718,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             } else {
                 QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
                 if ( bds==null ) System.err.println("expected TCA data to have BUNDLE dataset");
-                for (int i = 0; i < tcaData.length(0); i++) {
+                int lines= Math.min( MAX_TCA_LINES, tcaData.length(0) );
+                for (int i = 0; i < lines; i++) {
                     baseLine += lineHeight;
                     if ( bds==null ) {
                         idlt.setString( g, "???" );
@@ -1783,8 +1785,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int bottomPosition = getRow().getDMaximum();
             int DMax = getColumn().getDMaximum();
             int DMin = getColumn().getDMinimum();
-
-            Font labelFont = getTickLabelFont();
 
             TickVDescriptor ticks = getTickV();
 
@@ -1883,9 +1883,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int rightPosition = getColumn().getDMaximum();
             int DMax = getRow().getDMaximum();
             int DMin = getRow().getDMinimum();
-
-            Font labelFont = getTickLabelFont();
-
 
             TickVDescriptor ticks = getTickV();
 
@@ -2005,7 +2002,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }*/
         }
         if (getOrientation() == BOTTOM && drawTca && tcaData != null) {
-            offset += tcaData.length(0) * (tickLabelFont.getSize() + getLineSpacing());
+            offset += Math.min( MAX_TCA_LINES, tcaData.length(0) ) * (tickLabelFont.getSize() + getLineSpacing());
         }
         return offset;
     }
@@ -2032,7 +2029,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int height = (int) idlt.getHeight();
         int ascent = (int) idlt.getAscent();
 
-        int old_tick_label_gap= getFontMetrics(getTickLabelFont()).stringWidth(" ");
         int tick_label_gap = tickLen/2; //getFontMetrics(getTickLabelFont()).stringWidth(" ");
 
         if ( tick_label_gap<TICK_LABEL_GAP_MIN ) tick_label_gap= TICK_LABEL_GAP_MIN;
@@ -2110,7 +2106,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
 
-        for (int i = 0; i < tcaData.length(0); i++) {
+        int lines= Math.min( MAX_TCA_LINES, tcaData.length(0) );
+
+        for (int i = 0; i < lines; i++) {
             try {
                 baseLine += lineHeight;
                 QDataSet v1= tcaData.slice(index).slice(i);
@@ -2460,7 +2458,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int DMax = getColumn().getDMaximum();
                 Font tickLabelFont = getTickLabelFont();
                 int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
-                int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * tcaData.length(0);
+                int lines= Math.min( MAX_TCA_LINES, tcaData.length(0) );
+                int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * lines;
                 int maxLabelWidth = getMaxLabelWidth();
                 bounds.height += tcaHeight;
                 blLabelRect.height += tcaHeight;
@@ -2471,7 +2470,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 idlt.setString(tickLabelFont, "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
                 QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
-                for (int i = 0; i < tcaData.length(0); i++) {
+                for (int i = 0; i < lines; i++) {
                     String ss;
                     if ( bds==null ) {
                         ss= "???";
@@ -3296,7 +3295,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             if (drawTca && getOrientation() == BOTTOM && tcaData != null) {
                 Rectangle bounds = primaryInputPanel.getBounds();
-                int tcaHeight = (getTickLabelFont().getSize() + getLineSpacing()) * tcaData.length(0);
+                int tcaHeight = (getTickLabelFont().getSize() + getLineSpacing()) * Math.min( MAX_TCA_LINES, tcaData.length(0));
                 bounds.height += tcaHeight;
                 primaryInputPanel.setBounds(bounds);
             }
