@@ -55,10 +55,18 @@ public class EventsRenderer extends Renderer {
         yrange.putValue(0,0);
         yrange.putValue(1,10);
 
-        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        QDataSet xmins= SemanticOps.xtagsDataSet(ds);
+        QDataSet xmaxs= DataSetOps.unbundle( ds,1 );
 
-        xrange= Ops.extent(xds);
+        Units u0= SemanticOps.getUnits(xmins );
+        Units u1= SemanticOps.getUnits(xmaxs );
+        if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+            xmaxs= Ops.add( xmins, xmaxs );
+        }
 
+        xrange= Ops.extent(xmins);
+        xrange= Ops.extent(xmaxs,xrange);
+        
         xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
 
         JoinDataSet bds= new JoinDataSet(2);
