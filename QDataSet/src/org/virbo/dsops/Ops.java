@@ -1670,7 +1670,7 @@ public class Ops {
 
     public static QDataSet circle( QDataSet radius ) {
         if ( radius==null ) radius= DataSetUtil.asDataSet(1.);
-        MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.link( Ops.multiply( radius, sin(linspace(0,2*PI,600) ) ), Ops.multiply( radius, cos(linspace(0,2*PI,600 ) ) ) );
+        MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.link( Ops.multiply( radius, sin(linspace(0,601*PI/300,601) ) ), Ops.multiply( radius, cos(linspace(0,601*PI/300,601 ) ) ) );
         result.putProperty( QDataSet.RENDER_TYPE, "series" );
         return result;
     }
