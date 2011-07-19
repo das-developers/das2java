@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
+import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -1665,6 +1666,41 @@ public class Ops {
         }
         
         return result;
+    }
+
+    public static QDataSet circle( QDataSet radius ) {
+        if ( radius==null ) radius= DataSetUtil.asDataSet(1.);
+        MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.link( Ops.multiply( radius, sin(linspace(0,2*PI,600) ) ), Ops.multiply( radius, cos(linspace(0,2*PI,600 ) ) ) );
+        result.putProperty( QDataSet.RENDER_TYPE, "series" );
+        return result;
+    }
+
+    public static QDataSet circle( double dradius ) {
+        QDataSet radius= DataSetUtil.asDataSet(dradius);
+        return circle( radius );
+    }
+
+    public static QDataSet circle( String sradius ) throws ParseException {
+        QDataSet radius;
+        if ( sradius==null ) {
+            radius= DataSetUtil.asDataSet(1.);
+        } else {
+            Datum d;
+            try {
+                d= DatumUtil.parse(sradius);
+            } catch ( ParseException ex ) {
+                String[] ss= sradius.split(" ", 2);
+                if ( ss.length==2 ) {
+                    Units u= SemanticOps.lookupUnits(ss[1]);
+                    d= u.parse(ss[0]);  // double.parseDouble
+                } else {
+                    throw new IllegalArgumentException("unable to parse: "+sradius );
+                }
+            }
+            radius= DataSetUtil.asDataSet( d );
+        }
+
+        return circle( radius );
     }
 
     /**
