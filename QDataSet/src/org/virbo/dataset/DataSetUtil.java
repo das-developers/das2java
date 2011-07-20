@@ -1675,6 +1675,13 @@ public class DataSetUtil {
         }
     }
 
+    /**
+     * return the DatumRange equivalent of this 2-element, rank 1 bins dataset.
+     *
+     * @param ds
+     * @param sloppy true indicates we don't check BINS_0 property.
+     * @return
+     */
     public static DatumRange asDatumRange( QDataSet ds, boolean sloppy ) {
         Units u= SemanticOps.getUnits(ds);
         if ( sloppy==false ) {
@@ -1683,6 +1690,21 @@ public class DataSetUtil {
             }
         }
         return new DatumRange( ds.value(0), ds.value(1), u );
+    }
+
+    /**
+     * return a 2-element rank 1 bins dataset with BINS_0="min,max"
+     * @param dr
+     * @return
+     */
+    public static QDataSet asDataSet( DatumRange dr ) {
+        DDataSet result= DDataSet.createRank1(2);
+        Units u= dr.getUnits();
+        result.putValue( 0, dr.min().doubleValue(u) );
+        result.putValue( 1, dr.max().doubleValue(u) );
+        result.putProperty( QDataSet.UNITS,u );
+        result.putProperty( QDataSet.BINS_0, "min,max" );
+        return result;
     }
 
     public static DRank0DataSet asDataSet( double d, Units u ) {
