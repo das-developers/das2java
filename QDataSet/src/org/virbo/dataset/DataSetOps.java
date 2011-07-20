@@ -746,7 +746,11 @@ public class DataSetOps {
         if ( ib==-1 ) {
             if ( name.matches("ch_\\d+") ) {
                 int ich= Integer.parseInt(name.substring(3) );
-                return DataSetOps.slice1( bundleDs, ich );
+                if ( bundle1!=null ) {
+                    return DataSetOps.unbundle(bundleDs, ich, false);
+                } else {
+                    return DataSetOps.slice1( bundleDs, ich );
+                }
             } else {
                 throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
             }
