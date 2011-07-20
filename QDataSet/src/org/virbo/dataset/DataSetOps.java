@@ -690,7 +690,7 @@ public class DataSetOps {
     /**
      * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
      * @param bundleDs
-     * @param name
+     * @param name the name of the bundled dataset, or "ch_<i>" where i is the dataset number
      * @see unbundle( QDataSet bundleDs, int ib )
      * @throws IllegalArgumentException if no named dataset is found.
      * @return
@@ -744,7 +744,12 @@ public class DataSetOps {
             }
         }
         if ( ib==-1 ) {
-            throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
+            if ( name.matches("ch_\\d+") ) {
+                int ich= Integer.parseInt(name.substring(3) );
+                return DataSetOps.slice1( bundleDs, ich );
+            } else {
+                throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
+            }
         } else {
             return unbundle(bundleDs,ib,highRank);
         }
