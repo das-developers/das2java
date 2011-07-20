@@ -997,6 +997,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     }
 
+    /**
+     * update the TCAs using the QFunction this.tcaFunction.  We get an example
+     * input from the function, then call it for each tick.  We add the property
+     * "CONTEXT_0" to be a BINS dataset indicating the overall range for the
+     * read.
+     */
     private void updateTCADataSet() {
         QFunction ltcaFunction= this.tcaFunction;
         if ( ltcaFunction==null ) return;
@@ -1035,6 +1041,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return;
         }
         uc= UnitsConverter.getConverter( getUnits(), tcaUnits );
+
+        DatumRange context= getDatumRange(); // this may not contain all the ticks.
+        context= DatumRangeUtil.union( context, getUnits().createDatum( uc.convert(tickV[0]) ) );
+        context= DatumRangeUtil.union( context, getUnits().createDatum( uc.convert(tickV[tickV.length-1]) ) );
+        ex.putProperty( QDataSet.CONTEXT_0, org.virbo.dataset.DataSetUtil.asDataSet( getDatumRange() ) );
 
         DDataSet dep0= DDataSet.createRank1(tickV.length);
         dep0.putProperty(QDataSet.UNITS,getUnits());
