@@ -78,7 +78,11 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                         || key.equals(QDataSet.TYPICAL_MIN ) || key.equals(QDataSet.TYPICAL_MAX ) ) ) {
                     Units u= (Units) properties.get(QDataSet.UNITS);
                     if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
-                        svalue= u.createDatum((Number)value).toString() + " (" + svalue + ")";
+                        if ( u.isValid( ((Number)value).doubleValue() ) ) {
+                            svalue= u.createDatum((Number)value).toString() + " (" + svalue + ")";
+                        } else {
+                            svalue= "fill" + " (" + svalue + ")";
+                        }
                     }
                 }
                 nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
