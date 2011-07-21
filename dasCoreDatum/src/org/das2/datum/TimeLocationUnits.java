@@ -105,5 +105,13 @@ public class TimeLocationUnits extends LocationUnits {
         if ( Double.isNaN(vmin) ) calculateRange();
         return value>=vmin && value<=vmax && !Double.isNaN(value);
     }
+
+    public double validMin( ) {
+        return vmin;
+    }
+
+    public double validMax() {
+        return vmax;
+    }
           
 }
