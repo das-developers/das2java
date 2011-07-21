@@ -1933,11 +1933,17 @@ public class DataSetUtil {
      */
     public static String getStringValue( QDataSet yds, double value ) {
         Units u= SemanticOps.getUnits(yds);
-        Datum d = u.createDatum( value );
+        String form= (String)yds.property(QDataSet.FORMAT);
+        Datum d;
+        if ( u.isValid(value) ) {
+            d= u.createDatum( value );
+        } else {
+            //TODO: consider using format length and "****" to return value.
+            return "fill ("+value+")";
+        }
         DatumFormatter df= d.getFormatter();
         String s;
         if ( df instanceof DefaultDatumFormatter ) {
-            String form= (String)yds.property(QDataSet.FORMAT);
             if ( form==null ) {
                 if ( "log".equals( yds.property(QDataSet.SCALE_TYPE) ) ) {
                     s = String.format( "%9.3e", value ).trim();
