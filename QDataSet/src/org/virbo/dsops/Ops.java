@@ -1668,6 +1668,37 @@ public class Ops {
         return result;
     }
 
+
+    /**
+     * rank 4 dataset for demos.
+     * @return
+     */
+    public static QDataSet ripples( int len, int len0, int len1, int len4 ) {
+        FDataSet result= org.virbo.dataset.FDataSet.createRank4( len, len0, len1, len4 );
+        Random r= new java.util.Random(0);
+        for ( int j=0; j<len4; j++ ) {
+            double d= r.nextDouble();
+            for ( int i=0; i<len; i++ ) {
+                double eps= 1+(i/(float)len);
+                double eps2= 1+(i*5/(float)len);
+                QDataSet d2= new RipplesDataSet( (len0*eps)/10., len1/10., (len1*eps2)/20., (len0*eps)/2., len1/2., (len1*eps)/10., len0, len1 );
+                QubeDataSetIterator it= new QubeDataSetIterator(d2);
+                while ( it.hasNext() ) {
+                    it.next();
+                    result.putValue( i, it.index(0),it.index(1), j, it.getValue(d2)+d );
+                }
+                if ( i==0 ) result.putProperty(QDataSet.FILL_VALUE,d2.property(QDataSet.FILL_VALUE));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
+     * @param radius rank 0 dataset
+     * @return QDataSet that when plotted is a circle.
+     */
     public static QDataSet circle( QDataSet radius ) {
         if ( radius==null ) radius= DataSetUtil.asDataSet(1.);
         MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.link( Ops.multiply( radius, sin(linspace(0,601*PI/300,601) ) ), Ops.multiply( radius, cos(linspace(0,601*PI/300,601 ) ) ) );
@@ -1675,11 +1706,21 @@ public class Ops {
         return result;
     }
 
+    /**
+     * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
+     * @param radius
+     * @return QDataSet that when plotted is a circle.
+     */
     public static QDataSet circle( double dradius ) {
         QDataSet radius= DataSetUtil.asDataSet(dradius);
         return circle( radius );
     }
 
+    /**
+     * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
+     * @param radius string parsed into rank 0 dataset
+     * @return QDataSet that when plotted is a circle.
+     */
     public static QDataSet circle( String sradius ) throws ParseException {
         QDataSet radius;
         if ( sradius==null ) {
