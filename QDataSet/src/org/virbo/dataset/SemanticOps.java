@@ -99,6 +99,12 @@ public class SemanticOps {
     public static synchronized Units lookupUnits(String sunits) {
         Units result;
         sunits= sunits.trim();
+        if ( sunits.startsWith("[") && sunits.endsWith("]") ) {
+            sunits= sunits.substring(1,sunits.length()-1);
+        }
+        if ( sunits.startsWith("(") && sunits.endsWith(")") ) { // often units get [] or () put around them.  Pop these off.
+            sunits= sunits.substring(1,sunits.length()-1);
+        }
         try {
             result= Units.getByName(sunits);
             
