@@ -99,12 +99,6 @@ public class SemanticOps {
     public static synchronized Units lookupUnits(String sunits) {
         Units result;
         sunits= sunits.trim();
-        if ( sunits.startsWith("[") && sunits.endsWith("]") ) {
-            sunits= sunits.substring(1,sunits.length()-1);
-        }
-        if ( sunits.startsWith("(") && sunits.endsWith(")") ) { // often units get [] or () put around them.  Pop these off.
-            sunits= sunits.substring(1,sunits.length()-1);
-        }
         try {
             result= Units.getByName(sunits);
             
@@ -140,6 +134,20 @@ public class SemanticOps {
                     result= new NumberUnits( sunits );
                 }
             }
+        }
+
+        // look to see if there is a standard unit for this and register a converter if so.  E.g.  [ms]<-->ms
+        String stdunits= sunits;
+        if ( stdunits.startsWith("[") && stdunits.endsWith("]") ) { // we can't just pop these off.  Hudson has case where this causes problems.  We need to make units in vap files canonical as well.
+            stdunits= stdunits.substring(1,stdunits.length()-1);
+        }
+        if ( stdunits.startsWith("(") && stdunits.endsWith(")") ) { // often units get [] or () put around them.  Pop these off.
+            stdunits= stdunits.substring(1,stdunits.length()-1);
+        }
+        if ( !stdunits.equals(sunits) ) {
+            Units stdUnit= lookupUnits(stdunits);  // we need to register "foo" when "[foo]" so that order doesn't matter.
+            System.err.println("registering identity converter "+stdUnit + " -> "+ result );
+            stdUnit.registerConverter( result, UnitsConverter.IDENTITY );
         }
         return result;
     }
