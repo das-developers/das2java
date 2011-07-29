@@ -50,6 +50,7 @@ public class DasAxisBeanInfo extends AccessLevelBeanInfo {
         new Property("animated", AccessLevel.DASML, "isAnimated", "setAnimated", null),
         new Property("dataPath", AccessLevel.DASML, "getDataPath", "setDataPath", null),
         new Property("showTca", AccessLevel.DASML, "getDrawTca", "setDrawTca", null),
+        new Property("scanRange", AccessLevel.DASML, "getScanRange", "setScanRange", null),
     };
     
     public DasAxisBeanInfo() {

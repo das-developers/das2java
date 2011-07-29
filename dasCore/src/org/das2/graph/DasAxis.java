@@ -94,6 +94,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final String PROP_LOG = "log";
     public static final String PROP_OPPOSITE_AXIS_VISIBLE = "oppositeAxisVisible";
     public static final String PROP_BOUNDS = "bounds";
+    public static final String PROP_SCAN_RANGE="scanRange";
 
     private static final int MAX_TCA_LINES=10; // maximum number of TCA lines
     /*
@@ -174,6 +175,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected JPanel secondaryInputPanel;
     private ScanButton scanPrevious;
     private ScanButton scanNext;
+
+    /**
+     * limits of the scan range.  Scan buttons will only be shown with within this range.  If not set, then there is no limit to range
+     * and the buttons are always available.
+     */
+    private DatumRange scanRange;
+    
     private boolean animated = ("on".equals(DasProperties.getInstance().get("visualCues")));
     /* Rectangles representing different areas of the axis */
     private Rectangle blLineRect;
@@ -241,10 +249,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public DasAxis(Datum min, Datum max, int orientation, boolean log) {
         this(orientation);
         dataRange = new DataRange(this, min, max, log);
-        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
-            scanNext.setEnabled( UnitsUtil.isIntervalMeasurement(min.getUnits()) );
-            scanPrevious.setEnabled( UnitsUtil.isIntervalMeasurement(min.getUnits()) );
-        }
         addListenersToDataRange(dataRange, dataRangePropertyListener);
         copyFavorites();
         copyHistory();
@@ -257,10 +261,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected DasAxis(DataRange range, int orientation) {
         this(orientation);
         dataRange = range;
-        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
-            scanNext.setEnabled( UnitsUtil.isIntervalMeasurement(range.getUnits()) );
-            scanPrevious.setEnabled( UnitsUtil.isIntervalMeasurement(range.getUnits()) );
-        }
         addListenersToDataRange(range, dataRangePropertyListener);
         copyFavorites();
         copyHistory();
@@ -281,6 +281,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         setLayout(new AxisLayoutManager());
         maybeInitializeInputPanels();
         maybeInitializeScanButtons();
+        scanNext.setEnabled( true );
+        scanPrevious.setEnabled( true );
         add(primaryInputPanel);
         add(secondaryInputPanel);
         try {
@@ -433,9 +435,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 String command = e.getActionCommand();
                 DasLogger.getLogger(DasLogger.GUI_LOG).fine("event " + command);
                 if (command.equals(SCAN_PREVIOUS_LABEL)) {
-                    scanPrevious();
+                    if ( scanRange==null || scanRange.intersects(getDatumRange().previous()) ) scanPrevious();
                 } else if (command.equals(SCAN_NEXT_LABEL)) {
-                    scanNext();
+                    if ( scanRange==null || scanRange.intersects(getDatumRange().next()) ) scanNext();
                 }
             }
         };
@@ -599,6 +601,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         DatumRange oldRange = dataRange.getDatumRange();
         dataRange.setRange(newRange);
 
+        refreshScanButtons(false);
+        
         update();
         createAndFireRangeSelectionEvent();
         firePropertyChange(PROPERTY_DATUMRANGE, oldRange, newRange);
@@ -773,11 +777,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void setUnits(Units newUnits) {
         dataRange.setUnits(newUnits);
-        boolean b= UnitsUtil.isIntervalMeasurement(newUnits);
-        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
-            scanNext.setEnabled( b );
-            scanPrevious.setEnabled( b );
-        }
+    }
+
+    /**
+     * limit the scan buttons to operate within this range.
+     * http://sourceforge.net/tracker/index.php?func=detail&aid=3059009&group_id=199733&atid=970682
+     * @param range
+     */
+    public void setScanRange( DatumRange range ) {
+        DatumRange old= this.scanRange;
+        this.scanRange= range;
+        firePropertyChange( PROP_SCAN_RANGE, old, range );
+    }
+
+    /**
+     * get the limit the scan buttons, which may be null.
+     */
+    public DatumRange getScanRange(  ) {
+        return this.scanRange;
     }
 
     /**
@@ -796,15 +813,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         updateTickV();
         markDirty();
-        final boolean b= UnitsUtil.isIntervalMeasurement(range.getUnits());
-        if ( !DasApplication.getDefaultApplication().isHeadless() && b!=scanPrevious.isEnabled() ) {
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
-                    scanNext.setEnabled( b );
-                    scanPrevious.setEnabled( b );
-                } }
-            );
-        }
         firePropertyChange(PROPERTY_DATUMRANGE, oldRange, range);
         update();
     }
@@ -1544,6 +1552,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     if (drawTca && tcaFunction != null) {
                         updateTCADataSet();
                     }
+                } else {
+                    if (getUnits() instanceof TimeLocationUnits) {
+                        updateTickVTime();
+                    } else if (dataRange.isLog()) {
+                        updateTickVLog();
+                    } else {
+                        updateTickVLinear();
+                    }
                 }
                 repaint();
             }
@@ -1774,6 +1790,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( result.contains("%{" ) ) {
             result= result.replaceAll("%\\{UNITS\\}", getUnits().toString() );
             result= result.replaceAll("%\\{RANGE\\}", getDatumRange().toString() );
+            result= result.replaceAll("%\\{SCAN_RANGE\\}", String.valueOf(getScanRange()) );
         }
         return result;
     }
@@ -3468,11 +3485,28 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    private void refreshScanButtons(boolean reset) {
+        if ( scanRange!=null ) {
+            if ( !scanRange.getUnits().isConvertableTo(getDatumRange().getUnits()) ) {
+                  scanRange=null;
+            }
+        }
+        if ( reset || scanPrevious.hover ) {
+            boolean t= ( scanRange==null || ( false ? scanRange.intersects(getDatumRange().next()) : scanRange.intersects(getDatumRange().previous()) ) );
+            scanPrevious.hover= t;
+        }
+        if ( reset || scanNext.hover ) {
+            boolean t= ( scanRange==null || ( true ? scanRange.intersects(getDatumRange().next()) : scanRange.intersects(getDatumRange().previous()) ) );
+            scanNext.hover= t;
+        }
+    }
+
     private class ScanButton extends JButton {
 
         private boolean hover;
         private boolean pressed;
 
+        private boolean nextButton;
         /** TODO
          * @param text
          */
@@ -3481,6 +3515,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             setContentAreaFilled(false);
             setText(text);
             setFocusable(false);
+            nextButton= SCAN_NEXT_LABEL.equals(text);
+
             setBorder(new CompoundBorder(
                     new LineBorder(Color.BLACK),
                     new EmptyBorder(2, 2, 2, 2)));
@@ -3489,7 +3525,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 public void mousePressed(MouseEvent e) {
                     if (e.getButton() == MouseEvent.BUTTON1) {
                         setForeground(Color.LIGHT_GRAY);
-                        pressed = UnitsUtil.isIntervalMeasurement( getUnits() );
+                        pressed = scanRange==null || ( nextButton ? scanRange.intersects(getDatumRange().next()) : scanRange.intersects(getDatumRange().previous()) );
                         repaint();
                     }
                 }
@@ -3503,7 +3539,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
 
                 public void mouseEntered(MouseEvent e) {
-                    hover = UnitsUtil.isIntervalMeasurement( getUnits() );
+                    hover = scanRange==null || ( nextButton ? scanRange.intersects(getDatumRange().next()) : scanRange.intersects(getDatumRange().previous()) );
                     repaint();
                 }
 

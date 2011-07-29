@@ -372,6 +372,15 @@ public class TearoffTabbedPane extends JTabbedPane {
         super.setEnabledAt(tabIndex, false);
         TabDesc td = ((TabDesc) tabs.get(c));
         td.babysitter = newContainer;
+        if ( newContainer instanceof TearoffTabbedPane ) { // slide right
+            TearoffTabbedPane tt= (TearoffTabbedPane)newContainer;
+            Window ttp= SwingUtilities.getWindowAncestor(tt);
+            int dx= ttp.getWidth() - ( tt.getWidth() - 20 );
+            int dy= ttp.getHeight() - ( tt.getHeight() - 40 ); // kludge for size of labels
+            if ( tt.getTabCount()==0 ) {
+                ttp.setSize( c.getPreferredSize().width + dx, c.getPreferredSize().height + dy);
+            }
+        }
         setSelectedIndex(lastSelected);
     }
 
@@ -471,7 +480,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         }
     }
 
-    private synchronized TearoffTabbedPane getRightTabbedPane() {
+    private synchronized TearoffTabbedPane getRightTabbedPane( ) {
         if (rightPane == null) {
 
             final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
