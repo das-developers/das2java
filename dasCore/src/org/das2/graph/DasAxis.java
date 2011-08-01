@@ -1549,21 +1549,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             repaint();
         } else {
             if (autoTickV) {
-                if (majorTicksDomainDivider != null) {
-                    updateTickVDomainDivider();
-                    if (drawTca && tcaFunction != null) {
-                        updateTCADataSet();
-                    }
-                } else {
-                    if (getUnits() instanceof TimeLocationUnits) {
-                        updateTickVTime();
-                    } else if (dataRange.isLog()) {
-                        updateTickVLog();
+                try {
+                    if (majorTicksDomainDivider != null) {
+                        updateTickVDomainDivider();
+                        if (drawTca && tcaFunction != null) {
+                            updateTCADataSet();
+                        }
                     } else {
-                        updateTickVLinear();
+                        if (getUnits() instanceof TimeLocationUnits) {
+                            updateTickVTime();
+                        } else if (dataRange.isLog()) {
+                            updateTickVLog();
+                        } else {
+                            updateTickVLinear();
+                        }
                     }
+                    repaint();
+                } catch ( NullPointerException ex ) {
+                    ex.printStackTrace(); // why do we get this now?
                 }
-                repaint();
             }
         }
 
