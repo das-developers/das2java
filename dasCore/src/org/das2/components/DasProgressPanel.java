@@ -98,6 +98,9 @@ public class DasProgressPanel implements ProgressMonitor {
     Exception source;
     Exception consumer;
 
+    ImageIcon cancel= new ImageIcon( DasProgressPanel.class.getResource("/images/cancel14.png") );
+    ImageIcon cancelGrey= new ImageIcon( DasProgressPanel.class.getResource("/images/cancelGrey14.png") );
+    
     public DasProgressPanel(String label) {
         if (useDetails)
             source = new Exception();
@@ -255,14 +258,6 @@ public class DasProgressPanel implements ProgressMonitor {
         kbLabel.setPreferredSize(progressBar.getPreferredSize());
         kbLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
-        mainPanel = new JPanel();
-        mainPanel.setOpaque(false);
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.add(taskLabel);
-        mainPanel.add(progressMessageLabel);
-        mainPanel.add(progressBar);
-        mainPanel.add(kbLabel);
-
         Border lineBorder = new LineBorder(Color.BLACK, 2);
         Border emptyBorder = new EmptyBorder(2, 2, 2, 2);
         CompoundBorder border = new CompoundBorder(lineBorder, emptyBorder);
@@ -281,30 +276,44 @@ public class DasProgressPanel implements ProgressMonitor {
             });
         }
 
-        cancelButton = new JButton("cancel");
+        JPanel progressBarPanel= new JPanel( new BorderLayout() );
+
+        //cancelButton = new JButton("cancel");
+        cancelButton = new JButton( cancelGrey );
+        cancelButton.setToolTipText("cancel task");
         cancelButton.setEnabled(false);
+        cancelButton.setVerticalAlignment( SwingConstants.CENTER );
         cancelButton.setOpaque(false);
-        cancelButton.setBorder(border);
+        //cancelButton.setBorder(border);
         cancelButton.setFocusPainted(false);
         cancelButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 cancel();
             }
         });
 
-        buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setOpaque(false);
+        mainPanel = new JPanel();
+        mainPanel.setOpaque(false);
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(taskLabel);
+        mainPanel.add(progressMessageLabel);
+        progressBarPanel.add(progressBar,BorderLayout.CENTER);
+        progressBarPanel.add(cancelButton,BorderLayout.EAST);
+        mainPanel.add(progressBarPanel);
+        mainPanel.add(kbLabel);
 
-        if (useDetails)
-            buttonPanel.add(detailsButton);
-        buttonPanel.add(cancelButton);
+//        buttonPanel = new JPanel( new FlowLayout(FlowLayout.LEFT) );
+//        buttonPanel.setOpaque(false);
+//
+//        if (useDetails)
+//            buttonPanel.add(detailsButton);
+//        buttonPanel.add(cancelButton);
 
         thePanel = new MyPanel();
         thePanel.setOpaque(false);
         thePanel.setLayout(new BorderLayout());
         thePanel.add(mainPanel, BorderLayout.CENTER);
-        thePanel.add(buttonPanel, BorderLayout.SOUTH);
+        //thePanel.add(buttonPanel, BorderLayout.EAST);
 
         if (parentComponent != null) {
             thePanel.setSize(thePanel.getPreferredSize());
@@ -458,6 +467,13 @@ public class DasProgressPanel implements ProgressMonitor {
         boolean cancelEnabled = cancelCheckFailures < 2;
         if (cancelEnabled != cancelButton.isEnabled()) {
             cancelButton.setEnabled(cancelEnabled);
+            if ( cancelEnabled ) {
+                cancelButton.setIcon( cancel );
+                cancelButton.setToolTipText("cancel task");
+            } else {
+                cancelButton.setIcon( cancelGrey );
+                cancelButton.setToolTipText("task cannot be canceled");
+            }
         }
     }
 
