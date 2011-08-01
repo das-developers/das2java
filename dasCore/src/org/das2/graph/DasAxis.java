@@ -281,8 +281,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         setLayout(new AxisLayoutManager());
         maybeInitializeInputPanels();
         maybeInitializeScanButtons();
-        scanNext.setEnabled( true );
-        scanPrevious.setEnabled( true );
+        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            scanNext.setEnabled( true );
+            scanPrevious.setEnabled( true );
+        }
         add(primaryInputPanel);
         add(secondaryInputPanel);
         try {
@@ -3486,6 +3488,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private void refreshScanButtons(boolean reset) {
+        if ( scanNext==null ) return; // headless
         if ( scanRange!=null ) {
             if ( !scanRange.getUnits().isConvertableTo(getDatumRange().getUnits()) ) {
                   scanRange=null;
