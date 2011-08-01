@@ -43,6 +43,8 @@ import org.das2.graph.DasCanvas;
  * @author  eew
  */
 public class DasProgressPanel implements ProgressMonitor {
+    public static final String MSG_CANCEL_TASK = "cancel task";
+    public static final String MSG_TASK_CANNOT_BE_CANCELED = "task cannot be cancelled";
 
     private long taskStartedTime;
     private long currentTaskPosition;
@@ -280,7 +282,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
         //cancelButton = new JButton("cancel");
         cancelButton = new JButton( cancelGrey );
-        cancelButton.setToolTipText("cancel task");
+        cancelButton.setToolTipText(MSG_TASK_CANNOT_BE_CANCELED);
         cancelButton.setEnabled(false);
         cancelButton.setVerticalAlignment( SwingConstants.CENTER );
         cancelButton.setOpaque(false);
@@ -469,10 +471,10 @@ public class DasProgressPanel implements ProgressMonitor {
             cancelButton.setEnabled(cancelEnabled);
             if ( cancelEnabled ) {
                 cancelButton.setIcon( cancel );
-                cancelButton.setToolTipText("cancel task");
+                cancelButton.setToolTipText(MSG_CANCEL_TASK);
             } else {
                 cancelButton.setIcon( cancelGrey );
-                cancelButton.setToolTipText("task cannot be canceled");
+                cancelButton.setToolTipText(MSG_TASK_CANNOT_BE_CANCELED);
             }
         }
     }
