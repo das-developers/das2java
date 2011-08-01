@@ -236,7 +236,7 @@ public class DataSetUtil {
                     QDataSet.CACHE_TAG,
                     QDataSet.COORDINATE_FRAME,
                     QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
-                    QDataSet.WEIGHTS_PLANE, 
+                    QDataSet.WEIGHTS_PLANE,
                     QDataSet.USER_PROPERTIES,
                     QDataSet.METADATA, QDataSet.METADATA_MODEL,
                 };
@@ -966,6 +966,11 @@ public class DataSetUtil {
         } else if ( peakv<20 ) { // loosen things up when there isn't much data.
             ipeak= linHighestPeak;
             peakv= (int) hist.value(ipeak);
+        } else if ( ipeak<linHighestPeak ) { // ftp://laspftp.colorado.edu/pub/riesberl/MMS/data/full-mode/tha_l2_esa_20080907_v01.cdf?tha_peif_sc_pot
+            if ( hist.value(linHighestPeak) > Math.max( Math.ceil( hist.value(linLowestPeak) / 10 ), 1 ) ) {
+                ipeak= linHighestPeak;
+                peakv= (int)hist.value(ipeak);
+            }
         }
 
         double ss=0;
