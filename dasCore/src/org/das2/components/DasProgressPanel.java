@@ -39,7 +39,21 @@ import java.util.logging.Logger;
 import org.das2.graph.DasCanvas;
 
 /**
+ * ProgressMonitor component used throughout das2.
  *
+ * Here's an Autoplot script demoing its operation:
+ * monitor.setTaskSize( 100 )
+ * monitor.started()
+
+ * for i in range(100):
+ *   if ( i>50 and monitor.isCancelled() ):
+ *     raise Exception('cancel pressed')
+ *   print i
+ *   java.lang.Thread.sleep(100)
+ *   monitor.setTaskProgress(i)
+ *
+ * monitor.finished()
+
  * @author  eew
  */
 public class DasProgressPanel implements ProgressMonitor {
@@ -246,6 +260,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
         progressBar = new JProgressBar();
         progressBar.setOpaque(false);
+        progressBar.setPreferredSize( new Dimension(150,14) );
         progressBar.setMaximumSize(progressBar.getPreferredSize());
         progressBar.setMinimumSize(progressBar.getPreferredSize());
         progressBar.setAlignmentX(JComponent.CENTER_ALIGNMENT);
@@ -282,6 +297,11 @@ public class DasProgressPanel implements ProgressMonitor {
 
         //cancelButton = new JButton("cancel");
         cancelButton = new JButton( cancelGrey );
+        Dimension cs= new Dimension(20,20);
+        cancelButton.setMaximumSize( cs );
+        cancelButton.setMinimumSize( cs );
+        cancelButton.setPreferredSize( cs );
+        cancelButton.setMargin( new Insets( 2,2,2,2 ) );
         cancelButton.setToolTipText(MSG_TASK_CANNOT_BE_CANCELED);
         cancelButton.setEnabled(false);
         cancelButton.setVerticalAlignment( SwingConstants.CENTER );
