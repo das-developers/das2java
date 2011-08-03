@@ -32,7 +32,11 @@ public class Entities {
                 int i1= str.indexOf(";",i);
                 if ( i1!=-1 && i1-i<MAX_ENTITY_LEN) {
                     result.append( str.substring(i0,i));
-                    result.append( decode( str.substring(i,i1+1) ) );
+                    try {
+                        result.append( decode( str.substring(i,i1+1) ) );
+                    } catch ( NumberFormatException ex ) {
+                        result.append( str.substring(i,i1+1) );
+                    }
                     i0= i1+1;
                     if ( i0==str.length() ) return result.toString();
                 } else {
