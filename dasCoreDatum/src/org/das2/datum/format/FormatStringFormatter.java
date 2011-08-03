@@ -13,7 +13,7 @@ import org.das2.datum.UnitsUtil;
 /**
  * This is based on the C-style format strings introduced in Java 5 that
  * we can now use.  Note this should not be used for times.  In the future this
- * may be supported.
+ * may be supported.  
  * @author jbf
  */
 public class FormatStringFormatter extends DefaultDatumFormatter {
