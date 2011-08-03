@@ -113,6 +113,10 @@ public class SemanticOps {
                 result= Units.seconds;
             } else if ( sunits.equals("msec") ) {  // CDF
                 result= Units.milliseconds;
+            } else if ( sunits.contains("(All Qs)")) { //themis files have this annotation on the units. Register a converter. TODO: solve this in a nice way.  The problem is I wouldn't want to assume nT(s) doesn't mean nT * sec.
+                result= new NumberUnits( sunits );
+                Units targetUnits= lookupUnits( sunits.replace("(All Qs)","").trim() );
+                result.registerConverter( targetUnits, UnitsConverter.IDENTITY );
             } else {
                 Pattern multPattern= Pattern.compile("([.0-9]+)\\s*([a-zA-Z]+)");
                 Matcher m= multPattern.matcher(sunits);
