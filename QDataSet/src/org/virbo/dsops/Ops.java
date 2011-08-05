@@ -1745,6 +1745,15 @@ public class Ops {
     }
 
     /**
+     * copy the dataset to make a new one that is writable.
+     * @param src
+     * @return
+     */
+    public static WritableDataSet copy( QDataSet src ) {
+        return ArrayDataSet.copy(src);
+    }
+
+    /**
      * element-wise sin.
      * @param ds
      * @return
