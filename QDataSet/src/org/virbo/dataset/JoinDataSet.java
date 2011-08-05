@@ -62,6 +62,11 @@ public class JoinDataSet extends AbstractDataSet {
         join(ds1);
     }
 
+    /**
+     * copy this without copying each dataset.
+     * @param joinDataSet
+     * @return
+     */
     public static JoinDataSet copy(JoinDataSet joinDataSet) {
         JoinDataSet result= new JoinDataSet(joinDataSet.rank());
         result.datasets.addAll( joinDataSet.datasets );
