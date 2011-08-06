@@ -10,6 +10,8 @@ import java.awt.image.BufferedImage;
 import org.das2.datum.Units;
 import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
@@ -112,6 +114,8 @@ public class RGBImageRenderer extends Renderer {
                     }
                 }
             }
+        } else {
+            throw new IllegalArgumentException("DataSet must be rank 2 or rank 3: "+ds );
         }
         if (imageType == -19999) {
             throw new IllegalArgumentException("DataSet must be ds[w,h] ds[w,h,3] or ds[w,h,4] and be RGB, BGR, or ARGB.  Default is RBG");
@@ -143,4 +147,35 @@ public class RGBImageRenderer extends Renderer {
         return im;
     }
 
+    /**
+     * autorange on the data, returning a rank 2 bounds for the dataset.
+     *
+     * @param fillDs
+     * @return
+     */
+    public static QDataSet doAutorange( QDataSet ds ) {
+
+        QDataSet xds;
+        QDataSet yds;
+
+        QDataSet xrange;
+        QDataSet yrange;
+
+        if ( ds.rank()==2 ) {
+            xrange= DDataSet.wrap( new double[] { 0, ds.length() } );
+            yrange= DDataSet.wrap( new double[] { 0, ds.length(0) } );
+        } else if ( ds.rank()==3 ) {
+            xrange= DDataSet.wrap( new double[] { 0, ds.length() } );
+            yrange= DDataSet.wrap( new double[] { 0, ds.length(0) } );
+        } else {
+            throw new IllegalArgumentException("dataset should be rank 2 or rank 3: "+ds );
+        }
+
+        JoinDataSet bds= new JoinDataSet(2);
+        bds.join(xrange);
+        bds.join(yrange);
+
+        return bds;
+
+    }
 }
