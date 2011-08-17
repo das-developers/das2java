@@ -312,7 +312,9 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 break;
             case 2:
                 result= createRank2( c, ds.length(), ds.length(0) );
+                int i0= ds.length()>0 ? ds.length(0) : -1;
                 for ( int i=0; i<ds.length(); i++ ) {
+                    if ( ds.length(i)!=i0 ) throw new IllegalArgumentException("Attempt to copy non-qube into ArrayDataSet which must be qube: "+ds );
                     for ( int j=0; j<ds.length(i); j++ ) {
                         result.putValue( i, j, ds.value(i,j) );
                     }
@@ -320,7 +322,9 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 break;
             case 3:
                 result= createRank3( c, ds.length(), ds.length(0), ds.length(0,0) );
+                int i0_= ds.length()>0 ? ds.length(0) : -1;
                 for ( int i=0; i<ds.length(); i++ ) {
+                    if ( ds.length(i)!=i0_ ) throw new IllegalArgumentException("Attempt to copy non-qube into ArrayDataSet which must be qube: "+ds );
                     for ( int j=0; j<ds.length(i); j++ ) {
                         for ( int k=0; k<ds.length(i,j); k++ ) {
                             result.putValue( i, j, k, ds.value(i,j,k) );
