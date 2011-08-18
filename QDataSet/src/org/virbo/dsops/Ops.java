@@ -3460,9 +3460,65 @@ public class Ops {
         StringBuilder result= new StringBuilder( suggest.replaceAll(" ", "_" ) );
         if ( ! Character.isJavaIdentifierStart(result.charAt(0)) ) result.insert(0,"_");
         for ( int i=1; i<result.length(); i++ ) {
+            if ( result.charAt(i)=='.' ) {
+                result.replace( i, i+1, "pt" );
+                i+=1;
+                continue;
+            }
             if ( result.charAt(i)=='*' ) {
                 result.replace( i, i+1, "star" );
                 i+=3;
+                continue;
+            }
+            if ( result.charAt(i)=='/' ) {
+                result.replace( i, i+1, "div" );
+                i+=2;
+                continue;
+            }
+            if ( result.charAt(i)=='+' ) {
+                result.replace( i, i+1, "plus" );
+                i+=3;
+                continue;
+            }
+            if ( result.charAt(i)=='-' ) {
+                result.replace( i, i+1, "_" ); // 30.0-45.0eV
+                i+=0;
+                continue;
+            }
+            if ( result.length()>(i+1) && result.charAt(i)=='<' && result.charAt(i+1)=='=' ) {
+                result.replace( i, i+2, "le" );
+                i+=1;
+                continue;
+            }
+            if ( result.length()>(i+1) && result.charAt(i)=='>' && result.charAt(i+1)=='=' ) {
+                result.replace( i, i+2, "ge" );
+                i+=1;
+                continue;
+            }
+            if ( result.length()>(i+1) && result.charAt(i)=='<' && result.charAt(i+1)=='>' ) {
+                result.replace( i, i+2, "ne" );
+                i+=1;
+                continue;
+            }
+            if ( result.length()>(i+1) && result.charAt(i)=='!' && result.charAt(i+1)=='=' ) {
+                result.replace( i, i+2, "ne" );
+                i+=1;
+                continue;
+            }
+            if ( result.charAt(i)=='='  ) {
+                result.replace( i, i+1, "eq" );
+                i+=1;
+                continue;
+            }
+            if ( result.charAt(i)=='>' ) {
+                result.replace( i, i+1, "gt" );
+                i+=1;
+                continue;
+            }
+            if ( result.charAt(i)=='<' ) {
+                result.replace( i, i+1, "lt" );
+                i+=1;
+                continue;
             }
             if ( !Character.isJavaIdentifierPart( result.charAt(i) ) ) result.replace( i, i+1, "_" );
         }
