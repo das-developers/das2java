@@ -8,6 +8,7 @@
  */
 package org.virbo.dataset;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.IllegalFormatConversionException;
@@ -1725,14 +1726,132 @@ public class DataSetUtil {
     }
 
     /**
-     * convert java arrays into QDataSets.
-     * @param arr
+     * convert the QDataSet to an array.  Units and fill are ignored...
+     * @param d
      * @return
+     */
+    public static double[] asArrayOfDoubles( QDataSet d ) {
+        double[] result;
+        if ( d.rank()==1 ) {
+            DDataSet ds= (DDataSet)ArrayDataSet.maybeCopy( DDataSet.class, d );
+            double[] back= ds.back;
+            result= new double[d.length()];
+            System.arraycopy( back, 0, result, 0, d.length() );
+            
+        } else {
+            throw new IllegalArgumentException("only rank 1 supported");
+        }
+        
+        return result;
+    }
+
+    /**
+     * convert the QDataSet to an array.  Units and fill are ignored...
+     * @param d
+     * @return
+     */
+    public static double[][] as2DArrayOfDoubles( QDataSet d ) {
+        double[][] result;
+        if ( d.rank()==2 ) {
+            DDataSet ds= (DDataSet)ArrayDataSet.maybeCopy( DDataSet.class, d );
+            double[] back= ds.back;
+            int l1=d.length(0);
+            result= new double[d.length()][l1];
+            for ( int i=0; i<ds.length(); i++ ) {
+                System.arraycopy( back, i*l1, result[i], 0, l1 );
+            }
+            
+        } else {
+            throw new IllegalArgumentException("only rank 2 supported");
+        }
+
+        return result;
+    }
+
+    private static void flatten(double[][] data, double[] back, int offset, int nx, int ny) {
+        for (int i = 0; i < nx; i++) {
+            double[] dd = data[i];
+            System.arraycopy(dd, 0, back, offset + i * ny, ny);
+        }
+    }
+
+    private static void flatten(float[][] data, float[] back, int offset, int nx, int ny) {
+        for (int i = 0; i < nx; i++) {
+            float[] dd = data[i];
+            System.arraycopy(dd, 0, back, offset + i * ny, ny);
+        }
+    }
+
+    private static void flatten(long[][] data, long[] back, int offset, int nx, int ny) {
+        for (int i = 0; i < nx; i++) {
+            long[] dd = data[i];
+            System.arraycopy(dd, 0, back, offset + i * ny, ny);
+        }
+    }
+
+    private static void flatten(int[][] data, int[] back, int offset, int nx, int ny) {
+        for (int i = 0; i < nx; i++) {
+            int[] dd = data[i];
+            System.arraycopy(dd, 0, back, offset + i * ny, ny);
+        }
+    }
+
+    private static void flatten(short[][] data, short[] back, int offset, int nx, int ny) {
+        for (int i = 0; i < nx; i++) {
+            short[] dd = data[i];
+            System.arraycopy(dd, 0, back, offset + i * ny, ny);
+        }
+    }
+
+    private static void flatten(byte[][] data, byte[] back, int offset, int nx, int ny) {
+        for (int i = 0; i < nx; i++) {
+            byte[] dd = data[i];
+            System.arraycopy(dd, 0, back, offset + i * ny, ny);
+        }
+    }
+    /**
+     * convert java arrays into QDataSets.
+     * @param arr 1-D or 2-D array of java native type.
+     * @return Rank 1 or Rank 2 dataset.
      */
     public static QDataSet asDataSet(Object arr) {
         if ( arr.getClass().isArray() ) {
             Class c=  arr.getClass().getComponentType();
-            if ( c==double.class ) {
+            if ( c.isArray() ) {
+                c= c.getComponentType();
+                if ( c.isArray() ) {
+                    throw new IllegalArgumentException("3-D arrays not supported");
+                }
+                int ny= (Array.getLength( Array.get(arr,0) ) );
+                int nx= Array.getLength(arr);
+                if ( c==double.class ) {
+                    double[] dd= new double[nx*ny];
+                    flatten( (double[][])arr, dd, 0, nx, ny );
+                    return DDataSet.wrap(dd,nx,ny);
+                } else if ( c==float.class ) {
+                    float[] dd= new float[nx*ny];
+                    flatten( (float[][])arr, dd, 0, nx, ny );
+                    return FDataSet.wrap(dd,nx,ny);
+                } else if ( c==long.class ) {
+                    long[] dd= new long[nx*ny];
+                    flatten( (long[][])arr, dd, 0, nx, ny );
+                    return LDataSet.wrap(dd,nx,ny);
+                } else if ( c==int.class ) {
+                    int[] dd= new int[nx*ny];
+                    flatten( (int[][])arr, dd, 0, nx, ny );
+                    return IDataSet.wrap(dd,nx,ny);
+                } else if ( c==short.class ) {
+                    short[] dd= new short[nx*ny];
+                    flatten( (short[][])arr, dd, 0, nx, ny );
+                    return SDataSet.wrap(dd,nx,ny);
+                } else if ( c==byte.class ) {
+                    byte[] dd= new byte[nx*ny];
+                    flatten( (byte[][])arr, dd, 0, nx, ny );
+                    return BDataSet.wrap(dd,nx,ny);
+                } else {
+                    throw new IllegalArgumentException("Array component type not supported: "+c);
+                }
+            } else if ( c==double.class ) {
                 return DDataSet.wrap((double[])arr);
             } else if ( c==float.class ) {
                 return FDataSet.wrap((float[])arr);
@@ -1748,8 +1867,38 @@ public class DataSetUtil {
                 throw new IllegalArgumentException("unsupported type: "+arr.getClass());
             }
         } else {
+            if ( arr instanceof QDataSet ) {
+                return (QDataSet)arr;
+            } else if ( arr instanceof Datum ) {
+                return asDataSet( (Datum)arr );
+            } else if ( arr.getClass().isPrimitive() ) {
+                return asDataSet( (Double)arr );
+            }
             throw new IllegalArgumentException("unsupported type: "+arr.getClass());
         }
+    }
+
+    /**
+     * convert java arrays into QDataSets.
+     * @param arr
+     * @return
+     */
+    public static QDataSet asDataSet(Object x, Object y) {
+        QDataSet xds= asDataSet(x);
+        QDataSet yds= asDataSet(y);
+        return Ops.link(xds, yds);
+    }
+
+    /**
+     * convert java types into QDataSets.
+     * @param arr
+     * @return
+     */
+    public static QDataSet asDataSet(Object x, Object y, Object z) {
+        QDataSet xds= asDataSet(x);
+        QDataSet yds= asDataSet(y);
+        QDataSet zds= asDataSet(z);
+        return Ops.link(xds, yds, zds);
     }
 
     /**
