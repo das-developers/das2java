@@ -720,7 +720,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         double a2;
 
         final double[] xTags = ddX.binCenters();
-        final Units yTagUnits = ddX.getUnits();
+        final Units xTagUnits = ddX.getUnits();
         final boolean log = ddX.isLog();
 
         if (log) {
@@ -736,7 +736,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         double xSampleWidth;
         double fudge = 1.5 * 0.9; // 0.9 was removed from another code.
         if (interpolateType == Interpolate.NearestNeighbor) {
-            fudge = 1.1 * 0.9;
+            fudge = 1.0;
         }
         if (xTagWidth == null) {
             double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
@@ -746,7 +746,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 double p = xTagWidth.doubleValue(Units.logERatio);
                 xSampleWidth = p * fudge;
             } else {
-                double d = xTagWidth.doubleValue(yTagUnits.getOffsetUnits());
+                double d = xTagWidth.doubleValue(xTagUnits.getOffsetUnits());
                 xSampleWidth = d * fudge;
             }
         }
@@ -797,7 +797,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 for (int i = 0; i < nx; i++) {
                     boolean doInterp;
                     if ( i1[i]!= -1 && i2[i] != -1) {
-                        doInterp= ( xTagTemp[i2[i]]-xTagTemp[i1[i]] ) < xSampleWidth*2;
+                        doInterp= ( xTagTemp[i2[i]]-xTagTemp[i1[i]] ) < xSampleWidth*2 || i2[i] - i1[i] == 2;
                     } else {
                         //kludge for bug 000321
                         //doInterp= Math.min(i1[i] == -1 ? Double.MAX_VALUE : (xTagTemp[i] - xTagTemp[i1[i]]), i2[i] == -1 ? Double.MAX_VALUE : (xTagTemp[i2[i]] - xTagTemp[i])) < xSampleWidth / 2;
