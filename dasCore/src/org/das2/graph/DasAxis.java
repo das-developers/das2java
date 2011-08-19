@@ -569,8 +569,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         Units units = dataRange.getUnits();
         if (minimum.getUnits() != units) {
-            minimum = minimum.convertTo(units);
-            maximum = maximum.convertTo(units);
+            resetRange( new DatumRange( minimum, maximum ) );
+            return;
         }
 
         DatumRange newRange = new DatumRange(minimum, maximum);
