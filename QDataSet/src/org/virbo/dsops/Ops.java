@@ -3453,12 +3453,19 @@ public class Ops {
 
     /**
      * made a Java-style identifier from the provided string
+     * See VirboAutoplot/src/scripts/safeName.jy
      * @param suggest
      * @return
      */
     public static String safeName( String suggest ) {
         StringBuilder result= new StringBuilder( suggest.replaceAll(" ", "_" ) );
-        if ( ! Character.isJavaIdentifierStart(result.charAt(0)) ) result.insert(0,"_");
+        if ( ! Character.isJavaIdentifierStart(result.charAt(0)) ) {
+            if ( !Character.isJavaIdentifierPart(result.charAt(0)) ) { // we're going to add an underscore anyway
+                result.replace(0,1,"_");
+            } else {
+                result.insert(0,"_");
+            }
+        }
         for ( int i=1; i<result.length(); i++ ) {
             if ( result.charAt(i)=='.' ) {
                 result.replace( i, i+1, "pt" );
