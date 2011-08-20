@@ -184,14 +184,15 @@ public class BoxSelectorMouseModule extends MouseModule {
     }
 
     public void keyPressed(KeyEvent e) {
-        int keyCode = e.getKeyCode();
 
         if (lastMouseEvent != null) {
             BoxSelectionEvent dpse = getBoxSelectionEvent(lastMouseEvent);
             HashMap planes = new HashMap();
             planes.put("keyChar", String.valueOf(e.getKeyChar()));
-            dpse = new BoxSelectionEvent(this, dpse.getXRange(), dpse.getYRange(), planes);
-            fireBoxSelectionListenerBoxSelected(dpse);
+            BoxSelectionEvent dpse2 = new BoxSelectionEvent(this, dpse.getXRange(), dpse.getYRange(), planes);
+            dpse2.setStart( dpse.getStartX(), dpse.getStartY() );
+            dpse2.setFinish( dpse.getFinishX(), dpse.getFinishY() );
+            fireBoxSelectionListenerBoxSelected(dpse2);
         }
     }
 
