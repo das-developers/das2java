@@ -48,12 +48,16 @@ import java.util.regex.*;
  */
 public class HttpFileSystem extends WebFileSystem {
 
+    public static final int LISTING_TIMEOUT_MS = 20000;
+
     private final HashMap listings;
+    private final HashMap listingFreshness;
 
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URI root, File localRoot) {
         super(root, localRoot);
         listings = new HashMap();
+        listingFreshness= new HashMap();
     }
 
     public static synchronized HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException, UnknownHostException {
@@ -345,6 +349,22 @@ public class HttpFileSystem extends WebFileSystem {
         }
     }
 
+    public void resetListingCache() {
+        synchronized (listings) {
+            this.listings.clear();
+            this.listingFreshness.clear();
+        }
+    }
+
+    public boolean isListingCached( String directory ) {
+        directory = HttpFileSystem.toCanonicalFilename(directory);
+        if ( !listings.containsKey(directory) ) {
+            return false;
+        } else {
+            return ((Long)listingFreshness.get(directory))-System.currentTimeMillis() > 0 ;
+        }
+    }
+
     public String[] listDirectory(String directory) throws IOException {
         directory = HttpFileSystem.toCanonicalFilename(directory);
         if (!isDirectory(directory)) {
@@ -355,13 +375,15 @@ public class HttpFileSystem extends WebFileSystem {
             directory = directory + "/";
         }
         synchronized (listings) {
-            if (listings.containsKey(directory)) {
+            if ( isListingCached(directory) ) { //TODO: there are no timestamps to invalidate listings!!!  How is it I haven't run across this before...https://sourceforge.net/tracker/index.php?func=detail&aid=3395693&group_id=199733&atid=970682
+                logger.log( Level.FINE, "use cached listing for {0}", directory );
                 String[] result= (String[]) listings.get(directory);
                 String[] resultc= new String[result.length];
                 System.arraycopy( result, 0, resultc, 0, result.length );
                 return resultc;
-            } else {
 
+            } else {
+                logger.log(Level.FINE, "list {0}", directory);
                 URL[] list;
                 try {
                     list = HtmlUtil.getDirectoryListing(getURL(directory));
@@ -384,6 +406,7 @@ public class HttpFileSystem extends WebFileSystem {
                     result[i] = getLocalName(url).substring(n);
                 }
                 listings.put(directory, result);
+                listingFreshness.put( directory, new Long( System.currentTimeMillis()+LISTING_TIMEOUT_MS ) );
                 return result;
             }
         }
