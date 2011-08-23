@@ -256,8 +256,6 @@ public abstract class WebFileSystem extends FileSystem {
 
     abstract public String[] listDirectory(String directory) throws IOException;
 
-    abstract public Date getModifiedDate( String filename );
-    
     public String[] listDirectory(String directory, String regex) throws IOException {
         String[] names = listDirectory(directory);
         Pattern pattern = Pattern.compile(regex);
