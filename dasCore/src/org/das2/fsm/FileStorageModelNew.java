@@ -252,6 +252,14 @@ public class FileStorageModelNew {
 
 
 
+    /**
+     * return the names in the range, maybe with versioning.  
+     * @param targetRange range limit, or null if no constraint used here.
+     * @param versioning true means check versions.
+     * @param monitor
+     * @return
+     * @throws IOException
+     */
     private String[] getNamesFor( final DatumRange targetRange, boolean versioning, ProgressMonitor monitor ) throws IOException {
         String listRegex;
 
@@ -678,7 +686,7 @@ public class FileStorageModelNew {
         if ( fieldName==null ) {
             this.timeParser= TimeParser.create( template, f, vh );
         } else {
-            if ( moreHandler==null ) {
+            if ( moreHandler==null || moreHandler.length==0 ) { //TODO: check if it can ever be null.
                 this.timeParser= TimeParser.create( template, fieldName, fieldHandler, f, vh );
             } else {
                 this.timeParser= TimeParser.create( template, fieldName, fieldHandler, f, vh, moreHandler );

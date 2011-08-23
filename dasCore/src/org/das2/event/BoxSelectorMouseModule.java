@@ -44,7 +44,7 @@ public class BoxSelectorMouseModule extends MouseModule {
     BoxSelectionEvent lastSelectionEvent = null;
 
     public static BoxSelectorMouseModule create( DasPlot parent, String label ) {
-        return new BoxSelectorMouseModule( parent, parent.getXAxis(), parent.getYAxis(), null, new BoxRenderer(parent), label );
+        return new BoxSelectorMouseModule( parent, parent.getXAxis(), parent.getYAxis(), null, new BoxRenderer(parent,true), label );
     }
     
     public BoxSelectorMouseModule(DasCanvasComponent parent, DasAxis xAxis, DasAxis yAxis,
@@ -173,6 +173,7 @@ public class BoxSelectorMouseModule extends MouseModule {
         return evt;
     }
 
+    @Override
     public void mouseRangeSelected(MouseDragEvent e) {
         lastMouseEvent = e;
         if (keyEvents) {
@@ -183,6 +184,7 @@ public class BoxSelectorMouseModule extends MouseModule {
         }
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
 
         if (lastMouseEvent != null) {
@@ -270,6 +272,7 @@ public class BoxSelectorMouseModule extends MouseModule {
         this.keyEvents = keyEvents;
     }
 
+    @Override
     public void mouseReleased(java.awt.event.MouseEvent e) {
         super.mouseReleased(e);
         if (releaseEvents) {

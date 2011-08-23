@@ -160,7 +160,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
         mousePointSelection = new MousePointSelectionEvent(this, 0, 0);
 
-        resizeRenderer = new BoxRenderer(parent);
+        resizeRenderer = new BoxRenderer(parent,false);
 
 
         dirtyBoundsList = new Rectangle[0];
