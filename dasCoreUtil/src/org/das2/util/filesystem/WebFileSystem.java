@@ -256,6 +256,8 @@ public abstract class WebFileSystem extends FileSystem {
 
     abstract public String[] listDirectory(String directory) throws IOException;
 
+    abstract public Date getModifiedDate( String filename );
+    
     public String[] listDirectory(String directory, String regex) throws IOException {
         String[] names = listDirectory(directory);
         Pattern pattern = Pattern.compile(regex);
@@ -323,7 +325,7 @@ public abstract class WebFileSystem extends FileSystem {
     }
 
     public FileObject getFileObject(String filename) {
-        WebFileObject f = new WebFileObject(this, filename, new Date(System.currentTimeMillis()));//TODO: huh?  really?
+        WebFileObject f = new WebFileObject(this, filename, new Date(System.currentTimeMillis()));//TODO: huh?  really?  Because it's intensive to get a listing with Html head requests.
         return f;
     }
 
