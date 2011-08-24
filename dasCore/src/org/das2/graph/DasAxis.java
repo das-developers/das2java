@@ -2516,6 +2516,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     } else {
                         ss=  (String) bds.property( QDataSet.LABEL, i );
                     }
+                    if ( ss==null ) ss= "   ";
                     idlt.setString( tickLabelFont, ss );
                     int width = (int) Math.floor(idlt.getWidth() + 0.5);
                     tcaLabelWidth = Math.max(tcaLabelWidth, width);
