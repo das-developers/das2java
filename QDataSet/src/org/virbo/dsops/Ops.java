@@ -3458,6 +3458,9 @@ public class Ops {
      * @return
      */
     public static String safeName( String suggest ) {
+        if ( suggest.startsWith("|") && suggest.endsWith("|") ) { // taken from rich headers code.
+            suggest= suggest.substring(1,suggest.length()-1)+"_mag";
+        }
         StringBuilder result= new StringBuilder( suggest.replaceAll(" ", "_" ) );
         if ( ! Character.isJavaIdentifierStart(result.charAt(0)) ) {
             if ( !Character.isJavaIdentifierPart(result.charAt(0)) ) { // we're going to add an underscore anyway
