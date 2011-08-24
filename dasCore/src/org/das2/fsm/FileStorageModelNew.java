@@ -645,7 +645,7 @@ public class FileStorageModelNew {
         int i2= template.lastIndexOf("%",i);
         if ( i2 != -1 ) {
             String parentTemplate= template.substring(0,i);
-            FileStorageModelNew parentFSM= FileStorageModelNew.create( root, parentTemplate );
+            FileStorageModelNew parentFSM= FileStorageModelNew.create( root, parentTemplate, fieldName, fieldHandler );
             return new FileStorageModelNew( parentFSM, root, template, fieldName, fieldHandler );
         } else {
             return new FileStorageModelNew( null, root, template, fieldName, fieldHandler );
