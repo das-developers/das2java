@@ -557,10 +557,7 @@ public class AsciiHeadersParser {
                 putProperty( QDataSet.START_INDEX, i, i ); // datasets2 does the mapping.
             }
             if ( qube.length>0 && names!=null ) {
-                for ( int k=0; k<names.length; k++ ) {   //  look for label |B_GSM|
-                    if ( names[k].startsWith("|") && names[k].endsWith("|") ) { // illegal name
-                        names[k]= names[k].substring(1,names[k].length()-1)+"_mag";
-                    }
+                for ( int k=0; k<names.length; k++ ) {  
                     names[k]= Ops.safeName(names[k]);
                 }
             }
