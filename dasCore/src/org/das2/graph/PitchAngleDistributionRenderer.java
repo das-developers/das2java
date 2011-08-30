@@ -10,12 +10,10 @@ import org.virbo.dataset.QDataSet;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.das2.dataset.TableDataSet;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import static java.lang.Math.*;
@@ -46,7 +44,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
         }
     };
 
-    public void setColorBar(DasColorBar colorBar) {
+    public final void setColorBar(DasColorBar colorBar) {
         DasColorBar oldColorBar = this.colorBar;
         if ( this.colorBar!=null ) {
             colorBar.removePropertyChangeListener("dataMinimum", rebinListener);
@@ -69,7 +67,13 @@ public class PitchAngleDistributionRenderer extends Renderer {
 
     @Override
     public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
-        
+
+        if (ds == null) {
+            logger.fine("null data set");
+            parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+            return;
+        }
+
         if ( !( SemanticOps.isTableDataSet(ds) ) ) {
             parent.postException( this, new IllegalArgumentException("expected Table: " +ds ) );
             return;
@@ -111,9 +115,9 @@ public class PitchAngleDistributionRenderer extends Renderer {
 
         for ( int iflip=0; iflip<2; iflip++ ) {
             if ( !mirror && iflip==1 ) continue;
-            for ( int j=0; j<rds.length(0)-1; j++ ) {
-                double v1= rds.value( 0, j );
-                double v2= rds.value( 0, j+1 );
+            for ( int j=0; j<rds.length()-1; j++ ) {
+                double v1= rds.value( j ); // sure wish we'd been testing this so I'd know where the old code worked.
+                double v2= rds.value( j+1 );
                 double r0= y0 - ( yAxis.transform(v1,yunits) ); // in
                 double r1= y0 - ( yAxis.transform(v2,yunits) ); // out
                 for ( int i=0; i<xds.length(); i++ ) {
