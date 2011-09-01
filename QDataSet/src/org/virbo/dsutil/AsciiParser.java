@@ -1172,7 +1172,7 @@ public class AsciiParser {
                     }
                 } else {
                     if ( m.find(index) ) {
-                        index0= index;
+                        if ( qend==-1 ) index0= index;
                         index= m.start();
                         if ( qend==-1 ) {
                             fields[ifield]= input.substring(index0, index);
@@ -1423,6 +1423,15 @@ public class AsciiParser {
         return readStream( new FileReader(filename), null, mon );
     }
 
+    public static void printAndResetMain( DelimParser dp, String parse, String[] fields) {
+        System.err.println(""+parse);
+        dp.splitRecord( parse, fields );
+        for ( int i=0; i<fields.length; i++ ) {
+            System.err.println( String.format( "%3d %s", new Integer(i), fields[i]  ) );
+            fields[i]= null;
+        }
+    }
+
     public static void main(String[] args) throws Exception {
 
         TimeParser tp= TimeParser.create( "%{ignore} %y %m %d %{ignore} %H" );
@@ -1433,13 +1442,14 @@ public class AsciiParser {
             DelimParser dp= parser.guessDelimParser("1,2,3,4,5");
             String[] fields= new String[5];
             boolean ok;
-            ok= dp.splitRecord( "1, 2 ,3,4,\"154\"", fields);
-            ok= dp.splitRecord( "1,2,3,4,5", fields);
-            ok= dp.splitRecord( "1,\"foo\",3,4,5", fields);
-            ok= dp.splitRecord( "1,\"fo,o\",3,4,5", fields);
-            ok= dp.splitRecord( "1, \"fo,o\" ,3,4,5", fields);
-            ok= dp.splitRecord( "1, \"he said \"\"boo\"\"!\" ,3,4,\"154\"", fields);
-            ok= dp.splitRecord( "1, 2 ,3,4,\"154\"", fields);
+            printAndResetMain(dp,"1, 2 ,3,4,\"154\"",fields);
+            printAndResetMain(dp,"1,2,3,4,5",fields);
+            printAndResetMain(dp,"\"foo\",1,3,4,5", fields);
+            printAndResetMain(dp,"1,\"foo\",3,4,5", fields);
+            printAndResetMain(dp,"1,\"fo,o\",3,4,5", fields);
+            printAndResetMain(dp,"1, \"fo,o\" ,3,4,5", fields);
+            printAndResetMain(dp,"1, \"he said \"\"boo\"\"!\" ,3,4,\"154\"", fields);
+            printAndResetMain(dp,"1, 2 ,3,4,\"154\"", fields);
             System.err.println("great stuff");
         }
 
