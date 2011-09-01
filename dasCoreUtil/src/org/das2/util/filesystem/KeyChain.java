@@ -5,6 +5,7 @@
 
 package org.das2.util.filesystem;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import org.das2.util.monitor.CancelledOperationException;
 import java.net.MalformedURLException;
@@ -53,6 +54,11 @@ public class KeyChain {
     private Map<String,String> keys= new HashMap<String,String>();
 
     /**
+     * parent component for password dialog.
+     */
+    private Component parent=null;
+
+    /**
      * get the user credentials, maybe throwing CancelledOperationException if the
      * user hits cancel.
      * @param url
@@ -71,6 +77,10 @@ public class KeyChain {
         String userInfo= url.getUserInfo();
         if ( userInfo==null ) return null;
         return getUserInfo( url, userInfo );
+    }
+
+    public void setParentGUI( Component c ) {
+        this.parent= c;
     }
 
     /**
@@ -123,7 +133,7 @@ public class KeyChain {
                 if ( ss.length>1 && !( ss[1].equals("pass")||ss[1].equals("password")) ) passTf.setText(ss[1]);
                 panel.add( passTf );
                 //int r= JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION );
-                int r= JOptionPane.showConfirmDialog( null, panel, proto + " Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null);
+                int r= JOptionPane.showConfirmDialog( parent, panel, proto + " Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null);
                 if ( JOptionPane.OK_OPTION==r ) {
                     char[] pass= passTf.getPassword();
                     storedUserInfo= userTf.getText() + ":" + new String(pass);
