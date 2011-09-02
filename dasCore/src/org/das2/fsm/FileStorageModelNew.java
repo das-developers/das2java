@@ -149,7 +149,8 @@ public class FileStorageModelNew {
         for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
             String[] files1= fileSystems[i].listDirectory( "/", listRegex );
             if ( files1.length>0 ) {
-                String ff= names[i].equals("") ? files1[0] : names[i]+"/"+files1[0];
+                int last= files1.length-1;
+                String ff= names[i].equals("") ? files1[ last ] : names[i]+"/"+files1[ last ];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
                 result= ff;
             }
@@ -160,7 +161,8 @@ public class FileStorageModelNew {
                 for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
                     String[] files1= fileSystems[i].listDirectory( "/", listRegex + ".gz" );
                     if ( files1.length>0 ) {
-                        String ff= names[i].equals("") ? files1[0] : names[i]+"/"+files1[0];
+                        int last= files1.length-1;
+                        String ff= names[i].equals("") ? files1[ last ] : names[i]+"/"+files1[ last ];
                         if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
                         result= ff.substring( 0,ff.length()-3 );
                     }
