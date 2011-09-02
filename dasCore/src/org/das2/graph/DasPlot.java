@@ -512,7 +512,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public int findRendererAt(int x, int y) {
         for (int i = 0; messages != null && i < messages.size(); i++) {
             MessageDescriptor message = (MessageDescriptor) messages.get(i);
-            if (message.bounds.contains(x, y) && message.renderer != null) {
+            if ( message.bounds!=null && message.bounds.contains(x, y) && message.renderer != null) {
                 int result = this.renderers.indexOf(message.renderer);
                 if (result != -1) {
                     return result;
@@ -522,7 +522,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         for (int i = 0; legendElements != null && i < legendElements.size(); i++) {
             LegendElement legendElement = legendElements.get(i);
-            if (legendElement.bounds.contains(x, y) && legendElement.renderer != null) {
+            if ( legendElement.bounds!=null && legendElement.bounds.contains(x, y) && legendElement.renderer != null) {
                 int result = this.renderers.indexOf(legendElement.renderer);
                 if (result != -1) {
                     return result;
