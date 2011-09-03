@@ -1526,7 +1526,7 @@ public class DataSetUtil {
         }
         QDataSet plane0 = (QDataSet) ds.property(QDataSet.PLANE_0);
         if ( plane0!=null ) {
-            if ( plane0.length()!=ds.length() ) {
+            if ( plane0.rank()>0 && plane0.length()!=ds.length() ) {
                 problems.add( String.format( "PLANE_0 length is %d, should be %d", plane0.length(), ds.length() ) );
             }
         }
