@@ -79,6 +79,37 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         throw new IllegalArgumentException("class not supported: "+c);
     }
 
+    /**
+     * return the array as ArrayDataSet  The array must be a 1-D array and the
+     * dimensions of the result are provided in qube.
+     * @param array 1-D array
+     * @param qube dimensions of the dataset
+     * @param copy copy the data so that original data is not modified with putValue
+     * @return ArrayDataSet
+     */
+    public static ArrayDataSet wrap( Object array, int[] qube, boolean copy ) {
+        Object arr;
+        //check type
+        if ( !array.getClass().isArray() ) throw new IllegalArgumentException("input must be an array");
+        Class c= array.getClass().getComponentType();
+        if ( c.isArray() ) throw new IllegalArgumentException("input must be 1-D array");
+        if ( copy ) {
+            arr= Array.newInstance( c, Array.getLength(array) );
+            System.arraycopy( array, 0, arr, 0, Array.getLength(array) );
+        } else {
+            arr= array;
+        }
+        if ( c==double.class ) return DDataSet.wrap( (double[])array, qube );
+        if ( c==float.class ) return FDataSet.wrap( (float[])array, qube );
+        if ( c==long.class ) return LDataSet.wrap( (long[])array, qube );
+        if ( c==int.class ) return IDataSet.wrap( (int[])array, qube );
+        if ( c==short.class ) return SDataSet.wrap( (short[])array, qube );
+        if ( c==byte.class ) return BDataSet.wrap( (byte[])array, qube );
+
+        throw new IllegalArgumentException("component type not supported: "+c );
+
+    }
+
     public int rank() {
         return rank;
     }
