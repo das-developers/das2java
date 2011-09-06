@@ -264,7 +264,7 @@ public class AsciiParser {
     /**
      * read in records, allowing for a header of non-records before
      * guessing the delim parser.  This will return a reference to the
-     * DelimParser and set skipLines.
+     * DelimParser and set skipLines.  DelimParser header field is set as well.
      * @param filename
      * @return the record parser to use, or null if no records are found.
      */
@@ -342,6 +342,7 @@ public class AsciiParser {
             } catch (ParseException ex) {
                 Logger.getLogger(AsciiParser.class.getName()).log(Level.SEVERE, null, ex);
             }
+            result.header= header;
         }
 
         
@@ -1049,6 +1050,7 @@ public class AsciiParser {
         String delimRegex;
         Pattern delimPattern;
         boolean[] doParseField;
+        public String header=null; // place to store the header.
 
         public DelimParser(int fieldCount, String delim) {
             this.fieldCount = fieldCount;
@@ -1058,6 +1060,7 @@ public class AsciiParser {
             }
             this.delimRegex = delim;
             this.delimPattern = Pattern.compile(delim);
+            this.header= ""; // call guessParser to set
         }
 
         /**
