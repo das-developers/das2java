@@ -809,7 +809,9 @@ public class AsciiHeadersParser {
                                     bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
                                  }
                              }
-                             bd.putProperty( "RENDER_TYPE", ids, "series" );
+                             if ( bd.property( "RENDER_TYPE", ids )==null ) {
+                                bd.putProperty( "RENDER_TYPE", ids, "series" );
+                             }
                             continue;
                          } else if ( prop.equals("UNITS") && ( sv.equals("UTC") || sv.equals("UT") ) ) {
                             bd.putProperty( prop, ids, Units.us2000 );
