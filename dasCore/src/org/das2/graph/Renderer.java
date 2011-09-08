@@ -250,6 +250,15 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     /**
+     * return true if the dataset appears to be in a scheme accepted by this renderer.  This should assume that axis
+     * units can be reset, etc.
+     * @param ds
+     * @return true if the dataset appears to be acceptable.
+     */
+    public boolean acceptsDataSet( QDataSet ds ) {
+        return true;
+    }
+    /**
      * Set the dataset to be plotted.  Different renderers accept QDataSets with
      * different schemes.  For example SeriesRenderer takes:
      *   ds[t]   rank 1 dataset with rank 1 DEPEND_0  or
