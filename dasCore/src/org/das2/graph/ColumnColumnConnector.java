@@ -112,29 +112,29 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         return d1.gt(d2) ? d1 : d2;
     }
 
-    private void paintBottomContext( Graphics2D g, Datum context ) {
+    private void paintBottomContext( Graphics2D g, DatumRange context ) {
                 g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
         g.translate(-getX(), -getY());
 
-        int xhigh1= (int)topPlot.getXAxis().transform(context);
+        int xhigh1= (int)topPlot.getXAxis().transform(context.min());
         int xhigh2= (int)bottomPlot.getXAxis().getColumn().getDMiddle();
-        int xlow1= (int)topPlot.getXAxis().transform(context);
+        int xlow1= (int)topPlot.getXAxis().transform(context.min());
         int xlow2= (int)bottomPlot.getXAxis().getColumn().getDMiddle();
 
         //if ( xhigh1 > xhigh2 ) return;
         paintIt( g, xhigh1, xhigh2, xlow1, xlow2 );
     }
 
-    private void paintTopContext( Graphics2D g, Datum context ) {
+    private void paintTopContext( Graphics2D g, DatumRange context ) {
                 g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
         g.translate(-getX(), -getY());
 
         int xhigh1= (int)topPlot.getXAxis().getColumn().getDMiddle();
-        int xhigh2= (int)bottomPlot.getXAxis().transform(context);
+        int xhigh2= (int)bottomPlot.getXAxis().transform(context.min());
         int xlow1= (int)topPlot.getXAxis().getColumn().getDMiddle();
-        int xlow2= (int)bottomPlot.getXAxis().transform(context);
+        int xlow2= (int)bottomPlot.getXAxis().transform(context.min());
 
         //if ( xhigh1 > xhigh2 ) return;
         paintIt( g, xhigh1, xhigh2, xlow1, xlow2 );
@@ -181,18 +181,16 @@ public class ColumnColumnConnector extends DasCanvasComponent {
             contextRange= bottomPlot.getContext(); //TODO: this is not a closed-loop system.  We should indicate timerange found in dataset.
             boolean isContext= contextRange!=null && topPlot.getXAxis().getUnits().isConvertableTo( contextRange.getUnits() );
             if ( isContext ) {
-                 Datum context= contextRange.min();
                  Graphics2D g2=(Graphics2D)g1.create();
-                 paintBottomContext( g2, context );
+                 paintBottomContext( g2, contextRange );
                  g2.dispose();
                  return;
 
             } else {
                 contextRange= topPlot.getContext();
                 if ( isContext ) {
-                    Datum context= contextRange.min();
                     Graphics2D g2=(Graphics2D)g1.create();
-                    paintTopContext( g2, context );
+                    paintTopContext( g2, contextRange );
                     g2.dispose();
                     return;
                 } else {
