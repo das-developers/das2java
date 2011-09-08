@@ -87,6 +87,8 @@ public class PitchAngleDistributionRenderer extends Renderer {
         }
 
         QDataSet tds= (QDataSet)ds;
+        QDataSet wds= SemanticOps.weightsDataSet(ds);
+        
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
@@ -118,8 +120,10 @@ public class PitchAngleDistributionRenderer extends Renderer {
             for ( int j=0; j<rds.length()-1; j++ ) {
                 double v1= rds.value( j ); // sure wish we'd been testing this so I'd know where the old code worked.
                 double v2= rds.value( j+1 );
-                double r0= y0 - ( yAxis.transform(v1,yunits) ); // in
-                double r1= y0 - ( yAxis.transform(v2,yunits) ); // out
+                double r0x= x0 - ( xAxis.transform(v1,yunits) ); // in
+                double r0y= y0 - ( yAxis.transform(v1,yunits) ); // in
+                double r1x= x0 - ( xAxis.transform(v2,yunits) ); // out
+                double r1y= y0 - ( yAxis.transform(v2,yunits) ); // out
                 for ( int i=0; i<xds.length(); i++ ) {
                     double a0= xds.value(i) - da;
                     double a1= xds.value(i) + da;
@@ -128,42 +132,43 @@ public class PitchAngleDistributionRenderer extends Renderer {
                         a1= -a1;
                     }
                     if ( originNorth ) {
-                        yy[i][j]= (float) ( y0 - cos(a0) * r0 );
-                        xx[i][j]= (float) ( x0 - sin(a0) * r0 );
-                        yy[i][j+1]= (float) ( y0 - cos(a0) * r1 );
-                        xx[i][j+1]= (float) ( x0 - sin(a0) * r1 );
-                        yy[i+1][j]= (float) ( y0 - cos(a1) * r0 );
-                        xx[i+1][j]= (float) ( x0 - sin(a1) * r0 );
-                        yy[i+1][j+1]= (float) ( y0 - cos(a1) * r1 );
-                        xx[i+1][j+1]= (float) ( x0 - sin(a1) * r1 );
+                        yy[i][j]= (float) ( y0 - cos(a0) * r0y );
+                        xx[i][j]= (float) ( x0 - sin(a0) * r0x );
+                        yy[i][j+1]= (float) ( y0 - cos(a0) * r1y );
+                        xx[i][j+1]= (float) ( x0 - sin(a0) * r1x );
+                        yy[i+1][j]= (float) ( y0 - cos(a1) * r0y );
+                        xx[i+1][j]= (float) ( x0 - sin(a1) * r0x );
+                        yy[i+1][j+1]= (float) ( y0 - cos(a1) * r1y );
+                        xx[i+1][j+1]= (float) ( x0 - sin(a1) * r1x );
                     } else {
-                        xx[i][j]= (float) ( x0 + cos(a0) * r0 );
-                        yy[i][j]= (float) ( y0 - sin(a0) * r0 );
-                        xx[i][j+1]= (float) ( x0 + cos(a0) * r1 );
-                        yy[i][j+1]= (float) ( y0 - sin(a0) * r1 );
-                        xx[i+1][j]= (float) ( x0 + cos(a1) * r0 );
-                        yy[i+1][j]= (float) ( y0 - sin(a1) * r0 );
-                        xx[i+1][j+1]= (float) ( x0 + cos(a1) * r1 );
-                        yy[i+1][j+1]= (float) ( y0 - sin(a1) * r1 );
+                        xx[i][j]= (float) ( x0 + cos(a0) * r0x );
+                        yy[i][j]= (float) ( y0 - sin(a0) * r0y );
+                        xx[i][j+1]= (float) ( x0 + cos(a0) * r1x );
+                        yy[i][j+1]= (float) ( y0 - sin(a0) * r1y );
+                        xx[i+1][j]= (float) ( x0 + cos(a1) * r0x );
+                        yy[i+1][j]= (float) ( y0 - sin(a1) * r0y );
+                        xx[i+1][j+1]= (float) ( x0 + cos(a1) * r1x );
+                        yy[i+1][j+1]= (float) ( y0 - sin(a1) * r1y );
                     }
-                    int zz= colorBar.rgbTransform( tds.value(i,j), zunits );
-                    //int[] x= new int [] {(int) xx[i][j], (int)xx[i][j+1], (int)xx[i+1][j+1], (int)xx[i+1][j], (int)xx[i][j] };
-                    //int[] y= new int [] { (int)yy[i][j], (int)yy[i][j+1], (int)yy[i+1][j+1], (int)yy[i+1][j], (int)yy[i][j] };
-                    //int[] x= new int [] {(int) xx[i][j], (int)xx[i][j+1], (int)xx[i+1][j+1], (int)xx[i+1][j],};
-                    //int[] y= new int [] { (int)yy[i][j], (int)yy[i][j+1], (int)yy[i+1][j+1], (int)yy[i+1][j]};
-                    //Polygon p= new Polygon( x, y, 4 );
-                    g.setColor( new Color(zz) );
-                    //g.fillPolygon(p);
 
-                    GeneralPath gp= new GeneralPath( GeneralPath.WIND_NON_ZERO,6);
-                    gp.moveTo( xx[i][j], yy[i][j] );
-                    gp.lineTo( xx[i][j+1], yy[i][j+1] );
-                    gp.lineTo( xx[i+1][j+1], yy[i+1][j+1] );
-                    gp.lineTo( xx[i+1][j], yy[i+1][j] );
-                    gp.lineTo( xx[i][j], yy[i][j] );
 
-                    g.fill(gp);
-                    g.draw(gp);
+                    if ( wds.value(i,j)>0 ) {
+                        int zz= colorBar.rgbTransform( tds.value(i,j), zunits );
+                        g.setColor( new Color(zz) );
+                        GeneralPath gp= new GeneralPath( GeneralPath.WIND_NON_ZERO,6);
+                        gp.moveTo( xx[i][j], yy[i][j] );
+                        gp.lineTo( xx[i][j+1], yy[i][j+1] );
+                        gp.lineTo( xx[i+1][j+1], yy[i+1][j+1] );
+                        gp.lineTo( xx[i+1][j], yy[i+1][j] );
+                        gp.lineTo( xx[i][j], yy[i][j] );
+
+                        g.fill(gp);
+                        g.draw(gp);
+
+                    } else {
+                        //g.setColor( Color.lightGray );
+                    }
+
 
                 }
             }
