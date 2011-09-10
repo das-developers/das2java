@@ -36,6 +36,7 @@ public abstract class UnitsConverter {
         public double convert(double value) {
             return value;
         }
+        @Override
         public String toString() {
             return "IDENTITY UnitsConverter";
         }
@@ -125,6 +126,7 @@ public abstract class UnitsConverter {
             return scale * value + offset;
         }
 
+        @Override
         public UnitsConverter append(UnitsConverter that) {
             if (this.equals(IDENTITY)) {
                 return that;
@@ -143,6 +145,7 @@ public abstract class UnitsConverter {
             }
         }
         
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof ScaleOffset)) {
                 return false;
@@ -151,10 +154,12 @@ public abstract class UnitsConverter {
             return this.scale == that.scale && this.offset == that.offset;
         }
 
+        @Override
         public String toString() {
             return getClass().getName() + "[scale=" + scale + ",offset=" + offset + "]";
         }
 
+        @Override
         public int hashCode() {
             return hashCode;
         }
@@ -169,12 +174,8 @@ public abstract class UnitsConverter {
             UnitsConverter[] a1 = ucToArray(uc1);
             UnitsConverter[] a2 = ucToArray(uc2);
             converters = new UnitsConverter[a1.length + a2.length];
-            for (int i = 0; i < a1.length; i++) {
-                converters[i] = a1[i];
-            }
-            for (int i = 0; i < a2.length; i++) {
-                converters[i + a1.length] = a2[i];
-            }
+            System.arraycopy(a1, 0, converters, 0, a1.length);
+            System.arraycopy(a2, 0, converters, a1.length, a2.length);
         }
         
         private Appended(UnitsConverter[] array, UnitsConverter inverse) {
@@ -189,6 +190,7 @@ public abstract class UnitsConverter {
             return value;
         }
         
+        @Override
         public Number convert(Number value) {
             for (int i = 0; i < converters.length; i++) {
                 value = converters[i].convert(value);
@@ -217,6 +219,7 @@ public abstract class UnitsConverter {
             }
         }
 
+        @Override
         public String toString() {
             String result="UnitsConverted$Appended[";
             for ( UnitsConverter  uc1: converters ) {
@@ -236,7 +239,11 @@ public abstract class UnitsConverter {
      * @throws InconvertibleUnitsException when the conversion is not possible.
      */
     public static UnitsConverter getConverter(Units fromUnits, Units toUnits) {
-        return Units.getConverter(fromUnits,toUnits);
+        if ( fromUnits==toUnits ) {
+            return UnitsConverter.IDENTITY;
+        } else {
+            return Units.getConverter(fromUnits,toUnits);
+        }
     }
 
 }
