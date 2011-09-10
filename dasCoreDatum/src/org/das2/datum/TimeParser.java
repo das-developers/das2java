@@ -211,7 +211,7 @@ public class TimeParser {
 
         ndigits = ss.length;
 
-        StringBuffer regex1 = new StringBuffer(100);
+        StringBuilder regex1 = new StringBuilder(100);
         regex1.append(ss[0].replaceAll("\\+","\\\\+"));//TODO: I thought we did this already.
 
         lengths = new int[ndigits];
@@ -399,7 +399,7 @@ public class TimeParser {
             if (lengths[i] == -1) {
                 regex1.append("(.*)");
             } else {
-                regex1.append("(" + dots.substring(0, lengths[i]) + ")");
+                regex1.append("(").append(dots.substring(0, lengths[i])).append(")");
             }
             regex1.append(delim[i].replaceAll("\\+","\\\\+"));
 
@@ -547,7 +547,7 @@ public class TimeParser {
     }
 
     /**
-     * attempt to parse the string.  The parser itsself is returned so that
+     * attempt to parse the string.  The parser itself is returned so that
      * so expressions can be chained like so:
      *    parser.parse("2009-jan").getTimeRange()
      * @param timeString
@@ -984,7 +984,7 @@ public class TimeParser {
     /**
      * Returns the implicit interval as a DatumRange.
      * For example, "Jan 1, 2003" would have a getTimeDatum of "Jan 1, 2003 00:00:00",
-     * and getDatumRange() would go from midnight to mignight.
+     * and getDatumRange() would go from midnight to midnight.
      */
     public DatumRange getTimeRange() {
         if ( time.day==1 && time.hour==0 && time.minute==0 && time.seconds==0 &&
@@ -1026,7 +1026,7 @@ public class TimeParser {
      */
     public String format(Datum start, Datum end) {
 
-        StringBuffer result = new StringBuffer(100);
+        StringBuilder result = new StringBuilder(100);
 
         int offs = 0;
         int len = 0;
@@ -1151,9 +1151,9 @@ public class TimeParser {
 
     @Override
     public String toString() {
-        StringBuffer result= new StringBuffer();
+        StringBuilder result= new StringBuilder();
         for ( int i=0;i<this.fc.length; i++ ) {
-            if ( this.fc[i]!=null ) result.append( "%"+this.fc[i] );
+            if ( this.fc[i]!=null ) result.append("%").append( this.fc[i]);
             result.append( this.delims[i] );
         }
         return result.toString();
