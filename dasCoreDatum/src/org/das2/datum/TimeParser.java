@@ -345,7 +345,9 @@ public class TimeParser {
             if ( qualifiers[i]!=null ) {
                 String[] ss2= qualifiers[i].split(";");
                 if ( ss2.length==1 && ss2[0].split(",").length>1 ) {
-                    System.err.println( "maybe semicolons instead of commas");
+                    System.err.println( "--------------------------------------------------");
+                    System.err.println( "maybe use semicolons instead of commas in template");
+                    System.err.println( "--------------------------------------------------");
                 }
                 for ( int i2=0; i2<ss2.length; i2++ ) {
                     String qual= ss2[i2];
