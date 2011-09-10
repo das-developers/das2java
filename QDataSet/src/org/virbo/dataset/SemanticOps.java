@@ -213,6 +213,9 @@ public class SemanticOps {
         if ( ss[1].contains("1970-01-01 00:00:00.0 0:00") ) {
             ss[1]= "1970-01-01 00:00:00";
         }
+        if ( ss[1].endsWith(" UTC") ) { // http://www.ngdc.noaa.gov/stp/satellite/dmsp/f16/ssj/2011/01/f16_20110101_ssj.h5?TIME
+            ss[1]= ss[1].substring(0,ss[1].length()-4);
+        }
         datum= TimeUtil.create(ss[1]);
         String canonicalName = "" + offsetUnits + " since "+ datum;
         try {
