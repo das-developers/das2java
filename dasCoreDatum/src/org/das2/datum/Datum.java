@@ -71,10 +71,10 @@ public class Datum implements Comparable {
         if ( value==null ) throw new IllegalArgumentException("value is null");
         this.value = value;
         this.units = units;
-        if ( UnitsUtil.isTimeLocation(this.units) ) {
-            int mjd1958= UnitsConverter.getConverter(units,Units.mj1958).convert( value ).intValue();
-            if ( mjd1958 < -714781 ) { // year 0001
-                throw new IllegalArgumentException( "invalid time: mjd1958="+mjd1958 );
+        if ( units==Units.us2000 || UnitsUtil.isTimeLocation(this.units) ) {
+            double us2000= UnitsConverter.getConverter(units,Units.us2000).convert( value ).doubleValue();
+            if ( us2000 < -6.30824544E16 ) { // year 0001
+                throw new IllegalArgumentException( "invalid time before year 0001: us2000="+us2000 ); //TODO: this check probably isn't necessary, we check elsewhere...
             }
         }
         this.resolution= resolution;
@@ -359,6 +359,7 @@ public class Datum implements Comparable {
      * returns a hashcode that is a function of the value and the units.
      * @return a hashcode for the datum
      */
+    @Override
     public int hashCode() {
         long bits = (long) getValue().hashCode();
         int doubleHash= (int)(bits ^ (bits >>> 32));
@@ -372,6 +373,7 @@ public class Datum implements Comparable {
      * @throws java.lang.IllegalArgumentException if the Object is not a datum or the units are not convertable.
      * @return true if the datums are equal.
      */
+    @Override
     public boolean equals( Object a ) throws IllegalArgumentException {
         return ( a!=null && (a instanceof Datum) && this.equals( (Datum)a ) );
     }
@@ -388,7 +390,7 @@ public class Datum implements Comparable {
     
     /**
      * returns true if this is less than <tt>a</tt>.
-     * @param a a datum convertable to this Datum's units.
+     * @param a a datum convertible to this Datum's units.
      * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
      * @return true if this is less than <tt>a</tt>.
      */
@@ -398,7 +400,7 @@ public class Datum implements Comparable {
     
     /**
      * returns true if this is greater than <tt>a</tt>.
-     * @param a a datum convertable to this Datum's units.
+     * @param a a datum convertible to this Datum's units.
      * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
      * @return true if this is greater than <tt>a</tt>.
      */
@@ -408,7 +410,7 @@ public class Datum implements Comparable {
     
     /**
      * returns true if this is less than or equal to <tt>a</tt>.
-     * @param a a datum convertable to this Datum's units.
+     * @param a a datum convertible to this Datum's units.
      * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
      * @return true if this is less than or equal to <tt>a</tt>.
      */
@@ -418,7 +420,7 @@ public class Datum implements Comparable {
     
     /**
      * returns true if this is greater than or equal to <tt>a</tt>.
-     * @param a a datum convertable to this Datum's units.
+     * @param a a datum convertible to this Datum's units.
      * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
      * @return true if this is greater than or equal to <tt>a</tt>.
      */
@@ -486,6 +488,7 @@ public class Datum implements Comparable {
      * @return a human readable String representation of the Datum, which should also be parseable with
      * Units.parse()
      */
+    @Override
     public String toString() {
         if (formatter==null) {
             return units.getDatumFormatterFactory().defaultFormatter().format(this);
@@ -535,7 +538,7 @@ public class Datum implements Comparable {
      * Returns a Datum with the given value and limited to the given resolution.
      * When formatted, the formatter should use this resolution to limit the 
      * precision displayed.
-     * @param value the magnitude of the datum, or value to be interpretted in the context of units.
+     * @param value the magnitude of the datum, or value to be interpreted in the context of units.
      * @param units the units of the datum.
      * @param resolution the limit to which the datum's precision is known.
      * @return a Datum with the given units and value.
@@ -550,7 +553,7 @@ public class Datum implements Comparable {
      * Returns a Datum with the given value and limited to the given resolution.
      * When formatted, the formatter should use this resolution to limit the 
      * precision displayed.
-     * @param value the magnitude of the datum, or value to be interpretted in the context of units.
+     * @param value the magnitude of the datum, or value to be interpreted in the context of units.
      * @param units the units of the datum.
      * @param resolution the limit to which the datum's precision is known.
      * @param formatter the DatumFormatter that should be used to format this datum, which will be
