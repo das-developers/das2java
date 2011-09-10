@@ -7,7 +7,7 @@
 package org.das2.datum;
 
 /**
- *
+ * Useful operations for units, and tests for Steven's Levels of Measurement.
  * @author  Jeremy
  */
 public class UnitsUtil {
@@ -26,12 +26,12 @@ public class UnitsUtil {
      * returns true if the unit describes a location in time, as in us2000.
      */
     public static final boolean isTimeLocation( Units unit ) {
-        return unit.isConvertableTo(Units.us2000);
+        return unit==Units.us2000 || unit.isConvertableTo(Units.us2000);
     }
     
     /**
      * returns true if the unit is a ratio measurement, meaning there is a physical zero
-     * and you can make meaningful ratios between arbitary numbers.  All operations 
+     * and you can make meaningful ratios between arbitrary numbers.  All operations
      * like add, multiply and divide are allowed.  (What about negative numbers?  We
      * need a statistician!)
      * Examples include "5 km" or "0.2/cc" and "15 counts"
@@ -105,7 +105,7 @@ public class UnitsUtil {
     
     /**
      * Special division operation that either does the Datum division if
-     * possible, or returns the division of the magitude parts of the
+     * possible, or returns the division of the magnitude parts of the
      * Datums plus the unit names "A/B", suitable for human consumption.
      */
     public static String divideToString( Datum aDatum, Datum bDatum ) {
@@ -123,7 +123,7 @@ public class UnitsUtil {
     
     /**
      * attempt to perform the division of two Datums by looking for
-     * convertable units or dimensionless.
+     * convertible units or dimensionless.
      */
     public static Datum divide( Datum aDatum, Datum bDatum ) {
         Units bUnits= bDatum.getUnits();
