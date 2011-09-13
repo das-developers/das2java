@@ -99,7 +99,35 @@ public class UnitsUtil {
         } else if ( unit==Units.microseconds ) {
             return Units.megaHertz;
         } else {
-            throw new IllegalArgumentException( "units not supported: "+unit );
+            if ( unit.isConvertableTo(Units.seconds ) ) {
+                UnitsConverter uc= unit.getConverter(Units.seconds);
+                if ( uc==UnitsConverter.IDENTITY ) {
+                    return Units.hertz;
+                } 
+                uc= unit.getConverter(Units.milliseconds);  // there's no way to check for scale=1000...
+                if ( uc==UnitsConverter.IDENTITY ) {
+                    return Units.kiloHertz;
+                } else {
+                    throw new IllegalArgumentException( "units not supported: "+unit );
+                }
+            } else if ( unit.isConvertableTo(Units.hertz ) ) {
+                UnitsConverter uc= unit.getConverter(Units.hertz);
+                if ( uc==UnitsConverter.IDENTITY ) {
+                    return Units.seconds;
+                }
+                uc= unit.getConverter(Units.kiloHertz);
+                if ( uc==UnitsConverter.IDENTITY ) {
+                    return Units.milliseconds ;
+                }
+                uc= unit.getConverter(Units.megaHertz);
+                if ( uc==UnitsConverter.IDENTITY ) {
+                    return Units.microseconds;
+                } else {
+                    throw new IllegalArgumentException( "units not supported: "+unit );
+                }
+            } else {
+                throw new IllegalArgumentException( "units not supported: "+unit );
+            }
         }
     }
     
