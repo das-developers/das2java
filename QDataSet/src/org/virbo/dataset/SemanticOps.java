@@ -151,7 +151,10 @@ public class SemanticOps {
         if ( !stdunits.equals(sunits) ) {
             Units stdUnit= lookupUnits(stdunits);  // we need to register "foo" when "[foo]" so that order doesn't matter.
             System.err.println("registering identity converter "+stdUnit + " -> "+ result );
-            stdUnit.registerConverter( result, UnitsConverter.IDENTITY );
+            if ( !stdUnit.isConvertableTo(result) ) {
+                stdUnit.registerConverter( result, UnitsConverter.IDENTITY );
+                stdUnit.getConverter(result);
+            }
         }
         return result;
     }
