@@ -1940,4 +1940,32 @@ public class SeriesRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_CADENCECHECK, oldCadenceCheck, cadenceCheck);
     }
 
+    @Override
+    public boolean acceptsDataSet(QDataSet dataSet) {
+        QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
+        QDataSet ds= dataSet;
+        QDataSet vds, tds;
+        boolean plottable= false;
+        if ( !SemanticOps.isTableDataSet(dataSet) ) {
+            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+                vds = DataSetOps.unbundleDefaultDataSet( ds );
+            } else if ( ds.rank()!=1 ) {
+                logger.fine("dataset rank error");
+                return false;
+            }  else {
+                vds = (QDataSet) dataSet;
+            }
+
+            unitsWarning= false;
+            plottable = true;
+
+        } else if (dataSet instanceof QDataSet) {
+            tds = (QDataSet) dataSet;
+            plottable = true;
+        }
+
+        return plottable;
+    }
+
+
 }
