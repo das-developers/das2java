@@ -5,6 +5,8 @@
 
 package org.das2.graph;
 
+import org.virbo.dataset.JoinDataSet;
+import org.virbo.dsops.Ops;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.QDataSet;
 import java.awt.Color;
@@ -16,6 +18,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.DataSetUtil;
 import static java.lang.Math.*;
 
 /**
@@ -65,6 +68,39 @@ public class PitchAngleDistributionRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_COLORBAR, oldColorBar, colorBar);
     }
 
+    public static QDataSet doAutorange(QDataSet tds) {
+
+        QDataSet zdesc = Ops.extent( tds );
+
+        QDataSet ads= SemanticOps.xtagsDataSet(tds);
+        QDataSet rds= SemanticOps.ytagsDataSet(tds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
+
+        Units xunits= SemanticOps.getUnits(ads);
+        Units yunits= SemanticOps.getUnits(rds);
+
+        if ( yunits.isConvertableTo(Units.degrees) && !xunits.isConvertableTo(Units.degrees) ) { // swap em
+            rds= SemanticOps.xtagsDataSet(tds);
+            ads= SemanticOps.ytagsDataSet(tds);
+            xunits= SemanticOps.getUnits(ads);
+            yunits= SemanticOps.getUnits(rds);
+        }
+
+        QDataSet xdesc= Ops.extent(rds);
+        QDataSet ydesc= xdesc;
+
+        xdesc= Ops.rescaleRange( xdesc, -1.1, 1.1 );
+        ydesc= Ops.rescaleRange( ydesc, -1.1, 1.1 );
+
+        JoinDataSet bds= new JoinDataSet(2);
+        bds.join(xdesc);
+        bds.join(ydesc);
+        bds.join(zdesc);
+
+        return bds;
+
+    }
+
+
     @Override
     public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
@@ -87,7 +123,6 @@ public class PitchAngleDistributionRenderer extends Renderer {
         }
 
         QDataSet tds= (QDataSet)ds;
-        QDataSet wds= SemanticOps.weightsDataSet(ds);
         
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -95,22 +130,30 @@ public class PitchAngleDistributionRenderer extends Renderer {
         if ( tds==null ) return;
         if ( colorBar==null ) return;
 
-        QDataSet xds= SemanticOps.xtagsDataSet(tds);
+        QDataSet ads= SemanticOps.xtagsDataSet(tds);
         QDataSet rds= SemanticOps.ytagsDataSet(tds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
+
+        Units xunits= SemanticOps.getUnits(ads);
+        Units yunits= SemanticOps.getUnits(rds);
+
+        if ( yunits.isConvertableTo(Units.degrees) && !xunits.isConvertableTo(Units.degrees) ) { // swap em
+            rds= SemanticOps.xtagsDataSet(tds);
+            ads= SemanticOps.ytagsDataSet(tds);
+            xunits= SemanticOps.getUnits(ads);
+            yunits= SemanticOps.getUnits(rds);
+            tds= Ops.transpose(tds);
+        }
+        QDataSet wds= SemanticOps.weightsDataSet(tds);
 
         float[][] xx= new float[ tds.length()+1 ] [ tds.length(0)+1 ];
         float[][] yy= new float[ tds.length()+1 ] [ tds.length(0)+1 ];
 
-        Units xunits= Units.radians;  // should be rad
-        if ( SemanticOps.getUnits(xds)==Units.dimensionless ) {
-            xunits= Units.dimensionless;
+        if ( SemanticOps.getUnits(ads)==Units.dimensionless ) {
+            xunits= Units.radians;
         }
-        Units yunits= Units.dimensionless;  // should be eV
         Units zunits= SemanticOps.getUnits(tds);
 
-        //TODO: handle log energy, etc, by converting to linear axis.
-
-        double da= ( xds.value(1) - xds.value(0) ) / 2;
+        double da= ( ads.value(1) - ads.value(0) ) / 2;
 
         double x0= xAxis.transform(0,yunits);
         double y0= yAxis.transform(0,yunits);
@@ -124,12 +167,16 @@ public class PitchAngleDistributionRenderer extends Renderer {
                 double r0y= y0 - ( yAxis.transform(v1,yunits) ); // in
                 double r1x= x0 - ( xAxis.transform(v2,yunits) ); // out
                 double r1y= y0 - ( yAxis.transform(v2,yunits) ); // out
-                for ( int i=0; i<xds.length(); i++ ) {
-                    double a0= xds.value(i) - da;
-                    double a1= xds.value(i) + da;
+                for ( int i=0; i<ads.length(); i++ ) {
+                    double a0= ads.value(i) - da;
+                    double a1= ads.value(i) + da;
                     if ( iflip==1 ) {
                         a0= -a0;
                         a1= -a1;
+                    }
+                    if ( xunits==Units.degrees ) {
+                        a0= Math.toRadians(a0);
+                        a1= Math.toRadians(a1);
                     }
                     if ( originNorth ) {
                         yy[i][j]= (float) ( y0 - cos(a0) * r0y );
