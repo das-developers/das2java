@@ -1077,7 +1077,9 @@ public class SeriesRenderer extends Renderer {
 
         logger.fine("rendering points: " + lastIndex + "  " + firstIndex);
         if ( lastIndex == -1 ) {
-            if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "need to update first/last", DasPlot.INFO, null, null);
+            if ( messageCount++==0) {
+                lparent.postMessage(SeriesRenderer.this, "need to update first/last", DasPlot.INFO, null, null);
+            }
             update(); //DANGER: this kludge is not well tested, and may cause problems.  It should be the case that another
                       // update is posted that will resolve this problem, but somehow it's not happening when Autoplot adds a
                       // bunch of panels.
