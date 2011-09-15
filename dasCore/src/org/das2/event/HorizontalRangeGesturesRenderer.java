@@ -26,6 +26,11 @@ package org.das2.event;
 import org.das2.graph.DasCanvasComponent;
 
 import java.awt.*;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
+import org.das2.graph.DasAxis;
+import org.das2.graph.GraphUtil;
+import org.das2.util.GrannyTextRenderer;
 
 /**
  *
@@ -89,9 +94,31 @@ public class HorizontalRangeGesturesRenderer implements DragRenderer {
                 g.drawLine(x1+3, y, x2-3, y);
             g.drawLine(x1, y+2, x1, y-2 ); //serifs
             g.drawLine(x2, y+2, x2, y-2 );
-            
+
             dirtyBounds.setLocation(x1-2,y+3);
             dirtyBounds.add(x2+2,y-3);
+
+            if ( parent instanceof DasAxis && ( x1<parent.getColumn().getDMinimum() || x2>parent.getColumn().getDMaximum() ) ) {
+                DasAxis p= (DasAxis)parent;
+                DatumRange dr= DatumRangeUtil.union( p.invTransform( x1 ), p.invTransform(x2 ) );
+                dr= p.getTickV().enclosingRange( dr, true );
+                g.setColor( new Color(255,255,255,200) );
+                GrannyTextRenderer gtr= new GrannyTextRenderer();
+                gtr.setString( g1, ""+dr );
+                Rectangle r= gtr.getBounds();
+                int x;
+                if ( x2>parent.getColumn().getDMaximum() ) {
+                    x= x1+3;
+                } else {
+                    x= x2-3-(int)gtr.getWidth();
+                }
+                r.translate(x,y+g.getFontMetrics().getHeight() );
+                g.fill( r );
+                g.setColor(color0);
+                gtr.draw( g, x, y+g.getFontMetrics().getHeight() );
+                dirtyBounds.add(x,y+g.getFontMetrics().getHeight() );
+            }
+            
         }
         return new Rectangle[] { dirtyBounds };
     }
