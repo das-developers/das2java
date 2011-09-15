@@ -31,6 +31,7 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
     /** Creates a new instance of BoxZoomMouseModule */
     public BoxZoomMouseModule( DasCanvasComponent parent, DataSetConsumer consumer, DasAxis xAxis, DasAxis yAxis ) {
         super( parent, consumer, xAxis, yAxis );
+        setDragRenderer( new BoxZoomGesturesRenderer(parent) );
         setLabel("Box Zoom");
     }
         
@@ -56,6 +57,13 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
                 yrange= yAxis.getDatumRange();
             }
             if ( ( e.getXMaximum()-e.getXMinimum() )<5 || ( boxAspect>10 && edgeX ) ) {
+                xrange= xAxis.getDatumRange();
+            }
+            //boxes along axes must only zoom along that axes.  The intent might have been to start the box on the axis instead of the plot.
+            if ( edgeY && boxAspect<0.2 ) {
+                yrange= yAxis.getDatumRange();
+            }
+            if ( edgeX && boxAspect>5 ) {
                 xrange= xAxis.getDatumRange();
             }
 
