@@ -498,4 +498,25 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     public String toString( ) {
         return DataSetUtil.toString( this );
     }
+
+    public int jvmMemory() {
+        int sizePer;
+        Class component= this.getComponentType();
+        if ( component==double.class ) {
+            sizePer= 8;
+        } else if ( component==float.class ) {
+            sizePer= 4;
+        } else if ( component==long.class ) {
+            sizePer= 8;
+        } else if ( component==int.class ) {
+            sizePer= 4;
+        } else if ( component==short.class ) {
+            sizePer= 2;
+        } else if ( component==byte.class ) {
+            sizePer= 1;
+        } else {
+            throw new IllegalArgumentException("not supported "+component );
+        }
+        return Array.getLength( this.getBack() ) * sizePer;
+    }
 }
