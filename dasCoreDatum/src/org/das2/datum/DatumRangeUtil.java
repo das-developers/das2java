@@ -145,7 +145,7 @@ public class DatumRangeUtil {
         try {
             return Integer.parseInt(s);
         } catch ( NumberFormatException e ) {
-            throw new ParseException( "failed attempt to parse int in "+s, 0 );
+            throw new ParseException( "failed attempt to parse int in \""+s+"\"", 0 );
         }
     }
 
