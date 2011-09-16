@@ -423,6 +423,8 @@ public class SemanticOps {
         }
         if ( isBundle(ds) ) {
             return DataSetOps.unbundle( ds, 1 );
+        } else if ( isLegacyBundle(ds) ) {
+            return DataSetOps.unbundle(ds,1);
         } else if ( isJoin(ds)) {
             QDataSet yds= ytagsDataSet( ds.slice(0) );
             JoinDataSet result= new JoinDataSet(yds);
