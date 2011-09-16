@@ -261,6 +261,23 @@ public class SemanticOps {
     }
 
     /**
+     * See Ops.isLegacyBundle
+     * @param zds
+     * @return
+     */
+    public static boolean isLegacyBundle( QDataSet zds ) {
+        if ( zds.rank()==2 ) {
+            QDataSet dep1= (QDataSet) zds.property(QDataSet.DEPEND_1);
+            if ( dep1!=null ) {
+                Units u= (Units) dep1.property(QDataSet.UNITS);
+                if ( u instanceof EnumerationUnits ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    /**
      * Test for bins scheme, where BINS_1 is set.  This is
      * where a two-element index is min, max.
      * @param ds
@@ -358,8 +375,7 @@ public class SemanticOps {
     /**
      * return the dataset containing the x tags for the dataset.  This
      * is QDataSet.DEPEND_0, or if that's null then IndexGenDataSet(ds.length).
-     * For a bundle, this is just the 0th dataset.  For a join, this is a join
-     * of all the DEPEND_0 datasets.
+     * For a bundle, this is just the 0th dataset.  
      * For a join, this is a join of the xtags datasets of each dataset.
      * @param ds
      * @return
@@ -368,6 +384,8 @@ public class SemanticOps {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( dep0!=null ) return dep0;
         if ( isBundle(ds) ){
+            return DataSetOps.unbundle(ds,0);
+        } else if ( isLegacyBundle(ds) ) {
             return DataSetOps.unbundle(ds,0);
         } else if ( isJoin(ds) ) {
             QDataSet xds= xtagsDataSet( ds.slice(0) );
