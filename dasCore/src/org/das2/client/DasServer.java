@@ -166,6 +166,32 @@ public class DasServer {
 
     }
 
+    public TreeModel getDataSetListWithDiscovery() throws org.das2.DasException {
+        String formData= "server=discovery";
+
+        try {
+            URL server= new URL("http",host,port,path+"?"+formData);
+
+            logger.info( "connecting to "+server);
+
+            URLConnection urlConnection = server.openConnection();
+            urlConnection.connect();
+
+            String contentType = urlConnection.getContentType();
+
+            InputStream in= urlConnection.getInputStream();
+
+            TreeModel result= createModel(in);
+            logger.info( "response->"+result);
+            return result;
+
+        } catch (IOException e) {
+
+            throw new DasIOException( e.getMessage() );
+        }
+
+    }
+
     public TreeModel getDataSetList() throws org.das2.DasException {
         String formData= "server=list";
 
