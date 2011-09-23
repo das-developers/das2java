@@ -659,8 +659,8 @@ public class SemanticOps {
                 QDataSet yinside= yrange==null ? null :
                     Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
                 SubsetDataSet sds= new SubsetDataSet(ds);
-                sds.applyIndex( 0, Ops.where(xinside) );
-                sds.applyIndex( 1, Ops.where(yinside) );
+                if ( xinside!=null ) sds.applyIndex( 0, Ops.where(xinside) );  //TODO: consider the use of trim which would be more efficient.
+                if ( yinside!=null ) sds.applyIndex( 1, Ops.where(yinside) );
                 return sds;
             }
         } else if ( rank==1 ) { 
