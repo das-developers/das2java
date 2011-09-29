@@ -9,11 +9,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -421,8 +419,8 @@ public class AsciiHeadersParser {
         }
 
         if ( messages.size()>0 ) {
-            for ( JSONObject jo1: messages.keySet() ) {
-                System.err.println(""+messages.get(jo1) );
+            for ( Entry<JSONObject,String> jos1: messages.entrySet() ) {
+                System.err.println(""+messages.get(jos1.getValue()) );
             }
         }
 
@@ -492,7 +490,6 @@ public class AsciiHeadersParser {
 
     public static class BundleDescriptor extends AbstractDataSet {
 
-        int len;
         Map<String,Integer> datasets;
         Map<Integer,String> datasets2;
         Map<String,QDataSet> inlineDataSets;  // in-line datasets, like DEPEND_1.
