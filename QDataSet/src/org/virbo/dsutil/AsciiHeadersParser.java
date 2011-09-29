@@ -377,7 +377,7 @@ public class AsciiHeadersParser {
                         if ( columns[j].equals(lookFor) ) {
                             logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
                             icol= j;
-                            bd.addDataSet( name, ids, idims, elementNames, labels );
+                            bd.addDataSet( name, ids, idims, null, labels ); // findbugs NP_LOAD_OF_KNOWN_NULL_VALUE
                             break;
                         }
                     }
@@ -672,7 +672,6 @@ public class AsciiHeadersParser {
          */
         @Override
         public QDataSet trim(int start, int end) {
-            MutablePropertyDataSet result= (MutablePropertyDataSet) super.trim(start,end);
             throw new IllegalArgumentException("Not supported");
         }
 
