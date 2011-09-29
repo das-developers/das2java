@@ -225,38 +225,42 @@ public class AsciiParser {
      * @return
      */
     public int guessSkipLines( String filename, RecordParser recParser ) throws IOException {
-        BufferedReader reader = new LineNumberReader(new FileReader(filename));
+        BufferedReader reader = null;
+        int currentFirstRecord=0;
+        try {
+            reader= new LineNumberReader(new FileReader(filename));
 
-        String line;
-        String lastLine = null;
+            String line;
+            String lastLine = null;
 
-        line = reader.readLine();
-        int iline = 0;
-        while (line != null && isHeader(iline, lastLine, line, 0)) {
-            lastLine = line;
             line = reader.readLine();
-            iline++;
-        }
-
-        int currentFieldCount=-1;
-        int currentFirstRecord=iline;
-        int repeatCount=0;
-        while ( line != null ) {
-            int fc= recParser.fieldCount(line);
-            if ( fc!=currentFieldCount ) {
-                currentFieldCount=fc;
-                currentFirstRecord= iline;
-                repeatCount=1;
-            } else {
-                repeatCount++;
+            int iline = 0;
+            while (line != null && isHeader(iline, lastLine, line, 0)) {
+                lastLine = line;
+                line = reader.readLine();
+                iline++;
             }
-            if ( repeatCount>50 ) {
-                return currentFirstRecord;
-            }
-            line = reader.readLine();
-        }
 
-        reader.close();
+            int currentFieldCount=-1;
+            currentFirstRecord=iline;
+            int repeatCount=0;
+            while ( line != null ) {
+                int fc= recParser.fieldCount(line);
+                if ( fc!=currentFieldCount ) {
+                    currentFieldCount=fc;
+                    currentFirstRecord= iline;
+                    repeatCount=1;
+                } else {
+                    repeatCount++;
+                }
+                if ( repeatCount>50 ) {
+                    return currentFirstRecord;
+                }
+                line = reader.readLine();
+            }
+        } finally {
+            reader.close();
+        }
 
         return currentFirstRecord;
     }
@@ -269,59 +273,67 @@ public class AsciiParser {
      * @return the record parser to use, or null if no records are found.
      */
     public DelimParser guessSkipAndDelimParser( String filename ) throws IOException {
-        BufferedReader reader = new BufferedReader( new FileReader(filename) );
+        BufferedReader reader = null;
+        DelimParser result= null;
 
-        String line;
-        String lastLine = null;
+        try {
+            reader = new BufferedReader( new FileReader(filename) );
 
-        line = reader.readLine();
-        int iline = 0;
+            String line;
+            String lastLine = null;
 
-        headerBuffer= new StringBuffer();
-
-        while (line != null && isHeader(iline, lastLine, line, 0)) {
-            lastLine = line;
-            if ( iline<HEADER_LENGTH_LIMIT ) {
-               headerBuffer.append(line).append("\n");
-            }
             line = reader.readLine();
-            iline++;
-        }
+            int iline = 0;
 
-        if ( line==null ) return null;
+            headerBuffer= new StringBuffer();
 
-        DelimParser p= guessDelimParser(line);
-
-        List<String> lines= new LinkedList<String>();
-
-        int parseCount=0;
-
-        while ( iline<HEADER_LENGTH_LIMIT && line != null && parseCount<3 ) {
-            lines.add(line);
-            line = reader.readLine();
-            iline++;
-            while ( lines.size()>5 ) {
-                lines.remove(0);
+            while (line != null && isHeader(iline, lastLine, line, 0)) {
+                lastLine = line;
+                if ( iline<HEADER_LENGTH_LIMIT ) {
+                   headerBuffer.append(line).append("\n");
+                }
+                line = reader.readLine();
+                iline++;
             }
-            if ( line!=null ) {
-            	p= guessDelimParser(line);
-            	parseCount= p.tryParseRecord(line, iline, null) ? 1 : 0;
-            	for ( int i=0; i<lines.size(); i++ ) {
-            		if ( p.tryParseRecord(lines.get(i), 0, null) ) {
-            			parseCount++;
-            		}
-            	}
-            }
-        }
 
-        DelimParser result= p;
-        for ( int i=0; i<lines.size(); i++ ) {
-            if ( p.fieldCount(lines.get(i))==p.fieldCount() ) {
-                result= createDelimParser( lines.get(i), p.getDelim() ); // set column names
-                break;
+            if ( line==null ) return null;
+
+            DelimParser p= guessDelimParser(line);
+
+            List<String> lines= new LinkedList<String>();
+
+            int parseCount=0;
+
+            while ( iline<HEADER_LENGTH_LIMIT && line != null && parseCount<3 ) {
+                lines.add(line);
+                line = reader.readLine();
+                iline++;
+                while ( lines.size()>5 ) {
+                    lines.remove(0);
+                }
+                if ( line!=null ) {
+                    p= guessDelimParser(line);
+                    parseCount= p.tryParseRecord(line, iline, null) ? 1 : 0;
+                    for ( int i=0; i<lines.size(); i++ ) {
+                            if ( p.tryParseRecord(lines.get(i), 0, null) ) {
+                                    parseCount++;
+                            }
+                    }
+                }
             }
+
+            result= p;
+
+            for ( int i=0; i<lines.size(); i++ ) {
+                if ( p.fieldCount(lines.get(i))==p.fieldCount() ) {
+                    result= createDelimParser( lines.get(i), p.getDelim() ); // set column names
+                    break;
+                }
+            }
+            
+        } finally {
+            reader.close();
         }
-        reader.close();
 
         String header= headerBuffer.toString();
         // look for rich headers, and update the column names.
