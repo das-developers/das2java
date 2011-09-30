@@ -1918,7 +1918,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
 
-    /** TODO */
     public static class Cell implements PropertyChangeListener {
 
         Rectangle rc;
@@ -1939,9 +1938,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             rc.height = (int) Math.floor(row.getDMaximum() + 0.5) - rc.y;
         }
 
-        /** TODO
-         * @param e
-         */
         public void propertyChange(PropertyChangeEvent e) {
             if (e.getSource() == row) {
                 rc.y = (int) Math.floor(row.getDMinimum() + 0.5);
@@ -1952,10 +1948,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
 
-        /** TODO
-         * @param o
-         * @return
-         */
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 79 * hash + (this.row != null ? this.row.hashCode() : 0);
+            hash = 79 * hash + (this.column != null ? this.column.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (o instanceof Cell) {
                 Cell box = (Cell) o;
@@ -1964,21 +1965,19 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             return false;
         }
 
-        /** TODO
-         * @return
-         */
+        @Override
         public String toString() {
             return "{" + row.getDasName() + " x " + column.getDasName() + ": " + rc.toString() + "}";
         }
 
-        /** TODO
+        /** get the bounds
          * @return
          */
         public Rectangle getCellBounds() {
             return new Rectangle(rc);
         }
 
-        /** TODO
+        /** get the bounds
          * @param r
          * @return
          */
@@ -1990,14 +1989,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             return r;
         }
 
-        /** TODO
+        /** get the Row
          * @return
          */
         public DasRow getRow() {
             return row;
         }
 
-        /** TODO
+        /** get the Column
          * @return
          */
         public DasColumn getColumn() {
