@@ -128,10 +128,10 @@ public abstract class UnitsConverter {
 
         @Override
         public UnitsConverter append(UnitsConverter that) {
-            if (this.equals(IDENTITY)) {
+            if (this==IDENTITY) {
                 return that;
             }
-            else if (that.equals(IDENTITY)) {
+            else if (that==IDENTITY) {
                 return this;
             }
             else if (that instanceof ScaleOffset) {
