@@ -90,20 +90,21 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     public boolean isCancelled() { 
         return cancelled; 
     }
-    
-	@Deprecated
+
+    @Deprecated
     public void setAdditionalInfo(String s) { };
     
     private String label;
     
     public void setLabel( String s ) { 
-        this.label= label;
+        this.label= s;
     }
     
     public String getLabel() { 
         return label; 
     }
     
+    @Override
     public String toString() {
         return "" + this.position + " of "+ this.taskSize;
     }
