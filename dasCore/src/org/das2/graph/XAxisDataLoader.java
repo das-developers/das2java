@@ -41,7 +41,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     DasAxis xaxis;
     DataSetDescriptor dsd;
     ProgressMonitor progressMonitor;
-    Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG, "XAxisDataLoader" );
+    private static final Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG, "XAxisDataLoader" );
     
     Request currentRequest;
     List unsolicitedRequests;
@@ -52,7 +52,6 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     public XAxisDataLoader( Renderer r, DataSetDescriptor dsd ) {
         super(r);
         this.dsd= dsd;
-        this.logger= logger;
         if ( dsd!=null ) dsd.addDataSetUpdateListener( this );
         unsolicitedRequests= new ArrayList();
     }
