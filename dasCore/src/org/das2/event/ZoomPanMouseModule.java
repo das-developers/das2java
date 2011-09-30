@@ -144,12 +144,13 @@ public class ZoomPanMouseModule extends MouseModule {
             Pos xpos = xAxis == null ? Pos._null : position(xAxis.getColumn(), ep.x, 20);
             Pos ypos = yAxis == null ? Pos._null : position(yAxis.getRow(), ep.y, 20);
 
+            //mac trackpads coast a while after release, so let's govern the speed a little more
             if (e.getWheelRotation() < 0) {
-                nmin = 0.20; // zoom in
-                nmax = 0.80;
+                nmin = 0.10; // zoom in
+                nmax = 0.90;
             } else {
-                nmin = -0.25; // zoom out
-                nmax = 1.25;
+                nmin = -0.125; // zoom out
+                nmax = 1.125;
             }
             switch (xpos) {
                 case min:
@@ -176,7 +177,7 @@ public class ZoomPanMouseModule extends MouseModule {
         if ((t1 - t0) / clickMag < limitNanos) {
             clickMag = (int) Math.floor( (t1 - t0) / limitNanos );
         }
-        
+
         if (clickMag == 0) return;
         t0 = System.nanoTime();
 
