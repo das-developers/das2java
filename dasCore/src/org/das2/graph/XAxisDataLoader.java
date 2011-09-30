@@ -10,6 +10,7 @@
 
 package org.das2.graph;
 
+import java.util.logging.Level;
 import org.das2.CancelledOperationException;
 import org.das2.dataset.CacheTag;
 import org.das2.dataset.DataSet;
@@ -46,7 +47,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     Request currentRequest;
     List unsolicitedRequests;
     
-    Object lockObject= new Object();
+    final Object lockObject= new Object();
     
     /** Creates a new instance of DataLoader */
     public XAxisDataLoader( Renderer r, DataSetDescriptor dsd ) {
@@ -79,7 +80,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
      */
     private void loadDataSet( DasAxis xAxis, DasAxis yAxis ) {
         
-        logger.fine( "render requests dataset for x:"+xAxis.getMemento() + " y:"+yAxis.getMemento());
+        logger.log( Level.FINE, "render requests dataset for x:{0} y:{1}", new Object[]{xAxis.getMemento(), yAxis.getMemento()});
         
         if ( xaxis==null ) this.xaxis= xAxis;
         
@@ -97,7 +98,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
             if ( currentRequest!=null ) {
                 synchronized (currentRequest) {
                     if ( ! xAxis.getMemento().equals( currentRequest.xmem ) ) {
-                        logger.fine( "cancel old request: "+currentRequest );
+                        logger.log( Level.FINE, "cancel old request: {0}", currentRequest);
                         ProgressMonitor monitor= currentRequest.monitor;
                         currentRequest= null;
                         monitor.cancel();
@@ -140,7 +141,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                 parent.repaint( 0, 0, parent.getWidth(), parent.getHeight() );
                 
                 //if ( renderer.isOverloading() ) loadRange= loadRange.rescale(-1,2);
-                logger.fine("request data from dsd: "+loadRange+" @ "+resolution);
+                logger.log(Level.FINE, "request data from dsd: {0} @ {1}", new Object[]{loadRange, resolution});
                 
                 currentRequest= new Request( progressMonitor, xAxis.getMemento(), yAxis.getMemento() );
                 
@@ -172,12 +173,12 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
         synchronized ( lockObject ) {
             if ( renderer.getDataLoader()!=this ) return; // see bug 233
             
-            logger.fine("got dataset update:"+e);
+            logger.log(Level.FINE, "got dataset update:{0}", e);
             // TODO make sure Exception is cleared--what if data set is non-null but Exception is as well?
             if ( e.getException()!=null && e.getDataSet()!=null ) {
                 throw new IllegalStateException("both exception and data set");
             } else if (e.getException() != null) {
-                logger.fine("got dataset update exception: "+e.getException());
+                logger.log(Level.FINE, "got dataset update exception: {0}", e.getException());
                 Exception exception = e.getException();
                 if ( !rendererHandlesException(exception) ) {
                     DasExceptionHandler.handle(exception);
@@ -188,7 +189,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                     if ( mon==null || mon==currentRequest.monitor ) {
                         renderer.setException( exception );
                         renderer.setDataSet(null);
-                        logger.fine("current request completed w/exception: " + currentRequest );
+                        logger.log(Level.FINE, "current request completed w/exception: {0}", currentRequest);
                         currentRequest=null;
                     } else {
                         logger.fine("got exception but not for currentRequest " );
@@ -218,20 +219,20 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                     DataSet ds= e.getDataSet();
                     ProgressMonitor mon= e.getMonitor();
                     if ( mon==null || currentRequest.monitor==mon ) {
-                        logger.fine("got dataset update w/dataset: "+ds);
+                        logger.log(Level.FINE, "got dataset update w/dataset: {0}", ds);
                         if ( ds!=null ) {
                             if ( ds.getXLength()>0 ) {
-                                logger.fine("  ds range: "+DataSetUtil.xRange(ds) );
+                                logger.log(Level.FINE, "  ds range: {0}", DataSetUtil.xRange(ds));
                             } else {
                                 logger.fine("  ds range: (empty)" );
                             }
                         }
                         renderer.setDataSet( DataSetAdapter.create(ds) );
 
-                        logger.fine("current request completed w/dataset: " + currentRequest.xmem );
+                        logger.log(Level.FINE, "current request completed w/dataset: {0}", currentRequest.xmem);
                         currentRequest=null;
                     } else {
-                        logger.fine("got dataset update w/dataset but not my monitor: "+ds);
+                        logger.log(Level.FINE, "got dataset update w/dataset but not my monitor: {0}", ds);
                     }
                 }
             }
@@ -240,7 +241,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     
     
     public void setDataSetDescriptor( DataSetDescriptor dsd ) {
-        logger.fine("set dsd: "+dsd);
+        logger.log(Level.FINE, "set dsd: {0}", dsd);
         if ( this.dsd!=null ) this.dsd.removeDataSetUpdateListener(this);
         this.dsd = dsd;
         if ( dsd!=null ) dsd.addDataSetUpdateListener(this);
@@ -251,6 +252,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
         return this.dsd;
     }
     
+    @Override
     public void setReloadDataSet(boolean reloadDataSet) {
         super.setReloadDataSet(reloadDataSet);
         this.dsd.reset();
@@ -258,10 +260,12 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
     
     //TODO: this shadows the same property of the super class.  This should be cleaned up.
     private boolean fullResolution = false;
+    @Override
     public boolean isFullResolution() {
         return fullResolution;
     }
     
+    @Override
     public void setFullResolution(boolean b) {
         if (fullResolution == b) return;
         fullResolution = b;
