@@ -82,8 +82,10 @@ public class RebinDescriptor {
             switch (outOfBoundsAction) {
                 case FIRSTORLAST:
                     result= x<start ? 0 : nBin-1;
+                    break;
                 case MINUSONE:
                     result= -1;
+                    break;
             }
         } else {
             result= (int)((x-start)*nBin/(end-start));
@@ -237,6 +239,7 @@ public class RebinDescriptor {
         return units;
     }
     
+    @Override
     public String toString() {
         if ( isLog() ) {
             return "["+units.createDatum(Math.exp(start))+" - "+units.createDatum(Math.exp(end))+" in "+nBin+" bins "+(isLog?"Log":"")+"]";
