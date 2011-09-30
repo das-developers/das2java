@@ -36,6 +36,12 @@ public abstract class UnitsConverter {
         public double convert(double value) {
             return value;
         }
+
+        @Override
+        public UnitsConverter append(UnitsConverter that) {
+            return that;
+        }
+        
         @Override
         public String toString() {
             return "IDENTITY UnitsConverter";
@@ -128,13 +134,9 @@ public abstract class UnitsConverter {
 
         @Override
         public UnitsConverter append(UnitsConverter that) {
-            if (this==IDENTITY) {
-                return that;
-            }
-            else if (that==IDENTITY) {
+            if (that==IDENTITY) {
                 return this;
-            }
-            else if (that instanceof ScaleOffset) {
+            } else if (that instanceof ScaleOffset) {
                 ScaleOffset so = (ScaleOffset)that;
                 double aScale = this.scale * so.scale;
                 double aOffset = this.offset * so.scale + so.offset;
