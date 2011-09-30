@@ -446,6 +446,9 @@ public interface QDataSet {
 
     /**
      * return a dataset that is a slice of this dataset, slicing on the first dimension.
+     * A slice will be the elements at this index, for example if this dataset
+     * is a rank 2 dataset flux(Time,Energy) then the slice of this will be
+     * a rank 1 dataset flux(Energy).
      * @throws IllegalArgumentException when dataset rank is zero.
      * @param i
      * @return
