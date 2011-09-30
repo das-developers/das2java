@@ -5,6 +5,7 @@
 
 package org.das2.graph;
 
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dsops.Ops;
 import org.virbo.dataset.SemanticOps;
@@ -85,7 +86,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
             yunits= SemanticOps.getUnits(rds);
         }
 
-        QDataSet xdesc= Ops.extent(rds);
+        QDataSet xdesc= DDataSet.wrap( new double[] { 0, Ops.extent(rds).value(1) } );
         QDataSet ydesc= xdesc;
 
         xdesc= Ops.rescaleRange( xdesc, -1.1, 1.1 );
