@@ -205,9 +205,10 @@ public class StreamTool {
             }
         }
 
-        if (b == -1) {
-            throw new IOException("unexpected end of file before xml termination\n");
-        }
+        //findbugs INT_BAD_COMPARISON_WITH_NONNEGATIVE_VALUE, see Das2Stream StreamTool.  This was probably leftover code.
+        //if (b == -1) {
+        //    throw new IOException("unexpected end of file before xml termination\n");
+        //}
 
         eatWhiteSpace(buffer);
 
