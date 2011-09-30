@@ -157,7 +157,6 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
                 }
             }
             pos+=u.length();
-            u.trim();
             if ( u.charAt(0)=='%' ) {
                 result[0]= d/100.;
             } else if ( u.equals("e") ) {
