@@ -149,7 +149,7 @@ public abstract class WeightsDataSet implements QDataSet {
         }
         
         public final double weight(double v) {
-            return v == fill || Double.isNaN(v) ? 0.0 : 1.0;
+            return v == fill || v==(float)fill || Double.isNaN(v) ? 0.0 : 1.0;
         }
 
         public double value() {
