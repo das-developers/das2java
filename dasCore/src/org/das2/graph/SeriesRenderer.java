@@ -56,6 +56,7 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.dataset.VectorUtil;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
 import org.das2.event.CrossHairMouseModule;
 import org.das2.util.monitor.ProgressMonitor;
@@ -1363,11 +1364,18 @@ public class SeriesRenderer extends Renderer {
                 widthy.divide(yaxis.getRow().getHeight()/5)
                 );
 
-        GeneralPath path = GraphUtil.getPath(xaxis, yaxis, reduce, histogram, true );
+        try {
+            GeneralPath path = GraphUtil.getPath(xaxis, yaxis, reduce, histogram, true );
 
-        Shape s = new BasicStroke(5.f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND).createStrokedShape(path);
+            Shape s = new BasicStroke(5.f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND).createStrokedShape(path);
+            return s;
 
-        return s;
+        } catch ( InconvertibleUnitsException ex ) {
+            return SelectionUtil.NULL; // transient state, hopefully...
+
+        }
+
+        
 
     }
 
