@@ -237,8 +237,9 @@ public class AsciiHeadersParser {
      * high rank datasets.
      * @param bd
      * @param columns
+     * @param labels human-consumable labels for each column
      */
-    private static BundleDescriptor calcBundleDescriptor( JSONObject jo, String[] columns ) {
+    private static BundleDescriptor calcBundleDescriptor( JSONObject jo, String[] columns, String[] columnLabels ) {
 
         String[] snames= new String[ columns.length ];
 
@@ -330,10 +331,18 @@ public class AsciiHeadersParser {
                                 } else {
                                     logger.log( Level.FINE, "using first column ({1}) for {0}", new Object[]{lookFor, icol } );
                                 }
+                                if ( labels==null ) {
+                                    labels= new String[elementNames.length];
+                                    for ( int i=0; i<elementNames.length; i++ ) labels[i]= columnLabels[i+icol];
+                                }
                                 bd.addDataSet( name, ids, idims, elementNames, labels );
                             } else {
                                 if ( jo1.has("START_COLUMN") ) {
                                     logger.log( Level.FINE, "ignoring START_COLUMN property for {0}", new Object[]{lookFor } );
+                                }
+                                if ( labels==null ) {
+                                    labels= new String[elementNames.length];
+                                    for ( int i=0; i<elementNames.length; i++ ) labels[i]= columnLabels[i+icol];
                                 }
                                 bd.addDataSet( name, ids, idims, elementNames, labels );
                             }
@@ -341,6 +350,10 @@ public class AsciiHeadersParser {
                             if ( jo1.has("START_COLUMN") ) {
                                 icol=  jo1.getInt("START_COLUMN");
                                 logger.log( Level.FINE, "using START_COLUMN={1} property for {0}", new Object[]{lookFor, icol } );
+                                if ( labels==null ) {
+                                    labels= new String[elementNames.length];
+                                    for ( int i=0; i<elementNames.length; i++ ) labels[i]= columnLabels[i+icol];
+                                }
                                 bd.addDataSet( name, ids, idims, elementNames, labels );
                             } else {
                                 if ( jo1.has("VALUES") ) {
@@ -472,13 +485,13 @@ public class AsciiHeadersParser {
      * @param header
      * @return
      */
-    public static BundleDescriptor parseMetadata( String header, String[] columns ) throws ParseException {
+    public static BundleDescriptor parseMetadata( String header, String[] columns, String[] columnLabels ) throws ParseException {
         try {
             JSONObject jo;
             AsciiHeadersParser ahp= new AsciiHeadersParser();
             String sjson= ahp.prep(header);
             jo = new JSONObject( sjson );
-            BundleDescriptor bd= calcBundleDescriptor( jo, columns );
+            BundleDescriptor bd= calcBundleDescriptor( jo, columns, columnLabels );
 
             fillMetadata( bd,jo );
             return bd;
