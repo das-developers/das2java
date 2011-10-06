@@ -1032,7 +1032,6 @@ public class AsciiParser {
                     logger.log(Level.FINEST, "first parsed line does not appear to be column header because of field #{0}: {1}", new Object[]{i, ss[i]});
                 }
                 isColumnHeaders = false;
-                if ( fieldLabels[i]==null ) fieldLabels[i]= ss[i];
             }
         }
 
