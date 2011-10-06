@@ -7,12 +7,21 @@ package org.das2.graph;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.GeneralPath;
 
 /**
  *
  * @author jbf
  */
 public class SelectionUtil {
+
+    public static final Shape NULL= new GeneralPath();
+
+    /**
+     * returns the selection area, of SelectionUtil.NULL.
+     * @param r
+     * @return
+     */
     public static Shape getSelectionArea( Renderer r ) {
         if ( r instanceof SeriesRenderer ) {
             Shape a= ((SeriesRenderer)r).selectionArea();
