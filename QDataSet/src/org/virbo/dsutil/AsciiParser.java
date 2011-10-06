@@ -340,7 +340,7 @@ public class AsciiParser {
         boolean isRichHeader= isRichHeader(header);
         if ( isRichHeader ) {
             try {
-                bundleDescriptor = AsciiHeadersParser.parseMetadata(header, fieldNames );
+                bundleDescriptor = AsciiHeadersParser.parseMetadata(header, fieldNames, fieldLabels );
                 if ( bundleDescriptor.length()==fieldNames.length ) {
                     for ( int j=0; j<bundleDescriptor.length(); j++ ) {
                         String n= (String)bundleDescriptor.property(QDataSet.NAME,j);
@@ -801,8 +801,9 @@ public class AsciiParser {
             try {
                 //System.err.println( "== JSON Header == \n"+header );
                 System.err.println("Parsing Rich JSON Header...");
-                bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames() );
+                bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames(), getFieldLabels() );
                 builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
+                bundleDescriptor.property(QDataSet.LABEL, 1);
                 //move dimensionless properties to the dataset.
                 Map<String,Object> props= DataSetUtil.getProperties( bundleDescriptor, DataSetUtil.globalProperties(), null );
                 for ( String k: props.keySet() ) {
@@ -1031,6 +1032,7 @@ public class AsciiParser {
                     logger.log(Level.FINEST, "first parsed line does not appear to be column header because of field #{0}: {1}", new Object[]{i, ss[i]});
                 }
                 isColumnHeaders = false;
+                if ( fieldLabels[i]==null ) fieldLabels[i]= ss[i];
             }
         }
 
