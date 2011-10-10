@@ -857,7 +857,13 @@ public class DataSetUtil {
         QDataSet extent= Ops.extent(xds);
 
         AutoHistogram ah= new AutoHistogram();
-        QDataSet diffs=  Ops.diff(xds);
+        QDataSet diffs;
+        if ( yds.rank()==1 && xds.rank()==1 ) { // ftp://virbo.org/tmp/poes_n17_20041228.cdf?P1_90[0:300] has every other value=fill.
+            QDataSet r= Ops.where( Ops.valid(yds) );
+            diffs=  Ops.diff( DataSetOps.applyIndex( xds, 0, r, false ) );
+        } else {
+            diffs=  Ops.diff( xds );
+        }
         if ( monoDecreasing>(9*count/10) ) {
             diffs= Ops.multiply( diffs, asDataSet(-1) );
         }
