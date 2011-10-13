@@ -60,7 +60,7 @@ public class ValuesTreeModel extends DefaultTreeModel {
             public TreeNode getChildAt(int i) {
                 if ( ds.rank()==1 ) {
                     String sval= units==null ? String.valueOf(ds.value(i)) : String.valueOf(units.createDatum(ds.value(i)));
-                    if ( wds.value(i) > 0. ) sval= "fill"; //TODO: future datum class may allow for toString to return nominal data for invalid data.
+                    if ( wds.value(i) > 0. ) sval= "fill ("+ds.value(i)+")"; //TODO: future datum class may allow for toString to return nominal data for invalid data.
                     return new DefaultMutableTreeNode( prefix+""+i+")="+sval);
                 } else {
                     String sdepu= dep0==null ? String.valueOf(i) : String.valueOf(depu.createDatum(dep0.value(i)));
@@ -105,6 +105,11 @@ public class ValuesTreeModel extends DefaultTreeModel {
         };
     }
 
+    private static String svalRank1( QDataSet wds, QDataSet ds, int i ) {
+        String s= DataSetUtil.getStringValue( ds, ds.value(i) );
+        return wds.value(i) > 0. ? s : "fill ("+s+")";
+    }
+
     public static MutableTreeNode valuesTreeNode( String prefix, MutableTreeNode aroot, QDataSet ds, int sizeLimit ) {
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
@@ -132,19 +137,19 @@ public class ValuesTreeModel extends DefaultTreeModel {
                 String sval;
                 if ( u instanceof EnumerationUnits ) {
                     try {
-                        sval= wds.value(i) > 0. ? String.valueOf(u.createDatum(ds.value(i))) : "fill";
+                        sval= svalRank1( wds, ds, i );
                     } catch ( IllegalArgumentException ex ) {
                         sval= "" + ds.value(i) + " (error)";
                     }
                 } else {
-                    sval= wds.value(i) > 0. ? DataSetUtil.getStringValue( ds, ds.value(i) )  : "fill";
+                    sval= svalRank1( wds, ds, i );
                 }
                 //TODO: future datum class may allow for toString to return nominal data for invalid data.
                 if ( dep0!=null ) {
-                    sval += " @ " +( String.valueOf(wdsDep0.value(i) > 0 ? DataSetUtil.getStringValue( dep0, dep0.value(i) ) : "fill" ) );
+                    sval += " @ " +( svalRank1( wdsDep0, dep0, i ) );
                 }
                 if ( bundle!=null ) {
-                    sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? String.valueOf(u.createDatum(ds.value(i))) : "fill" );
+                    sval = bundle.property(QDataSet.NAME,i)+" = " + ( svalRank1( wds, ds, i ) );
                     //sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? DataSetUtil.getStringValue( bundle.slice(i), ds.value(i) ) : "fill" ); //TODO: check this
                     aroot.insert(  new DefaultMutableTreeNode( sval), aroot.getChildCount() );
                 } else {
