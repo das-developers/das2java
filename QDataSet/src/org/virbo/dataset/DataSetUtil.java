@@ -16,6 +16,7 @@ import org.das2.datum.Units;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -1353,13 +1354,13 @@ public class DataSetUtil {
                         double millis= u.convertDoubleTo(Units.t1970, ds.value() );
                         Calendar cal= Calendar.getInstance();
                         cal.setTimeInMillis( (long)millis ); // TODO: check how to specify to nanos.
-                        result.append( String.format(format,cal) );
+                        result.append( String.format(Locale.US,format,cal) );
                     } else {
-                        result.append( String.format(format,ds.value()) );
+                        result.append( String.format(Locale.US,format,ds.value()) );
                         if ( u!=Units.dimensionless ) result.append( " " ).append(u.toString());
                     }
                 } else {
-                    result.append( String.format(format,ds.value()) );
+                    result.append( String.format(Locale.US,format,ds.value()) );
                 }
             } else {
                 if ( u!=null ) {
@@ -2117,17 +2118,17 @@ public class DataSetUtil {
         if ( df instanceof DefaultDatumFormatter ) {
             if ( form==null ) {
                 if ( "log".equals( yds.property(QDataSet.SCALE_TYPE) ) ) {
-                    s = String.format( "%9.3e", value ).trim();
+                    s = String.format( Locale.US, "%9.3e", value ).trim();
                 } else {
-                    s = String.format( "%9.3f", value ).trim();
+                    s = String.format( Locale.US, "%9.3f", value ).trim();
                 }
             } else {
                 try {
-                    s = String.format( form, value );
+                    s = String.format( Locale.US, form, value );
                 } catch ( IllegalFormatConversionException ex ) { // '%2X'
                     char c= ex.getConversion();
                     if ( c=='X' || c=='x' || c=='d' || c=='o' || c=='c' || c=='C'  ) {
-                        s = String.format( form, (long)value );
+                        s = String.format( Locale.US, form, (long)value );
                     } else {
                         //warning bad format string
                         s= df.format(d);

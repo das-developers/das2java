@@ -6,6 +6,7 @@
 package org.virbo.qstream;
 
 import java.nio.ByteBuffer;
+import java.util.Locale;
 
 /**
  * optimized for sending integers
@@ -21,7 +22,7 @@ public class AsciiIntegerTransferType extends AsciiTransferType {
     }
     
     public void write(double d, ByteBuffer buffer) {
-        String s= String.format( format, (int)d );
+        String s= String.format( Locale.US, format, (int)d );
         buffer.put( s.getBytes() );
         buffer.put( (byte)' ' );
     }
