@@ -423,8 +423,8 @@ public final class DatumUtil {
             double nn = Math.abs(n.doubleValue());
             
             double score;
-            if (nn > 20)
-                score = 20/nn;
+            if (nn > 100)  // favor 72 seconds over 1.2 minutes
+                score = 100/nn;
             else
                 score = nn;
             
