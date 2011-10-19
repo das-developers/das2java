@@ -330,7 +330,7 @@ public class FileStorageModelNew {
                     if ( !e.getMessage().contains("invalid time before year 0001") ) {
                         System.err.println(e);
                     }
-                    System.err.println("ignoring file "+ff +" because of error");
+                    System.err.println("ignoring file "+ff +" because of error when parsing as "+template);
                 }
                 monitor.setTaskProgress( i*10 + j * 10 / files1.length );
             }
