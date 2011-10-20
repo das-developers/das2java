@@ -961,8 +961,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 repaint();
             }
         };
-        row.addPropertyChangeListener(positionListener);
-        column.addPropertyChangeListener(positionListener);
+
+		  if(row != null)
+		     row.addPropertyChangeListener(positionListener);
+		  
+		  if(column != null)
+		     column.addPropertyChangeListener(positionListener);
     }
 
     /** TODO
