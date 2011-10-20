@@ -71,6 +71,7 @@ import java.io.*;
 import java.io.IOException;
 import java.nio.channels.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import org.das2.DasException;
@@ -128,12 +129,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             @Override
             public void mousePressed(MouseEvent e) {
                 //if (e.getButton() == MouseEvent.BUTTON3) {
-                int ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
                 Renderer r = null;
-                if ( ir>-1 ) {
-                    r= (Renderer) renderers.get(ir);
+                int ir;
+                synchronized ( DasPlot.this ) {
+                    ir = findRendererAt(getX() + e.getX(), getY() + e.getY());
+                    if ( ir>-1 ) {
+                        r= (Renderer) renderers.get(ir);
+                    }
+                    setFocusRenderer(r);
                 }
-                setFocusRenderer(r);
                 if (editRendererMenuItem != null) {
                     //TODO: check out SwingUtilities, I think this is wrong:
                     editRendererMenuItem.setText("Renderer Properties");
@@ -373,8 +377,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         for (int i = 0; i < messages.size(); i++) {
             MessageDescriptor message = (MessageDescriptor) messages.get(i);
 
+            List<Renderer> renderers1=  Arrays.asList( getRenderers() );
             Icon icon=null;
-            if ( message.renderer!=null && renderers.size()>1 ) {
+            if ( message.renderer!=null && renderers1.size()>1 ) {
                 icon= message.renderer.getListIcon();
             }
 
@@ -472,9 +477,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         drawContent(plotGraphics);
 
+        List<Renderer> renderers1= Arrays.asList(getRenderers());
+
         boolean noneActive = true;
-        for (int i = 0; i < renderers.size(); i++) {
-            Renderer rend = (Renderer) renderers.get(i);
+        for (int i = 0; i < renderers1.size(); i++) {
+            Renderer rend = (Renderer) renderers1.get(i);
             if (rend.isActive()) {
                 logger.log(Level.FINEST, "rendering #{0}: {1}", new Object[]{i, rend});
                 try {
@@ -497,7 +504,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         if (gridOver) {
             maybeDrawGrid(plotGraphics);
         }
-        if (renderers.isEmpty()) {
+        if (renderers1.isEmpty()) {
             postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
             logger.fine("dasPlot has no renderers");
         } else if (noneActive) {
@@ -510,10 +517,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * no renderer is found at the position.
      */
     public int findRendererAt(int x, int y) {
+        List<Renderer> renderers1= Arrays.asList(getRenderers());
+
         for (int i = 0; messages != null && i < messages.size(); i++) {
             MessageDescriptor message = (MessageDescriptor) messages.get(i);
             if ( message.bounds!=null && message.bounds.contains(x, y) && message.renderer != null) {
-                int result = this.renderers.indexOf(message.renderer);
+                int result = renderers1.indexOf(message.renderer);
                 if (result != -1) {
                     return result;
                 }
@@ -523,15 +532,15 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         for (int i = 0; legendElements != null && i < legendElements.size(); i++) {
             LegendElement legendElement = legendElements.get(i);
             if ( legendElement.bounds!=null && legendElement.bounds.contains(x, y) && legendElement.renderer != null) {
-                int result = this.renderers.indexOf(legendElement.renderer);
+                int result = renderers1.indexOf(legendElement.renderer);
                 if (result != -1) {
                     return result;
                 }
             }
         }
 
-        for (int i = renderers.size() - 1; i >= 0; i--) {
-            Renderer rend = (Renderer) renderers.get(i);
+        for (int i = renderers1.size() - 1; i >= 0; i--) {
+            Renderer rend = (Renderer) renderers1.get(i);
             if (rend.isActive() && rend.acceptContext(x, y)) {
                 return i;
             }
@@ -595,10 +604,11 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public Action DUMP_TO_FILE_ACTION = new AbstractAction("Dump Data Set to File") {
 
         public void actionPerformed(ActionEvent e) {
-            if (renderers.isEmpty()) {
+            List<Renderer> renderers1= Arrays.asList(getRenderers());
+            if (renderers1.isEmpty()) {
                 return;
             }
-            Renderer renderer = (Renderer) renderers.get(0);
+            Renderer renderer = (Renderer) renderers1.get(0);
             JFileChooser chooser = new JFileChooser();
             int result = chooser.showSaveDialog(DasPlot.this);
             if (result == JFileChooser.APPROVE_OPTION) {
@@ -718,8 +728,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         //paintImmediately(0, 0, getWidth(), getHeight());
         super.updateImmediately();
         logger.finer("DasPlot.updateImmediately");
-        for (int i = 0; i < renderers.size(); i++) {
-            Renderer rend = (Renderer) renderers.get(i);
+        List<Renderer> renderers1= Arrays.asList(getRenderers());
+        for (int i = 0; i < renderers1.size(); i++) {
+            Renderer rend = (Renderer) renderers1.get(i);
             rend.update();
         }
     }
@@ -807,8 +818,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     @Override
     protected void printComponent(Graphics g) {
         resetCacheImageBounds(true);
-        for (int i = 0; i < renderers.size(); i++) {
-            Renderer rend = (Renderer) renderers.get(i);
+        List<Renderer> renderers1= Arrays.asList(getRenderers());
+        for (int i = 0; i < renderers1.size(); i++) {
+            Renderer rend = (Renderer) renderers1.get(i);
             if (rend.isActive()) {
                 logger.log(Level.FINEST, "updating renderer #{0}: {1}", new Object[]{i, rend});
                 try {
@@ -1205,8 +1217,9 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                 setBounds(bounds);
                 SwingUtilities.invokeLater( new Runnable() {
                    public void run() {
-                        for ( int i=0; i<renderers.size(); i++ ) {
-                            ((Renderer)renderers.get(i)).refresh();
+                        List<Renderer> renderers1= Arrays.asList(getRenderers());
+                        for ( int i=0; i<renderers1.size(); i++ ) {
+                            ((Renderer)renderers1.get(i)).refresh();
                         }
                        invalidateCacheImage();
                    }
@@ -1377,7 +1390,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     /**
      * remove all the renderers from the dasPlot.
      */
-    public void removeRenderers() {
+    public synchronized void removeRenderers() {
         if (getCanvas() != null) {
             for ( Renderer rend: renderers ) {
                 rend.uninstallRenderer();
@@ -1404,12 +1417,12 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         return result;
     }
 
-    public Renderer getRenderer(int index) {
+    public synchronized Renderer getRenderer(int index) {
         return (Renderer) renderers.get(index);
     }
 
-    public Renderer[] getRenderers() {
-        return (Renderer[]) renderers.toArray(new Renderer[0]);
+    public synchronized Renderer[] getRenderers() {
+        return (Renderer[]) renderers.toArray(new Renderer[renderers.size()]);
     }
 
 
