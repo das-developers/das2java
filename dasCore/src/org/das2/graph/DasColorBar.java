@@ -129,10 +129,10 @@ public class DasColorBar extends DasAxis {
             return;
         }
         
-        int x = (int)Math.round(getColumn().getDMinimum());
-        int y = (int)Math.round(getRow().getDMinimum());
-        int width = (int)Math.round(getColumn().getDMaximum()) - x;
-        int height = (int)Math.round(getRow().getDMaximum()) - y;
+        int x = getColumn().getDMinimum();
+        int y = getRow().getDMinimum();
+        int width = getColumn().getDMaximum() - x;
+        int height = getRow().getDMaximum() - y;
         //if (image == null || image.getWidth() != width || image.getHeight() != height) {
         if (isHorizontal()) {
             image = type.getHorizontalScaledImage(width, height);
@@ -150,10 +150,10 @@ public class DasColorBar extends DasAxis {
     }
     
     protected Rectangle getAxisBounds() {
-        int x = (int)Math.round(getColumn().getDMinimum());
-        int y = (int)Math.round(getRow().getDMinimum());
-        int width = (int)Math.round(getColumn().getDMaximum()) - x;
-        int height = (int)Math.round(getRow().getDMaximum()) - y;
+        int x = getColumn().getDMinimum();
+        int y = getRow().getDMinimum();
+        int width = getColumn().getDMaximum() - x;
+        int height = getRow().getDMaximum() - y;
         Rectangle rc = new Rectangle(x, y, width, height);
         Rectangle bounds = super.getAxisBounds();
         bounds.add(rc);
