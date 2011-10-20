@@ -363,7 +363,7 @@ public class DatumRangeUtil {
         
         public boolean isTime( String string, int[] timearr ) throws ParseException {
             Matcher m;
-            Pattern hhmmssmmPattern= Pattern.compile( "(\\d+):(\\d\\d+):(\\d\\d+).(\\d+) )" );
+            Pattern hhmmssmmPattern= Pattern.compile( "(\\d+):(\\d\\d+):(\\d\\d+).(\\d+)" );
             Pattern hhmmssPattern= Pattern.compile( "(\\d+):(\\d\\d+):(\\d\\d+)" );
             Pattern hhmmPattern= Pattern.compile( "(\\d+):(\\d\\d+)" );
             Pattern hhPattern= Pattern.compile( "(\\d+):" );
