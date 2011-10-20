@@ -464,22 +464,13 @@ public class Datum implements Comparable {
     }
     
     /**
-     * returns true if the value is non NaN.
-     * @return true if the value is non NaN.
-     * @deprecated Use isFinite instead, or getValue.
-     */
-    public boolean isValid() {
-        return (value.doubleValue()!=java.lang.Double.NaN);
-    }
-    
-    /**
      * returns true if the value is finite, that is not INFINITY or NaN.
      * @return true if the value is finite, that is not INFINITY or NaN.
      */
     public boolean isFinite() {
         return ( value.doubleValue()!=java.lang.Double.POSITIVE_INFINITY )
         && ( value.doubleValue()!=java.lang.Double.NEGATIVE_INFINITY )
-        && ( value.doubleValue()!=java.lang.Double.NaN );
+        && ( !java.lang.Double.isNaN( value.doubleValue() ) );
     }
     
     /**
