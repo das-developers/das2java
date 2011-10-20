@@ -122,7 +122,7 @@ public abstract class Units {
     public static final Units cmps= new NumberUnits("cm/s");
     
     /**
-     * volts / m<sup>2</sup> Hz 
+     * Volts <sup>2</sup> m<sup>-2</sup> Hz<sup>-1</sup>
      */
     public static final Units v2pm2Hz= new NumberUnits("V!a2!nm!a-2!nHz!a-1");
     
@@ -130,7 +130,7 @@ public abstract class Units {
      * Watts / m<sup>2</sup>
      */
     public static final Units wpm2= new NumberUnits("W/m!a-2!n");
-    
+
     public static final Units inches = new NumberUnits("inch");
     
     public static final Units meters = new NumberUnits("m");
