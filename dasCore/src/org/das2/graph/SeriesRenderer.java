@@ -283,12 +283,12 @@ public class SeriesRenderer extends Renderer {
                     vds = (QDataSet) dataSet;
                 }
 
-            } else if (dataSet instanceof QDataSet) {
-                tds = (QDataSet) dataSet;
-            }
-
-            if ( vds.rank()!= 1 ) {
-                return;
+                if ( vds.rank()!= 1 ) {
+                    return;
+                }
+                
+            } else {
+                throw new IllegalArgumentException("Table Data Sets no longer supported in SeriesRenderer");
             }
             
             Units xUnits= SemanticOps.getUnits(xds);
