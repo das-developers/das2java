@@ -295,7 +295,11 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                         y = SemanticOps.getDatum( yds, yds.value(ij[1]) );
                         yAsString = nfy.format(y);
                     } else {
-                        zAsString = getZString(tds, x, y, null);
+                        if ( tds==null ) {
+                            zAsString= "N/A";
+                        } else {
+                            zAsString = getZString(tds, x, y, null);
+                        }
                     }
                     report = "x:" + xAsString + nl + "y:" + yAsString + nl + "z:" + zAsString;
                 } else {
