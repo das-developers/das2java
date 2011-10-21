@@ -166,10 +166,10 @@ public class DasColorBar extends DasAxis {
     
     
     public Shape getActiveRegion() {
-        int x = (int)Math.round(getColumn().getDMinimum());
-        int y = (int)Math.round(getRow().getDMinimum());
-        int width = (int)Math.round(getColumn().getDMaximum()) - x;
-        int height = (int)Math.round(getRow().getDMaximum()) - y;
+        int x = getColumn().getDMinimum();
+        int y = getRow().getDMinimum();
+        int width = getColumn().getWidth();
+        int height = getRow().getHeight();
         Rectangle bounds = primaryInputPanel.getBounds();
         bounds.translate(getX(), getY());
         Rectangle middleBounds = new Rectangle(x, y, width, height);
@@ -186,10 +186,10 @@ public class DasColorBar extends DasAxis {
         
         public void layoutContainer(Container parent) {
             super.layoutContainer(parent);
-            int x = (int)Math.round(getColumn().getDMinimum());
-            int y = (int)Math.round(getRow().getDMinimum());
-            int width = (int)Math.round(getColumn().getDMaximum()) - x;
-            int height = (int)Math.round(getRow().getDMaximum()) - y;
+            int x = getColumn().getDMinimum();
+            int y = getRow().getDMinimum();
+            int width = getColumn().getWidth();
+            int height = getRow().getHeight();
             Rectangle rc = new Rectangle(x - getX(), y - getY(), width, height);
             Rectangle bounds = primaryInputPanel.getBounds();
             bounds.add(rc);
