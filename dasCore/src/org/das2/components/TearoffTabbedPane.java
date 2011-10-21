@@ -212,10 +212,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                                 SwingUtilities.getWindowAncestor(TearoffTabbedPane.this).dispose();
                             } 
                         } else {
-                            if (desc.babysitter instanceof Window) {
-                                ((Window) desc.babysitter).dispose();
-                            }
-                            parentPane.dock(selectedComponent);
+                            throw new IllegalArgumentException("parentPane must not be null"); //findbugs pointed this out
                         }
                         
                     }
