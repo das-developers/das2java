@@ -280,7 +280,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                                 break;
                             }
                         }
-                        assert ( desc.babysitter!=null );
+                        if (desc==null) return;
                         if (desc.babysitter instanceof Window) {
                             Window babySitter = (Window) desc.babysitter;
                             babySitter.setVisible(false);
@@ -309,7 +309,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
                             }
                         }
-                        assert ( desc.babysitter!=null );
+                        if (desc==null) return;
                         if (desc.babysitter instanceof Window) {
                             ((Window) desc.babysitter).dispose();
                         } else if ( desc.babysitter instanceof TearoffTabbedPane ) {
