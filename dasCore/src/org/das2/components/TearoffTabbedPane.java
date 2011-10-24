@@ -95,19 +95,17 @@ public class TearoffTabbedPane extends JTabbedPane {
         babySitterC.setActionMap(am);
     }
 
-    class TabDesc {
+    private static class TabDesc {
 
         Icon icon;
         String title;
         String tip;
         int index;
         Container babysitter;
-        Component component;
 
-        TabDesc(String title, Icon icon, Component component, String tip, int index) {
+        TabDesc(String title, Icon icon, String tip, int index) {
             this.title = title;
             this.icon = icon;
-            this.component = component;
             this.tip = tip;
             this.index = index;
             this.babysitter = null;
@@ -120,7 +118,6 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     private TearoffTabbedPane(TearoffTabbedPane parent) {
         super();
-        Window w= SwingUtilities.getWindowAncestor(this);
         if (parent == null) {
             //TODO: need a way to remove mouse adapter when parent isn't JFrame
             MouseAdapter ma = getParentMouseAdapter();
@@ -197,12 +194,6 @@ public class TearoffTabbedPane extends JTabbedPane {
                 dockMenu.add(new JMenuItem(new AbstractAction("dock") {
 
                     public void actionPerformed(ActionEvent event) {
-                        TabDesc desc = null;
-
-                        for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
-                            Component key = (Component) i.next();
-                            TabDesc d = (TabDesc) tabs.get(key);
-                        }
 
                         if (parentPane != null) {
                             selectedComponent = getComponent(selectedTab);
@@ -615,25 +606,25 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     public void addTab(String title, Icon icon, Component component) {
         super.addTab(title, icon, component);
-        TabDesc td = new TabDesc(title, icon, component, null, indexOfComponent(component));
+        TabDesc td = new TabDesc(title, icon, null, indexOfComponent(component));
         tabs.put(component, td);
     }
 
     public void addTab(String title, Component component) {
         super.addTab(title, component);
-        TabDesc td = new TabDesc(title, null, component, null, indexOfComponent(component));
+        TabDesc td = new TabDesc(title, null, null, indexOfComponent(component));
         tabs.put(component, td);
     }
 
     public void insertTab(String title, Icon icon, Component component, String tip, int index) {
         super.insertTab(title, icon, component, tip, index);
-        TabDesc td = new TabDesc(title, icon, component, tip, index);
+        TabDesc td = new TabDesc(title, icon, tip, index);
         tabs.put(component, td);
     }
 
     public void addTab(String title, Icon icon, Component component, String tip) {
         super.addTab(title, icon, component, tip);
-        TabDesc td = new TabDesc(title, icon, component, tip, indexOfComponent(component));
+        TabDesc td = new TabDesc(title, icon, tip, indexOfComponent(component));
         tabs.put(component, td);
     }
 
@@ -641,16 +632,6 @@ public class TearoffTabbedPane extends JTabbedPane {
         for (Component key : tabs.keySet()) {
             TabDesc td = tabs.get(key);
             if (td.index == index) {
-                return key;
-            }
-        }
-        return null;
-    }
-
-    private Component getTabComponentByTitle(String title) {
-        for (Component key : tabs.keySet()) {
-            TabDesc td = tabs.get(key);
-            if (td.title == title) {
                 return key;
             }
         }
