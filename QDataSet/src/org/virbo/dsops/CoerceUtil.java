@@ -162,18 +162,6 @@ public class CoerceUtil {
                 return ds.property(name);
             }
 
-            public Object property(String name, int i0, int i1) {
-                return ds.property(name);
-            }
-
-            public Object property(String name, int i0, int i1, int i2) {
-                return ds.property(name);
-            }
-
-            public Object property(String name, int i0, int i1, int i2, int i3) {
-                return ds.property(name);
-            }
-
             public int length() {
                 return ds2.length();
             }
@@ -251,18 +239,6 @@ public class CoerceUtil {
 
             public Object property(String name, int i) {
                 return ds.property(name, i);
-            }
-
-            public Object property(String name, int i0, int i1) {
-                return ds.property(name, i0);
-            }
-
-            public Object property(String name, int i0, int i1, int i2) {
-                return ds.property(name, i0);
-            }
-
-            public Object property(String name, int i0, int i1, int i2, int i3) {
-                return ds.property(name, i0);
             }
 
             public int length() {
