@@ -74,7 +74,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         if ( name.equals(QDataSet.DELTA_MINUS) || name.equals(QDataSet.DELTA_PLUS)
                 || name.equals(QDataSet.DEPEND_0) ) {
             if ( value!=null && !( value instanceof QDataSet ) ) {
-                System.err.println( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet", name, value ) );
+                System.err.println( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet (%s)", name, value.toString() ) );
             }
         } 
     }
