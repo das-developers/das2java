@@ -4,6 +4,8 @@
  */
 package org.virbo.dsops;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.virbo.dataset.BundleDataSet.BundleDescriptor;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.das2.datum.Datum;
@@ -1204,7 +1206,21 @@ public class Ops {
      */
     public static QDataSet timegen(String baseTime, String cadence, int len0) throws ParseException {
         double base = TimeUtil.create(baseTime).doubleValue(Units.us2000);
-        double dcadence = Units.us2000.getOffsetUnits().parse(cadence).doubleValue(Units.us2000.getOffsetUnits());
+        String[] ss= cadence.split(" ");
+        
+        Datum cad= null;
+        if ( ss.length==2 ) {
+            try {
+                Units u= SemanticOps.lookupUnits(ss[1]);
+                cad= u.parse(ss[0]);
+            } catch ( ParseException ex ) {
+                // try using old code below.
+            }
+        }
+        if ( cad==null ) {
+            cad= Units.us2000.getOffsetUnits().parse(cadence);
+        }
+        double dcadence = cad.doubleValue(Units.us2000.getOffsetUnits());
 
         return taggen( base, dcadence, len0, Units.us2000 );
     }
@@ -1692,6 +1708,32 @@ public class Ops {
         }
 
         return result;
+    }
+
+    /**
+     * return fake position data for testing
+     * @param len
+     * @return
+     */
+    public static QDataSet ripplesVectorTimeSeries( int len ) {
+        QDataSet rip= ripples( len,100 );
+        ArrayDataSet x= ArrayDataSet.copy( DataSetOps.slice1(rip,20) );
+        ArrayDataSet y= ArrayDataSet.copy( DataSetOps.slice1(rip,30) );
+        ArrayDataSet z= ArrayDataSet.copy( DataSetOps.slice1(rip,40) );
+        x.putProperty( QDataSet.NAME, "X" );
+        y.putProperty( QDataSet.NAME, "Y" );
+        z.putProperty( QDataSet.NAME, "Z" );
+
+        MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.bundle( Ops.bundle( x, y), z );
+        QDataSet t;
+        try {
+            t = Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            result.putProperty(QDataSet.DEPEND_0,t);
+            return result;
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
+        
     }
 
     /**
@@ -3230,7 +3272,7 @@ public class Ops {
     /**
      * bundle the two datasets, adding if necessary a bundle dimension.  This
      * will try to bundle on the second dimension, unlike join.  This will also
-     * isolate the semmantics of bundle dimensions as it's introduced.
+     * isolate the semantics of bundle dimensions as it's introduced.
      * @param ds1
      * @param ds2
      * @return
@@ -3354,7 +3396,7 @@ public class Ops {
             if ( zname==null ) zname="data2";
             QDataSet result= bundle( bundle( x, y ), z );
             BundleDataSet.BundleDescriptor bds= (BundleDescriptor) result.property(QDataSet.BUNDLE_1);
-            bds.putProperty( "CONTEXT_0", 2, xname+","+yname );
+            bds.putProperty( "CONTEXT_0", 2, xname+","+yname ); // note this is a string, not a QDataSet.  This is sloppy, but probably okay for now.
             bds.putProperty( QDataSet.NAME, 0, xname );
             bds.putProperty( QDataSet.NAME, 1, yname );
             bds.putProperty( QDataSet.NAME, 2, zname );
