@@ -776,13 +776,17 @@ public class DataSetOps {
                 throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
             }
         }
-
         int ids= -1;
-        for ( int i=0; i<bundle1.length(); i++ ) {
-            if ( bundle1.property(QDataSet.DEPEND_0,i)!=null ) ids=i;
-            if ( bundle1.property(QDataSet.CONTEXT_0,i)!=null ) ids=i;
+        if ( bundle1!=null ) {
+            for ( int i=0; i<bundle1.length(); i++ ) {
+                if ( bundle1.property(QDataSet.DEPEND_0,i)!=null ) ids=i;
+                if ( bundle1.property(QDataSet.CONTEXT_0,i)!=null ) ids=i;
+            }
+            if ( ids==-1 ) ids= bundle1.length()-1;
+        } else {
+            ids= bundleDs.length(0)-1; // this would have been a NullPointerException before, thanks findbugs
         }
-        if ( ids==-1 ) ids= bundle1.length()-1;
+        
         return unbundle(bundleDs,ids);
     }
 
