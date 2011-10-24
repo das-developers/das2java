@@ -901,7 +901,14 @@ public class DataSetOps {
         if ( bundle.length(j)==0 || !highRank ) {
             if ( bundleDs instanceof BundleDataSet ) {
                 QDataSet r= ((BundleDataSet)bundleDs).unbundle(j);
-                return r;
+                QDataSet dep0= (QDataSet) bundleDs.property( QDataSet.DEPEND_0 );
+                if ( dep0!=null && r.property(QDataSet.DEPEND_0)==null ) {
+                    MutablePropertyDataSet rc= new DataSetWrapper(r);
+                    rc.putProperty( QDataSet.DEPEND_0, dep0 );
+                    return rc;
+                } else {
+                    return r;
+                }
 
             } else {
                 MutablePropertyDataSet result=null;
