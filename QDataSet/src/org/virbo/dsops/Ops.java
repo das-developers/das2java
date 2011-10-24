@@ -1211,7 +1211,7 @@ public class Ops {
         Datum cad= null;
         if ( ss.length==2 ) {
             try {
-                Units u= SemanticOps.lookupUnits(ss[1]);
+                Units u= SemanticOps.lookupUnits(ss[1]); 
                 cad= u.parse(ss[0]);
             } catch ( ParseException ex ) {
                 // try using old code below.
