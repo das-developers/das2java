@@ -1711,7 +1711,26 @@ public class Ops {
     }
 
     /**
+     * return fake rank 1 data timeseries for testing
+     * @param len
+     * @return
+     */
+    public static QDataSet ripplesTimeSeries( int len ) {
+        QDataSet rip= ripples( len,100 );
+        ArrayDataSet result= ArrayDataSet.copy( DataSetOps.slice1(rip,20) );
+        QDataSet t;
+        try {
+            t = Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            result.putProperty(QDataSet.DEPEND_0,t);
+            return result;
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
      * return fake position data for testing
+     * result is rank 2 bundle [len,3]
      * @param len
      * @return
      */
@@ -1734,6 +1753,31 @@ public class Ops {
             throw new RuntimeException(ex);
         }
         
+    }
+
+    /**
+     * return fake position data for testing
+     * result is rank 2 bundle [len,27]
+     * @param len
+     * @return
+     */
+    public static QDataSet ripplesSpectrogramTimeSeries( int len ) {
+        QDataSet rip= ripples( len,100 );
+        ArrayDataSet result= ArrayDataSet.copy( DataSetOps.leafTrim( rip,0,27 ) );
+        result.putProperty( QDataSet.NAME, "Flux" );
+        MutablePropertyDataSet y= DataSetOps.makePropertiesMutable( Ops.pow( DataSetUtil.asDataSet(10), Ops.linspace(1,4,27 ) ) );
+        y.putProperty( QDataSet.LABEL, "Energy" );
+        result.putProperty( QDataSet.DEPEND_1, y );
+
+        QDataSet t;
+        try {
+            t = Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            result.putProperty(QDataSet.DEPEND_0,t);
+            return result;
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
+
     }
 
     /**
