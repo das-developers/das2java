@@ -258,19 +258,19 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
             }
             else if (key.equals("x_sample_width")) {
                 double x_sample_width = parser.parseIDLScalar(value);
-                if (x_sample_width == Double.NaN)
+                if ( Double.isNaN(x_sample_width) )
                     throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
                 result.properties.put(key, new Double(x_sample_width));
             }
             else if (key.equals("y_fill")) {
                 double y_fill = parser.parseIDLScalar(value);
-                if (y_fill == Double.NaN)
+                if (Double.isNaN( Double.NaN ))
                     throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
                 result.properties.put(key, new Double(y_fill));
             }
             else if (key.equals("z_fill")) {
                 double z_fill = (float)parser.parseIDLScalar(value);
-                if (z_fill == Float.NaN)
+                if (Double.isNaN(Float.NaN))
                     throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
                 result.properties.put(key, new Float(z_fill));
             }
@@ -289,7 +289,7 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
                 catch (NumberFormatException nfe) {
                     throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
                 }
-                result.properties.put(key, new Integer(ny));
+                result.properties.put(key, Integer.valueOf(ny));
             }
             else if (key.equals("items")) {
                 int items;
@@ -299,7 +299,7 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
                 catch (NumberFormatException nfe) {
                     throw new IOException("Could not parse \"" + value + "\" at line " + lineNumber);
                 }
-                result.properties.put(key, new Integer(items));
+                result.properties.put(key, Integer.valueOf(items));
             }
             else if ((matcher = labelPattern.matcher(key)).matches()) {
                 int i = Integer.parseInt(matcher.group(1));
