@@ -279,7 +279,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
 
         Rectangle axisBounds= DasDevicePosition.toRectangle( getRow(), getColumn() );
-        axisBounds.width= Math.max( axisBounds.width, mrect.width ); // don't limit width because of outside NE
+        axisBounds.width= Math.max( axisBounds.width, mrect.x+mrect.width-axisBounds.x ); // don't limit width because of outside NE
         Rectangle2D rr= mrect.createIntersection(axisBounds);
 
         return new Rectangle( (int)rr.getX(),(int)rr.getY(),(int)rr.getWidth(),(int)rr.getHeight() );
