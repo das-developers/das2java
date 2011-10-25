@@ -25,7 +25,7 @@ public class Legend extends DasCanvasComponent {
     
     final static Logger logger= DasLogger.getLogger( DasLogger.GRAPHICS_LOG );
     
-    class LegendElement {
+    private static class LegendElement {
         Icon icon;
         Psym psym;
         PsymConnector psymConnector;
@@ -221,8 +221,6 @@ public class Legend extends DasCanvasComponent {
         }
         
         g.setColor( color0 );
-        int width= maxWidth+10+1;
-        int height= y;
         
         getDasMouseInputAdapter().paint(g1);
         
