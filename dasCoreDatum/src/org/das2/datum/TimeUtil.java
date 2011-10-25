@@ -906,7 +906,7 @@ public final class TimeUtil {
             
             try {
                 if ( tok[i].length()>0 && Character.isLetter(tok[i].charAt(0) ) ) {
-                    throw new NumberFormatException("must start with a number: "+tok); // caught immediately.
+                    throw new NumberFormatException("must start with a number: "+tok[i]); // caught immediately.
                 }
                 value = Double.parseDouble(tok[i]);
             } catch (NumberFormatException e) {
