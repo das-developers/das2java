@@ -24,9 +24,6 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
 import java.awt.image.WritableRaster;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
@@ -519,7 +516,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
      */
     synchronized void calcSelectionArea() {
         //System.err.println("in calc selection area");
-        long t0= System.currentTimeMillis();
+        //long t0= System.currentTimeMillis();
         if ( plotImage==null ) return;
         int w= plotImage.getWidth();
         int h= plotImage.getHeight();
