@@ -111,7 +111,6 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
      * @param orientation should be one of AttachedLabel.TOP, AttachedLabel.BOTTOM, AttachedLabel.LEFT, AttachedLabel.RIGHT
      */
     public void setOrientation(int orientation) {
-        boolean oldIsHorizontal = isHorizontal();
         setOrientationInternal(orientation);
     }
     
@@ -237,7 +236,6 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         Font labelFont = getLabelFont();
         
         int tickLengthMajor = labelFont.getSize() * 2 / 3;
-        int tickLengthMinor = tickLengthMajor / 2;
         
         if (!axisLabel.equals("")) {
             Graphics2D g2 = (Graphics2D)g.create();
@@ -284,7 +282,6 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         Font labelFont = getLabelFont();
         
         int tickLengthMajor= labelFont.getSize()*2/3;
-        int tickLengthMinor = tickLengthMajor / 2;
         
         if (!axisLabel.equals("")) {
             Graphics2D g2 = (Graphics2D)g.create();
@@ -382,11 +379,7 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
     }
     
     private Rectangle getHorizontalLabelBounds() {
-        int topPosition = getRow().getDMinimum() - 1;
-        int bottomPosition = getRow().getDMaximum();
         DasDevicePosition range = getColumn();
-        int DMax = range.getDMaximum();
-        int DMin = range.getDMinimum();
         
         boolean bottomLabel = (orientation == BOTTOM && !axisLabel.equals(""));
         boolean topLabel = (orientation == TOP && !axisLabel.equals(""));
@@ -421,12 +414,7 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
     private Rectangle getVerticalLabelBounds() {
         boolean leftLabel = (orientation == LEFT && !axisLabel.equals(""));
         boolean rightLabel = (orientation == RIGHT && !axisLabel.equals(""));
-        
-        int leftPosition = getColumn().getDMinimum() - 1;
-        int rightPosition = getColumn().getDMaximum();
-        int DMax= getRow().getDMaximum();
-        int DMin= getRow().getDMinimum();
-        
+                
         Rectangle bounds;
         
         int offset = getTitlePositionOffset();
