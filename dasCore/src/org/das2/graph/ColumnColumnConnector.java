@@ -23,11 +23,8 @@ import org.das2.datum.Units;
  * to show a zoom in above of a context below.
  */
 public class ColumnColumnConnector extends DasCanvasComponent {
-    
-    private DasCanvas parent;
-    
+        
     private DasRow topRow;
-    private DasRow bottomRow;
     
     private DasPlot topPlot;
     private final DasPlot bottomPlot;
@@ -43,7 +40,6 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         this.topPlot= topPlot;
         this.topRow= topRow;
         this.bottomPlot= bottomPlot;
-        this.parent= parent;
         
         setForeground( Color.LIGHT_GRAY );
         setRow( topRow );
@@ -146,7 +142,6 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         int y1= topRow.getDMaximum()+hlen;
         int y2= bottomPlot.getRow().getDMinimum()-1-hlen;
         int y3= bottomPlot.getRow().getDMinimum()-1;
-        int y4= bottomPlot.getRow().getDMaximum();
 
         GeneralPath gp= new GeneralPath();
         GeneralPath fillPath= new GeneralPath();
@@ -255,8 +250,6 @@ public class ColumnColumnConnector extends DasCanvasComponent {
             y6= (int)( bottomPlot.getYAxis().transform( drtop.min() )+0.00001 );
             
             if ( curtainOpacityPercent > 0 ) {
-                int xLeft= (int)topPlot.getXAxis().getColumn().getDMinimum();
-                int xRight= (int)bottomPlot.getXAxis().getColumn().getDMaximum();
                 Color canvasColor= getCanvas().getBackground();
                 Color curtainColor= new Color( canvasColor.getRed(), canvasColor.getGreen(), canvasColor.getBlue(),
                         curtainOpacityPercent * 255 / 100 );
