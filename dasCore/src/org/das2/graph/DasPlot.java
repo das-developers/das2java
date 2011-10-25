@@ -245,34 +245,26 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         mrect = new Rectangle(boundRect);
         mrect.width += iconColumnWidth;
         if ( legendPosition==LegendPosition.NE || legendPosition==LegendPosition.NW ) {
-            msgy = yAxis.getRow().getDMinimum() + em/2;
-            mrect.y= msgy;
+            mrect.y= yAxis.getRow().getDMinimum() + em/2;
             if ( legendPosition==LegendPosition.NE ) {
                 mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
-                msgx =    xAxis.getColumn().getDMaximum() - em - mrect.width;
 
             } else if ( legendPosition==LegendPosition.NW ) {
                 mrect.x = xAxis.getColumn().getDMinimum() + em ;
-                msgx    = xAxis.getColumn().getDMinimum() + em + maxIconWidth + em/4;
             }
         } else if ( legendPosition==LegendPosition.SE || legendPosition==LegendPosition.SW ) {
-            msgy =   yAxis.getRow().getDMaximum() - boundRect.height - em; // note em not em/2 is intentional
-            mrect.y= msgy;
+            mrect.y=  yAxis.getRow().getDMaximum() - boundRect.height - em; // note em not em/2 is intentional
             if ( legendPosition==LegendPosition.SE ) {
                 mrect.x = xAxis.getColumn().getDMaximum() - em - mrect.width;
-                msgx =    xAxis.getColumn().getDMaximum() - em - mrect.width ;
 
             } else if ( legendPosition==LegendPosition.SW ) {
                 mrect.x = xAxis.getColumn().getDMinimum() + em ;
-                msgx =    xAxis.getColumn().getDMinimum() + em + maxIconWidth + em/4;
             }
 
         } else if ( legendPosition==LegendPosition.OutsideNE ) {
             mrect.x = xAxis.getColumn().getDMaximum() + em + maxIconWidth;
             boundRect.x = mrect.x;
-            msgx = mrect.x;
-            msgy = yAxis.getRow().getDMinimum(); // em/5 determined by experiment.
-            mrect.y= msgy;
+            mrect.y= yAxis.getRow().getDMinimum(); // em/5 determined by experiment.
 
         } else {
             throw new IllegalArgumentException("not supported: "+legendPosition);
