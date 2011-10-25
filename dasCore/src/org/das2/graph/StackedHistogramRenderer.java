@@ -395,21 +395,24 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             if ( rdUnits instanceof LocationUnits ) {
                 rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
             }
-            
-            try {
-                QDataSet result= null;
-                if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
-                    logger.fine("using rebinner "+highResRebinner);
+
+            throw new RuntimeException("Not supported, since the introduction of QDataSet into das2.");
+
+            //try {
+                //QDataSet result= null;
+                //if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
+                    //logger.fine("using rebinner "+highResRebinner);
                     //result= highResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
-                } else {
-                    logger.fine("using rebinner "+lowResRebinner);
+                //} else {
+                    //logger.fine("using rebinner "+lowResRebinner);
                     //result= lowResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
-                }
-                return result;
-            } catch ( Exception e ) {
-                DasExceptionHandler.handle(e);
-                return null;
-            }
+                //}
+                
+                //return result;
+            //} catch ( Exception e ) {
+            //    DasExceptionHandler.handle(e);
+            //    return null;
+            //}
         }
         
     }
