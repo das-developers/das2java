@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * uses HTTP, and doesn't download resources to cache
@@ -56,8 +57,9 @@ public class AppletHttpProtocol implements WebProtocol {
         Map<String, String> result = new HashMap<String, String>();
 
         Map<String, List<String>> fields = connect.getHeaderFields();
-        for (String key : fields.keySet()) {
-            List<String> value = fields.get(key);
+        for (Entry<String,List<String>> e : fields.entrySet()) {
+            String key= e.getKey();
+            List<String> value = e.getValue();
             result.put(key, value.get(0));
         }
 
