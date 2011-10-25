@@ -127,9 +127,10 @@ public class FFTUtil {
         
     static QDataSet getFrequencyDomainTags( QDataSet timeDomainTags ) {
         Units timeUnit=null;
-        if ( timeDomainTags!=null ) {
-            timeUnit= (Units) timeDomainTags.property( QDataSet.UNITS );
+        if ( timeDomainTags==null ) {
+            throw new NullPointerException("null timeDomainTags passed into getFrequencyDomainTags");
         }
+        timeUnit= (Units) timeDomainTags.property( QDataSet.UNITS );
         if ( timeUnit==null ) timeUnit= Units.dimensionless;
 
         double[] result= new double[timeDomainTags.length()];
