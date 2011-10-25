@@ -471,7 +471,7 @@ public class ComplexFloatFFT_Mixed extends ComplexFloatFFT{
         int m = n / factor;
         int q = n / product;
         int p_1 = product / factor;
-        int jump = (factor - 1) * p_1;
+
         
         float tau = (float)(sign * Math.sqrt(3.0) / 2.0);
         int i = in0, j = out0;
