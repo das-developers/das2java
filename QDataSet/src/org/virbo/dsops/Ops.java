@@ -79,13 +79,9 @@ public class Ops {
      * @param op
      * @return
      */
-    public static final MutablePropertyDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
+    public static MutablePropertyDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
         QDataSet wds= DataSetUtil.weightsDataSet(ds1);
-        Units u = (Units) ds1.property(QDataSet.UNITS);
-        if (u == null) {
-            u = Units.dimensionless;
-        }
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
 
         double fill= -1e38;
@@ -2512,10 +2508,6 @@ public class Ops {
         }
 
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
-        Units u = (Units) ds.property(QDataSet.UNITS);
-        if (u == null) {
-            u = Units.dimensionless;
-        }
         ComplexArray.Double ca = FFTUtil.fft( fft, ds );
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -2551,10 +2543,6 @@ public class Ops {
      */
     public static QDataSet fft(QDataSet ds) {
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
-        Units u = (Units) ds.property(QDataSet.UNITS);
-        if (u == null) {
-            u = Units.dimensionless;
-        }
         ComplexArray.Double cc = FFTUtil.fft(fft, ds);
         DDataSet result = DDataSet.createRank2(ds.length(), 2);
         for (int i = 0; i < ds.length(); i++) {
