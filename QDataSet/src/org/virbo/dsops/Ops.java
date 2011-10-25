@@ -1442,7 +1442,7 @@ public class Ops {
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
         if ( ds1==null && ds2!=null ) return ds2;
-        if ( ds1!=null && ds2==null ) return ds1;
+        if ( ds1==null && ds2==null ) throw new NullPointerException("both ds1 and ds2 are null");
         if ( ds1 instanceof FDataSet && ds2 instanceof FDataSet ) {
             FDataSet result = (FDataSet) ArrayDataSet.copy(ds1);
             if ( ds2.rank()==0 && ds1.rank()==1 ) {
@@ -3323,6 +3323,7 @@ public class Ops {
      * @return
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2 ) {
+        if ( ds1==null && ds2==null ) throw new NullPointerException("both ds1 and ds2 are null");
         if ( ds1==null && ds2!=null ) {
             BundleDataSet ds;
             if ( ds2.rank()==0 ) {
@@ -3521,6 +3522,7 @@ public class Ops {
      * @return rank N+1 dataset
      */
     public static QDataSet join(QDataSet ds1, QDataSet ds2) {
+        if ( ds1==null && ds2==null ) throw new NullPointerException("both ds1 and ds2 are null");
         if ( ds1==null && ds2!=null ) {
             JoinDataSet ds= new JoinDataSet( ds2.rank()+1 );
             ds.join(ds2);
