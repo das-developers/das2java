@@ -237,7 +237,6 @@ public class DasAnnotation extends DasCanvasComponent {
             head.translate(-getColumn().getDMinimum(), -getRow().getDMinimum());
             int tx = Math.min(head.x, r.x + r.width * 2 / 3);
             tx = Math.max(tx, r.x + r.width * 1 / 3);
-            Point tail = new Point(tx, r.y + r.height);
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setClip(null);
             //Arrow.paintArrow(g2, head, tail, em2);
@@ -325,8 +324,8 @@ public class DasAnnotation extends DasCanvasComponent {
         if (f == null) {
             f = getCanvas().getBaseFont();
         }
-        Font newFont= f;
         if ( fontSize>0 ) f= f.deriveFont(fontSize);
+        Font newFont= f;
         Graphics g= this.getGraphics();
         if ( g==null ) return;
         g.setFont(newFont);
