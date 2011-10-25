@@ -56,53 +56,59 @@ public class FTPFileSystem extends WebFileSystem {
     private String[] parseLsl( String dir, File listing ) throws IOException {
         InputStream in= new FileInputStream( listing );
         
-        BufferedReader reader= new BufferedReader( new InputStreamReader( in ) );
-        
-        String aline= reader.readLine();
-        
-        boolean done= aline==null;
-        
-        String types="d-";
-        
-        long bytesRead= 0;
-        long totalSize;
-        long sumSize=0;
-        
+        BufferedReader reader=null;
         List result= new ArrayList( 20 );
-        while ( ! done ) {
-            
-            bytesRead= bytesRead+ aline.length() + 1;
-            
-            aline= aline.trim();
-            
-            if ( aline.length() == 0 ) {
-                done=true;
-            } else {
-                
-                char type= aline.charAt(0);
-                if ( type == 't' ) {
-                    if ( aline.indexOf( "total" ) == 0 ) {
-                        //totalSize= Long.parseLong( aline.substring( 5 ).trim() );
+
+        try {
+            reader= new BufferedReader( new InputStreamReader( in ) );
+
+            String aline= reader.readLine();
+
+            boolean done= aline==null;
+
+            String types="d-";
+
+            long bytesRead= 0;
+            long totalSize;
+            long sumSize=0;
+
+            while ( ! done ) {
+
+                bytesRead= bytesRead+ aline.length() + 1;
+
+                aline= aline.trim();
+
+                if ( aline.length() == 0 ) {
+                    done=true;
+                } else {
+
+                    char type= aline.charAt(0);
+                    if ( type == 't' ) {
+                        if ( aline.indexOf( "total" ) == 0 ) {
+                            //totalSize= Long.parseLong( aline.substring( 5 ).trim() );
+                        }
                     }
-                }
-                
-                if ( types.indexOf(type)!=-1 ) {
-                    int i= aline.lastIndexOf( ' ' );
-                    String name= aline.substring( i+1 );
-                    //long size= Long.parseLong( aline.substring( 31, 31+12 ) ); // tested on: linux
-                    boolean isFolder= type=='d';
-                    
-                    result.add( name + ( isFolder ? "/" : "" ) );
-                    
-                    //sumSize= sumSize + size;
-                    
-                }
-                
-                aline= reader.readLine();
-                done= aline==null;
-                
-            } // while
-            
+
+                    if ( types.indexOf(type)!=-1 ) {
+                        int i= aline.lastIndexOf( ' ' );
+                        String name= aline.substring( i+1 );
+                        //long size= Long.parseLong( aline.substring( 31, 31+12 ) ); // tested on: linux
+                        boolean isFolder= type=='d';
+
+                        result.add( name + ( isFolder ? "/" : "" ) );
+
+                        //sumSize= sumSize + size;
+
+                    }
+
+                    aline= reader.readLine();
+                    done= aline==null;
+
+                } // while
+
+            }
+        } finally {
+            if ( reader!=null ) reader.close();
         }
         return (String[])result.toArray(new String[result.size()]);
     }
