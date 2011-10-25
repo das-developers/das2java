@@ -81,9 +81,6 @@ public class PitchAngleDistributionRenderer extends Renderer {
 
         if ( yunits.isConvertableTo(Units.degrees) && !xunits.isConvertableTo(Units.degrees) ) { // swap em
             rds= SemanticOps.xtagsDataSet(tds);
-            ads= SemanticOps.ytagsDataSet(tds);
-            xunits= SemanticOps.getUnits(ads);
-            yunits= SemanticOps.getUnits(rds);
         }
 
         QDataSet xdesc= DDataSet.wrap( new double[] { 0, Ops.extent(rds).value(1) } );
