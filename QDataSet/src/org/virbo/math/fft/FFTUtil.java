@@ -75,8 +75,6 @@ public class FFTUtil {
     public static QDataSet fftPower( GeneralFFT fft, QDataSet vds, QDataSet weights ) {
         if ( vds.length()>fft.n) vds= vds.trim(0,fft.n);
         double [] yreal= new double[ fft.n ];
-        Units yUnits= SemanticOps.getUnits(vds);
-        double [] yimag= new double[ fft.n ];
         for ( int i=0; i<fft.n; i++ ) yreal[i]= vds.value( i ) * weights.value( i );
         ComplexArray.Double ca= ComplexArray.newArray(yreal);
         fft.transform( ca );
@@ -100,7 +98,6 @@ public class FFTUtil {
     
     public static ComplexArray.Double fft( GeneralFFT fft, QDataSet vds, Units units ) {
         double [] yreal= new double[ vds.length() ];
-        double [] yimag= new double[ vds.length() ];
         for ( int i=0; i<vds.length(); i++ ) yreal[i]= vds.value( i );
         ComplexArray.Double ca= ComplexArray.newArray(yreal);
         fft.transform( ca );
