@@ -305,7 +305,6 @@ public class DataRange implements Cloneable {
         }
         
         if ( pushHistory && !valueIsAdjusting ) {
-            List oldHistory= new ArrayList( history );
             if ( history.size()==0 || !this.range.equals(history.peek()) ) history.push(this.range);
             DasLogger.getLogger( DasLogger.GUI_LOG ).fine( "push history: "+range );
             forwardHistory.removeAllElements();
