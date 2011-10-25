@@ -14,6 +14,7 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.das2.util.monitor.ProgressMonitor;
 
 /**
@@ -59,8 +60,9 @@ public class DefaultHttpProtocol implements WebProtocol {
             Map<String, String> result = new HashMap<String, String>();
 
             Map<String, List<String>> fields = connect.getHeaderFields();
-            for (String key : fields.keySet()) {
-                List<String> value = fields.get(key);
+            for (Entry<String,List<String>> e : fields.entrySet()) {
+                String key= e.getKey();
+                List<String> value = e.getValue();
                 result.put(key, value.get(0));
             }
 
