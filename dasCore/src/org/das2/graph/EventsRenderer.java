@@ -23,14 +23,12 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
 import org.das2.datum.Units;
-import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
-import test.graph.PlotDemo;
 
 
 /**
@@ -307,7 +305,6 @@ public class EventsRenderer extends Renderer {
         QDataSet xmins= DataSetOps.unbundle( ds,0 );
         QDataSet xmaxs= DataSetOps.unbundle( ds,1 );
         QDataSet color= ds.length(0)>3 ? DataSetOps.unbundle( ds,2 ) : null;
-        QDataSet msgs= DataSetOps.unbundle(ds,ds.length(0)-1);
 
         if ( vds==null && lastException!=null ) {
             renderException( g, xAxis, yAxis, lastException );
@@ -322,7 +319,6 @@ public class EventsRenderer extends Renderer {
             
             QDataSet xds= xmins;
             Units xunits= SemanticOps.getUnits(xds);
-            Units units= SemanticOps.getUnits(msgs);
 
             if ( vds.length()>0 ) {
                 
