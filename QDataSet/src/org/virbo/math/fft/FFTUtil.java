@@ -135,7 +135,7 @@ public class FFTUtil {
 
         double[] result= new double[timeDomainTags.length()];
         result[0]= 0.;
-        double T= timeDomainTags==null ? 1 : timeDomainTags.value(1) - timeDomainTags.value(0);
+        double T= timeDomainTags.value(1) - timeDomainTags.value(0);
         int n= result.length;
         int n21= n/2+1;
         for ( int i=0; i<n21; i++ ) {
