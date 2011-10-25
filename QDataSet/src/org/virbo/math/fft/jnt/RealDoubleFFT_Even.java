@@ -16,10 +16,10 @@ public class RealDoubleFFT_Even extends RealDoubleFFT {
   /** Create an FFT for transforming n points of real, double precision data. */
   public RealDoubleFFT_Even(int n){      
     super(n);
-    if (true) throw new RuntimeException("Not verified--and it looks bad!");
     if (n%2 != 0)
       throw new IllegalArgumentException(n+" is not even");
     fft = new ComplexDoubleFFT_Mixed(n/2);
+    if (true) throw new RuntimeException("Not verified--and it looks bad!");
   }
 
   /** Compute the Fast Fourier Transform of data leaving the result in data. */
