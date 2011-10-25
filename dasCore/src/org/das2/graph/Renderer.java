@@ -365,7 +365,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
         String s;
         String message;
-        FontMetrics fm = g.getFontMetrics();
 
         if (e instanceof NoDataInIntervalException) {
             s = "no data in interval";
