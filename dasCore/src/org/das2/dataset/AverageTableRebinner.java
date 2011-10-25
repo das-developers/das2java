@@ -92,9 +92,8 @@ public class AverageTableRebinner implements DataSetRebinner {
         Units xunits= SemanticOps.getUnits( xds );
         Units yunits= SemanticOps.getUnits( yds );
 
-        UnitsConverter xc= xunits.getConverter(ddX.getUnits());
-
         if ( ddX != null && tds.length() > 0 ) {
+            UnitsConverter xc= xunits.getConverter(ddX.getUnits());
             QDataSet bounds= SemanticOps.bounds(tds);
             double start = xc.convert( bounds.value(0,0) );
             double end = xc.convert( bounds.value(0,1) );
