@@ -401,7 +401,15 @@ public class AsciiParser {
      * @throws java.io.IOException
      */
     public DelimParser setDelimParser(String filename, String delim) throws IOException {
-        return setDelimParser(new FileReader(filename), delim);
+        FileReader r= null;
+        DelimParser result=null;;
+        try {
+            r= new FileReader(filename);
+            result= setDelimParser(r, delim);
+        } finally {
+            if ( r!=null ) r.close();
+        }
+        return result;
     }
 
     /**
@@ -439,7 +447,7 @@ public class AsciiParser {
         for (int i = 0; i < fieldCount; i++) {
             units[i] = Units.dimensionless;
         }
-        StringBuffer regexBuf = new StringBuffer();
+        StringBuilder regexBuf = new StringBuilder();
         regexBuf.append("\\s*");
         for (int i = 0; i < fieldCount - 1; i++) {
             regexBuf.append("(" + decimalRegex + ")[\\s+,+]\\s*");
@@ -528,9 +536,7 @@ public class AsciiParser {
         }
 
         int[] co = new int[columnWidths.length];
-        for (int i = 0; i < columnWidths.length; i++) {
-            co[i] = columnOffsets[i];
-        }
+        System.arraycopy(columnOffsets, 0, co, 0, columnWidths.length);
 
         this.units = new Units[fieldCount];
         for (int i = 0; i < fieldCount; i++) {
@@ -961,7 +967,7 @@ public class AsciiParser {
      * @param regex regular expression like \\s+
      * @return string array containing the fields.
      */
-    private static final String[] split(String string, String regex) {
+    private static String[] split(String string, String regex) {
         String[] ss = string.trim().split(regex);
         if (string.endsWith(regex)) {
             String[] ss1 = new String[ss.length + 1];
@@ -1224,6 +1230,7 @@ public class AsciiParser {
             return ( ifield == fields.length && index==len ) ;
         }
 
+        @Override
         public String toString() {
             return "AsciiParser.DelimParser: regex="+this.delimRegex;
         }
@@ -1301,6 +1308,7 @@ public class AsciiParser {
             }
         }
 
+        @Override
         public String toString() {
             return "RegexParser regex="+this.recordPattern+"";
         }
