@@ -166,7 +166,7 @@ public abstract class AbstractDataSetCache implements DataSetCache {
             CacheTag ctTest= entryTest.cacheTag;
             if ( ctTest.range.min().equals(t1) && 
                  ( ( ct.resolution==null && ctTest.resolution==null ) || 
-                    ct.resolution.equals( ctTest.resolution ) ) ) {
+                    ( ct.resolution!=null && ct.resolution.equals( ctTest.resolution ) ) ) ) {
                 ds= DataSetUtil.append( ds, entryTest.data );
                 t1= ctTest.range.max();
             }
