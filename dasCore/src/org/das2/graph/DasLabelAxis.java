@@ -254,9 +254,6 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
 
         Font labelFont = getTickLabelFont();
 
-        double dataMax = dataRange.getMaximum();
-        double dataMin = dataRange.getMinimum();
-
         TickVDescriptor ticks = getTickV();
 
         if (bottomTicks) {
@@ -267,7 +264,6 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         }
 
         int tickLengthMajor = labelFont.getSize() * 2 / 3;
-        int tickLengthMinor = tickLengthMajor / 2;
         int tickLength;
 
         String[] llabels= tickFormatter( ticks.tickV, getDatumRange() );
@@ -336,9 +332,6 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
 
         Font labelFont = getTickLabelFont();
 
-        double dataMax = dataRange.getMaximum();
-        double dataMin = dataRange.getMinimum();
-
         TickVDescriptor ticks = getTickV();
 
         if (leftTicks) {
@@ -349,14 +342,12 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         }
 
         int tickLengthMajor = labelFont.getSize() * 2 / 3;
-        int tickLengthMinor = tickLengthMajor / 2;
         int tickLength;
 
         String[] llabels= tickFormatter( labels, getDatumRange() );
         for (int i = 0; i < ticks.tickV.getLength(); i++) {
             Datum datum = ticks.tickV.get(i);
 
-            int w = getInterItemSpace();
             int tickPosition = (getItemMax(datum) + getItemMin(datum)) / 2 - g.getFontMetrics().getAscent() / 5;
             if (getRow().contains(tickPosition)) {
                 tickLength = tickLengthMajor;
