@@ -1151,14 +1151,14 @@ public class SeriesRenderer extends Renderer {
         log.finest("drawing psymConnector in " + color);
 
         int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon);
-
+        log.finest("connectCount: "+connectCount);
         errorElement.render(graphics, xAxis, yAxis, vds, mon);
 
         int symCount= 0;
         if (psym != DefaultPlotSymbol.NONE) {
 
             symCount= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
-
+            log.finest("symCount: "+symCount);
 //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
             mon.finished();
         }
@@ -1339,13 +1339,8 @@ public class SeriesRenderer extends Renderer {
             widthy = yaxis.getDatumRange().width();
         }
 
-        int fi= firstIndex;
-        int li= lastIndex;
-
         if ( xaxis.getColumn().getWidth()==0 || yaxis.getRow().getHeight()==0 ) return null;
         
-        DatumRange dr= xaxis.getDatumRange();
-
         QDataSet ds2= ds;
         if ( this.unitsWarning ) {
             ArrayDataSet ds3= ArrayDataSet.copy(ds);
@@ -1952,25 +1947,23 @@ public class SeriesRenderer extends Renderer {
 
     @Override
     public boolean acceptsDataSet(QDataSet dataSet) {
-        QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         QDataSet ds= dataSet;
-        QDataSet vds, tds;
+        //QDataSet vds, tds;
         boolean plottable= false;
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
             if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
-                vds = DataSetOps.unbundleDefaultDataSet( ds );
+            //    vds = DataSetOps.unbundleDefaultDataSet( ds );
             } else if ( ds.rank()!=1 ) {
                 logger.fine("dataset rank error");
                 return false;
             }  else {
-                vds = (QDataSet) dataSet;
+            //    vds = (QDataSet) dataSet;
             }
 
             unitsWarning= false;
             plottable = true;
 
         } else if (dataSet instanceof QDataSet) {
-            tds = (QDataSet) dataSet;
             plottable = true;
         }
 
