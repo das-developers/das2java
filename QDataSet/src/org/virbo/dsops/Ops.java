@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.regex.Pattern;
 import org.das2.datum.DatumUtil;
@@ -221,8 +222,9 @@ public class Ops {
      */
     private static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
         HashMap result = new HashMap();
-        for ( String k : m1.keySet()) {
-            Object v = m1.get(k);
+        for ( Entry<String,Object> e : m1.entrySet()) {
+            String k= e.getKey();
+            Object v = e.getValue();
             if (v != null ) {
                 Object v2= m2.get(k);
                 if ( v.equals(v2) ) {
