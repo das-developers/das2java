@@ -24,9 +24,9 @@
 package org.das2.dataset;
 
 import java.awt.Graphics2D;
+import java.util.logging.Level;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.datum.Datum;
-import org.das2.DasApplication;
 import org.das2.system.DasLogger;
 import java.text.*;
 import java.util.*;
@@ -76,6 +76,7 @@ public abstract class AbstractDataSetCache implements DataSetCache {
             return result;
         }
         
+        @Override
         public String toString() {
             long sizeBytes= DataSetUtil.guessSizeBytes(this.data);
             String sizeBytesString= " ("+NumberFormat.getIntegerInstance().format(sizeBytes)+" bytes)";
@@ -112,10 +113,10 @@ public abstract class AbstractDataSetCache implements DataSetCache {
     public boolean haveStored( DataSetDescriptor dsd, CacheTag cacheTag ) {
         boolean result= haveStoredImpl( dsd, cacheTag );
         if ( result ) {
-            logger.fine("cache hit "+dsd+" "+cacheTag);            
+            logger.log(Level.FINE, "cache hit {0} {1}", new Object[]{dsd, cacheTag});
             hits++;
         } else {
-            logger.fine("cache miss "+dsd+" "+cacheTag);
+            logger.log(Level.FINE, "cache miss {0} {1}", new Object[]{dsd, cacheTag});
             misses++;
         }
         return result;
@@ -142,7 +143,7 @@ public abstract class AbstractDataSetCache implements DataSetCache {
     
     /**
      * return the DataSet described by the set of DataSets if possible.  
-     * @throws IllegalArgumentException if a subset is not continous, 
+     * @throws IllegalArgumentException if a subset is not continuous,
      * non-overlapping, and of the same resolution.  Removes 
      * elements from the list that are not needed for the set.
      */
@@ -156,7 +157,6 @@ public abstract class AbstractDataSetCache implements DataSetCache {
         Entry e0= (Entry)result.get(0);
         CacheTag ct= e0.cacheTag;
         Datum t1= ct.range.max();        
-        Datum resolution= ct.resolution;
 
         DataSet ds= e0.data;
 
