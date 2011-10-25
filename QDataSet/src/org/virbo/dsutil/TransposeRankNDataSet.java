@@ -21,17 +21,18 @@ public class TransposeRankNDataSet extends AbstractDataSet {
     int[] order;
     int[] qube;
     final int shuffleType;
-    private final int SHUFFLE_123= 0; //brute force, good luck with rank 4.
-    private final int SHUFFLE_132= 1;
-    private final int SHUFFLE_213= 2;
-    private final int SHUFFLE_231= 3;
-    private final int SHUFFLE_312= 4;
-    private final int SHUFFLE_321= 5;
+    private static final int SHUFFLE_123= 0; //brute force, good luck with rank 4.
+    private static final int SHUFFLE_132= 1;
+    private static final int SHUFFLE_213= 2;
+    private static final int SHUFFLE_231= 3;
+    private static final int SHUFFLE_312= 4;
+    private static final int SHUFFLE_321= 5;
     
     
     public TransposeRankNDataSet( QDataSet source, int[] order ) {
         this.source= source;
-        this.order= order;
+        this.order=  new int[order.length];
+        System.arraycopy( order, 0, this.order, 0, order.length );
         this.qube= DataSetUtil.qubeDims(source);
         
         for ( int i=0; i<source.rank(); i++ ) {
@@ -69,8 +70,9 @@ public class TransposeRankNDataSet extends AbstractDataSet {
         return super.value(i);
     }
 
+    @Override
     public double value(int i0, int i1) {
-        return source.value( i0, i1 );
+        return source.value( i0, i1 ); //TODO: verify this...
     }
 
     @Override
@@ -88,24 +90,29 @@ public class TransposeRankNDataSet extends AbstractDataSet {
     }
 
 
+    @Override
     public Object property(String name) {
-        Object v= properties.get(name);
+        Object v= properties.get(name); //TODO: verify this
         return ( v==null ) ? source.property(name) : v;
     }
 
+    @Override
     public Object property(String name, int i) {
-        Object v= properties.get(name);
+        Object v= properties.get(name); //TODO: verify this
         return ( v==null ) ? source.property(name,i) : v;
     }
 
+    @Override
     public int length() {
         return qube[order[0]];
     }
 
+    @Override
     public int length(int i) {
         return qube[order[1]];
     }
     
+    @Override
     public int length( int i, int j ) {
         return qube[order[2]];
     }
