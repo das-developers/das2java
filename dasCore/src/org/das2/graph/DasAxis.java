@@ -1019,19 +1019,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         logger.fine("updateTCADataSet");
         double[] tickV = getTickV().tickV.toDoubleArray(getUnits());
-        Datum data_minimum;
-        Datum data_maximum;
-        Datum iinterval;
-        if (tickV.length == 1) {
-            data_minimum = Datum.create(tickV[0], getTickV().units);
-            data_maximum = Datum.create(tickV[0], getTickV().units);
-            iinterval = data_maximum.subtract(data_minimum);
-        } else {
-            data_minimum = Datum.create(tickV[0], getTickV().units);
-            data_maximum = Datum.create(tickV[tickV.length - 1], getTickV().units);
-            iinterval = (data_maximum.subtract(data_minimum)).divide(tickV.length - 1);
-        }
-        data_maximum = data_maximum.add(iinterval);
         tcaData = null;
 
         JoinDataSet ltcaData= new JoinDataSet(2);
@@ -1198,14 +1185,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     private void updateTickVLog() {
 
-        double min = getDataMinimum().doubleValue(getUnits());
-        double max = getDataMaximum().doubleValue(getUnits());
-
-        double dMinTick = DasMath.roundNFractionalDigits(Math.log10(min), 4);
-        int minTick = (int) Math.ceil(dMinTick);
-        double dMaxTick = DasMath.roundNFractionalDigits(Math.log10(max), 4);
-        int maxTick = (int) Math.floor(dMaxTick);
-
         GrannyTextRenderer idlt = new GrannyTextRenderer();
         idlt.setString(this.getTickLabelFont(), "10!U-10");
 
@@ -1322,7 +1301,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return
      */
     private boolean hasTickCollisions(DatumVector minor) {
-        DatumRange range= getDatumRange();
         if (minor.getLength() < 2) {
             return false;
         }
@@ -1823,8 +1801,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int DMax = getColumn().getDMaximum();
             int DMin = getColumn().getDMinimum();
 
-            Font labelFont = getTickLabelFont(); // put back in after null pointer exception
-
             TickVDescriptor ticks = getTickV();
 
             if (bottomLine) {
@@ -2143,16 +2119,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         FontMetrics fm = getFontMetrics(tickLabelFont);
         int lineHeight = tickLabelFont.getSize() + getLineSpacing();
 
-        QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
-
         int lines= Math.min( MAX_TCA_LINES, tcaData.length(0) );
 
         for (int i = 0; i < lines; i++) {
             try {
                 baseLine += lineHeight;
                 QDataSet v1= tcaData.slice(index).slice(i);
-                Datum d1= org.virbo.dataset.DataSetUtil.asDatum(v1);
-                Units u= d1.getUnits();
                 String item;
                 item= org.virbo.dataset.DataSetUtil.getStringValue( v1, v1.value() );
                 width = fm.stringWidth(item);
@@ -2341,7 +2313,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             TickVDescriptor ticks = getTickV();
             DatumVector tickv = ticks.tickV;
             int size = Integer.MIN_VALUE;
-            Graphics g = this.getGraphics();
             for (int i = 0; i < tickv.getLength(); i++) {
                 String label = tickFormatter(tickv.get(i));
                 GrannyTextRenderer idlt = new GrannyTextRenderer();
@@ -2494,7 +2465,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (getOrientation() == BOTTOM && isTickLabelsVisible()) {
             if (drawTca && tcaData != null && tcaData.length() != 0) {
                 int DMin = getColumn().getDMinimum();
-                int DMax = getColumn().getDMaximum();
                 Font tickLabelFont = getTickLabelFont();
                 int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
                 int lines= Math.min( MAX_TCA_LINES, tcaData.length(0) );
