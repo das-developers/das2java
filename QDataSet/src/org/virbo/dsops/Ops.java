@@ -2682,7 +2682,7 @@ public class Ops {
 
         DDataSet qresult= DDataSet.wrap(result);
         qresult.putProperty( QDataSet.SCALE_TYPE, ds.property(QDataSet.SCALE_TYPE) );
-        qresult.putProperty( QDataSet.USER_PROPERTIES, Collections.singletonMap( "count", new Integer(count) ) );
+        qresult.putProperty( QDataSet.USER_PROPERTIES, Collections.singletonMap( "count", count ) );
         qresult.putProperty( QDataSet.BINS_0, "min,maxInclusive" );
         qresult.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
         if ( result[0]==fill ) qresult.putProperty( QDataSet.FILL_VALUE, fill);
@@ -3686,6 +3686,6 @@ public class Ops {
         return dim;
     }
 
-    public static double PI = Math.PI;
-    public static double E = Math.E;
+    public static final double PI = Math.PI;
+    public static final double E = Math.E;
 }
