@@ -23,23 +23,27 @@
 
 package org.das2.graph;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.geom.Point2D;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.MouseModule;
 import org.das2.event.LengthDragRenderer;
 import org.das2.event.CrossHairMouseModule;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetRebinner;
-import org.das2.dataset.NearestNeighborTableRebinner;
-import org.das2.dataset.AveragePeakTableRebinner;
 import org.das2.dataset.TableDataSetConsumer;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.RebinDescriptor;
 import org.das2.dataset.TableDataSet;
-import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetUtil;
 import org.das2.datum.LocationUnits;
 import org.das2.datum.DatumRange;
-import org.das2.util.DasExceptionHandler;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.DasException;
 import org.das2.components.HorizontalSpectrogramSlicer;
@@ -49,13 +53,11 @@ import org.das2.event.VerticalSlicerMouseModule;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.components.propertyeditor.Enumeration;
-
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
-import java.beans.*;
-import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
@@ -248,10 +250,10 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         g.fillRect(0, 0, plotImage.getWidth(), plotImage.getHeight());
         g.translate(-column.getDMinimum(),-row.getDMinimum());
         
-        Dimension d;
+        //Dimension d;
         
-        double iMin= column.getDMinimum();
-        double jMin= row.getDMinimum();
+        //double iMin= column.getDMinimum();
+        //double jMin= row.getDMinimum();
         
         RebinDescriptor xbins= new RebinDescriptor(xAxis.getDataMinimum(), xAxis.getDataMaximum(), (int)(Math.abs(column.getWidth())/1)+1, (xAxis.isLog()));
         
@@ -292,7 +294,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         for (int j = 0; j < data.length(0); j++) {
             
             int yBase;
-            Line2D.Float lBase;
+            //Line2D.Float lBase;
             
             if ( j==(data.length(0)-1) ) {   /* Draw top grey line */
                 yBase= yAxis.getItemMin(yunits.createDatum(yds.value(j)));
@@ -317,7 +319,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             } 
             
             double [] binStarts= xbins.binStarts();
-            double [] binStops= xbins.binStops();
+            //double [] binStops= xbins.binStops();
             
             int y0= yBase;
             
@@ -328,8 +330,8 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             if ( yBase1 >= row.getDMinimum() && yBase <= row.getDMaximum() ) {
                 for (int ibin=0; ibin < data.length(); ibin++) {
                     int x0= (int)xAxis.transform(binStarts[ibin],xbins.getUnits());
-                    int x1;
-                    x1=x0+1; // 1 pixel wide
+                    //int x1;
+                    //x1=x0+1; // 1 pixel wide
                     double zz= data.value( ibin, j );
                     if ( !( weights.value(ibin,j)==0 ) ) {
                         int yAvg= (int)zAxis.transform( zz, zunits, yBase, yBase1 );
