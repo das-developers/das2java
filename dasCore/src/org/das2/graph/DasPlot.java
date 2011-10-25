@@ -688,7 +688,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      */
     public void setYAxis(DasAxis yAxis) {
         Object oldValue = this.yAxis;
-        logger.log(Level.FINE, "setYAxis({0}), removes {1}", new Object[]{yAxis.getName(), this.yAxis});
+        logger.log(Level.FINE, "setYAxis({0}), removes {1}", new Object[]{ yAxis==null ? "null" : yAxis.getName(), this.yAxis});
         Container parent = getParent();
         if (this.yAxis != null) {
             DasProperties.getLogger().fine("setYAxis upsets the dmia");
