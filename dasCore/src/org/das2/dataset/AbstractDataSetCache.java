@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractDataSetCache implements DataSetCache {
     
-    protected class Entry implements Displayable {
+    protected static class Entry implements Displayable {
         
         protected DataSetDescriptor dsd;
         protected CacheTag cacheTag;
