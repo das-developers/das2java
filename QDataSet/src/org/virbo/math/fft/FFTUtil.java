@@ -11,7 +11,6 @@ import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
 import org.virbo.dsutil.DataSetBuilder;
 
 /**
@@ -29,9 +28,11 @@ public class FFTUtil {
             public int rank() {
                 return 1;
             }
+            @Override
             public double value(int i) {
                 return 1.0;
             }
+            @Override
             public int length() {
                 return size;
             }
@@ -57,9 +58,11 @@ public class FFTUtil {
             public int rank() {
                 return 1;
             }
+            @Override
             public double value(int i) {
                 return  ww[i];
             }
+            @Override
             public int length() {
                 return size;
             }
