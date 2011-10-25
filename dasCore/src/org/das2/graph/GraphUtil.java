@@ -216,7 +216,6 @@ public class GraphUtil {
             throw new IllegalArgumentException("only TableDataSet supported");
         }
         QDataSet ds = (QDataSet) dsz;
-        Units zunits = SemanticOps.getUnits(ds);
 
         DatumRange range = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(ds), true );
 
@@ -257,7 +256,6 @@ public class GraphUtil {
             }
 
         } else if ( SemanticOps.isTableDataSet(ds) ) {
-            Units zunits = SemanticOps.getUnits(ds);
             DasAxis zaxis = guessZAxis(ds);
             DasColorBar colorbar = new DasColorBar(zaxis.getDataMinimum(), zaxis.getDataMaximum(), zaxis.isLog());
             colorbar.setLabel(zaxis.getLabel());
@@ -345,7 +343,7 @@ public class GraphUtil {
         float xres = res;
         float yres = res;
 
-        String[] types = new String[]{"M", "L", "QUAD", "CUBIC", "CLOSE"};
+        //String[] types = new String[]{"M", "L", "QUAD", "CUBIC", "CLOSE"};
 
         int points = 0;
         int inCount = 0;
@@ -669,7 +667,6 @@ public class GraphUtil {
     public static Icon colorIcon( Color iconColor, int w, int h ) {
         BufferedImage image= new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
         Graphics g= image.getGraphics();
-        Color save = g.getColor();
         if ( iconColor.getAlpha()!=255 ) { // draw checkerboard to indicate transparency
             for ( int j=0; j<16/4; j++ ) {
                 for ( int i=0; i<16/4; i++ ) {
