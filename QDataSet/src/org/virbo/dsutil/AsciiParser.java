@@ -555,7 +555,7 @@ public class AsciiParser {
 
         int[] recCount = new int[maxFieldCount];
 
-        StringBuffer regexBuf = new StringBuffer();
+        StringBuilder regexBuf = new StringBuilder();
         regexBuf.append("\\s*(" + decimalRegex + ")");
         for (int i = 1; i < maxFieldCount; i++) {
             regexBuf.append("([\\s+,+]\\s*(" + decimalRegex + "))?");
@@ -564,20 +564,25 @@ public class AsciiParser {
 
         Pattern pat = Pattern.compile(regexBuf.toString());
 
-        BufferedReader reader = new LineNumberReader(new FileReader(filename));
+        BufferedReader reader=null;
+        try {
+            reader= new LineNumberReader(new FileReader(filename));
 
-        String line;
-        while ((line = reader.readLine()) != null) {
-            Matcher m = pat.matcher(line);
-            if (m.matches()) {
-                int j;
-                for (j = 1; j < m.groupCount(); j += 2) {
-                    if (m.group(j) == null) {
-                        recCount[(j - 1) / 2]++;
-                        break;
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Matcher m = pat.matcher(line);
+                if (m.matches()) {
+                    int j;
+                    for (j = 1; j < m.groupCount(); j += 2) {
+                        if (m.group(j) == null) {
+                            recCount[(j - 1) / 2]++;
+                            break;
+                        }
                     }
                 }
             }
+        } finally {
+            if ( reader!=null ) reader.close();
         }
         int max = 0;
         int imax = 0;
