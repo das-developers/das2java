@@ -30,7 +30,6 @@ import org.das2.datum.UnitsUtil;
 import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.logging.*;
-import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
@@ -49,7 +48,7 @@ import org.virbo.dsops.Ops;
  */
 public class AverageTableRebinner implements DataSetRebinner {
 
-    private static Logger logger = DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG);
+    private static final Logger logger = DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG);
     /**
      * Holds value of property interpolate.
      */
@@ -112,7 +111,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             throw new IllegalArgumentException("ddY was null but there was rank 3 dataset");
         }
 
-        logger.finest("Allocating rebinData and rebinWeights: " + nx + " x " + ny);
+        logger.log(Level.FINEST, "Allocating rebinData and rebinWeights: {0} x {1}", new Object[]{nx, ny});
 
         double[][] rebinData = new double[nx][ny];
         double[][] rebinWeights = new double[nx][ny];
@@ -596,12 +595,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         multiplyWeights( rebinData, rebinWeights, zunits.getFillDouble() );
     }
 
-    private final static double linearlyInterpolate(int i0, double z0, int i1, double z1, int i) {
-        double r = ((double) (i - i0)) / (i1 - i0);
-        return z0 + r * (z1 - z0);
-    }
-
-    private final static void multiplyWeights(double[][] data, double[][] weights, double fill) {
+    private static void multiplyWeights(double[][] data, double[][] weights, double fill) {
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[i].length; j++) {
                 if (weights[i][j] > 0.0) {
@@ -720,9 +714,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 xTagTemp[i] = Math.log(xTags[i]);
             }
         } else {
-            for (int i = 0; i < nx; i++) {
-                xTagTemp[i] = xTags[i];
-            }
+            System.arraycopy(xTags, 0, xTagTemp, 0, nx);
         }
 
         double xSampleWidth;
@@ -864,9 +856,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 yTagTemp[j] = Math.log(yTags[j]);
             }
         } else {
-            for (int j = 0; j < ny; j++) {
-                yTagTemp[j] = yTags[j];
-            }
+            System.arraycopy(yTags, 0, yTagTemp, 0, ny);
         }
 
         double ySampleWidth;
