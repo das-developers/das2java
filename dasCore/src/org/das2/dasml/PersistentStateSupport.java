@@ -210,8 +210,6 @@ public class PersistentStateSupport {
         
         document.appendChild( element );
         
-        StringWriter writer = new StringWriter();
-
         DOMImplementationLS ls = (DOMImplementationLS)
                         document.getImplementation().getFeature("LS", "3.0");
         LSOutput output = ls.createLSOutput();
