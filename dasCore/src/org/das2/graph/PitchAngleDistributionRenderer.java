@@ -19,7 +19,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
-import org.virbo.dataset.DataSetUtil;
 import static java.lang.Math.*;
 
 /**
@@ -32,8 +31,6 @@ public class PitchAngleDistributionRenderer extends Renderer {
         setColorBar(cb);
     }
     
-    DasColorBar cb;
-
     protected DasColorBar colorBar = null;
     public static final String PROP_COLORBAR = "colorBar";
 
