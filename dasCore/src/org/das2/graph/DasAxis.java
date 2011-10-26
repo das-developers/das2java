@@ -70,6 +70,7 @@ import java.util.regex.*;
 import org.das2.system.DasLogger;
 import java.util.logging.Logger;
 import javax.management.ReflectionException;
+import javax.swing.event.EventListenerList;
 import org.das2.DasException;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
@@ -2386,8 +2387,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         setBounds(getAxisBounds());
         //setBounds(getAxisBoundsNew());
         invalidate();
-        if (tickV == null || tickV.tickV.getUnits().isConvertableTo(getUnits())) {
-            validate();
+        synchronized (this) {
+            if (tickV == null || tickV.tickV.getUnits().isConvertableTo(getUnits())) {
+                validate();
+            }
         }
         firePropertyChange(PROP_BOUNDS, oldBounds, getBounds());
     }
@@ -3223,7 +3226,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      *
      * @param event The event to be fired
      */
-    private void fireTimeRangeSelectionListenerTimeRangeSelected(TimeRangeSelectionEvent event) {
+    private synchronized void fireTimeRangeSelectionListenerTimeRangeSelected(TimeRangeSelectionEvent event) {
         if (timeRangeListenerList == null) {
             return;
         }
