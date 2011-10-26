@@ -22,20 +22,40 @@
  */
 package org.das2.components;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Window;
 import org.das2.graph.DasCanvasComponent;
 import org.das2.system.DasLogger;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.logging.Level;
-import javax.swing.*;
-import javax.swing.border.*;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.NumberFormatUtil;
-import java.util.*;
 import java.util.logging.Logger;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import org.das2.graph.DasCanvas;
 
 /**
@@ -93,6 +113,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
     class MyPanel extends JPanel {
 
+        @Override
         protected void paintComponent(Graphics g1) {
             Graphics2D g2 = (Graphics2D) g1;
 
@@ -126,25 +147,6 @@ public class DasProgressPanel implements ProgressMonitor {
         showProgressRate = true;
         isCancelled = false;
         running = false;
-    }
-
-    private void details() {
-        System.err.println("Source: ");
-        source.printStackTrace();
-        System.err.println("Consumer: ");
-        consumer.printStackTrace();
-        String stateString;
-        if (finished) {
-            stateString = "finished";
-        } else if (running) {
-            stateString = "running";
-        } else if (isCancelled) {
-            stateString = "cancelled";
-        }
-        System.err.println("State: ");
-        System.err.println("  running: " + running);
-        System.err.println("  cancelled: " + isCancelled);
-        System.err.println("  finished: " + finished);
     }
 
     /**
@@ -238,6 +240,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
         progressMessageLabel = new JLabel() {
 
+            @Override
             public void paint(Graphics g) {
                 ((java.awt.Graphics2D) g).setRenderingHint(
                         java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
@@ -344,7 +347,7 @@ public class DasProgressPanel implements ProgressMonitor {
     /* ProgressMonitor interface */
     public void setTaskProgress(long position) throws IllegalStateException {
         if (logger.isLoggable(Level.FINEST)) {
-            logger.finest("progressPosition=" + position);
+            logger.log(Level.FINEST, "progressPosition={0}", position);
         }
 
         if (isCancelled) {
@@ -455,7 +458,6 @@ public class DasProgressPanel implements ProgressMonitor {
         }
 
         if (showProgressRate && elapsedTimeMs > 1000 && transferRateString != null) {
-            double transferRate = ((double) currentTaskPosition * 1000) / (elapsedTimeMs);
             kbLabel.setText(bytesReadLabel + " " + transferRateString);
         } else {
             kbLabel.setText(bytesReadLabel);
@@ -529,9 +531,8 @@ public class DasProgressPanel implements ProgressMonitor {
                         Thread.sleep(hideInitiallyMilliSeconds);
                     } catch (InterruptedException e) {
                     }
-                    ;
                     if (running) {
-                        logger.fine("hide time=" + (System.currentTimeMillis() - taskStartedTime));
+                        logger.log(Level.FINE, "hide time={0}", (System.currentTimeMillis() - taskStartedTime));
                         setVisible(true);
                     }
                 }
@@ -574,6 +575,7 @@ public class DasProgressPanel implements ProgressMonitor {
         this.showProgressRate = showProgressRate;
     }
 
+    @Override
     public String toString() {
         if (isCancelled) {
             return "cancelled";
