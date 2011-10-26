@@ -353,16 +353,16 @@ public class TimeDatumFormatter extends DatumFormatter {
 
         TimeUtil.carry(ts);
 
-        array[YEAR_FIELD_INDEX] = new Integer(ts.year);
-        array[MONTH_FIELD_INDEX] = new Integer(ts.month);
-        array[DAY_FIELD_INDEX] = new Integer(ts.day);
-        array[DOY_FIELD_INDEX] = new Integer(ts.doy);
-        array[HOUR_FIELD_INDEX] = new Integer(ts.hour);
-        array[MINUTE_FIELD_INDEX] = new Integer(ts.minute);
-        array[SECONDS_FIELD_INDEX] = new Integer((int)ts.seconds);
+        array[YEAR_FIELD_INDEX] = ts.year;
+        array[MONTH_FIELD_INDEX] = ts.month;
+        array[DAY_FIELD_INDEX] = ts.day;
+        array[DOY_FIELD_INDEX] = ts.doy;
+        array[HOUR_FIELD_INDEX] = ts.hour;
+        array[MINUTE_FIELD_INDEX] = ts.minute;
+        array[SECONDS_FIELD_INDEX] = (int)ts.seconds;
         for (int i = TIMESTAMP_FIELD_COUNT; i < array.length; i++) {
             int value = (int)Math.round(fracSeconds * Math.pow(10, scaleSeconds[i - TIMESTAMP_FIELD_COUNT]));
-            array[i] = new Integer(value);
+            array[i] = value;
         }
         return array;
     }
