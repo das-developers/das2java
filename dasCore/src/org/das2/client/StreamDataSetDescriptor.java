@@ -387,7 +387,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         }
         ByteBuffer data = getByteBuffer(in);
         //double timeBaseValue= start.doubleValue(start.getUnits());
-        Units offsetUnits = start.getUnits().getOffsetUnits();
+        //Units offsetUnits = start.getUnits().getOffsetUnits();
         //UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
         double[] yCoordinates = yScans[0].getYTags();
         DatumVector y = DatumVector.newDatumVector(yCoordinates, yUnits);
