@@ -59,7 +59,7 @@ public class DasServer {
     private HashMap keys; // <key>
     private Key key;
 
-    private static Logger logger= DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG );
+    private static final Logger logger= DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG );
 
     private static HashMap instanceHashMap= new HashMap();
 
@@ -125,8 +125,6 @@ public class DasServer {
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
 
-            String contentType = urlConnection.getContentType();
-
             InputStream in= urlConnection.getInputStream();
 
             String result= new String(  read(in) );
@@ -150,8 +148,6 @@ public class DasServer {
             logger.info( "connecting to "+server);
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
-
-            String contentType = urlConnection.getContentType();
 
             InputStream in= urlConnection.getInputStream();
 
@@ -177,8 +173,6 @@ public class DasServer {
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
 
-            String contentType = urlConnection.getContentType();
-
             InputStream in= urlConnection.getInputStream();
 
             TreeModel result= createModel(in);
@@ -202,8 +196,6 @@ public class DasServer {
 
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
-
-            String contentType = urlConnection.getContentType();
 
             InputStream in= urlConnection.getInputStream();
 
@@ -484,12 +476,12 @@ public class DasServer {
         LinkedList list = new LinkedList();
         byte[] data;
         int bytesRead=0;
-        int totalBytesRead=0;
+        //int totalBytesRead=0;
 
         //BufferedInputStream in= new BufferedInputStream(uin,4096*2);
         InputStream in= uin;
 
-        long time = System.currentTimeMillis();
+        //long time = System.currentTimeMillis();
         //        fireReaderStarted();
 
         //FileOutputStream out= new FileOutputStream("x."+time+".dat");
@@ -497,8 +489,6 @@ public class DasServer {
         data = new byte[4096];
 
         int lastBytesRead = -1;
-
-        String s;
 
         int offset=0;
 
@@ -510,7 +500,7 @@ public class DasServer {
 
         while (bytesRead != -1) {
 
-            int bytesSoFar = totalBytesRead;
+            //int bytesSoFar = totalBytesRead;
             //            fireReaderUpdate(bytesSoFar);
             //            if (requestor != null) {
             //                requestor.currentByteCount(bytesSoFar);
@@ -525,7 +515,7 @@ public class DasServer {
                 offset=0;
             }
 
-            totalBytesRead+= bytesRead;
+            //totalBytesRead+= bytesRead;
 
             bytesRead= in.read(data,offset,4096-offset);
 
