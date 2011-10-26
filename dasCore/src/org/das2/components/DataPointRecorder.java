@@ -274,7 +274,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         for (int i = 0; i < dataPoints.size(); i++) {
             DataPoint p = (DataPoint) dataPoints.get(i);
             if (xrange.contains(p.data[0]) && yrange.contains(p.data[1])) {
-                selectMe.add(new Integer(i));
+                selectMe.add( i );
             }
         }
         table.getSelectionModel().clearSelection();
