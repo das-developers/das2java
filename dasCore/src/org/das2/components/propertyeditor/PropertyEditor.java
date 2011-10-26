@@ -511,7 +511,6 @@ public class PropertyEditor extends JComponent {
         public void mouseClicked(MouseEvent event) {
             Point p = event.getPoint();
             int row = table.rowAtPoint(p);
-            int column = table.columnAtPoint(p);
             TreeTableModel model = (TreeTableModel) table.getModel();
             PropertyTreeNodeInterface node = (PropertyTreeNodeInterface) model.getNodeForRow(row);
 
