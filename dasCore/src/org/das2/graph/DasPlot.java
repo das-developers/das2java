@@ -77,13 +77,11 @@ import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.graph.DasAxis.Memento;
-import org.virbo.dataset.QDataSet;
 
-public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
+public class DasPlot extends DasCanvasComponent {
 
-    public static String PROP_TITLE = "title";
+    public static final String PROP_TITLE = "title";
     protected DataSetDescriptor dataSetDescriptor;
-    protected QDataSet Data;
     private DasAxis xAxis;
     private DasAxis yAxis;
     DasAxis.Memento xmemento;
@@ -93,7 +91,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected double[] psym_x;
     protected double[] psym_y;
     protected RebinListener rebinListener = new RebinListener();
-    protected PropertyChangeListener ticksListener = new PropertyChangeListener() {
+    protected transient PropertyChangeListener ticksListener = new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (drawGrid || drawMinorGrid) {
@@ -117,8 +115,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
      * the new axis position in animation-interactive time.
      */
     boolean preview = false;
-    private int repaintCount = 0;
-    private int paintComponentCount = 0;
+    //private int repaintCount = 0;
+    //private int paintComponentCount = 0;
     private int titleHeight= 0;
 
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
@@ -143,12 +141,8 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                     editRendererMenuItem.setText("Renderer Properties");
                     if (ir > -1) {
                         editRendererMenuItem.setEnabled(true);
-                        if (r instanceof Displayable) {
-                            Displayable d = (Displayable) r;
-                            editRendererMenuItem.setIcon(d.getListIcon());
-                        } else {
-                            editRendererMenuItem.setIcon(null);
-                        }
+                        Displayable d = (Displayable) r;
+                        editRendererMenuItem.setIcon(d.getListIcon());
                     } else {
                         editRendererMenuItem.setEnabled(false);
                         editRendererMenuItem.setIcon(null);
@@ -619,21 +613,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             }
         }
     };
-
-    public QDataSet getDataSet() {
-        // TODO: get rid of this!!!
-        return Data;
-    }
-
-    public QDataSet getConsumedDataSet() {
-        // TODO: get rid of this!!!
-        return Data;
-    }
-
-    public QDataSet getData() {
-        // TODO: get rid of this!!!
-        return Data;
-    }
 
     public void setXAxis(DasAxis xAxis) {
         Object oldValue = this.xAxis;
@@ -1535,7 +1514,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     @Override
     public void repaint() {
         super.repaint();
-        repaintCount++;
+        //repaintCount++;
     }
 
     protected synchronized void invalidateCacheImage() {
