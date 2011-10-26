@@ -270,9 +270,6 @@ public final class TimeUtil {
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
-        int hour = (int)d.hour;
-        int minute = (int)d.minute;
-        double seconds = d.seconds + hour*(float)3600.0 + minute*(float)60.0;
         double us2000= ( jd - 2451545 ) * 86400e6; // TODO: leap seconds 
         return Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
     }
