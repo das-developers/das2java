@@ -432,7 +432,6 @@ public class TearoffTabbedPane extends JTabbedPane {
         Dimension s1= panel1.getSize();
         Dimension frameSize1= frame1.getSize();
         Dimension s2= panel2.getSize();
-        Dimension frameSize2= frame2.getSize();
 
         if ( direction==STICK_RIGHT ) {
             if ( active==frame1 ) {
@@ -533,7 +532,6 @@ public class TearoffTabbedPane extends JTabbedPane {
         if (td == null) {
             return;
         }
-        final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
 
         TearoffTabbedPane right = getRightTabbedPane();
 
