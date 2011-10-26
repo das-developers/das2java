@@ -22,6 +22,7 @@
  */
 package org.das2.components.propertyeditor;
 
+import java.util.logging.Level;
 import org.das2.components.treetable.TreeTableCellRenderer;
 import org.das2.components.treetable.TreeTableModel;
 import org.das2.datum.Datum;
@@ -93,7 +94,7 @@ public class PropertyEditor extends JComponent {
      */
     private int focusRow = 0;
     private JPopupMenu popupMenu;
-    private Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
+    private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
 
     private PropertyEditor(PropertyTreeNodeInterface root, Object bean) {
         this.bean = bean;
@@ -179,7 +180,7 @@ public class PropertyEditor extends JComponent {
             public void valueChanged(ListSelectionEvent e) {
                 focusRow = table.getSelectedRow(); // we could do a better job here
 
-                logger.fine("focusRow=" + focusRow);
+                logger.log(Level.FINE, "focusRow={0}", focusRow);
             }
         };
     }
@@ -188,6 +189,7 @@ public class PropertyEditor extends JComponent {
         KeyAdapter ka;
         return new KeyAdapter() {
 
+            @Override
             public void keyReleased(KeyEvent event) {
                 logger.fine(String.valueOf(event));
                 if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
@@ -435,6 +437,7 @@ public class PropertyEditor extends JComponent {
         dialog.setModal(true);
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         dialog.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent e) {
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
@@ -469,6 +472,7 @@ public class PropertyEditor extends JComponent {
             dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
             dialog.addWindowListener(new WindowAdapter() {
 
+                @Override
                 public void windowClosing(WindowEvent e) {
                     SwingUtilities.invokeLater( new Runnable() {
                         public void run() {
@@ -497,6 +501,7 @@ public class PropertyEditor extends JComponent {
         //dialog.setIconImage(icon);  // java6
     }
 
+    @Override
     public void doLayout() {
         if (SwingUtilities.isDescendingFrom(this, dialog)) {
             closeButton.setVisible(true);
@@ -508,6 +513,7 @@ public class PropertyEditor extends JComponent {
 
     class PropertyTableMouseListener extends MouseAdapter {
 
+        @Override
         public void mouseClicked(MouseEvent event) {
             Point p = event.getPoint();
             int row = table.rowAtPoint(p);
@@ -522,6 +528,7 @@ public class PropertyEditor extends JComponent {
             }
         }
 
+        @Override
         public void mousePressed(MouseEvent event) {
             Point p = event.getPoint();
             focusRow = table.rowAtPoint(p);
@@ -530,6 +537,7 @@ public class PropertyEditor extends JComponent {
             }
         }
 
+        @Override
         public void mouseReleased(MouseEvent event) {
             Point p = event.getPoint();
             focusRow = table.rowAtPoint(p);
