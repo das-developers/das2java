@@ -569,17 +569,6 @@ public class TickVDescriptor {
 
     }
     
-    private static boolean checkMono(DatumVector ticks) {
-        Datum d = ticks.get(0);
-        for (int i = 1; i < ticks.getLength(); i++) {
-            if (ticks.get(i).lt(d)) {
-               // System.err.println("TickVDescriptor: not mono at " + i + ": " + d + " > " + ticks.get(i));
-                return false;
-            }
-            d = ticks.get(i);
-        }
-        return true;
-    }
 
     /**
      * return a set of ticks counting off ordinal time ranges, such as months, years, days, etc.
