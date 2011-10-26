@@ -47,7 +47,7 @@ public class CrossHairMouseModule extends MouseModule {
     private javax.swing.event.EventListenerList listenerList =  null;
     
     public CrossHairMouseModule(DasPlot parent, DasAxis xaxis, DasAxis yaxis) {
-        this( parent, parent, xaxis, yaxis );
+        this( parent, null, xaxis, yaxis );
     }
     
     public CrossHairMouseModule( DasPlot parent, org.das2.dataset.DataSetConsumer dataSetConsumer, DasAxis xAxis, DasAxis yAxis ) {

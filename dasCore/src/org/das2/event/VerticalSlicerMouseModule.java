@@ -60,7 +60,7 @@ public class VerticalSlicerMouseModule extends MouseModule {
     public static VerticalSlicerMouseModule create(DasPlot parent) {
         DasAxis xaxis= parent.getXAxis();
         DasAxis yaxis= parent.getYAxis();
-        return new VerticalSlicerMouseModule(parent,parent,xaxis,yaxis);
+        return new VerticalSlicerMouseModule(parent,null,xaxis,yaxis);
     }
     
     public static VerticalSlicerMouseModule create( Renderer renderer ) {

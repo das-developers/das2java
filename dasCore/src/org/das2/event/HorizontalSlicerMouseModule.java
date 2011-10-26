@@ -66,7 +66,7 @@ public class HorizontalSlicerMouseModule extends MouseModule {
     public static HorizontalSlicerMouseModule create(DasPlot parent) {
         DasAxis xaxis= parent.getXAxis();
         DasAxis yaxis= parent.getYAxis();
-        return new HorizontalSlicerMouseModule(parent,parent,xaxis,yaxis);
+        return new HorizontalSlicerMouseModule(parent,null,xaxis,yaxis);
     }
     
     public static HorizontalSlicerMouseModule create(Renderer renderer)
