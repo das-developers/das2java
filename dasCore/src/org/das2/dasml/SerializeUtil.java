@@ -289,8 +289,6 @@ public class SerializeUtil {
                 nameMap.put( properties[i].getName(), properties[i] );
             }
             
-            HashMap serializedObjects= new HashMap();
-            
             NamedNodeMap attrs= element.getAttributes();
             for ( int i=0; i<attrs.getLength(); i++ ) {
                 Node node= attrs.item(i);
