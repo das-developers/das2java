@@ -82,10 +82,8 @@ public class DasProgressPanel implements ProgressMonitor {
     private static final int refreshPeriodMilliSeconds = 500;
     private boolean running = false;
     private boolean finished = false;
-    private long lastRefreshTime;
-    private ArrayList refreshTimeQueue;
     private Thread updateThread;
-    private Logger logger = DasLogger.getLogger(DasLogger.SYSTEM_LOG);
+    private static final Logger logger = DasLogger.getLogger(DasLogger.SYSTEM_LOG);
     private boolean showProgressRate;
     private JPanel thePanel;
     private boolean componentsInitialized;
@@ -124,7 +122,7 @@ public class DasProgressPanel implements ProgressMonitor {
         transferRateFormat = NumberFormatUtil.getDecimalFormat();
         transferRateFormat.setMaximumFractionDigits(2);
         maximumTaskPosition = -1;
-        lastRefreshTime = Integer.MIN_VALUE;
+        //lastRefreshTime = Integer.MIN_VALUE;
         showProgressRate = true;
         isCancelled = false;
         running = false;
