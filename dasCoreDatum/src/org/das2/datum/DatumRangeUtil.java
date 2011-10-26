@@ -278,10 +278,10 @@ public class DatumRangeUtil {
             for ( int i=0; i<6; i++ ) digits2[i] = digits1[i] + digits2[i];
         }
 
-        Datum time1= TimeUtil.toDatum(digits1);
-        Datum time2= TimeUtil.toDatum(digits2);
+        Datum t1= TimeUtil.toDatum(digits1);
+        Datum t2= TimeUtil.toDatum(digits2);
 
-        return new DatumRange( time1, time2 );
+        return new DatumRange( t1, t2 );
 
 
     }
@@ -390,20 +390,20 @@ public class DatumRangeUtil {
                 return true;
             }
             
-            String delim;
+            String delim1;
             
             String delims="(/|\\.|-| )";
             Matcher matcher= Pattern.compile(delims).matcher(string);
             
             if ( matcher.find() ) {
                 int posDelim= matcher.start();
-                delim= string.substring(matcher.start(),matcher.end());
+                delim1= string.substring(matcher.start(),matcher.end());
             } else {
                 return false;
             }
             
-            if ( delim.equals(".") ) {
-                delim="\\.";
+            if ( delim1.equals(".") ) {
+                delim1="\\.";
             }
             
             String monthNameRegex= "(jan[a-z]*|feb[a-z]*|mar[a-z]*|apr[a-z]*|may|june?|july?|aug[a-z]*|sep[a-z]*|oct[a-z]*|nov[a-z]*|dec[a-z]*)";
@@ -412,11 +412,11 @@ public class DatumRangeUtil {
             
             String euroDateRegex;
             
-            if ( delim.equals("\\.") ) {
-                euroDateRegex= "(" + dayRegex + delim + monthRegex + delim + yearRegex + dateDelimRegex + ")";
+            if ( delim1.equals("\\.") ) {
+                euroDateRegex= "(" + dayRegex + delim1 + monthRegex + delim1 + yearRegex + dateDelimRegex + ")";
                 groups= new int [] { 6, 3, 2, 8  };
             } else {
-                euroDateRegex= "(" + dayRegex + delim + monthNameRegex + delim + yearRegex + dateDelimRegex + ")";
+                euroDateRegex= "(" + dayRegex + delim1 + monthNameRegex + delim1 + yearRegex + dateDelimRegex + ")";
                 groups= new int [] { 4, 3, 2, 6 };
             }
             if ( tryPattern( Pattern.compile( euroDateRegex ), string, groups, dateDescriptor ) ) {
@@ -424,14 +424,14 @@ public class DatumRangeUtil {
                 return true;
             }
             
-            String usaDateRegex= monthRegex + delim + dayRegex + delim + yearRegex + dateDelimRegex ;
+            String usaDateRegex= monthRegex + delim1 + dayRegex + delim1 + yearRegex + dateDelimRegex ;
             if ( tryPattern( Pattern.compile( usaDateRegex ), string, new int[] { 5,1,4,7 }, dateDescriptor ) ) {
                 dateDescriptor.dateformat= DATEFORMAT_USA;
                 return true;
             }
             
             // only works for four-digit years
-            String lastDateRegex= "(\\d{4})" + delim + monthRegex + delim + dayRegex + dateDelimRegex;
+            String lastDateRegex= "(\\d{4})" + delim1 + monthRegex + delim1 + dayRegex + dateDelimRegex;
             if ( tryPattern( Pattern.compile( lastDateRegex ), string, new int[] { 1,2,5,6 }, dateDescriptor ) ) {
                 dateDescriptor.dateformat= DATEFORMAT_USA;
                 return true;
@@ -498,7 +498,7 @@ public class DatumRangeUtil {
             DateDescriptor dateDescriptor= new DateDescriptor();
             ipos=0;
             
-            StringBuffer newString= new StringBuffer();
+            StringBuilder newString= new StringBuilder();
             while ( ipos<s.length() ) {
                 if ( isDate( s.substring( ipos ), dateDescriptor ) ) {
                     ipos= ipos+dateDescriptor.date.length()+dateDescriptor.delim.length();
@@ -740,11 +740,11 @@ public class DatumRangeUtil {
             format= format+" ";
             
             {
-                StringBuffer stringBuffer= new StringBuffer("ts1: ");
-                for ( int i=0; i<7; i++ ) stringBuffer.append(""+ts1[i]+" ");
+                StringBuilder stringBuffer= new StringBuilder("ts1: ");
+                for ( int i=0; i<7; i++ ) stringBuffer.append("").append(ts1[i]).append(" ");
                 logger.fine( stringBuffer.toString() );
-                stringBuffer= new StringBuffer("ts2: ");
-                for ( int i=0; i<7; i++ ) stringBuffer.append(""+ts2[i]+" ");
+                stringBuffer= new StringBuilder("ts2: ");
+                for ( int i=0; i<7; i++ ) stringBuffer.append("").append(ts2[i]).append(" ");
                 logger.fine( stringBuffer.toString() );
                 logger.fine( format );
             }
