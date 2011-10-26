@@ -355,7 +355,6 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
             return new DatumRange( t.add(r.min()), t.add(r.max()) );
         }
         if ( digit==ARR_YEAR && ysDivider!=null ) {
-            Datum t= Units.t2000.createDatum(0);
             int yearMin = TimeUtil.toTimeStruct(v).year;
             DatumRange r= ysDivider.rangeContaining( Units.dimensionless.createDatum(yearMin) );
             double tmin, tmax;
