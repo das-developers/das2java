@@ -33,7 +33,7 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
         try {
             if (dirty) {
                 Method writeMethod = indexedPropertyDescriptor.getIndexedWriteMethod();
-                writeMethod.invoke(parent.parent.value, new Object[]{new Integer(index), value} );
+                writeMethod.invoke(parent.parent.value, new Object[]{ index, value} );
                 dirty = false;
             }
             if (childDirty) {
