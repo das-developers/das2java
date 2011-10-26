@@ -23,6 +23,7 @@
 
 package org.das2.client;
 
+import java.util.logging.Level;
 import org.das2.stream.StreamDescriptor;
 import org.das2.stream.StreamException;
 import org.das2.stream.DasStreamFormatException;
@@ -104,11 +105,11 @@ public class DasServer {
         }
         String key= "http://" + host + url.getPath();
         if ( instanceHashMap.containsKey( key ) ) {
-            logger.info( "Using existing DasServer for "+url);
+            logger.log( Level.INFO, "Using existing DasServer for {0}", url);
             return (DasServer) instanceHashMap.get( key );
         } else {
             String path= url.getPath();
-            logger.info( "Creating DasServer for "+url);
+            logger.log( Level.INFO, "Creating DasServer for {0}", url);
             DasServer result= new DasServer(host,path);
             instanceHashMap.put(key,result);
             return result;
@@ -121,14 +122,14 @@ public class DasServer {
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.info( "connecting to "+server);
+            logger.log( Level.INFO, "connecting to {0}", server);
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
 
             InputStream in= urlConnection.getInputStream();
 
             String result= new String(  read(in) );
-            logger.info( "response="+result);
+            logger.log( Level.INFO, "response={0}", result);
 
             return result;
         } catch (IOException e) {
@@ -145,14 +146,14 @@ public class DasServer {
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.info( "connecting to "+server);
+            logger.log( Level.INFO, "connecting to {0}", server);
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
 
             InputStream in= urlConnection.getInputStream();
 
             byte[] data= read(in);
-            logger.info( "response="+data.length+" bytes");
+            logger.log( Level.INFO, "response={0} bytes", data.length);
             return new ImageIcon(data);
 
         } catch (IOException e) {
@@ -168,7 +169,7 @@ public class DasServer {
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.info( "connecting to "+server);
+            logger.log( Level.INFO, "connecting to {0}", server);
 
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
@@ -176,7 +177,7 @@ public class DasServer {
             InputStream in= urlConnection.getInputStream();
 
             TreeModel result= createModel(in);
-            logger.info( "response->"+result);
+            logger.log( Level.INFO, "response->{0}", result);
             return result;
 
         } catch (IOException e) {
@@ -192,7 +193,7 @@ public class DasServer {
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.info( "connecting to "+server);
+            logger.log( Level.INFO, "connecting to {0}", server);
 
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
@@ -200,7 +201,7 @@ public class DasServer {
             InputStream in= urlConnection.getInputStream();
 
             TreeModel result= createModel(in);
-            logger.info( "response->"+result);
+            logger.log( Level.INFO, "response->{0}", result);
             return result;
 
         } catch (IOException e) {
@@ -254,7 +255,7 @@ public class DasServer {
             String dsdf = dataSetID.getQuery().split("&")[0];
             URL url = new URL("http", host, port, path+"?server=dsdf&dataset=" + dsdf);
 
-            logger.info( "connecting to "+url);
+            logger.log( Level.INFO, "connecting to {0}", url);
             URLConnection connection = url.openConnection();
             connection.connect();
             String contentType = connection.getContentType();
@@ -277,9 +278,7 @@ public class DasServer {
                         logger.info("response is an exception");
                         String type= root.getAttribute("type");
                         StreamException se= new StreamException( "stream exception: "+type );
-                        DasException de= new DasException( "stream exception: "+type );
-                        de.initCause(se);
-                        throw de;
+                        throw new DasException("stream exception: " + type, se);
                     }
                     else if (root.getTagName().equals("")) {
                         throw new DasStreamFormatException();
@@ -298,7 +297,7 @@ public class DasServer {
             }
             else {
                 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuffer message = new StringBuffer();
+                StringBuilder message = new StringBuilder();
                 for (String line = in.readLine(); line != null; line = in.readLine()) {
                     message.append(line).append('\n');
                 }
@@ -325,7 +324,7 @@ public class DasServer {
 
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.info( "connecting to "+server);
+            logger.log( Level.INFO, "connecting to {0}", server);
 
             InputStream in= server.openStream();
             BufferedInputStream bin= new BufferedInputStream(in);
@@ -360,7 +359,7 @@ public class DasServer {
 
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.info( "connecting to "+server);
+            logger.log( Level.INFO, "connecting to {0}", server);
 
             InputStream in= server.openStream();
             BufferedInputStream bin= new BufferedInputStream(in);
@@ -390,7 +389,7 @@ public class DasServer {
             formData+= "&newPasswd="+URLBuddy.encodeUTF8(cryptNewPass);
 
             URL server= new URL("http",host,port,path+"?"+formData);
-            logger.info( "connecting to "+server);
+            logger.log( Level.INFO, "connecting to {0}", server);
 
             InputStream in= server.openStream();
             BufferedInputStream bin= new BufferedInputStream(in);
@@ -425,9 +424,9 @@ public class DasServer {
 
         byte[] data = new byte[4096];
 
-        int lastBytesRead = -1;
+        //int lastBytesRead = -1;
 
-        String s;
+        //String s;
 
         int offset=0;
 
@@ -467,7 +466,7 @@ public class DasServer {
             das2Response= "";
         }
 
-        logger.info( "response="+das2Response);
+        logger.log( Level.INFO, "response={0}", das2Response);
 
         return das2Response;
     }
@@ -565,8 +564,8 @@ public class DasServer {
             if ( keys.get(resource)==null ) {
                 Authenticator authenticator;
                 authenticator= new Authenticator(this,resource);
-                Key key= authenticator.authenticate();
-                if ( key!=null ) keys.put( resource, key);
+                Key key1= authenticator.authenticate();
+                if ( key1!=null ) keys.put( resource, key1);
             }
         }
         return (Key)keys.get(resource);
@@ -576,6 +575,7 @@ public class DasServer {
         this.key= key;
     }
 
+    @Override
     public String toString() {
         return this.getURL();
     }
