@@ -2171,14 +2171,30 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         private boolean flipped;
         private DasAxis axis;
 
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 29 * hash + (this.range != null ? this.range.hashCode() : 0);
+            hash = 29 * hash + this.dmin;
+            hash = 29 * hash + this.dmax;
+            hash = 29 * hash + ( this.log ? 1 : 0 );
+            hash = 29 * hash + ( this.flipped ? 1 : 0 );
+            hash = 29 * hash + (this.axis != null ? this.axis.hashCode() : 0);
+            return hash;
+        }
+
         public boolean equals(Object o) {
-            Memento m = (Memento) o;
-            return this == m || (this.range.equals(m.range) &&
+            if ( o==null || !( o instanceof Memento) ) {
+                return false;
+            } else {
+                Memento m = (Memento) o;
+                return this == m || (this.range.equals(m.range) &&
                     this.dmin == m.dmin &&
                     this.dmax == m.dmax &&
                     this.log == m.log &&
                     this.flipped == m.flipped &&
                     this.axis == m.axis);
+            }
         }
 
         public String toString() {
