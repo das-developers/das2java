@@ -4,7 +4,7 @@ import java.beans.IndexedPropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Iterator;
 
 class IndexedPropertyItemTreeNode extends PropertyTreeNode {
     
