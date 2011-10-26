@@ -32,6 +32,7 @@ import org.das2.system.DasLogger;
 import java.util.logging.*;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -174,9 +175,14 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
 
-        DDataSet xx= DDataSet.createRank1( ddX.numberOfBins() );
-        for ( int i=0; i<xx.length(); i++ ) xx.putValue(i, ddX.binCenter(i,xunits));
-        xx.putProperty( QDataSet.UNITS, xunits );
+        ArrayDataSet xx;
+        if ( ddX==null ) {
+            xx= ArrayDataSet.copy(xds); //TODO: untested branch
+        } else {
+            xx= DDataSet.createRank1( ddX.numberOfBins() );
+            for ( int i=0; i<xx.length(); i++ ) xx.putValue(i, ddX.binCenter(i,xunits));
+            xx.putProperty( QDataSet.UNITS, xunits );
+        }
 
         MutablePropertyDataSet yy;
         if ( ddY!=null ) {
