@@ -199,7 +199,6 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     
     public Datum getDatum(int i, int j) {
         int table = tableOfIndex(i);
-        int yLength = yTags[table].length;
         if (i < 0 || i >= tableData[0].length) {
             IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException
                     ("x index is out of bounds: " + i + " xLength: " + getXLength());
@@ -447,14 +446,12 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         
         public Datum getDatum(int i, int j) {
             int table = tableOfIndex(i);
-            int yLength = yTags[table].length;
             double value = tableData[index][i][j];
             return Datum.create(value, zUnits[index]);
         }
         
         public double getDouble(int i, int j, Units units) {
             int table = tableOfIndex(i);
-            int yLength = yTags[table].length;
             double value = tableData[index][i][j];
             return zUnits[index].getConverter(units).convert(value);
         }
