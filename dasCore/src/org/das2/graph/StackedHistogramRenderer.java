@@ -383,8 +383,8 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }
     
     public class Rebinner implements DataSetRebinner {
-        DataSetRebinner highResRebinner;
-        DataSetRebinner lowResRebinner;
+        //DataSetRebinner highResRebinner;
+        //DataSetRebinner lowResRebinner;
         Rebinner() {
           //  highResRebinner= new NearestNeighborTableRebinner();
             //highResRebinner= new AveragePeakTableRebinner();
