@@ -344,14 +344,8 @@ public class DatumRangeUtil {
         private boolean tryPattern( Pattern regex, String string, int[] groups, DateDescriptor dateDescriptor ) throws ParseException {
             Matcher matcher= regex.matcher( string.toLowerCase() );
             if ( matcher.find() && matcher.start()==0 ) {
-                // printGroups(matcher);
-                int posDate= matcher.start();
-                int length= matcher.end()-matcher.start();
                 dateDescriptor.delim= matcher.group(groups[3]);
                 dateDescriptor.date= string.substring( matcher.start(), matcher.end()-dateDescriptor.delim.length() );
-                String month;
-                String day;
-                String year;
                 dateDescriptor.day= matcher.group(groups[2]);
                 dateDescriptor.month= matcher.group(groups[1]);
                 dateDescriptor.year= matcher.group(groups[0]);
