@@ -23,6 +23,13 @@
 
 package org.das2.components;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Window;
 import org.das2.graph.SymbolLineRenderer;
 import org.das2.graph.DasColumn;
 import org.das2.graph.DasCanvas;
@@ -37,10 +44,15 @@ import org.das2.system.DasLogger;
 import org.das2.datum.Datum;
 import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -76,7 +88,6 @@ extends DasPlot implements DataPointSelectionListener {
     }
     
     public static VerticalSpectrogramSlicer createSlicer( DasPlot plot, DasAxis xAxis, TableDataSetConsumer dataSetConsumer) {
-        DasAxis sourceYAxis = plot.getYAxis();
         DasAxis sourceZAxis = dataSetConsumer.getZAxis();
         DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
         return new VerticalSpectrogramSlicer(plot, xAxis, yAxis);
@@ -123,7 +134,7 @@ extends DasPlot implements DataPointSelectionListener {
         JButton printButton= new JButton( new AbstractAction("Print...") {
             public void actionPerformed( ActionEvent e ) {
                 canvas.makeCurrent();
-                canvas.PRINT_ACTION.actionPerformed(e);
+                DasCanvas.PRINT_ACTION.actionPerformed(e);
             }
         });
         buttonPanel.add( printButton );
@@ -161,6 +172,7 @@ extends DasPlot implements DataPointSelectionListener {
         popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
     }
     
+    @Override
     protected void drawContent(Graphics2D g) {
         long x;
         x= System.currentTimeMillis()-eventBirthMilli;
@@ -238,15 +250,18 @@ extends DasPlot implements DataPointSelectionListener {
         eventBirthMilli= e.birthMilli;
     }
     
+    @Override
     protected void uninstallComponent() {
         super.uninstallComponent();
     }
     
+    @Override
     protected void installComponent() {
         super.installComponent();
         getCanvas().getGlassPane().setVisible(false);
     }
     
+    @Override
     protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {
         if (isDisplayable()) {
             updateImmediately();
