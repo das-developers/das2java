@@ -86,7 +86,7 @@ public class SerializeUtil {
                 
                 String propertyName= propertyNameList[i];
                 
-                log.fine( "serializing property "+propertyName + " of "+elementName );
+                log.log( Level.FINE, "serializing property {0} of {1}", new Object[]{propertyName, elementName});
                 
                 if ( propertyName.equals("parent") ) {
                     log.info( "kludge to avoid cycles in bean graph due to parent property, ignoring");
@@ -95,7 +95,7 @@ public class SerializeUtil {
                 PropertyDescriptor pd= (PropertyDescriptor)nameMap.get(propertyName);
                 
                 if ( pd==null ) {
-                    log.warning("unable to locate property: "+propertyName+", ignoring");
+                    log.log(Level.WARNING, "unable to locate property: {0}, ignoring", propertyName);
                     continue;
                 }
                 
@@ -103,7 +103,7 @@ public class SerializeUtil {
                 
                 if ( readMethod==null ) {
                     // note this happens with the indexed property getRBG of ColorBar.Type
-                    log.info( "skipping property "+propertyName+" of "+elementName+", failed to find read method." );
+                    log.log( Level.INFO, "skipping property {0} of {1}, failed to find read method.", new Object[]{propertyName, elementName});
                     continue;
                 }
                 
@@ -114,7 +114,7 @@ public class SerializeUtil {
                 value= readMethod.invoke( object, new Object[0] );
                 
                 if ( value==null ) {
-                    log.info( "skipping property "+propertyName+" of "+elementName+", value is null." );
+                    log.log( Level.INFO, "skipping property {0} of {1}, value is null.", new Object[]{propertyName, elementName});
                     continue;
                 }
                 
@@ -180,7 +180,7 @@ public class SerializeUtil {
         PropertyDescriptor pd= (PropertyDescriptor)nameMap.get(propertyName);
         
         if ( pd==null ) {
-            log.warning("unable to locate property: "+propertyName+" of "+className+", ignoring");
+            log.log(Level.WARNING, "unable to locate property: {0} of {1}, ignoring", new Object[]{propertyName, className});
             return;
         }
         
@@ -205,7 +205,7 @@ public class SerializeUtil {
             
             Method writeMethod= pd.getWriteMethod();
             if ( writeMethod==null ) {
-                log.warning("read-only property \""+propertyName+"\" of "+className+" ignored" );
+                log.log(Level.WARNING, "read-only property \"{0}\" of {1} ignored", new Object[]{propertyName, className});
                 return;
             }
             
@@ -271,7 +271,7 @@ public class SerializeUtil {
             String elementName= element.getTagName();
             elementName= elementName.replaceAll( "\\_dollar_", "\\$" );
             
-            log.fine("handling "+elementName);
+            log.log(Level.FINE, "handling {0}", elementName);
             
             if ( !object.getClass().getName().equals( elementName ) ) {
                 throw new IllegalArgumentException("class name doesn't match: expected "+
@@ -292,7 +292,7 @@ public class SerializeUtil {
             NamedNodeMap attrs= element.getAttributes();
             for ( int i=0; i<attrs.getLength(); i++ ) {
                 Node node= attrs.item(i);
-                log.finer( "attr: "+ node.getNodeType() +"  "+node.getNodeName() );
+                log.log( Level.FINER, "attr: {0}  {1}", new Object[]{node.getNodeType(), node.getNodeName()});
                 processNode( node, object, elementName, nameMap );
             }
             
