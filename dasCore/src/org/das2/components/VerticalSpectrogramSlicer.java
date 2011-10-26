@@ -174,8 +174,6 @@ extends DasPlot implements DataPointSelectionListener {
     
     @Override
     protected void drawContent(Graphics2D g) {
-        long x;
-        x= System.currentTimeMillis()-eventBirthMilli;
         
         int ix= (int)this.getXAxis().transform(yValue);
         DasRow row= this.getRow();
@@ -190,8 +188,6 @@ extends DasPlot implements DataPointSelectionListener {
         g.drawLine( ix, iy0+4, ix, iy1-4 );
         
         super.drawContent(g);
-        x= System.currentTimeMillis()-eventBirthMilli;
-        //org.das2.util.DasDie.println("event handled in "+x+" milliseconds");
     }
     
     protected boolean isPopupVisible() {
