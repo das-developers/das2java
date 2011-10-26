@@ -153,7 +153,7 @@ public class NameContext {
             }
             IndexedPropertyDescriptor ipd = (IndexedPropertyDescriptor)pd;
             Method readMethod = ipd.getIndexedReadMethod();
-            return readMethod.invoke(obj, new Object[] { new Integer(index) });
+            return readMethod.invoke(obj, new Object[] { index });
         }
         catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);
@@ -230,7 +230,7 @@ public class NameContext {
             && !(propertyType == long.class && value instanceof Long)) {
                 throw new DasPropertyException(DasPropertyException.TYPE_MISMATCH, null, property);
             }
-            writeMethod.invoke(obj, new Object[] { new Integer(index), value });
+            writeMethod.invoke(obj, new Object[] { index, value });
         }
         catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);

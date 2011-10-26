@@ -133,7 +133,7 @@ public class DasApplication {
         } else {
             ihits= (hits.intValue())+1;
         }
-        hitsMap.put( type, new Integer(ihits));
+        hitsMap.put( type, ihits);
         return type+"_"+ihits;
     }
     
