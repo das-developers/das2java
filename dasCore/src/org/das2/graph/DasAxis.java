@@ -1154,7 +1154,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @return
      */
-    public TickVDescriptor getTickV() {
+    public synchronized TickVDescriptor getTickV() {
         if (tickV == null) {
             updateTickV();
         }
