@@ -76,6 +76,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
                     showPopupImpl();
                 }
             };
+            SwingUtilities.invokeLater(r);
         }
     }
     
