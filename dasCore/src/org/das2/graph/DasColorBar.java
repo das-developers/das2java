@@ -292,7 +292,7 @@ public class DasColorBar extends DasAxis {
             
             int ii= 0;
             for (int i = 0; i < ncolor-1; i++) {
-                float comp= ( i - bottom ) * 255 / ( top - bottom );
+                float comp= ( i - bottom ) * 255.f / ( top - bottom );
                 if ( comp > index[ii + 1]) {
                     ii++;
                 }
@@ -517,37 +517,6 @@ public class DasColorBar extends DasAxis {
         
         public void mousePointSelected(MousePointSelectionEvent e) {
             setColorBar( e.getY() );
-        }
-        
-        /** Registers DataRangeSelectionListener to receive events.
-         * @param listener The listener to register.
-         */
-        public synchronized void addDataRangeSelectionListener(org.das2.event.DataRangeSelectionListener listener) {
-            if (listenerList == null ) {
-                listenerList = new EventListenerList();
-            }
-            listenerList.add(org.das2.event.DataRangeSelectionListener.class, listener);
-        }
-        
-        /** Removes DataRangeSelectionListener from the list of listeners.
-         * @param listener The listener to remove.
-         */
-        public synchronized void removeDataRangeSelectionListener(org.das2.event.DataRangeSelectionListener listener) {
-            listenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
-        }
-        
-        /** Notifies all registered listeners about the event.
-         *
-         * @param event The event to be fired
-         */
-        private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event) {
-            if (listenerList == null) return;
-            Object[] listeners = listenerList.getListenerList();
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i]==org.das2.event.DataRangeSelectionListener.class) {
-                    ((org.das2.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
-                }
-            }
         }
         
         public void mousePressed(java.awt.event.MouseEvent e) {
