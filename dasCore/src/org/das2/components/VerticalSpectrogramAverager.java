@@ -23,6 +23,11 @@
 
 package org.das2.components;
 
+import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.Point;
+import java.awt.Window;
 import org.das2.graph.SymbolLineRenderer;
 import org.das2.graph.DasColumn;
 import org.das2.graph.DasCanvas;
@@ -37,10 +42,15 @@ import org.das2.DasException;
 import org.das2.datum.Datum;
 import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.DataRangeSelectionListener;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.das2.graph.SeriesRenderer;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -109,7 +119,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         JButton printButton= new JButton( new AbstractAction("Print...") {
             public void actionPerformed( ActionEvent e ) {
                 canvas.makeCurrent();
-                canvas.PRINT_ACTION.actionPerformed(e);
+                DasCanvas.PRINT_ACTION.actionPerformed(e);
             }
         });
         buttonPanel.add( printButton );
@@ -180,10 +190,12 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         }
     }
     
+    @Override
     protected void uninstallComponent() {
         super.uninstallComponent();
     }
     
+    @Override
     protected void installComponent() {
         super.installComponent();
         getCanvas().getGlassPane().setVisible(false);
