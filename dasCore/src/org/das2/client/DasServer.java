@@ -473,7 +473,7 @@ public class DasServer {
     }
 
     private byte[] read(InputStream uin) throws IOException {
-        LinkedList list = new LinkedList();
+        LinkedList<byte[]> list = new LinkedList();
         byte[] data;
         int bytesRead=0;
         //int totalBytesRead=0;
@@ -533,7 +533,7 @@ public class DasServer {
 
         data = new byte[dataLength];
 
-        Iterator iterator = list.iterator();
+        Iterator<byte[]> iterator = list.iterator();
         int i;
         for (i = 0; i < list.size()-1; i++) {
             System.arraycopy(iterator.next(), 0, data, i*4096, 4096);
