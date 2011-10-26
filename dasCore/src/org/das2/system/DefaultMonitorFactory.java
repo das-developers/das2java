@@ -76,7 +76,7 @@ public class DefaultMonitorFactory implements MonitorFactory {
     }
     
     private void putMonitor( ProgressMonitor monitor, String label, String description ) {
-        Long key= new Long( System.currentTimeMillis() );
+        Long key= System.currentTimeMillis();
         monitors.put( key, new MonitorEntry( monitor, description ) );
     }
     
