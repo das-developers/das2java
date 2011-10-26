@@ -28,6 +28,7 @@ import java.awt.event.WindowStateListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -210,6 +211,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }));
             }
 
+            @Override
             public void mousePressed(MouseEvent event) {
                 selectedTab = TearoffTabbedPane.this.indexAtLocation(event.getX(), event.getY());
                 if (event.isPopupTrigger()) {
@@ -316,6 +318,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }));
             }
 
+            @Override
             public void mousePressed(MouseEvent event) {
                 selectedTab = TearoffTabbedPane.this.indexAtLocation(event.getX(), event.getY());
                 if (event.isPopupTrigger()) {
@@ -353,7 +356,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
 
     public void tearOff(int tabIndex, Container newContainer) {
-        int lastSelected = this.lastSelected;
+        int lastSelected1 = this.lastSelected;
         Component c = getComponentAt(tabIndex);
         String title = super.getTitleAt(tabIndex);
         super.removeTabAt(tabIndex);
@@ -370,10 +373,9 @@ public class TearoffTabbedPane extends JTabbedPane {
                 ttp.setSize( c.getPreferredSize().width + dx, c.getPreferredSize().height + dy);
             }
         }
-        setSelectedIndex(lastSelected);
+        setSelectedIndex(lastSelected1);
     }
 
-    private final static Object STICK_LEFT= "left";
     private final static Object STICK_RIGHT= "right";
 
     /**
@@ -489,6 +491,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
             rightFrame.addWindowListener(new WindowAdapter() {
 
+                @Override
                 public void windowClosing(WindowEvent e) {
                     parent.removeWindowStateListener(listener);
                     parent.removeComponentListener(rightFrameListener);
@@ -523,7 +526,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     protected void slideRight(int tabIndex) {
 
         final Component c = getComponentAt(tabIndex);
-        logger.finest("slideRight "+c);
+        logger.log(Level.FINEST, "slideRight {0}", c);
 
         setSelectedIndex(tabIndex);
         c.setVisible(true);  // darwin bug297
@@ -548,7 +551,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     protected JFrame tearOffIntoFrame(int tabIndex) {
         final Component c = getComponentAt(tabIndex);
-        logger.finest("tearOffInfoFrame "+c);
+        logger.log(Level.FINEST, "tearOffInfoFrame {0}", c);
         setSelectedIndex(tabIndex);
         c.setVisible(true);  // darwin bug297
         Point p = c.getLocationOnScreen();
@@ -571,6 +574,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         babySitter.setLocation(p);
         babySitter.addWindowListener(new WindowAdapter() {
 
+            @Override
             public void windowClosing(WindowEvent e) {
                 parent.removeWindowStateListener(listener);
                 dock(c);
@@ -592,7 +596,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
 
     public void dock(Component c) {
-        logger.finest("dock "+c);
+        logger.log(Level.FINEST, "dock {0}", c);
         int selectedIndex = getSelectedIndex();
         TabDesc td = (TabDesc) tabs.get(c);
         int index = td.index;
@@ -602,24 +606,28 @@ public class TearoffTabbedPane extends JTabbedPane {
         setSelectedIndex(selectedIndex);
     }
 
+    @Override
     public void addTab(String title, Icon icon, Component component) {
         super.addTab(title, icon, component);
         TabDesc td = new TabDesc(title, icon, null, indexOfComponent(component));
         tabs.put(component, td);
     }
 
+    @Override
     public void addTab(String title, Component component) {
         super.addTab(title, component);
         TabDesc td = new TabDesc(title, null, null, indexOfComponent(component));
         tabs.put(component, td);
     }
 
+    @Override
     public void insertTab(String title, Icon icon, Component component, String tip, int index) {
         super.insertTab(title, icon, component, tip, index);
         TabDesc td = new TabDesc(title, icon, tip, index);
         tabs.put(component, td);
     }
 
+    @Override
     public void addTab(String title, Icon icon, Component component, String tip) {
         super.addTab(title, icon, component, tip);
         TabDesc td = new TabDesc(title, icon, tip, indexOfComponent(component));
@@ -636,6 +644,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         return null;
     }
 
+    @Override
     public void removeTabAt(int index) {
         Component c = getTabComponentByIndex(index);
         super.removeTabAt(index);
@@ -654,11 +663,12 @@ public class TearoffTabbedPane extends JTabbedPane {
         
     }
 
+    @Override
     public void setSelectedIndex(int index) {
         if (index != getSelectedIndex()) {
             lastSelected = getSelectedIndex();
         }
         super.setSelectedIndex(index);
-        logger.finest("setSelectedIndex "+getSelectedComponent());
+        logger.log(Level.FINEST, "setSelectedIndex {0}", getSelectedComponent());
     }
 }
