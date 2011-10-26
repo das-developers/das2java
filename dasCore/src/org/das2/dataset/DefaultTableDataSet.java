@@ -379,10 +379,10 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         out.println("    Table Count: " + tableCount());
         Object[] args = new Object[4];
         for (int table = 0; table < tableCount(); table++) {
-            args[0] = new Integer(table);
-            args[1] = new Integer(yTags[table].length);
-            args[2] = new Integer(tableStart(table));
-            args[3] = new Integer(tableEnd(table));
+            args[0] = table;
+            args[1] = yTags[table].length;
+            args[2] = tableStart(table);
+            args[3] = tableEnd(table);
             String str = tableFormat.format(args);
             out.println(str);
             out.print("        Y Tags:");
