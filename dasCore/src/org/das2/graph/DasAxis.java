@@ -95,6 +95,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final String PROP_OPPOSITE_AXIS_VISIBLE = "oppositeAxisVisible";
     public static final String PROP_BOUNDS = "bounds";
     public static final String PROP_SCAN_RANGE="scanRange";
+    public static final String PROP_UNITS = "units";
+    public static final String PROPERTY_TICKS = "ticks";
 
     private static final int MAX_TCA_LINES=10; // maximum number of TCA lines
     /*
@@ -116,13 +118,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final int UP = 995;
     /**  */
     public static final int DOWN = 996;
+
     /* Constants defining the action commands and labels for the scan buttons. */
     private static final String SCAN_PREVIOUS_LABEL = "<< scan";
     private static final String SCAN_NEXT_LABEL = "scan >>";
-    public static String PROP_UNITS = "units";
+
     /* GENERAL AXIS INSTANCE MEMBERS */
     protected DataRange dataRange;
-    public static String PROPERTY_TICKS = "ticks";
 
     public DatumFormatter getUserDatumFormatter() {
         return userDatumFormatter;
@@ -164,7 +166,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private int tickDirection = 1;  // 1=down or left, -1=up or right
     protected String axisLabel = "";
     protected TickVDescriptor tickV;
-    protected boolean autoTickV = true;
+    private boolean autoTickV = true;
     private boolean ticksVisible = true;
     private boolean tickLabelsVisible = true;
     private boolean oppositeAxisVisible = false;
@@ -202,7 +204,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private QDataSet tcaData = null;
     private String dataset = "";
     private boolean drawTca;
-    public static String PROPERTY_DATUMRANGE = "datumRange";
+    public static final String PROPERTY_DATUMRANGE = "datumRange";
     /* DEBUGGING INSTANCE MEMBERS */
     private static boolean DEBUG_GRAPHICS = false;
     private static final Color[] DEBUG_COLORS;
@@ -1550,42 +1552,42 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
     }
-    private String errorMessage;
-
-    /**
-     * checks the validity of the state, setting variable errorMessage to non-null if there is a problem.
-     */
-    private void checkState() {
-        double dmin = getDataMinimum(dataRange.getUnits());
-        double dmax = getDataMaximum(dataRange.getUnits());
-
-        String em = "";
-
-        if (Double.isNaN(dmin)) {
-            em += "dmin is NaN, ";
-        }
-        if (Double.isNaN(dmax)) {
-            em += "dmax is NaN, ";
-        }
-        if (Double.isInfinite(dmin)) {
-            em += "dmin is infinite, ";
-        }
-        if (Double.isInfinite(dmax)) {
-            em += "dmax is infinite, ";
-        }
-        if (dmin >= dmax) {
-            em += "min => max, ";
-        }
-        if (dataRange.isLog() && dmin <= 0) {
-            em += "min<= 0 and log, ";
-        }
-
-        if (em.length() == 0) {
-            this.errorMessage = null;
-        } else {
-            this.errorMessage = em;
-        }
-    }
+//    private String errorMessage;
+//
+//    /**
+//     * checks the validity of the state, setting variable errorMessage to non-null if there is a problem.
+//     */
+//    private void checkState() {
+//        double dmin = getDataMinimum(dataRange.getUnits());
+//        double dmax = getDataMaximum(dataRange.getUnits());
+//
+//        String em = "";
+//
+//        if (Double.isNaN(dmin)) {
+//            em += "dmin is NaN, ";
+//        }
+//        if (Double.isNaN(dmax)) {
+//            em += "dmax is NaN, ";
+//        }
+//        if (Double.isInfinite(dmin)) {
+//            em += "dmin is infinite, ";
+//        }
+//        if (Double.isInfinite(dmax)) {
+//            em += "dmax is infinite, ";
+//        }
+//        if (dmin >= dmax) {
+//            em += "min => max, ";
+//        }
+//        if (dataRange.isLog() && dmin <= 0) {
+//            em += "min<= 0 and log, ";
+//        }
+//
+//        if (em.length() == 0) {
+//            this.errorMessage = null;
+//        } else {
+//            this.errorMessage = em;
+//        }
+//    }
 
     /** paints the axis component.  The tickV's and bounds should be calculated at this point */
     protected void paintComponent(Graphics graphics) {
@@ -1675,7 +1677,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         /* End debugging code */
 
-        if (tickV == null || tickV.tickV.getUnits().isConvertableTo(getUnits())) {
+        TickVDescriptor tickV1;
+        synchronized (this) {
+            tickV1= this.tickV;
+        }
+        if (tickV1 == null || tickV1.tickV.getUnits().isConvertableTo(getUnits())) {
             if (isHorizontal()) {
                 paintHorizontalAxis(g);
             } else {
