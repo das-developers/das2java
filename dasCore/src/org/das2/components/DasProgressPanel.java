@@ -110,7 +110,6 @@ public class DasProgressPanel implements ProgressMonitor {
             super.paintComponent(g1);
         }
     }    // provides details button, which shows who creates and who consumes the ProgressPanel
-    final static boolean useDetails = false;
     Exception source;
     Exception consumer;
 
@@ -118,9 +117,7 @@ public class DasProgressPanel implements ProgressMonitor {
     ImageIcon cancelGrey= new ImageIcon( DasProgressPanel.class.getResource("/images/cancelGrey14.png") );
     
     public DasProgressPanel(String label) {
-        if (useDetails)
-            source = new Exception();
-
+        
         componentsInitialized = false;
         this.label = label;
 
@@ -229,8 +226,6 @@ public class DasProgressPanel implements ProgressMonitor {
 
     private void initComponents() {
         // get a stack trace so we can see what caused this.
-        if (useDetails)
-            consumer = new Exception();
 
         createComponentCount++;
         //System.err.println("createComponentCount="+createComponentCount );
@@ -274,24 +269,6 @@ public class DasProgressPanel implements ProgressMonitor {
         kbLabel.setMinimumSize(progressBar.getPreferredSize());
         kbLabel.setPreferredSize(progressBar.getPreferredSize());
         kbLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-
-        Border lineBorder = new LineBorder(Color.BLACK, 2);
-        Border emptyBorder = new EmptyBorder(2, 2, 2, 2);
-        CompoundBorder border = new CompoundBorder(lineBorder, emptyBorder);
-
-        JButton detailsButton;
-        if (useDetails) {
-            detailsButton = new JButton("details");
-            detailsButton.setOpaque(false);
-            detailsButton.setBorder(border);
-            detailsButton.setFocusPainted(false);
-            detailsButton.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    details();
-                }
-            });
-        }
 
         JPanel progressBarPanel= new JPanel( new BorderLayout() );
 
