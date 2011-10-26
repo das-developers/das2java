@@ -204,7 +204,7 @@ public class NumberUnits extends Units {
     
     protected static Number add( Number a, Number value ) {
         if ( ( a instanceof Integer ) && ( value instanceof Integer ) ) {
-            return new Integer( a.intValue() + value.intValue() );
+            return a.intValue() + value.intValue();
         } else {
             return new java.lang.Double( a.doubleValue()+value.doubleValue() );
         }
@@ -212,7 +212,7 @@ public class NumberUnits extends Units {
     
     protected static Number subtract( Number from, Number value ) {
         if ( ( from instanceof Integer ) && ( value instanceof Integer ) ) {
-            return new Integer( from.intValue() - value.intValue() );
+            return from.intValue() - value.intValue();
         } else {
             return new java.lang.Double( from.doubleValue()-value.doubleValue() );
         }
@@ -220,7 +220,7 @@ public class NumberUnits extends Units {
     
     protected static Number divide( Number a, Number value ) {
         if ( ( a instanceof Integer ) && ( value instanceof Integer ) ) {
-            return new Integer( a.intValue() / value.intValue() );
+            return a.intValue() / value.intValue();
         } else {
             return new java.lang.Double( a.doubleValue()/value.doubleValue() );
         }
@@ -228,7 +228,7 @@ public class NumberUnits extends Units {
     
     protected static Number multiply( Number a, Number value ) {
         if ( ( a instanceof Integer ) && ( value instanceof Integer ) ) {
-            return new Integer( a.intValue() * value.intValue() );
+            return a.intValue() * value.intValue();
         } else {
             return new java.lang.Double( a.doubleValue()*value.doubleValue() );
         }

@@ -74,10 +74,10 @@ public abstract class UnitsConverter {
         double value = number.doubleValue();
         value = convert(value);
         if (number instanceof Integer) {
-            return new Integer((int)value);
+            return Integer.valueOf((int)value);
         }
         else if (number instanceof Long) {
-            return new Long((long)value);
+            return Long.valueOf((long)value);
         }
         else {
             return new Double(value);
