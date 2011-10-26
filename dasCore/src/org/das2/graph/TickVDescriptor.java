@@ -15,6 +15,8 @@ import org.das2.datum.TimeUtil;
 import org.das2.util.DasMath;
 import java.text.ParseException;
 import java.util.*;
+import org.das2.datum.EnumerationUnits;
+import org.das2.datum.UnitsUtil;
 
 /** A TickVDescriptor describes the position that ticks
  * should be drawn, so that a fairly generic tick drawing routine
@@ -191,6 +193,13 @@ public class TickVDescriptor {
             mag *= 10;
         }
 
+        if ( UnitsUtil.isNominalMeasurement(res.units) || UnitsUtil.isOrdinalMeasurement(res.units) ) {
+            if ( mag<1 ) {
+                mag= 1;
+                absissa= 1;
+            }
+        }
+
         double axisLengthData = maximum - minimum;
 
         int minorPerMajor;
@@ -208,6 +217,11 @@ public class TickVDescriptor {
         double firstTick = majorTickSize * Math.ceil((minimum - axisLengthData) / majorTickSize - 0.01);
         double lastTick = majorTickSize * Math.floor((maximum + axisLengthData) / majorTickSize + 0.01);
 
+        if ( UnitsUtil.isNominalMeasurement(res.units) || UnitsUtil.isOrdinalMeasurement(res.units) ) {
+            if ( minorTickSize<1 ) {
+                minorTickSize= 1;
+            }
+        }
         int nTicks = 1 + (int) Math.round((lastTick - firstTick) / majorTickSize);
 
         double[] result = new double[nTicks];
@@ -219,6 +233,17 @@ public class TickVDescriptor {
         int ifirst = nTicks / 3;
         int ilast = 2 * nTicks / 3;
 
+        if ( UnitsUtil.isNominalMeasurement(res.units) || UnitsUtil.isOrdinalMeasurement(res.units) ) {
+            EnumerationUnits eu= (EnumerationUnits)res.units;
+            Map<Integer,Datum> ords= eu.getValues();
+            int imax= eu.getHighestOrdinal();
+            for ( int i=0; i<result.length; i++ ) {
+                while ( result[i]<=imax && !ords.containsKey(result[i]) ) result[i]= result[i]+1;
+                if ( result[i]>imax ) result[i]=imax;
+            }
+            System.err.println("here245");
+        }
+
         res.datumFormatter = DatumUtil.bestFormatter(res.units.createDatum(result[ifirst]),
                 res.units.createDatum(result[ilast]), ilast - ifirst);
 
@@ -228,6 +253,16 @@ public class TickVDescriptor {
         double[] minorTickV = new double[nMinor];
         for (int i = 0; i < nMinor; i++) {
             minorTickV[i] = firstMinor + i * minorTickSize;
+        }
+
+        if ( UnitsUtil.isNominalMeasurement(res.units) || UnitsUtil.isOrdinalMeasurement(res.units) ) {
+            EnumerationUnits eu= (EnumerationUnits)res.units;
+            int imax= eu.getHighestOrdinal();
+            Map<Integer,Datum> ords= eu.getValues();
+            for ( int i=0; i<minorTickV.length; i++ ) {
+                while ( minorTickV[i]<=imax && !ords.containsKey(minorTickV[i]) ) minorTickV[i]= minorTickV[i]+1;
+                if ( minorTickV[i]>imax ) minorTickV[i]=imax;
+            }
         }
         res.minorTickV = DatumVector.newDatumVector(minorTickV, res.units);
 
