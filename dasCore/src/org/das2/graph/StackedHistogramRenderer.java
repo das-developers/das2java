@@ -92,6 +92,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             this.id= id;
         }
         
+        @Override
         public String toString() {
             return this.id;
         }
@@ -153,6 +154,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         g2.dispose();
     }
     
+    @Override
     protected void installRenderer() {
         DasCanvas canvas= parent.getCanvas();
         littleRow= new DasRow( canvas, 0.5,0.6 );
@@ -185,6 +187,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer(p,p.getXAxis(),p.getYAxis()), "Length" ) );
     }
     
+    @Override
     protected void uninstallRenderer() {
     }
     
@@ -226,13 +229,14 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }
     
     
+    @Override
     synchronized public void updatePlotImage( DasAxis xAxis, DasAxis yAxis_1, ProgressMonitor monitor ) throws DasException {
         super.updatePlotImage( xAxis, yAxis_1, monitor );
         final Color BAR_COLOR= Color.BLACK;
         
-        Component parent= getParent();
-        Cursor cursor0= parent.getCursor();
-        parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        Component parent1= getParent();
+        Cursor cursor0= parent1.getCursor();
+        parent1.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         
         DasColumn column= xAxis.getColumn();
         DasRow row= yAxis.getRow();
@@ -243,11 +247,11 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         if ( w==0 ) return;
         
         //plotImage = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
-        BufferedImage plotImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        BufferedImage plotImage1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         
-        Graphics2D g = plotImage.createGraphics();
+        Graphics2D g = plotImage1.createGraphics();
         g.setColor(Color.WHITE);
-        g.fillRect(0, 0, plotImage.getWidth(), plotImage.getHeight());
+        g.fillRect(0, 0, plotImage1.getWidth(), plotImage1.getHeight());
         g.translate(-column.getDMinimum(),-row.getDMinimum());
         
         //Dimension d;
@@ -282,7 +286,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         QDataSet peaks= SemanticOps.getPlanarView(data,"peaks");
         QDataSet weights= SemanticOps.weightsDataSet(data);
         
-        DasLabelAxis yAxis= (DasLabelAxis)yAxis_1;
+        DasLabelAxis yAxis1= (DasLabelAxis)yAxis_1;
         
         int zmid= zAxis.getRow().getDMiddle();
         boolean haveLittleRow= false;
@@ -297,19 +301,19 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             //Line2D.Float lBase;
             
             if ( j==(data.length(0)-1) ) {   /* Draw top grey line */
-                yBase= yAxis.getItemMin(yunits.createDatum(yds.value(j)));
+                yBase= yAxis1.getItemMin(yunits.createDatum(yds.value(j)));
                 g.setColor(GREY_PEAKS_COLOR);
                 g.drawLine(xDMin, yBase, xDMax, yBase );
                 g.setColor(BAR_COLOR);
             }
             
-            yBase= yAxis.getItemMax(yunits.createDatum(yds.value(j)));
+            yBase= yAxis1.getItemMax(yunits.createDatum(yds.value(j)));
             g.setColor(Color.lightGray);
             g.drawLine(xDMin, yBase, xDMax, yBase );
             g.setColor(BAR_COLOR);
             
-            int yBase1= yAxis.getItemMin(yunits.createDatum(yds.value(j)));
-            double canvasHeight= parent.getHeight();
+            int yBase1= yAxis1.getItemMin(yunits.createDatum(yds.value(j)));
+            double canvasHeight= parent1.getHeight();
             
             if ( !haveLittleRow && yBase1 <= zmid  ) {
                 littleRow.setDPosition(yBase1,yBase);
@@ -362,8 +366,8 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         }
         
         g.dispose();
-        this.plotImage = plotImage;
-        parent.setCursor(cursor0);
+        this.plotImage = plotImage1;
+        parent1.setCursor(cursor0);
         getParent().repaint();
         
         if ( sliceRebinnedData ) super.ds= data;
@@ -450,10 +454,12 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         this.sliceRebinnedData = sliceRebinnedData;
     }
         
+    @Override
     public String getListLabel() {
         return "stacked histogram";
     }
     
+    @Override
     public Icon getListIcon() {
         return null;
     }
