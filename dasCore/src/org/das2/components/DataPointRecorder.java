@@ -939,11 +939,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
 
     private void fireDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
-        if (listenerList1 == null) {
-            return;
-        }
+        Object[] listeners;
+        synchronized (this) {
+            if (listenerList1 == null) {
+                return;
+            }
 
-        Object[] listeners = listenerList1.getListenerList();
+            listeners= listenerList1.getListenerList();
+        }
         for (int i = listeners.length - 2; i >=
                 0; i -=
                         2) {
