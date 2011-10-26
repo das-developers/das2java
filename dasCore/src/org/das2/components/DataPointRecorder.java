@@ -288,19 +288,19 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         FileOutputStream out = new FileOutputStream(file);
         BufferedWriter r = new BufferedWriter(new OutputStreamWriter(out));
 
-        StringBuffer header = new StringBuffer();
+        StringBuilder header = new StringBuilder();
         header.append("## ");
         for (int j = 0; j < planesArray.length; j++) {
-            header.append(myTableModel.getColumnName(j) + "\t");
+            header.append(myTableModel.getColumnName(j)).append("\t");
         }
         r.write(header.toString());
         r.newLine();
         for (int i = 0; i < dataPoints.size(); i++) {
             DataPoint x = (DataPoint) dataPoints.get(i);
-            StringBuffer s = new StringBuffer();
+            StringBuilder s = new StringBuilder();
             for (int j = 0; j < 2; j++) {
                 DatumFormatter formatter = x.get(j).getFormatter();
-                s.append(formatter.format(x.get(j), unitsArray[j]) + "\t");
+                s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
             }
             for (int j = 2; j < planesArray.length; j++) {
                 Object o = x.getPlane(planesArray[j]);
@@ -308,11 +308,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     if (o == null) {
                         o = "";
                     }
-                    s.append("\"" + o + "\"\t");
+                    s.append("\"").append(o).append("\"\t");
                 } else {
                     Datum d = (Datum) o;
                     DatumFormatter f = d.getFormatter();
-                    s.append(f.format(d, unitsArray[j]) + "\t");
+                    s.append(f.format(d, unitsArray[j])).append("\t");
                 }
             }
             r.write(s.toString());
