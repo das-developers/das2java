@@ -233,7 +233,7 @@ public class DataSetOps {
         
         for (int i = 0; i < ds.length(); i++) {
             if ( wds.value(i)>0. ) {
-                indeces[i0] = new Integer(i);
+                indeces[i0] = i;
                 i0++;
             }
         }
