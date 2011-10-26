@@ -77,7 +77,7 @@ public class EnumerationUnits extends Units {
             if (highestOrdinal < ival) {
                 highestOrdinal = ival;
             }
-            Integer ordinal = new Integer(ival);
+            Integer ordinal = ival;
             Datum result = new Datum.Double(ordinal, this);
             if ( ordinals.containsKey(ordinal) ) {
                 Datum d=  ordinals.get(ordinal);
@@ -106,7 +106,7 @@ public class EnumerationUnits extends Units {
             return objects.get(object);
         } else {
             highestOrdinal++;
-            Integer ordinal = new Integer(highestOrdinal);
+            Integer ordinal = highestOrdinal;
             Datum result = new Datum.Double(ordinal, this);
             ordinals.put(ordinal, result);
             invObjects.put(result, object);
@@ -124,7 +124,7 @@ public class EnumerationUnits extends Units {
     }
 
     public Datum createDatum(int value) {
-        Integer key = new Integer(value);
+        Integer key = value;
         if (ordinals.containsKey(key)) {
             return ordinals.get(key);
         } else {
