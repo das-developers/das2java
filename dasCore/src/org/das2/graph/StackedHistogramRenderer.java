@@ -393,14 +393,14 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         }
         
         public QDataSet rebin(QDataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException {
-            QDataSet xds= SemanticOps.xtagsDataSet(ds);
+            //QDataSet xds= SemanticOps.xtagsDataSet(ds);
 
-            Datum xwidth= SemanticOps.guessXTagWidth(xds,null);
-            if ( xwidth==null ) xwidth= DataSetUtil.guessXTagWidth((TableDataSet)ds);
-            Units rdUnits= x.getUnits();
-            if ( rdUnits instanceof LocationUnits ) {
-                rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
-            }
+            //Datum xwidth= SemanticOps.guessXTagWidth(xds,null);
+            //if ( xwidth==null ) xwidth= DataSetUtil.guessXTagWidth((TableDataSet)ds);
+            //Units rdUnits= x.getUnits();
+            //if ( rdUnits instanceof LocationUnits ) {
+            //    rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
+            //}
 
             throw new RuntimeException("Not supported, since the introduction of QDataSet into das2.");
 
