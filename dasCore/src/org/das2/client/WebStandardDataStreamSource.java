@@ -219,7 +219,6 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
 
             String errorTag= "error";
             if (serverResponse.startsWith("<"+errorTag+">")) {
-                int index2= serverResponse.indexOf("</"+errorTag+">");
 
                 String error= serverResponse.substring( errorTag.length()+2,
                         serverResponse.length()-(errorTag.length()+3));
