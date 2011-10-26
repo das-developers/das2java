@@ -115,6 +115,7 @@ public final class TimeUtil {
         
         public boolean isLocation= false;
         
+        @Override
         public String toString() {
             return year+"/"+month+"/"+day+" "+hour+":"+minute+":"+seconds;
         }
@@ -604,7 +605,7 @@ public final class TimeUtil {
      * @param array
      * @return
      */
-    private static final TimeStruct next( int step, TimeStruct array ) {
+    private static TimeStruct next( int step, TimeStruct array ) {
         switch (step) {
             case SECOND: 
                 array.seconds= array.seconds+1;
@@ -651,7 +652,7 @@ public final class TimeUtil {
         return array;
     }
     
-    public static final Datum next( int step, Datum datum ) {
+    public static Datum next( int step, Datum datum ) {
         if ( step==NANO ) throw new IllegalArgumentException("not supported nanos");
         return toDatum( next( step, toTimeStruct(datum) ) );
     }
@@ -798,7 +799,7 @@ public final class TimeUtil {
      * @return
      * @throws java.text.ParseException
      */
-    public static final TimeStruct parseTime(String s) throws java.text.ParseException {
+    public static TimeStruct parseTime(String s) throws java.text.ParseException {
         int year, month, day_month, day_year, hour, minute;
         //String s;
         double second;
