@@ -1042,7 +1042,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         DatumRange context= getDatumRange(); // this may not contain all the ticks.
         context= DatumRangeUtil.union( context, getUnits().createDatum( uc.convert(tickV[0]) ) );
         context= DatumRangeUtil.union( context, getUnits().createDatum( uc.convert(tickV[tickV.length-1]) ) );
-        ex.putProperty( QDataSet.CONTEXT_0, 0, org.virbo.dataset.DataSetUtil.asDataSet( getDatumRange() ) );
+        ex.putProperty( QDataSet.CONTEXT_0, 0, org.virbo.dataset.DataSetUtil.asDataSet( context ) );
         QDataSet dx= org.virbo.dataset.DataSetUtil.asDataSet( getDatumRange().width().divide( getColumn().getWidth() ) );
         ex.putProperty( QDataSet.DELTA_PLUS, 0, dx );
         ex.putProperty( QDataSet.DELTA_MINUS, 0, dx );
