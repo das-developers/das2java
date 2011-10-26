@@ -173,8 +173,8 @@ class PropertyTreeNode implements PropertyTreeNodeInterface {
         boolean allowsChildren= getAllowsChildren();
         
         if ( allowsChildren ) {
-            String ss= String.valueOf(value);
-            /*if ( ss.length()<100 ) {
+            /*String ss= String.valueOf(value);
+            if ( ss.length()<100 ) {
                 return ss;
             } else {
                 return ss.substring(0,100) + "...";
