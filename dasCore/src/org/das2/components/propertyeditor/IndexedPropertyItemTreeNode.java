@@ -21,14 +21,17 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
         this.indexedPropertyDescriptor = indexedPropertyDescriptor;
     }
     
+    @Override
     public boolean getAllowsChildren() {
         return indexedPropertyDescriptor.getPropertyEditorClass() == null;
     }
     
+    @Override
     public String getDisplayName() {
         return propertyDescriptor.getName() + "[" + index + "]";
     }
     
+    @Override
     public void flush()  {
         try {
             if (dirty) {
@@ -50,11 +53,13 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
         }
     }
     
+    @Override
     protected Object read() {
         Object[] parentValue= (Object[])parent.read();
         return parentValue[this.index];
     }
     
+    @Override
     public void refresh( ) {
         Object newValue = read();
         boolean foldMe= false;
