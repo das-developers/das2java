@@ -265,7 +265,6 @@ public final class DatumUtil {
             double discernable= Math.pow(10,-1*fracDigits);
             
             Datum step= maximum.subtract(minimum).divide( nsteps );
-            double dstep= step.doubleValue(units.getOffsetUnits());
             for ( int j=0; j<nsteps; j++ ) {
                 double d= minimum.add(step.multiply(j)).doubleValue(units);
                 if ( Math.abs(d)>(discernable*0.1) ) { // don't look at fuzzy zero
@@ -294,7 +293,7 @@ public final class DatumUtil {
     }
     
     private static String exp(int power) {
-        StringBuffer buffer = new StringBuffer(power+4);
+        StringBuilder buffer = new StringBuilder(power+4);
         for (int i = 0; i < power - 1; i++) {
             buffer.append('#');
         }
@@ -319,7 +318,6 @@ public final class DatumUtil {
     
     public static DatumFormatter bestTimeFormatter(Datum minimum, Datum maximum, int nsteps) {
         double secondsPerStep = maximum.subtract(minimum).doubleValue(Units.seconds) / ( nsteps );
-        double daysPerStep= secondsPerStep/86400;
         if (secondsPerStep < 1.) {
             return TimeDatumFormatter.MILLISECONDS;
         }
