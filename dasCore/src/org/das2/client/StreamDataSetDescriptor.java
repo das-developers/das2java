@@ -22,6 +22,20 @@
  */
 package org.das2.client;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.PushbackInputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.logging.Level;
 import org.das2.dataset.VectorDataSetBuilder;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.TableDataSet;
@@ -45,15 +59,13 @@ import org.das2.datum.DatumVector;
 import org.das2.system.DasLogger;
 import org.das2.stream.StreamTool;
 
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.*;
 import java.util.logging.Logger;
-import javax.xml.parsers.*;
-import org.xml.sax.*;
-import org.w3c.dom.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public class StreamDataSetDescriptor extends DataSetDescriptor {
     
@@ -92,7 +104,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         return this.standardDataStreamSource;
     }
     
-    protected void setProperties(Map properties, boolean legacy) {
+    protected final void setProperties(Map properties, boolean legacy) {
         super.setProperties(properties);
         if (properties.containsKey("form") && properties.get("form").equals("x_multi_y")
             && properties.containsKey("items")) {
@@ -165,6 +177,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         return data;
     }
     
+    @Override
     public String toString() {
         return "dsd "+getDataSetID();
     }
@@ -192,7 +205,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         try {
             byte[] four = new byte[4];
             int bytesRead= pin.read(four);
-            logger.finer("read first four bytes bytesRead="+bytesRead);
+            logger.log(Level.FINER, "read first four bytes bytesRead={0}", bytesRead);
             if ( bytesRead!=4 ) {
                 logger.info("no data returned from server");
                 throw new DasIOException( "No data returned from server" );
@@ -214,6 +227,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                 ReadableByteChannel channel = Channels.newChannel(mpin);
                 
                 DataSetStreamHandler handler = new DataSetStreamHandler( properties, monitor ) {
+                    @Override
                     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
                         super.streamDescriptor( sd );
                         if ( super.taskSize!=-1 ) {
