@@ -487,11 +487,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     protected void firePropertyChange(String propertyName, int oldValue, int newValue) {
-        firePropertyChange(propertyName, oldValue, newValue);
+        firePropertyChange(propertyName, Integer.valueOf(oldValue), Integer.valueOf(newValue) );
     }
     
     protected void firePropertyChange(String propertyName, long oldValue, long newValue) {
-        firePropertyChange(propertyName, oldValue, newValue);
+        firePropertyChange(propertyName, Long.valueOf(oldValue), Long.valueOf(newValue) );
     }
     
     protected void firePropertyChange(String propertyName, float oldValue, float newValue) {
