@@ -406,7 +406,7 @@ public class HttpFileSystem extends WebFileSystem {
                     result[i] = getLocalName(url).substring(n);
                 }
                 listings.put(directory, result);
-                listingFreshness.put( directory, new Long( System.currentTimeMillis()+LISTING_TIMEOUT_MS ) );
+                listingFreshness.put( directory, System.currentTimeMillis()+LISTING_TIMEOUT_MS );
                 return result;
             }
         }
