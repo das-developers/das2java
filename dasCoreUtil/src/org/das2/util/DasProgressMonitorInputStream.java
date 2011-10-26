@@ -204,7 +204,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         long oldTaskSize = this.streamLength;
         this.streamLength = taskSize;
         this.taskSize= taskSize==-1 ? taskSize : streamLength/1000;
-        propertyChangeSupport.firePropertyChange ("streamLength", new Long (oldTaskSize), new Long (taskSize));
+        propertyChangeSupport.firePropertyChange ("streamLength", oldTaskSize, taskSize );
     }
     
 }

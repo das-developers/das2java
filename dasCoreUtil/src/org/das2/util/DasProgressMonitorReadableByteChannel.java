@@ -143,7 +143,7 @@ public class DasProgressMonitorReadableByteChannel implements ReadableByteChanne
         long oldTaskSize = this.streamLength;
         this.streamLength = taskSize;
         this.taskSize = taskSize == -1 ? taskSize : streamLength / 1000;
-        propertyChangeSupport.firePropertyChange("streamLength", new Long(oldTaskSize), new Long(taskSize));
+        propertyChangeSupport.firePropertyChange("streamLength", oldTaskSize, taskSize);
     }
 
     public int read(ByteBuffer dst) throws IOException {
