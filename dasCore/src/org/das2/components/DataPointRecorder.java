@@ -70,7 +70,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     private JLabel messageLabel;
     private boolean active = true; // false means don't fire updates
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
-    static Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
+    private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
 
     protected class DataPoint implements Comparable {
 
@@ -106,12 +106,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             return this.data[0].lt(that.data[0]) ? -1 : this.data[0].gt(that.data[0]) ? 1 : 0;
         }
 
+        @Override
         public String toString() {
-            StringBuffer result = new StringBuffer("" + data[0] + " " + data[1]);
+            StringBuilder result = new StringBuilder("" + data[0] + " " + data[1]);
             if (planes != null) {
                 for (Iterator i = planes.keySet().iterator(); i.hasNext();) {
                     Object key = i.next();
-                    result.append(" " + planes.get(key));
+                    result.append(" ").append(planes.get(key));
                 }
             }
             return result.toString();
@@ -128,6 +129,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
 
+        @Override
         public String getColumnName(int j) {
             String result = planesArray[j];
             if (unitsArray[j] != null) {
@@ -252,7 +254,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 int irow = selectedRows[i];
                 DataPoint dp = (DataPoint) dataPoints.get(irow);
                 builder.insertY(dp.get(0), dp.get(1));
-                Map map = dp.planes;
                 for (int j = 2; j < planesArray.length; j++) {
                     builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
                             ((Datum) dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
@@ -346,8 +347,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             r = new BufferedReader(new InputStreamReader(in));
 
             dataPoints.clear();
-            String[] planesArray = null;
-            Units[] unitsArray = null;
+            String[] planesArray1 = null;
+            Units[] unitsArray1 = null;
 
             Datum x;
             Datum y;
@@ -373,65 +374,65 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 }
                 mon.setTaskProgress(linenum);
                 if (line.startsWith("## ")) {
-                    if ( unitsArray!=null ) continue;
+                    if ( unitsArray1!=null ) continue;
                     line = line.substring(3);
                     if ( line.indexOf("\t")==-1 ) delim= "\\s+";
                     String[] s = line.trim().split(delim);
                     Pattern p = Pattern.compile("(.+)\\((.*)\\)");
-                    planesArray = new String[s.length];
-                    unitsArray = new Units[s.length];
+                    planesArray1 = new String[s.length];
+                    unitsArray1 = new Units[s.length];
                     for (int i = 0; i < s.length; i++) {
                         Matcher m = p.matcher(s[i]);
                         if (m.matches()) {
                             //System.err.printf("%d %s\n", i, m.group(1) );
-                            planesArray[i] = m.group(1);
+                            planesArray1[i] = m.group(1);
                             try {
-                                unitsArray[i] = Units.getByName(m.group(2));
+                                unitsArray1[i] = Units.getByName(m.group(2));
                             } catch (IndexOutOfBoundsException e) {
                                 throw e;
                             }
                         } else {
-                            planesArray[i] = s[i];
-                            unitsArray[i] = null;
+                            planesArray1[i] = s[i];
+                            unitsArray1[i] = null;
                         }
                     }
                     continue;
                 }
                 String[] s = line.trim().split(delim);
-                if (unitsArray == null) {
+                if (unitsArray1 == null) {
                     // support for legacy files
-                    unitsArray = new Units[s.length];
+                    unitsArray1 = new Units[s.length];
                     for (int i = 0; i < s.length; i++) {
                         if (s[i].charAt(0) == '"') {
-                            unitsArray[i] = null;
+                            unitsArray1[i] = null;
                         } else if (TimeUtil.isValidTime(s[i])) {
-                            unitsArray[i] = Units.us2000;
+                            unitsArray1[i] = Units.us2000;
                         } else {
-                            unitsArray[i] = DatumUtil.parseValid(s[i]).getUnits();
+                            unitsArray1[i] = DatumUtil.parseValid(s[i]).getUnits();
                         }
                     }
-                    planesArray = new String[]{"X", "Y", "comment"};
+                    planesArray1 = new String[]{"X", "Y", "comment"};
                 }
 
                 try {
 
-                    x = unitsArray[0].parse(s[0]);
-                    y = unitsArray[1].parse(s[1]);
+                    x = unitsArray1[0].parse(s[0]);
+                    y = unitsArray1[1].parse(s[1]);
 
                     planes = new LinkedHashMap();
 
                     for (int i = 2; i < s.length; i++) {
-                        if (unitsArray[i] == null) {
+                        if (unitsArray1[i] == null) {
                             Pattern p = Pattern.compile("\"(.*)\".*");
                             Matcher m = p.matcher(s[i]);
                             if (m.matches()) {
-                                planes.put(planesArray[i], m.group(1));
+                                planes.put(planesArray1[i], m.group(1));
                             } else {
                                 throw new ParseException("parse error, expected \"\"", 0);
                             }
                         } else {
                             try {
-                                planes.put(planesArray[i], unitsArray[i].parse(s[i]));
+                                planes.put(planesArray1[i], unitsArray1[i].parse(s[i]));
                             } catch (ParseException e) {
                                 throw new RuntimeException(e);
                             }
@@ -495,6 +496,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
         MouseAdapter mm;
 
+        @Override
         public void mousePressed(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON3) {
                 int rowCount = parent.getSelectedRows().length;
@@ -503,6 +505,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         // hide popup
         }
@@ -515,7 +518,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 JFileChooser jj = new JFileChooser();
                 String lastFileString = prefs.get("components.DataPointRecorder.lastFileSave", "");
                 File lastFile = null;
-                if (lastFileString != "") {
+                if (lastFileString.length()>0) {
                     lastFile = new File(lastFileString);
                     jj.setSelectedFile(lastFile);
                 }
@@ -561,7 +564,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     JFileChooser jj = new JFileChooser();
                     String lastFileString = prefs.get("components.DataPointRecorder.lastFileLoad", "");
                     File lastFile = null;
-                    if (lastFileString != "") {
+                    if ( lastFileString.length()>0 ) {
                         lastFile = new File(lastFileString);
                         jj.setSelectedFile(lastFile);
                     }
@@ -794,7 +797,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     public void addDataPoint(Datum x, Datum y, Map planes) {
         if ( planes==null ) planes= new HashMap();
         if (dataPoints.size() == 0) {
-            Datum[] datums = new Datum[]{x, y};
             unitsArray =
                     new Units[2 + planes.size()];
             unitsArray[0] = x.getUnits();
@@ -836,8 +838,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
 
     public void appendDataSet(VectorDataSet ds) {
-
-        String comment;
 
         Map planesMap = new LinkedHashMap();
 
@@ -921,29 +921,29 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         addDataPoint(x, e.getY(), planesMap);
         updateClients();
     }
-    private javax.swing.event.EventListenerList listenerList = null;
+    private javax.swing.event.EventListenerList listenerList1 = null;
 
     public synchronized void addDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-        if (listenerList == null) {
-            listenerList = new javax.swing.event.EventListenerList();
+        if (listenerList1 == null) {
+            listenerList1 = new javax.swing.event.EventListenerList();
         }
 
 
 
 
-        listenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
+        listenerList1.add(org.das2.dataset.DataSetUpdateListener.class, listener);
     }
 
     public synchronized void removeDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-        listenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
+        listenerList1.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
     }
 
     private void fireDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
-        if (listenerList == null) {
+        if (listenerList1 == null) {
             return;
         }
 
-        Object[] listeners = listenerList.getListenerList();
+        Object[] listeners = listenerList1.getListenerList();
         for (int i = listeners.length - 2; i >=
                 0; i -=
                         2) {
@@ -1014,14 +1014,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      */
     public synchronized void addDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
 
-        if (listenerList == null) {
-            listenerList = new javax.swing.event.EventListenerList();
+        if (listenerList1 == null) {
+            listenerList1 = new javax.swing.event.EventListenerList();
         }
 
 
 
 
-        listenerList.add(org.das2.event.DataPointSelectionListener.class, listener);
+        listenerList1.add(org.das2.event.DataPointSelectionListener.class, listener);
     }
 
     /**
@@ -1030,7 +1030,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      */
     public synchronized void removeDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
 
-        listenerList.remove(org.das2.event.DataPointSelectionListener.class, listener);
+        listenerList1.remove(org.das2.event.DataPointSelectionListener.class, listener);
     }
 
     /**
@@ -1039,12 +1039,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * @param event The event to be fired
      */
     private void fireDataPointSelectionListenerDataPointSelected(org.das2.event.DataPointSelectionEvent event) {
-        if (listenerList == null) {
+        if (listenerList1 == null) {
             return;
         }
 
         logger.fine("firing data point selection event");
-        Object[] listeners = listenerList.getListenerList();
+        Object[] listeners = listenerList1.getListenerList();
         for (int i = listeners.length - 2; i >=
                 0; i -=
                         2) {
