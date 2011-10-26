@@ -445,13 +445,11 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         }
         
         public Datum getDatum(int i, int j) {
-            int table = tableOfIndex(i);
             double value = tableData[index][i][j];
             return Datum.create(value, zUnits[index]);
         }
         
         public double getDouble(int i, int j, Units units) {
-            int table = tableOfIndex(i);
             double value = tableData[index][i][j];
             return zUnits[index].getConverter(units).convert(value);
         }
