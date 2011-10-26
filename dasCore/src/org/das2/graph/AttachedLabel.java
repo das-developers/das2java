@@ -233,10 +233,6 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         int DMax= getColumn().getDMaximum();
         int DMin= getColumn().getDMinimum();
         
-        Font labelFont = getLabelFont();
-        
-        int tickLengthMajor = labelFont.getSize() * 2 / 3;
-        
         if (!axisLabel.equals("")) {
             Graphics2D g2 = (Graphics2D)g.create();
             int titlePositionOffset = getTitlePositionOffset();
@@ -278,10 +274,6 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         int rightPosition = getColumn().getDMaximum();
         int DMax= getRow().getDMaximum();
         int DMin= getRow().getDMinimum();
-        
-        Font labelFont = getLabelFont();
-        
-        int tickLengthMajor= labelFont.getSize()*2/3;
         
         if (!axisLabel.equals("")) {
             Graphics2D g2 = (Graphics2D)g.create();
@@ -379,7 +371,6 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
     }
     
     private Rectangle getHorizontalLabelBounds() {
-        DasDevicePosition range = getColumn();
         
         boolean bottomLabel = (orientation == BOTTOM && !axisLabel.equals(""));
         boolean topLabel = (orientation == TOP && !axisLabel.equals(""));
