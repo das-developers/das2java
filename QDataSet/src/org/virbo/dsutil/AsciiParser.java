@@ -1456,7 +1456,7 @@ public class AsciiParser {
         System.err.println(""+parse);
         dp.splitRecord( parse, fields );
         for ( int i=0; i<fields.length; i++ ) {
-            System.err.println( String.format( "%3d %s", new Integer(i), fields[i]  ) );
+            System.err.println( String.format( "%3d %s", i, fields[i]  ) );
             fields[i]= null;
         }
     }
