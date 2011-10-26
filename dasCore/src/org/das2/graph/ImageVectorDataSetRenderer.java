@@ -40,17 +40,12 @@ import org.virbo.dataset.SemanticOps;
  */
 public class ImageVectorDataSetRenderer extends Renderer {
 
-    GeneralPath path;
-    //SymbolLineRenderer highResRenderer;
-    Datum xTagWidth;
     BufferedImage plotImage;
     Rectangle plotImageBounds;
     DatumRange imageXRange;
     DatumRange imageYRange;
-    QDataSet hist;
     private Color color = Color.BLACK;
     private int ixstepLimitSq=1000000;  /** pixels, limit of x increment before line break */
-    private Datum xres= null; /** size used to set ixstepLimitSq */
     private Shape selectionArea;
 
     public ImageVectorDataSetRenderer(DataSetDescriptor dsd) {
@@ -400,10 +395,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         if ( xmono ) {
             firstIndex = DataSetUtil.getPreviousIndex(xds, visibleRange.min());
             lastIndex = DataSetUtil.getNextIndex(xds, visibleRange.max()) ;
-            Datum xres1= visibleRange.width().divide(xAxis.getDLength());
             if ( xAxis.isLog() ) {
                 ixstepLimitSq= 100000000;
-                xres= null;
             } else {
                 RankZeroDataSet d= DataSetUtil.guessCadenceNew(xds,ds1);
                 if ( d!=null ) {
@@ -416,7 +409,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
                         ixstepLimit= 1 + (int) (xAxis.transform(xmax) - xAxis.transform(xmax.subtract(sw)));
                     }
                     ixstepLimitSq= ixstepLimit * ixstepLimit;
-                    xres= xres1;
                 } else {
                     ixstepLimitSq= 100000000;
                 }
@@ -425,7 +417,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
             firstIndex = 0;
             lastIndex = ds1.length();
             ixstepLimitSq= 100000000;
-            xres= null;
         }
 
         if ((lastIndex - firstIndex) > 20 * xAxis.getColumn().getWidth()) {
