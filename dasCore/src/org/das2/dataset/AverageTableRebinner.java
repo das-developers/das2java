@@ -489,7 +489,6 @@ public class AverageTableRebinner implements DataSetRebinner {
                             yunits.createDatum( yds.value(j1) ) );
 
                         if (xdr.width().lt(xTagWidth)) {
-                            DatumRange xdr1 = new DatumRange(ddX.binCenter(0), ddX.binCenter(ddX.numberOfBins() - 1));
                             double yalpha = DatumRangeUtil.normalize(ydr, yy);
                             if (interpolateType == Interpolate.NearestNeighbor) {
                                 yalpha = yalpha < 0.5 ? 0.0 : 1.0;
@@ -517,7 +516,6 @@ public class AverageTableRebinner implements DataSetRebinner {
     }
 
     static void average( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
-        double[] ycoordinate;
         int nTables;
         Units zunits;
         int nx, ny;
@@ -528,17 +526,6 @@ public class AverageTableRebinner implements DataSetRebinner {
 
         nx = (ddX == null ? tds.length(0) : ddX.numberOfBins());
         ny = (ddY == null ? tds.length(0,0) : ddY.numberOfBins());
-
-
-        if (ddY != null) {
-            ycoordinate = ddY.binCenters();
-        } else {
-            QDataSet yds= SemanticOps.ytagsDataSet( tds.slice(0) );
-            ycoordinate = new double[yds.length()];
-            for (int j = 0; j < ycoordinate.length; j++) {
-                ycoordinate[j] = yds.value(0);
-            }
-        }
 
         nTables = tds.length();
         for (int iTable = 0; iTable < nTables; iTable++) {
