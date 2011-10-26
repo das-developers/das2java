@@ -88,6 +88,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
                     showPopupImpl();
                 }
             };
+            SwingUtilities.invokeLater(r);
         }
     }
     
