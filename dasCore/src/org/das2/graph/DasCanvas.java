@@ -116,17 +116,17 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     /** Default drawing layer of the JLayeredPane */
     public static final Integer DEFAULT_LAYER = JLayeredPane.DEFAULT_LAYER;
     /** Z-Layer for drawing the plot.  */
-    public static final Integer PLOT_LAYER = new Integer(300);
+    public static final Integer PLOT_LAYER = 300;
     /** Z-Layer for vertical axis.  Presently lower than the horizontal axis, presumably to remove ambiguity */
-    public static final Integer VERTICAL_AXIS_LAYER = new Integer(400);
+    public static final Integer VERTICAL_AXIS_LAYER = 400;
     /** Z-Layer */
-    public static final Integer HORIZONTAL_AXIS_LAYER = new Integer(500);
+    public static final Integer HORIZONTAL_AXIS_LAYER = 500;
     /** Z-Layer */
     public static final Integer AXIS_LAYER = VERTICAL_AXIS_LAYER;
     /** Z-Layer */
-    public static final Integer ANNOTATION_LAYER = new Integer(1000);
+    public static final Integer ANNOTATION_LAYER = 1000;
     /** Z-Layer */
-    public static final Integer GLASS_PANE_LAYER = new Integer(30000);
+    public static final Integer GLASS_PANE_LAYER = 30000;
     private static final Paint PAINT_ROW = new Color(0xff, 0xb2, 0xb2, 0x92);
     private static final Paint PAINT_COLUMN = new Color(0xb2, 0xb2, 0xff, 0x92);
     private static final Paint PAINT_SELECTION = Color.GRAY;

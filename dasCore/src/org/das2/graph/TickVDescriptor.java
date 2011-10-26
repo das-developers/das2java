@@ -431,7 +431,7 @@ public class TickVDescriptor {
                 continue;
             }
             if (divisionsPerDecade % tt[i] == 0) {
-                result.add(new Integer(tt[i]));
+                result.add(tt[i]);
             }
         }
         return result;

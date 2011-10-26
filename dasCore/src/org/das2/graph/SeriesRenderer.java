@@ -1892,7 +1892,7 @@ public class SeriesRenderer extends Renderer {
         int oldDataSetSizeLimit = this.dataSetSizeLimit;
         this.dataSetSizeLimit = dataSetSizeLimit;
         refreshImage();
-        propertyChangeSupport.firePropertyChange("dataSetSizeLimit", new Integer(oldDataSetSizeLimit), new Integer(dataSetSizeLimit));
+        propertyChangeSupport.firePropertyChange("dataSetSizeLimit", oldDataSetSizeLimit, dataSetSizeLimit );
     }
     private double updatesPointsPerMillisecond;
     public static final String PROP_UPDATESPOINTSPERMILLISECOND = "updatesPointsPerMillisecond";

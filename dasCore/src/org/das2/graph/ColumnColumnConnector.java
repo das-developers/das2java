@@ -354,7 +354,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         boolean oldFill = this.fill;
         this.fill = fill;
         repaint();
-        propertyChangeSupport.firePropertyChange("fill", new Boolean(oldFill), new Boolean(fill));
+        propertyChangeSupport.firePropertyChange("fill", Boolean.valueOf(oldFill), Boolean.valueOf(fill));
     }
     
     /**
@@ -378,7 +378,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         boolean oldBottomCurtain = this.bottomCurtain;
         this.bottomCurtain = bottomCurtain;
         repaint();
-        propertyChangeSupport.firePropertyChange("bottomCurtain", new Boolean(oldBottomCurtain), new Boolean(bottomCurtain));
+        propertyChangeSupport.firePropertyChange("bottomCurtain", Boolean.valueOf(oldBottomCurtain), Boolean.valueOf(bottomCurtain));
     }
     
     /**
@@ -402,7 +402,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         int oldCurtainOpacityPercent = this.curtainOpacityPercent;
         this.curtainOpacityPercent = Math.max( 0, Math.min( 100, curtainOpacityPercent ) );
         repaint();
-        propertyChangeSupport.firePropertyChange("curtainOpacityPercent", new Integer(oldCurtainOpacityPercent), new Integer(curtainOpacityPercent));
+        propertyChangeSupport.firePropertyChange("curtainOpacityPercent", oldCurtainOpacityPercent, curtainOpacityPercent );
     }
     
 }
