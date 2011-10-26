@@ -42,9 +42,9 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         this.bottomPlot= bottomPlot;
         
         setForeground( Color.LIGHT_GRAY );
+        if ( topRow==null ) topRow= topPlot.getRow();
         setRow( topRow );
         setColumn( topPlot.getColumn() );
-        if ( topRow==null ) topRow= topPlot.getRow();
 
         PropertyChangeListener pcl= createPropertyChangeListener();
 
