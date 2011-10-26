@@ -27,12 +27,8 @@ public class Legend extends DasCanvasComponent {
     
     private static class LegendElement {
         Icon icon;
-        Psym psym;
-        PsymConnector psymConnector;
         Displayable rend;
-        Color color;
         String label;
-        Legend parent;
         
         Icon getIcon() {
             if ( rend!=null ) {
