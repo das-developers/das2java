@@ -30,7 +30,6 @@ import org.das2.dataset.VectorDataSet;
 import org.das2.dataset.TableDataSetBuilder;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
-import org.das2.datum.UnitsConverter;
 import org.das2.stream.StreamYScanDescriptor;
 import org.das2.stream.StreamMultiYDescriptor;
 import org.das2.stream.StreamDescriptor;
@@ -104,7 +103,8 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         }
     }
     
-    protected void setProperties( Map properties ) {
+    @Override
+    protected final void setProperties( Map properties ) {
         setProperties(properties, false);
     }
     
@@ -123,18 +123,18 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
      * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
      */
     protected byte[] readBytes(InputStream in) throws DasException {
-        LinkedList list = new LinkedList();
+        LinkedList<byte[]> list = new LinkedList();
         byte[] data = new byte[4096];
         int bytesRead=0;
-        int totalBytesRead=0;
+        //int totalBytesRead=0;
         int lastBytesRead = -1;
         int offset=0;
-        long time = System.currentTimeMillis();
+        //long time = System.currentTimeMillis();
         
         try {
             bytesRead= in.read(data,offset,4096-offset);
             while (bytesRead != -1) {
-                int bytesSoFar = totalBytesRead;
+                //int bytesSoFar = totalBytesRead;
                 offset+=bytesRead;
                 lastBytesRead= offset;
                 if (offset==4096) {
@@ -142,7 +142,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
                     data = new byte[4096];
                     offset=0;
                 }
-                totalBytesRead+= bytesRead;
+                //totalBytesRead+= bytesRead;
                 bytesRead= in.read(data,offset,4096-offset);
             }
         } catch ( IOException e ) {
@@ -158,7 +158,6 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         }
         int dataLength = (list.size()-1)*4096 + lastBytesRead;
         data = new byte[dataLength];
-        Iterator iterator = list.iterator();
         for (int i = 0; i < list.size()-1; i++) {
             System.arraycopy(list.get(i), 0, data, i*4096, 4096);
         }
@@ -315,7 +314,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             ByteBuffer data = getByteBuffer(in);
             double timeBaseValue = start.doubleValue(start.getUnits());
             Units offsetUnits = start.getUnits().getOffsetUnits();
-            UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
+            //UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
             while (data.remaining() > recordSize) {
                 DatumVector vector = sd.getXDescriptor().read(data);
                 double xTag = timeBaseValue + vector.doubleValue(0, offsetUnits);
@@ -349,7 +348,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         PacketDescriptor sd = getPacketDescriptor(in);
         TableDataSetBuilder builder = new TableDataSetBuilder(start.getUnits(),Units.dimensionless,Units.dimensionless);
         Units yUnits = Units.dimensionless;
-        Units zUnits= Units.dimensionless;
+        //Units zUnits= Units.dimensionless;
         
         for (Iterator i = sd.getYDescriptors().iterator(); i.hasNext();) {
             Object o = i.next();
@@ -373,9 +372,9 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             recordSize += yScans[planeIndex].getSizeBytes();
         }
         ByteBuffer data = getByteBuffer(in);
-        double timeBaseValue= start.doubleValue(start.getUnits());
+        //double timeBaseValue= start.doubleValue(start.getUnits());
         Units offsetUnits = start.getUnits().getOffsetUnits();
-        UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
+        //UnitsConverter uc = sd.getXDescriptor().getUnits().getConverter(offsetUnits);
         double[] yCoordinates = yScans[0].getYTags();
         DatumVector y = DatumVector.newDatumVector(yCoordinates, yUnits);
         
