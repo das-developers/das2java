@@ -64,14 +64,18 @@ public class DasServer {
 
     private static HashMap instanceHashMap= new HashMap();
 
-    public static DasServer plasmaWaveGroup;
-    public static DasServer sarahandjeremy;
+    public static final DasServer plasmaWaveGroup;
+    public static final DasServer sarahandjeremy;
     static {
         try {
             plasmaWaveGroup= DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/das2Server"));
+        } catch ( java.net.MalformedURLException e ) {
+            throw new IllegalArgumentException(e);
+        }
+        try {
             sarahandjeremy= DasServer.create(new URL("http://www.sarahandjeremy.net/das/dasServer.cgi"));
         } catch ( java.net.MalformedURLException e ) {
-            org.das2.util.DasExceptionHandler.handle(e);
+            throw new IllegalArgumentException(e);
         }
     }
 
