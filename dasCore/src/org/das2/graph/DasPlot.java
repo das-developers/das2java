@@ -1207,13 +1207,14 @@ public class DasPlot extends DasCanvasComponent {
     public void setTitle(String t) {
         Object oldValue = plotTitle;
         plotTitle = t;
+        if ( t==null ) t="";
         if (getCanvas() != null) {
             FontMetrics fm = getFontMetrics(getCanvas().getFont());
             titleHeight = fm.getHeight() + fm.getHeight() / 2;
             resize();
             invalidateCacheImage();
         }
-        if (t != oldValue) {
+        if ( !t.equals(oldValue) ) {
             firePropertyChange(PROP_TITLE, oldValue, t);
         }
     }
