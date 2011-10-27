@@ -1002,13 +1002,18 @@ public class Base64
                 }   // end try
                 catch( java.io.IOException e )
                 {
+                    e.printStackTrace();
                     // Just return originally-decoded bytes
                 }   // end catch
                 finally
                 {
-                    try{ baos.close(); } catch( Exception e ){}
-                    try{ gzis.close(); } catch( Exception e ){}
-                    try{ bais.close(); } catch( Exception e ){}
+                    try{
+                        baos.close();
+                        gzis.close();
+                        bais.close();
+                    } catch( Exception e ){
+                        e.printStackTrace();
+                    }
                 }   // end finally
 
             }   // end if: gzipped
