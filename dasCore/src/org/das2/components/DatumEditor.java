@@ -75,7 +75,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
     public DatumEditor() {
     }
 
-    private synchronized void initGui() {
+    private void initGui() {
         initComponents();
         installListeners();
         initToolTips();
@@ -83,13 +83,13 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         panel.setFocusable(true);
     }
 
-    private synchronized void maybeInitGui() {
+    private void maybeInitGui() {
         if (panel == null) {
             initGui();
         }
     }
 
-    private synchronized void initComponents() {
+    private void initComponents() {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
@@ -201,7 +201,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         }
     }
 
-    public synchronized void setUnits(Units units) {
+    public void setUnits(Units units) {
         if (unitsButton != null) {
 //            if (units instanceof TimeLocationUnits) {
                 unitsButton.setVisible(false);
@@ -302,7 +302,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         }
     }
 
-    public synchronized String getToolTipText(MouseEvent event) {
+    public String getToolTipText(MouseEvent event) {
         if (unitsButton.getBounds().contains(event.getX(), event.getY())) {
             return unitsButton.getToolTipText();
         } else {
