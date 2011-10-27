@@ -233,7 +233,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
             public void keyPressed(KeyEvent ev) {
                 log.finest("keyPressed ");
-                if (ev.getKeyCode() == KeyEvent.VK_ESCAPE & active != null) {
+                if (ev.getKeyCode() == KeyEvent.VK_ESCAPE && active != null) {
                     active = null;
                     getGlassPane().setDragRenderer(null, null, null);
                     parent.getCanvas().paintImmediately(0, 0, parent.getCanvas().getWidth(), parent.getCanvas().getHeight());
