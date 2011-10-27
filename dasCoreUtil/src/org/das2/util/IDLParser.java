@@ -26,7 +26,8 @@ package org.das2.util;
 import java.util.StringTokenizer;
 import java.util.Vector;
 /**
- *
+ * This was created originally to evaluate expressions found in das2server dsdf files that would
+ * describe column locations, which would be expressions like "10^(findgen(3)/3.3)"
  * @author  jbf
  */
 public class IDLParser {
