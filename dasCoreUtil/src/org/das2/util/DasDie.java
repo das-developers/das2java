@@ -32,12 +32,12 @@ import java.io.StringWriter;
  */
 public class DasDie {
     
-    public static int DEBUG=-20;  // info useful only to das developers
-    public static int VERBOSE=-10; // info useful to end users in debugging
-    public static int INFORM=0; // warm-fuzzy operational messages
-    public static int WARN=10; // end user needs to be aware of, no action required
-    public static int ALARM=20; // end user needs to take action
-    public static int CRITICAL=30;  // abnormal system condition that cannot be supressed.
+    public static final int DEBUG=-20;  // info useful only to das developers
+    public static final int VERBOSE=-10; // info useful to end users in debugging
+    public static final int INFORM=0; // warm-fuzzy operational messages
+    public static final int WARN=10; // end user needs to be aware of, no action required
+    public static final int ALARM=20; // end user needs to take action
+    public static final int CRITICAL=30;  // abnormal system condition that cannot be supressed.
     
     public static int verbosity;
     
