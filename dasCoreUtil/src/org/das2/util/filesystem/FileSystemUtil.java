@@ -5,7 +5,6 @@
 
 package org.das2.util.filesystem;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,12 +13,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.zip.GZIPInputStream;
-import org.das2.util.DeflaterChannel;
 
 /**
  *
@@ -53,10 +50,6 @@ public class FileSystemUtil {
         }
     }
 
-    public static void main( String[] args ) throws Exception {
-        InputStream in= new ByteArrayInputStream( "Hello there".getBytes() );
-        dumpToFile( in, new File( "/home/jbf/text.txt" ) );
-    }
 
     /**
      * un-gzip the file.  This is similar to the unix gunzip command.
