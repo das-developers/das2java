@@ -375,8 +375,8 @@ public class ArgumentList {
                 String[] keys= (String[])requireOneOfList.get(i);
                 boolean haveValue=false;
                 for ( int j=0;j<keys.length;j++ ) {
-                    if ( !values.get(keys[j]).equals(UNSPECIFIED) &
-                            !values.get(keys[j]).equals(UNDEFINED_SWITCH) &
+                    if ( !values.get(keys[j]).equals(UNSPECIFIED) &&  //TODO: De Morgan's law should clarify
+                            !values.get(keys[j]).equals(UNDEFINED_SWITCH) &&
                             !values.get(keys[j]).equals(REFERENCEWITHOUTVALUE) ) haveValue=true;
                 }
                 if ( !haveValue ) {
