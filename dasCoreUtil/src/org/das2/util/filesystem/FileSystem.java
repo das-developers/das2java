@@ -48,7 +48,7 @@ import org.das2.util.monitor.ProgressMonitor;
 public abstract class FileSystem  {
 
     URI root;
-    protected static Logger logger= Logger.getLogger(  "das2.filesystem" );
+    protected static final Logger logger= Logger.getLogger(  "das2.filesystem" );
     
     public static class FileSystemOfflineException extends IOException {
         public FileSystemOfflineException() {
