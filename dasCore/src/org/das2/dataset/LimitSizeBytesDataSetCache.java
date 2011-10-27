@@ -32,7 +32,6 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
     /* return a list of all the datasets that together cover the cacheTag */
     private Entry findStored( DataSetDescriptor dsd, CacheTag cacheTag ) {
         Entry entry= new Entry( dsd, cacheTag, null );
-        List result= new ArrayList();
         
         Entry iHit=null;
         synchronized (entries) {
