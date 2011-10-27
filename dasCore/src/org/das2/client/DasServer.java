@@ -455,7 +455,11 @@ public class DasServer {
                 org.das2.util.DasDie.println("das2Response="+das2Response);
 
                 in.reset();
-                in.skip( das2Response.length() + 2 * das2ResponseTag.length() + 5 );
+                long n= das2Response.length() + 2 * das2ResponseTag.length() + 5;
+                while ( n>0 ) {
+                    long k= in.skip( n );
+                    n-= k;
+                }
 
             } else {
                 in.reset();
