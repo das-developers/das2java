@@ -292,7 +292,7 @@ public class DasColorBar extends DasAxis {
             
             int ii= 0;
             for (int i = 0; i < ncolor-1; i++) {
-                float comp= ( i - bottom ) * 255.f / ( top - bottom );
+                float comp= ( i - bottom ) * 255 / ( top - bottom );
                 if ( comp > index[ii + 1]) {
                     ii++;
                 }
