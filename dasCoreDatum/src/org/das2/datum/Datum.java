@@ -363,7 +363,7 @@ public class Datum implements Comparable {
     public int hashCode() {
         long bits = (long) getValue().hashCode();
         int doubleHash= (int)(bits ^ (bits >>> 32));
-        int unitsHash= units.hashCode();
+        int unitsHash= units.hashCode(); //TODO: this should probably be converted to canonical unit to match equals.  ("1 km".equals("1000 m")) is true.
         return doubleHash ^ unitsHash;
     }
     
