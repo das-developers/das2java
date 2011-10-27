@@ -577,10 +577,10 @@ public class Base64
         }   // end catch
         finally
         {
-            try{ oos.close();   } catch( Exception e ){}
-            try{ gzos.close();  } catch( Exception e ){}
-            try{ b64os.close(); } catch( Exception e ){}
-            try{ baos.close();  } catch( Exception e ){}
+            try{ oos.close();   } catch( Exception e ){ e.printStackTrace(); }
+            try{ gzos.close();  } catch( Exception e ){ e.printStackTrace(); }
+            try{ b64os.close(); } catch( Exception e ){ e.printStackTrace(); }
+            try{ baos.close();  } catch( Exception e ){ e.printStackTrace(); }
         }   // end finally
         
         // Return value according to relevant encoding.
@@ -707,9 +707,9 @@ public class Base64
             }   // end catch
             finally
             {
-                try{ gzos.close();  } catch( Exception e ){}
-                try{ b64os.close(); } catch( Exception e ){}
-                try{ baos.close();  } catch( Exception e ){}
+                try{ gzos.close();  } catch( Exception e ){ e.printStackTrace(); }
+                try{ b64os.close(); } catch( Exception e ){ e.printStackTrace(); }
+                try{ baos.close();  } catch( Exception e ){ e.printStackTrace(); }
             }   // end finally
 
             // Return value according to relevant encoding.
