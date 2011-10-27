@@ -67,7 +67,7 @@ public class DataRange implements Cloneable {
      * maximum, which are simply to implement it. 
      */
     private DatumRange range;
-    public static String PROPERTY_DATUMRANGE="datumRange";
+    public static final String PROPERTY_DATUMRANGE="datumRange";
     
     private boolean log;
     
