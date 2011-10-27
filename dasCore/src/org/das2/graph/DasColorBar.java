@@ -55,8 +55,7 @@ public class DasColorBar extends DasAxis {
     
     private BufferedImage image;
     private DasColorBar.Type type;
-    private static int sFillColor= Color.LIGHT_GRAY.getRGB();
-    private int fillColor= Color.LIGHT_GRAY.getRGB();
+    private static int fillColor= Color.LIGHT_GRAY.getRGB();
     private int fillColorIndex;
     private int ncolor;
     
@@ -313,7 +312,7 @@ public class DasColorBar extends DasAxis {
                 colorTable[i]= new Color((float)rr,(float)gg,(float)bb).getRGB();
             }
 
-            colorTable[ncolor-1]= sFillColor; // probably not used
+            colorTable[ncolor-1]= fillColor;
             return colorTable;
         }
         
