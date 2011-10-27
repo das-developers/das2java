@@ -141,7 +141,14 @@ public class DatumRange implements Comparable {
             return ""+ this.s1.getFormatter().format(this.s1,u) + " to " + this.s1.getFormatter().format(this.s2,u) + " " + u;
         }
     }
-    
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + (this.s1 != null ? this.s1.hashCode() : 0);
+        hash = 67 * hash + (this.s2 != null ? this.s2.hashCode() : 0);
+        return hash;
+    }
     
     /**
      * returns true if the two endpoints are equal.
