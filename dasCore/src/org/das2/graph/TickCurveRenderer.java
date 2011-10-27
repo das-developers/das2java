@@ -66,8 +66,8 @@ public class TickCurveRenderer extends Renderer {
     
     public static class TickStyle implements Enumeration {
         private String name;
-        public static TickStyle outer= new TickStyle("Outer");
-        public static TickStyle both= new TickStyle("Both");        
+        public static final TickStyle outer= new TickStyle("Outer");
+        public static final TickStyle both= new TickStyle("Both");
         private TickStyle(String name) {
             this.name= name;
         }
