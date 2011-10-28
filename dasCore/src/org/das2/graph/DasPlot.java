@@ -410,7 +410,7 @@ public class DasPlot extends DasCanvasComponent {
             }
             message.bounds = mrect;
 
-            msgy += gtr.getHeight() + msgem / 2;
+            msgy += gtr.getHeight() + msgem / 2;  // findbugs OKAY
         }
 
         graphics.dispose();
