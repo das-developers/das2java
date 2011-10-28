@@ -75,7 +75,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
             timeElapsed= System.currentTimeMillis()-birthTimeMilli;
         }
         if ( timeElapsed==0 ) return Double.POSITIVE_INFINITY;
-        return 1000 * totalBytesRead / timeElapsed;
+        return 1000. * totalBytesRead / timeElapsed;
     }
     
     public int read() throws IOException {
