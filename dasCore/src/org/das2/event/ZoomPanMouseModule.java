@@ -175,7 +175,7 @@ public class ZoomPanMouseModule extends MouseModule {
         final long t1 = System.nanoTime();
         long limitNanos = (long) 40e6;
         if ((t1 - t0) / clickMag < limitNanos) {
-            clickMag = (int) Math.floor( (t1 - t0) / limitNanos );
+            clickMag = (int) Math.floor( (double)(t1 - t0) / limitNanos );
         }
 
         if (clickMag == 0) return;
