@@ -22,11 +22,12 @@
  */
 package org.das2.util;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.text.DecimalFormat;
 import org.das2.util.monitor.ProgressMonitor;
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.text.*;
 
 /**
  *
