@@ -1679,9 +1679,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         /* End debugging code */
 
         TickVDescriptor tickV1;
-        synchronized (this) {
-            tickV1= this.tickV;
-        }
+        tickV1= this.tickV; //findbugs IS2_INCONSISTENT_SYNC.  This caused deadlock.  I think accessing tickV once is a correct fix and doesn't need to be synchronized.
         if (tickV1 == null || tickV1.tickV.getUnits().isConvertableTo(getUnits())) {
             if (isHorizontal()) {
                 paintHorizontalAxis(g);
