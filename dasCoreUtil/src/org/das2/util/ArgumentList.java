@@ -35,8 +35,6 @@ public class ArgumentList {
     
     Map<String,String> abbrevs;
     
-    Map<String,String> isBoolean;
-    
     ArrayList<String[]> requireOneOfList;
     
     /**
@@ -252,18 +250,19 @@ public class ArgumentList {
      * print the usage statement out to stderr.
      */
     public void printUsage() {
-        String s;
-        s= "Usage: "+this.programName+" ";
+        StringBuilder s;
+        s= new StringBuilder( "Usage: " );
+        s.append(this.programName).append(" ");
         for ( int i=0; i<this.nposition; i++ ) {
             Object key= positionKeys[i];
             if ( !this.UNSPECIFIED.equals(values.get(key)) ) {
-                s+= "["+descriptions.get(key)+"] ";
+                s.append("[").append(descriptions.get(key)).append("] ");
             } else {
-                s+= "<"+descriptions.get(key)+"> ";
+                s.append("<").append(descriptions.get(key)).append("> ");
             }
         }
         
-        System.err.println(s);
+        System.err.println(s.toString());
         
         Set set= names.keySet();
         Iterator<String> i= set.iterator();
@@ -284,32 +283,32 @@ public class ArgumentList {
                 abbrevsCopy.remove(abbrev);
             }
             
-            s= "  ";
+            s= new StringBuilder("  ");
             String description= descriptions.get(key);
             String value= values.get(key);
 
             if ( abbrev==null ) {
                 if ( !this.UNSPECIFIED.equals(value) ) {
                     if ( this.FALSE.equals(value) || this.TRUE.equals(value) ) {
-                        s+= "--"+name+"  \t"+description;
+                        s.append( String.format( "--%s  \t%s", name, description ) );
                     } else {
-                        s+= "--"+name+"= \t"+description+" ";
+                        s.append( String.format( "--%s= \t%s ", name, description ) );
                     }
                 } else {
-                    s+= "--"+name+"= \t"+description+" (required)";
+                    s.append( String.format( "--%s= \t%s (required)", name, description ) );
                 }
             } else {
                 if ( !this.UNSPECIFIED.equals(value) ) {
                     if ( this.FALSE.equals(value) || this.TRUE.equals(value) ) {
-                        s+= "-"+abbrev+ ", --"+name+"  \t"+description;
+                        s.append( String.format( "-%s, --%s  \t%s", abbrev, name, description ) );
                     } else {
-                        s+= "-"+abbrev+ ", --"+name+"= \t"+description+" ";
+                        s.append( String.format( "-%s, --%s= \t%s ", abbrev, name, description ) );
                     }
                 } else {
-                    s+= "-"+abbrev+ ", --"+name+"= \t"+description+" (required)";
+                    s.append( String.format( "-%s, --%s= \t%s (required)", abbrev, name, description ) );
                 }
             }
-            System.err.println(s);
+            System.err.println(s.toString());
         }
         
         set= abbrevsCopy.keySet();
@@ -318,16 +317,16 @@ public class ArgumentList {
         while ( i.hasNext() ) {
             String abbrev= i.next();
             String key= abbrevs.get(abbrev);
-            s= "  ";
+            s= new StringBuilder("  ");
             String description= descriptions.get(key);
             if ( !this.UNSPECIFIED.equals(values.get(key) ) ) {
                 if ( this.FALSE.equals(values.get(key)) || this.TRUE.equals(values.get(key)) ) {
-                    s+= "-"+abbrev+"   \t"+description;
+                    s.append( String.format( "-%s   \t%s", abbrev, description ) );
                 } else {
-                    s+= "-"+abbrev+"="+description+" ";
+                    s.append( String.format( "-%s=%s ", abbrev, description ) );
                 }
             } else {
-                s+= "-"+abbrev+"="+description+" (required)";
+                s.append( String.format( "-%s=%s (required)", abbrev, description ) );
             }
             System.err.println(s);
         }
@@ -528,14 +527,13 @@ public class ArgumentList {
      * see Vg1pws app for example use.
      */
     public void printPrefsSettings() {
-        String s;
-        s= "Explicit Settings: \n";
-        s+= this.programName+" ";
+        StringBuilder s= new StringBuilder( "Explicit Settings: \n" );
+        s.append( this.programName ).append( " " );
         
         for ( int i=0; i<this.nposition; i++ ) {
             Object key= positionKeys[i];
             if ( formUsed.get(key)!=null ) {
-                s+= formUsed.get(key);
+                s.append( formUsed.get(key) );
             }
         }
         
@@ -548,11 +546,11 @@ public class ArgumentList {
             String value= (String)formUsed.get(key);
             if ( value !=null ) {
                 if ( value.equals(this.TRUE) ) {
-                    s+= "--"+name;
+                    s.append( "--" ).append( name );
                 } if ( value.equals(this.FALSE ) ) {  
                     // do nothing
                 } else {
-                    s+= "--"+name+"="+value+" ";
+                    s.append( "--" ).append( name ).append( "=" ).append( value ).append(" ");
                 }
             }
         }
