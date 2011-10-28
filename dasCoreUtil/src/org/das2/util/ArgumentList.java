@@ -356,7 +356,7 @@ public class ArgumentList {
                 }
                 if ( key.equals("help") || key.equals("--help" ) ) { // kludge
                     printUsage();
-                    System.exit(-1);
+                    System.exit(-1); //Findbugs correctly points out that this is a bad idea.  For example, a typo on a web server could bring the whole thing down.
                 }
                 if ( values.get( key )==this.UNSPECIFIED ) {
                     errorList.add( "Argument needed: --" + reverseNames.get( key ) );
@@ -547,9 +547,9 @@ public class ArgumentList {
             Object key= names.get(name);
             String value= (String)formUsed.get(key);
             if ( value !=null ) {
-                if ( value==this.TRUE ) {
+                if ( value.equals(this.TRUE) ) {
                     s+= "--"+name;
-                } if ( value==this.FALSE ) {
+                } if ( value.equals(this.FALSE ) ) {  
                     // do nothing
                 } else {
                     s+= "--"+name+"="+value+" ";
