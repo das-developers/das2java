@@ -78,7 +78,7 @@ public class DasProgressMonitorReadableByteChannel implements ReadableByteChanne
         if (timeElapsed == 0) {
             return Double.POSITIVE_INFINITY;
         }
-        return 1000 * totalBytesRead / timeElapsed;
+        return 1000. * totalBytesRead / timeElapsed;
     }
 
     private void checkCancelled() throws IOException {
