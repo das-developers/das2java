@@ -143,7 +143,7 @@ public class InputStreamMeter {
         if ( millis==0 ) {
             return Units.bytesPerSecond.getFillDouble();
         } else {
-            return 1000 * totalBytesRead / millis;
+            return 1000. * totalBytesRead / millis;
         }
     }
     
