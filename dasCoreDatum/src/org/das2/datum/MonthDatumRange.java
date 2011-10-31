@@ -18,8 +18,7 @@ public class MonthDatumRange extends DatumRange {
     int[] end;
     
     public MonthDatumRange( int[] start, int[] end ) {
-        super( TimeUtil.toDatum( start ),
-        TimeUtil.toDatum( end ) );
+        super( TimeUtil.toDatum( start ), TimeUtil.toDatum( end ) );
         widthDigit= -1;
         int[] widthArr= new int[7];
         for ( int i=0; i<7; i++ ) {
@@ -81,5 +80,9 @@ public class MonthDatumRange extends DatumRange {
         
         return new MonthDatumRange( start1, this.start );
     }
-        
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o); // fingbugs EQ_DOESNT_OVERRIDE_EQUALS okay
+    }
 }
