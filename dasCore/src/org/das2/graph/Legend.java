@@ -32,11 +32,7 @@ public class Legend extends DasCanvasComponent {
         
         Icon getIcon() {
             if ( rend!=null ) {
-                if ( rend instanceof Displayable ) {
-                    return ((Displayable)rend).getListIcon();
-                } else {
-                    return null;
-                }
+                return rend.getListIcon();
             } else {
                 return icon;
             }
@@ -44,9 +40,7 @@ public class Legend extends DasCanvasComponent {
         
         void update() {
             if ( rend!=null ) {
-                if ( rend instanceof Displayable ) {
-                    this.icon= ((Displayable)rend).getListIcon();
-                }
+                this.icon= rend.getListIcon();
             }
         }
         
