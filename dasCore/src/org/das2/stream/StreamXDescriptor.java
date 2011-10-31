@@ -39,8 +39,6 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
     
     private Datum base;
     
-    private Units baseUnits = Units.us2000;
-    
     private Units units = null;
     
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
@@ -75,9 +73,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
            
         String baseString = element.getAttribute("base");
         if (baseString != null && !baseString.equals("")) {
-            if (baseUnits instanceof TimeLocationUnits) {
-                base = TimeUtil.createValid(baseString);
-            }
+            base = TimeUtil.createValid(baseString);
         }
     }
     
