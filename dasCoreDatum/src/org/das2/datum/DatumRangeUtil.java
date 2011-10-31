@@ -516,7 +516,7 @@ public class DatumRangeUtil {
             }
             String result= newString.toString();
             
-            String[] ss= result.split("to");
+            String[] ss= result.split("to"); //findbugs SBSC_USE_STRINGBUFFER_CONCATENATION okay
             if ( ss.length>2 ) {
                 result= ss[0];
                 for ( int i=1; i<ss.length; i++ ) {
