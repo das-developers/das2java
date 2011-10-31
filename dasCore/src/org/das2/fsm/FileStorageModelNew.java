@@ -142,8 +142,6 @@ public class FileStorageModelNew {
             listRegex= regex;
         }
         
-        List list= new ArrayList();
-
         String result= null;
 
         for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
@@ -422,7 +420,6 @@ public class FileStorageModelNew {
         if ( !fileNameMap.containsKey(file) ) {
             return false;
         } else {
-            String result= (String)fileNameMap.get(file);
             String name= getNameFor( file );
             Matcher m= pattern.matcher( name );
             return m.matches();
