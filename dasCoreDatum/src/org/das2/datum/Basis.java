@@ -18,14 +18,14 @@ public class Basis {
     public static final Basis fahrenheit= new Basis( "fahrenheit", "fahrenheit", Basis.physicalZero, 255.370, Units.celciusDegrees );
     public static final Basis kelvin= new Basis( "kelvin", "kelvin", Basis.physicalZero, 0, Units.celciusDegrees );
     public static final Basis centigrade= new Basis( "centigrade", "centigrade", Basis.physicalZero, 273.15, Units.celciusDegrees );
-    
+
     public static final Basis since2000= new Basis( "since2000", "since 2000-01-01T00:00Z", null, 0, null );
     public static final Basis since1980= new Basis( "since1980", "since 1980-01-01T00:00Z", since2000, -631152000., Units.seconds );
     public static final Basis since1970= new Basis( "since1970", "since 1970-01-01T00:00Z", since2000, -938044800., Units.seconds );
     public static final Basis since1958= new Basis( "since1958", "since 1958-01-01T00:00Z", since2000, -1325376000., Units.seconds );
     public static final Basis modifiedJulian= new Basis( "modifiedJulian", "since 1858-11-17T00:00Z", since2000, 4453401600., Units.seconds );
     public static final Basis since0000= new Basis( "since0000", "since 01-Jan-0000T00:00Z", since2000, 63113904000., Units.seconds );
-            
+
     /**
      * special basis representing physical zero for all combinations of physical units.
      */
@@ -46,6 +46,14 @@ public class Basis {
         } else {
             bases= new IdentityHashMap<Basis,Datum>();
         }
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public String getDescription() {
+        return this.description;
     }
     
     /**
