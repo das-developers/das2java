@@ -163,7 +163,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
         g.translate( -plotImageBounds2.x, -plotImageBounds2.y);
         
         imageXRange= GraphUtil.invTransformRange( xAxis, plotImageBounds2.x, plotImageBounds2.x+plotImageBounds2.width );
-        imageYRange= GraphUtil.invTransformRange( yAxis, plotImageBounds2.y, plotImageBounds2.y+plotImageBounds2.height );
 
         DatumRange visibleRange = imageXRange;
 
@@ -355,7 +354,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
         r.setDataElements(0, 0, w, h, raster);
 
         imageXRange = xrange;
-        imageYRange = yrange;
     }
 
     @Override
@@ -505,7 +503,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
      * this is very challenging!
      * 
      */
-    synchronized void calcSelectionArea() {
+    private void calcSelectionArea() {
+        BufferedImage plotImage= this.plotImage;
         //System.err.println("in calc selection area");
         //long t0= System.currentTimeMillis();
         if ( plotImage==null ) return;
