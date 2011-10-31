@@ -355,25 +355,6 @@ public class DatumRangeUtil {
             }
         }
         
-        public boolean isTime( String string, int[] timearr ) throws ParseException {
-            Matcher m;
-            Pattern hhmmssmmPattern= Pattern.compile( "(\\d+):(\\d\\d+):(\\d\\d+).(\\d+)" );
-            Pattern hhmmssPattern= Pattern.compile( "(\\d+):(\\d\\d+):(\\d\\d+)" );
-            Pattern hhmmPattern= Pattern.compile( "(\\d+):(\\d\\d+)" );
-            Pattern hhPattern= Pattern.compile( "(\\d+):" );
-            
-            if ( (m=hhmmssmmPattern.matcher(string)).matches() ) {
-                timearr[HOUR]= Integer.parseInt( m.group(1) );
-                timearr[MINUTE]= Integer.parseInt( m.group(2) );
-                timearr[SECOND]= Integer.parseInt( m.group(3) );
-                timearr[NANO]= (int)( Integer.parseInt( m.group(4) ) * ( 100000 / Math.pow( 10, m.group(4).length() ) ));
-                throw new RuntimeException("working on this");
-            } else if (( m=hhmmssPattern.matcher(string)).matches() ) {
-            } else if (( m=hhmmPattern.matcher(string)).matches() ) {
-            } else if (( m=hhPattern.matcher(string)).matches() ) {
-            }
-            return false;
-        }
         
         public boolean isDate( String string, DateDescriptor dateDescriptor ) throws ParseException {
             //  this is introduced because mm/dd/yy is so ambiguous, the parser
