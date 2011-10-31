@@ -1054,7 +1054,7 @@ public class SeriesRenderer extends Renderer {
             }
             yaxisUnitsOkay = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
 
-        } else if (dataSet instanceof QDataSet) {
+        } else {
             tds = (QDataSet) dataSet;
             yaxisUnitsOkay = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
         }
@@ -1251,7 +1251,7 @@ public class SeriesRenderer extends Renderer {
                 }
             }
 
-        } else if (dataSet instanceof QDataSet) {
+        } else {
             tds = (QDataSet) dataSet;
             plottable = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
         }
@@ -1963,7 +1963,7 @@ public class SeriesRenderer extends Renderer {
             unitsWarning= false;
             plottable = true;
 
-        } else if (dataSet instanceof QDataSet) {
+        } else {
             plottable = true;
         }
 
