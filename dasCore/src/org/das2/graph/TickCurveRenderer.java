@@ -242,7 +242,7 @@ public class TickCurveRenderer extends Renderer {
         DDataSet xxds= DDataSet.wrap( tickv.minorTickV.toDoubleArray( xunits ), xunits );
         findex= Ops.findex( xds, xxds );
 
-        tickLabeller= new GrannyTickLabeller( parent ); 
+        tickLabeller= new GrannyTickLabeller( ); 
         tickLabeller.init( tickv );
         
         for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {

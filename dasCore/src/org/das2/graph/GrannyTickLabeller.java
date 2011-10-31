@@ -17,12 +17,9 @@ public class GrannyTickLabeller implements TickLabeller {
     
     private TickVDescriptor ticks;
     
-    private Component parent;
-    
     private DatumFormatter df;
     
-    public GrannyTickLabeller(Component parent) {
-        this.parent= parent;
+    public GrannyTickLabeller() {
     }
     
     /**
