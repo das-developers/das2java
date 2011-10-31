@@ -462,7 +462,9 @@ public class FileStorageModelNew {
             String sfz = fz.getPath().substring(0, fz.getPath().length() - 3);
             f0 = new File(sfz);
             FileSystemUtil.unzip(fz, f0);
-            f0.setLastModified(fz.lastModified());
+            if ( !f0.setLastModified(fz.lastModified()) ) {
+                throw new IllegalArgumentException("failed to set last modified");
+            }
         }
         return f0;
     }
