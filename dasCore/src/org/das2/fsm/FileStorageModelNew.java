@@ -354,6 +354,7 @@ public class FileStorageModelNew {
                         bestVersions.put( key, thss );
                         bestFiles.put( key,ff );
                     } catch ( Exception ex ) {
+                        ex.printStackTrace();
                         // doesn't match if comparator (e.g. version isn't a decimal number)
                     }
                 } else {
@@ -363,6 +364,7 @@ public class FileStorageModelNew {
                             bestFiles.put( key,ff );
                         }
                     } catch ( Exception ex ) {
+                        ex.printStackTrace();
                         // doesn't match
                     }
                 }
