@@ -316,17 +316,17 @@ public class DatumRangeUtil {
         String string;
         int ipos;
         
-        final int YEAR=0;
-        final int MONTH=1;
-        final int DAY=2;
-        final int HOUR=3;
-        final int MINUTE=4;
-        final int SECOND=5;
-        final int NANO=6;
+        static final int YEAR=0;
+        static final int MONTH=1;
+        static final int DAY=2;
+        static final int HOUR=3;
+        static final int MINUTE=4;
+        static final int SECOND=5;
+        static final int NANO=6;
         
-        final int STATE_OPEN=89;
-        final int STATE_TS1TIME=90;
-        final int STATE_TS2TIME=91;
+        static final int STATE_OPEN=89;
+        static final int STATE_TS1TIME=90;
+        static final int STATE_TS2TIME=91;
         
         int state= STATE_OPEN;
         
