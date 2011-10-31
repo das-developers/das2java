@@ -46,7 +46,7 @@ public class EnumerationUnits extends Units {
     private int highestOrdinal; // highest ordinal for each Units type
     private HashMap<Object, Datum> objects;    // maps from object to Datum.Integer
     private HashMap<Datum, Object> invObjects; // maps from Datum.Integer to object
-    public static HashMap<Class, EnumerationUnits> unitsInstances;
+    private static HashMap<Class, EnumerationUnits> unitsInstances;
 
     public EnumerationUnits(String id) {
         this(id, "");
@@ -74,8 +74,10 @@ public class EnumerationUnits extends Units {
         if (objects.containsKey(object)) {
             return objects.get(object);
         } else {
-            if (highestOrdinal < ival) {
-                highestOrdinal = ival;
+            synchronized (this) {
+                if (highestOrdinal < ival) {
+                    highestOrdinal = ival;
+                }
             }
             Integer ordinal = ival;
             Datum result = new Datum.Double(ordinal, this);
@@ -101,11 +103,13 @@ public class EnumerationUnits extends Units {
         return DatumVector.newDatumVector(doubles, this);
     }
 
-    public synchronized Datum createDatum(Object object) {
+    public Datum createDatum(Object object) {
         if (objects.containsKey(object)) {
             return objects.get(object);
         } else {
-            highestOrdinal++;
+            synchronized (this) {
+                highestOrdinal++;
+            }
             Integer ordinal = highestOrdinal;
             Datum result = new Datum.Double(ordinal, this);
             ordinals.put(ordinal, result);
