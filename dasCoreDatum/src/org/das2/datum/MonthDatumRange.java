@@ -7,22 +7,32 @@
 package org.das2.datum;
 
 /**
- *
+ * DatumRange implementation that preserves month and year boundaries in the next() and previous() implementations.  For example,
+ *   dr= MonthDatumRange( [ 1999, 01, 01, 00, 00, 00, 0 ], [ 1999, 02, 01, 00, 00, 00, 0 ] )
+ *   dr.toString() -> "Jan 1999"
+ *   dr= dr.next()
+ *   dr.toString() -> "Feb 1999"  ; a normal datumRange would simply advance 31 days.
  * @author  Jeremy
  */
 public class MonthDatumRange extends DatumRange {
     
     int width;
     int widthDigit;
-    int[] start;
-    int[] end;
+    final int[] start;
+    final int[] end;
     
     public MonthDatumRange( int[] start, int[] end ) {
+
         super( TimeUtil.toDatum( start ), TimeUtil.toDatum( end ) );
+        this.start= new int[7]; // make defensive copy to make findbugs happy.
+        System.arraycopy( start, 0, this.start, 0, 7 );
+        this.end= new int[7];
+        System.arraycopy( end, 0, this.end, 0, 7 );
+
         widthDigit= -1;
         int[] widthArr= new int[7];
         for ( int i=0; i<7; i++ ) {
-            widthArr[i]= end[i]-start[i];
+            widthArr[i]= this.end[i]-this.start[i];
         }
         while( widthArr[1]<0 ) {
             widthArr[1]+= 12;
@@ -35,15 +45,13 @@ public class MonthDatumRange extends DatumRange {
                     widthArr[1]+=widthArr[0]*12;
                     widthArr[0]= 0;
                 } else if ( widthDigit!=-1 ) {
-                    throw new IllegalArgumentException("MonthDatumRange must only vary in month or year, not both"); //todo: why?
+                    throw new IllegalArgumentException("MonthDatumRange must only vary in month or year, not both"); //TODO: why?
                 } else {
                     widthDigit=i;
                     width= widthArr[widthDigit];
                 }
             }
         }
-        this.start= start;
-        this.end= end;
     }
     
     public DatumRange next() {
