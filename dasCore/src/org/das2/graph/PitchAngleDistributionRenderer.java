@@ -99,14 +99,16 @@ public class PitchAngleDistributionRenderer extends Renderer {
     @Override
     public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
-        if (ds == null) {
+        QDataSet tds= (QDataSet)ds;
+
+        if (tds == null) {
             logger.fine("null data set");
             parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             return;
         }
 
-        if ( !( SemanticOps.isTableDataSet(ds) ) ) {
-            parent.postException( this, new IllegalArgumentException("expected Table: " +ds ) );
+        if ( !( SemanticOps.isTableDataSet(tds) ) ) {
+            parent.postException( this, new IllegalArgumentException("expected Table: " +tds ) );
             return;
         }
 
@@ -116,13 +118,10 @@ public class PitchAngleDistributionRenderer extends Renderer {
                     +xAxis.getUnits() + " y="+yAxis.getUnits()  ) );
             return;
         }
-
-        QDataSet tds= (QDataSet)ds;
         
         Graphics2D g= (Graphics2D)g1;
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
-        if ( tds==null ) return;
         if ( colorBar==null ) return;
 
         QDataSet ads= SemanticOps.xtagsDataSet(tds);
