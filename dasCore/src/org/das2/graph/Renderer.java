@@ -472,6 +472,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                         xmemento = lparent.getXAxis().getMemento();
                         ymemento = lparent.getYAxis().getMemento();
                         renderException = null;
+                        lastException= null;
                     } else {
                         return;
                     }
