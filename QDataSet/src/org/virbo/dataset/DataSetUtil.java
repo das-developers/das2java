@@ -901,7 +901,7 @@ public class DataSetUtil {
                 ipeak= i;
                 peakv= (int) hist.value(i);
             }
-            if ( hist.value(i)>peakv/10  ) {
+            if ( hist.value(i)>peakv/10.  ) {
                 linHighestPeak= i;
             }
             if ( linMedian==-1 && t>total/2 ) {
@@ -910,7 +910,7 @@ public class DataSetUtil {
         }
         int linLowestPeak=0;
         for ( int i=0; i<hist.length(); i++ ) {
-            if ( hist.value(i)>peakv/10 ) {
+            if ( hist.value(i)>peakv/10. ) {
                 linLowestPeak=i;
                 break;
             }
@@ -945,16 +945,16 @@ public class DataSetUtil {
                     logPeak=i;
                     logPeakv= (int) loghist.value(i);
                 }
-                if ( loghist.value(i)>logPeakv/100  ) { // be loosy-goosey with log.
+                if ( loghist.value(i)>logPeakv/100.  ) { // be loosy-goosey with log.
                    logHighestPeak= i;
                 }
                 if ( logMedian==-1 && t>ltotal/2 ) {
                     logMedian= i;
                 }
             }
-            int logLowestPeak=0;
+            int logLowestPeak=0; // see commented code below
             for ( int i=0; i<hist.length(); i++ ) {
-                if ( loghist.value(i)>logPeakv/10 ) {
+                if ( loghist.value(i)>logPeakv/10. ) {
                     logLowestPeak=i;
                     break;
                 }
@@ -973,13 +973,18 @@ public class DataSetUtil {
             if ( peakv<20 ) {
                 ipeak= highestPeak;
                 peakv= (int) hist.value(ipeak);
+            } else if ( ipeak<logHighestPeak ) {
+              //  if ( hist.value(logHighestPeak) > Math.max( Math.ceil( hist.value(logLowestPeak) / 10 ), 1 ) ) {
+              //      ipeak= logHighestPeak;
+              //      peakv= (int)hist.value(ipeak);
+              //  }
             }
 
         } else if ( peakv<20 ) { // loosen things up when there isn't much data.
             ipeak= linHighestPeak;
             peakv= (int) hist.value(ipeak);
         } else if ( ipeak<linHighestPeak ) { // ftp://laspftp.colorado.edu/pub/riesberl/MMS/data/full-mode/tha_l2_esa_20080907_v01.cdf?tha_peif_sc_pot
-            if ( hist.value(linHighestPeak) > Math.max( Math.ceil( hist.value(linLowestPeak) / 10 ), 1 ) ) {
+            if ( hist.value(linHighestPeak) > Math.max( Math.ceil( hist.value(linLowestPeak) / 10. ), 1 ) ) {
                 ipeak= linHighestPeak;
                 peakv= (int)hist.value(ipeak);
             }
