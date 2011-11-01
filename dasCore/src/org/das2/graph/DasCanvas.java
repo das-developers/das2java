@@ -645,8 +645,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                     DasPlot p = (DasPlot) c;
                     logger.fine("    DasPlot.isDirty()=" + p.isDirty());
                     logger.fine("    DasPlot.getBounds()=" + p.getBounds());
-                    System.err.println("    DasPlot.isDirty()=" + p.isDirty());
-                    System.err.println("    DasPlot.getBounds()=" + p.getBounds());
+                    /* System.err.println("    DasPlot.isDirty()=" + p.isDirty());
+                    System.err.println("    DasPlot.getBounds()=" + p.getBounds()); */
                 }
             }
             super.print(g);

@@ -40,7 +40,19 @@ public class DasRow extends DasDevicePosition {
     public DasRow( DasCanvas parent, double top, double bottom) {
         super(parent,top,bottom,false );
     }
-    
+
+	 /** Create a new row layout object.
+	  * 
+	  * @param canvas
+	  * @param parent This can be null.
+	  * @param nMin Fraction of the canvas height up from the bottom of the canvas.
+	  * @param nMax Fraction of the canvas height up from the bottom of the canvas,
+	  *             if this ain't bigger then nMin you ain't doing it right.
+	  * @param emMin Bottom boarder size in EM's, if ptMin is
+	  * @param emMax Top boarder size in EM's.
+	  * @param ptMin
+	  * @param ptMax
+	  */
     public DasRow( DasCanvas canvas, DasRow parent, double nMin, double nMax, 
             double emMin, double emMax, int ptMin, int ptMax ) {
         super( canvas, false, parent, nMin, nMax, emMin, emMax, ptMin, ptMax );

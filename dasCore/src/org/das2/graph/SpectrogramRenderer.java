@@ -157,6 +157,19 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
+	 /** Creates a new instance of SpectrogramRenderer.
+	  * @param colorBar A colorBar object I presume?
+	  */
+	 public SpectrogramRenderer(DasColorBar colorBar) {
+       this(null, colorBar);
+    }
+
+	 /** Creates a new instance of SpectrogramRenderer.
+	  *
+	  * @param dsd And object used to provide data to the renderer based on an
+	  *            index range.  Note: This may be null.
+	  * @param colorBar A colorBar object I presume?
+	  */
     public SpectrogramRenderer(DataSetDescriptor dsd, DasColorBar colorBar) {
         super(dsd);
         this.colorBar = colorBar;
@@ -648,24 +661,5 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     public boolean acceptContext(int x, int y) {
         return true;
     }
-    /**
-     * Holds value of property fillColor.
-     */
-    private Color fillColor = Color.GRAY;
 
-    /**
-     * Getter for property fillColor.
-     * @return Value of property fillColor.
-     */
-    public Color getFillColor() {
-        return this.fillColor;
-    }
-
-    /**
-     * Setter for property fillColor.
-     * @param fillColor New value of property fillColor.
-     */
-    public void setFillColor(Color fillColor) {
-        this.fillColor = fillColor;
-    }
 }
