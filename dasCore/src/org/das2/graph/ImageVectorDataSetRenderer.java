@@ -67,11 +67,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
         Graphics2D g2 = (Graphics2D) g1;
         if (plotImage == null) {
-            if (lastException != null) {
-                if (lastException instanceof NoDataInIntervalException) {
-                    parent.postMessage(this, "no data in interval:!c" + lastException.getMessage(), DasPlot.WARNING, null, null);
+            if (getLastException() != null) {
+                if (getLastException() instanceof NoDataInIntervalException) {
+                    parent.postMessage(this, "no data in interval:!c" + getLastException().getMessage(), DasPlot.WARNING, null, null);
                 } else {
-                    parent.postException(this, lastException);
+                    parent.postException(this, getLastException());
                 }
             } else {
                 if (getDataSet() == null) {

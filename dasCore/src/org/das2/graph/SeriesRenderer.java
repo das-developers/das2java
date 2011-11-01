@@ -705,8 +705,8 @@ public class SeriesRenderer extends Renderer implements Displayable {
 
         logger.fine( "ds: "+this.ds+",  drawing indeces "+this.firstIndex+" to "+this.lastIndex );
         if ( parent==null ) return;
-        if ( this.ds == null && lastException != null) {
-            parent.postException(this, lastException);
+        if ( this.ds == null && getLastException() != null) {
+            parent.postException(this, getLastException());
             return;
         }
 

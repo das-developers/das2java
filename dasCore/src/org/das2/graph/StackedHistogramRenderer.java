@@ -135,8 +135,8 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         Graphics2D g2= (Graphics2D)g.create();
         
         Point2D p;
-        if (getDataSet()==null && lastException!=null ) {
-            renderException(g2,xAxis,yAxis,lastException);
+        if (getDataSet()==null && getLastException()!=null ) {
+            renderException(g2,xAxis,yAxis,getLastException());
         } else if (plotImage!=null) {
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
             p= new Point2D.Float( xAxis.getColumn().getDMinimum(), yAxis.getRow().getDMinimum() );
@@ -265,7 +265,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         if ( xtysData==null ) {
             this.plotImage= null;
-            if ( lastException==null ) this.setLastException( new DasException("null data set" ) );
+            if ( getLastException()==null ) this.setLastException( new DasException("null data set" ) );
             return;
         }
         

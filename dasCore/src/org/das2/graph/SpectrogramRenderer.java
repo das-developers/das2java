@@ -236,11 +236,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         reportCount();
         synchronized (lockObject) {
             if (plotImage == null) {
-                if (lastException != null) {
-                    if (lastException instanceof NoDataInIntervalException) {
-                        parent.postMessage(this, "no data in interval:!c" + lastException.getMessage(), DasPlot.WARNING, null, null);
+                if (getLastException() != null) {
+                    if (getLastException() instanceof NoDataInIntervalException) {
+                        parent.postMessage(this, "no data in interval:!c" + getLastException().getMessage(), DasPlot.WARNING, null, null);
                     } else {
-                        parent.postException(this, lastException);
+                        parent.postException(this, getLastException());
                     }
                 } else {
                     if (getDataSet() == null) {
@@ -322,6 +322,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     }
 
+//    private String getDsId() {
+//        if ( this.ds==null ) {
+//            return "null";
+//        } else if ( this.ds.getXLength()==0 ) {
+//            return "empty"+this.ds.hashCode();
+//        } else {
+//            return this.ds.getXTagDatum(0).toString();
+//        }
+//    }
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
         logger.finer("entering SpectrogramRenderer.updatePlotImage");
         updateImageCount++;
@@ -462,7 +471,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         } catch (NullPointerException ex) {
             ex.printStackTrace();
         } catch (NoDataInIntervalException e) {
-            lastException = e;
+            setLastException(e);
             plotImage = null;
         } finally {
             getParent().repaint();
