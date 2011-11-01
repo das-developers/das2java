@@ -20,6 +20,7 @@ public class Basis {
     public static final Basis centigrade= new Basis( "centigrade", "centigrade", Basis.physicalZero, 273.15, Units.celciusDegrees );
 
     public static final Basis since2000= new Basis( "since2000", "since 2000-01-01T00:00Z", null, 0, null );
+    public static final Basis since2010= new Basis( "since2010", "since 2010-01-01T00:00Z", since2000,  315619200., Units.seconds );
     public static final Basis since1980= new Basis( "since1980", "since 1980-01-01T00:00Z", since2000, -631152000., Units.seconds );
     public static final Basis since1970= new Basis( "since1970", "since 1970-01-01T00:00Z", since2000, -938044800., Units.seconds );
     public static final Basis since1958= new Basis( "since1958", "since 1958-01-01T00:00Z", since2000, -1325376000., Units.seconds );
@@ -84,9 +85,9 @@ public class Basis {
     
     
     public static void main( String[] args ) {
-        Basis since2010= new Basis( "since2010", "since 2010-01-01T00:00Z", Basis.since2000, 315619200000000.0, Units.microseconds );
+        Basis since2010x= new Basis( "since2010", "since 2010-01-01T00:00Z", Basis.since2000, 315619200000000.0, Units.microseconds );
         Basis since2011= new Basis( "since2011", "since 2011-01-01T00:00Z", Basis.since2000, 347155200000000.0, Units.microseconds );
-        System.err.println( since2011.getOffset(since2010, Units.days ));
+        System.err.println( since2011.getOffset(since2010x, Units.days ));
         
         System.err.println( centigrade.getOffset( fahrenheit, Units.fahrenheitDegrees ) );
         
