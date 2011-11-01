@@ -164,6 +164,12 @@ public abstract class Units {
             Units.microseconds, Basis.since1980 );
 
     /**
+     * Seconds since midnight Jan 1, 2010, excluding leap seconds.
+     */
+    public static final TimeLocationUnits t2010= new TimeLocationUnits("t2010","Seconds since midnight Jan 1, 2010.",
+            Units.seconds, Basis.since2010 );
+
+    /**
      * Seconds since midnight Jan 1, 2000, excluding leap seconds.
      */    
     public static final TimeLocationUnits t2000= new TimeLocationUnits("t2000","Seconds since midnight Jan 1, 2000.",
