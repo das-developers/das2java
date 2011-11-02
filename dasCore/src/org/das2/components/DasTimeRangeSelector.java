@@ -108,12 +108,12 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
 
     private JComboBox rangeComboBox;
 
-    private boolean pref= true;
+    private boolean pref;
 
     /** Creates a new instance of DasTimeRangeSelector */
     public DasTimeRangeSelector() {
         super();
-        pref= true;
+        pref= !org.das2.DasApplication.getDefaultApplication().isApplet();
         if ( pref ) {
             updateRangeString= Preferences.userNodeForPackage(this.getClass()).getBoolean("updateRangeString", false);
         } else {
