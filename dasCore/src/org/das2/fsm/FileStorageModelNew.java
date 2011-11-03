@@ -542,7 +542,8 @@ public class FileStorageModelNew {
     }
 
     /**
-     * Split off the end of the regex to get a regex for use in the parent system.
+     * Split off the end of the regex to get a regex for use in the parent system.  Returns null
+     * if there is no parent portion of the regex.
      */
     private static String getParentRegex( String regex ) {
         String[] s= regex.split( "/" );
@@ -555,7 +556,7 @@ public class FileStorageModelNew {
         } else {
             dirRegex= null;
         }
-        return dirRegex.toString();
+        return dirRegex==null ? null : dirRegex.toString();
     }
 
     /**
