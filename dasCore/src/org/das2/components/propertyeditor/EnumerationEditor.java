@@ -44,7 +44,6 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
     private Model model;
     private Object selected;
     private Class type;
-    private boolean guessType;
     private PropertyChangeSupport pcSupport;
     private EventListenerList listeners = new EventListenerList();
     private Map valueMap;
@@ -53,13 +52,11 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
 
     /** Creates a new instance of EnumerationEditor */
     public EnumerationEditor() {
-        guessType = true;
         pcSupport = new PropertyChangeSupport(this);
     }
 
     protected EnumerationEditor(Class c) {
         setClass(c);
-        guessType = false;
     }
 
     private void initEditor() {
@@ -121,6 +118,27 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
         nameMap = nameM;
         valueMap = valueM;
         toStringMap = toStringM;
+    }
+
+    /** remove the item from the list of selections
+     * 
+     * @param j
+     */
+    public void removeItem( Object j ) {
+        Field[] fields = type.getDeclaredFields();
+        for ( Field f: fields ) {
+            try {
+                if ( f.get(selected).equals(j) ) {
+                    nameMap.remove( f.getName() );
+                }
+            } catch ( IllegalAccessException ex ) {
+                
+            }
+        }
+        if ( editor!=null ) {
+            model = new Model();
+            editor.setModel(model);
+        }
     }
 
     public String getAsText() {
@@ -283,6 +301,7 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
 
     private class Renderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean hasFocus) {
             String s = (String) valueMap.get(value);
             super.getListCellRendererComponent(list, s, index, isSelected, hasFocus);
@@ -321,16 +340,19 @@ public class EnumerationEditor implements java.beans.PropertyEditor, TableCellEd
         }
 
         //TODO: remove?
+        @Override
         protected void fireIntervalRemoved(Object source, int index0, int index1) {
             super.fireIntervalRemoved(source, index0, index1);
         }
 
         //TODO: remove?
+        @Override
         protected void fireIntervalAdded(Object source, int index0, int index1) {
             super.fireIntervalAdded(source, index0, index1);
         }
 
         //TODO: remove?
+        @Override
         protected void fireContentsChanged(Object source, int index0, int index1) {
             super.fireContentsChanged(source, index0, index1);
         }
