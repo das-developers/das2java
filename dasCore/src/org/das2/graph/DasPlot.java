@@ -31,7 +31,6 @@ import org.das2.event.CrossHairMouseModule;
 import org.das2.event.BoxZoomMouseModule;
 import org.das2.event.VerticalRangeSelectorMouseModule;
 import org.das2.event.ZoomPanMouseModule;
-import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.VectorUtil;
 import org.das2.dataset.TableDataSet;
@@ -46,7 +45,6 @@ import org.das2.util.DasExceptionHandler;
 import org.das2.util.DnDSupport;
 import java.beans.PropertyChangeEvent;
 import org.das2.util.monitor.NullProgressMonitor;
-import org.das2.components.propertyeditor.Displayable;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -141,8 +139,7 @@ public class DasPlot extends DasCanvasComponent {
                     editRendererMenuItem.setText("Renderer Properties");
                     if (ir > -1) {
                         editRendererMenuItem.setEnabled(true);
-                        Displayable d = (Displayable) r;
-                        editRendererMenuItem.setIcon(d.getListIcon());
+                        editRendererMenuItem.setIcon(r.getListIcon());
                     } else {
                         editRendererMenuItem.setEnabled(false);
                         editRendererMenuItem.setIcon(null);
@@ -1073,7 +1070,7 @@ public class DasPlot extends DasCanvasComponent {
 
     public static final int INFO = 0;
     public static final int WARNING = 1;
-    public static final int ERROR = 2;
+    public static final int ERROR = 2; // fundbugs okay
     List messages;
     List<LegendElement> legendElements;
 
