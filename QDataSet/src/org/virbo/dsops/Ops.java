@@ -3539,7 +3539,7 @@ public class Ops {
      * @return
      */
     public static String saferName( String suggest ) {
-        return suggest.trim().replaceAll("|","_");
+        return suggest.trim().replaceAll("\\|","_");
     }
 
     /**
