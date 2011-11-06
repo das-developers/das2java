@@ -3532,6 +3532,17 @@ public class Ops {
     }
 
     /**
+     * extra spaces and pipes cause problems in the Operations text field.  Provide so that data sources can provide
+     * safer names, while we test safe-name requirements on a broader test set.  Use of this method will allow us to see
+     * where changes are needed.
+     * @param suggest
+     * @return
+     */
+    public static String saferName( String suggest ) {
+        return suggest.trim().replaceAll("|","_");
+    }
+
+    /**
      * made a Java-style identifier from the provided string
      * See VirboAutoplot/src/scripts/safeName.jy
      * @param suggest
