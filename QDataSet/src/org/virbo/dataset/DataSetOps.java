@@ -704,6 +704,7 @@ public class DataSetOps {
         int i= name.indexOf("["); // allow name to be "Flux[Time=1440,en=10]"
         if ( i>0 ) {
             name= name.substring(i);
+            name= Ops.saferName(name);
         }
 
         if ( bundle1==null ) {
@@ -713,7 +714,7 @@ public class DataSetOps {
             } else if ( bundle1!=null ) {
                 Units u= (Units) bundle1.property(QDataSet.UNITS);
                 for ( int i2=0; i2<bundle1.length(); i2++ ) {
-                    if ( name.equals( u.createDatum( bundle1.value(i2) ).toString() ) ) {
+                    if ( name.equals( Ops.saferName( u.createDatum( bundle1.value(i2) ).toString() ) ) ) {
                         return unbundle( bundleDs, i2 );
                     }
                 }
@@ -732,7 +733,7 @@ public class DataSetOps {
 
         boolean highRank= false;
         for ( int j=0; j<bundle1.length(); j++ ) {
-            String n1= (String) bundle1.property( QDataSet.NAME, j );
+            String n1= Ops.saferName( (String) bundle1.property( QDataSet.NAME, j ) );
             if ( n1!=null && n1.equals(name) ) {
                 ib= j;
             }
