@@ -125,7 +125,7 @@ public class Ops {
      * @param op
      * @return
      */
-    public static final MutablePropertyDataSet applyBinaryOp( QDataSet ds1, QDataSet ds2, BinaryOp op ) {
+    public static MutablePropertyDataSet applyBinaryOp( QDataSet ds1, QDataSet ds2, BinaryOp op ) {
 
         if ( ds1.rank()==ds2.rank() && ds1.rank()>0 ) {
             if ( ds1.length()!=ds2.length() ) {
@@ -182,7 +182,7 @@ public class Ops {
         return result;
     }
 
-    public static final MutablePropertyDataSet applyBinaryOp(QDataSet ds1, double d2, BinaryOp op) {
+    public static MutablePropertyDataSet applyBinaryOp(QDataSet ds1, double d2, BinaryOp op) {
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
 
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
@@ -454,7 +454,7 @@ public class Ops {
      * Does not support BINS or BUNDLE dimensions.
      *
      * @param ds
-     * @return the unweighted total of the dataset, or -1e31 if fill was encounted.
+     * @return the unweighted total of the dataset, or -1e31 if fill was encountered.
      */
     public static double total(QDataSet ds) {
         double s = 0;
@@ -497,7 +497,7 @@ public class Ops {
     }
 
     /**
-     * reduce the dataset's rank by totalling all the elements along a dimension.
+     * reduce the dataset's rank by totaling all the elements along a dimension.
      * Only QUBEs are supported presently.
      * 
      * @param ds rank N qube dataset.
@@ -542,7 +542,7 @@ public class Ops {
     }
 
     /**
-     * reduce the dataset's rank by totalling all the elements along a dimension.
+     * reduce the dataset's rank by totaling all the elements along a dimension.
      * Only QUBEs are supported presently.
      * 
      * @param ds rank N qube dataset.  N=1,2,3,4
@@ -684,7 +684,7 @@ public class Ops {
     }
 
     /**
-     * for jython, we handle this because the double isn't coerced.
+     * for Jython, we handle this because the double isn't coerced.
      * @param x
      * @return
      */
@@ -693,7 +693,7 @@ public class Ops {
     }
 
     /**
-     * for jython, we handle this because the double isn't coerced.
+     * for Jython, we handle this because the double isn't coerced.
      * @param x
      * @return
      */
@@ -702,7 +702,7 @@ public class Ops {
     }
 
     /**
-     * for jython, we handle this because the double isn't coerced.
+     * for Jython, we handle this because the double isn't coerced.
      * @param x
      * @return
      */
@@ -712,7 +712,7 @@ public class Ops {
 
     /**
      * element-wise abs.  For vectors, this returns the length of each element.
-     * Note jython conflict needs to be resolved.
+     * Note Jython conflict needs to be resolved.
      * @param ds1
      * @return
      */
@@ -728,7 +728,7 @@ public class Ops {
     }
 
     /**
-     * for jython, we define this because the doubles aren't coerced.
+     * for Jython, we define this because the doubles aren't coerced.
      * @param x
      * @param y
      * @return
@@ -739,7 +739,7 @@ public class Ops {
 
 
     /**
-     * for jython, we define this because the doubles aren't coerced.
+     * for Jython, we define this because the doubles aren't coerced.
      * @param x
      * @param y
      * @return
@@ -750,7 +750,7 @@ public class Ops {
 
     /**
      * element-wise pow.  (** in FORTRAN, ^ in IDL)
-     * Note jython conflict needs to be resolved.
+     * Note Jython conflict needs to be resolved.
      * @param ds1
      * @param pow
      * @return
