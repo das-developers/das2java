@@ -432,6 +432,8 @@ public class Ops {
             } else {
                 isCart = ds.length(0)<4;  // loosen up restrictions
             }
+        } else {
+            isCart = ds.length(0)<4;  // loosen up restrictions
         }
         if (isCart) {
             Units u= (Units) ds.property(QDataSet.UNITS);
