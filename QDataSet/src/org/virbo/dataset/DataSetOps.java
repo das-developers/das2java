@@ -733,12 +733,14 @@ public class DataSetOps {
 
         boolean highRank= false;
         for ( int j=0; j<bundle1.length(); j++ ) {
-            String n1= Ops.saferName( (String) bundle1.property( QDataSet.NAME, j ) );
+            String n1= (String) bundle1.property( QDataSet.NAME, j );
+            if ( n1!=null ) n1= Ops.saferName(n1);
             if ( n1!=null && n1.equals(name) ) {
                 ib= j;
             }
             if ( bundle1.length(j)>0 ) {
                 n1= (String) bundle1.property( QDataSet.ELEMENT_NAME, j );
+                if ( n1!=null ) n1= Ops.saferName(n1);
                 if ( n1!=null && n1.equals(name) ) {
                     ib= j;
                     highRank= true;
