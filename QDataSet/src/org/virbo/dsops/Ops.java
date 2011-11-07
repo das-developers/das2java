@@ -537,6 +537,7 @@ public class Ops {
         }
         DataSetUtil.putProperties(DataSetUtil.getProperties(ds), result);
         sliceProperties(dim, ds, result);
+        result.putProperty(QDataSet.FILL_VALUE,fill);
         return result;
     }
 
@@ -580,6 +581,7 @@ public class Ops {
         }
         sliceProperties( dim, ds, result );
         result.putProperty(QDataSet.WEIGHTS_PLANE,weights);
+        result.putProperty(QDataSet.FILL_VALUE,fill);
         return result;
     }
 
