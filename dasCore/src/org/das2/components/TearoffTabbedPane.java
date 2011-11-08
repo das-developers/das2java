@@ -335,6 +335,11 @@ public class TearoffTabbedPane extends JTabbedPane {
                     //f.setLocation( p );
                     setCursor(null);
                     draggingFrame = null;
+//
+//                    if ( e.isShiftDown() ) {
+//                        System.err.println("shift is down");
+//                        //check for another Babysitter, dock into it...  Provide feedback...
+//                    }
                 }
                 dragStart = null;
                 if (e.isPopupTrigger()) {
@@ -470,6 +475,10 @@ public class TearoffTabbedPane extends JTabbedPane {
         }
     }
 
+    /**
+     * provide a reference to the right tabbed pane, possibly creating it.
+     * @return
+     */
     private synchronized TearoffTabbedPane getRightTabbedPane( ) {
         if (rightPane == null) {
 
@@ -523,6 +532,11 @@ public class TearoffTabbedPane extends JTabbedPane {
         return rightPane;
     }
 
+    /**
+     * instead of undocking, "slide" the component into a second JFrame that follows the first.
+     * This may create the JFrame that accepts tabs.
+     * @param tabIndex
+     */
     protected void slideRight(int tabIndex) {
 
         final Component c = getComponentAt(tabIndex);
@@ -549,6 +563,12 @@ public class TearoffTabbedPane extends JTabbedPane {
         }
     }
 
+    /**
+     * create a new Frame to contain the tab that was torn off.  This may happen
+     * with the menu item "undock" or when a drag is begun within the tab.
+     * @param tabIndex
+     * @return
+     */
     protected JFrame tearOffIntoFrame(int tabIndex) {
         final Component c = getComponentAt(tabIndex);
         logger.log(Level.FINEST, "tearOffInfoFrame {0}", c);
