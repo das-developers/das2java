@@ -147,15 +147,16 @@ public class BinAverage {
      * @return QDataSet 
      */
     public static QDataSet residuals(QDataSet ds, int boxcarSize) {
-        if (ds.rank() != 1)
+        if (ds.rank() != 1) {
             throw new IllegalArgumentException("rank must be 1");
+        }
         QDataSet mean = BinAverage.boxcar(ds, boxcarSize);
         QDataSet dres = Ops.pow(Ops.subtract(ds, mean), 2);
         QDataSet var = Ops.sqrt(BinAverage.boxcar(dres, boxcarSize));
         QDataSet res = Ops.divide(Ops.abs(Ops.subtract(ds, mean)), var);
         return res;
     }
-    
+
     /**
      * run boxcar average over the dataset, returning a dataset of same geometry.  Points near the edge are simply copied from the
      * source dataset.  The result dataset contains a property "weights" that is the weights for each point.
@@ -164,14 +165,18 @@ public class BinAverage {
      * @param size the number of adjacent bins to average
      * @return rank 1 dataset of size N
      */
-    public static DDataSet boxcar( QDataSet ds, int size ) {
+    public static DDataSet boxcar(QDataSet ds, int size) {
         int nn = ds.length();
         int s2 = size / 2;
         int s3 = s2 + size % 2;   // one greater than s2 if s2 is odd.
 
-        if ( ds.rank()!=1 ) throw new IllegalArgumentException("dataset must be rank 1");
-        if ( ds.length()<size ) throw new IllegalArgumentException("dataset length is less than window size");
-        
+        if (ds.rank() != 1) {
+            throw new IllegalArgumentException("dataset must be rank 1");
+        }
+        if (ds.length() < size) {
+            throw new IllegalArgumentException("dataset length is less than window size");
+        }
+
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
         DDataSet sums = DDataSet.createRank1(nn);
@@ -223,24 +228,24 @@ public class BinAverage {
 
         DDataSet result = sums;
         //DDataSet resultVar= sums2;
-        
+
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
         for (int i = 0; i < nn; i++) {
             if (weights.value(i) > 0) {
-                double s= result.value(i);
+                double s = result.value(i);
                 result.putValue(i, s / weights.value(i));
                 //resultVar.putValue( i, ( Math.sqrt( resultVar.value(i) -  s * s ) / weights.value(i)) ); 
-                
+
             } else {
                 result.putValue(i, fill);
             }
         }
 
-        result.putProperty( QDataSet.WEIGHTS_PLANE, weights );
+        result.putProperty(QDataSet.WEIGHTS_PLANE, weights);
         //result.putProperty( QDataSet.DELTA_PLUS, resultVar );
         //result.putProperty( QDataSet.DELTA_MINUS, resultVar );
-        result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0) );
-
+        result.putProperty(QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0));
+        result.putProperty(QDataSet.FILL_VALUE, fill);
         return result;
 
     }
@@ -251,7 +256,7 @@ public class BinAverage {
      * @param binSize0 number of adjacent bins to reduce.
      * @return rank 1 dataset with N/binSize0 points.  Weights plane added.
      */
-    public static QDataSet rebin( QDataSet ds, int binSize0 ) {
+    public static QDataSet rebin(QDataSet ds, int binSize0) {
         int l0 = ds.length();
 
         DDataSet result = DDataSet.createRank1(l0 / binSize0);
@@ -264,8 +269,8 @@ public class BinAverage {
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
 
         for (int i0 = 0; i0 < n0; i0++) {
-            int j0= i0 * binSize0;
-            
+            int j0 = i0 * binSize0;
+
             double s = 0, w = 0;
             for (int k0 = 0; k0 < binSize0; k0++) {
                 double w1 = wds.value(j0 + k0);
@@ -277,12 +282,12 @@ public class BinAverage {
         }
 
         result.putProperty(QDataSet.WEIGHTS_PLANE, weights);
-        
-        QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
-        if ( dep0!=null ) {
-            result.putProperty( QDataSet.DEPEND_0, rebin(dep0,binSize0) );
+        result.putProperty(QDataSet.FILL_VALUE, fill);
+        QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if (dep0 != null) {
+            result.putProperty(QDataSet.DEPEND_0, rebin(dep0, binSize0));
         }
-        
+
         return result;
     }
 
@@ -305,19 +310,19 @@ public class BinAverage {
         int n0 = l0 / binSize0;
         int n1 = l1 / binSize1;
 
-        double fill = ((Number) wds.property( QDataSet.FILL_VALUE )).doubleValue();
+        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
 
         for (int i0 = 0; i0 < n0; i0++) {
             for (int i1 = 0; i1 < n1; i1++) {
-                int j0= i0 * binSize0;
-                int j1= i1 * binSize1;
+                int j0 = i0 * binSize0;
+                int j1 = i1 * binSize1;
                 double s = 0, w = 0;
 
                 for (int k0 = 0; k0 < binSize0; k0++) {
                     for (int k1 = 0; k1 < binSize1; k1++) {
-                        double w1 = wds.value( j0 + k0, j1 + k1);
+                        double w1 = wds.value(j0 + k0, j1 + k1);
                         w += w1;
-                        s += w1 * ds.value( j0 + k0, j1 + k1);
+                        s += w1 * ds.value(j0 + k0, j1 + k1);
                     }
                 }
                 weights.putValue(i0, i1, w);
@@ -326,17 +331,18 @@ public class BinAverage {
         }
 
         result.putProperty(QDataSet.WEIGHTS_PLANE, weights);
-        
-        QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
-        if ( dep0!=null ) {
-            result.putProperty( QDataSet.DEPEND_0, rebin(dep0,binSize0) );
+        result.putProperty(QDataSet.FILL_VALUE, fill);
+
+        QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if (dep0 != null) {
+            result.putProperty(QDataSet.DEPEND_0, rebin(dep0, binSize0));
         }
-        
-        QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
-        if ( dep1!=null ) {
-            result.putProperty( QDataSet.DEPEND_1, rebin(dep1,binSize1) );
+
+        QDataSet dep1 = (QDataSet) ds.property(QDataSet.DEPEND_1);
+        if (dep1 != null) {
+            result.putProperty(QDataSet.DEPEND_1, rebin(dep1, binSize1));
         }
-        
+
         return result;
     }
 }
