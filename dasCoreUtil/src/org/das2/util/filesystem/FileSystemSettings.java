@@ -65,6 +65,14 @@ public class FileSystemSettings {
         localCacheDir = local;
     }
 
+    /**
+     * return the connection timeout in milliseconds.
+     * @return
+     */
+    int getConnectTimeoutMs() {
+        return 5000;
+    }
+
     public enum Persistence {
         /**
          * No persistence.  No files are cached locally.
