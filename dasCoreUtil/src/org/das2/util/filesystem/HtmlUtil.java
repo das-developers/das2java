@@ -41,7 +41,17 @@ public class HtmlUtil {
         String file= url.getFile();
         return file.charAt(file.length()-1) != '/';
     }
-    
+
+    /**
+     * Get the listing of the web directory, returning links that are "under" the given URL.
+     * Note this does not handle off-line modes where we need to log into
+     * a website first, as is often the case for a hotel.
+     * TODO: check for 302 redirect that Holiday Inn used to get credentials page
+     * @param url
+     * @return list of URIs referred to in the page.
+     * @throws IOException
+     * @throws CancelledOperationException
+     */
     public static URL[] getDirectoryListing( URL url ) throws IOException, CancelledOperationException {
         FileSystem.logger.finer("listing "+url);
         
@@ -58,7 +68,8 @@ public class HtmlUtil {
         URLConnection urlConnection = url.openConnection();
 
         urlConnection.setAllowUserInteraction(false);
-        
+        urlConnection.setConnectTimeout(FileSystem.settings().getConnectTimeoutMs() );
+
         int contentLength=10000;
         
         //System.err.println("connected in "+( System.currentTimeMillis() - t0 )+" millis" );
@@ -76,7 +87,8 @@ public class HtmlUtil {
         byte b[] = new byte[10000];
         int numRead = urlStream.read(b);
         StringBuffer contentBuffer = new StringBuffer( contentLength );
-        contentBuffer.append( new String( b, 0, numRead ) );
+
+        if ( numRead!=-1 ) contentBuffer.append( new String( b, 0, numRead ) );
         while (numRead != -1) {
             FileSystem.logger.finest("download listing");
             numRead = urlStream.read(b);
