@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
 import org.das2.util.monitor.ProgressMonitor;
@@ -1029,10 +1030,19 @@ public class DataSetOps {
 
         while ( s.hasNext() ) {
             String cmd= s.next();
-            if ( cmd.startsWith("|slice") ) {
-                if  ( cmd.length()<=6 ) {
-                    throw new IllegalArgumentException("need DIM on sliceDIM(INDEX)");
+            if ( cmd.startsWith("|slice") && cmd.length()==6 ) { // multi dimensional slice
+                Pattern skipPattern= Pattern.compile("\\'\\'");
+                List<Object> args= new ArrayList();
+                while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
+                    if ( s.hasNextInt() ) {
+                        args.add( s.nextInt() );
+                    } else {
+                        args.add( s.next() );
+                    }
                 }
+                fillDs= Ops.slice( fillDs, args.toArray() );
+                
+            } else if(cmd.startsWith("|slice")) {
                 int dim= cmd.charAt(6)-'0';
                 int idx= s.nextInt();
                 if ( dim==0 ) {
@@ -1158,20 +1168,20 @@ public class DataSetOps {
     /**
      * indicate if the operators change dimensions of the dataset.  Often
      * this will result in true when the dimensions do not change, this is the better way to err.
-     * @param c process string like "slice0(0)"
+     * @param c0 process string like "slice0(0)"
      * @param c2 process string like "slice0(0)|slice1(0)"
      * @return
      */
-    public static boolean changesDimensions( String c, String c2 ) {
+    public static boolean changesDimensions( String c0, String c2 ) {
         //if ( c.length()==0 && !c2.startsWith("|") ) return false;  //TODO: kludge to avoid true when adding component child.
-        Scanner s= new Scanner( c );
+        Scanner s= new Scanner( c0 );
         s.useDelimiter("[\\(\\),]");
         Scanner s2= new Scanner( c2 );
         s2.useDelimiter("[\\(\\),]");
         while ( s.hasNext() && s2.hasNext() ) {
             String cmd= s.next();
             if ( !s2.next().equals(cmd) ) return true;
-            if ( cmd.startsWith("|slice") ) {
+            if ( cmd.startsWith("|slice") && cmd.length()>6 ) {
                 s.nextInt();
                 s2.nextInt();
             }
