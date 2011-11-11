@@ -28,6 +28,7 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.CoerceUtil;
 import org.virbo.dsops.Ops;
 
 
@@ -38,6 +39,7 @@ import org.virbo.dsops.Ops;
  * @author Jeremy
  */
 public class EventsRenderer extends Renderer {
+    public static final String PROP_COLOR = "color";
 
     /**
      * return bounding cube 
@@ -269,7 +271,13 @@ public class EventsRenderer extends Renderer {
                 parent.postMessage( this, "dataset is not correct form", DasPlot.WARNING, null, null );
                 return null;
             }
-            colors= Ops.replicate( 0x808080, xmins.length() );
+            Color c0= getColor();
+            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), 128 );
+            int irgb= c1.getRGB();
+            
+            colors= Ops.replicate( irgb, xmins.length() );
+            int b= (int)( ( (long)colors.value(0) ) & 0xff );
+
         } else {
             parent.postMessage( this, "dataset must be rank 1 or rank 2", DasPlot.WARNING, null, null );
             return null;
@@ -333,9 +341,10 @@ public class EventsRenderer extends Renderer {
                     int iwidth= Math.max( ixmax- ixmin, 1 );
 
                     if ( color!=null ) {
-                        int rr= ( (int)color.value(i) & 0xFF0000 ) >> 16;
-                        int gg= ( (int)color.value(i) & 0x00FF00 ) >> 8;
-                        int bb= ( (int)color.value(i) & 0x0000FF ) >> 0;
+                        int irgb= (int)color.value(i);
+                        int rr= ( irgb & 0xFF0000 ) >> 16;
+                        int gg= ( irgb & 0x00FF00 ) >> 8;
+                        int bb= ( irgb & 0x0000FF ) >> 0;
                         int aa= 128;
                         g.setColor( new Color( rr, gg, bb, aa ) );
                     }
@@ -373,14 +382,16 @@ public class EventsRenderer extends Renderer {
     protected void uninstallRenderer() {
     }
     
-    private Color color= new Color(100,100,100,180);
+    private Color color= new Color(100,100,100,180); // note this alpha=180 is ignored
     
     public Color getColor() {
         return color;
     }
     
     public void setColor( Color color ) {
-        this.color= new Color( color.getRed(), color.getGreen(), color.getBlue(), 180 );
+        Color old= this.color;
+        this.color= new Color( color.getRed(), color.getGreen(), color.getBlue(), 180 );// note this alpha=180 is ignored
+        propertyChangeSupport.firePropertyChange(  PROP_COLOR, old , color);
         super.invalidateParentCacheImage();
     }
     
