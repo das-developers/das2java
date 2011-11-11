@@ -41,6 +41,7 @@ import org.virbo.dataset.DataSetIterator;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.LDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
@@ -1266,6 +1267,54 @@ public class Ops {
             }
             return DDataSet.wrap(back, 1, len0, 1, 1);
         }
+    }
+
+    /**
+     * returns rank 1 dataset with value
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @return
+     */
+    public static WritableDataSet replicate(long val, int len0) {
+        int size = len0;
+        long[] back = new long[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return LDataSet.wrap( back, 1, len0, 1, 1, 1 );
+    }
+
+    /**
+     * returns rank 2 dataset filled with value
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @param len1
+     * @return
+     */
+    public static WritableDataSet replicate(long val, int len0, int len1) {
+        int size = len0 * len1;
+        long[] back = new long[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return LDataSet.wrap(back, 2, len0, len1, 1, 1 );
+    }
+
+    /**
+     * returns rank 3 dataset with filled with value.
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @param len1
+     * @param len2
+     * @return
+     */
+    public static WritableDataSet replicate(long val, int len0, int len1, int len2) {
+        int size = len0 * len1 * len2;
+        long[] back = new long[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return LDataSet.wrap(back, 3, len0, len1, len2, 1);
     }
 
     /**
