@@ -3253,7 +3253,7 @@ public class Ops {
     }
 
     /**
-     * slice each dimension in one call, so that chaining isn't required to slice multiple dimensions at once.
+     * slice each dimension in one call, so that chaining isn't required to slice multiple dimensions at once. 
      * @param ds
      * @param args
      * @return
