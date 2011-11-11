@@ -3253,6 +3253,50 @@ public class Ops {
     }
 
     /**
+     * slice each dimension in one call, so that chaining isn't required to slice multiple dimensions at once.
+     * @param ds
+     * @param args
+     * @return
+     */
+    public static QDataSet slice( QDataSet ds, Object ... args ) {
+        int cdim=0; // to keep track of if we can use native slice
+        int sdim=0; // to keep track of number of slices offset.
+        QDataSet result= ds;
+        for ( int i=0; i<args.length; i++ ) {
+            if ( args[i] instanceof Integer ) {
+                int sliceIdx= ((Integer)args[i]).intValue();
+                if ( cdim==i ) {
+                    result= result.slice(sliceIdx);
+                    cdim++;
+                } else {
+                    switch ( i-sdim ) {
+                        case 1:
+                            result= DataSetOps.slice1( result, sliceIdx );
+                            break;
+                        case 2:
+                            result= DataSetOps.slice2( result, sliceIdx );
+                            break;
+                        case 3:
+                            result= DataSetOps.slice3( result, sliceIdx );
+                            break;
+                        default:
+                            throw new IllegalArgumentException("slice not implemented, too many slices follow non-slice");
+                    }
+                }
+                sdim++;
+            } else {
+                if ( args[i] instanceof String ) {
+                    String s= (String)args[i];
+                    if ( s.contains("=") ) {
+                        throw new IllegalArgumentException("argument not supported in this version: "+s );
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Reshape the dataset to remove the first dimension with length 1, reducing
      * its rank by 1.  Dependencies are also preserved.
      * @param ds
