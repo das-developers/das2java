@@ -3308,7 +3308,7 @@ public class Ops {
      * @return
      */
     public static QDataSet slicex( QDataSet ds, Object ... args ) {
-        int cdim=0; // to keep track of if we can use native slicex
+        int cdim=0; // to keep track of if we can use native slice
         int sdim=0; // to keep track of number of slices offset.
         QDataSet result= ds;
         for ( int i=0; i<args.length; i++ ) {
