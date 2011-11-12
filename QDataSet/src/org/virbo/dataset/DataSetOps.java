@@ -64,14 +64,14 @@ public class DataSetOps {
     }
 
     /**
-     *slice on the first dimension
+     *slicex on the first dimension
      */
     public static MutablePropertyDataSet slice0(final QDataSet ds, final int index) {
         return new Slice0DataSet(ds, index,true);
     }
 
     /**
-     * slice dataset operator assumes a qube dataset
+     * slicex dataset operator assumes a qube dataset
      * by picking the index-th element of dataset's second dimension, without
      * regard to tags.
      */
@@ -80,7 +80,7 @@ public class DataSetOps {
     }
 
     /**
-     * slice dataset operator assumes a qube dataset
+     * slicex dataset operator assumes a qube dataset
      * by picking the index-th element of dataset's second dimension, without
      * regard to tags.
      */
@@ -89,7 +89,7 @@ public class DataSetOps {
     }
 
     /**
-     * slice dataset operator assumes a qube dataset
+     * slicex dataset operator assumes a qube dataset
      * by picking the index-th element of dataset's second dimension, without
      * regard to tags.
      */
@@ -210,7 +210,7 @@ public class DataSetOps {
      * row with length>end.
      * This is extended to support rank 4 datasets.
      * TODO: This probably doesn't handle bundles property.
-     * TODO: slice and trim should probably be implemented here for efficiently.
+     * TODO: slicex and trim should probably be implemented here for efficiently.
      * @param start first index to include.
      * @param end last index, exclusive
      */
@@ -490,7 +490,7 @@ public class DataSetOps {
     }
 
     /**
-     * method to help dataset implementations implement slice.
+     * method to help dataset implementations implement slicex.
      * 2010-09-23: support rank 2 DEPEND_2 and DEPEND_3
      * 2010-09-23: add BINS_1 and BUNDLE_1, Slice0DataSet calls this.
      * 2010-02-24: BUNDLE_0 handled.
@@ -823,7 +823,7 @@ public class DataSetOps {
      * @param ib index of the dataset to extract. If the index is within a dataset,
      *   then the entire dataset is returned.
      * @param highRank if true, then if the dataset at ib is rank 2 or greater, then
-     *   then the entire dataset is returned.  If false, only the slice of the dataset is
+     *   then the entire dataset is returned.  If false, only the slicex of the dataset is
      *   returned.
      * @throws IndexOutOfBoundsException if the index is invalid.
      * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
@@ -1030,7 +1030,7 @@ public class DataSetOps {
 
         while ( s.hasNext() ) {
             String cmd= s.next();
-            if ( cmd.startsWith("|slice") && cmd.length()==6 ) { // multi dimensional slice
+            if ( cmd.startsWith("|slicex") && cmd.length()==7 ) { // multi dimensional slicex
                 Pattern skipPattern= Pattern.compile("\\'\\'");
                 List<Object> args= new ArrayList();
                 while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
@@ -1040,7 +1040,7 @@ public class DataSetOps {
                         args.add( s.next() );
                     }
                 }
-                fillDs= Ops.slice( fillDs, args.toArray() );
+                fillDs= Ops.slicex( fillDs, args.toArray() );
                 
             } else if(cmd.startsWith("|slice")) {
                 int dim= cmd.charAt(6)-'0';
@@ -1048,7 +1048,7 @@ public class DataSetOps {
                 if ( dim==0 ) {
                     if ( idx>=fillDs.length() ) idx=fillDs.length()-1;
                     if ( idx<0 ) idx=0;
-                    fillDs= slice0(fillDs, idx); //TODO: use fillDs.slice
+                    fillDs= slice0(fillDs, idx); //TODO: use fillDs.slicex
                 } else if ( dim==1 ) {
                     if ( idx>=fillDs.length(0) ) idx=fillDs.length(0)-1;
                     if ( idx<0 ) idx=0;
