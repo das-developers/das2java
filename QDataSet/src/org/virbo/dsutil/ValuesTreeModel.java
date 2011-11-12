@@ -23,6 +23,9 @@ import org.virbo.dsops.Ops;
  */
 public class ValuesTreeModel extends DefaultTreeModel {
 
+    // number of trailing elements to show
+    private static final int TAIL_COUNT = 3;
+
     QDataSet ds;
     String dsLabel;
  
@@ -159,6 +162,35 @@ public class ValuesTreeModel extends DefaultTreeModel {
             if ( ds.length()>=sizeLimit ) {
                 aroot.insert( new DefaultMutableTreeNode( "..." ), aroot.getChildCount() );
             }
+            // insert last N values
+            for ( int i=Math.max( ds.length()-TAIL_COUNT,sizeLimit ); i<ds.length(); i++ ) {
+                Units u= units;
+                if ( bundle!=null ) {
+                    u= (Units)bundle.property( QDataSet.UNITS, i );
+                    if ( u==null ) u= Units.dimensionless;
+                }
+                String sval;
+                if ( u instanceof EnumerationUnits ) {
+                    try {
+                        sval= svalRank1( wds, ds, i );
+                    } catch ( IllegalArgumentException ex ) {
+                        sval= "" + ds.value(i) + " (error)";
+                    }
+                } else {
+                    sval= svalRank1( wds, ds, i );
+                }
+                //TODO: future datum class may allow for toString to return nominal data for invalid data.
+                if ( dep0!=null ) {
+                    sval += " @ " +( svalRank1( wdsDep0, dep0, i ) );
+                }
+                if ( bundle!=null ) {
+                    sval = bundle.property(QDataSet.NAME,i)+" = " + ( svalRank1( wds, ds, i ) );
+                    //sval = bundle.property(QDataSet.NAME,i)+" = " + ( wds.value(i) > 0. ? DataSetUtil.getStringValue( bundle.slice(i), ds.value(i) ) : "fill" ); //TODO: check this
+                    aroot.insert(  new DefaultMutableTreeNode( sval), aroot.getChildCount() );
+                } else {
+                    aroot.insert(  new DefaultMutableTreeNode( prefix+""+i+")="+sval), aroot.getChildCount() );
+                }
+            }
         } else {
             if ( dep0==null ) dep0= Ops.dindgen(ds.length());
             if ( depu==null ) depu= Units.dimensionless;
@@ -167,11 +199,18 @@ public class ValuesTreeModel extends DefaultTreeModel {
                 if ( dep0.rank()==1 ) { //TODO: what should this do for rank>1?
                     MutableTreeNode sliceNode= new DefaultMutableTreeNode( "values @ "+depu.createDatum(dep0.value(i)) );
                     aroot.insert( sliceNode, aroot.getChildCount() );
-                    MutableTreeNode childSlice= valuesTreeNode( prefix + i+",", sliceNode, DataSetOps.slice0(ds, i), 20 );
+                    valuesTreeNode( prefix + i+",", sliceNode, DataSetOps.slice0(ds, i), 20 );
                 }
             }
             if ( ds.length()>=sizeLimit ) {
                 aroot.insert( new DefaultMutableTreeNode( "..." ), aroot.getChildCount() );
+            }
+            for ( int i=Math.max( ds.length()-TAIL_COUNT,sizeLimit ); i<ds.length(); i++  ) {
+                if ( dep0.rank()==1 ) { //TODO: what should this do for rank>1?
+                    MutableTreeNode sliceNode= new DefaultMutableTreeNode( "values @ "+depu.createDatum(dep0.value(i)) );
+                    aroot.insert( sliceNode, aroot.getChildCount() );
+                    valuesTreeNode( prefix + i+",", sliceNode, DataSetOps.slice0(ds, i), 20 );
+                }
             }
         }
         return aroot;
