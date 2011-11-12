@@ -210,7 +210,7 @@ public class DataSetOps {
      * row with length>end.
      * This is extended to support rank 4 datasets.
      * TODO: This probably doesn't handle bundles property.
-     * TODO: slicex and trim should probably be implemented here for efficiently.
+     * TODO: slice and trim should probably be implemented here for efficiently.
      * @param start first index to include.
      * @param end last index, exclusive
      */
@@ -490,7 +490,7 @@ public class DataSetOps {
     }
 
     /**
-     * method to help dataset implementations implement slicex.
+     * method to help dataset implementations implement slice.
      * 2010-09-23: support rank 2 DEPEND_2 and DEPEND_3
      * 2010-09-23: add BINS_1 and BUNDLE_1, Slice0DataSet calls this.
      * 2010-02-24: BUNDLE_0 handled.
@@ -823,7 +823,7 @@ public class DataSetOps {
      * @param ib index of the dataset to extract. If the index is within a dataset,
      *   then the entire dataset is returned.
      * @param highRank if true, then if the dataset at ib is rank 2 or greater, then
-     *   then the entire dataset is returned.  If false, only the slicex of the dataset is
+     *   then the entire dataset is returned.  If false, only the slice of the dataset is
      *   returned.
      * @throws IndexOutOfBoundsException if the index is invalid.
      * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
@@ -1023,14 +1023,14 @@ public class DataSetOps {
      * @param fillDs
      * @return
      */
-    public static QDataSet sprocess( String c, QDataSet fillDs , ProgressMonitor mon ) {
+    public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) {
         int i=1;
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
 
         while ( s.hasNext() ) {
             String cmd= s.next();
-            if ( cmd.startsWith("|slicex") && cmd.length()==7 ) { // multi dimensional slicex
+            if ( cmd.startsWith("|slicex") && cmd.length()==7 ) { // multi dimensional slice
                 Pattern skipPattern= Pattern.compile("\\'\\'");
                 List<Object> args= new ArrayList();
                 while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
