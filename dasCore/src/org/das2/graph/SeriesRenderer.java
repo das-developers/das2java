@@ -22,6 +22,7 @@
  */
 package org.das2.graph;
 
+import java.util.logging.Level;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.DasProperties;
@@ -100,7 +101,7 @@ public class SeriesRenderer extends Renderer {
 
     boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
     
-    private Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
+    private static final Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     /**
      * indicates the dataset was clipped by dataSetSizeLimit 
      */
@@ -531,7 +532,7 @@ public class SeriesRenderer extends Renderer {
             y = (double) vds.value(index);
 
             // first point //
-            logger.fine("firstPoint moveTo,LineTo= " + x + "," + y);
+            logger.log(Level.FINE, "firstPoint moveTo,LineTo= {0},{1}", new Object[]{x, y});
             fx = (float) xAxis.transform(x, xUnits);
             fy = (float) yAxis.transform(y, yUnits);
 
@@ -1004,8 +1005,8 @@ public class SeriesRenderer extends Renderer {
 
         DasPlot lparent= this.parent;
 
-        logger.fine("enter "+id+".render: "+getDataSet());
-        logger.fine( "ds: "+this.ds+",  drawing indeces "+this.firstIndex+" to "+this.lastIndex );
+        logger.log(Level.FINE, "enter {0}.render: {1}", new Object[]{id, getDataSet()});
+        logger.log( Level.FINE, "ds: {0},  drawing indeces {1} to {2}", new Object[]{this.ds, this.firstIndex, this.lastIndex});
         
         if ( lparent==null ) return;
         if ( this.ds == null && lastException != null) {
@@ -1076,7 +1077,7 @@ public class SeriesRenderer extends Renderer {
 
         int messageCount= 0;
 
-        logger.fine("rendering points: " + lastIndex + "  " + firstIndex);
+        logger.log(Level.FINE, "rendering points: {0}  {1}", new Object[]{lastIndex, firstIndex});
         if ( lastIndex == -1 ) {
             if ( messageCount++==0) {
                 lparent.postMessage(SeriesRenderer.this, "need to update first/last", DasPlot.INFO, null, null);
@@ -1100,7 +1101,7 @@ public class SeriesRenderer extends Renderer {
             }
         }
 
-        logger.fine("render data set " + dataSet);
+        logger.log(Level.FINE, "render data set {0}", dataSet);
 
         Graphics2D graphics = (Graphics2D) g.create();
 
@@ -1148,17 +1149,17 @@ public class SeriesRenderer extends Renderer {
 
 
         graphics.setColor(color);
-        log.finest("drawing psymConnector in " + color);
+        log.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
         int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon);
-        log.finest("connectCount: "+connectCount);
+        log.log(Level.FINEST, "connectCount: {0}", connectCount);
         errorElement.render(graphics, xAxis, yAxis, vds, mon);
 
         int symCount= 0;
         if (psym != DefaultPlotSymbol.NONE) {
 
             symCount= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
-            log.finest("symCount: "+symCount);
+            log.log(Level.FINEST, "symCount: {0}", symCount);
 //double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
             mon.finished();
         }
@@ -1170,7 +1171,7 @@ public class SeriesRenderer extends Renderer {
 
         setRenderPointsPerMillisecond(dppms);
 
-        logger.finer("render: " + renderTime + " total:" + (milli - lastUpdateMillis) + " fps:" + (1000. / (milli - lastUpdateMillis)) + " pts/ms:" + dppms);
+        logger.log(Level.FINER, "render: {0} total:{1} fps:{2} pts/ms:{3}", new Object[]{renderTime, milli - lastUpdateMillis, 1000. / (milli - lastUpdateMillis), dppms});
         lastUpdateMillis = milli;
 
         if (dataSetClipped) {
@@ -1198,7 +1199,7 @@ public class SeriesRenderer extends Renderer {
      */
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
-        logger.fine("enter "+id+".updatePlotImage: "+getDataSet());
+        logger.log(Level.FINE, "enter {0}.updatePlotImage: {1}", new Object[]{id, getDataSet()});
 
         updating = true;
 
@@ -1315,7 +1316,7 @@ public class SeriesRenderer extends Renderer {
             getParent().repaint();
         }
 
-        logger.fine("done updatePlotImage in " + (System.currentTimeMillis() - t0) + " ms");
+        logger.log(Level.FINE, "done updatePlotImage in {0} ms", (System.currentTimeMillis() - t0));
         updating = false;
         long milli = System.currentTimeMillis();
         long renderTime = (milli - t0);
@@ -1374,6 +1375,7 @@ public class SeriesRenderer extends Renderer {
 
     }
 
+    @Override
     protected void installRenderer() {
         if (!DasApplication.getDefaultApplication().isHeadless()) {
             DasPlot lparent= parent;
@@ -1389,6 +1391,7 @@ public class SeriesRenderer extends Renderer {
         updatePsym();
     }
 
+    @Override
     protected void uninstallRenderer() {
     }
 
@@ -1401,6 +1404,7 @@ public class SeriesRenderer extends Renderer {
      * TODO: cache the result to support use in legend.
      * @return
      */
+    @Override
     public javax.swing.Icon getListIcon() {
         Image i = new BufferedImage(15, 10, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) i.getGraphics();
@@ -1442,6 +1446,7 @@ public class SeriesRenderer extends Renderer {
     }
 
 
+    @Override
     public String getListLabel() {
         return String.valueOf(this.getDataSetDescriptor());
     }
@@ -1947,13 +1952,13 @@ public class SeriesRenderer extends Renderer {
 
     @Override
     public boolean acceptsDataSet(QDataSet dataSet) {
-        QDataSet ds= dataSet;
+        QDataSet ds1= dataSet;
         //QDataSet vds, tds;
         boolean plottable= false;
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
-            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+            if ( ds1.rank()==2 && SemanticOps.isBundle(ds1) ) {
             //    vds = DataSetOps.unbundleDefaultDataSet( ds );
-            } else if ( ds.rank()!=1 ) {
+            } else if ( ds1.rank()!=1 ) {
                 logger.fine("dataset rank error");
                 return false;
             }  else {
