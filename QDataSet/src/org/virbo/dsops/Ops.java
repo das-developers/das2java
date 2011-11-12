@@ -2299,7 +2299,7 @@ public class Ops {
             ds= jds;
         }
 
-        if ( ds.rank()==3 ) { // slicex it and do the process to each branch.
+        if ( ds.rank()==3 ) { // slice it and do the process to each branch.
             JoinDataSet result= new JoinDataSet(3);
             mon.setTaskSize( ds.length()*10  );
             mon.started();
@@ -2412,7 +2412,7 @@ public class Ops {
             ds= jds;
         }
 
-        if ( ds.rank()==3 ) { // slicex it and do the process to each branch.
+        if ( ds.rank()==3 ) { // slice it and do the process to each branch.
             JoinDataSet result= new JoinDataSet(3);
             mon.setTaskSize( ds.length()*10  );
             mon.started();
@@ -3302,9 +3302,9 @@ public class Ops {
     }
 
     /**
-     * slicex each dimension in one call, so that chaining isn't required to slicex multiple dimensions at once.
+     * slice each dimension in one call, so that chaining isn't required to slice multiple dimensions at once.
      * @param ds
-     * @param args varargs list of integers that are slicex indeces, or "" or ":" to mean don't slicex
+     * @param args varargs list of integers that are slice indeces, or "" or ":" to mean don't slice
      * @return
      */
     public static QDataSet slicex( QDataSet ds, Object ... args ) {
@@ -3595,7 +3595,7 @@ public class Ops {
 
     /**
      * Join two rank N datasets to make a rank N+1 dataset, with the first dimension
-     * having two elements.  This is the anti-slicex operator.
+     * having two elements.  This is the anti-slice operator.
      * 
      * If the first dataset is rank N+1 JoinDataset and the other is rank N, then the rank N dataset is
      * added to the rank N+1 dataset.
