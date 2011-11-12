@@ -1030,7 +1030,7 @@ public class DataSetOps {
 
         while ( s.hasNext() ) {
             String cmd= s.next();
-            if ( cmd.startsWith("|slicex") && cmd.length()==7 ) { // multi dimensional slice
+            if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
                 Pattern skipPattern= Pattern.compile("\\'\\'");
                 List<Object> args= new ArrayList();
                 while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
@@ -1040,7 +1040,7 @@ public class DataSetOps {
                         args.add( s.next() );
                     }
                 }
-                fillDs= Ops.slicex( fillDs, args.toArray() );
+                fillDs= Ops.slices( fillDs, args.toArray() );
                 
             } else if(cmd.startsWith("|slice")) {
                 int dim= cmd.charAt(6)-'0';

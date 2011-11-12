@@ -3307,7 +3307,7 @@ public class Ops {
      * @param args varargs list of integers that are slice indeces, or "" or ":" to mean don't slice
      * @return
      */
-    public static QDataSet slicex( QDataSet ds, Object ... args ) {
+    public static QDataSet slices( QDataSet ds, Object ... args ) {
         int cdim=0; // to keep track of if we can use native slice
         int sdim=0; // to keep track of number of slices offset.
         QDataSet result= ds;
@@ -3605,7 +3605,7 @@ public class Ops {
      * 
      * @param ds1 rank N dataset, or null
      * @param ds2 rank N dataset
-     * @see slicex
+     * @see slices
      * @see concatenate
      * @return rank N+1 dataset
      */
