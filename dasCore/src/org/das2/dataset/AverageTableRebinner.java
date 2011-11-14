@@ -123,28 +123,6 @@ public class AverageTableRebinner implements DataSetRebinner {
             doCorners(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
         }
 
-        double[] xTags;
-
-        if (ddX != null) {
-            xTags = ddX.binCenters();
-        } else {
-            xTags = new double[nx];
-            for (int i = 0; i < nx; i++) {
-                xTags[i] = xds.value( i );
-            }
-        }
-
-
-        double[][] yTags;
-        if (ddY != null) {
-            yTags = new double[][]{ddY.binCenters()};
-        } else {
-            yTags = new double[1][ny];
-            for (int j = 0; j < ny; j++) {
-                yTags[0][j] = yds.value( j );  // TODO: rank 2
-            }
-        }
-
         if (this.interpolate) {
             Datum xTagWidth = getXTagWidth(xds, tds1);
 
