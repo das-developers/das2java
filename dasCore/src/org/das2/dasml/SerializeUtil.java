@@ -281,7 +281,6 @@ public class SerializeUtil {
             AccessLevelBeanInfo info = BeansUtil.asAccessLevelBeanInfo( BeansUtil.getBeanInfo(object.getClass()), object.getClass() );
             PropertyDescriptor[] properties =
                     info.getPropertyDescriptors( AccessLevelBeanInfo.PersistenceLevel.PERSISTENT ) ;
-            String[] propertyNameList= BeansUtil.getPropertyNames(object.getClass());
             
             HashMap nameMap= new HashMap();
             
