@@ -25,9 +25,7 @@ package org.das2.event;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.TableDataSetConsumer;
-import org.das2.dataset.TableUtil;
 import org.virbo.dataset.DataSetUtil;
-import org.das2.dataset.VectorDataSet;
 import org.das2.datum.format.DefaultDatumFormatterFactory;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.graph.DasAxis;
@@ -54,14 +52,10 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     protected DasAxis XAxis;
     protected DasAxis YAxis;
     protected DasPlot parent;
-    private int ix = 0; // store the current position within the dataset object
-    private int iy = 0;
-    private int context;
     private DatumFormatter nfx;
     private DatumFormatter nfy;
     private DatumFormatter nfz;
     private FontMetrics fm;
-    private int dxMax = -999999;
     private Rectangle hDirtyBounds;
     private Rectangle vDirtyBounds;
     private Point crossHairLocation = null;
@@ -116,7 +110,6 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         int i = DataSetUtil.closestIndex(xds, x);
         int j = DataSetUtil.closestIndex(yds, y); //TODO: check multiple tables?
         
-        Units units= SemanticOps.getUnits(tds);
         double d= tds.value(i,j);
         Datum zValue = SemanticOps.getDatum( tds, d );
 
@@ -459,7 +452,6 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
      * @return Value of property multiLine.
      */
     public boolean isMultiLine() {
-
         return this.multiLine;
     }
 
@@ -468,7 +460,6 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
      * @param multiLine New value of property multiLine.
      */
     public void setMultiLine(boolean multiLine) {
-
         this.multiLine = multiLine;
     }
 }
