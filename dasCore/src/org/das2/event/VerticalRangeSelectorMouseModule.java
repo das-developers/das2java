@@ -48,13 +48,11 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
             throw new IllegalArgumentException("Axis orientation is not vertical");
         }
         this.parent= parent;
-        //  this.dragRenderer= (DragRenderer)HorizontalRangeRenderer.renderer;
         this.dragRenderer= new VerticalRangeGesturesRenderer(parent);
         this.axis= axis;
     }
     
     public static VerticalRangeSelectorMouseModule create(DasPlot parent) {
-        DasAxis axis= parent.getYAxis();
         VerticalRangeSelectorMouseModule result=
         new VerticalRangeSelectorMouseModule(parent,parent.getYAxis());
         return result;
@@ -64,8 +62,6 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
         if (!e0.isGesture()) {
             Datum min;
             Datum max;
-            Datum nnMin;
-            Datum nnMax;
             MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
             min= axis.invTransform(e.getMaximum());
             max= axis.invTransform(e.getMinimum());

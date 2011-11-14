@@ -51,7 +51,6 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
     }
    
     public static HorizontalRangeSelectorMouseModule create(DasPlot parent) {
-        DasAxis axis= parent.getXAxis();
         HorizontalRangeSelectorMouseModule result=
         new HorizontalRangeSelectorMouseModule(parent,parent.getXAxis());
         return result;

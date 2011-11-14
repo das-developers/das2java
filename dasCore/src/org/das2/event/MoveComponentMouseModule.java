@@ -88,15 +88,9 @@ public class MoveComponentMouseModule extends MouseModule {
             bounds.translate(p2.x - p1.x, p2.y - p1.y);
             Graphics2D g = (Graphics2D) g1;
             
-            //g.drawImage( i, p2.x - p1.x, p2.y-p1.y, c );
-            
             g.setClip(null);
             g.setColor(Color.BLACK);
             g.draw(bounds);
-            Point p = center(bounds);
-            //g.drawOval(p.x - 2, p.y - 2, 5, 5);
-            //g.draw(enlarge(bounds.getBounds(), 1.2));
-            //System.err.println("draw " + bounds.getBounds());
             return new Rectangle[] { enlarge(bounds.getBounds(), 1.2 ).getBounds()};
         }
 

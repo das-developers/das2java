@@ -11,11 +11,9 @@ package org.das2.event;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
-import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.UnitsUtil;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasCanvasComponent;
-import org.das2.graph.TickVDescriptor;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -24,7 +22,6 @@ import javax.swing.SwingUtilities;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.TimeUtil;
-import org.das2.datum.Units;
 import org.das2.graph.DasDevicePosition;
 
 /**
@@ -42,9 +39,6 @@ public class ZoomPanMouseModule extends MouseModule {
     DatumRange xAxisRange0;
     DatumRange yAxisRange0;
     long t0, tbirth;
-
-    private Datum MIN_TIME= TimeUtil.createTimeDatum( 1000, 1, 1, 0, 0, 0, 0 ); // I know these are found elsewhere in the code, but I can't find it.
-    private Datum MAX_TIME= TimeUtil.createTimeDatum( 3000, 1, 1, 0, 0, 0, 0 );
 
     /** Creates a new instance of ZoomPanMouseModule */
     public ZoomPanMouseModule(DasCanvasComponent parent, DasAxis horizontalAxis, DasAxis verticalAxis) {
@@ -83,7 +77,6 @@ public class ZoomPanMouseModule extends MouseModule {
                 Datum max= DatumRangeUtil.normalize( maxDr, dr.max() ) < 0.5 ? maxDr.min() : maxDr.max();
                 DatumRange drRound= new DatumRange( min, max );
 
-                double d= DatumRangeUtil.normalize( dr, drRound.min() );
                 dr= drRound;
             } catch ( InconvertibleUnitsException ex ) {
                 // it's okay to do nothing, this is a transient state
@@ -242,21 +235,6 @@ public class ZoomPanMouseModule extends MouseModule {
         }
         doPan(e);
         parent.getCanvas().getGlassPane().setCursor(null);
-    }
-
-    /**
-     * round to a nice boundaries.
-     */
-    private static DatumRange doRound(DatumRange dr, DasAxis axis) {
-        TickVDescriptor ticks;
-        if (dr.getUnits() instanceof TimeLocationUnits) {
-            ticks = TickVDescriptor.bestTickVTime(dr.min(), dr.max(), axis.getDLength() / 2, axis.getDLength(), true);
-        } else if (axis.isLog()) {
-            ticks = TickVDescriptor.bestTickVLogNew(dr.min(), dr.max(), axis.getDLength() / 2, axis.getDLength(), true);
-        } else {
-            ticks = TickVDescriptor.bestTickVLinear(dr.min(), dr.max(), axis.getDLength() / 2, axis.getDLength(), true);
-        }
-        return ticks.enclosingRange(dr, true);
     }
 
     private void doPan(final MouseEvent e) {

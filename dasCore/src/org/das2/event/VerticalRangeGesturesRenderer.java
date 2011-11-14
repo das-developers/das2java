@@ -49,11 +49,7 @@ public class VerticalRangeGesturesRenderer implements DragRenderer {
         
         Graphics2D g= (Graphics2D) g1;
         
-        double dx= p2.x-p1.x;
-        double dy= -1* ( p2.y-p1.y );
-        double angle= Math.atan2(dy, dx) * 180 / Math.PI;
-        double radius= Math.sqrt(dy*dy+dx*dx);
-        if ( radius<20 ) {
+        if (  gr.isGesture(p1,p2) ) {
             gr.renderDrag( g, p1, p2 );
             dirtyBounds.setBounds(gr.getDirtyBounds());
         } else {
@@ -91,7 +87,6 @@ public class VerticalRangeGesturesRenderer implements DragRenderer {
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
         double dx= p2.x-p1.x;
         double dy= -1* ( p2.y-p1.y );        
-        double radius= Math.sqrt(dy*dy+dx*dx);
         if ( gr.isGesture(p1,p2) ) {
             return gr.getMouseDragEvent(source,p1,p2,isModified);             
         } else {           

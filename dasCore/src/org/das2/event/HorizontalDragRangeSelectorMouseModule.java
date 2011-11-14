@@ -23,9 +23,7 @@
 
 package org.das2.event;
 
-import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.TableDataSetConsumer;
-import org.das2.datum.Datum;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasPlot;
 
@@ -55,7 +53,6 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
     }
     
     public static HorizontalDragRangeSelectorMouseModule create(DasPlot parent) {
-        DasAxis axis= parent.getXAxis();
         HorizontalDragRangeSelectorMouseModule result=
         new HorizontalDragRangeSelectorMouseModule(parent,null,parent.getXAxis());
         return result;
