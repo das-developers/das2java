@@ -34,11 +34,10 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
         this.format= formatStr;
         this.units= units;
 
-        String s;
+        // attempt to use the string
         try {
-            s= String.format( format, 0. );
+            String.format( format, 0. );
         }  catch ( IllegalFormatException ex ) {
-            s= String.format( format, 0 );
             integer= true;
         }
     }
