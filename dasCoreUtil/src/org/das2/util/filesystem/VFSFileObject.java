@@ -126,12 +126,16 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
             // If it's a folder, ensure corresponding cache dir exists
             if (vfsob.getType() == org.apache.commons.vfs.FileType.FOLDER) {
                 if (!localFile.exists()) {
-                    localFile.mkdirs();
+                    if ( !localFile.mkdirs() ) {
+                        throw new IllegalArgumentException("failed to make dirs "+localFile );
+                    }
                 }
             } else {
                 // Download and cache remote file (including zip etc)
                 if (!localFile.getParentFile().exists()) {
-                    localFile.getParentFile().mkdirs();
+                    if ( !localFile.getParentFile().mkdirs() ) {
+                        throw new IllegalArgumentException("failed to make dirs "+localFile.getParentFile() );
+                    }
                 }
                 File partfile = new File(localFile.toString() + ".part");
                 vfsfs.downloadFile( localName, localFile, partfile, monitor);
