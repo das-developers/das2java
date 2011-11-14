@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -40,8 +39,6 @@ import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-//import org.apache.xml.serialize.OutputFormat;
-//import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -223,8 +220,8 @@ public class PersistentStateSupport {
             }
         } catch (Error e) {
             // Ed's nice trick for finding the implementation
-            String name = serializer.getClass().getSimpleName();
-            java.net.URL u = serializer.getClass().getResource(name+".class");
+            //String name = serializer.getClass().getSimpleName();
+            //java.net.URL u = serializer.getClass().getResource(name+".class");
             //System.err.println(u);
             e.printStackTrace();
         }
