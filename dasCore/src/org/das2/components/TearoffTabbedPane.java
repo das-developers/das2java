@@ -444,7 +444,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             if ( active==frame1 ) {
                 int delta= frame2.getWidth() - (int)s2.getWidth();
                 // wdelta shrinks right frame
-                GraphicsDevice gd= java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0]; 
+                //GraphicsDevice gd= java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
                 //TODO: bad assumption what if left is not index 0?
                 if ( updateSize ) {
                     //int leftWidth= gd.getDisplayMode().getWidth();
