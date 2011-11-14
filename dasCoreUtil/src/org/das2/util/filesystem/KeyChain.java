@@ -102,10 +102,11 @@ public class KeyChain {
             userName= ss[0];
             if ( userName.contains("%40") ) {
                 userName= userName.replaceAll( "%40", "@" );
-                userInfo= userName;
+                StringBuilder userInfob= new StringBuilder(userName);
                 for ( int i=1; i<ss.length; i++ ) {
-                    userInfo= userInfo + ":"+ss[i];
+                    userInfob.append(":").append(ss[i]);
                 }
+                userInfo= userInfob.toString();
             }
         }
         
