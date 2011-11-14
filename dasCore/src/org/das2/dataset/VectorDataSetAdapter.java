@@ -70,15 +70,13 @@ public class VectorDataSetAdapter implements VectorDataSet {
         
         QDataSet y= DataSetOps.unbundle( bds, dependentParameter );
         QDataSet x= (QDataSet) y.property( QDataSet.DEPEND_0 );
-        QDataSet z= null;
         String context= (String) bdesc.property(QDataSet.CONTEXT_0,dependentParameter);
         if ( context!=null ) {
             String[] ss= context.split(",");
             if ( ss.length==1 && x!=null ) {
-                z= y;
                 y= DataSetOps.unbundle( bds, ss[0] );
             } else if ( ss.length==2 ) {
-                z= y;
+                QDataSet z= y;
                 if ( x==null ) x= DataSetOps.unbundle(bds, ss[0]);
                 y= DataSetOps.unbundle(bds, ss[1]);
                 ((MutablePropertyDataSet)y).putProperty(QDataSet.PLANE_0, z);

@@ -99,19 +99,11 @@ public class TableDataSetBuilder {
         insertYScan( x, y, new DatumVector[]{z}, new String[]{ planeId } );
     }
     
-    private int count = 0;
-    
     public void insertYScan(Datum xTag, DatumVector yTags, DatumVector[] scans, String[] planeIDs) {
         double x = xTag.doubleValue(xUnits);
         double[] y = yTags.toDoubleArray(yUnits);
         int insertionIndex = xTags.size();
         if ( xTags.size()>0 && ((Double)xTags.get(xTags.size()-1))>x ) monotonic=false;
-        for (int i = 0; i < scans.length; i++) {
-            if (yTags.getLength() != scans[i].getLength()) {
-                IllegalArgumentException iae = new IllegalArgumentException
-                    ("Scan length must equal yTags length");
-            }
-        }
         if (yTagSet.contains(y)) {
             y = (double[])yTagSet.tailSet(y).iterator().next();
         }
@@ -227,7 +219,6 @@ public class TableDataSetBuilder {
     }
     
     public String toString() {
-        int index = 0;
         return "TableDataSetBuilder ["+xTags.size()+" xtags, "+getTableCount(zValues)+"tables]";
     }
     
@@ -255,37 +246,7 @@ public class TableDataSetBuilder {
     public double getXTag(int i) {
         return (Double)xTags.get(i);
     }
-    
-    private static double[] insert(double[] array, double value, int index) {
-        double[] result = new double[array.length + 1];
-        System.arraycopy(array, 0, result, 0, index);
-        result[index] = value;
-        System.arraycopy(array, index, result, index + 1, array.length - index);
-        return result;
-    }
-    
-    private static double[][] insert(double[][] array, double[] values, int index) {
-        double[][] result = new double[array.length + 1][];
-        System.arraycopy(array, 0, result, 0, index);
-        result[index] = values;
-        System.arraycopy(array, index, result, index + 1, array.length - index);
-        return result;
-    }
-    
-    private static String toString(double[] array) {
-        return toString(array, 0, array.length);
-    }
-    
-    private static String toString(double[] array, int startIndex, int endIndex) {
-        if (array.length == 0) return "[]";
-        StringBuffer buffer = new StringBuffer("[");
-        for (int i = startIndex; i < endIndex-1; i++) {
-            buffer.append(array[i]).append(", ");
-        }
-        buffer.append(array[endIndex - 1]).append(']');
-        return buffer.toString();
-    }
-    
+        
     private static int getTableCount(List list) {
         int count = 0;
         double[] previous = null;
