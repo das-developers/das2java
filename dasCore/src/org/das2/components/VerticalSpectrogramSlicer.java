@@ -103,6 +103,7 @@ extends DasPlot implements DataPointSelectionListener {
                     showPopupImpl();
                 }
             };
+            SwingUtilities.invokeLater(r);
         }
     }
     
