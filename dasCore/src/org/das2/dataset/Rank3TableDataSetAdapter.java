@@ -132,7 +132,6 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
 
     public double[] getDoubleScan(int i, Units units) {
         int i0= tableOfIndex(i);
-        int i1= i - tableStart(i0);
         double[] zz = new double[getYLength(i0)];
         for (int j = 0; j < zz.length; j++) {
             zz[j] = getDouble( i, j, getZUnits());
