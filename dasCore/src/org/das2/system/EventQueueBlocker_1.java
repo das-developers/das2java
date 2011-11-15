@@ -27,7 +27,7 @@ public final class EventQueueBlocker_1 {
     
     private static final Logger logger= Logger.getLogger( "das2.system" );
     
-    private static Object lockObject= new String("EQB_1");
+    private static final Object lockObject= new Object();
     
     /** Creates a new instance of EventQueueBlocker */
     private EventQueueBlocker_1() {
@@ -48,7 +48,7 @@ public final class EventQueueBlocker_1 {
         } else {
             logger.finer("no update events found ");
             synchronized(lockObject) {
-                lockObject.notify();
+                lockObject.notify();  // findbugs NN_NAKED_NOTIFY okay
             }
         }
     }
@@ -62,7 +62,7 @@ public final class EventQueueBlocker_1 {
             if ( Toolkit.getDefaultToolkit().getSystemEventQueue().peekEvent(DasUpdateEvent.DAS_UPDATE_EVENT_ID) != null ) {
                 EventQueue.invokeLater( clearEventQueueImmediatelyRunnable );
                 logger.finer("waiting for lockObject to indicate eventQueue is clear");
-                lockObject.wait();
+                lockObject.wait();  // findbugs WA_NOT_IN_LOOP okay
             } else {
                 logger.finer("no update events found, no runnable submitted ");
             }
