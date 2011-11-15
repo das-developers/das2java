@@ -713,7 +713,7 @@ public class DataSetOps {
             if ( bundle1!=null && bundle1.rank()>1 ) {
                 throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
             } else if ( bundle1!=null ) {
-                Units u= (Units) bundle1.property(QDataSet.UNITS);
+                Units u= SemanticOps.getUnits( bundle1 );
                 for ( int i2=0; i2<bundle1.length(); i2++ ) {
                     if ( name.equals( Ops.saferName( u.createDatum( bundle1.value(i2) ).toString() ) ) ) {
                         return unbundle( bundleDs, i2 );
