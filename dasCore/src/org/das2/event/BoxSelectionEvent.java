@@ -23,7 +23,7 @@
 
 package org.das2.event;
 
-import org.das2.dataset.DataSet;
+
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import java.util.HashMap;
@@ -33,7 +33,7 @@ import org.virbo.dataset.QDataSet;
  * This is the range anolog to the DataPointSelectionEvent.  The DPSE is a point,
  * and this is a box.
  *
- * Note that it's acceptible to have null xrange and yrange, so that the same
+ * Note that it's acceptable to have null xrange and yrange, so that the same
  * code can support a variety of applications.  It's left to the programmer to
  * see that these are used consistently.
  *
@@ -47,14 +47,6 @@ public class BoxSelectionEvent extends DasEvent {
     private Datum startx, starty;
     private QDataSet ds;
     private HashMap planes;
-       
-    /**
-     * @deprecated  use BoxSelectionEvent( Object, DatumRange, DatumRange );
-     */
-    public BoxSelectionEvent(Object source, org.das2.datum.Datum xMin, org.das2.datum.Datum xMax, org.das2.datum.Datum yMin, org.das2.datum.Datum yMax) {
-        this( source, xMin.le(xMax) ? new DatumRange( xMin, xMax ) : new DatumRange( xMax, xMin ),
-                yMin.le(yMax) ? new DatumRange( yMin, yMax ) : new DatumRange( yMax, yMin ) );
-    }
     
     public BoxSelectionEvent( Object source, DatumRange xrange, DatumRange yrange ) {
         this( source, xrange, yrange, null );
@@ -91,34 +83,6 @@ public class BoxSelectionEvent extends DasEvent {
     
     public Datum getStartY() {
         return this.starty;
-    }
-        
-    /**
-     * @deprecated  use getXRange().min();
-     */
-    public org.das2.datum.Datum getXMinimum() {
-        if ( xrange!=null ) return xrange.min(); else return null;
-    }
-    
-    /**
-     * @deprecated  use getXRange().max();
-     */
-    public org.das2.datum.Datum getXMaximum() {
-        if ( xrange!=null ) return xrange.max(); else return null;
-    }
-    
-    /**
-     * @deprecated  use getYRange().min();
-     */    
-    public org.das2.datum.Datum getYMinimum() {
-        if ( yrange!=null ) return yrange.min(); else return null;
-    }
-    
-    /**
-     * @deprecated  use getYRange().max();
-     */
-    public org.das2.datum.Datum getYMaximum() {
-        if ( yrange!=null ) return yrange.max(); else return null;
     }
     
     public DatumRange getXRange() {
