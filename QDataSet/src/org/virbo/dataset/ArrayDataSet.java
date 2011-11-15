@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsConverter;
 
 /**
  * A number of static methods were initially defined in DDataSet, then
@@ -99,12 +100,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         } else {
             arr= array;
         }
-        if ( c==double.class ) return DDataSet.wrap( (double[])array, qube );
-        if ( c==float.class ) return FDataSet.wrap( (float[])array, qube );
-        if ( c==long.class ) return LDataSet.wrap( (long[])array, qube );
-        if ( c==int.class ) return IDataSet.wrap( (int[])array, qube );
-        if ( c==short.class ) return SDataSet.wrap( (short[])array, qube );
-        if ( c==byte.class ) return BDataSet.wrap( (byte[])array, qube );
+        if ( c==double.class ) return DDataSet.wrap( (double[])arr, qube );
+        if ( c==float.class ) return FDataSet.wrap( (float[])arr, qube );
+        if ( c==long.class ) return LDataSet.wrap( (long[])arr, qube );
+        if ( c==int.class ) return IDataSet.wrap( (int[])arr, qube );
+        if ( c==short.class ) return SDataSet.wrap( (short[])arr, qube );
+        if ( c==byte.class ) return BDataSet.wrap( (byte[])arr, qube );
 
         throw new IllegalArgumentException("component type not supported: "+c );
 
@@ -479,9 +480,10 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             // check to see that result would be monotonic
             int[] fl1= DataSetUtil.rangeOfMonotonic( ths );
             int[] fl2= DataSetUtil.rangeOfMonotonic( ds );
-            Units u= SemanticOps.getUnits(ths);
-            Datum diff= u.createDatum(ds.value(fl2[0])).subtract( u.createDatum(ths.value(fl1[1])) );
-            if ( ds.value(fl2[0]) -  ths.value(fl1[1]) >= 0 ) { //TODO: assumes UNITS
+            Units u1= SemanticOps.getUnits(ds);
+            Units u2= SemanticOps.getUnits(ths);
+            UnitsConverter uc= u2.getConverter(u1);
+            if ( ds.value(fl2[0]) -  uc.convert( ths.value(fl1[1]) ) >= 0 ) { 
                 result.put( QDataSet.MONOTONIC, Boolean.TRUE );
             }
         }
