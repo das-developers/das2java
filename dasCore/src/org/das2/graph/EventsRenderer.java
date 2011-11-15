@@ -157,12 +157,9 @@ public class EventsRenderer extends Renderer {
     }
     
     private class DragRenderer extends LabelDragRenderer {
-        DasAxis xaxis, yaxis;
         DasPlot parent;
         DragRenderer( DasPlot parent ) {
             super( parent );
-            this.xaxis= parent.getXAxis();
-            this.yaxis= parent.getYAxis();
             this.parent= parent;
             this.setTooltip(true);
         }
@@ -276,7 +273,6 @@ public class EventsRenderer extends Renderer {
             int irgb= c1.getRGB();
             
             colors= Ops.replicate( irgb, xmins.length() );
-            int b= (int)( ( (long)colors.value(0) ) & 0xff );
 
         } else {
             parent.postMessage( this, "dataset must be rank 1 or rank 2", DasPlot.WARNING, null, null );
@@ -314,7 +310,7 @@ public class EventsRenderer extends Renderer {
         QDataSet xmaxs= DataSetOps.unbundle( ds,1 );
         QDataSet color= ds.length(0)>3 ? DataSetOps.unbundle( ds,2 ) : null;
 
-        if ( vds==null && lastException!=null ) {
+        if ( lastException!=null ) {
             renderException( g, xAxis, yAxis, lastException );
             
         } else {
