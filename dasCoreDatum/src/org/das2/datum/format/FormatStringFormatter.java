@@ -37,6 +37,7 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
         // attempt to use the string
         try {
             String.format( format, 0. );
+            integer= false;
         }  catch ( IllegalFormatException ex ) {
             integer= true;
         }
