@@ -28,13 +28,25 @@ package org.das2.util.filesystem;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
 import org.das2.util.monitor.ProgressMonitor;
-import java.io.*;
-import java.net.*;
-import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.*;
+import java.util.regex.Pattern;
 
 /**
  * Base class for HTTP and FTP-based filesystems.  A local cache is kept of
@@ -119,7 +131,7 @@ public abstract class WebFileSystem extends FileSystem {
 
         File local = FileSystem.settings().getLocalCacheDir();
 
-        logger.fine( "WFS localRoot="+ local );
+        logger.log( Level.FINE, "WFS localRoot={0}", local);
         
         String s = root.getScheme() + "/" + root.getHost() + "/" + root.getPath(); //TODO: check getPath
 
@@ -193,11 +205,11 @@ public abstract class WebFileSystem extends FileSystem {
      * @return Lock.  The client should call lock.unlock() when the download is complete
      */
     protected Lock getDownloadLock(final String filename, File f, ProgressMonitor monitor) throws IOException {
-        logger.finer("" + Thread.currentThread().getName() + " wants download lock for " + filename + " wfs impl " + this.hashCode());
+        logger.log(Level.FINER, "{0} wants download lock for {1} wfs impl {2}", new Object[]{Thread.currentThread().getName(), filename, this.hashCode()});
         synchronized (downloads) {
             ProgressMonitor mon = (ProgressMonitor) downloads.get(filename);
             if (mon != null) { // the webfilesystem is already loading this file, so wait.
-                logger.fine("another thread is downloading " + filename + ", waiting...");
+                logger.log(Level.FINE, "another thread is downloading {0}, waiting...", filename);
                 waitForDownload( monitor, filename );
                 if (f.exists()) {
                     return null;
@@ -209,14 +221,16 @@ public abstract class WebFileSystem extends FileSystem {
                     }
                 }
             } else {
-                logger.fine("this thread will download " + filename + ".");
+                logger.log(Level.FINE, "this thread will download {0}.", filename);
                 downloads.put(filename, monitor);
                 monitor.started();  // this is necessary for the other monitors
 
                 return new ReentrantLock() {
+                    @Override
                     public void lock() {
 
                     }
+                    @Override
                     public void unlock() {
                         synchronized (downloads) {
                             downloads.remove(filename);
@@ -365,6 +379,7 @@ public abstract class WebFileSystem extends FileSystem {
         }
     }
 
+    @Override
     public String toString() {
         return "wfs " + root;
     }
