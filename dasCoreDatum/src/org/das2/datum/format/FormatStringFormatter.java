@@ -6,6 +6,8 @@
 package org.das2.datum.format;
 
 import java.util.IllegalFormatException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
@@ -22,6 +24,8 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
     private boolean units;
     private boolean integer;
 
+    private static final Logger logger= Logger.getLogger("org.das2.datum.format");
+    
     /**
      * create a new instance based on the Java format string.
      * @param formatStr see http://download.oracle.com/javase/1.5.0/docs/api/java/util/Formatter.html#syntax
@@ -36,7 +40,8 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
 
         // attempt to use the string
         try {
-            String.format( format, 0. );
+            String s= String.format( format, 0. );
+            logger.log( Level.FINEST, "format string results in {0}", s);
             integer= false;
         }  catch ( IllegalFormatException ex ) {
             integer= true;
