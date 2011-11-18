@@ -223,7 +223,9 @@ public class DataSetUtil {
     }
 
     /**
-     * TODO: how is this different than dimensionProperties?
+     * Return the set of non-structural properties of the dataset, like the UNITS and CADENCE.
+     * These are the dimensionProperties, plus others specific to the dataset, such as CADENCE and
+     * DELTA_PLUS.
      */
     public static String[] propertyNames() {
         return new String[]{
@@ -245,7 +247,14 @@ public class DataSetUtil {
     }
 
     /**
-     * copy over all the dimension properties.
+     * Copy over all the dimension properties, including:
+     *       UNITS, FORMAT, SCALE_TYPE,
+     *       TYPICAL_MIN, TYPICAL_MAX,
+     *       VALID_MIN, VALID_MAX, FILL_VALUE,
+     *       NAME, LABEL, TITLE,
+     *       USER_PROPERTIES
+     * These are dimension properties, as opposed to structural
+     * see dimensionProperties() for a list of dimension properties.
      * This DOES NOT support join datasets yet.
      * @param source
      * @param dest
