@@ -3025,6 +3025,7 @@ public class Ops {
             }
 
         }
+        DataSetUtil.copyDimensionProperties( vv, result );
 
         return result;
     }
