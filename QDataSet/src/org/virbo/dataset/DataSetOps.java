@@ -708,6 +708,11 @@ public class DataSetOps {
             name= Ops.saferName(name);
         }
 
+        if ( name.matches("ch_\\d+") ) {
+            int ich= Integer.parseInt(name.substring(3) );
+            return DataSetOps.slice1( bundleDs, ich );
+        }
+
         if ( bundle1==null ) {
             bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
             if ( bundle1!=null && bundle1.rank()>1 ) {
@@ -720,9 +725,6 @@ public class DataSetOps {
                     }
                 }
                 throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
-            } else if ( bundle1==null && name.matches("ch_\\d+") ) {
-                int ich= Integer.parseInt(name.substring(3) );
-                return DataSetOps.slice1( bundleDs, ich );
             } else if ( bundle1==null ) {
                 throw new IllegalArgumentException("expected to find BUNDLE_1 or DEPEND_1 with ordinal units." );
             }
