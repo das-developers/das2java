@@ -40,7 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This original FtpFileSystem implementation is based on Java's FTP client.
+ * This original FtpFileSystem implementation is based on Java's FTP client.  Note, Autoplot uses a third-party library because
+ * of limitations of the Java implementation.  See DataSource project of Autoplot.  TODO: like what?
  * 
  * @author Jeremy
  */
