@@ -358,7 +358,8 @@ public class AsciiHeadersParser {
                             } else {
                                 if ( jo1.has("VALUES") ) {
                                     logger.log( Level.FINE, "missing START_COLUMN element, {0} must be a DEPEND_1 dataset", name );
-                                    QDataSet vv= getDataSet( jo1, jo1.getJSONArray("VALUES"), idims );
+                                    DDataSet vv= getDataSet( jo1, jo1.getJSONArray("VALUES"), idims );
+                                    vv.putProperty( QDataSet.NAME, name );
                                     //TODO: we have to ignore ELEMENT_NAMES and ELEMENT_LABELS for now, there's no place in QDataSet for them.
                                     bd.addDataSet( name, vv );
                                 } else {
@@ -460,7 +461,7 @@ public class AsciiHeadersParser {
      * @param dims
      * @return
      */
-    public static QDataSet getDataSet( JSONObject jo, JSONArray values, int[] dims ) throws JSONException {
+    private static DDataSet getDataSet( JSONObject jo, JSONArray values, int[] dims ) throws JSONException {
         double[] dd= new double[ values.length() ];
         for ( int i=0; i<values.length(); i++ ) {
             try {
