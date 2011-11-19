@@ -156,6 +156,13 @@ public abstract class FileSystem  {
     }
 
     /**
+     * remove all the cached FileSystem instances.
+     */
+    public synchronized static void reset() {
+        instances.clear();
+    }
+
+    /**
      * Creates a FileSystem by parsing the URI and creating the correct FS type.
      * Presently, file, http, and ftp are supported.  If the URI contains a folder
      * ending in .zip and a FileSystemFactory is registered as handling .zip, then
@@ -165,7 +172,7 @@ public abstract class FileSystem  {
      * @throws IllegalArgumentException if the local root does not exist.
      */
     public synchronized static FileSystem create( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
-        logger.fine("create filesystem "+root);
+        logger.log(Level.FINE, "create filesystem {0}", root);
 
         FileSystem result= instances.get(root);
         if ( result!=null ) {
@@ -226,7 +233,7 @@ public abstract class FileSystem  {
     
     private static FileSystemSettings settings= new FileSystemSettings();
     
-    static HashMap registry;
+    private static final HashMap registry;
     static {
         registry= new HashMap();
         registry.put("file",new LocalFileSystemFactory() );
