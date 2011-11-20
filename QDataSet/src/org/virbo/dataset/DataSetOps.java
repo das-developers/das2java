@@ -13,6 +13,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -965,6 +966,19 @@ public class DataSetOps {
                 Object vv= props.get(ss);
                 if ( vv!=null && !vv.equals( props2.get(ss) ) ) {
                     props.put(ss,null);
+                }
+            }
+
+            if ( bundleDs.rank()>1 ) {
+                if ( bundle.property(QDataSet.DEPEND_1,first)!=null && bundle.property(QDataSet.DEPEND_1,first)==bundle.property(QDataSet.DEPEND_1,last) ) {
+                    props.put( QDataSet.DEPEND_1, bundle.property(QDataSet.DEPEND_1,first) );
+                }
+                if ( bundle.property(QDataSet.BINS_1,first)!=null && bundle.property(QDataSet.BINS_1,first).equals(bundle.property(QDataSet.BINS_1,last)) ) {
+                    props.put( QDataSet.BINS_1, bundle.property(QDataSet.BINS_1,first) );
+                }
+                if ( bundle.property(QDataSet.BUNDLE_1,first)!=null  && bundle.property(QDataSet.BUNDLE_1,first)==(bundle.property(QDataSet.BUNDLE_1,last) ) ) {
+                    //throw new IllegalArgumentException("bundle containing bundle is not supported");
+                    props.put( QDataSet.BUNDLE_1, bundle.property(QDataSet.BUNDLE_1,first) );
                 }
             }
 
