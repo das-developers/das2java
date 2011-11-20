@@ -978,7 +978,8 @@ public class DataSetOps {
                 }
                 if ( bundle.property(QDataSet.BUNDLE_1,first)!=null  && bundle.property(QDataSet.BUNDLE_1,first)==(bundle.property(QDataSet.BUNDLE_1,last) ) ) {
                     //throw new IllegalArgumentException("bundle containing bundle is not supported");
-                    props.put( QDataSet.BUNDLE_1, bundle.property(QDataSet.BUNDLE_1,first) );
+//                    System.err.println("bundle containing bundle is not supported presently");
+                    //props.put( QDataSet.BUNDLE_1, bundle.property(QDataSet.BUNDLE_1,first) );
                 }
             }
 
