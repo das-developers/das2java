@@ -75,12 +75,12 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
                     putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0,index) ); //TODO: discovered this problem with autoplot-test013, where DEPEND_0 is a string.  Oops.  We'll try to get the same result for now.
                 }
             }
-            putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_1,index)); //TODO: QDataSet.DEPENDNAME_1,etc
+            if ( ds.rank()>2 ) putProperty( QDataSet.DEPEND_1, ds.property(QDataSet.DEPEND_1,index)); //TODO: QDataSet.DEPENDNAME_1,etc
             putProperty( QDataSet.RENDER_TYPE, ds.property(QDataSet.RENDER_TYPE,index)); //kludge for autoplot test030_002, we use this to unbundle.
             putProperty( QDataSet.BINS_0, ds.property(QDataSet.BINS_0,index) );
-            putProperty( QDataSet.BINS_1, ds.property(QDataSet.BINS_1,index) );
+            if ( ds.rank()>2 ) putProperty( QDataSet.BINS_1, ds.property(QDataSet.BINS_1,index) );
             putProperty( QDataSet.BUNDLE_0, ds.property(QDataSet.BUNDLE_0,index) );
-            putProperty( QDataSet.BUNDLE_1, ds.property(QDataSet.BUNDLE_1,index) );
+            if ( ds.rank()>2 ) putProperty( QDataSet.BUNDLE_1, ds.property(QDataSet.BUNDLE_1,index) );
         }
         putProperty( QDataSet.JOIN_0, null );
         
@@ -116,22 +116,27 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         return ds.rank() - 1;
     }
 
+    @Override
     public double value() {
         return ds.value(index);
     }
 
+    @Override
     public double value(int i) {
         return ds.value(index,i);
     }
 
+    @Override
     public double value(int i0, int i1) {
         return ds.value(index, i0, i1);
     }
 
+    @Override
     public double value(int i0, int i1, int i2) {
         return ds.value(index, i0, i1, i2 );
     }
 
+    @Override
     public Object property(String name) {
         if (properties.containsKey(name)) {
             return properties.get(name);
@@ -144,6 +149,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         }
     }
 
+    @Override
     public Object property( String name, int i ) {
         if (properties.containsKey(name)) {
             return properties.get(name);
@@ -157,14 +163,17 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         }
     }
 
+    @Override
     public int length() {
         return ds.length(index);
     }
     
+    @Override
     public int length( int i0 ) {
         return ds.length(index,i0);        
     }
 
+    @Override
     public int length( int i0, int i1 ) {
         return ds.length(index,i0,i1);
     }    
