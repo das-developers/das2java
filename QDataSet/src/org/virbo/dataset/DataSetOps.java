@@ -196,9 +196,7 @@ public class DataSetOps {
      */
     public static int[] removeElement(int[] array, int index) {
         int[] result = new int[array.length - 1];
-        for (int i = 0; i < index; i++) {
-            result[i] = array[i];
-        }
+        System.arraycopy(array, 0, result, 0, index);
         for (int i = index + 1; i < array.length; i++) {
             result[i - 1] = array[i];
         }
