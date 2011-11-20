@@ -352,7 +352,10 @@ public class AsciiHeadersParser {
                                 logger.log( Level.FINE, "using START_COLUMN={1} property for {0}", new Object[]{lookFor, icol } );
                                 if ( labels==null ) {
                                     labels= new String[elementNames.length];
-                                    for ( int i=0; i<elementNames.length; i++ ) labels[i]= columnLabels[i+icol];
+                                    for ( int i=0; i<elementNames.length; i++ ) {
+                                        labels[i]= columnLabels[i+icol];
+                                        if ( labels[i]==null ) labels[i]= elementNames[i];
+                                    }
                                 }
                                 bd.addDataSet( name, ids, idims, elementNames, labels );
                             } else {
