@@ -3642,7 +3642,7 @@ public class Ops {
 
     /**
      * made a Java-style identifier from the provided string
-     * See VirboAutoplot/src/scripts/safeName.jy
+     * See VirboAutoplot/src/scripts/safeName.jy which demonstrates this.
      * @param suggest
      * @return
      */
