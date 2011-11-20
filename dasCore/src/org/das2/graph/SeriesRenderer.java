@@ -1299,7 +1299,7 @@ public class SeriesRenderer extends Renderer {
                     colorHSV[1] = 0.7f;
                 }
                 extraConnectorElements[i].color = Color.getHSBColor(i / 6.f, colorHSV[1], colorHSV[2]);
-                vds = DataSetOps.slice1(tds,i);
+                vds = DataSetOps.unbundle(tds,i);
 
                 if (i == 0) {
                     updateFirstLast(xAxis, yAxis, xds, vds ); // minimal support assumes vert slice data is all valid or all invalid.
