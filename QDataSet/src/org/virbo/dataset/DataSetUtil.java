@@ -1549,6 +1549,17 @@ public class DataSetUtil {
                 }
             }
         }
+        QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        if ( bds!=null ) {
+            for ( int i=0; i<bds.length(); i++ ) {
+                QDataSet bds1= DataSetOps.unbundle(ds,i,true); // assumes rank1, so we have excessive work for rank>1
+                Object o= bds1.property(QDataSet.DEPEND_1);
+                if ( o!=null && !(o instanceof QDataSet) ) {
+                    validate( bds1,problems,1) ;
+                }
+            }
+        }
+        
         QDataSet plane0 = (QDataSet) ds.property(QDataSet.PLANE_0);
         if ( plane0!=null ) {
             if ( plane0.rank()>0 && plane0.length()!=ds.length() ) { 
@@ -1939,7 +1950,7 @@ public class DataSetUtil {
      * @param ds
      * @param cds
      */
-    public static void addContext( MutablePropertyDataSet ds, QDataSet cds ) {
+    public final static void addContext( MutablePropertyDataSet ds, QDataSet cds ) {
         int idx=0;
         while ( ds.property("CONTEXT_"+idx)!=null ) idx++;
         ds.putProperty( "CONTEXT_"+idx, cds );
@@ -1951,13 +1962,13 @@ public class DataSetUtil {
      * @param ds
      * @param cds
      */
-    public static void addContext( Map<String,Object> props, QDataSet cds ) {
+    public final static void addContext( Map<String,Object> props, QDataSet cds ) {
         int idx=0;
         while ( props.get("CONTEXT_"+idx)!=null ) idx++;
         props.put( "CONTEXT_"+idx, cds );
     }
 
-    public static String contextAsString( QDataSet ds ) {
+    public final static String contextAsString( QDataSet ds ) {
         StringBuffer result= new StringBuffer();
         QDataSet cds= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
         int idx=0;
