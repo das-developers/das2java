@@ -278,8 +278,9 @@ public class SemanticOps {
         return false;
     }
     /**
-     * Test for bins scheme, where BINS_1 (or BINS_0) is set.  This is
-     * where a two-element index is min, max.
+     * Test for bins scheme, where BINS_1 (or BINS_0) is set.  
+     * This is where a two-element index is min, max.
+     * Note the BINS dimension must be the last index of the QDataSet.
      * @param ds
      * @return
      */
