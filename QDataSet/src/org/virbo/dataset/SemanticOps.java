@@ -278,15 +278,15 @@ public class SemanticOps {
         return false;
     }
     /**
-     * Test for bins scheme, where BINS_1 is set.  This is
+     * Test for bins scheme, where BINS_1 (or BINS_0) is set.  This is
      * where a two-element index is min, max.
      * @param ds
      * @return
      */
     public static boolean isBins(QDataSet ds ) {
-        boolean bins= "min,max".equals( ds.property(QDataSet.BINS_1) ) ||
-                 "min,maxInclusive".equals( ds.property(QDataSet.BINS_1) );
-        return ds.rank()==2 && bins;
+        String binsProp= (String) ds.property( "BINS_"+(ds.rank()-1) );
+        boolean bins= binsProp!=null && ( "min,max".equals( binsProp ) || "min,maxInclusive".equals( binsProp ) );
+        return bins;
     }
     
     /**
