@@ -206,7 +206,12 @@ public class DigitalRenderer extends Renderer {
 
         Boolean xMono = SemanticOps.isMonotonic(xds);
 
-        if (xMono != null && xMono.booleanValue()) {
+
+        if ( SemanticOps.isBins(dataSet) ) {
+            ixmin = 0;
+            ixmax = dataSet.length();
+            
+        } else if ( xMono != null && xMono.booleanValue()) {
             DatumRange visibleRange = xAxis.getDatumRange();
             if (parent.isOverSize()) {
                 Rectangle plotBounds = parent.getUpdateImageBounds();
@@ -279,6 +284,8 @@ public class DigitalRenderer extends Renderer {
         }
         if ( ds.rank()==0 || ( ds.rank()==1 && SemanticOps.isRank1Bundle(ds) ) ) {
             renderRank0( ds, g, xAxis, yAxis, mon);
+        } else if ( SemanticOps.isBins(ds) ) {
+            renderRank0( ds, g, xAxis, yAxis, mon);
         } else if ( ! SemanticOps.isTableDataSet(ds) ) {
             renderRank1( ds, g, xAxis, yAxis, mon);
         } else {
@@ -297,6 +304,15 @@ public class DigitalRenderer extends Renderer {
                 sb.append(label).append( "=");
             }
             sb.append( DataSetUtil.asDatum(ds).toString() );
+        } else if ( SemanticOps.isBins(ds) ) {
+            String label= (String)ds.property( QDataSet.LABEL );
+            if ( label==null ) {
+                label= (String) ds.property( QDataSet.NAME );
+            }
+            if ( label!=null ) {
+                sb.append(label).append( "=");
+            }
+            sb.append( DataSetUtil.toString(ds) );
         } else {
             for ( int i=0; i<Math.min(4,ds.length()); i++ ) {
                 if ( i>0 ) sb.append(", ");
