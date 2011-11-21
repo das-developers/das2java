@@ -998,6 +998,7 @@ public class SeriesRenderer extends Renderer {
 
         lastIndex = index;
 
+        logger.log( Level.FINE, "ds: {0},  firstIndex={1} to lastIndex={2}", new Object[]{this.ds, this.firstIndex, this.lastIndex});
     }
 
 
