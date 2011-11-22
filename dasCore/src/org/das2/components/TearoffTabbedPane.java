@@ -13,7 +13,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.GraphicsDevice;
+import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -238,6 +238,26 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     }
 
+    /**
+     * raise the application window
+     * http://stackoverflow.com/questions/309023/howto-bring-a-java-window-to-the-front
+     */
+    private static void raiseApplicationWindow( java.awt.Window window ) {
+        window.setVisible(true);
+        if ( window instanceof Frame ) {
+            Frame frame= (Frame)window;
+            int state = frame.getExtendedState();
+            state &= ~JFrame.ICONIFIED;
+            frame.setExtendedState(state);
+        }
+        window.setAlwaysOnTop(true); // security exception
+        window.toFront();
+        window.requestFocus();
+        window.setAlwaysOnTop(false); // security exception  //ubuntu 10.04 this returns to the bottom
+        window.setVisible(false);
+        window.setVisible(true);
+    }
+
     private MouseAdapter getParentMouseAdapter() {
         return new MouseAdapter() {
 
@@ -276,12 +296,10 @@ public class TearoffTabbedPane extends JTabbedPane {
                         if (desc==null) return;
                         if (desc.babysitter instanceof Window) {
                             Window babySitter = (Window) desc.babysitter;
-                            babySitter.setVisible(false);
-                            babySitter.setVisible(true);
+                            raiseApplicationWindow(babySitter);
                         } else if ( desc.babysitter instanceof TearoffTabbedPane ) {
                             Window parent= SwingUtilities.getWindowAncestor(babyComponent);
-                            parent.setVisible(false);
-                            parent.setVisible(true);
+                            raiseApplicationWindow(parent);
                         }
                         
                     //babySitter.toFront();  // no effect on Linux/Gnome
