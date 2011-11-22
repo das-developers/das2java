@@ -708,7 +708,8 @@ public class DataSetOps {
 
         if ( name.matches("ch_\\d+") ) {
             int ich= Integer.parseInt(name.substring(3) );
-            return DataSetOps.slice1( bundleDs, ich );
+            return new Slice1DataSet( bundleDs, ich, true, true );
+            //return DataSetOps.slice1( bundleDs, ich );
         }
 
         if ( bundle1==null ) {
