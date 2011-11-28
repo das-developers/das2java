@@ -383,11 +383,22 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
-     * copies the dataset into a writeable ArrayDataSet, and all of it's depend datasets as well.
+     * copies the dataset into a writable ArrayDataSet, and all of its depend datasets as well.
      */
     public static ArrayDataSet copy( QDataSet ds ) {
-        if ( ds instanceof ArrayDataSet ) return ddcopy( (ArrayDataSet)ds );
-        return copy( double.class, ds );
+        if ( ds instanceof ArrayDataSet ) {
+            return ddcopy( (ArrayDataSet)ds );
+        } else if ( ds instanceof JoinDataSet && ds.length()>0 ) {
+            QDataSet ds1= ds.slice(0);
+            if ( ds1 instanceof ArrayDataSet ) { // Juno/Waves needed to save memory and avoid converting everything to doubles
+                Class c= ((ArrayDataSet)ds1).getBack().getClass().getComponentType();
+                return copy( c, ds );
+            } else {
+                return copy( double.class, ds );
+            }
+        } else {
+            return copy( double.class, ds ); // strange type does legacy behavior.
+        }
     }
 
 
