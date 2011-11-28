@@ -21,6 +21,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -128,6 +129,23 @@ public class TearoffTabbedPane extends JTabbedPane {
             parentPane = parent;
             addMouseListener(getChildMouseAdapter());
         }
+    }
+
+    /**
+     * I needed a way to hide the mouseAdapter, since we can't do this automatically.  
+     */
+    public void hideMouseAdapter() {
+        // https://sourceforge.net/tracker/?func=detail&aid=3377337&group_id=199733&atid=970682
+        MouseListener[] mls= getMouseListeners();
+        if ( mls.length>0 ) {
+            MouseListener ml= mls[mls.length-1];
+            removeMouseListener( ml );
+        }
+        if ( getMouseMotionListeners().length>0 ) {
+            MouseMotionListener ml= getMouseMotionListeners()[0];
+            removeMouseMotionListener( ml );
+        }
+
     }
 
     private MouseMotionListener getMouseMotionListener() {
