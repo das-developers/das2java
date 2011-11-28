@@ -501,6 +501,10 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         return DataSetUtil.toString( this );
     }
 
+    /**
+     * returns the size of the dataset in bytes.
+     * @return
+     */
     public int jvmMemory() {
         int sizePer;
         Class component= this.getComponentType();
