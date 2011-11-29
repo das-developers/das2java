@@ -3651,6 +3651,9 @@ public class Ops {
             suggest= suggest.substring(1,suggest.length()-1)+"_mag";
         }
         StringBuilder result= new StringBuilder( suggest.replaceAll(" ", "_" ) );
+        if ( result.length()==0 ) {
+            throw new IllegalArgumentException("safe name cannot be created from empty string");
+        }
         if ( ! Character.isJavaIdentifierStart(result.charAt(0)) ) {
             if ( !Character.isJavaIdentifierPart(result.charAt(0)) ) { // we're going to add an underscore anyway
                 result.replace(0,1,"_");
