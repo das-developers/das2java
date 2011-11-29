@@ -7,6 +7,7 @@ package org.das2.util.filesystem;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -15,7 +16,7 @@ import java.util.logging.Logger;
  */
 public class FileSystemSettings {
 
-    private static Logger logger= Logger.getLogger("org.das2.util.filesystem");
+    private static final Logger logger= Logger.getLogger("org.das2.util.filesystem");
 
     /**
      * check the security manager to see if all permissions are allowed,
@@ -87,7 +88,7 @@ public class FileSystemSettings {
          */
         EXPIRES, 
         /**
-         * Files persist indefinately, and the server is only contacted when a file
+         * Files persist indefinitely, and the server is only contacted when a file
          * is not available locally.
          */
         ALWAYS
@@ -106,7 +107,7 @@ public class FileSystemSettings {
     public void setLocalCacheDir(File localCacheDir) {
         File oldLocalCacheDir = this.localCacheDir;
         this.localCacheDir = localCacheDir;
-        logger.fine( "setLocalCacheDir("+localCacheDir+")" );
+        logger.log( Level.FINE, "setLocalCacheDir({0})", localCacheDir);
         propertyChangeSupport.firePropertyChange(PROP_LOCALCACHEDIR, oldLocalCacheDir, localCacheDir);
     }
     protected Persistence persistence = Persistence.SESSION;
