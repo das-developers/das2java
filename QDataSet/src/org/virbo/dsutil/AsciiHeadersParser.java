@@ -361,7 +361,12 @@ public class AsciiHeadersParser {
                             } else {
                                 if ( jo1.has("VALUES") ) {
                                     logger.log( Level.FINE, "missing START_COLUMN element, {0} must be a DEPEND_1 dataset", name );
-                                    DDataSet vv= getDataSet( jo1, jo1.getJSONArray("VALUES"), idims );
+                                    int n= DataSetUtil.product(idims);
+                                    JSONArray arr= jo1.getJSONArray("VALUES");
+                                    if ( n!=arr.length() ) {
+                                        throw new IllegalArgumentException("VALUES element doesn't match DIMENSION under "+ jsonName );
+                                    }
+                                    DDataSet vv= getDataSet( jo1, arr, idims );
                                     vv.putProperty( QDataSet.NAME, name );
                                     //TODO: we have to ignore ELEMENT_NAMES and ELEMENT_LABELS for now, there's no place in QDataSet for them.
                                     bd.addDataSet( name, vv );
@@ -405,7 +410,12 @@ public class AsciiHeadersParser {
                             bd.addDataSet( name, ids, idims );
                         } else {
                             if ( jo1.has("VALUES") ) {
-                                bd.addDataSet( name, getDataSet( jo1, jo1.getJSONArray("VALUES"), idims ) );
+                                int n= DataSetUtil.product(idims);
+                                JSONArray arr= jo1.getJSONArray("VALUES");
+                                if ( n!=arr.length() ) {
+                                    throw new IllegalArgumentException("VALUES element doesn't match DIMENSION under "+ jsonName );
+                                }
+                                bd.addDataSet( name, getDataSet( jo1, arr, idims ) );
                                 continue;
                             } else {
                                 messages.put(jo1,"Couldn't find column starting with: "+lookFor);
