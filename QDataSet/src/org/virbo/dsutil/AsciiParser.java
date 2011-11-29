@@ -884,7 +884,7 @@ public class AsciiParser {
                     if ( len==0 ) {
                         result.put(name+": field"+i,label);
                     } else {
-                        result.put(name+": field"+i+"-field"+(i+len),label);
+                        result.put(name+": field"+i+"-field"+(i+len-1),label);
                         i=i+len-1;
                     }
                 }
