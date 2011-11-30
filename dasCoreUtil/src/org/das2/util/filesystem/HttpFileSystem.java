@@ -397,10 +397,14 @@ public class HttpFileSystem extends WebFileSystem {
             File listing= listingFile(directory);
             
             URL[] list=null;
+            FileInputStream fin=null;
             try {
-                list = HtmlUtil.getDirectoryListing(getURL(directory), new FileInputStream(listing) );
+                fin= new FileInputStream(listing);
+                list = HtmlUtil.getDirectoryListing(getURL(directory), fin );
             } catch (CancelledOperationException ex) {
                 throw new IllegalArgumentException(ex); // shouldn't happen since it's local
+            } finally {
+                if ( fin!=null ) fin.close();
             }
             
             result = new String[list.length];
@@ -438,7 +442,13 @@ public class HttpFileSystem extends WebFileSystem {
 
                 downloadFile( directory, listing, new File( listing.toString()+".part" ), new NullProgressMonitor() );
 
-                list = HtmlUtil.getDirectoryListing( getURL(directory), new FileInputStream(listing) );
+                FileInputStream fin=null;
+                try {
+                    fin= new FileInputStream(listing);
+                    list = HtmlUtil.getDirectoryListing( getURL(directory), fin );
+                } finally {
+                    if ( fin!=null ) fin.close();
+                }
 
                 result = new String[list.length];
                 int n = directory.length();
