@@ -29,18 +29,31 @@ package org.das2.util.filesystem;
 import java.util.logging.Logger;
 import org.das2.util.monitor.CancelledOperationException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import org.das2.util.Base64;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
-import java.net.*;
-import java.util.*;
 import java.util.concurrent.locks.Lock;
-import java.util.regex.*;
+import java.util.regex.Pattern;
+import org.das2.util.FileUtil;
+import org.das2.util.monitor.NullProgressMonitor;
 
 /**
  *
@@ -48,16 +61,11 @@ import java.util.regex.*;
  */
 public class HttpFileSystem extends WebFileSystem {
 
-    public static final int LISTING_TIMEOUT_MS = 20000;
-
-    private final HashMap listings;
-    private final HashMap listingFreshness;
+    public static final int LISTING_TIMEOUT_MS = 200000;
 
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URI root, File localRoot) {
         super(root, localRoot);
-        listings = new HashMap();
-        listingFreshness= new HashMap();
     }
 
     public static synchronized HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException, UnknownHostException {
@@ -136,6 +144,8 @@ public class HttpFileSystem extends WebFileSystem {
                     } else {
                         offline= false;
                     }
+                } else {
+                    offline= false;
                 }
             } 
 
@@ -350,67 +360,158 @@ public class HttpFileSystem extends WebFileSystem {
     }
 
     public void resetListingCache() {
-        synchronized (listings) {
-            this.listings.clear();
-            this.listingFreshness.clear();
+        if ( !FileUtil.deleteWithinFileTree(localRoot,".listing") ) {
+            throw new IllegalArgumentException("unable to delete all .listing files");
         }
     }
 
+    /**
+     * return the File for the cached listing, even if it does not exist.
+     * @param directory
+     * @return
+     */
+    private File listingFile( String directory ) {
+        new File(localRoot, directory).mkdirs();
+        File listing = new File(localRoot, directory + ".listing");
+        return listing;
+    }
+
+
     public boolean isListingCached( String directory ) {
-        directory = HttpFileSystem.toCanonicalFilename(directory);
-        if ( !listings.containsKey(directory) ) {
-            return false;
+        File listing = listingFile( directory );
+        if ( listing.exists() && ( System.currentTimeMillis() - listing.lastModified() ) < LISTING_TIMEOUT_MS ) {
+            logger.fine(String.format( "listing date is %f5.2 seconds old", (( System.currentTimeMillis() - listing.lastModified() ) /1000.) ));
+            return true;
         } else {
-            return ((Long)listingFreshness.get(directory))-System.currentTimeMillis() > 0 ;
+            return false;
         }
     }
 
     public String[] listDirectory(String directory) throws IOException {
-        directory = HttpFileSystem.toCanonicalFilename(directory);
-        if (!isDirectory(directory)) {
-            throw new IllegalArgumentException("is not a directory: " + directory);
+        directory = toCanonicalFolderName(directory);
+
+        String[] result;
+        if ( isListingCached(directory) ) {
+            logger.log(Level.FINE, "using cached listing for {0}", directory);
+
+            File listing= listingFile(directory);
+            
+            URL[] list=null;
+            try {
+                list = HtmlUtil.getDirectoryListing(getURL(directory), new FileInputStream(listing) );
+            } catch (CancelledOperationException ex) {
+                throw new IllegalArgumentException(ex); // shouldn't happen since it's local
+            }
+            
+            result = new String[list.length];
+            int n = directory.length();
+            for (int i = 0; i < list.length; i++) {
+                URL url = list[i];
+                result[i] = getLocalName(url).substring(n);
+            }
+
+            return result;
         }
 
-        if (!directory.endsWith("/")) {
-            directory = directory + "/";
-        }
-        synchronized (listings) {
-            if ( isListingCached(directory) ) { //TODO: there are no timestamps to invalidate listings!!!  How is it I haven't run across this before...https://sourceforge.net/tracker/index.php?func=detail&aid=3395693&group_id=199733&atid=970682
-                logger.log( Level.FINE, "use cached listing for {0}", directory );
-                String[] result= (String[]) listings.get(directory);
-                String[] resultc= new String[result.length];
-                System.arraycopy( result, 0, resultc, 0, result.length );
-                return resultc;
+        boolean successOrCancel= false;
 
-            } else {
-                logger.log(Level.FINE, "list {0}", directory);
-                URL[] list;
-                try {
-                    list = HtmlUtil.getDirectoryListing(getURL(directory));
-                } catch (CancelledOperationException ex) {
-                    throw new IOException( "user cancelled at credentials" ); // JAVA6
-                } catch ( IOException ex ) {
-                    if ( isOffline() ) {
-                        System.err.println("** using local listing because remote is not available");
-                        System.err.println("or some other error occurred. **");
-                        File localFile= new File( localRoot, directory );
-                        return localFile.list();
-                    } else {
-                        throw ex;
-                    }
+        if ( this.isOffline() ) {
+            File f= new File(localRoot, directory);
+            if ( !f.exists() ) throw new FileSystemOfflineException("unable to list "+f+" when offline");
+            String[] listing = f.list();
+            return listing;
+        }
+
+
+        while ( !successOrCancel ) {
+            logger.log(Level.FINE, "list {0}", directory);
+            URL[] list;
+            try {
+                URL listUrl= getURL(directory);
+
+                String file= listUrl.getFile();
+                if ( file.charAt(file.length()-1)!='/' ) {
+                    listUrl= new URL( listUrl.toString()+'/' );
                 }
-                String[] result = new String[list.length];
+
+                File listing= listingFile( directory );
+
+                downloadFile( directory, listing, new File( listing.toString()+".part" ), new NullProgressMonitor() );
+
+                list = HtmlUtil.getDirectoryListing( getURL(directory), new FileInputStream(listing) );
+
+                result = new String[list.length];
                 int n = directory.length();
                 for (int i = 0; i < list.length; i++) {
                     URL url = list[i];
                     result[i] = getLocalName(url).substring(n);
                 }
-                listings.put(directory, result);
-                listingFreshness.put( directory, System.currentTimeMillis()+LISTING_TIMEOUT_MS );
+
                 return result;
+            } catch (CancelledOperationException ex) {
+                throw new IOException( "user cancelled at credentials" ); // JAVA6
+            } catch ( IOException ex ) {
+                if ( isOffline() ) {
+                    System.err.println("** using local listing because remote is not available");
+                    System.err.println("or some other error occurred. **");
+                    File localFile= new File( localRoot, directory );
+                    return localFile.list();
+                } else {
+                    throw ex;
+                }
             }
+
         }
+        return( new String[] { "should not get here" } ); // we should not be able to reach this point
+        
     }
+
+//    public String[] listDirectoryOld(String directory) throws IOException {
+//        directory = HttpFileSystem.toCanonicalFilename(directory);
+//        if (!isDirectory(directory)) {
+//            throw new IllegalArgumentException("is not a directory: " + directory);
+//        }
+//
+//        if (!directory.endsWith("/")) {
+//            directory = directory + "/";
+//        }
+//        synchronized (listings) {
+//            if ( isListingCached(directory) ) { //TODO: there are no timestamps to invalidate listings!!!  How is it I haven't run across this before...https://sourceforge.net/tracker/index.php?func=detail&aid=3395693&group_id=199733&atid=970682
+//                logger.log( Level.FINE, "use cached listing for {0}", directory );
+//                String[] result= (String[]) listings.get(directory);
+//                String[] resultc= new String[result.length];
+//                System.arraycopy( result, 0, resultc, 0, result.length );
+//                return resultc;
+//
+//            } else {
+//                logger.log(Level.FINE, "list {0}", directory);
+//                URL[] list;
+//                try {
+//                    list = HtmlUtil.getDirectoryListing(getURL(directory));
+//                } catch (CancelledOperationException ex) {
+//                    throw new IOException( "user cancelled at credentials" ); // JAVA6
+//                } catch ( IOException ex ) {
+//                    if ( isOffline() ) {
+//                        System.err.println("** using local listing because remote is not available");
+//                        System.err.println("or some other error occurred. **");
+//                        File localFile= new File( localRoot, directory );
+//                        return localFile.list();
+//                    } else {
+//                        throw ex;
+//                    }
+//                }
+//                String[] result = new String[list.length];
+//                int n = directory.length();
+//                for (int i = 0; i < list.length; i++) {
+//                    URL url = list[i];
+//                    result[i] = getLocalName(url).substring(n);
+//                }
+//                listings.put(directory, result);
+//                listingFreshness.put( directory, System.currentTimeMillis()+LISTING_TIMEOUT_MS );
+//                return result;
+//            }
+//        }
+//    }
 
     @Override
     public String[] listDirectory(String directory, String regex) throws IOException {
