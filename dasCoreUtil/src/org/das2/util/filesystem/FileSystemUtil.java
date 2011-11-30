@@ -12,10 +12,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -69,5 +75,38 @@ public class FileSystemUtil {
         }
         in.close();
         out.close();
+    }
+
+    /**
+     * return null if the URI is not cacheable, or the URI of the parent if it is.
+     *
+     * For example,
+     *    URI uri= new URL("http://autoplot.org/data/demos2011.xml").toURI();
+     *    URI parentUri= FileSystemUtil.isCacheable( uri );
+     *    if ( parentUri ) {
+     *        FileSystem fd= FileSystem.create(parentUri);
+              FileObject fo= fd.getFileObject( ruri.relativize(parentUri).toString() );
+              in= fo.getInputStream();
+     *    }
+     * @param rurl
+     * @return
+     */
+    public static URI isCacheable(URI ruri) {
+        if ( ruri.getQuery()==null && ruri.getPath().length()>1 && !ruri.getPath().endsWith("/") ) {
+            String s= ruri.toString();
+            int i= s.lastIndexOf("/");
+            String folder= s.substring(0,i);
+            try {
+                return new URL(folder).toURI();
+            } catch (URISyntaxException ex) {
+                System.err.println("couldn't create URI from parent URL: " + ex);
+                return null;
+            } catch (MalformedURLException ex) {
+                System.err.println("url caused malformed URL exception when creating parent URL: "+ex);
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 }
