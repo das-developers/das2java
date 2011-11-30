@@ -46,6 +46,68 @@ public class HtmlUtil {
      * Get the listing of the web directory, returning links that are "under" the given URL.
      * Note this does not handle off-line modes where we need to log into
      * a website first, as is often the case for a hotel.
+     *
+     * This was refactored to support caching of listings by simply writing the content to disk.
+     *
+     * @param url
+     * @return list of URIs referred to in the page.
+     * @throws IOException
+     * @throws CancelledOperationException
+     */
+    public static URL[] getDirectoryListing( URL url, InputStream urlStream ) throws IOException, CancelledOperationException {
+        // search the input stream for links
+        // first, read in the entire URL
+        byte b[] = new byte[10000];
+        int numRead = urlStream.read(b);
+        StringBuilder contentBuffer = new StringBuilder( 10000 );
+
+        if ( numRead!=-1 ) contentBuffer.append( new String( b, 0, numRead ) );
+        while (numRead != -1) {
+            FileSystem.logger.finest("download listing");
+            numRead = urlStream.read(b);
+            if (numRead != -1) {
+                String newContent = new String(b, 0, numRead);
+                contentBuffer.append( newContent );
+            }
+        }
+        urlStream.close();
+
+        // System.err.println("read listing data in "+( System.currentTimeMillis() - t0 )+" millis" );
+        String content= contentBuffer.toString();
+
+        String hrefRegex= "(?i)href\\s*=\\s*([\"'])(.+?)\\1";
+        Pattern hrefPattern= Pattern.compile( hrefRegex );
+
+        Matcher matcher= hrefPattern.matcher( content );
+
+        ArrayList urlList= new ArrayList();
+
+        while ( matcher.find() ) {
+            FileSystem.logger.finest("parse listing");
+            String strLink= matcher.group(2);
+            URL urlLink= null;
+
+            try {
+                urlLink = new URL(url, strLink);
+                strLink = urlLink.toString();
+            } catch (MalformedURLException e) {
+                System.err.println("bad URL: "+url+" "+strLink);
+                continue;
+            }
+
+            if ( urlLink.toString().startsWith(url.toString()) && null==urlLink.getQuery() ) {
+                urlList.add( urlLink );
+            }
+        }
+
+        return (URL[]) urlList.toArray( new URL[urlList.size()] );
+
+    }
+
+    /**
+     * Get the listing of the web directory, returning links that are "under" the given URL.
+     * Note this does not handle off-line modes where we need to log into
+     * a website first, as is often the case for a hotel.
      * TODO: check for 302 redirect that Holiday Inn used to get credentials page
      * @param url
      * @return list of URIs referred to in the page.
@@ -60,8 +122,6 @@ public class HtmlUtil {
             url= new URL( url.toString()+'/' );
         }
         
-        ArrayList urlList= new ArrayList();
-
         String userInfo= KeyChain.getDefault().getUserInfo(url);
 
         long t0= System.currentTimeMillis();
@@ -74,7 +134,7 @@ public class HtmlUtil {
         
         //System.err.println("connected in "+( System.currentTimeMillis() - t0 )+" millis" );
         if ( userInfo != null) {
-            String encode = new String(Base64.encodeBytes( userInfo.getBytes()));
+            String encode = Base64.encodeBytes( userInfo.getBytes());
             urlConnection.setRequestProperty("Authorization", "Basic " + encode);
         }
 
@@ -82,50 +142,7 @@ public class HtmlUtil {
         InputStream urlStream;
         urlStream= urlConnection.getInputStream();
         
-        // search the input stream for links
-        // first, read in the entire URL
-        byte b[] = new byte[10000];
-        int numRead = urlStream.read(b);
-        StringBuffer contentBuffer = new StringBuffer( contentLength );
-
-        if ( numRead!=-1 ) contentBuffer.append( new String( b, 0, numRead ) );
-        while (numRead != -1) {
-            FileSystem.logger.finest("download listing");
-            numRead = urlStream.read(b);
-            if (numRead != -1) {
-                String newContent = new String(b, 0, numRead);
-                contentBuffer.append( newContent );
-            }
-        }
-        urlStream.close();
-        
-        // System.err.println("read listing data in "+( System.currentTimeMillis() - t0 )+" millis" );
-        String content= contentBuffer.toString();
-        
-        String hrefRegex= "(?i)href\\s*=\\s*([\"'])(.+?)\\1";
-        Pattern hrefPattern= Pattern.compile( hrefRegex );
-        
-        Matcher matcher= hrefPattern.matcher( content );
-        
-        while ( matcher.find() ) {
-            FileSystem.logger.finest("parse listing");
-            String strLink= matcher.group(2);
-            URL urlLink= null;
-            
-            try {
-                urlLink = new URL(url, strLink);
-                strLink = urlLink.toString();
-            } catch (MalformedURLException e) {
-                System.err.println("bad URL: "+url+" "+strLink);
-                continue;
-            }
-            
-            if ( urlLink.toString().startsWith(url.toString()) && null==urlLink.getQuery() ) {
-                urlList.add( urlLink );
-            }
-        }
-        
-        return (URL[]) urlList.toArray( new URL[urlList.size()] );
+        return getDirectoryListing( url, urlStream );
     }
     
 }
