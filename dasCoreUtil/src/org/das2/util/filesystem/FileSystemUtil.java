@@ -88,6 +88,7 @@ public class FileSystemUtil {
               FileObject fo= fd.getFileObject( ruri.relativize(parentUri).toString() );
               in= fo.getInputStream();
      *    }
+     *
      * @param rurl
      * @return
      */
@@ -97,6 +98,7 @@ public class FileSystemUtil {
             int i= s.lastIndexOf("/");
             String folder= s.substring(0,i);
             try {
+                //TODO: actually list the parent to make sure it contains the child.
                 return new URL(folder).toURI();
             } catch (URISyntaxException ex) {
                 System.err.println("couldn't create URI from parent URL: " + ex);
