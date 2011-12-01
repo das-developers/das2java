@@ -133,7 +133,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     /**
-     * parse position strings like "100%-5em+4pt" into npos, emoffset, pt_offset.
+     * parse position strings like "100%-5em+4pt" into [ npos, emoffset, pt_offset ].
      * Note px is acceptable, but pt is proper. 
      * Ems are rounded to the nearest hundredth.
      * Percents are returned as normal (0-1) and rounded to the nearest thousandth.
