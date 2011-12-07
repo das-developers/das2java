@@ -1311,6 +1311,16 @@ public class DataSetUtil {
     }
 
     public static String format(QDataSet ds) {
+        return format( ds, true );
+    }
+
+    /**
+     * return a human-readable string representing the dataset
+     * @param ds the dataset to represent
+     * @param showContext show the context property (@slice2=1) if present and ds is rank0.
+     * @return
+     */
+    public static String format(QDataSet ds,boolean showContext) {
         if ( ds.property(QDataSet.BUNDLE_0)!=null ) {
             StringBuffer result= new StringBuffer(); // for documenting context.
             for ( int i=0; i<ds.length(); i++ ) {
@@ -1383,9 +1393,11 @@ public class DataSetUtil {
                     result.append( ds.value() );
                 }
             }
-            QDataSet context0= (QDataSet) ds.property("CONTEXT_0");
-            if ( context0!=null ) {
-                result.append(" @ " + format(context0) );
+            if ( showContext ) {
+                QDataSet context0= (QDataSet) ds.property("CONTEXT_0");
+                if ( context0!=null ) {
+                    result.append(" @ " + format(context0) );
+                }
             }
             return result.toString();
         }
@@ -1975,17 +1987,17 @@ public class DataSetUtil {
         while ( cds!=null ) {
             if ( cds.rank()>0 ) {
                 if ( cds.rank()==1 && cds.property(QDataSet.BINS_0)!=null ) {
-                    result.append( DataSetUtil.format(cds) );
+                    result.append( DataSetUtil.format(cds,false) );
                 } else {
                     QDataSet extent= Ops.extent(cds);
                     if ( extent.value(1)==extent.value(0) ) {
-                        result.append( DataSetUtil.format(cds.slice(0)) );  // for CLUSTER/PEACE this happens where rank 1 context is all the same value
+                        result.append( DataSetUtil.format(cds.slice(0),false) );  // for CLUSTER/PEACE this happens where rank 1 context is all the same value
                     } else {
-                        result.append( DataSetUtil.format(extent) ).append( " " +cds.length() + " different values" ); // slice was probably done when we should't have.
+                        result.append( DataSetUtil.format(extent,false) ).append( " " +cds.length() + " different values" ); // slice was probably done when we should't have.
                     }
                 }
             } else {
-                result.append( DataSetUtil.format(cds) );
+                result.append( DataSetUtil.format(cds,false) );
             }
             idx++;
             cds= (QDataSet) ds.property( "CONTEXT_"+idx );
