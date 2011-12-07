@@ -49,6 +49,7 @@ public class DataSetUtil {
      */
     public static MutablePropertyDataSet tagGenDataSet(int n, final double start, final double cadence) {
         IndexGenDataSet result = new IndexGenDataSet(n) {
+            @Override
             public double value(int i) {
                 return i * cadence + start;
             }
@@ -65,6 +66,7 @@ public class DataSetUtil {
      */
     public static MutablePropertyDataSet tagGenDataSet(int n, final double start, final double cadence, Units units ) {
         IndexGenDataSet result = new IndexGenDataSet(n) {
+            @Override
             public double value(int i) {
                 return i * cadence + start;
             }
@@ -86,6 +88,7 @@ public class DataSetUtil {
     public static MutablePropertyDataSet replicateDataSet(int n, final double value) {
         IndexGenDataSet result = new IndexGenDataSet(n) {
 
+            @Override
             public double value(int i) {
                 return value;
             }
@@ -598,9 +601,9 @@ public class DataSetUtil {
             if ( ds.rank() > 3) qubeDims[3]= ds.length(0,0,0);
         }
 
-        StringBuffer dimStr = new StringBuffer("" + depNames[0] + ds.length());
+        StringBuilder dimStr = new StringBuilder("" + depNames[0] + ds.length());
         for ( int i=1; i<ds.rank(); i++ ) {
-            dimStr.append("," + depNames[i] + qubeDims[i] + qubeStr);
+            dimStr.append(",").append(depNames[i]).append(qubeDims[i]).append(qubeStr);
         }
         
         String su = String.valueOf(u);
@@ -1322,7 +1325,7 @@ public class DataSetUtil {
      */
     public static String format(QDataSet ds,boolean showContext) {
         if ( ds.property(QDataSet.BUNDLE_0)!=null ) {
-            StringBuffer result= new StringBuffer(); // for documenting context.
+            StringBuilder result= new StringBuilder(); // for documenting context.
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet cds= DataSetOps.slice0(ds, i);
                 result.append( DataSetUtil.format(cds) );
@@ -1330,7 +1333,7 @@ public class DataSetUtil {
             }
             return result.toString();
         } else if ( "min,max".equals( ds.property(QDataSet.BINS_0) ) && ds.rank()==1) {
-            StringBuffer result= new StringBuffer();
+            StringBuilder result= new StringBuilder();
             Units u= (Units) ds.property(QDataSet.UNITS);
             if ( u==null ) u= Units.dimensionless;
             result.append( new DatumRange( ds.value(0), ds.value(1), u ).toString() );
@@ -1340,7 +1343,7 @@ public class DataSetUtil {
             return result.toString();
 
         } else if ( "min,maxInclusive".equals( ds.property(QDataSet.BINS_0) ) && ds.rank()==1) {
-            StringBuffer result= new StringBuffer();
+            StringBuilder result= new StringBuilder();
             Units u= (Units) ds.property(QDataSet.UNITS);
             if ( u==null ) u= Units.dimensionless;
             result.append( new DatumRange( ds.value(0), ds.value(1), u ).toString() );
@@ -1350,17 +1353,17 @@ public class DataSetUtil {
             return result.toString();
 
         } else if ( ds.property(QDataSet.BINS_0)!=null && ds.rank()==1) {
-            StringBuffer result= new StringBuffer();
+            StringBuilder result= new StringBuilder();
             Units u= (Units) ds.property(QDataSet.UNITS);
             if ( u==null ) u= Units.dimensionless;
             String[] ss= ((String)ds.property(QDataSet.BINS_0)).split(",",-2);
             if (ss.length!=ds.length() ) throw new IllegalArgumentException("bins count != length in ds");
             for ( int i=0; i<ds.length(); i++ ) {
-                result.append( ss[i]+"="+u.createDatum(ds.value(i)) );
+                result.append(ss[i]).append("=").append( u.createDatum(ds.value(i)));
                 if ( i<ds.length()-1 ) result.append(", ");
             }
             if ( ds.property(QDataSet.SCALE_TYPE)!=null ) {
-                result.append("SCALE_TYPE="+ds.property(QDataSet.SCALE_TYPE) );
+                result.append("SCALE_TYPE=").append(ds.property(QDataSet.SCALE_TYPE));
             }
             return result.toString();
         }
@@ -1368,7 +1371,7 @@ public class DataSetUtil {
             String name= (String) ds.property(QDataSet.NAME);
             Units u= (Units) ds.property(QDataSet.UNITS);
             String format= (String) ds.property( QDataSet.FORMAT );
-            StringBuffer result= new StringBuffer();
+            StringBuilder result= new StringBuilder();
             if ( name!=null ) {
                 result.append(name).append("=");
             }
@@ -1396,15 +1399,15 @@ public class DataSetUtil {
             if ( showContext ) {
                 QDataSet context0= (QDataSet) ds.property("CONTEXT_0");
                 if ( context0!=null ) {
-                    result.append(" @ " + format(context0) );
+                    result.append(" @ ").append(format(context0));
                 }
             }
             return result.toString();
         }
-        StringBuffer buf = new StringBuffer(ds.toString() + ":\n");
+        StringBuilder buf = new StringBuilder(ds.toString() + ":\n");
         if (ds.rank() == 1) {
             for (int i = 0; i < Math.min(40, ds.length()); i++) {
-                buf.append(" " + ds.value(i));
+                buf.append(" ").append(ds.value(i));
             }
             if (ds.length() >= 40) {
                 buf.append(" ...");
@@ -1413,7 +1416,7 @@ public class DataSetUtil {
         if (ds.rank() == 2) {
             for (int i = 0; i < Math.min(10, ds.length()); i++) {
                 for (int j = 0; j < Math.min(20, ds.length(i)); j++) {
-                    buf.append(" " + ds.value(i,j));
+                    buf.append(" ").append(ds.value(i, j));
                 }
                 if (ds.length() >= 40) {
                     buf.append(" ...");
@@ -1962,7 +1965,7 @@ public class DataSetUtil {
      * @param ds
      * @param cds
      */
-    public final static void addContext( MutablePropertyDataSet ds, QDataSet cds ) {
+    public static void addContext( MutablePropertyDataSet ds, QDataSet cds ) {
         int idx=0;
         while ( ds.property("CONTEXT_"+idx)!=null ) idx++;
         ds.putProperty( "CONTEXT_"+idx, cds );
@@ -1974,14 +1977,14 @@ public class DataSetUtil {
      * @param ds
      * @param cds
      */
-    public final static void addContext( Map<String,Object> props, QDataSet cds ) {
+    public static void addContext( Map<String,Object> props, QDataSet cds ) {
         int idx=0;
         while ( props.get("CONTEXT_"+idx)!=null ) idx++;
         props.put( "CONTEXT_"+idx, cds );
     }
 
-    public final static String contextAsString( QDataSet ds ) {
-        StringBuffer result= new StringBuffer();
+    public static String contextAsString( QDataSet ds ) {
+        StringBuilder result= new StringBuilder();
         QDataSet cds= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
         int idx=0;
         while ( cds!=null ) {
@@ -1993,7 +1996,7 @@ public class DataSetUtil {
                     if ( extent.value(1)==extent.value(0) ) {
                         result.append( DataSetUtil.format(cds.slice(0),false) );  // for CLUSTER/PEACE this happens where rank 1 context is all the same value
                     } else {
-                        result.append( DataSetUtil.format(extent,false) ).append( " " +cds.length() + " different values" ); // slice was probably done when we should't have.
+                        result.append(DataSetUtil.format(extent, false)).append(" ").append( cds.length() ).append( " different values"); // slice was probably done when we should't have.
                     }
                 }
             } else {
