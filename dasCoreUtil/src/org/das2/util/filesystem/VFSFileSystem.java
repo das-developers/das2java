@@ -404,13 +404,17 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
             // If necessary, create destination folder
             if (!f.getParentFile().exists()) {
                 logger.fine("Creating destination directory " + f.getParentFile());
-                f.getParentFile().mkdirs();
+                if ( ! f.getParentFile().mkdirs() ) {
+                    throw new IllegalArgumentException("unable to mkdirs "+ f.getParentFile() );
+                }
             }
 
             if (partfile.exists()) {
                 logger.fine("Deleting existing partfile.");
-                partfile.delete();
-            //TODO: check for failed deletion
+                if ( ! partfile.delete() ) {
+                    throw new IllegalArgumentException("unable to delete "+partfile );
+                }
+            
             }
 
             // create partfile
@@ -424,12 +428,16 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
                     copyStream(is, os, monitor);
                     is.close();
                     os.close();
-                    partfile.renameTo(f);
+                    if ( ! partfile.renameTo(f) ) {
+                        throw new IllegalArgumentException("unable to rename file "+partfile + " to "+f );
+                    }
                 } catch (IOException e) {
                     // clean up and pass the exception on
                     is.close();
                     os.close();
-                    partfile.delete();
+                    if ( ! partfile.delete() ) {
+                        throw new IOException("unable to delete file "+partfile );
+                    }
                     throw (e);
                 }
             } else {

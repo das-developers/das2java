@@ -118,7 +118,10 @@ public class FTPFileSystem extends WebFileSystem {
         directory= toCanonicalFolderName( directory );
         
         try {
-            new File( localRoot, directory ).mkdirs();
+            File f= new File( localRoot, directory );
+            if ( !f.mkdirs() ) {
+                throw new IllegalArgumentException("unable to mkdirs "+f );
+            }
             File listing= new File( localRoot, directory + ".listing" );
             if ( !listing.canRead() ) {
                 File partFile= listing;
@@ -149,11 +152,15 @@ public class FTPFileSystem extends WebFileSystem {
             monitor.finished();
             out.close();
             is.close();
-            partFile.renameTo( targetFile );
+            if ( ! partFile.renameTo( targetFile ) ) {
+                throw new IllegalArgumentException("unable to rename "+partFile+" to "+targetFile );
+            }
         } catch ( IOException e ) {
             if ( out!=null ) out.close();
             if ( is!=null ) is.close();
-            partFile.delete();
+            if ( ! partFile.delete() ) {
+                throw new IllegalArgumentException("unable to delete "+partFile );
+            }
             throw e;
         }
         

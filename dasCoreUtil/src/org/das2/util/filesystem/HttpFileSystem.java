@@ -218,12 +218,14 @@ public class HttpFileSystem extends WebFileSystem {
 
             if (!f.getParentFile().exists()) {
                 logger.log(Level.FINE, "make dirs {0}", f.getParentFile());
-                f.getParentFile().mkdirs();
+                if ( ! f.getParentFile().mkdirs() ) {
+                    throw new IllegalArgumentException("unable to mkdirs "+f.getParent() );
+                }
             }
             if (partFile.exists()) {
                 logger.log(Level.FINE, "clobber file {0}", f);
                 if (!partFile.delete()) {
-                    logger.log(Level.INFO, "Unable to clobber file {0}, better use it for now.", f);
+                    logger.log(Level.INFO, "Unable to clobber file {0}, better use it for now.", f); //TODO: review this
                     return;
                 }
             }
@@ -250,10 +252,12 @@ public class HttpFileSystem extends WebFileSystem {
                     }
                     if ( f.exists() ) {
                         logger.log(Level.FINE, "deleting old file {0}", f);
-                        f.delete();
+                        if ( ! f.delete() ) {
+                            throw new IllegalArgumentException("unable to delete "+f );
+                        }
                     }
                     if ( !partFile.renameTo(f) ) {
-                        logger.log(Level.FINE, "rename failed, but continuing on.");
+                        throw new IllegalArgumentException( "rename failed " + partFile + " to "+f );
                     }
                 } catch (IOException e) {
                     out.close();

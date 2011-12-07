@@ -137,7 +137,9 @@ public abstract class WebFileSystem extends FileSystem {
 
         local = new File(local, s);
 
-        local.mkdirs();
+        if ( ! local.mkdirs() ) {
+            throw new IllegalArgumentException("unable to mkdir "+local );
+        }
         return local;
     }
     /**
