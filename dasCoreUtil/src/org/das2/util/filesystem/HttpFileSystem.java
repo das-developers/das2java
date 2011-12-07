@@ -371,7 +371,10 @@ public class HttpFileSystem extends WebFileSystem {
      * @return
      */
     private File listingFile( String directory ) {
-        new File(localRoot, directory).mkdirs();
+        File f= new File(localRoot, directory);
+        if ( ! f.mkdirs() ) {
+            throw new IllegalArgumentException("unable to mkdir "+f);
+        }
         File listing = new File(localRoot, directory + ".listing");
         return listing;
     }
