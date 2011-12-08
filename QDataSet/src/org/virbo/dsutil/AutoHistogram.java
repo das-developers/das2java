@@ -18,6 +18,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.das2.util.DasMath;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
@@ -27,6 +28,7 @@ import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.RankZeroDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TagGenDataSet;
 
 /**
@@ -154,7 +156,13 @@ public final class AutoHistogram {
      */
     public DDataSet getHistogram() {
         int nonZeroCount = nbin - zeroesLeft - zeroesRight + 2;
-        int ifirstBin = zeroesLeft - 1;
+        int ifirstBin;
+        if ( UnitsUtil.isOrdinalMeasurement(units) ) {
+            nonZeroCount= nonZeroCount-2;
+            ifirstBin=zeroesLeft;
+        } else {
+            ifirstBin=zeroesLeft - 1;
+        }
         if (ifirstBin < 0) ifirstBin = 0;
         if (nonZeroCount + ifirstBin > nbin) nonZeroCount = nbin - ifirstBin;
 
@@ -176,10 +184,12 @@ public final class AutoHistogram {
             stddevs.putProperty(QDataSet.UNITS, units.getOffsetUnits());
         means.putProperty(QDataSet.NAME, "means");
         stddevs.putProperty(QDataSet.NAME, "stddevs");
-        result.putProperty(QDataSet.PLANE_0, means);
-        result.putProperty("means", means);
-        result.putProperty("PLANE_1", stddevs);
-        result.putProperty("stddevs", stddevs);
+        if ( ! UnitsUtil.isOrdinalMeasurement(units) ) {
+            result.putProperty(QDataSet.PLANE_0, means);
+            result.putProperty("means", means);
+            result.putProperty("PLANE_1", stddevs);
+            result.putProperty("stddevs", stddevs);
+        }
         result.putProperty( QDataSet.RENDER_TYPE, "stairSteps" );  //TODO: consider schema id
 
         //TagGenDataSet dep0 = new TagGenDataSet( nonZeroCount, binw / binwDenom, firstb + binw *firstBin / binwDenom, units ); // firstBin done
@@ -825,6 +835,16 @@ public final class AutoHistogram {
      * @return rank 0 dataset (a Datum) whose value is the mean, and the property("stddev") contains the standard deviation
      */
     public static RankZeroDataSet moments(QDataSet hist) {
+        
+        long total = (Long) (((Map) hist.property(QDataSet.USER_PROPERTIES)).get(USER_PROP_TOTAL));
+
+        if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits( (QDataSet)hist.property(QDataSet.DEPEND_0 ) ) ) ) {
+            DRank0DataSet result= DataSetUtil.asDataSet(-1);
+            result.putProperty("validCount", total);
+            result.putProperty("invalidCount", ((Map) hist.property(QDataSet.USER_PROPERTIES)).get(USER_PROP_INVALID_COUNT));
+            return result;
+        }
+
         double[] vvs = new double[hist.length()];
         double mean = mean(hist).value();
 
@@ -837,7 +857,6 @@ public final class AutoHistogram {
         }
 
         double VV = 0;
-        long total = (Long) (((Map) hist.property(QDataSet.USER_PROPERTIES)).get(USER_PROP_TOTAL));
 
         for (int i = 0; i < hist.length(); i++) {
             VV += vvs[i];
@@ -886,13 +905,17 @@ public final class AutoHistogram {
             QDataSet cadence= (QDataSet)dep0.property(QDataSet.CADENCE);
             if ( cadence==null ) {
                 // huh?
-                result= DDataSet.wrap( new double[] { dep0.value(imin),
-                dep0.value(imax) } );
+                result= DDataSet.wrap( new double[] { dep0.value(imin), dep0.value(imax) } );
+                result.putProperty( QDataSet.BINS_0, "min,max" );
             } else {
-                result= DDataSet.wrap( new double[] { dep0.value(imin),
-                dep0.value(imax) + cadence.value() } );
+                if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(dep0 ) ) ) {
+                    result= DDataSet.wrap( new double[] { dep0.value(imin), dep0.value(imax) } );
+                    result.putProperty( QDataSet.BINS_0, "min,maxInclusive" );
+                } else {
+                    result= DDataSet.wrap( new double[] { dep0.value(imin), dep0.value(imax) + cadence.value() } );
+                    result.putProperty( QDataSet.BINS_0, "min,max" );
+                }
             }
-            result.putProperty( QDataSet.BINS_0, "min,max" );
             result.putProperty( QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
         }
         return result;
