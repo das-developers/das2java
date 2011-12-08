@@ -17,6 +17,7 @@ import org.virbo.dataset.DataSetUtil;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DefaultDatumFormatter;
 import org.das2.util.GrannyTextRenderer;
@@ -286,6 +287,8 @@ public class DigitalRenderer extends Renderer {
             renderRank0( ds, g, xAxis, yAxis, mon);
         } else if ( SemanticOps.isBins(ds) ) {
             renderRank0( ds, g, xAxis, yAxis, mon);
+        } else if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) ) ) {
+            renderRank0( ds, g, xAxis, yAxis, mon);
         } else if ( ! SemanticOps.isTableDataSet(ds) ) {
             renderRank1( ds, g, xAxis, yAxis, mon);
         } else {
@@ -313,7 +316,7 @@ public class DigitalRenderer extends Renderer {
                 sb.append(label).append( "=");
             }
             sb.append( DataSetUtil.toString(ds) );
-        } else {
+        } else if ( SemanticOps.isBundle(ds) ) {
             for ( int i=0; i<Math.min(4,ds.length()); i++ ) {
                 if ( i>0 ) sb.append(", ");
                 QDataSet ds1= DataSetOps.unbundle(ds, i);
@@ -325,6 +328,16 @@ public class DigitalRenderer extends Renderer {
                     sb.append(label).append( "=");
                 } 
                 sb.append(  DataSetUtil.asDatum(ds1).toString() );
+            }
+        } else {
+            for ( int i=0; i<Math.min(4,ds.length()); i++ ) {
+                if ( i>0 ) sb.append(", ");
+                QDataSet ds1= ds.slice(i);
+
+                sb.append(  DataSetUtil.asDatum(ds1).toString() );
+            }
+            if ( ds.length()>4 ) {
+                sb.append(  ", ..." );
             }
         }
         parent.postMessage(this, sb.toString(), DasPlot.INFO, null, null);
