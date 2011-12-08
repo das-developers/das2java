@@ -20,8 +20,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -110,5 +108,19 @@ public class FileSystemUtil {
         } else {
             return null;
         }
+    }
+
+    /**
+     * create the file folder if it does not exist.  Throw an IOException if it failed.
+     * @param file
+     * @throws IOException
+     */
+    public static void maybeMkdirs( File file ) throws IOException {
+        if ( file.exists() ) return;
+        if ( !file.mkdirs() ) {
+            System.err.println("Unable to mkdirs "+file ); // print it in case the IOException is misinterpretted.
+            throw new IOException( "Unable to mkdirs "+file );
+        }
+        return;
     }
 }

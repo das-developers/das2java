@@ -119,7 +119,9 @@ public class FTPFileSystem extends WebFileSystem {
         
         try {
             File f= new File( localRoot, directory );
-            if ( !f.mkdirs() ) {
+            try {
+                FileSystemUtil.maybeMkdirs(f);
+            } catch ( IOException ex ) {
                 throw new IllegalArgumentException("unable to mkdirs "+f );
             }
             File listing= new File( localRoot, directory + ".listing" );

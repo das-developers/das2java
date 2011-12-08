@@ -218,9 +218,7 @@ public class HttpFileSystem extends WebFileSystem {
 
             if (!f.getParentFile().exists()) {
                 logger.log(Level.FINE, "make dirs {0}", f.getParentFile());
-                if ( ! f.getParentFile().mkdirs() ) {
-                    throw new IllegalArgumentException("unable to mkdirs "+f.getParent() );
-                }
+                FileSystemUtil.maybeMkdirs( f.getParentFile() );
             }
             if (partFile.exists()) {
                 logger.log(Level.FINE, "clobber file {0}", f);
@@ -376,7 +374,9 @@ public class HttpFileSystem extends WebFileSystem {
      */
     private File listingFile( String directory ) {
         File f= new File(localRoot, directory);
-        if ( ! f.mkdirs() ) {
+        try {
+            FileSystemUtil.maybeMkdirs( f );
+        } catch ( IOException ex ) {
             throw new IllegalArgumentException("unable to mkdir "+f);
         }
         File listing = new File(localRoot, directory + ".listing");

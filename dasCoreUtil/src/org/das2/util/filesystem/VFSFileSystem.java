@@ -404,9 +404,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
             // If necessary, create destination folder
             if (!f.getParentFile().exists()) {
                 logger.fine("Creating destination directory " + f.getParentFile());
-                if ( ! f.getParentFile().mkdirs() ) {
-                    throw new IllegalArgumentException("unable to mkdirs "+ f.getParentFile() );
-                }
+                FileSystemUtil.maybeMkdirs( f.getParentFile() );
             }
 
             if (partfile.exists()) {

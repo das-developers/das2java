@@ -185,9 +185,7 @@ public class WebFileObject extends FileObject {
             try {
                 if (!localFile.canRead()) {
                     if ( !( pathname.endsWith(".zip") || pathname.endsWith(".ZIP") ) && wfs.isDirectory(pathname) ) {  // klugde, see https://sourceforge.net/tracker/index.php?func=detail&aid=3049303&group_id=199733&atid=970682
-                        if ( ! localFile.mkdirs() ) {
-                            throw new IllegalArgumentException("unable to mkdirs "+localFile );
-                        }
+                        FileSystemUtil.maybeMkdirs(localFile);
                         this.isFolder = true;
                         if ("".equals(pathname)) {
                             this.isRoot = true;
@@ -201,6 +199,7 @@ public class WebFileObject extends FileObject {
                 }
                 this.isFolderResolved= true;
             } catch (IOException ex) {
+                ex.printStackTrace();
                 this.isFolderResolved = false;
             }
         }
@@ -290,9 +289,7 @@ public class WebFileObject extends FileObject {
             try {
                 FileSystem.logger.log(Level.FINE, "downloading file {0}", getNameExt());
                 if (!localFile.getParentFile().exists()) {
-                    if ( ! localFile.getParentFile().mkdirs() ) {
-                        throw new IllegalArgumentException("unable to mkdir "+localFile.getParent() );
-                    }
+                    FileSystemUtil.maybeMkdirs( localFile.getParentFile() );
                 }
                 File partFile = new File(localFile.toString() + ".part");
                 wfs.downloadFile(pathname, localFile, partFile, monitor);

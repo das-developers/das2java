@@ -43,6 +43,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -136,10 +137,12 @@ public abstract class WebFileSystem extends FileSystem {
         String s = root.getScheme() + "/" + root.getHost() + "/" + root.getPath(); //TODO: check getPath
 
         local = new File(local, s);
-
-        if ( ! local.mkdirs() ) {
-            throw new IllegalArgumentException("unable to mkdir "+local );
+        try {
+            FileSystemUtil.maybeMkdirs(local);
+        } catch (IOException ex) {
+            throw new IllegalArgumentException( ex );
         }
+
         return local;
     }
     /**
