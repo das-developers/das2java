@@ -238,10 +238,12 @@ public class TickVDescriptor {
             Map<Integer,Datum> ords= eu.getValues();
             int imax= eu.getHighestOrdinal();
             for ( int i=0; i<result.length; i++ ) {
-                while ( result[i]<=imax && !ords.containsKey(result[i]) ) result[i]= result[i]+1;
+                while ( result[i]<=imax && !ords.containsKey( Integer.valueOf((int)result[i])) ) result[i]= result[i]+1;
                 if ( result[i]>imax ) result[i]=imax;
             }
-            System.err.println("here245");
+            //System.err.println("here245");
+            //new Exception("here245 indicates ordinal data").printStackTrace();
+
         }
 
         res.datumFormatter = DatumUtil.bestFormatter(res.units.createDatum(result[ifirst]),
@@ -260,7 +262,7 @@ public class TickVDescriptor {
             int imax= eu.getHighestOrdinal();
             Map<Integer,Datum> ords= eu.getValues();
             for ( int i=0; i<minorTickV.length; i++ ) {
-                while ( minorTickV[i]<=imax && !ords.containsKey(minorTickV[i]) ) minorTickV[i]= minorTickV[i]+1;
+                while ( minorTickV[i]<=imax && !ords.containsKey( Integer.valueOf((int)minorTickV[i])) ) minorTickV[i]= minorTickV[i]+1;
                 if ( minorTickV[i]>imax ) minorTickV[i]=imax;
             }
         }
