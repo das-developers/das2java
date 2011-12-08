@@ -49,13 +49,18 @@ public class Contour {
             this.ww= DataSetUtil.weightsDataSet(zz);
             
             zunits= (Units) tds.property( QDataSet.UNITS );
-            
-            ncv= contourValues.length();
-            cv= new float[ncv];
-            for ( int i=0; i<ncv; i++ ) {
-                cv[i]= (float)contourValues.value(i);
+
+            if ( contourValues.rank()==0 ) {
+                ncv= 1;
+                cv= new float[ncv];
+                cv[0]= (float)contourValues.value();
+            } else {
+                ncv= contourValues.length();
+                cv= new float[ncv];
+                for ( int i=0; i<ncv; i++ ) {
+                    cv[i]= (float)contourValues.value(i);
+                }
             }
-            
         }
         
         /*
