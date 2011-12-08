@@ -55,6 +55,7 @@ import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.BinAverage;
 import org.virbo.dsutil.DataSetBuilder;
 import org.virbo.dsutil.FFTUtil;
+import org.virbo.math.Contour;
 
 /**
  * A fairly complete set of operations for QDataSets.  Currently, most operations
@@ -3126,6 +3127,18 @@ public class Ops {
         DataSetUtil.copyDimensionProperties( ds, result );
         
         return result;
+    }
+
+    /**
+     * contour the data in rank 2 table tds at rank 0 vv.  The result
+     * is a rank 2 bundle of [:,'x,y,z'].
+     * @param tds rank 2 table
+     * @param vv rank 2 bundle
+     * @return
+     */
+    public static QDataSet contour( QDataSet tds, QDataSet vv ) {
+        QDataSet vds = Contour.contour(tds, vv );
+        return vds;
     }
 
     /**
