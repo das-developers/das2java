@@ -181,24 +181,18 @@ public class ContoursRenderer extends Renderer {
         return clip;
     }
 
-    protected void installRenderer() {
-    }
 
-    protected void uninstallRenderer() {
-    }
-
-    protected Element getDOMElement(Document document) {
-        return null;
-    }
-
+    @Override
     public Icon getListIcon() {
         return new ImageIcon(ContoursRenderer.class.getResource("/images/icons/contoursRenderer.png"));
     }
 
+    @Override
     public String getListLabel() {
         return "" + ( getLegendLabel().length()> 0 ? getLegendLabel() +" " : "contours" );
     }
 
+    @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         super.updatePlotImage(xAxis, yAxis, monitor);
 
@@ -367,6 +361,7 @@ public class ContoursRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange("labelCadence", new Double(oldLabelCadence), new Double(labelCadence));
     }
 
+    @Override
     public boolean acceptContext(int x, int y) {
         if (paths == null) {
             return false;
@@ -401,7 +396,7 @@ public class ContoursRenderer extends Renderer {
         boolean oldDrawLabels = this.drawLabels;
         this.drawLabels = drawLabels;
         update();
-        propertyChangeSupport.firePropertyChange("drawLabels", new Boolean(oldDrawLabels), new Boolean(drawLabels));
+        propertyChangeSupport.firePropertyChange("drawLabels", oldDrawLabels, drawLabels );
     }
     /**
      * Holds value of property color.
