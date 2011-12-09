@@ -1039,21 +1039,21 @@ public final class TimeUtil {
                 if (len == 4) {
                     hold = number / 100;
                     // TODO: handle times like Jan-1-2001T24:00 --> Jan-2-2001T00:00,  for ease of modifying times
-                    if (hold > 23) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
+                    if (hold > 24) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                     hour = hold;
                     hold = number % 100;
-                    if (hold > 59) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
+                    if (hold > 60) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                     minute = hold;
                     want[MINUTE] = false;
                 } else {
-                    if (number > 23) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
+                    if (number > 24) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                     hour = number;
                 }
                 want[HOUR] = false;
                 
             } else if (want[MINUTE]) {
                 // TODO: handle times like 0:90 --> 1:30,  for ease of modifying times
-                if (number > 59) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
+                if (number > 60) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
                 minute = number;
                 want[MINUTE] = false;
                 
