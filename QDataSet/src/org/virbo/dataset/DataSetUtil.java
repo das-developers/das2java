@@ -515,10 +515,15 @@ public class DataSetUtil {
         }
 
         if ( ds.rank()==0 ) {
-            if ( name.equals("dataSet") ) {
-                return String.valueOf( DataSetUtil.asDatum(ds) );
-            } else {
-                return name + "=" + DataSetUtil.asDatum(ds) ;
+            try {
+                if ( name.equals("dataSet") ) {
+                    Datum d= DataSetUtil.asDatum(ds);
+                    return String.valueOf( d );
+                } else {
+                    return name + "=" + DataSetUtil.asDatum(ds) ;
+                }
+            } catch ( IllegalArgumentException ex ) {
+                return "Error: "+ex;
             }
         }
 
