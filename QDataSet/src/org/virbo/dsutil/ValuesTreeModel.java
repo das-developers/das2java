@@ -109,8 +109,15 @@ public class ValuesTreeModel extends DefaultTreeModel {
     }
 
     private static String svalRank1( QDataSet wds, QDataSet ds, int i ) {
-        String s= DataSetUtil.getStringValue( ds, ds.value(i) );
-        return wds.value(i) > 0. ? s : "fill ("+s+")";
+        if ( ds.rank()==2 && ds.property(QDataSet.BINS_1).equals("min,max") ) {
+            return DataSetUtil.asDatumRange( ds.slice(i), true ).toString();
+        }
+        try {
+            String s= DataSetUtil.getStringValue( ds, ds.value(i) );
+            return wds.value(i) > 0. ? s : "fill ("+s+")";
+        } catch ( IllegalArgumentException ex ) {
+            return "Error: "+ex;
+        }
     }
 
     public static MutableTreeNode valuesTreeNode( String prefix, MutableTreeNode aroot, QDataSet ds, int sizeLimit ) {
