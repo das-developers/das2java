@@ -794,6 +794,10 @@ public class DataSetUtil {
 
         if ( xds.length()<2 ) return null;
 
+        if ( xds.rank()==2 && xds.property(QDataSet.BINS_1)!=null ) {
+            xds= DataSetOps.slice1( xds, 0 );
+        }
+
         // Do initial scans of the data to check for monotonic decreasing and "ever increasing" spacing.
         double sp; // spacing between two measurements.
         double monoMag; // -1 if mono decreasing, 0 if not monotonic, 1 if mono increasing.
