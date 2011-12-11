@@ -1442,6 +1442,7 @@ public class AsciiParser {
     public String[] getFieldUnits() {
         return this.fieldUnits;
     }
+
     /**
      * Parse the file using the current settings.
      * @return a rank 2 dataset.
@@ -1449,7 +1450,14 @@ public class AsciiParser {
     public WritableDataSet readFile(String filename, ProgressMonitor mon) throws IOException {
         long size = new File(filename).length();
         mon.setTaskSize(size);
-        return readStream( new FileReader(filename), null, mon );
+        Reader in= null;
+        try {
+            in= new FileReader(filename);
+            WritableDataSet result= readStream( in, null, mon );
+            return result;
+        } finally {
+            if ( in!=null ) in.close();
+        }
     }
 
     public static void printAndResetMain( DelimParser dp, String parse, String[] fields) {
