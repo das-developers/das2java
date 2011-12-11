@@ -80,11 +80,11 @@ public class HttpFileSystem extends WebFileSystem {
                 throw new IllegalArgumentException("user info section can contain at most two at (@) symbols");
             } else if ( ss.length==3 ) {//bugfix 3299977.  UMich server uses email:password@umich.  Java doesn't like this.
                 // the user didn't escape the at (@) in the email.  escape it here.
-                String userInfo= ss[0];
-                for ( int i=1;i<2;i++ ) userInfo= userInfo+"%40"+ss[i];
+                StringBuilder userInfo= new StringBuilder( ss[0] );
+                for ( int i=1;i<2;i++ ) userInfo.append("%40").append(ss[i]);
                 auth= ss[2];
                 try {
-                    URI rooturi2= new URI( rooturi.getScheme() + "://" + userInfo+"@"+auth + rooturi.getPath() );
+                    URI rooturi2= new URI( rooturi.getScheme() + "://" + userInfo.toString()+"@"+auth + rooturi.getPath() );
                     rooturi= rooturi2;
                 } catch ( URISyntaxException ex ) {
                     throw new IllegalArgumentException("unable to handle: "+rooturi);

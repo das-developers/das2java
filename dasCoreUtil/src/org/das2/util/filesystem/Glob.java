@@ -44,17 +44,16 @@ public class Glob {
      */
     private static String getParentDirectory( String regex ) {
         String[] s= regex.split( "/" );
-        String dirRegex;
+        StringBuilder dirRegex;
         if ( s.length>1 ) {
-            dirRegex= s[0];
+            dirRegex= new StringBuilder(s[0]);
             for ( int i=1; i<s.length-1; i++ ) {
-                dirRegex+= "/"+s[i];
+                dirRegex.append( "/") .append( s[i] );
             }
         } else {
             dirRegex= null;
         }
-        String fileRegex= s[s.length-1];
-        return dirRegex;
+        return dirRegex.toString();
     }
     
     /**
