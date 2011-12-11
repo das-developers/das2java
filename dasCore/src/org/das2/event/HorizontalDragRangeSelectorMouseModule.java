@@ -58,7 +58,11 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
         return result;
     }
     
+    @Override
     public void mouseRangeSelected(MouseDragEvent e0) {
+        if ( !( e0 instanceof MouseRangeSelectionEvent ) ) {
+            throw new IllegalArgumentException("Event should be MouseRangeSelectionEvent"); // findbugs
+        }
         MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
         org.das2.datum.Datum min;
         org.das2.datum.Datum max;

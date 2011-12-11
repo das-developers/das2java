@@ -98,6 +98,9 @@ public class DisplayDataMouseModule extends MouseModule {
     @Override
     public void mouseRangeSelected(MouseDragEvent e0) {
 
+       if ( !( e0 instanceof MouseBoxEvent ) ) {
+            throw new IllegalArgumentException("Event should be MouseBoxEvent"); // findbugs
+       }
        MouseBoxEvent e = (MouseBoxEvent) e0;
         if ( Point.distance( e.getXMaximum(), e.getYMinimum(), e.getXMaximum(), e.getYMaximum() ) < 5 ) {
             return;
@@ -123,19 +126,19 @@ public class DisplayDataMouseModule extends MouseModule {
             yrng= null;
         }
 
-        final Renderer[] rends = plot.getRenderers();
+        final Renderer[] rends1 = plot.getRenderers();
 
-        if ( rends.length==0 ) return;
+        if ( rends1.length==0 ) return;
         myFrame.setVisible(true);
 
-        String[] rlabels= new String[ rends.length ];
+        String[] rlabels= new String[ rends1.length ];
         int firstActive= -1;
-        for ( int i=0; i<rends.length; i++ ) {
-            String label= rends[i].getLegendLabel();
+        for ( int i=0; i<rends1.length; i++ ) {
+            String label= rends1[i].getLegendLabel();
             if ( label==null || label.equals("") ) {
                 label= "Renderer "+i;
             }
-            if ( !rends[i].isActive() ) {
+            if ( !rends1[i].isActive() ) {
                 label += " (not visible)";
             } else {
                 if ( firstActive==-1 ) firstActive= i;
@@ -144,13 +147,13 @@ public class DisplayDataMouseModule extends MouseModule {
         };
         if ( firstActive==-1 ) firstActive=0;
 
-        this.rends= rends;
+        this.rends= rends1;
         this.xrange= xrng;
         this.yrange= yrng;
 
         comboBox.setModel( new DefaultComboBoxModel( rlabels ) );
         comboBox.setSelectedIndex(firstActive);
-        setDataSet(rends[firstActive].getDataSet(),xrange,yrange);
+        setDataSet(rends1[firstActive].getDataSet(),xrange,yrange);
 
     }
 
@@ -218,6 +221,7 @@ public class DisplayDataMouseModule extends MouseModule {
 
     }
 
+    @Override
     public String getListLabel() {
         return getLabel();
     }
@@ -274,6 +278,6 @@ public class DisplayDataMouseModule extends MouseModule {
     public void setYclip(boolean yclip) {
         boolean oldYclip = this.yclip;
         this.yclip = yclip;
-        propertyChangeSupport.firePropertyChange("yclip", new Boolean(oldYclip), new Boolean(yclip));
+        propertyChangeSupport.firePropertyChange("yclip", oldYclip, yclip);
     }
 }

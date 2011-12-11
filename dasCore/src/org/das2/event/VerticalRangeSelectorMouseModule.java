@@ -41,6 +41,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
     /** Utility field used by event firing mechanism. */
     private EventListenerList listenerList =  null;
     
+    @Override
     public String getLabel() { return "Zoom Y"; };
     
     public VerticalRangeSelectorMouseModule(DasCanvasComponent parent, DasAxis axis) {
@@ -58,10 +59,14 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
         return result;
     }
     
+    @Override
     public void mouseRangeSelected(MouseDragEvent e0) {                
         if (!e0.isGesture()) {
             Datum min;
             Datum max;
+            if ( !( e0 instanceof MouseRangeSelectionEvent ) ) {
+                throw new IllegalArgumentException("Event should be MouseRangeSelectionEvent"); // findbugs
+            }
             MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
             min= axis.invTransform(e.getMaximum());
             max= axis.invTransform(e.getMinimum());

@@ -60,6 +60,9 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
         if (!e0.isGesture()) {
             Datum min;
             Datum max;
+            if ( !( e0 instanceof MouseRangeSelectionEvent ) ) {
+                throw new IllegalArgumentException("Event should be MouseRangeSelectionEvent"); // findbugs
+            }
             MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
             min= axis.invTransform(e.getMinimum());
             max= axis.invTransform(e.getMaximum());
