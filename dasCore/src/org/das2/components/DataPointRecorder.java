@@ -327,24 +327,39 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     }
 
+    private int lineCount( File file ) throws IOException {
+         BufferedReader r=null;
+         int lineCount = 0;
+         try {
+            FileInputStream in = new FileInputStream(file);
+            r = new BufferedReader(new InputStreamReader(in));
+
+
+            for (String line = r.readLine(); line != null; line = r.readLine()) {
+                lineCount++;
+            }
+        } catch ( IOException ex ) {
+            throw ex;
+
+        } finally {
+            if ( r!=null ) r.close();
+        }
+        return lineCount;
+        
+    }
+
     public void loadFromFile(File file) throws IOException {
 
         ProgressMonitor mon= null;
 
+        BufferedReader r=null;
+
         try {
             active = false;
 
-            FileInputStream in = new FileInputStream(file);
-            BufferedReader r = new BufferedReader(new InputStreamReader(in));
+            int lineCount= lineCount( file );
 
-            int lineCount = 0;
-            for (String line = r.readLine(); line != null; line = r.readLine()) {
-                lineCount++;
-            }
-            r.close();
-
-            in = new FileInputStream(file);
-            r = new BufferedReader(new InputStreamReader(in));
+            r = new BufferedReader( new FileReader( file ) );
 
             dataPoints.clear();
             String[] planesArray1 = null;
@@ -361,7 +376,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
 
             // tabs detected in file.
-            boolean hasTabs= false;
             String delim= "\t";
             
             mon.setTaskSize(lineCount);
@@ -451,6 +465,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         } finally {
 
             mon.finished();
+
+            if ( r!=null ) r.close();
+
             active = true;
             modified = false;
 
