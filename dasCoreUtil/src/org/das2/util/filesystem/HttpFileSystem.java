@@ -260,7 +260,7 @@ public class HttpFileSystem extends WebFileSystem {
                 } catch (IOException e) {
                     out.close();
                     in.close();
-                    if ( !partFile.delete() ) {
+                    if ( partFile.exists() && !partFile.delete() ) {
                         throw new IllegalArgumentException("unable to delete "+partFile );
                     }
                     throw e;
