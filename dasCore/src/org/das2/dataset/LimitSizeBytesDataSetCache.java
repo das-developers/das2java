@@ -52,7 +52,7 @@ public class LimitSizeBytesDataSetCache extends AbstractDataSetCache {
     
     public void reset() {
         synchronized(entries) {
-            entries.removeAll(entries);
+            entries.clear();
             this.totalSize= 0;
         }
     }

@@ -639,9 +639,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
             public void actionPerformed(ActionEvent e) {
                 if (checkModified(e)) {
-                    dataPoints.removeAll(dataPoints);
-                    saveFile =
-                            null;
+                    dataPoints.clear();
+                    saveFile =  null;
                     updateStatus();
                     updateClients();
                 }
