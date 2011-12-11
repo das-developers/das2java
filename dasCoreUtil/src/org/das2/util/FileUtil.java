@@ -35,7 +35,7 @@ public class FileUtil {
             if (children[i].isDirectory()) {
                 success = success && deleteFileTree(children[i]);
             } else {
-                success = success && children[i].delete();
+                success = success && ( !children[i].exists() || children[i].delete() ); // in case file is deleted by another process, check exists again.
                 if (!success) {
                     throw new IllegalArgumentException("unable to delete file " + children[i]);
                 }
@@ -65,7 +65,7 @@ public class FileUtil {
                 success = success && deleteWithinFileTree(children[i],name);
             } else {
                 if ( children[i].getName().equals(name) ) {
-                    success = success && children[i].delete();
+                    success = success && ( !children[i].exists() || children[i].delete() );
                     if (!success) {
                         throw new IllegalArgumentException("unable to delete file " + children[i]);
                     }
