@@ -79,8 +79,11 @@ public class FileSystemUtil {
                 out.write(buf, 0, len);
             }
         } finally {
-            if ( in!=null ) in.close();
-            if ( out!=null ) out.close();
+            try {
+                if ( in!=null ) in.close();
+            } finally {
+                if ( out!=null ) out.close();
+            }
         }
     }
 

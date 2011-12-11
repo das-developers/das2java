@@ -50,10 +50,10 @@ public class Glob {
             for ( int i=1; i<s.length-1; i++ ) {
                 dirRegex.append( "/") .append( s[i] );
             }
+            return dirRegex.toString();
         } else {
-            dirRegex= null;
+            return s[0];
         }
-        return dirRegex.toString();
     }
     
     /**
