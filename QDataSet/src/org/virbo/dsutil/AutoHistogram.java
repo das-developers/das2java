@@ -287,9 +287,9 @@ public final class AutoHistogram {
             wds = DataSetUtil.weightsDataSet(ds);
         }
 
-        QDataSet context1;
+//        QDataSet context1;
         // try to get an extent of the data depend0.
-        QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+//        QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
 //        if ( dep0!= null ) {
 //            if ( DataSetUtil.isMonotonic(dep0 ) ) {
 //                context1= monoExtent(dep0);
@@ -300,7 +300,7 @@ public final class AutoHistogram {
 //                }
 //            }
 //        }
-        context= null;
+//        context= null;
 
         Units d1 = (Units) ds.property(QDataSet.UNITS);
         if (d1 != null) units = d1;
@@ -391,7 +391,7 @@ public final class AutoHistogram {
         }
 
         DDataSet result = getHistogram();
-        if ( context!=null ) result.putProperty( QDataSet.CONTEXT_0, context );
+        //if ( context!=null ) result.putProperty( QDataSet.CONTEXT_0, context );
         
         return result;
     }

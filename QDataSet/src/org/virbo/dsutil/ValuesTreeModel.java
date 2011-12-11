@@ -68,7 +68,6 @@ public class ValuesTreeModel extends DefaultTreeModel {
                 } else {
                     String sdepu= dep0==null ? String.valueOf(i) : String.valueOf(depu.createDatum(dep0.value(i)));
                     MutableTreeNode sliceNode= new DefaultMutableTreeNode( "values @ "+ sdepu );
-                    TreeNode atree= valuesTreeNode2( prefix + i+",", sliceNode, DataSetOps.slice0(ds, i) );
                     return sliceNode;
                 }
             }

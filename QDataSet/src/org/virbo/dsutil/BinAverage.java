@@ -37,10 +37,6 @@ public class BinAverage {
 
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
-        Units u = (Units) ds.property(org.virbo.dataset.QDataSet.UNITS);
-        if (u == null) {
-            u = Units.dimensionless;
-        }
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
 
         DDataSet result = DDataSet.createRank1(newTags0.length());

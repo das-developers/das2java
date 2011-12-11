@@ -710,7 +710,7 @@ public class AsciiParser {
 
         headerBuffer = new StringBuffer();
         
-        int skipInt = skipLines + (skipColumnHeader ? 1 : 0);
+        //int skipInt = skipLines + (skipColumnHeader ? 1 : 0);
 
         lastLine = line;
         if (firstRecord != null) {
@@ -1469,59 +1469,57 @@ public class AsciiParser {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-
-        TimeParser tp= TimeParser.create( "%{ignore} %y %m %d %{ignore} %H" );
-        System.err.println( tp.parse("JF 09 12 02 xxx 04").getTimeDatum() );
-
-        {
-            AsciiParser parser= AsciiParser.newParser(5);
-            DelimParser dp= parser.guessDelimParser("1,2,3,4,5");
-            String[] fields= new String[5];
-            boolean ok;
-            printAndResetMain(dp,"1, 2 ,3,4,\"154\"",fields);
-            printAndResetMain(dp,"1,2,3,4,5",fields);
-            printAndResetMain(dp,"\"foo\",1,3,4,5", fields);
-            printAndResetMain(dp,"1,\"foo\",3,4,5", fields);
-            printAndResetMain(dp,"1,\"fo,o\",3,4,5", fields);
-            printAndResetMain(dp,"1, \"fo,o\" ,3,4,5", fields);
-            printAndResetMain(dp,"1, \"he said \"\"boo\"\"!\" ,3,4,\"154\"", fields);
-            printAndResetMain(dp,"1, 2 ,3,4,\"154\"", fields);
-            System.err.println("great stuff");
-        }
-
-        String file = "/media/mini/data.backup/examples/dat/sarah/2490lintest90005.raw";
-
-        {
-            AsciiParser parser = AsciiParser.newParser(5);
-            parser.setPropertyPattern(Pattern.compile("\\s*(.+)\\s*\\:\\s*(.+)\\s*"));
-            long t0 = System.currentTimeMillis();
-            WritableDataSet ds = parser.readFile(file, new NullProgressMonitor());
-            System.out.println("" + (System.currentTimeMillis() - t0));
-            System.out.println(ds.property("Frequency"));
-            System.out.println(ds.value(0));
-            System.out.flush();
-        }
-        {
-            AsciiParser parser = AsciiParser.newParser(5);
-            parser.setSkipLines(30);
-            RecordParser rec = parser.guessDelimParser(parser.readFirstRecord(file));
-
-            parser.setPropertyPattern(Pattern.compile("\\s*(.+)\\s*\\:\\s*(.+)\\s*"));
-            long t0 = System.currentTimeMillis();
-            WritableDataSet ds = parser.readFile(file, new NullProgressMonitor());
-            System.out.println("" + (System.currentTimeMillis() - t0));
-            System.out.println(ds.property("Frequency"));
-            for (int j = 0; j < parser.fieldCount; j++) {
-                System.out.print(ds.value(0, j) + " ");
-            }
-            System.out.println();
-            System.out.flush();
-        }
-
-
-
-    }
+//    public static void main(String[] args) throws Exception {
+//
+//        TimeParser tp= TimeParser.create( "%{ignore} %y %m %d %{ignore} %H" );
+//        System.err.println( tp.parse("JF 09 12 02 xxx 04").getTimeDatum() );
+//
+//        {
+//            AsciiParser parser= AsciiParser.newParser(5);
+//            DelimParser dp= parser.guessDelimParser("1,2,3,4,5");
+//            String[] fields= new String[5];
+//            boolean ok;
+//            printAndResetMain(dp,"1, 2 ,3,4,\"154\"",fields);
+//            printAndResetMain(dp,"1,2,3,4,5",fields);
+//            printAndResetMain(dp,"\"foo\",1,3,4,5", fields);
+//            printAndResetMain(dp,"1,\"foo\",3,4,5", fields);
+//            printAndResetMain(dp,"1,\"fo,o\",3,4,5", fields);
+//            printAndResetMain(dp,"1, \"fo,o\" ,3,4,5", fields);
+//            printAndResetMain(dp,"1, \"he said \"\"boo\"\"!\" ,3,4,\"154\"", fields);
+//            printAndResetMain(dp,"1, 2 ,3,4,\"154\"", fields);
+//            System.err.println("great stuff");
+//        }
+//
+//        String file = "/media/mini/data.backup/examples/dat/sarah/2490lintest90005.raw";
+//
+//        {
+//            AsciiParser parser = AsciiParser.newParser(5);
+//            parser.setPropertyPattern(Pattern.compile("\\s*(.+)\\s*\\:\\s*(.+)\\s*"));
+//            long t0 = System.currentTimeMillis();
+//            WritableDataSet ds = parser.readFile(file, new NullProgressMonitor());
+//            System.out.println("" + (System.currentTimeMillis() - t0));
+//            System.out.println(ds.property("Frequency"));
+//            System.out.println(ds.value(0));
+//            System.out.flush();
+//        }
+//        {
+//            AsciiParser parser = AsciiParser.newParser(5);
+//            parser.setSkipLines(30);
+//            //RecordParser rec = parser.guessDelimParser(parser.readFirstRecord(file));
+//
+//            parser.setPropertyPattern(Pattern.compile("\\s*(.+)\\s*\\:\\s*(.+)\\s*"));
+//            long t0 = System.currentTimeMillis();
+//            WritableDataSet ds = parser.readFile(file, new NullProgressMonitor());
+//            System.out.println("" + (System.currentTimeMillis() - t0));
+//            System.out.println(ds.property("Frequency"));
+//            for (int j = 0; j < parser.fieldCount; j++) {
+//                System.out.print(ds.value(0, j) + " ");
+//            }
+//            System.out.println();
+//            System.out.flush();
+//        }
+//
+//    }
 
     /** Creates a new instance of AsciiParser */
     public AsciiParser() {
