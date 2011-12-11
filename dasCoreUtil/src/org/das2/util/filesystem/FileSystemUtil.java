@@ -37,20 +37,26 @@ public class FileSystemUtil {
      * @throws java.io.IOException
      */
     public static void dumpToFile( InputStream in, File f ) throws FileNotFoundException, IOException {
+
         ReadableByteChannel ic = Channels.newChannel(in);
-        FileChannel oc = new FileOutputStream(f).getChannel();
-        if ( ic instanceof FileChannel ) {
-            FileChannel fic= (FileChannel)ic;
-            fic.transferTo(0, fic.size(), oc);
-            fic.close();
-            oc.close();
-        } else {
-            ByteBuffer buf= ByteBuffer.allocateDirect( 16*1024 );
-            while ( ic.read(buf) >= 0 || buf.position() != 0 ) {
-                buf.flip();
-                oc.write(buf);
-                buf.compact();
+        FileChannel oc=null;
+        try {
+            oc= new FileOutputStream(f).getChannel();
+            if ( ic instanceof FileChannel ) {
+                FileChannel fic= (FileChannel)ic;
+                fic.transferTo(0, fic.size(), oc);
+                fic.close();
+                oc.close();
+            } else {
+                ByteBuffer buf= ByteBuffer.allocateDirect( 16*1024 );
+                while ( ic.read(buf) >= 0 || buf.position() != 0 ) {
+                    buf.flip();
+                    oc.write(buf);
+                    buf.compact();
+                }
             }
+        } finally {
+            if ( oc!=null ) oc.close();
         }
     }
 
@@ -61,18 +67,21 @@ public class FileSystemUtil {
      * @param file unzipped destination file
      */
     public static void unzip( File fz, File file) throws IOException {
-        
-        GZIPInputStream in = new GZIPInputStream(new FileInputStream(fz));
+        GZIPInputStream in= null;
+        OutputStream out= null;
+        try {
+            in = new GZIPInputStream(new FileInputStream(fz));
+            out = new FileOutputStream(file);
 
-        OutputStream out = new FileOutputStream(file);
-    
-        byte[] buf = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
+            byte[] buf = new byte[1024];  //TODO: use FileChannel
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+        } finally {
+            if ( in!=null ) in.close();
+            if ( out!=null ) out.close();
         }
-        in.close();
-        out.close();
     }
 
     /**
