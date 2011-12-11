@@ -23,6 +23,7 @@
 
 package org.das2.util.filesystem;
 
+import java.util.logging.Level;
 import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.Base64;
 import java.io.*;
@@ -115,7 +116,7 @@ public class HtmlUtil {
      * @throws CancelledOperationException
      */
     public static URL[] getDirectoryListing( URL url ) throws IOException, CancelledOperationException {
-        FileSystem.logger.finer("listing "+url);
+        FileSystem.logger.log(Level.FINER, "listing {0}", url);
         
         String file= url.getFile();
         if ( file.charAt(file.length()-1)!='/' ) {
@@ -124,13 +125,13 @@ public class HtmlUtil {
         
         String userInfo= KeyChain.getDefault().getUserInfo(url);
 
-        long t0= System.currentTimeMillis();
+        //long t0= System.currentTimeMillis();
         URLConnection urlConnection = url.openConnection();
 
         urlConnection.setAllowUserInteraction(false);
         urlConnection.setConnectTimeout(FileSystem.settings().getConnectTimeoutMs() );
 
-        int contentLength=10000;
+        //int contentLength=10000;
         
         //System.err.println("connected in "+( System.currentTimeMillis() - t0 )+" millis" );
         if ( userInfo != null) {
