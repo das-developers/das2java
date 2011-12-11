@@ -160,7 +160,7 @@ public class FTPFileSystem extends WebFileSystem {
         } catch ( IOException e ) {
             if ( out!=null ) out.close();
             if ( is!=null ) is.close();
-            if ( ! partFile.delete() ) {
+            if ( partFile.exists() &&  ! partFile.delete() ) {
                 throw new IllegalArgumentException("unable to delete "+partFile );
             }
             throw e;
