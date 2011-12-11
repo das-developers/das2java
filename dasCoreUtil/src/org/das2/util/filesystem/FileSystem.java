@@ -441,7 +441,7 @@ public abstract class FileSystem  {
     /**
      * DirectoryEntry defines a structure for containing directory entry data.
      */
-    public class DirectoryEntry {
+    public static class DirectoryEntry {
         /**
          * the name within the context of the directory.
          */
