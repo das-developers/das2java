@@ -433,7 +433,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
                     // clean up and pass the exception on
                     is.close();
                     os.close();
-                    if ( ! partfile.delete() ) {
+                    if ( partfile.exists() && ! partfile.delete() ) {
                         throw new IOException("unable to delete file "+partfile );
                     }
                     throw (e);
