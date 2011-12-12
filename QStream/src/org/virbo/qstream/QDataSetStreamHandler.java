@@ -232,6 +232,16 @@ public class QDataSetStreamHandler implements StreamHandler {
                         if (builder == null) {
                             builder = createBuilder(rank, dims);
                             builders.put(name, builder);
+                            if ( !joinParent.equals("") ) {
+                                JoinDataSet parent= joinDataSets.get( joinParent );
+                                String children= (String) parent.property(BUILDER_JOIN_CHILDREN);
+                                if ( children==null || children.length()==0 ) {
+                                    children= name;
+                                } else {
+                                    children= children + "," + name ;
+                                }
+                                parent.putProperty( BUILDER_JOIN_CHILDREN, children );
+                            }
                         } else {
                             JoinDataSet join;
                             if ( joinParent.equals("") ) {
@@ -359,16 +369,30 @@ public class QDataSetStreamHandler implements StreamHandler {
         if (join != null) {
             if ( builder.rank()>0 ) {
                 sliceDs= builder.getDataSet();
+                List<QDataSet> childDataSets=null;
                 if ( sliceDs.property(BUILDER_JOIN_CHILDREN)!=null ) {
-                    String joinChild= (String)sliceDs.property(BUILDER_JOIN_CHILDREN);
-                    DataSetBuilder childBuilder= builders.get(joinChild);
-                    if ( childBuilder!=null ) {
-                        sliceDs= childBuilder.getDataSet();
-                    } else {
-                        sliceDs= null;
+                    String joinChild= (String)join.property(BUILDER_JOIN_CHILDREN);
+                    if ( joinChild==null ) joinChild= (String)sliceDs.property(BUILDER_JOIN_CHILDREN);
+                    String[] children= joinChild.split(",");
+                    childDataSets= new ArrayList();
+                    for ( int i=0; i<children.length; i++ ) {
+                        DataSetBuilder childBuilder= builders.get(children[i]);
+                        if ( childBuilder!=null ) {
+                            MutablePropertyDataSet sliceDs1= childBuilder.getDataSet();
+                            resolveProps(sliceDs1);
+                            childDataSets.add( sliceDs1 );
+                            System.err.println("child: "+sliceDs1.toString());
+                        } else {
+                            System.err.println("missing child: "+children[i]);
+                        }
                     }
                 }
-                if ( sliceDs!=null ) join.join(sliceDs);
+                if ( childDataSets!=null ) {
+                    for ( QDataSet child: childDataSets ) {
+                        join.join(child);
+                    }
+                }
+                //if ( sliceDs!=null ) join.join(sliceDs);
             } else {
                 DataSetUtil.putProperties( builder.getProperties(), join );
                 sliceDs= (MutablePropertyDataSet) join.slice(join.length()-1); //wha??  when do we use this?
