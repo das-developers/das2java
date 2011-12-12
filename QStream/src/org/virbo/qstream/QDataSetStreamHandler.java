@@ -392,6 +392,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                         join.join(child);
                     }
                 }
+                DataSetUtil.putProperties( builder.getProperties(), join );
                 //if ( sliceDs!=null ) join.join(sliceDs);
             } else {
                 DataSetUtil.putProperties( builder.getProperties(), join );
