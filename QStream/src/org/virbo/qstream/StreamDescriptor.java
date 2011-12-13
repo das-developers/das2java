@@ -122,7 +122,7 @@ public class StreamDescriptor implements Descriptor {
         this.sizeBytes= size;
     }
     
-    protected ByteOrder byteOrder = ByteOrder.nativeOrder();
+    protected ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;
 
     public ByteOrder getByteOrder() {
         return byteOrder;
