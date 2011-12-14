@@ -946,6 +946,35 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     /**
+     * process all pending operations and make sure we're repainted.  See PlotCommand in Autoplot.
+     */
+    public void waitUntilValid() {
+        for (int i = 0; i < getComponentCount(); i++) {
+            Component c = getComponent(i);
+            if (c instanceof DasPlot) {
+                ((DasPlot) c).invalidateCacheImage();
+            }
+        }
+        if ( ! this.isShowing() || "true".equals(DasApplication.getProperty("java.awt.headless", "false")) ) {
+            this.addNotify();
+            logger.finer("setSize(" + getPreferredSize() + ")");
+            this.setSize(getPreferredSize());
+            logger.finer("validate()");
+            this.validate();
+
+            resizeAllComponents();
+        } else {
+            resizeAllComponents();
+        }
+        try {
+            waitUntilIdle();
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
+
+    }
+
+    /**
      * resets the width and height, then waits for all update
      * messages to be processed.  In headless mode,
      * the gui components are validated.
