@@ -22,7 +22,6 @@
 
 package org.das2.graph;
 
-import org.das2.dataset.VectorUtil;
 import org.das2.datum.Units;
 import org.das2.util.DasMath;
 import org.das2.util.monitor.ProgressMonitor;
@@ -55,14 +54,11 @@ public class TickCurveRenderer extends Renderer {
     
     TickLabeller tickLabeller;
     
-    /** Holds value of property tickStyle. */
-    private TickStyle tickStyle;
+    private TickStyle tickStyle= TickCurveRenderer.TickStyle.outer;
     
-    /** Holds value of property lineWidth. */
-    private double lineWidth;
+    private double lineWidth=  1.0f;
     
-    /** Holds value of property tickLength. */
-    private float tickLength;
+    private float tickLength= 8.0f;
     
     public static class TickStyle implements Enumeration {
         private String name;
@@ -71,6 +67,7 @@ public class TickCurveRenderer extends Renderer {
         private TickStyle(String name) {
             this.name= name;
         }
+        @Override
         public String toString() {
             return this.name;
         }
@@ -85,27 +82,18 @@ public class TickCurveRenderer extends Renderer {
      */
     public TickCurveRenderer( QDataSet ds, String xplane, String yplane, TickVDescriptor tickv) {
         super(ds);        
-    
-        setTickStyle( TickCurveRenderer.TickStyle.outer );
-        setLineWidth( 1.0f );
-        setTickLength( 8.0f );
+        stroke= new BasicStroke((float)lineWidth);
         this.xplane= xplane;
         this.yplane= yplane;
         this.tickv= tickv;                
     }
     
-    protected void uninstallRenderer() {
-    }
-    
-    protected void installRenderer() {
-    }
-    
-    private static double length( Line2D line ) {
-        double dx= line.getX2()-line.getX1();
-        double dy= line.getY2()-line.getY1();
-        double dist= Math.sqrt( dx*dx + dy*dy );
-        return dist;
-    }
+//    private static double length( Line2D line ) {
+//        double dx= line.getX2()-line.getX1();
+//        double dy= line.getY2()-line.getY1();
+//        double dist= Math.sqrt( dx*dx + dy*dy );
+//        return dist;
+//    }
     
     private static Line2D normalize(Line2D line, double len) {
         // make line segment length len, starting at line.getP1()
@@ -174,8 +162,6 @@ public class TickCurveRenderer extends Renderer {
             dyNorm= dx;
         }
                         
-        Line2D normal;
-
         return normalize( new Line2D.Double(xinterp, yinterp, xinterp+dxNorm,yinterp+dyNorm ), 1. ) ;
 
     }
@@ -192,9 +178,9 @@ public class TickCurveRenderer extends Renderer {
         }
     }
     
-    private double slope( Line2D line ) {
-        return ( line.getY2()-line.getY1() ) / ( line.getX2()-line.getX1() );
-    }
+    //private double slope( Line2D line ) {
+    //    return ( line.getY2()-line.getY1() ) / ( line.getX2()-line.getX1() );
+    //}
     
     private void drawLabelTick( Graphics2D g, double findex, int tickNumber ) {        
         float tl= getTickLength();
@@ -263,9 +249,9 @@ public class TickCurveRenderer extends Renderer {
         
     }
     
-    private static String lineToString( Line2D line ) {
-        return GraphUtil.toString( line );
-    }
+//    private static String lineToString( Line2D line ) {
+//        return GraphUtil.toString( line );
+//    }
     
     /** Getter for property tickStyle.
      * @return Value of property tickStyle.
