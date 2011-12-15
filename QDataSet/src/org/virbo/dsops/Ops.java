@@ -537,8 +537,9 @@ public class Ops {
             op.normalize(store);
             it1.putValue(result, store[1] > 0 ? store[0] : fill);
         }
-        DataSetUtil.putProperties(DataSetUtil.getProperties(ds), result);
-        sliceProperties(dim, ds, result);
+        Map<String,Object> props= DataSetUtil.getProperties(ds);
+        props= DataSetOps.sliceProperties( props, dim );
+        DataSetUtil.putProperties( props, result );
         result.putProperty(QDataSet.FILL_VALUE,fill);
         return result;
     }
