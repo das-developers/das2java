@@ -82,7 +82,11 @@ public class CacheTag {
      * one line as it is used to list cache contents.
      */
     public String toString() {
-        return range + " @ " + ( resolution==null ? INTRINSIC : ""+DatumUtil.asOrderOneUnits(resolution) );
+        try {
+            return range + " @ " + ( resolution==null ? INTRINSIC : ""+DatumUtil.asOrderOneUnits(resolution) );
+        } catch ( IllegalArgumentException ex ) { // vap+das2server:http://www-pw.physics.uiowa.edu/das/das2Server?dataset=cassini/mag/mag_vectorQ&start_time=2011-12-29T00:00:00.000Z&end_time=2011-12-30T00:00:00.000Z was empty
+            return "range: "+ range.min() + " to "+ range.max() + " @ " + ( resolution==null ? INTRINSIC : ""+DatumUtil.asOrderOneUnits(resolution) );
+        }
     }
     
     /**
