@@ -13,6 +13,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -614,6 +615,51 @@ public class DataSetOps {
     }
 
     /**
+     * we've sliced a dataset, removing an index.  move the properties.  This was Ops.sliceProperties
+     * @param result
+     * @param removeDim
+     * @return
+     */
+    public static Map<String,Object> sliceProperties( Map<String,Object> props, int removeDim ) {
+        Map<String,Object> result= new HashMap();
+        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
+            if (i < removeDim) {
+                Object v= props.get("DEPEND_" + i);
+                if ( v!=null ) result.put("DEPEND_" + i, v );
+            } else {
+                Object v= props.get("DEPEND_" + (i+1) );
+                if ( v!=null ) result.put("DEPEND_" + i, v );
+            }
+        }
+
+        if ( removeDim==0 ) {
+            String bins1= (String) props.get( QDataSet.BINS_1 );
+            QDataSet bundle1= (QDataSet) props.get( QDataSet.BUNDLE_1 );
+            if ( bins1!=null ) {
+                result.put( QDataSet.BINS_0, bins1 );
+            }
+            if ( bundle1!=null ) {
+                result.put( QDataSet.BUNDLE_0, bundle1 );
+            }
+        } else if ( removeDim==1 ) {
+            String bins0= (String) props.get( QDataSet.BINS_0 );
+            QDataSet bundle0= (QDataSet) props.get( QDataSet.BUNDLE_0 );
+            if ( bins0!=null ) {
+                result.put( QDataSet.BINS_0, bins0 );
+            }
+            if ( bundle0!=null ) {
+                result.put( QDataSet.BUNDLE_0, bundle0 );
+            }
+        }
+        for ( String prop: DataSetUtil.dimensionProperties() ) {
+            Object v= props.get(prop);
+            if ( v!=null ) result.put( prop, v );
+        }
+
+        return result;
+    }
+
+    /**
      * returns a bundle descriptor roughly equivalent to the BundleDescriptor
      * passed in, but will describe each dataset as if it were rank 1.  This
      * is useful for when the client can't work with mixed rank bundles anyway
@@ -1044,7 +1090,7 @@ public class DataSetOps {
         while ( s.hasNext() ) {
             String cmd= s.next();
             if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
-                Pattern skipPattern= Pattern.compile("\\'\\'");
+                Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
                 List<Object> args= new ArrayList();
                 while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
                     if ( s.hasNextInt() ) {
@@ -1196,7 +1242,20 @@ public class DataSetOps {
         while ( s.hasNext() && s2.hasNext() ) {
             String cmd= s.next();
             if ( !s2.next().equals(cmd) ) return true;
-            if ( cmd.startsWith("|slice") && cmd.length()>6 ) {
+            if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
+                Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
+                List<Object> args= new ArrayList();
+                while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
+                    if ( s.hasNextInt() && s2.hasNextInt() ) {
+                        s.nextInt();
+                        s2.nextInt();
+                    } else {
+                        s.next();
+                        s2.next();
+                    }
+                }
+                s.next();
+            } else if (cmd.startsWith("|slice") && cmd.length() > 6) {
                 s.nextInt();
                 s2.nextInt();
             }
