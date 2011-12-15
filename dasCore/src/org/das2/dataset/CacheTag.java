@@ -67,7 +67,7 @@ public class CacheTag {
     }
     
     /**
-     * Constucts a new CacheTag.
+     * Constructs a new CacheTag.
      * @param range the interval covered by the CacheTag.
      * @param resolution  the highest resolution request that can be provided.
      */
