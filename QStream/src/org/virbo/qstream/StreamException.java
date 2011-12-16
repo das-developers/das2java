@@ -31,20 +31,17 @@ import org.xml.sax.SAXException;
  * @author  eew
  */
 public class StreamException extends Exception {
+
+    public static String NO_DATA_IN_INTERVAL= "NoDataInInterval";
     
     /** Creates a new instance of StreamException */
     public StreamException(String message) {
         super(message);
     }
-    
-    public StreamException(SAXException se) {
-        super(se.getMessage());
-        initCause(se);
-    }
-    
-    public StreamException(IOException ioe) {
-        super(ioe.getMessage());
-        initCause(ioe);
+
+    public StreamException(Exception cause) {
+        super(cause.getMessage());
+        initCause(cause);
     }
     
 }
