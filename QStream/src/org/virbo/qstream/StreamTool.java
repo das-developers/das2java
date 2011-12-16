@@ -41,6 +41,7 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.das2.dataset.NoDataInIntervalException;
 import org.w3c.dom.*;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
@@ -409,7 +410,14 @@ public class StreamTool {
 
     private static final StreamException exception(Element exception) {
         String type = exception.getAttribute("type");
-        return new StreamException(type);
+        String message= exception.getAttribute("message");
+        if ( type.equals( StreamException.NO_DATA_IN_INTERVAL ) ) {
+            NoDataInIntervalException ex = new NoDataInIntervalException(message);
+            StreamException se= new StreamException(ex);
+            return se;
+        } else {
+            return new StreamException(message);
+        }
     }
 
     private static boolean getChunk(ReadStreamStructure struct) throws StreamException, IOException {
@@ -445,7 +453,8 @@ public class StreamTool {
 
                 DescriptorFactory factory = DescriptorRegistry.get(root.getTagName());
 
-                Descriptor pd = factory.create(doc.getDocumentElement());
+                Element ele= doc.getDocumentElement();
+                Descriptor pd = factory.create(ele);
 
                 if (pd instanceof PacketDescriptor) {
                     struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
