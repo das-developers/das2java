@@ -18,7 +18,7 @@ public abstract class DefaultSerializeDelegate implements SerializeDelegate {
         SerializeRegistry.register( java.lang.Double.class, new Double() );
         SerializeRegistry.register( java.lang.Short.class, new Short() );
         SerializeRegistry.register( java.lang.Byte.class, new Byte() );
-
+        SerializeRegistry.register( java.lang.Number.class, new Number() );
         SerializeRegistry.register( boolean.class, new Boolean() );
         SerializeRegistry.register( int.class, new Integer() );
         SerializeRegistry.register( long.class, new Long() );
@@ -67,6 +67,12 @@ public abstract class DefaultSerializeDelegate implements SerializeDelegate {
         }
     }
     public static class Double extends DefaultSerializeDelegate {
+        @Override
+        public Object parse(String typeId, String s) {
+            return java.lang.Double.parseDouble(s);
+        }
+    }
+    public static class Number extends DefaultSerializeDelegate {
         @Override
         public Object parse(String typeId, String s) {
             return java.lang.Double.parseDouble(s);
