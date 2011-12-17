@@ -24,7 +24,6 @@ import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsutil.DataSetBuilder;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -430,7 +429,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     }
 
     /**
-     * if true, then packets are interpretted.
+     * if true, then packets are interpreted.
      * @return
      */
     public boolean getReadPackets() {
@@ -468,7 +467,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     } else {
                         SerializeDelegate delegate = SerializeRegistry.getByName(stype);
                         if (delegate == null) {
-                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \"" + stype + "\"");
+                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "!!! No delegate found for \"{0}\"", stype); // chris and I didn't see this invisible message
                             continue;
                         }
                         Object oval;
@@ -516,7 +515,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             } else {
                 SerializeDelegate delegate = SerializeRegistry.getByName(stype);
                 if (delegate == null) {
-                    Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \"" + stype + "\"");
+                    Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \"{0}\"", stype);
                     continue;
                 }
                 Object oval;
