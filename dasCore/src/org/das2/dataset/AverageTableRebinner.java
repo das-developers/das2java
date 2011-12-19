@@ -699,7 +699,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         double xSampleWidth;
         double fudge = 1.5 * 0.9; // 0.9 was removed from another code.
         if (interpolateType == Interpolate.NearestNeighbor) {
-            fudge = 1.0;
+            fudge = 1.1;
         }
         if (xTagWidth == null) {
             double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
@@ -765,6 +765,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                     if ( i1[i]!= -1 && i2[i] != -1) {
                         boolean doInterpR= ( xTagTemp[i2[i]] - xTagTemp[i] ) < xSampleWidth/2;
                         doInterp= doInterpR || ( xTagTemp[i] - xTagTemp[i1[i]] ) < xSampleWidth/2;
+                        doInterp= doInterp || ( xTagTemp[i2[i]]-xTagTemp[i1[i]] ) < xSampleWidth*2; // strange bit of code that is probably wrong.
                     } else {
                         //kludge for bug 000321
                         //doInterp= Math.min(i1[i] == -1 ? Double.MAX_VALUE : (xTagTemp[i] - xTagTemp[i1[i]]), i2[i] == -1 ? Double.MAX_VALUE : (xTagTemp[i2[i]] - xTagTemp[i])) < xSampleWidth / 2;
@@ -861,7 +862,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         double ySampleWidth;
         double fudge = 1.5 * 0.9; // 0.9 was removed from another code.
         if (interpolateType == Interpolate.NearestNeighbor) {
-            fudge = 1.1 * 0.9;
+            fudge = 1.1;
         }
         if (yTagWidth == null) {
             double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
@@ -924,7 +925,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                     if ( i1[j]!= -1 && i2[j] != -1) {
                         boolean doInterpR= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidth/2;
                         doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidth/2;
-                        //doInterp= ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth*2;
+                        doInterp= doInterp || ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth*2; // strange bit of code that is probably wrong.
                     } else {
                         //kludge for bug 000321
                         if ( ddY.isLog() && !UnitsUtil.isRatiometric(yTagUnits) ) {
