@@ -537,6 +537,16 @@ public class DataSetUtil {
             return dr.toString() + "  (inclusive)";
         }
 
+        if ( ds.rank()==1 && Ops.isLegacyBundle(ds) && ds.length()<8 ) { // introduced to support where or rank 2 dataset.
+            QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            StringBuilder str = new StringBuilder("");
+            str.append( dep0.slice(0) ).append("=").append( ds.slice(0) );
+            for ( int i=1; i<ds.length(); i++ ) {
+                str.append(", ").append( dep0.slice(i) ).append("=").append( ds.slice(i) );
+            }
+            return str.toString();
+        }
+
         if ( ds.rank()==2 && ds.length()==2 && ds.length(0)==2 && "min,maxInclusive".equals(ds.property( QDataSet.BINS_1) ) ) {
             Units u1= (Units) ds.property(QDataSet.UNITS,0);
             Units u2= (Units) ds.property(QDataSet.UNITS,1);
