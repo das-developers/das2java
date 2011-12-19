@@ -535,6 +535,9 @@ public class QubeDataSetIterator implements DataSetIterator {
             case 3:
                 ds.putValue(index(0), index(1), index(2), v);
                 return;
+            case 4:
+                ds.putValue(index(0), index(1), index(2), index(3), v);
+                return;
             default:
                 throw new IllegalArgumentException("rank limit");
         }
