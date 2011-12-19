@@ -3464,12 +3464,23 @@ public class Ops {
      * @return
      */
     public static boolean isLegacyBundle( QDataSet zds ) {
-        QDataSet dep1= (QDataSet) zds.property(QDataSet.DEPEND_1);
-        if ( dep1!=null ) {
-            Units u= (Units) dep1.property(QDataSet.UNITS);
-            if ( u instanceof EnumerationUnits ) {
-                return true;
+        if ( zds.rank()==2 ) {
+            QDataSet dep1= (QDataSet) zds.property(QDataSet.DEPEND_1);
+            if ( dep1!=null ) {
+                Units u= (Units) dep1.property(QDataSet.UNITS);
+                if ( u instanceof EnumerationUnits ) {
+                    return true;
+                }
             }
+        } else if ( zds.rank()==1 ) {
+            QDataSet dep0= (QDataSet) zds.property(QDataSet.DEPEND_0);
+            if ( dep0!=null ) {
+                Units u= (Units) dep0.property(QDataSet.UNITS);
+                if ( u instanceof EnumerationUnits ) {
+                    return true;
+                }
+            }
+
         }
         return false;
     }
