@@ -598,6 +598,16 @@ public class SemanticOps {
     }
 
     /**
+     * returns the Double value of the number, preserving null and NaN.
+     * @param value
+     * @return
+     */
+    public static Double doubleValue( Number value ) {
+        if ( value==null ) return null;
+        return Double.valueOf( value.doubleValue() );
+    }
+
+    /**
      * returns the value as a datum.  Note this should be used with reservation,
      * this is not very efficient when the operation is done many times.
      * @param ds
@@ -606,9 +616,9 @@ public class SemanticOps {
      */
     public static Datum getDatum( QDataSet ds, double d ) {
         Units u = SemanticOps.getUnits(ds);
-        Double vmin= (Double)ds.property( QDataSet.VALID_MIN );
-        Double vmax= (Double)ds.property( QDataSet.VALID_MAX );
-        Double fill= (Double)ds.property( QDataSet.FILL_VALUE );
+        Double vmin=  doubleValue( (Number) ds.property( QDataSet.VALID_MIN ) );
+        Double vmax=  doubleValue( (Number) ds.property( QDataSet.VALID_MAX ) );
+        Double fill= doubleValue( (Number)ds.property( QDataSet.FILL_VALUE ) );
         if ( vmin!=null ) if ( vmin>d ) return u.getFillDatum();
         if ( vmax!=null ) if ( vmax<d ) return u.getFillDatum();
         if ( fill!=null ) if ( fill==d ) return u.getFillDatum();
