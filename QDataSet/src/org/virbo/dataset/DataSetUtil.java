@@ -550,7 +550,7 @@ public class DataSetUtil {
 
         String[] depNames = new String[4];
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             depNames[i] = "";
             Object dep0o= ds.property("DEPEND_" + i);
             if ( dep0o!=null ) {
