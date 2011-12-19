@@ -2102,6 +2102,8 @@ public class Ops {
      * the result is a zero-length array, as opposed to IDL which would return
      * a -1 scalar.
      * 
+     * Note fill values are not included in the list, so where(A).length + where(not A).length != where( A.or(not(A) )
+     *
      * @param ds of any rank M
      * @return a rank 1 or rank 2 dataset with N by M elements, where N is the number
      * of non-zero elements found.
@@ -2110,12 +2112,13 @@ public class Ops {
         DataSetBuilder builder;
 
         QubeDataSetIterator iter = new QubeDataSetIterator(ds);
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
         if (ds.rank() == 1) {
             builder = new DataSetBuilder(1, 100, 1, 1);
             while (iter.hasNext()) {
                 iter.next();
-                if (iter.getValue(ds) != 0.) {
+                if ( iter.getValue(wds)> 0 && iter.getValue(ds) != 0.) {
                     builder.putValue(-1, iter.index(0));
                     builder.nextRecord();
                 }
@@ -2125,7 +2128,7 @@ public class Ops {
             builder = new DataSetBuilder(2, 100, ds.rank(), 1);
             while (iter.hasNext()) {
                 iter.next();
-                if (iter.getValue(ds) != 0.) {
+                if ( iter.getValue(wds)> 0 && iter.getValue(ds) != 0.) {
                     builder.putValue(-1, 0, iter.index(0));
                     if (ds.rank() > 1) {
                         builder.putValue(-1, 1, iter.index(1));
