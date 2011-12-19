@@ -30,6 +30,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.logging.*;
+import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
@@ -713,6 +714,9 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
 
+        //int numberNonGap= 0; // for debugging
+        //int numberGap= 0;
+        
         for (int j = 0; j < ny; j++) {
             int ii1 = -1;
             int ii2 = -1;
@@ -759,7 +763,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                 for (int i = 0; i < nx; i++) {
                     boolean doInterp;
                     if ( i1[i]!= -1 && i2[i] != -1) {
-                        doInterp= ( xTagTemp[i2[i]]-xTagTemp[i1[i]] ) < xSampleWidth*2 || i2[i] - i1[i] == 2;
+                        boolean doInterpR= ( xTagTemp[i2[i]] - xTagTemp[i] ) < xSampleWidth/2;
+                        doInterp= doInterpR || ( xTagTemp[i] - xTagTemp[i1[i]] ) < xSampleWidth/2;
                     } else {
                         //kludge for bug 000321
                         //doInterp= Math.min(i1[i] == -1 ? Double.MAX_VALUE : (xTagTemp[i] - xTagTemp[i1[i]]), i2[i] == -1 ? Double.MAX_VALUE : (xTagTemp[i2[i]] - xTagTemp[i])) < xSampleWidth / 2;
@@ -796,7 +801,23 @@ public class AverageTableRebinner implements DataSetRebinner {
                         data[i][j] = data[idx][j];
                         weights[i][j] = weights[idx][j];
 
-                    }
+//                        if (numberGap>0 ) {
+//                            if ( j==86 ) System.err.println("found gap close: i="+i + " j="+j + " gapSize="+numberGap );
+//
+//                            numberNonGap= 0;
+//                            numberGap= 0;
+//                        }
+//                        numberNonGap++;
+
+                    } //else {
+//                        if ( numberNonGap>0 ) {
+//                            if ( j==86 ) System.err.println("found gap open: i="+i + " j="+j + " nonGapSize="+numberNonGap );
+//                            numberNonGap=0;
+//                            numberGap=0;
+//                        }
+//                        numberGap++;
+//
+//                    }
 
                 }
             } else {
