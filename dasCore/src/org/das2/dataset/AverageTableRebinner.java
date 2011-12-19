@@ -922,7 +922,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                 for (int j = 0; j < ny; j++) {
                     boolean doInterp;
                     if ( i1[j]!= -1 && i2[j] != -1) {
-                        doInterp= ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth*2;
+                        boolean doInterpR= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidth/2;
+                        doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidth/2;
+                        //doInterp= ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth*2;
                     } else {
                         //kludge for bug 000321
                         if ( ddY.isLog() && !UnitsUtil.isRatiometric(yTagUnits) ) {
