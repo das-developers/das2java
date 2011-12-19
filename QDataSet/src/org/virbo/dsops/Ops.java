@@ -2152,6 +2152,7 @@ public class Ops {
         }
 
         builder.putProperty(QDataSet.CADENCE, DataSetUtil.asDataSet(1.0) );
+        builder.putProperty( QDataSet.FORMAT, "%d" );
 
         return builder.getDataSet();
     }
