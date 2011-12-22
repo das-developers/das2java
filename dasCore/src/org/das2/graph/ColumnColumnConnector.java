@@ -174,14 +174,24 @@ public class ColumnColumnConnector extends DasCanvasComponent {
             // check to see if bottom panel is slice of top
             DatumRange contextRange;
             contextRange= bottomPlot.getContext(); //TODO: this is not a closed-loop system.  We should indicate timerange found in dataset.
-            boolean isContext= contextRange!=null && topPlot.getXAxis().getUnits().isConvertableTo( contextRange.getUnits() );
-            if ( isContext ) {
-                 Graphics2D g2=(Graphics2D)g1.create();
-                 paintBottomContext( g2, contextRange );
-                 g2.dispose();
-                 return;
+            DatumRange topContext= topPlot.getContext();
 
+            boolean topIsInterestingContext= topContext!=null && topContext.getUnits()!=Units.dimensionless;
+
+            boolean useTop= contextRange==null || ( contextRange.getUnits()==Units.dimensionless && topIsInterestingContext );
+
+            //problem: Autoplot uses "0 to 100" as the default context.
+
+            if ( !useTop ) {
+                boolean isContext= contextRange!=null && topPlot.getXAxis().getUnits().isConvertableTo( contextRange.getUnits() );
+                if ( isContext ) {
+                     Graphics2D g2=(Graphics2D)g1.create();
+                     paintBottomContext( g2, contextRange );
+                     g2.dispose();
+                     return;
+                }
             } else {
+                boolean isContext= topContext!=null && bottomPlot.getXAxis().getUnits().isConvertableTo( topContext.getUnits() );
                 contextRange= topPlot.getContext();
                 if ( isContext ) {
                     Graphics2D g2=(Graphics2D)g1.create();
