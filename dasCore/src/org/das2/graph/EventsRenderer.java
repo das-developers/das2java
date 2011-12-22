@@ -9,6 +9,7 @@
 package org.das2.graph;
 
 import java.awt.Shape;
+import javax.swing.Icon;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
@@ -22,6 +23,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
+import javax.swing.ImageIcon;
 import org.das2.datum.Units;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -374,8 +376,10 @@ public class EventsRenderer extends Renderer {
         selectionArea= sa;
         
     }
-    
-    protected void uninstallRenderer() {
+
+    @Override
+    public Icon getListIcon() {
+        return new ImageIcon(SpectrogramRenderer.class.getResource("/images/icons/eventsBar.png"));
     }
     
     private Color color= new Color(100,100,100,180); // note this alpha=180 is ignored
