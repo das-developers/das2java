@@ -5,6 +5,8 @@
 
 package org.das2.graph;
 
+import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dsops.Ops;
@@ -44,6 +46,12 @@ public class PitchAngleDistributionRenderer extends Renderer {
             refreshImage();
         }
     };
+
+    @Override
+    public Icon getListIcon() {
+        return new ImageIcon(SpectrogramRenderer.class.getResource("/images/icons/pitchAngleDistribution.png"));
+    }
+
 
     public final void setColorBar(DasColorBar colorBar) {
         DasColorBar oldColorBar = this.colorBar;
