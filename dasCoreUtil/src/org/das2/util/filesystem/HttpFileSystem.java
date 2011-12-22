@@ -379,7 +379,7 @@ public class HttpFileSystem extends WebFileSystem {
         try {
             FileSystemUtil.maybeMkdirs( f );
         } catch ( IOException ex ) {
-            throw new IllegalArgumentException("unable to mkdir "+f);
+            throw new IllegalArgumentException("unable to mkdir "+f,ex);
         }
         File listing = new File(localRoot, directory + ".listing");
         return listing;
