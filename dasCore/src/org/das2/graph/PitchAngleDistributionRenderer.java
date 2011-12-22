@@ -157,10 +157,11 @@ public class PitchAngleDistributionRenderer extends Renderer {
             for ( int j=0; j<rds.length()-1; j++ ) {
                 double v1= rds.value( j ); // sure wish we'd been testing this so I'd know where the old code worked.
                 double v2= rds.value( j+1 );
-                double r0x= x0 - ( xAxis.transform(v1,yunits) ); // in
-                double r0y= y0 - ( yAxis.transform(v1,yunits) ); // in
-                double r1x= x0 - ( xAxis.transform(v2,yunits) ); // out
-                double r1y= y0 - ( yAxis.transform(v2,yunits) ); // out
+                double r0x= ( xAxis.transform(v1,yunits) ) - x0; // inner ring radius at y=0
+                double r0y= y0 - ( yAxis.transform(v1,yunits) ); // inner ring radius at x=0, equal to r0x when isotropic (round)
+                double r1x= ( xAxis.transform(v2,yunits) ) - x0; // outer ring radius at y=0
+                double r1y= y0 - ( yAxis.transform(v2,yunits) ); // outer ring radius at x=0, equal to r1x when isotropic (round)
+                
                 for ( int i=0; i<ads.length(); i++ ) {
                     double a0= ads.value(i) - da;
                     double a1= ads.value(i) + da;
