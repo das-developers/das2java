@@ -130,8 +130,12 @@ public class FileSystemUtil {
     public static void maybeMkdirs( File file ) throws IOException {
         if ( file.exists() ) return;
         if ( !file.mkdirs() ) {
-            System.err.println("Unable to mkdirs "+file ); // print it in case the IOException is misinterpretted.
-            throw new IOException( "Unable to mkdirs "+file );
+            if ( file.exists() ) {
+                return; // somebody else made the file.
+            } else {
+                System.err.println("Unable to mkdirs "+file ); // print it in case the IOException is misinterpretted.
+                throw new IOException( "Unable to mkdirs "+file );
+            }
         }
         return;
     }
