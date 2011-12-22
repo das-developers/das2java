@@ -172,30 +172,29 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         if ( ! topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() ) ) {
             //context plots
             // check to see if bottom panel is slice of top
-            DatumRange contextRange;
-            contextRange= bottomPlot.getContext(); //TODO: this is not a closed-loop system.  We should indicate timerange found in dataset.
+            DatumRange bottomContext= bottomPlot.getContext(); //TODO: this is not a closed-loop system.  We should indicate timerange found in dataset.
             DatumRange topContext= topPlot.getContext();
 
             boolean topIsInterestingContext= topContext!=null && topContext.getUnits()!=Units.dimensionless;
 
-            boolean useTop= contextRange==null || ( contextRange.getUnits()==Units.dimensionless && topIsInterestingContext );
+            boolean useTop= bottomContext==null || ( bottomContext.getUnits()==Units.dimensionless && topIsInterestingContext );
 
             //problem: Autoplot uses "0 to 100" as the default context.
 
             if ( !useTop ) {
-                boolean isContext= contextRange!=null && topPlot.getXAxis().getUnits().isConvertableTo( contextRange.getUnits() );
+                boolean isContext= bottomContext!=null && topPlot.getXAxis().getUnits().isConvertableTo( bottomContext.getUnits() );
                 if ( isContext ) {
                      Graphics2D g2=(Graphics2D)g1.create();
-                     paintBottomContext( g2, contextRange );
+                     paintBottomContext( g2, bottomContext );
                      g2.dispose();
                      return;
                 }
             } else {
                 boolean isContext= topContext!=null && bottomPlot.getXAxis().getUnits().isConvertableTo( topContext.getUnits() );
-                contextRange= topPlot.getContext();
+                bottomContext= topPlot.getContext();
                 if ( isContext ) {
                     Graphics2D g2=(Graphics2D)g1.create();
-                    paintTopContext( g2, contextRange );
+                    paintTopContext( g2, bottomContext );
                     g2.dispose();
                     return;
                 } else {
