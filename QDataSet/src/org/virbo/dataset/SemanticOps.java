@@ -93,6 +93,10 @@ public class SemanticOps {
 
     /**
      * lookupUnits canonical units object, or allocate one.
+     * Examples include:
+     *   "nT" where it's already allocated,
+     *   "apples" where it allocates a new one, and
+     *   "seconds since 2011-12-21T00:00" where it uses lookupTimeUnits.
      * @param units string identifier.
      * @return canonical units object.
      */
