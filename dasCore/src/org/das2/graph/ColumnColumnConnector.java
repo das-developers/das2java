@@ -214,7 +214,11 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         int y2= bottomPlot.getRow().getDMinimum()-1-hlen;
         int y3= bottomPlot.getRow().getDMinimum()-1;
         int y4= bottomPlot.getRow().getDMaximum();
-        
+
+        if ( ! topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() ) ) {
+            // transition state (?) that caused failure of autoplot-test500 005.
+            return;
+        }
         Datum dlow= max( topPlot.getXAxis().getDataMinimum(), bottomPlot.getXAxis().getDataMinimum() );
         Datum dhigh= min( topPlot.getXAxis().getDataMaximum(), bottomPlot.getXAxis().getDataMaximum() );
         int xhigh1= (int)topPlot.getXAxis().transform(dhigh);
