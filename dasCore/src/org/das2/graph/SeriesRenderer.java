@@ -1028,6 +1028,12 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
+        if (dataSet.rank() == 0) {
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("rank 0 data set");
+            lparent.postMessage(this, "rank 0 data set: "+dataSet.toString(), DasPlot.INFO, null, null);
+            return;
+        }
+
         if (dataSet.length() == 0) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("empty data set");
             lparent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
@@ -1220,6 +1226,11 @@ public class SeriesRenderer extends Renderer {
 
         if (dataSet == null ) {
             logger.fine("dataset was null");
+            return;
+        }
+
+        if ( dataSet.rank() == 0) {
+            logger.fine("rank 0 dataset");
             return;
         }
 
