@@ -16,6 +16,7 @@ import org.das2.DasException;
 import org.virbo.dataset.DataSetUtil;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
@@ -291,16 +292,20 @@ public class DigitalRenderer extends Renderer {
             }
             return;
         }
-        if ( ds.rank()==0 || ( ds.rank()==1 && SemanticOps.isRank1Bundle(ds) ) ) {
-            renderRank0( ds, g, xAxis, yAxis, mon);
-        } else if ( SemanticOps.isBins(ds) ) {
-            renderRank0( ds, g, xAxis, yAxis, mon);
-        } else if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) ) ) {
-            renderRank0( ds, g, xAxis, yAxis, mon);
-        } else if ( ! SemanticOps.isTableDataSet(ds) ) {
-            renderRank1( ds, g, xAxis, yAxis, mon);
-        } else {
-            renderRank2( ds, g, xAxis, yAxis, mon);
+        try {
+            if ( ds.rank()==0 || ( ds.rank()==1 && SemanticOps.isRank1Bundle(ds) ) ) {
+                renderRank0( ds, g, xAxis, yAxis, mon);
+            } else if ( SemanticOps.isBins(ds) ) {
+                renderRank0( ds, g, xAxis, yAxis, mon);
+            } else if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(ds) ) ) {
+                renderRank0( ds, g, xAxis, yAxis, mon);
+            } else if ( ! SemanticOps.isTableDataSet(ds) ) {
+                renderRank1( ds, g, xAxis, yAxis, mon);
+            } else {
+                renderRank2( ds, g, xAxis, yAxis, mon);
+            }
+        } catch ( InconvertibleUnitsException ex ) {
+            parent.postMessage(this, "inconvertable units", DasPlot.INFO, null, null);
         }
     }
 
@@ -554,7 +559,11 @@ public class DigitalRenderer extends Renderer {
         if ( ds.rank()==0 || ( getDataSet().rank()==1 && SemanticOps.isRank1Bundle(ds) ) ) {
             // nothin
         } else {
-            updateFirstLast( xAxis, yAxis, ds );
+            try {
+                updateFirstLast( xAxis, yAxis, ds );
+            } catch ( InconvertibleUnitsException ex ) {
+                // nothin
+            }
         }
     }
 
