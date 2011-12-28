@@ -46,17 +46,25 @@ public class DigitalRenderer extends Renderer {
         QDataSet xds;
         QDataSet yds;
 
-        xds= SemanticOps.xtagsDataSet(ds);
-        yds= SemanticOps.ytagsDataSet(ds);
+        if ( ds.rank()==0 ) {
+            JoinDataSet bds= new JoinDataSet(2);
+            bds.join( DDataSet.wrap( new double[] { 0,1 } ) );
+            bds.join( DDataSet.wrap( new double[] { 0,1 } ) );
+            return bds;
+            
+        } else {
+            xds= SemanticOps.xtagsDataSet(ds);
+            yds= SemanticOps.ytagsDataSet(ds);
 
-        QDataSet xrange= doRange( xds );
-        QDataSet yrange= doRange( yds );
+            QDataSet xrange= doRange( xds );
+            QDataSet yrange= doRange( yds );
 
-        JoinDataSet bds= new JoinDataSet(2);
-        bds.join(xrange);
-        bds.join(yrange);
+            JoinDataSet bds= new JoinDataSet(2);
+            bds.join(xrange);
+            bds.join(yrange);
 
-        return bds;
+            return bds;
+        }
 
     }
 
