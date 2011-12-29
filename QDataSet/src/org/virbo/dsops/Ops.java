@@ -499,15 +499,17 @@ public class Ops {
     }
 
     /**
-     * reduce the dataset's rank by totaling all the elements along a dimension.
+     * reduce the dataset's rank by combining all the elements along a dimension.
+     * AverageOp is used to combine measurements.
      * Only QUBEs are supported presently.
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
-     * @param normalize return the average instead of the total.
+     * @param AverageOp operation to combine measurements, such as max or mean.
      * @return
      */
     private static QDataSet averageGen(QDataSet ds, int dim, AverageOp op) {
+        if ( ds==null ) throw new NullPointerException("ds reference is null");
         int[] qube = DataSetUtil.qubeDims(ds);
         if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube");
         if ( dim>=ds.rank() )
