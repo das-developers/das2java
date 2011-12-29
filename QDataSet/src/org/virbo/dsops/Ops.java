@@ -177,6 +177,7 @@ public class Ops {
         m3.remove( QDataSet.MONOTONIC );
         m3.remove( QDataSet.METADATA_MODEL );
         m3.remove( QDataSet.METADATA );
+        m3.remove( QDataSet.UNITS );
 
         DataSetUtil.putProperties(m3, result);
         result.putProperty( QDataSet.FILL_VALUE, fill );
