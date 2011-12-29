@@ -921,15 +921,19 @@ public class Ops {
 
     /**
      * element-wise mod of two datasets with compatible geometry.
+     * TODO: I think there's a tacit assumption that the units are the same.
      * @param ds
      * @return
      */
     public static QDataSet mod(QDataSet ds1, QDataSet ds2) {
-        return applyBinaryOp(ds1, ds2, new BinaryOp() {
+        MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return d1 % d2;
             }
         });
+        Units u= (Units) ds2.property(QDataSet.UNITS);
+        if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
+        return result;
     }
 
     /**
