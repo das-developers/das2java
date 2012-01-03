@@ -211,9 +211,34 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             throw new IllegalArgumentException("unable to append dataset, not enough room");
         }
 
-        int srcPos= myLength;
         System.arraycopy( ds.getBack(), 0, this.getBack(), myLength, dsLength );
 
+        Units u1= SemanticOps.getUnits(this);
+        Units u2= SemanticOps.getUnits(ds);
+        if ( u1!=u2 ) {
+            UnitsConverter uc= UnitsConverter.getConverter(u2,u1);
+            Class backClass= this.getBack().getClass().getComponentType();
+            for ( int i=myLength; i<myLength+dsLength; i++ ) {
+                Number nv=  uc.convert(Array.getDouble( this.getBack(),i) ) ;
+                if ( backClass==double.class ) {
+                    Array.set( this.getBack(), i, nv.doubleValue() );
+                } else if ( backClass==float.class ) {
+                    Array.set( this.getBack(), i, nv.floatValue() );
+                } else if ( backClass==long.class ) {
+                    Array.set( this.getBack(), i, nv.longValue() );
+                } else if ( backClass==int.class ) {
+                    Array.set( this.getBack(), i, nv.intValue() );
+                } else if ( backClass==short.class ) {
+                    Array.set( this.getBack(), i, nv.shortValue() );
+                } else if ( backClass==byte.class ) {
+                    Array.set( this.getBack(), i, nv.byteValue() );
+                } else {
+                    throw new IllegalArgumentException("unsupported type: "+backClass );
+                }
+                
+            }
+        }
+        
         this.len0= this.len0 + ds.len0;
 
         properties.putAll( joinProperties( this, ds ) ); //TODO: verify
@@ -434,6 +459,16 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
         System.arraycopy( ths.getBack(), 0, newback, 0, myLength );
         System.arraycopy( ds.getBack(), 0, newback, myLength, dsLength );
+
+        Units u1= SemanticOps.getUnits(ths);
+        Units u2= SemanticOps.getUnits(ds);
+        if ( u1!=u2 ) {
+            UnitsConverter uc= UnitsConverter.getConverter(u2,u1);
+            for ( int i=myLength; i<myLength+dsLength; i++ ) {
+                Object nv=  uc.convert(Array.getDouble(newback,i) ) ;
+                Array.set( newback, i, nv );
+            }
+        }
 
         int len0= ths.len0 + ds.len0;
         
