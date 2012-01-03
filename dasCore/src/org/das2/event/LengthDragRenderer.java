@@ -37,21 +37,24 @@ public class LengthDragRenderer extends LabelDragRenderer {
         this.yaxis= yaxis;
     }
     
-    // kludge to handle the fact that datums are not always displayed with their units!!!
-    private String datumString( Datum d ) {
-        String result= d.toString();
-        /*if ( d.getUnits()!= Units.dimensionless && !d.getUnits().isConvertableTo(Units.us2000) ) {
-            result+= " "+d.getUnits();
-        }*/
-        return result;
-    }
-    
+    @Override
     public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
         Graphics2D g= ( Graphics2D ) g1;
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         double atan= Math.atan2( p2.y-p1.y, p2.x-p1.x );
         
         Line2D line= new Line2D.Double( p1.x + (int)(4.0 * Math.cos(atan)), (int)(p1.y + 4.0*Math.sin(atan)), p2.x, p2.y );
+        Line2D line2= new Line2D.Double( p1.x + (int)(6.0 * Math.cos(atan)), (int)(p1.y + 6.0*Math.sin(atan)), p2.x, p2.y );
+
+        Color color0= g.getColor();
+        g.setColor(new Color(255,255,255,100));
+        g.setStroke(new BasicStroke( 3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+        g.draw( line2 );
+        g.draw( new Ellipse2D.Double( p1.x-4, p1.y-4, 8, 8 ) );
+
+        g.setStroke(new BasicStroke());
+        g.setColor(color0);
+
         g.draw( line );
         g.draw( new Ellipse2D.Double( p1.x-4, p1.y-4, 8, 8 ) );
         
@@ -73,7 +76,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
             if ( x1.getUnits()==run.getUnits() ) {
                 runString= x1.getFormatter().format(run);
             } else {
-                runString= datumString(run);
+                runString= run.toString();
             }
             
             Datum y1= ya.invTransform(p2.y);
@@ -81,7 +84,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
             Datum rise= y1.subtract(y0);
 
             String riseString;
-            riseString= datumString(rise);
+            riseString= rise.toString();
             
             String radString;
             if ( rise.getUnits().isConvertableTo(run.getUnits()) ) {
@@ -101,10 +104,10 @@ public class LengthDragRenderer extends LabelDragRenderer {
                 radString= "";
             }
             
-            String label= "\u0394x: " + runString + " \u0394y: " + riseString + radString ;
+            String label1= "\u0394x: " + runString + " \u0394y: " + riseString + radString ;
             
             if ( showSlope ) {
-                label += "!c m: "+ UnitsUtil.divideToString( rise, run );
+                label1 += "!c m: "+ UnitsUtil.divideToString( rise, run );
             }
             
             if ( showFit ) {
@@ -140,11 +143,11 @@ public class LengthDragRenderer extends LabelDragRenderer {
                 } else {
                     fit= "y="+ slope + " * ( x - ("+x1+") ) + "+ y1;
                 }
-                label+= "!c" + fit;
+                label1+= "!c" + fit;
             }
             
             
-            setLabel( label );
+            setLabel( label1 );
         } else {
             setLabel( "" );
         }
