@@ -117,7 +117,9 @@ public class AverageTableRebinner implements DataSetRebinner {
         double[][] rebinData = new double[nx][ny];
         double[][] rebinWeights = new double[nx][ny];
 
+        // average all the measurements that fall onto the same pixel together.
         average( tds, weights, rebinData, rebinWeights, ddX, ddY );
+
         if (interpolate) { // I think these calculate the interpolated value at the edge.  Note there's a bug in here...
             doBoundaries2RL(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
             doBoundaries2TB(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
@@ -714,6 +716,9 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
 
+        double pixelSize= ddX.binWidth();
+        xSampleWidth= xSampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
+        
         //int numberNonGap= 0; // for debugging
         //int numberGap= 0;
         
@@ -830,7 +835,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                         data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
                         weights[i][j] = weights[i1[i]][j] * a1 + weights[i2[i]][j] * a2; //approximate
 
-                    }
+                    } 
                 }
             }
         }
