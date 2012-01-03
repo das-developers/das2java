@@ -464,9 +464,24 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         Units u2= SemanticOps.getUnits(ds);
         if ( u1!=u2 ) {
             UnitsConverter uc= UnitsConverter.getConverter(u2,u1);
-            for ( int i=myLength; i<myLength+dsLength; i++ ) {
-                Object nv=  uc.convert(Array.getDouble(newback,i) ) ;
-                Array.set( newback, i, nv );
+            Class backClass= ths.getBack().getClass().getComponentType();
+            for ( int i=myLength; i<myLength+dsLength; i++ ) { //TODO: this is going to be sub-optimal that its much slower than it needs to be because if statements.
+                Number nv=  uc.convert(Array.getDouble( ths.getBack(),i) ) ;
+                if ( backClass==double.class ) {
+                    Array.set( ths.getBack(), i, nv.doubleValue() );
+                } else if ( backClass==float.class ) {
+                    Array.set( ths.getBack(), i, nv.floatValue() );
+                } else if ( backClass==long.class ) {
+                    Array.set( ths.getBack(), i, nv.longValue() );
+                } else if ( backClass==int.class ) {
+                    Array.set( ths.getBack(), i, nv.intValue() );
+                } else if ( backClass==short.class ) {
+                    Array.set( ths.getBack(), i, nv.shortValue() );
+                } else if ( backClass==byte.class ) {
+                    Array.set( ths.getBack(), i, nv.byteValue() );
+                } else {
+                    throw new IllegalArgumentException("unsupported type: "+backClass );
+                }
             }
         }
 
