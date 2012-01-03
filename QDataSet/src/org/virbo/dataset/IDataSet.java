@@ -9,7 +9,6 @@
 
 package org.virbo.dataset;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,7 +23,7 @@ public final class IDataSet extends ArrayDataSet {
     int[] back;
     
     
-    public static final String version="20070529";
+    public static final String version="20120103";
     
     public static IDataSet createRank1( int len0 ) {
         return new IDataSet( 1, len0, 1, 1, 1 );
@@ -40,6 +39,27 @@ public final class IDataSet extends ArrayDataSet {
 
     public static IDataSet createRank4( int len0, int len1, int len2, int len3 ) {
         return new IDataSet( 4, len0, len1, len2, len3);
+    }
+    /**
+     * Makes an array from array of dimension sizes.  The result will have
+     * rank qube.length().
+     * @param qube array specifying the rank and size of each dimension
+     * @return FDataSet
+     */
+    public static IDataSet create(int[] qube) {
+        if (qube.length == 0) {
+            return new IDataSet( 0, 1, 1, 1, 1 );
+        } else if ( qube.length==1 ) {
+            return IDataSet.createRank1(qube[0]);
+        } else if (qube.length == 2) {
+            return IDataSet.createRank2(qube[0], qube[1]);
+        } else if (qube.length == 3) {
+            return IDataSet.createRank3(qube[0], qube[1], qube[2]);
+        } else if (qube.length == 4) {
+            return IDataSet.createRank4(qube[0], qube[1], qube[2], qube[3]);
+        } else {
+            throw new IllegalArgumentException("bad qube");
+        }
     }
     
     /**
@@ -131,123 +151,9 @@ public final class IDataSet extends ArrayDataSet {
     }
 
     public void putValue( int i0, int i1, int i2, int i3, double value ) {
-        back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3 ] = (int)value;
+        back[ i0*len1*len2*len3 + i1*len2*len3 +i2*len3 +i3] = (int)value;
     }
 
-
-    /**
-     * Shorten the dataset by changing it's dim 0 length parameter.  The same backing array is used, 
-     * so the element that remain ill be the same.
-     * can only shorten!
-     */
-    public void putLength( int len ) {
-        if ( len>len0 ) throw new IllegalArgumentException("dataset cannot be lengthened");
-        len0= len;
-    }
-
-    @Override
-    public String toString( ) {
-        return DataSetUtil.toString( this );
-    }
-    
-    /**
-     * copies the properties, copying depend datasets as well.
-     */
-    private static Map copyProperties( QDataSet ds ) {
-        Map result = new HashMap();        
-        Map srcProps= DataSetUtil.getProperties(ds);
-        
-        result.putAll(srcProps);
-                
-        for ( int i=0; i < ds.rank(); i++) {
-            QDataSet dep = (QDataSet) ds.property("DEPEND_" + i);
-            if (dep == ds) {
-                throw new IllegalArgumentException("dataset is dependent on itsself!");
-            }
-            if (dep != null) {
-                if ( dep instanceof FDataSet ) {
-                    result.put("DEPEND_" + i, FDataSet.copy(dep));
-                } else if ( dep instanceof DDataSet ) {
-                    result.put("DEPEND_" + i, DDataSet.copy(dep));
-                } else {
-                    result.put("DEPEND_" + i, copy(dep));
-                }
-            }
-        }
-
-        for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
-            QDataSet plane0 = (QDataSet) ds.property("PLANE_" + i);
-            if (plane0 != null) {
-                result.put("PLANE_" + i, copy(plane0));
-            } else {
-                break;
-            }
-        }
-
-        return result;
-    }
-     
-    private static IDataSet ddcopy( IDataSet ds ) {
-        int dsLength= ds.len0 * ds.len1 * ds.len2 * ds.len3;
-        
-        int[] newback= new int[ dsLength ];
-        
-        System.arraycopy( ds.back, 0, newback, 0, dsLength );
-        
-        IDataSet result= new IDataSet( ds.rank, ds.len0, ds.len1, ds.len2, ds.len3, newback );
-        result.properties.putAll( copyProperties(ds) ); // TODO: problems... 
-        
-        return result;
-    }
-    
-    /**
-     * copies the dataset into a writeable dataset, and all of it's depend datasets as well.
-     * //TODO: check for DDataSet, do System.arraycopy.
-     */
-    public static IDataSet copy( QDataSet ds ) {
-        if ( ds instanceof IDataSet ) return ddcopy( (IDataSet)ds );
-        int rank= ds.rank();
-        IDataSet result;
-        switch (rank) {
-            case 1: 
-                result= createRank1( ds.length() ); 
-                for ( int i=0; i<ds.length(); i++ ) {
-                    result.putValue( i, ds.value(i) );
-                }
-                break;
-            case 2: 
-                result= createRank2( ds.length(), ds.length(0) ); 
-                for ( int i=0; i<ds.length(); i++ ) {
-                    for ( int j=0; j<ds.length(i); j++ ) {
-                        result.putValue( i, j, ds.value(i,j) );
-                    }
-                }
-                break;
-            case 3: 
-                result= createRank3( ds.length(), ds.length(0), ds.length(0,0) ); 
-                for ( int i=0; i<ds.length(); i++ ) {
-                    for ( int j=0; j<ds.length(i); j++ ) {
-                        for ( int k=0; k<ds.length(i,j); k++ ) {
-                            result.putValue( i, j, k, ds.value(i,j,k) );
-                        }
-                    }
-                }
-                break;
-            case 4:
-                result = createRank4( ds.length(), ds.length(0), ds.length(0,0), ds.length(0,0,0));
-                for ( int i=0; i<ds.length(); i++ )
-                    for ( int j=0; j<ds.length(i); j++ )
-                        for (int k=0; k<ds.length(i,j); k++)
-                            for (int l=0; l<ds.length(i,j,k); l++)
-                                result.putValue( i, j, k, l, ds.value(i,j,k,l));
-                break;
-            default: throw new IllegalArgumentException("bad rank");
-        }
-        result.properties.putAll( copyProperties(ds) ); // TODO: problems...
-        
-        return result;
-    }
-    
     /**
      * creates a rank1 IDataSet by wrapping an existing array.
      */
@@ -269,62 +175,6 @@ public final class IDataSet extends ArrayDataSet {
         return new IDataSet( 3, nx, ny, nz, 1, back );
     }
     
-    private void joinProperties( IDataSet ds ) {
-        Map result= new HashMap();
-        for ( int i=0; i<ds.rank(); i++ ) {
-            QDataSet dep1= (QDataSet) ds.property( "DEPEND_"+i );
-            if ( dep1!=null ) {
-                QDataSet dep0= (QDataSet) this.property( "DEPEND_"+i );
-                IDataSet djoin= IDataSet.copy( dep0 );
-                IDataSet ddep1= dep1 instanceof IDataSet ? (IDataSet) dep1 : IDataSet.copy( dep1 );
-                djoin.join( ddep1 );
-                result.put( "DEPEND_"+i, djoin );
-            }
-        }
-        QDataSet dep1= (QDataSet) ds.property( QDataSet.PLANE_0 );
-        if ( dep1!=null ) {
-            QDataSet dep0= (QDataSet) this.property( QDataSet.PLANE_0 );
-            IDataSet djoin= IDataSet.copy( dep0 );
-            IDataSet dd1= dep1 instanceof IDataSet ? (IDataSet) dep1 : IDataSet.copy( dep1 );
-            djoin.join( dd1 );
-            result.put( QDataSet.PLANE_0, djoin );
-        }
-        //TODO: correlated PLANEs
-        this.properties.putAll( result );
-    }
-
-    /**
-     * append the second dataset onto this dataset.  Not thread safe!!!
-     * @deprecated Use append instead.
-     */
-    public void join( IDataSet ds ) {
-        append(ds);
-    }
-    
-    /**
-     * append the second dataset onto this dataset.  Not thread safe!!!
-     * TODO: this really should return a new dataset.  Presumably this is to avoid copies, but currently it copies anyway!
-     */
-    public void append( IDataSet ds ) {
-        if ( ds.rank()!=rank ) throw new IllegalArgumentException("rank mismatch");
-        if ( ds.len1!=len1 ) throw new IllegalArgumentException("len1 mismatch");
-        if ( ds.len2!=len2 ) throw new IllegalArgumentException("len2 mismatch");
-        if ( ds.len3!=len3 ) throw new IllegalArgumentException("len3 mismatch");
-
-        int myLength= len0 * len1 * len2 * len3;
-        int dsLength= ds.len0 * ds.len1 * ds.len2 * ds.len3;
-        
-        int[] newback= new int[ myLength + dsLength ];
-        
-        System.arraycopy( this.back, 0, newback, 0, myLength );
-        System.arraycopy( ds.back, 0, newback, myLength, dsLength );
-        
-        len0= this.len0 + ds.len0;
-        this.back= newback;
-        
-        joinProperties( ds );
-    }
-
 
     /**
      * the slice operator is better implemented here.  Presently, we
