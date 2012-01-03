@@ -525,7 +525,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             xrangeWarning= "data ends before range";
                         }
                         //t0= System.currentTimeMillis();
-                        rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
+                        try {
+                            rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
+                        } catch ( RuntimeException ex ) {
+                            ex.printStackTrace(); //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
+                            return;
+                        }
                         //System.err.println( "rebin (ms): " + ( System.currentTimeMillis()-t0) );
                         xmemento = xAxis.getMemento();
                         ymemento = yAxis.getMemento();
