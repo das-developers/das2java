@@ -466,19 +466,19 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             UnitsConverter uc= UnitsConverter.getConverter(u2,u1);
             Class backClass= ths.getBack().getClass().getComponentType();
             for ( int i=myLength; i<myLength+dsLength; i++ ) { //TODO: this is going to be sub-optimal that its much slower than it needs to be because if statements.
-                Number nv=  uc.convert(Array.getDouble( ths.getBack(),i) ) ;
+                Number nv=  uc.convert(Array.getDouble( newback,i) ) ;
                 if ( backClass==double.class ) {
-                    Array.set( ths.getBack(), i, nv.doubleValue() );
+                    Array.set( newback, i, nv.doubleValue() );
                 } else if ( backClass==float.class ) {
-                    Array.set( ths.getBack(), i, nv.floatValue() );
+                    Array.set( newback, i, nv.floatValue() );
                 } else if ( backClass==long.class ) {
-                    Array.set( ths.getBack(), i, nv.longValue() );
+                    Array.set( newback, i, nv.longValue() );
                 } else if ( backClass==int.class ) {
-                    Array.set( ths.getBack(), i, nv.intValue() );
+                    Array.set( newback, i, nv.intValue() );
                 } else if ( backClass==short.class ) {
-                    Array.set( ths.getBack(), i, nv.shortValue() );
+                    Array.set( newback, i, nv.shortValue() );
                 } else if ( backClass==byte.class ) {
-                    Array.set( ths.getBack(), i, nv.byteValue() );
+                    Array.set( newback, i, nv.byteValue() );
                 } else {
                     throw new IllegalArgumentException("unsupported type: "+backClass );
                 }
@@ -490,6 +490,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         ArrayDataSet result= create( ths.rank, len0, ths.len1, ths.len2, ths.len3, newback );
 
         result.properties.putAll( joinProperties( ths, ds ) );
+        result.properties.put( QDataSet.UNITS, u1 ); // since we resolve units when they change (bug 3469219)
+
         return result;
     }
 
