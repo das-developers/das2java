@@ -5,8 +5,8 @@
 
 package org.virbo.qstream;
 
-import org.das2.datum.NumberUnits;
 import org.das2.datum.Units;
+import org.virbo.dataset.SemanticOps;
 
 /**
  *
@@ -20,11 +20,7 @@ public class UnitsSerializeDelegate implements SerializeDelegate {
 
     public Object parse(String typeId,String s) {
         Units u;
-        try {
-            u= Units.getByName(s);
-        } catch ( IllegalArgumentException ex ) {
-            u= new NumberUnits(s);
-        }
+        u= SemanticOps.lookupUnits(s);
         return u;
     }
 
