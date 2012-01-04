@@ -882,6 +882,9 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
 
+        double pixelSize= ddY.binWidth();
+        ySampleWidth= ySampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
+
         for (int i = 0; i < nx; i++) {
             int ii1 = -1;
             int ii2 = -1;
