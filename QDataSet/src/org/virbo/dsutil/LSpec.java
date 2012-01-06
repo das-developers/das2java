@@ -9,10 +9,13 @@
 
 package org.virbo.dsutil;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.das2.datum.Units;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  * Form a rank 2 dataset with L and Time for tags by identifying monotonic sweeps
@@ -20,6 +23,11 @@ import org.virbo.dataset.QDataSet;
  * @author jbf
  */
 public class LSpec {
+
+    /**
+     * identifies the sweep of each record
+     */
+    public static final String USER_PROP_SWEEPS = "sweeps";
     
     /** Creates a new instance of LSpec */
     private LSpec() {
@@ -36,11 +44,11 @@ public class LSpec {
         int start=0;
         int index=0;
         int end=0; // index of the right point of slope0.
-        
-        Units u= (Units) lds.property( QDataSet.UNITS );
-        
+
+        QDataSet wds= SemanticOps.weightsDataSet(lds);
+
         for ( int i=1; i<lds.length(); i++ ) {
-            if ( u.isFill( lds.value(i) ) || u.isFill( lds.value(i-1) ) ) continue;
+            if ( wds.value(i)==0 ) continue;
             double slope1=  lds.value(i) - lds.value(i-1);
             if ( slope0 * slope1 <= 0. ) {
                 if ( slope0!=0. ) {
@@ -173,12 +181,17 @@ public class LSpec {
                         + dep0.value( (int)sweeps.value( i,1 ) ) ) / 2 );
                 
             }
-            xtags.putProperty( QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
+
+            Units xunits= SemanticOps.getUnits(dep0);
+            xtags.putProperty( QDataSet.UNITS, xunits );
             xtags.putProperty( QDataSet.MONOTONIC, org.virbo.dataset.DataSetUtil.isMonotonic(dep0) );
-            xtags.putProperty( QDataSet.CADENCE, DRank0DataSet.create( 1.5 * guessCadence(xtags,2) ) );
+            xtags.putProperty( QDataSet.CADENCE, DRank0DataSet.create( 1.5 * guessCadence(xtags,2), xunits.getOffsetUnits() ) );
         }
-        
-        result.putProperty( "sweeps", sweeps );
+
+        Map<String,Object> userProps= new LinkedHashMap();
+        userProps.put(USER_PROP_SWEEPS, sweeps);
+
+        result.putProperty( QDataSet.USER_PROPERTIES, userProps );
         
         result.putProperty( QDataSet.DEPEND_1, lgrid );
         result.putProperty( QDataSet.DEPEND_0, xtags );
