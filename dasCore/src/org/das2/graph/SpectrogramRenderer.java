@@ -60,6 +60,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsConverter;
+import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -91,6 +92,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     private String xrangeWarning= null; // if non-null, print out of bounds warning.
 
+    boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
+    
     protected class RebinListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent e) {
@@ -272,13 +275,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                     zds= SemanticOps.getDependentDataSet(zds);
                                 }
                             }
-                            if ( ! SemanticOps.getUnits(zds).isConvertableTo(colorBar.getUnits()) ) {
-                                parent.postMessage(this, "inconvertible colorbar units", DasPlot.INFO, null, null);
-                            }
                         }
                     }
                 }
             } else if (plotImage != null) {
+                if ( unitsWarning ) {
+                    parent.postMessage( this, "zaxis units changed from \""+SemanticOps.getUnits(getDataSet()) + "\" to \"" + colorBar.getUnits() + "\"", DasPlot.WARNING, null, null );
+                }
+
                 Point2D p;
                 p = new Point2D.Float( plotImageBounds.x, plotImageBounds.y );
                 int x = (int) (p.getX() + 0.5);
@@ -349,6 +353,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         int icolor;
 
         Units units = SemanticOps.getUnits(rebinData);
+        if ( !units.isConvertableTo( cb.getUnits() ) ) {
+            // we'll print a warning later
+            units= cb.getUnits();
+        }
 
         QDataSet wds = SemanticOps.weightsDataSet( rebinData );
 
@@ -481,11 +489,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             return;
                         }
 
-                        if ( !( SemanticOps.getUnits(fds) ).isConvertableTo(colorBar.getUnits()) ) {
-                            logger.fine("dataset units are incompatable with colorbar.");
-                            plotImage = null;
-                            plotImageBounds= null;
-                            return;                            
+                        boolean plottable = false;
+                        plottable = SemanticOps.getUnits(fds).isConvertableTo(colorBar.getUnits());
+                        if ( !plottable ) {
+                            if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(fds) ) && UnitsUtil.isRatioMeasurement( colorBar.getUnits() ) ) {
+                                plottable= true; // we'll provide a warning
+                                unitsWarning= true;
+                            }
                         }
                         
                         RebinDescriptor xRebinDescriptor;
