@@ -2391,8 +2391,7 @@ public class Ops {
      * create a power spectrum on the dataset by breaking it up and
      * doing ffts on each segment.
      * 
-     * right now only rank 2 data is supported, but there is no reason that
-     * rank 1 shouldn't be supported.
+     * data may be rank 1, rank 2, or rank 3.
      *
      * Looks for DEPEND_1.USER_PROPERTIES.FFT_Translation, which should
      * be a rank 0 or rank 1 QDataSet.  If it is rank 1, then it should correspond
