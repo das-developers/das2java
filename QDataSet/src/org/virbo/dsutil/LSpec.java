@@ -79,7 +79,7 @@ public class LSpec {
      * @param dir 1 if datax is increasing, -1 if decreasing
      * @return index
      */
-    private final static int findIndex( QDataSet datax, int start, int end, double x, int guess, int dir ) {
+    private static int findIndex( QDataSet datax, int start, int end, double x, int guess, int dir ) {
         int index= Math.max( Math.min( guess, end-1 ), start );
         if ( dir > 0 ) {
             while ( index<end && datax.value(index+1) < x ) index++;
