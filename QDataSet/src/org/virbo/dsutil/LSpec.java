@@ -153,7 +153,7 @@ public class LSpec {
         final QDataSet sweeps= identifySweeps( lds );
         
         DDataSet result= DDataSet.createRank2( sweeps.length(), lgrid.length() );
-        result.putProperty( QDataSet.UNITS, lds.property( QDataSet.UNITS ) );
+        result.putProperty( QDataSet.UNITS, zds.property( QDataSet.UNITS ) );
         
         for ( int i=0; i<sweeps.length(); i++ ) {
             interpolate( lds, zds, (int) sweeps.value( i,0 ), (int) sweeps.value( i,1 ), i, lgrid, result );
