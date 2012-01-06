@@ -20,6 +20,10 @@ import org.das2.system.DasLogger;
 import javax.sound.sampled.*;
 import org.das2.dataset.DataSetUtil;
 import org.das2.datum.DatumRange;
+import org.das2.datum.UnitsConverter;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -36,14 +40,16 @@ public class Auralizor {
     double max;
     Units yUnits;
     
-    VectorDataSet ds;
+    QDataSet ds;
     
-    void setDataSet( VectorDataSet ds ) {
+    void setDataSet( QDataSet ds ) {
         this.ds= ds;
     }
     
     public void playSound() {
-        float sampleRate=   (float) ( 1. / ds.getXTagDatum(1).subtract(ds.getXTagDatum(0)).doubleValue(Units.seconds)  ) ;
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(dep0).getOffsetUnits(), Units.seconds );
+        float sampleRate=   (float) ( 1. / uc.convert( dep0.value(1)-dep0.value(0) )  ) ;
         DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("sampleRate= "+sampleRate);
         AudioFormat audioFormat= new AudioFormat( sampleRate, 16, 1, true, true );
 
@@ -68,8 +74,8 @@ public class Auralizor {
         int i=0;
         int ibuf=0;
 
-        while ( i<ds.getXLength() ) {
-            double d= ds.getDouble(i++,yUnits);
+        while ( i<dep0.length() ) {
+            double d= ds.value(i++);
             int b= (int) ( 65536 * ( d - min ) / ( max-min ) ) - 32768;
             try {
                 buffer.putShort( ibuf, (short)b );
@@ -115,13 +121,12 @@ public class Auralizor {
         };
     }
     
-    public Auralizor( VectorDataSet ds ) {
+    public Auralizor( QDataSet ds ) {
         min= -1;
         max= 1;
-        DatumRange yrange= DataSetUtil.yRange(ds);
-        yUnits= Units.dimensionless;
-        min= yrange.min().doubleValue(yUnits);
-        max= yrange.max().doubleValue(yUnits);
+        QDataSet yrange= Ops.extent(ds);
+        min= yrange.value(0);
+        max= yrange.value(1);
         this.ds= ds;
     }
     
