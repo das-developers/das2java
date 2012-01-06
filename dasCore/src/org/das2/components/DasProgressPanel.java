@@ -420,6 +420,9 @@ public class DasProgressPanel implements ProgressMonitor {
         updateThread.start();
     }
 
+    /**
+     * this must be run on the event thread
+     */
     private void updateUIComponents() {
         long elapsedTimeMs = System.currentTimeMillis() - taskStartedTime;
 
@@ -493,8 +496,13 @@ public class DasProgressPanel implements ProgressMonitor {
         if (taskSize < -1) {
             throw new IllegalArgumentException("taskSize must be positive, -1, or 0, not " + taskSize);
         } else {
-            if (componentsInitialized)
-                progressBar.setIndeterminate(false);
+            if (componentsInitialized) {
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        progressBar.setIndeterminate(false);
+                    }
+                } );
+            }
         }
         maximumTaskPosition = taskSize;
     }
