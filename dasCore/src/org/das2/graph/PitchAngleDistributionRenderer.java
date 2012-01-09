@@ -227,21 +227,21 @@ public class PitchAngleDistributionRenderer extends Renderer {
     }
 
     protected void installRenderer() {
-        if (parent != null && parent.getCanvas() != null) {
-            if (colorBar != null) {
-                if (colorBar.getColumn() == DasColumn.NULL) {
-                    DasColumn column = parent.getColumn();
-                    colorBar.setColumn(new DasColumn(null, column, 1.0, 1.0, 1, 2, 0, 0));
-                }
-                parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
-            }
-        }
+//        if (parent != null && parent.getCanvas() != null) {
+//            if (colorBar != null) {
+//                if (colorBar.getColumn() == DasColumn.NULL) {
+//                    DasColumn column = parent.getColumn();
+//                    colorBar.setColumn(new DasColumn(null, column, 1.0, 1.0, 1, 2, 0, 0));
+//                }
+//                parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
+//            }
+//        }
     }
 
     protected void uninstallRenderer() {
-        if (colorBar != null && colorBar.getCanvas() != null) {
-            colorBar.getCanvas().remove(colorBar);
-        }
+//        if (colorBar != null && colorBar.getCanvas() != null) {
+//            colorBar.getCanvas().remove(colorBar);
+//        }
     }
 
     /**
