@@ -966,7 +966,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
 
     public void removeMouseModule(MouseModule module) {
-        // not implemented yet
+        //primaryActionButtonMap.remove(module);
+        //secondaryActionButtonMap.remove(module);
+        //modules.removeElement(module);
+        //TODO: implement this.  We need to keep track of the menu items...
     }
 
     /**
