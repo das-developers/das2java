@@ -624,11 +624,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     protected void installRenderer() {
         if (parent != null && parent.getCanvas() != null) {
             if (colorBar != null) {
-                if (colorBar.getColumn() == DasColumn.NULL) {
-                    DasColumn column = parent.getColumn();
-                    colorBar.setColumn(new DasColumn(null, column, 1.0, 1.0, 1, 2, 0, 0));
-                }
-                parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
+//                if (colorBar.getColumn() == DasColumn.NULL) {
+//                    DasColumn column = parent.getColumn();
+//                    colorBar.setColumn(new DasColumn(null, column, 1.0, 1.0, 1, 2, 0, 0));
+//                }
+//                parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
                 if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
                     DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
                     VerticalSpectrogramSlicer vSlicer =
@@ -657,26 +657,26 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
 
     protected void uninstallRenderer() {
-        if (colorBar != null && colorBar.getCanvas() != null) {
-            // count the number of Renderers pointing to the colorbar.  Remove it if it's the only one.
-            DasCanvas c= colorBar.getCanvas();
-            boolean othersUse= false;
-            for ( DasCanvasComponent cc: c.getCanvasComponents() ) {
-                if ( cc instanceof DasPlot ) {
-                    Renderer[] rr= ((DasPlot)cc).getRenderers();
-                    for ( Renderer r1: rr ) {
-                        if ( r1 instanceof SpectrogramRenderer && r1!=this ) {
-                            if ( ((SpectrogramRenderer)r1).getColorBar()==colorBar ) {
-                                othersUse= true;
-                            }
-                        }
-                    }
-                }
-            }
-            if ( !othersUse ) {
-                colorBar.getCanvas().remove(colorBar);
-            }
-        }
+//        if (colorBar != null && colorBar.getCanvas() != null) {
+//            // count the number of Renderers pointing to the colorbar.  Remove it if it's the only one.
+//            DasCanvas c= colorBar.getCanvas();
+//            boolean othersUse= false;
+//            for ( DasCanvasComponent cc: c.getCanvasComponents() ) {
+//                if ( cc instanceof DasPlot ) {
+//                    Renderer[] rr= ((DasPlot)cc).getRenderers();
+//                    for ( Renderer r1: rr ) {
+//                        if ( r1 instanceof SpectrogramRenderer && r1!=this ) {
+//                            if ( ((SpectrogramRenderer)r1).getColorBar()==colorBar ) {
+//                                othersUse= true;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            if ( !othersUse ) {
+//                colorBar.getCanvas().remove(colorBar);
+//            }
+//        }
     }
 
 
