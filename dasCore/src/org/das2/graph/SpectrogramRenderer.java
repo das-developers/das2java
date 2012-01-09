@@ -680,10 +680,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
         if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
             //TODO: remove slicers.  Note if two spectrograms, then we'll have problems.
-            DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
-            mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Vertical Slice") );
-            mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Horizontal Slice") );
-            mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Horizontal Drag Range") );
+            //DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
+            //mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Vertical Slice") );
+            //mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Horizontal Slice") );
+            //mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Horizontal Drag Range") );
 
         }
     }
