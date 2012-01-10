@@ -161,13 +161,19 @@ public class DataSetBuilder {
      * a system call), ignoring dataset geometry.  TODO: since the element count
      * allows for putting multiple records in at once, an index out of bounds may 
      * occur after the last record of current is written.
-     * @param index0
-     * @param values
+     * @param index0 The index to put the values, or -1 for the current position.
+     * @param values rank 1 dataset.
      * @param count the number of elements to copy
      */
-    public void putValues( int index0, DDataSet values, int count ) {
+    public void putValues( int index0, QDataSet values, int count ) {
+        DDataSet ddvalues;
+        if ( values instanceof DDataSet ) {
+            ddvalues= (DDataSet) values;
+        } else {
+            ddvalues= (DDataSet) ArrayDataSet.copy( double.class, values );
+        }
         checkStreamIndex(index0);
-        DDataSet.copyElements( values, 0, current, this.index, count, false );
+        DDataSet.copyElements( ddvalues, 0, current, this.index, count, false );
     }
     
     /**
