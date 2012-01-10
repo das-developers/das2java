@@ -408,6 +408,7 @@ public class SemanticOps {
      * return the ytags for the simple table that is ds.
      *   rank 2 spectrogram: Z[X,Y] -> Y
      *   bundle_1: ds[ :, [x,y,z] ] -> y
+     *   Y[X] -> Y
      * consider: These break duck typing goal, and really need a scheme
      *   to tell it how to get the dataset.
      * @param ds
@@ -425,8 +426,7 @@ public class SemanticOps {
             } else {
                 return dep1;
             }
-        }
-        if ( isBundle(ds) ) {
+        } else if ( isBundle(ds) ) {
             return DataSetOps.unbundle( ds, 1 );
         } else if ( isLegacyBundle(ds) ) {
             return DataSetOps.unbundle(ds,1);
@@ -449,11 +449,15 @@ public class SemanticOps {
             return result;
 
         } else {
-            QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_1);
-            if ( result==null ) {
-                return new IndexGenDataSet(ds.length(0));
+            if ( ds.rank()==1 ) {
+                return ds;
             } else {
-                return result;
+                QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_1);
+                if ( result==null ) {
+                    return new IndexGenDataSet(ds.length(0));
+                } else {
+                    return result;
+                }
             }
         }
     }
