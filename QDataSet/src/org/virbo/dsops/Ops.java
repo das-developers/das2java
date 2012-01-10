@@ -3267,6 +3267,28 @@ public class Ops {
     }
 
     /**
+     * flatten a rank N dataset, though currently only rank 2 is supported.
+     * The result for rank 2 is an n,3 dataset of [x,y,z], or if there are no tags, just [z].
+     * The last index will be the dependent variable, and the first indeces will
+     * be the independent variables sorted by dimension.
+     * @param ds
+     * @return
+     */
+    public static QDataSet flatten( QDataSet ds ) {
+        if ( ds.rank()==0 ) {
+            DDataSet result= DDataSet.createRank1(1);
+            result.putValue(0,ds.value());
+            DataSetUtil.copyDimensionProperties( ds, result );
+            return result;
+        }  else if(ds.rank() == 1) {
+            return ds;
+        } else if ( ds.rank()==2 ) {
+            return DataSetOps.flattenRank2(ds);
+        } else {
+            throw new UnsupportedOperationException("only rank 0,1,and 2 supported");
+        }
+    }
+    /**
      * create a labels dataset for tagging rows of a dataset.  If the context
      * has been used already, including "default", then the EnumerationUnit
      * for the data will be preserved.  labels(["red","green","blue"],"default")
