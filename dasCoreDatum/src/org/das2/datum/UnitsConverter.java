@@ -47,7 +47,30 @@ public abstract class UnitsConverter {
             return "IDENTITY UnitsConverter";
         }
     };
-    
+
+    /**
+     * Allow conversion, but this is a flag that indicates the result should be dimension because the Ratiometric units were
+     * not convertible.
+     */
+    public static final UnitsConverter LOOSE_IDENTITY = new UnitsConverter() {
+        public UnitsConverter getInverse() {
+            return this;
+        }
+        public double convert(double value) {
+            return value;
+        }
+
+        @Override
+        public UnitsConverter append(UnitsConverter that) {
+            return that;
+        }
+
+        @Override
+        public String toString() {
+            return "LOOSE_IDENTITY UnitsConverter";
+        }
+    };
+
     public static final UnitsConverter TERA = new ScaleOffset(1e-12, 0.0);
     public static final UnitsConverter GIGA = new ScaleOffset(1e-9, 0.0);
     public static final UnitsConverter MEGA = new ScaleOffset(1e-6, 0.0);
