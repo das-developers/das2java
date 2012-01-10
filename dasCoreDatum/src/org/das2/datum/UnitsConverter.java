@@ -49,7 +49,7 @@ public abstract class UnitsConverter {
     };
 
     /**
-     * Allow conversion, but this is a flag that indicates the result should be dimension because the Ratiometric units were
+     * Allow conversion, but this is a flag that indicates the result should be dimensionless because the Ratiometric units were
      * not convertible.
      */
     public static final UnitsConverter LOOSE_IDENTITY = new UnitsConverter() {
