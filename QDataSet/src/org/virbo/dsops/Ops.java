@@ -956,7 +956,7 @@ public class Ops {
      * @return
      */
     public static QDataSet eq(QDataSet ds1, QDataSet ds2) {
-        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return uc.convert(d1) == d2 ? 1.0 : 0.0;
@@ -972,7 +972,7 @@ public class Ops {
      * @return
      */
     public static QDataSet ne(QDataSet ds1, QDataSet ds2) {
-        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return uc.convert(d1) != d2 ? 1.0 : 0.0;
@@ -987,7 +987,7 @@ public class Ops {
      * @return
      */
     public static QDataSet gt(QDataSet ds1, QDataSet ds2) {
-        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return uc.convert(d1) > d2 ? 1.0 : 0.0;
@@ -1002,7 +1002,7 @@ public class Ops {
      * @return
      */
     public static QDataSet ge(QDataSet ds1, QDataSet ds2) {
-        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return uc.convert(d1) >= d2 ? 1.0 : 0.0;
@@ -1017,7 +1017,7 @@ public class Ops {
      * @return
      */
     public static QDataSet lt(QDataSet ds1, QDataSet ds2) {
-        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return uc.convert(d1) < d2 ? 1.0 : 0.0;
@@ -1032,7 +1032,7 @@ public class Ops {
      * @return
      */
     public static QDataSet le(QDataSet ds1, QDataSet ds2) {
-        final UnitsConverter uc= SemanticOps.getUnitsConverter( ds1, ds2 );
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
                 return uc.convert(d1) <= d2 ? 1.0 : 0.0;
@@ -2934,10 +2934,8 @@ public class Ops {
         double uc0 = uu.value(ic0);
         double uc1 = uu.value(ic1);
         int n = uu.length();
-        Units vvunits= (Units) vv.property(QDataSet.UNITS);
-        if ( vvunits==null ) vvunits= Units.dimensionless;
-        Units uuunits= (Units) uu.property(QDataSet.UNITS);
-        if ( uuunits==null ) uuunits= Units.dimensionless;
+        Units vvunits= SemanticOps.getUnits( vv );
+        Units uuunits= SemanticOps.getUnits( uu );
 
         UnitsConverter uc= UnitsConverter.getConverter( vvunits, uuunits );
 
