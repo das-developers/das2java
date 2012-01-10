@@ -11,12 +11,14 @@ import org.das2.datum.Basis;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.NumberUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsConverter.ScaleOffset;
+import org.das2.datum.UnitsUtil;
 import org.virbo.dsops.Ops;
 
 /**
@@ -45,6 +47,24 @@ public class SemanticOps {
         Units usrc= getUnits(src);
         Units udst= getUnits(dst);
         return usrc.getConverter(udst);
+    }
+
+    public final static UnitsConverter getLooseUnitsConverter( QDataSet src, QDataSet dst ) {
+        Units usrc= getUnits(src);
+        Units udst= getUnits(dst);
+        try {
+            return usrc.getConverter(udst);
+        } catch ( InconvertibleUnitsException ex ) {
+            if ( UnitsUtil.isRatioMeasurement(usrc) && UnitsUtil.isRatioMeasurement(udst) ) {
+                if ( Units.dimensionless==usrc || Units.dimensionless==udst ) {
+                    return UnitsConverter.LOOSE_IDENTITY;
+                } else {
+                    throw ex;
+                }
+            } else {
+                throw ex;
+            }
+        }
     }
 
     /**
