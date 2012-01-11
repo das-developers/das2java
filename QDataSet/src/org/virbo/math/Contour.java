@@ -74,16 +74,17 @@ public class Contour {
         public QDataSet performContour() {
             DataSetBuilder builder= new DataSetBuilder( 2, 100, 3 );
 
-            QDataSet tags= Ops.labels( new String[] { Contour.PLANE_X, Contour.PLANE_Y, "cval" } );
-
             int workLength = 2 * xSteps * ySteps * ncv;
             boolean[] workSpace= new boolean[workLength];
             
             idx=0;
             ContourPlotKernel( builder, workSpace );
 
-            builder.putProperty( QDataSet.DEPEND_1, tags );
-            return builder.getDataSet();
+
+            DDataSet result= builder.getDataSet();
+            result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(result) );
+
+            return result;
         }
         
         //-------------------------------------------------------
@@ -512,24 +513,27 @@ public class Contour {
 
     private static QDataSet getBundleDescriptor( QDataSet input ) {
         QDataSet dep0= (QDataSet) input.property(QDataSet.DEPEND_0);
-        String label0= dep0==null ? "X" : Ops.guessName( dep0 );
+        String name0= dep0==null ? "X" : Ops.guessName( dep0 );
 
         QDataSet dep1= (QDataSet) input.property(QDataSet.DEPEND_1);
-        String label1= dep1==null ? "Y" : Ops.guessName( dep1 );
+        String name1= dep1==null ? "Y" : Ops.guessName( dep1 );
 
-        String label= Ops.guessName( input );
+        String name= Ops.guessName( input );
+        if ( name==null ) {
+            name= "Z";
+        }
 
         ArrayDataSet bds= (ArrayDataSet) DDataSet.createRank1(3);
-        bds.putProperty( QDataSet.LABEL, 0, label0 );
+        bds.putProperty( QDataSet.NAME, 0, name0 );
         if ( dep0!=null ) bds.putProperty( QDataSet.UNITS, 0, SemanticOps.getUnits( dep0 ) );
 
-        bds.putProperty( QDataSet.LABEL, 1, label1 );
+        bds.putProperty( QDataSet.NAME, 1, name1 );
         if ( dep1!=null ) bds.putProperty( QDataSet.UNITS, 1, SemanticOps.getUnits( dep1 ) );
 
-        bds.putProperty( QDataSet.LABEL, 2, label );
+        bds.putProperty( QDataSet.NAME, 2, name );
         bds.putProperty( QDataSet.UNITS, 2, SemanticOps.getUnits( input ) );
-        bds.putProperty( QDataSet.DEPENDNAME_0, 2, label1 ); // TODO: Z([X,Y]) is not supported. I think this should be
-        bds.putProperty( QDataSet.CONTEXT_0,    2, label0 + "," + label1 ); // TODO: QDataSet probably needs CONTEXTNAME_0.
+        bds.putProperty( QDataSet.DEPENDNAME_0, 2, name1 ); // TODO: Z([X,Y]) is not supported. I think this should be
+        bds.putProperty( QDataSet.CONTEXT_0,    2, name0 + "," + name1 ); // TODO: QDataSet probably needs CONTEXTNAME_0.
 
         return bds;
     }
@@ -540,10 +544,7 @@ public class Contour {
      */
     public static QDataSet contour( QDataSet tds, QDataSet levels ) {
         Contour.ContourPlot cp= new ContourPlot( tds, levels );
-        MutablePropertyDataSet result= DataSetOps.makePropertiesMutable( cp.performContour() );
-
-        result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(tds) );
-        return result;
+        return cp.performContour();
     }
     
     public static QDataSet contour( QDataSet tds, Datum level ) {
@@ -552,10 +553,7 @@ public class Contour {
         DDataSet levels= DDataSet.wrap( new double[] { value } );
         levels.putProperty( QDataSet.UNITS, units );
         Contour.ContourPlot cp= new ContourPlot( tds, levels );
-        MutablePropertyDataSet result= DataSetOps.makePropertiesMutable( cp.performContour() );
-
-        result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(tds) );
-        return result;
+        return cp.performContour();
     }
     
     
