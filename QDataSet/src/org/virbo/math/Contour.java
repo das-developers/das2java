@@ -552,7 +552,10 @@ public class Contour {
         DDataSet levels= DDataSet.wrap( new double[] { value } );
         levels.putProperty( QDataSet.UNITS, units );
         Contour.ContourPlot cp= new ContourPlot( tds, levels );
-        return cp.performContour();
+        MutablePropertyDataSet result= DataSetOps.makePropertiesMutable( cp.performContour() );
+
+        result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(tds) );
+        return result;
     }
     
     
