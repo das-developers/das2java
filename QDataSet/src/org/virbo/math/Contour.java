@@ -9,8 +9,11 @@ package org.virbo.math;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import java.awt.*;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
@@ -506,7 +509,30 @@ public class Contour {
             }
         }
     }
-    
+
+    private static QDataSet getBundleDescriptor( QDataSet input ) {
+        QDataSet dep0= (QDataSet) input.property(QDataSet.DEPEND_0);
+        String label0= dep0==null ? "X" : Ops.guessName( dep0 );
+
+        QDataSet dep1= (QDataSet) input.property(QDataSet.DEPEND_1);
+        String label1= dep1==null ? "Y" : Ops.guessName( dep1 );
+
+        String label= Ops.guessName( input );
+
+        ArrayDataSet bds= (ArrayDataSet) DDataSet.createRank1(3);
+        bds.putProperty( QDataSet.LABEL, 0, label0 );
+        if ( dep0!=null ) bds.putProperty( QDataSet.UNITS, 0, SemanticOps.getUnits( dep0 ) );
+
+        bds.putProperty( QDataSet.LABEL, 1, label1 );
+        if ( dep1!=null ) bds.putProperty( QDataSet.UNITS, 1, SemanticOps.getUnits( dep1 ) );
+
+        bds.putProperty( QDataSet.LABEL, 2, label );
+        bds.putProperty( QDataSet.UNITS, 2, SemanticOps.getUnits( input ) );
+        bds.putProperty( QDataSet.DEPENDNAME_0, 2, label1 ); // TODO: Z([X,Y]) is not supported. I think this should be
+        bds.putProperty( QDataSet.CONTEXT_0,    2, label0 + "," + label1 ); // TODO: QDataSet probably needs CONTEXTNAME_0.
+
+        return bds;
+    }
     /**
      * returns a rank 1 dataset, a vector dataset, listing the points
      * of the contour paths.  The data set will have three planes:
@@ -514,7 +540,10 @@ public class Contour {
      */
     public static QDataSet contour( QDataSet tds, QDataSet levels ) {
         Contour.ContourPlot cp= new ContourPlot( tds, levels );
-        return cp.performContour();
+        MutablePropertyDataSet result= DataSetOps.makePropertiesMutable( cp.performContour() );
+
+        result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(tds) );
+        return result;
     }
     
     public static QDataSet contour( QDataSet tds, Datum level ) {
