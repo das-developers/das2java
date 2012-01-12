@@ -134,6 +134,27 @@ public class SeriesRenderer extends Renderer {
         boolean acceptContext(Point2D.Double dp);
     }
 
+    /**
+     * return the dataset for colors, or null if one is not identified.
+     * @param ds
+     * @return
+     */
+    private QDataSet colorByDataSet( QDataSet ds ) {
+        QDataSet colorByDataSet1;
+        if ( this.colorByDataSetId.length()>0 ) {
+            if ( colorByDataSetId.equals(QDataSet.PLANE_0) ) {
+                colorByDataSet1= DataSetOps.unbundleDefaultDataSet( ds );
+            } else {
+                colorByDataSet1= DataSetOps.unbundle( ds, colorByDataSetId );
+            }
+        } else {
+            colorByDataSet1= null;
+        }
+        return colorByDataSet1;
+    }
+
+
+
     class PsymRenderElement implements RenderElement {
 
         protected GeneralPath psymsPath; // store the location of the psyms here.
@@ -158,9 +179,9 @@ public class SeriesRenderer extends Renderer {
             DasPlot lparent= parent;
             if ( lparent==null ) return 0;
 
-            QDataSet colorByDataSet = null;
-            if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
-                colorByDataSet = SemanticOps.getPlanarView( vds, colorByDataSetId );
+            QDataSet colorByDataSet=null;
+            if ( colorByDataSetId != null && !colorByDataSetId.equals("")) {
+                colorByDataSet = colorByDataSet( ds );
             }
 
             if (colorByDataSet != null) {
@@ -193,8 +214,9 @@ public class SeriesRenderer extends Renderer {
 
             float fsymSize = (float) symSize;
 
-            if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
-                colorByDataSet = SemanticOps.getPlanarView( dataSet,colorByDataSetId );
+            QDataSet colorByDataSet=null;
+            if ( colorByDataSetId != null && !colorByDataSetId.equals("")) {
+                colorByDataSet = colorByDataSet(ds);
             }
 
             graphics.setStroke(new BasicStroke((float) lineWidth));
@@ -252,13 +274,11 @@ public class SeriesRenderer extends Renderer {
 
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
-            QDataSet colorByDataSet = null;
+            QDataSet colorByDataSet1 = colorByDataSet(dataSet);
+
             Units cunits = null;
-            if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
-                colorByDataSet = SemanticOps.getPlanarView( dataSet, colorByDataSetId );
-                if (colorByDataSet != null) {
-                    cunits = SemanticOps.getUnits( colorByDataSet );
-                }
+            if (colorByDataSet1 != null) {
+                cunits = SemanticOps.getUnits( colorByDataSet1 );
             }
 
             double x, y;            
@@ -276,13 +296,7 @@ public class SeriesRenderer extends Renderer {
 
             QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
             if ( !SemanticOps.isTableDataSet(dataSet) ) {
-                if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
-                    vds = DataSetOps.unbundleDefaultDataSet( ds );
-                } else if (ds.rank() != 1 ) {
-                    return;
-                } else {
-                    vds = (QDataSet) dataSet;
-                }
+                vds= SemanticOps.ytagsDataSet(dataSet);
 
                 if ( vds.rank()!= 1 ) {
                     return;
@@ -335,8 +349,8 @@ public class SeriesRenderer extends Renderer {
                     }
                     dpsymsPath[i * 2] = dx;
                     dpsymsPath[i * 2 + 1] = dy;
-                    if (colorByDataSet != null) {
-                        colors[i] = colorBar.indexColorTransform( colorByDataSet.value(index), cunits);
+                    if (colorByDataSet1 != null) {
+                        colors[i] = colorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
                     }
                     i++;
                 }
@@ -453,14 +467,7 @@ public class SeriesRenderer extends Renderer {
 
             QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
 
-            QDataSet vds;
-            if ( dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
-                vds = DataSetOps.unbundleDefaultDataSet( dataSet );
-            } else if ( dataSet.rank()!=1 ) {
-                return;
-            } else {
-                vds = (QDataSet) dataSet;
-            }
+            QDataSet vds= SemanticOps.ytagsDataSet( dataSet );
 
             if ( vds.rank()>1 ) {
                 return;
@@ -621,7 +628,7 @@ public class SeriesRenderer extends Renderer {
             } // for ( ; index < ixmax && lastIndex; index++ )
 
 
-            if (!histogram && simplifyPaths && colorByDataSet == null) {
+            if (!histogram && simplifyPaths && colorByDataSetId.length()==0 ) {
                 //j   System.err.println( "input: " );
                 //j   System.err.println( GraphUtil.describe( newPath, true) );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
@@ -1053,7 +1060,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
             if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
-                vds = DataSetOps.unbundleDefaultDataSet( ds );
+                vds= SemanticOps.ytagsDataSet(ds);
             } else if ( ds.rank()==2 ) {
                 lparent.postMessage(this, "dataset is rank 2 and not a bundle", DasPlot.INFO, null, null);
                 return;
@@ -1247,7 +1254,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
             if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
-                vds = DataSetOps.unbundleDefaultDataSet( ds );
+                vds= SemanticOps.ytagsDataSet(ds);
             } else if ( ds.rank()!=1 ) {
                 logger.fine("dataset rank error");
                 return;
@@ -1638,7 +1645,7 @@ public class SeriesRenderer extends Renderer {
     /**
      * Holds value of property colorByDataSetId.
      */
-    private String colorByDataSetId = null;
+    private String colorByDataSetId = "";
 
     /**
      * Getter for property colorByDataSetId.
@@ -1753,27 +1760,7 @@ public class SeriesRenderer extends Renderer {
         }
 
     }
-    /**
-     * Holds value of property colorByDataSet.
-     */
-    private QDataSet colorByDataSet;
 
-    /**
-     * Getter for property colorByDataSet.
-     * @return Value of property colorByDataSet.
-     */
-    public QDataSet getColorByDataSet() {
-        return this.colorByDataSet;
-    }
-
-    /**
-     * Setter for property colorByDataSet.
-     * @param colorByDataSet New value of property colorByDataSet.
-     */
-    public void setColorByDataSet( QDataSet colorByDataSet) {
-        this.colorByDataSet = colorByDataSet;
-        refreshImage();
-    }
     /**
      * Holds value of property resetDebugCounters.
      */
