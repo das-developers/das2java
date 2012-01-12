@@ -134,6 +134,18 @@ public class SeriesRenderer extends Renderer {
         boolean acceptContext(Point2D.Double dp);
     }
 
+    private QDataSet ytagsDataSet( QDataSet ds ) {
+        QDataSet vds;
+        if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+            vds= SemanticOps.ytagsDataSet(ds);
+        } else if ( ds.rank()==2 ) {
+            parent.postMessage(this, "dataset is rank 2 and not a bundle", DasPlot.INFO, null, null);
+            return null;
+        } else {
+            vds = (QDataSet) ds;
+        }
+        return vds;
+    }
     /**
      * return the dataset for colors, or null if one is not identified.  This defines a scheme,
      * that the last column of a bundle is the color.
@@ -307,16 +319,7 @@ public class SeriesRenderer extends Renderer {
            QDataSet vds = null;
 
             QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
-            if ( !SemanticOps.isTableDataSet(dataSet) ) {
-                vds= SemanticOps.ytagsDataSet(dataSet);
-
-                if ( vds.rank()!= 1 ) {
-                    return;
-                }
-                
-            } else {
-                throw new IllegalArgumentException("Table Data Sets no longer supported in SeriesRenderer");
-            }
+            vds= ytagsDataSet(dataSet);
             
             Units xUnits= SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
@@ -405,14 +408,7 @@ public class SeriesRenderer extends Renderer {
 
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
-            QDataSet vds;
-            if ( dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
-                vds = DataSetOps.unbundleDefaultDataSet( dataSet );
-            } else if ( dataSet.rank()!=1 ) {
-                return;
-            } else {
-                vds = (QDataSet) dataSet;
-            }
+            QDataSet vds= ytagsDataSet(dataSet);
 
             QDataSet deltaPlusY = (QDataSet) vds.property( QDataSet.DELTA_PLUS );
             QDataSet deltaMinusY = (QDataSet) vds.property( QDataSet.DELTA_MINUS );
@@ -479,7 +475,7 @@ public class SeriesRenderer extends Renderer {
 
             QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
 
-            QDataSet vds= SemanticOps.ytagsDataSet( dataSet );
+            QDataSet vds= ytagsDataSet( dataSet );
 
             if ( vds.rank()>1 ) {
                 return;
@@ -709,12 +705,7 @@ public class SeriesRenderer extends Renderer {
 
             QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
             QDataSet vds;
-
-            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
-                vds = DataSetOps.unbundleDefaultDataSet( ds );
-            } else {
-                vds = (QDataSet) dataSet;
-            }
+            vds = ytagsDataSet( ds );
 
             Units xUnits = SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
@@ -1071,14 +1062,7 @@ public class SeriesRenderer extends Renderer {
 
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
-            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
-                vds= SemanticOps.ytagsDataSet(ds);
-            } else if ( ds.rank()==2 ) {
-                lparent.postMessage(this, "dataset is rank 2 and not a bundle", DasPlot.INFO, null, null);
-                return;
-            } else {
-                vds = (QDataSet) dataSet;
-            }
+            vds= ytagsDataSet(ds);
             yaxisUnitsOkay = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
 
         } else {
@@ -1144,7 +1128,7 @@ public class SeriesRenderer extends Renderer {
             if ( tds.length(0) != extraConnectorElements.length) {
                 return;
             } else {
-                QDataSet yds= SemanticOps.ytagsDataSet(tds);
+                QDataSet yds= ytagsDataSet(tds);
                 Units yunits= SemanticOps.getUnits(yds);
                 int maxWidth = 0;
                 for (int j = 0; j < tds.length(0); j++) {
@@ -1265,14 +1249,7 @@ public class SeriesRenderer extends Renderer {
 
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
-            if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
-                vds= SemanticOps.ytagsDataSet(ds);
-            } else if ( ds.rank()!=1 ) {
-                logger.fine("dataset rank error");
-                return;
-            }  else {
-                vds = (QDataSet) dataSet;
-            }
+            vds= ytagsDataSet(ds);
 
             unitsWarning= false;
             plottable = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits());
