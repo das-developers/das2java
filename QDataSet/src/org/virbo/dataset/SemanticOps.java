@@ -429,6 +429,7 @@ public class SemanticOps {
      *   rank 2 spectrogram: Z[X,Y] -> Y
      *   bundle_1: ds[ :, [x,y,z] ] -> y
      *   Y[X] -> Y
+     *   [x,y,z] -> y
      * consider: These break duck typing goal, and really need a scheme
      *   to tell it how to get the dataset.
      * @param ds
