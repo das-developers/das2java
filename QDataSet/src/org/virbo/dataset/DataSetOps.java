@@ -1219,6 +1219,11 @@ public class DataSetOps {
                 String comp= s.next();
                 int icomp= Integer.parseInt(comp);
                 fillDs= Ops.smooth(fillDs, icomp);
+            } else if ( cmd.equals("|contour") ) {
+                String comp= s.next();
+                double d= Double.parseDouble(comp);
+                fillDs= Ops.contour( fillDs, DataSetUtil.asDataSet(d) );
+
             } else {
                 if ( !cmd.equals("") ) System.err.println( "command not recognized: \""+cmd +"\"" );
             }
