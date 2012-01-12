@@ -923,6 +923,23 @@ public class DataSetUtil {
         int linMedian=-1;
         int t=0;
 
+// TODO: do this some time.  A contour plot only has connections in one direction.
+//        // look for negative cadence peak as well as positive
+//        QDataSet dep0= (QDataSet) hist.property(QDataSet.DEPEND_0 );
+//        double binWidth1= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_WIDTH)).doubleValue();
+//
+//        int imin= -1;
+//        for ( int i=0; i<hist.length(); i++ ) {
+//            if ( hist.value(i)>0 ) {
+//                imin= i;
+//                break;
+//            }
+//        }
+//        if ( dep0.value(imin) < binWidth1 ) {
+//            return null;
+//        }
+
+
         double mean= AutoHistogram.mean( hist ).value();
         int imean= AutoHistogram.binOf( hist, mean );
 
