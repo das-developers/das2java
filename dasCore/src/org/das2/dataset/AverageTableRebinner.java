@@ -252,7 +252,20 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
-
+    static boolean canInterpolate( DatumRange span, Datum xTagWidthLimit  ) {
+        double xSampleWidth;
+        double fudge= 1.001;
+        if (UnitsUtil.isRatiometric(xTagWidthLimit.getUnits())) {
+            double p = xTagWidthLimit.doubleValue(Units.logERatio);
+            xSampleWidth = p * fudge;
+            return Math.log( span.max().divide(span.min()).doubleValue(Units.dimensionless) ) < xSampleWidth;
+        } else {
+            double d = xTagWidthLimit.doubleValue( xTagWidthLimit.getUnits() );
+            xSampleWidth = d * fudge;
+            return span.width().doubleValue(xTagWidthLimit.getUnits() ) < xSampleWidth;
+        }
+    }
+    
     static void doBoundaries2RL( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY, Interpolate interpolateType) {
 
         if ( tds.rank()!=3 ) throw new IllegalArgumentException("rank 3 expected");
@@ -293,7 +306,7 @@ public class AverageTableRebinner implements DataSetRebinner {
 //                    } catch ( InconvertibleUnitsException ex ) {
 //                        dr.width().gt( xTagWidth );
 //                    }
-                    if ( dr.width().ge( xTagWidth ) ) {
+                    if ( canInterpolate( dr, xTagWidth ) ) {
                         double alpha = DatumRangeUtil.normalize(dr, xx);
                         if ( interpolateType==Interpolate.NearestNeighbor ) {
                             alpha= alpha < 0.5 ? 0.0 : 1.0;
@@ -468,7 +481,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                             yunits.createDatum( yds.value(j0) ),
                             yunits.createDatum( yds.value(j1) ) );
 
-                        if (xdr.width().lt(xTagWidth)) {
+                        if ( canInterpolate( xdr, xTagWidth ) ) {
                             double yalpha = DatumRangeUtil.normalize(ydr, yy);
                             if (interpolateType == Interpolate.NearestNeighbor) {
                                 yalpha = yalpha < 0.5 ? 0.0 : 1.0;
