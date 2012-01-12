@@ -3741,6 +3741,23 @@ public class Ops {
     }
 
     /**
+     * guess a name for the dataset, looking for NAME and then safeName(LABEL)
+     * @param ds
+     * @return
+     */
+    public static String guessName( QDataSet ds ) {
+        String label= (String) ds.property( QDataSet.NAME );
+        if ( label==null ) {
+            label= (String) ds.property( QDataSet.LABEL );
+            if ( label!=null ) label= safeName( label );
+        }
+        if ( label==null ) {
+            return null;
+        } else {
+            return label;
+        }
+    }
+    /**
      * extra spaces and pipes cause problems in the Operations text field.  Provide so that data sources can provide
      * safer names, while we test safe-name requirements on a broader test set.  Use of this method will allow us to see
      * where changes are needed.
