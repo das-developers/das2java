@@ -221,6 +221,9 @@ public class SeriesRenderer extends Renderer {
             QDataSet colorByDataSet=null;
             if ( colorByDataSetId != null && !colorByDataSetId.equals("")) {
                 colorByDataSet = colorByDataSet(ds);
+                if ( colorByDataSet.length()!=dataSet.length() ) {
+                    throw new IllegalArgumentException("colorByDataSet and dataSet do not have same length");
+                }
             }
 
             graphics.setStroke(new BasicStroke((float) lineWidth));
@@ -244,7 +247,11 @@ public class SeriesRenderer extends Renderer {
             } else {
                 for (int i = 0; i < count; i++) {
 //                    psym.draw(graphics, ipsymsPath[i * 2], ipsymsPath[i * 2 + 1], fsymSize, fillStyle);
-                    psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                    try {
+                        psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                    } catch ( ArrayIndexOutOfBoundsException ex ) {
+                        ex.printStackTrace();
+                    }
                 }
             }
 
@@ -290,6 +297,7 @@ public class SeriesRenderer extends Renderer {
 
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             psymsPath = new GeneralPath(GeneralPath.WIND_NON_ZERO,pathLengthApprox );
+            count= 0; // intermediate state
             dpsymsPath = new double[(lastIndex - firstIndex ) * 2];
             colors = new int[lastIndex - firstIndex + 2];
 
