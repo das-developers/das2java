@@ -523,7 +523,7 @@ public class Contour {
             name= "Z";
         }
 
-        ArrayDataSet bds= (ArrayDataSet) DDataSet.createRank1(3);
+        ArrayDataSet bds= (ArrayDataSet) DDataSet.createRank2(3,0);
         bds.putProperty( QDataSet.NAME, 0, name0 );
         if ( dep0!=null ) bds.putProperty( QDataSet.UNITS, 0, SemanticOps.getUnits( dep0 ) );
 
