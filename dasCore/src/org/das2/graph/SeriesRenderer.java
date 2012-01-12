@@ -135,7 +135,8 @@ public class SeriesRenderer extends Renderer {
     }
 
     /**
-     * return the dataset for colors, or null if one is not identified.
+     * return the dataset for colors, or null if one is not identified.  This defines a scheme,
+     * that the last column of a bundle is the color.
      * @param ds
      * @return
      */
@@ -143,7 +144,10 @@ public class SeriesRenderer extends Renderer {
         QDataSet colorByDataSet1;
         if ( this.colorByDataSetId.length()>0 ) {
             if ( colorByDataSetId.equals(QDataSet.PLANE_0) ) {
-                colorByDataSet1= DataSetOps.unbundleDefaultDataSet( ds );
+                colorByDataSet1= (QDataSet) ds.property(QDataSet.PLANE_0); // maybe they really meant PLANE_0.
+                if ( colorByDataSet1==null ) {
+                    colorByDataSet1= DataSetOps.unbundleDefaultDataSet( ds );
+                }
             } else {
                 colorByDataSet1= DataSetOps.unbundle( ds, colorByDataSetId );
             }
