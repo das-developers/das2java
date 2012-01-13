@@ -27,6 +27,9 @@ public class TrimStrideWrapper extends AbstractDataSet {
         offset= new int[ds.rank()];
         stride= new int[ds.rank()];
         for ( int i=0; i<ds.rank(); i++ ) stride[i]= 1;
+        if ( DataSetUtil.isQube(ds) ) {
+            this.putProperty( QDataSet.QUBE, Boolean.TRUE );
+        }
         DataSetUtil.copyDimensionProperties( ds, this );
     }
 
