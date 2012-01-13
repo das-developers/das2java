@@ -153,18 +153,18 @@ public class SeriesRenderer extends Renderer {
      * @return
      */
     private QDataSet colorByDataSet( QDataSet ds ) {
-        QDataSet colorByDataSet1;
+        QDataSet colorByDataSet1=null;
         if ( this.colorByDataSetId.length()>0 ) {
             if ( colorByDataSetId.equals(QDataSet.PLANE_0) ) {
                 colorByDataSet1= (QDataSet) ds.property(QDataSet.PLANE_0); // maybe they really meant PLANE_0.
-                if ( colorByDataSet1==null ) {
+                if ( colorByDataSet1==null && ds.rank()==2 ) {
                     colorByDataSet1= DataSetOps.unbundleDefaultDataSet( ds );
                 }
             } else {
-                colorByDataSet1= DataSetOps.unbundle( ds, colorByDataSetId );
+                if ( ds.rank()==2 ) {
+                    colorByDataSet1= DataSetOps.unbundle( ds, colorByDataSetId );
+                }
             }
-        } else {
-            colorByDataSet1= null;
         }
         return colorByDataSet1;
     }
@@ -233,8 +233,12 @@ public class SeriesRenderer extends Renderer {
             QDataSet colorByDataSet=null;
             if ( colorByDataSetId != null && !colorByDataSetId.equals("")) {
                 colorByDataSet = colorByDataSet(ds);
-                if ( colorByDataSet.length()!=dataSet.length() ) {
-                    throw new IllegalArgumentException("colorByDataSet and dataSet do not have same length");
+                if ( colorByDataSet!=null ) {
+                    if ( colorByDataSet.length()!=dataSet.length()) {
+                        throw new IllegalArgumentException("colorByDataSet and dataSet do not have same length");
+                    }
+                } else {
+                    System.err.println("why is colorByDataSetId set?");
                 }
             }
 
