@@ -31,11 +31,7 @@ import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.DataRangeSelectionListener;
 import org.das2.event.VerticalRangeSelectorMouseModule;
 import org.das2.event.ZoomPanMouseModule;
-import org.das2.dataset.DataSetUpdateEvent;
 import org.das2.dataset.DataSetDescriptor;
-import org.das2.dataset.VectorDataSet;
-import org.das2.dataset.DataSetUpdateListener;
-import org.das2.dataset.DataSetUtil;
 import org.das2.datum.format.DefaultDatumFormatterFactory;
 import org.das2.datum.DatumRange;
 import org.das2.datum.format.DatumFormatter;
@@ -49,7 +45,6 @@ import org.das2.DasProperties;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.DasMath;
-import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.DasApplication;
 import java.awt.*;
 import java.awt.event.*;
@@ -60,7 +55,6 @@ import javax.swing.border.*;
 import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.text.*;
 import javax.swing.*;
 import java.util.*;
@@ -69,8 +63,6 @@ import java.util.regex.*;
 
 import org.das2.system.DasLogger;
 import java.util.logging.Logger;
-import javax.management.ReflectionException;
-import javax.swing.event.EventListenerList;
 import org.das2.DasException;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
@@ -2913,7 +2905,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         Datum result = Datum.create(data, dataRange.getUnits(), resolution);
-
+         
         return result;
     }
 
