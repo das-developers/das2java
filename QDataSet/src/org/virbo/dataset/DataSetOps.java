@@ -1220,9 +1220,16 @@ public class DataSetOps {
                 int icomp= Integer.parseInt(comp);
                 fillDs= Ops.smooth(fillDs, icomp);
             } else if ( cmd.equals("|contour") ) {
-                String comp= s.next();
-                double d= Double.parseDouble(comp);
-                fillDs= Ops.contour( fillDs, DataSetUtil.asDataSet(d) );
+
+                List<Double> args= new ArrayList();
+
+                args.add( s.nextDouble() );
+                while ( s.hasNextDouble() ) {
+                    args.add( s.nextDouble() );
+                }
+                double[] aa= new double[args.size()];
+                for ( int j=0; j<aa.length; j++ ) aa[j]= args.get(j).doubleValue();
+                fillDs= Ops.contour( fillDs, DataSetUtil.asDataSet( aa ) );
 
             } else {
                 if ( !cmd.equals("") ) System.err.println( "command not recognized: \""+cmd +"\"" );
