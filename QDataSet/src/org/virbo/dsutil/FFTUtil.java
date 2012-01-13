@@ -131,6 +131,7 @@ public class FFTUtil {
      * Produces the power spectrum of the dataset.  This is the length of the fourier
      * components squared, normalized by the bandwidth.  The result dataset has dimensionless yunits.
      * It's assumed that all the data is valid.
+     * Note when the input is in mV/m, the result will be in (V/m)^2/Hz.
      * @param vds QDataSet rank 1 dataset with depend 0 units TimeLocationUnits.
      */
     public static QDataSet fftPower( GeneralFFT fft, QDataSet vds, QDataSet weights ) {
@@ -162,6 +163,15 @@ public class FFTUtil {
         for ( int i=1; i<xtags.length()/2; i++ ) {
             result.putValue(i-1,4*ComplexArray.magnitude2(ca,i) / binsize );
         }
+
+        Units u= (Units) vds.property( QDataSet.UNITS );
+        if ( u!=null && u.toString().equalsIgnoreCase("mV/m" ) ) { // kludge to support RPWS H7 H8 H9 files.
+            for ( int i=0; i<result.length(); i++ ) {
+                result.putValue( i, result.value(i) / 1e6 );
+            }
+            result.putProperty( QDataSet.UNITS, SemanticOps.lookupUnits("(V/m)^2/Hz") );
+        }
+
         result.putProperty( QDataSet.DEPEND_0, powTags );
         return result;
     }
