@@ -1242,6 +1242,10 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
+        if ( !this.isActive() ) {
+            return;
+        }
+        
         boolean plottable = false;
 
         QDataSet tds = null;
@@ -1313,7 +1317,7 @@ public class SeriesRenderer extends Renderer {
                     updateFirstLast(xAxis, yAxis, xds, vds ); // minimal support assumes vert slice data is all valid or all invalid.
 
                 }
-                extraConnectorElements[i].update(xAxis, yAxis, dataSet, monitor);
+                extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
                 if ( i==0 ) selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );
             }
         } else {
