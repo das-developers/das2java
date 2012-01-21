@@ -23,11 +23,15 @@ import javax.swing.JPanel;
 public class TearoffTabbedPaneDemo {
     private static JPanel getPanel( final int index ) {
         final JPanel panel= new JPanel();
-
+        panel.setName( "tab"+index );
         panel.setLayout( new BoxLayout( panel, BoxLayout.Y_AXIS ) );
         JLabel label= new JLabel(" --"+index+"--");
         label.setFont( Font.decode( "HELVETICA" ).deriveFont(Font.BOLD,40.0f) );
         panel.add( label );
+
+        JLabel sublabel= new JLabel( "name="+panel.getName()+" hash="+panel.hashCode() );
+        sublabel.setFont( Font.decode( "HELVETICA" ).deriveFont(Font.ITALIC,8.0f) );
+        panel.add( sublabel );
         return panel;
     }
 
