@@ -60,7 +60,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     private TearoffTabbedPane parentPane;
 
     private TearoffTabbedPane rightPane = null;
-    private TearoffTabbedPane firstChild= null;
+    private TearoffTabbedPane secondTabbedPane= null;
 
     private JFrame rightFrame = null;
     private ComponentListener rightFrameListener;
@@ -124,13 +124,13 @@ public class TearoffTabbedPane extends JTabbedPane {
         super();
         if (parent == null) {
             //TODO: need a way to remove mouse adapter when parent isn't JFrame
-            MouseAdapter ma = getParentMouseAdapter();
+            MouseAdapter ma = new ParentMouseAdapter();
             addMouseListener(ma);
             addMouseMotionListener(getMouseMotionListener());
         } else {
             parentPane = parent;
             addMouseListener(getChildMouseAdapter());
-            parent.firstChild= this;
+            parent.secondTabbedPane= this;
         }
     }
 
@@ -302,52 +302,64 @@ public class TearoffTabbedPane extends JTabbedPane {
         window.setVisible(true);
     }
 
-    private MouseAdapter getParentMouseAdapter() {
-        return new MouseAdapter() {
+    /**
+     * tearoff into another tabbed pane, or create one if target is null.
+     * @param target
+     * @param selectedTab
+     */
+    private void tearoffIntoTearoffTabbedPane( TearoffTabbedPane target, int selectedTab ) {
+        if (target != null) {
+            TabDesc desc = getTabDesc(selectedTab);
+            Component selectedComponent = getComponentAt(desc.index);
+            //System.err.println("name="+selectedComponent.getName()+" hash="+selectedComponent.hashCode());  // see TearoffTabbedPaneDemo which sets name and indicates hashcode.
+            TearoffTabbedPane.this.tearOff(selectedTab, target);
+            target.add(desc.title, selectedComponent);
+            target.setSelectedIndex(target.getTabCount() - 1);
+            if (!target.isShowing()) {
+                Window w = SwingUtilities.getWindowAncestor(target);
+                w.setVisible(false);
+                w.setVisible(true);
+            }
+        } else {
+            TearoffTabbedPane.this.tearOffIntoFrame(selectedTab);
+        }
+    }
 
-            {
+    private TabDesc getTabDesc( int tabNumber ) {
+        for ( TabDesc td: tabs.values() ) {
+            if ( td.index==tabNumber ) {
+                return td;
+            }
+        }
+        throw new IllegalArgumentException("no tab at index: "+tabNumber);
+    }
+
+    private class ParentMouseAdapter extends MouseAdapter {
+
+        private ParentMouseAdapter() {
                 tearOffMenu.add(new JMenuItem(new AbstractAction("undock") {
-
                     public void actionPerformed(ActionEvent event) {
                         TearoffTabbedPane.this.tearOffIntoFrame(selectedTab);
                     }
                 }));
-                tearOffMenu.add(new JMenuItem(new AbstractAction("slide right") {
 
+                 tearOffMenu.add(new JMenuItem(new AbstractAction("undock to second") {
+                    public void actionPerformed(ActionEvent event) {
+                        tearoffIntoTearoffTabbedPane(secondTabbedPane,selectedTab);
+                    }
+
+                }));
+
+                tearOffMenu.add(new JMenuItem(new AbstractAction("slide right") {
                     public void actionPerformed(ActionEvent event) {
                         TearoffTabbedPane.this.slideRight(selectedTab);
                     }
                 }));
-                 tearOffMenu.add(new JMenuItem(new AbstractAction("experiment") {
 
-                    public void actionPerformed(ActionEvent event) {
-
-
-                        if ( firstChild!=null ) {
-                           Component selectedComponent= getComponent(selectedTab);
-                            TearoffTabbedPane.this.tearOff(selectedTab,firstChild);
-                            TabDesc desc= tabs.get(selectedComponent);
-                            firstChild.add( desc.title, selectedComponent );
-                            firstChild.setSelectedIndex(firstChild.getTabCount()-1);
-                            if ( !firstChild.isShowing() ) {
-                                Window w= SwingUtilities.getWindowAncestor(firstChild);
-                                w.setVisible(false);
-                                w.setVisible(true);
-                            }
-                        }
-                    }
-                }));
-
-            }
-            Component selectedComponent;
-
-
-            {
                 dockMenu.add(new JMenuItem(new AbstractAction("show") {
-
                     public void actionPerformed(ActionEvent event) {
                         showIt();
-                        
+
                     //babySitter.toFront();  // no effect on Linux/Gnome
                     }
                 }));
@@ -419,7 +431,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                     showPopupMenu(e);
                 }
             }
-        };
+
     }
 
     /**
@@ -663,20 +675,24 @@ public class TearoffTabbedPane extends JTabbedPane {
         };
         parent.addWindowStateListener(listener);
 
+        final JTabbedPane pane = new TearoffTabbedPane(this);
+
         p.translate(20, 20);
         babySitter.setLocation(p);
         babySitter.addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosing(WindowEvent e) {
+                Component[] cc= pane.getComponents();
                 parent.removeWindowStateListener(listener);
-                dock(c);
+                for ( Component c: cc ) {
+                    dock(c);
+                }
             }
         });
 
         copyInputMap(parent, babySitter);
 
-        JTabbedPane pane = new TearoffTabbedPane(this);
         babySitter.getContentPane().add(pane);
 
         tearOff(tabIndex, babySitter);
@@ -697,21 +713,6 @@ public class TearoffTabbedPane extends JTabbedPane {
         super.insertTab(td.title, td.icon, c, td.tip, index);
         super.setEnabledAt(index, true);
         setSelectedIndex(selectedIndex);
-    }
-
-    public void dockInto( Component c, TearoffTabbedPane target ){
-        logger.log(Level.FINEST, "dockInto {0}", c);
-        int selectedIndex = target.getSelectedIndex();
-        TabDesc td = (TabDesc) target.tabs.get(c);
-        if ( td!=null ) {
-            int index = td.index;
-            target.removeTabAt(index);
-            target.insertTab(td.title, td.icon, c, td.tip, index);
-            target.setEnabledAt(index, true);
-            target.setSelectedIndex(selectedIndex);
-        } else {
-            target.addTab( c.getName(), target );
-        }
     }
 
     @Override
