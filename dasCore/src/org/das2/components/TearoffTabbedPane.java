@@ -15,6 +15,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
@@ -155,6 +156,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         return new MouseMotionListener() {
 
             public void mouseDragged(MouseEvent e) {
+                System.err.println(e);
                 if (selectedTab == -1) {
                     return;
                 }
@@ -190,6 +192,8 @@ public class TearoffTabbedPane extends JTabbedPane {
 
             public void mouseMoved(MouseEvent e) {
             }
+
+
         };
     }
 
@@ -419,6 +423,34 @@ public class TearoffTabbedPane extends JTabbedPane {
                     //SwingUtilities.convertPointToScreen( p ,(Component) e.getSource() );
                     //f.setLocation( p );
                     setCursor(null);
+
+                    // See if there is another TearoffTabbedPane we can dock into.
+                    TearoffTabbedPane last=null;
+                    for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
+                        Component key = (Component) i.next();
+                        TabDesc d = (TabDesc) tabs.get(key);
+                        System.err.println("title="+d.title);
+                        if ( d.babysitter!=null ) {
+                            Component maybe= getTabbedPane(d.babysitter);
+                            if ( maybe!=null ) {
+                                Point p= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), maybe );
+                                if ( maybe.getBounds().contains(p) ) {
+                                    System.err.println("found "+maybe);
+                                    last= (TearoffTabbedPane)maybe;
+                                }
+                            }
+                        }
+                    }
+
+                    if ( last!=null && draggingFrame!=null ) {
+                        TearoffTabbedPane babyComponent= getTabbedPane( draggingFrame );
+                        if ( last!=babyComponent && babyComponent.getTabCount()==1 ) { // assert tabCount=1.
+                            TearoffTabbedPane.this.dock(babyComponent.getComponentAt(0)); // we need to dock it first, then tear it off into the other tab.
+                            tearoffIntoTearoffTabbedPane( last, selectedTab );
+                            draggingFrame.dispose();
+                        }
+                    }
+
                     draggingFrame = null;
 //
 //                    if ( e.isShiftDown() ) {
@@ -432,6 +464,21 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }
             }
 
+    }
+
+    /**
+     * isolate the logic of finding the TearoffTabbedPane.
+     * @param comp
+     * @return
+     */
+    private TearoffTabbedPane getTabbedPane( Component comp ) {
+        if ( comp instanceof JFrame && ((JFrame)comp).getContentPane().getComponent(0) instanceof TearoffTabbedPane ) {
+            return (TearoffTabbedPane)(((JFrame)comp).getContentPane().getComponent(0));
+        } else if ( comp instanceof TearoffTabbedPane ) {
+            return (TearoffTabbedPane) comp;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -453,7 +500,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         super.insertTab("(" + title + ")", null, getTornOffComponent(), null, tabIndex);
         super.setEnabledAt(tabIndex, false);
         TabDesc td = ((TabDesc) tabs.get(c));
-        td.babysitter = newContainer;
+        if ( td!=null ) td.babysitter = newContainer; // drop into another frame
         if ( newContainer instanceof TearoffTabbedPane ) { // slide right
             TearoffTabbedPane tt= (TearoffTabbedPane)newContainer;
             Window ttp= SwingUtilities.getWindowAncestor(tt);
@@ -569,6 +616,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
             final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
             rightPane = new TearoffTabbedPane(this);
+            rightPane.setName("rightTearoffTabbedPane");
             rightFrame = new JFrame();
 
             rightFrame.add(rightPane);
@@ -697,6 +745,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
         tearOff(tabIndex, babySitter);
         pane.add(td.title, c);
+        pane.setName(td.title);
 
         babySitter.pack();
         babySitter.setVisible(true);
@@ -712,6 +761,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         super.removeTabAt(index);
         super.insertTab(td.title, td.icon, c, td.tip, index);
         super.setEnabledAt(index, true);
+        td.babysitter= null; // get rid of reference so it will be garbage collected.
         setSelectedIndex(selectedIndex);
     }
 
