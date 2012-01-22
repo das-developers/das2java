@@ -417,13 +417,14 @@ public class TearoffTabbedPane extends JTabbedPane {
 
                     // See if there is another TearoffTabbedPane we can dock into.
                     TearoffTabbedPane last=null;
+                    TearoffTabbedPane me= getTabbedPane( draggingFrame );
                     for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
                         Component key = (Component) i.next();
                         TabDesc d = (TabDesc) tabs.get(key);
                         System.err.println("title="+d.title);
                         if ( d.babysitter!=null ) {
                             Component maybe= getTabbedPane(d.babysitter);
-                            if ( maybe!=null ) {
+                            if ( maybe!=null && maybe!=me ) {
                                 Point p= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), maybe );
                                 if ( maybe.getBounds().contains(p) ) {
                                     System.err.println("found "+maybe);
