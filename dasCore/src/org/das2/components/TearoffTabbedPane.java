@@ -61,7 +61,6 @@ public class TearoffTabbedPane extends JTabbedPane {
     private TearoffTabbedPane parentPane;
 
     private TearoffTabbedPane rightPane = null;
-    private TearoffTabbedPane secondTabbedPane= null;
 
     private JFrame rightFrame = null;
     private ComponentListener rightFrameListener;
@@ -131,7 +130,6 @@ public class TearoffTabbedPane extends JTabbedPane {
         } else {
             parentPane = parent;
             addMouseListener(getChildMouseAdapter());
-            parent.secondTabbedPane= this;
         }
     }
 
@@ -345,13 +343,6 @@ public class TearoffTabbedPane extends JTabbedPane {
                     public void actionPerformed(ActionEvent event) {
                         TearoffTabbedPane.this.tearOffIntoFrame(selectedTab);
                     }
-                }));
-
-                 tearOffMenu.add(new JMenuItem(new AbstractAction("undock to second") {
-                    public void actionPerformed(ActionEvent event) {
-                        tearoffIntoTearoffTabbedPane(secondTabbedPane,selectedTab);
-                    }
-
                 }));
 
                 tearOffMenu.add(new JMenuItem(new AbstractAction("slide right") {
@@ -638,10 +629,11 @@ public class TearoffTabbedPane extends JTabbedPane {
                     parent.removeWindowStateListener(listener);
                     parent.removeComponentListener(rightFrameListener);
 
-                    for (Component c : new ArrayList<Component>(rightPane.tabs.keySet())) {
-                        TearoffTabbedPane.this.dock(c);
+                    if ( rightPane!=null ) {
+                        for (Component c : new ArrayList<Component>(rightPane.tabs.keySet())) {
+                            TearoffTabbedPane.this.dock(c);
+                        }
                     }
-                    
                     rightFrame = null;
                     rightPane = null;
                 }
