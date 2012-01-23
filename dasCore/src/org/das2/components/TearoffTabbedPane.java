@@ -278,6 +278,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             raiseApplicationWindow(babySitter);
         } else if ( desc.babysitter instanceof TearoffTabbedPane ) {
             Window parent= SwingUtilities.getWindowAncestor(babyComponent);
+            ((TearoffTabbedPane)desc.babysitter).setSelectedComponent(babyComponent);
             raiseApplicationWindow(parent);
         }
     }
