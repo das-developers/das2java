@@ -419,13 +419,11 @@ public class TearoffTabbedPane extends JTabbedPane {
                     for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
                         Component key = (Component) i.next();
                         TabDesc d = (TabDesc) tabs.get(key);
-                        System.err.println("title="+d.title);
                         if ( d.babysitter!=null ) {
                             Component maybe= getTabbedPane(d.babysitter);
                             if ( maybe!=null && maybe!=me ) {
                                 Point p= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), maybe );
                                 if ( maybe.getBounds().contains(p) ) {
-                                    System.err.println("found "+maybe);
                                     last= (TearoffTabbedPane)maybe;
                                 }
                             }
@@ -435,7 +433,10 @@ public class TearoffTabbedPane extends JTabbedPane {
                     if ( last!=null && draggingFrame!=null ) {
                         TearoffTabbedPane babyComponent= getTabbedPane( draggingFrame );
                         if ( last!=babyComponent && babyComponent.getTabCount()==1 ) { // assert tabCount=1.
+                            int i= TearoffTabbedPane.this.getSelectedIndex();
+                            if (i>-1) TearoffTabbedPane.this.lastSelected= i;
                             TearoffTabbedPane.this.dock(babyComponent.getComponentAt(0)); // we need to dock it first, then tear it off into the other tab.
+                            if (i>-1) TearoffTabbedPane.this.setSelectedIndex(i);
                             tearoffIntoTearoffTabbedPane( last, selectedTab );
                             draggingFrame.dispose();
                         }
