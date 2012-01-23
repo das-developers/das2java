@@ -15,7 +15,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
@@ -154,7 +153,6 @@ public class TearoffTabbedPane extends JTabbedPane {
         return new MouseMotionListener() {
 
             public void mouseDragged(MouseEvent e) {
-                System.err.println(e);
                 if (selectedTab == -1) {
                     return;
                 }
