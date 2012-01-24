@@ -1063,6 +1063,117 @@ public class DataSetOps {
     }
 
     /**
+     * returns the value from within a distribution that is the nth percentile division.
+     * @param ds
+     * @param n
+     * @return
+     */
+    public static double getNthPercentileSort( QDataSet ds, double n ) {
+
+        if ( n<0 ) throw new IllegalArgumentException("n<0");
+        if ( n>100 ) throw new IllegalArgumentException("n>=100");
+
+        QDataSet sort= Ops.sort(ds);
+        int idx;
+        if ( n==100 ) {
+            idx= (int) sort.value( sort.length()-1 );
+        } else {
+            idx= (int) sort.value( (int)( ds.length() * n / 100 ) );
+        }
+
+        return ds.value(idx);
+    }
+
+
+    /**
+     * Get the background level by sorting the data.  The result is rank one less than the input rank.
+     * @param ds
+     * @param level
+     * @return
+     */
+    public static QDataSet getBackgroundLevel( QDataSet ds, double level ) {
+        if ( ds.rank()==1 ) {
+            DDataSet result= DDataSet.createRank1( ds.length(0) );
+            result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_1) );
+            double b1= getNthPercentileSort( ds, level );
+            return DataSetUtil.asDataSet(b1);
+        } else if ( ds.rank()==2 ) {
+            DDataSet result= DDataSet.createRank1( ds.length(0) );
+            result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_1) );
+            for ( int jj=0; jj<ds.length(0); jj++ ) {
+                double b1= getNthPercentileSort( DataSetOps.slice1(ds,jj), level );
+                result.putValue(jj, b1);
+            }
+            return result;
+        } else if ( ds.rank()>2 ) {
+            JoinDataSet result= new JoinDataSet(ds.rank()-1);
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet ds1= ds.slice(i);
+                QDataSet r1= getBackgroundLevel( ds1, level );
+                result.join(r1);
+            }
+            return result;
+        } else {
+            throw new IllegalArgumentException("rank 0 dataset");
+        }
+    }
+
+
+    /**
+     * normalize the level-th percentile from:
+     *   rank 1: each element 
+     *   rank 2: each row of the dataset
+     *   rank 3: each row of each rank 2 dataset slice.
+     * There must be at least 2 elements.  If the data is already in dB, then the result is a difference.
+     * @param ds
+     * @param level the percentile level.  
+     * @return
+     */
+    public static QDataSet removeBackground( QDataSet ds, double level ) {
+    
+        if ( ds.rank()<3 && ds.length()<10 ) {
+            return ds;
+        }
+
+
+        if ( ds.rank()==1 ) {
+            QDataSet back= getBackgroundLevel( ds, level );
+            ds= Ops.copy(ds);
+            boolean db= ds.property(QDataSet.UNITS)==Units.dB;
+
+            for ( int ii=0; ii<ds.length(); ii++ ) {
+                WritableDataSet wds= (WritableDataSet) ds;
+                double v= db ? wds.value(ii) - back.value() : 20 * Math.log10( wds.value(ii) / back.value() );
+                wds.putValue( ii,Math.max( 0,v ) );
+            }
+
+        } else if ( ds.rank()==2 ) {
+            QDataSet back= getBackgroundLevel( ds, level );
+            ds= Ops.copy(ds);
+            boolean db= ds.property(QDataSet.UNITS)==Units.dB;
+
+            for ( int jj=0; jj<ds.length(0); jj++ ) {
+                for ( int ii=0; ii<ds.length(); ii++ ) {
+                    WritableDataSet wds= (WritableDataSet) ds;
+                    double v= db ? wds.value(ii,jj) - back.value(jj) : 20 * Math.log10( wds.value(ii,jj) / back.value(jj) );
+                    wds.putValue( ii,jj, Math.max( 0,v ) );
+                }
+            }
+
+        } else {
+            JoinDataSet result= new JoinDataSet(ds.rank());
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet ds1= ds.slice(i);
+                QDataSet r1= removeBackground( ds1, level );
+                result.join(r1);
+            }
+            return result;
+        }
+
+        return (MutablePropertyDataSet)ds;
+    }
+
+    /**
      * return true if the process described in c is probably a slow
      * process that should be done asynchronously.  For example, do
      * a long fft on a different thread and use a progress monitor.  Processes
@@ -1230,6 +1341,10 @@ public class DataSetOps {
                 double[] aa= new double[args.size()];
                 for ( int j=0; j<aa.length; j++ ) aa[j]= args.get(j).doubleValue();
                 fillDs= Ops.contour( fillDs, DataSetUtil.asDataSet( aa ) );
+            } else if ( cmd.equals("|removeBackground") ) {
+                String qrg= s.next();
+                int iarg= Integer.parseInt(qrg);
+                fillDs= DataSetOps.removeBackground( fillDs, iarg );
 
             } else {
                 if ( !cmd.equals("") ) System.err.println( "command not recognized: \""+cmd +"\"" );
