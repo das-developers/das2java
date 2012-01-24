@@ -9,6 +9,7 @@
 package org.das2.components;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -60,6 +61,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     private TearoffTabbedPane parentPane;
 
     private TearoffTabbedPane rightPane = null;
+    private TearoffTabbedPane dropDirty = null;
 
     private JFrame rightFrame = null;
     private ComponentListener rightFrameListener;
@@ -182,6 +184,22 @@ public class TearoffTabbedPane extends JTabbedPane {
                         SwingUtilities.convertPointToScreen(p, (Component) e.getSource());
                         p.translate(dragOffset.x, dragOffset.y);
                         draggingFrame.setLocation(p);
+
+                        TearoffTabbedPane drop= getHoverTP( e.getComponent(), e.getPoint() );
+
+                        if ( dropDirty!=null ) { // give some hint that this is a drop target.
+                            dropDirty.setLocation( 0,0 );
+                            dropDirty.repaint();
+                        }
+                        
+                        if ( drop!=null ) {
+                            drop.setLocation( 4,4 );
+                            drop.repaint();
+                            dropDirty= drop;
+                        } else {
+                            dropDirty= null;
+                        }
+
                     }
                 }
             }
@@ -335,6 +353,26 @@ public class TearoffTabbedPane extends JTabbedPane {
         throw new IllegalArgumentException("no tab at index: "+tabNumber);
     }
 
+    private TearoffTabbedPane getHoverTP( Component myFrame, Point myPosition ) {
+        TearoffTabbedPane last=null;
+        TearoffTabbedPane me= getTabbedPane( draggingFrame );
+
+        for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
+            Component key = (Component) i.next();
+            TabDesc d = (TabDesc) tabs.get(key);
+            if ( d.babysitter!=null ) {
+                Component maybe= getTabbedPane(d.babysitter);
+                if ( maybe!=null && maybe!=me ) {
+                    Point p= SwingUtilities.convertPoint( myFrame, myPosition, maybe );
+                    if ( maybe.getBounds().contains(p) ) {
+                        last= (TearoffTabbedPane)maybe;
+                    }
+                }
+            }
+        }
+        return last;
+    }
+
     private class ParentMouseAdapter extends MouseAdapter {
 
         private ParentMouseAdapter() {
@@ -415,21 +453,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                     setCursor(null);
 
                     // See if there is another TearoffTabbedPane we can dock into.
-                    TearoffTabbedPane last=null;
-                    TearoffTabbedPane me= getTabbedPane( draggingFrame );
-                    for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
-                        Component key = (Component) i.next();
-                        TabDesc d = (TabDesc) tabs.get(key);
-                        if ( d.babysitter!=null ) {
-                            Component maybe= getTabbedPane(d.babysitter);
-                            if ( maybe!=null && maybe!=me ) {
-                                Point p= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), maybe );
-                                if ( maybe.getBounds().contains(p) ) {
-                                    last= (TearoffTabbedPane)maybe;
-                                }
-                            }
-                        }
-                    }
+                    TearoffTabbedPane last= getHoverTP( e.getComponent(), e.getPoint() );
 
                     if ( last!=null && draggingFrame!=null ) {
                         TearoffTabbedPane babyComponent= getTabbedPane( draggingFrame );
@@ -441,6 +465,12 @@ public class TearoffTabbedPane extends JTabbedPane {
                             tearoffIntoTearoffTabbedPane( last, selectedTab );
                             draggingFrame.dispose();
                         }
+                    }
+
+
+                    if ( dropDirty!=null ) {
+                        dropDirty.setLocation( 0,0 );
+                        dropDirty.repaint();
                     }
 
                     draggingFrame = null;
