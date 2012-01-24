@@ -1067,21 +1067,28 @@ public class DataSetOps {
      * @param ds
      * @param n
      * @return
+     * @throws IllegalArgumentException when data is all fill.
      */
-    public static double getNthPercentileSort( QDataSet ds, double n ) {
+    public static QDataSet getNthPercentileSort( QDataSet ds, double n ) {
 
         if ( n<0 ) throw new IllegalArgumentException("n<0");
         if ( n>100 ) throw new IllegalArgumentException("n>=100");
 
+        Units u= SemanticOps.getUnits(ds);
+
         QDataSet sort= Ops.sort(ds);
+        if ( sort.length()==0 ) {
+            return DataSetUtil.asDataSet( u.getFillDatum() );
+        }
+        
         int idx;
         if ( n==100 ) {
             idx= (int) sort.value( sort.length()-1 );
         } else {
-            idx= (int) sort.value( (int)( ds.length() * n / 100 ) );
+            idx= (int) sort.value( (int)( sort.length() * n / 100 ) );
         }
 
-        return ds.value(idx);
+        return ds.slice(idx);
     }
 
 
@@ -1095,14 +1102,13 @@ public class DataSetOps {
         if ( ds.rank()==1 ) {
             DDataSet result= DDataSet.createRank1( ds.length(0) );
             result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_1) );
-            double b1= getNthPercentileSort( ds, level );
-            return DataSetUtil.asDataSet(b1);
+            return  getNthPercentileSort( ds, level );
         } else if ( ds.rank()==2 ) {
             DDataSet result= DDataSet.createRank1( ds.length(0) );
             result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_1) );
             for ( int jj=0; jj<ds.length(0); jj++ ) {
-                double b1= getNthPercentileSort( DataSetOps.slice1(ds,jj), level );
-                result.putValue(jj, b1);
+                QDataSet b1= getNthPercentileSort( DataSetOps.slice1(ds,jj), level );
+                result.putValue(jj, b1.value() );
             }
             return result;
         } else if ( ds.rank()>2 ) {
@@ -1124,15 +1130,15 @@ public class DataSetOps {
      *   rank 1: each element 
      *   rank 2: each row of the dataset
      *   rank 3: each row of each rank 2 dataset slice.
-     * There must be at least 2 elements.  If the data is already in dB, then the result is a difference.
+     * There must be at least 10 elements.  If the data is already in dB, then the result is a difference.
      * @param ds
      * @param level the percentile level.  
      * @return
      */
-    public static QDataSet removeBackground( QDataSet ds, double level ) {
+    public static QDataSet removeBackground1( QDataSet ds, double level ) {
     
         if ( ds.rank()<3 && ds.length()<10 ) {
-            return ds;
+            throw new IllegalArgumentException("not enough elements: "+ds);
         }
 
 
@@ -1164,7 +1170,61 @@ public class DataSetOps {
             JoinDataSet result= new JoinDataSet(ds.rank());
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet ds1= ds.slice(i);
-                QDataSet r1= removeBackground( ds1, level );
+                QDataSet r1= removeBackground1( ds1, level );
+                result.join(r1);
+            }
+            return result;
+        }
+
+        return (MutablePropertyDataSet)ds;
+    }
+
+    /**
+     * normalize the level-th percentile from:
+     *   rank 1: each element (same as removeBackground1)
+     *   rank 2: each column of the dataset
+     *   rank 3: each column of each rank 2 dataset slice.
+     * There must be at least 10 elements.  If the data is already in dB, then the result is a difference.
+     * @param ds
+     * @param level the percentile level.
+     * @return
+     */
+    public static QDataSet removeBackground0( QDataSet ds, double level ) {
+
+        if ( ds.rank()==1 ) {
+            QDataSet back= getBackgroundLevel( ds, level );
+            ds= Ops.copy(ds);
+            boolean db= ds.property(QDataSet.UNITS)==Units.dB;
+
+            for ( int ii=0; ii<ds.length(); ii++ ) {
+                WritableDataSet wds= (WritableDataSet) ds;
+                double v= db ? wds.value(ii) - back.value() : 20 * Math.log10( wds.value(ii) / back.value() );
+                wds.putValue( ii,Math.max( 0,v ) );
+            }
+
+        } else if ( ds.rank()==2 ) {
+            boolean db= ds.property(QDataSet.UNITS)==Units.dB;
+
+            JoinDataSet result= new JoinDataSet(ds.rank());
+            for ( int ii=0; ii<ds.length(); ii++ ) {
+                QDataSet ds1= ds.slice(ii);
+                QDataSet back= getBackgroundLevel( ds1, level );
+                ds1= Ops.copy(ds1);
+                WritableDataSet wds= (WritableDataSet) ds1;
+                for ( int jj=0; jj<ds1.length(); jj++ ) {
+                    double v= db ? wds.value(jj) - back.value() : 20 * Math.log10( wds.value(jj) / back.value() );
+                    wds.putValue( jj, Math.max( 0,v ) );
+                }
+                result.join(wds);
+            }
+            result.putProperty(QDataSet.DEPEND_0,ds.property(QDataSet.DEPEND_0));
+            return result;
+
+        } else {
+            JoinDataSet result= new JoinDataSet(ds.rank());
+            for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet ds1= ds.slice(i);
+                QDataSet r1= removeBackground0( ds1, level );
                 result.join(r1);
             }
             return result;
@@ -1341,10 +1401,15 @@ public class DataSetOps {
                 double[] aa= new double[args.size()];
                 for ( int j=0; j<aa.length; j++ ) aa[j]= args.get(j).doubleValue();
                 fillDs= Ops.contour( fillDs, DataSetUtil.asDataSet( aa ) );
-            } else if ( cmd.equals("|removeBackground") ) {
+            } else if ( cmd.equals("|removeBackground1") ) { // remove the background across slices
                 String qrg= s.next();
                 int iarg= Integer.parseInt(qrg);
-                fillDs= DataSetOps.removeBackground( fillDs, iarg );
+                fillDs= DataSetOps.removeBackground1( fillDs, iarg );
+
+            } else if ( cmd.equals("|removeBackground0") ) { // remove the background within slices
+                String qrg= s.next();
+                int iarg= Integer.parseInt(qrg);
+                fillDs= DataSetOps.removeBackground0( fillDs, iarg );
 
             } else {
                 if ( !cmd.equals("") ) System.err.println( "command not recognized: \""+cmd +"\"" );
