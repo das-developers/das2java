@@ -2473,9 +2473,10 @@ public class Ops {
             mon.started();
             mon.setProgressMessage("performing fftPower");
             for ( int i=0; i<ds.length(); i++ ) {
+                QDataSet slicei= ds.slice(i); //TODO: for DDataSet, this copies the backing array.  This shouldn't happen in DDataSet.slice, but it does...
                 for ( int j=0; j<ds.length(i)/len; j++ ) {
                     GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
-                    QDataSet wave= ds.slice(i).trim(j*len,(j+1)*len );
+                    QDataSet wave= slicei.trim(j*len,(j+1)*len );
                     QDataSet weig= DataSetUtil.weightsDataSet(wave);
                     boolean hasFill= false;
                     for ( int k=0; k<weig.length(); k++ ) {
