@@ -1012,7 +1012,7 @@ public class SeriesRenderer extends Renderer {
 
         lastIndex = index;
 
-        logger.log( Level.FINE, "ds: {0},  firstIndex={1} to lastIndex={2}", new Object[]{this.ds, this.firstIndex, this.lastIndex});
+        logger.log( Level.FINE, "ds: {0},  firstIndex={1} to lastIndex={2}", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex});
     }
 
 
@@ -1020,8 +1020,8 @@ public class SeriesRenderer extends Renderer {
 
         DasPlot lparent= this.parent;
 
-        logger.log(Level.FINE, "enter {0}.render: {1}", new Object[]{id, getDataSet()});
-        logger.log( Level.FINE, "ds: {0},  drawing indeces {1} to {2}", new Object[]{this.ds, this.firstIndex, this.lastIndex});
+        logger.log(Level.FINE, "enter {0}.render: {1}", new Object[]{id, String.valueOf(getDataSet()) });
+        logger.log( Level.FINE, "ds: {0},  drawing indeces {1} to {2}", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex});
         
         if ( lparent==null ) return;
         if ( this.ds == null && lastException != null) {
@@ -1213,7 +1213,7 @@ public class SeriesRenderer extends Renderer {
      */
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
-        logger.log(Level.FINE, "enter {0}.updatePlotImage: {1}", new Object[]{id, getDataSet()});
+        logger.log(Level.FINE, "enter {0}.updatePlotImage: {1}", new Object[]{id, String.valueOf(getDataSet()) });
 
         updating = true;
 
