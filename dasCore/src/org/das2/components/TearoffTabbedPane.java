@@ -131,6 +131,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         } else {
             parentPane = parent;
             addMouseListener(getChildMouseAdapter());
+            addMouseMotionListener(getChildMouseMotionListener());
         }
     }
 
@@ -260,6 +261,19 @@ public class TearoffTabbedPane extends JTabbedPane {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                TearoffTabbedPane draggingTearOff=null;
+                if ( draggingFrame!=null ) {
+                    draggingTearOff= getTabbedPane(draggingFrame);
+                    if ( draggingTearOff!=null && TearoffTabbedPane.this.parentPane.contains( SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), TearoffTabbedPane.this.parentPane ) ) ) {
+                        TearoffTabbedPane.this.parentPane.dock(draggingTearOff.getComponentAt(0));
+                        draggingFrame.dispose();
+                        TearoffTabbedPane oldChildParent= getTabbedPane(e.getComponent());
+                        if ( oldChildParent.getTabCount()==0 ) {
+                            SwingUtilities.getWindowAncestor(e.getComponent()).dispose();
+                        }
+                    }
+
+                }
                 if (dragStart != null && selectedTab != -1) {
                     //JFrame f= TearoffTabbedPane.this.tearOffIntoFrame( selectedTab );
                     //Point p= e.getPoint();
@@ -276,7 +290,71 @@ public class TearoffTabbedPane extends JTabbedPane {
         };
 
     }
-            
+
+    private MouseMotionListener getChildMouseMotionListener() {
+        return new MouseMotionListener() {
+
+            public void mouseDragged(MouseEvent e) {
+                if (selectedTab == -1) {
+                    return;
+                }
+                if (dragStart == null) {
+                    dragStart = e.getPoint();
+                } else {
+                    if (dragStart.distance(e.getPoint()) > 10) {
+                        if (draggingFrame == null) {
+                            setSelectedIndex(selectedTab);
+                            getComponentAt(selectedTab).setVisible(true);
+                            dragOffset= getComponentAt(selectedTab).getLocationOnScreen();
+                            Point ds= new Point(dragStart);
+                            SwingUtilities.convertPointToScreen(ds, e.getComponent() );
+                            int tabAndWindowHeight=40; // ubuntu, TODO: calculate
+                            dragOffset.translate( -ds.x, -ds.y - tabAndWindowHeight );
+                            draggingFrame = TearoffTabbedPane.this.tearOffIntoFrame(selectedTab);
+                            TearoffTabbedPane.super.removeTabAt(selectedTab);
+                            if (draggingFrame == null) {
+                                return;
+                            }
+                            setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                            if ( draggingFrame.getWidth()< -1*dragOffset.x ) {
+                                int borderWidth=5;
+                                dragOffset.x= -1*(draggingFrame.getWidth()-borderWidth);
+                            }
+                        }
+                        Point p = e.getPoint();
+                        SwingUtilities.convertPointToScreen(p, (Component) e.getSource());
+                        p.translate(dragOffset.x, dragOffset.y);
+                        draggingFrame.setLocation(p);
+
+                        TearoffTabbedPane drop=null;
+                        if ( TearoffTabbedPane.this.parentPane.contains( SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), TearoffTabbedPane.this.parentPane ) ) ) {
+                            drop= TearoffTabbedPane.this.parentPane;
+                        }
+
+                        if ( dropDirty!=null ) { // give some hint that this is a drop target.
+                            dropDirty.setLocation( 0,0 );
+                            dropDirty.repaint();
+                        }
+
+                        if ( drop!=null ) {
+                            drop.setLocation( 4,4 );
+                            drop.repaint();
+                            dropDirty= drop;
+                        } else {
+                            dropDirty= null;
+                        }
+
+                    }
+                }
+            }
+
+            public void mouseMoved(MouseEvent e) {
+            }
+
+
+        };
+    }
+
     private void showIt() {
 
         TabDesc desc = null;
@@ -294,6 +372,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         if (desc.babysitter instanceof Window) {
             Window babySitter = (Window) desc.babysitter;
             raiseApplicationWindow(babySitter);
+            getTabbedPane(babyComponent).setSelectedComponent(babyComponent);
         } else if ( desc.babysitter instanceof TearoffTabbedPane ) {
             Window parent= SwingUtilities.getWindowAncestor(babyComponent);
             ((TearoffTabbedPane)desc.babysitter).setSelectedComponent(babyComponent);
@@ -489,13 +568,17 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
 
     /**
-     * isolate the logic of finding the TearoffTabbedPane.
+     * isolate the logic of finding the TearoffTabbedPane.  This looks for compoents:
+     * * that have child TearoffTabbedPane
+     * * are child of a TearoffTabbedPane
      * @param comp
      * @return
      */
     private TearoffTabbedPane getTabbedPane( Component comp ) {
         if ( comp instanceof JFrame && ((JFrame)comp).getContentPane().getComponent(0) instanceof TearoffTabbedPane ) {
             return (TearoffTabbedPane)(((JFrame)comp).getContentPane().getComponent(0));
+        } else if ( comp instanceof JPanel && comp.getParent() instanceof TearoffTabbedPane ) {
+            return (TearoffTabbedPane)(comp.getParent());
         } else if ( comp instanceof TearoffTabbedPane ) {
             return (TearoffTabbedPane) comp;
         } else {
