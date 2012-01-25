@@ -413,7 +413,7 @@ public final class DDataSet extends ArrayDataSet {
         props.remove(QDataSet.DEPEND_0);
         DataSetUtil.putProperties( props, result );
         QDataSet dep0= (QDataSet) property(QDataSet.DEPEND_0);
-        if ( dep0!=null ) result.putProperty( QDataSet.DEPEND_0, dep0.trim(start, end) );
+        if ( dep0!=null ) result.putProperty( QDataSet.DEPEND_0, dep0.trim(start, end) );  //TODO: there really should be DataSetUtil.trimProperties...
         return result;
     }
 
