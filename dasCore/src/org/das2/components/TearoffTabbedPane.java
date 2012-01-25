@@ -271,6 +271,11 @@ public class TearoffTabbedPane extends JTabbedPane {
                         if ( oldChildParent.getTabCount()==0 ) {
                             SwingUtilities.getWindowAncestor(e.getComponent()).dispose();
                         }
+                    } else {
+                        TearoffTabbedPane oldChildParent= getTabbedPane(e.getComponent());
+                        if ( oldChildParent.getTabCount()==0 ) {
+                            SwingUtilities.getWindowAncestor(e.getComponent()).dispose();
+                        }
                     }
 
                 }
@@ -311,6 +316,8 @@ public class TearoffTabbedPane extends JTabbedPane {
                             int tabAndWindowHeight=40; // ubuntu, TODO: calculate
                             dragOffset.translate( -ds.x, -ds.y - tabAndWindowHeight );
                             draggingFrame = TearoffTabbedPane.this.tearOffIntoFrame(selectedTab);
+                            TearoffTabbedPane carry= getTabbedPane(draggingFrame);
+                            carry.parentPane= TearoffTabbedPane.this.parentPane;
                             TearoffTabbedPane.super.removeTabAt(selectedTab);
                             if (draggingFrame == null) {
                                 return;
