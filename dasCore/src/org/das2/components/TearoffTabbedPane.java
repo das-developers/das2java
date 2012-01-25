@@ -534,9 +534,10 @@ public class TearoffTabbedPane extends JTabbedPane {
                     setCursor(null);
 
                     // See if there is another TearoffTabbedPane we can dock into.
-                    TearoffTabbedPane last= getHoverTP( e.getComponent(), e.getPoint() );
+                    TearoffTabbedPane last=null;
+                    if ( draggingFrame!=null ) last= getHoverTP( e.getComponent(), e.getPoint() );
 
-                    if ( last!=null && draggingFrame!=null ) {
+                    if ( last!=null ) {
                         TearoffTabbedPane babyComponent= getTabbedPane( draggingFrame );
                         if ( last!=babyComponent && babyComponent.getTabCount()==1 ) { // assert tabCount=1.
                             int i= TearoffTabbedPane.this.getSelectedIndex();
@@ -579,10 +580,10 @@ public class TearoffTabbedPane extends JTabbedPane {
     private TearoffTabbedPane getTabbedPane( Component comp ) {
         if ( comp instanceof JFrame && ((JFrame)comp).getContentPane().getComponent(0) instanceof TearoffTabbedPane ) {
             return (TearoffTabbedPane)(((JFrame)comp).getContentPane().getComponent(0));
-        } else if ( comp instanceof JPanel && comp.getParent() instanceof TearoffTabbedPane ) {
-            return (TearoffTabbedPane)(comp.getParent());
         } else if ( comp instanceof TearoffTabbedPane ) {
             return (TearoffTabbedPane) comp;
+        } else if ( comp.getParent()!=null && ( comp.getParent() instanceof TearoffTabbedPane ) ) {
+            return (TearoffTabbedPane)(comp.getParent());
         } else {
             return null;
         }
@@ -604,7 +605,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         Component c = getComponentAt(tabIndex);
         String title = super.getTitleAt(tabIndex);
         super.removeTabAt(tabIndex);
-        super.insertTab("(" + title + ")", null, getTornOffComponent(), null, tabIndex);
+        super.insertTab("(" + title + ")", null, getTornOffComponent(), null, tabIndex); // we don't really need to do this for child tabs.
         super.setEnabledAt(tabIndex, false);
         TabDesc td = ((TabDesc) tabs.get(c));
         if ( td!=null ) td.babysitter = newContainer; // drop into another frame
@@ -617,7 +618,9 @@ public class TearoffTabbedPane extends JTabbedPane {
                 ttp.setSize( c.getPreferredSize().width + dx, c.getPreferredSize().height + dy);
             }
         }
-        setSelectedIndex(lastSelected1);
+        if ( this.parentPane==null ) {
+            setSelectedIndex(lastSelected1);
+        }
     }
 
     private final static Object STICK_RIGHT= "right";
