@@ -267,15 +267,10 @@ public class TearoffTabbedPane extends JTabbedPane {
                     if ( draggingTearOff!=null && TearoffTabbedPane.this.parentPane.contains( SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), TearoffTabbedPane.this.parentPane ) ) ) {
                         TearoffTabbedPane.this.parentPane.dock(draggingTearOff.getComponentAt(0));
                         draggingFrame.dispose();
-                        TearoffTabbedPane oldChildParent= getTabbedPane(e.getComponent());
-                        if ( oldChildParent.getTabCount()==0 ) {
-                            SwingUtilities.getWindowAncestor(e.getComponent()).dispose();
-                        }
-                    } else {
-                        TearoffTabbedPane oldChildParent= getTabbedPane(e.getComponent());
-                        if ( oldChildParent.getTabCount()==0 ) {
-                            SwingUtilities.getWindowAncestor(e.getComponent()).dispose();
-                        }
+                    }
+                    TearoffTabbedPane oldChildParent= getTabbedPane(e.getComponent());
+                    if ( oldChildParent.getTabCount()==0 ) {
+                        SwingUtilities.getWindowAncestor(e.getComponent()).dispose();
                     }
 
                 }
