@@ -24,6 +24,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
 import javax.swing.ImageIcon;
+import org.das2.dataset.DataSetUtil;
 import org.das2.datum.Units;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -60,16 +61,27 @@ public class EventsRenderer extends Renderer {
         QDataSet xmins= SemanticOps.xtagsDataSet(ds);
         QDataSet xmaxs= DataSetOps.unbundle( ds,1 );
 
-        Units u0= SemanticOps.getUnits(xmins );
-        Units u1= SemanticOps.getUnits(xmaxs );
+        Units u0= SemanticOps.getUnits(xmins);
+        Units u1= SemanticOps.getUnits(xmaxs);
 
-        xrange= Ops.extent(xmins);
-        if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
-            xmaxs= Ops.add( xmins, xmaxs );
-            xrange= Ops.extent(xmaxs,xrange);
+        if ( xmins.length()==0 ) {
+            xrange=  DDataSet.wrap( new double[] {0,1}, u0 );
+
+        } else {
+            //TODO: probably the day/days containing would be better
+            xrange= Ops.extent(xmins);
+            if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+                xmaxs= Ops.add( xmins, xmaxs );
+                xrange= Ops.extent(xmaxs,xrange);
+            }
+
+            if ( xrange.value(0)<xrange.value(1) ) {
+                xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
+            } else {
+                QDataSet dx= DDataSet.wrap( new double[] {-1,1}, u0.getOffsetUnits() );
+                xrange= Ops.add( xrange, dx );
+            }
         }
-        
-        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
 
         JoinDataSet bds= new JoinDataSet(2);
         bds.join(xrange);
