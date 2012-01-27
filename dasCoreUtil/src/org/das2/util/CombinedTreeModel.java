@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -28,7 +29,7 @@ public class CombinedTreeModel implements TreeModel {
     List treeModelRoots;
     List<Float> treeModelSortIndexes;
     Object root = null;
-    WeakHashMap sourceMap;
+    private WeakHashMap<Object,TreeModel> sourceMap;
     List listeners;    // generally, the model should only be modified on the event thread.
     // this is useful for debugging.
     final private boolean checkEvent = false;
@@ -119,6 +120,21 @@ public class CombinedTreeModel implements TreeModel {
             TreePath path = new TreePath(root);
             fireTreeNodesRemoved( new TreeModelEvent(this, path, new int[] { index }, new Object[] { treeModel.getRoot() } ) );
         }
+
+        while ( true ) {
+            Object rm= null;
+            for ( Entry<Object,TreeModel> e: sourceMap.entrySet() ) {
+                if ( e.getValue().equals(treeModel) ) {
+                    rm= e.getKey();
+                }
+            }
+            if ( rm==null) {
+                break;
+            } else {
+                sourceMap.remove(rm);
+            }
+        }
+
     }
 
     public synchronized Object getChild(Object parent, int index) {
