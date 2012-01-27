@@ -176,7 +176,35 @@ public class FFTUtil {
         return result;
     }
 
+    private static class TTagBufElement {
+        QDataSet data;
+        double dt;
+        double ddt;
+        int n;
+        Units units;
+    }
+
+    /*
+     * keep track of one result, since one spectrogram will have thousands of these.  This is mostly to conserve space, but
+     * we should see some performance gain as well.
+     */
+    private static TTagBufElement freqDomainTagsForPowerBuf= null;
+
     public static QDataSet getFrequencyDomainTagsForPower( QDataSet dep0 ) {
+        Units xunits= SemanticOps.getUnits(dep0);
+        if ( dep0.length()<2 ) {
+             throw new IllegalArgumentException("dep0 must be two or more elements");
+        }
+
+        synchronized (FFTUtil.class) {
+            if ( freqDomainTagsForPowerBuf!=null ) {
+                if ( Math.abs(  freqDomainTagsForPowerBuf.dt - ( dep0.value(1) - dep0.value(0) ) ) < freqDomainTagsForPowerBuf.ddt
+                    && freqDomainTagsForPowerBuf.n == dep0.length()
+                    && freqDomainTagsForPowerBuf.units== xunits ) {
+                    return freqDomainTagsForPowerBuf.data;
+                }
+            }
+        }
         QDataSet xtags= getFrequencyDomainTags( dep0 );
         Units xUnits= (Units)xtags.property( QDataSet.UNITS );
         DDataSet powTags= DDataSet.createRank1(xtags.length()/2-1);
@@ -184,6 +212,14 @@ public class FFTUtil {
             powTags.putValue(i-1,xtags.value(i));
         }
         powTags.putProperty( QDataSet.UNITS, xUnits );
+        synchronized (FFTUtil.class ) {
+            freqDomainTagsForPowerBuf= new TTagBufElement();
+            freqDomainTagsForPowerBuf.data= powTags;
+            freqDomainTagsForPowerBuf.dt= ( dep0.value(1) - dep0.value(0) );
+            freqDomainTagsForPowerBuf.ddt= freqDomainTagsForPowerBuf.dt / 1e7;
+            freqDomainTagsForPowerBuf.n = dep0.length();
+            freqDomainTagsForPowerBuf.units= xunits;
+        }
         return powTags;
     }
 
