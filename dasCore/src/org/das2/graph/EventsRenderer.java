@@ -62,12 +62,12 @@ public class EventsRenderer extends Renderer {
 
         Units u0= SemanticOps.getUnits(xmins );
         Units u1= SemanticOps.getUnits(xmaxs );
-        if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
-            xmaxs= Ops.add( xmins, xmaxs );
-        }
 
         xrange= Ops.extent(xmins);
-        xrange= Ops.extent(xmaxs,xrange);
+        if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+            xmaxs= Ops.add( xmins, xmaxs );
+            xrange= Ops.extent(xmaxs,xrange);
+        }
         
         xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
 
