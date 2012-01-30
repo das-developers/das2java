@@ -2472,8 +2472,17 @@ public class Ops {
             mon.setTaskSize(ds.length());
             mon.started();
             mon.setProgressMessage("performing fftPower");
+
+            boolean isMono= true;
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet slicei= ds.slice(i); //TODO: for DDataSet, this copies the backing array.  This shouldn't happen in DDataSet.slice, but it does...
+                QDataSet dep0i= (QDataSet) slicei.property(QDataSet.DEPEND_0);
+                if ( dep0i!=null && dep0==null ) {
+                    dep0b.putProperty(QDataSet.UNITS, dep0i.property(QDataSet.UNITS) );
+                    if ( !Boolean.TRUE.equals( dep0i.property(QDataSet.MONOTONIC) ) ) {
+                        isMono= false;
+                    }
+                }
                 for ( int j=0; j<ds.length(i)/len; j++ ) {
                     GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
                     QDataSet wave= slicei.trim(j*len,(j+1)*len );
@@ -2487,6 +2496,7 @@ public class Ops {
                     if ( hasFill ) continue;
 
                     QDataSet vds= FFTUtil.fftPower( fft, wave );
+
                     if ( translation!=null ) {
                         QDataSet fftDep1= (QDataSet) vds.property( QDataSet.DEPEND_0 );
                         if (translation.rank()==0 ) {
@@ -2498,12 +2508,17 @@ public class Ops {
                         }
                         ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, fftDep1 );
                     }
+
                     result.join(vds);
+
                     if ( dep0!=null && dep1!=null ) {
                         dep0b.putValue(-1, dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  ) );
                         dep0b.nextRecord();
                     } else if ( dep0!=null ) {
                         dep0b.putValue(-1, dep0.value(i) );
+                        dep0b.nextRecord();
+                    } else if ( dep0i!=null ) {
+                        dep0b.putValue(-1, dep0i.value(j*len) );
                         dep0b.nextRecord();
                     } else {
                         dep0b= null;
@@ -2514,6 +2529,10 @@ public class Ops {
             mon.finished();
             if (dep0!=null ) {
                 dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
+                if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
+                result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
+            } else if ( dep0b!=null ) {
+                if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
                 result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
             }
             
