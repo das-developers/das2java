@@ -2469,11 +2469,14 @@ public class Ops {
                 if ( dep0Units!=null && dep1Units!=null ) uc= dep1Units.getConverter(dep0Units.getOffsetUnits());
             }
 
-            mon.setTaskSize(ds.length());
+            int len1= ds.length(0)/len;
+
+            mon.setTaskSize(ds.length()*len1); // assumes all are the same length.
             mon.started();
             mon.setProgressMessage("performing fftPower");
 
-            boolean isMono= true;
+            boolean isMono= dep0==null ? true : DataSetUtil.isMonotonic(dep0);
+
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet slicei= ds.slice(i); //TODO: for DDataSet, this copies the backing array.  This shouldn't happen in DDataSet.slice, but it does...
                 QDataSet dep0i= (QDataSet) slicei.property(QDataSet.DEPEND_0);
@@ -2483,7 +2486,8 @@ public class Ops {
                         isMono= false;
                     }
                 }
-                for ( int j=0; j<ds.length(i)/len; j++ ) {
+
+                for ( int j=0; j<len1; j++ ) {
                     GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
                     QDataSet wave= slicei.trim(j*len,(j+1)*len );
                     QDataSet weig= DataSetUtil.weightsDataSet(wave);
@@ -2523,8 +2527,11 @@ public class Ops {
                     } else {
                         dep0b= null;
                     }
+
+                    mon.setTaskProgress(i*len1+j);
+
                 }
-                mon.setTaskProgress(i);
+                
             }
             mon.finished();
             if (dep0!=null ) {
