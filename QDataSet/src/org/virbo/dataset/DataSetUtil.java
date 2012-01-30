@@ -345,6 +345,41 @@ public class DataSetUtil {
     }
 
     /**
+     * help out implementations of the QDataSet.trim() command.  This does the dimension properties
+     * and geometric properties like DEPEND_0  and DELTA_PLUS.
+     * @param ds the dataset with properties to trim.
+     * @param start start index of trim operation
+     * @param stop exclusive stop index of the trim operation.
+     * @return
+     */
+    public static Map<String,Object> trimProperties( QDataSet ds, int start, int stop ) {
+
+        Map<String,Object> result= new LinkedHashMap();
+        getDimensionProperties(ds,result);
+
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) result.put( QDataSet.DEPEND_0, dep0.trim(start,stop) );
+
+        QDataSet dsp;
+        dsp= (QDataSet) ds.property(QDataSet.DELTA_PLUS);
+        if ( dsp!=null ) result.put( QDataSet.DELTA_PLUS, dsp.trim(start,stop) );
+        dsp= (QDataSet) ds.property(QDataSet.DELTA_MINUS);
+        if ( dsp!=null ) result.put( QDataSet.DELTA_MINUS, dsp.trim(start,stop) );
+
+        for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
+            QDataSet p= (QDataSet) ds.property("PLANE_"+i);
+            if ( p!=null ) {
+                if ( p.rank()>0 ) result.put( "PLANE_"+i, p.trim(start,stop) ); else result.put("PLANE_"+i, p ); // note planes must be at least rank 1 right now.
+            } else {
+                break;
+            }
+        }
+
+        return result;
+        
+    }
+
+    /**
      * return just the properties attached to the dataset, not DEPEND_x, etc.
      * @param ds
      * @param def default values
