@@ -507,15 +507,28 @@ public class DasProgressPanel implements ProgressMonitor {
         maximumTaskPosition = taskSize;
     }
 
-    public synchronized void setVisible(boolean visible) {
+    /**
+     * the the progressPanel visible or hide it.  This
+     * @param visible
+     */
+    public synchronized void setVisible(final boolean visible) {
         if (!componentsInitialized && !visible)
             return;
-        if (!componentsInitialized && !finished)
-            initComponents();
-        if (thePanel != null)
-            thePanel.setVisible(visible);
-        if (this.jframe != null)
-            this.jframe.setVisible(visible);
+        Runnable run= new Runnable() {
+            public void run() {
+                if (!componentsInitialized && !finished)
+                    initComponents();
+                if (thePanel != null)
+                    thePanel.setVisible(visible);
+                if (DasProgressPanel.this.jframe != null)
+                    DasProgressPanel.this.jframe.setVisible(visible);
+            }
+        };
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
 
         if (visible) {
             startUpdateThread();
