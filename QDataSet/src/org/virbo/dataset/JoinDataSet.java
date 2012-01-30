@@ -253,7 +253,6 @@ public class JoinDataSet extends AbstractDataSet {
                 props.put( QDataSet.DEPEND_0, null ); //TODO: we can put DEPEND_0 in.
             }
             DataSetUtil.putProperties(props, mpds); //TODO: this is a little dangerous because we mutate the original datasets.
-            final Object dep1 = properties.get(QDataSet.DEPEND_1);
         }
         return result;
     }
