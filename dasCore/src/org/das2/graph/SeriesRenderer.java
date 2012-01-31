@@ -1409,6 +1409,8 @@ public class SeriesRenderer extends Renderer {
 
     @Override
     protected void uninstallRenderer() {
+        //There's a bug here, that if multiple SeriesRenderers are drawing on a plot, then we want to leave the mouseModules.
+        //We can't do that right now...
     }
 
     public Element getDOMElement(Document document) {
