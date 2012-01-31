@@ -337,11 +337,16 @@ public class DasProgressPanel implements ProgressMonitor {
     public synchronized void finished() {
         running = false;
         finished = true;
-        if (jframe == null) {
-            setVisible(false);
-        } else {
-            jframe.dispose();
-        }
+        Runnable run= new Runnable() {
+            public void run() {
+                if (jframe == null) {
+                    setVisible(false);
+                } else {
+                    jframe.dispose();
+                }
+            }
+        };
+        SwingUtilities.invokeLater(run);
     }
 
     /* ProgressMonitor interface */
