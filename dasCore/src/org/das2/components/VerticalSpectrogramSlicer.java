@@ -109,15 +109,12 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     public static VerticalSpectrogramSlicer createSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceYAxis = plot.getYAxis();
         DasAxis sourceZAxis = dataSetConsumer.getZAxis();
-        DasAxis xAxis = sourceYAxis.createAttachedAxis(DasAxis.HORIZONTAL);
-        DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
-        return new VerticalSpectrogramSlicer(plot, xAxis, yAxis);
+        return new VerticalSpectrogramSlicer(plot, sourceYAxis, sourceZAxis);
     }
     
     public static VerticalSpectrogramSlicer createSlicer( DasPlot plot, DasAxis xAxis, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceZAxis = dataSetConsumer.getZAxis();
-        DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
-        return new VerticalSpectrogramSlicer(plot, xAxis, yAxis);
+        return new VerticalSpectrogramSlicer(plot, xAxis, sourceZAxis );
     }
     
     public void showPopup() {
