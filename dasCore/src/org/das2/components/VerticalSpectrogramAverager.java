@@ -67,9 +67,9 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
     private DasPlot myPlot;
     private DasAxis sourceZAxis;
     private DasAxis sourceXAxis;
-    protected Datum yValue;
+    protected Datum value;
     private SeriesRenderer renderer;
-    private Color yMarkColor = new Color(230,230,230);
+    private Color markColor = new Color(230,230,230);
     
     protected VerticalSpectrogramAverager( DasPlot parent, DasAxis sourceXAxis, DasAxis sourceZAxis ) {
         this.sourceZAxis= sourceZAxis;
@@ -82,12 +82,13 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
         myPlot= new DasPlot( xAxis, yAxis);
         renderer= new SymbolLineRenderer();
+        renderer.setAntiAliased(true);
         myPlot.addRenderer(renderer);
         myPlot.addRenderer( new Renderer() {
             @Override
             public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
-                if ( yValue!=null ) {
-                    int ix= (int)myPlot.getXAxis().transform(yValue);
+                if ( value!=null ) {
+                    int ix= (int)myPlot.getXAxis().transform(value);
                     DasRow row= myPlot.getRow();
                     int iy0= (int)row.getDMinimum();
                     int iy1= (int)row.getDMaximum();
@@ -96,7 +97,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
                     g.drawLine(ix+3,iy1,ix,iy1-3);
                     g.drawLine(ix-3,iy1,ix,iy1-3);
 
-                    g.setColor(yMarkColor);
+                    g.setColor(markColor);
                     g.drawLine( ix, iy0+4, ix, iy1-4 );
                 }
             }
@@ -228,7 +229,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
             //Do nothing.
         }
 
-        yValue= e.getReference();
+        value= e.getReference();
 
         myPlot.setTitle( new DatumRange( xValue1, xValue2 ).toString() );
 

@@ -40,7 +40,6 @@ import org.das2.dataset.TableDataSetConsumer;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.datum.TimeLocationUnits;
-import org.das2.system.DasLogger;
 import org.das2.datum.Datum;
 import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
@@ -83,6 +82,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
         myPlot= new DasPlot( xAxis, yAxis);
         renderer= new SymbolLineRenderer();
+        renderer.setAntiAliased(true);
         myPlot.addRenderer(renderer);
         myPlot.addRenderer( new Renderer() {
             @Override
@@ -142,8 +142,8 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         int width = parentPlot.getCanvas().getWidth() / 2;
         int height = parentPlot.getCanvas().getHeight() / 2;
         final DasCanvas canvas = new DasCanvas(width, height);
-        DasRow row = new DasRow(canvas, 0.1, 0.9);
-        DasColumn column = new DasColumn(canvas, 0.1, 0.9);
+        DasRow row = new DasRow(canvas, null, 0, 1.0, 3, -5, 0, 0 );
+        DasColumn column = new DasColumn(canvas, null, 0, 1.0, 7, -3, 0, 0 );
         canvas.add( myPlot, row, column);
         
         JPanel content = new JPanel(new BorderLayout());
