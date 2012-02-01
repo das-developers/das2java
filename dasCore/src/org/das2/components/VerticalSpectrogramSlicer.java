@@ -27,7 +27,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Frame;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Window;
 import org.das2.graph.SymbolLineRenderer;
@@ -53,26 +53,53 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.das2.graph.Renderer;
+import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
 
-public class VerticalSpectrogramSlicer
-extends DasPlot implements DataPointSelectionListener {
+public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     
     private JDialog popupWindow;
     private DasPlot parentPlot;
+    private DasPlot myPlot;
+    private DasAxis sourceZAxis;
+    private DasAxis sourceXAxis;
     protected Datum yValue;    
-    private long eventBirthMilli;
+    //private long eventBirthMilli;
     private SymbolLineRenderer renderer;
     private Color yMarkColor = new Color(230,230,230);
     
-    protected VerticalSpectrogramSlicer(DasPlot parent, DasAxis xAxis, DasAxis yAxis) {
-        super( xAxis, yAxis);
-        this.parentPlot = parent;
+    protected VerticalSpectrogramSlicer( DasPlot parent, DasAxis sourceXAxis, DasAxis sourceZAxis ) {
+        this.sourceZAxis= sourceZAxis;
+        this.sourceXAxis= sourceXAxis;
+        this.parentPlot= parent;
+    }
+
+    private void initPlot() {
+        DasAxis xAxis= sourceXAxis.createAttachedAxis( DasAxis.HORIZONTAL );
+        DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
+        myPlot= new DasPlot( xAxis, yAxis);
         renderer= new SymbolLineRenderer();
-        addRenderer(renderer);                
+        myPlot.addRenderer(renderer);
+        myPlot.addRenderer( new Renderer() {
+            @Override
+            public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+                int ix= (int)myPlot.getXAxis().transform(yValue);
+                DasRow row= myPlot.getRow();
+                int iy0= (int)row.getDMinimum();
+                int iy1= (int)row.getDMaximum();
+                g.drawLine(ix+3,iy0,ix,iy0+3);
+                g.drawLine(ix-3,iy0,ix,iy0+3);
+                g.drawLine(ix+3,iy1,ix,iy1-3);
+                g.drawLine(ix-3,iy1,ix,iy1-3);
+
+                g.setColor(yMarkColor);
+                g.drawLine( ix, iy0+4, ix, iy1-4 );
+            }
+        } );
     }
         
     protected void setDataSet( QDataSet ds ) {
@@ -117,12 +144,15 @@ extends DasPlot implements DataPointSelectionListener {
     
     /** This method should ONLY be called by the AWT event thread */
     private void createPopup() {
+        if ( myPlot==null ) {
+            initPlot();
+        }
         int width = parentPlot.getCanvas().getWidth() / 2;
         int height = parentPlot.getCanvas().getHeight() / 2;
         final DasCanvas canvas = new DasCanvas(width, height);
         DasRow row = new DasRow(canvas, 0.1, 0.9);
         DasColumn column = new DasColumn(canvas, 0.1, 0.9);
-        canvas.add(this, row, column);
+        canvas.add( myPlot, row, column);
         
         JPanel content = new JPanel(new BorderLayout());
         
@@ -173,26 +203,8 @@ extends DasPlot implements DataPointSelectionListener {
         popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
     }
     
-    @Override
-    protected void drawContent(Graphics2D g) {
-        
-        int ix= (int)this.getXAxis().transform(yValue);
-        DasRow row= this.getRow();
-        int iy0= (int)row.getDMinimum();
-        int iy1= (int)row.getDMaximum();
-        g.drawLine(ix+3,iy0,ix,iy0+3);
-        g.drawLine(ix-3,iy0,ix,iy0+3);
-        g.drawLine(ix+3,iy1,ix,iy1-3);
-        g.drawLine(ix-3,iy1,ix,iy1-3);
-        
-        g.setColor(yMarkColor);
-        g.drawLine( ix, iy0+4, ix, iy1-4 );
-        
-        super.drawContent(g);
-    }
-    
     protected boolean isPopupVisible() {
-        return ( popupWindow != null && popupWindow.isVisible()) && getCanvas() != null;
+        return ( popupWindow != null && popupWindow.isVisible()) && myPlot.getCanvas() != null;
     }
     
     public void dataPointSelected(DataPointSelectionEvent e) {    
@@ -226,11 +238,12 @@ extends DasPlot implements DataPointSelectionListener {
         QDataSet xds= SemanticOps.xtagsDataSet(tds1);
         QDataSet sliceDataSet= tds1.slice( org.virbo.dataset.DataSetUtil.closestIndex( xds, e.getX() ) );
                       
-        renderer.setDataSet(sliceDataSet);
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");        
         if (!isPopupVisible()) {
             showPopup();
         }
+
+        renderer.setDataSet(sliceDataSet);
         
         yValue= e.getY();
         Datum xValue = e.getX();
@@ -242,30 +255,11 @@ extends DasPlot implements DataPointSelectionListener {
             formatter= xValue.getFormatter();
         }
             
-        setTitle("x: "+ formatter.format(xValue) + " y: "+yValue);
+        myPlot.setTitle("x: "+ formatter.format(xValue) + " y: "+yValue);
         
-        eventBirthMilli= e.birthMilli;
+        //eventBirthMilli= e.birthMilli;
     }
     
-    @Override
-    protected void uninstallComponent() {
-        super.uninstallComponent();
-    }
-    
-    @Override
-    protected void installComponent() {
-        super.installComponent();
-        getCanvas().getGlassPane().setVisible(false);
-    }
-    
-    @Override
-    protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {
-        if (isDisplayable()) {
-            updateImmediately();
-            resize();
-        }
-    }
-
     public Color getYMarkColor() {
         return yMarkColor;
     }
