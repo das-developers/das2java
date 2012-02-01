@@ -27,7 +27,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Frame;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Window;
 import org.das2.graph.SymbolLineRenderer;
@@ -40,6 +40,7 @@ import org.das2.dataset.TableDataSetConsumer;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.datum.TimeLocationUnits;
+import org.das2.system.DasLogger;
 import org.das2.datum.Datum;
 import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
@@ -52,30 +53,63 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.das2.graph.Renderer;
+import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
 
-public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSelectionListener {
+public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     
     private JDialog popupWindow;
-    private Datum xValue;
-    private SymbolLineRenderer renderer;
     private DasPlot parentPlot;
+    private DasPlot myPlot;
+    private DasAxis sourceZAxis;
+    private DasAxis sourceXAxis;
+    protected Datum value;
+    //private long eventBirthMilli;
+    private SymbolLineRenderer renderer;
+    private Color markColor = new Color(230,230,230);
     
-    private HorizontalSpectrogramSlicer(DasPlot plot, DasAxis xAxis, DasAxis yAxis) {
-        super(xAxis, yAxis);
-        parentPlot = plot;
-        renderer= new SymbolLineRenderer();
-        addRenderer(renderer);
+    private HorizontalSpectrogramSlicer(DasPlot parent, DasAxis sourceXAxis, DasAxis sourceZAxis) {
+        this.sourceZAxis= sourceZAxis;
+        this.sourceXAxis= sourceXAxis;
+        this.parentPlot= parent;
     }
-    
-    public static HorizontalSpectrogramSlicer createSlicer(DasPlot plot, TableDataSetConsumer dataSetConsumer) {
+
+    private void initPlot() {
+        DasAxis xAxis= sourceXAxis.createAttachedAxis( DasAxis.HORIZONTAL );
+        DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
+        myPlot= new DasPlot( xAxis, yAxis);
+        renderer= new SymbolLineRenderer();
+        myPlot.addRenderer(renderer);
+        myPlot.addRenderer( new Renderer() {
+            @Override
+            public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+                int ix= (int)myPlot.getXAxis().transform(value);
+                DasRow row= myPlot.getRow();
+                int iy0= (int)row.getDMinimum();
+                int iy1= (int)row.getDMaximum();
+                g.drawLine(ix+3,iy0,ix,iy0+3);
+                g.drawLine(ix-3,iy0,ix,iy0+3);
+                g.drawLine(ix+3,iy1,ix,iy1-3);
+                g.drawLine(ix-3,iy1,ix,iy1-3);
+
+                g.setColor(markColor);
+                g.drawLine( ix, iy0+4, ix, iy1-4 );
+            }
+        } );
+    }
+
+    protected void setDataSet( QDataSet ds ) {
+       renderer.setDataSet(ds);
+    }
+
+    public static HorizontalSpectrogramSlicer createSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceXAxis = plot.getXAxis();
-        DasAxis xAxis = sourceXAxis.createAttachedAxis(DasAxis.HORIZONTAL);
-        DasAxis yAxis = dataSetConsumer.getZAxis().createAttachedAxis(DasAxis.VERTICAL);
-        return new HorizontalSpectrogramSlicer(plot, xAxis, yAxis);
+        DasAxis sourceZAxis = dataSetConsumer.getZAxis();
+        return new HorizontalSpectrogramSlicer(plot, sourceXAxis, sourceZAxis );
     }
     
     public void showPopup() {
@@ -102,18 +136,20 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
     
     /** This method should ONLY be called by the AWT event thread */
     private void createPopup() {
+        if ( myPlot==null ) {
+            initPlot();
+        }
         int width = parentPlot.getCanvas().getWidth() / 2;
         int height = parentPlot.getCanvas().getHeight() / 2;
         final DasCanvas canvas = new DasCanvas(width, height);
         DasRow row = new DasRow(canvas, 0.1, 0.9);
         DasColumn column = new DasColumn(canvas, 0.1, 0.9);
-        canvas.add(this, row, column);
+        canvas.add( myPlot, row, column);
         
         JPanel content = new JPanel(new BorderLayout());
         
         JPanel buttonPanel = new JPanel();
         BoxLayout buttonLayout = new BoxLayout(buttonPanel, BoxLayout.X_AXIS);
-
         buttonPanel.setLayout(buttonLayout);
 
         buttonPanel.add(Box.createHorizontalGlue());
@@ -121,10 +157,11 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         JButton printButton= new JButton( new AbstractAction("Print...") {
             public void actionPerformed( ActionEvent e ) {
                 canvas.makeCurrent();
-                canvas.PRINT_ACTION.actionPerformed(e);
+                DasCanvas.PRINT_ACTION.actionPerformed(e);
             }
         });
         buttonPanel.add( printButton );
+
 
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
@@ -158,6 +195,10 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y + height);
     }
     
+    protected boolean isPopupVisible() {
+        return ( popupWindow != null && popupWindow.isVisible()) && myPlot.getCanvas() != null;
+    }
+
     public void dataPointSelected(DataPointSelectionEvent e) {
                 
         QDataSet ds = e.getDataSet();
@@ -166,7 +207,7 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         }
         
         Datum yValue = e.getY();
-        xValue = e.getX();
+        value = e.getX();
         
         QDataSet tds = (QDataSet)ds; //TODO: clean up after refactor
 
@@ -175,14 +216,14 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
         if ( tds.rank()==3 ) { // slice to get the correct table;
             for ( int i=0; i<tds.length(); i++ ) {
                 QDataSet bounds= DataSetOps.dependBounds(tds.slice(i));
-                if ( DataSetOps.boundsContains( bounds, xValue, yValue ) ) {
+                if ( DataSetOps.boundsContains( bounds, value, yValue ) ) {
                     tds1= tds.slice(i);
                     break;
                 }
             }
         } else {
             QDataSet bounds= DataSetOps.dependBounds(tds);
-            if ( DataSetOps.boundsContains( bounds, xValue, yValue) ) {
+            if ( DataSetOps.boundsContains( bounds, value, yValue) ) {
                 tds1= tds;
             }
         }
@@ -190,8 +231,15 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
 
         QDataSet yds= SemanticOps.ytagsDataSet(tds1);
         QDataSet sliceDataSet= DataSetOps.slice1( ds, org.virbo.dataset.DataSetUtil.closestIndex( yds, e.getY() ) );
-        
+
+        if (!isPopupVisible()) {
+            showPopup();
+        }
+
         renderer.setDataSet(sliceDataSet);
+
+        yValue= e.getY();
+        Datum xValue = e.getX();
 
         DatumFormatter formatter;
         if ( xValue.getUnits() instanceof TimeLocationUnits ) {
@@ -200,33 +248,16 @@ public class HorizontalSpectrogramSlicer extends DasPlot implements DataPointSel
             formatter= xValue.getFormatter();
         }
             
-        setTitle("x: "+ formatter.format(xValue) + " y: "+yValue);
+        myPlot.setTitle("x: "+ formatter.format(xValue) + " y: "+yValue);
         
-        if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
-            showPopup();
-        }
+        //eventBirthMilli= e.birthMilli;
     }
-    
-    @Override
-    public void drawContent(Graphics2D g) {
-        super.drawContent(g);
-        int ix= (int)this.getXAxis().transform(xValue);
-        DasRow row= this.getRow();
-        int iy0= row.getDMinimum();
-        int iy1= row.getDMaximum();
-        g.drawLine(ix+3,iy0,ix,iy0+3);
-        g.drawLine(ix-3,iy0,ix,iy0+3);
-        g.drawLine(ix+3,iy1,ix,iy1-3);
-        g.drawLine(ix-3,iy1,ix,iy1-3);
-        
-        g.setColor( new Color(230,230,230) );
-        g.drawLine( ix, iy0+4, ix, iy1-4 );
+
+    public Color getYMarkColor() {
+        return markColor;
     }
-    
-    protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {
-        if (isDisplayable()) {
-            updateImmediately();
-            resize();
-        }
+
+    public void setMarkColor(Color markColor) {
+        this.markColor = markColor;
     }
 }
