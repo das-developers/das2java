@@ -684,7 +684,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * @param l The listener to add.
      */
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        //System.err.println(""+this+" addPCL <>" );
         propertyChangeSupport.addPropertyChangeListener(l);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        //System.err.println(""+this+" addPCL "+propertyName);
+        propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
     }
 
     /**
@@ -692,14 +698,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * @param l The listener to remove.
      */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        //System.err.println(""+this+" removePCL <>" );
         propertyChangeSupport.removePropertyChangeListener(l);
     }
 
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        //System.err.println(""+this+" removePCL "+propertyName);
         propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
     }
 
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
-    }
 }
