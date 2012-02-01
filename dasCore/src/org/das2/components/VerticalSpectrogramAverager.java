@@ -24,8 +24,10 @@
 package org.das2.components;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Window;
 import org.das2.graph.SymbolLineRenderer;
@@ -51,30 +53,65 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
+import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
 
-public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSelectionListener {
+public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
     
     private JDialog popupWindow;
-
     private DasPlot parentPlot;
+    private DasPlot myPlot;
+    private DasAxis sourceZAxis;
+    private DasAxis sourceXAxis;
+    protected Datum yValue;
     private SeriesRenderer renderer;
+    private Color yMarkColor = new Color(230,230,230);
     
-    protected VerticalSpectrogramAverager(DasPlot plot, DasAxis xAxis, DasAxis yAxis) {
-        super(xAxis, yAxis);
-        parentPlot = plot;
-        renderer= new SymbolLineRenderer();
-        addRenderer(renderer);
+    protected VerticalSpectrogramAverager( DasPlot parent, DasAxis sourceXAxis, DasAxis sourceZAxis ) {
+        this.sourceZAxis= sourceZAxis;
+        this.sourceXAxis= sourceXAxis;
+        this.parentPlot= parent;
     }
+
+    private void initPlot() {
+        DasAxis xAxis= sourceXAxis.createAttachedAxis( DasAxis.HORIZONTAL );
+        DasAxis yAxis = sourceZAxis.createAttachedAxis(DasAxis.VERTICAL);
+        myPlot= new DasPlot( xAxis, yAxis);
+        renderer= new SymbolLineRenderer();
+        myPlot.addRenderer(renderer);
+        myPlot.addRenderer( new Renderer() {
+            @Override
+            public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+                if ( yValue!=null ) {
+                    int ix= (int)myPlot.getXAxis().transform(yValue);
+                    DasRow row= myPlot.getRow();
+                    int iy0= (int)row.getDMinimum();
+                    int iy1= (int)row.getDMaximum();
+                    g.drawLine(ix+3,iy0,ix,iy0+3);
+                    g.drawLine(ix-3,iy0,ix,iy0+3);
+                    g.drawLine(ix+3,iy1,ix,iy1-3);
+                    g.drawLine(ix-3,iy1,ix,iy1-3);
+
+                    g.setColor(yMarkColor);
+                    g.drawLine( ix, iy0+4, ix, iy1-4 );
+                }
+            }
+        } );
+    }
+
+    protected void setDataSet( QDataSet ds ) {
+       renderer.setDataSet(ds);
+    }
+
     
     public static VerticalSpectrogramAverager createAverager(DasPlot plot, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceYAxis = plot.getYAxis();
-        DasAxis xAxis = sourceYAxis.createAttachedAxis(DasAxis.HORIZONTAL);
-        DasAxis yAxis = dataSetConsumer.getZAxis().createAttachedAxis(DasAxis.VERTICAL);
-        return new VerticalSpectrogramAverager(plot, xAxis, yAxis);
+        DasAxis sourceZAxis = dataSetConsumer.getZAxis();
+        return new VerticalSpectrogramAverager(plot, sourceYAxis, sourceZAxis);
     }
     
     public void showPopup() {
@@ -100,18 +137,20 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
     
     /** This method should ONLY be called by the AWT event thread */
     private void createPopup() {
+        if ( myPlot==null ) {
+            initPlot();
+        }
         int width = parentPlot.getCanvas().getWidth() / 2;
         int height = parentPlot.getCanvas().getHeight() / 2;
         final DasCanvas canvas = new DasCanvas(width, height);
         DasRow row = new DasRow(canvas, null, 0, 1.0, 3, -5, 0, 0 );
         DasColumn column = new DasColumn(canvas, null, 0, 1.0, 7, -3, 0, 0 );
-        canvas.add(this, row, column);
+        canvas.add(myPlot, row, column);
         
         JPanel content = new JPanel(new BorderLayout());
         
         JPanel buttonPanel = new JPanel();
         BoxLayout buttonLayout = new BoxLayout(buttonPanel, BoxLayout.X_AXIS);
-
         buttonPanel.setLayout(buttonLayout);
 
         buttonPanel.add(Box.createHorizontalGlue());
@@ -123,6 +162,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
             }
         });
         buttonPanel.add( printButton );
+
 
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
@@ -154,6 +194,9 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
     }
     
+    protected boolean isPopupVisible() {
+        return ( popupWindow != null && popupWindow.isVisible()) && myPlot.getCanvas() != null;
+    }
     
     public void dataRangeSelected(DataRangeSelectionEvent e) {
         QDataSet ds = e.getDataSet();
@@ -169,8 +212,10 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         if ( xValue2.equals(xValue1) ) {
             return;
         }
-        
-        this.setTitle( new DatumRange( xValue1, xValue2 ).toString() );
+
+        if (!isPopupVisible()) {
+            showPopup();
+        }
         
         RebinDescriptor ddX = new RebinDescriptor(xValue1, xValue2, 1, false);
         ddX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
@@ -182,23 +227,13 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         } catch (DasException de) {
             //Do nothing.
         }
-        
-        if (!(popupWindow == null || popupWindow.isVisible()) || getCanvas() == null) {
-            showPopup();
-        } else {
-            repaint();
-        }
+
+        yValue= e.getReference();
+
+        myPlot.setTitle( new DatumRange( xValue1, xValue2 ).toString() );
+
+        //eventBirthMilli= e.birthMilli;
     }
     
-    @Override
-    protected void uninstallComponent() {
-        super.uninstallComponent();
-    }
-    
-    @Override
-    protected void installComponent() {
-        super.installComponent();
-        getCanvas().getGlassPane().setVisible(false);
-    }
-    
+
 }
