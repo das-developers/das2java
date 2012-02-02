@@ -889,29 +889,30 @@ public class SeriesRenderer extends Renderer {
         psym.draw(g, dcmx, dcmy, (float) symSize, fillStyle);
         psymImage = image;
 
-        if (colorBar != null) {
-            IndexColorModel model = colorBar.getIndexColorModel();
-            coloredPsyms = new Image[model.getMapSize()];
-            for (int i = 0; i < model.getMapSize(); i++) {
-                Color c = new Color(model.getRGB(i));
-                image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
-                g = (Graphics2D) image.getGraphics();
-                g.setBackground(lparent.getBackground());
-
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
-                g.setColor(c);
-                g.setStroke(new BasicStroke((float) lineWidth));
-
-                psym.draw(g, dcmx, dcmy, (float) symSize, this.fillStyle);
-                coloredPsyms[i] = image;
-            }
-
+        if (  colorByDataSetId != null && !colorByDataSetId.equals("") ) {
+            initColoredPsyms(sx, sy, image, g, lparent, rendering, dcmx, dcmy);
         }
 
         cmx = (int) dcmx;
         cmy = (int) dcmy;
 
         update();
+    }
+
+    private void initColoredPsyms(int sx, int sy, BufferedImage image, Graphics2D g, DasPlot lparent, Object rendering, double dcmx, double dcmy) {
+        IndexColorModel model = colorBar.getIndexColorModel();
+        coloredPsyms = new Image[model.getMapSize()];
+        for (int i = 0; i < model.getMapSize(); i++) {
+            Color c = new Color(model.getRGB(i));
+            image = new BufferedImage(sx, sy, BufferedImage.TYPE_INT_ARGB);
+            g = (Graphics2D) image.getGraphics();
+            g.setBackground(lparent.getBackground());
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
+            g.setColor(c);
+            g.setStroke(new BasicStroke((float) lineWidth));
+            psym.draw(g, dcmx, dcmy, (float) symSize, this.fillStyle);
+            coloredPsyms[i] = image;
+        }
     }
 
     private void reportCount() {
@@ -1663,6 +1664,7 @@ public class SeriesRenderer extends Renderer {
         String oldVal = this.colorByDataSetId;
         this.colorByDataSetId = colorByDataSetId;
         update();
+        if ( !colorByDataSetId.equals("") ) updatePsym();
         propertyChangeSupport.firePropertyChange("colorByDataSetId", oldVal, colorByDataSetId);
     }
     /**
