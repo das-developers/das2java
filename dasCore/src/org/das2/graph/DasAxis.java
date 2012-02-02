@@ -784,18 +784,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setScanRange( DatumRange range ) {
         DatumRange old= this.scanRange;
         this.scanRange= range;
-        SwingUtilities.invokeLater( new Runnable() {
-            public void run() {
-                DatumRange range= getScanRange();
-                if ( range==null ) {
-                    scanNext.setToolTipText("");
-                    scanPrevious.setToolTipText("");
-                } else {
-                    scanNext.setToolTipText("<html><em><sub>scan limited to<br>"+range.toString());
-                    scanPrevious.setToolTipText("<html><em><sub>scan limited to<br>"+range.toString());
+        if ( scanNext!=null ) { // headless will have null scanNext
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    DatumRange range= getScanRange();
+                    if ( range==null ) {
+                        scanNext.setToolTipText("");
+                        scanPrevious.setToolTipText("");
+                    } else {
+                        scanNext.setToolTipText("<html><em><sub>scan limited to<br>"+range.toString());
+                        scanPrevious.setToolTipText("<html><em><sub>scan limited to<br>"+range.toString());
+                    }
                 }
-            }
-        });
+            });
+        }
         firePropertyChange( PROP_SCAN_RANGE, old, range );
     }
 
