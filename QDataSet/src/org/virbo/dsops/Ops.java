@@ -2335,6 +2335,9 @@ public class Ops {
             QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
 
             UnitsConverter uc= UnitsConverter.IDENTITY;
+            Units dep0u= SemanticOps.getUnits(dep0);
+            Units dep1u= SemanticOps.getUnits(dep1);
+            uc= dep1u.getConverter( dep0u.getOffsetUnits() );
 
             QDataSet filter;
             if ( filt==FFTFilterType.Hanning ) {
