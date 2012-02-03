@@ -2279,7 +2279,7 @@ public class Ops {
         return wds;
     }
 
-    public static enum FFTFilterType{ Hanning };
+    public static enum FFTFilterType{ Hanning, TenPercentEdgeCosine };
 
     public static QDataSet fftFilter( QDataSet ds, int len, FFTFilterType filt ) {
         ProgressMonitor mon=null;
@@ -2342,6 +2342,8 @@ public class Ops {
             QDataSet filter;
             if ( filt==FFTFilterType.Hanning ) {
                 filter= FFTUtil.getWindowHanning(len);
+            } else if ( filt==FFTFilterType.TenPercentEdgeCosine ) {
+                filter= FFTUtil.getWindow10PercentEdgeCosine(len);
             } else {
                 throw new UnsupportedOperationException("unsupported op: "+filt );
             }
