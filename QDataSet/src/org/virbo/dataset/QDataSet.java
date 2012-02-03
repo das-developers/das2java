@@ -289,9 +289,9 @@ public interface QDataSet {
     public final static String COORDINATE_FRAME="COORDINATE_FRAME";
     
     /**
-     * Map<String,Object> representing additional properties used by client codes.  No
+     * Map&lt;String,Object&gt; representing additional properties used by client codes.  No
      * interpretation is done of these properties, but they are passed around as much
-     * as possible.  Note Object can be String, Double, or Map<String,Object>.  METADATA_MODEL
+     * as possible.  Note Object can be String, Double, or Map&lt;String,Object&gt;.  METADATA_MODEL
      * is a string identifying the type of metadata,
      * a scheme for the metadata tree, such as ISTP-CDF or SPASE.
      */
@@ -360,7 +360,7 @@ public interface QDataSet {
     public final static String ELEMENT_LABEL="ELEMENT_LABEL";
 
     /**
-     * Map<String,Object> representing additional properties used by client codes.  No
+     * Map&lt;String,Object&gt; representing additional properties used by client codes.  No
      * interpretation is done of these properties, but they are passed around as much
      * as possible.
      */
