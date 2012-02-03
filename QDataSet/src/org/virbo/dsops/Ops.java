@@ -1488,7 +1488,7 @@ public class Ops {
     }
 
     /**
-     * concatenates the two datasets together, appending the on the zeroth dimension.
+     * concatenates the two datasets together, appending the datasets on the zeroth dimension.
      * The two datasets must be QUBES have similar geometry on the higher dimensions.
      * If one of the datasets is rank 0 and the geometry of the other is rank 1, then
      * the lower rank dataset is promoted before appending.  If the first dataset
