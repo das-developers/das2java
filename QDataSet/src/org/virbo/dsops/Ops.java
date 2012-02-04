@@ -3561,7 +3561,9 @@ public class Ops {
     }
 
     /**
-     * like bundle, but declare the last dataset is dependent on the first one.
+     * link is like the plot command, but doesn't plot.  For example
+     *   plot(x,y) shows a plot of Y(X),
+     *   link(x,y) returns the dataset Y(X).
      *
      * @param x rank 1 dataset
      * @param y rank 1 or rank 2 dataset
@@ -3569,21 +3571,13 @@ public class Ops {
      */
     public static QDataSet link( QDataSet x, QDataSet y ) {
         if (y.rank() == 1) {
-            String xname= (String) x.property(QDataSet.NAME);
-            String yname= (String) y.property(QDataSet.NAME);
-            if ( xname==null ) xname="data0";
-            if ( yname==null ) yname="data1";
-            QDataSet result= bundle( x, y );
-            BundleDataSet.BundleDescriptor bds= (BundleDescriptor) result.property(QDataSet.BUNDLE_1);
-            bds.putProperty( "CONTEXT_0", 1, xname );
-            bds.putProperty( QDataSet.NAME, 0, xname );
-            bds.putProperty( QDataSet.NAME, 1, yname );
-            bds.putProperty( QDataSet.DEPEND_0, 1, xname );
+            ArrayDataSet yds= ArrayDataSet.copy(y);
+            yds.putProperty(QDataSet.DEPEND_0, x);
             List<String> problems= new ArrayList();
-            if ( DataSetUtil.validate(result, problems) ) {
-                return result;
-            } else {
+            if ( !DataSetUtil.validate(yds, problems ) ) {
                 throw new IllegalArgumentException( problems.get(0) );
+            } else {
+                return yds;
             }
         } else {
             ArrayDataSet zds = ArrayDataSet.copy(y);
@@ -3601,7 +3595,10 @@ public class Ops {
     }
 
     /**
-     * like bundle, but declare the last dataset is dependent on the first two.
+     * link is like the plot command, but doesn't plot.  For example
+     *   plot(x,y,z) shows a plot of Z(X,Y),
+     *   link(x,y,z) returns the dataset Z(X,Y).
+     * Note if z is a rank 1 dataset, then a bundle dataset Nx3 is returned, and names are assigned to the datasets
      *
      * @param x rank 1 dataset
      * @param y rank 1 dataset
