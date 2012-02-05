@@ -849,9 +849,7 @@ public class DataSetUtil {
 
         QDataSet wds= DataSetUtil.weightsDataSet(xds);
 
-        // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
-        // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
-        // number in a ever increasing sequence.
+        // check to see if spacing is monotonically increasing or decreasing, and has repeats.
         int monoDecreasing= 0;
         int monoIncreasing= 0;
         int count= 0;
@@ -876,6 +874,7 @@ public class DataSetUtil {
             } else {
                 repeatValues++;
             }
+            last= xds.value(i);
         }
         if ( ( repeatValues + monoIncreasing ) >(9*count/10) ) {
             monoMag= 1;
