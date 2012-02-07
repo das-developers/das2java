@@ -91,14 +91,17 @@ public class FileSystemUtil {
      * return null if the URI is not cacheable, or the URI of the parent if it is.
      *
      * For example,
-     *    URI uri= new URL("http://autoplot.org/data/demos2011.xml").toURI();
-     *    URI parentUri= FileSystemUtil.isCacheable( uri );
-     *    if ( parentUri ) {
-     *        FileSystem fd= FileSystem.create(parentUri);
-              FileObject fo= fd.getFileObject( ruri.relativize(parentUri).toString() );
-              in= fo.getInputStream();
-     *    }
-     *
+     * <pre>
+     * {@code
+     * URI uri= new URL("http://autoplot.org/data/demos2011.xml").toURI();
+     * URI parentUri= FileSystemUtil.isCacheable( uri );
+     * if ( parentUri ) {
+     *     FileSystem fd= FileSystem.create(parentUri);
+     *     FileObject fo= fd.getFileObject( ruri.relativize(parentUri).toString() );
+     *     in= fo.getInputStream();
+     * }
+     * }
+     * </pre>
      * @param rurl
      * @return
      */
