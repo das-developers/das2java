@@ -192,7 +192,7 @@ public class SemanticOps {
         s= s.toLowerCase().trim();
         if ( s.startsWith("sec") || s.equals("s") ) {
             return Units.seconds;
-        } else if ( s.startsWith("ms") || s.startsWith("millisec") ) {
+        } else if ( s.startsWith("ms") || s.startsWith("millisec") || s.startsWith("milliseconds") ) {
             return Units.milliseconds;
         } else if ( s.equals("hr") || s.startsWith("hour") ) {
             return Units.hours;
