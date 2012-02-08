@@ -419,7 +419,7 @@ public class SeriesRenderer extends Renderer {
 
             p = null;
 
-            if (deltaMinusY == null) {
+            if (deltaPlusY == null) {
                 return;
             }
             if (deltaMinusY == null) {
