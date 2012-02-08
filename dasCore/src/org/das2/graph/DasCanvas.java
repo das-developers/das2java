@@ -1053,7 +1053,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param image
      */
     protected void writeToImageImmediately(Image image) {
-        Graphics graphics;
+        Graphics2D graphics;
         try {
             synchronized (displayLockObject) {
                 if (displayLockCount != 0) {
@@ -1062,10 +1062,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         } catch (InterruptedException ex) {
         }
-        graphics = image.getGraphics();
+        graphics = (Graphics2D) image.getGraphics();
         graphics.setColor(this.getBackground());
         graphics.fillRect(0, 0, image.getWidth(this), image.getHeight(this));
         graphics.setColor(this.getForeground());
+        graphics.setBackground(this.getBackground());
         print(graphics);
     }
 
