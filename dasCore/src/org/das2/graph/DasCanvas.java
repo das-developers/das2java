@@ -715,7 +715,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return this.lpaintingForPrint;
     }
 
-    public void print(Graphics g) {
+    @Override
+    public void print(Graphics g1) {
         synchronized (this) {
             if (printingThreads == null) {
                 printingThreads = new HashSet();
@@ -725,10 +726,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         try {
             setOpaque(false);
 
+            Graphics2D g= (Graphics2D)g1;
             // if svg
             g.setColor( this.getBackground() );
             g.fillRect(0,0,getWidth(),getHeight());
             g.setColor( this.getForeground() );
+            g.setBackground( this.getBackground() );
 
             //logger.fine("*** print graphics: " + g);
             //logger.fine("*** print graphics clip: " + g.getClip());
@@ -744,8 +747,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                // }
             //}
             lpaintingForPrint= true;
+
             super.print(g);
+
             lpaintingForPrint= false;
+            
         } finally {
             setOpaque(true);
             synchronized (this) {
