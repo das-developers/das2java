@@ -110,6 +110,9 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
      */
     private void setDatumRange(DatumRange datumRange ) {
         DatumRange oldValue = value;
+//        if ( datumRange.min().gt( datumRange.max() ) ) {
+//            System.err.println("how did we get here!");
+//        }
         value = datumRange;
         Units u= datumRange.getUnits();
         String text= datumRange.toString();
@@ -119,6 +122,15 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
                 text= text.substring(0,n-u.toString().length());
             }
         }
+//        System.err.println("thetext="+text);
+//        try {
+//            DatumRangeUtil.parseTimeRange(text);
+//        } catch ( ParseException ex ) {
+//            ex.printStackTrace();;
+//        } catch ( IllegalArgumentException ex ) {
+//            ex.printStackTrace();;
+//            datumRange.toString();
+//        }
         editor.setText( text );
         setUnits(u);
         if (oldValue != value && oldValue != null && !oldValue.equals(value)) {
