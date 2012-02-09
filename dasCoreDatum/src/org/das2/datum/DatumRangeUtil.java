@@ -1029,6 +1029,9 @@ public class DatumRangeUtil {
                 timeOfDayFormatter.format( self.min() );
                 String sminDay=  daysFormat.format( TimeUtil.prevMidnight( self.min() ) ); //grrr
                 String smaxDay=  daysFormat.format( self.max() );
+                if ( sminDay.compareTo(smaxDay)>0 ) { // Oh-oh, something has gone terribly wrong.  This is a rounding error...
+                    return self.min() + " to " + self.max();
+                } 
                 return sminDay + " " + timeOfDayFormatter.format( self.min() )
                         + " to " + smaxDay + " " + timeOfDayFormatter.format( self.max() );
             }
