@@ -410,10 +410,10 @@ public final class DDataSet extends ArrayDataSet {
         System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
         DDataSet result= new DDataSet( nrank, end-start, len1, len2, len3, newback );
         Map<String,Object> props= DataSetUtil.getProperties(this);
-        props.remove(QDataSet.DEPEND_0);
+        Map<String,Object> depProps= DataSetUtil.trimProperties( this, start, end );
+        props.putAll(depProps);
         DataSetUtil.putProperties( props, result );
-        QDataSet dep0= (QDataSet) property(QDataSet.DEPEND_0);
-        if ( dep0!=null ) result.putProperty( QDataSet.DEPEND_0, dep0.trim(start, end) );  //TODO: there really should be DataSetUtil.trimProperties...
+
         return result;
     }
 
