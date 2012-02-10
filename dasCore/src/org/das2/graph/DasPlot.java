@@ -356,11 +356,18 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         Color warnColor = new Color(255, 255, 100, 200);
-        Color errorColor = new Color(255, 140, 140, 200);
-        for (int i = 0; i < messages.size(); i++) {
-            MessageDescriptor message = (MessageDescriptor) messages.get(i);
+        Color severeColor = new Color(255, 140, 140, 200);
 
-            List<Renderer> renderers1=  Arrays.asList( getRenderers() );
+        List<Renderer> renderers1=  Arrays.asList( getRenderers() );
+        List<MessageDescriptor> lmessages= new ArrayList( this.messages ); // copy to local variable
+
+        for (int i = 0; i < lmessages.size(); i++) {
+            MessageDescriptor message = (MessageDescriptor) lmessages.get(i);
+
+            if ( message.messageType<logLevel.intValue() ) {
+                continue; // skip this message
+            }
+
             Icon icon=null;
             if ( message.renderer!=null && renderers1.size()>1 ) {
                 icon= message.renderer.getListIcon();
@@ -390,8 +397,8 @@ public class DasPlot extends DasCanvasComponent {
             Color backColor = GraphUtil.getRicePaperColor();
             if (message.messageType == DasPlot.WARNING) {
                 backColor = warnColor;
-            } else if (message.messageType == DasPlot.ERROR) {
-                backColor = errorColor;
+            } else if (message.messageType == DasPlot.SEVERE) {
+                backColor = severeColor;
             }
             graphics.setColor(backColor);
             graphics.fillRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
@@ -989,7 +996,6 @@ public class DasPlot extends DasCanvasComponent {
 
         graphics.setClip(null);
 
-        Font font0 = graphics.getFont();
         // --- draw messages ---
         if (messages.size() > 0) {
             drawMessages(graphics);
@@ -1036,6 +1042,10 @@ public class DasPlot extends DasCanvasComponent {
          */
         Renderer renderer;
         String text;
+
+        /**
+         * The severity of the message.  DasPlot.INFO or Level.INFO.intValue().
+         */
         int messageType;
         Datum x;
         Datum y;
@@ -1068,9 +1078,13 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
-    public static final int INFO = 0;
-    public static final int WARNING = 1;
-    public static final int ERROR = 2; // fundbugs okay
+    /**
+     * These levels are now taken from java.util.logging.Level.
+     */
+    public static final int INFO = Level.INFO.intValue();
+    public static final int WARNING = Level.WARNING.intValue();
+    public static final int SEVERE = Level.SEVERE.intValue(); // this was ERROR before Feb 2011.
+
     List messages;
     List<LegendElement> legendElements;
 
@@ -1078,13 +1092,12 @@ public class DasPlot extends DasCanvasComponent {
      * Notify user of an exception, in the context of the plot.  A position in
      * the data space may be specified to locate the text within the data context.
      * Note either or both x or y may be null.  Messages must only be posted while the
-     * Renderer's render method is called.  All messages are cleared before the render
-     * step.
-     * 
+     * Renderer's render method is called, not during updatePlotImage.  All messages are
+     * cleared before the render step. (TODO:check on this)
      * 
      * @param renderer identifies the renderer posting the exception
      * @param text the text to be displayed, may contain granny text.
-     * @param messageType DasPlot.INFORMATION_MESSAGE, DasPlot.WARNING_MESSAGE, or DasPlot.ERROR_MESSAGE.
+     * @param messageType DasPlot.INFO, DasPlot.WARNING, or DasPlot.SEVERE.  (SEVERE was ERROR before)
      * @param x if non-null, the location on the x axis giving context for the text.
      * @param y if non-null, the location on the y axis giving context for the text.
      */
@@ -1097,14 +1110,38 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     /**
-     * notify user of an exception, in the context of the plot.
+     * Notify user of an exception, in the context of the plot.  A position in
+     * the data space may be specified to locate the text within the data context.
+     * Note either or both x or y may be null.  Messages must only be posted while the
+     * Renderer's render method is called, not during updatePlotImage.  All messages are
+     * cleared before the render step. (TODO:check on this)
+     *
+     * @param renderer identifies the renderer posting the exception
+     * @param text the text to be displayed, may contain granny text.
+     * @param messageLevel allows java.util.logging.Level to be used, for example Level.INFO, Level.WARNING, and Level.SEVERE
+     * @param x if non-null, the location on the x axis giving context for the text.
+     * @param y if non-null, the location on the y axis giving context for the text.
+     */
+    public void postMessage(Renderer renderer, String message, Level messageLevel, Datum x, Datum y) {
+        if ( messages==null ) {
+            //system.err.println("don't post messages in updatePlotImage")
+        } else {
+            messages.add(new MessageDescriptor(renderer, message, messageLevel.intValue(), x, y));
+        }
+    }
+
+    /**
+     * notify user of an exception, in the context of the plot.  This is similar
+     * to postMessage(renderer, exception.getMessage(), DasPlot.SEVERE, null, null )
+     * except that it does catch CancelledOperationExceptions and reduced the
+     * severity since the user probably initiated the condition.
      */
     public void postException(Renderer renderer, Exception exception) {
         String message = exception.getMessage();
         if (message == null) {
             message = String.valueOf(exception);
         }
-        int errorLevel = ERROR;
+        int errorLevel = SEVERE;
         if (exception instanceof CancelledOperationException) {
             errorLevel = INFO;
             if (exception.getMessage() == null) {
@@ -1659,6 +1696,21 @@ public class DasPlot extends DasCanvasComponent {
         firePropertyChange(PROP_OVERSIZE, oldOverSize, overSize);
     }
 
+    public static final String PROP_LOG_LEVEL = "logLevel";
+    private Level logLevel= Level.INFO;
+
+    public void setLogLevel( Level level ) {
+        Level oldLevel= this.logLevel;
+        logLevel= level;
+        if ( !oldLevel.equals(level) ) {
+            repaint();
+        }
+        firePropertyChange(PROP_LOG_LEVEL, oldLevel, level );
+    }
+
+    public Level getLogLevel( ) {
+        return logLevel;
+    }
     /**
      * returns the rectangle that renderers should paint so that when they
      * are asked to render, they have everything pre-rendered.  This is
