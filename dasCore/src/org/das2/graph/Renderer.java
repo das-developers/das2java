@@ -381,7 +381,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             s += ":!c" + message;
         }
 
-        parent.postMessage(this, s, DasPlot.ERROR, null, null);
+        parent.postMessage(this, s, DasPlot.SEVERE, null, null);
 
     }
 
