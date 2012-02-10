@@ -22,6 +22,7 @@
  */
 package org.das2.graph;
 
+import java.util.logging.Level;
 import org.das2.DasApplication;
 import org.das2.DasNameException;
 import org.das2.DasProperties;
@@ -106,7 +107,6 @@ import javax.swing.filechooser.FileFilter;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.system.ChangesSupport;
-import org.das2.system.MutatorLock;
 
 /** Canvas for das2 graphics.  The DasCanvas contains any number of DasCanvasComponents such as axes, plots, colorbars, etc.
  * @author eew
@@ -323,10 +323,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return Collections.unmodifiableList(devicePositionList);
     }
 
+    @Override
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);
     }
 
+    @Override
     public void invalidate() {
         super.invalidate();
     }
@@ -506,7 +508,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return Collections.unmodifiableList(devicePositionList);
     }
     private int displayLockCount = 0;
-    private Object displayLockObject = new String("DISPLAY_LOCK_OBJECT");//findbugs DM_STRING_CTOR okay
+    private final Object displayLockObject = new String("DISPLAY_LOCK_OBJECT");//findbugs DM_STRING_CTOR okay
 
     /**
      * Lock the display for this canvas.  All Mouse and Key events are captured
@@ -801,7 +803,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         try {
             logger.fine("Encoding image into png");
             encoder.write((BufferedImage) image, out);
-            logger.fine("write png file " + filename);
+            logger.log(Level.FINE, "write png file {0}", filename);
         } catch (IOException ioe) {
         } finally {
             try {
@@ -816,7 +818,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     public void writeToPDF(String filename) throws IOException {
         try {
             writeToGraphicsOutput(filename, "org.das2.util.awt.PdfGraphicsOutput");
-            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("write pdf file " + filename);
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).log(Level.FINE, "write pdf file {0}", filename);
         } catch (NoClassDefFoundError cnfe) {
             DasExceptionHandler.handle(new RuntimeException("PDF output is not available", cnfe));
         } catch (ClassNotFoundException cnfe) {
@@ -859,7 +861,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     public void writeToSVG(String filename) throws IOException {
         try {
             writeToGraphicsOutput(filename, "org.das2.util.awt.SvgGraphicsOutput");
-            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("write svg file " + filename);
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).log(Level.FINE, "write svg file {0}", filename);
         } catch (ClassNotFoundException cnfe) {
             DasExceptionHandler.handle(new RuntimeException("SVG output is not available", cnfe));
         } catch (InstantiationException ie) {
@@ -971,7 +973,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
         if ( ! this.isShowing() || "true".equals(DasApplication.getProperty("java.awt.headless", "false")) ) {
             this.addNotify();
-            logger.finer("setSize(" + getPreferredSize() + ")");
+            logger.log(Level.FINER, "setSize({0})", getPreferredSize());
             this.setSize(getPreferredSize());
             logger.finer("validate()");
             this.validate();
@@ -1008,7 +1010,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         if ( ! this.isShowing() || "true".equals(DasApplication.getProperty("java.awt.headless", "false")) ) {
             this.addNotify();
-            logger.finer("setSize(" + getPreferredSize() + ")");
+            logger.log(Level.FINER, "setSize({0})", getPreferredSize());
             this.setSize(getPreferredSize());
             logger.finer("validate()");
             this.validate();
@@ -1116,6 +1118,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param constraints
      * @param index
      */
+    @Override
     protected void addImpl(Component comp, Object constraints, int index) {
         if (comp == null) {
             org.das2.util.DasDie.println("NULL COMPONENT");
@@ -1288,6 +1291,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * from this container.
      * @param     index   the index of the component to be removed.
      */
+    @Override
     public void remove(int index) {
         Component comp = this.getComponent(index);
         super.remove(index);
@@ -1504,6 +1508,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             this.p2 = p2;
         }
 
+        @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             if (blocking) {
@@ -1886,6 +1891,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return result;
     }
 
+    @Override
     public String toString() {
         return "[DasCanvas " + this.getWidth() + "x" + this.getHeight() + " " + this.getDasName() + "]";
     }
@@ -1910,7 +1916,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             devicePosition.addPropertyChangeListener((minOrMax == MIN ? "dMinimum" : "dMaximum"), this);
         }
 
-        void refresh() {
+        final void refresh() {
             position = (minOrMax == MIN
                     ? (int) Math.floor(devicePosition.getDMinimum() + 0.5)
                     : (int) Math.floor(devicePosition.getDMaximum() + 0.5));
@@ -1923,10 +1929,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             refresh();
         }
 
-        /** TODO
-         * @param o
-         * @return
-         */
+        @Override
         public boolean equals(Object o) {
             if (o instanceof HotLine) {
                 HotLine h = (HotLine) o;
@@ -1935,16 +1938,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             return false;
         }
 
-        /** TODO
-         * @return
-         */
+        @Override
         public int hashCode() {
             return minOrMax * devicePosition.hashCode();
         }
 
-        /** TODO
-         * @return
-         */
+        @Override
         public String toString() {
             return "{" + devicePosition.getDasName() + (minOrMax == MIN ? ", MIN, " : ", MAX, ") + position + "}";
         }
