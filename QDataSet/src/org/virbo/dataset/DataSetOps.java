@@ -1078,7 +1078,7 @@ public class DataSetOps {
 
         QDataSet sort= Ops.sort(ds);
         if ( sort.length()==0 ) {
-            return DataSetUtil.asDataSet( u.getFillDatum() );
+            throw new IllegalArgumentException("unable to getNthPercentileSort, data is all fill");
         }
         
         int idx;
@@ -1126,57 +1126,62 @@ public class DataSetOps {
 
 
     /**
-     * normalize the level-th percentile from:
+     * normalize the nth-level percentile from:
      *   rank 1: each element 
      *   rank 2: each row of the dataset
      *   rank 3: each row of each rank 2 dataset slice.
      * There must be at least 10 elements.  If the data is already in dB, then the result is a difference.
      * @param ds
-     * @param level the percentile level.  
-     * @return
+     * @param level the percentile level, e.g. 10= 10%
+     * @return the result dataset, in dB above background.
      */
-    public static QDataSet removeBackground1( QDataSet ds, double level ) {
+    public static QDataSet dbAboveBackgroundDim1( QDataSet ds, double level ) {
     
         if ( ds.rank()<3 && ds.length()<10 ) {
             throw new IllegalArgumentException("not enough elements: "+ds);
         }
 
+        MutablePropertyDataSet result;
 
         if ( ds.rank()==1 ) {
             QDataSet back= getBackgroundLevel( ds, level );
-            ds= Ops.copy(ds);
+            result= Ops.copy(ds);
             boolean db= ds.property(QDataSet.UNITS)==Units.dB;
 
+            WritableDataSet wds= (WritableDataSet)result;
             for ( int ii=0; ii<ds.length(); ii++ ) {
-                WritableDataSet wds= (WritableDataSet) ds;
-                double v= db ? wds.value(ii) - back.value() : 20 * Math.log10( wds.value(ii) / back.value() );
+                double v= db ? ds.value(ii) - back.value() : 20 * Math.log10( ds.value(ii) / back.value() );
                 wds.putValue( ii,Math.max( 0,v ) );
             }
 
         } else if ( ds.rank()==2 ) {
             QDataSet back= getBackgroundLevel( ds, level );
-            ds= Ops.copy(ds);
+            result= Ops.copy(ds);
             boolean db= ds.property(QDataSet.UNITS)==Units.dB;
 
+            WritableDataSet wds= (WritableDataSet)result;
             for ( int jj=0; jj<ds.length(0); jj++ ) {
                 for ( int ii=0; ii<ds.length(); ii++ ) {
-                    WritableDataSet wds= (WritableDataSet) ds;
-                    double v= db ? wds.value(ii,jj) - back.value(jj) : 20 * Math.log10( wds.value(ii,jj) / back.value(jj) );
+                    double v= db ? ds.value(ii,jj) - back.value(jj) : 20 * Math.log10( ds.value(ii,jj) / back.value(jj) );
                     wds.putValue( ii,jj, Math.max( 0,v ) );
                 }
             }
 
         } else {
-            JoinDataSet result= new JoinDataSet(ds.rank());
+            JoinDataSet result1= new JoinDataSet(ds.rank());
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet ds1= ds.slice(i);
-                QDataSet r1= removeBackground1( ds1, level );
-                result.join(r1);
+                QDataSet r1= dbAboveBackgroundDim1( ds1, level );
+                result1.join(r1);
             }
-            return result;
+            result= result1;
         }
 
-        return (MutablePropertyDataSet)ds;
+        result.putProperty( QDataSet.UNITS, Units.dB );
+        result.putProperty( QDataSet.TYPICAL_MIN, 0 );
+        result.putProperty( QDataSet.TYPICAL_MAX, 120 );
+
+        return result;
     }
 
     /**
@@ -1186,18 +1191,20 @@ public class DataSetOps {
      *   rank 3: each column of each rank 2 dataset slice.
      * There must be at least 10 elements.  If the data is already in dB, then the result is a difference.
      * @param ds
-     * @param level the percentile level.
-     * @return
+     * @param level the percentile level, e.g. 10= 10%
+     * @return the result dataset, in dB above background.
      */
-    public static QDataSet removeBackground0( QDataSet ds, double level ) {
+    public static QDataSet dbAboveBackgroundDim0( QDataSet ds, double level ) {
+
+        MutablePropertyDataSet result;
 
         if ( ds.rank()==1 ) {
             QDataSet back= getBackgroundLevel( ds, level );
-            ds= Ops.copy(ds);
+            result= Ops.copy(ds);
             boolean db= ds.property(QDataSet.UNITS)==Units.dB;
 
+            WritableDataSet wds= (WritableDataSet) result;
             for ( int ii=0; ii<ds.length(); ii++ ) {
-                WritableDataSet wds= (WritableDataSet) ds;
                 double v= db ? wds.value(ii) - back.value() : 20 * Math.log10( wds.value(ii) / back.value() );
                 wds.putValue( ii,Math.max( 0,v ) );
             }
@@ -1205,7 +1212,7 @@ public class DataSetOps {
         } else if ( ds.rank()==2 ) {
             boolean db= ds.property(QDataSet.UNITS)==Units.dB;
 
-            JoinDataSet result= new JoinDataSet(ds.rank());
+            JoinDataSet result1= new JoinDataSet(ds.rank());
             for ( int ii=0; ii<ds.length(); ii++ ) {
                 QDataSet ds1= ds.slice(ii);
                 QDataSet back= getBackgroundLevel( ds1, level );
@@ -1215,20 +1222,25 @@ public class DataSetOps {
                     double v= db ? wds.value(jj) - back.value() : 20 * Math.log10( wds.value(jj) / back.value() );
                     wds.putValue( jj, Math.max( 0,v ) );
                 }
-                result.join(wds);
+                result1.join(wds);
             }
-            result.putProperty(QDataSet.DEPEND_0,ds.property(QDataSet.DEPEND_0));
-            return result;
-
+            result1.putProperty(QDataSet.DEPEND_0,ds.property(QDataSet.DEPEND_0));
+            result= result1;
+            
         } else {
-            JoinDataSet result= new JoinDataSet(ds.rank());
+            JoinDataSet result1= new JoinDataSet(ds.rank());
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet ds1= ds.slice(i);
-                QDataSet r1= removeBackground0( ds1, level );
-                result.join(r1);
+                QDataSet r1= dbAboveBackgroundDim0( ds1, level );
+                result1.join(r1);
             }
-            return result;
+            result= result1;
+            
         }
+
+        result.putProperty( QDataSet.UNITS, Units.dB );
+        result.putProperty( QDataSet.TYPICAL_MIN, 0 );
+        result.putProperty( QDataSet.TYPICAL_MAX, 120 );
 
         return (MutablePropertyDataSet)ds;
     }
@@ -1401,15 +1413,16 @@ public class DataSetOps {
                 double[] aa= new double[args.size()];
                 for ( int j=0; j<aa.length; j++ ) aa[j]= args.get(j).doubleValue();
                 fillDs= Ops.contour( fillDs, DataSetUtil.asDataSet( aa ) );
-            } else if ( cmd.equals("|removeBackground1") ) { // remove the background across slices
+                
+            } else if ( cmd.equals("|dbAboveBackgroundDim1") ) { // remove the background across slices
                 String qrg= s.next();
                 int iarg= Integer.parseInt(qrg);
-                fillDs= DataSetOps.removeBackground1( fillDs, iarg );
+                fillDs= DataSetOps.dbAboveBackgroundDim1( fillDs, iarg );
 
-            } else if ( cmd.equals("|removeBackground0") ) { // remove the background within slices
+            } else if ( cmd.equals("|dbAboveBackgroundDim0") ) { // remove the background within slices
                 String qrg= s.next();
                 int iarg= Integer.parseInt(qrg);
-                fillDs= DataSetOps.removeBackground0( fillDs, iarg );
+                fillDs= DataSetOps.dbAboveBackgroundDim0( fillDs, iarg );
 
             } else {
                 if ( !cmd.equals("") ) System.err.println( "command not recognized: \""+cmd +"\"" );
