@@ -280,9 +280,26 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 }
             } else if (plotImage != null) {
                 if ( unitsWarning ) {
-                    parent.postMessage( this, "zaxis units changed from \""+SemanticOps.getUnits(getDataSet()) + "\" to \"" + colorBar.getUnits() + "\"", DasPlot.WARNING, null, null );
+                    QDataSet zds= getDataSet();
+                    QDataSet xds=null, yds=null;
+                    if ( zds.rank()==2 ) {
+                        xds= SemanticOps.xtagsDataSet(zds);
+                        yds= SemanticOps.ytagsDataSet(zds);
+                    } else if ( zds.rank()==3 ) {
+                        xds= SemanticOps.xtagsDataSet(zds.slice(0));
+                        yds= SemanticOps.ytagsDataSet(zds.slice(0));
+                    }
+                    if ( ! SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits()) ) {
+                        parent.postMessage(this, "yaxis units changed from "+SemanticOps.getUnits(yds)+" to "+ yAxis.getUnits(), DasPlot.INFO, null, null);
+                    }
+                    if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
+                        parent.postMessage(this, "xaxis units changed from "+SemanticOps.getUnits(xds)+" to "+xAxis.getUnits(), DasPlot.INFO, null, null);
+                    }
+                    if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
+                        parent.postMessage( this, "zaxis units changed from \""+SemanticOps.getUnits(getDataSet()) + "\" to \"" + colorBar.getUnits() + "\"", DasPlot.WARNING, null, null );
+                    }
                 }
-
+                
                 Point2D p;
                 p = new Point2D.Float( plotImageBounds.x, plotImageBounds.y );
                 int x = (int) (p.getX() + 0.5);
@@ -393,6 +410,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     }
 
+    private static RebinDescriptor convertUnitsTo( RebinDescriptor in, Units newUnits ) {
+        RebinDescriptor result= new RebinDescriptor(
+                                newUnits.createDatum(in.binStarts()[0]),
+                                newUnits.createDatum(in.binStops()[in.numberOfBins()-1]),
+                                in.numberOfBins(), in.isLog() );
+        return result;
+    }
+
     public synchronized void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
         logger.finer("entering SpectrogramRenderer.updatePlotImage");
         updateImageCount++;
@@ -411,6 +436,22 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             try {
 
                 BufferedImage plotImage2;  // index color model
+
+                Units xunits=null, yunits=null;
+
+                if ( fds!=null && fds.length()>0 ) {
+                    if ( fds.rank()==2 ) {
+                        xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds) );
+                        if ( SemanticOps.isJoin(fds) ) {//TODO: vap+junorpw:file:///media/mini/ct/pw/juno/oct2010/test_2010_10_26T20.lrs.ucal
+                            yunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds.slice(0)) );
+                        } else {
+                            yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds) );
+                        }
+                    } else {
+                        xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds.slice(0)) );
+                        yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds.slice(0)) );
+                    }
+                }
 
                 synchronized (lockObject) {
 
@@ -454,7 +495,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             return;
                         }
 
-                        Units xunits, yunits;
                         if ( fds.rank()==2 ) {
                             xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds) );
                             if ( SemanticOps.isJoin(fds) ) {//TODO: vap+junorpw:file:///media/mini/ct/pw/juno/oct2010/test_2010_10_26T20.lrs.ucal
@@ -467,19 +507,28 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds.slice(0)) );
                         }
 
+                        unitsWarning= false;
                         if ( !xunits.isConvertableTo(xAxis.getUnits()) ) {
-                            logger.fine("dataset units are incompatable with x axis.");
-                            plotImage = null;
-                            plotImageBounds= null;
-                            return;
+                            if ( UnitsUtil.isRatioMeasurement( xunits ) && UnitsUtil.isRatioMeasurement( xAxis.getUnits() ) ) {
+                                unitsWarning= true;
+                            } else {
+                                logger.fine("dataset units are incompatable with x axis.");
+                                plotImage = null;
+                                plotImageBounds= null;
+                                return;
+                            }
                         }
 
 
                         if ( !yunits.isConvertableTo(yAxis.getUnits()) ) {
-                            logger.fine("dataset units are incompatable with y axis.");
-                            plotImage = null;
-                            plotImageBounds= null;
-                            return;
+                             if ( UnitsUtil.isRatioMeasurement( yunits ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
+                                unitsWarning= true;
+                            } else {
+                                logger.fine("dataset units are incompatable with y axis.");
+                                plotImage = null;
+                                plotImageBounds= null;
+                                return;
+                            }
                         }
 
                         if ( !( SemanticOps.isTableDataSet(fds) ) ) {
@@ -510,6 +559,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 yAxis.invTransform(plotImageBounds2.y),
                                 plotImageBounds2.height,
                                 yAxis.isLog());
+
+                        if ( !xunits.isConvertableTo(xAxis.getUnits()) ) {
+                            xRebinDescriptor= convertUnitsTo(xRebinDescriptor, xunits);
+                        }
+
+                        if ( !yunits.isConvertableTo(yAxis.getUnits()) ) {
+                            yRebinDescriptor= convertUnitsTo(yRebinDescriptor, yunits);
+                        }
 
                         imageXRange = xAxis.getDatumRange();
                         imageYRange = yAxis.getDatumRange();
@@ -592,6 +649,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         QDataSet bounds= bounds(fds);
                         DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true );
                         DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
+                        if ( xunits!=null && !xunits.isConvertableTo(xAxis.getUnits()) ) {
+                            xdr= new DatumRange( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits()),xAxis.getUnits() );
+                        }
+                        if ( yunits!=null && !yunits.isConvertableTo(yAxis.getUnits()) ) {
+                            ydr= new DatumRange( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits()),yAxis.getUnits() );
+                        }
                         double[] yy= GraphUtil.transformRange( yAxis, ydr );
                         double[] xx= GraphUtil.transformRange( xAxis, xdr );
                         selectionArea= rr.intersection( new Rectangle( (int)xx[0], (int)yy[0], (int)(xx[1]-xx[0]), (int)(yy[1]-yy[0]) ) );
