@@ -34,6 +34,7 @@ public class DasPlotBeanInfo extends AccessLevelBeanInfo {
         new Property("preview", AccessLevel.DASML, "isPreviewEnabled", "setPreviewEnabled", null ),
         new Property("oversize", AccessLevel.DASML, "isOverSize", "setOverSize", null ),
         new Property("legendPosition", AccessLevel.DASML, "getLegendPosition", "setLegendPosition", null ),
+        new Property("setLogLevel", AccessLevel.DASML, "getLogLevel", "setLogLevel", null ),
         new Property("renderers", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getRenderers", null, "getRenderer", null, null),
         new Property("xAxis", AccessLevel.DASML,  PersistenceLevel.PERSISTENT, "getXAxis", "setXAxis", null),
         new Property("yAxis", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getYAxis", "setYAxis", null),
