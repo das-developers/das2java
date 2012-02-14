@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -1153,6 +1154,7 @@ public class DataSetOps {
                 double v= db ? ds.value(ii) - back.value() : 20 * Math.log10( ds.value(ii) / back.value() );
                 wds.putValue( ii,Math.max( 0,v ) );
             }
+            result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
 
         } else if ( ds.rank()==2 ) {
             QDataSet back= getBackgroundLevel( ds, level );
@@ -1166,7 +1168,8 @@ public class DataSetOps {
                     wds.putValue( ii,jj, Math.max( 0,v ) );
                 }
             }
-
+            result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
+            
         } else {
             JoinDataSet result1= new JoinDataSet(ds.rank());
             for ( int i=0; i<ds.length(); i++ ) {
@@ -1180,6 +1183,7 @@ public class DataSetOps {
         result.putProperty( QDataSet.UNITS, Units.dB );
         result.putProperty( QDataSet.TYPICAL_MIN, 0 );
         result.putProperty( QDataSet.TYPICAL_MAX, 120 );
+        result.putProperty( QDataSet.SCALE_TYPE, "linear" );
 
         return result;
     }
@@ -1208,7 +1212,7 @@ public class DataSetOps {
                 double v= db ? wds.value(ii) - back.value() : 20 * Math.log10( wds.value(ii) / back.value() );
                 wds.putValue( ii,Math.max( 0,v ) );
             }
-
+            result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
         } else if ( ds.rank()==2 ) {
             boolean db= ds.property(QDataSet.UNITS)==Units.dB;
 
@@ -1241,6 +1245,7 @@ public class DataSetOps {
         result.putProperty( QDataSet.UNITS, Units.dB );
         result.putProperty( QDataSet.TYPICAL_MIN, 0 );
         result.putProperty( QDataSet.TYPICAL_MAX, 120 );
+        result.putProperty( QDataSet.SCALE_TYPE, "linear" );
 
         return (MutablePropertyDataSet)result;
     }
