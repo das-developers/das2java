@@ -82,6 +82,7 @@ public class Ops {
      * @return
      */
     public static MutablePropertyDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
+        //TODO: handle JOIN from RPWS group, which is not a QUBE...
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
         QDataSet wds= DataSetUtil.weightsDataSet(ds1);
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
@@ -128,7 +129,7 @@ public class Ops {
      * @return
      */
     public static MutablePropertyDataSet applyBinaryOp( QDataSet ds1, QDataSet ds2, BinaryOp op ) {
-
+        //TODO: handle JOIN from RPWS group, which is not a QUBE...
         if ( ds1.rank()==ds2.rank() && ds1.rank()>0 ) {
             if ( ds1.length()!=ds2.length() ) {
                 throw new IllegalArgumentException("binary option on datasets of different lengths: "+ ds1 + " " + ds2 );
@@ -186,6 +187,7 @@ public class Ops {
     }
 
     public static MutablePropertyDataSet applyBinaryOp(QDataSet ds1, double d2, BinaryOp op) {
+        //TODO: handle JOIN from RPWS group, which is not a QUBE...
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
 
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
@@ -684,7 +686,12 @@ public class Ops {
      * @return
      */
     public static QDataSet sqrt(QDataSet ds) {
-        MutablePropertyDataSet result= (MutablePropertyDataSet) pow(ds, 0.5);
+        //MutablePropertyDataSet result= (MutablePropertyDataSet) pow(ds, 0.5);
+        MutablePropertyDataSet result= applyUnaryOp( ds, new UnaryOp() {
+            public double op(double d1) {
+                return Math.sqrt(d1);
+            }
+        } );
         result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds, "sqrt" ) );
         return result;
     }
