@@ -1242,7 +1242,7 @@ public class DataSetOps {
         result.putProperty( QDataSet.TYPICAL_MIN, 0 );
         result.putProperty( QDataSet.TYPICAL_MAX, 120 );
 
-        return (MutablePropertyDataSet)ds;
+        return (MutablePropertyDataSet)result;
     }
 
     /**
