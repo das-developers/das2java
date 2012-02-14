@@ -796,7 +796,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             w=(int) p.getWidth();
             h=(int) p.getHeight();
         }
-        Image image = getImage(h,w);
+        Image image = getImage(w,h);
 
         DasPNGEncoder encoder = new DasPNGEncoder();
         encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
