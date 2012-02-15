@@ -903,7 +903,7 @@ public class DataSetOps {
             if ( bundle0==null ) {
                 bundle0= (QDataSet) bundleDs.property(QDataSet.DEPEND_0); //simple legacy bundle was once DEPEND_1.
                 if ( bundle0==null ) {
-                    throw new IllegalArgumentException( "Neither BUNDLE_0 nor DEPEND_0 found on dataset passed to unbundle command.");
+                    return new Slice0DataSet( bundleDs, ib );
                 }
                 if ( bundle0!=null && bundle0.rank()>1 ) {
                     throw new IllegalArgumentException("high rank DEPEND_0 found where rank 1 was expected");
