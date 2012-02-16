@@ -2446,6 +2446,8 @@ public class Ops {
                 result.join(pow1);
             }
             mon.finished();
+
+            result.putProperty( QDataSet.QUBE, Boolean.TRUE );
             return result;
 
         } else if ( ds.rank()==2 ) {
@@ -2478,12 +2480,15 @@ public class Ops {
                 }
             }
 
+            double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
             if ( dep1!=null && dep1.rank()==1 ) {
                 QDataSet ytags= FFTUtil.getFrequencyDomainTagsForPower( dep1.trim(0,len) );
                 if ( translation==null ) result.putProperty( QDataSet.DEPEND_1, ytags );
                 Units dep1Units= (Units) dep1.property(QDataSet.UNITS);
                 Units dep0Units= (Units) dep0.property(QDataSet.UNITS);
                 if ( dep0Units!=null && dep1Units!=null ) uc= dep1Units.getConverter(dep0Units.getOffsetUnits());
+                if ( dep0.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0.property(QDataSet.VALID_MIN)).doubleValue();
+                if ( dep0.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0.property(QDataSet.VALID_MAX)).doubleValue();
             }
 
             int len1= ds.length(0)/len;
@@ -2502,6 +2507,8 @@ public class Ops {
                     if ( !Boolean.TRUE.equals( dep0i.property(QDataSet.MONOTONIC) ) ) {
                         isMono= false;
                     }
+                    if ( dep0i.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0i.property(QDataSet.VALID_MIN)).doubleValue(); else minD= Double.NEGATIVE_INFINITY;
+                    if ( dep0i.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0i.property(QDataSet.VALID_MAX)).doubleValue(); else minD= Double.POSITIVE_INFINITY;
                 }
 
                 for ( int j=0; j<len1; j++ ) {
@@ -2530,19 +2537,24 @@ public class Ops {
                         ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, fftDep1 );
                     }
 
-                    result.join(vds);
-
+                    double d0=0;
                     if ( dep0!=null && dep1!=null ) {
-                        dep0b.putValue(-1, dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  ) );
-                        dep0b.nextRecord();
+                        d0= dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  );
                     } else if ( dep0!=null ) {
-                        dep0b.putValue(-1, dep0.value(i) );
-                        dep0b.nextRecord();
+                        d0= dep0.value(i);
                     } else if ( dep0i!=null ) {
-                        dep0b.putValue(-1, dep0i.value(j*len) );
-                        dep0b.nextRecord();
+                        d0= dep0i.value(j*len);
                     } else {
                         dep0b= null;
+                    }
+
+
+                    if ( d0>=minD && d0<=maxD) {
+                        result.join(vds);
+                        if ( dep0b!=null ) {
+                            dep0b.putValue(-1, d0 );
+                            dep0b.nextRecord();
+                        }
                     }
 
                     mon.setTaskProgress(i*len1+j);
@@ -2559,6 +2571,8 @@ public class Ops {
                 if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
                 result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
             }
+
+            result.putProperty( QDataSet.QUBE, Boolean.TRUE );
             
             return result;
 
