@@ -34,6 +34,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsutil.QDataSetTableModel;
@@ -204,7 +205,12 @@ public class DisplayDataMouseModule extends MouseModule {
         
         TableColumnModel tcm= new DefaultTableColumnModel();
         try {
-            QDataSet tds=SemanticOps.trim( ds, xrange, yrange );
+            QDataSet tds;
+            if ( DataSetUtil.isQube(ds) ) {
+                tds=SemanticOps.trim( ds, xrange, yrange );
+            } else {
+                tds=SemanticOps.trim( ds, xrange, null ); // this may cause problems else where...
+            }
             tm= new QDataSetTableModel(tds);
             tcm= ((QDataSetTableModel)tm).getTableColumnModel();
         } catch ( RuntimeException ex ) {
