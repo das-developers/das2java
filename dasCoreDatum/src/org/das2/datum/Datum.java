@@ -100,12 +100,12 @@ public class Datum implements Comparable {
     }
     
     /**
-     * returns the magnitude, as long as the Units indicate this is a ratio measurement, and there is a meaningful 0.  For example
-     * "5 Kg" -> 5, but "2012-02-16T00:00" would throw an IllegalArgumentException.  Note this was introduced because often we just need
+     * returns the double value without the unit, as long as the Units indicate this is a ratio measurement, and there is a meaningful 0.
+     * For example "5 Kg" -> 5, but "2012-02-16T00:00" would throw an IllegalArgumentException.  Note this was introduced because often we just need
      * to check to see if a value is zero.
      * @return
      */
-    public double magnitude() {
+    public double value() {
         if ( UnitsUtil.isRatioMeasurement(units) ) {
             return this.doubleValue( this.getUnits() );
         } else {
