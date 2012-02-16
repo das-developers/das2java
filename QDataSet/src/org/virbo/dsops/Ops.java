@@ -2456,6 +2456,11 @@ public class Ops {
             DataSetBuilder dep0b= new DataSetBuilder(1,nsam );
 
             QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            if ( dep0!=null ) { // make sure these are really units we can use
+                Units u0= SemanticOps.getUnits(dep0);
+                if ( UnitsUtil.isNominalMeasurement(u0) ) dep0= null; // nope, we can't use it.
+            }
+
             QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
 
             UnitsConverter uc= UnitsConverter.IDENTITY;
