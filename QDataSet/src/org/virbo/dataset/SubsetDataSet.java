@@ -11,21 +11,33 @@ public class SubsetDataSet extends AbstractDataSet {
     QDataSet[] sorts;
     int[] lens;
 
+    boolean nonQube=false;
+
     public SubsetDataSet( QDataSet source ) {
         this.source= source;
         sorts= new QDataSet[ QDataSet.MAX_RANK ];
         lens= new int[ QDataSet.MAX_RANK ];
         if ( !DataSetUtil.isQube(source) ) {
-            throw new IllegalArgumentException("source must be a qube!");
+            nonQube= true;
         }
         int[] lenss= DataSetUtil.qubeDims(source);
-        for ( int i=0; i<lenss.length; i++ ) {
-            lens[i]= lenss[i];
-            sorts[i]= new IndexGenDataSet(lenss[i]);
+        if ( nonQube ) {
+            lens[0]= source.length();
+            sorts[0]= new IndexGenDataSet(lens[0]);
+            for ( int i=1; i<source.rank(); i++ ) {
+                lens[i]= Integer.MAX_VALUE;
+                sorts[i]= new IndexGenDataSet(lens[i]);
+            }
+        } else {
+            for ( int i=0; i<lenss.length; i++ ) {
+                lens[i]= lenss[i];
+                sorts[i]= new IndexGenDataSet(lenss[i]);
+            }
         }
     }
 
     public void applyIndex( int idim, QDataSet idx ) {
+        if ( nonQube && idim>0 ) throw new IllegalArgumentException("unable to applyIndex on non-qube source dataset");
         sorts[idim]= idx;
         lens[idim]= idx.length();
         if ( idx.rank()>1 ) throw new IllegalArgumentException("rank>1");
@@ -55,17 +67,17 @@ public class SubsetDataSet extends AbstractDataSet {
 
     @Override
     public int length(int i) {
-        return lens[1];
+        return nonQube ? source.length(i) : lens[1];
     }
 
     @Override
     public int length(int i, int j) {
-        return lens[2];
+        return nonQube ? source.length(i,j) : lens[2];
     }
 
     @Override
     public int length(int i, int j, int k) {
-        return lens[3];
+        return nonQube ? source.length(i,j,k) : lens[3];
     }
 
     @Override
