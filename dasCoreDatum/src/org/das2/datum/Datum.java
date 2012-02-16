@@ -41,7 +41,7 @@ public class Datum implements Comparable {
     private Number value;
     private double resolution;
     private DatumFormatter formatter;
-    
+
     /**
      * class backing Datums with a double.
      */
@@ -99,6 +99,21 @@ public class Datum implements Comparable {
         }
     }
     
+    /**
+     * returns the magnitude, as long as the Units indicate this is a ratio measurement, and there is a meaningful 0.  For example
+     * "5 Kg" -> 5, but "2012-02-16T00:00" would throw an IllegalArgumentException.  Note this was introduced because often we just need
+     * to check to see if a value is zero.
+     * @return
+     */
+    public double magnitude() {
+        if ( UnitsUtil.isRatioMeasurement(units) ) {
+            return this.doubleValue( this.getUnits() );
+        } else {
+            throw new IllegalArgumentException("datum is not ratio measurement: "+this );
+        }
+    }
+
+
     /**
      * returns the resolution (or precision) of the datum.  This is metadata for the datum, used
      * primarily to limit the number of decimal places displayed in a string representation,
