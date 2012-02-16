@@ -608,7 +608,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         for ( Painter p : bottomDecorators ) {
             try {
-                p.paint(g);
+                Graphics2D g2= (Graphics2D) g.create(); // create a graphics object in case they reset colors, etc.
+                p.paint(g2);
             } catch ( Exception ex ) {
                 g.drawString( "bottomDecorator causes exception: "+ex.toString(), 20, 20 );
                 ex.printStackTrace();
@@ -1543,7 +1544,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
             for ( Painter p : getCanvas().topDecorators ) {
                 try {
-                    p.paint(g2);
+                    Graphics2D g22= (Graphics2D) g2.create(); // create a graphics object in case they reset colors, etc.
+                    p.paint(g22);
                 } catch ( Exception ex ) {
                     g.drawString( "topDecorator causes exception: "+ex.toString(), 20, 20 );
                     ex.printStackTrace();
