@@ -817,7 +817,16 @@ public class DasPlot extends DasCanvasComponent {
             repaint();
             return;
         }
-        
+
+        if ( isOpaque() ) {
+            Color co= graphics0.getColor();
+            graphics0.setColor(getBackground());
+            Rectangle clip= DasDevicePosition.toRectangle( getRow(),getColumn() );
+            int dy= getRow().top()-this.getY();
+            graphics0.fillRect( 0, dy, clip.width+1, clip.height+dy );
+            graphics0.setColor(co);
+        }
+
         if (!getCanvas().isPrintingThread() && !EventQueue.isDispatchThread()) {
             throw new RuntimeException("not event thread: " + Thread.currentThread().getName());
         }
