@@ -15,7 +15,9 @@ public class SubsetDataSet extends AbstractDataSet {
         this.source= source;
         sorts= new QDataSet[ QDataSet.MAX_RANK ];
         lens= new int[ QDataSet.MAX_RANK ];
-        if ( !DataSetUtil.isQube(source) ) System.err.println("source should be qube, warning you!");
+        if ( !DataSetUtil.isQube(source) ) {
+            throw new IllegalArgumentException("source must be a qube!");
+        }
         int[] lenss= DataSetUtil.qubeDims(source);
         for ( int i=0; i<lenss.length; i++ ) {
             lens[i]= lenss[i];
