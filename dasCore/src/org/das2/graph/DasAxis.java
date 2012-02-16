@@ -3546,7 +3546,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
 
                 public void mouseEntered(MouseEvent e) {
-                    hover = scanRange==null || scanRange.width().magnitude()==0 || ( nextButton ? scanRange.intersects(getDatumRange().next()) : scanRange.intersects(getDatumRange().previous()) );
+                    hover = scanRange==null || scanRange.width().value()==0 || ( nextButton ? scanRange.intersects(getDatumRange().next()) : scanRange.intersects(getDatumRange().previous()) );
                     repaint();
                 }
 
