@@ -434,6 +434,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         this.topDecorators.remove( painter );
         repaint();
     }
+    public void removeTopDecorators() {
+        this.topDecorators.clear( );
+        repaint();
+    }
+
     public boolean hasTopDecorators() {
         return ! this.topDecorators.isEmpty();
     }
@@ -446,6 +451,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         this.bottomDecorators.remove( painter );
         repaint();
     }
+    public void removeBottomDecorators() {
+        this.bottomDecorators.clear( );
+        repaint();
+    }
+
     public boolean hasBottomDecorators() {
         return ! this.bottomDecorators.isEmpty();
     }
@@ -581,8 +591,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         Graphics2D g = (Graphics2D) g1;
 
-        for ( Painter p : bottomDecorators ) p.paint(g);
-
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 textAntiAlias ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
 
@@ -597,6 +605,16 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             g2.fill(g2.getClipBounds());
         }
         g.setColor(getForeground());
+
+        for ( Painter p : bottomDecorators ) {
+            try {
+                p.paint(g);
+            } catch ( Exception ex ) {
+                g.drawString( "bottomDecorator causes exception: "+ex.toString(), 20, 20 );
+                ex.printStackTrace();
+            }
+        }
+
         if (isPrintingThread()) {
             int width, height;
             Date now;
@@ -1523,11 +1541,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             if (dragRenderer != null) {
                 dragRenderer.renderDrag(g2, p1, p2);
             }
-            for ( Painter p:getCanvas().topDecorators ) {
+            for ( Painter p : getCanvas().topDecorators ) {
                 try {
                     p.paint(g2);
-                } catch ( Exception e ) {
-                    e.printStackTrace();
+                } catch ( Exception ex ) {
+                    g.drawString( "topDecorator causes exception: "+ex.toString(), 20, 20 );
+                    ex.printStackTrace();
                 }
             }
             g2.dispose();
