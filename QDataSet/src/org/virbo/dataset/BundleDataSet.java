@@ -178,11 +178,13 @@ public class BundleDataSet extends AbstractDataSet {
         if ( rank==1 ) {
             return DataSetUtil.format(this);
         } else {
-             if ( datasets.size()>4 ) {
-                return "BundleDataSet["+datasets.size()+" datasets: "+ datasets.get(0)+", "+datasets.get(1)+", ...]";
-            } else {
-                return "BundleDataSet["+datasets.size()+" datasets: "+ datasets +" ]";
+            QDataSet dep0= (QDataSet) this.property(QDataSet.DEPEND_0);
+            String dep0name= "";
+            if (dep0 != null) {
+                dep0name = (String) dep0.property(QDataSet.NAME);
+                if ( dep0name==null ) dep0name=""; else dep0name=dep0name+"=";
             }
+            return "BundleDataSet["+dep0name + len0 + "," + datasets.size()+" datasets]";
         }
     }
 
