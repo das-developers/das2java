@@ -255,8 +255,8 @@ public class FFTUtil {
         QDataSet x= timeDomainTags;
         double[] result= new double[x.length()];
         result[0]= 0.;
-        double T= x.value(1)-x.value(0);
         int n= x.length();
+        double T= ( x.value(n-1)-x.value(0) ) / (n-1);
         int n21= n/2+1;
         Units frequencyUnit= UnitsUtil.getInverseUnit( timeUnit.getOffsetUnits() );
         if ( T>0.5 ) {
