@@ -601,7 +601,7 @@ public class DataSetUtil {
             if ( dep0o!=null ) {
                 String dname=null;
                 if ( dep0o instanceof QDataSet ) {
-                    QDataSet dep0 = (QDataSet) dep0o; // BUNDLES can contain strings for DEPEND_x.
+                    QDataSet dep0 = (QDataSet) dep0o;
                     if (dep0 != null) {
                         dname = (String) dep0.property(QDataSet.NAME);
                     }
@@ -1685,6 +1685,28 @@ public class DataSetUtil {
     }
 
     /**
+     * special weightsDataSet for when there is a bundle, and each
+     * component could have its own FILL_VALID and VALID_MAX.  Each component
+     * gets its own weights dataset in a JoinDataSet.
+     * @param ds
+     * @return
+     */
+    public static QDataSet bundleWeightsDataSet( final QDataSet ds ) {
+        QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
+        if ( bds==null ) {
+            throw new IllegalArgumentException("dataset must be bundle");
+        }
+        QDataSet result=null;
+        int nb= ds.length(0);
+        for ( int i=0; i<nb; i++ ) {
+            result= Ops.bundle( result, weightsDataSet( DataSetOps.unbundle(ds,i,false) ) );
+        }
+        ((MutablePropertyDataSet)result).putProperty( QDataSet.FILL_VALUE, -1e38 ); // codes like total assume this property exists.
+        
+        return result;
+    }
+    
+    /**
      * Provide consistent valid logic to operators by providing a QDataSet
      * with >0.0 where the data is valid, and 0.0 where the data is invalid.
      * VALID_MIN, VALID_MAX and FILL_VALUE properties are used.  
@@ -1698,6 +1720,10 @@ public class DataSetUtil {
     public static QDataSet weightsDataSet(final QDataSet ds) {
         QDataSet result = (QDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
         if (result == null) {
+            QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
+            if ( bds!=null ) {
+                return bundleWeightsDataSet(ds);
+            }
             Number validMin = (Number) ds.property(QDataSet.VALID_MIN);
             if (validMin == null) validMin = Double.NEGATIVE_INFINITY;
             Number validMax = (Number) ds.property(QDataSet.VALID_MAX);
