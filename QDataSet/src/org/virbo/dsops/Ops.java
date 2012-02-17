@@ -4,8 +4,6 @@
  */
 package org.virbo.dsops;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.virbo.dataset.BundleDataSet.BundleDescriptor;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.das2.datum.Datum;
@@ -107,6 +105,8 @@ public class Ops {
         m.remove( QDataSet.MONOTONIC );
         m.remove( QDataSet.METADATA_MODEL );
         m.remove( QDataSet.METADATA );
+        m.remove( QDataSet.BUNDLE_1 ); // because this contains FILL_VALUE, etc that are no longer correct.
+        
         DataSetUtil.putProperties( m, result );
         result.putProperty( QDataSet.FILL_VALUE, fill );
         return result;
@@ -179,6 +179,7 @@ public class Ops {
         m3.remove( QDataSet.METADATA_MODEL );
         m3.remove( QDataSet.METADATA );
         m3.remove( QDataSet.UNITS );
+        m3.remove( QDataSet.BUNDLE_1 ); // because this contains FILL_VALUE, etc that are no longer correct.
 
         DataSetUtil.putProperties(m3, result);
         result.putProperty( QDataSet.FILL_VALUE, fill );
@@ -207,6 +208,7 @@ public class Ops {
         props.remove( QDataSet.MONOTONIC );
         props.remove( QDataSet.METADATA_MODEL );
         props.remove( QDataSet.METADATA );
+        props.remove( QDataSet.BUNDLE_1 ); // because this contains FILL_VALUE, etc that are no longer correct.
 
         DataSetUtil.putProperties(props, result);
         result.putProperty( QDataSet.FILL_VALUE, fill );
