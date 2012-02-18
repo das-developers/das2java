@@ -2558,7 +2558,7 @@ public class Ops {
                             dep0b.nextRecord();
                         }
                     } else {
-                        System.err.println("dropping record with invalid timetag: "+d0 );
+                        System.err.println("dropping record with invalid timetag: "+d0 ); //TODO: consider setting VALID_MIN, VALID_MAX instead...
                     }
 
                     mon.setTaskProgress(i*len1+j);
