@@ -257,6 +257,10 @@ public class FFTUtil {
         result[0]= 0.;
         int n= x.length();
         double T= ( x.value(n-1)-x.value(0) ) / (n-1);
+        double Tcheck= x.value(1)-x.value(0);
+        if ( Math.abs( ( T-Tcheck ) / ( T ) ) > 0.001 ) {
+            System.err.println("WARNING: timetags do not appear to be uniform: "+x );
+        }
         int n21= n/2+1;
         Units frequencyUnit= UnitsUtil.getInverseUnit( timeUnit.getOffsetUnits() );
         if ( T>0.5 ) {
