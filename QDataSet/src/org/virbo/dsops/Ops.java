@@ -2510,7 +2510,7 @@ public class Ops {
                         isMono= false;
                     }
                     if ( dep0i.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0i.property(QDataSet.VALID_MIN)).doubleValue(); else minD= Double.NEGATIVE_INFINITY;
-                    if ( dep0i.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0i.property(QDataSet.VALID_MAX)).doubleValue(); else minD= Double.POSITIVE_INFINITY;
+                    if ( dep0i.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0i.property(QDataSet.VALID_MAX)).doubleValue(); else maxD= Double.POSITIVE_INFINITY;
                 }
 
                 for ( int j=0; j<len1; j++ ) {
@@ -2557,6 +2557,8 @@ public class Ops {
                             dep0b.putValue(-1, d0 );
                             dep0b.nextRecord();
                         }
+                    } else {
+                        System.err.println("dropping record with invalid timetag: "+d0 );
                     }
 
                     mon.setTaskProgress(i*len1+j);
