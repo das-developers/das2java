@@ -383,6 +383,12 @@ public class EventsRenderer extends Renderer {
                         for ( int k=em0; k<em1; k++ ) {
                             if ( k>=0 && k<eventMap.length ) eventMap[k]= i;
                         }
+                        if ( this.showLabels ) {
+                            DatumRange dr= new DatumRange( xmins.value(i), xmaxs.value(i), xunits );
+                            Datum d= dr.min();
+                            String text= textSpecifier.getText( dr, d );
+                            g.drawString( text, ixmin+2, row.getDMinimum()+14 );
+                        }
                     }
                 }
 
@@ -421,6 +427,25 @@ public class EventsRenderer extends Renderer {
         super.invalidateParentCacheImage();
     }
     
+    /**
+     * true means draw the event label next to the bar.
+     */
+    protected boolean showLabels = false;
+    public static final String PROP_SHOWLABELS = "showLabels";
+
+    public boolean isShowLabels() {
+        return showLabels;
+    }
+
+    public void setShowLabels(boolean showLabels) {
+        boolean oldShowLabels = this.showLabels;
+        this.showLabels = showLabels;
+        parent.invalidateCacheImage();
+        parent.repaint();
+        propertyChangeSupport.firePropertyChange(PROP_SHOWLABELS, oldShowLabels, showLabels);
+    }
+
+
     /**
      * Holds value of property textSpecifier.
      */
