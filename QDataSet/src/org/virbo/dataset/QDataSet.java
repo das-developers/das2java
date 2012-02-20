@@ -365,6 +365,11 @@ public interface QDataSet {
      * as possible.
      */
     public final static String USER_PROPERTIES="USER_PROPERTIES";
+
+    /**
+     * typical bin is min,max with min inclusive and max exclusive.
+     */
+    public static String VALUE_BINS_MIN_MAX="min,max";
     
     /**
      * returns the rank of the dataset, which is the number of indeces used to access data.  Only rank 1, 2, and 3 datasets
