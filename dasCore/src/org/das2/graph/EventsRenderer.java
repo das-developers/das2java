@@ -225,9 +225,13 @@ public class EventsRenderer extends Renderer {
                         sxmax= sxmaxunits.convertDoubleTo( sxunits, sxmax );
                     }
 
-                    Datum sz= zunits.createDatum( msgs.value(i) );
-                    DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
-                    setLabel( textSpecifier.getText( dr, sz ) );
+                    if ( sxmax<sxmin ) {
+                        setLabel( "Error, sxmax<sxmin");
+                    } else {
+                        Datum sz= zunits.createDatum( msgs.value(i) );
+                        DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
+                        setLabel( textSpecifier.getText( dr, sz ) );
+                    }
                 } else {
                     setLabel(null);
                 }
