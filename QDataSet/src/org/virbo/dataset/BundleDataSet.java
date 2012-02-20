@@ -100,7 +100,7 @@ public class BundleDataSet extends AbstractDataSet {
      * @param i
      * @return
      */
-    QDataSet unbundle(int i) {
+    public QDataSet unbundle(int i) {
         return datasets.get(i);
     }
 
