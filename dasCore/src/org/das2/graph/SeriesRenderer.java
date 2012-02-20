@@ -65,6 +65,7 @@ import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -324,6 +325,10 @@ public class SeriesRenderer extends Renderer {
 
             QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
             vds= ytagsDataSet(dataSet);
+
+            if ( xds.rank()==2 && xds.property( QDataSet.BINS_1 )!=null ) {
+                xds= Ops.reduceMean(xds,1);
+            }
             
             Units xUnits= SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
@@ -478,6 +483,9 @@ public class SeriesRenderer extends Renderer {
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
             QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
+            if ( xds.rank()==2 && xds.property( QDataSet.BINS_1 )!=null ) {
+                xds= Ops.reduceMean(xds,1);
+            }
 
             QDataSet vds= ytagsDataSet( dataSet );
 
@@ -936,6 +944,11 @@ public class SeriesRenderer extends Renderer {
         if ( yds.rank()==2 ) {
             yds= DataSetOps.slice1( yds, 0 );
         }
+
+        if ( xds.rank()==2 ) {
+            xds= DataSetOps.slice1(xds,0); //BINS dataset
+        }
+
         QDataSet wxds= SemanticOps.weightsDataSet( xds );
 
         QDataSet wds;
