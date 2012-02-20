@@ -58,8 +58,15 @@ public class EventsRenderer extends Renderer {
         yrange.putValue(0,0);
         yrange.putValue(1,10);
 
-        QDataSet xmins= SemanticOps.xtagsDataSet(ds);
-        QDataSet xmaxs= DataSetOps.unbundle( ds,1 );
+        QDataSet xmins;
+        QDataSet xmaxs;
+        if ( ds.rank()==1 && !SemanticOps.isBundle(ds) ) {
+            xmins= ds; //vap+inline:2010-002T03:50,2010-002T03:54,2010-002T03:56&RENDER_TYPE=eventsBar
+            xmaxs= ds;
+        } else {
+            xmins= SemanticOps.xtagsDataSet(ds);
+            xmaxs= DataSetOps.unbundle( ds,1 );
+        }
 
         Units u0= SemanticOps.getUnits(xmins);
         Units u1= SemanticOps.getUnits(xmaxs);
@@ -137,10 +144,14 @@ public class EventsRenderer extends Renderer {
     public static final TextSpecifier DEFAULT_TEXT_SPECIFIER= new TextSpecifier() {
         public String getText( DatumRange dr, Datum d ) {
             Datum sy= DatumUtil.asOrderOneUnits( dr.width() );
-            if ( sy.doubleValue( Units.seconds )== 0 ) {
-                return ""+dr.min()+"!c"+d ;
+            if ( dr.width().value()== 0 ) {
+                if ( d.toString().equals(dr.min().toString() ) ) {
+                    return d.toString();
+                } else {
+                    return String.format( "%s!c%s", dr.min(), d ) ;
+                }
             } else {
-                return ""+dr+" ("+sy+")!c"+d ;
+                return String.format( "%s (%s)!c%s", dr, sy, d ) ;
             }
         }
     };
