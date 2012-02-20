@@ -60,9 +60,12 @@ public class EventsRenderer extends Renderer {
 
         QDataSet xmins;
         QDataSet xmaxs;
-        if ( ds.rank()==1 && !SemanticOps.isBundle(ds) ) {
+        if ( ds.rank()==1 && ds.property(QDataSet.DEPEND_0)==null ) {
             xmins= ds; //vap+inline:2010-002T03:50,2010-002T03:54,2010-002T03:56&RENDER_TYPE=eventsBar
             xmaxs= ds;
+        } else if ( ds.rank()==1 && ds.property(QDataSet.DEPEND_0)!=null ) {
+            xmins= (QDataSet)ds.property(QDataSet.DEPEND_0); //vap+inline:2010-002T03:50,2010-002T03:54,2010-002T03:56&RENDER_TYPE=eventsBar
+            xmaxs= xmins;
         } else {
             xmins= SemanticOps.xtagsDataSet(ds);
             xmaxs= DataSetOps.unbundle( ds,1 );
