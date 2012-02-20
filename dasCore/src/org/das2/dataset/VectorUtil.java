@@ -22,6 +22,7 @@ import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
 
 /**
@@ -326,6 +327,10 @@ public class VectorUtil {
         double ay0 = Float.NaN;  // last averaged location
 
         QDataSet wds= SemanticOps.weightsDataSet(ds);
+
+        if ( xds.rank()==2 && xds.property( QDataSet.BINS_1 )!=null ) {
+            xds= Ops.reduceMean(xds,1);
+        }
 
         final Units xunits= SemanticOps.getUnits(xds);
         final Units yunits= SemanticOps.getUnits(ds);
