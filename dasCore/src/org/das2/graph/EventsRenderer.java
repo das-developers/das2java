@@ -26,6 +26,7 @@ import java.awt.geom.GeneralPath;
 import javax.swing.ImageIcon;
 import org.das2.dataset.DataSetUtil;
 import org.das2.datum.Units;
+import org.das2.util.GrannyTextRenderer;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.JoinDataSet;
@@ -340,6 +341,8 @@ public class EventsRenderer extends Renderer {
 
         QDataSet xmins= DataSetOps.unbundle( ds,0 );
         QDataSet xmaxs= DataSetOps.unbundle( ds,1 );
+        QDataSet msgs= DataSetOps.unbundle( ds,ds.length(0)-1 );
+        Units eu= SemanticOps.getUnits( msgs );
         QDataSet color= ds.length(0)>3 ? DataSetOps.unbundle( ds,2 ) : null;
 
         if ( lastException!=null ) {
@@ -360,6 +363,8 @@ public class EventsRenderer extends Renderer {
                 
                 int ivds0= 0;
                 int ivds1= xmins.length();
+
+                GrannyTextRenderer gtr= new GrannyTextRenderer();
 
                 for ( int i=ivds0; i<ivds1; i++ ) {
                     
@@ -389,9 +394,10 @@ public class EventsRenderer extends Renderer {
                         }
                         if ( this.showLabels ) {
                             DatumRange dr= new DatumRange( xmins.value(i), xmaxs.value(i), xunits );
-                            Datum d= dr.min();
+                            Datum d= eu.createDatum( msgs.value(i) );
                             String text= textSpecifier.getText( dr, d );
-                            g.drawString( text, ixmin+2, row.getDMinimum()+14 );
+                            gtr.setString(g1,text);
+                            gtr.draw( g1, ixmin+2, row.getDMinimum()+(int)gtr.getAscent() );
                         }
                     }
                 }
