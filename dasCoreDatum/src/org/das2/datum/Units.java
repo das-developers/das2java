@@ -195,17 +195,20 @@ public abstract class Units {
             Units.days , Basis.modifiedJulian );
     
     /**
-     * cdf epoch milliseconds since midnight, 01-Jan-0000, excluding those with a leap second.  There must be skipped days, because this doesn't yeild 01-Jan-0000 for 0.,
+     * cdf epoch milliseconds since midnight, 01-Jan-0000, excluding those with a leap second.  There must be skipped days, because this doesn't yield 01-Jan-0000 for 0.,
      * but works fine at 1-1-2000., excluding those within a leap second
      */
     public static final TimeLocationUnits cdfEpoch= new TimeLocationUnits("cdfEpoch","milliseconds since 01-Jan-0000", 
             Units.milliseconds, Basis.since0000 );
-    
-    
+
+    public static final TimeLocationUnits cdfTT2000= new TimeLocationUnits("cdfTT2000","nanoseconds since 01-Jan-2000, including leap seconds",
+            Units.nanoseconds, Basis.since2000 );
+
     static {
         ((Units)t2000).registerConverter(us2000, UnitsConverter.MICRO);
         ((Units)us1980).registerConverter(us2000, new UnitsConverter.ScaleOffset(1.0, -631152000000000L ) );
         ((Units)us2000).registerConverter(cdfEpoch, new UnitsConverter.ScaleOffset( 1/1000.,63113904000000L ));
+        ((Units)us2000).registerConverter(cdfTT2000, new UnitsConverter.ScaleOffset( 1000., 0L ) ); //TODO: wrong! doesn't include leap seconds
         ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
         ((Units)t2000).registerConverter(t2010, new UnitsConverter.ScaleOffset(1.0, -3.1561920e+8 ));
         ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 15340 ));
