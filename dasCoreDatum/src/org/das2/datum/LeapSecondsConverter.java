@@ -1,0 +1,147 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.das2.datum;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * TT2000 converter that takes leap seconds into account from us2000.
+ * @author jbf
+ */
+public class LeapSecondsConverter extends UnitsConverter {
+
+    private static List<Long> leapSeconds;
+    private static List<Long> withoutLeapSeconds;
+    private static long lastUpdate=0;
+
+    private static void updateLeapSeconds() throws IOException, MalformedURLException, NumberFormatException {
+        URL url = new URL("http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt");
+        InputStream in;
+        try {
+            in= url.openStream();
+        } catch ( IOException ex ) {
+            url= LeapSecondsConverter.class.getResource("CDFLeapSeconds.txt");
+            in= url.openStream();
+            System.err.println("Using local copy of leap seconds!!!");
+        }
+        
+        BufferedReader r = new BufferedReader(new InputStreamReader(in));
+        String s = "";
+        leapSeconds = new ArrayList(50);
+        withoutLeapSeconds = new ArrayList(50);
+        String lastLine= s;
+        while (s != null) {
+            s = r.readLine();
+            if (s == null) {
+                System.err.println( "Last leap second read from "+url+" "+lastLine );
+                continue;
+            }
+            if (s.startsWith(";")) {
+                continue;
+            }
+            String[] ss = s.trim().split("\\s+", -2);
+            if (ss[0].compareTo("1972") < 0) {
+                continue;
+            }
+            int iyear = Integer.parseInt(ss[0]);
+            int imonth = Integer.parseInt(ss[1]);
+            int iday = Integer.parseInt(ss[2]);
+            int ileap = (int) (Double.parseDouble(ss[3])); // I thought these could only be whole numbers
+            double us2000 = TimeUtil.createTimeDatum(iyear, imonth, iday, 0, 0, 0, 0).doubleValue(Units.us2000);
+            leapSeconds.add( Long.valueOf(((long) us2000) / (long) 1000000 + (long) ( ileap-32 ) * 1000000000) );
+            withoutLeapSeconds.add( Long.valueOf(((long) us2000) / (long) 1000000) );
+        }
+        lastUpdate = System.currentTimeMillis();
+    }
+
+    boolean us2000ToTT2000;
+
+    public LeapSecondsConverter( boolean us2000ToTT2000 ) {
+        this.us2000ToTT2000= us2000ToTT2000;
+        if ( us2000ToTT2000 ) {
+            inverse= new LeapSecondsConverter( !us2000ToTT2000 );
+            inverse.inverse= this;
+        }
+    }
+
+    /**
+     * calculate the number of leap seconds in the tt2000, since 2000.
+     * @param tt2000 the time in tt2000, which include the leap seconds.
+     * @return
+     * @throws Exception
+     */
+    public synchronized static int getLeapSecondCountForUs2000( double us2000 ) throws IOException {
+
+        if ( System.currentTimeMillis()-lastUpdate > 86400000 ) {
+            updateLeapSeconds();
+        }
+
+        if ( us2000 < withoutLeapSeconds.get(0) ) {
+            return 0;
+        }
+
+        for ( int i=0; i<withoutLeapSeconds.size(); i++ ) {
+            if ( withoutLeapSeconds.get(i) <= us2000 && ( i==withoutLeapSeconds.size()-1 || us2000 < withoutLeapSeconds.get(i+1) ) ) {
+                return i+10;
+            }
+        }
+        throw new RuntimeException("code shouldn't get to this point: implementation error...");
+    }
+
+    /**
+     * calculate the number of leap seconds in the tt2000, since 2000.
+     * @param tt2000 the time in tt2000, which include the leap seconds.
+     * @return
+     * @throws Exception
+     */
+    public synchronized static int getLeapSecondCountForTT2000( long tt2000 ) throws IOException {
+
+        if ( System.currentTimeMillis()-lastUpdate > 86400000 ) {
+            updateLeapSeconds();
+        }
+
+        if ( tt2000 < leapSeconds.get(0) ) {
+            return 0;
+        }
+
+        for ( int i=0; i<leapSeconds.size(); i++ ) {
+            if ( leapSeconds.get(i) <= tt2000 && ( i==leapSeconds.size()-1 || tt2000 < leapSeconds.get(i+1) ) ) {
+                return i+10;
+            }
+        }
+        throw new RuntimeException("code shouldn't get to this point: implementation error...");
+    }
+
+    @Override
+    public UnitsConverter getInverse() {
+        return inverse;
+    }
+
+    @Override
+    public double convert(double value) {
+        try {
+            if ( this.us2000ToTT2000 ) {
+                int leapSeconds= getLeapSecondCountForUs2000( value );
+                return ( value * 1000 ) + ( leapSeconds - 32 ) * 1000000000L;
+            } else {
+                int leapSeconds= getLeapSecondCountForTT2000( (long)value );
+                return ( value - ( leapSeconds - 32 ) * 1000000000L ) / 1000.;
+            }
+        } catch ( IOException ex ) {
+            throw new RuntimeException("LeapSeconds file not available.  This should never happen since there is a leapSeconds file within code.",ex);
+        }
+        
+    }
+
+
+}
