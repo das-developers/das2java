@@ -21,8 +21,16 @@ import java.util.List;
 public class LeapSecondsConverter extends UnitsConverter {
 
     private static List<Long> leapSeconds;
-    private static List<Long> withoutLeapSeconds;
+    private static List<Double> withoutLeapSeconds;
     private static long lastUpdate=0;
+    
+    // the following six are a cache...
+    private static double us2000_st= -1;
+    private static double us2000_en= -1;
+    private static int us2000_c=-1;
+    private static long tt2000_st= -1;
+    private static long tt2000_en= -1;
+    private static int tt2000_c=-1;
 
     private static void updateLeapSeconds() throws IOException, MalformedURLException, NumberFormatException {
         URL url = new URL("http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt");
@@ -59,8 +67,11 @@ public class LeapSecondsConverter extends UnitsConverter {
             int ileap = (int) (Double.parseDouble(ss[3])); // I thought these could only be whole numbers
             double us2000 = TimeUtil.createTimeDatum(iyear, imonth, iday, 0, 0, 0, 0).doubleValue(Units.us2000);
             leapSeconds.add( Long.valueOf(((long) us2000) / (long) 1000000 + (long) ( ileap-32 ) * 1000000000) );
-            withoutLeapSeconds.add( Long.valueOf(((long) us2000) / (long) 1000000) );
+            withoutLeapSeconds.add( us2000/1000000 );
         }
+        leapSeconds.add( Long.MAX_VALUE );
+        withoutLeapSeconds.add( Double.MAX_VALUE );
+
         lastUpdate = System.currentTimeMillis();
     }
 
@@ -90,8 +101,11 @@ public class LeapSecondsConverter extends UnitsConverter {
             return 0;
         }
 
-        for ( int i=0; i<withoutLeapSeconds.size(); i++ ) {
+        for ( int i=0; i<withoutLeapSeconds.size()-1; i++ ) {
             if ( withoutLeapSeconds.get(i) <= us2000 && ( i==withoutLeapSeconds.size()-1 || us2000 < withoutLeapSeconds.get(i+1) ) ) {
+                us2000_st= withoutLeapSeconds.get(i);
+                us2000_en= withoutLeapSeconds.get(i+1);
+                us2000_c= i+10;
                 return i+10;
             }
         }
@@ -114,8 +128,11 @@ public class LeapSecondsConverter extends UnitsConverter {
             return 0;
         }
 
-        for ( int i=0; i<leapSeconds.size(); i++ ) {
+        for ( int i=0; i<leapSeconds.size()-1; i++ ) {
             if ( leapSeconds.get(i) <= tt2000 && ( i==leapSeconds.size()-1 || tt2000 < leapSeconds.get(i+1) ) ) {
+                tt2000_st= leapSeconds.get(i);
+                tt2000_en= leapSeconds.get(i+1);
+                tt2000_c= i+10;
                 return i+10;
             }
         }
@@ -128,13 +145,22 @@ public class LeapSecondsConverter extends UnitsConverter {
     }
 
     @Override
-    public double convert(double value) {
+    public synchronized double convert(double value) {
         try {
+            int leapSeconds;
             if ( this.us2000ToTT2000 ) {
-                int leapSeconds= getLeapSecondCountForUs2000( value );
+                if ( us2000_st <= value && value<us2000_en ) {
+                    leapSeconds= us2000_c;
+                } else {
+                    leapSeconds= getLeapSecondCountForUs2000( value );
+                }
                 return ( value * 1000 ) + ( leapSeconds - 32 ) * 1000000000L;
             } else {
-                int leapSeconds= getLeapSecondCountForTT2000( (long)value );
+                if ( tt2000_st <= value && value<tt2000_en ) { // DANGER--rounding...
+                    leapSeconds= tt2000_c;
+                } else {
+                    leapSeconds= getLeapSecondCountForTT2000( (long)value );
+                }
                 return ( value - ( leapSeconds - 32 ) * 1000000000L ) / 1000.;
             }
         } catch ( IOException ex ) {
