@@ -692,11 +692,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     DasColumn column = parent.getColumn();
                     colorBar.setColumn(new DasColumn(null, column, 1.0, 1.0, 1, 2, 0, 0));
                 }
-                SwingUtilities.invokeLater( new Runnable() {
-                    public void run() {
-                        parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
-                    }
-                } );
+                parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
                 if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
                     DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
                     VerticalSpectrogramSlicer vSlicer =
