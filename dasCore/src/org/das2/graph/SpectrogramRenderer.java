@@ -58,6 +58,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
@@ -687,11 +688,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     protected void installRenderer() {
         if (parent != null && parent.getCanvas() != null) {
             if (colorBar != null) {
-//                if (colorBar.getColumn() == DasColumn.NULL) {
-//                    DasColumn column = parent.getColumn();
-//                    colorBar.setColumn(new DasColumn(null, column, 1.0, 1.0, 1, 2, 0, 0));
-//                }
-//                parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
+                if (colorBar.getColumn() == DasColumn.NULL) {
+                    DasColumn column = parent.getColumn();
+                    colorBar.setColumn(new DasColumn(null, column, 1.0, 1.0, 1, 2, 0, 0));
+                }
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
+                    }
+                } );
                 if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
                     DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
                     VerticalSpectrogramSlicer vSlicer =
