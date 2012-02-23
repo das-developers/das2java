@@ -1464,7 +1464,7 @@ public class DataSetOps {
                         s2.next();
                     }
                 }
-                s.next();
+                if ( s.hasNext() ) s.next();
             } else if (cmd.startsWith("|slice") && cmd.length() > 6) {
                 s.nextInt();
                 s2.nextInt();
