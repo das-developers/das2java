@@ -19,10 +19,11 @@ import java.util.List;
  * @author jbf
  */
 public class LeapSecondsConverter extends UnitsConverter {
+    public static final int T1972_LEAP = 10;
 
-    private static List<Long> leapSeconds;
+    private static List<Long> leapSeconds; // number of leap seconds is the index, value is in tt2000.
     private static List<Double> withoutLeapSeconds;
-    private static long lastUpdate=0;
+    private static long lastUpdateMillis=0;
     
     // the following six are a cache...
     private static double us2000_st= -1;
@@ -66,13 +67,13 @@ public class LeapSecondsConverter extends UnitsConverter {
             int iday = Integer.parseInt(ss[2]);
             int ileap = (int) (Double.parseDouble(ss[3])); // I thought these could only be whole numbers
             double us2000 = TimeUtil.createTimeDatum(iyear, imonth, iday, 0, 0, 0, 0).doubleValue(Units.us2000);
-            leapSeconds.add( Long.valueOf(((long) us2000) / (long) 1000000 + (long) ( ileap-32 ) * 1000000000) );
-            withoutLeapSeconds.add( us2000/1000000 );
+            leapSeconds.add( Long.valueOf( ((long) us2000) * 1000L - 43200000000000L + (long) ( ileap-32 ) * 1000000000) );
+            withoutLeapSeconds.add( us2000 );
         }
         leapSeconds.add( Long.MAX_VALUE );
         withoutLeapSeconds.add( Double.MAX_VALUE );
 
-        lastUpdate = System.currentTimeMillis();
+        lastUpdateMillis = System.currentTimeMillis();
     }
 
     boolean us2000ToTT2000;
@@ -87,13 +88,14 @@ public class LeapSecondsConverter extends UnitsConverter {
 
     /**
      * calculate the number of leap seconds in the tt2000, since 2000.
+     * This is intended to replicate the table http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt
      * @param tt2000 the time in tt2000, which include the leap seconds.
      * @return
      * @throws Exception
      */
     public synchronized static int getLeapSecondCountForUs2000( double us2000 ) throws IOException {
 
-        if ( System.currentTimeMillis()-lastUpdate > 86400000 ) {
+        if ( System.currentTimeMillis()-lastUpdateMillis > 86400000 ) {
             updateLeapSeconds();
         }
 
@@ -105,7 +107,7 @@ public class LeapSecondsConverter extends UnitsConverter {
             if ( withoutLeapSeconds.get(i) <= us2000 && ( i==withoutLeapSeconds.size()-1 || us2000 < withoutLeapSeconds.get(i+1) ) ) {
                 us2000_st= withoutLeapSeconds.get(i);
                 us2000_en= withoutLeapSeconds.get(i+1);
-                us2000_c= i+10;
+                us2000_c= i+T1972_LEAP;
                 return i+10;
             }
         }
@@ -114,13 +116,14 @@ public class LeapSecondsConverter extends UnitsConverter {
 
     /**
      * calculate the number of leap seconds in the tt2000, since 2000.
+     * This is intended to replicate the table http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt
      * @param tt2000 the time in tt2000, which include the leap seconds.
      * @return
      * @throws Exception
      */
     public synchronized static int getLeapSecondCountForTT2000( long tt2000 ) throws IOException {
 
-        if ( System.currentTimeMillis()-lastUpdate > 86400000 ) {
+        if ( System.currentTimeMillis()-lastUpdateMillis > 86400000 ) {
             updateLeapSeconds();
         }
 
@@ -154,14 +157,14 @@ public class LeapSecondsConverter extends UnitsConverter {
                 } else {
                     leapSeconds= getLeapSecondCountForUs2000( value );
                 }
-                return ( value * 1000 ) + ( leapSeconds - 32 ) * 1000000000L;
+                return ( value * 1000 - 43200000000000L ) + ( leapSeconds - 32 + 64.184 ) * 1000000000L;
             } else {
                 if ( tt2000_st <= value && value<tt2000_en ) { // DANGER--rounding...
                     leapSeconds= tt2000_c;
                 } else {
                     leapSeconds= getLeapSecondCountForTT2000( (long)value );
                 }
-                return ( value - ( leapSeconds - 32 ) * 1000000000L ) / 1000.;
+                return ( ( value - (  leapSeconds - 32 + 64.184  ) * 1000000000L ) + 43200000000000L ) / 1000.; // tt = TAI + 32.184 s = UTC + 32 + 32.184 = UTC + 64.184s, see jbf@space.physics.uiowa.edu email at 2012-02-23 12:57 CST
             }
         } catch ( IOException ex ) {
             throw new RuntimeException("LeapSeconds file not available.  This should never happen since there is a leapSeconds file within code.",ex);
