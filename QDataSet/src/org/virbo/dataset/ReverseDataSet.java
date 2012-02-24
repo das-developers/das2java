@@ -47,7 +47,7 @@ public class ReverseDataSet extends AbstractDataSet {
             }
         } else {
             if ( this.properties.containsKey(name) ) {
-                return name;
+                return this.properties.get(name);
             } else {
                 return source.property(name);
             }
