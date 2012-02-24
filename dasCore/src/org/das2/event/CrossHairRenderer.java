@@ -171,11 +171,11 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         int start, end;
         Point2D.Double me = new Point2D.Double(xa.transform(x), ya.transform(y));
         if (xmono != null && xmono.equals(Boolean.TRUE)) {
-            start = DataSetUtil.getPreviousIndex(ds, xa.getDataMinimum());
-            end = DataSetUtil.getNextIndex(ds, xa.getDataMaximum());
+            start = DataSetUtil.getPreviousIndex(xds, xa.getDataMinimum());
+            end = DataSetUtil.getNextIndex(xds, xa.getDataMaximum());
         } else {
             start = 0;
-            end = ds.length();
+            end = xds.length();
         }
 
         int bestIndex = -1;
