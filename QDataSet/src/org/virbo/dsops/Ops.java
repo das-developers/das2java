@@ -1247,6 +1247,55 @@ public class Ops {
     }
 
     /**
+     * return a rank 1 dataset of times.  All inputs should be rank 1 dataset (for now) or null.
+     * @param years the years. (2010) Less than 100 is interpreted as 19xx.
+     * @param mons the months (1..12), or null.  If null, then days are day of year
+     * @param days the day of month (1..28) or day of year.
+     * @param hour null or the hours of the day.
+     * @param minute null or the minutes of the day
+     * @param second null or the seconds of the day
+     * @param nano null or the nanoseconds (1e-9) of the day
+     * @return
+     */
+    public static QDataSet toTimeDataSet( QDataSet years, QDataSet mons, QDataSet days, QDataSet hour, QDataSet minute, QDataSet second, QDataSet nano ) {
+        DDataSet result= DDataSet.createRank1(years.length());
+        result.putProperty( QDataSet.UNITS, Units.us2000 );
+        if ( years.length()==0 ) {
+            throw new IllegalArgumentException("Empty year array");
+        }
+
+        if ( years.value(0)<100 ) {
+            years= add( years, DataSetUtil.asDataSet(1900) );
+        }
+
+        if ( mons==null ) {
+            mons= Ops.ones( years.length() );
+        }
+        // handle nulls with one array, and avoid condition tests within the loop
+        QDataSet zeros= Ops.zeros( years.length() );  //TODO: rewrite with zerosDataSet that doesn't allocate space
+        if ( hour==null ) hour= zeros;
+        if ( minute==null ) minute= zeros;
+        if ( second==null ) second= zeros;
+        if ( nano==null ) nano= zeros;
+
+        for ( int i=0; i<result.length(); i++ ) {
+            int year= (int)years.value(i);
+            int month= (int)mons.value(i);
+            int day= (int)days.value(i);
+
+            int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+                    3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+                    275 * month / 9 + day + 1721029;
+            double microseconds = second.value(i)*1e6 + hour.value(i)*3600e6 + minute.value(i)*60e6 + nano.value(i)/1e3;
+            double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 )) + microseconds;
+            result.putValue( i, us2000 );
+
+        }
+
+        return result;
+    }
+
+    /**
      * creates tags.  First tag will be start and they will increase by cadence.  Units specifies
      * the units of each tag.
      * @param start
