@@ -120,6 +120,9 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
             if ( digit==ARR_YEAR && ( ysDivider.getSignificand()>1 || ysDivider.getExponent()>0 ) ) {
                 return new OrdinalTimeDomainDivider( significand, digit, (LinearDomainDivider)ysDivider.finerDivider(superset) );
             } else if ( digit==ARR_SECOND ) {
+                if (  Math.abs( ysDivider.getExponent() ) > 1000 ) {
+                    throw new IllegalArgumentException("something has gone wrong in OrdinalTimeDomainDivider");
+                }
                 return new OrdinalTimeDomainDivider( significand, digit, (LinearDomainDivider)ysDivider.finerDivider(superset) );
             }
         }
