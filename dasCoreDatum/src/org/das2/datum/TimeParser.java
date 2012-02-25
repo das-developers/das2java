@@ -451,6 +451,17 @@ public class TimeParser {
     }
 
     /**
+     * Create a TimeParser object, which is the fast time parser for use when a known format specification is used to
+     * parse many instances of a formatted string.  For example, this would be used to interpret the times in an text file,
+     * but not times entered in a time range GUI to control an axis.  This can also be and is used for filenames,
+     * for example omni2_h0_mrg1hr_%Y%(m,span=6)01_v01.cdf.
+     *
+     * Note field lengths are used when formatting the data, but when parsing often fractional components are accepted.  For
+     * example, the format might be "%Y %j %H", and "2012 365 12.003" is accepted.
+     *
+     * Note also that often $(Y) is used where %{Y} is used.  These are equivalent, and useful when %{} interferes with parsing
+     * elsewhere.
+     *
      * <pre>
      *  %[fieldLength]<1-char code>  or
      *  %[fieldLength]{<code>}
@@ -459,20 +470,26 @@ public class TimeParser {
      *  fieldLength=0 --> makes field length indeterminate, deliminator must follow.
      *
      *  %Y   4-digit year
-     *  %y    2-digit year
-     *  %j     3-digit day of year
+     *  %y   2-digit year
+     *  %j   3-digit day of year
      *  %m   2-digit month
-     *  %b   3-char month name
-     *  %d    2-digit day
-     *  %H    2-digit hour
-     *  %M    2-digit minute
-     *  %S     2-digit second
+     *  %b   3-char month name (jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec.  Sorry, rest of world...)
+     *  %d   2-digit day
+     *  %H   2-digit hour
+     *  %M   2-digit minute
+     *  %S   2-digit second
      *  %{milli}  3-digit milliseconds
      *  %{ignore} skip this field
      *
      * Qualifiers:
      *    span=<int>
      *    Y=2004  Also for Y,m,d,H,M,S
+     *
+     *   For example:
+     *      %{j,Y=2004} means the day-of-year, within the year 2004.
+     *      %{H,Y=2004,j=117} means the hour of day 2004-117
+     *      %{m,span=6} means the 6-month interval starting at the given month.
+     *
      *  </pre>
      *
      */
