@@ -389,7 +389,7 @@ public class TimeParser {
             }
 
             if (handler < 100) {
-                if (precision[handler] > lsd) {
+                if ( precision[handler] > lsd && lsdMult==1 ) {  // omni2_h0_mrg1hr_$Y$(m,span=6)$d_v01.cdf.  Essentially we ignore the $d.
                     lsd = precision[handler];
                     lsdMult= span;
                 }
