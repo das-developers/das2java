@@ -470,6 +470,7 @@ public class FileStorageModelNew {
      * @return a list of files that can be used
      */
     public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
+
         String[] names= getNamesFor( targetRange );
         File[] files= new File[names.length];
 
