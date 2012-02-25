@@ -72,7 +72,7 @@ public class TransposeRankNDataSet extends AbstractDataSet {
 
     @Override
     public double value(int i0, int i1) {
-        return source.value( i0, i1 ); //TODO: verify this...
+        return source.value( i1, i0 ); //TODO: verify this...
     }
 
     @Override
