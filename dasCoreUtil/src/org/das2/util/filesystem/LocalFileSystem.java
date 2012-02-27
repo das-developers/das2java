@@ -91,9 +91,13 @@ public class LocalFileSystem extends FileSystem {
         File f= new File( localRoot, directory );
         if ( !f.canRead() ) throw new IllegalArgumentException("cannot read directory " +f );
         File[] files= f.listFiles();
-        String[] result= new String[files.length];
-        for ( int i=0; i<files.length; i++ ) result[i]= files[i].getName() + ( files[i].isDirectory() ? "/" : "" );
-        return result;
+        List<String> result= new ArrayList();
+        for ( int i=0; i<files.length; i++ ) {
+            if ( ! files[i].isHidden() ) { // Windows 7 hides "c:/Documents and Settings", and we get bugs if this is presented.
+                result.add( files[i].getName() + ( files[i].isDirectory() ? "/" : "" ) );
+            }
+        }
+        return result.toArray( new String[result.size()] );
     }
     
     public String[] listDirectory(String directory, String regex ) {
@@ -102,7 +106,7 @@ public class LocalFileSystem extends FileSystem {
         if ( !f.canRead() ) throw new IllegalArgumentException("cannot read directory " +f );
         File[] files= f.listFiles( new FilenameFilter() {
             public boolean accept( File file, String name ) {
-                return pattern.matcher(name).matches();
+                return pattern.matcher(name).matches() && ! file.isHidden();
             }
         } );
         String[] result= new String[files.length];

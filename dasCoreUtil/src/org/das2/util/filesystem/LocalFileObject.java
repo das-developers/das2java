@@ -53,7 +53,9 @@ public class LocalFileObject extends FileObject {
         File[] files= localFile.listFiles();
         LocalFileObject[] result= new LocalFileObject[files.length];
         for ( int i=0; i<files.length; i++ ) {
-            result[i]= new LocalFileObject( lfs, localRoot, lfs.getLocalName(files[i]) );
+            if ( ! files[i].isHidden() ) {
+                result[i]= new LocalFileObject( lfs, localRoot, lfs.getLocalName(files[i]) );
+            }
         }
         return result;
     }
