@@ -89,7 +89,7 @@ public class LocalFileSystem extends FileSystem {
     
     public String[] listDirectory(String directory) {
         File f= new File( localRoot, directory );
-        if ( !f.canRead() || f.isHidden() ) throw new IllegalArgumentException("cannot read directory " +f );
+        if ( !f.canRead() || ( f.getParentFile()!=null && f.isHidden() ) ) throw new IllegalArgumentException("cannot read directory " +f );
         File[] files= f.listFiles();
         List<String> result= new ArrayList();
         for ( int i=0; i<files.length; i++ ) {
@@ -103,7 +103,7 @@ public class LocalFileSystem extends FileSystem {
     public String[] listDirectory(String directory, String regex ) {
         File f= new File( localRoot, directory );
         final Pattern pattern= Pattern.compile(regex);
-        if ( !f.canRead() || f.isHidden()  ) throw new IllegalArgumentException("cannot read directory " +f );
+        if ( !f.canRead() || ( f.getParentFile()!=null && f.isHidden() ) ) throw new IllegalArgumentException("cannot read directory " +f );
         File[] files= f.listFiles( new FilenameFilter() {
             public boolean accept( File file, String name ) {
                 return pattern.matcher(name).matches() && ! file.isHidden();
