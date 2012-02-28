@@ -135,7 +135,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             //double xTagWidthDouble = xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
             RankZeroDataSet yTagWidthQ= DataSetUtil.guessCadenceNew( yds1, null );
             Datum yTagWidth = yTagWidthQ==null ? null : DataSetUtil.asDatum( yTagWidthQ );
-            if ( yTagWidth.value()<0 ) yTagWidth= yTagWidth.multiply(-1);
+            if ( yTagWidth!=null && yTagWidth.value()<0 ) yTagWidth= yTagWidth.multiply(-1);
 
             if (ddX != null) {
                 fillInterpolateXNew(rebinData, rebinWeights, ddX, xTagWidth, interpolateType);
@@ -196,6 +196,11 @@ public class AverageTableRebinner implements DataSetRebinner {
         return result;
     }
 
+    /** return the cadence of the data.
+     * @param xds the x tags of the data.
+     * @param tds1 the data, where we look for fill values.
+     * @return the cadence of the data (never null)
+     */
     private static Datum getXTagWidth( QDataSet xds, QDataSet tds1 ) {
         Datum xTagWidth;
         if ( xds.length()>1 ) {
