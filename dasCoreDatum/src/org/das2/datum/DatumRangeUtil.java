@@ -885,7 +885,15 @@ public class DatumRangeUtil {
      * @return
      */
     public static DatumRange parseTimeRange( String string ) throws ParseException {
-        return new TimeRangeParser().parse(string);
+        if ( string.startsWith("orbit:") ) { // experiment with orbits  orbit:crres:591
+            String[] ss= string.split(":");
+            return new OrbitDatumRange( ss[1], ss[2] );
+        } else if ( string.equals("P1D") ) { // just for experiment.  See ISO8601
+            Datum now= TimeUtil.now();
+            return new DatumRange( now.subtract(1,Units.days), now );
+        } else {
+            return new TimeRangeParser().parse(string);
+        }
     }
     
 
