@@ -151,7 +151,7 @@ public class Orbits {
 
     public static synchronized Orbits getOrbitsFor( String sc ) {
         Orbits orbits= missions.get(sc);
-        if ( orbits!=null ) {
+        if ( orbits!=null && orbits.orbits.size()>0 ) {
             return orbits;
         } else {
             try {
