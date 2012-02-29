@@ -31,16 +31,16 @@ public class OrbitDatumRange extends DatumRange {
         if ( next==null ) {
             return this;
         } else {
-            return Orbits.getOrbitsFor(sc).getDatumRange(next);
+            return new OrbitDatumRange( sc, next );
         }
     }
     
     public DatumRange previous() {
-        String prev= Orbits.getOrbitsFor(sc).next(this.orbit);
+        String prev= Orbits.getOrbitsFor(sc).prev(this.orbit);
         if ( prev==null ) {
             return this;
         } else {
-            return Orbits.getOrbitsFor(sc).getDatumRange(prev);
+            return new OrbitDatumRange( sc, prev );
         }
     }
 
