@@ -28,6 +28,8 @@ public class Slice2DataSet extends AbstractDataSet {
         if ( ds.rank()<3 ) {
             throw new IllegalArgumentException("rank limit < 3");
         }
+        if ( index>= ds.length(0,0) ) throw new IndexOutOfBoundsException("slice2 index is out of bounds");
+
         this.ds = ds;
         this.index = index;
 
