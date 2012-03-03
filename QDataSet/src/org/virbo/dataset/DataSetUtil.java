@@ -575,7 +575,12 @@ public class DataSetUtil {
         if ( ds.rank()==1 && Ops.isLegacyBundle(ds) && ds.length()<8 ) { // introduced to support where or rank 2 dataset.
             QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
             StringBuilder str = new StringBuilder("");
-            str.append( dep0.slice(0) ).append("=").append( ds.slice(0) );
+            try {
+                str.append( dep0.slice(0) ).append("=").append( ds.slice(0) );
+            } catch ( RuntimeException ex ) {
+                ex.printStackTrace();
+                str.append("Exception");
+            }
             for ( int i=1; i<ds.length(); i++ ) {
                 str.append(", ").append( dep0.slice(i) ).append("=").append( ds.slice(i) );
             }
