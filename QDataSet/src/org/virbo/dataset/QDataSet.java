@@ -259,7 +259,10 @@ public interface QDataSet {
     public final static String CACHE_TAG="CACHE_TAG";
     
     /**
-     * String, hint as to preferred rendering method.  Examples include "spectrogram", "time_series", and "stack_plot"
+     * String, hint as to preferred rendering method.  Examples include "spectrogram", "time_series", and "stack_plot", 
+     * "nnSpectrogram", "hugeScatter", "series", "scatter", "colorScatter", "stairSteps", "fillToZero"
+     * "digital", "image", "pitchAngleDistribution", "eventsBar".  Note these are just suggestions and are not
+     * interpreted in the library.
      */
     public final static String RENDER_TYPE="RENDER_TYPE";
     
