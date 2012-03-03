@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.*;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeParser;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -956,6 +957,16 @@ public class AsciiParser {
         public final double parseField(String field, int columnIndex) throws ParseException {
             Units u = AsciiParser.this.units[columnIndex];
             return u.parse(field).doubleValue(u);
+        }
+    };
+
+    /**
+     * uses the EnumerationUnits for the field to create a Datum.
+     */
+    public final FieldParser ENUMERATION_PARSER = new FieldParser() {
+        public final double parseField(String field, int columnIndex) throws ParseException {
+            EnumerationUnits u = (EnumerationUnits)AsciiParser.this.units[columnIndex];
+            return u.createDatum(field).doubleValue(u);
         }
     };
 
