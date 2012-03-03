@@ -1035,7 +1035,7 @@ public class DataSetUtil {
                 }
             }
             int logLowestPeak=0; // see commented code below
-            for ( int i=0; i<hist.length(); i++ ) {
+            for ( int i=0; i<loghist.length(); i++ ) {
                 if ( loghist.value(i)>logPeakv/10. ) {
                     logLowestPeak=i;
                     break;
