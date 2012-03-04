@@ -27,7 +27,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * reads a QDataSet from a stream 
+ * reads a stream and produces QDataSets representing the data found on the
+ * stream.  The stream is read in, and then getDataSet or getDataSet(name) is
+ * called to retrieve datasets.
+ *
  * @author jbf
  */
 public class QDataSetStreamHandler implements StreamHandler {
