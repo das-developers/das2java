@@ -28,6 +28,9 @@ import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.util.InflaterChannel;
 import org.das2.util.ByteBufferInputStream;
 import java.nio.ByteBuffer;
@@ -499,16 +502,23 @@ public class StreamTool {
 
                 // this is nasty.
                 String sunits=null;
+                String stype=null;
+                Units units=null;
                 NodeList odims= (NodeList) xpath.evaluate("properties[not(@index)]/property", n, XPathConstants.NODESET );
                 for ( int ii=0; sunits==null && ii<odims.getLength(); ii++ ) {
                     Node nn= odims.item(ii);
                     if ( nn.getAttributes().getNamedItem("name").getNodeValue().equals("UNITS") ) {
                         sunits= nn.getAttributes().getNamedItem("value").getNodeValue();
+                        stype= nn.getAttributes().getNamedItem("type").getNodeValue();
+                        SerializeDelegate delegate = SerializeRegistry.getByName(stype);
+                        try {
+                            units = (Units) delegate.parse(stype,sunits);
+                        } catch (ParseException ex) {
+                            Logger.getLogger(StreamTool.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 }
-                //String sunits= xpath.evaluate("properties[not(@index)]/property/@name=UNITS", n, XPathConstants.NODE );
-                Object units= sunits==null ? null : SemanticOps.lookupUnits(sunits);
-                TransferType tt = TransferType.getForName( ttype, Collections.singletonMap( "UNITS", units ) );
+                TransferType tt = TransferType.getForName( ttype, Collections.singletonMap( "UNITS", (Object)units ) );
                 if ( tt==null && isInline ) {
                     tt= new AsciiTransferType( 10, true ); // kludge because we need something
                 }
