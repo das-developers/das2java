@@ -22,9 +22,14 @@
  */
 package org.virbo.qstream;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PushbackInputStream;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import org.das2.util.InflaterChannel;
 import org.das2.util.ByteBufferInputStream;
-import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.Channels;
@@ -36,13 +41,25 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathExpressionException;
 import org.das2.dataset.NoDataInIntervalException;
-import org.w3c.dom.*;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.SemanticOps;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
@@ -408,7 +425,7 @@ public class StreamTool {
         return msg;
     }
 
-    private static final StreamException exception(Element exception) {
+    private static StreamException exception(Element exception) {
         String type = exception.getAttribute("type");
         String message= exception.getAttribute("message");
         if ( type.equals( StreamException.NO_DATA_IN_INTERVAL ) ) {
@@ -417,6 +434,97 @@ public class StreamTool {
             return se;
         } else {
             return new StreamException(message);
+        }
+    }
+
+    /**
+     * this is code buried down in QDataSetStreamHandler, which was doing a lot of the interpretation that could
+     * be done without knowing about QDataSet.
+     * @param pd
+     * @throws XPathExpressionException
+     */
+    public static void interpretPlanes( PacketDescriptor pd ) throws StreamException {
+        try {
+            Element e = pd.getDomElement();
+
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+
+            XPathExpression expr = xpath.compile("/packet/qdataset");
+            Object o = expr.evaluate(e, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) o;
+            for (int i = 0; i < nodes.getLength(); i++) {
+                Element n = (Element) nodes.item(i);
+                String name = n.getAttribute("id");
+                int rank = Integer.parseInt(n.getAttribute("rank"));
+
+                String sdims=null;
+                int[] dims= null;
+                String ttype=null; // ttype or
+                String joinChildren= null; //  join will be specified.
+                //String joinParent= null;
+                boolean isInline= false;
+                //joinParent= n.getAttribute("joinId");
+
+                NodeList values= (NodeList) xpath.evaluate("values", n, XPathConstants.NODESET );
+                if ( values.getLength()==0 ) {
+                    throw new IllegalArgumentException("no values node in "+n.getNodeName() + " " +n.getAttribute("id") );
+                }
+
+                for ( int iv= 0; iv<values.getLength(); iv++ ) {
+                    Element vn= (Element)values.item(iv);
+
+                    if ( vn.hasAttribute("values") ) {  // TODO: consider "inline"
+                        isInline= true;
+                    }
+                    //index stuff--Ed W. thinks index should be implicit.
+                    sdims = xpath.evaluate("@length", vn);
+                    ttype = xpath.evaluate("@encoding", vn);
+                    joinChildren = xpath.evaluate("@join", vn);
+
+                    if (sdims == null) {
+                        dims = new int[0];
+                    } else {
+                        dims = Util.decodeArray(sdims);
+                    }
+
+                }
+
+                PlaneDescriptor planeDescriptor = new PlaneDescriptor();
+                planeDescriptor.setRank(rank);
+                planeDescriptor.setQube(dims); // zero length is okay
+                boolean isStream = rank > dims.length;
+                pd.setStream(isStream);
+                pd.setStreamRank( rank - dims.length );
+
+                // this is nasty.
+                String sunits=null;
+                NodeList odims= (NodeList) xpath.evaluate("properties[not(@index)]/property", n, XPathConstants.NODESET );
+                for ( int ii=0; sunits==null && ii<odims.getLength(); ii++ ) {
+                    Node nn= odims.item(ii);
+                    if ( nn.getAttributes().getNamedItem("name").getNodeValue().equals("UNITS") ) {
+                        sunits= nn.getAttributes().getNamedItem("value").getNodeValue();
+                    }
+                }
+                //String sunits= xpath.evaluate("properties[not(@index)]/property/@name=UNITS", n, XPathConstants.NODE );
+                Object units= sunits==null ? null : SemanticOps.lookupUnits(sunits);
+                TransferType tt = TransferType.getForName( ttype, Collections.singletonMap( "UNITS", units ) );
+                if ( tt==null && isInline ) {
+                    tt= new AsciiTransferType( 10, true ); // kludge because we need something
+                }
+                if ( tt==null && joinChildren!=null && joinChildren.length()>0 ) {
+                    tt= new AsciiTransferType( 10, true ); // kludge because we need something
+                }
+                if (tt == null ) {
+                    throw new IllegalArgumentException("unrecognized transfer type: " + ttype);
+                }
+                planeDescriptor.setType(tt);
+                planeDescriptor.setName(name);
+
+                pd.addPlane(planeDescriptor);
+            }
+        } catch ( XPathExpressionException ex ) {
+            throw new StreamException(ex);
         }
     }
 
@@ -458,6 +566,7 @@ public class StreamTool {
 
                 if (pd instanceof PacketDescriptor) {
                     struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
+                    StreamTool.interpretPlanes((PacketDescriptor)pd);
                     struct.handler.packetDescriptor((PacketDescriptor) pd);
                 } else if (root.getTagName().equals("exception")) {
                     throw exception(root);
