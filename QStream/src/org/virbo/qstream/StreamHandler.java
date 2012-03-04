@@ -26,13 +26,51 @@ package org.virbo.qstream;
 import java.nio.ByteBuffer;
 
 /**
- *
- * @author  Edward E. West
+ * This describes an object that is able to receive a stream from StreamTool.readStream, which breaks the stream up
+ * into descriptors and packets.  This was copied from das2's das2stream library to create QStream, which is to replace it.
+ * See http://das2.org/wiki/index.php/Das2/QStreams
+ * 
+ * @author  Jeremy Faden, Ed West wrote original das2stream library
  */
 public interface StreamHandler {
+
+    /**
+     * initial description of the stream.  This contains global properties of the stream.
+     * TODO: should codes expect only one of these?  I think most probably do, but the spec says we should be able to pick up
+     * in the middle, implying that steamDescriptors may be resent.
+     * @param sd
+     * @throws StreamException
+     */
     void streamDescriptor(StreamDescriptor sd) throws StreamException;
+
+    /**
+     * description of a new packet type. This packetDescriptor will also be sent as packets of data are received.
+     * @param pd
+     * @throws StreamException
+     */
     void packetDescriptor(PacketDescriptor pd) throws StreamException;
+
+    /**
+     * receive a data packet from the stream.  The packet descriptor is used to describe the packet contents,
+     * and the ByteBuffer contains the bytes.  The byte buffer will have its position at the beginning of the data, and the limit
+     * will be the end of the data.  Note for filters, the buffer must be reset!
+     * @param pd PacketDescriptor describing the data.
+     * @param data ByteBuffer containing the data.
+     * @throws StreamException when something is wrong with the content of the stream.
+     */
     void packet(PacketDescriptor pd, ByteBuffer data ) throws StreamException;
+
+    /**
+     * indicates the stream end is encountered.
+     * @param sd
+     * @throws StreamException
+     */
     void streamClosed(StreamDescriptor sd) throws StreamException;
+
+    /**
+     * This is used to indicate an exception occurred in the source.
+     * @param se
+     * @throws StreamException
+     */
     void streamException(StreamException se) throws StreamException;
 }
