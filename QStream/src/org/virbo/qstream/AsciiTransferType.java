@@ -16,7 +16,8 @@ import org.das2.util.FixedWidthFormatter;
 import org.das2.util.NumberFormatUtil;
 
 /**
- *
+ * Transfer type that represents data as formatted ASCII strings.  See
+ * also AsciiTimeTransferType, which represents UT times.
  * @author jbf
  */
 public class AsciiTransferType extends TransferType {
@@ -25,7 +26,7 @@ public class AsciiTransferType extends TransferType {
     private DecimalFormat formatter;
     private String formatStr; // for debugging
     
-    AsciiTransferType( int sizeBytes, boolean scientificNotation ) {
+    public AsciiTransferType( int sizeBytes, boolean scientificNotation ) {
         this.sizeBytes = sizeBytes;
         this.formatStr= getFormat(sizeBytes-1,scientificNotation);
         formatter = NumberFormatUtil.getDecimalFormat( formatStr );
