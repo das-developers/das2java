@@ -58,7 +58,7 @@ public class PacketDescriptor implements Descriptor {
         this.streamRank= streamRank;
     }
     
-    void addPlane( PlaneDescriptor planeDescriptor ) {
+    public void addPlane( PlaneDescriptor planeDescriptor ) {
         planes.add(planeDescriptor);
     }
     
