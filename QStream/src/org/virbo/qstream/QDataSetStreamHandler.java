@@ -167,6 +167,11 @@ public class QDataSetStreamHandler implements StreamHandler {
             XPathExpression expr = xpath.compile("/packet/qdataset");
             Object o = expr.evaluate(e, XPathConstants.NODESET);
             NodeList nodes = (NodeList) o;
+
+            List<PlaneDescriptor> planes= pd.getPlanes();
+            if ( planes.size()!=nodes.getLength() ) {
+                System.err.println("these should be the same length, QDSSH line 172");
+            }
             for (int i = 0; i < nodes.getLength(); i++) {
                 Element n = (Element) nodes.item(i);
                 String name = n.getAttribute("id");
@@ -174,7 +179,6 @@ public class QDataSetStreamHandler implements StreamHandler {
                 DataSetBuilder builder=null;
                 String sdims=null;
                 int[] dims= null;
-                String ttype=null; // ttype or
                 String joinChildren= null; //  join will be specified.
                 String joinParent= null;
                 boolean isInline= false;
@@ -194,7 +198,6 @@ public class QDataSetStreamHandler implements StreamHandler {
                     }
                     //index stuff--Ed W. thinks index should be implicit.
                     sdims = xpath.evaluate("@length", vn);
-                    ttype = xpath.evaluate("@encoding", vn);
                     joinChildren = xpath.evaluate("@join", vn);
 
                     if (sdims == null) {
@@ -271,29 +274,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                 odims = (NodeList) xpath.evaluate("properties[@index]/property", n, XPathConstants.NODESET);
                 doPropsIndex( odims, joinDataSets.get(name) );
 
-                PlaneDescriptor planeDescriptor = new PlaneDescriptor();
-                planeDescriptor.setRank(rank);
-                planeDescriptor.setQube(dims); // zero length is okay
-                boolean isStream = rank > dims.length;
-                pd.setStream(isStream);
-                pd.setStreamRank( rank - dims.length );
-
-                TransferType tt = TransferType.getForName(ttype, builder.getProperties());
-                if ( tt==null && isInline ) {
-                    tt= new AsciiTransferType( 10, true ); // kludge because we need something
-                }
-                if ( tt==null && joinChildren!=null && joinChildren.length()>0 ) {
-                    tt= new AsciiTransferType( 10, true ); // kludge because we need something
-                }
-                if (tt == null ) {
-                    throw new IllegalArgumentException("unrecognized transfer type: " + ttype);
-                }
-                planeDescriptor.setType(tt);
-                planeDescriptor.setName(name);
+                PlaneDescriptor planeDescriptor = planes.get(i);
                 planeDescriptor.setBuilder(builder);
-
-                pd.addPlane(planeDescriptor);
-
+                // we no longer do the addPlane stuff here, since it is done at the source.
+                // TODO: a lot of work is done twice here, but this takes a trivial amount of time.
             }
         } catch (XPathExpressionException ex) {
             Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
