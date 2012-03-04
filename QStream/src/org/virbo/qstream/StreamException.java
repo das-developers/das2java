@@ -24,7 +24,12 @@
 package org.virbo.qstream;
 
 /**
- *
+ * This odd class seems to communication information in two directions.
+ * First, in the streamException method of StreamHandler it is used to communicate that
+ * something went wrong in the source.  For example, a data file was not found.
+ * Second, each of the StreamHandler methods can throe StreamExceptions, so they
+ * could communicate that the client had a problem.
+ * TODO: this should probably be split up into two exceptions...
  * @author  eew
  */
 public class StreamException extends Exception {
