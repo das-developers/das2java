@@ -52,7 +52,7 @@ public class Orbits {
             in= url.openConnection().getInputStream();
         } catch ( IOException ex ) {
             url= Orbits.class.getResource("/orbits/"+sc+".dat");
-            if ( url!=null ) {
+            if ( url==null ) {
                 throw new IllegalArgumentException("unable to find orbits file for \""+sc+"\"" );
             }
             try {
