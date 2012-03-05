@@ -90,6 +90,10 @@ public class ReduceFilter implements StreamHandler {
         sink.streamException(se);
     }
 
+    /**
+     * initialize the accumulators to an empty state.
+     * @param pd
+     */
     private void initAccumulators(PacketDescriptor pd) {
         List<PlaneDescriptor> planes = pd.getPlanes();
         for (int i = 0; i < planes.size(); i++) {
