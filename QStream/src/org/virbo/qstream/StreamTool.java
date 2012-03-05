@@ -510,7 +510,11 @@ public class StreamTool {
                     if ( nn.getAttributes().getNamedItem("name").getNodeValue().equals("UNITS") ) {
                         sunits= nn.getAttributes().getNamedItem("value").getNodeValue();
                         stype= nn.getAttributes().getNamedItem("type").getNodeValue();
+                        if ( stype.equals("unit") ) stype= "units"; // http://apps-pw.physics.uiowa.edu/hudson/job/autoplot-test501/ test 20 of 114.
                         SerializeDelegate delegate = SerializeRegistry.getByName(stype);
+                        if ( delegate==null ) {
+                            throw new StreamException("unable to parse UNITS, because unable to identify parser for "+stype );
+                        }
                         try {
                             units = (Units) delegate.parse(stype,sunits);
                         } catch (ParseException ex) {
