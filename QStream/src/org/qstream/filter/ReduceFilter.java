@@ -205,7 +205,7 @@ public class ReduceFilter implements StreamHandler {
         QDataSetStreamHandler handler = new QDataSetStreamHandler();
 
         ReduceFilter filter= new ReduceFilter();
-        filter.length= 3600000;
+        filter.length= 3600000; //TODO: client must know the units of the qstream.
         
         filter.sink= handler;
 
