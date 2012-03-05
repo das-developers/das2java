@@ -154,23 +154,23 @@ public class LinFit {
             return 0;
         }
         if (x < (a + 1.0)) {
-            gser(gamser, a, x, gln);
+            gamser= gser(gamser, a, x, gln);
             return 1.0 - gamser;
         } else {
-            gcf(gammcf, a, x, gln);
+            gammcf= gcf(gammcf, a, x, gln);
             return gammcf;
         }
     }
 
-    void gser(Double gamser, double a, double x, Double gln) {
+    double gser(Double gamser, double a, double x, Double gln) {
         int n;
         double sum, del, ap;
 
         gln = gammln(a);
         if (x <= 0.0) {
-            //if (x < 0.0) nrerror("x less than 0 in routine gser");
+            if (x < 0.0) throw new IllegalArgumentException("x less than 0 in routine gser");
             gamser = 0.0;
-            return;
+            return gamser;
         } else {
             ap = a;
             del = sum = 1.0 / a;
@@ -180,15 +180,14 @@ public class LinFit {
                 sum += del;
                 if (Math.abs(del) < Math.abs(sum) * EPS) {
                     gamser = sum * Math.exp(-x + a * Math.log(x) - (gln));
-                    return;
+                    return gamser;
                 }
             }
-            //nrerror("a too large, ITMAX too small in routine gser");
-            return;
+            throw new IllegalArgumentException( "a too large, ITMAX too small in routine gser" );
         }
     }
 
-    void gcf(Double gammcf, double a, double x, Double gln) {
+    double gcf(Double gammcf, double a, double x, Double gln) {
         int i;
         double an, b, c, d, del, h;
 
@@ -217,6 +216,7 @@ public class LinFit {
         }
         //if (i > ITMAX) nrerror("a too large, ITMAX too small in gcf");
         gammcf = Math.exp(-x + a * Math.log(x) - (gln)) * h;
+        return gammcf;
     }
 
     double gammln(double xx) {
