@@ -289,15 +289,17 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     } else if ( zds.rank()==3 ) {
                         xds= SemanticOps.xtagsDataSet(zds.slice(0));
                         yds= SemanticOps.ytagsDataSet(zds.slice(0));
+                    } else {
+                        throw new IllegalArgumentException("only rank 2 and rank 3 supported");
                     }
                     if ( ! SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits()) ) {
-                        parent.postMessage(this, "yaxis units changed from "+SemanticOps.getUnits(yds)+" to "+ yAxis.getUnits(), DasPlot.INFO, null, null);
+                        parent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(yds)+"\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
                     }
                     if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
-                        parent.postMessage(this, "xaxis units changed from "+SemanticOps.getUnits(xds)+" to "+xAxis.getUnits(), DasPlot.INFO, null, null);
+                        parent.postMessage( this, "xaxis units changed from \""+SemanticOps.getUnits(xds)+"\" to \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
                     }
-                    if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
-                        parent.postMessage( this, "zaxis units changed from \""+SemanticOps.getUnits(getDataSet()) + "\" to \"" + colorBar.getUnits() + "\"", DasPlot.WARNING, null, null );
+                    if ( ! SemanticOps.getUnits(zds).isConvertableTo(colorBar.getUnits()) ) {
+                        parent.postMessage( this, "zaxis units changed from \""+SemanticOps.getUnits(zds)+"\" to \"" + colorBar.getUnits() + "\"", DasPlot.INFO, null, null );
                     }
                 }
                 
