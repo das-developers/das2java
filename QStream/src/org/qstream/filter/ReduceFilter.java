@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
@@ -33,6 +34,7 @@ import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamHandler;
 import org.virbo.qstream.StreamTool;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Reduce packets of the same type by combining packets together.  Currently this
@@ -44,7 +46,7 @@ public class ReduceFilter implements StreamHandler {
 
     StreamHandler sink;
 
-    double length;
+    double lengthSeconds;
     double nextTag;
 
     class Accum {
@@ -57,7 +59,7 @@ public class ReduceFilter implements StreamHandler {
 
     public ReduceFilter() {
         accum= new HashMap();
-        length= 60;
+        lengthSeconds= 60;
         nextTag= 0;
     }
 
@@ -72,7 +74,9 @@ public class ReduceFilter implements StreamHandler {
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
         try {
-            XPathExpression expr = xpath.compile("/packet/qdataset[0]/properties/");
+            XPathExpression expr = xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
+            Node xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
+            xp.setNodeValue( String.format( "%f units:UNITS=s", lengthSeconds ) );
             //TODO: adjust cadence property.
         } catch (XPathExpressionException ex) {
             Logger.getLogger(ReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
@@ -168,7 +172,7 @@ public class ReduceFilter implements StreamHandler {
         if ( ttag>nextTag ) {
             unload( pd, data.limit() );
             initAccumulators(pd);
-            nextTag= ( 1 + Math.floor( ttag/length ) ) * length;
+            nextTag= ( 1 + Math.floor( ttag/lengthSeconds ) ) * lengthSeconds;
         }
 
         data.rewind();
@@ -209,7 +213,7 @@ public class ReduceFilter implements StreamHandler {
         QDataSetStreamHandler handler = new QDataSetStreamHandler();
 
         ReduceFilter filter= new ReduceFilter();
-        filter.length= 3600000; //TODO: client must know the units of the qstream.
+        filter.lengthSeconds= 3600000; //TODO: client must know the units of the qstream.
         
         filter.sink= handler;
 
