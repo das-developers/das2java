@@ -58,14 +58,7 @@ import java.util.regex.Pattern;
 public abstract class WebFileSystem extends FileSystem {
 
     public static File getDownloadDirectory() {
-        File local;
-        if (System.getProperty("user.name").equals("Web")) {
-            local = new File("/tmp");
-        } else {
-            local = new File(System.getProperty("user.home"));
-        }
-        local = new File(local, ".das2/fsCache/wfs/");
-
+        File local = FileSystem.settings().getLocalCacheDir();
         return local;
     }
 
