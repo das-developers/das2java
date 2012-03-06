@@ -435,6 +435,9 @@ public class StreamTool {
             NoDataInIntervalException ex = new NoDataInIntervalException(message);
             StreamException se= new StreamException(ex);
             return se;
+        } else if ( type.equals(StreamException.EMPTY_RESPONSE_FROM_READER ) ) {
+            StreamException se = new StreamException( "Empty response from reader\n"+message );
+            return se;
         } else {
             return new StreamException(message);
         }
