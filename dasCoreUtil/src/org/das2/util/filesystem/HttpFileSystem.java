@@ -97,7 +97,7 @@ public class HttpFileSystem extends WebFileSystem {
             HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
             urlc.setConnectTimeout(3000);
 
-            urlc.setRequestMethod("HEAD");
+            //urlc.setRequestMethod("HEAD"); // Causes problems with the LANL firewall.
 
             String userInfo= null;
             
