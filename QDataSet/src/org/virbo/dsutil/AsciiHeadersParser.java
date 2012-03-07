@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
@@ -699,7 +700,8 @@ public class AsciiHeadersParser {
          */
         @Override
         public QDataSet trim(int start, int end) {
-            throw new IllegalArgumentException("Not supported");
+            return DataSetOps.trim( this, start, end-start );
+            //throw new IllegalArgumentException("Not supported");
         }
 
 
