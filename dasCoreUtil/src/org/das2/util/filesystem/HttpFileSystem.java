@@ -114,8 +114,15 @@ public class HttpFileSystem extends WebFileSystem {
             boolean offline = true;
             boolean connectFail= true;
 
+            byte[] buf= new byte[2048];
             try {
                 urlc.connect();
+                InputStream is = urlc.getInputStream();
+                int ret = 0;
+                while ((ret = is.read(buf)) > 0) { //http://docs.oracle.com/javase/1.5.0/docs/guide/net/http-keepalive.html suggests that you "do not abandon connection"
+                   // empty out the input stream.
+                }
+                is.close();
                 connectFail= false;
             } catch ( IOException ex ) {
                 ex.printStackTrace();
@@ -124,6 +131,12 @@ public class HttpFileSystem extends WebFileSystem {
                 } else {
                     throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
                 }
+                InputStream err = urlc.getErrorStream();
+                int ret = 0;
+                while ((ret = err.read(buf)) > 0) { 
+                   // empty out the error stream.
+                }
+                err.close();
             }
 
             if ( !connectFail ) {
