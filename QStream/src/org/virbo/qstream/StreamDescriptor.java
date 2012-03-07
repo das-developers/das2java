@@ -77,7 +77,7 @@ public class StreamDescriptor implements Descriptor {
     public void send(Descriptor pd, WritableByteChannel out) throws StreamException, IOException {
         Document document = documents.get(pd);
 
-        document.appendChild(pd.getDomElement());
+        document.appendChild( document.importNode( pd.getDomElement(), true ) );
 
         ByteArrayOutputStream pdout = new ByteArrayOutputStream(1000);
         Writer writer = new OutputStreamWriter(pdout);
@@ -143,6 +143,11 @@ public class StreamDescriptor implements Descriptor {
 
     public void setAsciiTypes(boolean asciiTypes) {
         this.asciiTypes = asciiTypes;
+    }
+
+    //added to support filters
+    void setFactory(DocumentBuilderFactory newInstance) {
+        this.factory= newInstance;
     }
 
 }
