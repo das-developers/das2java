@@ -22,6 +22,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
@@ -857,7 +858,7 @@ public class DataSetOps {
      * @return
      */
     public static QDataSet unbundle(QDataSet bundleDs, int ib) {
-        return unbundle( bundleDs, ib, true );
+        return unbundle( bundleDs, ib, false );
     }
 
     /**
@@ -1013,6 +1014,9 @@ public class DataSetOps {
                     props.put(ss,null);
                 }
             }
+            if ( last!=first ) {
+                props.put( QDataSet.BUNDLE_1, bundle.trim(first,last+1) );
+            }
 
             if ( bundleDs.rank()>1 ) {
                 if ( bundle.property(QDataSet.DEPEND_1,first)!=null && bundle.property(QDataSet.DEPEND_1,first)==bundle.property(QDataSet.DEPEND_1,last) ) {
@@ -1053,6 +1057,14 @@ public class DataSetOps {
                         } catch ( IllegalArgumentException ex ) {
                             throw new IllegalArgumentException("unable to find DEPEND_0 reference to \""+dep0+"\"");
                         }
+                    }
+                }
+            }
+            if ( result.property(QDataSet.DEPEND_0)==null ) { // last make the default DEPEND_0 be the first column, if it is a UT time.
+                if ( ib>0 ) {
+                    Units u= (Units) bundle.property(QDataSet.UNITS,0);
+                    if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
+                        result.putProperty( QDataSet.DEPEND_0, unbundle(bundleDs,0,false) );
                     }
                 }
             }
