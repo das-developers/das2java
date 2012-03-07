@@ -35,7 +35,8 @@ package org.virbo.qstream;
 public class StreamException extends Exception {
 
     public static String NO_DATA_IN_INTERVAL= "NoDataInInterval";
-    
+    public static String EMPTY_RESPONSE_FROM_READER= "EmptyResponseFromReader";
+
     /** Creates a new instance of StreamException */
     public StreamException(String message) {
         super(message);
