@@ -816,23 +816,30 @@ public class AsciiHeadersParser {
                          Object sv= propsj.get(prop);
                          if ( prop.equals( PROP_DIMENSION ) || prop.equals( "START_COLUMN") || prop.equals("ELEMENT_NAMES") ) {
                              if ( prop.equals("ELEMENT_NAMES") && sv instanceof JSONArray ) {
-                                 String[] ss= toStringArray( (JSONArray)sv );
-                                 for ( int i=0; i<ss.length; i++ ) {
-                                     if ( ss[i].startsWith("|") )  {
-                                         ss[i]= Ops.safeName(ss[i]);
-                                     } 
-                                 }
-                                 if ( propsj.has("DEPEND_1") ) { // in the CRRES file, we have both the channel labels enumerated, and a pitch angle dependence.  
-                                     BundleDescriptor bds= new BundleDescriptor();
-                                     for ( int i=0; i<ss.length; i++ ) {
-                                         bds.addDataSet( Ops.safeName(ss[i]), i, new int[0] );
-                                         bds.putProperty( QDataSet.LABEL, i, ss[i] ); 
-                                     }
-                                     bd.putProperty( QDataSet.BUNDLE_1, ids, bds );
-                                    //bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
-                                 } else {
-                                    bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
-                                 }
+//                                 String[] ss= toStringArray( (JSONArray)sv );
+//                                 String[] labels= toStringArray( (JSONArray)sv );
+//                                 for ( int i=0; i<ss.length; i++ ) {
+//                                     if ( ss[i].startsWith("|") )  {
+//                                         ss[i]= Ops.safeName(ss[i]);
+//                                     }
+//                                 }
+//                                 if ( propsj.has("ELEMENT_LABELS") ) {
+//                                     Object el= propsj.get("ELEMENT_LABELS");
+//                                     if ( el instanceof JSONArray ) {
+//                                         labels= toStringArray( (JSONArray)el );
+//                                     }
+//                                 }
+//                                 if ( propsj.has("DEPEND_1") ) { // in the CRRES file, we have both the channel labels enumerated, and a pitch angle dependence.
+//                                     BundleDescriptor bds= new BundleDescriptor();
+//                                     for ( int i=0; i<ss.length; i++ ) {
+//                                         bds.addDataSet( Ops.safeName(ss[i]), i, new int[0] );
+//                                         bds.putProperty( QDataSet.LABEL, i, labels[i] );
+//                                     }
+//                                     bd.putProperty( QDataSet.BUNDLE_1, ids, bds );
+//                                    //bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
+//                                 } else {
+//                                    bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
+//                                 }
                              }
                              if ( bd.property( "RENDER_TYPE", ids )==null ) {
                                 bd.putProperty( "RENDER_TYPE", ids, "series" );
