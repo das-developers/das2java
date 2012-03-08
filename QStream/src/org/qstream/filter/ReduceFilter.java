@@ -51,6 +51,7 @@ public class ReduceFilter implements StreamHandler {
     StreamHandler sink;
 
     double lengthSeconds;
+    double length; // in the stream units.
     double nextTag;
 
     class Accum {
@@ -78,11 +79,28 @@ public class ReduceFilter implements StreamHandler {
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
 
-        Units xunits= null;
-
+        
         try {
-            XPathExpression expr = xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
-            Node xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
+            XPathExpression expr;
+            Node xp;
+
+            // figure out units.
+            Units xunits= null;
+            expr=  xpath.compile("/packet/qdataset[1]/properties/property[@name='UNITS']/@value");
+            xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
+            String sunits= xp.getNodeValue();
+            try {
+                xunits= SemanticOps.lookupTimeUnits(sunits);
+                double secmult= Units.seconds.getConverter( xunits.getOffsetUnits() ).convert(1);
+                length= secmult * lengthSeconds;
+
+            } catch ( ParseException ex ) {
+                throw new StreamException("Unable to parse time units", ex);
+            }
+
+            // reset/set the cadence.
+            expr= xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
+            xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
             if ( xp!=null ) {
                 xp.setNodeValue( String.format( "%f units:UNITS=s", lengthSeconds ) );
             } else {
@@ -96,17 +114,6 @@ public class ReduceFilter implements StreamHandler {
                 propNode.setAttribute("type", "Rank0DataSet" );
                 propNode.setAttribute("value", String.format( "%f units:UNITS=s", lengthSeconds ) );
                 props.appendChild( propNode );
-            }
-            expr=  xpath.compile("/packet/qdataset[1]/properties/property[@name='UNITS']/@value");
-            xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
-            String sunits= xp.getNodeValue();
-            try {
-                xunits= SemanticOps.lookupTimeUnits(sunits);
-                double secmult= Units.seconds.getConverter( xunits.getOffsetUnits() ).convert(1);
-                lengthSeconds= secmult * lengthSeconds;
-
-            } catch ( ParseException ex ) {
-                throw new StreamException("Unable to parse time units", ex);
             }
 
         } catch (XPathExpressionException ex) {
@@ -203,7 +210,7 @@ public class ReduceFilter implements StreamHandler {
         if ( ttag>nextTag ) {
             unload( pd, data.limit() );
             initAccumulators(pd);
-            nextTag= ( 1 + Math.floor( ttag/lengthSeconds ) ) * lengthSeconds;
+            nextTag= ( 1 + Math.floor( ttag/length ) ) * length;
         }
 
         data.rewind();
