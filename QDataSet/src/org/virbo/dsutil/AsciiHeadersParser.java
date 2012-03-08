@@ -23,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.virbo.dataset.AbstractDataSet;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
@@ -63,7 +64,7 @@ public class AsciiHeadersParser {
     public static final String PROP_ELEMENT_LABELS = "ELEMENT_LABELS";
 
     private static final Logger logger= Logger.getLogger("virbo.dataset.AsciiHeadersParser");
-    
+
     char commented= '?'; // tri-state: '?' 'T' 'F'
 
     /**
@@ -889,5 +890,30 @@ public class AsciiHeadersParser {
          }
     }
 
+    /**
+     * allow inline dataset to be retrieved.
+     * @param bds a BundleDescriptor, from BUNDLE_1.  This must have been created by this code.
+     * @param column the name of the inline dataset
+     * @return the dataset, or null if the dataset is not found.
+     * @throws IllegalArgumentException if the dataset not a BundleDescriptor.
+     */
+    public static QDataSet getInlineDataSet( QDataSet bds, String name ) {
+        if ( bds instanceof BundleDescriptor ) {
+            Map<String,QDataSet> inlineDataSets= ((BundleDescriptor)bds).inlineDataSets;
+            QDataSet result= inlineDataSets.get(name);
+            return result;
+        } else {
+            throw new IllegalArgumentException("bds is not a BundleDescriptor created by this class");
+        }
+    }
+
+    public static String[] getInlineDataSetNames( QDataSet bds ) {
+        if ( bds instanceof BundleDescriptor ) {
+            Map<String,QDataSet> inlineDataSets= ((BundleDescriptor)bds).inlineDataSets;
+            return inlineDataSets.keySet().toArray( new String[inlineDataSets.size()] );
+        } else {
+            throw new IllegalArgumentException("bds is not a BundleDescriptor created by this class");
+        }
+    }
 
 }
