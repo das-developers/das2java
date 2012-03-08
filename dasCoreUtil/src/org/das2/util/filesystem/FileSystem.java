@@ -25,6 +25,7 @@ package org.das2.util.filesystem;
 
 import java.io.*;
 import java.net.*;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -67,7 +68,12 @@ public abstract class FileSystem  {
         }
     }
     
-    private static final Map<URI,FileSystem> instances= new HashMap<URI,FileSystem>();
+    private static final Map<URI,FileSystem> instances= Collections.synchronizedMap( new HashMap() );
+
+    /**
+     * non-null means filesystem is bring created and we should wait.
+     */
+    private static final Map<URI,String> blocks= Collections.synchronizedMap( new HashMap() );
 
     /**
      *
@@ -160,6 +166,7 @@ public abstract class FileSystem  {
      */
     public synchronized static void reset() {
         instances.clear();
+        blocks.clear();
     }
 
     /**
@@ -171,13 +178,49 @@ public abstract class FileSystem  {
      * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
      * @throws IllegalArgumentException if the local root does not exist.
      */
-    public synchronized static FileSystem create( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem create( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
         logger.log(Level.FINE, "create filesystem {0}", root);
 
-        FileSystem result= instances.get(root);
+        FileSystem result;
+
+        result= instances.get(root);
         if ( result!=null ) {
             return result;
         }
+
+        String waitObject= null;
+        boolean ishouldwait= false;
+        synchronized (blocks) {
+            if ( blocks.containsKey(root) ) {
+                waitObject= blocks.get(root);
+                ishouldwait= true;
+            } else {
+                waitObject= String.valueOf( Long.valueOf( System.currentTimeMillis() ) ); // just to be sure it's unique.
+                blocks.put( root, waitObject );
+                System.err.println("created waitObject "+waitObject);
+            }
+        }
+
+        if ( ishouldwait ) { // wait until the other thread is done.  If the other thread doesn't put the result in instances, then there's a problem...
+            try {
+                synchronized ( waitObject ) {
+                    System.err.println("waiting for "+waitObject);
+                    waitObject.wait();
+                    System.err.println("done waiting for "+root);
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            result= instances.get(root);
+
+            if ( result!=null ) {
+                return result;
+            } else {
+                throw new IllegalArgumentException("other thread failed to create filesystem!");
+            }
+
+        } 
 
         FileSystemFactory factory;
         if ( root.getPath()!=null && ( root.getPath().contains(".zip") ||   root.getPath().contains(".ZIP") ) && registry.containsKey("zip") ) {
@@ -221,8 +264,15 @@ public abstract class FileSystem  {
                 }
             }
         }
-        
+
         instances.put(root, result);
+
+        blocks.remove(root);
+
+        System.err.println("releasing "+waitObject);
+        synchronized( waitObject ) {
+            waitObject.notifyAll();
+        }
         
         return result;
     }
