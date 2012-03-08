@@ -62,6 +62,11 @@ public class LocalFileSystem extends FileSystem {
         }
         String[] split= FileSystem.splitUrl( surl );
         localRoot=new File( split[2].substring(split[0].length()) );
+//        try { // simulate slow web site
+//            Thread.sleep(5000);
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(LocalFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         if ( !localRoot.exists() ) {
             File[] roots= File.listRoots();
             if ( Arrays.asList(roots).contains(localRoot) ) {
@@ -122,6 +127,11 @@ public class LocalFileSystem extends FileSystem {
     }
     
     public FileObject getFileObject(String filename) {
+//        try { // simulate slow filesystem
+//            Thread.sleep(1000);
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(LocalFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         return new LocalFileObject( this, localRoot, filename );
     }
     
