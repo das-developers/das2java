@@ -46,5 +46,9 @@ public class StreamException extends Exception {
         super(cause.getMessage());
         initCause(cause);
     }
+
+    public StreamException( String message, Throwable cause ) {
+        super(message, cause);
+    }
     
 }
