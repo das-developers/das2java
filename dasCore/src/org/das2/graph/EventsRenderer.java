@@ -152,7 +152,7 @@ public class EventsRenderer extends Renderer {
                 if ( d.toString().equals(dr.min().toString() ) ) {
                     return d.toString();
                 } else {
-                    return String.format( "%s!c%s", dr.min(), d ) ;
+                    return String.format( "%s", d ) ; // don't indicate time if it's zero width, because this is redundant and clutter.
                 }
             } else {
                 return String.format( "%s (%s)!c%s", dr, sy, d ) ;
