@@ -25,6 +25,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.das2.datum.Datum;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -39,6 +40,7 @@ import org.virbo.qstream.StreamHandler;
 import org.virbo.qstream.StreamTool;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Reduce packets of the same type by combining packets together.  Currently this
@@ -61,9 +63,11 @@ public class ReduceFilter implements StreamHandler {
     }
 
     Map<String, Accum> accum;
+    Map<PacketDescriptor, Boolean> skip;
 
     public ReduceFilter() {
         accum= new HashMap();
+        skip= new HashMap();
         lengthSeconds= 60;
         nextTag= 0;
     }
@@ -79,42 +83,53 @@ public class ReduceFilter implements StreamHandler {
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
 
-        
+
         try {
             XPathExpression expr;
             Node xp;
+
+            boolean skip= false;
 
             // figure out units.
             Units xunits= null;
             expr=  xpath.compile("/packet/qdataset[1]/properties/property[@name='UNITS']/@value");
             xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
             String sunits= xp.getNodeValue();
-            try {
-                xunits= SemanticOps.lookupTimeUnits(sunits);
-                double secmult= Units.seconds.getConverter( xunits.getOffsetUnits() ).convert(1);
-                length= secmult * lengthSeconds;
-
-            } catch ( ParseException ex ) {
-                throw new StreamException("Unable to parse time units", ex);
-            }
-
-            // reset/set the cadence.
-            expr= xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
-            xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
-            if ( xp!=null ) {
-                xp.setNodeValue( String.format( "%f units:UNITS=s", lengthSeconds ) );
-            } else {
-                XPathExpression  parentExpr= xpath.compile("/packet/qdataset[1]/properties"); // it should at least have a units, so it's safe to assume this node is to be found.
-                Node props= (Node) parentExpr.evaluate(ele,XPathConstants.NODE);
-                if ( props==null ) {
-                    throw new StreamException("No properties node found under the first dataset, which should be time.");
+            if ( sunits!=null ) {
+                try {
+                    xunits= SemanticOps.lookupTimeUnits(sunits);
+                    double secmult= Units.seconds.getConverter( xunits.getOffsetUnits() ).convert(1);
+                    length= secmult * lengthSeconds;
+                } catch ( InconvertibleUnitsException ex ) {
+                    skip= true;
+                } catch ( ParseException ex ) {
+                    skip= true;
                 }
-                Element propNode= ele.getOwnerDocument().createElement( "property" );
-                propNode.setAttribute("name", "CADENCE");
-                propNode.setAttribute("type", "Rank0DataSet" );
-                propNode.setAttribute("value", String.format( "%f units:UNITS=s", lengthSeconds ) );
-                props.appendChild( propNode );
+            } else {
+                skip= true;
             }
+
+            if ( !skip ) {
+                // reset/set the cadence.
+                expr= xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
+                xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
+                if ( xp!=null ) {
+                    xp.setNodeValue( String.format( "%f units:UNITS=s", lengthSeconds ) );
+                } else {
+                    XPathExpression  parentExpr= xpath.compile("/packet/qdataset[1]/properties"); // it should at least have a units, so it's safe to assume this node is to be found.
+                    Node props= (Node) parentExpr.evaluate(ele,XPathConstants.NODE);
+                    if ( props==null ) {
+                        throw new StreamException("No properties node found under the first dataset, which should be time.");
+                    }
+                    Element propNode= ele.getOwnerDocument().createElement( "property" );
+                    propNode.setAttribute("name", "CADENCE");
+                    propNode.setAttribute("type", "Rank0DataSet" );
+                    propNode.setAttribute("value", String.format( "%f units:UNITS=s", lengthSeconds ) );
+                    props.appendChild( propNode );
+                }
+            }
+
+            this.skip.put(pd, skip);
 
         } catch (XPathExpressionException ex) {
             Logger.getLogger(ReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
@@ -200,45 +215,51 @@ public class ReduceFilter implements StreamHandler {
      */
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
 
-        //TODO: nextTag may be attached to packet ids.  This is coded with just one.
+        boolean skip= this.skip.get(pd);
+        if ( skip ) {
+            sink.packet( pd, data );
 
-        List<PlaneDescriptor> planes= pd.getPlanes();
+        } else {
+            //TODO: nextTag may be attached to packet ids.  This is coded with just one.
 
-        PlaneDescriptor t0= planes.get(0);
-        double ttag= t0.getType().read(data);
+            List<PlaneDescriptor> planes= pd.getPlanes();
 
-        if ( ttag>nextTag ) {
-            unload( pd, data.limit() );
-            initAccumulators(pd);
-            nextTag= ( 1 + Math.floor( ttag/length ) ) * length;
-        }
+            PlaneDescriptor t0= planes.get(0);
+            double ttag= t0.getType().read(data);
 
-        data.rewind();
-
-        for (PlaneDescriptor planed : pd.getPlanes() ) {
-
-            Accum ac1= accum.get(planed.getName());
-
-            double[] ss = ac1.S;
-            int nn= ac1.N;
-            double bb= ac1.B;
-
-            if ( nn==0 ) {
-                int pos= data.position();
-                bb= planed.getType().read(data);
-                data.position(pos);
-                ac1.B= bb;
+            if ( ttag>nextTag ) {
+                unload( pd, data.limit() );
+                initAccumulators(pd);
+                nextTag= ( 1 + Math.floor( ttag/length ) ) * length;
             }
 
-            if (planed.getElements() > 1) {
-                for (int ii = 0; ii < planed.getElements(); ii++) {
-                    ss[ii]+= ( planed.getType().read(data)-bb ); // java nio keeps track of index
+            data.rewind();
+
+            for (PlaneDescriptor planed : pd.getPlanes() ) {
+
+                Accum ac1= accum.get(planed.getName());
+
+                double[] ss = ac1.S;
+                int nn= ac1.N;
+                double bb= ac1.B;
+
+                if ( nn==0 ) {
+                    int pos= data.position();
+                    bb= planed.getType().read(data);
+                    data.position(pos);
+                    ac1.B= bb;
                 }
-            } else {
-                ss[0]+= planed.getType().read(data)-bb; 
-            }
-            ac1.N+= 1;
 
+                if (planed.getElements() > 1) {
+                    for (int ii = 0; ii < planed.getElements(); ii++) {
+                        ss[ii]+= ( planed.getType().read(data)-bb ); // java nio keeps track of index
+                    }
+                } else {
+                    ss[0]+= planed.getType().read(data)-bb;
+                }
+                ac1.N+= 1;
+
+            }
         }
 
     }
