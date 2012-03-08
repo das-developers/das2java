@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +24,11 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.das2.datum.Datum;
+import org.das2.datum.Units;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.qstream.PacketDescriptor;
 import org.virbo.qstream.PlaneDescriptor;
 import org.virbo.qstream.QDataSetStreamHandler;
@@ -73,11 +77,38 @@ public class ReduceFilter implements StreamHandler {
 
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
+
+        Units xunits= null;
+
         try {
             XPathExpression expr = xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
             Node xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
-            xp.setNodeValue( String.format( "%f units:UNITS=s", lengthSeconds ) );
-            //TODO: adjust cadence property.
+            if ( xp!=null ) {
+                xp.setNodeValue( String.format( "%f units:UNITS=s", lengthSeconds ) );
+            } else {
+                XPathExpression  parentExpr= xpath.compile("/packet/qdataset[1]/properties"); // it should at least have a units, so it's safe to assume this node is to be found.
+                Node props= (Node) parentExpr.evaluate(ele,XPathConstants.NODE);
+                if ( props==null ) {
+                    throw new StreamException("No properties node found under the first dataset, which should be time.");
+                }
+                Element propNode= ele.getOwnerDocument().createElement( "property" );
+                propNode.setAttribute("name", "CADENCE");
+                propNode.setAttribute("type", "Rank0DataSet" );
+                propNode.setAttribute("value", String.format( "%f units:UNITS=s", lengthSeconds ) );
+                props.appendChild( propNode );
+            }
+            expr=  xpath.compile("/packet/qdataset[1]/properties/property[@name='UNITS']/@value");
+            xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
+            String sunits= xp.getNodeValue();
+            try {
+                xunits= SemanticOps.lookupTimeUnits(sunits);
+                double secmult= Units.seconds.getConverter( xunits.getOffsetUnits() ).convert(1);
+                lengthSeconds= secmult * lengthSeconds;
+
+            } catch ( ParseException ex ) {
+                throw new StreamException("Unable to parse time units", ex);
+            }
+
         } catch (XPathExpressionException ex) {
             Logger.getLogger(ReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -205,6 +236,14 @@ public class ReduceFilter implements StreamHandler {
 
     }
 
+    /**
+     * set the cadence to reduce to target the data.  This should be convertible to seconds.
+     * Note we assume all packets have the same offset units (e.g. microseconds).
+     * @param cadence
+     */
+    void setCadence(Datum cadence) {
+        lengthSeconds= cadence.doubleValue( Units.seconds );
+    }
 
     public static void main( String[] args ) throws StreamException, FileNotFoundException, IOException {
         File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
@@ -213,7 +252,7 @@ public class ReduceFilter implements StreamHandler {
         QDataSetStreamHandler handler = new QDataSetStreamHandler();
 
         ReduceFilter filter= new ReduceFilter();
-        filter.lengthSeconds= 3600000; //TODO: client must know the units of the qstream.
+        filter.lengthSeconds= 3600; //TODO: client must know the units of the qstream.
         
         filter.sink= handler;
 
