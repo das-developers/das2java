@@ -250,6 +250,7 @@ public class ReduceFilter implements StreamHandler {
                     ac1.B= bb;
                 }
 
+                //TODO: look out for fill...
                 if (planed.getElements() > 1) {
                     for (int ii = 0; ii < planed.getElements(); ii++) {
                         ss[ii]+= ( planed.getType().read(data)-bb ); // java nio keeps track of index
