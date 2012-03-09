@@ -991,6 +991,16 @@ public class DataSetOps {
                         result.putProperty( ss, props3.get(ss) );
                     }
                 }
+
+                if ( result.property(QDataSet.DEPEND_0)==null ) { // last make the default DEPEND_0 be the first column, if it is a UT time.
+                    if ( ib>0 ) {
+                        Units u= (Units) bundle.property(QDataSet.UNITS,0);
+                        if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
+                            result.putProperty( QDataSet.DEPEND_0, unbundle(bundleDs,0,false) );
+                        }
+                    }
+                }
+
                 return result;
             }
         } else if ( bundle.length(j)==1 ) {
