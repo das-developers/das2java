@@ -16,6 +16,7 @@ import org.das2.DasException;
 import org.virbo.dataset.DataSetUtil;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
@@ -59,6 +60,9 @@ public class DigitalRenderer extends Renderer {
 
             QDataSet xrange= doRange( xds );
             QDataSet yrange= doRange( yds );
+            if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits( (QDataSet) yrange ) ) ) {
+                yrange= DataSetUtil.asDataSet( DatumRangeUtil.newDimensionless(0,10) );
+            }
 
             JoinDataSet bds= new JoinDataSet(2);
             bds.join(xrange);
