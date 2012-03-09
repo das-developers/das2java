@@ -197,14 +197,14 @@ public abstract class FileSystem  {
             } else {
                 waitObject= String.valueOf( Long.valueOf( System.currentTimeMillis() ) ); // just to be sure it's unique.
                 blocks.put( root, waitObject );
-                System.err.println("created waitObject "+waitObject);
+                System.err.println("created waitObject "+waitObject + " "+root );
             }
         }
 
         if ( ishouldwait ) { // wait until the other thread is done.  If the other thread doesn't put the result in instances, then there's a problem...
             try {
                 synchronized ( waitObject ) {
-                    System.err.println("waiting for "+waitObject);
+                    System.err.println("waiting for "+waitObject + " " + root );
                     waitObject.wait();
                     System.err.println("done waiting for "+root);
                 }
