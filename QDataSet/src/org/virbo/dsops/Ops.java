@@ -3849,7 +3849,8 @@ public class Ops {
     }
 
     /**
-     * guess a name for the dataset, looking for NAME and then safeName(LABEL)
+     * guess a name for the dataset, looking for NAME and then safeName(LABEL).  The
+     * result will be a C/Python/Java-style identifier suitable for the variable.
      * @param ds
      * @return
      */
