@@ -42,7 +42,11 @@ public class Orbits {
     private static LinkedHashMap<String,DatumRange> readOrbits( String sc ) throws IOException {
         URL url;
         try {
-            url= new URL( "http://das2.org/wiki/index.php/Orbits/"+sc );
+            if ( sc.contains(":") ) {
+                url= new URL( sc );  // orbit:http://das2.org/wiki/index.php/Orbits/crres:6 allowed.
+            } else {
+                url= new URL( "http://das2.org/wiki/index.php/Orbits/"+sc );
+            }
         } catch ( MalformedURLException ex ) {
             throw new RuntimeException(ex);
         }
@@ -51,6 +55,9 @@ public class Orbits {
         try {
             in= url.openConnection().getInputStream();
         } catch ( IOException ex ) {
+            if ( sc.contains(":") ) {
+                throw new IllegalArgumentException("I/O Exception prevents reading orbits from \""+sc+"\"",ex );
+            }
             url= Orbits.class.getResource("/orbits/"+sc+".dat");
             if ( url==null ) {
                 throw new IllegalArgumentException("unable to find orbits file for \""+sc+"\"" );
@@ -108,7 +115,11 @@ public class Orbits {
                 if ( d1.gt(d2) ) {
                     System.err.println("dropping invalid orbit: "+s );
                 } else {
-                    result.put( s0, new DatumRange(d1,d2) );
+                    try {
+                        result.put( s0, new DatumRange(d1,d2) );
+                    } catch ( IllegalArgumentException ex ) {
+                        System.err.println(ex.getMessage()+": " +s );
+                    }
                 }
             }
             s= rin.readLine();
