@@ -233,6 +233,7 @@ public abstract class FileSystem  {
                 String zipname = ss[3].substring(ss[2].length());
                 String subdir = surl.substring(i+4);
                 FileSystem remote = FileSystem.create(parent);
+                mon.setProgressMessage("loading zip file");
                 File localZipFile = remote.getFileObject(zipname).getFile(mon);
                 factory = (FileSystemFactory) registry.get("zip");
                 FileSystem zipfs = factory.createFileSystem(localZipFile.toURI());
