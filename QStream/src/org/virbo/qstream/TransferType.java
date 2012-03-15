@@ -9,7 +9,8 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
- *
+ * A transfer type is an encoding of a double on to the stream.  It must have a fixed length in bytes.
+ * Some are pure ascii, and isAscii can be used to check this.
  * @author jbf
  */
 public abstract class TransferType {
@@ -63,7 +64,7 @@ public abstract class TransferType {
      * return the number of bytes used by the transfer type.
      * @return
      */
-    abstract int sizeBytes();
+    public abstract int sizeBytes();
     
     /**
      * return true if the transfer type uses Ascii-encodings to respresent data.
@@ -71,7 +72,7 @@ public abstract class TransferType {
      * readability.
      * @return true if the type is ascii-based.
      */
-    abstract boolean isAscii( );
+    public abstract boolean isAscii( );
     
     /**
      * return a string identifying the TransferType.
