@@ -25,12 +25,12 @@ public class IntegerTransferType extends TransferType {
     }
 
     @Override
-    int sizeBytes() {
+    public int sizeBytes() {
         return 4;
     }
 
     @Override
-    boolean isAscii() {
+    public boolean isAscii() {
         return false;
     }
 

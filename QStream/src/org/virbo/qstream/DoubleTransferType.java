@@ -25,12 +25,12 @@ public class DoubleTransferType extends TransferType {
     }
 
     @Override
-    int sizeBytes() {
+    public int sizeBytes() {
         return 8;
     }
 
     @Override
-    boolean isAscii() {
+    public boolean isAscii() {
         return false;
     }
 
