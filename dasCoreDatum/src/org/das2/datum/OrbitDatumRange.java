@@ -1,8 +1,3 @@
-/*
- * MonthDatumRange.java
- *
- * Created on November 15, 2004, 4:28 PM
- */
 
 package org.das2.datum;
 
@@ -13,6 +8,8 @@ package org.das2.datum;
  *   dr.toString() -> "orbit:crres:6"
  *   dr= dr.next()
  *   dr.toString() -> "orbit:crres:7"
+ *
+ * Also, orbit:http://das2.org/wiki/index.php/Orbits/crres:6 is supported for development work and personal lists.
  * @author  Jeremy
  */
 public class OrbitDatumRange extends DatumRange {
