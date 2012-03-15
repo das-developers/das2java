@@ -41,6 +41,7 @@ import org.w3c.dom.Element;
  * @author jbf
  */
 public class SimpleStreamFormatter {
+    private static final char CHAR_NEWLINE = '\n';
 
     Map<PlaneDescriptor, QDataSet> planeToDataSet;
     boolean asciiTypes = true;
@@ -467,7 +468,7 @@ public class SimpleStreamFormatter {
                         }
                     }
                     if (lastPlane && tt.isAscii() && Character.isWhitespace(buffer.get(bufferSize - 1))) {
-                        buffer.put(bufferSize - 1, (byte) '\n');
+                        buffer.put(bufferSize - 1, (byte) CHAR_NEWLINE);
                     }
                 }
 
@@ -493,7 +494,7 @@ public class SimpleStreamFormatter {
                 }
                 boolean lastPlane = iplane == planeCount - 1;
                 if (lastPlane && tt.isAscii() && Character.isWhitespace(buffer.get(bufferSize - 1))) {
-                    buffer.put(bufferSize - 1, (byte) '\n');
+                    buffer.put(bufferSize - 1, (byte) CHAR_NEWLINE);
                 }
 
             }
