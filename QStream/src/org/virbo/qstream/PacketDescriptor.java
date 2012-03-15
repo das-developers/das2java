@@ -95,7 +95,7 @@ public class PacketDescriptor implements Descriptor {
      * calculate the number of bytes in each packet.
      * @return
      */
-    int sizeBytes() {
+    public int sizeBytes() {
         int sizeBytes = 0;
         for (int iplane = 0; iplane < planes.size(); iplane++) {
             PlaneDescriptor pd = planes.get(iplane);
