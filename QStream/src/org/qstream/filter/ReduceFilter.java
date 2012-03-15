@@ -15,8 +15,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.xpath.XPath;
@@ -57,6 +59,8 @@ public class ReduceFilter implements StreamHandler {
     double nextTag;
 
     class Accum {
+        PacketDescriptor pd; // All planes should have the same value.
+        int capacity; // total capacity of the packet.  All planes should have the same number.
         double[] S;
         int N;
         double B; // base offset for S.  We remove this before putting data into the accumulation.
@@ -139,7 +143,17 @@ public class ReduceFilter implements StreamHandler {
     }
 
     public void streamClosed(StreamDescriptor sd) throws StreamException {
-        //TODO: flush remaining accum
+        Set<String> keys= accum.keySet();
+        Set<PacketDescriptor> unloaded= new HashSet<PacketDescriptor>();
+        for ( String key: keys ) {
+            Accum ac1= accum.get(key);
+            if ( unloaded.contains(ac1.pd) ) {
+
+            } else {
+                unload( ac1.pd );
+                unloaded.add(ac1.pd);
+            }
+        }
         sink.streamClosed(sd);
     }
 
@@ -157,19 +171,25 @@ public class ReduceFilter implements StreamHandler {
             PlaneDescriptor planed = planes.get(i);
             double[] ss = new double[DataSetUtil.product(planed.getQube())];
             Accum ac1= new Accum();
+            ac1.pd= pd;
             ac1.S= ss;
             ac1.N= 0;
             ac1.B= -1e38;
             accum.put(planed.getName(), ac1 );
         }
     }
-    
+
+    final char CHAR_NEWLINE= '\n';
+
     /**
      * unload all the packets for this interval on to the stream
      * @param pd
      */
-    private void unload( PacketDescriptor pd, int capacity ) throws StreamException {
-        ByteBuffer data= ByteBuffer.allocate(capacity);
+    private void unload( PacketDescriptor pd ) throws StreamException {
+        ByteBuffer data= ByteBuffer.allocate( pd.sizeBytes() );
+
+        int np= pd.getPlanes().size();
+        int ip= 0;
 
         for (PlaneDescriptor planed : pd.getPlanes() ) {
 
@@ -199,6 +219,11 @@ public class ReduceFilter implements StreamHandler {
                 planed.getType().write( avg, data );
             }
 
+            if ( ( ip==np-1 ) && planed.getType().isAscii() && Character.isWhitespace( data.get( data.capacity() - 1) ) ) {
+                data.put( data.capacity() - 1, (byte) CHAR_NEWLINE );
+            }
+
+            ip++;
         }
 
         data.flip();
@@ -228,7 +253,7 @@ public class ReduceFilter implements StreamHandler {
             double ttag= t0.getType().read(data);
 
             if ( ttag>nextTag ) {
-                unload( pd, data.limit() );
+                unload( pd );
                 initAccumulators(pd);
                 nextTag= ( 1 + Math.floor( ttag/length ) ) * length;
             }
@@ -242,6 +267,7 @@ public class ReduceFilter implements StreamHandler {
                 double[] ss = ac1.S;
                 int nn= ac1.N;
                 double bb= ac1.B;
+                ac1.capacity= data.limit();
 
                 if ( nn==0 ) {
                     int pos= data.position();
