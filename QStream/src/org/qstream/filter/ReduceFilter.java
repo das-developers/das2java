@@ -14,10 +14,12 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +62,9 @@ public class ReduceFilter implements StreamHandler {
 
     class Accum {
         PacketDescriptor pd; // All planes should have the same value.
+        int id;       // the packetId.
         int capacity; // total capacity of the packet.  All planes should have the same number.
+        String dsid;  // the dataset id, so we can remove this later.
         double[] S;
         int N;
         double B; // base offset for S.  We remove this before putting data into the accumulation.
@@ -68,6 +72,8 @@ public class ReduceFilter implements StreamHandler {
 
     Map<String, Accum> accum;
     Map<PacketDescriptor, Boolean> skip;
+
+    StreamDescriptor sd;
 
     public ReduceFilter() {
         accum= new HashMap();
@@ -77,16 +83,19 @@ public class ReduceFilter implements StreamHandler {
     }
 
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
+        this.sd= sd;
         sink.streamDescriptor(sd);
     }
 
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
-        initAccumulators(pd);
+
         Element ele= pd.getDomElement();
 
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
 
+        unload( sd.descriptorId(pd) );
+        clear( sd.descriptorId(pd) );
 
         try {
             XPathExpression expr;
@@ -114,6 +123,9 @@ public class ReduceFilter implements StreamHandler {
             }
 
             if ( !skip ) {
+
+                initAccumulators(pd);
+
                 // reset/set the cadence.
                 expr= xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
                 xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
@@ -172,6 +184,8 @@ public class ReduceFilter implements StreamHandler {
             double[] ss = new double[DataSetUtil.product(planed.getQube())];
             Accum ac1= new Accum();
             ac1.pd= pd;
+            ac1.id= sd.descriptorId(pd);
+            ac1.dsid= planed.getName();
             ac1.S= ss;
             ac1.N= 0;
             ac1.B= -1e38;
@@ -180,6 +194,38 @@ public class ReduceFilter implements StreamHandler {
     }
 
     final char CHAR_NEWLINE= '\n';
+
+    /**
+     * remove this id from the packet accumulators, because this ID is about to be recycled.
+     * unload(id) should be called just prior to clearing it.
+     * @param id the integer id 1-99.
+     */
+    private void clear( int id ) {
+        List<String> remove= new ArrayList();
+        for ( Entry<String,Accum> entry: accum.entrySet() ) {
+            Accum a= entry.getValue();
+            if ( a.id==id ) {
+                remove.add(a.dsid);
+            }
+        }
+        for ( String a: remove ) {
+            accum.remove(a);
+        }
+    }
+    /**
+     * unload the packets associated with the packet id.  (The packet id is 1 for ":01:")
+     * Note unload of a packet that is not loaded does not cause exception.
+     * @param id the integer id 1-99.
+     * @throws StreamException
+     */
+    private void unload( int id ) throws StreamException {
+        for ( Entry<String,Accum> entry: accum.entrySet() ) {
+            Accum a= entry.getValue();
+            if ( a.id==id ) {
+                unload(a.pd);
+            }
+        }
+    }
 
     /**
      * unload all the packets for this interval on to the stream
@@ -245,7 +291,6 @@ public class ReduceFilter implements StreamHandler {
             sink.packet( pd, data );
 
         } else {
-            //TODO: nextTag may be attached to packet ids.  This is coded with just one.
 
             List<PlaneDescriptor> planes= pd.getPlanes();
 
@@ -269,7 +314,7 @@ public class ReduceFilter implements StreamHandler {
                 double bb= ac1.B;
                 ac1.capacity= data.limit();
 
-                if ( nn==0 ) {
+                if ( bb==-1e38 ) {
                     int pos= data.position();
                     bb= planed.getType().read(data);
                     data.position(pos);
