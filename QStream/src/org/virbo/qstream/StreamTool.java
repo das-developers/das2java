@@ -252,6 +252,7 @@ public class StreamTool {
         private byte[] four = new byte[4];
         private StreamHandler handler;
         private Map descriptors = new HashMap();
+        private StreamDescriptor sd;
         private int byteOffset = 0;  // byte offset into file of the end of the buffer.
         private int descriptorCount = 0; // successfully read descriptors
         private int packetCount = 0; // successfully read packets
@@ -280,6 +281,7 @@ public class StreamTool {
                 stream = getInflaterChannel(stream);
             }
 
+            struct.sd= sd;
             handler.streamDescriptor(sd);
             struct.descriptorCount++;
             int bytesRead;
@@ -584,7 +586,14 @@ public class StreamTool {
                 if (pd instanceof PacketDescriptor) {
                     struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
                     StreamTool.interpretPlanes((PacketDescriptor)pd);
-                    struct.handler.packetDescriptor((PacketDescriptor) pd);
+                    int id= -1;
+                    try {
+                        id= Integer.parseInt( asciiBytesToString(struct.four, 1, 2) );
+                    } catch ( NumberFormatException ex ) {
+                        throw new StreamException( "packet descriptor id must be an integer from 1-99");
+                    }
+                    struct.sd.addDescriptor((PacketDescriptor) pd,id);
+                    struct.handler.packetDescriptor( (PacketDescriptor) pd );
                 } else if (root.getTagName().equals("exception")) {
                     throw exception(root);
                 } else if (pd instanceof StreamComment) {

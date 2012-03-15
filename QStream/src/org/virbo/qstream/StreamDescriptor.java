@@ -47,16 +47,26 @@ public class StreamDescriptor implements Descriptor {
 
     public synchronized void addDescriptor(Descriptor pd) {
         int found= -1;
+        if ( invPackets.get(pd)!=null ) {
+            return; // it's already registered.
+        }
         for ( int i=0; i<100; i++ ) {
             if ( descriptors.get(i)==null ) {
                 found=i;
                 break;
+            } else {
+
             }
         }
         if ( found==-1 ) throw new IllegalArgumentException("ran out of numbers, use retire to free");
+        addDescriptor( pd, found );
+    }
+
+    public synchronized void addDescriptor( Descriptor pd, int found ) {
         descriptors.put(found, pd);
         invPackets.put(pd, found );
     }
+
 
     public synchronized int descriptorId(Descriptor pd) {
         if ( pd==this ) return 0;
