@@ -1,6 +1,5 @@
 package org.das2.util.filesystem;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.UnknownHostException;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
