@@ -217,7 +217,8 @@ public abstract class FileSystem  {
             if ( result!=null ) {
                 return result;
             } else {
-                throw new IllegalArgumentException("other thread failed to create filesystem!");
+                // assume the other thread told them what was going on.
+                throw new FileSystemOfflineException("other thread failed to create filesystem.");
             }
 
         } 
@@ -249,31 +250,42 @@ public abstract class FileSystem  {
                 throw new RuntimeException(ex);
             } catch (IOException ex) {
                 throw new FileSystemOfflineException(ex);
+            } finally {
+                if ( result!=null ) instances.put(root, result);
+                blocks.remove(root);
             }
         } else {
             factory= (FileSystemFactory) registry.get(root.getScheme());
         }
+
         if ( factory==null ) {
+            System.err.println("releasing "+waitObject); 
+            synchronized( waitObject ) {
+                waitObject.notifyAll(); //TODO: the other threads are going to think it's offline.
+            }
             throw new IllegalArgumentException( "unsupported protocol: "+root );
+            
         } else {
-            if ( result==null ) { // if we didn't create it in the zip file part
-                try {
-                    // if we didn't create it in the zip file part
+            try {
+                if ( result==null ) { // if we didn't create it in the zip file part
+
                     result = factory.createFileSystem(root);
-                } catch (MalformedURLException ex) {
-                    throw new IllegalArgumentException(ex);
+                    
+                }
+
+            } finally {
+                if ( result!=null ) instances.put(root, result);
+                blocks.remove(root);
+
+                System.err.println("releasing "+waitObject); // need to do this in the finally block in case there was an Exception.
+                synchronized( waitObject ) {
+                    waitObject.notifyAll();
                 }
             }
-        }
 
-        instances.put(root, result);
+       }
 
-        blocks.remove(root);
 
-        System.err.println("releasing "+waitObject);
-        synchronized( waitObject ) {
-            waitObject.notifyAll();
-        }
         
         return result;
     }
