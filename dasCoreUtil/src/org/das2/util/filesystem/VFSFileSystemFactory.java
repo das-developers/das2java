@@ -14,7 +14,7 @@ public class VFSFileSystemFactory implements FileSystemFactory {
     public VFSFileSystemFactory() {
     }
 
-    public FileSystem createFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException, MalformedURLException {
+    public FileSystem createFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException {
         VFSFileSystem vfs = VFSFileSystem.createVFSFileSystem(root);
         return vfs;
     }
