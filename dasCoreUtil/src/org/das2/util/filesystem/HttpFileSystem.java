@@ -132,11 +132,13 @@ public class HttpFileSystem extends WebFileSystem {
                     throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
                 }
                 InputStream err = urlc.getErrorStream();
-                int ret = 0;
-                while ((ret = err.read(buf)) > 0) { 
-                   // empty out the error stream.
+                if ( err!=null ) {
+                    int ret = 0;
+                    while ((ret = err.read(buf)) > 0) {
+                       // empty out the error stream.
+                    }
+                    err.close();
                 }
-                err.close();
             }
 
             if ( !connectFail ) {
