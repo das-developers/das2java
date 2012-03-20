@@ -886,7 +886,11 @@ public class DatumRangeUtil {
      */
     public static DatumRange parseTimeRange( String string ) throws ParseException {
         if ( string.startsWith("orbit:") ) { // experiment with orbits  orbit:crres:591
-            String[] ss= string.split(":");
+            String[] ss= string.split(":"); // support orbit:http://das2.org/wiki/index.php/Orbits/crres:5
+            if ( ss.length==4 ) {
+                ss[1]= ss[1]+":"+ss[2];
+                ss[2]= ss[3];
+            }
             return new OrbitDatumRange( ss[1], ss[2] );
         } else if ( string.equals("P1D") ) { // just for experiment.  See ISO8601
             Datum now= TimeUtil.now();
