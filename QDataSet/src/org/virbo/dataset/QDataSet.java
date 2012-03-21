@@ -466,11 +466,13 @@ public interface QDataSet {
     /**
      * return a dataset that is a subset of this dataset.
      * For example:
-     * <tt>
+     * <pre>
+     * {@code
      *    ds= DDataSet.createRank1(100);
      *    QDataSet trim= ds.trim(50,60);
      *    assert( trim.length()==10 );
-     * </tt>
+     * }
+     * </pre>
      * @param start  the first index to be included in the new dataset.
      * @param end the exclusive index indicating the last index.
      * @return
@@ -480,11 +482,13 @@ public interface QDataSet {
     /**
      * return null or an object implementing the capability for the given interface
      * For example:
-     * <tt>
+     * <pre>
+     * {@code
      *    ds= DDataSet.createRank1(100);
      *    WriteCapability write= ds.capability( WriteCapability.class );
      *    write.putValue( 99, -1e31 );
-     * </tt>
+     * }
+     * </pre>
      * This allows operations to be performed efficiently.
      */
     <T> T capability( Class<T> clazz );
