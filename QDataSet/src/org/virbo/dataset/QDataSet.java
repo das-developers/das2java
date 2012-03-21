@@ -386,7 +386,7 @@ public interface QDataSet {
     /**
      * rank 0 accessor.
      * @throws IllegalArgumentException if the dataset is not rank 0.
-     * @return
+     * @return the value, see the property UNITS to interpret this.
      */
     double value();
 
@@ -459,7 +459,7 @@ public interface QDataSet {
      * a rank 1 dataset flux(Energy).
      * @throws IllegalArgumentException when dataset rank is zero.
      * @param i
-     * @return
+     * @return the QDataSet at index i.
      */
     QDataSet slice( int i );
 
@@ -472,10 +472,10 @@ public interface QDataSet {
      *    QDataSet trim= ds.trim(50,60);
      *    assert( trim.length()==10 );
      * }
-     * </pre>
+     * </pre> 
      * @param start  the first index to be included in the new dataset.
      * @param end the exclusive index indicating the last index.
-     * @return
+     * @return a QDataSet with the same rank but fewer elements.
      */
     QDataSet trim( int start, int end );
 
