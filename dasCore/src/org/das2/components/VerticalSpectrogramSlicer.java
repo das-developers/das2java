@@ -56,6 +56,7 @@ import javax.swing.SwingUtilities;
 import org.das2.graph.Renderer;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
@@ -234,7 +235,10 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         if ( tds1==null ) return;
         
         QDataSet xds= SemanticOps.xtagsDataSet(tds1);
-        QDataSet sliceDataSet= tds1.slice( org.virbo.dataset.DataSetUtil.closestIndex( xds, e.getX() ) );
+
+        int index;
+        index= org.virbo.dataset.DataSetUtil.closestIndex( xds, e.getX() );
+        QDataSet sliceDataSet= tds1.slice( index );
                       
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");        
         if (!isPopupVisible()) {
