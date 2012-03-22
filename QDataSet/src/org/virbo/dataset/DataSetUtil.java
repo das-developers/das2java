@@ -2172,32 +2172,53 @@ public class DataSetUtil {
     /**
      * returns the index of the closest index in the data. "column" comes
      * from the legacy operator.
+     * This assumes there is no invalid data!
      * @param ds
      * @param datum
      * @return
      */
     public static int closestIndex( QDataSet ds, Datum datum ) {
-        if ( !isMonotonic(ds) ) {
-            System.err.println("dataset is not monotonic");
-            isMonotonic(ds);
-            throw new IllegalArgumentException("dataset is not monotonic");
+        if ( ds.rank()!=1 ) {
+            throw new IllegalArgumentException("ds rank should be 1");
         }
-        int result= xTagBinarySearch( ds, datum, 0, ds.length()-1 );
+        if ( ds.length()==0 ) {
+            throw new IllegalArgumentException("ds length is zero");
+        }
+        
         double ddatum= datum.doubleValue( SemanticOps.getUnits(ds) );
-        if (result == -1) {
-            result = 0; //insertion point is 0
-        } else if (result < 0) {
-            result= ~result; // usually this is the case
-            if ( result >= ds.length()-1 ) {
-                result= ds.length()-1;
-            } else {
-                double x= ddatum;
-                double x0= ds.value(result-1 );
-                double x1= ds.value(result );
-                result= ( ( x-x0 ) / ( x1 - x0 ) < 0.5 ? result-1 : result );
+
+        if ( !isMonotonic(ds) ) {
+            int closest= 0;
+            double v= Math.abs( ds.value(closest)-ddatum );
+            for ( int i=1; i<ds.length(); i++ ) {
+                double tv= Math.abs( ds.value(i)-ddatum );
+                if ( tv < v ) {
+                    closest= i;
+                    v= tv;
+                }
             }
+            return closest;
+
+        } else {
+
+            int result= xTagBinarySearch( ds, datum, 0, ds.length()-1 );
+
+            if (result == -1) {
+                result = 0; //insertion point is 0
+            } else if (result < 0) {
+                result= ~result; // usually this is the case
+                if ( result >= ds.length()-1 ) {
+                    result= ds.length()-1;
+                } else {
+                    double x= ddatum;
+                    double x0= ds.value(result-1 );
+                    double x1= ds.value(result );
+                    result= ( ( x-x0 ) / ( x1 - x0 ) < 0.5 ? result-1 : result );
+                }
+            }
+            return result;
+
         }
-        return result;
     }
 
     public static int closestIndex( QDataSet table, double x, Units units ) {
