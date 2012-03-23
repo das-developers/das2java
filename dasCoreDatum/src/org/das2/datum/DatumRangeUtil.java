@@ -966,6 +966,16 @@ public class DatumRangeUtil {
     public static boolean useDoy= false;
 
     public static String formatTimeRange( DatumRange self ) {
+        return formatTimeRange( self, false );
+    }
+
+    /**
+     * format the time into an efficient string.  This should be parseable.
+     * @param self
+     * @param bothDoyYMD if true, use %Y-%m-%d (%J) for formatting days.
+     * @return
+     */
+    public static String formatTimeRange( DatumRange self, boolean bothDoyYMD ) {
         
         String[] monthStr= new String[] { "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec" };
         
@@ -1011,7 +1021,14 @@ public class DatumRangeUtil {
             }
         }
 
-        final DatumFormatter daysFormat= useDoy ? TimeDatumFormatter.DAY_OF_YEAR : TimeDatumFormatter.DAYS;
+        final DatumFormatter daysFormat;
+        if ( bothDoyYMD ) {
+            daysFormat= TimeDatumFormatter.DOY_DAYS;
+        } else if ( useDoy ) {
+            daysFormat= TimeDatumFormatter.DAY_OF_YEAR;
+        } else {
+            daysFormat= TimeDatumFormatter.DAYS;
+        }
 
         if ( isMidnight1 && isMidnight2 ) { // no need to indicate HH:MM
             if ( TimeUtil.getJulianDay( self.max() ) - TimeUtil.getJulianDay( self.min() ) == 1 ) {
