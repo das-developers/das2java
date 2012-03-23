@@ -20,12 +20,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.SwingUtilities;
 import org.das2.datum.DomainDivider;
+import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.TimeUtil;
 import org.das2.graph.DasDevicePosition;
 
 /**
- *
+ * Provide navigation similar to Google Maps, where drag events result a pan on the axes, and mouse wheel events
+ * are zoom in and zoom out.  This is typically attached to the middle mouse button.
+ * 
  * @author jbf
  */
 public class ZoomPanMouseModule extends MouseModule {
@@ -63,6 +66,9 @@ public class ZoomPanMouseModule extends MouseModule {
      */
     private DatumRange maybeRound(DasAxis xAxis, DatumRange dr) {
         DomainDivider div= xAxis.getMinorTicksDomainDivider();
+        if ( false && div==null ) { // make true to experiment with maybeRound while DomainDividers are still not being used.
+            div= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), xAxis.isLog() );
+        }
         if ( div!=null ) {
             try {
                 int px= 999;
