@@ -101,7 +101,8 @@ public class SeriesRenderer extends Renderer {
     boolean updating = false;
 
     boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
-    
+    boolean xunitsWarning= false;
+
     private static final Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     /**
      * indicates the dataset was clipped by dataSetSizeLimit 
@@ -333,6 +334,7 @@ public class SeriesRenderer extends Renderer {
             Units xUnits= SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
             if ( unitsWarning ) yUnits= yAxis.getUnits();
+            if ( xunitsWarning ) xUnits= xAxis.getUnits();
 
             if ( index<lastIndex ) {
                 x = xds.value(index);
@@ -437,7 +439,8 @@ public class SeriesRenderer extends Renderer {
             Units yunits = SemanticOps.getUnits(vds);
             
             if ( unitsWarning ) yunits= yAxis.getUnits();
-            
+            if ( xunitsWarning ) xunits= xAxis.getUnits();
+
             Units yoffsetUnits = yunits.getOffsetUnits();
 
             p = new GeneralPath();
@@ -498,6 +501,7 @@ public class SeriesRenderer extends Renderer {
             Units xUnits = SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
             if ( unitsWarning ) yUnits= yAxis.getUnits();
+            if ( xunitsWarning ) xUnits= yAxis.getUnits();
 
             Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             int buffer= (int)Math.ceil( Math.max( getLineWidth(),10 ) );
@@ -722,7 +726,8 @@ public class SeriesRenderer extends Renderer {
             Units xUnits = SemanticOps.getUnits(xds);
             Units yUnits = SemanticOps.getUnits(vds);
             if ( unitsWarning ) yUnits= yAxis.getUnits();
-            
+            if ( xunitsWarning ) xUnits= xAxis.getUnits();
+
             QDataSet wds= SemanticOps.weightsDataSet( vds );
 
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
@@ -1077,8 +1082,10 @@ public class SeriesRenderer extends Renderer {
         QDataSet tds = null;
         QDataSet vds = null;
         boolean yaxisUnitsOkay = false;
+        boolean xaxisUnitsOkay= false;
 
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
+        xaxisUnitsOkay = SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits() );
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
             vds= ytagsDataSet(ds);
             yaxisUnitsOkay = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
@@ -1091,16 +1098,21 @@ public class SeriesRenderer extends Renderer {
         if ( !yaxisUnitsOkay ) {
             if ( unitsWarning ) {
                 //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
-                lparent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.WARNING, null, null );
+                lparent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
             } else {
                 lparent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
                 return;
             }
         }
 
-        if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
-            lparent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
-            return;
+        if ( !xaxisUnitsOkay ) {
+            if ( xunitsWarning ) {
+                //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
+                lparent.postMessage( this, "xaxis units changed from \""+SemanticOps.getUnits(xds) + "\" to \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+            } else {
+                lparent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
+                return;
+            }
         }
 
         int messageCount= 0;
@@ -1264,7 +1276,7 @@ public class SeriesRenderer extends Renderer {
             return;
         }
         
-        boolean plottable = false;
+        boolean plottable = true;
 
         QDataSet tds = null;
         QDataSet vds = null;
@@ -1285,8 +1297,22 @@ public class SeriesRenderer extends Renderer {
         } else {
             tds = (QDataSet) dataSet;
             plottable = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
+            if ( !plottable ) {
+                if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(tds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
+                    plottable= true; // we'll provide a warning
+                    unitsWarning= true;
+                }
+            }
         }
-        plottable = plottable && SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits());
+
+        plottable = SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits());
+        xunitsWarning= false;
+        if ( !plottable ) {
+            if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(xds) ) && UnitsUtil.isRatioMeasurement( xAxis.getUnits() ) ) {
+                plottable= true; // we'll provide a warning
+                xunitsWarning= true;
+            }
+        }
 
         if (!plottable) {
             return;
@@ -1377,6 +1403,11 @@ public class SeriesRenderer extends Renderer {
             ArrayDataSet ds3= ArrayDataSet.copy(ds);
             ds3.putProperty( QDataSet.UNITS, yaxis.getUnits() );
             ds2= ds3;
+        }
+        if ( this.xunitsWarning ) {
+            ArrayDataSet ds3= ArrayDataSet.copy(xds);
+            ds3.putProperty( QDataSet.UNITS, yaxis.getUnits() );
+            xds= ds3;
         }
         if ( ds2.rank()==2 ) {
             ds2= DataSetOps.slice1( ds2, 0 );
