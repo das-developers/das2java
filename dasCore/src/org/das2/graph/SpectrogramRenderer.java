@@ -262,11 +262,18 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
 
                         } else {
-                            if ( ! SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits()) ) {
-                                parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
+                            boolean xunitsOkay= SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ;
+                            boolean yunitsOkay= SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits());
+                            String message= null;
+                            if ( !xunitsOkay && !yunitsOkay ) {
+                                message= "xaxis and yaxis units";
+                            } else  if ( !xunitsOkay ) {
+                                message= "xaxis units";
+                            } else if ( !yunitsOkay ) {
+                                message= "yaxis units";
                             }
-                            if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
-                                parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
+                            if ( message!=null ) {
+                                parent.postMessage(this, "inconvertible "+message, DasPlot.INFO, null, null);
                             }
                             if ( !SemanticOps.isTableDataSet( zds ) ) {
                                 if ( !SemanticOps.isBundle( zds ) ) {
@@ -419,6 +426,24 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 newUnits.createDatum(in.binStops()[in.numberOfBins()-1]),
                                 in.numberOfBins(), in.isLog() );
         return result;
+    }
+
+    /**
+     * compare the two datums, possibly ignoring units if the two datums are ratio measurements.
+     * @param a
+     * @param b
+     * @return
+     */
+    private int compare( Datum a, Datum b ) {
+        if ( a.getUnits().isConvertableTo(b.getUnits()) ) {
+            return a.compareTo(b);
+        } else {
+            if ( UnitsUtil.isRatioMeasurement(a.getUnits()) && UnitsUtil.isRatioMeasurement(b.getUnits())) {
+                return Double.compare( a.value(), b.value() );
+            } else {
+                throw new InconvertibleUnitsException(a.getUnits(),b.getUnits());
+            }
+        }
     }
 
     public synchronized void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
@@ -579,19 +604,17 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
 
-                        long t0;
+                        //long t0;
 
-                        t0 = System.currentTimeMillis();
+                        //t0 = System.currentTimeMillis();
 
                         QDataSet bounds= bounds(fds);
 
-                        UnitsConverter xuc= xunits.getConverter( xRebinDescriptor.getUnits() );
-
-                        double start = xuc.convert( bounds.value(0,0) );
-                        double end = xuc.convert( bounds.value(0,1) );
-                        if (start > imageXRange.max().doubleValue( xRebinDescriptor.getUnits() ) ) {
+                        Datum start = Datum.create(  bounds.value(0,0), xunits );
+                        Datum end = Datum.create( bounds.value(0,1), xunits );
+                        if ( compare( start, imageXRange.max() )> 0 ) {
                             xrangeWarning= "data starts after range";
-                        } else if ( end < imageXRange.min().doubleValue(xRebinDescriptor.getUnits())) {
+                        } else if ( compare( end, imageXRange.min() ) < 0 ) {
                             xrangeWarning= "data ends before range";
                         }
                         //t0= System.currentTimeMillis();
