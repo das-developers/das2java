@@ -168,7 +168,7 @@ public class DatumRangeUtil {
         String i3= "(\\d\\d\\d)";
         String i2= "(\\d\\d)";
 
-        String iso8601time= i4 + d + i2 + d + i2 + "T" + i2 + d + i2 + "(" + d + i2 + ")?Z?" ;
+        String iso8601time= i4 + d + i2 + d + i2 + "T" + i2 + d + i2 + "((" + d + i2 + "(\\." + i3 + ")?)?)Z?" ;  // "2012-03-27T12:22:36.786Z"
         String iso8601time2= i4 + i2 + i2 + "T" + i2 + i2 + "(" + i2 + ")?Z?" ;
         String iso8601time3= i4 + d + i3 + "T" + i2 + d + i2 + "(" + i2 + ")?Z?" ;
         String iso8601time4= i4 + d + i2 + d + i2 + "Z?" ;
@@ -180,14 +180,14 @@ public class DatumRangeUtil {
         time5= Pattern.compile(iso8601time5);
     }
     /**
+     * Parser for ISO8601 formatted times.
      * returns null or int[7]: [ Y, m, d, H, M, S, nano ]
-     *
-     * @param stringIn
-     * @param periodEnd true means the string refers to the end of a period,
-     *   and for ranges (Years,Months,Days) the time should be inclusive.
-     *
-     *
-     * @return
+     * The code cannot parse any iso8601 string, but this code should.  Right now it parses:
+     * "2012-03-27T12:22:36.786Z"
+     * "2012-03-27T12:22:36"
+     * (and some others) TODO: enumerate and test.
+     * @param stringIn iso8601 string.
+     * @return null or int[7]: [ Y, m, d, H, M, S, nano ]
      */
     public static int[] parseISO8601 ( String str ) {
 
@@ -195,7 +195,7 @@ public class DatumRangeUtil {
 
         m= time1.matcher(str);
         if ( m.matches() ) {
-            return new int[] { Integer.parseInt( m.group(1) ), Integer.parseInt( m.group(2) ), Integer.parseInt( m.group(3) ), getInt( m.group(4), 0 ), getInt( m.group(5), 0 ), getInt( m.group(7), 0), 0 };
+            return new int[] { Integer.parseInt( m.group(1) ), Integer.parseInt( m.group(2) ), Integer.parseInt( m.group(3) ), getInt( m.group(4), 0 ), getInt( m.group(5), 0 ), getInt( m.group(8), 0), 1000000 * getInt( m.group(10), 0) };
         } else {
             m= time2.matcher(str);
             if ( m.matches() ) {
@@ -220,6 +220,9 @@ public class DatumRangeUtil {
         return null;
     }
 
+    public static final String iso8601duration= "P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?";
+    public static final Pattern iso8601DurationPattern= Pattern.compile(iso8601duration);
+
     /**
      * returns the time found in an iso8601 string, or null.  This supports
      * periods (durations) as in: 2007-03-01T13:00:00Z/P1Y2M10DT2H30M
@@ -234,24 +237,19 @@ public class DatumRangeUtil {
      */
     public static DatumRange parseISO8601Range( String stringIn ) {
 
-        String iso8601duration= "P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?";
-        
         String[] parts= stringIn.split("/",-2);
         if ( parts.length!=2 ) return null;
 
         boolean d1= parts[0].charAt(0)=='P';
         boolean d2= parts[1].charAt(0)=='P';
 
-        Pattern p;
         Matcher m;
 
         int[] digits1= null;
         int[] digits2= null;
 
-        Pattern duration= Pattern.compile(iso8601duration);
-
         if ( d1 ) {
-            m= duration.matcher(parts[0]);
+            m= iso8601DurationPattern.matcher(parts[0]);
             if ( m.matches() ) {
                 digits1= new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ), getInt( m.group(7), 0 ) };
             }
@@ -260,7 +258,7 @@ public class DatumRangeUtil {
         }
 
         if ( d2 ) {
-            m= duration.matcher(parts[1]);
+            m= iso8601DurationPattern.matcher(parts[1]);
             if ( m.matches() ) {
                 digits2= new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ), getInt( m.group(7), 0 ) };
             }
@@ -892,9 +890,12 @@ public class DatumRangeUtil {
                 ss[2]= ss[3];
             }
             return new OrbitDatumRange( ss[1], ss[2] );
-        } else if ( string.equals("P1D") ) { // just for experiment.  See ISO8601
+        } else if ( string.startsWith("P") && iso8601DurationPattern.matcher(string).matches() ) { // just for experiment.  See ISO8601
             Datum now= TimeUtil.now();
-            return new DatumRange( now.subtract(1,Units.days), now );
+            DatumRange result= parseISO8601Range( string + "/" + TimeParser.create(TimeParser.TIMEFORMAT_Z).format(now, null) );
+            if ( result==null ) throw new ParseException(string,0);
+            return result;
+
         } else {
             return new TimeRangeParser().parse(string);
         }
