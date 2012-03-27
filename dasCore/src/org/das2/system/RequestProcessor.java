@@ -58,6 +58,7 @@ public final class RequestProcessor {
     private static final BlockingRequestQueue queue = new BlockingRequestQueue();
     private static final WeakHashMap runnableQueueMap = new WeakHashMap();
     private static final Runner runner = new Runner();
+    private static final Runnable SHUTDOWN = new Runnable() { public void run() {} };
     
     private static int maxThreadCount = 10;
     private static int threadCount = 0;
@@ -66,7 +67,7 @@ public final class RequestProcessor {
     private final static Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
     
     private static int threadOrdinal = 0;
-    
+
     private RequestProcessor() {}
     
     private static void setJob(Runnable job) {
@@ -174,6 +175,10 @@ public final class RequestProcessor {
             }
         }
     }
+
+    public static void shutdown() {
+        queue.add(SHUTDOWN);
+    }
     
     /*
     public static int getMaximumThreadCount(int i) {
@@ -197,6 +202,10 @@ public final class RequestProcessor {
                 while (true) {
                     try {                        
                         Runnable run = queue.remove();
+                        if (run == SHUTDOWN) {
+                            queue.add(run);
+                            break;
+                        }
                         logger.fine("running "+run);
                         if (run != null) {
                             setJob(run);
