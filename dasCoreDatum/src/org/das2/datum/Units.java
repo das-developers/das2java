@@ -106,9 +106,11 @@ public abstract class Units {
     public static final Units hertz= new NumberUnits("Hz");
     public static final Units kiloHertz = new NumberUnits("kHz");
     public static final Units megaHertz = new NumberUnits("MHz");
+    public static final Units gigaHertz = new NumberUnits("GHz");
     static {
         hertz.registerConverter(kiloHertz, UnitsConverter.KILO);
         hertz.registerConverter(megaHertz, UnitsConverter.MEGA);
+        hertz.registerConverter(gigaHertz, UnitsConverter.GIGA);
     }
     
     public static final Units eV= new NumberUnits("eV");
