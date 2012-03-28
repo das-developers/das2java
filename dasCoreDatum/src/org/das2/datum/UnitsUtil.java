@@ -18,14 +18,14 @@ public class UnitsUtil {
      * are not considered ratiometric.  (Of course, all ratiometic
      * units are dimensionless...)
      */
-    public static final boolean isRatiometric( Units unit ) {
+    public static boolean isRatiometric( Units unit ) {
         return unit!=Units.dimensionless && unit.isConvertableTo(Units.logERatio);
     }
     
     /**
      * returns true if the unit describes a location in time, as in us2000.
      */
-    public static final boolean isTimeLocation( Units unit ) {
+    public static boolean isTimeLocation( Units unit ) {
         return unit==Units.us2000 || unit.isConvertableTo(Units.us2000);
     }
     
@@ -39,7 +39,7 @@ public class UnitsUtil {
      * @param unit
      * @return
      */
-    public static final boolean isRatioMeasurement( Units unit ) {
+    public static boolean isRatioMeasurement( Units unit ) {
         return !(unit instanceof EnumerationUnits) && unit.getOffsetUnits()==unit;
     }
     
@@ -52,7 +52,7 @@ public class UnitsUtil {
      * @param unit
      * @return
      */
-    public static final boolean isIntervalMeasurement( Units unit ) {
+    public static boolean isIntervalMeasurement( Units unit ) {
         return !(unit instanceof EnumerationUnits) && unit.getOffsetUnits()!=unit;
     }
     /**
@@ -64,7 +64,7 @@ public class UnitsUtil {
      * @param unit
      * @return true if the unit is nominal.
      */
-    public static final boolean isNominalMeasurement( Units unit ) {
+    public static boolean isNominalMeasurement( Units unit ) {
         return unit instanceof EnumerationUnits;
     }
     
@@ -77,7 +77,7 @@ public class UnitsUtil {
      * @param unit
      * @return true if the unit is ordinal.
      */
-    public static final boolean isOrdinalMeasurement( Units unit ) {
+    public static boolean isOrdinalMeasurement( Units unit ) {
         return unit instanceof EnumerationUnits;
     }
     
@@ -98,6 +98,8 @@ public class UnitsUtil {
             return Units.kiloHertz;
         } else if ( unit==Units.microseconds ) {
             return Units.megaHertz;
+        } else if ( unit==Units.nanoseconds ) {
+            return Units.gigaHertz;
         } else {
             if ( unit.isConvertableTo(Units.seconds ) ) {
                 UnitsConverter uc= unit.getConverter(Units.seconds);
@@ -107,6 +109,14 @@ public class UnitsUtil {
                 uc= unit.getConverter(Units.milliseconds);  // there's no way to check for scale=1000...
                 if ( uc==UnitsConverter.IDENTITY ) {
                     return Units.kiloHertz;
+                }
+                uc= unit.getConverter(Units.microseconds);  // there's no way to check for scale=1000...
+                if ( uc==UnitsConverter.IDENTITY ) {
+                    return Units.megaHertz;
+                }
+                uc= unit.getConverter(Units.nanoseconds);  // there's no way to check for scale=1000...
+                if ( uc==UnitsConverter.IDENTITY ) {
+                    return Units.gigaHertz;
                 } else {
                     throw new IllegalArgumentException( "units not supported: "+unit );
                 }
@@ -122,6 +132,10 @@ public class UnitsUtil {
                 uc= unit.getConverter(Units.megaHertz);
                 if ( uc==UnitsConverter.IDENTITY ) {
                     return Units.microseconds;
+                }
+                uc= unit.getConverter(Units.gigaHertz);
+                if ( uc==UnitsConverter.IDENTITY ) {
+                    return Units.nanoseconds;
                 } else {
                     throw new IllegalArgumentException( "units not supported: "+unit );
                 }
