@@ -1,0 +1,4 @@
+[00]000067<?xml version="1.0" encoding="UTF-8"?>
+<stream dataset_id="ds_0"/>
+[xx]000144<?xml version="1.0" encoding="UTF-8"?>
+<exception type="NoDataInInterval" message="No data found in interval.  Last data found at 2012-02-01"/>
