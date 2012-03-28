@@ -420,7 +420,7 @@ public class HttpFileSystem extends WebFileSystem {
                 in= protocol.getInputStream( new WebFileObject(this,directory,new Date() ), new NullProgressMonitor() );
                 list= HtmlUtil.getDirectoryListing( getURL(directory), in );
             } catch ( CancelledOperationException ex ) {
-                throw new IOException(ex);
+                throw new IllegalArgumentException(ex); //TODO: this should probably be IOException(ex).  See use 20 lines below as well.
             } finally {
                 if ( in!=null ) in.close();
             }
