@@ -412,6 +412,29 @@ public class HttpFileSystem extends WebFileSystem {
     }
 
     public String[] listDirectory(String directory) throws IOException {
+
+        if ( protocol!=null && protocol instanceof AppletHttpProtocol ) { // support applets.  This could check for local write access, but DefaultHttpProtocol shows a problem here too.
+            InputStream in=null;
+            URL[] list;
+            try {
+                in= protocol.getInputStream( new WebFileObject(this,directory,new Date() ), new NullProgressMonitor() );
+                list= HtmlUtil.getDirectoryListing( getURL(directory), in );
+            } catch ( CancelledOperationException ex ) {
+                throw new IOException(ex);
+            } finally {
+                if ( in!=null ) in.close();
+            }
+            
+            String[] result;
+            result = new String[list.length];
+            int n = directory.length();
+            for (int i = 0; i < list.length; i++) {
+                URL url = list[i];
+                result[i] = getLocalName(url).substring(n);
+            }
+            return result;
+        }
+
         directory = toCanonicalFolderName(directory);
 
         String[] result;
