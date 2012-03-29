@@ -64,16 +64,53 @@ public class TimeParser {
      */
     int lsd;
 
-    //TODO: FieldHandler needs to report its affect on the LSD.  (Autoplot gets versioning).
+    /**
+     * Interface to add custom handlers for strings with unique formats.  For example, the RPWS group had files with
+     * two-hex digits indicating the ten-minute interval covered by the file name.  This is also used for orbits.
+     * TODO: FieldHandler needs to report its affect on the LSD.  (Autoplot gets versioning).
+     */
     public interface FieldHandler {
+
         /**
          * arguments for the parser are passed in.
-         * @param args map of arguments.  %(t,a1,a2,a3)
+         * @param args map of arguments.  $(t,a1=v1,a2=v2,a3=v3)
          * @return null if the string is parseable, an error message otherwise.
          */
         public String configure( Map<String,String> args );
-        //TODO: String getRegex(); 
-        public void handleValue( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) throws ParseException;
+
+        /**
+         * return a regular expression that matches valid field entries.  ".*" can be used to match anything, but this limits use.
+         * TODO: where is this used?  I added it because it's easy and I saw a TODO to add it.
+         * @return a regular expression matching valid entries.
+         */
+        public String getRegex();
+
+        /**
+         * parse the field to interpret as a time range.
+         * @param fieldContent
+         * @param startTime
+         * @param timeWidth
+         * @param extra extra data, such as version numbers, are passed out here.
+         * @throws ParseException
+         */
+        public void parse( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) throws ParseException;
+        
+        /**
+         * create a string given the times, when this is possible.  An IllegalArgumentException should be thrown when this is 
+         * not possible, but be loose so this can be composed with other field handlers.  For example, imagine the $Y field handler.
+         * This should not throw an exception when 2012-03-29 is passed in because it's not 2012-01-01, because the $m and $d might
+         * be used later.  However if a time is specified for a year before the first orbit of a spacecraft, then an exception
+         * should be thrown because there is an error that the developer is going to have to deal with.
+         * 
+         * @param startTime
+         * @param timeWidth
+         * @param length, -1 or the length of the field.
+         * @param extra extra data, such as version numbers, are passed in here.
+         * @return the string representing the time range specified.
+         * @throws IllegalArgumentException
+         */
+        public abstract String format( TimeStruct startTime, TimeStruct timeWidth, int length, Map<String,String> extra ) throws IllegalArgumentException;
+
     }
 
     /**
@@ -375,7 +412,7 @@ public class TimeParser {
                         String name= qual.substring(0,idx);
                         String val= qual.substring(idx+1);
                         //FieldHandler fh= (FieldHandler) fieldHandlers.get(name);
-                        //fh.handleValue( val, context, timeWidth );
+                        //fh.parse( val, context, timeWidth );
                         if ( name.equals("Y") ) context.year= Integer.parseInt(val);
                         else if ( name.equals("m") ) context.month= Integer.parseInt(val);
                         else if ( name.equals("d") ) context.day= Integer.parseInt(val);
@@ -655,7 +692,7 @@ public class TimeParser {
                     }
                 } else if (handlers[idigit] == 100) {
                     FieldHandler handler = (FieldHandler) fieldHandlers.get(fc[idigit]);
-                    handler.handleValue(timeString.substring(offs, offs + len), time, timeWidth, extra );
+                    handler.parse(timeString.substring(offs, offs + len), time, timeWidth, extra );
 
                 } else if (handlers[idigit] == 10) {
                     char ch = timeString.charAt(offs);
@@ -1143,7 +1180,7 @@ public class TimeParser {
                 throw new RuntimeException("cannot format spec containing ignore");
 
             } else if (handlers[idigit] == 100) {
-                if ( fc[idigit].equals("v") ) { // kludge for version
+                if ( fc[idigit].equals("v") ) { // kludge for version.  TODO: This can probably use the code below now.
                     String ins= "00";
                     if ( len>-1 ) {
                         if ( len>20 ) throw new IllegalArgumentException("version lengths>20 not supported");
@@ -1152,7 +1189,13 @@ public class TimeParser {
                     result.insert( offs, ins );
                     offs+= ins.length();
                 } else {
-                    throw new RuntimeException("Handlers not supported");
+                    FieldHandler fh1= fieldHandlers.get(fc[idigit]);
+                    String ins= fh1.format( time, timeWidth, len, null );
+                    if ( len>-1 && ins.length()!=len ) {
+                        throw new IllegalArgumentException("length of fh is incorrect, should be "+len+", got \""+ins+"\"");
+                    }
+                    result.insert( offs, ins );
+                    offs+= ins.length();
                 }
 
             } else if (handlers[idigit] == 10) {
