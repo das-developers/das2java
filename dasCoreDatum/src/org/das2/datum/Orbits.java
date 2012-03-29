@@ -203,7 +203,12 @@ public class Orbits {
 
 
         public String configure(Map<String, String> args) {
-            o= getOrbitsFor( args.get("id") );
+            String id= args.get("id");
+            if ( id==null ) {
+                id= "rbspa-pp";
+            }
+
+            o= getOrbitsFor( id );
             if ( args.containsKey("pad") ) {
                 pad= args.get("pad").charAt(0);
             }
@@ -271,8 +276,9 @@ public class Orbits {
             if ( result==null ) {
                 throw new IllegalArgumentException("unable to find orbit for timerange");
             }
-            
-            int n= length==-1 ? 0 : length-result.length();
+
+            if ( length<0 ) length= 5; // 5 by default.
+            int n= length-result.length();
 
             String ppad= "";
             for ( int i=0; i<n; i++ ) {
