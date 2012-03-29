@@ -372,9 +372,6 @@ public final class TimeUtil {
     }
     
     public static TimeStruct subtract( TimeStruct a, TimeStruct b ) {
-        if ( b.year>1000 && a.year>1000 ) {
-            throw new IllegalArgumentException("cannot add more than 1000 years at a time.  Did you attempt to add two time locations?");
-        }
         TimeStruct result= new TimeStruct();
         result.year= a.year - b.year;
         result.month= a.month - b.month;
