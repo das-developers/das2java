@@ -538,7 +538,11 @@ public class TimeParser {
      *
      */
     public static TimeParser create(String formatString) {
-        return new TimeParser(formatString, null);
+        HashMap map= new HashMap();
+        if ( map.get("o")==null ) {
+            map.put("o",new OrbitFieldHandler());
+        }
+        return new TimeParser(formatString,map);
     }
 
     public static TimeParser create(String formatString, String fieldName, FieldHandler handler, Object ... moreHandler  ) {
