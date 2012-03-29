@@ -198,6 +198,7 @@ public class Orbits {
     public static class OrbitFieldHandler implements TimeParser.FieldHandler {
 
         Orbits o;
+        OrbitDatumRange orbitDatumRange;
         char pad='_';
 
 
@@ -239,8 +240,13 @@ public class Orbits {
             timeWidth.minute= tsmax.hour-tsmin.hour;
             timeWidth.seconds= tsmax.seconds-tsmin.seconds;
             timeWidth.micros= tsmax.micros-tsmin.micros;
+
+            orbitDatumRange= new OrbitDatumRange( o.sc,fieldContent.substring(i).trim() );
         }
 
+        public OrbitDatumRange getOrbitRange() {
+            return orbitDatumRange;
+        }
 
         public String format( TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra ) throws IllegalArgumentException {
             
@@ -249,10 +255,17 @@ public class Orbits {
             for ( String s: o.orbits.keySet() ) {
                 DatumRange dr= o.getDatumRange(s);
                 double nmin= DatumRangeUtil.normalize( dr, seek.min() );
-                double nmax= DatumRangeUtil.normalize( dr, seek.max() );
-                if ( nmin>-0.8 && nmin<0.2 && nmax>0.8 && nmax<1.2 ) {
-                    result= s;
-                    break;
+                if ( seek.width().value()==0 ) {
+                    if ( nmin>=0.0 && nmin<1.0 ) {
+                        result= s;
+                        break;
+                    }
+                } else {
+                    double nmax= DatumRangeUtil.normalize( dr, seek.max() );
+                    if ( nmin>-0.8 && nmin<0.2 && nmax>0.8 && nmax<1.2 ) {
+                        result= s;
+                        break;
+                    }
                 }
             }
             if ( result==null ) {
