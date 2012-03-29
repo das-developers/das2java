@@ -684,9 +684,18 @@ public class FileStorageModelNew {
                 }
                 return null;
             }
-            public void handleValue( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) {
+            public void parse( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) {
                 extra.put( "v", fieldContent );
             }
+
+            public String getRegex() {
+                return ".*";
+            }
+
+            public String format( TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra ) {
+                return extra.get("v"); //TODO: length
+            }
+
         };
 
         if ( fieldName==null ) {
