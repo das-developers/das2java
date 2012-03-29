@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.das2.datum.Orbits.OrbitFieldHandler;
 
 /**
  * TimeParser designed to quickly parse strings with a specified format.  This parser has been
@@ -30,9 +31,15 @@ public class TimeParser {
      * %Y-%m-%dT%H:%M:%S.%{milli}Z
      */
     public static final String TIMEFORMAT_Z = "%Y-%m-%dT%H:%M:%S.%{milli}Z";
+
     TimeStruct time;
     TimeStruct timeWidth;
     TimeStruct context;
+
+    /**
+     * keep track of the orbit DatumRange parsed.
+     */
+    OrbitDatumRange orbitDatumRange;
 
     int ndigits;
     String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b", "X", };
@@ -544,6 +551,9 @@ public class TimeParser {
                 map.put( fieldName, handler );
             }
         }
+        if ( map.get("o")==null ) {
+            map.put("o",new OrbitFieldHandler());
+        }
         return new TimeParser(formatString, map);
     }
 
@@ -613,6 +623,8 @@ public class TimeParser {
         int offs = 0;
         int len = 0;
 
+        orbitDatumRange=null;
+        
         time.year = context.year;
         time.month = context.month;
         time.day = context.day;
@@ -693,7 +705,9 @@ public class TimeParser {
                 } else if (handlers[idigit] == 100) {
                     FieldHandler handler = (FieldHandler) fieldHandlers.get(fc[idigit]);
                     handler.parse(timeString.substring(offs, offs + len), time, timeWidth, extra );
-
+                    if ( handler instanceof Orbits.OrbitFieldHandler ) {
+                        orbitDatumRange= ((Orbits.OrbitFieldHandler)handler).getOrbitRange();
+                    }
                 } else if (handlers[idigit] == 10) {
                     char ch = timeString.charAt(offs);
                     if (ch == 'P' || ch == 'p') {
@@ -1047,6 +1061,8 @@ public class TimeParser {
             int[] t1= new int[] { time.year, time.month, time.day, time.hour, time.minute, (int)time.seconds, time.millis };
             int[] t2= new int[] { time2.year, time2.month, time2.day, time2.hour, time2.minute, (int)time2.seconds, time2.millis };
             return new MonthDatumRange( t1, t2 );
+        } else if ( orbitDatumRange!=null ) {
+            return orbitDatumRange;
         } else {
             TimeStruct time2 = time.add(timeWidth);
             double t1 = toUs2000(time);
@@ -1075,10 +1091,12 @@ public class TimeParser {
     /**
      * format the range into a string.
      * @param start
-     * @param end currently ignored, and may be used in the future
+     * @param end currently ignored, and may be used in the future.  This may be null.
      * @return formatted string.
      */
     public String format(Datum start, Datum end) {
+
+        if ( end==null ) end= start;
 
         StringBuilder result = new StringBuilder(100);
 
@@ -1190,7 +1208,8 @@ public class TimeParser {
                     offs+= ins.length();
                 } else {
                     FieldHandler fh1= fieldHandlers.get(fc[idigit]);
-                    String ins= fh1.format( time, timeWidth, len, null );
+                    TimeUtil.TimeStruct timeEnd = TimeUtil.toTimeStruct(end);
+                    String ins= fh1.format( timel, TimeUtil.subtract(timeEnd, timel), len, null );
                     if ( len>-1 && ins.length()!=len ) {
                         throw new IllegalArgumentException("length of fh is incorrect, should be "+len+", got \""+ins+"\"");
                     }
