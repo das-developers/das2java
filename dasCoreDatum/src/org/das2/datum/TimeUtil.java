@@ -355,6 +355,38 @@ public final class TimeUtil {
         return result;
     }
 
+    public static TimeStruct add( TimeStruct a, TimeStruct b ) {
+        if ( b.year>1000 && a.year>1000 ) {
+            throw new IllegalArgumentException("cannot add more than 1000 years at a time.  Did you attempt to add two time locations?");
+        }
+        TimeStruct result= new TimeStruct();
+        result.year= a.year + b.year;
+        result.month= a.month + b.month;
+        result.day= a.day + b.day;
+        result.doy= a.doy + b.doy;
+        result.hour= a.hour + b.hour;
+        result.minute= a.hour + b.hour;
+        result.seconds= a.seconds + b.seconds;
+        result.micros= a.micros + b.micros;
+        return result;
+    }
+    
+    public static TimeStruct subtract( TimeStruct a, TimeStruct b ) {
+        if ( b.year>1000 && a.year>1000 ) {
+            throw new IllegalArgumentException("cannot add more than 1000 years at a time.  Did you attempt to add two time locations?");
+        }
+        TimeStruct result= new TimeStruct();
+        result.year= a.year - b.year;
+        result.month= a.month - b.month;
+        result.day= a.day - b.day;
+        result.doy= a.doy - b.doy;
+        result.hour= a.hour - b.hour;
+        result.minute= a.hour - b.hour;
+        result.seconds= a.seconds - b.seconds;
+        result.micros= a.micros - b.micros;
+        return result;
+    }
+
     /**
      * splits the time location datum into y,m,d,etc components.  Note that
      * seconds is a double, and micros will be 0.
