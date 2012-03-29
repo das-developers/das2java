@@ -16,8 +16,16 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.das2.datum.TimeUtil.TimeStruct;
 
 /**
+ * Orbits are a map of string identifiers to DatumRanges, typically used to enumerate the orbits a spacecraft makes.
+ * For example, Cassini orbit "C" was from 2004-366T07:03 to 2005-032T03:27 and "33" was from  2006-318T23:34 to 2006-330T22:23.
+ * There are two types of orbits: canonical, which have an identifier like "cassini" and can be used by the community, and user
+ * which have identifiers like  http://das2.org/wiki/index.php/testorbits .  In either case, these refer to a file.
+ * The canonical ones are stored on the das2 wiki at  http://das2.org/wiki/index.php/Orbits/&lt;id&gt;.  This file is a
+ * three-column ascii file with the orbit id in either the first or last column.  Note any line not meeting this spec is ignored,
+ * so that orbit files can contain additional documentation (and can sit within a wiki).
  *
  * @author jbf
  */
@@ -138,7 +146,7 @@ public class Orbits {
         return orbits.get(orbit);
     }
 
-    public String next( String orbit ) {//TODO: do this efficiently
+    public String next( String orbit ) {//TODO: do this efficiently!
         boolean next= false;
         for ( String s: orbits.keySet() ) {
             if ( next ) return s;
@@ -149,7 +157,7 @@ public class Orbits {
         return null;
     }
     
-    public String prev( String orbit ) { //TODO: do this efficiently
+    public String prev( String orbit ) { //TODO: do this efficiently!
         String prev= null;
         for ( String s: orbits.keySet() ) {
             if ( s.equals(orbit) ) {
@@ -158,6 +166,14 @@ public class Orbits {
             prev= s;
         }
         return null;
+    }
+
+    /**
+     * return the first orbit id, so that we can iterate through all
+     * @return
+     */
+    public String first() {
+        return orbits.keySet().iterator().next();
     }
 
     public static synchronized Orbits getOrbitsFor( String sc ) {
@@ -176,9 +192,96 @@ public class Orbits {
         }
     }
 
-    public static void main( String[] args ) {
+    /**
+     * allow orbits to be used in file names
+     */
+    public static class OrbitFieldHandler implements TimeParser.FieldHandler {
+
+        Orbits o;
+        char pad='_';
+
+
+        public String configure(Map<String, String> args) {
+            o= getOrbitsFor( args.get("id") );
+            if ( args.containsKey("pad") ) {
+                pad= args.get("pad").charAt(0);
+            }
+            return null; // no errors
+        }
+
+        public String getRegex() {
+            return ".*";
+        }
+
+        public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
+
+            // identify leading fill characters
+            int i=0;
+            while ( i<fieldContent.length() && fieldContent.charAt(i)==pad ) i++; // note we also trim
+
+            DatumRange dr= o.getDatumRange( fieldContent.substring(i).trim() );
+            TimeStruct tsmin= TimeUtil.toTimeStruct(dr.min());
+            TimeStruct tsmax= TimeUtil.toTimeStruct(dr.max());
+            
+            startTime.year= tsmin.year;
+            startTime.month= tsmin.month;
+            startTime.day= tsmin.day;
+            startTime.doy= tsmin.doy;
+            startTime.hour= tsmin.hour;
+            startTime.minute= tsmin.hour;
+            startTime.seconds= tsmin.seconds;
+
+            timeWidth.year= tsmax.year-tsmin.year;
+            timeWidth.month= tsmax.month-tsmin.month;
+            timeWidth.day= tsmax.day-tsmin.day;
+            timeWidth.doy= tsmax.doy-tsmin.doy;
+            timeWidth.hour= tsmax.hour-tsmin.hour;
+            timeWidth.minute= tsmax.hour-tsmin.hour;
+            timeWidth.seconds= tsmax.seconds-tsmin.seconds;
+            timeWidth.micros= tsmax.micros-tsmin.micros;
+        }
+
+
+        public String format( TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra ) throws IllegalArgumentException {
+            
+            DatumRange seek= new DatumRange( TimeUtil.toDatum(startTime),TimeUtil.toDatum(TimeUtil.add(startTime,timeWidth)) );
+            String result=null;
+            for ( String s: o.orbits.keySet() ) {
+                DatumRange dr= o.getDatumRange(s);
+                double nmin= DatumRangeUtil.normalize( dr, seek.min() );
+                double nmax= DatumRangeUtil.normalize( dr, seek.max() );
+                if ( nmin>-0.8 && nmin<0.2 && nmax>0.8 && nmax<1.2 ) {
+                    result= s;
+                    break;
+                }
+            }
+            if ( result==null ) {
+                throw new IllegalArgumentException("unable to find orbit for timerange");
+            }
+            
+            int n= length==-1 ? 0 : length-result.length();
+
+            String ppad= "";
+            for ( int i=0; i<n; i++ ) {
+                ppad= ppad+pad;
+            }
+            
+            return ppad + result;
+
+        }
+
+    }
+
+    public static void main( String[] args ) throws ParseException {
         Orbits o= getOrbitsFor( "cassini" );
         System.err.println(o.getDatumRange("120"));
+
+        TimeParser tp= TimeParser.create( "$5(o,id=cassini)", "o", new OrbitFieldHandler() );
+        DatumRange dr= tp.parse( "____C").getTimeRange();
+        System.err.println( dr );
+        System.err.println( tp.format(dr) );
+        
+
     }
 
 }
