@@ -491,6 +491,7 @@ public class TimeParser {
         if ( spec.contains("%Y")||spec.contains("%y") ) return true;
         if ( spec.contains(";Y=") ) return true;
         if ( spec.contains(",Y=") ) return true; //yay, sloppy specs!
+        if ( spec.contains("%o")|| spec.contains("%{o,") ) return true;
         return false;
     }
 
