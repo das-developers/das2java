@@ -12,6 +12,7 @@ package org.das2.fsm;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
+import org.das2.datum.TimeUtil.TimeStruct;
 import org.das2.util.filesystem.FileSystem;
 import org.das2.DasException;
 import org.das2.dataset.CacheTag;
@@ -70,13 +71,31 @@ public class FileStorageModelAvailabilityDataSetDescriptor extends DataSetDescri
         fs = FileSystem.create(new URI("http://www-pw.physics.uiowa.edu/~jbf/cluster/obtdata/"));
         
         TimeParser.FieldHandler hexHandler= new TimeParser.FieldHandler() {
+            
             public String configure( Map<String,String> args ) { return null; }
-            public void handleValue(String fieldContent, TimeUtil.TimeStruct startTime, TimeUtil.TimeStruct timeWidth, Map<String,String> extra ) {
+
+            public void parse(String fieldContent, TimeUtil.TimeStruct startTime, TimeUtil.TimeStruct timeWidth, Map<String,String> extra ) {
                 int i= Integer.decode("0x"+fieldContent).intValue();
                 double seconds= 86400 * i / 256;
                 startTime.seconds= seconds;
                 timeWidth.seconds= 86400 / 256.;
             }
+
+            public String getRegex() {
+                return "..";
+            }
+
+            public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
+                if ( length!=2 ) {
+                    throw new IllegalArgumentException("length must be 2");
+                }
+                double seconds= startTime.seconds;
+                if ( seconds<0 || seconds>=86400 ) throw new IllegalArgumentException("seconds of startTime must be between 0 and 86400");
+                int i= (int)( seconds * 256 / 86400 );
+                String r= String.format( "%2X", i );
+                return r;
+            }
+            
         };
         
         int cl= 4;
