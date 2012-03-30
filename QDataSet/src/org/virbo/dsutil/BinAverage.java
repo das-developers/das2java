@@ -225,7 +225,7 @@ public class BinAverage {
         DDataSet result = sums;
         //DDataSet resultVar= sums2;
 
-        Double fill= ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
+        Number fill= ((Number) wds.property(QDataSet.FILL_VALUE));
         if ( fill==null ) fill= -1e31;
 
         for (int i = 0; i < nn; i++) {
@@ -235,7 +235,7 @@ public class BinAverage {
                 //resultVar.putValue( i, ( Math.sqrt( resultVar.value(i) -  s * s ) / weights.value(i)) ); 
 
             } else {
-                result.putValue(i, fill);
+                result.putValue(i, fill.doubleValue() );
             }
         }
 
