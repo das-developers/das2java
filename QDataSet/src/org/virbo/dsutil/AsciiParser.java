@@ -1237,6 +1237,10 @@ public class AsciiParser {
                     }
                 }
             }
+            if ( index==len && ifield==fields.length-1 && !delimPattern.toString().equals(" ") ) { // check for empty field at the end of the record, as in "1991-01-01 00:03,1490.0,I,"
+                fields[ifield]="";
+                ifield++;
+            }
 
             return ( ifield == fields.length && index==len ) ;
         }
