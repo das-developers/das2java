@@ -488,10 +488,17 @@ public class TimeParser {
      * @return
      */
     public static boolean isSpec(String spec) {
-        if ( spec.contains("%Y")||spec.contains("%y") ) return true;
+        if ( spec.contains("%") && !spec.contains("$") ) {
+            spec= spec.replaceAll("%","$");
+            if ( spec.contains("{") && !spec.contains("(") ) {
+                spec= spec.replaceAll("\\{","(");
+                spec= spec.replaceAll("\\}",")");
+            }
+        }
+        if ( spec.contains("$Y")||spec.contains("$y") ) return true;
         if ( spec.contains(";Y=") ) return true;
         if ( spec.contains(",Y=") ) return true; //yay, sloppy specs!
-        if ( spec.contains("%o")|| spec.contains("%{o,") ) return true;
+        if ( spec.contains("$o")|| spec.contains("$(o,") ) return true;
         return false;
     }
 
