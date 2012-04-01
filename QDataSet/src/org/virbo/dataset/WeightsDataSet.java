@@ -29,6 +29,7 @@ public abstract class WeightsDataSet implements QDataSet {
      */
     final boolean check;
     QDataSet ds;
+    String dsname;
 
     protected WeightsDataSet(QDataSet ds) {
         this.ds = ds;
@@ -46,6 +47,7 @@ public abstract class WeightsDataSet implements QDataSet {
         vmax = validMax.doubleValue();
 
         check = (vmin > -1 * Double.MAX_VALUE || vmax < Double.MAX_VALUE || !(Double.isNaN(fill)));
+        dsname= "wds_"+ds.property(QDataSet.NAME);
     }
 
     public int rank() {
@@ -63,7 +65,10 @@ public abstract class WeightsDataSet implements QDataSet {
     public abstract double value(int i0, int i1, int i2, int i3);
 
     public Object property(String name) {
-        return name.equals(QDataSet.FILL_VALUE) ? fill : null;
+        if ( name.equals(QDataSet.FILL_VALUE) ) return fill;
+        if ( name.equals(QDataSet.NAME ) ) return dsname;
+        return null;
+
     }
 
     public Object property(String name, int i) {
