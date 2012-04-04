@@ -142,8 +142,12 @@ public class Orbits {
         this.orbits= orbits;
     }
 
-    public DatumRange getDatumRange( String orbit ) {
-        return orbits.get(orbit);
+    public DatumRange getDatumRange( String orbit ) throws ParseException {
+        DatumRange s= orbits.get(orbit);
+        if ( s==null ) {
+            throw new ParseException("unable to find orbit: "+orbit+" for "+sc, 0 );
+        }
+        return s;
     }
 
     public String next( String orbit ) {//TODO: do this efficiently!
@@ -258,7 +262,12 @@ public class Orbits {
             DatumRange seek= new DatumRange( TimeUtil.toDatum(startTime),TimeUtil.toDatum(TimeUtil.add(startTime,timeWidth)) );
             String result=null;
             for ( String s: o.orbits.keySet() ) {
-                DatumRange dr= o.getDatumRange(s);
+                DatumRange dr;
+                try {
+                    dr= o.getDatumRange(s);
+                } catch ( ParseException ex ) {
+                throw new RuntimeException(ex); // shouldn't happen
+                }
                 double nmin= DatumRangeUtil.normalize( dr, seek.min() );
                 if ( seek.width().value()==0 ) {
                     if ( nmin>=0.0 && nmin<1.0 ) {
