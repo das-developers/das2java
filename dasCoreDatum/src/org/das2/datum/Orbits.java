@@ -294,13 +294,13 @@ public class Orbits {
                 }
                 double nmin= DatumRangeUtil.normalize( dr, seek.min() );
                 if ( seek.width().value()==0 ) {
-                    if ( nmin>=0.0 && nmin<1.0 ) {
+                    if ( nmin>=-0.001 && nmin<1.001 ) {
                         result= s;
                         break;
                     }
                 } else {
                     double nmax= DatumRangeUtil.normalize( dr, seek.max() );
-                    if ( nmin>-0.8 && nmin<0.2 && nmax>0.8 && nmax<1.2 ) {
+                    if ( nmin>-0.8 && nmin<0.2 && ( nmax-nmin<0.01 || ( nmax>0.8 && nmax<1.2 ) ) ) {
                         result= s;
                         break;
                     }
