@@ -145,9 +145,11 @@ public class DasAnnotation extends DasCanvasComponent {
     @Override
     public void resize() {
         super.resize();
-        this.gtr.setString(this.getGraphics(), getString() );
-        Rectangle r= calcBounds();
-        setBounds(r);
+        if ( this.getGraphics()!=null ) {
+            this.gtr.setString(this.getGraphics(), getString() );
+            Rectangle r= calcBounds();
+            setBounds(r);
+        }
     }
 
     @Override
