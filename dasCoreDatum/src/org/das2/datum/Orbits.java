@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.das2.datum.TimeUtil.TimeStruct;
@@ -34,6 +35,11 @@ public class Orbits {
     private String sc;
 
     private LinkedHashMap<String,DatumRange> orbits;
+
+    /**
+     * the last orbit
+     */
+    private String last;
 
     private static HashMap<String,Orbits> missions= new HashMap();
 
@@ -142,6 +148,12 @@ public class Orbits {
         this.orbits= orbits;
     }
 
+    /**
+     * return the DatumRange for this orbit number.  Note this IS NOT an OrbitDatumRange.
+     * @param orbit
+     * @return
+     * @throws ParseException
+     */
     public DatumRange getDatumRange( String orbit ) throws ParseException {
         DatumRange s= orbits.get(orbit);
         if ( s==null ) {
@@ -180,6 +192,14 @@ public class Orbits {
         return orbits.keySet().iterator().next();
     }
 
+    public String last() {
+        return last;
+    }
+
+    public String getSpacecraft() {
+        return sc;
+    }
+
     public static synchronized Orbits getOrbitsFor( String sc ) {
         Orbits orbits= missions.get(sc);
         if ( orbits!=null && orbits.orbits.size()>0 ) {
@@ -188,6 +208,10 @@ public class Orbits {
             try {
                 LinkedHashMap<String,DatumRange> lorbits= readOrbits(sc);
                 orbits= new Orbits(sc,lorbits);
+                Iterator<String> o= lorbits.keySet().iterator();
+                String last= o.hasNext() ? o.next() : null;
+                while ( o.hasNext() ) last= o.next();
+                orbits.last= last;
                 missions.put( sc, orbits );
             } catch ( IOException ex ) {
                 throw new IllegalArgumentException( "Unable to read orbits file for "+sc, ex );
