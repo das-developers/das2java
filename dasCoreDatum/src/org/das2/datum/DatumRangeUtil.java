@@ -889,6 +889,9 @@ public class DatumRangeUtil {
                 ss[1]= ss[1]+":"+ss[2];
                 ss[2]= ss[3];
             }
+            if ( ss.length<3 ) {
+                throw new ParseException("orbit misformatted, should be orbit:<sc>:<num>",0);
+            }
             return new OrbitDatumRange( ss[1], ss[2] );
         } else if ( string.startsWith("P") && iso8601DurationPattern.matcher(string).matches() ) { // just for experiment.  See ISO8601
             Datum now= TimeUtil.now();
