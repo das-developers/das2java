@@ -7,6 +7,7 @@
  */
 package org.das2.datum;
 
+import java.util.logging.Level;
 import org.das2.datum.TimeUtil.TimeStruct;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -1059,6 +1060,31 @@ public class TimeParser {
         } else {
             return Units.us2000.createDatum(toUs2000(time));
         }
+    }
+
+    /**
+     * return the limits of the range we can parse.  These limits come from
+     * orbit files like "$(o,sc=rbspa-pp)"
+     * or from explicit fields like "$(M,Y=1999)"
+     * @return
+     */
+    public DatumRange getValidRange() {
+        if ( fieldHandlers.size()==1 && fieldHandlers.get("o") instanceof OrbitFieldHandler ) {
+            OrbitFieldHandler ofh= (OrbitFieldHandler)fieldHandlers.get("o");
+            try {
+                DatumRange d1 = new OrbitDatumRange( ofh.o.getSpacecraft(), ofh.o.first() );
+                DatumRange d2= new OrbitDatumRange( ofh.o.getSpacecraft(), ofh.o.last() );
+                return DatumRangeUtil.union( d1,d2 );
+            } catch (ParseException ex) {
+                Logger.getLogger(TimeParser.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            return DatumRangeUtil.parseTimeRangeValid( "1000-9000" );
+
+        } else {
+            return DatumRangeUtil.parseTimeRangeValid( "1000-9000" );
+        }
+
     }
 
     /**
