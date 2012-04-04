@@ -266,7 +266,7 @@ public class Orbits {
                 try {
                     dr= o.getDatumRange(s);
                 } catch ( ParseException ex ) {
-                throw new RuntimeException(ex); // shouldn't happen
+                    throw new RuntimeException(ex); // shouldn't happen
                 }
                 double nmin= DatumRangeUtil.normalize( dr, seek.min() );
                 if ( seek.width().value()==0 ) {
