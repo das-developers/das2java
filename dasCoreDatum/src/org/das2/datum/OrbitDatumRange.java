@@ -1,6 +1,8 @@
 
 package org.das2.datum;
 
+import java.text.ParseException;
+
 /**
  * DatumRange implementation that identifies times by orbit number.  Note orbit numbers are strings, see Cassini for why.
  * next will return the same one at the end of the sequence.
@@ -17,27 +19,37 @@ public class OrbitDatumRange extends DatumRange {
     String sc;
     String orbit;
 
-    public OrbitDatumRange( String sc, String orbit ) {
+    public OrbitDatumRange( String sc, String orbit ) throws ParseException {
         super( Orbits.getOrbitsFor(sc).getDatumRange(orbit).min(), Orbits.getOrbitsFor(sc).getDatumRange(orbit).max() );
         this.sc= sc;
         this.orbit= orbit;
     }
     
+    @Override
     public DatumRange next() {
         String next= Orbits.getOrbitsFor(sc).next(this.orbit);
         if ( next==null ) {
             return this;
         } else {
-            return new OrbitDatumRange( sc, next );
+            try {
+                return new OrbitDatumRange( sc, next );
+            } catch ( ParseException ex ) {
+                throw new RuntimeException(ex);
+            }
         }
     }
     
+    @Override
     public DatumRange previous() {
         String prev= Orbits.getOrbitsFor(sc).prev(this.orbit);
         if ( prev==null ) {
             return this;
         } else {
-            return new OrbitDatumRange( sc, prev );
+            try {
+                return new OrbitDatumRange( sc, prev );
+            } catch ( ParseException ex ) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
