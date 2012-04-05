@@ -421,6 +421,9 @@ public class AsciiHeadersParser {
                                 continue;
                             } else {
                                 messages.put(jo1,"Couldn't find column starting with: "+lookFor);
+                                if ( columns[0].equals("field0") ) {
+                                    throw new IllegalArgumentException("Couldn't find column starting with \""+lookFor+"\".  Are the columns named?");
+                                }
                             }
                         }
                     }
