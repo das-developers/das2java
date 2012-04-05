@@ -5,11 +5,9 @@
 
 package org.virbo.dataset;
 
-import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
-import javax.swing.DefaultBoundedRangeModel;
 
 /**
  *
