@@ -137,6 +137,10 @@ public class PropertyEditor extends JComponent {
         table.addKeyListener(getKeyListener());
         addActions(table);
         table.getSelectionModel().addListSelectionListener(getListSelectionListener());
+
+        if ( table.getColumnCount()>5 ) {
+            this.setPreferredSize( new Dimension( (int)Math.min( Toolkit.getDefaultToolkit().getScreenSize().getWidth(), table.getColumnCount()*100 ), 500 ) );
+        }
     }
 
     public PropertyEditor(Object bean) {
