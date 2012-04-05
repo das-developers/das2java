@@ -3860,20 +3860,31 @@ public class Ops {
      * guess a name for the dataset, looking for NAME and then safeName(LABEL).  The
      * result will be a C/Python/Java-style identifier suitable for the variable.
      * @param ds
-     * @return
+     * @return the name or null if there is no NAME or LABEL
      */
     public static String guessName( QDataSet ds ) {
+        return guessName( ds, null );
+    }
+
+    /**
+     * guess a name for the dataset, looking for NAME and then safeName(LABEL).  The
+     * result will be a C/Python/Java-style identifier suitable for the variable.
+     * @param ds
+     * @return the name, or deft if there is no NAME or LABEL.
+     */
+    public static String guessName( QDataSet ds, String deft ) {
         String label= (String) ds.property( QDataSet.NAME );
         if ( label==null ) {
             label= (String) ds.property( QDataSet.LABEL );
             if ( label!=null ) label= safeName( label );
         }
         if ( label==null ) {
-            return null;
+            return deft==null ? null : safeName(deft);
         } else {
             return label;
         }
     }
+
     /**
      * extra spaces and pipes cause problems in the Operations text field.  Provide so that data sources can provide
      * safer names, while we test safe-name requirements on a broader test set.  Use of this method will allow us to see
