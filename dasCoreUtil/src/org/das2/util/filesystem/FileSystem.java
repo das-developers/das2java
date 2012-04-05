@@ -153,7 +153,8 @@ public abstract class FileSystem  {
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws UnknownHostException
      */
-    public synchronized static FileSystem recreate( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem recreate( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
+        //TODO: there may be a need to synchronize here
         FileSystem result= instances.get(root);
         if ( result!=null ) {
             return instances.remove(root);
