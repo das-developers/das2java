@@ -117,6 +117,8 @@ public class DasPlot extends DasCanvasComponent {
     //private int paintComponentCount = 0;
     private int titleHeight= 0;
 
+    private boolean drawInactiveInLegend= false;
+
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         super();
 
@@ -216,19 +218,21 @@ public class DasPlot extends DasCanvasComponent {
 
         for (int i = 0; i < legendElements.size(); i++) {
             LegendElement le = legendElements.get(i);
-            GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(graphics, String.valueOf(le.label)); // protect from nulls, which seems to happen
-            mrect = gtr.getBounds();
-            maxIconWidth = Math.max(maxIconWidth, le.icon.getIconWidth());
-            int theheight = Math.max(mrect.height, le.icon.getIconHeight());
-            mrect.translate(msgx, msgy + (int) gtr.getAscent() );
-            mrect.height= theheight;
-            if (boundRect == null) {
-                boundRect = mrect;
-            } else {
-                boundRect.add(mrect);
+            if ( ( le.renderer!=null && le.renderer.isActive() ) || drawInactiveInLegend ) {
+                GrannyTextRenderer gtr = new GrannyTextRenderer();
+                gtr.setString(graphics, String.valueOf(le.label)); // protect from nulls, which seems to happen
+                mrect = gtr.getBounds();
+                maxIconWidth = Math.max(maxIconWidth, le.icon.getIconWidth());
+                int theheight = Math.max(mrect.height, le.icon.getIconHeight());
+                mrect.translate(msgx, msgy + (int) gtr.getAscent() );
+                mrect.height= theheight;
+                if (boundRect == null) {
+                    boundRect = mrect;
+                } else {
+                    boundRect.add(mrect);
+                }
+                msgy += theheight;
             }
-            msgy += theheight;
         }
 
         if ( boundRect==null ) return null;
@@ -291,6 +295,8 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         mrect= getLegendBounds(graphics,msgx,msgy);
+        if ( mrect==null ) return; // nothing is active
+
         msgx= mrect.x;
         msgy= mrect.y;
         if ( legendPosition!=LegendPosition.OutsideNE ) {
@@ -306,30 +312,33 @@ public class DasPlot extends DasCanvasComponent {
 
         for (int i = 0; i < legendElements.size(); i++) {
             LegendElement le = legendElements.get(i);
-            GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setString(graphics, String.valueOf(le.label)); // protect from nulls, which seems to happen
-            mrect = gtr.getBounds();
-            mrect.translate(msgx, msgy + (int) gtr.getAscent());
-            int theheight= Math.max(mrect.height, le.icon.getIconHeight());
-            int icony= theheight/2 - le.icon.getIconHeight() / 2;  // from top of rectangle
-            int texty= theheight/2 - (int)gtr.getHeight() / 2 + (int) gtr.getAscent();
-            gtr.draw( graphics, msgx, msgy + texty );
-            mrect.height = theheight;
-            Rectangle imgBounds = new Rectangle(
-                    msgx - (le.icon.getIconWidth() + em / 4),
-                    msgy + icony,
-                    le.icon.getIconWidth(), 
-                    le.icon.getIconHeight() );
-            boolean printing= true;
-            if ( printing ) {
-                le.drawIcon( graphics, msgx - (le.icon.getIconWidth() + em / 4), msgy + icony );
-            } else {
-                graphics.drawImage(le.icon.getImage(), imgBounds.x, imgBounds.y, null);
+
+            if ( ( le.renderer!=null && le.renderer.isActive() ) || drawInactiveInLegend ) {
+                GrannyTextRenderer gtr = new GrannyTextRenderer();
+                gtr.setString(graphics, String.valueOf(le.label)); // protect from nulls, which seems to happen
+                mrect = gtr.getBounds();
+                mrect.translate(msgx, msgy + (int) gtr.getAscent());
+                int theheight= Math.max(mrect.height, le.icon.getIconHeight());
+                int icony= theheight/2 - le.icon.getIconHeight() / 2;  // from top of rectangle
+                int texty= theheight/2 - (int)gtr.getHeight() / 2 + (int) gtr.getAscent();
+                gtr.draw( graphics, msgx, msgy + texty );
+                mrect.height = theheight;
+                Rectangle imgBounds = new Rectangle(
+                        msgx - (le.icon.getIconWidth() + em / 4),
+                        msgy + icony,
+                        le.icon.getIconWidth(),
+                        le.icon.getIconHeight() );
+                boolean printing= true;
+                if ( printing ) {
+                    le.drawIcon( graphics, msgx - (le.icon.getIconWidth() + em / 4), msgy + icony );
+                } else {
+                    graphics.drawImage(le.icon.getImage(), imgBounds.x, imgBounds.y, null);
+                }
+                msgy += mrect.getHeight();
+                mrect.add(imgBounds);
+                if ( msgy > getRow().bottom() ) break;
+                le.bounds = mrect;
             }
-            msgy += mrect.getHeight();
-            mrect.add(imgBounds);
-            if ( msgy > getRow().bottom() ) break;
-            le.bounds = mrect;
         }
 
         graphics.dispose();
