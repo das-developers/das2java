@@ -198,16 +198,16 @@ public abstract class FileSystem  {
             } else {
                 waitObject= String.valueOf( Long.valueOf( System.currentTimeMillis() ) ); // just to be sure it's unique.
                 blocks.put( root, waitObject );
-                System.err.println("created waitObject "+waitObject + " "+root );
+                //System.err.println("created waitObject "+waitObject + " "+root );
             }
         }
 
         if ( ishouldwait ) { // wait until the other thread is done.  If the other thread doesn't put the result in instances, then there's a problem...
             try {
                 synchronized ( waitObject ) {
-                    System.err.println("waiting for "+waitObject + " " + root );
+                    //System.err.println("waiting for "+waitObject + " " + root );
                     waitObject.wait();
-                    System.err.println("done waiting for "+root);
+                    //System.err.println("done waiting for "+root);
                 }
             } catch (InterruptedException ex) {
                 Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, ex);
@@ -260,7 +260,7 @@ public abstract class FileSystem  {
         }
 
         if ( factory==null ) {
-            System.err.println("releasing "+waitObject); 
+            //System.err.println("releasing "+waitObject);
             synchronized( waitObject ) {
                 waitObject.notifyAll(); //TODO: the other threads are going to think it's offline.
             }
@@ -278,7 +278,7 @@ public abstract class FileSystem  {
                 if ( result!=null ) instances.put(root, result);
                 blocks.remove(root);
 
-                System.err.println("releasing "+waitObject); // need to do this in the finally block in case there was an Exception.
+                //System.err.println("releasing "+waitObject); // need to do this in the finally block in case there was an Exception.
                 synchronized( waitObject ) {
                     waitObject.notifyAll();
                 }
