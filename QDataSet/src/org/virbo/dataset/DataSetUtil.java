@@ -2258,9 +2258,15 @@ public class DataSetUtil {
         }
     }
 
+    public static Object getProperty( QDataSet ds, String name, Object deflt ) {
+        Object o= ds.property(name);
+        if ( o!=null ) return o; else return deflt;
+    }
+
     /**
      * return the string value of the double, considering QDataSet.FORMAT, the units and the value.
-     * formatting is done assuming someone else will report the units.
+     * formatting is done assuming someone else will report the units.  If the value is invalid,
+     * then "***" is returned.
      * @param yds`
      * @param value
      * @return
@@ -2269,11 +2275,15 @@ public class DataSetUtil {
         Units u= SemanticOps.getUnits(yds);
         String form= (String)yds.property(QDataSet.FORMAT);
         Datum d;
-        if ( u.isValid(value) ) {
+
+        double vmin= ((Number) getProperty( yds, QDataSet.VALID_MIN, -1*Double.MAX_VALUE )).doubleValue();
+        double vmax= ((Number) getProperty( yds, QDataSet.VALID_MAX, Double.MAX_VALUE )).doubleValue();
+        double fill= ((Number) getProperty( yds, QDataSet.VALID_MAX, -1e31 ) ).doubleValue();
+        if ( value>=vmin && value<=vmax && value!=fill ) {
             d= u.createDatum( value );
         } else {
             //TODO: consider using format length and "****" to return value.
-            return "fill ("+value+")";
+            return "****";
         }
         DatumFormatter df= d.getFormatter();
         String s;
