@@ -3593,6 +3593,13 @@ public class Ops {
         } else if ( ds1 instanceof BundleDataSet && ds1.rank()-1==ds2.rank() ) {
             ((BundleDataSet)ds1).bundle(ds2);
             return ds1;
+        } else if ( ds1.rank()-1==ds2.rank() ) {
+            BundleDataSet bds= new BundleDataSet(ds1.rank());
+            for ( int i=0; i<ds1.length(0); i++ ) {
+                bds.bundle( DataSetOps.unbundle(ds1,i) );
+            }
+            bds.bundle( ds2 );
+            return bds;
         } else {
             throw new IllegalArgumentException("not supported yet");
         }
