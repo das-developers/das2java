@@ -967,9 +967,9 @@ public class Ops {
     public static QDataSet eq(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
-            public double op(double d1, double d2) {
+           public double op(double d1, double d2) {
                 return uc.convert(d1) == d2 ? 1.0 : 0.0;
-            }
+           }
         });
     }
 
@@ -4002,6 +4002,9 @@ public class Ops {
      * @return
      */
     public static boolean equivalent( QDataSet ds1, QDataSet ds2 ) {
+        Units u1= SemanticOps.getUnits(ds1);
+        Units u2= SemanticOps.getUnits(ds2);
+        if ( !u1.isConvertableTo(u2) ) return false;
         QDataSet eq= eq( ds1, ds2 );
         QubeDataSetIterator it= new QubeDataSetIterator(eq);
         while ( it.hasNext() ) {
