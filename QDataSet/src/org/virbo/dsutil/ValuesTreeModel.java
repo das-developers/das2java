@@ -112,8 +112,11 @@ public class ValuesTreeModel extends DefaultTreeModel {
             return DataSetUtil.asDatumRange( ds.slice(i), true ).toString();
         }
         try {
-            String s= DataSetUtil.getStringValue( ds, ds.value(i) );
-            return wds.value(i) > 0. ? s : "fill ("+s+")";
+            if ( wds.value(i) > 0. ) {
+                return DataSetUtil.getStringValue( ds, ds.value(i) );
+            } else {
+                return "fill ("+ds.value(i)+")";
+            }
         } catch ( IllegalArgumentException ex ) {
             return "Error: "+ex;
         }
