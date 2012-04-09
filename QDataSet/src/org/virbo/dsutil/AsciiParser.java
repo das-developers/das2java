@@ -341,6 +341,14 @@ public class AsciiParser {
         boolean isRichHeader= isRichHeader(header);
         if ( isRichHeader ) {
             try {
+                int ii= header.indexOf("\n"); // check for lost header new line delimiter.
+                if ( ii>0 ) {
+                    String ss= header.substring(0,ii);
+                    if ( ss.split("\\#").length>2 ) {
+                        throw new IllegalArgumentException("rich header cannot contain more than two hashes (#) on the first line.  Maybe newlines were unintentionally removed");
+                    }
+                }
+
                 bundleDescriptor = AsciiHeadersParser.parseMetadata(header, fieldNames, fieldLabels );
                 if ( bundleDescriptor.length()==fieldNames.length ) {
                     for ( int j=0; j<bundleDescriptor.length(); j++ ) {
