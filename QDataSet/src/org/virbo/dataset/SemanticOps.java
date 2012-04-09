@@ -49,6 +49,13 @@ public class SemanticOps {
         return usrc.getConverter(udst);
     }
 
+    /**
+     *
+     * @param src
+     * @param dst
+     * @return
+     * @throws InconvertableUnitsException when it just can't be done (EnumerationUnits and Ratiometric)
+     */
     public final static UnitsConverter getLooseUnitsConverter( QDataSet src, QDataSet dst ) {
         Units usrc= getUnits(src);
         Units udst= getUnits(dst);
