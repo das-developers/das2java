@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.das2.datum.TimeUtil.TimeStruct;
 
@@ -185,6 +186,27 @@ public class Orbits {
     }
 
     /**
+     * return -1 if a is before b, 0 if they are equal, and 1 if a is after b.
+     * @param a
+     * @param b
+     * @return
+     */
+    public int compare( String a, String b ) {
+        if ( a.equals(b) ) return 0;
+        int ia= -1;
+        int ib= -1;
+        int i=0;
+        for ( String s: orbits.keySet() ) {
+            if ( s.equals(a) ) ia= i;
+            if ( s.equals(b) ) ib= i;
+            i++;
+        }
+        if ( ia==-1 ) throw new IllegalArgumentException("not an orbit id: "+a );
+        if ( ib==-1 ) throw new IllegalArgumentException("not an orbit id: "+b );
+        return ia<ib ? -1 : ( ia==ib ? 0 : 1);
+    }
+
+    /**
      * return the first orbit id, so that we can iterate through all
      * @return
      */
@@ -340,6 +362,20 @@ public class Orbits {
             DatumRange dr= tp.parse( "__132").getTimeRange();
             System.err.println( dr );
             System.err.println( tp.format(dr) );
+        }
+
+        {
+            // CRRES orbit 599 and 600 are the same interval.
+            DatumRange dr= TimeParser.create("$(o,id=crres)").parse("599").getTimeRange();
+            System.err.println( dr );
+            DatumRange o600= dr.next();
+            System.err.println( o600 );
+            System.err.println( "-generate a list--" );
+            List<DatumRange> drs= DatumRangeUtil.generateList( DatumRangeUtil.parseTimeRangeValid("1991-03-27 through 1991-03-29"), o600 );
+            for ( DatumRange dr1: drs ) {
+                System.err.println( dr1 );
+            }
+
         }
     }
 
