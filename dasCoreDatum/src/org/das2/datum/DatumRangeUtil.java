@@ -1112,7 +1112,9 @@ public class DatumRangeUtil {
         if ( stepOutside ) dr= dr.next();
         while( dr.min().lt(bounds.max() ) ) {
             result.add(dr);
-            dr= dr.next();
+            DatumRange dr1= dr.next();
+            if ( dr1.equals(dr) ) break;
+            dr= dr1;
         }
         return result;
     }
