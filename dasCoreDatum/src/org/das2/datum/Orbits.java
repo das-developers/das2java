@@ -328,12 +328,19 @@ public class Orbits {
         Orbits o= getOrbitsFor( "cassini" );
         System.err.println(o.getDatumRange("120"));
 
-        TimeParser tp= TimeParser.create( "$5(o,id=cassini)", "o", new OrbitFieldHandler() );
-        DatumRange dr= tp.parse( "____C").getTimeRange();
-        System.err.println( dr );
-        System.err.println( tp.format(dr) );
-        
+        {
+            TimeParser tp= TimeParser.create( "$5(o,id=cassini)", "o", new OrbitFieldHandler() );
+            DatumRange dr= tp.parse( "____C").getTimeRange();
+            System.err.println( dr );
+            System.err.println( tp.format(dr) );
+        }
 
+        {
+            TimeParser tp= TimeParser.create( "$5(o,id=crres)", "o", new OrbitFieldHandler() );
+            DatumRange dr= tp.parse( "__132").getTimeRange();
+            System.err.println( dr );
+            System.err.println( tp.format(dr) );
+        }
     }
 
 }
