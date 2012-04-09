@@ -365,7 +365,7 @@ public final class TimeUtil {
         result.day= a.day + b.day;
         result.doy= a.doy + b.doy;
         result.hour= a.hour + b.hour;
-        result.minute= a.hour + b.hour;
+        result.minute= a.minute + b.minute;
         result.seconds= a.seconds + b.seconds;
         result.micros= a.micros + b.micros;
         return result;
@@ -378,7 +378,7 @@ public final class TimeUtil {
         result.day= a.day - b.day;
         result.doy= a.doy - b.doy;
         result.hour= a.hour - b.hour;
-        result.minute= a.hour - b.hour;
+        result.minute= a.minute - b.minute;
         result.seconds= a.seconds - b.seconds;
         result.micros= a.micros - b.micros;
         return result;
