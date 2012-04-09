@@ -1091,15 +1091,25 @@ public class DatumRangeUtil {
         ArrayList<DatumRange> result= new ArrayList();
         DatumRange dr= element;
         while ( dr.max().le( bounds.min() ) ) {
-            dr= dr.next();
+            DatumRange dr1= dr.next();
+            if ( dr1.equals(dr) ) break; // TODO: orbits return self when at the beginning or end, requiring code like this.  Maybe they should just return null.
+            dr= dr1;
         }
         while ( dr.min().ge( bounds.max() ) ) {
-            dr= dr.previous();
+            DatumRange dr1= dr.previous();
+            if ( dr1.equals(dr) ) break;
+            dr= dr1;
         }
+        boolean stepOutside= true;
         while ( dr.max().gt( bounds.min() ) ) {
-            dr= dr.previous();
+            DatumRange dr1= dr.previous();
+            if ( dr1.equals(dr) ) {
+                stepOutside= false;
+                break;
+            }
+            dr= dr1;
         }
-        dr= dr.next();
+        if ( stepOutside ) dr= dr.next();
         while( dr.min().lt(bounds.max() ) ) {
             result.add(dr);
             dr= dr.next();
