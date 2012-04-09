@@ -54,6 +54,51 @@ public class OrbitDatumRange extends DatumRange {
     }
 
     @Override
+    public int compareTo(Object o) {
+        if ( o instanceof OrbitDatumRange ) {
+            OrbitDatumRange odr= ((OrbitDatumRange)o);
+            if ( odr.sc.equals(this.sc) ) {
+                if ( odr.orbit.equals(this.orbit) ) {
+                    return 0;
+                } else {
+                    return Orbits.getOrbitsFor(sc).compare( this.orbit, odr.orbit );
+                }
+            } else {
+                return super.compareTo(o); // simple time range compare
+            }
+        } else {
+            return super.compareTo(o);
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if ( o instanceof OrbitDatumRange ) {
+            OrbitDatumRange odr= ((OrbitDatumRange)o);
+            if ( odr.sc.equals(this.sc) ) {
+                if ( odr.orbit.equals(this.orbit) ) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return super.equals(o); // simple time range compare
+            }
+        } else {
+            return super.equals(o);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 71 * hash + (this.sc != null ? this.sc.hashCode() : 0);
+        hash = 71 * hash + (this.orbit != null ? this.orbit.hashCode() : 0);
+        return hash;
+    }
+
+
+    @Override
     public String toString() {
         return "orbit:"+sc+":"+orbit;
     }
