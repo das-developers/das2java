@@ -354,6 +354,7 @@ public class AsciiParser {
                 }
             } catch (ParseException ex) {
                 Logger.getLogger(AsciiParser.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace();
             }
             result.header= header;
         }
