@@ -203,11 +203,7 @@ public class JoinDataSet extends AbstractDataSet {
 
     @Override
     public String toString() {
-        if ( datasets.size()>4 ) {
-            return "JoinDataSet["+datasets.size()+" datasets: "+ datasets.get(0)+", "+datasets.get(1)+", ...]";
-        } else {
-            return "JoinDataSet["+datasets.size()+" datasets: "+ datasets +" ]";
-        }
+        return DataSetUtil.toString(this);
     }
 
     /**
