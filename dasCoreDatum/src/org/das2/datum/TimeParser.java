@@ -379,7 +379,7 @@ public class TimeParser {
                 offsets[i] = pos;
                 if (lengths[i] < 1 || pos == -1) {
                     pos = -1;
-                    lengths[i] = -1;
+                    //lengths[i] = -1; // bugfix: I wonder where this was used.  removed to support "$-1Y $-1m $-1d $H$M"
                 } else {
                     pos += lengths[i];
                 }
