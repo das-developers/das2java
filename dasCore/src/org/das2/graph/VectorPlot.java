@@ -10,15 +10,57 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  *
  * @author jbf
  */
 public class VectorPlot extends Renderer {
+
+    /**
+     * autorange on the data, returning a rank 2 bounds for the dataset.
+     *
+     * @param fillDs
+     * @return
+     */
+    public static QDataSet doAutorange( QDataSet ds ) {
+        
+        QDataSet xrange= doRange( DataSetOps.unbundle(ds,0), DataSetOps.unbundle(ds,2) );
+        QDataSet yrange= doRange( DataSetOps.unbundle(ds,1), DataSetOps.unbundle(ds,3) );
+
+        JoinDataSet bds= new JoinDataSet(2);
+        bds.join(xrange);
+        bds.join(yrange);
+
+        return bds;
+
+    }
+
+    private static QDataSet doRange( QDataSet xds, QDataSet dxds ) {
+
+        double scale= 1.0; //TODO: this will change
+
+        QDataSet xrange= Ops.extent(xds);
+        xrange= Ops.extent( Ops.add(xds,Ops.multiply(dxds,DataSetUtil.asDataSet(scale)) ), xrange );
+
+        if ( xrange.value(1)==xrange.value(0) ) {
+            if ( !"log".equals( xrange.property(QDataSet.SCALE_TYPE)) ) {
+                xrange= DDataSet.wrap( new double[] { xrange.value(0)-1, xrange.value(1)+1 } ).setUnits( SemanticOps.getUnits(xrange) );
+            } else {
+                xrange= DDataSet.wrap( new double[] { xrange.value(0)/10, xrange.value(1)*10 } ).setUnits( SemanticOps.getUnits(xrange) );
+            }
+        }
+        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
+        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
+        return xrange;
+    }
 
     @Override
     public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
