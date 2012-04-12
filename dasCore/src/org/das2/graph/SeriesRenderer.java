@@ -541,6 +541,7 @@ public class SeriesRenderer extends Renderer {
 
 
             /* fuzz the xSampleWidth */
+            double xSampleWidthExact= xSampleWidth;
             xSampleWidth = xSampleWidth * 1.20;
 
             double x = Double.NaN;
@@ -620,10 +621,10 @@ public class SeriesRenderer extends Renderer {
                     } else {
                         // introduce break in line
                         if (histogram) {
-                            float fx1 = (float) xAxis.transform(x0 + xSampleWidth / 2, xUnits);
+                            float fx1 = (float) xAxis.transform(x0 + xSampleWidthExact / 2, xUnits);
                             newPath.lineTo(fx1, fy0);
-
-                            fx1 = (float) xAxis.transform(x - xSampleWidth / 2, xUnits);
+                            // there's a bug here if you pan around the dataset shown in SeriesBreakHist.java
+                            fx1 = (float) xAxis.transform(x - xSampleWidthExact / 2, xUnits);
                             newPath.moveTo(fx1, fy);
                             newPath.lineTo(fx, fy);
 
@@ -651,6 +652,10 @@ public class SeriesRenderer extends Renderer {
 
             } // for ( ; index < ixmax && lastIndex; index++ )
 
+            if ( histogram ) {
+                fx = (float) xAxis.transform( x + xSampleWidthExact / 2, xUnits );
+                newPath.lineTo(fx, fy0);
+            }
 
             if (!histogram && simplifyPaths && colorByDataSetId.length()==0 ) {
                 //j   System.err.println( "input: " );
@@ -751,6 +756,7 @@ public class SeriesRenderer extends Renderer {
 
 
             /* fuzz the xSampleWidth */
+            double xSampleWidthExact= xSampleWidth;
             xSampleWidth = xSampleWidth * 1.20;
 
             if (reference != null && reference.getUnits() != yAxis.getUnits()) {
@@ -832,10 +838,10 @@ public class SeriesRenderer extends Renderer {
                         } else {
                             // introduce break in line
                             if (histogram) {
-                                float fx1 = midPoint( xAxis, x0, xUnits, xSampleWidth, logStep, 0.5 );
+                                float fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
                                 fillPath.lineTo(fx1, fy0);
                                 fillPath.lineTo(fx1, fyref);
-                                fx1 = midPoint( xAxis, x, xUnits, xSampleWidth, logStep, -0.5 );
+                                fx1 = midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
                                 fillPath.moveTo(fx1, fyref);
                                 fillPath.lineTo(fx1, fy);
                                 fillPath.lineTo(fx, fy);
@@ -859,7 +865,14 @@ public class SeriesRenderer extends Renderer {
 
             }
 
-            fillPath.lineTo(fx0, fyref);
+            if ( histogram ) {
+                float fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
+                fillPath.lineTo(fx1, fy0);
+                fillPath.lineTo(fx1, fyref);
+            } else {
+                fillPath.lineTo(fx0, fyref);
+            }
+
             this.fillToRefPath1 = fillPath;
 
             if (simplifyPaths) {
