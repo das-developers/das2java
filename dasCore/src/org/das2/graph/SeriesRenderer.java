@@ -805,7 +805,7 @@ public class SeriesRenderer extends Renderer {
             if (histogram) {
                 float fx1;
                 fx1= midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
-                fillPath.moveTo(fx1, fyref);
+                fillPath.moveTo(fx1-1, fyref); // doesn't line up, -1 is fudge
                 fillPath.lineTo(fx1, fy);
                 fillPath.lineTo(fx, fy);
 
