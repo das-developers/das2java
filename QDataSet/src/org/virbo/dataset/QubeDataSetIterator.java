@@ -485,7 +485,7 @@ public class QubeDataSetIterator implements DataSetIterator {
                         QDataSet depSlice= DataSetOps.trim( dep, sssi.start, sssi.stop, sssi.step );
                         result.putProperty( "DEPEND_"+i, depSlice );
                     }
-                } else if ( bund!=null && it[idim].length()==dep.length() ) { //TODO: verify this
+                } else if ( bund!=null && dep!=null && it[idim].length()==dep.length() ) { //TODO: verify this
                     result.putProperty( "BUNDLE_"+i, dep );
                 }
             }
