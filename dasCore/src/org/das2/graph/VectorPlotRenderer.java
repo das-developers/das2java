@@ -8,6 +8,7 @@ package org.das2.graph;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.logging.Level;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DDataSet;
@@ -68,6 +69,15 @@ public class VectorPlotRenderer extends Renderer {
         Graphics2D g= (Graphics2D)g1;
 
         QDataSet ds= getDataSet();
+
+        if ( ds==null ) {
+            if ( getLastException()!=null ) {
+                renderException(g, xAxis, yAxis, lastException);
+            } else {
+                parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+            }
+            return;
+        }
 
         if ( ds.length()==0 ) {
             parent.postException( this, new IllegalArgumentException("no data to plot") );
