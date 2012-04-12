@@ -15,6 +15,7 @@ import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import javax.swing.*;
+import org.das2.datum.DatumRangeUtil;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
@@ -178,6 +179,7 @@ public class GraphUtil {
             QDataSet yds= SemanticOps.ytagsDataSet(ds);
 
             DatumRange yrange = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(yds), true );
+            yrange= DatumRangeUtil.rescale( yrange, -0.1, 1.1 );
             Datum dy = org.virbo.dataset.DataSetUtil.asDatum( org.virbo.dataset.DataSetUtil.guessCadenceNew( yds, null ) );
 
             if (UnitsUtil.isRatiometric(dy.getUnits())) {
@@ -193,6 +195,7 @@ public class GraphUtil {
             }
 
             DatumRange yrange = org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(yds), true );
+            yrange= DatumRangeUtil.rescale( yrange, -0.1, 1.1 );
             result = new DasAxis(yrange.min(), yrange.max(), DasAxis.LEFT, log);
 
         } else {
@@ -208,6 +211,7 @@ public class GraphUtil {
     public static DasAxis guessXAxis(QDataSet ds) {
         QDataSet xds= SemanticOps.xtagsDataSet(ds);
         DatumRange range= org.virbo.dataset.DataSetUtil.asDatumRange( Ops.extent(xds), true );
+        range= DatumRangeUtil.rescale( range, -0.1, 1.1 );
         return new DasAxis( range.min(), range.max(), DasAxis.BOTTOM);
     }
 
