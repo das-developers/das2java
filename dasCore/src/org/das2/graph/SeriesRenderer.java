@@ -586,14 +586,18 @@ public class SeriesRenderer extends Renderer {
 
             index++;
 
+            QDataSet ydc= ArrayDataSet.copy(vds);
+
             // now loop through all of them. //
             boolean ignoreCadence= ! cadenceCheck;
+            boolean isValid= false;
+
             for (; index < lastIndex; index++) {
 
                 x = xds.value(index);
                 y = vds.value(index);
 
-                final boolean isValid = wds.value( index )>0 && xUnits.isValid(x);
+                isValid = wds.value( index )>0 && xUnits.isValid(x);
 
                 fx = (float) xAxis.transform(x, xUnits);
                 fy = (float) yAxis.transform(y, yUnits);
@@ -645,7 +649,12 @@ public class SeriesRenderer extends Renderer {
 
                 } else {
                     if (visible0) {
-                        newPath.moveTo(fx0, fy0); // place holder
+                        if ( histogram ) {
+                            float fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
+                            newPath.lineTo(fx1, fy0);
+                        } else {
+                            newPath.moveTo(fx0, fy0); // place holder
+                        }
                     }
 
                 }
@@ -653,8 +662,10 @@ public class SeriesRenderer extends Renderer {
             } // for ( ; index < ixmax && lastIndex; index++ )
 
             if ( histogram ) {
-                fx = (float) xAxis.transform( x + xSampleWidthExact / 2, xUnits );
-                newPath.lineTo(fx, fy0);
+                if ( isValid ) {
+                    fx = (float) xAxis.transform( x + xSampleWidthExact / 2, xUnits );
+                    newPath.lineTo(fx, fy0);
+                }
             }
 
             if (!histogram && simplifyPaths && colorByDataSetId.length()==0 ) {
