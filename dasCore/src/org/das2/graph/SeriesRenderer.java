@@ -571,7 +571,7 @@ public class SeriesRenderer extends Renderer {
             visible0= window.contains(fx,fy);
             visible= visible0;
             if (histogram) {
-                float fx1 = midPoint( xAxis, x, xUnits, xSampleWidth, logStep, -0.5 );
+                float fx1 = midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
                 newPath.moveTo(fx1, fy);
                 newPath.lineTo(fx, fy);
             } else {
@@ -793,7 +793,7 @@ public class SeriesRenderer extends Renderer {
             fy = (float) yAxis.transform(y, yUnits);
             if (histogram) {
                 float fx1;
-                fx1= midPoint( xAxis, x, xUnits, xSampleWidth, logStep, -0.5 );
+                fx1= midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
                 fillPath.moveTo(fx1, fyref);
                 fillPath.lineTo(fx1, fy);
                 fillPath.lineTo(fx, fy);
