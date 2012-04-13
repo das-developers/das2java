@@ -2350,6 +2350,16 @@ public class Ops {
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
             QDataSet dep0ds= (QDataSet) ds.property( QDataSet.DEPEND_0 );
 
+            if ( c!=null ) {
+                Units cunits= SemanticOps.getUnits(c);
+                if ( dep0ds!=null ) {
+                    Units dep0units= SemanticOps.getUnits(dep0ds);
+                    if ( !cunits.getOffsetUnits().isConvertableTo(dep0units.getOffsetUnits()) ) {
+                        c= null;
+                    }
+                }
+            }
+            
             if ( c==null && dep0ds!=null ) {
                 c= dep0ds.slice(0);
             }
