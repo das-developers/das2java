@@ -131,7 +131,8 @@ public class LeapSecondsConverter extends UnitsConverter {
             return 0;
         }
 
-        for ( int i=0; i<leapSeconds.size()-1; i++ ) {
+        int i=0;
+        for ( i=0; i<leapSeconds.size()-1; i++ ) {
             if ( leapSeconds.get(i) <= tt2000 && ( i==leapSeconds.size()-1 || tt2000 < leapSeconds.get(i+1) ) ) {
                 tt2000_st= leapSeconds.get(i);
                 tt2000_en= leapSeconds.get(i+1);
@@ -139,7 +140,8 @@ public class LeapSecondsConverter extends UnitsConverter {
                 return i+10;
             }
         }
-        throw new RuntimeException("code shouldn't get to this point: implementation error...");
+
+        return i+9; // this is when we receive Long.MAX_VALUE, presumably coming from a valid_max.
     }
 
     @Override
