@@ -2,6 +2,7 @@ package org.das2.util;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
@@ -254,7 +255,7 @@ public class ArgumentList {
         s= new StringBuilder( "Usage: " );
         s.append(this.programName).append(" ");
         for ( int i=0; i<this.nposition; i++ ) {
-            Object key= positionKeys[i];
+            String key= positionKeys[i];
             if ( !this.UNSPECIFIED.equals(values.get(key)) ) {
                 s.append("[").append(descriptions.get(key)).append("] ");
             } else {
@@ -339,16 +340,16 @@ public class ArgumentList {
         boolean error= false;
         java.util.List errorList= new java.util.ArrayList(); // add strings to here
         for ( int i=0; !error & i<nposition; i++ ) {
-            if ( values.get( positionKeys[i] ) == this.UNSPECIFIED ) {
+            if ( values.get( positionKeys[i] ).equals( this.UNSPECIFIED ) ) {
                 errorList.add( "Expected more positional arguments, only got "+i );
                 error= true;
             }
         }
         //TODO: check for too many arguments provided by enduser!
         if ( !error ) {
-            Iterator i= values.keySet().iterator();
+            Iterator<String> i= values.keySet().iterator();
             while ( i.hasNext() ) {
-                Object key= i.next();
+                String key= i.next();
                 if ( key==null ) {
                     System.err.println("TODO: handle this case whereever it's coming from: key==null");
                     continue;
@@ -357,13 +358,13 @@ public class ArgumentList {
                     printUsage();
                     System.exit(-1); //Findbugs correctly points out that this is a bad idea.  For example, a typo on a web server could bring the whole thing down.
                 }
-                if ( values.get( key )==this.UNSPECIFIED ) {
+                if ( values.get( key ).equals( this.UNSPECIFIED ) ) {
                     errorList.add( "Argument needed: --" + reverseNames.get( key ) );
                 }
-                if ( values.get( key )== this.REFERENCEWITHOUTVALUE ) {
+                if ( values.get( key ).equals( this.REFERENCEWITHOUTVALUE ) ) {
                     errorList.add( "Switch requires argument: "+formUsed.get(key));
                 }
-                if ( values.get( key ) == this.UNDEFINED_SWITCH && !allowUndefinedSwitch ) {
+                if ( values.get( key ).equals( this.UNDEFINED_SWITCH ) && !allowUndefinedSwitch ) {
                     errorList.add( "Not a valid switch: "+formUsed.get(key) );
                 }
             }
@@ -379,8 +380,8 @@ public class ArgumentList {
                             !values.get(keys[j]).equals(REFERENCEWITHOUTVALUE) ) haveValue=true;
                 }
                 if ( !haveValue ) {
-                    StringBuffer list= new StringBuffer( (String)reverseNames.get( keys[0] ) );
-                    for ( int j=1;j<keys.length;j++ ) list.append(", "+(String)reverseNames.get( keys[j] ) );
+                    StringBuilder list= new StringBuilder( (String)reverseNames.get( keys[0] ) );
+                    for ( int j=1;j<keys.length;j++ ) list.append(", ").append((String) reverseNames.get( keys[j] ));
                     errorList.add("One of the following needs to be specified: "+list.toString());
                 }
             }
@@ -415,7 +416,7 @@ public class ArgumentList {
         HashMap result= new HashMap();
         List exclude= Arrays.asList( positionKeys );
         for ( Iterator i=values.keySet().iterator(); i.hasNext(); ) {
-            Object key= (String)i.next();
+            String key= (String)i.next();
             if( !exclude.contains(key) && formUsed.containsKey(key) ) {
                 result.put( key, values.get(key) );
             }
@@ -444,11 +445,11 @@ public class ArgumentList {
             key= args[i];
             values.put( key, this.UNDEFINED_SWITCH );
             formUsed.put( key, args[i] );
-            logger.finer("undefined switch: "+key);
+            logger.log(Level.FINER, "undefined switch: {0}", key);
         } else {
             String value;
             formUsed.put( key,args[i] );
-            if ( values.get(key) == this.FALSE || values.get(key) == this.TRUE ) { // is boolean
+            if ( values.get(key).equals(this.FALSE) || values.get(key).equals( this.TRUE ) ) { // is boolean
                 value= TRUE;
                 if ( args[i].indexOf('=')!= -1 ) {
                     value= args[i].substring( args[i].indexOf('=')+1 );
@@ -473,7 +474,7 @@ public class ArgumentList {
                 if ( value.startsWith("\"") ) {
                     value= value.substring(1,value.length()-2);
                 }
-                logger.finer("switch key: "+key+"="+value);
+                logger.log(Level.FINER, "switch key: {0}={1}", new Object[]{key, value});
                 values.put( key, value );
             }
         }
@@ -492,12 +493,12 @@ public class ArgumentList {
      */
     public void process(String[] args) {
         
-        StringBuffer sb= new StringBuffer();
+        StringBuilder sb= new StringBuilder();
         for ( int i=0; i<args.length; i++ ) {
             sb.append(args[i]);
             sb.append(" ");
         }
-        logger.finer("args: "+sb.toString());
+        logger.log(Level.FINER, "args: {0}", sb.toString());
         int iposition=0;
         
         for ( int i=0; i<args.length; i++ ) {
@@ -510,7 +511,7 @@ public class ArgumentList {
                 if ( key==null ) {
                     System.err.println( "\nWarning: position value found when position value was not expected: "+ args[i] + "\n" );
                 }
-                logger.finer("position key: "+key+"="+args[i]);
+                logger.log(Level.FINER, "position key: {0}={1}", new Object[]{key, args[i]});
                 String vv= args[i];
                 if ( vv.startsWith("\"") ) {
                     vv= vv.substring(1,vv.length()-2);
@@ -531,18 +532,18 @@ public class ArgumentList {
         s.append( this.programName ).append( " " );
         
         for ( int i=0; i<this.nposition; i++ ) {
-            Object key= positionKeys[i];
+            String key= positionKeys[i];
             if ( formUsed.get(key)!=null ) {
                 s.append( formUsed.get(key) );
             }
         }
         
-        Set set= names.keySet();
-        Iterator i= set.iterator();
+        Set<String> set= names.keySet();
+        Iterator<String> i= set.iterator();
         
         while ( i.hasNext() ) {
-            Object name= i.next();
-            Object key= names.get(name);
+            String name= i.next();
+            String key= names.get(name);
             String value= (String)formUsed.get(key);
             if ( value !=null ) {
                 if ( value.equals(this.TRUE) ) {
