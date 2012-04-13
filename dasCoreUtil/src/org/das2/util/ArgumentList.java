@@ -340,7 +340,7 @@ public class ArgumentList {
         boolean error= false;
         java.util.List errorList= new java.util.ArrayList(); // add strings to here
         for ( int i=0; !error & i<nposition; i++ ) {
-            if ( values.get( positionKeys[i] ).equals( this.UNSPECIFIED ) ) {
+            if ( values.get( positionKeys[i] ) == this.UNSPECIFIED ) {
                 errorList.add( "Expected more positional arguments, only got "+i );
                 error= true;
             }
@@ -358,13 +358,13 @@ public class ArgumentList {
                     printUsage();
                     System.exit(-1); //Findbugs correctly points out that this is a bad idea.  For example, a typo on a web server could bring the whole thing down.
                 }
-                if ( values.get( key ).equals( this.UNSPECIFIED ) ) {
+                if ( values.get( key ) == this.UNSPECIFIED ) {
                     errorList.add( "Argument needed: --" + reverseNames.get( key ) );
                 }
-                if ( values.get( key ).equals( this.REFERENCEWITHOUTVALUE ) ) {
+                if ( values.get( key ) == this.REFERENCEWITHOUTVALUE ) {
                     errorList.add( "Switch requires argument: "+formUsed.get(key));
                 }
-                if ( values.get( key ).equals( this.UNDEFINED_SWITCH ) && !allowUndefinedSwitch ) {
+                if ( values.get( key ) == this.UNDEFINED_SWITCH && !allowUndefinedSwitch ) {
                     errorList.add( "Not a valid switch: "+formUsed.get(key) );
                 }
             }
@@ -449,7 +449,7 @@ public class ArgumentList {
         } else {
             String value;
             formUsed.put( key,args[i] );
-            if ( values.get(key).equals(this.FALSE) || values.get(key).equals( this.TRUE ) ) { // is boolean
+            if ( values.get(key)==this.FALSE || values.get(key)==this.TRUE ) { // is boolean
                 value= TRUE;
                 if ( args[i].indexOf('=')!= -1 ) {
                     value= args[i].substring( args[i].indexOf('=')+1 );
@@ -500,7 +500,12 @@ public class ArgumentList {
         }
         logger.log(Level.FINER, "args: {0}", sb.toString());
         int iposition=0;
-        
+
+        for ( int i=0; i<positionKeys.length; i++ ) {
+            //values.put( positionKeys[i], UNSPECIFIED );
+            //Note null means unspecified (for now...)
+        }
+
         for ( int i=0; i<args.length; i++ ) {
             if ( args[i].startsWith("-") ) {
                 i= processSwitch( args, i );
