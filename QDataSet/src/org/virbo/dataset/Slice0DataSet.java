@@ -58,8 +58,22 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
             putProperty( QDataSet.BUNDLE_0, ds.property(QDataSet.BUNDLE_1 ) );
             putProperty( QDataSet.BUNDLE_1, null );
             putProperty( QDataSet.BINS_0, ds.property( QDataSet.BINS_1 ) );
-            if ( ds.rank()>2 ) putProperty( QDataSet.DEPEND_1, ds.property( QDataSet.DEPEND_2 ) );
-            if ( ds.rank()>3 ) putProperty( QDataSet.DEPEND_2, ds.property( QDataSet.DEPEND_3 ) );
+            if ( ds.rank()>2 ) {
+                QDataSet dep =  (QDataSet) ds.property( QDataSet.DEPEND_2 );
+                if ( dep!=null && dep.rank()==2 ) {
+                    putProperty( QDataSet.DEPEND_1, new Slice0DataSet( dep, index, false ) ); // TODO: consider dep.slice
+                } else {
+                    putProperty( QDataSet.DEPEND_1, dep );
+                }
+            }
+            if ( ds.rank()>3 ) {
+                QDataSet dep =  (QDataSet) ds.property( QDataSet.DEPEND_2 );
+                if ( dep!=null && dep.rank()==2 ) {
+                    putProperty( QDataSet.DEPEND_2, new Slice0DataSet( dep, index, false ) );
+                } else {
+                    putProperty( QDataSet.DEPEND_2, ds.property( QDataSet.DEPEND_3 ) );
+                }
+            }
 
         } else {
             if ( dep0!=null && dep0.rank()>1 ) {
