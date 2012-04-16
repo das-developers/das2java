@@ -22,7 +22,8 @@ import java.util.Map;
 public final class FDataSet extends ArrayDataSet {
     float[] back;
 
-    public static final String version="20090606";
+    private static final boolean RANGE_CHECK = true;
+    public static final String version="20120416";
     
     public static FDataSet createRank1( int len0 ) {
         return new FDataSet( 1, len0, 1, 1, 1 );
@@ -110,30 +111,86 @@ public final class FDataSet extends ArrayDataSet {
 
     @Override
     public double value() {
+        if ( RANGE_CHECK ) {
+            if ( this.rank!=0 ) {
+                throw new IllegalArgumentException("rank 0 access on rank "+this.rank+" dataset");
+            }
+        }
         float v= back[0];
         return v==fill ? dfill : v;
     }
 
     @Override
     public double value(int i0) {
+        if (RANGE_CHECK) {
+            if ( this.rank!=1 ) {
+                throw new IllegalArgumentException("rank 1 access on rank "+this.rank+" dataset");
+            }
+            if (i0 < 0 || i0 >= len0) {
+                throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
+            }
+        }
         float v= back[i0];
         return v==fill ? dfill : v;
     }    
 
     @Override
     public double value(int i0, int i1) {
+        if (RANGE_CHECK) {
+            if ( this.rank!=2 ) {
+                throw new IllegalArgumentException("rank 2 access on rank "+this.rank+" dataset");
+            }
+            if (i0 < 0 || i0 >= len0) {
+                throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
+            }
+            if (i1 < 0 || i1 >= len1) {
+                throw new IndexOutOfBoundsException("i1=" + i1 + " " + this);
+            }
+        }
         float v= back[ i0 * len1 + i1 ];
         return v==fill ? dfill : v;
     }    
     
     @Override
     public double value(int i0, int i1, int i2 ) {
+        if (RANGE_CHECK) {
+            if ( this.rank!=3 ) {
+                throw new IllegalArgumentException("rank 3 access on rank "+this.rank+" dataset");
+            }
+            if (i0 < 0 || i0 >= len0) {
+                throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
+            }
+            if (i1 < 0 || i1 >= len1) {
+                throw new IndexOutOfBoundsException("i1=" + i1 + " " + this);
+            }
+            if (i2 < 0 || i2 >= len2) {
+                throw new IndexOutOfBoundsException("i2=" + i2 + " " + this);
+            }
+        }
+
         float v= back[ i0 * len1 * len2 + i1 *len2 + i2 ];
         return v==fill ? dfill : v;
     }
 
     @Override
     public double value(int i0, int i1, int i2, int i3) {
+        if (RANGE_CHECK) {
+            if ( this.rank!=4 ) {
+                throw new IllegalArgumentException("rank 4 access on rank "+this.rank+" dataset");
+            }
+            if (i0 < 0 || i0 >= len0) {
+                throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
+            }
+            if (i1 < 0 || i1 >= len1) {
+                throw new IndexOutOfBoundsException("i1=" + i1 + " " + this);
+            }
+            if (i2 < 0 || i2 >= len2) {
+                throw new IndexOutOfBoundsException("i2=" + i2 + " " + this);
+            }
+            if (i3 < 0 || i3 >= len3) {
+                throw new IndexOutOfBoundsException("i3=" + i3 + " " + this);
+            }
+        }
         float v=  back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3 ];
         return v==fill ? dfill : v;
     }
