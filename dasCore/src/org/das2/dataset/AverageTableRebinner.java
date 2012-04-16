@@ -542,10 +542,17 @@ public class AverageTableRebinner implements DataSetRebinner {
 
             int[] ibiny = new int[tds1.length(0)];
 
-            if ( yds.rank()==1 ) {
+            QDataSet vyds= SemanticOps.weightsDataSet(yds);
+            QDataSet vxds= SemanticOps.weightsDataSet(xds);
+
+            if ( yds.rank()==1 ) {    
                 for (int j = 0; j < ibiny.length; j++) {
                     if (ddY != null) {
-                        ibiny[j] = ddY.whichBin( yds.value(j), yunits );
+                        if ( vyds.value(j)>0 ) {
+                            ibiny[j] = ddY.whichBin( yds.value(j), yunits );
+                        } else {
+                            ibiny[j] = -10000;
+                        }
                     } else {
                         ibiny[j] = j;
                     }
@@ -556,7 +563,11 @@ public class AverageTableRebinner implements DataSetRebinner {
                 if ( yds.rank()==2 ) {
                     for (int j = 0; j < ibiny.length; j++) {
                         if (ddY != null) {
-                            ibiny[j] = ddY.whichBin( yds.value(i,j), yunits );
+                            if ( vyds.value(j)>0 ) {
+                                ibiny[j] = ddY.whichBin( yds.value(i,j), yunits );
+                            } else {
+                                ibiny[j] = -10000;
+                            }
                         } else {
                             ibiny[j] = j;
                         }
@@ -566,7 +577,11 @@ public class AverageTableRebinner implements DataSetRebinner {
                 int ibinx;
 
                 if (ddX != null) {
-                    ibinx = ddX.whichBin( xds.value(i), xunits );
+                    if ( vxds.value(i)>0 ) {
+                        ibinx = ddX.whichBin( xds.value(i), xunits );
+                    } else {
+                        ibinx = -10000;
+                    }
                 } else {
                     ibinx = i;
                 }
