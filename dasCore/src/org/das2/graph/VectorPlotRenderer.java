@@ -15,6 +15,7 @@ import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
@@ -46,10 +47,13 @@ public class VectorPlotRenderer extends Renderer {
 
     private static QDataSet doRange( QDataSet xds, QDataSet dxds ) {
 
-        double scale= 1.0; //TODO: this will change
+        double scale= 1.0; 
 
         QDataSet xrange= Ops.extent(xds);
-        xrange= Ops.extent( Ops.add(xds,Ops.multiply(dxds,DataSetUtil.asDataSet(scale)) ), xrange );
+
+        MutablePropertyDataSet vxds= (MutablePropertyDataSet)Ops.multiply(dxds,DataSetUtil.asDataSet(scale));
+        vxds.putProperty(QDataSet.UNITS, xds.property( QDataSet.UNITS ) );
+        xrange= Ops.extent( Ops.add(xds,vxds), xrange );
 
         if ( xrange.value(1)==xrange.value(0) ) {
             if ( !"log".equals( xrange.property(QDataSet.SCALE_TYPE)) ) {
@@ -61,6 +65,20 @@ public class VectorPlotRenderer extends Renderer {
         xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
         xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
         return xrange;
+    }
+
+    protected double scale = 1.0;
+    public static final String PROP_SCALE = "scale";
+
+    public double getScale() {
+        return scale;
+    }
+
+    public void setScale(double scale) {
+        double oldScale = this.scale;
+        this.scale = scale;
+        refresh();
+        propertyChangeSupport.firePropertyChange(PROP_SCALE, oldScale, scale);
     }
 
     @Override
@@ -97,9 +115,14 @@ public class VectorPlotRenderer extends Renderer {
         Units xunits= SemanticOps.getUnits( x );
         Units yunits= SemanticOps.getUnits( y );
 
-        double scale= 1;
+        QDataSet wdx= SemanticOps.weightsDataSet(dx);
+        QDataSet wdy= SemanticOps.weightsDataSet(dy);
+        QDataSet wx= SemanticOps.weightsDataSet(x);
+        QDataSet wy= SemanticOps.weightsDataSet(y);
 
         for ( int i=0; i<ds.length(); i++ ) {
+            if ( wdx.value(i) * wdy.value(i) * wx.value(i) * wy.value(i)==0 ) continue;
+            
             double ix= xAxis.transform( x.value(i), xunits );
             double iy= yAxis.transform( y.value(i), yunits );
 
