@@ -563,7 +563,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 if ( yds.rank()==2 ) {
                     for (int j = 0; j < ibiny.length; j++) {
                         if (ddY != null) {
-                            if ( vyds.value(j)>0 ) {
+                            if ( vyds.value(i,j)>0 ) {
                                 ibiny[j] = ddY.whichBin( yds.value(i,j), yunits );
                             } else {
                                 ibiny[j] = -10000;
