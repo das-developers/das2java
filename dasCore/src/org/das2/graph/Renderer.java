@@ -397,6 +397,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
     }
 
+    /**
+     * refresh, but only if the parent has been set.
+     */
     protected void refreshImage() {
         if (getParent() != null) {
             refresh();
