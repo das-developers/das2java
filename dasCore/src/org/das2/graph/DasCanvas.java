@@ -1089,7 +1089,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     /** TODO
      * @param image
      */
-    protected void writeToImageImmediately(Image image) {
+    public void writeToImageImmediately(Image image) {
         Graphics2D graphics;
         try {
             synchronized (displayLockObject) {
