@@ -1100,6 +1100,23 @@ public class DataSetUtil {
             }
         }
 
+        // one last sanity check, for the PlasmaWaveGroup file:///home/jbf/project/autoplot/data/qds/gapBug/gapBug.qds?Frequency
+        if ( t<65 && log ) {
+            double s= ss/nn;
+            int skip=0;
+            int bigSkip=0;
+            for ( int i=0; i<t-1; i++ ) {
+                double d= Math.log( xds.value(i+1) / xds.value(i) );
+                if ( d > s*1.5 ) {
+                    skip++;
+                    if ( d > s*7 ) {
+                        bigSkip++;
+                    }
+                }
+            }
+            if ( bigSkip==0 && skip>0 ) return null;
+        }
+
         if ( log ) {
             MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
             result.putProperty( QDataSet.UNITS, Units.logERatio );
