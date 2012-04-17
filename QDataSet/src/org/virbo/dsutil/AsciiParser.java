@@ -1095,6 +1095,7 @@ public class AsciiParser {
         Pattern delimPattern;
         boolean[] doParseField;
         public String header=null; // place to store the header.
+        boolean showException= true;
 
         public DelimParser(int fieldCount, String delim) {
             this.fieldCount = fieldCount;
@@ -1139,6 +1140,10 @@ public class AsciiParser {
                         if ( builder!=null ) builder.putValue(irec, j, d );
                         okayCount++;
                     } catch (ParseException e) {
+                        if ( showException ) {
+                            e.printStackTrace();
+                            showException= false;
+                        }
                         failCount++;
                         if ( builder!=null ) builder.putValue(irec, j, -1e31 ); //TODO
                     } catch (NumberFormatException e) {
