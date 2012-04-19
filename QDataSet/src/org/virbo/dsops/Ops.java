@@ -2437,6 +2437,8 @@ public class Ops {
                 throw new UnsupportedOperationException("unsupported op: "+filt );
             }
 
+            boolean convertToFloat= ds instanceof FDataSet;
+
             mon.setTaskSize(ds.length());
             mon.started();
             mon.setProgressMessage("performing fftFilter");
@@ -2446,6 +2448,10 @@ public class Ops {
                     QDataSet wave= ds.slice(i).trim(j*len,(j+1)*len );
 
                     QDataSet vds= Ops.multiply( wave, filter );
+                    if ( convertToFloat ) {
+                        vds= ArrayDataSet.copy( float.class, vds );
+                    }
+
                     result.join(vds);
 
                     if ( dep0!=null && dep1!=null ) {
@@ -2491,23 +2497,64 @@ public class Ops {
     /**
      * create a power spectrum on the dataset by breaking it up and
      * doing ffts on each segment.
-     * 
+     *
      * data may be rank 1, rank 2, or rank 3.
      *
      * Looks for DEPEND_1.USER_PROPERTIES.FFT_Translation, which should
      * be a rank 0 or rank 1 QDataSet.  If it is rank 1, then it should correspond
      * to the DEPEND_0 dimension.
-     * 
+     *
      * @param ds rank 2 dataset ds(N,M) with M>len
      * @param len the number of elements to have in each fft.
      * @param mon a ProgressMonitor for the process
      * @return rank 2 fft spectrum
      */
     public static QDataSet fftPower( QDataSet ds, int len, ProgressMonitor mon ) {
+        QDataSet unity= ones(len);
+        return fftPower( ds, unity, mon );
+    }
+
+    /**
+     * return a dataset for the given filter type.  The result will be rank 1 and length len.
+     */
+    public static QDataSet windowFunction( FFTFilterType filt, int len ) {
+        if ( filt==FFTFilterType.Hanning ) {
+            return FFTUtil.getWindowHanning(len);
+        } else if ( filt==FFTFilterType.TenPercentEdgeCosine ) {
+            return FFTUtil.getWindow10PercentEdgeCosine(len);
+        } else {
+            throw new UnsupportedOperationException("unsupported op: "+filt );
+        }
+    }
+
+    /**
+     * create a power spectrum on the dataset by breaking it up and
+     * doing ffts on each segment.
+     *
+     * data may be rank 1, rank 2, or rank 3.
+     *
+     * Looks for DEPEND_1.USER_PROPERTIES.FFT_Translation, which should
+     * be a rank 0 or rank 1 QDataSet.  If it is rank 1, then it should correspond
+     * to the DEPEND_0 dimension.
+     *
+     * No normalization is done with non-unity windows.
+     *
+     * @param ds rank 2 dataset ds(N,M) with M>len
+     * @param window window to apply to the data before performing FFT
+     * @param mon a ProgressMonitor for the process
+     * @return rank 2 fft spectrum
+     */
+    public static QDataSet fftPower( QDataSet ds, QDataSet window, ProgressMonitor mon ) {
         if ( mon==null ) {
             mon= new NullProgressMonitor();
         }
-        
+
+        int len= window.length();
+        boolean windowNonUnity= false;
+        for ( int i=0; windowNonUnity==false && i<len; i++ ) {
+            if ( window.value(i)!=1.0 ) windowNonUnity=true;
+        }
+
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
             JoinDataSet dep0=null;
@@ -2523,7 +2570,7 @@ public class Ops {
             }
 
             ds= jds;
-        }
+        } 
 
         if ( ds.rank()==3 ) { // slice it and do the process to each branch.
             JoinDataSet result= new JoinDataSet(3);
@@ -2531,7 +2578,7 @@ public class Ops {
             mon.started();
             for ( int i=0; i<ds.length(); i++ ) {
                 mon.setTaskProgress(i*10);
-                QDataSet pow1= fftPower( ds.slice(i), len, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
+                QDataSet pow1= fftPower( ds.slice(i), window, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
                 result.join(pow1);
             }
             mon.finished();
@@ -2611,6 +2658,10 @@ public class Ops {
                         }
                     }
                     if ( hasFill ) continue;
+
+                    if ( windowNonUnity ) {
+                        wave= Ops.multiply(wave,window);
+                    }
 
                     QDataSet vds= FFTUtil.fftPower( fft, wave );
 
