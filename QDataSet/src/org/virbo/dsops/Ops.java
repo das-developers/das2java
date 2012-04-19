@@ -2466,6 +2466,13 @@ public class Ops {
 
     }
 
+    /**
+     * Apply Hanning windows to the data to prepare for FFT.  The data is reformed into a rank 2 dataset [N,len].
+     * Hanning windows taper the ends of the interval to remove noise caused by the discontinuity.
+     * @param ds, rank 1, 2, or 3 data
+     * @param len
+     * @return data[N,len] with the hanning window applied.
+     */
     public static QDataSet hanning( QDataSet ds, int len ) {
         return fftFilter(  ds, len, FFTFilterType.Hanning );
     }
