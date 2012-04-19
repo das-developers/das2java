@@ -2347,8 +2347,19 @@ public class Ops {
         return wds;
     }
 
+    /**
+     *@see #fftFilter
+     */
     public static enum FFTFilterType{ Hanning, TenPercentEdgeCosine };
 
+    /**
+     * Apply Hanning windows to the data to prepare for FFT.  The data is reformed into a rank 2 dataset [N,len].
+     * The filter is applied to the data to remove noise caused by the discontinuity.
+     * @param ds rank 1, 2, or 3 data
+     * @param len
+     * @param filt FFTFilterType.Hanning or FFTFilterType.TenPercentEdgeCosine
+     * @return data[N,len] with the window applied.
+     */
     public static QDataSet fftFilter( QDataSet ds, int len, FFTFilterType filt ) {
         ProgressMonitor mon=null;
 
