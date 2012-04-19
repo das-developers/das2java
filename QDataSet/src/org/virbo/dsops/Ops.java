@@ -913,8 +913,18 @@ public class Ops {
         } else {
             if ( !UnitsUtil.isRatioMeasurement(units1) ) throw new IllegalArgumentException("ds1 units are not ratio units: "+units1);
             if ( !UnitsUtil.isRatioMeasurement(units2) ) throw new IllegalArgumentException("ds2 units are not ratio units: "+units2);
-            System.err.println("throwing out units until we improve the units library, arguments have unequal units");
-            resultUnits= null;
+
+            if ( units1==Units.dimensionless ) {
+                try {
+                    resultUnits= UnitsUtil.getInverseUnit(units2);
+                } catch ( IllegalArgumentException ex ) {
+                    System.err.println( String.format( "unable to invert unit2=%s, arguments have unequal units", units2 ) );
+                    resultUnits= null;
+                }
+            } else {
+                System.err.println("throwing out units until we improve the units library, arguments have unequal units");
+                resultUnits= null;
+            }
         }
 
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
