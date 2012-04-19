@@ -117,7 +117,6 @@ public class FFTUtil {
 
     public static QDataSet getWindowHanning( final int size ) {
         final int n= size;
-        int maxlim= 410;
         final double[] ww= new double[n];
 
         int halfsize= size/2;
