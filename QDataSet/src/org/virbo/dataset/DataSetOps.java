@@ -1283,7 +1283,7 @@ public class DataSetOps {
      * @return
      */
     public static boolean isProcessAsync(String c) {
-        return c.contains("fft");
+        return c.contains("fft") || c.contains("contour") || c.contains("dbAboveBackgroundDim");
     }
 
     /**
