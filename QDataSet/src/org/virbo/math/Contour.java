@@ -82,7 +82,7 @@ public class Contour {
 
 
             DDataSet result= builder.getDataSet();
-            result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(result) );
+            result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(this,result) );
 
             return result;
         }
@@ -511,17 +511,16 @@ public class Contour {
         }
     }
 
-    private static QDataSet getBundleDescriptor( QDataSet input ) {
-        QDataSet dep0= (QDataSet) input.property(QDataSet.DEPEND_0);
-        String name0= dep0==null ? "X" : Ops.guessName( dep0 );
+    private static QDataSet getBundleDescriptor( ContourPlot cp, QDataSet input ) {
+        QDataSet dep0= cp.xx;
 
-        QDataSet dep1= (QDataSet) input.property(QDataSet.DEPEND_1);
-        String name1= dep1==null ? "Y" : Ops.guessName( dep1 );
+        String name0= dep0==null ? "X" : Ops.guessName( dep0, "X" );
 
-        String name= Ops.guessName( input );
-        if ( name==null ) {
-            name= "Z";
-        }
+        QDataSet dep1= cp.yy;
+
+        String name1= dep1==null ? "Y" : Ops.guessName( dep1, "Y" );
+
+        String name= Ops.guessName( cp.zz, "Z" );
 
         ArrayDataSet bds= (ArrayDataSet) DDataSet.createRank2(3,0);
         bds.putProperty( QDataSet.NAME, 0, name0 );
@@ -531,7 +530,7 @@ public class Contour {
         if ( dep1!=null ) bds.putProperty( QDataSet.UNITS, 1, SemanticOps.getUnits( dep1 ) );
 
         bds.putProperty( QDataSet.NAME, 2, name );
-        bds.putProperty( QDataSet.UNITS, 2, SemanticOps.getUnits( input ) );
+        bds.putProperty( QDataSet.UNITS, 2, SemanticOps.getUnits( cp.zz ) );
         bds.putProperty( QDataSet.DEPENDNAME_0, 2, name1 ); // TODO: Z([X,Y]) is not supported. I think this should be
         bds.putProperty( QDataSet.CONTEXT_0,    2, name0 + "," + name1 ); // TODO: QDataSet probably needs CONTEXTNAME_0.
 
