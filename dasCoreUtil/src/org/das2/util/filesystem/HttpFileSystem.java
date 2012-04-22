@@ -68,7 +68,7 @@ public class HttpFileSystem extends WebFileSystem {
         super(root, localRoot);
     }
 
-    public static synchronized HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException, UnknownHostException {
+    public static HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException, UnknownHostException {
         try {
 
             String auth= rooturi.getAuthority();

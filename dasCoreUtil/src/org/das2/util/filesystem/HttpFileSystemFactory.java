@@ -37,6 +37,7 @@ public class HttpFileSystemFactory implements FileSystemFactory {
     }
 
     public FileSystem createFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException {
+        System.err.println("createFileSystem: " +root);
         HttpFileSystem hfs = HttpFileSystem.createHttpFileSystem(root);
         if (!FileSystemSettings.hasAllPermission()) hfs.setAppletMode(true);
         return hfs;

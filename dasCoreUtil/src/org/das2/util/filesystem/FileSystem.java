@@ -28,6 +28,7 @@ import java.net.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.DefaultExceptionHandler;
@@ -109,7 +110,7 @@ public abstract class FileSystem  {
      * @throws IllegalArgumentException if the url cannot be converted to a URI.
      * @throws IllegalArgumentException if the local root does not exist.
      */
-    public synchronized static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
         try {
             return create(root.toURI(), mon);
         } catch (URISyntaxException ex) {
@@ -125,7 +126,7 @@ public abstract class FileSystem  {
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws UnknownHostException
      */
-    public synchronized static FileSystem recreate( URI root ) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem recreate( URI root ) throws FileSystemOfflineException, UnknownHostException {
         return recreate( root, new NullProgressMonitor() );
     }
 

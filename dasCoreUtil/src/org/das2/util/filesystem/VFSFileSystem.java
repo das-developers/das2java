@@ -88,7 +88,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
         return createVFSFileSystem(root, false);
     }
 
-    public static synchronized VFSFileSystem createVFSFileSystem(URI root, boolean createFolder) throws FileSystemOfflineException, UnknownHostException {
+    public static VFSFileSystem createVFSFileSystem(URI root, boolean createFolder) throws FileSystemOfflineException, UnknownHostException {
         //TODO: Handle at least some exceptions; offline detection?
         // yes, this is ugly
 
