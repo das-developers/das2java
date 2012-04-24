@@ -22,7 +22,7 @@ import java.util.Map;
 public final class FDataSet extends ArrayDataSet {
     float[] back;
 
-    private static final boolean RANGE_CHECK = true;
+    private static final boolean RANGE_CHECK = false;
     public static final String version="20120416";
     
     public static FDataSet createRank1( int len0 ) {
