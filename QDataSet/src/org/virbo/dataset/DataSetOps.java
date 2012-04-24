@@ -974,6 +974,8 @@ public class DataSetOps {
                     result= DataSetOps.makePropertiesMutable( bundleDs.slice(j) );
                 } else if ( bundleDs.rank()==2 ) {
                     result= new Slice1DataSet( bundleDs, j, true );
+                } else {
+                    throw new IllegalArgumentException("BundleDs must be rank 1 or rank 2"); // this is handled above and findbugs doesn't see that we can't get here.
                 }
 
                 String[] names1= DataSetUtil.dimensionProperties();
