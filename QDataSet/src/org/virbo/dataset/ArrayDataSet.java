@@ -118,18 +118,18 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     @Override
-    public int length() {
+    public final int length() {
         return len0;
     }
 
     @Override
-    public int length(int i) {
+    public final int length(int i) {
         if ( RANGE_CHECK && i>=len0 ) throw new IndexOutOfBoundsException("length("+i+") when dim 0 length="+len0); //TODO: allow disable with RANGE_CHECK for performance
         return len1;
     }
 
     @Override
-    public int length( int i0, int i1 ) {
+    public final int length( int i0, int i1 ) {
         if ( RANGE_CHECK ) {
             if ( i0>=len0 ) throw new IndexOutOfBoundsException("length("+i0+","+i1+") when dim 0 length="+len0);
             if ( i1>=len1 ) throw new IndexOutOfBoundsException("length("+i0+","+i1+") when dim 1 length="+len1);
@@ -138,7 +138,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     @Override
-    public int length( int i0, int i1, int i2) {
+    public final int length( int i0, int i1, int i2) {
         if ( RANGE_CHECK ) {
             if ( i0>=len0 ) throw new IndexOutOfBoundsException("length("+i0+","+i1+","+i2+") when dim 0 length="+len0);
             if ( i1>=len1 ) throw new IndexOutOfBoundsException("length("+i0+","+i1+","+i2+") when dim 1 length="+len1);
