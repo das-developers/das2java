@@ -106,14 +106,14 @@ public class WebFileObject extends FileObject {
     }
 
     public long getSize() {
+        if (isFolder) {
+            throw new IllegalArgumentException("is a folder");
+        }
         try {
             maybeLoadMetadata();
         } catch ( IOException ex ) {
             System.err.println("unable to load metadata: "+ex);
             return localFile.length();
-        }
-        if (isFolder) {
-            throw new IllegalArgumentException("is a folder");
         }
         if ( metadata.containsKey("Content-Length") ) {
             return Long.parseLong(metadata.get("Content-Length") );
