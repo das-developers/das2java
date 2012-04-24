@@ -77,7 +77,7 @@ public class FormatStreamHandler implements StreamHandler {
     public void streamException(StreamException se) throws StreamException {
         String msg= String.format("<exception type='%s' message='%s'/>", se.getClass().toString(), se.getMessage() );
         try {
-            out.write( ByteBuffer.wrap( String.format( "[xx]%06i", msg.length() ).getBytes("US-ASCII") ) );
+            out.write( ByteBuffer.wrap( String.format( "[xx]%06d", msg.length() ).getBytes("US-ASCII") ) );
             out.write( ByteBuffer.wrap( msg.getBytes("US-ASCII") ) );
         } catch ( IOException ex ) {
             throw new StreamException(ex);
