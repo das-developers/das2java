@@ -1099,8 +1099,6 @@ public class DataSetOps {
         if ( n<0 ) throw new IllegalArgumentException("n<0");
         if ( n>100 ) throw new IllegalArgumentException("n>=100");
 
-        Units u= SemanticOps.getUnits(ds);
-
         QDataSet sort= Ops.sort(ds);
         if ( sort.length()==0 ) {
             throw new IllegalArgumentException("unable to getNthPercentileSort, data is all fill");
@@ -1478,7 +1476,6 @@ public class DataSetOps {
             if ( !s2.next().equals(cmd) ) return true;
             if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
                 Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
-                List<Object> args= new ArrayList();
                 while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
                     if ( s.hasNextInt() && s2.hasNextInt() ) {
                         s.nextInt();
