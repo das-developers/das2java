@@ -715,8 +715,6 @@ public class DataSetUtil {
             u= Units.dimensionless;
         }
 
-        double offset= u.getFillDouble();
-
         int lenmax= DataSetUtil.totalLength(ds);
 
         DDataSet result= DDataSet.createRank1(lenmax);
@@ -980,7 +978,6 @@ public class DataSetUtil {
 
 
         double mean= AutoHistogram.mean( hist ).value();
-        int imean= AutoHistogram.binOf( hist, mean );
 
         for ( int i=0; i<hist.length(); i++ ) {
             t+= hist.value(i);
@@ -1025,7 +1022,6 @@ public class DataSetUtil {
             t=0;
 
             mean= AutoHistogram.mean(loghist).value();
-            int lmean= AutoHistogram.binOf( loghist, mean );
             for ( int i=0; i<loghist.length(); i++ ) {
                 t+= loghist.value(i);
                 if ( loghist.value(i)>logPeakv ) {
@@ -1039,13 +1035,13 @@ public class DataSetUtil {
                     logMedian= i;
                 }
             }
-            int logLowestPeak=0; // see commented code below
-            for ( int i=0; i<loghist.length(); i++ ) {
-                if ( loghist.value(i)>logPeakv/10. ) {
-                    logLowestPeak=i;
-                    break;
-                }
-            }
+            //int logLowestPeak=0; // see commented code below
+            //for ( int i=0; i<loghist.length(); i++ ) {
+            //    if ( loghist.value(i)>logPeakv/10. ) {
+            //        logLowestPeak=i;
+            //        break;
+            //    }
+            //}
 
             int highestPeak= linHighestPeak;
 
@@ -2156,9 +2152,7 @@ public class DataSetUtil {
      * returns the index of a tag, or the  <tt>(-(<i>insertion point</i>) - 1)</tt>.  (See Arrays.binarySearch)
      */
     public static int xTagBinarySearch( QDataSet ds, Datum datum, int low, int high ) {
-        Units units= datum.getUnits();
         Units toUnits= SemanticOps.getUnits( ds );
-        UnitsConverter uc= units.getConverter(toUnits);
         double key= datum.doubleValue(toUnits);
         while (low <= high) {
             int mid = (low + high) >> 1;
