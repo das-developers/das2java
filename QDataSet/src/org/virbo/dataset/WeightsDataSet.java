@@ -54,6 +54,10 @@ public abstract class WeightsDataSet implements QDataSet {
         return ds.rank();
     }
 
+    public String toString() {
+        return DataSetUtil.toString(ds);
+    }
+
     public abstract double value();
 
     public abstract double value(int i);
