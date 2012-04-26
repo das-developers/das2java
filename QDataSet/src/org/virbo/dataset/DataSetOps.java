@@ -1437,6 +1437,8 @@ public class DataSetOps {
             } else if ( cmd.equals("|total")) {
                 int idx= s.nextInt();
                 fillDs= Ops.total(fillDs, idx);
+            } else if ( cmd.equals("|valid")) {
+                fillDs= Ops.valid(fillDs);
             } else if ( cmd.equals("|sqrt")) {
                 fillDs= Ops.sqrt(fillDs);
             } else if ( cmd.equals("|fftPower" ) ) {
