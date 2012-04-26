@@ -47,7 +47,8 @@ public abstract class WeightsDataSet implements QDataSet {
         vmax = validMax.doubleValue();
 
         check = (vmin > -1 * Double.MAX_VALUE || vmax < Double.MAX_VALUE || !(Double.isNaN(fill)));
-        dsname= "wds_"+ds.property(QDataSet.NAME);
+        String name= (String)ds.property(QDataSet.NAME);
+        dsname= name==null ? "wds" : "wds_"+name;
     }
 
     public int rank() {
