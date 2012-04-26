@@ -1283,7 +1283,7 @@ public class DataSetOps {
                 QDataSet ds1= ds.slice(ii);
                 QDataSet back= getBackgroundLevel( ds1, level );
                 QDataSet validDs= Ops.valid(back);
-                QDataSet vds2= DataSetUtil.weightsDataSet(ds);
+                QDataSet vds2= DataSetUtil.weightsDataSet(ds1);
                 ds1= Ops.copy(ds1);
                 WritableDataSet wds= (WritableDataSet) ds1;
                 if ( validDs.value()>0 ) {
