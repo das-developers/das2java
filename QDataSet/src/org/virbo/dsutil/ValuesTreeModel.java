@@ -109,7 +109,11 @@ public class ValuesTreeModel extends DefaultTreeModel {
 
     private static String svalRank1( QDataSet wds, QDataSet ds, int i ) {
         if ( ds.rank()==2 && ds.property(QDataSet.BINS_1).equals("min,max") ) {
-            return DataSetUtil.asDatumRange( ds.slice(i), true ).toString();
+            if ( wds.value(i,0)==0 || wds.value(i,1)==0 ) {
+               return "fill";
+            } else {
+                return DataSetUtil.asDatumRange( ds.slice(i), true ).toString();
+            }
         }
         try {
             if ( wds.value(i) > 0. ) {
