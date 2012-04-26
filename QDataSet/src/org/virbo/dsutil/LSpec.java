@@ -14,6 +14,7 @@ import java.util.Map;
 import org.das2.datum.Units;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
@@ -182,6 +183,7 @@ public class LSpec {
                 
             }
 
+            DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep0,null), xtags );
             Units xunits= SemanticOps.getUnits(dep0);
             xtags.putProperty( QDataSet.UNITS, xunits );
             xtags.putProperty( QDataSet.MONOTONIC, org.virbo.dataset.DataSetUtil.isMonotonic(dep0) );
@@ -195,6 +197,8 @@ public class LSpec {
         
         result.putProperty( QDataSet.DEPEND_1, lgrid );
         result.putProperty( QDataSet.DEPEND_0, xtags );
+
+        DataSetUtil.putProperties( DataSetUtil.getDimensionProperties( zds, null ), result );
         
         return result;
     }
