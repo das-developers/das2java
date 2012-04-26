@@ -19,7 +19,7 @@ public class DRank0DataSet extends AbstractDataSet implements RankZeroDataSet {
 
     private DRank0DataSet( double d, Units u ) {
         if ( u!=null && u!=Units.dimensionless ) putProperty( QDataSet.UNITS, u );
-        if ( u.isFill(d) ) {
+        if ( u!=null && u.isFill(d) ) {
             putProperty( QDataSet.FILL_VALUE, d );
         }
         this.d= d;
