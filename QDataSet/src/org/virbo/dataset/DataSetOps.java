@@ -232,7 +232,6 @@ public class DataSetOps {
         int i0 = 0;
         
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
-        
         for (int i = 0; i < ds.length(); i++) {
             if ( wds.value(i)>0. ) {
                 indeces[i0] = i;
@@ -1088,11 +1087,11 @@ public class DataSetOps {
     }
 
     /**
-     * returns the value from within a distribution that is the nth percentile division.
+     * returns the value from within a distribution that is the nth percentile division.  This
+     * returns a fill dataset (Units.dimensionless.getFillDouble()) when the data is all fill.
      * @param ds
      * @param n
      * @return
-     * @throws IllegalArgumentException when data is all fill.
      */
     public static QDataSet getNthPercentileSort( QDataSet ds, double n ) {
 
@@ -1101,7 +1100,7 @@ public class DataSetOps {
 
         QDataSet sort= Ops.sort(ds);
         if ( sort.length()==0 ) {
-            throw new IllegalArgumentException("unable to getNthPercentileSort, data is all fill");
+            return DataSetUtil.asDataSet( Units.dimensionless.getFillDatum() );
         }
         
         int idx;
@@ -1125,7 +1124,7 @@ public class DataSetOps {
         if ( ds.rank()==1 ) {
             DDataSet result= DDataSet.createRank1( ds.length(0) );
             result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_1) );
-            return  getNthPercentileSort( ds, level );
+            return getNthPercentileSort( ds, level );
         } else if ( ds.rank()==2 ) {
             DDataSet result= DDataSet.createRank1( ds.length(0) );
             result.putProperty( QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_1) );
@@ -1133,6 +1132,7 @@ public class DataSetOps {
                 QDataSet b1= getNthPercentileSort( DataSetOps.slice1(ds,jj), level );
                 result.putValue(jj, b1.value() );
             }
+            result.putProperty(QDataSet.FILL_VALUE,Units.dimensionless.getFillDouble());
             return result;
         } else if ( ds.rank()>2 ) {
             JoinDataSet result= new JoinDataSet(ds.rank()-1);
@@ -1166,15 +1166,25 @@ public class DataSetOps {
 
         MutablePropertyDataSet result;
 
+        double fill= -1e31;
+        boolean hasFill= false;
         if ( ds.rank()==1 ) {
             QDataSet back= getBackgroundLevel( ds, level );
             result= Ops.copy(ds);
             boolean db= ds.property(QDataSet.UNITS)==Units.dB;
 
             WritableDataSet wds= (WritableDataSet)result;
-            for ( int ii=0; ii<ds.length(); ii++ ) {
-                double v= db ? ds.value(ii) - back.value() : 20 * Math.log10( ds.value(ii) / back.value() );
-                wds.putValue( ii,Math.max( 0,v ) );
+            QDataSet validDs= Ops.valid(back);
+            if ( validDs.value()>0 ) {
+                for ( int ii=0; ii<ds.length(); ii++ ) {
+                    double v= db ? ds.value(ii) - back.value() : 20 * Math.log10( ds.value(ii) / back.value() );
+                    wds.putValue( ii,Math.max( 0,v ) );
+                }
+            } else {
+                for ( int ii=0; ii<ds.length(); ii++ ) {
+                    wds.putValue( ii, fill );
+                }
+                hasFill= true;
             }
             result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
 
@@ -1184,10 +1194,16 @@ public class DataSetOps {
             boolean db= ds.property(QDataSet.UNITS)==Units.dB;
 
             WritableDataSet wds= (WritableDataSet)result;
+            QDataSet validDs= Ops.valid(back);
             for ( int jj=0; jj<ds.length(0); jj++ ) {
                 for ( int ii=0; ii<ds.length(); ii++ ) {
-                    double v= db ? ds.value(ii,jj) - back.value(jj) : 20 * Math.log10( ds.value(ii,jj) / back.value(jj) );
-                    wds.putValue( ii,jj, Math.max( 0,v ) );
+                    if ( validDs.value(jj)>0 ) {
+                        double v= db ? ds.value(ii,jj) - back.value(jj) : 20 * Math.log10( ds.value(ii,jj) / back.value(jj) );
+                        wds.putValue( ii,jj, Math.max( 0,v ) );
+                    } else {
+                        wds.putValue( ii,jj, fill );
+                        hasFill= true;
+                    }
                 }
             }
             result.putProperty( QDataSet.USER_PROPERTIES,Collections.singletonMap("background", back) );
@@ -1198,6 +1214,9 @@ public class DataSetOps {
                 QDataSet ds1= ds.slice(i);
                 QDataSet r1= dbAboveBackgroundDim1( ds1, level );
                 result1.join(r1);
+                if ( r1.property( QDataSet.FILL_VALUE )!=null ) {
+                    hasFill= true;
+                }
             }
             result= result1;
         }
@@ -1206,6 +1225,7 @@ public class DataSetOps {
         result.putProperty( QDataSet.TYPICAL_MIN, 0 );
         result.putProperty( QDataSet.TYPICAL_MAX, 120 );
         result.putProperty( QDataSet.SCALE_TYPE, "linear" );
+        if ( hasFill ) result.putProperty( QDataSet.FILL_VALUE, fill );
 
         return result;
     }
