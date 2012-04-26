@@ -128,17 +128,17 @@ public class LSpec {
     }
     
     private static double guessCadence( QDataSet xds, final int skip ) {
-        double cadence = Double.MAX_VALUE;
+        double cadence = 0;
         
         // calculate average cadence for consistent points.  Preload to avoid extra branch.
-        double cadenceS= Double.MAX_VALUE;
+        double cadenceS= 0;
         int cadenceN= 1;
         
         for ( int i=skip; i < xds.length(); i++) {
             double cadenceAvg;
             cadenceAvg= cadenceS/cadenceN;
             cadence = xds.value(i) - xds.value(i-skip);
-            if ( cadence < 0.5 * cadenceAvg) {
+            if ( cadence > 1.5 * cadenceAvg) {
                 cadenceS= cadence;
                 cadenceN= 1;
             } else if ( cadence < 1.5 * cadenceAvg ) {
