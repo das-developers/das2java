@@ -200,7 +200,7 @@ public abstract class WebFileSystem extends FileSystem {
      *    the monitor is not touched, but other threads may use it to keep track
      *    of the download progress.
      * @throws FileNotFoundException if the file wasn't found after another thread loaded the file.
-     * @return Lock.  The client should call lock.unlock() when the download is complete
+     * @return Lock or null if another thread loaded the resource.  The client should call lock.unlock() when the download is complete
      */
     protected Lock getDownloadLock(final String filename, File f, ProgressMonitor monitor) throws IOException {
         logger.log(Level.FINER, "{0} wants download lock for {1} wfs impl {2}", new Object[]{Thread.currentThread().getName(), filename, this.hashCode()});
@@ -208,7 +208,7 @@ public abstract class WebFileSystem extends FileSystem {
             ProgressMonitor mon = (ProgressMonitor) downloads.get(filename);
             if (mon != null) { // the webfilesystem is already loading this file, so wait.
                 logger.log(Level.FINE, "another thread is downloading {0}, waiting...", filename);
-                waitForDownload( monitor, filename );
+                waitForDownload( monitor, filename );  //TODO: this seems strange, that we would have this in a synchronized block.
                 if (f.exists()) {
                     return null;
                 } else {
