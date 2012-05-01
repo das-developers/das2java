@@ -127,7 +127,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         } else if (plotImage != null) {
             Point2D p;
             p = new Point2D.Float(plotImageBounds.x, plotImageBounds.y);
-            int x = (int) (p.getX());
+            int x = (int) (p.getX());  
             int y = (int) (p.getY());
             if (parent.getCanvas().isPrintingThread() && print300dpi) {
                 AffineTransformOp atop = new AffineTransformOp(AffineTransform.getScaleInstance(4, 4), AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
