@@ -174,7 +174,7 @@ public class NumberUnits extends Units {
                 }
                 double[] dd= parseDecimal(ss[0]);
                 if ( ss.length==1 ) {
-                    return Datum.create( dd[0], this, dd[1] );
+                    return Datum.create( dd[0], this, 0 );
                 } else {
                     String unitsString= ss[1];
                     for ( int i=2; i<ss.length; i++ ) unitsString+= " "+ss[i];
@@ -187,7 +187,7 @@ public class NumberUnits extends Units {
                         throw t;
                     }
                     UnitsConverter uc= u.getConverter(this);
-                    return Datum.create( uc.convert(dd[0]), this, uc.convert(dd[1]) );
+                    return Datum.create( uc.convert(dd[0]), this, 0. );
                 }
             } catch (NumberFormatException nfe) {
                 if ( s.equals("fill") ) {
