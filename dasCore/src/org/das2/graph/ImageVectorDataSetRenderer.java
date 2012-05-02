@@ -510,9 +510,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
         if ( plotImage==null ) return;
         int w= plotImage.getWidth();
         int h= plotImage.getHeight();
-        int imagex = (int)parent.getCacheImageBounds().getX(); //TODO: there is a bug here, with vap+cdaweb:ds=THE_L2_FBK&id=the_fb_hff&timerange=2007-02-24 I noticed it didn't line up when overrendering is on.
+        int imagex = (int)parent.getCacheImageBounds().getX();
+        int parentx= parent.getX();
         int dx= parent.getColumn().getDMinimum() - imagex;
-        int imagey = (int)parent.getCacheImageBounds().getY();
+        int parenty = (int)parent.getCacheImageBounds().getY();
+        int overx= imagex - parentx;
         GeneralPath result= new GeneralPath();
         for ( int i=0; i<w; i+=5 ) {
             for ( int j=0; j<h; j+=5 ) {
@@ -531,7 +533,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     }
                 }
                 if ( n>0 ) {
-                    result.append( new Rectangle( (int)( i+((float)x)/n+imagex-5 + dx ), (int)( j+((float)y)/n+imagey-5 ), 10, 10 ), true );
+                    result.append( new Rectangle( (int)( overx + i+((float)x)/n+parentx-5 + dx ), (int)( j+((float)y)/n+parenty-5 ), 10, 10 ), true );
                 }
             }
         }
