@@ -114,7 +114,7 @@ public class EventsRenderer extends Renderer {
     private Shape selectionArea;
 
     Shape selectionArea() {
-        return selectionArea;
+        return selectionArea==null ? SelectionUtil.NULL : selectionArea;
     }
 
     @Override

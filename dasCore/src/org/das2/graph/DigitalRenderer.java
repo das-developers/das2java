@@ -170,7 +170,7 @@ public class DigitalRenderer extends Renderer {
      * @return
      */
     public Shape selectionArea() {
-        return selectionArea;
+        return selectionArea==null ? SelectionUtil.NULL : selectionArea;
     }
 
     protected int dataSetSizeLimit = 10000;

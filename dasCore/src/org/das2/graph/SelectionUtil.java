@@ -18,7 +18,7 @@ public class SelectionUtil {
     public static final Shape NULL= new GeneralPath();
 
     /**
-     * returns the selection area, of SelectionUtil.NULL.
+     * returns the selection area, or SelectionUtil.NULL.
      * @param r
      * @return
      */
@@ -26,8 +26,6 @@ public class SelectionUtil {
         if ( r instanceof SeriesRenderer ) {
             Shape a= ((SeriesRenderer)r).selectionArea();
             return a;
-//        } else if ( r instanceof ImageVectorDataSetRenderer ) {
-//            return ((ImageVectorDataSetRenderer)r).selectionArea();
         } else if ( r instanceof SpectrogramRenderer ) {
             return ((SpectrogramRenderer)r).selectionArea();
         } else if ( r instanceof DigitalRenderer ) {

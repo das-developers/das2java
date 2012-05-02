@@ -549,6 +549,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
         if ( selectionArea==null ) {
             calcSelectionArea();
         }
-        return selectionArea;
+        return selectionArea==null ? SelectionUtil.NULL : selectionArea;
     }
 }

@@ -58,9 +58,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import org.das2.datum.Datum;
-import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
@@ -869,9 +867,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      * @return
      */
     public Shape selectionArea() {
-        return selectionArea;
+        return ( selectionArea==null ) ? SelectionUtil.NULL : selectionArea;
     }
 
+    @Override
     public boolean acceptContext(int x, int y) {
         return selectionArea!=null && selectionArea.contains(x, y);
     }

@@ -1907,7 +1907,7 @@ public class SeriesRenderer extends Renderer {
      * @return
      */
     public Shape selectionArea() {
-        return selectionArea;
+        return selectionArea==null ? SelectionUtil.NULL : selectionArea;
     }
 
     @Override
