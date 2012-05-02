@@ -185,6 +185,13 @@ public abstract class FileSystem  {
 
         FileSystem result;
 
+        if ( !root.toString().endsWith("/") ) {
+            try {
+                root= new URI( root.toString()+"/" );
+            } catch ( URISyntaxException ex ) {
+            }
+        }
+
         result= instances.get(root);
         if ( result!=null ) {
             return result;
