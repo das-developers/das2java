@@ -500,11 +500,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
     }
 
     /**
-     * this is very challenging!
-     * 
+     * calculate the area that describes roughly where the data lie.  The
+     * variable "selectionArea" is set.
      */
     private void calcSelectionArea() {
-        BufferedImage plotImage= this.plotImage;
+        BufferedImage plotImage= this.plotImage; // make local copy
         //System.err.println("in calc selection area");
         //long t0= System.currentTimeMillis();
         if ( plotImage==null ) return;
@@ -541,6 +541,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
         //System.err.println("done in calc selection area " + ( System.currentTimeMillis()-t0) + "ms");
     }
 
+    /**
+     * return a Shape object showing where the data lie and focus should be accepted.
+     * @return
+     */
     Shape selectionArea() {
         if ( selectionArea==null ) {
             calcSelectionArea();
