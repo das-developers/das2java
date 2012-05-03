@@ -579,7 +579,14 @@ public class StreamTool {
                 Element root = doc.getDocumentElement();
 
                 DescriptorFactory factory = DescriptorRegistry.get(root.getTagName());
-
+                if ( factory==null ) {
+                    if ( root.getTagName().equals("stream") ) {
+                        System.err.println("ignoring secondary stream descriptor");
+                        return true;
+                    } else {
+                        throw new StreamException("Unrecognized tag name \""+root.getTagName()+"\"");
+                    }
+                }
                 Element ele= doc.getDocumentElement();
                 Descriptor pd = factory.create(ele);
 
