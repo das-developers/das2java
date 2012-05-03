@@ -273,6 +273,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         logger.log(Level.FINE, "Renderer.setDataSet {0}: {1}", new Object[]{id, ds});
 
         QDataSet oldDs = this.ds;
+        this.lastException = null;
 
         if (oldDs != ds) {
             synchronized(this) {
@@ -286,6 +287,9 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
 
+    /**
+     * set the exception to be rendered instead of the dataset.
+     */
     public void setException(Exception e) {
         logger.log(Level.FINE, "Renderer.setException: {0}", e);
         Exception oldException = this.lastException;
@@ -475,7 +479,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                         xmemento = lparent.getXAxis().getMemento();
                         ymemento = lparent.getYAxis().getMemento();
                         renderException = null;
-                        lastException= null;
                     } else {
                         return;
                     }
