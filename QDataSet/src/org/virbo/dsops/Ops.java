@@ -1873,7 +1873,7 @@ public class Ops {
         y.putProperty( QDataSet.NAME, "Y" );
         z.putProperty( QDataSet.NAME, "Z" );
 
-        MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.bundle( Ops.bundle( x, y), z );
+        MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.bundle( x, y, z );
         QDataSet t;
         try {
             t = Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
