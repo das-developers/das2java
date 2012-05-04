@@ -359,9 +359,9 @@ public class TimeParser {
                         for ( int i2=0; i2<ss2.length; i2++ ) {
                             int i3= ss2[i2].indexOf("=");
                             if ( i3==-1 ) {
-                                argv.put(ss2[i2],"");
+                                argv.put(ss2[i2].trim(),"");
                             } else {
-                                argv.put(ss2[i2].substring(0,i3),ss2[i2].substring(i3+1));
+                                argv.put(ss2[i2].substring(0,i3).trim(),ss2[i2].substring(i3+1).trim());
                             }
                         }
                     }
