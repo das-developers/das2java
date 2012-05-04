@@ -130,7 +130,7 @@ public class FileStorageModelNew {
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
                 try {
-                    fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor ); // allow the FS type to change; eg to zip.
+                    fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor ); // 3523492: allow the FS type to change; eg to zip.
                     //fileSystems[i]= root.createFileSystem( names[i] );
                 } catch ( Exception e ) {
                     throw new RuntimeException(e);
