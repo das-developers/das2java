@@ -125,11 +125,13 @@ public class FileStorageModelNew {
         String name;
         String[] names;
         if ( parent!=null ) {
-            names= parent.getNamesFor(null);
+            String one= parent.getRepresentativeFile( monitor );
+            names= new String[] { one }; //parent.getNamesFor(null);
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
                 try {
-                    fileSystems[i]= root.createFileSystem( names[i] );
+                    fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor ); // allow the FS type to change; eg to zip.
+                    //fileSystems[i]= root.createFileSystem( names[i] );
                 } catch ( Exception e ) {
                     throw new RuntimeException(e);
                 }
