@@ -222,6 +222,18 @@ public class Orbits {
         return sc;
     }
 
+    /**
+     * reset the loaded missions.
+     */
+    public static synchronized void reset() {
+        missions= new HashMap();
+    }
+
+    /**
+     * return the orbits for the named spacecraft.
+     * @param sc missions in http://das2.org/wiki/index.php/Orbits/ or URL to mission orbit file.
+     * @return
+     */
     public static synchronized Orbits getOrbitsFor( String sc ) {
         Orbits orbits= missions.get(sc);
         if ( orbits!=null && orbits.orbits.size()>0 ) {
