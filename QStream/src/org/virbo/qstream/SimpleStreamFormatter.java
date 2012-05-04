@@ -48,6 +48,11 @@ public class SimpleStreamFormatter {
     boolean isBigEndian = true; //ByteOrder.nativeOrder() .equals( ByteOrder.BIG_ENDIAN );
     private static final Logger logger= Logger.getLogger("autoplot.qstream");
 
+    /**
+     * newBundle true indicates try to format the bundle with new code.
+     */
+    boolean newBundle= true;
+
     Document getNewDocument() {
         try {
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -221,6 +226,53 @@ public class SimpleStreamFormatter {
             return new AsciiTimeTransferType( Math.max( timeDigits, timeDigitsGcd ), u );
         }
 
+    }
+
+    /**
+     * write out the plane descriptor for a bundle dataset.
+     * @param document
+     * @param pd
+     * @param ds
+     * @param streamRank
+     * @return
+     */
+    private PlaneDescriptor doPlaneDescriptorBundle(Document document, PacketDescriptor pd, QDataSet ds ) {
+
+        Element qdatasetElement = document.createElement("qdataset");
+        qdatasetElement.setAttribute("id", nameFor(ds));
+
+        logger.log( Level.FINE, "writing qdataset {0}", nameFor(ds));
+
+        QDataSet bds;
+        if ( isBundle(ds) ) {
+            if ( ds.rank()==1 ) {
+                bds= (QDataSet) ds.property("BUNDLE_0");
+            } else {
+                bds= (QDataSet) ds.property("BUNDLE_1");
+            }
+            for ( int i=0; i<ds.length(0); i++ ) {
+                QDataSet ds1= DataSetOps.unbundle( ds, i );
+                Element bundle= document.createElement("bundle");
+                bundle.setAttribute( "NAME", nameFor(ds1) );
+                qdatasetElement.appendChild( bundle );
+            }
+        } else {
+            throw new IllegalArgumentException("not supported");
+        }
+
+        Element props = doProperties(document, ds);
+        qdatasetElement.appendChild(props);
+
+        PlaneDescriptor planeDescriptor = new PlaneDescriptor();
+
+        planeDescriptor.setRank(ds.rank());
+
+        planeDescriptor.setDs(ds);
+        planeDescriptor.setName(nameFor(ds));
+
+        planeDescriptor.setDomElement(qdatasetElement);
+
+        return planeDescriptor;
     }
 
     /**
@@ -589,7 +641,7 @@ public class SimpleStreamFormatter {
         return packetDescriptor;
 
     }
-
+ 
     PacketDescriptor doPacketDescriptorJoin( StreamDescriptor sd, QDataSet ds,
             boolean stream, boolean valuesInDescriptor, int streamRank )
             throws ParserConfigurationException {
@@ -598,9 +650,9 @@ public class SimpleStreamFormatter {
         packetDescriptor.setStream(stream);
         packetDescriptor.setStreamRank(streamRank);
         if (valuesInDescriptor) {
-            packetDescriptor.setValuesInDescriptor(true);
+        packetDescriptor.setValuesInDescriptor(true);
         }
-
+            
         Document document = sd.newDocument(packetDescriptor);
 
         Element packetElement = getPacketElement(document);
@@ -619,6 +671,37 @@ public class SimpleStreamFormatter {
         return packetDescriptor;
 
     }
+
+    PacketDescriptor doPacketDescriptorBundle( StreamDescriptor sd, QDataSet ds )
+            throws ParserConfigurationException {
+
+        PacketDescriptor packetDescriptor = new PacketDescriptor();
+        packetDescriptor.setStream(true);
+        packetDescriptor.setStreamRank(2);
+        packetDescriptor.setValuesInDescriptor(true);
+
+        Document document = sd.newDocument(packetDescriptor);
+
+        Element packetElement = getPacketElement(document);
+
+        QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        if ( bds==null ) {
+            throw new IllegalArgumentException("not supported");
+        }
+
+        PlaneDescriptor planeDescriptor = doPlaneDescriptorBundle( document, packetDescriptor, ds );
+        packetDescriptor.addPlane(planeDescriptor);
+        packetElement.appendChild(planeDescriptor.getDomElement());
+        //PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, bds, 2 );
+        //packetDescriptor.addPlane(planeDescriptor);
+        //packetElement.appendChild(planeDescriptor.getDomElement());
+
+        packetDescriptor.setDomElement(packetElement);
+
+        return packetDescriptor;
+
+    }
+    
     /**
      * create the packetDescriptor object.  
      * @param sd the handle for the stream
@@ -665,13 +748,23 @@ public class SimpleStreamFormatter {
             }
         }
 
-        PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, ds, streamRank);
-        packetDescriptor.addPlane(planeDescriptor);
+        if ( newBundle && SemanticOps.isBundle(ds) ) {
+            for ( int i=0; i<ds.length(0); i++ ) {
+                QDataSet ds1= DataSetOps.unbundle(ds,i);
+                PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, ds1, streamRank);
+                packetDescriptor.addPlane(planeDescriptor);
+                Element dselement= planeDescriptor.getDomElement();
+                if (joinId!=null ) dselement.setAttribute("joinId", joinId );
+                packetElement.appendChild(dselement);
+            }
 
-        Element dselement= planeDescriptor.getDomElement();
-        if (joinId!=null ) dselement.setAttribute("joinId", joinId );
-
-        packetElement.appendChild(dselement);
+        } else {
+            PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, ds, streamRank);
+            packetDescriptor.addPlane(planeDescriptor);
+            Element dselement= planeDescriptor.getDomElement();
+            if (joinId!=null ) dselement.setAttribute("joinId", joinId );
+            packetElement.appendChild(dselement);
+        }
 
         packetDescriptor.setDomElement(packetElement);
 
@@ -837,13 +930,23 @@ public class SimpleStreamFormatter {
                         sd.addDescriptor(pd);
 
                         depPackets.add(pd);
-                        sd.send(pd, out);
+                        if ( !newBundle ) {
+                            sd.send(pd, out);
+                        }
 
                         retire.add(pd);
                     }
                 }
 
                 sd.send(mainPd, out);
+
+                if ( newBundle && SemanticOps.isBundle(ds) ) {
+                    PacketDescriptor join= doPacketDescriptorBundle(sd,ds); // assumes bundled datasets are already on the stream
+                    sd.addDescriptor(join);
+                    sd.send(join, out);
+                    joinDataSet= nameFor(ds);
+                }
+
 
                 for (PacketDescriptor deppd : depPackets) {
                     if (!deppd.isValuesInDescriptor()) {
