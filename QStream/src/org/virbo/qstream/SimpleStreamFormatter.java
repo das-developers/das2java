@@ -51,7 +51,7 @@ public class SimpleStreamFormatter {
     /**
      * newBundle true indicates try to format the bundle with new code.
      */
-    boolean newBundle= true;
+    boolean newBundle= false;
 
     Document getNewDocument() {
         try {
@@ -942,6 +942,12 @@ public class SimpleStreamFormatter {
                 sd.send(mainPd, out);
 
                 if ( newBundle && SemanticOps.isBundle(ds) ) {
+                    QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+
+                    PacketDescriptor bdsd= doPacketDescriptorNonQube( sd, bds, false, true, 2 );
+                    sd.addDescriptor(bdsd);
+                    sd.send(bdsd, out);
+                    
                     PacketDescriptor join= doPacketDescriptorBundle(sd,ds); // assumes bundled datasets are already on the stream
                     sd.addDescriptor(join);
                     sd.send(join, out);
