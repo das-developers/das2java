@@ -254,7 +254,7 @@ public class SimpleStreamFormatter {
             for ( int i=0; i<ds.length(0); i++ ) {
                 QDataSet ds1= DataSetOps.unbundle( ds, i );
                 Element bundle= document.createElement("bundle");
-                bundle.setAttribute( "NAME", nameFor(ds1) );
+                bundle.setAttribute( "id", nameFor(ds1) );
                 qdatasetElement.appendChild( bundle );
             }
         } else {
