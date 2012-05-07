@@ -475,27 +475,36 @@ public class StreamTool {
                 //joinParent= n.getAttribute("joinId");
 
                 NodeList values= (NodeList) xpath.evaluate("values", n, XPathConstants.NODESET );
+                NodeList bundles= null;
                 if ( values.getLength()==0 ) {
-                    throw new IllegalArgumentException("no values node in "+n.getNodeName() + " " +n.getAttribute("id") );
+                    bundles= (NodeList) xpath.evaluate("bundle", n, XPathConstants.NODESET );
+                    if ( bundles.getLength()==0 ) {
+                        throw new IllegalArgumentException("no values node in "+n.getNodeName() + " " +n.getAttribute("id") );
+                    }
                 }
 
-                for ( int iv= 0; iv<values.getLength(); iv++ ) {
-                    Element vn= (Element)values.item(iv);
 
-                    if ( vn.hasAttribute("values") ) {  // TODO: consider "inline"
-                        isInline= true;
+                if ( bundles!=null ) {
+                    // see below
+                } else {
+                    for ( int iv= 0; iv<values.getLength(); iv++ ) {
+                        Element vn= (Element)values.item(iv);
+
+                        if ( vn.hasAttribute("values") ) {  // TODO: consider "inline"
+                            isInline= true;
+                        }
+                        //index stuff--Ed W. thinks index should be implicit.
+                        sdims = xpath.evaluate("@length", vn);
+                        ttype = xpath.evaluate("@encoding", vn);
+                        joinChildren = xpath.evaluate("@join", vn);
+
+                        if (sdims == null) {
+                            dims = new int[0];
+                        } else {
+                            dims = Util.decodeArray(sdims);
+                        }
+
                     }
-                    //index stuff--Ed W. thinks index should be implicit.
-                    sdims = xpath.evaluate("@length", vn);
-                    ttype = xpath.evaluate("@encoding", vn);
-                    joinChildren = xpath.evaluate("@join", vn);
-
-                    if (sdims == null) {
-                        dims = new int[0];
-                    } else {
-                        dims = Util.decodeArray(sdims);
-                    }
-
                 }
 
                 PlaneDescriptor planeDescriptor = new PlaneDescriptor();
@@ -528,6 +537,14 @@ public class StreamTool {
                     }
                 }
                 TransferType tt = TransferType.getForName( ttype, Collections.singletonMap( "UNITS", (Object)units ) );
+                if ( bundles!=null ) {
+                    String[] sbundles= new String[ bundles.getLength() ];
+                    for ( int j=0; j<bundles.getLength(); j++ ) {
+                        sbundles[j]= bundles.item(j).getNodeValue();
+                    }
+                    planeDescriptor.setBundles(sbundles);
+                    tt= new AsciiTransferType( 10, true );
+                }
                 if ( tt==null && isInline ) {
                     tt= new AsciiTransferType( 10, true ); // kludge because we need something
                 }
