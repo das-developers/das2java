@@ -51,7 +51,7 @@ public class SimpleStreamFormatter {
     /**
      * newBundle true indicates try to format the bundle with new code.
      */
-    boolean newBundle= false;
+    boolean newBundle= true;
 
     Document getNewDocument() {
         try {
@@ -236,10 +236,11 @@ public class SimpleStreamFormatter {
      * @param streamRank
      * @return
      */
-    private PlaneDescriptor doPlaneDescriptorBundle(Document document, PacketDescriptor pd, QDataSet ds ) {
+    private PlaneDescriptor doPlaneDescriptorBundle(Document document, PacketDescriptor pd, QDataSet ds, int rank ) {
 
         Element qdatasetElement = document.createElement("qdataset");
         qdatasetElement.setAttribute("id", nameFor(ds));
+        qdatasetElement.setAttribute("rank", String.valueOf(rank) );
 
         logger.log( Level.FINE, "writing qdataset {0}", nameFor(ds));
 
@@ -689,7 +690,7 @@ public class SimpleStreamFormatter {
             throw new IllegalArgumentException("not supported");
         }
 
-        PlaneDescriptor planeDescriptor = doPlaneDescriptorBundle( document, packetDescriptor, ds );
+        PlaneDescriptor planeDescriptor = doPlaneDescriptorBundle( document, packetDescriptor, ds, ds.rank() );
         packetDescriptor.addPlane(planeDescriptor);
         packetElement.appendChild(planeDescriptor.getDomElement());
         //PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, bds, 2 );
