@@ -51,7 +51,7 @@ public class SimpleStreamFormatter {
     /**
      * newBundle true indicates try to format the bundle with new code.
      */
-    boolean newBundle= true;
+    boolean newBundle= false;
 
     Document getNewDocument() {
         try {
