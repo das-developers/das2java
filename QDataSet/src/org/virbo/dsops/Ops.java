@@ -437,10 +437,11 @@ public class Ops {
             } else if ("cartesian".equals(depn.property(QDataSet.NAME))) {
                 isCart = true;
             } else {
-                isCart = ds.length(0)<4;  // loosen up restrictions
+                isCart = depn.length()<4;  // loosen up restrictions
             }
         } else {
-            isCart = ds.length(0)<4;  // loosen up restrictions
+            int[] qubedims= DataSetUtil.qubeDims(ds);
+            isCart = qubedims[r]<4;  // loosen up restrictions
         }
         if (isCart) {
             Units u= (Units) ds.property(QDataSet.UNITS);
