@@ -486,6 +486,8 @@ public class StreamTool {
 
                 if ( bundles!=null ) {
                     // see below
+                    dims= new int[0];
+                    isInline= true;
                 } else {
                     for ( int iv= 0; iv<values.getLength(); iv++ ) {
                         Element vn= (Element)values.item(iv);
@@ -536,25 +538,27 @@ public class StreamTool {
                         }
                     }
                 }
-                TransferType tt = TransferType.getForName( ttype, Collections.singletonMap( "UNITS", (Object)units ) );
+                
                 if ( bundles!=null ) {
                     String[] sbundles= new String[ bundles.getLength() ];
                     for ( int j=0; j<bundles.getLength(); j++ ) {
-                        sbundles[j]= bundles.item(j).getNodeValue();
+                        sbundles[j]= ((Element)bundles.item(j)).getAttribute("id");
                     }
                     planeDescriptor.setBundles(sbundles);
-                    tt= new AsciiTransferType( 10, true );
+                    planeDescriptor.setType(new AsciiTransferType( 10, true )); // kludge because we need something
+                } else {
+                    TransferType tt = TransferType.getForName( ttype, Collections.singletonMap( "UNITS", (Object)units ) );
+                    if ( tt==null && isInline ) {
+                        tt= new AsciiTransferType( 10, true ); // kludge because we need something
+                    }
+                    if ( tt==null && joinChildren!=null && joinChildren.length()>0 ) {
+                        tt= new AsciiTransferType( 10, true ); // kludge because we need something
+                    }
+                    if (tt == null ) {
+                        throw new IllegalArgumentException("unrecognized transfer type: " + ttype);
+                    }
+                    planeDescriptor.setType(tt);
                 }
-                if ( tt==null && isInline ) {
-                    tt= new AsciiTransferType( 10, true ); // kludge because we need something
-                }
-                if ( tt==null && joinChildren!=null && joinChildren.length()>0 ) {
-                    tt= new AsciiTransferType( 10, true ); // kludge because we need something
-                }
-                if (tt == null ) {
-                    throw new IllegalArgumentException("unrecognized transfer type: " + ttype);
-                }
-                planeDescriptor.setType(tt);
                 planeDescriptor.setName(name);
 
                 pd.addPlane(planeDescriptor);
