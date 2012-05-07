@@ -101,4 +101,16 @@ public class PlaneDescriptor {
     public void setType(TransferType type) {
         this.type = type;
     }
+
+    /**
+     * support for bundle datasets.
+     */
+    String[] bundles= null;
+    void setBundles(String[] sbundles) {
+        this.bundles= sbundles;
+    }
+
+    public String[] getBundles() {
+        return this.bundles;
+    }
 }
