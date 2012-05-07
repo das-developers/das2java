@@ -1035,6 +1035,7 @@ public class DataSetOps {
                 }
                 if ( bundle.property(QDataSet.BINS_1,first)!=null && bundle.property(QDataSet.BINS_1,first).equals(bundle.property(QDataSet.BINS_1,last)) ) {
                     props.put( QDataSet.BINS_1, bundle.property(QDataSet.BINS_1,first) );
+                    props.remove( QDataSet.BUNDLE_1 );
                 }
                 if ( bundle.property(QDataSet.BUNDLE_1,first)!=null  && bundle.property(QDataSet.BUNDLE_1,first)==(bundle.property(QDataSet.BUNDLE_1,last) ) ) {
                     props.put( QDataSet.BUNDLE_1, bundle.property(QDataSet.BUNDLE_1,first) );
