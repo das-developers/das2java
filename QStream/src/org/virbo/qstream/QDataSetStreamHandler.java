@@ -17,6 +17,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
@@ -38,6 +39,7 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     Map<String, DataSetBuilder> builders;
     Map<String, JoinDataSet> joinDataSets;
+    Map<String, String[]> bundleDataSets;
     
     XPathFactory factory = XPathFactory.newInstance();
     XPath xpath = factory.newXPath();
@@ -47,6 +49,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     public QDataSetStreamHandler() {
         builders = new HashMap<String, DataSetBuilder>();
         joinDataSets = new HashMap<String, JoinDataSet>();
+        bundleDataSets = new HashMap<String, String[]>();
     }
 
     /**
@@ -185,85 +188,101 @@ public class QDataSetStreamHandler implements StreamHandler {
                 joinParent= n.getAttribute("joinId");
 
                 NodeList values= (NodeList) xpath.evaluate("values", n, XPathConstants.NODESET );
+                NodeList bundles= null;
                 if ( values.getLength()==0 ) {
-                    throw new IllegalArgumentException("no values node in "+n.getNodeName() + " " +n.getAttribute("id") );
+                    bundles= (NodeList) xpath.evaluate("bundle", n, XPathConstants.NODESET );
+                    if ( bundles.getLength()==0 ) {
+                        throw new IllegalArgumentException("no values node in "+n.getNodeName() + " " +n.getAttribute("id") );
+                    } else {
+                        System.err.println("newBundle");
+                    }
                 }
 
-                for ( int iv= 0; iv<values.getLength(); iv++ ) {
-                    Element vn= (Element)values.item(iv);
-                    DDataSet inlineDs= null;
-                    if ( vn.hasAttribute("values") ) {  // TODO: consider "inline"
-                        inlineDs= doInLine( vn );
-                        isInline= true;
-                    }
-                    //index stuff--Ed W. thinks index should be implicit.
-                    sdims = xpath.evaluate("@length", vn);
-                    joinChildren = xpath.evaluate("@join", vn);
+                if ( bundles!=null ) {
+                    //nothing to do yet...
+                    builder= new DataSetBuilder(0,0);
+                    builders.put(name,builder ); // this is to hold properties.
 
-                    if (sdims == null) {
-                        dims = new int[0];
-                    } else {
-                        dims = Util.decodeArray(sdims);
-                    }
+                    String[] ss= planes.get(i).getBundles();
+                    bundleDataSets.put( name, ss );
 
-                    if ( isInline && inlineDs.rank()<rank ) {
-                       JoinDataSet join = joinDataSets.get(name);
-                       if (join == null) {
-                           join = new JoinDataSet(rank);
-                           joinDataSets.put(name, join);
-                       }
-                       join.join(inlineDs);
-                       builder= new DataSetBuilder(0,0);
-                       builders.put(name,builder ); // rank 0 means the values were in line.
-                    } else if ( isInline && inlineDs.rank()==rank ) {
-                       builder= new DataSetBuilder(rank,inlineDs.length());
-                       for ( int j=0; j<inlineDs.length(); j++ ) {
-                           DDataSet slice= (DDataSet)inlineDs.slice(j);
-                           builder.putValues( -1, slice, DataSetUtil.totalLength(slice) );
-                           builder.nextRecord();
-                       }
-                       builders.put(name,builder ); // rank 0 means the values were in line.
-                    } else if ( joinChildren.length()>0 ) {
-                        JoinDataSet join= joinDataSets.get(name);
-                        if (join == null) { // typically we will only declare once.
-                           join = new JoinDataSet(rank);
-                           joinDataSets.put(name, join);
-                       }
-                        builder= new DataSetBuilder(1,10);
-                        builder.putProperty(BUILDER_JOIN_CHILDREN, joinChildren);
-                        builders.put(name,builder ); //
-                    } else {
-                        builder = builders.get(name);
-                        if (builder == null) {
-                            builder = createBuilder(rank, dims);
-                            builders.put(name, builder);
-                            if ( !joinParent.equals("") ) {
-                                JoinDataSet parent= joinDataSets.get( joinParent );
-                                String children= (String) parent.property(BUILDER_JOIN_CHILDREN);
-                                if ( children==null || children.length()==0 ) {
-                                    children= name;
-                                } else {
-                                    children= children + "," + name ;
-                                }
-                                parent.putProperty( BUILDER_JOIN_CHILDREN, children );
-                            }
+                } else {
+                    for ( int iv= 0; iv<values.getLength(); iv++ ) {
+                        Element vn= (Element)values.item(iv);
+                        DDataSet inlineDs= null;
+                        if ( vn.hasAttribute("values") ) {  // TODO: consider "inline"
+                            inlineDs= doInLine( vn );
+                            isInline= true;
+                        }
+                        //index stuff--Ed W. thinks index should be implicit.
+                        sdims = xpath.evaluate("@length", vn);
+                        joinChildren = xpath.evaluate("@join", vn);
+
+                        if (sdims == null) {
+                            dims = new int[0];
                         } else {
-                            JoinDataSet join;
-                            if ( joinParent.equals("") ) {
-                                join= joinDataSets.get(name); // old scheme
-                            } else {
-                                join= joinDataSets.get(joinParent);
-                            }
-                             
-                            if (join == null) {
-                                join = new JoinDataSet(rank);
-                                joinDataSets.put(name, join);
-                            }
-                            MutablePropertyDataSet mds= resolveProps( builder.getDataSet() );
-                            join.join(mds);
+                            dims = Util.decodeArray(sdims);
+                        }
 
-                            builder = createBuilder(rank, dims);
-                            builders.put(name, builder);
+                        if ( isInline && inlineDs.rank()<rank ) {
+                           JoinDataSet join = joinDataSets.get(name);
+                           if (join == null) {
+                               join = new JoinDataSet(rank);
+                               joinDataSets.put(name, join);
+                           }
+                           join.join(inlineDs);
+                           builder= new DataSetBuilder(0,0);
+                           builders.put(name,builder ); // rank 0 means the values were in line.
+                        } else if ( isInline && inlineDs.rank()==rank ) {
+                           builder= new DataSetBuilder(rank,inlineDs.length());
+                           for ( int j=0; j<inlineDs.length(); j++ ) {
+                               DDataSet slice= (DDataSet)inlineDs.slice(j);
+                               builder.putValues( -1, slice, DataSetUtil.totalLength(slice) );
+                               builder.nextRecord();
+                           }
+                           builders.put(name,builder ); // rank 0 means the values were in line.
+                        } else if ( joinChildren.length()>0 ) {
+                            JoinDataSet join= joinDataSets.get(name);
+                            if (join == null) { // typically we will only declare once.
+                               join = new JoinDataSet(rank);
+                               joinDataSets.put(name, join);
+                           }
+                            builder= new DataSetBuilder(1,10);
+                            builder.putProperty(BUILDER_JOIN_CHILDREN, joinChildren);
+                            builders.put(name,builder ); //
+                        } else {
+                            builder = builders.get(name);
+                            if (builder == null) {
+                                builder = createBuilder(rank, dims);
+                                builders.put(name, builder);
+                                if ( !joinParent.equals("") ) {
+                                    JoinDataSet parent= joinDataSets.get( joinParent );
+                                    String children= (String) parent.property(BUILDER_JOIN_CHILDREN);
+                                    if ( children==null || children.length()==0 ) {
+                                        children= name;
+                                    } else {
+                                        children= children + "," + name ;
+                                    }
+                                    parent.putProperty( BUILDER_JOIN_CHILDREN, children );
+                                }
+                            } else {
+                                JoinDataSet join;
+                                if ( joinParent.equals("") ) {
+                                    join= joinDataSets.get(name); // old scheme
+                                } else {
+                                    join= joinDataSets.get(joinParent);
+                                }
+
+                                if (join == null) {
+                                    join = new JoinDataSet(rank);
+                                    joinDataSets.put(name, join);
+                                }
+                                MutablePropertyDataSet mds= resolveProps( builder.getDataSet() );
+                                join.join(mds);
+
+                                builder = createBuilder(rank, dims);
+                                builders.put(name, builder);
+                            }
                         }
                     }
                 }
@@ -346,9 +365,11 @@ public class QDataSetStreamHandler implements StreamHandler {
     public QDataSet getDataSet(String name) {
         System.err.println("getDataSet("+name+")");
         DataSetBuilder builder = builders.get(name);
-        if (builder == null) throw new IllegalArgumentException("No such dataset \"" + name + "\"");
-
+        String[] sbds= bundleDataSets.get(name);
         JoinDataSet join = joinDataSets.get(name);
+
+        if (builder == null && sbds==null ) throw new IllegalArgumentException("No such dataset \"" + name + "\"");
+        
         MutablePropertyDataSet result;
         MutablePropertyDataSet sliceDs= null;
             
@@ -385,6 +406,13 @@ public class QDataSetStreamHandler implements StreamHandler {
                 sliceDs= (MutablePropertyDataSet) join.slice(join.length()-1); //wha??  when do we use this?
             }
             result = join;
+
+        } else if ( sbds!=null ) {
+            BundleDataSet bds= new BundleDataSet();
+            for ( int i=0; i<sbds.length; i++ ) {
+                bds.bundle( getDataSet(sbds[i]) );
+            }
+            result= bds;
             
         } else {
             result = builder.getDataSet();
