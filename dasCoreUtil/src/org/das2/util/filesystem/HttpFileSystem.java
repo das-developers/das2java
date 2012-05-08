@@ -64,16 +64,6 @@ import org.das2.util.monitor.NullProgressMonitor;
  */
 public class HttpFileSystem extends WebFileSystem {
 
-    /**
-     * we keep a cached listing in on disk.  This is backed by the the website.
-     */
-    public static final int LISTING_TIMEOUT_MS =      200000;
-
-    /**
-     * we keep a cached listing in memory for performance.  This is backed by the .listing file.
-     */
-    public static final int MEMORY_LISTING_TIMEOUT_MS= 60000;
-
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URI root, File localRoot) {
         super(root, localRoot);
@@ -389,56 +379,6 @@ public class HttpFileSystem extends WebFileSystem {
         }
     }
 
-    public synchronized void resetListingCache() {
-        if ( !FileUtil.deleteWithinFileTree(localRoot,".listing") ) {
-            throw new IllegalArgumentException("unable to delete all .listing files");
-        }
-        listings.clear();
-        listingFreshness.clear();
-    }
-
-    /**
-     * return the File for the cached listing, even if it does not exist.
-     * @param directory
-     * @return
-     */
-    private File listingFile( String directory ) {
-        File f= new File(localRoot, directory);
-        try {
-            FileSystemUtil.maybeMkdirs( f );
-        } catch ( IOException ex ) {
-            throw new IllegalArgumentException("unable to mkdir "+f,ex);
-        }
-        File listing = new File(localRoot, directory + ".listing");
-        return listing;
-    }
-
-
-    public synchronized boolean isListingCached( String directory ) {
-        File listing = listingFile( directory );
-        if ( listing.exists() && ( System.currentTimeMillis() - listing.lastModified() ) < LISTING_TIMEOUT_MS ) {
-            logger.fine(String.format( "listing date is %f5.2 seconds old", (( System.currentTimeMillis() - listing.lastModified() ) /1000.) ));
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private Map<String,String[]> listings= new HashMap();
-    private Map<String,Long> listingFreshness= new HashMap();
-
-    private synchronized String[] listDirectoryFromMemory( String directory ) {
-        Long freshness= listingFreshness.get(directory);
-        if ( freshness==null ) return null;
-        if ( System.currentTimeMillis()-freshness < MEMORY_LISTING_TIMEOUT_MS ) {
-            String [] result= listings.get(directory);
-            return result;
-        } else {
-            listings.remove(directory);
-            listingFreshness.remove(directory);
-        }
-        return null;
-    }
 
     public String[] listDirectory(String directory) throws IOException {
 
@@ -493,10 +433,8 @@ public class HttpFileSystem extends WebFileSystem {
                 result[i] = getLocalName(url).substring(n);
             }
 
-            synchronized (this) {
-                listings.put( directory, result );
-                listingFreshness.put( directory, new Long( System.currentTimeMillis() ) );
-            }
+            cacheListing(directory, result );
+
             return result;
         }
 
@@ -540,10 +478,7 @@ public class HttpFileSystem extends WebFileSystem {
                     result[i] = getLocalName(url).substring(n);
                 }
 
-                synchronized (this) {
-                    listings.put( directory, result );
-                    listingFreshness.put( directory, new Long( System.currentTimeMillis() ) );
-                }
+                cacheListing( directory, result );
 
                 return result;
             } catch (CancelledOperationException ex) {

@@ -43,11 +43,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
+import org.das2.util.FileUtil;
 
 /**
  * Base class for HTTP and FTP-based filesystems.  A local cache is kept of
@@ -56,6 +56,16 @@ import java.util.regex.Pattern;
  * @author  Jeremy
  */
 public abstract class WebFileSystem extends FileSystem {
+
+    /**
+     * we keep a cached listing in on disk.  This is backed by the the website.
+     */
+    public static final int LISTING_TIMEOUT_MS =      200000;
+
+    /**
+     * we keep a cached listing in memory for performance.  This is backed by the .listing file.
+     */
+    public static final int MEMORY_LISTING_TIMEOUT_MS= 60000;
 
     public static File getDownloadDirectory() {
         File local = FileSystem.settings().getLocalCacheDir();
@@ -262,6 +272,76 @@ public abstract class WebFileSystem extends FileSystem {
 
     public File getLocalRoot() {
         return this.localRoot;
+    }
+
+    public synchronized void resetListingCache() {
+        if ( !FileUtil.deleteWithinFileTree(localRoot,".listing") ) { // yikes.  This should probably not be in a synchronized block...
+            throw new IllegalArgumentException("unable to delete all .listing files");
+        }
+        listings.clear();
+        listingFreshness.clear();
+    }
+
+    /**
+     * From FTPBeanFileSystem.
+     * @param directory
+     */
+    public synchronized void resetListCache( String directory ) {
+        directory = toCanonicalFolderName(directory);
+
+        File f= new File(localRoot, directory + ".listing");
+        if ( f.exists() && ! f.delete() ) {
+            throw new IllegalArgumentException("unable to delete .listing file: "+f);
+        }
+        listings.remove( directory );
+        listingFreshness.remove( directory );
+    }
+
+    /**
+     * return the File for the cached listing, even if it does not exist.
+     * @param directory
+     * @return
+     */
+    protected File listingFile( String directory ) {
+        File f= new File(localRoot, directory);
+        try {
+            FileSystemUtil.maybeMkdirs( f );
+        } catch ( IOException ex ) {
+            throw new IllegalArgumentException("unable to mkdir "+f,ex);
+        }
+        File listing = new File(localRoot, directory + ".listing");
+        return listing;
+    }
+
+    private Map<String,String[]> listings= new HashMap();
+    private Map<String,Long> listingFreshness= new HashMap();
+
+    public synchronized boolean isListingCached( String directory ) {
+        File listing = listingFile( directory );
+        if ( listing.exists() && ( System.currentTimeMillis() - listing.lastModified() ) < LISTING_TIMEOUT_MS ) {
+            logger.fine(String.format( "listing date is %f5.2 seconds old", (( System.currentTimeMillis() - listing.lastModified() ) /1000.) ));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public synchronized void cacheListing( String directory, String[] listing ) {
+         listings.put( directory, listing );
+         listingFreshness.put( directory, new Long( System.currentTimeMillis() ) );
+    }
+
+    protected synchronized String[] listDirectoryFromMemory( String directory ) {
+        Long freshness= listingFreshness.get(directory);
+        if ( freshness==null ) return null;
+        if ( System.currentTimeMillis()-freshness < MEMORY_LISTING_TIMEOUT_MS ) {
+            String [] result= listings.get(directory);
+            return result;
+        } else {
+            listings.remove(directory);
+            listingFreshness.remove(directory);
+        }
+        return null;
     }
 
     abstract public boolean isDirectory(String filename) throws IOException;
