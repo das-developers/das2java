@@ -56,12 +56,23 @@ import org.das2.util.FileUtil;
 import org.das2.util.monitor.NullProgressMonitor;
 
 /**
+ * Make a web folder accessible.  This assumes listings are provided in html form by requesting links ending in a slash.
+ * For example, http://autoplot.org/data/pngwalk/.  Links to resources "outside" of the filesystem are not considered part of
+ * the filesystem.  Again, this assumes listings are HTML content, and I suspect this will be changing...
  *
  * @author  Jeremy
  */
 public class HttpFileSystem extends WebFileSystem {
 
-    public static final int LISTING_TIMEOUT_MS = 200000;
+    /**
+     * we keep a cached listing in on disk.  This is backed by the the website.
+     */
+    public static final int LISTING_TIMEOUT_MS =      200000;
+
+    /**
+     * we keep a cached listing in memory for performance.  This is backed by the .listing file.
+     */
+    public static final int MEMORY_LISTING_TIMEOUT_MS= 60000;
 
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URI root, File localRoot) {
@@ -378,10 +389,12 @@ public class HttpFileSystem extends WebFileSystem {
         }
     }
 
-    public void resetListingCache() {
+    public synchronized void resetListingCache() {
         if ( !FileUtil.deleteWithinFileTree(localRoot,".listing") ) {
             throw new IllegalArgumentException("unable to delete all .listing files");
         }
+        listings.clear();
+        listingFreshness.clear();
     }
 
     /**
@@ -401,7 +414,7 @@ public class HttpFileSystem extends WebFileSystem {
     }
 
 
-    public boolean isListingCached( String directory ) {
+    public synchronized boolean isListingCached( String directory ) {
         File listing = listingFile( directory );
         if ( listing.exists() && ( System.currentTimeMillis() - listing.lastModified() ) < LISTING_TIMEOUT_MS ) {
             logger.fine(String.format( "listing date is %f5.2 seconds old", (( System.currentTimeMillis() - listing.lastModified() ) /1000.) ));
@@ -411,7 +424,26 @@ public class HttpFileSystem extends WebFileSystem {
         }
     }
 
+    private Map<String,String[]> listings= new HashMap();
+    private Map<String,Long> listingFreshness= new HashMap();
+
+    private synchronized String[] listDirectoryFromMemory( String directory ) {
+        Long freshness= listingFreshness.get(directory);
+        if ( freshness==null ) return null;
+        if ( System.currentTimeMillis()-freshness < MEMORY_LISTING_TIMEOUT_MS ) {
+            String [] result= listings.get(directory);
+            return result;
+        } else {
+            listings.remove(directory);
+            listingFreshness.remove(directory);
+        }
+        return null;
+    }
+
     public String[] listDirectory(String directory) throws IOException {
+
+        String[] cached= listDirectoryFromMemory( directory );
+        if ( cached!=null ) return cached;
 
         if ( protocol!=null && protocol instanceof AppletHttpProtocol ) { // support applets.  This could check for local write access, but DefaultHttpProtocol shows a problem here too.
             InputStream in=null;
@@ -461,6 +493,10 @@ public class HttpFileSystem extends WebFileSystem {
                 result[i] = getLocalName(url).substring(n);
             }
 
+            synchronized (this) {
+                listings.put( directory, result );
+                listingFreshness.put( directory, new Long( System.currentTimeMillis() ) );
+            }
             return result;
         }
 
@@ -502,6 +538,11 @@ public class HttpFileSystem extends WebFileSystem {
                 for (int i = 0; i < list.length; i++) {
                     URL url = list[i];
                     result[i] = getLocalName(url).substring(n);
+                }
+
+                synchronized (this) {
+                    listings.put( directory, result );
+                    listingFreshness.put( directory, new Long( System.currentTimeMillis() ) );
                 }
 
                 return result;
