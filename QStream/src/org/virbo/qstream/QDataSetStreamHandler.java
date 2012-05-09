@@ -25,6 +25,7 @@ import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsutil.DataSetBuilder;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -118,6 +119,15 @@ public class QDataSetStreamHandler implements StreamHandler {
         try {
             Element e = sd.getDomElement();
             dsname = xpath.evaluate("//stream/@dataset_id", e);
+            if ( dsname.length()==0 ) {
+                Node stream = (Node)xpath.evaluate("//stream", e, XPathConstants.NODE );
+                if ( stream!=null ) {
+                    throw new StreamException("dataset_id attribute expected in the stream descriptor.  Is this a qstream?");
+                } else {
+                    throw new StreamException("dataset_id attribute expected in the stream descriptor.  Expected to find stream.");
+                }
+                
+            }
         } catch (XPathExpressionException ex) {
             Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
