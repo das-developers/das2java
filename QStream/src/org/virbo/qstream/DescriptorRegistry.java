@@ -18,6 +18,7 @@ public class DescriptorRegistry {
     static {
         register( "packet", new PacketDescriptorFactory() );
         register( "exception", new ExceptionDescriptorFactory() );
+        register( "comment", new StreamCommentDescriptorFactory() );
     }
     
     public synchronized static void register( String s, DescriptorFactory factory ) {
