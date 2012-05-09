@@ -904,6 +904,16 @@ public class TearoffTabbedPane extends JTabbedPane {
         tabs.put(component, td);
     }
 
+    @Override
+    public void remove( Component c ) {
+        //TODO: this does not work properly if the tab is undocked.
+        TabDesc desc= tabs.get(c);
+        if ( desc.babysitter!=null ) {
+            this.dock(c);
+        }
+        super.remove(c);
+    }
+
     private Component getTabComponentByIndex(int index) {
         for (Component key : tabs.keySet()) {
             TabDesc td = tabs.get(key);
