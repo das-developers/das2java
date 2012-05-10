@@ -148,16 +148,8 @@ public class ReduceFilter implements StreamHandler {
                     }
                     xp.setNodeValue( String.format( "%f units:UNITS=s", lengthSeconds ) );
                 } else {
-                    XPathExpression  parentExpr= xpath.compile("/packet/qdataset[1]/properties"); // it should at least have a units, so it's safe to assume this node is to be found.
-                    Node props= (Node) parentExpr.evaluate(ele,XPathConstants.NODE);
-                    if ( props==null ) {
-                        throw new StreamException("No properties node found under the first dataset, which should be time.");
-                    }
-                    Element propNode= ele.getOwnerDocument().createElement( "property" );
-                    propNode.setAttribute("name", "CADENCE");
-                    propNode.setAttribute("type", "Rank0DataSet" );
-                    propNode.setAttribute("value", String.format( "%f units:UNITS=s", lengthSeconds ) );
-                    props.appendChild( propNode );
+                    // don't install the cadence when there wasn't one already.  Let the client guess as they would have
+                    // if the cadence were not specified.
                 }
             }
 
