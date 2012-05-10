@@ -41,7 +41,10 @@ public class PipeFilter {
     }
     
     public static void main( String[] args ) throws StreamException, MalformedURLException, IOException, ParseException {
-        Datum cadence= args.length==1 ? Units.seconds.parse(args[0]) : Units.seconds.createDatum(600);
+        if ( args.length!=1 ) {
+            System.err.println("java -jar autoplot.jar org.qstream.filter.PipeFilter <seconds>");
+        }
+        Datum cadence= Units.seconds.parse(args[0]);
         doit( System.in, System.out, cadence );
         //doit( new java.net.URL("file:///tmp/0B000800408DD710.20120302.qds").openStream(), new FileOutputStream("/tmp/0B000800408DD710.20120302.reduce.qds"), cadence );
         //doit( new java.net.URL("file:///tmp/po_h0_hyd_20000128.qds").openStream(), new FileOutputStream("/tmp/po_h0_hyd_20000128.reduce.qds"), cadence );
