@@ -38,6 +38,7 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.qstream.PacketDescriptor;
 import org.virbo.qstream.PlaneDescriptor;
 import org.virbo.qstream.QDataSetStreamHandler;
+import org.virbo.qstream.Rank0DataSetSerializeDelegate;
 import org.virbo.qstream.SimpleStreamFormatter;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
@@ -132,6 +133,19 @@ public class ReduceFilter implements StreamHandler {
                 expr= xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
                 xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
                 if ( xp!=null ) {
+                    expr= xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
+                    xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
+                    String scadence= xp.getNodeValue();
+                    double oldCadenceSeconds=0;
+                    try {
+                        QDataSet o = (QDataSet) new Rank0DataSetSerializeDelegate().parse( "rank0dataset", scadence );
+                        oldCadenceSeconds= DataSetUtil.asDatum(o).doubleValue( Units.seconds );
+                        if ( lengthSeconds<oldCadenceSeconds ) {
+                            lengthSeconds= oldCadenceSeconds;
+                        }
+                    } catch ( ParseException ex ) {
+                        System.err.println("unable to parse cadence");
+                    }
                     xp.setNodeValue( String.format( "%f units:UNITS=s", lengthSeconds ) );
                 } else {
                     XPathExpression  parentExpr= xpath.compile("/packet/qdataset[1]/properties"); // it should at least have a units, so it's safe to assume this node is to be found.
