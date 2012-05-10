@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.Channels;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -44,7 +45,6 @@ import org.virbo.qstream.StreamHandler;
 import org.virbo.qstream.StreamTool;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Reduce packets of the same type by combining packets together.  Currently this
@@ -55,6 +55,7 @@ import org.w3c.dom.NodeList;
 public class ReduceFilter implements StreamHandler {
 
     StreamHandler sink;
+    ByteOrder byteOrder;
 
     double lengthSeconds;
     double length; // in the stream units.
@@ -85,6 +86,7 @@ public class ReduceFilter implements StreamHandler {
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         this.sd= sd;
         sink.streamDescriptor(sd);
+        byteOrder= sd.getByteOrder();
     }
 
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
@@ -232,7 +234,9 @@ public class ReduceFilter implements StreamHandler {
      * @param pd
      */
     private void unload( PacketDescriptor pd ) throws StreamException {
+
         ByteBuffer data= ByteBuffer.allocate( pd.sizeBytes() );
+        data.order( byteOrder );
 
         int np= pd.getPlanes().size();
         int ip= 0;
