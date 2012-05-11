@@ -395,25 +395,30 @@ public class TimeParser {
                     System.err.println( "--------------------------------------------------");
                 }
                 for ( int i2=0; i2<ss2.length; i2++ ) {
+                    boolean okay=false;
                     String qual= ss2[i2];
                     
                     Pattern p= Pattern.compile("cadence=(\\d+)");
                     Matcher m= p.matcher(qual);
                     if ( m.matches() ) {
                         span= Integer.parseInt( m.group(1) );
+                        okay= true;
                     }
                     p= Pattern.compile("resolution=(\\d+)");
                     m= p.matcher(qual);
                     if ( m.matches() ) {
                         span= Integer.parseInt( m.group(1) );
+                        okay= true;
                     }
                     p= Pattern.compile("span=(\\d+)");
                     m= p.matcher(qual);
                     if ( m.matches() ) {
                         span= Integer.parseInt( m.group(1) );
+                        okay= true;
                     }
                     if ( qual.equals("startTimeOnly") ) {
                         startTimeOnly= fc[i].charAt(0);
+                        okay= true;
                     }
                     int idx= qual.indexOf("=");
                     if ( idx==1 ) {
@@ -429,6 +434,15 @@ public class TimeParser {
                         else if ( name.equals("M") ) context.minute= Integer.parseInt(val);
                         else if ( name.equals("S") ) context.seconds= Integer.parseInt(val);
                         else throw new IllegalArgumentException("unrecognized/unsupported field: "+name + " in "+qual );
+                        okay= true;
+                    }
+                    if ( !okay && ( qual.equals("Y") || qual.equals("m") || qual.equals("d") || qual.equals("j") ||
+                            qual.equals("H") || qual.equals("M") ||  qual.equals("S")) ) {
+                        throw new IllegalArgumentException( String.format( "need integer argument for %s that is the field value in %s", qual, ss[i] ) );
+                    }
+
+                    if ( !okay ) {
+                        throw new IllegalArgumentException("unrecognized/unsupported field:"+qual+ " in " +ss[i] );
                     }
                 }
             }
