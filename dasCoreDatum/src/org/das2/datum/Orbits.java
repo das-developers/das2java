@@ -131,7 +131,7 @@ public class Orbits {
                     System.err.println("dropping invalid orbit: "+s );
                 } else {
                     try {
-                        result.put( s0, new DatumRange(d1,d2) );
+                        result.put( trimOrbit(s0), new DatumRange(d1,d2) );
                     } catch ( IllegalArgumentException ex ) {
                         System.err.println(ex.getMessage()+": " +s );
                     }
@@ -156,6 +156,7 @@ public class Orbits {
      * @throws ParseException
      */
     public DatumRange getDatumRange( String orbit ) throws ParseException {
+        orbit= trimOrbit( orbit );
         DatumRange s= orbits.get(orbit);
         if ( s==null ) {
             throw new ParseException("unable to find orbit: "+orbit+" for "+sc, 0 );
@@ -165,6 +166,7 @@ public class Orbits {
 
     public String next( String orbit ) {//TODO: do this efficiently!
         boolean next= false;
+        orbit= trimOrbit(orbit);
         for ( String s: orbits.keySet() ) {
             if ( next ) return s;
             if ( s.equals(orbit) ) {
@@ -176,6 +178,7 @@ public class Orbits {
     
     public String prev( String orbit ) { //TODO: do this efficiently!
         String prev= null;
+        orbit= trimOrbit(orbit);
         for ( String s: orbits.keySet() ) {
             if ( s.equals(orbit) ) {
                 return prev;
@@ -185,6 +188,20 @@ public class Orbits {
         return null;
     }
 
+    /**
+     * remove trailing _'s and 0's.
+     * @param o
+     * @return
+     */
+    private static String trimOrbit( String orbit ) {
+        orbit= orbit.trim();
+        int i;
+        for ( i=0; i<orbit.length() && orbit.charAt(i)=='_'; i++ ) ; // pass
+        for ( ; i<orbit.length() && orbit.charAt(i)=='0'; i++ ) ; // pass
+        if ( i==orbit.length() ) return "0"; // cassini?
+        orbit= orbit.substring(i);
+        return orbit;
+    }
     /**
      * return -1 if a is before b, 0 if they are equal, and 1 if a is after b.
      * @param a
@@ -196,6 +213,9 @@ public class Orbits {
         int ia= -1;
         int ib= -1;
         int i=0;
+        a= trimOrbit( a );
+        b= trimOrbit( b );
+
         for ( String s: orbits.keySet() ) {
             if ( s.equals(a) ) ia= i;
             if ( s.equals(b) ) ib= i;
