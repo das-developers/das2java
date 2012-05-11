@@ -418,6 +418,7 @@ public class TimeParser {
                         else if ( name.equals("cadence") ) span= Integer.parseInt(val);
                         else if ( name.equals("span") ) span= Integer.parseInt(val);
                         else if ( name.equals("resolution") ) span= Integer.parseInt(val);
+                        else if ( name.equals("id") ) ; //TODO: orbit plug in handler...
                         else throw new IllegalArgumentException("unrecognized/unsupported field: "+name + " in "+qual );
                         okay= true;
                     }
@@ -426,7 +427,9 @@ public class TimeParser {
                         throw new IllegalArgumentException( String.format( "%s must be assigned an integer value (e.g. %s=1) in %s", qual, qual, ss[i] ) );
                     }
                     if ( !okay ) {
-                        throw new IllegalArgumentException("unrecognized/unsupported field:"+qual+ " in " +ss[i] );
+                        System.err.println("unrecognized/unsupported field:"+qual+ " in " +ss[i] );
+                        //TODO: check plug-in handlers like orbit...
+                        //throw new IllegalArgumentException("unrecognized/unsupported field:"+qual+ " in " +ss[i] );
                     }
                 }
             }
