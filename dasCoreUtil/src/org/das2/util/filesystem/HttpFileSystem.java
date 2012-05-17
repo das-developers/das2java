@@ -94,77 +94,90 @@ public class HttpFileSystem extends WebFileSystem {
 
             root= rooturi.toURL();
 
-            // verify URL is valid and accessible
-            HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
-            urlc.setConnectTimeout(3000);
-
-            //urlc.setRequestMethod("HEAD"); // Causes problems with the LANL firewall.
-
-            String userInfo= null;
-            
-            try {
-                userInfo = KeyChain.getDefault().getUserInfo(root);
-            } catch (CancelledOperationException ex) {
-                throw new FileSystemOfflineException("user cancelled credentials");
+            boolean doCheck= true;
+            URI parentURI= FileSystemUtil.getParentUri( rooturi );
+            if ( parentURI!=null ) {
+                HttpFileSystem parent= (HttpFileSystem) peek( parentURI );
+                if ( parent!=null && parent.isOffline() ) {
+                    System.err.println("parent is offline, don't check...");
+                    doCheck= false;
+                }
             }
-            if ( userInfo != null) {
-                String encode = Base64.encodeBytes( userInfo.getBytes());
-                urlc.setRequestProperty("Authorization", "Basic " + encode);
-            }
+
 
             boolean offline = true;
-            boolean connectFail= true;
+            if ( doCheck ) {
+                // verify URL is valid and accessible
+                HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
+                urlc.setConnectTimeout(3000);
 
-            byte[] buf= new byte[2048];
-            try {
-                urlc.connect();
-                InputStream is = urlc.getInputStream();
-                int ret = 0;
-                while ((ret = is.read(buf)) > 0) { //http://docs.oracle.com/javase/1.5.0/docs/guide/net/http-keepalive.html suggests that you "do not abandon connection"
-                   // empty out the input stream.
+                //urlc.setRequestMethod("HEAD"); // Causes problems with the LANL firewall.
+
+                String userInfo= null;
+
+                try {
+                    userInfo = KeyChain.getDefault().getUserInfo(root);
+                } catch (CancelledOperationException ex) {
+                    throw new FileSystemOfflineException("user cancelled credentials");
                 }
-                is.close();
-                connectFail= false;
-            } catch ( IOException ex ) {
-                ex.printStackTrace();
-                if ( FileSystem.settings().isAllowOffline() ) {
-                    logger.info("remote filesystem is offline, allowing access to local cache.");
-                } else {
-                    throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
+                if ( userInfo != null) {
+                    String encode = Base64.encodeBytes( userInfo.getBytes());
+                    urlc.setRequestProperty("Authorization", "Basic " + encode);
                 }
-                InputStream err = urlc.getErrorStream();
-                if ( err!=null ) {
+
+                boolean connectFail= true;
+
+                byte[] buf= new byte[2048];
+                try {
+                    urlc.connect();
+                    InputStream is = urlc.getInputStream();
                     int ret = 0;
-                    while ((ret = err.read(buf)) > 0) {
-                       // empty out the error stream.
+                    while ((ret = is.read(buf)) > 0) { //http://docs.oracle.com/javase/1.5.0/docs/guide/net/http-keepalive.html suggests that you "do not abandon connection"
+                       // empty out the input stream.
                     }
-                    err.close();
+                    is.close();
+                    connectFail= false;
+                } catch ( IOException ex ) {
+                    ex.printStackTrace();
+                    if ( FileSystem.settings().isAllowOffline() ) {
+                        logger.info("remote filesystem is offline, allowing access to local cache.");
+                    } else {
+                        throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
+                    }
+                    InputStream err = urlc.getErrorStream();
+                    if ( err!=null ) {
+                        int ret = 0;
+                        while ((ret = err.read(buf)) > 0) {
+                           // empty out the error stream.
+                        }
+                        err.close();
+                    }
                 }
-            }
 
-            if ( !connectFail ) {
-                if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode() != HttpURLConnection.HTTP_FORBIDDEN) {
-                    if ( urlc.getResponseCode()==HttpURLConnection.HTTP_UNAUTHORIZED ) {
-                        // might be nice to modify URL so that credentials are used.
-                        KeyChain.getDefault().clearUserPassword(root);
-                        if ( userInfo==null ) {
-                            String port=  root.getPort()==-1 ? "" : ( ":" +root.getPort() );
-                            URL rootAuth= new URL( root.getProtocol() + "://" + "user@" + root.getHost() + port + root.getFile() );
-                            try {
-                                URI rootAuthUri= rootAuth.toURI();
-                                return createHttpFileSystem( rootAuthUri );
-                            } catch ( URISyntaxException ex ) {
-                                throw new RuntimeException(ex);
+                if ( !connectFail ) {
+                    if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode() != HttpURLConnection.HTTP_FORBIDDEN) {
+                        if ( urlc.getResponseCode()==HttpURLConnection.HTTP_UNAUTHORIZED ) {
+                            // might be nice to modify URL so that credentials are used.
+                            KeyChain.getDefault().clearUserPassword(root);
+                            if ( userInfo==null ) {
+                                String port=  root.getPort()==-1 ? "" : ( ":" +root.getPort() );
+                                URL rootAuth= new URL( root.getProtocol() + "://" + "user@" + root.getHost() + port + root.getFile() );
+                                try {
+                                    URI rootAuthUri= rootAuth.toURI();
+                                    return createHttpFileSystem( rootAuthUri );
+                                } catch ( URISyntaxException ex ) {
+                                    throw new RuntimeException(ex);
+                                }
                             }
+                        } else {
+                            offline= false;
                         }
                     } else {
                         offline= false;
                     }
-                } else {
-                    offline= false;
                 }
-            } 
-
+            }
+            
             File local;
 
             if (FileSystemSettings.hasAllPermission()) {

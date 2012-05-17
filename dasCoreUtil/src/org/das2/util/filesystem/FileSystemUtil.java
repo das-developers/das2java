@@ -20,6 +20,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -122,6 +124,34 @@ public class FileSystemUtil {
             }
         } else {
             return null;
+        }
+    }
+
+    /**
+     * return the parent of the URI, or null if this is not possible.
+     * @param ruri
+     * @return
+     */
+    public static URI getParentUri( URI ruri ) {
+         if ( ruri.getQuery()==null && ruri.getPath().length()>1 ) {
+            String s= ruri.toString();
+            int i= s.length();
+            if ( s.charAt(i-1)=='/') {
+                i=i-1;
+            }
+            i= s.lastIndexOf("/",i-1);
+            String folder= s.substring(0,i);
+            try {
+                return new URL(folder).toURI();
+            } catch (URISyntaxException ex) {
+                System.err.println("couldn't create URI from parent URL: " + ex);
+                return null;
+            } catch (MalformedURLException ex) {
+                System.err.println("url caused malformed URL exception when creating parent URL: "+ex);
+                return null;
+            }
+        } else {
+             return null;
         }
     }
 

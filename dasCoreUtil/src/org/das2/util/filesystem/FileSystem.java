@@ -164,6 +164,17 @@ public abstract class FileSystem  {
     }
 
     /**
+     * allow factories to peek, so they can see if there is a parent that is offline.
+     * @param root
+     * @return
+     */
+    public static FileSystem peek( URI root ) {
+        root = toCanonicalFolderName(root);
+        FileSystem result = instances.get(root);
+        return result;
+    }
+
+    /**
      * remove all the cached FileSystem instances.
      */
     public synchronized static void reset() {
@@ -362,7 +373,17 @@ public abstract class FileSystem  {
         if ( !name.endsWith("/") ) name= name + "/";
         return name;
     }
-    
+
+    protected static URI toCanonicalFolderName( URI name ) {
+        try {
+            String sname= name.toString();
+            if ( !sname.endsWith("/") ) sname= sname + "/";
+            return new URI(sname);
+        } catch ( URISyntaxException ex ) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     /**
      * return the FileObject that corresponds to the name.
      */
