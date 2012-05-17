@@ -8,7 +8,10 @@
  */
 package org.virbo.dataset;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import java.util.Arrays;
@@ -21,11 +24,13 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
+import org.virbo.dsutil.Reduction;
 
 /**
  * Useful operations for QDataSets
@@ -1340,7 +1345,7 @@ public class DataSetOps {
      * @return
      */
     public static boolean isProcessAsync(String c) {
-        return c.contains("fft") || c.contains("contour") || c.contains("dbAboveBackgroundDim");
+        return c.contains("fft") || c.contains("contour") || c.contains("dbAboveBackgroundDim") || c.contains("reducex");
     }
 
     /**
@@ -1388,6 +1393,18 @@ public class DataSetOps {
                     if ( idx<0 ) idx=0;
                     fillDs= slice3(fillDs, idx);
                 }
+            } else if ( cmd.equals("|reducex") ) {
+                String arg= s.next();
+                try {
+                    if ( arg.startsWith("'") && arg.endsWith("'") ) {
+                       arg= arg.substring(1,arg.length()-1);
+                    }
+                    Datum r = DatumUtil.parse(arg);
+                    fillDs= Reduction.reduce2D( fillDs, DataSetUtil.asDataSet(r),null);
+                } catch (ParseException ex) {
+                    Logger.getLogger(DataSetOps.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
             } else if ( cmd.equals("|nop") ) {
                 //fillDs= fillDs;
             } else if ( cmd.equals("|diff") ) {

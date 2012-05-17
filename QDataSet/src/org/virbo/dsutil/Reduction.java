@@ -57,18 +57,21 @@ public class Reduction {
      * Units.logERatio (for example, Units.log10Ratio or Units.percentIncrease).
      * Note when either is log, then averaging is done in the log space.
      *
-     * @param ds
+     * @param ds rank 1 dataset.  Must have DEPEND_0 (presently)
      * @param xLimit the size of the bins or null to indicate no limit.
      * @param yLimit the size of the bins or null to indicate no limit.
      * @return
      */
     public static QDataSet reduce2D( QDataSet ds, QDataSet xLimit, QDataSet yLimit ) {
 
+        long t0= System.currentTimeMillis();
+
         DataSetBuilder xbuilder= new DataSetBuilder( 1, 1000 );
         DataSetBuilder ybuilder= new DataSetBuilder( 1, 1000 );
         DataSetBuilder wbuilder= new DataSetBuilder( 1, 1000 ); // weights to go here
 
         QDataSet x= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+        if ( x==null ) x= new org.virbo.dataset.IndexGenDataSet(ds.length());
         QDataSet y= ds;
 
         double x0 = Float.MAX_VALUE;
@@ -111,7 +114,10 @@ public class Reduction {
             double yy= y.value(i);
             double ww= wds.value(i);
 
-            if ( ww==0 ) continue;
+            if ( ww==0 ) {
+                i++;
+                continue;
+            }
 
             double p0 = xlog ? Math.log(xx) : xx;
             double p1 = ylog ? Math.log(yy) : yy;
@@ -120,8 +126,8 @@ public class Reduction {
             double dy = p1 - y0;
 
             if ( Math.abs(dx) < dxLimit && Math.abs(dy) < dyLimit) {
-                sx0 += p0;
-                sy0 += p1;
+                sx0 += p0*ww;
+                sy0 += p1*ww;
                 nn0 += ww;
                 i++;
                 continue;
@@ -140,8 +146,8 @@ public class Reduction {
 
             x0 = dxLimit * ( 0.5 + (int) Math.floor(p0/dxLimit) );
             y0 = dyLimit * ( 0.5 + (int) Math.floor(p1/dyLimit) );
-            sx0 = p0;
-            sy0 = p1;
+            sx0 = p0*ww;
+            sy0 = p1*ww;
             nn0 = ww;
         }
 
@@ -162,6 +168,8 @@ public class Reduction {
         if ( xds.property( QDataSet.CADENCE ) != null ) xds.putProperty( QDataSet.CADENCE, xLimit );
         yds.putProperty( QDataSet.DEPEND_0, xds );
         yds.putProperty( QDataSet.WEIGHTS_PLANE, wbuilder.getDataSet() );
+
+        System.err.println( String.format( "time to reduce2D(%d points) (ms): %d", ds.length(), System.currentTimeMillis()-t0) );
 
         return yds;
 
