@@ -69,6 +69,7 @@ import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.system.RequestProcessor;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -1499,9 +1500,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         datumFormatter = resolveFormatter(tickV);
 
-        if (drawTca && tcaFunction != null) {
-            updateTCADataSet();
-        }
     }
 
     public synchronized void updateTickV() {
@@ -1528,7 +1526,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                 }
                 if (drawTca && tcaFunction != null) {
-                    updateTCADataSet();
+                    RequestProcessor.invokeLater( new Runnable() {
+                        public void run() {
+                            updateTCADataSet();
+                            repaint();
+                        }
+                    } );
                 }
 
                 firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
@@ -1540,7 +1543,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     if (majorTicksDomainDivider != null) {
                         updateTickVDomainDivider();
                         if (drawTca && tcaFunction != null) {
-                            updateTCADataSet();
+                            RequestProcessor.invokeLater( new Runnable() {
+                                public void run() {
+                                    updateTCADataSet();
+                                    repaint();
+                                }
+                            } );
                         }
                     } else {
                         if (getUnits() instanceof TimeLocationUnits) {
@@ -2502,11 +2510,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             bounds = getVerticalAxisBounds();
         }
         if (getOrientation() == BOTTOM && isTickLabelsVisible()) {
-            if (drawTca && tcaData != null && tcaData.length() != 0) {
+            QDataSet ltcaData= tcaData;
+            if (drawTca && ltcaData != null && ltcaData.length() != 0) {
                 int DMin = getColumn().getDMinimum();
                 Font tickLabelFont = getTickLabelFont();
                 int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
-                int lines= Math.min( MAX_TCA_LINES, tcaData.length(0) );
+                int lines= Math.min( MAX_TCA_LINES, ltcaData.length(0) );
                 int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * lines;
                 int maxLabelWidth = getMaxLabelWidth();
                 bounds.height += tcaHeight;
@@ -2517,7 +2526,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 GrannyTextRenderer idlt = new GrannyTextRenderer();
                 idlt.setString(tickLabelFont, "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
-                QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
+                QDataSet bds= (QDataSet) ltcaData.property(QDataSet.BUNDLE_1);
                 for (int i = 0; i < lines; i++) {
                     String ss;
                     if ( bds==null ) {
