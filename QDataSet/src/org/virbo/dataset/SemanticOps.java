@@ -419,7 +419,7 @@ public class SemanticOps {
             return DataSetOps.unbundle(ds,0);
         } else if ( isLegacyBundle(ds) ) {
             return DataSetOps.unbundle(ds,0);
-        } else if ( isJoin(ds) ) {
+        } else if ( isJoin(ds) && ds.rank()>2 ) {  // support only RPWS rank 3 array of spectrograms.
             QDataSet xds= xtagsDataSet( ds.slice(0) );
             JoinDataSet result= new JoinDataSet(xds);
             for ( int i=1; i<ds.length(); i++ ) {
