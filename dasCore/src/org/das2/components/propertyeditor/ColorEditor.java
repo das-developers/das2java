@@ -58,8 +58,10 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
     
     /** Creates a new instance of ColorEditor */
     public ColorEditor() {
+        long t0= System.currentTimeMillis();
+
         editorSupport = new PropertyEditorSupport(this){};
-        custom = new JColorChooser();
+        custom = null;
         choice = new JComboBox(new ColorChoiceModel()) {
             public void setBounds(int x, int y, int width, int height) {
                 Dimension preferred = getPreferredSize();
@@ -76,11 +78,8 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
                 }
             }
         });
-        custom.addPropertyChangeListener("color", new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                setValue(e.getNewValue());
-            }
-        });
+        System.err.println( String.format( "total time in init ColorEditor: %d", ( System.currentTimeMillis()-t0 ) ));
+
     }
 
     public boolean supportsCustomEditor() { return true; }
@@ -95,9 +94,22 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         }
         return hex;
     }
-    
+
+    private void initCustom() {
+            custom= new JColorChooser();
+            custom.addPropertyChangeListener("color", new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent e) {
+                    setValue(e.getNewValue());
+                }
+            } );
+            custom.setColor( (Color)getValue() );
+    }
+
     public Component getCustomEditor() {
         Color c = (Color)getValue();
+        if ( custom==null ) {
+            initCustom();
+        }
         custom.setColor(c);
         return custom;
     }
@@ -189,6 +201,9 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
                 setValue(obj);
             }
             else if (CUSTOM_LABEL.equals(obj)) {
+                if ( custom==null ) {
+                    initCustom();
+                }
                 Color c = custom.showDialog(choice, "Color Editor", (Color)getValue());
                 if (c != null) {
                     setValue(c);
