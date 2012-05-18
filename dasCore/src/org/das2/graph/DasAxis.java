@@ -1029,8 +1029,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         logger.fine("updateTCADataSet");
         double[] tickV = getTickV().tickV.toDoubleArray(getUnits());
-        tcaData = null;
-
+        
         JoinDataSet ltcaData= new JoinDataSet(2);
         ArrayDataSet ex= ArrayDataSet.copy( ltcaFunction.exampleInput() );
         QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
