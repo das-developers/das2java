@@ -12,6 +12,7 @@ package org.virbo.dsutil;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.das2.datum.Units;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetUtil;
@@ -39,11 +40,11 @@ public class LSpec {
      *
      * @return rank 2 data set of sweep indeces, dim0 is sweep number, dim1 is two-element [ start, end(exclusive) ].
      */
-    private static QDataSet identifySweeps( QDataSet lds ) {
-        DDataSet result= DDataSet.createRank2( lds.length(), 2 );
+    private static QDataSet identifySweeps( QDataSet lds, int dir ) {
+
+        DataSetBuilder builder= new DataSetBuilder( 2, 100, 2 );
         double slope0= lds.value(1) - lds.value(0);
         int start=0;
-        int index=0;
         int end=0; // index of the right point of slope0.
 
         QDataSet wds= SemanticOps.weightsDataSet(lds);
@@ -52,10 +53,10 @@ public class LSpec {
             if ( wds.value(i)==0 ) continue;
             double slope1=  lds.value(i) - lds.value(i-1);
             if ( slope0 * slope1 <= 0. ) {
-                if ( slope0!=0. ) {
-                    result.putValue( index, 0, start );
-                    result.putValue( index, 1, end );
-                    index++;
+                if ( slope0!=0. && ( dir==0 || ( slope0*dir>0 && end-start>1 ) ) ) {  //TODO: detect jumps in the LShell, e.g. only downward: \\\\\
+                    builder.putValue( -1, 0, start );
+                    builder.putValue( -1, 1, end );
+                    builder.nextRecord();
                 }
                 if ( slope1!=0. ) {
                     start= i-1;
@@ -66,8 +67,8 @@ public class LSpec {
             slope0= slope1;
         }
         
-        result.putLength(index);
-        return result;
+        return builder.getDataSet();
+        
     }
     
     /**
@@ -159,7 +160,21 @@ public class LSpec {
      * @return a rank 2 dataset, with one column per sweep, interpolated to <tt>lgrid</tt>
      */
     public static QDataSet rebin( QDataSet lds, QDataSet zds, QDataSet lgrid ) {
-        final QDataSet sweeps= identifySweeps( lds );
+        return rebin( lds, zds, lgrid, 0 );
+    }
+    
+    /**
+     * rebin the datasets to rank 2 dataset ( time, LShell ), by interpolating along sweeps.  This
+     * dataset has the property "sweeps", which is a dataset that indexes the input datasets.
+     * @param lds rank 1 dataset of length N
+     * @param zds rank 1 dataset of length N, indexed along with <tt>lds</tt>
+     * @param lgrid rank 1 dataset indicating the dim 1 tags for the result dataset.
+     * @param dir =1 increasing (outward) only, =-1 decreasing (inward) only, 0 both
+     * @return a rank 2 dataset, with one column per sweep, interpolated to <tt>lgrid</tt>
+     */
+    public static QDataSet rebin( QDataSet lds, QDataSet zds, QDataSet lgrid, int dir ) {
+
+        final QDataSet sweeps= identifySweeps( lds, dir );
         
         DDataSet result= DDataSet.createRank2( sweeps.length(), lgrid.length() );
         result.putProperty( QDataSet.UNITS, zds.property( QDataSet.UNITS ) );
@@ -194,6 +209,13 @@ public class LSpec {
         userProps.put(USER_PROP_SWEEPS, sweeps);
 
         result.putProperty( QDataSet.USER_PROPERTIES, userProps );
+
+        if ( lgrid.property(QDataSet.UNITS)==null ) {
+            ArrayDataSet lgridCopy= ArrayDataSet.copy(lgrid); // often linspace( 4, 10, 30 ) is used to specify locations.  Go ahead and copy over units.
+            Units u= (Units) lds.property( QDataSet.UNITS );
+            if ( u!=null ) lgridCopy.putProperty( QDataSet.UNITS, u );
+            lgrid= lgridCopy;
+        }
         
         result.putProperty( QDataSet.DEPEND_1, lgrid );
         result.putProperty( QDataSet.DEPEND_0, xtags );
