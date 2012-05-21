@@ -1533,7 +1533,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                             updateTCADataSet();
                             repaint();
                         }
-                    } );
+                    }, DasAxis.this );
                 }
 
                 firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
@@ -1550,7 +1550,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                                     updateTCADataSet();
                                     repaint();
                                 }
-                            } );
+                            }, DasAxis.this );
                         }
                     } else {
                         if (getUnits() instanceof TimeLocationUnits) {
