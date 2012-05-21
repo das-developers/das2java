@@ -58,7 +58,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
     
     /** Creates a new instance of ColorEditor */
     public ColorEditor() {
-        long t0= System.currentTimeMillis();
+        //long t0= System.currentTimeMillis();
 
         editorSupport = new PropertyEditorSupport(this){};
         custom = null;
@@ -78,7 +78,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
                 }
             }
         });
-        System.err.println( String.format( "total time in init ColorEditor: %d", ( System.currentTimeMillis()-t0 ) ));
+        //System.err.println( String.format( "total time in init ColorEditor: %d", ( System.currentTimeMillis()-t0 ) ));
 
     }
 
