@@ -967,9 +967,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         if (dataset.equals("")) {
             tcaFunction = null;
+            this.tcaData= null;
         } else {
             try {
                 tcaFunction= tcaFunction( dataset );
+                this.tcaData= null;
                 if ( tcaFunction==null ) {
                     throw new IllegalArgumentException("unable to implement tca QFunction: "+dataset );
                 }
@@ -1074,6 +1076,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         ltcaData.putProperty( QDataSet.DEPEND_0, dep0 );
 
         this.tcaData= ltcaData;
+        update();
         
     }
 
@@ -2514,7 +2517,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int DMin = getColumn().getDMinimum();
                 Font tickLabelFont = getTickLabelFont();
                 int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
-                int lines= Math.min( MAX_TCA_LINES, ltcaData.length(0) );
+                int ntca= ltcaData.length();
+                int lines= Math.min( MAX_TCA_LINES, Math.max( ltcaData.length(ntca-1), Math.max( ltcaData.length(ntca/2), ltcaData.length(0) ) ) );
                 int tcaHeight = (tickLabelFont.getSize() + getLineSpacing()) * lines;
                 int maxLabelWidth = getMaxLabelWidth();
                 bounds.height += tcaHeight;
