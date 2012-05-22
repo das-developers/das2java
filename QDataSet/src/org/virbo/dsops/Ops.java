@@ -1259,9 +1259,9 @@ public class Ops {
 
     /**
      * return a rank 1 dataset of times.  All inputs should be rank 1 dataset (for now) or null.
-     * @param years the years. (2010) Less than 100 is interpreted as 19xx.
-     * @param mons the months (1..12), or null.  If null, then days are day of year
-     * @param days the day of month (1..28) or day of year.
+     * @param years the years. (2010) Less than 100 is interpreted as 19xx.  This must be integers.
+     * @param mons the months (1..12), or null.  If null, then days are day of year.  This must be integers.
+     * @param days the day of month (1..28) or day of year.  This may be fractional.
      * @param hour null or the hours of the day.
      * @param minute null or the minutes of the day
      * @param second null or the seconds of the day
@@ -1291,13 +1291,22 @@ public class Ops {
 
         for ( int i=0; i<result.length(); i++ ) {
             int year= (int)years.value(i);
+            double fyear= years.value(i) - year;
             int month= (int)mons.value(i);
+            double fmonth= mons.value(i) - month;
             int day= (int)days.value(i);
+            double fday= days.value(i) - day;
 
+            if ( fyear>0 ) {
+                throw new IllegalArgumentException("fractional year not allowed: "+ years.value(i) );
+            }
+            if ( fmonth>0 ) {
+                throw new IllegalArgumentException("fractional month not allowed: "+ mons.value(i) );
+            }
             int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                     3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                     275 * month / 9 + day + 1721029;
-            double microseconds = second.value(i)*1e6 + hour.value(i)*3600e6 + minute.value(i)*60e6 + nano.value(i)/1e3;
+            double microseconds = nano.value(i)/1e3 + second.value(i)*1e6 + hour.value(i)*3600e6 + minute.value(i)*60e6 + fday*86400000000.;
             double us2000= UnitsConverter.getConverter(Units.mj1958,Units.us2000).convert(( jd - 2436205 )) + microseconds;
             result.putValue( i, us2000 );
 
