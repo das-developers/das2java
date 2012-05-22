@@ -1119,7 +1119,19 @@ public class SeriesRenderer extends Renderer {
             yaxisUnitsOkay = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
         }
 
-        if ( !yaxisUnitsOkay ) {
+        boolean haveReportedUnitProblem= false;
+        if ( !xaxisUnitsOkay && !yaxisUnitsOkay && SemanticOps.getUnits(xds)==SemanticOps.getUnits(vds) && xAxis.getUnits()==yAxis.getUnits() ) {
+             if ( unitsWarning ) {
+                //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
+                lparent.postMessage( this, "axis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                haveReportedUnitProblem= true;
+            } else {
+                lparent.postMessage( this, "inconvertible axis units", DasPlot.INFO, null, null );
+                return;
+            }
+        }
+
+        if ( !haveReportedUnitProblem && !yaxisUnitsOkay ) {
             if ( unitsWarning ) {
                 //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
                 lparent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
@@ -1129,7 +1141,7 @@ public class SeriesRenderer extends Renderer {
             }
         }
 
-        if ( !xaxisUnitsOkay ) {
+        if ( !haveReportedUnitProblem && !xaxisUnitsOkay ) {
             if ( xunitsWarning ) {
                 //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
                 lparent.postMessage( this, "xaxis units changed from \""+SemanticOps.getUnits(xds) + "\" to \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
