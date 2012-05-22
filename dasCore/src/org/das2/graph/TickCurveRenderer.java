@@ -30,6 +30,8 @@ import java.awt.*;
 import java.awt.geom.*;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
@@ -81,13 +83,37 @@ public class TickCurveRenderer extends Renderer {
      *  by xplane and yplane.
      */
     public TickCurveRenderer( QDataSet ds, String xplane, String yplane, TickVDescriptor tickv) {
-        super(ds);        
-        stroke= new BasicStroke((float)lineWidth);
+        this();
+        this.setDataSet(ds);
         this.xplane= xplane;
         this.yplane= yplane;
         this.tickv= tickv;                
     }
-    
+
+    public TickCurveRenderer() {
+        super();
+        stroke= new BasicStroke((float)lineWidth);
+    }
+
+    /**
+     * autorange on the data, returning a rank 2 bounds for the dataset.
+     *
+     * @param fillDs
+     * @return
+     */
+    public static QDataSet doAutorange( QDataSet ds ) {
+
+        QDataSet xrange= Ops.rescaleRange( Ops.extent( DataSetOps.unbundle(ds,1) ), -0.1, 1.1 );
+        QDataSet yrange= Ops.rescaleRange( Ops.extent( DataSetOps.unbundle(ds,2) ), -0.1, 1.1 );
+
+        JoinDataSet bds= new JoinDataSet(2);
+        bds.join(xrange);
+        bds.join(yrange);
+
+        return bds;
+
+    }
+
 //    private static double length( Line2D line ) {
 //        double dx= line.getX2()-line.getX1();
 //        double dy= line.getY2()-line.getY1();
@@ -197,20 +223,86 @@ public class TickCurveRenderer extends Renderer {
         
     }
 
+    private TickVDescriptor resetTickV( QDataSet tds ) {
+        QDataSet trange= Ops.extent(tds);
+        return TickVDescriptor.bestTickVTime( DataSetUtil.asDatum(trange.slice(0)), DataSetUtil.asDatum(trange.slice(1)), 10, 20, true );
+//        Units tunits= SemanticOps.getUnits(tds);
+//        double targetSpace= 20;
+//        double nomSpace= Double.MAX_VALUE;
+//        int nomTick= 20;
+//        int safeBreak= 4;
+//        while ( nomSpace>targetSpace && nomTick>1 && safeBreak>=0 ) {
+//            safeBreak= safeBreak-1;
+//            tickv= TickVDescriptor.bestTickVTime( DataSetUtil.asDatum(trange.slice(0)), DataSetUtil.asDatum(trange.slice(1)), nomTick/2, nomTick, true );
+//            DDataSet txds= DDataSet.wrap( tickv.minorTickV.toDoubleArray( tunits ), tunits );
+//            QDataSet findex= Ops.findex( tds, txds );
+//            double rmin= Double.MAX_VALUE;
+//            double x0= Double.MAX_VALUE,y0= Double.MAX_VALUE;
+//
+//            for ( int i=0; i<tickv.tickV.getLength(); i++ ) {
+//                int index0= (int)Math.floor(findex.value(i));
+//                if ( index0>=0 && index0<idata[0].length ) {
+//                    if ( x0==Double.MAX_VALUE ) {
+//                        x0= idata[0][index0];
+//                        y0= idata[1][index0];
+//                    } else {
+//                        double x1= idata[0][index0];
+//                        double y1= idata[1][index0];
+//                        double r= (x1-x0)*(x1-x0) + (y1-y0)*(y1-y0);
+//                        if ( r<rmin ) rmin= Math.sqrt(r);
+//                        x0= x1;
+//                        y0= y1;
+//                    }
+//                }
+//            }
+//            if ( rmin==Double.MAX_VALUE ) {
+//                throw new IllegalArgumentException("didn't find any ticks!");
+//            }
+//            nomSpace= rmin;
+//            System.err.printf("nomTick=%f %s \n",nomSpace, tickv.tickV.getSubVector(0,3) );
+//            if ( nomSpace>targetSpace ) {
+//                nomTick*= 2;
+//            } else if ( nomSpace<10 ) {
+//                nomTick/= 2;
+//            }
+//        }
+//
+//        return tickv;
+    }
+
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
         if ( ds==null ) {
             return;
         }
+
+        if ( ds.length()<2 ) {
+            return;
+        }
         
         Graphics2D g= (Graphics2D)g1;
         g.setStroke( stroke );
+
+        g.setFont( parent.getFont() );
         
         g.setColor( Color.black );
-        
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+
         QDataSet ds3= getDataSet();
-        xds= DataSetOps.unbundle( ds3, xplane );
-        yds= DataSetOps.unbundle( ds3, yplane );
+        if ( xplane!=null && !xplane.equals("") ) {
+            xds= DataSetOps.unbundle( ds3, xplane );
+        } else {
+            xds= DataSetOps.unbundle( ds3, 1 );
+        }
+        if ( yplane!=null && !yplane.equals("") ) {
+            yds= DataSetOps.unbundle( ds3, yplane );
+        } else {
+            yds= DataSetOps.unbundle( ds3, 2 );
+        }
+
+        QDataSet tds;
+        tds= (QDataSet) xds.property(QDataSet.DEPEND_0);
+
         xunits= SemanticOps.getUnits(xds);
         yunits= SemanticOps.getUnits(yds);
         
@@ -219,14 +311,27 @@ public class TickCurveRenderer extends Renderer {
             idata[0][i]= xAxis.transform(xds.value(i),xunits);
             idata[1][i]= yAxis.transform(yds.value(i),yunits);
         }
-        
+
+
+        GeneralPath p= new GeneralPath();
+        p.moveTo( idata[0][0],idata[1][0] );
         for ( int i=1; i<xds.length(); i++ ) {
-            g.drawLine((int)idata[0][i-1],(int)idata[1][i-1],(int)idata[0][i],(int)idata[1][i]);            
+            p.lineTo( idata[0][i],idata[1][i] );
         }
+        GeneralPath rp= new GeneralPath();
+        GraphUtil.reducePath( p.getPathIterator(null), rp, 2 );
+        g.draw(rp);
+        
         
         QDataSet findex;
-        DDataSet xxds= DDataSet.wrap( tickv.minorTickV.toDoubleArray( xunits ), xunits );
-        findex= Ops.findex( xds, xxds );
+        Units tunits= SemanticOps.getUnits(tds);
+        
+        //if ( tickv==null ) {
+            tickv= resetTickV( tds );
+        //}
+        
+        DDataSet txds= DDataSet.wrap( tickv.minorTickV.toDoubleArray( tunits ), tunits );
+        findex= Ops.findex( tds, txds );
 
         tickLabeller= new GrannyTickLabeller( ); 
         tickLabeller.init( tickv );
@@ -237,14 +342,19 @@ public class TickCurveRenderer extends Renderer {
             }
         }
 
-        xxds= DDataSet.wrap( tickv.tickV.toDoubleArray( xunits ), xunits );
-        findex= Ops.findex( xds, xxds );
+        txds= DDataSet.wrap( tickv.tickV.toDoubleArray( tunits ), tunits );
+        findex= Ops.findex( tds, txds );
         for ( int i=0; i<tickv.tickV.getLength(); i++ ) {            
             if ( findex.value(i)>=0 && findex.value(i)<xds.length() ) {
                 drawLabelTick( g, findex.value(i), i );
             }
         }
-        
+
+        int n= idata[0].length;
+        int em= 10;
+        Arrow.paintArrow( g,
+                new Point2D.Double( idata[0][n-1],idata[1][n-1] ),
+                new Point2D.Double( idata[0][n-3],idata[1][n-3] ), em, Arrow.HeadStyle.FAT_TRIANGLE );
         tickLabeller.finished();
         
     }

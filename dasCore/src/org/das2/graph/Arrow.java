@@ -36,8 +36,12 @@ public class Arrow extends DasCanvasComponent {
         bounds.add( tail.x + em, tail.y+em );
         setBounds(bounds);
     }
-    
+
     public static void paintArrow( Graphics2D g, Point head, Point tail, double em, HeadStyle style ) {
+        paintArrow( g, new Point2D.Double( head.getX(), head.getY() ), new Point2D.Double( tail.getX(), tail.getY() ), em, style );
+    }
+
+    public static void paintArrow( Graphics2D g, Point2D head, Point2D tail, double em, HeadStyle style ) {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         
         Line2D line= new Line2D.Double( head, tail );
