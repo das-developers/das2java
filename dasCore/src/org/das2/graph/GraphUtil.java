@@ -314,6 +314,18 @@ public class GraphUtil {
 //        return result;
 //    }
 
+    /**
+     * Returns the input GeneralPath filled with new points which will be rendered identically to the input path,
+     * but contains a minimal number of points.  We bin average the points within a cell, because descretization
+     * would mess up the label orientation in contour plotting.
+     *
+     * a new GeneralPath which will be rendered identically to the input path,
+     * but contains a minimal number of points.
+     *
+     * @return the number of "points" (LINE_TOs) in the result.
+     * @param it A path iterator with minute details that will be lost when rendering.
+     * @param result A GeneralPath to put the result into.
+     */
     public static int reducePath(PathIterator it, GeneralPath result) {
         return reducePath( it, result, 1 );
     }
@@ -328,6 +340,7 @@ public class GraphUtil {
      * @return the number of "points" (LINE_TOs) in the result.
      * @param it A path iterator with minute details that will be lost when rendering.
      * @param result A GeneralPath to put the result into.
+     * @param res limit the resolution in pixels 
      */
     public static int reducePath(PathIterator it, GeneralPath result, int res ) {
 
