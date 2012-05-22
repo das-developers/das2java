@@ -203,6 +203,9 @@ public abstract class Units {
     public static final TimeLocationUnits cdfEpoch= new TimeLocationUnits("cdfEpoch","milliseconds since 01-Jan-0000", 
             Units.milliseconds, Basis.since0000 );
 
+    /**
+     * the number of nanoseconds since 01-Jan-2000T12:00, roughly.  This includes leap seconds, so conversion is more than a scale-offset.
+     */
     public static final TimeLocationUnits cdfTT2000= new TimeLocationUnits("cdfTT2000","nanoseconds since 01-Jan-2000, including leap seconds",
             Units.nanoseconds, Basis.since2000 );
 
