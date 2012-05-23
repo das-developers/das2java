@@ -28,6 +28,10 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.propertyeditor.Enumeration;
 import java.awt.*;
 import java.awt.geom.*;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumVector;
+import org.das2.datum.DomainDivider;
+import org.das2.datum.DomainDividerUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
@@ -45,6 +49,7 @@ public class TickCurveRenderer extends Renderer {
     private Stroke stroke;
     
     TickVDescriptor tickv;
+    DomainDivider ticksDivider;
     private String xplane;
     private String yplane;
     
@@ -195,6 +200,11 @@ public class TickCurveRenderer extends Renderer {
     private void drawTick( Graphics2D g, double findex ) {  
         float tl= getTickLength()*2/3;
         Line2D tick= normalize( outsideNormalAt( findex ), tl );        
+
+        if ( tick.getP1().getX() < -1000 || tick.getP1().getY()<-1000 || tick.getP1().getX()> 9999 || tick.getP1().getY()> 9999 ) {
+            return;
+        }
+
         if ( tickStyle==TickStyle.both ) {
             Line2D flipTick= normalize( tick, -tl );
             Line2D bothTick= new Line2D.Double( flipTick.getP2(), tick.getP2() );
@@ -211,6 +221,11 @@ public class TickCurveRenderer extends Renderer {
     private void drawLabelTick( Graphics2D g, double findex, int tickNumber ) {        
         float tl= getTickLength();
         Line2D tick= normalize( outsideNormalAt( findex ), tl );
+
+        if ( tick.getP1().getX() <-1000 || tick.getP1().getY()<-1000 || tick.getP1().getX()> 9999 || tick.getP1().getY()> 9999 ) {
+            return;
+        }
+
         if ( tickStyle==TickStyle.both ) {
             Line2D flipTick= normalize( tick, -tl );
             Line2D bothTick= new Line2D.Double( flipTick.getP2(), tick.getP2() );
@@ -219,55 +234,82 @@ public class TickCurveRenderer extends Renderer {
             g.draw( tick );
         }
 
+
         tickLabeller.labelMajorTick( g, tickNumber, tick );
         
     }
 
     private TickVDescriptor resetTickV( QDataSet tds ) {
         QDataSet trange= Ops.extent(tds);
-        return TickVDescriptor.bestTickVTime( DataSetUtil.asDatum(trange.slice(0)), DataSetUtil.asDatum(trange.slice(1)), 10, 20, true );
-//        Units tunits= SemanticOps.getUnits(tds);
-//        double targetSpace= 20;
-//        double nomSpace= Double.MAX_VALUE;
-//        int nomTick= 20;
-//        int safeBreak= 4;
-//        while ( nomSpace>targetSpace && nomTick>1 && safeBreak>=0 ) {
-//            safeBreak= safeBreak-1;
-//            tickv= TickVDescriptor.bestTickVTime( DataSetUtil.asDatum(trange.slice(0)), DataSetUtil.asDatum(trange.slice(1)), nomTick/2, nomTick, true );
-//            DDataSet txds= DDataSet.wrap( tickv.minorTickV.toDoubleArray( tunits ), tunits );
-//            QDataSet findex= Ops.findex( tds, txds );
-//            double rmin= Double.MAX_VALUE;
-//            double x0= Double.MAX_VALUE,y0= Double.MAX_VALUE;
-//
-//            for ( int i=0; i<tickv.tickV.getLength(); i++ ) {
-//                int index0= (int)Math.floor(findex.value(i));
-//                if ( index0>=0 && index0<idata[0].length ) {
-//                    if ( x0==Double.MAX_VALUE ) {
-//                        x0= idata[0][index0];
-//                        y0= idata[1][index0];
-//                    } else {
-//                        double x1= idata[0][index0];
-//                        double y1= idata[1][index0];
-//                        double r= (x1-x0)*(x1-x0) + (y1-y0)*(y1-y0);
-//                        if ( r<rmin ) rmin= Math.sqrt(r);
-//                        x0= x1;
-//                        y0= y1;
-//                    }
-//                }
-//            }
-//            if ( rmin==Double.MAX_VALUE ) {
-//                throw new IllegalArgumentException("didn't find any ticks!");
-//            }
-//            nomSpace= rmin;
-//            System.err.printf("nomTick=%f %s \n",nomSpace, tickv.tickV.getSubVector(0,3) );
-//            if ( nomSpace>targetSpace ) {
-//                nomTick*= 2;
-//            } else if ( nomSpace<10 ) {
-//                nomTick/= 2;
-//            }
-//        }
-//
-//        return tickv;
+        DatumRange dr= DataSetUtil.asDatumRange( trange, true );
+
+        if ( ticksDivider==null ) {
+             ticksDivider= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), false );
+        }
+        
+        double plen= 0;
+        int ic= 1;
+        for ( int i=1; i<idata[0].length; i++ ) {
+            if ( Math.abs( idata[0][i] )<10000 && Math.abs( idata[0][i-1] )<10000 &&  Math.abs( idata[1][i] )<10000 && Math.abs( idata[1][i-1] )<10000 ) {
+                double dx= idata[0][i] - idata[0][i-1];
+                double dy= idata[1][i] - idata[1][i-1];
+                plen += Math.sqrt( dx*dx + dy*dy );
+                ic++;
+            }
+        }
+        
+        if ( ic>0 ) { // compensate for stuff that can't be transformed.
+            plen= plen * idata[0].length / ic;
+        }
+        if ( plen<100 ) plen=100;
+
+        while ( ticksDivider.boundaryCount( dr.min(), dr.max() ) < Math.ceil( plen / 100 ) ) {
+            ticksDivider= ticksDivider.finerDivider(false);
+        }
+        while ( ticksDivider.boundaryCount( dr.min(), dr.max() ) > Math.ceil( plen / 50 ) ) {
+            ticksDivider= ticksDivider.coarserDivider(false);
+        }
+
+        DatumVector major = ticksDivider.boundaries(dr.min(), dr.max());
+        DatumVector minor = ticksDivider.finerDivider(true).boundaries(dr.min(), dr.max());
+        tickv = TickVDescriptor.newTickVDescriptor(major, minor);
+        tickv.datumFormatter= DomainDividerUtil.getDatumFormatter( ticksDivider, dr );
+
+        return tickv;
+    }
+
+    /** 
+     * returns the minimal distance between consecutive ticks, or Double.MAX_VALUE if fewer than two ticks are found.
+     * @param tds
+     * @return
+     */
+    public double checkTickV( QDataSet tds ) {
+
+        Units tunits= SemanticOps.getUnits(tds);
+        
+        DDataSet txds= DDataSet.wrap( tickv.tickV.toDoubleArray( tunits ), tunits );
+        QDataSet findex= Ops.findex( tds, txds );
+        double rmin= Double.MAX_VALUE;
+        double x0= Double.MAX_VALUE,y0= Double.MAX_VALUE;
+
+        for ( int i=0; i<tickv.tickV.getLength(); i++ ) {
+            int index0= (int)Math.floor(findex.value(i));
+            if ( index0>=0 && index0<idata[0].length ) {
+                if ( x0==Double.MAX_VALUE ) {
+                    x0= idata[0][index0];
+                    y0= idata[1][index0];
+                } else {
+                    double x1= idata[0][index0];
+                    double y1= idata[1][index0];
+                    double r= (x1-x0)*(x1-x0) + (y1-y0)*(y1-y0);
+                    if ( r<rmin ) rmin= Math.sqrt(r);
+                    x0= x1;
+                    y0= y1;
+                }
+            }
+        }
+        return rmin;
+
     }
 
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
@@ -325,10 +367,17 @@ public class TickCurveRenderer extends Renderer {
         
         QDataSet findex;
         Units tunits= SemanticOps.getUnits(tds);
-        
-        //if ( tickv==null ) {
+
+        if ( tickv==null ) {
             tickv= resetTickV( tds );
-        //}
+        } else {
+            double check= checkTickV(tds);
+            if ( check<30 ) {
+                tickv= resetTickV( tds );
+            } else if ( check>100 ) {
+                tickv= resetTickV( tds );
+            }
+        }
         
         DDataSet txds= DDataSet.wrap( tickv.minorTickV.toDoubleArray( tunits ), tunits );
         findex= Ops.findex( tds, txds );
