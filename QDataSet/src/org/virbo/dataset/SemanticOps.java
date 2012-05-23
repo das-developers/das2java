@@ -756,6 +756,8 @@ public class SemanticOps {
      */
     public static QDataSet cadenceCheck( QDataSet tds, QDataSet ds ) {
         Datum cadence= guessXTagWidth( tds, ds );
+        cadence= cadence.multiply(1.1);
+
         QDataSet diffs= Ops.diff(tds);
         QDataSet result= (MutablePropertyDataSet) Ops.lt( diffs, DataSetUtil.asDataSet(cadence) ); // cheat cast
         if ( !( result instanceof ArrayDataSet ) ) {
