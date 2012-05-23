@@ -8,7 +8,6 @@
  */
 package org.virbo.dataset;
 
-import java.util.HashMap;
 import java.util.Map;
 import org.das2.datum.Units;
 
@@ -256,8 +255,8 @@ public final class DDataSet extends ArrayDataSet {
 
     /**
      * Shorten the dataset by changing it's dim 0 length parameter.  The same backing array is used, 
-     * so the element that remain ill be the same.
-     * can only shorten!
+     * so the element that remain will be the same.
+     * This can only shorten!
      */
     public void putLength(int len) {
         if (len > len0) {
