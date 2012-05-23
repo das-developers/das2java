@@ -265,20 +265,44 @@ public class EventsRenderer extends Renderer {
         QDataSet msgs;
 
         if ( vds.rank()==2 ) {
-            xmins= DataSetOps.unbundle( vds,0 );
-            xmaxs= DataSetOps.unbundle( vds,1 );
-            Units u0= SemanticOps.getUnits(xmins );
-            Units u1= SemanticOps.getUnits(xmaxs );
-            if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
-                xmaxs= Ops.add( xmins, xmaxs );
-            }
-            if ( vds.length(0)>3 ) {
-                colors= DataSetOps.unbundle( vds,2 );
-            } else {
+            QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
+            if ( dep0==null ) {
+                xmins= DataSetOps.unbundle( vds,0 );
+                xmaxs= DataSetOps.unbundle( vds,1 );
+
+                if ( vds.length(0)>3 ) {
+                    colors= DataSetOps.unbundle( vds,2 );
+                } else {
+                    colors= Ops.replicate( 0x808080, xmins.length() );
+                }
+                
+            } else if ( dep0.rank()==2 ) {
+                if ( SemanticOps.isBins(dep0) ) {
+                    xmins= DataSetOps.slice1( dep0, 0 );
+                    xmaxs= DataSetOps.slice1( dep0, 1 );
+                    colors= Ops.replicate( 0x808080, xmins.length() );
+                    Units u0= SemanticOps.getUnits(xmins );
+                    Units u1= SemanticOps.getUnits(xmaxs );
+                    if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+                        xmaxs= Ops.add( xmins, xmaxs );
+                    }
+                } else {
+                    parent.postMessage( this, "DEPEND_0 is rank 2 but not bins", DasPlot.WARNING, null, null );
+                    return null;
+                }
+                
+            } else  if ( dep0.rank() == 1 ) {
+                xmins= dep0;
+                xmaxs= xmins;
                 colors= Ops.replicate( 0x808080, xmins.length() );
+
+            } else {
+                parent.postMessage( this, "rank 2 dataset must have dep0 of rank 1 or rank 2 bins", DasPlot.WARNING, null, null );
+                return null;
             }
+
             msgs= DataSetOps.unbundle( vds, vds.length(0)-1 );
-            
+
         } else if ( vds.rank()==1 ) {
             QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
             if ( dep0==null ) {
