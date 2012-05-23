@@ -48,19 +48,24 @@ public class LSpec {
         int end=0; // index of the right point of slope0.
 
         QDataSet wds= SemanticOps.weightsDataSet(lds);
+        QDataSet tds= SemanticOps.xtagsDataSet(lds);
+        QDataSet nonGap= SemanticOps.cadenceCheck(tds,lds);
 
         for ( int i=1; i<lds.length(); i++ ) {
             if ( wds.value(i)==0 ) continue;
             double slope1=  lds.value(i) - lds.value(i-1);
-            if ( slope0 * slope1 <= 0. ) {
+            if ( slope0 * slope1 <= 0. || ( nonGap.value(i-1)==1 && nonGap.value(i)==0 ) ) {
                 if ( slope0!=0. && ( dir==0 || ( slope0*dir>0 && end-start>1 ) ) ) {  //TODO: detect jumps in the LShell, e.g. only downward: \\\\\
                     builder.putValue( -1, 0, start );
                     builder.putValue( -1, 1, end );
                     builder.nextRecord();
                 }
-                if ( slope1!=0. ) {
+                if ( slope1!=0. || nonGap.value(i)>0 ) {
                     start= i-1;
                 }
+            } else if ( nonGap.value(i-1)==0 && nonGap.value(i)==1 ) {
+                start= i;
+                end= i+1;
             } else {
                 end= i+1; // end is not inclusive
             }
