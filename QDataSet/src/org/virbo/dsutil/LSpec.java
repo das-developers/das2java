@@ -43,6 +43,7 @@ public class LSpec {
     private static QDataSet identifySweeps( QDataSet lds, int dir ) {
 
         DataSetBuilder builder= new DataSetBuilder( 2, 100, 2 );
+        DataSetBuilder dep0builder= new DataSetBuilder( 2, 100, 2 );
         double slope0= lds.value(1) - lds.value(0);
         int start=0;
         int end=0; // index of the right point of slope0.
@@ -59,9 +60,12 @@ public class LSpec {
                     builder.putValue( -1, 0, start );
                     builder.putValue( -1, 1, end );
                     builder.nextRecord();
+                    dep0builder.putValue( -1, 0, tds.value(start) );
+                    dep0builder.putValue( -1, 1, tds.value(end) );
+                    dep0builder.nextRecord();
                 }
                 if ( slope1!=0. || nonGap.value(i)>0 ) {
-                    start= i-1;
+                    start= i;
                 }
             } else if ( nonGap.value(i-1)==0 && nonGap.value(i)==1 ) {
                 start= i;
@@ -72,7 +76,13 @@ public class LSpec {
             slope0= slope1;
         }
         
-        return builder.getDataSet();
+        dep0builder.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+        dep0builder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(tds) );
+        
+        DDataSet result= builder.getDataSet();
+        result.putProperty( QDataSet.DEPEND_0, dep0builder.getDataSet() );
+        result.putProperty( QDataSet.RENDER_TYPE, "eventsBar" );
+        return result;
         
     }
     
