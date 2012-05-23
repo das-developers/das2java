@@ -385,6 +385,8 @@ public class SemanticOps {
      * but this is not uniformly supported.  
      * Note: this uses QDataSet.WEIGHTS_PLANE
      * Note: calls org.virbo.dataset.DataSetUtil.weightsDataSet.
+     * @see Ops.valid, which is equivalent
+     * @see cadenceCheck, which detects for gaps in cadence.
      * @param ds
      * @return QDataSet with same geometry containing zeros and non-zeros.
      */
@@ -731,6 +733,43 @@ public class SemanticOps {
         } else {
             throw new IllegalArgumentException("not supported: "+ds);
         }
+    }
+
+    /**
+     * return a dataset with 1's where the cadence following this measurement is acceptable, and 0's where
+     * there should be a break in the data.  For example:
+     * <pre>
+     *   findex= Ops.interpolate( xds, x )
+     *   cadenceCheck= cadenceCheck(xds)
+     *   r= where( cadenceCheck[floor(findex)] eq 0 )
+     *   xds[r]= fill
+     * </pre>
+     * Presently this just uses guessXTagWidth to get the cadence, but this may allow a future version to support
+     * mode changes.
+     *
+     * The result is a dataset with the same length, and the last element is always 1.
+     *
+     * @see Ops.valid which checks for fill and valid_min, valid_max.
+     * @param tds rank 1 dataset of length N.
+     * @return dataset with length N
+     */
+    public static QDataSet cadenceCheck( QDataSet tds, QDataSet ds ) {
+        Datum cadence= guessXTagWidth( tds, ds );
+        QDataSet diffs= Ops.diff(tds);
+        QDataSet result= (MutablePropertyDataSet) Ops.lt( diffs, DataSetUtil.asDataSet(cadence) ); // cheat cast
+        if ( !( result instanceof ArrayDataSet ) ) {
+            result= ArrayDataSet.copy(result);
+        }
+        ArrayDataSet aresult= ((ArrayDataSet)result);
+        ArrayDataSet one= ArrayDataSet.createRank1( aresult.getComponentType(), 1 );
+        one.putValue(0,1.0);
+        DataSetUtil.copyDimensionProperties( aresult,one );
+        result= ArrayDataSet.append( aresult, one );
+
+        result= Ops.link( tds, result );
+
+        return result;
+        
     }
 
 }
