@@ -737,12 +737,12 @@ public class SemanticOps {
 
     /**
      * return a dataset with 1's where the cadence following this measurement is acceptable, and 0's where
-     * there should be a break in the data.  For example:
+     * there should be a break in the data.  For example, here's some pseudocode:
      * <pre>
      *   findex= Ops.interpolate( xds, x )
      *   cadenceCheck= cadenceCheck(xds)
      *   r= where( cadenceCheck[floor(findex)] eq 0 )
-     *   xds[r]= fill
+     *   x[r]= fill
      * </pre>
      * Presently this just uses guessXTagWidth to get the cadence, but this may allow a future version to support
      * mode changes.
@@ -751,6 +751,7 @@ public class SemanticOps {
      *
      * @see Ops.valid which checks for fill and valid_min, valid_max.
      * @param tds rank 1 dataset of length N.
+     * @param ds dataset dependent on tds and used to detect valid measurements, or null.
      * @return dataset with length N
      */
     public static QDataSet cadenceCheck( QDataSet tds, QDataSet ds ) {
