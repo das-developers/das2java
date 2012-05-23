@@ -380,13 +380,18 @@ public class DigitalRenderer extends Renderer {
 
         GrannyTextRenderer gtr = new GrannyTextRenderer();
 
-        Units u = SemanticOps.getUnits(ds);
         QDataSet xds= SemanticOps.xtagsDataSet(ds);
         QDataSet yds= SemanticOps.ytagsDataSet(ds);
+
+        QDataSet zds= (QDataSet) yds.property(QDataSet.PLANE_0);
+        if ( zds==null ) zds= yds;
+        Units u = SemanticOps.getUnits(zds);
+
         Units xunits= SemanticOps.getUnits(xds);
+        Units yunits= SemanticOps.getUnits(yds);
 
         String form=this.format;
-        String dsformat= (String) ds.property(QDataSet.FORMAT);
+        String dsformat= (String) zds.property(QDataSet.FORMAT);
         if ( form.length()==0 && dsformat!=null ) {
             form= dsformat;
         }
@@ -400,12 +405,12 @@ public class DigitalRenderer extends Renderer {
             parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
             return;
         }
-        if ( ! u.isConvertableTo(yAxis.getUnits() ) ) {
+        if ( ! yunits.isConvertableTo(yAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
             return;
         }
 
-        QDataSet wds= SemanticOps.weightsDataSet(yds);
+        QDataSet wds= SemanticOps.weightsDataSet(zds);
 
         for (int i = firstIndex; i < lastIndex; i++) {
             int ix = (int) xAxis.transform( xds.value(i), xunits );
@@ -413,11 +418,12 @@ public class DigitalRenderer extends Renderer {
             String s;
             int iy;
             if ( wds.value(i)>0 ) {
-                Datum d = u.createDatum( yds.value(i) );
+                Datum d = u.createDatum( zds.value(i) );
+                Datum y = yunits.createDatum( yds.value(i) );
                 DatumFormatter df= d.getFormatter();
                 if ( df instanceof DefaultDatumFormatter ) {
                     try {
-                        s = String.format( form, yds.value(i) );
+                        s = String.format( form, zds.value(i) );
                     } catch ( IllegalFormatConversionException ex ) { // '%2X'
                         char c= ex.getConversion();
                         if ( c=='X' || c=='x' || c=='d' || c=='o' || c=='c' || c=='C'  ) {
@@ -429,7 +435,7 @@ public class DigitalRenderer extends Renderer {
                 } else {
                     s = d.getFormatter().format(d, u);
                 }
-                iy = (int) yAxis.transform(d) + ha;
+                iy = (int) yAxis.transform(y) + ha;
             } else {
                 s = "fill";
                 iy = (int) yAxis.getRow().getDMaximum();
