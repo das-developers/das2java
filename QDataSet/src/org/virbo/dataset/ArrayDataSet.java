@@ -450,7 +450,11 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
-     * append the second dataset onto this dataset.       *
+     * append the second dataset onto this dataset.  The two datasets need only have convertible units, so for example
+     * two time arrays may be appended even if their units don't have the same base.  
+     * Only properties of the two datasets that do not change are preserved.
+     * @param ths rank N dataset
+     * @param ds rank N dataset of the same type and geometry as ths.
      */
     public static ArrayDataSet append( ArrayDataSet ths, ArrayDataSet ds ) {
         if ( ds.rank()!=ths.rank ) throw new IllegalArgumentException("rank mismatch");
