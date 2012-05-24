@@ -517,6 +517,7 @@ public class DasProgressPanel implements ProgressMonitor {
      * @param visible
      */
     public synchronized void setVisible(final boolean visible) {
+        boolean oldVis= this.isVisible();
         if (!componentsInitialized && !visible)
             return;
         Runnable run= new Runnable() {
@@ -535,7 +536,7 @@ public class DasProgressPanel implements ProgressMonitor {
             SwingUtilities.invokeLater(run);
         }
 
-        if (visible) {
+        if ( visible && !oldVis ) {
             startUpdateThread();
         }
     }
@@ -559,6 +560,7 @@ public class DasProgressPanel implements ProgressMonitor {
                     }
                     if (running) {
                         logger.log(Level.FINE, "hide time={0}", (System.currentTimeMillis() - taskStartedTime));
+                        System.err.println( DasProgressPanel.this.getLabel() );
                         setVisible(true);
                     }
                 }
