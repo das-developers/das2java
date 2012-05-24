@@ -104,6 +104,9 @@ public class BundleDataSet extends AbstractDataSet {
         return datasets.get(i);
     }
 
+    /**
+     * special dataset describing the bundled datasets in a BundleDataSet.
+     */
     public class BundleDescriptor extends AbstractDataSet {
 
         public int rank() {
@@ -140,6 +143,15 @@ public class BundleDataSet extends AbstractDataSet {
             throw new IndexOutOfBoundsException("length=0");
         }
 
+        public String toString() {
+            String names= (String)datasets.get(0).property(QDataSet.NAME);
+
+            for ( int i=1; i<datasets.size(); i++ ) {
+                String n= (String)datasets.get(i).property(QDataSet.NAME);
+                names+= ","+n;
+            }
+            return "BundleDescriptor[ "+names+"]";
+        }
     }
 
     public int rank() {
