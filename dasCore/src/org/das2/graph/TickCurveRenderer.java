@@ -356,9 +356,9 @@ public class TickCurveRenderer extends Renderer {
 
 
         GeneralPath p= new GeneralPath();
-        p.moveTo( idata[0][0],idata[1][0] );
+        p.moveTo( (float)idata[0][0],(float)idata[1][0] ); // Java5 requires floats
         for ( int i=1; i<xds.length(); i++ ) {
-            p.lineTo( idata[0][i],idata[1][i] );
+            p.lineTo( (float)idata[0][i],(float)idata[1][i] );
         }
         GeneralPath rp= new GeneralPath();
         GraphUtil.reducePath( p.getPathIterator(null), rp, 2 );
