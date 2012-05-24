@@ -1030,7 +1030,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( ltcaFunction==null ) return;
         
         logger.fine("updateTCADataSet");
-        double[] tickV = getTickV().tickV.toDoubleArray(getUnits());
+
+        Units u= getUnits();
+        DatumVector tickVDV= getTickV().tickV;
+        if ( !u.isConvertableTo(tickVDV.getUnits()) ) {
+            return; // transitional state
+        }
+        double[] tickV = tickVDV.toDoubleArray(u);
         
         JoinDataSet ltcaData= new JoinDataSet(2);
         ArrayDataSet ex= ArrayDataSet.copy( ltcaFunction.exampleInput() );
@@ -1044,22 +1050,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         UnitsConverter uc;
-        if ( !getUnits().isConvertableTo(tcaUnits) ) {
+        if ( !u.isConvertableTo(tcaUnits) ) {
             System.err.println("tca units are not convertable");
             return;
         }
-        uc= UnitsConverter.getConverter( getUnits(), tcaUnits );
+        uc= UnitsConverter.getConverter( u, tcaUnits );
 
         DatumRange context= getDatumRange(); // this may not contain all the ticks.
-        context= DatumRangeUtil.union( context, getUnits().createDatum( uc.convert(tickV[0]) ) );
-        context= DatumRangeUtil.union( context, getUnits().createDatum( uc.convert(tickV[tickV.length-1]) ) );
+        context= DatumRangeUtil.union( context, u.createDatum( uc.convert(tickV[0]) ) );
+        context= DatumRangeUtil.union( context, u.createDatum( uc.convert(tickV[tickV.length-1]) ) );
         ex.putProperty( QDataSet.CONTEXT_0, 0, org.virbo.dataset.DataSetUtil.asDataSet( context ) );
         QDataSet dx= org.virbo.dataset.DataSetUtil.asDataSet( getDatumRange().width().divide( getColumn().getWidth() ) );
         ex.putProperty( QDataSet.DELTA_PLUS, 0, dx );
         ex.putProperty( QDataSet.DELTA_MINUS, 0, dx );
 
         DDataSet dep0= DDataSet.createRank1(tickV.length);
-        dep0.putProperty(QDataSet.UNITS,getUnits());
+        dep0.putProperty(QDataSet.UNITS,u);
 
         QDataSet outDescriptor=null;
 
