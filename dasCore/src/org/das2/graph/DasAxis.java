@@ -1556,10 +1556,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     if (majorTicksDomainDivider != null) {
                         updateTickVDomainDivider();
                         if (drawTca && tcaFunction != null) {
+                            getCanvas().registerPendingChange( this, PENDING_CHANGE_TCALOAD );
                             RequestProcessor.invokeLater( new Runnable() {
                                 public void run() {
+                                    getCanvas().performingChange( DasAxis.this, PENDING_CHANGE_TCALOAD );
                                     updateTCADataSet();
                                     repaint();
+                                    getCanvas().changePerformed( DasAxis.this, PENDING_CHANGE_TCALOAD );
                                 }
                             }, DasAxis.this );
                         }
