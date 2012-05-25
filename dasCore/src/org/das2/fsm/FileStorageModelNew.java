@@ -130,6 +130,7 @@ public class FileStorageModelNew {
         if ( parent!=null ) {
             String parentRegex= getParentRegex(regex);
             String one= parent.getRepresentativeFile( monitor,regex.substring(parentRegex.length()+1) );
+            if ( one==null ) return null;
             names= new String[] { one }; //parent.getNamesFor(null);
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
