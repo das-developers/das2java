@@ -3123,12 +3123,18 @@ public class Ops {
     }
     
     /**
-     * returns the floating point index of each element of vv within the monotonically
-     * increasing dataset uu.  The result dataset will have the same geometry
-     * as vv.  The result will be negative when the element of vv is below the smallest 
-     * element of uu.  The result will be greater than or equal to the length of 
-     * uu minus one when it is greater than all elements.
-     * 
+     * returns the "floating point index" of each element of vv within the monotonically
+     * increasing dataset uu.  This handy number is the index of the lower bound plus the
+     * fractional position between the two bounds.  For example, findex([100,110,120],111.2) is
+     * 1.12 because it is just after the 1st element (110) and is 12% of the way from 110 to 120.
+     * The result dataset will have the same geometry as vv.  The result will be negative
+     * when the element of vv is below the smallest element of uu.  The result will be greater
+     * than or equal to the length of uu minus one when it is greater than all elements.
+     * When the monotonic dataset contains repeat values, the index of the first is returned.
+     *
+     * Paul Ricchiazzi wrote this routine first for IDL as a fast replacement for the interpol routine, but
+     * it is very useful in other situations as well.
+     *
      * @param uu rank 1 monotonically increasing dataset.
      * @param vv rank N dataset with values in the same physical dimension as uu.
      * @return rank N dataset with the same geometry as vv.
@@ -3153,15 +3159,13 @@ public class Ops {
             it.next();
             double d = uc.convert( it.getValue(vv) ); //TODO: assumes no fill data.
             // TODO: optimize by only doing binary search below or above ic0&ic1.
-            if (uc0 <= d && d <= uc1) {
-                double ff = (d - uc0) / (uc1 - uc0); // may be 1.0
-
+            if (uc0 <= d && d <= uc1) { // optimize by seeing if old pair still backets the current point.
+                double ff = d==uc0 ? 0 : (d - uc0) / (uc1 - uc0); // may be 1.0
                 it.putValue(result, ic0 + ff);
             } else {
                 int index = DataSetUtil.binarySearch(uu, d, 0, uu.length() - 1);
                 if (index == -1) {
                     index = 0; //insertion point is 0
-
                     ic0 = 0;
                     ic1 = 1;
                 } else if (index < (-n)) {
@@ -3169,7 +3173,6 @@ public class Ops {
                     ic1 = n - 1;
                 } else if (index < 0) {
                     ic1 = ~index;  // usually this is the case
-
                     ic0 = ic1 - 1;
                 } else if (index >= (n - 1)) {
                     ic0 = n - 2;
@@ -3180,7 +3183,7 @@ public class Ops {
                 }
                 uc0 = uu.value(ic0);
                 uc1 = uu.value(ic1);
-                double ff = (d - uc0) / (uc1 - uc0); // may be 1.0
+                double ff = d==uc0 ? 0 : (d - uc0) / (uc1 - uc0); // may be 1.0
 
                 it.putValue(result, ic0 + ff);
             }
