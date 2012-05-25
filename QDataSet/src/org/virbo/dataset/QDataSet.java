@@ -215,13 +215,7 @@ public interface QDataSet {
      * String, Human-consumable string suitable for a plot title. (100 chars).
      */
     public final static String TITLE="TITLE";
-    
-    /**
-     * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Data may only contain
-     * invalid values at the beginning or end.  Generally this will be used with tags datasets.
-     */
-    public final static String MONOTONIC="MONOTONIC";
-            
+                
     /**
      * QDataSet, dataset of same geometry that indicates the weights for each point.  Often weights are computed
      * in processing, and this is where they should be stored for other routines.  When the weights plane is 
@@ -229,10 +223,17 @@ public interface QDataSet {
      * indicate valid data.  Further, averages of averages will compute accurately.
      */
     public final static String WEIGHTS_PLANE="WEIGHTS";
+
+    /**
+     * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Data may only contain
+     * invalid values at the beginning or end, and may contain repeated values.  Generally
+     * this will be used with tags datasets.
+     */
+    public final static String MONOTONIC="MONOTONIC";
     
     /**
      * RankZeroDataSet, the expected distance between successive measurements where it is valid to make inferences about the data.
-     * For example, interpolation is disallowed for points 1.5*CADENCE apart.
+     * For example, interpolation is disallowed for points 1.5*CADENCE apart.  
      * This property only makes sense with a tags dataset.
      */
     public final static String CADENCE="CADENCE";
