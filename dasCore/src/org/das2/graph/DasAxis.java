@@ -117,6 +117,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private static final String SCAN_PREVIOUS_LABEL = "<< scan";
     private static final String SCAN_NEXT_LABEL = "scan >>";
 
+    private final String PENDING_CHANGE_TCALOAD= new String( "tcaload" );
+    
     /* GENERAL AXIS INSTANCE MEMBERS */
     protected DataRange dataRange;
 
@@ -1534,10 +1536,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                 }
                 if (drawTca && tcaFunction != null) {
+                    getCanvas().registerPendingChange( this, PENDING_CHANGE_TCALOAD );
                     RequestProcessor.invokeLater( new Runnable() {
                         public void run() {
+                            getCanvas().performingChange( DasAxis.this, PENDING_CHANGE_TCALOAD );
                             updateTCADataSet();
                             repaint();
+                            getCanvas().changePerformed( DasAxis.this, PENDING_CHANGE_TCALOAD );
                         }
                     }, DasAxis.this );
                 }
