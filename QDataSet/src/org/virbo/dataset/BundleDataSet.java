@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author jbf
  */
-public class BundleDataSet extends AbstractDataSet {
+public final class BundleDataSet extends AbstractDataSet {
     
     List<QDataSet> datasets;
     /**
@@ -76,6 +76,12 @@ public class BundleDataSet extends AbstractDataSet {
         }
 
     }
+
+    public BundleDataSet( QDataSet ds ) {
+        this( ds.rank()+1 );
+        bundle(ds);
+    }
+
     /**
      * add the dataset to the bundle of datasets.  Currently this implementation only supports rank N-1 datasets (N is this
      * dataset's rank), but the QDataSet spec allows for qube datasets of any rank>1 to be bundled.  This limitation will be removed
