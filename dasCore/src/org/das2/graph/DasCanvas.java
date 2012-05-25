@@ -2195,26 +2195,60 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return fitted;
     }
 
+    /**
+     * indicate to the canvas that a change will be made soon. 
+     * For example, the canvas should wait for the change to be performed before creating an image.
+     * @see ChangesSupport
+     * @param client the client registering the change
+     * @param lockObject an object identifying the change
+     */
     public void registerPendingChange(Object client, Object lockObject) {
         stateSupport.registerPendingChange(client, lockObject);
     }
 
+    /**
+     * indicate to the canvas that a change is being performed.
+     * @see ChangesSupport
+     * @param client the client registering the change
+     * @param lockObject an object identifying the change
+     */
     public void performingChange(Object client, Object lockObject) {
         stateSupport.performingChange(client, lockObject);
     }
 
+    /**
+     * indicate to the canvas that a change is now complete.
+     * @see ChangesSupport
+     * @param client the client registering the change
+     * @param lockObject an object identifying the change
+     */
     public void changePerformed(Object client, Object lockObject) {
         stateSupport.changePerformed(client, lockObject);
     }
 
+    /**
+     * returns true if there are changes pending.
+     * @see ChangesSupport
+     * @return
+     */
     public boolean isPendingChanges() {
         return stateSupport.isPendingChanges();
     }
 
+    /**
+     * access the lock for an atomic operation. 
+     * @see ChangesSupport
+     * @return
+     */
     public Lock mutatorLock() {
         return stateSupport.mutatorLock();
     }
 
+    /**
+     * returns true if an operation is being performed that should be treated as atomic.
+     * @see ChangesSupport
+     * @return
+     */
     public boolean isValueAdjusting() {
         return stateSupport.isValueAdjusting();
     }
