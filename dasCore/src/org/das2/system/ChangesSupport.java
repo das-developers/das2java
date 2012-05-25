@@ -48,7 +48,7 @@ public class ChangesSupport {
      * would be:
      *   layout because tick labels are changing
      *   data is loading
-     *
+     * Note, it is okay to call this multiple times for the same client and lock object.
      * @param client the object that will perform the change.  This allows the
      *   canvas (and developers) identify who has registered the change.
      * @param lockObject object identifying the change.
@@ -61,6 +61,7 @@ public class ChangesSupport {
             if (existingClient != client) {
                 throw new IllegalStateException("lock object in use: " + lockObject + ", by " + changesPending.get(lockObject));
             } else {
+                //Note, it is okay to call this multiple times for the same client and lock object.
                 return;
             }
         }
