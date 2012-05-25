@@ -109,6 +109,9 @@ public class FileStorageModelNew {
         return this.root;
     }
 
+    public String getRepresentativeFile( ProgressMonitor monitor ) throws IOException {
+        return getRepresentativeFile( monitor, null );
+    }
 
     /**
      * this is introduced to support discovery, where we just need one file to
@@ -116,16 +119,17 @@ public class FileStorageModelNew {
      * just the first one.  This may return a skeleton file, but getFileFor() must
      * return a result.
      * This implementation does the same as getNames(), but stops after finding a file.
+     * @param childRegex the parent must contain a file/folder matching childRegex
      * @return null if no file is found
      */
-    public String getRepresentativeFile( ProgressMonitor monitor ) throws IOException {
+    public String getRepresentativeFile( ProgressMonitor monitor, String childRegex ) throws IOException {
         String listRegex;
 
         FileSystem[] fileSystems;
-        String name;
         String[] names;
         if ( parent!=null ) {
-            String one= parent.getRepresentativeFile( monitor );
+            String parentRegex= getParentRegex(regex);
+            String one= parent.getRepresentativeFile( monitor,regex.substring(parentRegex.length()+1) );
             names= new String[] { one }; //parent.getNamesFor(null);
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
@@ -136,7 +140,6 @@ public class FileStorageModelNew {
                     throw new RuntimeException(e);
                 }
             }
-            String parentRegex= getParentRegex(regex);
             listRegex= regex.substring( parentRegex.length()+1 );
         } else {
             fileSystems= new FileSystem[] { root };
@@ -148,11 +151,19 @@ public class FileStorageModelNew {
 
         for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
             String[] files1= fileSystems[i].listDirectory( "/", listRegex );
-            if ( files1.length>0 ) {
-                int last= files1.length-1;
-                String ff= names[i].equals("") ? files1[ last ] : names[i]+"/"+files1[ last ];
+            int j= files1.length-1;
+            while ( j>=0 && result==null ) {
+                String ff= names[i].equals("") ? files1[ j ] : names[i]+"/"+files1[ j ];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                result= ff;
+                if ( childRegex!=null ) {
+                    String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex);
+                    if ( kids.length>0 ) {
+                        result= ff;
+                    }
+                } else {
+                    result= ff;
+                }
+                if ( result==null ) j--;
             }
         }
 
