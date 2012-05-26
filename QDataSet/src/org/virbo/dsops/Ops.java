@@ -3135,7 +3135,7 @@ public class Ops {
      * Paul Ricchiazzi wrote this routine first for IDL as a fast replacement for the interpol routine, but
      * it is very useful in other situations as well.
      *
-     * @param uu rank 1 monotonically increasing dataset.
+     * @param uu rank 1 monotonically increasing dataset, containing no fill values.
      * @param vv rank N dataset with values in the same physical dimension as uu.
      * @return rank N dataset with the same geometry as vv.
      */
