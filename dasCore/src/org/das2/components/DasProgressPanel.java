@@ -387,17 +387,6 @@ public class DasProgressPanel implements ProgressMonitor {
         if (elapsedTimeMs > hideInitiallyMilliSeconds && !isVisible()) {
             setVisible(true);
         }
-    /*     long tnow;
-    if ( (tnow=System.currentTimeMillis()) - lastRefreshTime > 30 ) {
-    updateUIComponents();
-    if (Toolkit.getDefaultToolkit().getSystemEventQueue().isDispatchThread()) {
-    paintImmediately(0, 0, getWidth(), getHeight());
-    }
-    else {
-    repaint();
-    }
-    lastRefreshTime= tnow;
-    } */
     }
 
     private void startUpdateThread() {
@@ -517,7 +506,6 @@ public class DasProgressPanel implements ProgressMonitor {
      * @param visible
      */
     public synchronized void setVisible(final boolean visible) {
-        boolean oldVis= this.isVisible();
         if (!componentsInitialized && !visible)
             return;
         Runnable run= new Runnable() {
@@ -536,8 +524,8 @@ public class DasProgressPanel implements ProgressMonitor {
             SwingUtilities.invokeLater(run);
         }
 
-        if ( visible && !oldVis ) {
-            startUpdateThread();
+        if ( visible ) {
+            if ( updateThread==null ) startUpdateThread();
         }
     }
 
