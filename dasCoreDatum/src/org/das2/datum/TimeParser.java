@@ -637,6 +637,8 @@ public class TimeParser {
         int offs = 0;
         int len = 0;
 
+        if ( extra==null ) extra= new HashMap();
+        
         orbitDatumRange=null;
         
         time.year = context.year;
