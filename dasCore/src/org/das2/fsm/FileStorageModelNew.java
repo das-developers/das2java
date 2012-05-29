@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.*;
+import org.das2.datum.TimeUtil;
 import org.das2.util.filesystem.FileSystemUtil;
 
 /**
@@ -156,13 +157,19 @@ public class FileStorageModelNew {
             while ( j>=0 && result==null ) {
                 String ff= names[i].equals("") ? files1[ j ] : names[i]+"/"+files1[ j ];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                if ( childRegex!=null ) {
-                    String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex);
-                    if ( kids.length>0 ) {
-                        result= ff;
+                try {
+                    if ( timeParser.getValidRange().contains( timeParser.parse(ff).getTimeRange() ) ) {
+                        if ( childRegex!=null ) {
+                            String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex);
+                            if ( kids.length>0 ) {
+                                result= ff;
+                            }
+                        } else {
+                            result= ff;
+                        }
                     }
-                } else {
-                    result= ff;
+                } catch ( ParseException ex ) {
+
                 }
                 if ( result==null ) j--;
             }
