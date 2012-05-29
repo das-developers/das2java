@@ -890,9 +890,20 @@ public class DatumRangeUtil {
                 ss[2]= ss[3];
             }
             if ( ss.length<3 ) {
-                throw new ParseException("orbit misformatted, should be orbit:<sc>:<num>",0);
+                throw new ParseException("orbit misformatted, should be orbit:<sc>:<num> or orbit:<sc>:<num>-<num>",0);
             }
-            return new OrbitDatumRange( ss[1], ss[2] );
+            if ( ss[2].contains("-") ) {
+                String[] sss= ss[2].split("-",-2);
+                if (sss.length!=2 ) {
+                    throw new ParseException("orbit range should be like 428-450",0);
+                }
+                DatumRange o0= new OrbitDatumRange( ss[1], sss[0] );
+                DatumRange o1= new OrbitDatumRange( ss[1], sss[1] );
+                return DatumRangeUtil.union( o0,o1 );
+            } else {
+                return new OrbitDatumRange( ss[1], ss[2] );
+            }
+            
         } else if ( string.startsWith("P") && iso8601DurationPattern.matcher(string).matches() ) { // just for experiment.  See ISO8601
             Datum now= TimeUtil.now();
             DatumRange result= parseISO8601Range( string + "/" + TimeParser.create(TimeParser.TIMEFORMAT_Z).format(now, null) );
