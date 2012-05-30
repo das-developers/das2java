@@ -175,12 +175,9 @@ public class SeriesRenderer extends Renderer {
 
     class PsymRenderElement implements RenderElement {
 
-        protected GeneralPath psymsPath; // store the location of the psyms here.
-
         int[] colors; // store the color index  of each psym
 
-        //int[] ipsymsPath; // store the location of the psyms here, evens=x, odds=y
-        double[] dpsymsPath;
+        double[] dpsymsPath; // store the location of the psyms here.
 
         int count; // the number of points to plot
 
@@ -313,16 +310,13 @@ public class SeriesRenderer extends Renderer {
             double x, y;            
             double dx,dy;
 
-            int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
-            psymsPath = new GeneralPath(GeneralPath.WIND_NON_ZERO,pathLengthApprox );
             count= 0; // intermediate state
             dpsymsPath = new double[(lastIndex - firstIndex ) * 2];
             colors = new int[lastIndex - firstIndex + 2];
 
             int index = firstIndex;
 
-           QDataSet tds = null;
-           QDataSet vds = null;
+            QDataSet vds = null;
 
             QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
             vds= ytagsDataSet(dataSet);
