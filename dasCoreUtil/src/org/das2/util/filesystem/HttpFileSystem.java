@@ -138,19 +138,23 @@ public class HttpFileSystem extends WebFileSystem {
                     is.close();
                     connectFail= false;
                 } catch ( IOException ex ) {
-                    ex.printStackTrace();
-                    if ( FileSystem.settings().isAllowOffline() ) {
-                        logger.info("remote filesystem is offline, allowing access to local cache.");
+                    if ( urlc.getResponseCode()==401 ) {
+                        connectFail= false;
                     } else {
-                        throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
-                    }
-                    InputStream err = urlc.getErrorStream();
-                    if ( err!=null ) {
-                        int ret = 0;
-                        while ((ret = err.read(buf)) > 0) {
-                           // empty out the error stream.
+                        ex.printStackTrace();
+                        if ( FileSystem.settings().isAllowOffline() ) {
+                            logger.info("remote filesystem is offline, allowing access to local cache.");
+                        } else {
+                            throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
                         }
-                        err.close();
+                        InputStream err = urlc.getErrorStream();
+                        if ( err!=null ) {
+                            int ret = 0;
+                            while ((ret = err.read(buf)) > 0) {
+                               // empty out the error stream.
+                            }
+                            err.close();
+                        }
                     }
                 }
 
