@@ -802,6 +802,29 @@ public class DataSetUtil {
     }
 
     /**
+     * das2 AverageTableRebinner needs to get the coursest of all the ytags.
+     * @param yTagWidth0
+     * @param yTagWidth1
+     * @return
+     */
+    public static RankZeroDataSet courserCadence( RankZeroDataSet yTagWidth0, RankZeroDataSet yTagWidth1 ) {
+        if ( yTagWidth0==null || yTagWidth1==null ) return null;
+        if ( "log".equals( yTagWidth0.property( QDataSet.SCALE_TYPE ) ) == "log".equals( yTagWidth1.property( QDataSet.SCALE_TYPE ) ) ) {
+             if ( DataSetUtil.asDatum(yTagWidth1).gt( DataSetUtil.asDatum(yTagWidth0) ) ) {
+                 return yTagWidth1;
+             } else {
+                 return yTagWidth0;
+             }
+        } else  {
+            if ( "log".equals( yTagWidth0.property( QDataSet.SCALE_TYPE ) ) ) {
+                return yTagWidth0;
+            } else {
+                return yTagWidth1;
+            }
+        }
+    }
+    
+    /**
      * returns a rank 0 dataset indicating the cadence of the dataset.  Using a
      * dataset as the result allows the result to indicate SCALE_TYPE and UNITS.
      * History:
