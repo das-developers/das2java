@@ -130,10 +130,19 @@ public class AverageTableRebinner implements DataSetRebinner {
             Datum xTagWidth = getXTagWidth(xds, tds1);
             if ( xTagWidth.value()<0 ) xTagWidth= xTagWidth.multiply(-1);
 
-            QDataSet yds1= yds.rank()==1 ? yds : yds.slice(0); //TODO: rank 2 y
+            RankZeroDataSet yTagWidth0;
+            if ( tds.rank()<3 ) {
+                yTagWidth0= DataSetUtil.guessCadenceNew( yds, null );
+            } else {
+                QDataSet yds1= SemanticOps.ytagsDataSet( tds.slice(0) );
+                yTagWidth0= DataSetUtil.guessCadenceNew( yds1, null );
+                for ( int i=1;i<tds.length(); i++ ) {
+                    yds1= SemanticOps.ytagsDataSet( tds.slice(i) );
+                    yTagWidth0= DataSetUtil.courserCadence( yTagWidth0, DataSetUtil.guessCadenceNew( yds1, null ) );
+                }
+            }
 
-            //double xTagWidthDouble = xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
-            RankZeroDataSet yTagWidthQ= DataSetUtil.guessCadenceNew( yds1, null );
+            RankZeroDataSet yTagWidthQ= yTagWidth0;
             Datum yTagWidth = yTagWidthQ==null ? null : DataSetUtil.asDatum( yTagWidthQ );
             if ( yTagWidth!=null && yTagWidth.value()<0 ) yTagWidth= yTagWidth.multiply(-1);
 
