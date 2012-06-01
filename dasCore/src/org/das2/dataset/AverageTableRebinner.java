@@ -132,12 +132,16 @@ public class AverageTableRebinner implements DataSetRebinner {
 
             RankZeroDataSet yTagWidth0;
             if ( tds.rank()<3 ) {
-                yTagWidth0= DataSetUtil.guessCadenceNew( yds, null );
+                QDataSet yds1= yds;
+                if ( yds1.rank()>1 ) yds1= yds1.slice(0);
+                yTagWidth0= DataSetUtil.guessCadenceNew( yds1, null );
             } else {
                 QDataSet yds1= SemanticOps.ytagsDataSet( tds.slice(0) );
+                if ( yds1.rank()>1 ) yds1= yds1.slice(0);
                 yTagWidth0= DataSetUtil.guessCadenceNew( yds1, null );
                 for ( int i=1;i<tds.length(); i++ ) {
                     yds1= SemanticOps.ytagsDataSet( tds.slice(i) );
+                    if ( yds1.rank()>1 ) yds1= yds1.slice(0);
                     yTagWidth0= DataSetUtil.courserCadence( yTagWidth0, DataSetUtil.guessCadenceNew( yds1, null ) );
                 }
             }
