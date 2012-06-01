@@ -323,7 +323,12 @@ public class DigitalRenderer extends Renderer {
             if ( label!=null ) {
                 sb.append(label).append( "=");
             }
-            sb.append( DataSetUtil.asDatum(ds).toString() );
+            Datum d=  DataSetUtil.asDatum(ds);
+            if ( d.isFill() ) {
+                sb.append("fill (").append(ds.value()).append( ")");
+            } else {
+                sb.append(d.toString());
+            }
         } else if ( SemanticOps.isBins(ds) ) {
             String label= (String)ds.property( QDataSet.LABEL );
             if ( label==null ) {
