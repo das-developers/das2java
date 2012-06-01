@@ -10,6 +10,8 @@ import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  * Reduction is set of static methods for reducing data.
@@ -68,6 +70,8 @@ public class Reduction {
 
         DataSetBuilder xbuilder= new DataSetBuilder( 1, 1000 );
         DataSetBuilder ybuilder= new DataSetBuilder( 1, 1000 );
+        DataSetBuilder yminbuilder= new DataSetBuilder( 1, 1000 );
+        DataSetBuilder ymaxbuilder= new DataSetBuilder( 1, 1000 );
         DataSetBuilder wbuilder= new DataSetBuilder( 1, 1000 ); // weights to go here
 
         QDataSet x= (QDataSet) ds.property( QDataSet.DEPEND_0 );
@@ -79,6 +83,8 @@ public class Reduction {
         double sx0 = 0;
         double sy0 = 0;
         double nn0 = 0;
+        double miny0 = Double.MAX_VALUE;
+        double maxy0 = Double.MIN_VALUE;
         double ax0 = Float.NaN;
         double ay0 = Float.NaN;  // last averaged location
 
@@ -119,16 +125,18 @@ public class Reduction {
                 continue;
             }
 
-            double p0 = xlog ? Math.log(xx) : xx;
-            double p1 = ylog ? Math.log(yy) : yy;
+            double pxx = xlog ? Math.log(xx) : xx;
+            double pyy = ylog ? Math.log(yy) : yy;
 
-            double dx = p0 - x0;
-            double dy = p1 - y0;
+            double dx = pxx - x0;
+            double dy = pyy - y0;
 
             if ( Math.abs(dx) < dxLimit && Math.abs(dy) < dyLimit) {
-                sx0 += p0*ww;
-                sy0 += p1*ww;
+                sx0 += pxx*ww;
+                sy0 += pyy*ww;
                 nn0 += ww;
+                miny0 = Math.min( miny0, yy);
+                maxy0 = Math.max( maxy0, yy);
                 i++;
                 continue;
             }
@@ -138,17 +146,22 @@ public class Reduction {
                 ay0 = sy0 / nn0;
                 xbuilder.putValue( points, xlog ? Math.exp(ax0) : ax0 );
                 ybuilder.putValue( points, ylog ? Math.exp(ay0) : ay0 );
+                yminbuilder.putValue( points, miny0 );
+                ymaxbuilder.putValue( points, maxy0 );
                 wbuilder.putValue( points, nn0 );
                 points++;
             }
 
             i++;
 
-            x0 = dxLimit * ( 0.5 + (int) Math.floor(p0/dxLimit) );
-            y0 = dyLimit * ( 0.5 + (int) Math.floor(p1/dyLimit) );
-            sx0 = p0*ww;
-            sy0 = p1*ww;
+            x0 = dxLimit * ( 0.5 + (int) Math.floor(pxx/dxLimit) );
+            y0 = dyLimit * ( 0.5 + (int) Math.floor(pyy/dyLimit) );
+            sx0 = pxx*ww;
+            sy0 = pyy*ww;
             nn0 = ww;
+            miny0 = Double.MAX_VALUE;
+            maxy0 = Double.MIN_VALUE;
+            
         }
 
         if ( nn0>0 ) {
@@ -156,6 +169,8 @@ public class Reduction {
             ay0 = sy0 / nn0;
             xbuilder.putValue( points, xlog ? Math.exp(ax0) : ax0 );
             ybuilder.putValue( points, ylog ? Math.exp(ay0) : ay0 );
+            yminbuilder.putValue( points, miny0 );
+            ymaxbuilder.putValue( points, maxy0 );
             wbuilder.putValue( points, nn0 );
             points++;
         }
@@ -164,10 +179,15 @@ public class Reduction {
         MutablePropertyDataSet xds= xbuilder.getDataSet();
 
         DataSetUtil.putProperties( DataSetUtil.getProperties(y), yds );
+        yminbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(y) );
+        ymaxbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(y) );
         DataSetUtil.putProperties( DataSetUtil.getProperties(x), xds );
         if ( xds.property( QDataSet.CADENCE ) != null ) xds.putProperty( QDataSet.CADENCE, xLimit );
         yds.putProperty( QDataSet.DEPEND_0, xds );
         yds.putProperty( QDataSet.WEIGHTS_PLANE, wbuilder.getDataSet() );
+
+        yds.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( yds, yminbuilder.getDataSet() ) );
+        yds.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), yds ) );
 
         System.err.println( String.format( "time to reduce2D(%d points) (ms): %d", ds.length(), System.currentTimeMillis()-t0) );
 
