@@ -1865,13 +1865,17 @@ public class DataSetUtil {
         if ( ds.rank()>0 ) {
             throw new IllegalArgumentException("dataset is not rank 0");
         } else {
-            Units u= (Units) ds.property(QDataSet.UNITS);
+            Units u= SemanticOps.getUnits(ds);
             String format= (String) ds.property(QDataSet.FORMAT);
-            if ( u==null ) u= Units.dimensionless;
-            if ( format==null ) {
-                return Datum.create( ds.value(), u );
+            QDataSet wds= weightsDataSet(ds);
+            if ( wds.value()==0 ) {
+                return u.getFillDatum();
             } else {
-                return Datum.create( ds.value(), u, new FormatStringFormatter(format, true) );
+                if ( format==null ) {
+                    return Datum.create( ds.value(), u );
+                } else {
+                    return Datum.create( ds.value(), u, new FormatStringFormatter(format, true) );
+                }
             }
         }
     }
