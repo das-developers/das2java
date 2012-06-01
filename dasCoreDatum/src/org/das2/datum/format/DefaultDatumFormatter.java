@@ -52,7 +52,11 @@ public class DefaultDatumFormatter extends DatumFormatter {
     }
 
     public String format(Datum datum) {
-        return format(datum, datum.getUnits()) + " " + datum.getUnits();
+        if ( datum.isFill() ) {
+            return "fill";
+        } else {
+            return format(datum, datum.getUnits()) + " " + datum.getUnits();
+        }
     }
 
     @Override
