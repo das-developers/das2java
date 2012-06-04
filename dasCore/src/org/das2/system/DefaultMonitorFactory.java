@@ -17,28 +17,24 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 
 /**
- *
+ * Provided so we could look at monitors leftover when debugging.  Note Autoplot appears to get old monitors from here
  * @author Jeremy
  */
 public class DefaultMonitorFactory implements MonitorFactory {
-    LinkedHashMap monitors= new LinkedHashMap() {
+    LinkedHashMap monitors= new LinkedHashMap(SIZE) {
         @Override
         protected boolean removeEldestEntry(Map.Entry eldest) {
-            return ( size()>size );
+            boolean removed = super.removeEldestEntry(eldest);
+            return ( size()>SIZE );
         }
     };
 
-    protected int size = 10;
+    protected static final int SIZE = 10;
     public static final String PROP_SIZE = "size";
 
     public int getSize() {
-        return size;
+        return SIZE;
     }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
     
     public class MonitorEntry {
         ProgressMonitor monitor;
