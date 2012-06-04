@@ -1107,6 +1107,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         print(graphics);
     }
 
+    private PropertyChangeListener repaintListener= new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            repaint();
+        }
+    };
+
     /** This methods adds the specified <code>DasCanvasComponent</code> to this canvas.
      * @param c the component to be added to this canvas
      * Note that the canvas will need to be revalidated after the component
@@ -1122,14 +1128,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             c.setColumn(column);
         }
         add(c);
-        PropertyChangeListener positionListener = new PropertyChangeListener() {
 
-            public void propertyChange(PropertyChangeEvent evt) {
-                repaint();
-            }
-        };
-        row.addPropertyChangeListener(positionListener);
-        column.addPropertyChangeListener(positionListener);
+        row.addPropertyChangeListener(repaintListener);
+        column.addPropertyChangeListener(repaintListener);
     }
 
     /** TODO
