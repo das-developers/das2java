@@ -72,7 +72,6 @@ import org.virbo.dataset.SemanticOps;
 public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer, org.das2.components.propertyeditor.Displayable {
 
     final private Object lockObject = new Object();
-    private DasColorBar colorBar;
     private Image plotImage;
     /**
      * bounds of the image, in the canvas frame.  Note that this can be bigger than the canvas itsself, for example if overrendering is on.
@@ -190,10 +189,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         return colorBar; //.getAxis();
     }
 
-    public DasColorBar getColorBar() {
-        return colorBar;
-    }
-
+    @Override
     public void setColorBar(DasColorBar cb) {
         if (colorBar == cb) {
             return;
@@ -444,6 +440,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
+    @Override
     public synchronized void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
         logger.finer("entering SpectrogramRenderer.updatePlotImage");
         updateImageCount++;
@@ -708,6 +705,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
+    @Override
     protected void installRenderer() {
         if (parent != null && parent.getCanvas() != null) {
             if (colorBar != null) {
@@ -743,6 +741,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
+    @Override
     protected void uninstallRenderer() {
 //        if (colorBar != null && colorBar.getCanvas() != null) {
 //            // count the number of Renderers pointing to the colorbar.  Remove it if it's the only one.

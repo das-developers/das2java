@@ -196,14 +196,6 @@ public class PlotSymbolRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_COLORBYDATASETID, oldcolorByDataSetId, newcolorByDataSetId);
     }
     
-    
-    public static final String PROP_COLORBAR = "colorBar";
-
-    private DasColorBar colorBar;
-
-    public DasColorBar getColorBar() {
-        return this.colorBar;
-    }
 
     public void setColorBar(DasColorBar colorBar) {
         DasColorBar oldcolorBar= this.colorBar;

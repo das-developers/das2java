@@ -32,13 +32,6 @@ public class PitchAngleDistributionRenderer extends Renderer {
     public PitchAngleDistributionRenderer( DasColorBar cb ) {
         setColorBar(cb);
     }
-    
-    protected DasColorBar colorBar = null;
-    public static final String PROP_COLORBAR = "colorBar";
-
-    public DasColorBar getColorBar() {
-        return colorBar;
-    }
 
     PropertyChangeListener rebinListener= new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent e) {
@@ -53,6 +46,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
     }
 
 
+    @Override
     public final void setColorBar(DasColorBar colorBar) {
         DasColorBar oldColorBar = this.colorBar;
         if ( this.colorBar!=null ) {

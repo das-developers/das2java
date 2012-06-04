@@ -667,10 +667,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * @return
      */
     public String getListLabel() {
-        StringBuffer l= new StringBuffer( getLegendLabel() );
+        StringBuilder l= new StringBuilder( getLegendLabel() );
         if ( this.getDataSetDescriptor()!=null ) {
             if ( l.length()>0 ) {
-                l.append( " ("+this.getDataSetDescriptor() +")" );
+                l.append(" (").append(this.getDataSetDescriptor()).append( ")");
             }
         }
         if ( l.length()==0 ) {
@@ -679,6 +679,22 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return l.toString();
     }
 
+    public static final String PROP_COLORBAR = "colorBar";
+    protected DasColorBar colorBar;
+
+    /**
+     * attach a colorBar to the renderer.  By default, the renderer simply ignores the colorbar, but instances may
+     * introduce special handling.
+     * WARNING: some subclasses override this, but do not call super.setColorBar.
+     * @param cb
+     */
+    public void setColorBar( DasColorBar cb ) {
+        this.colorBar= cb;
+    }
+
+    public DasColorBar getColorBar() {
+        return colorBar;
+    }
 
     /**
      * Utility field used by bound properties.

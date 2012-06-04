@@ -1741,18 +1741,6 @@ public class SeriesRenderer extends Renderer {
         if ( !colorByDataSetId.equals("") ) updatePsym();
         propertyChangeSupport.firePropertyChange("colorByDataSetId", oldVal, colorByDataSetId);
     }
-    /**
-     * Holds value of property colorBar.
-     */
-    private DasColorBar colorBar;
-
-    /**
-     * Getter for property colorBar.
-     * @return Value of property colorBar.
-     */
-    public DasColorBar getColorBar() {
-        return this.colorBar;
-    }
 
     PropertyChangeListener colorBarListener= new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
@@ -1766,6 +1754,7 @@ public class SeriesRenderer extends Renderer {
      * Setter for property colorBar.
      * @param colorBar New value of property colorBar.
      */
+    @Override
     public void setColorBar(DasColorBar cb) {
         if ( this.colorBar == cb) {
             return;
