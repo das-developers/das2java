@@ -8,32 +8,31 @@
 
 package org.das2.system;
 
-import java.util.Map;
 import org.das2.components.DasProgressPanel;
 import org.das2.graph.DasCanvas;
 import org.das2.graph.DasCanvasComponent;
 import org.das2.util.monitor.ProgressMonitor;
-import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
 
 /**
  * Provided so we could look at monitors leftover when debugging.  Note Autoplot appears to get old monitors from here
  * @author Jeremy
  */
 public class DefaultMonitorFactory implements MonitorFactory {
-    LinkedHashMap monitors= new LinkedHashMap(SIZE) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry eldest) {
-            boolean removed = super.removeEldestEntry(eldest);
-            return ( size()>SIZE );
-        }
-    };
+    LinkedList monitors= new LinkedList();
 
-    protected static final int SIZE = 10;
+    protected static int size = 10;
     public static final String PROP_SIZE = "size";
 
     public int getSize() {
-        return SIZE;
+        return size;
+    }
+
+    public synchronized void setSize( int size ) {
+        this.size= size;
+        while ( monitors.size()>size ) {
+            monitors.remove(0);
+        }
     }
     
     public class MonitorEntry {
@@ -71,23 +70,24 @@ public class DefaultMonitorFactory implements MonitorFactory {
         return result;
     }
     
-    private void putMonitor( ProgressMonitor monitor, String label, String description ) {
-        Long key= System.currentTimeMillis();
-        monitors.put( key, new MonitorEntry( monitor, description ) );
+    private synchronized void putMonitor( ProgressMonitor monitor, String label, String description ) {
+        monitors.add( new MonitorEntry( monitor, description ) );
+        while ( monitors.size()>size ) {
+            monitors.remove(0);
+        }
     }
     
-    public MonitorEntry[] getMonitors() {
-        Collection set= monitors.values();
-        return (MonitorEntry[])set.toArray( new MonitorEntry[ set.size() ] );
+    public synchronized MonitorEntry[] getMonitors() {
+        return (MonitorEntry[])monitors.toArray( new MonitorEntry[ monitors.size() ] );
     }
     
     public MonitorEntry getMonitors( int i ) {
         return getMonitors()[i];
     }
     
-    public void setClear( boolean clear ) {
+    public synchronized void setClear( boolean clear ) {
         if ( clear ) {
-            monitors.keySet().removeAll(monitors.keySet());
+            monitors.clear();
         }
     }
     
