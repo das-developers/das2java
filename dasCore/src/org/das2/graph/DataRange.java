@@ -305,7 +305,13 @@ public class DataRange implements Cloneable {
         }
         
         if ( pushHistory && !valueIsAdjusting ) {
-            if ( history.size()==0 || !this.range.equals(history.peek()) ) history.push(this.range);
+            if ( history.size()==0 || !this.range.equals(history.peek()) ) {
+                history.push(this.range);
+                while ( history.size()>HISTORY_DEPTH ) {
+                    history.remove(0);
+                }
+
+            }
             DasLogger.getLogger( DasLogger.GUI_LOG ).fine( "push history: "+range );
             forwardHistory.removeAllElements();
             firePropertyChange( "history", new ArrayList(), new ArrayList(history) );
@@ -419,6 +425,8 @@ public class DataRange implements Cloneable {
     }
     
     boolean valueIsAdjusting= false;
+
+    private static final int HISTORY_DEPTH = 10;
     
     protected DasAxis.Lock mutatorLock() {
         return new DasAxis.Lock() {
@@ -432,6 +440,9 @@ public class DataRange implements Cloneable {
             public void unlock() {
                 valueIsAdjusting= false;
                 if ( history.size()==0 || !orig.equals(history.peek()) ) history.push(orig);
+                while ( history.size()>HISTORY_DEPTH ) {
+                    history.remove(0);
+                }
                 if ( !DataRange.this.range.equals(orig) ) {
                     firePropertyChange( PROPERTY_DATUMRANGE, orig, DataRange.this.range );
                 }
