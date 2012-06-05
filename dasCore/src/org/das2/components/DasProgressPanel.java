@@ -109,6 +109,7 @@ public class DasProgressPanel implements ProgressMonitor {
     private boolean componentsInitialized;
     private DasCanvasComponent parentComponent;
     private DasCanvas parentCanvas;
+    private Container removeFromComponent= null; // this is the parent we need to remove the monitor from when finished.
     private static int createComponentCount = 0;
 
     class MyPanel extends JPanel {
@@ -320,14 +321,17 @@ public class DasProgressPanel implements ProgressMonitor {
             int x = parentComponent.getColumn().getDMiddle();
             int y = parentComponent.getRow().getDMiddle();
             thePanel.setLocation(x - thePanel.getWidth() / 2, y - thePanel.getHeight() / 2);
-            ((Container) (parentComponent.getCanvas().getGlassPane())).add(thePanel);
+            removeFromComponent= ((Container) (parentComponent.getCanvas().getGlassPane()));
+            removeFromComponent.add(thePanel);
             thePanel.setVisible(false);
         } else if ( parentCanvas!=null ) {
             thePanel.setSize(thePanel.getPreferredSize());
             int x = parentCanvas.getWidth()/2;
             int y = parentCanvas.getHeight()/2;
             thePanel.setLocation(x - thePanel.getWidth() / 2, y - thePanel.getHeight() / 2);
-            ((Container) (parentCanvas.getGlassPane())).add(thePanel);
+            removeFromComponent= ((Container) (parentCanvas.getGlassPane()));
+            removeFromComponent.add(thePanel);
+
             thePanel.setVisible(false);
         }
 
@@ -339,11 +343,15 @@ public class DasProgressPanel implements ProgressMonitor {
         finished = true;
         Runnable run= new Runnable() {
             public void run() {
+                if ( removeFromComponent!=null ) {
+                    removeFromComponent.remove(thePanel);
+                }
                 if (jframe == null) {
                     setVisible(false);
                 } else {
                     jframe.dispose();
                 }
+
             }
         };
         SwingUtilities.invokeLater(run);
