@@ -44,12 +44,7 @@ public class EnumerationDatumFormatter extends DatumFormatter {
     
     public String format(Datum datum) {
         String s= ((EnumerationUnits)datum.getUnits()).getObject(datum).toString();
-        if ( quotes ) s = "\"" + s + "\"";
         return s;
-    }
-
-    public void setAddQuotes(boolean b) {
-        quotes= b;
     }
     
 }
