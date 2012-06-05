@@ -3265,11 +3265,17 @@ public class Ops {
     public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
 
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex0));
+
+        QDataSet wds= DataSetUtil.weightsDataSet(vv);
+
         QubeDataSetIterator it = new QubeDataSetIterator(findex0);
         int ic00, ic01, ic10, ic11;
         int n0 = vv.length();
         int n1 = vv.length(0);
 
+        double fill= -1e38;
+        result.putProperty( QDataSet.FILL_VALUE, fill );
+        
         while (it.hasNext()) {
             it.next();
 
@@ -3278,11 +3284,9 @@ public class Ops {
 
             if (ff0 < 0) {
                 ic00 = 0; // extrapolate
-
                 ic01 = 1;
             } else if (ff0 >= n0 - 1) {
                 ic00 = n0 - 2; // extrapolate
-
                 ic01 = n0 - 1;
             } else {
                 ic00 = (int) Math.floor(ff0);
@@ -3291,11 +3295,9 @@ public class Ops {
 
             if (ff1 < 0) {
                 ic10 = 0; // extrapolate
-
                 ic11 = 1;
             } else if (ff1 >= n1 - 1) {
                 ic10 = n1 - 2; // extrapolate
-
                 ic11 = n1 - 1;
             } else {
                 ic10 = (int) Math.floor(ff1);
@@ -3307,13 +3309,22 @@ public class Ops {
 
             double vv00 = vv.value(ic00, ic10);
             double vv01 = vv.value(ic00, ic11);
-
             double vv10 = vv.value(ic01, ic10);
             double vv11 = vv.value(ic01, ic11);
 
-            it.putValue(result, vv00 * (1 - alpha0) * (1 - alpha1) + vv01 * (1 - alpha0) * (alpha1) + vv10 * (alpha0) * (1 - alpha1) + vv11 * (alpha0) * (alpha1));
+            double ww00=  wds.value(ic00, ic10);
+            double ww01 = wds.value(ic00, ic11);
+            double ww10 = wds.value(ic01, ic10);
+            double ww11 = wds.value(ic01, ic11);
+
+            if ( ww00*ww01*ww10*ww11 > 0 ) {
+                it.putValue(result, vv00 * (1 - alpha0) * (1 - alpha1) + vv01 * (1 - alpha0) * (alpha1) + vv10 * (alpha0) * (1 - alpha1) + vv11 * (alpha0) * (alpha1));
+            } else {
+                it.putValue(result, fill );
+            }
 
         }
+
         return result;
     }
 
