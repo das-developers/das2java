@@ -898,6 +898,8 @@ public class SeriesRenderer extends Renderer {
      * updates the image of a psym that is stamped
      */
     private void updatePsym() {
+        if ( !isActive() ) return;
+        
         int sx = 6+(int) Math.ceil(symSize + 2 * lineWidth);
         int sy = 6+(int) Math.ceil(symSize + 2 * lineWidth);
         double dcmx, dcmy;
@@ -1762,7 +1764,7 @@ public class SeriesRenderer extends Renderer {
         if (colorBar != null) {
             colorBar.removePropertyChangeListener( colorBarListener );
         }
-        colorBar = cb;
+        super.setColorBar(cb);
         if (colorBar != null) {
             if (parent != null && parent.getCanvas() != null) {
                 parent.getCanvas().add(colorBar);
