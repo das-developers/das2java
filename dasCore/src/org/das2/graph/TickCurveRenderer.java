@@ -344,6 +344,10 @@ public class TickCurveRenderer extends Renderer {
 
         QDataSet tds;
         tds= (QDataSet) xds.property(QDataSet.DEPEND_0);
+        if ( tds==null ) {
+            tds= DataSetOps.unbundle( ds3, 0 );
+        }
+
 
         xunits= SemanticOps.getUnits(xds);
         yunits= SemanticOps.getUnits(yds);
