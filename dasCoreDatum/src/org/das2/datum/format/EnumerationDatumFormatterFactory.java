@@ -31,12 +31,14 @@ public class EnumerationDatumFormatterFactory extends DatumFormatterFactory {
     
     private final static EnumerationDatumFormatterFactory INSTANCE
         = new EnumerationDatumFormatterFactory();
-    
+
+    private final static EnumerationDatumFormatter form= new EnumerationDatumFormatter();
+
     private EnumerationDatumFormatterFactory() {
     }
     
     public DatumFormatter defaultFormatter() {
-        return new EnumerationDatumFormatter();
+        return form;
     }
     
     public DatumFormatter newFormatter(String format) throws java.text.ParseException {
