@@ -58,7 +58,7 @@ import org.das2.util.monitor.NullProgressMonitor;
 /**
  * Make a web folder accessible.  This assumes listings are provided in html form by requesting links ending in a slash.
  * For example, http://autoplot.org/data/pngwalk/.  Links to resources "outside" of the filesystem are not considered part of
- * the filesystem.  Again, this assumes listings are HTML content, and I suspect this will be changing...
+ * the filesystem.  Again, this assumes listings are HTML content, and I suspect this will be changing (xml+client-side-xslt)...
  *
  * @author  Jeremy
  */
