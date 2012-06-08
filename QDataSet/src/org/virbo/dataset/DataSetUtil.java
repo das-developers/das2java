@@ -1898,6 +1898,17 @@ public class DataSetUtil {
     }
 
     /**
+     * return the DatumRange equivalent of this 2-element, rank 1 bins dataset.  This uses the
+     * sloppy mode, which does not check the BINS_0 property.
+     *
+     * @param ds a two-element dataset
+     * @return a DatumRange.
+     */
+    public static DatumRange asDatumRange( QDataSet ds ) {
+        return asDatumRange( ds, true );
+    }
+
+    /**
      * return a 2-element rank 1 bins dataset with BINS_0="min,max"
      * @param dr
      * @return
