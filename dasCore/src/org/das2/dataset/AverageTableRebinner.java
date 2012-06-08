@@ -137,8 +137,11 @@ public class AverageTableRebinner implements DataSetRebinner {
                 yTagWidth0= DataSetUtil.guessCadenceNew( yds1, null );
             } else {
                 QDataSet yds1= SemanticOps.ytagsDataSet( tds.slice(0) );
-                if ( yds1.rank()>1 ) yds1= yds1.slice(0);
-                yTagWidth0= DataSetUtil.guessCadenceNew( yds1, null );
+                if ( yds1.rank()==2 ) {
+                    yTagWidth0= null; //TODO: this whole routine needs to be redone, so just don't worry about cadence here
+                } else {
+                    yTagWidth0= DataSetUtil.guessCadenceNew( yds1, null );
+                }
                 for ( int i=1;i<tds.length(); i++ ) {
                     yds1= SemanticOps.ytagsDataSet( tds.slice(i) );
                     if ( yds1.rank()>1 ) yds1= yds1.slice(0);
