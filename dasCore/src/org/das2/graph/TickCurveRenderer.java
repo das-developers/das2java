@@ -106,8 +106,9 @@ public class TickCurveRenderer extends Renderer {
      * @param fillDs
      * @return
      */
-    public static QDataSet doAutorange( QDataSet ds ) {
+    public static QDataSet doAutorange( QDataSet ds1 ) {
 
+        QDataSet ds= makeCanonical(ds1);
         QDataSet xrange= Ops.rescaleRange( Ops.extent( DataSetOps.unbundle(ds,1) ), -0.1, 1.1 );
         QDataSet yrange= Ops.rescaleRange( Ops.extent( DataSetOps.unbundle(ds,2) ), -0.1, 1.1 );
 
@@ -117,6 +118,24 @@ public class TickCurveRenderer extends Renderer {
 
         return bds;
 
+    }
+
+    static QDataSet makeCanonical( QDataSet ds ) {
+        if ( ds.rank()==2 && ds.length(0)==3 ) {
+            return ds;
+        }
+        QDataSet xx;
+        QDataSet yy;
+        QDataSet tt;
+
+        if ( ds.rank()==1 ) {
+            yy= ds;
+            xx= SemanticOps.xtagsDataSet(yy);
+            tt= SemanticOps.xtagsDataSet(xx);
+            return Ops.bundle( tt, xx, yy );
+        } else {
+            throw new IllegalArgumentException("dataset must be rank2[3,n] or rank 1 ds[xx[tt]]");
+        }
     }
 
 //    private static double length( Line2D line ) {
@@ -318,7 +337,9 @@ public class TickCurveRenderer extends Renderer {
             return;
         }
 
-        if ( ds.length()<2 ) {
+        QDataSet ds2= makeCanonical(ds);
+
+        if ( ds2.length()<2 ) {
             return;
         }
         
@@ -330,7 +351,8 @@ public class TickCurveRenderer extends Renderer {
         g.setColor( Color.black );
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
-        QDataSet ds3= getDataSet();
+        QDataSet ds3= ds2;
+        
         if ( xplane!=null && !xplane.equals("") ) {
             xds= DataSetOps.unbundle( ds3, xplane );
         } else {
@@ -467,11 +489,6 @@ public class TickCurveRenderer extends Renderer {
         this.tickLength = tickLength;
         invalidateParentCacheImage();
     }
-
-        
-    protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
-        throw new UnsupportedOperationException();
-    }    
 
     /**
      * set the ticks for the renderer.
