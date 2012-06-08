@@ -179,7 +179,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     protected void invalidateParentCacheImage() {
-        if (parent != null) parent.invalidateCacheImage();
+        DasPlot lparent= parent;
+        if (lparent != null) lparent.invalidateCacheImage();
     }
 
     /**
@@ -295,7 +296,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         Exception oldException = this.lastException;
         this.lastException = e;
         this.renderException = lastException;
-        if (parent != null && oldException != e) {
+        if ( parent != null && oldException != e) {
             //parent.markDirty();
             //parent.update();
             update();
@@ -384,8 +385,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         if (!message.equals("")) {
             s += ":!c" + message;
         }
-
-        parent.postMessage(this, s, DasPlot.SEVERE, null, null);
+        DasPlot lparent= parent;
+        if ( lparent!=null ) lparent.postMessage(this, s, DasPlot.SEVERE, null, null);
 
     }
 
@@ -416,16 +417,17 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * repaint is posted on the event thread.
      */
     public void update() {
-        if (getParent() != null) getParent().repaint();
-        logger.log(Level.FINE, "Renderer.update {0}", id);
-        if (parent != null) {
-            java.awt.EventQueue eventQueue =
-                    Toolkit.getDefaultToolkit().getSystemEventQueue();
-            DasRendererUpdateEvent drue = new DasRendererUpdateEvent(parent, this);
-            eventQueue.postEvent(drue);
-        } else {
+        DasPlot lparent= parent;
+        if ( lparent==null ) {
             logger.fine("update but parent was null");
+            return;
         }
+        lparent.repaint();
+        logger.log(Level.FINE, "Renderer.update {0}", id);
+        java.awt.EventQueue eventQueue =
+                Toolkit.getDefaultToolkit().getSystemEventQueue();
+        DasRendererUpdateEvent drue = new DasRendererUpdateEvent(lparent, this);
+        eventQueue.postEvent(drue);
     }
 
     /**
@@ -435,7 +437,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      */
     protected void updateImmediately() {
         logger.finer("entering Renderer.updateImmediately");
-        if (parent == null || !parent.isDisplayable()) {
+        DasPlot lparent= parent;
+        if (lparent == null || !lparent.isDisplayable()) {
             return;
         }
 
@@ -457,12 +460,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     protected void refresh() {
         if (!isActive()) return;
 
+        DasPlot lparent= parent;
         logger.fine("entering Renderer.refresh");
-        if (parent == null) {
+        if (lparent == null) {
             logger.fine("null parent in refresh");
             return;
         }
-        if (!parent.isDisplayable()) {
+        if (!lparent.isDisplayable()) {
             logger.fine("parent not displayable");
             return;
         }
@@ -472,16 +476,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             public void run() {
                 logger.log(Level.FINE, "update plot image for {0}", id);
                 DasPlot lparent= parent;
+                if ( lparent==null ) return;
                 try {
-                    if (lparent != null) {
-                        final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
-                        updatePlotImage(lparent.getXAxis(), lparent.getYAxis(), progressPanel);
-                        xmemento = lparent.getXAxis().getMemento();
-                        ymemento = lparent.getYAxis().getMemento();
-                        renderException = null;
-                    } else {
-                        return;
-                    }
+                    final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
+                    updatePlotImage(lparent.getXAxis(), lparent.getYAxis(), progressPanel);
+                    xmemento = lparent.getXAxis().getMemento();
+                    ymemento = lparent.getYAxis().getMemento();
+                    renderException = null;
                 } catch (DasException de) {
                     // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
                     logger.log(Level.WARNING, "exception: {0}", de);
@@ -491,10 +492,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                     logger.log(Level.WARNING, "exception: {0}", re);
                     re.printStackTrace();
                     renderException = re;
-                    if ( lparent!=null ) {
-                        lparent.invalidateCacheImage();
-                        lparent.repaint();
-                    }
+                    lparent.invalidateCacheImage();
+                    lparent.repaint();
                     throw re;
                 } finally {
                     // this code used to call finished() on the progressPanel
@@ -526,9 +525,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
         if (loader instanceof XAxisDataLoader) {
             ((XAxisDataLoader) loader).setDataSetDescriptor(dsd);
-            if (parent != null) {
-                parent.markDirty();
-                parent.update();
+            DasPlot lparent= parent;
+            if (lparent != null) {
+                lparent.markDirty();
+                lparent.update();
             }
             this.ds = null;
         } else {
