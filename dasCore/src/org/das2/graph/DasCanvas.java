@@ -1905,10 +1905,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     public DasCanvasComponent[] getCanvasComponents() {
-        int n = getComponentCount() - 1;
+        Component[] cc= getComponents();
+        int n = cc.length - 1;
         DasCanvasComponent[] result = new DasCanvasComponent[n];
         for (int i = 0; i < n; i++) {
-            result[i] = getCanvasComponents(i);
+            result[i] = (DasCanvasComponent) cc[i+1];
         }
         return result;
     }
