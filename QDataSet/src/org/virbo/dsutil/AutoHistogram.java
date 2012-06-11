@@ -836,6 +836,10 @@ public final class AutoHistogram {
      */
     public static RankZeroDataSet moments(QDataSet hist) {
         
+        if ( ((Map) hist.property(QDataSet.USER_PROPERTIES))==null || (((Map) hist.property(QDataSet.USER_PROPERTIES)).get(USER_PROP_TOTAL))==null ) {
+            throw new IllegalArgumentException("moments expects the output of AutoHistogram for the result. USER_PROPERTIES.USER_PROP_TOTAL not found." );
+        }
+        
         long total = (Long) (((Map) hist.property(QDataSet.USER_PROPERTIES)).get(USER_PROP_TOTAL));
 
         if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits( (QDataSet)hist.property(QDataSet.DEPEND_0 ) ) ) ) {
