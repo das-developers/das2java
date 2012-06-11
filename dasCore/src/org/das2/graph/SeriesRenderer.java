@@ -1054,6 +1054,11 @@ public class SeriesRenderer extends Renderer {
         logger.log( Level.FINE, "ds: {0},  firstIndex={1} to lastIndex={2}", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex});
     }
 
+    @Override
+    public void setActive( boolean active ) {
+        super.setActive(active);
+        if ( active ) updatePsym();
+    }
 
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
