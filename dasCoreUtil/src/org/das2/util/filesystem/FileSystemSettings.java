@@ -70,7 +70,7 @@ public class FileSystemSettings {
      * return the connection timeout in milliseconds.
      * @return
      */
-    int getConnectTimeoutMs() {
+    public int getConnectTimeoutMs() {
         return 5000;
     }
 
