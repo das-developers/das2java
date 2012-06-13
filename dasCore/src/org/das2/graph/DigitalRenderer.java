@@ -389,6 +389,9 @@ public class DigitalRenderer extends Renderer {
         QDataSet yds= SemanticOps.ytagsDataSet(ds);
 
         QDataSet zds= (QDataSet) yds.property(QDataSet.PLANE_0);
+        if ( zds==null && ds.rank()==2 && ds.length(0)==3 ) {
+            zds= DataSetOps.unbundle(ds,2);
+        }
         if ( zds==null ) zds= yds;
         Units u = SemanticOps.getUnits(zds);
 
