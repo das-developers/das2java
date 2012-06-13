@@ -429,7 +429,7 @@ public class TickCurveRenderer extends Renderer {
         int em= 10;
         Arrow.paintArrow( g,
                 new Point2D.Double( idata[0][n-1],idata[1][n-1] ),
-                new Point2D.Double( idata[0][n-3],idata[1][n-3] ), em, Arrow.HeadStyle.FAT_TRIANGLE );
+                new Point2D.Double( idata[0][n-3],idata[1][n-3] ), em, Arrow.HeadStyle.DRAFTING );
         tickLabeller.finished();
         
     }
