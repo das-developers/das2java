@@ -639,7 +639,7 @@ public class StreamTool {
             String key = asciiBytesToString(struct.four, 1, 2);
             PacketDescriptor pd = (PacketDescriptor) struct.descriptors.get(key);
             if ( pd==null ) {
-                throw new IllegalArgumentException( String.format( "No packet found for key \"%s\"",key ) );
+                throw new StreamException( String.format( "No packet found for key \"%s\"",key ) ); //TODO
             }
             int contentLength = pd.sizeBytes();
             if ( contentLength>PACKET_LENGTH_LIMIT ) throw new IllegalStateException("packet length bug would cause stream parser to hang (bug 0000348: streams with long packet lengths)");
