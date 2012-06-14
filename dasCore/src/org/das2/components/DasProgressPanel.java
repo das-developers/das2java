@@ -179,16 +179,31 @@ public class DasProgressPanel implements ProgressMonitor {
         return true;
     }
 
-    public static DasProgressPanel createFramed(String label) {
-        DasProgressPanel result;
+    /**
+     * this may be called from off the event thread, but it does assume that the
+     * event thread is free.
+     * @param label
+     * @return
+     */
+    public static DasProgressPanel createFramed( final String label) {
+        final DasProgressPanel result;
         result = new DasProgressPanel(label);
-        JFrame fr= new JFrame("Progress Monitor");
-        result.jframe = fr;
-        result.initComponents();
-        fr.getContentPane().add(result.thePanel);
-        fr.pack();
-        fr.setVisible(false);
-        fr.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        Runnable run= new Runnable() {
+            public void run() {
+                JFrame fr= new JFrame("Progress Monitor");
+                result.jframe = fr;
+                result.initComponents();
+                fr.getContentPane().add(result.thePanel);
+                fr.pack();
+                fr.setVisible(false);
+                fr.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            }
+        };
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
         return result;
     }
 
@@ -198,19 +213,29 @@ public class DasProgressPanel implements ProgressMonitor {
      * @param label
      * @return
      */
-    public static DasProgressPanel createFramed( Window parent, String label) {
-        DasProgressPanel result;
+    public static DasProgressPanel createFramed( final Window parent, String label) {
+        final DasProgressPanel result;
         result = new DasProgressPanel(label);
-        if ( parent instanceof JFrame ) {
-            result.jframe = new JDialog((JFrame)parent,"Progress Monitor");
-        } else if ( parent instanceof Dialog ) {
-            result.jframe = new JDialog((Dialog)parent,"Progress Monitor");
+        Runnable run= new Runnable() {
+            public void run() {
+                if ( parent instanceof JFrame ) {
+                    result.jframe = new JDialog((JFrame)parent,"Progress Monitor");
+                } else if ( parent instanceof Dialog ) {
+                    result.jframe = new JDialog((Dialog)parent,"Progress Monitor");
+                }
+
+                result.initComponents();
+                result.jframe.add(result.thePanel);
+                result.jframe.pack();
+                result.jframe.setLocationRelativeTo(parent);
+                result.jframe.setVisible(false);
+            }
+        };
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
         }
-        result.initComponents();
-        result.jframe.add(result.thePanel);
-        result.jframe.pack();
-        result.jframe.setLocationRelativeTo(parent);
-        result.jframe.setVisible(false);
         return result;
     }
 
