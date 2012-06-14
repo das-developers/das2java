@@ -342,6 +342,13 @@ public class EventsRenderer extends Renderer {
             return null;
         }
 
+        Units u0= SemanticOps.getUnits( xmins );
+        Units u1= SemanticOps.getUnits( xmaxs );
+
+        if ( u1.isConvertableTo( u0.getOffsetUnits() ) && !u1.isConvertableTo(u0) ) { // maxes are dt instead of stopt.
+            xmaxs= Ops.add( xmins, xmaxs );
+        }
+
         QDataSet ds= Ops.bundle( Ops.bundle( Ops.bundle( xmins, xmaxs ), colors ), msgs );
 
         return ds;
