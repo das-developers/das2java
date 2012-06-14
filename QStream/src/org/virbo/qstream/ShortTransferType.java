@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
- *
+ * two-byte signed integer type.
  * @author jbf
  */
 public class ShortTransferType extends TransferType {
