@@ -462,10 +462,22 @@ public class HttpFileSystem extends WebFileSystem {
         boolean successOrCancel= false;
 
         if ( this.isOffline() ) {
-            File f= new File(localRoot, directory);
+            File f= new File(localRoot, directory).getCanonicalFile();
             if ( !f.exists() ) throw new FileSystemOfflineException("unable to list "+f+" when offline");
-            String[] listing = f.list();
-            return listing;
+            File[] listing = f.listFiles();
+
+            int n= f.toString().length();
+            List<String> result1= new ArrayList();
+            for ( int i=0; i<listing.length; i++ ) {
+                File f1= listing[i];
+                if ( f1.getName().endsWith(".listing") ) continue;
+                if ( f1.isDirectory() ) {
+                    result1.add( f1.getName() + "/" );
+                } else {
+                    result1.add( f1.getName() );
+                }
+            }
+            return result1.toArray( new String[result1.size()] );
         }
 
 
