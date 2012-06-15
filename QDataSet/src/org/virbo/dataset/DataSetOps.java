@@ -1349,7 +1349,22 @@ public class DataSetOps {
     }
 
     /**
-     * see http://www.papco.org/wiki/index.php/DataReductionSpecs
+     * pop off the single or double quotes delimiting a string, if found.
+     * @param s a string argument, possibly surrounded with quotes.
+     * @return the string without the quotes.
+     */
+    private static String getStringArg( String s ) {
+        String comp= s;
+        if ( comp.startsWith("'") && comp.endsWith("'") ) {
+            comp= comp.substring(1,comp.length()-1);
+        }
+        return comp;
+    }
+    
+    /**
+     * see http://www.papco.org/wiki/index.php/DataReductionSpecs.  There's a big problem here:
+     * if the command is not recognized, then it is ignored.  We should probably change this,
+     * but the change should be at a major version change in case it breaks things.
      * @param c
      * @param fillDs
      * @return
@@ -1394,11 +1409,8 @@ public class DataSetOps {
                     fillDs= slice3(fillDs, idx);
                 }
             } else if ( cmd.equals("|reducex") ) {
-                String arg= s.next();
+                String arg= getStringArg( s.next() );
                 try {
-                    if ( arg.startsWith("'") && arg.endsWith("'") ) {
-                       arg= arg.substring(1,arg.length()-1);
-                    }
                     Datum r = DatumUtil.parse(arg);
                     fillDs= Reduction.reduce2D( fillDs, DataSetUtil.asDataSet(r),null);
                 } catch (ParseException ex) {
@@ -1481,10 +1493,7 @@ public class DataSetOps {
                 }
 
             } else if ( cmd.equals("|unbundle" ) ) {
-                String comp= s.next();
-                if ( comp.startsWith("'") && comp.endsWith("'") ) {
-                    comp= comp.substring(1,comp.length()-1);
-                }
+                String comp= getStringArg( s.next() );
                 try {
                     int icomp= Integer.parseInt(comp);
                     fillDs= DataSetOps.unbundle( fillDs, icomp );
@@ -1526,6 +1535,11 @@ public class DataSetOps {
                 String qrg= s.next();
                 int iarg= Integer.parseInt(qrg);
                 fillDs= DataSetOps.dbAboveBackgroundDim0( fillDs, iarg );
+
+            } else if ( cmd.equals("|setUnits" ) ) {
+                String arg= getStringArg( s.next() );
+                Units newu= SemanticOps.lookupUnits(arg);
+                fillDs= ArrayDataSet.copy(fillDs).setUnits(newu);
 
             } else {
                 if ( !cmd.equals("") ) System.err.println( "command not recognized: \""+cmd +"\"" );
