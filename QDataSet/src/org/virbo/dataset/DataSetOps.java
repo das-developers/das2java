@@ -1357,6 +1357,8 @@ public class DataSetOps {
         String comp= s;
         if ( comp.startsWith("'") && comp.endsWith("'") ) {
             comp= comp.substring(1,comp.length()-1);
+        } else if ( comp.startsWith("\"") && comp.endsWith("\"") ) {
+            comp= comp.substring(1,comp.length()-1);
         }
         return comp;
     }
