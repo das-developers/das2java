@@ -135,8 +135,10 @@ public class Reduction {
                 sx0 += pxx*ww;
                 sy0 += pyy*ww;
                 nn0 += ww;
-                miny0 = Math.min( miny0, yy);
-                maxy0 = Math.max( maxy0, yy);
+                if ( ww>0 ) {
+                    miny0 = Math.min( miny0, yy);
+                    maxy0 = Math.max( maxy0, yy);
+                }
                 i++;
                 continue;
             }
@@ -159,8 +161,14 @@ public class Reduction {
             sx0 = pxx*ww;
             sy0 = pyy*ww;
             nn0 = ww;
-            miny0 = Double.MAX_VALUE;
-            maxy0 = Double.MIN_VALUE;
+            if ( ww>0 ) {
+                miny0 = yy;
+                maxy0 = yy;
+            } else {
+                miny0 = Double.MAX_VALUE;
+                maxy0 = Double.MIN_VALUE;
+            }
+            
             
         }
 
