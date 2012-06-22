@@ -441,7 +441,7 @@ public class Ops {
             }
         } else {
             int[] qubedims= DataSetUtil.qubeDims(ds);
-            isCart = qubedims[r]<4;  // loosen up restrictions
+            isCart = qubedims[r-1]<4;  // loosen up restrictions
         }
         if (isCart) {
             Units u= (Units) ds.property(QDataSet.UNITS);
