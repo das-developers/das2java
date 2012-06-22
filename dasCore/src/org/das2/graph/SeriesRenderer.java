@@ -1366,6 +1366,11 @@ public class SeriesRenderer extends Renderer {
         lastIndex= -1;
         
         if (vds != null) {
+            if ( !xAxis.getUnits().isConvertableTo( SemanticOps.getUnits(xds) ) ) {
+                xunitsWarning= true;
+                return;
+            }
+
             updateFirstLast(xAxis, yAxis, xds, vds );
 
             if (fillToReference) {
