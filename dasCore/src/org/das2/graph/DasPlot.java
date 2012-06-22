@@ -74,6 +74,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.dataset.DataSetAdapter;
+import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.Units;
 import org.das2.graph.DasAxis.Memento;
 
 public class DasPlot extends DasCanvasComponent {
@@ -1333,6 +1335,10 @@ public class DasPlot extends DasCanvasComponent {
         public void propertyChange(java.beans.PropertyChangeEvent e) {
             logger.log(Level.FINE, "rebin listener got property change: {0}", e.getNewValue());
             //System.err.println("rebin listener " + DasPlot.this + "got property change: "+e.getPropertyName() + "=" + e.getNewValue());
+            if ( isotropic && e.getSource() instanceof DasAxis ) {
+                DasAxis axis= (DasAxis)e.getSource();
+                checkIsotropic( DasPlot.this, axis );
+            }
             markDirty();
             DasPlot.this.update();
         }
@@ -1580,6 +1586,9 @@ public class DasPlot extends DasCanvasComponent {
     void markDirty() {
         logger.finer("DasPlot.markDirty");
         super.markDirty();
+        //if ( isotropic ) {
+        //    checkIsotropic( DasPlot.this, null );
+        //}
         repaint();
     }
 
@@ -1729,6 +1738,24 @@ public class DasPlot extends DasCanvasComponent {
     public Level getLogLevel( ) {
         return logLevel;
     }
+
+    public static String PROP_ISOTROPIC= "isotropic";
+
+    private boolean isotropic= false;
+
+    public boolean isIsotropic() {
+        return isotropic;
+    }
+
+    public void setIsotropic(boolean isotropic) {
+        boolean oldvalud= this.isotropic;
+        this.isotropic = isotropic;
+        if ( oldvalud!=isotropic ) {
+            firePropertyChange(PROP_ISOTROPIC, oldvalud, isotropic );
+        }
+        if ( isotropic ) checkIsotropic( this, null );
+    }
+
     /**
      * returns the rectangle that renderers should paint so that when they
      * are asked to render, they have everything pre-rendered.  This is
@@ -1759,5 +1786,40 @@ public class DasPlot extends DasCanvasComponent {
      */
     protected Rectangle getCacheImageBounds() {
         return cacheImageBounds;
+    }
+
+    /**
+     * adjust the plot axes so it remains isotropic.
+     * @param axis if non-null, the axis that changed, and the other should be adjusted.
+     */
+    private void checkIsotropic(DasPlot dasPlot, DasAxis axis) {
+        Datum scalex = dasPlot.getXAxis().getDatumRange().width().divide(dasPlot.getXAxis().getDLength());
+        Datum scaley = dasPlot.getYAxis().getDatumRange().width().divide(dasPlot.getYAxis().getDLength());
+
+        if ( ! scalex.getUnits().isConvertableTo(scaley.getUnits())
+                || dasPlot.getXAxis().isLog()
+                || dasPlot.getYAxis().isLog() ) {
+            return;
+        }
+
+        if ( axis==null ) {
+            axis= scalex.gt(scaley) ?  dasPlot.getXAxis()  : dasPlot.getYAxis() ;
+        }
+
+        if ( (axis == dasPlot.getXAxis() || axis == dasPlot.getYAxis()) ) {
+            DasAxis otherAxis = dasPlot.getYAxis();
+            if (axis == dasPlot.getYAxis()) {
+                otherAxis = dasPlot.getXAxis();
+            }
+            Datum scale = axis.getDatumRange().width().divide(axis.getDLength());
+            DatumRange otherRange = otherAxis.getDatumRange();
+            Datum otherScale = otherRange.width().divide(otherAxis.getDLength());
+            double expand = (scale.divide(otherScale).value() - 1) / 2;
+            if (Math.abs(expand) > 0.0001) {
+                System.err.println("expand="+expand + " scale="+scale + " otherScale="+otherScale );
+                DatumRange newOtherRange = DatumRangeUtil.rescale(otherRange, 0 - expand, 1 + expand);
+                otherAxis.setDatumRange(newOtherRange);
+            }
+        }
     }
 }
