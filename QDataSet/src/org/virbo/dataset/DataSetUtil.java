@@ -1032,8 +1032,10 @@ public class DataSetUtil {
         double binWidth= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_WIDTH)).doubleValue();
         firstBin= firstBin - binWidth;  // kludge, since the firstBin left side is based on the first point.
 
-        if ( UnitsUtil.isRatioMeasurement(xunits) && 
-                ( logScaleType || everIncreasing>everIncreasingLimit || ( ipeak==0 && extent.value(0)-Math.abs(mean) < 0 && ( total<10 || firstBin<=0. ) ) ) ) {
+        if ( UnitsUtil.isRatioMeasurement(xunits) && extent.value(0)>0 &&
+                ( logScaleType 
+                || everIncreasing>everIncreasingLimit
+                || ( ipeak==0 && extent.value(0)-Math.abs(mean) < 0 && ( total<10 || firstBin<=0. ) ) ) ) {
             ah= new AutoHistogram();
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
             // ltotal can be different than total.  TODO: WHY?  maybe because of outliers?
