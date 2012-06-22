@@ -123,6 +123,9 @@ public class SimpleDemo {
                 return inbds;
             }
 
+            public QDataSet exampleOutput() {
+                return value( exampleInput() );
+            }
         } );
 
         xaxis.setDrawTca(true);
