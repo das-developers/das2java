@@ -1463,6 +1463,8 @@ public class DataSetOps {
                 fillDs= grid(fillDs);
             } else if ( cmd.equals("|magnitude") ) {
                 fillDs= Ops.magnitude(fillDs);
+            } else if ( cmd.equals("|abs") ) {
+                fillDs= Ops.abs(fillDs);
             } else if ( cmd.equals("|pow")) {
                 int idx= s.nextInt();
                 fillDs= Ops.pow(fillDs,idx);
