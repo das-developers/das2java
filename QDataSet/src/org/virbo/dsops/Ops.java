@@ -451,7 +451,7 @@ public class Ops {
             if ( u!=null ) ((MutablePropertyDataSet)ds).putProperty(QDataSet.UNITS,u);
             return ds;
         } else {
-            throw new IllegalArgumentException("last dim must have COORDINATE_FRAME property");
+            throw new IllegalArgumentException("last dim must have COORDINATE_FRAME property.  See also abs() method");
         }
 
     }
