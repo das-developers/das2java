@@ -1804,23 +1804,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     }
 
-    private String resolveAxisLabel() {
-        String result= axisLabel;
-        if ( result.contains("%{" ) ) {
-            result= result.replaceAll("%\\{UNITS\\}", getUnits().toString() );
-            
-            if ( result.contains("%{RANGE}") ) {
-                DatumRange dr= getDatumRange();
-                String sdr;
-                if ( UnitsUtil.isTimeLocation( dr.getUnits() ) ) {
-                    sdr= DatumRangeUtil.formatTimeRange(dr,true);
-                } else {
-                    sdr= dr.toString();
-                }
-                result= result.replaceAll("%\\{RANGE\\}", sdr );
-            }
-            result= result.replaceAll("%\\{SCAN_RANGE\\}", String.valueOf(getScanRange()) );
+    private String resolveString( String text, String name, String value ) {
+        if ( text.contains("%{" ) ) {
+            text= text.replaceAll("%\\{"+name+"\\}", value );
+        } else if ( text.contains("$(") ) {
+            text= text.replaceAll("\\$\\("+name+"\\)", value );
         }
+        return text;
+    }
+
+    private String resolveAxisLabel() {
+        String result= resolveString( axisLabel, "UNITS", getUnits().toString() );
+        DatumRange dr= getDatumRange();
+        String sdr;
+        if ( UnitsUtil.isTimeLocation( dr.getUnits() ) ) {
+            sdr= DatumRangeUtil.formatTimeRange(dr,true);
+        } else {
+            sdr= dr.toString();
+        }
+        result= resolveString( result, "RANGE", sdr );
+        result= resolveString( result, "SCAN_RANGE", String.valueOf(getScanRange()) );
+
         return result;
     }
 
