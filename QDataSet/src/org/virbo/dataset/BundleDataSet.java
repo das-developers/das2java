@@ -136,7 +136,13 @@ public final class BundleDataSet extends AbstractDataSet {
                 throw new IndexOutOfBoundsException("No dataset at index " + i + " only " + datasets.size() +" datasets." );
             }
             if ( v==null ) {
-                return datasets.get(i).property(name);
+                if ( DataSetUtil.isInheritedProperty(name) ) { // UNITS, LABEL, TITLE, etc.
+                    return datasets.get(i).property(name);
+                } else {
+                    // the property DEPENDNAME_0 should be used in a bundle descriptor.  This property should not
+                    // be here, because we must be able to transfer BUNDLE_1 to BUNDLE_0.
+                    return null;
+                }
             } else {
                 return v;
             }
