@@ -2173,7 +2173,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         for (int i = 0; i < lines; i++) {
             try {
                 baseLine += lineHeight;
-                QDataSet v1= tcaData.slice(index).slice(i);
+                QDataSet test1= tcaData.slice(index);
+                QDataSet v1= test1.slice(i);
                 String item;
                 item= org.virbo.dataset.DataSetUtil.getStringValue( v1, v1.value() );
                 width = fm.stringWidth(item);
@@ -2548,12 +2549,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 idlt.setString(tickLabelFont, "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
                 QDataSet bds= (QDataSet) ltcaData.property(QDataSet.BUNDLE_1);
+                if ( bds.length()<lines ) {
+                    //TODO: transitional state--I hope...
+                    return bounds;
+                }
                 for (int i = 0; i < lines; i++) {
                     String ss;
                     if ( bds==null ) {
                         ss= "???";
                     } else {
-                        ss=  (String) bds.property( QDataSet.LABEL, i );
+                        ss= (String) bds.property( QDataSet.LABEL, i );
                     }
                     if ( ss==null ) ss= "   ";
                     idlt.setString( tickLabelFont, ss );
