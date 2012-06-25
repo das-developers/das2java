@@ -3796,13 +3796,16 @@ public class Ops {
     }
 
     /**
-     * link is like the plot command, but doesn't plot.  For example
-     *   plot(x,y) shows a plot of Y(X),
-     *   link(x,y) returns the dataset Y(X).
+     * link is the fundamental operator where we declare that one
+     * dataset is dependent on another.  For example link(x,y) creates
+     * a new dataset where y is the dependent variable of the independent
+     * variable x.  link is like the plot command, but doesn't plot.  For example
+     *   plot(X,Y) shows a plot of Y(X),
+     *   link(X,Y) returns the dataset Y(X).
      *
      * @param x rank 1 dataset
-     * @param y rank 1 or rank 2 dataset
-     * @return
+     * @param y rank 1 or rank 2 bundle dataset
+     * @return rank 1 dataset with DEPEND_0 set to x.
      */
     public static QDataSet link( QDataSet x, QDataSet y ) {
         if (y.rank() == 1) {
@@ -3830,7 +3833,10 @@ public class Ops {
     }
 
     /**
-     * link is like the plot command, but doesn't plot.  For example
+     * link is the fundamental operator where we declare that one
+     * dataset is dependent on another.  For example link(x,y,z) creates
+     * a new dataset where z is the dependent variable of the independent
+     * variables x and y.  link is like the plot command, but doesn't plot.  For example
      *   plot(x,y,z) shows a plot of Z(X,Y),
      *   link(x,y,z) returns the dataset Z(X,Y).
      * Note if z is a rank 1 dataset, then a bundle dataset Nx3 is returned, and names are assigned to the datasets
@@ -3838,7 +3844,7 @@ public class Ops {
      * @param x rank 1 dataset
      * @param y rank 1 dataset
      * @param z rank 1 or 2 dataset.
-     * @return
+     * @return rank 1 or 2 dataset with DEPEND_0 and DEPEND_1 set to X and Y.
      */
     public static QDataSet link( QDataSet x, QDataSet y, QDataSet z ) {
         if (z.rank() == 1) {
