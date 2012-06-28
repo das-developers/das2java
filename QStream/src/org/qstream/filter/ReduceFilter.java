@@ -110,7 +110,7 @@ public class ReduceFilter implements StreamHandler {
             Units xunits= null;
             expr=  xpath.compile("/packet/qdataset[1]/properties/property[@name='UNITS']/@value");
             xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
-            String sunits= xp.getNodeValue();
+            String sunits= xp==null ? null : xp.getNodeValue();
             if ( sunits!=null ) {
                 try {
                     xunits= SemanticOps.lookupTimeUnits(sunits);
@@ -133,8 +133,6 @@ public class ReduceFilter implements StreamHandler {
                 expr= xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
                 xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
                 if ( xp!=null ) {
-                    expr= xpath.compile("/packet/qdataset[1]/properties/property[@name='CADENCE']/@value");
-                    xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
                     String scadence= xp.getNodeValue();
                     double oldCadenceSeconds=0;
                     try {
