@@ -37,7 +37,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * 
+ * Class for formatting QDataSets as QStreams.  Although this is "SimpleStreamFormatter," this is the only formatter written
+ * thus far.
  * @author jbf
  */
 public class SimpleStreamFormatter {
@@ -291,10 +292,10 @@ public class SimpleStreamFormatter {
 
         logger.log( Level.FINE, "writing qdataset {0}", nameFor(ds));
 
-        if ( isJoin(ds) ){
-            qdatasetElement.setAttribute("rank", "" + ds.rank() );
+        if ( isJoin(ds) || isBundle(ds) ){
+            qdatasetElement.setAttribute("rank", String.valueOf( ds.rank() ) );
         } else {
-            qdatasetElement.setAttribute("rank", "" + (ds.rank() + (streamRank - 1)));
+            qdatasetElement.setAttribute("rank", String.valueOf( (ds.rank() + (streamRank - 1)) ) );
         }
 
         if ( isBundle(ds) ) {
@@ -883,14 +884,23 @@ public class SimpleStreamFormatter {
                         PacketDescriptor pd;
 
                         boolean valuesInDescriptor = true; // because it's a non-qube
+
+                        if ( depi.length()>100 ) {
+                            valuesInDescriptor= false;
+                        }
+
                         pd = doPacketDescriptor(sd, depi, false, valuesInDescriptor, 1, null);
+
+                        pd.setValuesInDescriptor(valuesInDescriptor);
 
                         sd.addDescriptor(pd);
 
                         depPackets.add(pd);
                         sd.send(pd, out);
 
-                        retire.add(pd);
+                        if ( valuesInDescriptor ) {
+                            retire.add(pd);
+                        }
                     }
                 }
 
@@ -958,6 +968,7 @@ public class SimpleStreamFormatter {
                 for (PacketDescriptor deppd : depPackets) {
                     if (!deppd.isValuesInDescriptor()) {
                         formatPackets(out, sd, deppd);
+                        sd.retireDescriptor(deppd); //TODO: verify this is correct for rank 2 deppd.
                     }
                 }
 
