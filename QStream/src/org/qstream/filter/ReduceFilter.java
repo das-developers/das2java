@@ -94,8 +94,6 @@ public class ReduceFilter implements StreamHandler {
 
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
 
-        System.err.println(pd);
-        
         Element ele= pd.getDomElement();
 
         XPathFactory factory = XPathFactory.newInstance();
@@ -276,7 +274,6 @@ public class ReduceFilter implements StreamHandler {
             } else {
                 double avg= ss[0]/nn + bb;
                 planed.getType().write( avg, data );
-                System.err.println("unload "+planed.getName()+" "+nn+"="+avg);
             }
 
             if ( ( ip==np-1 ) && planed.getType().isAscii() && Character.isWhitespace( data.get( data.capacity() - 1) ) ) {
@@ -300,7 +297,6 @@ public class ReduceFilter implements StreamHandler {
      */
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
 
-        System.err.println(pd);
         boolean skip= this.skip.get(pd);
         if ( skip ) {
             sink.packet( pd, data );
@@ -347,8 +343,6 @@ public class ReduceFilter implements StreamHandler {
                     ss[0]+= planed.getType().read(data)-bb;
                 }
                 ac1.N+= 1;
-
-                System.err.printf( "%s %d\n", planed.getName(), ac1.N );
 
             }
         }
