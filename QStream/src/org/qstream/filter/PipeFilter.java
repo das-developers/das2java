@@ -50,6 +50,7 @@ public class PipeFilter {
         //doit( new java.net.URL("file:///home/jbf/project/autoplot/data.nobackup/qds/fm2_jmp_2012_03_13_msim3.qds").openStream(), new java.io.FileOutputStream("/tmp/fm2_jmp_2012_03_13_msim3.qds"), cadence );
         //doit( new java.net.URL("file:///tmp/0B000800408DD710.20120302.qds").openStream(), new FileOutputStream("/tmp/0B000800408DD710.20120302.reduce.qds"), cadence );
         //doit( new java.net.URL("file:///tmp/po_h0_hyd_20000128.qds").openStream(), new FileOutputStream("/tmp/po_h0_hyd_20000128.reduce.qds"), cadence );
+        //doit( new java.net.URL("file:///home/jbf/data.nobackup/qds/doesntReduce.ascii.qds").openStream(), new java.io.FileOutputStream("/home/jbf/data.nobackup/qds/doesntReduce.reduced.qds"), cadence );
     }
 
 
