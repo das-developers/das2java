@@ -6,6 +6,7 @@
 package org.das2.util.filesystem;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -125,6 +126,20 @@ public class KeyChain {
                 w.close();
             }
         }
+
+        System.err.println("******************************");
+        System.err.println("created world-readable file ");
+        System.err.println( keysFile);
+        System.err.println("that contains all passwords!!!");
+        System.err.println("******************************");
+
+        JOptionPane.showMessageDialog( null,
+                "<html>******************************<br>"
+                +"created world-readable file <br>"
+                +keysFile +"<br>"
+                +"that contains all passwords!!!<br>"
+                +"******************************" );
+        
     }
 
 
