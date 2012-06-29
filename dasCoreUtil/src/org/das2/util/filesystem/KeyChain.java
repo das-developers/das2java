@@ -111,7 +111,7 @@ public class KeyChain {
      */
     public void writeKeysFile() {
         File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
-        if ( keysFile.exists() ) throw new IllegalArgumentException("keys file already exists, delete it first");
+        if ( keysFile.exists() ) throw new IllegalArgumentException("keys file "+keysFile + " already exists, delete it first");
         PrintWriter w=null;
         try {
             w= new PrintWriter( new FileWriter(keysFile) );
