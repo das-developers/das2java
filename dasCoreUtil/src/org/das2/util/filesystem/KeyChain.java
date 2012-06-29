@@ -7,13 +7,22 @@ package org.das2.util.filesystem;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import org.das2.util.monitor.CancelledOperationException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -47,9 +56,76 @@ public class KeyChain {
     public static synchronized KeyChain getDefault() {
         if ( instance==null ) {
             instance= new KeyChain();
+            instance.loadInitial();
         }
         return instance;
     }
+
+    /**
+     * If the keys file is found, then pre-load these credentials.
+     * The keys file is in new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
+     */
+    private void loadInitial() {
+        File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
+        if ( keysFile.exists() ) {
+            System.err.println("loading keys from "+ keysFile );
+            BufferedReader r=null;
+            try {
+                r= new BufferedReader( new FileReader(keysFile) );
+                String line= r.readLine();
+                while ( line!=null ) {
+                    int i= line.indexOf("#");
+                    if ( i>-1 ) line= line.substring(0,i);
+                    line= line.trim();
+                    if ( line.length()>0 ) {
+                        String[] ss= line.split("\\s+");
+                        if ( ss.length!=2 ) {
+                            System.err.println("skipping line because wrong number of fields: "+line );
+                        } else {
+                            String hash= ss[0].trim();
+                            String storedUserInfo= ss[1].trim();
+                            keys.put( hash, storedUserInfo );
+                        }
+                    }
+                    line= r.readLine();
+                }
+            } catch ( IOException ex ) {
+                ex.printStackTrace();
+            } finally {
+                if ( r!=null ) {
+                    try {
+                        r.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+
+        }
+    }
+
+    /**
+     * dump the loaded keys into the file new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" )
+     */
+    public void writeKeysFile() {
+        File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
+        if ( keysFile.exists() ) throw new IllegalArgumentException("keys file already exists, delete it first");
+        PrintWriter w=null;
+        try {
+            w= new PrintWriter( new FileWriter(keysFile) );
+            w.println("# keys file produced on "+ new java.util.Date() );
+            for ( Entry<String,String> key : keys.entrySet() ) {
+                w.println( key.getKey() + "\t" + key.getValue() );
+            }
+        } catch ( IOException ex ) {
+            ex.printStackTrace();
+        } finally {
+            if ( w!=null ) {
+                w.close();
+            }
+        }
+    }
+
 
     private Map<String,String> keys= new HashMap<String,String>();
 
