@@ -139,8 +139,10 @@ public class HttpFileSystem extends WebFileSystem {
                     connectFail= false;
                 } catch ( IOException ex ) {
                     int code= 0;
-                    if ( !( ex instanceof java.net.SocketTimeoutException ) ) {
+                    try {
                         code= urlc.getResponseCode();
+                    } catch ( IOException ex2 ) {
+                        // do nothing in this case, just try to get a response code.
                     }
                     if ( code==401 ) {
                         connectFail= false;
