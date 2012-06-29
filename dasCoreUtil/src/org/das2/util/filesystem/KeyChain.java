@@ -106,6 +106,7 @@ public class KeyChain {
 
     /**
      * dump the loaded keys into the file new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" )
+     * TODO: note Java1.6 has File.setReadable( true, ownerOnly ).
      */
     public void writeKeysFile() {
         File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
