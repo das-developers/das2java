@@ -60,7 +60,7 @@ public class ReduceFilter implements StreamHandler {
 
     double lengthSeconds;
     double length; // in the stream units.
-    double nextTag;
+    //double nextTag;
 
     class Accum {
         PacketDescriptor pd; // All planes should have the same value.
@@ -70,10 +70,12 @@ public class ReduceFilter implements StreamHandler {
         double[] S;
         int N;
         double B; // base offset for S.  We remove this before putting data into the accumulation.
+        double nextTag;
     }
 
     Map<String, Accum> accum;
     Map<PacketDescriptor, Boolean> skip;
+    Map<PacketDescriptor, Double> nextTags;
 
     StreamDescriptor sd;
 
@@ -81,7 +83,7 @@ public class ReduceFilter implements StreamHandler {
         accum= new HashMap();
         skip= new HashMap();
         lengthSeconds= 60;
-        nextTag= 0;
+        nextTags= new HashMap();
     }
 
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
@@ -92,6 +94,8 @@ public class ReduceFilter implements StreamHandler {
 
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
 
+        System.err.println(pd);
+        
         Element ele= pd.getDomElement();
 
         XPathFactory factory = XPathFactory.newInstance();
@@ -117,7 +121,7 @@ public class ReduceFilter implements StreamHandler {
                     double secmult= Units.seconds.getConverter( xunits.getOffsetUnits() ).convert(1);
                     length= secmult * lengthSeconds;
                 } catch ( InconvertibleUnitsException ex ) {
-                    skip= true;
+                     skip= true;
                 } catch ( ParseException ex ) {
                     skip= true;
                 }
@@ -152,6 +156,7 @@ public class ReduceFilter implements StreamHandler {
             }
 
             this.skip.put(pd, skip);
+            this.nextTags.put( pd, 0. );
 
         } catch (XPathExpressionException ex) {
             Logger.getLogger(ReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
@@ -271,6 +276,7 @@ public class ReduceFilter implements StreamHandler {
             } else {
                 double avg= ss[0]/nn + bb;
                 planed.getType().write( avg, data );
+                System.err.println("unload "+planed.getName()+" "+nn+"="+avg);
             }
 
             if ( ( ip==np-1 ) && planed.getType().isAscii() && Character.isWhitespace( data.get( data.capacity() - 1) ) ) {
@@ -294,6 +300,7 @@ public class ReduceFilter implements StreamHandler {
      */
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
 
+        System.err.println(pd);
         boolean skip= this.skip.get(pd);
         if ( skip ) {
             sink.packet( pd, data );
@@ -305,10 +312,13 @@ public class ReduceFilter implements StreamHandler {
             PlaneDescriptor t0= planes.get(0);
             double ttag= t0.getType().read(data);
 
+            double nextTag= nextTags.get( pd );
+
             if ( ttag>nextTag ) {
                 unload( pd );
                 initAccumulators(pd);
                 nextTag= ( 1 + Math.floor( ttag/length ) ) * length;
+                nextTags.put( pd, nextTag );
             }
 
             data.rewind();
@@ -318,7 +328,6 @@ public class ReduceFilter implements StreamHandler {
                 Accum ac1= accum.get(planed.getName());
 
                 double[] ss = ac1.S;
-                int nn= ac1.N;
                 double bb= ac1.B;
                 ac1.capacity= data.limit();
 
@@ -338,6 +347,8 @@ public class ReduceFilter implements StreamHandler {
                     ss[0]+= planed.getType().read(data)-bb;
                 }
                 ac1.N+= 1;
+
+                System.err.printf( "%s %d\n", planed.getName(), ac1.N );
 
             }
         }
