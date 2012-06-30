@@ -1174,7 +1174,52 @@ public class DatumRangeUtil {
     public static DatumRange parseDatumRange( String str, DatumRange orig ) throws ParseException {
         return parseDatumRange( str, orig.getUnits() );
     }
-    
+
+    /**
+     * parse position strings like "100%-5hr" into [ npos, datum ].
+     * Note px is acceptable, but pt is proper.
+     * Ems are rounded to the nearest hundredth.
+     * Percents are returned as normal (0-1) and rounded to the nearest thousandth.
+     */
+    public static Datum[] parseRescaleStr( String s, Datum[] result ) throws ParseException {
+        String[] ss= s.split("%",-2);
+        if ( ss.length==1 ) {
+            result[1]= result[1].getUnits().parse(ss[1]);
+        } else {
+            result[0]= Units.percent.parse(ss[0]);
+            if ( ss[1].trim().length()>0 ) {
+                result[1]= result[1].getUnits().parse(ss[1]);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * rescale the DatumRange with a specification like "50%,150%" or "0%-1hr,100%+1hr".  The string is spit on the comma
+     * the each is split on the % sign.  This was originally introduced to support CreatePngWalk in Autoplot.
+     * @param dr
+     * @param rescale
+     * @return
+     * @throws ParseException
+     */
+    public static DatumRange rescale( DatumRange dr, String rescale ) throws ParseException {
+        String[] ss= rescale.split(",");
+        Datum[] rrmin= new Datum[] { Units.percent.createDatum(0), dr.getUnits().getOffsetUnits().createDatum(0.) };
+        Datum[] rrmax= new Datum[] { Units.percent.createDatum(100), dr.getUnits().getOffsetUnits().createDatum(0.) };
+
+        if ( ss[0].trim().length()>0 ) {
+            rrmin= parseRescaleStr( ss[0], rrmin );
+        }
+        if ( ss[1].trim().length()>0 ) {
+            rrmax= parseRescaleStr( ss[1], rrmax );
+        }
+        DatumRange result= rescale( dr, rrmin[0].doubleValue(Units.percent)/100, rrmax[0].doubleValue(Units.percent)/100 );
+        result= new DatumRange( result.min().add( rrmin[1] ), result.max().add( rrmax[1] ) );
+
+        return result;
+        
+    }
+
     /**
      * returns DatumRange relative to this, where 0. is the minimum, and 1. is the maximum.
      * For example rescale(1,2) is scanNext, rescale(0.5,1.5) is zoomOut.
