@@ -12,7 +12,6 @@ import org.das2.DasException;
 import org.das2.dataset.AverageTableRebinner;
 import org.das2.dataset.ClippedTableDataSet;
 import org.das2.dataset.RebinDescriptor;
-import org.das2.dataset.VectorDataSet;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
 import org.virbo.math.Contour;
@@ -42,8 +41,6 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.DataSetUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * Renderer for making contour plots
@@ -59,10 +56,19 @@ public class ContoursRenderer extends Renderer {
 
     public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
+        DasPlot lparent= getParent();
+        
         Graphics2D g = (Graphics2D) g1;
 
-        if (parent.getCanvas().isAntiAlias()) {
+        if (lparent.getCanvas().isAntiAlias()) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
+
+        QDataSet tds = (QDataSet) getDataSet();
+
+        if (tds == null) {
+            lparent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+            return;
         }
 
         if (paths == null) {
@@ -74,7 +80,7 @@ public class ContoursRenderer extends Renderer {
         if (drawLabels) {
             Area labelClip = paintLabels(g);
             
-            Shape rclip = g.getClip() == null ? new Rectangle(parent.getX(), parent.getY(), parent.getWidth(), parent.getHeight()) : g.getClip();
+            Shape rclip = g.getClip() == null ? new Rectangle(lparent.getX(), lparent.getY(), lparent.getWidth(), lparent.getHeight()) : g.getClip();
             Area clip = new Area(rclip);
             clip.subtract(labelClip);
             g.setClip(clip);
@@ -89,6 +95,16 @@ public class ContoursRenderer extends Renderer {
         }
 
     }
+
+    @Override
+    public void setControl(String s) {
+        super.setControl(s);
+        this.contours= getControl( "levels", contours );
+        this.drawLabels= getBooleanControl( "labels", drawLabels );
+        this.lineThick= getDoubleControl( PROP_LINETHICK, lineThick );
+        this.labelCadence= getDoubleControl( "labelCadence", labelCadence );
+    }
+
 
     /**
      * returns clip, in the canvas reference frame
@@ -254,9 +270,10 @@ public class ContoursRenderer extends Renderer {
         double d0 = units.getFillDouble();
         int ii = -1;
 
-        QDataSet xds = (QDataSet) DataSetOps.unbundle( vds, Contour.PLANE_X );
-        QDataSet yds = (QDataSet) DataSetOps.unbundle( vds, Contour.PLANE_Y );
-        vds= (QDataSet) DataSetOps.unbundle( vds, 2 ); //TODO: why?  clarify
+        QDataSet xds = (QDataSet) DataSetOps.unbundle( vds, 0 );
+        QDataSet yds = (QDataSet) DataSetOps.unbundle( vds, 1 );
+        QDataSet zds=  (QDataSet) DataSetOps.unbundle( vds, 2 );
+        QDataSet ids=  SemanticOps.xtagsDataSet(zds);
 
         Units xunits = xAxis.getUnits();
         Units yunits = yAxis.getUnits();
@@ -274,9 +291,9 @@ public class ContoursRenderer extends Renderer {
 
         NumberFormat nf = new DecimalFormat("0.00");
 
-        for (int i = 0; i < vds.length(); i++) {
-            double d = vds.value(i);
-            int n = (int) xds.value(i);
+        for (int i = 0; i < zds.length(); i++) {
+            double d = zds.value(i);
+            int n = (int) ids.value(i);
 
             float fx = (float) xAxis.transform( xds.value(i), xunits );
             float fy = (float) yAxis.transform( yds.value(i), yunits );
@@ -299,8 +316,7 @@ public class ContoursRenderer extends Renderer {
                 slen = 0.;
                 fx0 = fx;
                 fy0 = fy;
-            }
-            if (n != (n0 + 1)) {
+            } else if (n != (n0 + 1)) {
                 currentPath.moveTo(fx, fy);
                 fx0 = fx;
                 fy0 = fy;
