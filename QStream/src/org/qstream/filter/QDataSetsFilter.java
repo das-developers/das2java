@@ -92,59 +92,8 @@ public class QDataSetsFilter implements StreamHandler {
 
     StreamDescriptor sd;
 
-    public void streamDescriptor(StreamDescriptor sd) throws StreamException {
-        sink.streamDescriptor(sd);
-        this.sd= sd;
-    }
-
-    public void packetDescriptor(PacketDescriptor pd) throws StreamException {
-        sink.packetDescriptor(pd);
-
-            Element ele= pd.getDomElement();
-
-            XPathFactory factory = XPathFactory.newInstance();
-            XPath xpath = factory.newXPath();
-
-            XPathExpression exprv;
-            XPathExpression exprp;
-
-            try {
-                NodeList odims = (NodeList) xpath.evaluate("/packet/qdataset", ele, XPathConstants.NODESET );
-
-                for (int j = 0; j < odims.getLength(); j++) {
-                    Element ds= (Element)odims.item(j);
-
-                    exprv=  xpath.compile("values");
-                    Node values= (Node) exprv.evaluate( ds, XPathConstants.NODE );
-
-                    exprp=  xpath.compile( "properties" );
-                    //exprp=  xpath.compile( "properties" );
-                    Node nprops= (Node) exprp.evaluate( ds, XPathConstants.NODE );
-
-                    Map<String,Object> props= doProps( nprops, null );
-
-                    String id= ds.getAttribute("id");
-
-                    propsn.put( id, props );
-
-                }
-
-            } catch (XPathExpressionException ex) {
-                throw new RuntimeException(ex);
-            }
-
-    }
-
-    public void streamClosed(StreamDescriptor sd) throws StreamException {
-        sink.streamClosed(sd);
-    }
-
-    public void streamException(StreamException se) throws StreamException {
-        sink.streamException(se);
-    }
-
     /**
-     * 
+     *
      * @param n node containing properties
      * @param props map to insert properties, or null.
      */
@@ -155,7 +104,7 @@ public class QDataSetsFilter implements StreamHandler {
         }
 
         if ( n==null ) return props;
-        
+
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
 
@@ -220,6 +169,52 @@ public class QDataSetsFilter implements StreamHandler {
         return props;
     }
 
+    public void streamDescriptor(StreamDescriptor sd) throws StreamException {
+        sink.streamDescriptor(sd);
+        this.sd= sd;
+    }
+
+    public void packetDescriptor(PacketDescriptor pd) throws StreamException {
+        sink.packetDescriptor(pd);
+
+            Element ele= pd.getDomElement();
+
+            XPathFactory factory = XPathFactory.newInstance();
+            XPath xpath = factory.newXPath();
+
+            XPathExpression exprv;
+            XPathExpression exprp;
+
+            try {
+                NodeList odims = (NodeList) xpath.evaluate("/packet/qdataset", ele, XPathConstants.NODESET );
+
+                for (int j = 0; j < odims.getLength(); j++) {
+                    Element ds= (Element)odims.item(j);
+
+                    exprp=  xpath.compile( "properties" );
+                    //exprp=  xpath.compile( "properties" );
+                    Node nprops= (Node) exprp.evaluate( ds, XPathConstants.NODE );
+
+                    Map<String,Object> props= doProps( nprops, null );
+
+                    String id= ds.getAttribute("id");
+
+                    propsn.put( id, props );
+
+                    exprv=  xpath.compile("values");
+                    Node values= (Node) exprv.evaluate( ds, XPathConstants.NODE );
+
+                    //if ( values!=null ) {
+                    //    doValues( n );
+                    //}
+                }
+
+            } catch (XPathExpressionException ex) {
+                throw new RuntimeException(ex);
+            }
+
+    }
+
     public void packet( PacketDescriptor pd, ByteBuffer data ) throws StreamException {
         //TODO: form QDataSet when the values are not in-line and only one packet exists.  Fire off a QDataSet packet.
         sink.packet(pd, data);
@@ -264,9 +259,18 @@ public class QDataSetsFilter implements StreamHandler {
 
     }
 
+    public void streamClosed(StreamDescriptor sd) throws StreamException {
+        sink.streamClosed(sd);
+    }
+
+    public void streamException(StreamException se) throws StreamException {
+        sink.streamException(se);
+    }
+
+
     public static void main( String[] args ) throws FileNotFoundException, StreamException {
-        //File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
-        File f = new File( "/home/jbf/data.nobackup/qds/waveformTable2.qds" );
+        File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );
+        //File f = new File( "/home/jbf/data.nobackup/qds/waveformTable2.qds" );
 
         InputStream in = new FileInputStream(f);
 
