@@ -14,6 +14,7 @@ import java.nio.channels.Channels;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -187,6 +188,7 @@ public class QDataSetsFilter implements StreamHandler {
 
             try {
                 NodeList odims = (NodeList) xpath.evaluate("/packet/qdataset", ele, XPathConstants.NODESET );
+                List<PlaneDescriptor> pds= pd.getPlanes();
 
                 for (int j = 0; j < odims.getLength(); j++) {
                     Element ds= (Element)odims.item(j);
@@ -201,13 +203,31 @@ public class QDataSetsFilter implements StreamHandler {
 
                     propsn.put( id, props );
 
-                    exprv=  xpath.compile("values");
+                    exprv=  xpath.compile("values/@values");
                     Node values= (Node) exprv.evaluate( ds, XPathConstants.NODE );
 
-                    //if ( values!=null ) {
-                    //    doValues( n );
-                    //}
+                    if ( values!=null ) {
+                        PlaneDescriptor planed= pds.get(j);
+                        exprv=  xpath.compile("values/@length");
+                        String svalues= values.getTextContent();
+                        String[] ss= svalues.split(",");
+                        double[] dd= new double[ss.length];
+                        for ( int i=0; i<ss.length; i++ ) {
+                            dd[i]= Double.parseDouble(ss[i]);
+                        }
+                        MutablePropertyDataSet mds;
+                        if ( planed.getQube().length==0 ) {
+                            mds= DDataSet.wrap( dd );
+                        } else {
+                            mds= DDataSet.wrap( dd, planed.getQube() );
+                        }
+
+                        DataSetUtil.putProperties( props, mds );
+                        sink.packetData( pd, planed, mds );
+
+                    }
                 }
+
 
             } catch (XPathExpressionException ex) {
                 throw new RuntimeException(ex);
@@ -241,7 +261,6 @@ public class QDataSetsFilter implements StreamHandler {
                 XPath xpath = factory.newXPath();
 
                 XPathExpression expr= xpath.compile("/packet/qdataset["+j+"]/properties");
-                Node values= (Node) expr.evaluate( pd.getDomElement(), XPathConstants.NODE );
                 Map<String,Object> props= propsn.get( planed.getName() );
                 DataSetUtil.putProperties( props, ds );
 
@@ -269,8 +288,8 @@ public class QDataSetsFilter implements StreamHandler {
 
 
     public static void main( String[] args ) throws FileNotFoundException, StreamException {
-        File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );
-        //File f = new File( "/home/jbf/data.nobackup/qds/waveformTable2.qds" );
+        //File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );
+        File f = new File( "/home/jbf/data.nobackup/qds/waveformTable2.qds" );
 
         InputStream in = new FileInputStream(f);
 
