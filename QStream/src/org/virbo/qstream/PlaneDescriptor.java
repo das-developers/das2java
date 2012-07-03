@@ -67,7 +67,8 @@ public class PlaneDescriptor {
     }
 
     /**
-     * return the dataset encoded in this plane
+     * return the dataset encoded in this plane.  Note this is just a convenient place
+     * to store a dataset, and someone else must calculate it and store it with setDs.
      * @return
      */
     public QDataSet getDs( ) {
