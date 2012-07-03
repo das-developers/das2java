@@ -2970,7 +2970,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /**
      * return a label for this datum and visible range. This is intended
-     * to be overriden to change behavior.  Note that both tickFormatter methods
+     * to be overridden to change behavior.  Note that both tickFormatter methods
      * should be overridden.
      * @param tickv
      * @return string, possibly with Granny control characters.
@@ -2983,7 +2983,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /**
      * return the tick labels for these datums and visible range.  This is intended
-     * to be overriden to change behavior.  Note that both tickFormatter methods
+     * to be overridden to change behavior.  Note that both tickFormatter methods
      * should be overridden.
      * @param tickV
      * @param datumRange
@@ -3006,7 +3006,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param minor
      * @return
      *
-     * @depricated. Use getTickVDescriptor.findTick
+     * @deprecated. Use getTickVDescriptor.findTick
      */
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
         return getTickV().findTick(xDatum, direction, minor);
