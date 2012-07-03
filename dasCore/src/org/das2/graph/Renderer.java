@@ -399,15 +399,18 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             ampstr= "&amp;";
         }
         Map<String,String> result= new LinkedHashMap();
+        if ( c.trim().length()==0 ) return result;
         String[] ss= c.split(ampstr);
         for ( int i=0; i<ss.length; i++ ) {
+            if ( ss[i].trim().length()==0 ) continue;
             String[] ss2= ss[i].split("=",2);
-            if ( ss2.length<2 ) {
-                throw new IllegalArgumentException("control string must contain = in: "+ss[i]);
+            if ( ss2.length==1 ) {
+                result.put( ss2[0].trim(), "T" );
+            } else {
+                String k= ss2[0].trim();
+                String v= ss2[1].trim();
+                result.put( k,v );
             }
-            String k= ss2[0];
-            String v= ss2[1];
-            result.put( k, v );
         }
         return result;
     }
