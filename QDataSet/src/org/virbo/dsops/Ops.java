@@ -3728,7 +3728,7 @@ public class Ops {
      * @param ds1 rank 1 (for now) dataset or rank 2 bundle dataset
      * @param ds2 rank 1 (for now) dataset
      * @param ds3 rank 1 (for now) dataset
-     * @return rank 2 [3,n] bundle dataset
+     * @return rank 2 [n,3] bundle dataset
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2, QDataSet ds3 ) {
         return bundle( bundle( ds1, ds2 ), ds3 );
@@ -3743,7 +3743,7 @@ public class Ops {
      * @param ds2 rank 1 (for now) dataset
      * @param ds3 rank 1 (for now) dataset
      * @param ds4 rank 1 (for now) dataset
-     * @return rank 2 [4,n] bundle dataset
+     * @return rank 2 [n,4] bundle dataset
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2, QDataSet ds3, QDataSet ds4 ) {
         return bundle( bundle( bundle( ds1, ds2 ), ds3 ), ds4 );
@@ -3768,6 +3768,10 @@ public class Ops {
                 }
             }
         } else if ( zds.rank()==1 ) {
+            Object o= zds.property(QDataSet.DEPEND_0);
+            if ( o!=null && !( o instanceof QDataSet ) ) {
+                throw new IllegalArgumentException("Somehow a string got into DEPEND_0 property.");
+            }
             QDataSet dep0= (QDataSet) zds.property(QDataSet.DEPEND_0);
             if ( dep0!=null ) {
                 Units u= (Units) dep0.property(QDataSet.UNITS);
