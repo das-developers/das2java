@@ -47,12 +47,20 @@ import org.das2.system.DasLogger;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.ParseException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetAdapter;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -329,11 +337,134 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
 
+
+    public static String PROP_CONTROL= "control";
+
+    /**
+     * generic control string, that is handled by the renderer.  In general, this should be
+     * a ampersand-delimited string of name=value pairs.  This may return values that
+     * are represented as a separate control, such as color.
+     *
+     *   fill=red,above,5.0;grey,below,0.0&ref=2.5
+     */
+    protected String control="";
+
+    private Map<String,String> controls= Collections.emptyMap();
+
+    public void setControl( String s ) {
+        String oldValue= this.control;
+        this.control= s;
+        if (oldValue != null && s != null && oldValue.equals(s)) {
+	    return;
+	}
+        controls= parseControl(s);
+        update();
+        propertyChangeSupport.firePropertyChange(PROP_CONTROL, oldValue, control );
+    }
+
+    public String getControl() {
+        return this.control;
+    }
+
+
+    /**
+     * convenient and official location for method that formats control string.
+     * @param c
+     * @return
+     */
+    public static String formatControl( Map<String,String> c ) {
+        StringBuilder result= new StringBuilder(50);
+        
+        String ampstr= "&";
+        for ( Entry<String,String> ee: c.entrySet() ) {
+            if ( ee.getKey().contains("&") ) throw new IllegalArgumentException("keys must be java identifiers");
+            if ( ee.getValue().contains("&") ) ampstr= "&amp;";
+        }
+        boolean amp= false;
+        for ( Entry<String,String> ee: c.entrySet() ) {
+            if ( amp ) result.append(ampstr); else amp=true;
+            result.append( ee.getKey() ) .append(":").append(ee.getValue() );
+        }
+        return result.toString();
+    }
+
+    /**
+     * convenient and official location for method that parses control string.
+     * @param c
+     * @return
+     */
+    public static Map<String,String> parseControl( String c ) {
+        String ampstr= "&";
+        if ( c.contains("&amp;") ) {
+            ampstr= "&amp;";
+        }
+        Map<String,String> result= new LinkedHashMap();
+        String[] ss= c.split(ampstr);
+        for ( int i=0; i<ss.length; i++ ) {
+            String[] ss2= ss[i].split("=",2);
+            if ( ss2.length<2 ) {
+                throw new IllegalArgumentException("control string must contain = in: "+ss[i]);
+            }
+            String k= ss2[0];
+            String v= ss2[1];
+            result.put( k, v );
+        }
+        return result;
+    }
+
+    public String getControl( String key, String deft ) {
+        if ( this.control.trim().length()==0 ) return deft;
+        String v= controls.get(key);
+        if ( v!=null ) return v; else return deft;
+    }
+
+    public boolean getBooleanControl( String key, boolean deft ) {
+        String v= controls.get(key);
+        if ( v!=null ) return v.equalsIgnoreCase("T"); else return deft;
+    }
+
+    public double getDoubleControl( String key, double deft ) {
+        String v= controls.get(key);
+        if ( v!=null ) return Double.parseDouble(v); else return deft;
+    }
+
+    public int getIntegerControl( String key, int deft ) {
+        String v= controls.get(key);
+        if ( v!=null ) return Integer.parseInt(v); else return deft;
+    }
+
+    public double[] getDoubleArrayControl( String key, double[] deft ) {
+        String v= controls.get(key);
+        if ( v!=null ) {
+            String[] ss= v.split(",");
+            double[] result= new double[ss.length];
+            for ( int i=0; i<ss.length; i++ ) {
+                result[i]= Double.parseDouble(ss[i]);
+            }
+            return result;
+        } else {
+            return deft;
+        }
+    }
+
+    public Datum getDatumControl( String key, Datum deft ) {
+        String v= controls.get(key);
+        if ( v!=null ) {
+            try {
+                return deft.getUnits().parse(key);
+            } catch ( ParseException ex ) {
+                throw new IllegalArgumentException("unable to parse: "+key );
+            }
+        } else {
+            return deft;
+        }
+    }
+
     /*
      * returns the AffineTransform to transform data from the last updatePlotImage call
      * axes (if super.updatePlotImage was called), or null if the transform is not possible.
      *
-     * @depricated DasPlot handles the affine transform and previews now.
+     * @deprecated DasPlot handles the affine transform and previews now.
      */
     protected AffineTransform getAffineTransform(DasAxis xAxis, DasAxis yAxis) {
         if (xmemento == null) {
