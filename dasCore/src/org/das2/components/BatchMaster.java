@@ -141,7 +141,7 @@ public class BatchMaster {
     }
     
     /**
-     * @depricated use addTask( DatumRange )
+     * @deprecated use addTask( DatumRange )
      */
     void addTask( Datum begin, Datum end ) {
         taskList.add( new DataRangeSelectionEvent( this, begin, end ) );
