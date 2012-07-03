@@ -3364,7 +3364,9 @@ public class Ops {
 
     /**
      * contour the data in rank 2 table tds at rank 0 vv.  The result
-     * is a rank 2 bundle of [:,'x,y,z'].
+     * is a rank 2 bundle of [:,'x,y,z'] where i is the contour number.
+     * The result will have DEPEND_0 be an monotonically increasing sequence with
+     * jumps indicating new contours.
      * @param tds rank 2 table
      * @param vv rank 2 bundle
      * @return
