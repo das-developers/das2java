@@ -27,9 +27,6 @@ import org.virbo.dsutil.DataSetBuilder;
  */
 public class Contour {
     
-    public static final String PLANE_X="x";
-    public static final String PLANE_Y="y";
-    
     final static public class ContourPlot {
         
         QDataSet zz;
@@ -69,10 +66,11 @@ public class Contour {
         /*
          * returns a rank 2 bundle QDataSet of ds[:,3] with the contours.
          * x is ds[:,0], y is ds[:,1], and Zval is ds[:,2]
+         * DEPEND_0 is a step number, where steps greater than 1 indicate a break in the contour.
          */
         
         public QDataSet performContour() {
-            DataSetBuilder builder= new DataSetBuilder( 2, 100, 3 );
+            DataSetBuilder builder= new DataSetBuilder( 2, 100, 4 ); // store ii in the last column.
 
             int workLength = 2 * xSteps * ySteps * ncv;
             boolean[] workSpace= new boolean[workLength];
@@ -80,9 +78,13 @@ public class Contour {
             idx=0;
             ContourPlotKernel( builder, workSpace );
 
+            MutablePropertyDataSet result= builder.getDataSet();
 
-            DDataSet result= builder.getDataSet();
+            QDataSet istep= DataSetOps.unbundle( result, 3 );
+
+            result= DataSetOps.leafTrim( result, 0, 3 );
             result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(this,result) );
+            result.putProperty( QDataSet.DEPEND_0, istep );
 
             return result;
         }
@@ -178,16 +180,15 @@ public class Contour {
         // index is drawn adjacent to where the contour ends.
         //-------------------------------------------------------
         void DrawKernel( DataSetBuilder dsbuilder) {
-            int	prevU,prevV,u,v;
             
             if ((iflag == 1) || (iflag == 4) || (iflag == 5)) {
                 
             } else {
                 idx++ ;
             }
-            
+
+            dsbuilder.putValue(-1,3,idx);
             dsbuilder.putValue(-1,2,cval);
-            
             dsbuilder.putValue(-1,0,getXValue(xy[0]));
             dsbuilder.putValue(-1,1,getYValue(xy[1]));
             dsbuilder.nextRecord();
@@ -523,6 +524,7 @@ public class Contour {
         String name= Ops.guessName( cp.zz, "Z" );
 
         ArrayDataSet bds= (ArrayDataSet) DDataSet.createRank2(3,0);
+
         bds.putProperty( QDataSet.NAME, 0, name0 );
         if ( dep0!=null ) bds.putProperty( QDataSet.UNITS, 0, SemanticOps.getUnits( dep0 ) );
 
@@ -537,9 +539,11 @@ public class Contour {
         return bds;
     }
     /**
-     * returns a rank 1 dataset, a vector dataset, listing the points
-     * of the contour paths.  The data set will have three planes:
-     * X, Y and the default plane is the Z.
+     * returns a rank 2 dataset, a bundle dataset, listing the points
+     * of the contour paths.  The dataset will be ds[n,3] where
+     * the bundled datasets are: [x,y,z] and where DEPEND_0 indicates the step number.
+     * Jumps in the step number indicate a break in the contour.
+     *
      */
     public static QDataSet contour( QDataSet tds, QDataSet levels ) {
         Contour.ContourPlot cp= new ContourPlot( tds, levels );
