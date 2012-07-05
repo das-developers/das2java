@@ -1920,6 +1920,62 @@ public class Ops {
 
     }
 
+
+    /**
+     * return fake position data for testing
+     * result is rank 2 bundle [len,27]
+     * @param len
+     * @return
+     */
+    public static QDataSet ripplesJoinSpectrogramTimeSeries( int len ) {
+
+        int len3= len/3;
+
+        try {
+            QDataSet rip= ripples( len3,100 );
+            ArrayDataSet result= ArrayDataSet.copy( DataSetOps.leafTrim( rip,0,27 ) );
+            result.putProperty( QDataSet.NAME, "Flux" );
+            MutablePropertyDataSet y= DataSetOps.makePropertiesMutable( Ops.pow( DataSetUtil.asDataSet(10), Ops.linspace(1,4,27 ) ) );
+            y.putProperty( QDataSet.LABEL, "Energy" );
+            result.putProperty( QDataSet.DEPEND_1, y );
+
+            QDataSet t;
+            t = Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len3), len3);
+            result.putProperty(QDataSet.DEPEND_0,t);
+
+            JoinDataSet jds= new JoinDataSet(result);
+
+            rip= ripples( len3,20 );
+            result= ArrayDataSet.copy( DataSetOps.leafTrim( rip,0,20 ) );
+            result.putProperty( QDataSet.NAME, "Flux" );
+            y= DataSetOps.makePropertiesMutable( Ops.pow( DataSetUtil.asDataSet(10), Ops.linspace(3.1,8.1,20 ) ) );
+            y.putProperty( QDataSet.LABEL, "Energy" );
+            result.putProperty( QDataSet.DEPEND_1, y );
+
+            t = Ops.timegen("2011-10-25", String.format("%f sec", 86400. / len3), len3);
+            result.putProperty(QDataSet.DEPEND_0,t);
+
+            jds.join(result);
+
+            int lenr=  len-2*len3;
+            rip= ripples( lenr,50 );
+            result= ArrayDataSet.copy( DataSetOps.leafTrim( rip,0,24 ) );
+            result.putProperty( QDataSet.NAME, "Flux" );
+            y= DataSetOps.makePropertiesMutable( Ops.pow( DataSetUtil.asDataSet(10), Ops.linspace(2.1,5.1,24 ) ) );
+            y.putProperty( QDataSet.LABEL, "Energy" );
+            result.putProperty( QDataSet.DEPEND_1, y );
+
+            t = Ops.timegen("2011-10-26", String.format("%f sec", 86400. / lenr), lenr);
+            result.putProperty(QDataSet.DEPEND_0,t);
+            jds.join(result);
+
+            return jds;
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
+
+    }
+
     /**
      * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
      * @param radius rank 0 dataset
