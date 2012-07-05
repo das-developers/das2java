@@ -621,7 +621,7 @@ public class SerialStreamFormatter {
         // configure the tool
         form.setAsciiTypes(true);
         form.setTransferType( name, new AsciiTransferType(12,true) );
-        form.setTransferType( dep0name, new AsciiTimeTransferType(18,Units.us2000 ) );
+        form.setTransferType( dep0name, new AsciiTimeTransferType(18,Units.us2000 ) ); //Danger: units must match.
 
         form.init( name, Channels.newChannel( System.out ) ); //WritableByteChannelSystem.out(WritableByteChannel)out.getChannel() );
         form.maybeFormat( null, (QDataSet) ds.property(QDataSet.DEPEND_1), true );
@@ -635,6 +635,8 @@ public class SerialStreamFormatter {
             }
         } else {
             for ( int i=0; i<ds.length(); i++ ) {
+                //TODO: we should just send all the data explicitly rather than requiring that a 
+                // dataset be formed for each packet: form.format( name, tt, ds.slice(i) ), false );
                 form.format( name, DDataSet.copy( ds.slice(i) ), false ); //TODO: remove DDataSet.copy used for debugging.
             }
         }
