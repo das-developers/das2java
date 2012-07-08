@@ -49,13 +49,13 @@ public final class FDataSet extends ArrayDataSet {
     public static FDataSet create(int[] qube) {
         if (qube.length == 0) {
             return new FDataSet( 0, 1, 1, 1, 1 );
-        } else if ( qube.length==1 ) {
+        } else if ( qube.length == 1 ) {
             return FDataSet.createRank1(qube[0]);
-        } else if (qube.length == 2) {
+        } else if ( qube.length == 2 ) {
             return FDataSet.createRank2(qube[0], qube[1]);
-        } else if (qube.length == 3) {
+        } else if ( qube.length == 3 ) {
             return FDataSet.createRank3(qube[0], qube[1], qube[2]);
-        } else if (qube.length == 4) {
+        } else if ( qube.length == 4 ) {
             return FDataSet.createRank4(qube[0], qube[1], qube[2], qube[3]);
         } else {
             throw new IllegalArgumentException("bad qube");
@@ -77,7 +77,7 @@ public final class FDataSet extends ArrayDataSet {
         } else if (qube.length == 3) {
             return new FDataSet( 3, qube[0], qube[1], qube[2], 1, data );
         } else if (qube.length == 4) {
-            return new FDataSet(4, qube[0], qube[1], qube[2], qube[3], data);
+            return new FDataSet( 4, qube[0], qube[1], qube[2], qube[3], data);
         } else {
             throw new IllegalArgumentException("bad qube");
         }

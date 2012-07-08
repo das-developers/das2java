@@ -55,7 +55,7 @@ public final class SDataSet extends ArrayDataSet {
         } else if (qube.length == 3) {
             return new SDataSet( 3, qube[0], qube[1], qube[2], 1, data );
         } else if (qube.length == 4) {
-            return new SDataSet(4, qube[0], qube[1], qube[2], qube[3], data);
+            return new SDataSet( 4, qube[0], qube[1], qube[2], qube[3], data );
         } else {
             throw new IllegalArgumentException("bad qube");
         }
