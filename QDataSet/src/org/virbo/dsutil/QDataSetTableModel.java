@@ -67,20 +67,17 @@ public class QDataSetTableModel extends AbstractTableModel {
 
         if (bundle1 != null) {
             for (int j = 0; j < bundle1.length(); j++) {
-                int n = 1;
-                for (int k = 0; k < n; k++) {
-                    units[i] = (Units) bundle1.property(QDataSet.UNITS, j);
-                    if ( units[i]==null ) units[i]= Units.dimensionless;
-                    String format= (String)bundle1.property(QDataSet.FORMAT, j);
-                    if ( format==null ) {
-                        df[i]= units[i].getDatumFormatterFactory().defaultFormatter();
-                    } else {
-                        df[i]= getDataFormatter( format, units[i] );
-                    }
-                    labels[i] = (String) bundle1.property(QDataSet.LABEL, j);
-                    if ( labels[i]==null ) labels[i]= (String) bundle1.property(QDataSet.NAME, j);
-                    i++;
+                units[i] = (Units) bundle1.property(QDataSet.UNITS, j);
+                if ( units[i]==null ) units[i]= Units.dimensionless;
+                String format= (String)bundle1.property(QDataSet.FORMAT, j);
+                if ( format==null ) {
+                    df[i]= units[i].getDatumFormatterFactory().defaultFormatter();
+                } else {
+                    df[i]= getDataFormatter( format, units[i] );
                 }
+                labels[i] = (String) bundle1.property(QDataSet.LABEL, j);
+                if ( labels[i]==null ) labels[i]= (String) bundle1.property(QDataSet.NAME, j);
+                i++;
             }
         } else if (dep1 != null) {
             Units dep1Units = SemanticOps.getUnits(dep1);
