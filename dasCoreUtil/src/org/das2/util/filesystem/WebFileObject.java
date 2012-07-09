@@ -295,6 +295,15 @@ public class WebFileObject extends FileObject {
             download = true;
         }
 
+        //check readonly cache for file.
+        if ( download && this.wfs.getReadOnlyCache()!=null ) {
+            File cacheFile= new File( this.wfs.getReadOnlyCache(), this.getNameExt() );
+            if ( cacheFile.exists() ) {
+                System.err.println("using file from ro_cache: "+this.getNameExt() );
+                return cacheFile;
+            }
+        }
+
         if (download) {
             try {
                 FileSystem.logger.log(Level.FINE, "downloading file {0}", getNameExt());
