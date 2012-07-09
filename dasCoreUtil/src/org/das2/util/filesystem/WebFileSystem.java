@@ -28,8 +28,10 @@ package org.das2.util.filesystem;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -43,6 +45,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -104,6 +107,25 @@ public abstract class WebFileSystem extends FileSystem {
         //FileSystem.settings().setOffline(true);  some may be online, some offline.
         propertyChangeSupport.firePropertyChange(PROP_OFFLINE, oldOffline, offline);
     }
+
+    /**
+     * alternate location to check for file before downloading.
+     */
+    public static final String PROP_READ_ONLY_CACHE= "readOnlyCache";
+
+    private File readOnlyCache= null;
+
+    public final void setReadOnlyCache( File f ) {
+        File oldValue= this.readOnlyCache;
+        this.readOnlyCache= f;
+        propertyChangeSupport.firePropertyChange(PROP_READ_ONLY_CACHE, oldValue, readOnlyCache );
+    }
+
+    public final File getReadOnlyCache( ) {
+        return this.readOnlyCache;
+    }
+
+
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -128,7 +150,35 @@ public abstract class WebFileSystem extends FileSystem {
                     || root.getScheme().equals("https" ) ) {
                 this.protocol = new DefaultHttpProtocol();
             }
+            File f= new File( localRoot, "ro_cache.txt" );
+            if ( f.exists() ) {
+                BufferedReader read = null;
+                try {
+                    read = new BufferedReader(new FileReader(f));
+                    String s = read.readLine();
+                    while (s != null) {
+                        int i= s.indexOf("#");
+                        if ( i>-1 ) s= s.substring(0,i);
+                        if ( s.trim().length()>0 ) {
+                            String sf= s.trim();
+                            setReadOnlyCache( new File(sf) );
+                            break;
+                        }
+                        s = read.readLine();
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(WebFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        if ( read!=null ) read.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(WebFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+
         }
+
     }
 
     static protected File localRoot(URI root) {
@@ -256,6 +306,10 @@ public abstract class WebFileSystem extends FileSystem {
      * used within the class and subclasses, clients should use getFileObject( String ).getFile().
      * Subclasses implementing this should download data to partfile, then rename partfile to
      * f after the download is complete.
+     *
+     * Note, this is non-trivial, since several threads and even several processes may be using
+     * the same area at once.  See HttpFileSystem's implementation of this before attempting to
+     * implement the function.
      *
      * @param filename the name of the file, relative to the filesystem.
      * @param f the file to where the file is downloaded.
