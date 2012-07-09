@@ -68,9 +68,6 @@ public class QDataSetTableModel extends AbstractTableModel {
         if (bundle1 != null) {
             for (int j = 0; j < bundle1.length(); j++) {
                 int n = 1;
-                for (int k = 0; k < bundle1.length(j); k++) {
-                    n *= bundle1.value(j, k);
-                }
                 for (int k = 0; k < n; k++) {
                     units[i] = (Units) bundle1.property(QDataSet.UNITS, j);
                     if ( units[i]==null ) units[i]= Units.dimensionless;
