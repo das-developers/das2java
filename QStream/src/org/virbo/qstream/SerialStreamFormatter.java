@@ -6,6 +6,7 @@
 package org.virbo.qstream;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -188,21 +189,37 @@ public class SerialStreamFormatter {
         transferTypes.put( name, tt );
     }
 
-    private Element doProperties(Document document, QDataSet ds) {
+    private Element doProperties(Document document, QDataSet ds, boolean slice) {
         Element properties = document.createElement("properties");
 
         Map<String, Object> props = DataSetUtil.getProperties(ds);
         Element prop;
         for (String name : props.keySet()) {
             prop= null;
+
             Object value = props.get(name);
+            String name1= name;
+            boolean allowRank0 = true;
+            if ( slice ) {
+                if ( name.startsWith("DEPEND_") ) {
+                    name1= "DEPEND_" + ( 1 + Integer.parseInt( name.substring(7) ) );
+                } else if ( name.equals("CONTEXT_0") ) {
+                    name1= "DEPEND_0";
+                    allowRank0= false;
+                }
+            }
+            
+            
+            if ( value==null ) {
+                continue; // slice
+            }
 
             if (value instanceof QDataSet) {
                 QDataSet qds = (QDataSet) value;
 
                 prop = document.createElement("property");
-                prop.setAttribute("name", name);
-                if (qds.rank() == 0) {
+                prop.setAttribute("name", name1);
+                if ( qds.rank() == 0 && allowRank0 ) {
                     SerializeDelegate r0d= (SerializeDelegate) SerializeRegistry.getByName("rank0dataset");
                     prop.setAttribute("type", "rank0dataset");
                     Units u= (Units) qds.property( QDataSet.UNITS );
@@ -247,13 +264,13 @@ public class SerialStreamFormatter {
 
         if (packetDescriptor.isStream()) {
             if (ds1.rank() > 0) {
-                values.setAttribute("length", Util.encodeArray(qubeDims, 1, qubeDims.length - 1)); // must be a qube for stream.
+                values.setAttribute("length", Util.encodeArray(qubeDims, 0, qubeDims.length) ); // must be a qube for stream.
             } else {
                 values.setAttribute("length", "");
             }
         } else {
             if ( qubeDims!=null ) {
-                values.setAttribute("length", Util.encodeArray(qubeDims, 0, qubeDims.length));
+                values.setAttribute("length", Util.encodeArray(qubeDims, 0, qubeDims.length) );
             }
             if (packetDescriptor.isValuesInDescriptor()) {
                 StringBuilder s = new StringBuilder("");
@@ -299,7 +316,7 @@ public class SerialStreamFormatter {
             planeDescriptor.setType(tt);
         }
 
-        if (pd.isValuesInDescriptor() && ds.rank() == 2) {
+        if (pd.isValuesInDescriptor() && ds.rank() == 2) { //TODO: check this
             for (int i = 0; i < ds.length(); i++) {
                 Element values = doValues( document, pd, planeDescriptor, ds.slice(i) );
                 values.setAttribute("index", String.valueOf(i));
@@ -316,7 +333,7 @@ public class SerialStreamFormatter {
      * @param document
      * @param pd
      * @param ds
-     * @param slice
+     * @param slice the dataset is a slice of the thing we need to describe.
      * @return
      */
     private PlaneDescriptor doPlaneDescriptor( Document document, PacketDescriptor pd,
@@ -336,14 +353,14 @@ public class SerialStreamFormatter {
             if ( bds==null ) {
                 for ( int i=0; i<ds.length(); i++ ) {
                     QDataSet ds1= DataSetOps.unbundle( ds, i );
-                    Element props = doProperties(document, ds1);
+                    Element props = doProperties(document, ds1, slice);
                     props.setAttribute("index", String.valueOf(i) );
                     qdatasetElement.appendChild(props);
                 }
             }
         }
 
-        Element props = doProperties(document, ds);
+        Element props = doProperties(document, ds, slice);
         qdatasetElement.appendChild(props);
 
         PlaneDescriptor planeDescriptor = new PlaneDescriptor();
@@ -605,14 +622,14 @@ public class SerialStreamFormatter {
         boolean join;
         //QDataSet ds= Ops.ripplesTimeSeries(24);
         //QDataSet ds= Ops.ripplesVectorTimeSeries(24);
-        //QDataSet ds= Ops.ripplesSpectrogramTimeSeries(24);
-        QDataSet ds= Ops.ripplesJoinSpectrogramTimeSeries(24);
+        QDataSet ds= Ops.ripplesSpectrogramTimeSeries(24);
+        //QDataSet ds= Ops.ripplesJoinSpectrogramTimeSeries(24);
         join= SemanticOps.isJoin(ds);
 
         SerialStreamFormatter form= new SerialStreamFormatter();
 
-        String name= "vector";
-        String dep0name= "time";
+        String name= "Flux";
+        String dep0name= "Epoch";
 
         //File f = new File( name + ".qds" );
         //FileOutputStream out = new FileOutputStream(f);
@@ -620,17 +637,19 @@ public class SerialStreamFormatter {
 
         // configure the tool
         form.setAsciiTypes(true);
-        form.setTransferType( name, new AsciiTransferType(12,true) );
-        form.setTransferType( dep0name, new AsciiTimeTransferType(18,Units.us2000 ) ); //Danger: units must match.
+        form.setTransferType( name, new AsciiTransferType(10,true) );
+        form.setTransferType( dep0name, new AsciiTimeTransferType(17,Units.us2000 ) ); //Danger: units must match.
 
-        form.init( name, Channels.newChannel( System.out ) ); //WritableByteChannelSystem.out(WritableByteChannel)out.getChannel() );
+        form.init( name, Channels.newChannel( new FileOutputStream("/tmp/foo.qds") ) );
+        //form.init( name, Channels.newChannel( System.out ) ); //
         form.maybeFormat( null, (QDataSet) ds.property(QDataSet.DEPEND_1), true );
 
         if ( join ) {
             for ( int j=0; j<ds.length(); j++ ) {
                 QDataSet jds1= ds.slice(j);
+                String channelName= name + String.valueOf(j);
                 for ( int i=0; i<jds1.length(); i++ ) {
-                    form.format( name, DDataSet.copy( jds1.slice(i) ), false ); //TODO: remove DDataSet.copy used for debugging.
+                    form.format( channelName, DDataSet.copy( jds1.slice(i) ), false ); //TODO: remove DDataSet.copy used for debugging.
                 }            
             }
         } else {
