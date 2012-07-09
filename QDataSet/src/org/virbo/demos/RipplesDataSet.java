@@ -9,7 +9,8 @@ import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.QDataSet;
 
 /**
- * old das2 ripples dataset, but supports rank 1 and 2
+ * old das2 ripples dataset, but supports rank 1 and 2.
+ * See Ops.ripples.
  * @author jbf
  */
 public class RipplesDataSet extends AbstractDataSet {
