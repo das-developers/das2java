@@ -658,11 +658,11 @@ public class StreamTool {
             struct.packetCount++;
 
         } else {
-            String msg = "Expected four byte header, found '";
+            String msg = "Expected four-byte header like ':01:' or '[01]', but instead found '";
             String s = new String(struct.four);
-            s = s.replaceAll("\n", "\\\\n"); // TODO: what's the right wat to say this?
+            s = s.replaceAll("\n", "\\\\n"); 
             msg += s;
-            msg += "' at byteOffset=" + (struct.byteOffset - struct.bigBuffer.limit() + struct.bigBuffer.position() - 4 + 10);
+            msg += "' at byteOffset=" + (struct.byteOffset - struct.bigBuffer.limit() + struct.bigBuffer.position() - 4 - 10);
             msg += " after reading " + struct.descriptorCount + " descriptors and " + struct.packetCount + " packets.";
             throw new StreamException(msg);
         }
