@@ -129,7 +129,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         double[][] rebinWeights = new double[nx][ny];
 
         // average all the measurements that fall onto the same pixel together.
-        average( tds, weights, rebinData, rebinWeights, ddX, ddY );
+        average( tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType );
 
         if (interpolate) { // I think these calculate the interpolated value at the edge.  Note there's a bug in here...
             doBoundaries2RL(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
@@ -544,14 +544,17 @@ public class AverageTableRebinner implements DataSetRebinner {
 
     /**
      * average data that falls onto the same pixel location.
-     * @param tds the dataset to average
+     * @param tds the dataset to average, either rank 2 table or rank 3 array of tables.
      * @param weights the weights for each measurement of the dataset.
      * @param rebinData output the averages, normalized by the weights
      * @param rebinWeights output the weights for each bin.
      * @param ddX describes the horizontal bins
      * @param ddY describes the vertical bins
+     * @param interpolateType if NearestNeighbor, then we set weight=1.  Why? see
      */
-    static void average( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
+    static void average( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, 
+            RebinDescriptor ddX, RebinDescriptor ddY,
+            Interpolate interpolateType) {
         int nTables;
         Units zunits;
         int nx, ny;
@@ -624,16 +627,6 @@ public class AverageTableRebinner implements DataSetRebinner {
 
                 if (ibinx >= 0 && ibinx < nx) {
                     for (int j = 0; j < tds1.length(i); j++) {
-                        try {
-                            double z = tds1.value( i, j );
-                            double w = wds.value( i, j );
-                            if (ibiny[j] >= 0 && ibiny[j] < ny) {
-                                rebinData[ibinx][ibiny[j]] += z * w;
-                                rebinWeights[ibinx][ibiny[j]] += w;
-                            }
-                        } catch ( Exception e ) {
-                            System.err.println("here");
-                        }
                         double z = tds1.value( i, j );
                         double w = wds.value( i, j );
                         if (ibiny[j] >= 0 && ibiny[j] < ny) {
