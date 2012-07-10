@@ -137,7 +137,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             doCorners(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
         }
 
-        if (this.interpolate) {
+        if (interpolate) {
             Datum xTagWidth = getXTagWidth(xds, tds1);
             if ( xTagWidth.value()<0 ) xTagWidth= xTagWidth.multiply(-1);
 
@@ -810,21 +810,16 @@ public class AverageTableRebinner implements DataSetRebinner {
 
         double pixelSize= ddX.binWidth();
         xSampleWidth= xSampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
-        
-        //int numberNonGap= 0; // for debugging
-        //int numberGap= 0;
-        
+
         for (int j = 0; j < ny; j++) {
             int ii1 = -1;
             int ii2 = -1;
             for (int i = 0; i < nx; i++) {
                 if (weights[i][j] > 0. && ii1 == (i - 1)) { // ho hum another valid point
-
                     i1[i] = -1;
                     i2[i] = -1;
                     ii1 = i;
                 } else if (weights[i][j] > 0. && ii1 == -1) { // first valid point
-
                     i1[i] = -1;
                     i2[i] = -1;
                     ii1 = i;
@@ -834,9 +829,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                         }
                     }
                 } else if (weights[i][j] > 0. && ii1 < (i - 1)) { // bracketed a gap, interpolate
-
                     if ((ii1 > -1)) {   // need restriction on Y gap size
-
                         i1[i] = -1;
                         i2[i] = -1;
                         ii2 = i;
@@ -897,19 +890,15 @@ public class AverageTableRebinner implements DataSetRebinner {
                         }
                         data[i][j] = data[idx][j];
                         weights[i][j] = weights[idx][j];
-
                     } 
-
                 }
             } else {
                 for (int i = 0; i < nx; i++) {
                     if ((i1[i] != -1) && ((xTagTemp[i2[i]] - xTagTemp[i1[i]]) < xSampleWidth || i2[i] - i1[i] == 2)) { //kludge for bug 000321
-
                         a2 = ((xTagTemp[i] - xTagTemp[i1[i]]) / (xTagTemp[i2[i]] - xTagTemp[i1[i]]));
                         a1 = 1. - a2;
                         data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
                         weights[i][j] = weights[i1[i]][j] * a1 + weights[i2[i]][j] * a2; //approximate
-
                     } 
                 }
             }
