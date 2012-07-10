@@ -753,7 +753,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         double xSampleWidth;
         double fudge = 1.5 * 0.9; // 0.9 was removed from another code.
         if (interpolateType == Interpolate.NearestNeighbor) {
-            fudge = 1.01;
+            fudge = 1.01; 
         }
         if (xTagWidth == null) {
             double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
