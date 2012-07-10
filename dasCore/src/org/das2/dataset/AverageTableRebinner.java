@@ -45,7 +45,8 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
 /**
- *
+ * DataSetRebinner implementing either bi-linear interpolation in blocks of 4 points, or nearest neighbor interpolation by
+ * grabbing close points, or no interpolation at all..  Points the land on the same pixel are averaged together.
  * @author  Edward West
  */
 public class AverageTableRebinner implements DataSetRebinner {
@@ -58,7 +59,6 @@ public class AverageTableRebinner implements DataSetRebinner {
     private boolean enlargePixels = true;
 
     public static enum Interpolate {
-
         None, Linear, NearestNeighbor
     }
 
