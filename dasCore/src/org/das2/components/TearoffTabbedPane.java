@@ -960,20 +960,25 @@ public class TearoffTabbedPane extends JTabbedPane {
     @Override
     public void removeTabAt(int index) {
         Component c = getTabComponentByIndex(index);
-        super.removeTabAt(index);
+        if ( c==null ) {
+            System.err.println("no tab at index: "+index);
+        }
         TabDesc tab = tabs.get(c);
         if ( tab!=null ) {
             if ( tab.babysitter != null ) { //perhaps better to dock it first
-                if (tab.babysitter instanceof Window) {
-                    ((Window) tab.babysitter).dispose();
-                }
+                dock(c);
             }
             tabs.remove(c);
         } else {
             logger.fine("tabs didn't contain c, someone else removed it.");
             //TODO: clean this up.
         }
-        
+        for ( TabDesc t: tabs.values() ) {
+            if ( t.index>=index ) {
+                t.index--;
+            }
+        }
+        super.removeTabAt(index);
     }
 
     @Override
