@@ -56,7 +56,6 @@ import javax.swing.SwingUtilities;
 import org.das2.graph.Renderer;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
