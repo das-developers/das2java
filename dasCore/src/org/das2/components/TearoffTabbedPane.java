@@ -115,6 +115,10 @@ public class TearoffTabbedPane extends JTabbedPane {
             this.index = index;
             this.babysitter = null;
         }
+
+        public String toString() {
+            return this.title + "@"+ this.index + ": " + this.babysitter;
+        }
     }
 
     public TearoffTabbedPane() {
@@ -355,6 +359,17 @@ public class TearoffTabbedPane extends JTabbedPane {
 
 
         };
+    }
+
+    /**
+     * show all the tabs desc
+     */
+    public void peek() {
+        for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
+            Component key = (Component) i.next();
+            TabDesc d = (TabDesc) tabs.get(key);
+            System.err.println(d);
+        }
     }
 
     private void showIt() {
@@ -824,21 +839,21 @@ public class TearoffTabbedPane extends JTabbedPane {
             return null;
         }
         final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
-        final JFrame babySitter = new JFrame(td.title);
-        babySitter.setIconImage( parent.getIconImage() );
+        final JFrame newParent = new JFrame(td.title);
+        newParent.setIconImage( parent.getIconImage() );
         final WindowStateListener listener = new WindowStateListener() {
 
             public void windowStateChanged(WindowEvent e) {
-                babySitter.setExtendedState(parent.getExtendedState());
+                newParent.setExtendedState(parent.getExtendedState());
             }
         };
         parent.addWindowStateListener(listener);
 
-        final JTabbedPane pane = new TearoffTabbedPane(this);
+        final TearoffTabbedPane pane = new TearoffTabbedPane(this);
 
         p.translate(20, 20);
-        babySitter.setLocation(p);
-        babySitter.addWindowListener(new WindowAdapter() {
+        newParent.setLocation(p);
+        newParent.addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosing(WindowEvent e) {
@@ -850,18 +865,18 @@ public class TearoffTabbedPane extends JTabbedPane {
             }
         });
 
-        copyInputMap(parent, babySitter);
+        copyInputMap(parent, newParent);
 
-        babySitter.getContentPane().add(pane);
+        newParent.getContentPane().add(pane);
 
-        tearOff(tabIndex, babySitter);
+        tearOff(tabIndex, pane);
         pane.add(td.title, c);
         pane.setName(td.title);
 
-        babySitter.pack();
-        babySitter.setVisible(true);
+        newParent.pack();
+        newParent.setVisible(true);
 
-        return babySitter;
+        return newParent;
     }
 
     public void dock(Component c) {
