@@ -802,10 +802,10 @@ public class DataSetUtil {
     }
 
     /**
-     * das2 AverageTableRebinner needs to get the coursest of all the ytags.
-     * @param yTagWidth0
-     * @param yTagWidth1
-     * @return
+     * return the courser cadence of the two cadences.  Das2's AverageTableRebinner needs to get the coursest of all the ytags.
+     * @param yTagWidth0 rank 0 dataset that is one cadence (e.g. 84 sec)
+     * @param yTagWidth1 rank 0 dataset that is the second cadence (e.g. 70 sec)
+     * @return the courser of the two cadences.  (e.g. 84 sec)
      */
     public static RankZeroDataSet courserCadence( RankZeroDataSet yTagWidth0, RankZeroDataSet yTagWidth1 ) {
         if ( yTagWidth0==null || yTagWidth1==null ) return null;
