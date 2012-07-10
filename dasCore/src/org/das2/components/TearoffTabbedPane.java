@@ -897,7 +897,10 @@ public class TearoffTabbedPane extends JTabbedPane {
             if ( babysitter instanceof TearoffTabbedPane ) {
                 TearoffTabbedPane tbabysitter= (TearoffTabbedPane)babysitter;
                 if ( tbabysitter.getTabCount()==0 ) {
-                    babysitter.setVisible(false);
+                    Window w= SwingUtilities.getWindowAncestor(tbabysitter);
+                    if ( w.getComponentCount()==1 ) { // the tearoff tabbed pane
+                        w.dispose();
+                    }
                 }
             } else {
                 babysitter.setVisible(false);
