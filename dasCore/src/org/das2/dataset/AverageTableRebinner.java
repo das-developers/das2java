@@ -550,7 +550,7 @@ public class AverageTableRebinner implements DataSetRebinner {
      * @param rebinWeights output the weights for each bin.
      * @param ddX describes the horizontal bins
      * @param ddY describes the vertical bins
-     * @param interpolateType if NearestNeighbor, then we set weight=1.  Why? see
+     * @param interpolateType if NearestNeighbor, then we set weight=1.  Why? see http://autoplot.org/developer.spectrogram
      */
     static void average( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, 
             RebinDescriptor ddX, RebinDescriptor ddY,
@@ -562,7 +562,8 @@ public class AverageTableRebinner implements DataSetRebinner {
         if ( tds.rank()!=3 ) throw new IllegalArgumentException("rank 3 expected");
 
         zunits = SemanticOps.getUnits( tds );
-
+        double fill= zunits.getFillDouble();
+        
         nx = (ddX == null ? tds.length(0) : ddX.numberOfBins());
         ny = (ddY == null ? tds.length(0,0) : ddY.numberOfBins());
 
@@ -630,14 +631,33 @@ public class AverageTableRebinner implements DataSetRebinner {
                         double z = tds1.value( i, j );
                         double w = wds.value( i, j );
                         if (ibiny[j] >= 0 && ibiny[j] < ny) {
-                            rebinData[ibinx][ibiny[j]] += z * w;
-                            rebinWeights[ibinx][ibiny[j]] += w;
+                            if ( interpolateType==Interpolate.NearestNeighbor ) { // propogate fill points through average
+                                if ( w==0 ) {
+                                    if ( rebinWeights[ibinx][ibiny[j]]==0 ) {
+                                        rebinData[ibinx][ibiny[j]] = fill;
+                                        rebinWeights[ibinx][ibiny[j]] = 1;
+                                    }
+                                } else {
+                                    if ( rebinWeights[ibinx][ibiny[j]]==1 && rebinData[ibinx][ibiny[j]]==fill ) {
+                                        rebinData[ibinx][ibiny[j]] = z;
+                                        rebinWeights[ibinx][ibiny[j]] = w;
+                                    } else {
+                                        rebinData[ibinx][ibiny[j]] += z * w;
+                                        rebinWeights[ibinx][ibiny[j]] += w;
+                                    }
+                                }
+                            } else {
+                                rebinData[ibinx][ibiny[j]] += z * w;
+                                rebinWeights[ibinx][ibiny[j]] += w;
+                            }
                         }
                     }
                 }
             }
         }
+
         multiplyWeights( rebinData, rebinWeights, zunits.getFillDouble() );
+
     }
 
     private static void multiplyWeights(double[][] data, double[][] weights, double fill) {
