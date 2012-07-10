@@ -31,7 +31,16 @@ import org.virbo.dataset.QDataSet;
  * @author  Edward West
  */
 public interface DataSetRebinner {
-    
+
+    /**
+     * create a new QDataSet in a rank 2 table with x and y tags described by x and y.
+     * @param ds The input dataset, either a rank 2 or rank 3 dataset.  Note this may include rank 1 dataset and rank 2 bundles at some point.
+     * @param x describes the column labels.  (Note this may become a QDataSet at some point).
+     * @param y describes the row labels.
+     * @return a rank 2 QDataSet with the given rows and columns.
+     * @throws IllegalArgumentException
+     * @throws DasException
+     */
     QDataSet rebin( QDataSet ds, RebinDescriptor x, RebinDescriptor y ) throws IllegalArgumentException, DasException;
     
 }
