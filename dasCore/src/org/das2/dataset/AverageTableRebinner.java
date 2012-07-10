@@ -66,6 +66,16 @@ public class AverageTableRebinner implements DataSetRebinner {
     public AverageTableRebinner() {
     }
 
+    /**
+     * rebin the data, using the interpolate control to define the interpolation between measurements.  Data that fall into the
+     * same pixel are always averaged in the linear space, regardless of interpolation method.
+     * @param ds rank 2 table or rank 3 join of tables.
+     * @param ddX
+     * @param ddY
+     * @return
+     * @throws IllegalArgumentException
+     * @throws DasException
+     */
     public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY ) throws IllegalArgumentException, DasException {
         logger.finest("enter AverageTableRebinner.rebin");
 
@@ -532,6 +542,15 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
+    /**
+     * average data that falls onto the same pixel location.
+     * @param tds the dataset to average
+     * @param weights the weights for each measurement of the dataset.
+     * @param rebinData output the averages, normalized by the weights
+     * @param rebinWeights output the weights for each bin.
+     * @param ddX describes the horizontal bins
+     * @param ddY describes the vertical bins
+     */
     static void average( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, RebinDescriptor ddX, RebinDescriptor ddY) {
         int nTables;
         Units zunits;
@@ -728,6 +747,14 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
+    /**
+     * interpolate the missing pixels by scanning rows, looking for point pairs where weights &gt; 0 and that are acceptably close.
+     * @param data the data, not scaled by weight.
+     * @param weights 0 means ignore, positive means valid
+     * @param ddX
+     * @param xTagWidth the nominal cadence between measurements.  This defines acceptably close, and we apply a fudge factor.
+     * @param interpolateType if NearestNeighbor, then special actions can occur.
+     */
     static void fillInterpolateXNew(final double[][] data, final double[][] weights, RebinDescriptor ddX, Datum xTagWidth, Interpolate interpolateType) {
 
         final int ny = data[0].length;
@@ -840,7 +867,6 @@ public class AverageTableRebinner implements DataSetRebinner {
                                 }
                             }
                         }
-                        //doInterp= ((i1[i] != -1) && ((xTagTemp[i2[i]] - xTagTemp[i1[i]]) < xSampleWidth || i2[i] - i1[i] == 2));
                     }
                     if ( doInterp ) {
                         int idx;
@@ -859,23 +885,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                         data[i][j] = data[idx][j];
                         weights[i][j] = weights[idx][j];
 
-//                        if (numberGap>0 ) {
-//                            if ( j==86 ) System.err.println("found gap close: i="+i + " j="+j + " gapSize="+numberGap );
-//
-//                            numberNonGap= 0;
-//                            numberGap= 0;
-//                        }
-//                        numberNonGap++;
-
-                    } //else {
-//                        if ( numberNonGap>0 ) {
-//                            if ( j==86 ) System.err.println("found gap open: i="+i + " j="+j + " nonGapSize="+numberNonGap );
-//                            numberNonGap=0;
-//                            numberGap=0;
-//                        }
-//                        numberGap++;
-//
-//                    }
+                    } 
 
                 }
             } else {
@@ -893,7 +903,14 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
-
+    /**
+     * interpolate the missing pixels by scanning columns, looking for point pairs where weights &gt; 0 and that are acceptably close.
+     * @param data the data, not scaled by weight.
+     * @param weights 0 means ignore, positive means valid
+     * @param ddX
+     * @param xTagWidth the nominal cadence between measurements.  This defines acceptably close, and we apply a fudge factor.
+     * @param interpolateType if NearestNeighbor, then special actions can occur.
+     */
     static void fillInterpolateY(final double[][] data, final double[][] weights, RebinDescriptor ddY, Datum yTagWidth, Interpolate interpolateType) {
 
         final int nx = data.length;
