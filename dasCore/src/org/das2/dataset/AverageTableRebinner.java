@@ -32,6 +32,7 @@ import org.das2.system.DasLogger;
 import java.util.logging.*;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsConverter;
+import org.das2.util.DasMath;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
@@ -752,7 +753,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         double xSampleWidth;
         double fudge = 1.5 * 0.9; // 0.9 was removed from another code.
         if (interpolateType == Interpolate.NearestNeighbor) {
-            fudge = 1.1;
+            fudge = 1.01;
         }
         if (xTagWidth == null) {
             double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
@@ -918,7 +919,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         double ySampleWidth;
         double fudge = 1.5 * 0.9; // 0.9 was removed from another code.
         if (interpolateType == Interpolate.NearestNeighbor) {
-            fudge = 1.1;
+            fudge = 1.01;
         }
         if (yTagWidth == null) {
             double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
@@ -984,7 +985,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                     if ( i1[j]!= -1 && i2[j] != -1) {
                         boolean doInterpR= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidth/2;
                         doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidth/2;
-                        doInterp= doInterp || ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth*2; // strange bit of code that is probably wrong.
+                        doInterp= doInterp || ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth;
                     } else {
                         //kludge for bug 000321
                         if ( ddY.isLog() && !UnitsUtil.isRatiometric(yTagUnits) ) {
