@@ -869,10 +869,25 @@ public class TearoffTabbedPane extends JTabbedPane {
         int selectedIndex = getSelectedIndex();
         TabDesc td = (TabDesc) tabs.get(c);
         int index = td.index;
-        super.removeTabAt(index);
+        if ( index>=super.getTabCount() ) {
+            System.err.println("something has gone wrong.  We haven't accounted for a tab which was removed.");
+        } else {
+            super.removeTabAt(index);
+        }
         super.insertTab(td.title, td.icon, c, td.tip, index);
         super.setEnabledAt(index, true);
+        Container babysitter= td.babysitter;
         td.babysitter= null; // get rid of reference so it will be garbage collected.
+        if ( babysitter!=null ) {
+            if ( babysitter instanceof TearoffTabbedPane ) {
+                TearoffTabbedPane tbabysitter= (TearoffTabbedPane)babysitter;
+                if ( tbabysitter.getTabCount()==0 ) {
+                    babysitter.setVisible(false);
+                }
+            } else {
+                babysitter.setVisible(false);
+            }
+        }
         setSelectedIndex(selectedIndex);
     }
 
@@ -908,6 +923,9 @@ public class TearoffTabbedPane extends JTabbedPane {
     public void remove( Component c ) {
         //TODO: this does not work properly if the tab is undocked.
         TabDesc desc= tabs.get(c);
+        if ( desc==null ) {
+            System.err.println("here c has no desc");
+        }
         if ( desc.babysitter!=null ) {
             this.dock(c);
         }
