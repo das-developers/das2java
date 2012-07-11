@@ -40,6 +40,7 @@ import org.das2.dataset.TableDataSetConsumer;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 import org.das2.datum.TimeLocationUnits;
+import org.das2.system.DasLogger;
 import org.das2.datum.Datum;
 import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
@@ -52,7 +53,9 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.graph.Renderer;
+import org.das2.graph.SpectrogramRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
@@ -66,7 +69,10 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     private DasPlot myPlot;
     private DasAxis sourceZAxis;
     private DasAxis sourceXAxis;
-    protected Datum value;
+
+    protected Datum xValue;
+    protected Datum yValue;
+
     //private long eventBirthMilli;
     private SymbolLineRenderer renderer;
     private Color markColor = new Color(230,230,230);
@@ -87,7 +93,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         myPlot.addRenderer( new Renderer() {
             @Override
             public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
-                int ix= (int)myPlot.getXAxis().transform(value);
+                int ix= (int)myPlot.getXAxis().transform(xValue);
                 DasRow row= myPlot.getRow();
                 int iy0= (int)row.getDMinimum();
                 int iy1= (int)row.getDMaximum();
@@ -162,6 +168,26 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         });
         buttonPanel.add( printButton );
 
+        JButton settingsButton= new JButton( new AbstractAction("Settings...") {
+            public void actionPerformed( ActionEvent e ) {
+                SpectrogramRenderer rend=null;
+                for ( Renderer r : parentPlot.getRenderers() ) {
+                    if ( r instanceof SpectrogramRenderer ) {
+                        rend= (SpectrogramRenderer) r;
+                        break;
+                    }
+                }
+                SliceSettings settings= new SliceSettings();
+                settings.setSliceRebinnedData( rend.isSliceRebinnedData() );
+                new PropertyEditor(settings).showModalDialog(canvas);
+                rend.setSliceRebinnedData(settings.isSliceRebinnedData());
+
+                QDataSet ds= rend.getConsumedDataSet();
+                showSlice( ds, xValue, yValue );
+
+            }
+        });
+        buttonPanel.add( settingsButton );
 
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
@@ -200,60 +226,63 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     }
 
     public void dataPointSelected(DataPointSelectionEvent e) {
+        long xxx[]= { 0,0,0,0 };
+        xxx[0] = System.currentTimeMillis()-e.birthMilli;
                 
+        yValue = e.getY();
+        xValue = e.getX();
+
         QDataSet ds = e.getDataSet();
-        if (ds==null || !( SemanticOps.isTableDataSet(ds) )) {
+        if (ds==null || ! SemanticOps.isTableDataSet(ds) )
             return;
-        }
         
-        Datum yValue = e.getY();
-        value = e.getX();
-        
-        QDataSet tds = (QDataSet)ds; //TODO: clean up after refactor
+        QDataSet tds = (QDataSet)ds;
 
-        QDataSet tds1=null;
+        showSlice( tds, xValue, yValue );
 
-        if ( tds.rank()==3 ) { // slice to get the correct table;
-            for ( int i=0; i<tds.length(); i++ ) {
-                QDataSet bounds= DataSetOps.dependBounds(tds.slice(i));
-                if ( DataSetOps.boundsContains( bounds, value, yValue ) ) {
-                    tds1= tds.slice(i);
+    }
+
+    private boolean showSlice( QDataSet tds, Datum xValue, Datum yValue ) {
+        QDataSet tds1 = null;
+        if (tds.rank() == 3) {
+            // slice to get the correct table;
+            for (int i = 0; i < tds.length(); i++) {
+                QDataSet bounds = DataSetOps.dependBounds(tds.slice(i));
+                if (DataSetOps.boundsContains(bounds, xValue, yValue)) {
+                    tds1 = tds.slice(i);
                     break;
                 }
             }
         } else {
-            QDataSet bounds= DataSetOps.dependBounds(tds);
-            if ( DataSetOps.boundsContains( bounds, value, yValue) ) {
-                tds1= tds;
+            QDataSet bounds = DataSetOps.dependBounds(tds);
+            if (DataSetOps.boundsContains(bounds, xValue, yValue)) {
+                tds1 = tds;
             }
         }
-        if (tds1==null) return;
+        if (tds1 == null) {
+            return false;
+        }
 
         QDataSet yds= SemanticOps.ytagsDataSet(tds1);
-        QDataSet sliceDataSet= DataSetOps.slice1( ds, org.virbo.dataset.DataSetUtil.closestIndex( yds, e.getY() ) );
+        QDataSet sliceDataSet= DataSetOps.slice1( tds1, org.virbo.dataset.DataSetUtil.closestIndex( yds, yValue ) );
 
+        DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");
         if (!isPopupVisible()) {
             showPopup();
         }
-
         renderer.setDataSet(sliceDataSet);
-
-        yValue= e.getY();
-        Datum xValue = e.getX();
-
         DatumFormatter formatter;
-        if ( xValue.getUnits() instanceof TimeLocationUnits ) {
-            formatter= TimeDatumFormatter.DEFAULT;
+        if (xValue.getUnits() instanceof TimeLocationUnits) {
+            formatter = TimeDatumFormatter.DEFAULT;
         } else {
-            formatter= xValue.getFormatter();
+            formatter = xValue.getFormatter();
         }
-            
-        myPlot.setTitle("x: "+ formatter.format(xValue) + " y: "+yValue);
-        
+        myPlot.setTitle( "x: " + formatter.format(xValue) + " y: " + yValue );
         //eventBirthMilli= e.birthMilli;
+        return true;
     }
 
-    public Color getYMarkColor() {
+    public Color getMarkColor() {
         return markColor;
     }
 
