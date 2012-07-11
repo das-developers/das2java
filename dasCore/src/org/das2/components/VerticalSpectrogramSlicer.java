@@ -69,7 +69,10 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     private DasPlot myPlot;
     private DasAxis sourceZAxis;
     private DasAxis sourceXAxis;
-    protected Datum yValue;    
+
+    protected Datum xValue;
+    protected Datum yValue;
+
     //private long eventBirthMilli;
     private SymbolLineRenderer renderer;
     private Color yMarkColor = new Color(230,230,230);
@@ -185,7 +188,8 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
                 rend.setSliceRebinnedData(settings.isSliceRebinnedData());
 
                 QDataSet ds= rend.getConsumedDataSet();
-                setDataSet(ds);
+                showSlice( ds, xValue, yValue );
+                
             }
         });
         buttonPanel.add( settingsButton );
@@ -230,56 +234,57 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         long xxx[]= { 0,0,0,0 };
         xxx[0] = System.currentTimeMillis()-e.birthMilli;    
 
-        yValue= e.getY();
-        Datum xValue = e.getX();
+        yValue = e.getY();
+        xValue = e.getX();
 
         QDataSet ds = e.getDataSet();
         if (ds==null || ! SemanticOps.isTableDataSet(ds) )
             return;
         
         QDataSet tds = (QDataSet)ds;
-        QDataSet tds1=null;
+        
+        showSlice( tds, xValue, yValue );
 
-        if ( tds.rank()==3 ) { // slice to get the correct table;
-            for ( int i=0; i<tds.length(); i++ ) {
-                QDataSet bounds= DataSetOps.dependBounds(tds.slice(i));
-                if ( DataSetOps.boundsContains( bounds, xValue, yValue ) ) {
-                    tds1= tds.slice(i);
+    }
+
+    private boolean showSlice( QDataSet tds, Datum xValue, Datum yValue ) {
+        QDataSet tds1 = null;
+        if (tds.rank() == 3) {
+            // slice to get the correct table;
+            for (int i = 0; i < tds.length(); i++) {
+                QDataSet bounds = DataSetOps.dependBounds(tds.slice(i));
+                if (DataSetOps.boundsContains(bounds, xValue, yValue)) {
+                    tds1 = tds.slice(i);
                     break;
                 }
             }
         } else {
-            QDataSet bounds= DataSetOps.dependBounds(tds);
-            if ( DataSetOps.boundsContains( bounds, xValue, yValue ) ) {
-                tds1= tds;
+            QDataSet bounds = DataSetOps.dependBounds(tds);
+            if (DataSetOps.boundsContains(bounds, xValue, yValue)) {
+                tds1 = tds;
             }
         }
-
-        if ( tds1==null ) return;
-        
-        QDataSet xds= SemanticOps.xtagsDataSet(tds1);
-
+        if (tds1 == null) {
+            return false;
+        }
+        QDataSet xds = SemanticOps.xtagsDataSet(tds1);
         int index;
-        index= org.virbo.dataset.DataSetUtil.closestIndex( xds, xValue );
-        QDataSet sliceDataSet= tds1.slice( index );
-                      
-        DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");        
+        index = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
+        QDataSet sliceDataSet = tds1.slice(index);
+        DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");
         if (!isPopupVisible()) {
             showPopup();
         }
-
         renderer.setDataSet(sliceDataSet);
-        
         DatumFormatter formatter;
-        if ( xValue.getUnits() instanceof TimeLocationUnits ) {
-            formatter= TimeDatumFormatter.DEFAULT;
+        if (xValue.getUnits() instanceof TimeLocationUnits) {
+            formatter = TimeDatumFormatter.DEFAULT;
         } else {
-            formatter= xValue.getFormatter();
+            formatter = xValue.getFormatter();
         }
-            
-        myPlot.setTitle("x: "+ formatter.format(xValue) + " y: "+yValue);
-        
+        myPlot.setTitle("x: " + formatter.format(xValue) + " y: " + yValue);
         //eventBirthMilli= e.birthMilli;
+        return true;
     }
     
     public Color getYMarkColor() {
