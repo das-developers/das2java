@@ -75,7 +75,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
 
     //private long eventBirthMilli;
     private SymbolLineRenderer renderer;
-    private Color yMarkColor = new Color(230,230,230);
+    private Color markColor = new Color(230,230,230);
     
     protected VerticalSpectrogramSlicer( DasPlot parent, DasAxis sourceXAxis, DasAxis sourceZAxis ) {
         this.sourceZAxis= sourceZAxis;
@@ -102,7 +102,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
                 g.drawLine(ix+3,iy1,ix,iy1-3);
                 g.drawLine(ix-3,iy1,ix,iy1-3);
 
-                g.setColor(yMarkColor);
+                g.setColor(markColor);
                 g.drawLine( ix, iy0+4, ix, iy1-4 );
             }
         } );
@@ -282,16 +282,16 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         } else {
             formatter = xValue.getFormatter();
         }
-        myPlot.setTitle("x: " + formatter.format(xValue) + " y: " + yValue);
+        myPlot.setTitle( "x: " + formatter.format(xValue) + " y: " + yValue );
         //eventBirthMilli= e.birthMilli;
         return true;
     }
     
-    public Color getYMarkColor() {
-        return yMarkColor;
+    public Color getMarkColor() {
+        return markColor;
     }
 
-    public void setYMarkColor(Color yMarkColor) {
-        this.yMarkColor = yMarkColor;
+    public void setMarkColor(Color markColor) {
+        this.markColor = markColor;
     }
 }
