@@ -83,6 +83,8 @@ public class HtmlUtil {
 
         ArrayList urlList= new ArrayList();
 
+        String surl= url.toString();
+
         while ( matcher.find() ) {
             FileSystem.logger.finest("parse listing");
             String strLink= matcher.group(2);
@@ -96,7 +98,7 @@ public class HtmlUtil {
                 continue;
             }
 
-            if ( urlLink.toString().startsWith(url.toString()) && null==urlLink.getQuery() ) {
+            if ( strLink.startsWith(surl) && strLink.length() > surl.length() && null==urlLink.getQuery() ) {
                 urlList.add( urlLink );
             }
         }
