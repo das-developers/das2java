@@ -178,11 +178,15 @@ public abstract class WebFileSystem extends FileSystem {
                 localRoot= localRoot.getParentFile();
             }
         }
-        String tail= start.getAbsolutePath().substring(localRoot.getAbsolutePath().length());
-        if ( tail.length()>0 ) {
-            return new File( result, tail );
-        } else {
+        if ( result==null ) {
             return result;
+        } else {
+            String tail= start.getAbsolutePath().substring(localRoot.getAbsolutePath().length());
+            if ( tail.length()>0 ) {
+                return new File( result, tail );
+            } else {
+                return result;
+            }
         }
     }
 
