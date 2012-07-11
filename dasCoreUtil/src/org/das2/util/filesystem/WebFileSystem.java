@@ -136,6 +136,57 @@ public abstract class WebFileSystem extends FileSystem {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
+    /**
+     * return the name of the folder containing a local copy of the cache.
+     * @param localRoot
+     * @return
+     */
+    private static File lookForROCache( File start ) {
+
+        File localRoot= start;
+        File stopFile= FileSystem.settings().getLocalCacheDir();
+        File result= null;
+
+        while ( !( localRoot.equals(stopFile) ) ) {
+            File f= new File( localRoot, "ro_cache.txt" );
+            if ( f.exists() ) {
+                BufferedReader read = null;
+                try {
+                    read = new BufferedReader(new FileReader(f));
+                    String s = read.readLine();
+                    while (s != null) {
+                        int i= s.indexOf("#");
+                        if ( i>-1 ) s= s.substring(0,i);
+                        if ( s.trim().length()>0 ) {
+                            String sf= s.trim();
+                            result= new File(sf);
+                            break;
+                        }
+                        s = read.readLine();
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(WebFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        if ( read!=null ) read.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(WebFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                break;
+            } else {
+                localRoot= localRoot.getParentFile();
+            }
+        }
+        String tail= start.getAbsolutePath().substring(localRoot.getAbsolutePath().length());
+        if ( tail.length()>0 ) {
+            return new File( result, tail );
+        } else {
+            return result;
+        }
+    }
+
+
     /** Creates a new instance of WebFileSystem */
     protected WebFileSystem(URI root, File localRoot) {
         super(root);
@@ -150,31 +201,9 @@ public abstract class WebFileSystem extends FileSystem {
                     || root.getScheme().equals("https" ) ) {
                 this.protocol = new DefaultHttpProtocol();
             }
-            File f= new File( localRoot, "ro_cache.txt" );
-            if ( f.exists() ) {
-                BufferedReader read = null;
-                try {
-                    read = new BufferedReader(new FileReader(f));
-                    String s = read.readLine();
-                    while (s != null) {
-                        int i= s.indexOf("#");
-                        if ( i>-1 ) s= s.substring(0,i);
-                        if ( s.trim().length()>0 ) {
-                            String sf= s.trim();
-                            setReadOnlyCache( new File(sf) );
-                            break;
-                        }
-                        s = read.readLine();
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(WebFileSystem.class.getName()).log(Level.SEVERE, null, ex);
-                } finally {
-                    try {
-                        if ( read!=null ) read.close();
-                    } catch (IOException ex) {
-                        Logger.getLogger(WebFileSystem.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+            File f= lookForROCache( localRoot );
+            if ( f!=null ) {
+                setReadOnlyCache( f );
             }
 
         }
