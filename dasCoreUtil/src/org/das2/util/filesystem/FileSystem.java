@@ -176,10 +176,12 @@ public abstract class FileSystem  {
 
     /**
      * remove all the cached FileSystem instances.
+     * NOTE: This does not remove local file listings! It should!
      */
     public synchronized static void reset() {
         instances.clear();
         blocks.clear();
+        System.err.println("memory caches cleared, but cache listings may exist on the file caches");
     }
 
     /**
