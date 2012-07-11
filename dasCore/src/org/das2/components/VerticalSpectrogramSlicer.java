@@ -53,7 +53,9 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.graph.Renderer;
+import org.das2.graph.SpectrogramRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
@@ -168,6 +170,25 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         });
         buttonPanel.add( printButton );
 
+        JButton settingsButton= new JButton( new AbstractAction("Settings...") {
+            public void actionPerformed( ActionEvent e ) {
+                SpectrogramRenderer rend=null;
+                for ( Renderer r : parentPlot.getRenderers() ) {
+                    if ( r instanceof SpectrogramRenderer ) {
+                        rend= (SpectrogramRenderer) r;
+                        break;
+                    }
+                }
+                SliceSettings settings= new SliceSettings();
+                settings.setSliceRebinnedData( rend.isSliceRebinnedData() );
+                new PropertyEditor(settings).showModalDialog(canvas);
+                rend.setSliceRebinnedData(settings.isSliceRebinnedData());
+
+                QDataSet ds= rend.getConsumedDataSet();
+                setDataSet(ds);
+            }
+        });
+        buttonPanel.add( settingsButton );
         
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
@@ -208,7 +229,10 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     public void dataPointSelected(DataPointSelectionEvent e) {    
         long xxx[]= { 0,0,0,0 };
         xxx[0] = System.currentTimeMillis()-e.birthMilli;    
-        
+
+        yValue= e.getY();
+        Datum xValue = e.getX();
+
         QDataSet ds = e.getDataSet();
         if (ds==null || ! SemanticOps.isTableDataSet(ds) )
             return;
@@ -219,14 +243,14 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         if ( tds.rank()==3 ) { // slice to get the correct table;
             for ( int i=0; i<tds.length(); i++ ) {
                 QDataSet bounds= DataSetOps.dependBounds(tds.slice(i));
-                if ( DataSetOps.boundsContains( bounds, e.getX(), e.getY() ) ) {
+                if ( DataSetOps.boundsContains( bounds, xValue, yValue ) ) {
                     tds1= tds.slice(i);
                     break;
                 }
             }
         } else {
             QDataSet bounds= DataSetOps.dependBounds(tds);
-            if ( DataSetOps.boundsContains( bounds, e.getX(), e.getY() ) ) {
+            if ( DataSetOps.boundsContains( bounds, xValue, yValue ) ) {
                 tds1= tds;
             }
         }
@@ -236,7 +260,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         QDataSet xds= SemanticOps.xtagsDataSet(tds1);
 
         int index;
-        index= org.virbo.dataset.DataSetUtil.closestIndex( xds, e.getX() );
+        index= org.virbo.dataset.DataSetUtil.closestIndex( xds, xValue );
         QDataSet sliceDataSet= tds1.slice( index );
                       
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");        
@@ -245,9 +269,6 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         }
 
         renderer.setDataSet(sliceDataSet);
-        
-        yValue= e.getY();
-        Datum xValue = e.getX();
         
         DatumFormatter formatter;
         if ( xValue.getUnits() instanceof TimeLocationUnits ) {
