@@ -282,8 +282,9 @@ public class EventsRenderer extends Renderer {
                 }
                 
             } else  if ( dep0.rank() == 1 ) {
-                xmins= dep0;
-                xmaxs= xmins;
+                Datum width= SemanticOps.guessXTagWidth( dep0, null ).divide(2);
+                xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
                 colors= Ops.replicate( 0x808080, xmins.length() );
 
             } else {
