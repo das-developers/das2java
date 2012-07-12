@@ -127,7 +127,7 @@ public abstract class WeightsDataSet implements QDataSet {
             super(ds);
         }
         
-        private final double weight(double v) {
+        private double weight(double v) {
             return v == fill || Double.isNaN(v) || v > vmax || v < vmin ? 0.0 : 1.0;
         }
 
@@ -158,7 +158,7 @@ public abstract class WeightsDataSet implements QDataSet {
             super(ds);
         }
         
-        public final double weight(double v) {
+        private double weight(double v) {
             return v == fill || v==(float)fill || Double.isNaN(v) ? 0.0 : 1.0;
         }
 
@@ -188,7 +188,7 @@ public abstract class WeightsDataSet implements QDataSet {
             super(ds);
         }
         
-        private final double weight(double v) {
+        private double weight(double v) {
             return Double.isNaN(v) ? 0.0 : 1.0;
         }
 
@@ -213,12 +213,12 @@ public abstract class WeightsDataSet implements QDataSet {
         }
     }    
     
-    public final class AllValid extends WeightsDataSet {
+    public static final class AllValid extends WeightsDataSet {
         public AllValid( QDataSet ds ) {
             super(ds);
         }
         
-        private final double weight(double v) {
+        private double weight(double v) {
             return 1.0;
         }
 
