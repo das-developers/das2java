@@ -405,7 +405,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             if ( ss[i].trim().length()==0 ) continue;
             String[] ss2= ss[i].split("=",2);
             if ( ss2.length==1 ) {
-                result.put( ss2[0].trim(), "T" );
+                result.put( ss2[0].trim(), "T" ); // true
             } else {
                 String k= ss2[0].trim();
                 String v= ss2[1].trim();
