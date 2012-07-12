@@ -45,6 +45,10 @@ public class StreamDescriptor implements Descriptor {
         documents = new HashMap<Descriptor, Document>();
     }
 
+    /**
+     * add the descriptor to the stream, manually assigning it an id
+     * @param pd
+     */
     public synchronized void addDescriptor(Descriptor pd) {
         int found= -1;
         if ( invPackets.get(pd)!=null ) {
@@ -62,15 +66,25 @@ public class StreamDescriptor implements Descriptor {
         addDescriptor( pd, found );
     }
 
-    public synchronized void addDescriptor( Descriptor pd, int found ) {
-        descriptors.put(found, pd);
-        invPackets.put(pd, found );
+    /**
+     * add the descriptor to the stream, with the given ID.
+     * @param pd
+     * @param descriptorId
+     */
+    public synchronized void addDescriptor( Descriptor pd, int descriptorId ) {
+        descriptors.put(descriptorId, pd);
+        invPackets.put(pd, descriptorId );
     }
 
 
     public synchronized int descriptorId(Descriptor pd) {
         if ( pd==this ) return 0;
-        return invPackets.get(pd);
+        Integer i= invPackets.get(pd);
+        if ( i==null ) {
+            throw new IllegalArgumentException("no descriptor ID found for descriptor: "+pd) ;
+        } else {
+            return i.intValue();
+        }
     }
 
     /**
@@ -87,7 +101,12 @@ public class StreamDescriptor implements Descriptor {
     public void send(Descriptor pd, WritableByteChannel out) throws StreamException, IOException {
         Document document = documents.get(pd);
 
-        document.appendChild( document.importNode( pd.getDomElement(), true ) );
+        Element ele= pd.getDomElement();
+        if ( ele==null ) {
+            throw new IllegalArgumentException("Descriptor contains no domElement, cannot be sent");
+        }
+
+        document.appendChild( document.importNode( ele, true ) );
 
         ByteArrayOutputStream pdout = new ByteArrayOutputStream(1000);
         Writer writer = new OutputStreamWriter(pdout);
