@@ -24,15 +24,15 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
 import javax.swing.ImageIcon;
-import org.das2.dataset.DataSetUtil;
 import org.das2.datum.Units;
 import org.das2.util.GrannyTextRenderer;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.CoerceUtil;
+import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 
 
@@ -43,6 +43,7 @@ import org.virbo.dsops.Ops;
  * @author Jeremy
  */
 public class EventsRenderer extends Renderer {
+    
     public static final String PROP_COLOR = "color";
 
     /**
@@ -103,10 +104,7 @@ public class EventsRenderer extends Renderer {
     }
     
     int[] eventMap;
-    
-    private EventsRenderer.ColorSpecifier colorSpecifier=null;
-    
-    
+        
     public EventsRenderer( ) {
         super();
     }
@@ -160,23 +158,6 @@ public class EventsRenderer extends Renderer {
         }
     };
     
-    /**
-     * set this to be an object implementing ColorSpecifier interface, if more than
-     * one color is to be used when drawing the bars.  Setting this to null will
-     * restore the initial behavior of drawing all bars in one color.
-     */
-    public void setColorSpecifier( ColorSpecifier spec ) {
-        this.colorSpecifier= spec;
-    }
-    
-    public ColorSpecifier getColorSpecifier( ) {
-        return this.colorSpecifier;
-    }
-    
-    
-    protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
-        return null;
-    }
     
     @Override
     protected void installRenderer() {
@@ -251,6 +232,11 @@ public class EventsRenderer extends Renderer {
     private MouseModule getMouseModule() {
         return new MouseModule( parent, new DragRenderer(parent), "event lookup" );
     }
+
+    /**
+     * canonical dataset containing rank2 bundle of start,stop,color,text.
+     */
+    private QDataSet cds=null;
     
     /**
      * make canonical rank 2 bundle dataset of min,max,color,text
@@ -264,6 +250,10 @@ public class EventsRenderer extends Renderer {
         QDataSet colors;
         QDataSet msgs;
 
+        if ( vds==null ) {
+            return null;
+        }
+        
         if ( vds.rank()==2 ) {
             QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
             if ( dep0==null ) {
@@ -324,8 +314,9 @@ public class EventsRenderer extends Renderer {
                     return null;
                 }
             } else if ( dep0.rank() == 1 ) {
-                xmins= dep0;
-                xmaxs= xmins;
+                Datum width= SemanticOps.guessXTagWidth( dep0, null ).divide(2);
+                xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
                 msgs= vds;
             } else {
                 parent.postMessage( this, "dataset is not correct form", DasPlot.WARNING, null, null );
@@ -340,6 +331,15 @@ public class EventsRenderer extends Renderer {
         } else {
             parent.postMessage( this, "dataset must be rank 1 or rank 2", DasPlot.WARNING, null, null );
             return null;
+        }
+
+        if ( this.colorSpecifier!=null ) {
+            Units u= SemanticOps.getUnits(msgs);
+            WritableDataSet wds= IDataSet.copy(colors);
+            for ( int i=0; i<msgs.length(); i++ ) {
+                wds.putValue( i, colorSpecifier.getColor( Datum.create( msgs.value(i), u ) ).getRGB() );
+            }
+            colors= wds;
         }
 
         Units u0= SemanticOps.getUnits( xmins );
@@ -370,17 +370,16 @@ public class EventsRenderer extends Renderer {
         
         g.setColor(color);
 
-        QDataSet ds= makeCanonical(vds);
-        if ( ds==null ) {
+        if ( cds==null ) {
             // a message should be posted by makeCanonical
             return;
         }
 
-        QDataSet xmins= DataSetOps.unbundle( ds,0 );
-        QDataSet xmaxs= DataSetOps.unbundle( ds,1 );
-        QDataSet msgs= DataSetOps.unbundle( ds,ds.length(0)-1 );
+        QDataSet xmins= DataSetOps.unbundle( cds,0 );
+        QDataSet xmaxs= DataSetOps.unbundle( cds,1 );
+        QDataSet msgs= DataSetOps.unbundle( cds,cds.length(0)-1 );
         Units eu= SemanticOps.getUnits( msgs );
-        QDataSet color= ds.length(0)>3 ? DataSetOps.unbundle( ds,2 ) : null;
+        QDataSet lcolor= cds.length(0)>3 ? DataSetOps.unbundle( cds,2 ) : null;
 
         if ( lastException!=null ) {
             renderException( g, xAxis, yAxis, lastException );
@@ -396,7 +395,7 @@ public class EventsRenderer extends Renderer {
             QDataSet xds= xmins;
             Units xunits= SemanticOps.getUnits(xds);
 
-            if ( vds.length()>0 ) {
+            if ( cds.length()>0 ) {
                 
                 int ivds0= 0;
                 int ivds1= xmins.length();
@@ -410,11 +409,11 @@ public class EventsRenderer extends Renderer {
 
                     int iwidth= Math.max( ixmax- ixmin, 1 );
 
-                    if ( color!=null ) {
-                        int irgb= (int)color.value(i);
+                    if ( lcolor!=null ) {
+                        int irgb= (int)lcolor.value(i);
                         int rr= ( irgb & 0xFF0000 ) >> 16;
                         int gg= ( irgb & 0x00FF00 ) >> 8;
-                        int bb= ( irgb & 0x0000FF ) >> 0;
+                        int bb= ( irgb & 0x0000FF );
                         int aa= 128;
                         g.setColor( new Color( rr, gg, bb, aa ) );
                     }
@@ -457,6 +456,13 @@ public class EventsRenderer extends Renderer {
     }
 
     @Override
+    public void setDataSet(QDataSet ds) {
+        super.setDataSet(ds);
+        cds= makeCanonical(ds);
+    }
+
+
+    @Override
     public Icon getListIcon() {
         return new ImageIcon(SpectrogramRenderer.class.getResource("/images/icons/eventsBar.png"));
     }
@@ -470,6 +476,7 @@ public class EventsRenderer extends Renderer {
     public void setColor( Color color ) {
         Color old= this.color;
         this.color= new Color( color.getRed(), color.getGreen(), color.getBlue(), 180 );// note this alpha=180 is ignored
+        cds= makeCanonical(getDataSet());
         propertyChangeSupport.firePropertyChange(  PROP_COLOR, old , color);
         super.invalidateParentCacheImage();
     }
@@ -492,9 +499,30 @@ public class EventsRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_SHOWLABELS, oldShowLabels, showLabels);
     }
 
+    public static final String PROP_COLOR_SPECIFIER= "colorSpecifier";
+
+    private ColorSpecifier colorSpecifier=null;
 
     /**
-     * Holds value of property textSpecifier.
+     * set this to be an object implementing ColorSpecifier interface, if more than
+     * one color is to be used when drawing the bars.  Setting this to null will
+     * restore the initial behavior of drawing all bars in one color (or with rank 2 bundle containing color).
+     */
+    public void setColorSpecifier( ColorSpecifier spec ) {
+        Object old= this.colorSpecifier;
+        this.colorSpecifier= spec;
+        cds= makeCanonical(ds);
+        propertyChangeSupport.firePropertyChange( PROP_COLOR_SPECIFIER, old , spec );
+        super.invalidateParentCacheImage();
+    }
+
+    public ColorSpecifier getColorSpecifier( ) {
+        return this.colorSpecifier;
+    }
+
+    /**
+     * Old TextSpecifier provided an alternate means to get text for any datum, allowing the user to avoid use of EnumerationUnits.
+     * This is currently not used in this version of the library.
      */
     private TextSpecifier textSpecifier= DEFAULT_TEXT_SPECIFIER;
     
