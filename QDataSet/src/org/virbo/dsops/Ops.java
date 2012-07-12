@@ -1858,9 +1858,10 @@ public class Ops {
     public static QDataSet ripplesTimeSeries( int len ) {
         QDataSet rip= ripples( len,100 );
         ArrayDataSet result= ArrayDataSet.copy( DataSetOps.slice1(rip,20) );
-        QDataSet t;
+        MutablePropertyDataSet t;
         try {
-            t = Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            t = (MutablePropertyDataSet) Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
             return result;
         } catch (ParseException ex) {
@@ -1884,9 +1885,10 @@ public class Ops {
         z.putProperty( QDataSet.NAME, "Z" );
 
         MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.bundle( x, y, z );
-        QDataSet t;
+        MutablePropertyDataSet t;
         try {
-            t = Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            t = (MutablePropertyDataSet) Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
             return result;
         } catch (ParseException ex) {
@@ -1907,11 +1909,13 @@ public class Ops {
         result.putProperty( QDataSet.NAME, "Flux" );
         MutablePropertyDataSet y= DataSetOps.makePropertiesMutable( Ops.pow( DataSetUtil.asDataSet(10), Ops.linspace(1,4,27 ) ) );
         y.putProperty( QDataSet.LABEL, "Energy" );
+        y.putProperty( QDataSet.NAME, "Energy" );
         result.putProperty( QDataSet.DEPEND_1, y );
 
-        QDataSet t;
+        MutablePropertyDataSet t;
         try {
-            t = Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            t = (MutablePropertyDataSet) Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len), len);
+            t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
             return result;
         } catch (ParseException ex) {
@@ -1937,10 +1941,12 @@ public class Ops {
             result.putProperty( QDataSet.NAME, "Flux" );
             MutablePropertyDataSet y= DataSetOps.makePropertiesMutable( Ops.pow( DataSetUtil.asDataSet(10), Ops.linspace(1,4,27 ) ) );
             y.putProperty( QDataSet.LABEL, "Energy" );
+            y.putProperty( QDataSet.NAME, "Energy" );
             result.putProperty( QDataSet.DEPEND_1, y );
 
-            QDataSet t;
-            t = Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len3), len3);
+            MutablePropertyDataSet t;
+            t = (MutablePropertyDataSet)Ops.timegen("2011-10-24", String.format("%f sec", 86400. / len3), len3);
+            t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
 
             JoinDataSet jds= new JoinDataSet(result);
@@ -1950,9 +1956,11 @@ public class Ops {
             result.putProperty( QDataSet.NAME, "Flux" );
             y= DataSetOps.makePropertiesMutable( Ops.pow( DataSetUtil.asDataSet(10), Ops.linspace(3.1,8.1,20 ) ) );
             y.putProperty( QDataSet.LABEL, "Energy" );
+            y.putProperty( QDataSet.NAME, "Energy" );
             result.putProperty( QDataSet.DEPEND_1, y );
 
-            t = Ops.timegen("2011-10-25", String.format("%f sec", 86400. / len3), len3);
+            t = (MutablePropertyDataSet)Ops.timegen("2011-10-25", String.format("%f sec", 86400. / len3), len3);
+            t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
 
             jds.join(result);
@@ -1963,9 +1971,11 @@ public class Ops {
             result.putProperty( QDataSet.NAME, "Flux" );
             y= DataSetOps.makePropertiesMutable( Ops.pow( DataSetUtil.asDataSet(10), Ops.linspace(2.1,5.1,24 ) ) );
             y.putProperty( QDataSet.LABEL, "Energy" );
+            y.putProperty( QDataSet.NAME, "Energy" );
             result.putProperty( QDataSet.DEPEND_1, y );
 
-            t = Ops.timegen("2011-10-26", String.format("%f sec", 86400. / lenr), lenr);
+            t = (MutablePropertyDataSet)Ops.timegen("2011-10-26", String.format("%f sec", 86400. / lenr), lenr);
+            t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
             jds.join(result);
 
