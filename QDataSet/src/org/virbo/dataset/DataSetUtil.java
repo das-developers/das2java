@@ -2329,7 +2329,7 @@ public class DataSetUtil {
 
         double vmin= ((Number) getProperty( yds, QDataSet.VALID_MIN, -1*Double.MAX_VALUE )).doubleValue();
         double vmax= ((Number) getProperty( yds, QDataSet.VALID_MAX, Double.MAX_VALUE )).doubleValue();
-        double fill= ((Number) getProperty( yds, QDataSet.VALID_MAX, -1e31 ) ).doubleValue();
+        double fill= ((Number) getProperty( yds, QDataSet.FILL_VALUE, -1e31 ) ).doubleValue();
         if ( value>=vmin && value<=vmax && value!=fill ) {
             d= u.createDatum( value );
         } else {
