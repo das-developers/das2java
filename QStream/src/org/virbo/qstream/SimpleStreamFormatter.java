@@ -4,6 +4,8 @@
  */
 package org.virbo.qstream;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -24,6 +26,7 @@ import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -38,7 +41,7 @@ import org.w3c.dom.Element;
 
 /**
  * Class for formatting QDataSets as QStreams.  Although this is "SimpleStreamFormatter," this is the only formatter written
- * thus far.
+ * thus far, except for SerialStreamFormatter, which formats packet-by-packet.
  * @author jbf
  */
 public class SimpleStreamFormatter {
@@ -992,4 +995,21 @@ public class SimpleStreamFormatter {
             System.err.println("already have name for "+packetDs );
         }
     }
+
+    public static void main( String[] args ) throws FileNotFoundException, IOException, StreamException {
+
+        boolean join;
+        //QDataSet ds= Ops.ripplesTimeSeries(24);
+        //QDataSet ds= Ops.ripplesVectorTimeSeries(24);
+        //QDataSet ds= Ops.ripplesSpectrogramTimeSeries(24);
+        QDataSet ds= Ops.ripplesJoinSpectrogramTimeSeries(24);
+        join= SemanticOps.isJoin(ds);
+
+        SimpleStreamFormatter form= new SimpleStreamFormatter();
+        OutputStream fo= new  FileOutputStream("/tmp/foo.simpleformatter.qds");
+        form.format( ds, fo, true );
+        fo.close();
+
+    }
+
 }
