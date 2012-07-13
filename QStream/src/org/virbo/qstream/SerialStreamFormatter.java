@@ -10,10 +10,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,10 +21,8 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.das2.datum.EnumerationUnits;
-import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
-import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -47,14 +43,14 @@ import org.w3c.dom.Element;
  *
  * Note this class is not thread-safe and assumes that only one thread will be working on the stream.  This may change.
  * 
- * This is not DONE!!!!
- * 
  * @author jbf
  */
 public class SerialStreamFormatter {
     public static final int DEFAULT_TIME_DIGITS = 27;
 
     StreamDescriptor sd;
+
+    StreamHandler sh;
 
     Map<String,PlaneDescriptor> planes;
     Map<String,PacketDescriptor> pds;
@@ -68,7 +64,6 @@ public class SerialStreamFormatter {
     Map<QDataSet,String> names;
     Map<String,String> namesRev;
 
-    WritableByteChannel channel;
 
     private static final char CHAR_NEWLINE = '\n';
     private static final Logger logger= Logger.getLogger("autoplot.qstream");
@@ -131,15 +126,28 @@ public class SerialStreamFormatter {
      */
     public void init( String name, WritableByteChannel out ) throws IOException, StreamException {
 
-        pds= new HashMap<String, PacketDescriptor>();
+        FormatStreamHandler sh= new FormatStreamHandler();
+        sh.setWritableByteChannel(out);
 
-        sd= doStreamDescriptor(name);
-        sd.send( sd, out );
-
-        this.channel= out;
-
+        init( name, sh );
+        
     }
 
+    /**
+     * initialize, sending data directly via the StreamHandler interface.  This avoids parsing and formatting the XML.
+     * @param name the name of the default dataset.
+     */
+    public void init( String name, StreamHandler sh ) throws IOException, StreamException {
+
+        pds= new HashMap<String, PacketDescriptor>();
+
+        this.sd= doStreamDescriptor(name);
+
+        this.sh= sh;
+
+        sh.streamDescriptor(sd);
+
+    }
     /**
      * return a name for the thing that describes ds1.  This will be used in
      * the descriptor, so if the descriptor doesn't contain the values, then
@@ -583,8 +591,8 @@ public class SerialStreamFormatter {
             }
 
             pds.put( name, pd );
-            sd.addDescriptor(pd);
-            sd.send(pd, channel);
+            
+            sh.packetDescriptor(pd);
 
             if ( inline ) return;
         }
@@ -641,9 +649,9 @@ public class SerialStreamFormatter {
             }
 
             buffer.flip();
-            channel.write(buffer);
             buffer.position(4);
-
+            sh.packet( pd, buffer.slice() ); 
+            
             buffer.flip();
         } else {
             int planeCount = pd.planes.size();
@@ -666,7 +674,8 @@ public class SerialStreamFormatter {
             }
 
             buffer.flip();
-            channel.write(buffer);
+            buffer.position(4);
+            sh.packet( pd, buffer.slice() );
             buffer.flip();
         }
 
@@ -718,9 +727,8 @@ public class SerialStreamFormatter {
            qdataset.appendChild(valuesElement);
 
            packetDescriptor.setDomElement(packetElement);
-           sd.addDescriptor(packetDescriptor);
 
-           sd.send( packetDescriptor, channel);
+           sh.packetDescriptor( packetDescriptor );
 
         } catch ( ParserConfigurationException ex ) {
             throw new RuntimeException(ex);
@@ -761,7 +769,12 @@ public class SerialStreamFormatter {
         form.setAsciiTypes(true);
         form.setTransferType( name, new AsciiTransferType(10,false) );
         form.setUnitTransferType( Units.us2000, new AsciiTimeTransferType(17,Units.us2000 ) );
-        form.init( name, Channels.newChannel( new FileOutputStream("/tmp/foo.serialStreamFormatter.qds") ) );
+        
+        //FormatStreamHandler sh= new FormatStreamHandler();
+        //sh.setOutputStream( new FileOutputStream("/tmp/foo.serialStreamFormatter.via.formatStreamHandler.qds") );
+        //form.init( name, sh );
+        
+        form.init( name, java.nio.channels.Channels.newChannel( new FileOutputStream("/tmp/foo.serialStreamFormatter.toStream.qds") ) );
         //form.init( name, Channels.newChannel( System.out ) ); //
 
 
