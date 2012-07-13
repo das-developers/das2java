@@ -35,7 +35,18 @@ public class FormatStreamHandler implements StreamHandler {
         this.out= Channels.newChannel(outs);
     }
 
+    public void setWritableByteChannel( WritableByteChannel outs ) {
+        this.out= outs;
+    }
 
+    /**
+     * create a stream descriptor packet.  TODO: createPacketDescriptor.  See SerialStreamFormatter for examples of how this
+     * would be done.
+     * @param name
+     * @param asciiTypes
+     * @param isBigEndian
+     * @return
+     */
     public StreamDescriptor createStreamDescriptor( String name, boolean asciiTypes, boolean isBigEndian ) {
         try {
             StreamDescriptor sd = new StreamDescriptor(DocumentBuilderFactory.newInstance());
