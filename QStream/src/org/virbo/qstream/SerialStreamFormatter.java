@@ -13,6 +13,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,6 +65,7 @@ public class SerialStreamFormatter {
      * may also be a method for explicitly naming packets.
      */
     Map<QDataSet,String> names;
+    Map<String,String> namesRev;
 
     WritableByteChannel channel;
 
@@ -92,6 +94,7 @@ public class SerialStreamFormatter {
 
     public SerialStreamFormatter() {
         names= new LinkedHashMap();
+        namesRev= new LinkedHashMap();
         transferTypes= new LinkedHashMap();
     }
 
@@ -142,7 +145,40 @@ public class SerialStreamFormatter {
      * @param ds1
      * @return
      */
+    private synchronized String newNameFor(QDataSet ds1) {
+        String name = names.get(ds1);
+
+        if (name == null) {
+            name = (String) ds1.property(QDataSet.NAME);
+        }
+
+        if (name == null) {
+            name = "ds_" + names.size();
+        }
+
+        String name0= name;
+        int i=1;
+        name= name0 + String.valueOf(i);
+        while (  namesRev.containsKey(name) ) {
+            i=i+1;
+            name = name0 + String.valueOf(i);
+        }
+
+        names.put( ds1, name );
+        namesRev.put( name, ds1.toString() );
+
+        return name;
+    }
+
+    /**
+     * return a name for the thing that describes ds1.  This will be used in
+     * the descriptor, so if the descriptor doesn't contain the values, then
+     * the name can be reused.  Note no names are reused at this point.
+     * @param ds1
+     * @return
+     */
     private synchronized String nameFor(QDataSet ds1) {
+        System.err.println(""+ ds1 + " " + ds1.hashCode() );
         String name = names.get(ds1);
         boolean assignName= name==null;
 
@@ -155,6 +191,7 @@ public class SerialStreamFormatter {
 
         if ( assignName ) {
             names.put( ds1, name );
+            namesRev.put( name,ds1.toString() );
         }
 
         return name;
@@ -189,10 +226,9 @@ public class SerialStreamFormatter {
         transferTypes.put( name, tt );
     }
 
-    private Element doProperties(Document document, QDataSet ds, boolean slice) {
+    private Element doProperties(Document document, Map<String, Object> props, boolean slice) {
         Element properties = document.createElement("properties");
 
-        Map<String, Object> props = DataSetUtil.getProperties(ds);
         Element prop;
         for (String name : props.keySet()) {
             prop= null;
@@ -229,6 +265,9 @@ public class SerialStreamFormatter {
                         prop.setAttribute("value", r0d.format(value) );
                     }
                 } else {
+                    if (  !names.containsKey(value) ) {
+                        System.err.println("Unidentified "+name1 +"!!");
+                    }
                     prop.setAttribute("type", "qdataset");
                     prop.setAttribute("value", nameFor((QDataSet) value));
                 }
@@ -339,7 +378,7 @@ public class SerialStreamFormatter {
     private PlaneDescriptor doPlaneDescriptor( Document document, PacketDescriptor pd,
             QDataSet ds, boolean slice ) {
         Element qdatasetElement = document.createElement("qdataset");
-        qdatasetElement.setAttribute("id", nameFor(ds));
+        qdatasetElement.setAttribute("id", newNameFor(ds));
 
         logger.log( Level.FINE, "writing qdataset {0}", nameFor(ds));
 
@@ -353,14 +392,14 @@ public class SerialStreamFormatter {
             if ( bds==null ) {
                 for ( int i=0; i<ds.length(); i++ ) {
                     QDataSet ds1= DataSetOps.unbundle( ds, i );
-                    Element props = doProperties(document, ds1, slice);
+                    Element props = doProperties(document, DataSetUtil.getProperties(ds1), slice);
                     props.setAttribute("index", String.valueOf(i) );
                     qdatasetElement.appendChild(props);
                 }
             }
         }
 
-        Element props = doProperties(document, ds, slice);
+        Element props = doProperties(document, DataSetUtil.getProperties(ds), slice);
         qdatasetElement.appendChild(props);
 
         PlaneDescriptor planeDescriptor = new PlaneDescriptor();
@@ -486,13 +525,14 @@ public class SerialStreamFormatter {
 
     /**
      * format the dataset, maybe sending a descriptor if it hasn't been sent already.
+     * @param joinName the name to which we join the dataset.
      * @param name the name for the dataset of which ds1 is all or a slice of, or null.
      * @param ds1
      * @param inline if true, then the entire dataset will be present.
      * @throws IOException
      * @throws StreamException
      */
-    public void format( String name, QDataSet ds1, boolean inline ) throws IOException, StreamException  {
+    public void format( String joinName, String name, QDataSet ds1, boolean inline ) throws IOException, StreamException  {
 
         if ( name==null ) {
             if ( inline ) {
@@ -505,12 +545,13 @@ public class SerialStreamFormatter {
         //get the packetDescriptor being used to describe these slices.
         PacketDescriptor pd= pds.get(name);
 
-        if ( pd==null ) {
+        if ( pd==null || inline ) {
             if ( inline ) {
-                pd= doPacketDescriptor(sd, ds1, false, true, ds1.rank(), null );
+                pd= doPacketDescriptor(sd, ds1, false, true, ds1.rank(), joinName );
             } else {
-                pd= doPacketDescriptor(sd, ds1, true, false, ds1.rank()+1, null );
+                pd= doPacketDescriptor(sd, ds1, true, false, ds1.rank()+1, joinName );
             }
+
             pds.put( name, pd );
             sd.addDescriptor(pd);
             sd.send(pd, channel);
@@ -607,6 +648,58 @@ public class SerialStreamFormatter {
     }
 
     /**
+     * format the dataset which is part of a join dataset.
+     * @param name the name for the dataset of which ds1 is all or a slice of, or null.
+     * @param ds1
+     * @param inline if true, then the entire dataset will be present.
+     * @throws IOException
+     * @throws StreamException
+     */
+    public void format( String name, QDataSet ds1, boolean inline ) throws IOException, StreamException  {
+        format( null, name, ds1, inline );
+    }
+
+
+    public void join( String name, int rank, Map<String,Object> props ) throws StreamException, IOException {
+
+        PacketDescriptor packetDescriptor = new PacketDescriptor();
+        packetDescriptor.setStream(true);
+        packetDescriptor.setStreamRank(rank);
+
+        try {
+           Document document = sd.newDocument(packetDescriptor);
+
+           Element packetElement = document.createElement("packet");
+
+           Element qdataset= document.createElement("qdataset");
+           packetElement.appendChild( qdataset );
+
+           qdataset.setAttribute( "id", name );
+
+           qdataset.setAttribute("rank", String.valueOf(rank) );
+
+           Element propsElement= doProperties( document, props, false );
+
+           qdataset.appendChild(propsElement);
+
+           Element valuesElement= document.createElement("values");
+           valuesElement.setAttribute( "join", "ignore" ); // this property value is ignored, but must have length>0
+
+           qdataset.appendChild(valuesElement);
+
+           packetDescriptor.setDomElement(packetElement);
+           sd.addDescriptor(packetDescriptor);
+
+           sd.send( packetDescriptor, channel);
+
+        } catch ( ParserConfigurationException ex ) {
+            throw new RuntimeException(ex);
+        }
+            //TODO: finish me!
+
+    }
+
+    /**
      * allow the stream to recycle the name.  new packets with this name will issue a new packetDescriptor.
      *
      * @param name
@@ -622,8 +715,8 @@ public class SerialStreamFormatter {
         boolean join;
         //QDataSet ds= Ops.ripplesTimeSeries(24);
         //QDataSet ds= Ops.ripplesVectorTimeSeries(24);
-        QDataSet ds= Ops.ripplesSpectrogramTimeSeries(24);
-        //QDataSet ds= Ops.ripplesJoinSpectrogramTimeSeries(24);
+        //QDataSet ds= Ops.ripplesSpectrogramTimeSeries(24);
+        QDataSet ds= Ops.ripplesJoinSpectrogramTimeSeries(24);
         join= SemanticOps.isJoin(ds);
 
         SerialStreamFormatter form= new SerialStreamFormatter();
@@ -637,26 +730,29 @@ public class SerialStreamFormatter {
 
         // configure the tool
         form.setAsciiTypes(true);
-        form.setTransferType( name, new AsciiTransferType(10,true) );
+        form.setTransferType( name, new AsciiTransferType(10,false) );
         form.setTransferType( dep0name, new AsciiTimeTransferType(17,Units.us2000 ) ); //Danger: units must match.
 
-        form.init( name, Channels.newChannel( new FileOutputStream("/tmp/foo.qds") ) );
+        form.init( name, Channels.newChannel( new FileOutputStream("/tmp/foo.serialStreamFormatter.qds") ) );
         //form.init( name, Channels.newChannel( System.out ) ); //
-        form.maybeFormat( null, (QDataSet) ds.property(QDataSet.DEPEND_1), true );
+
 
         if ( join ) {
+            form.join( name, 3, new HashMap<String, Object>() );
             for ( int j=0; j<ds.length(); j++ ) {
                 QDataSet jds1= ds.slice(j);
+                form.maybeFormat( null, (QDataSet) jds1.property(QDataSet.DEPEND_1), true );
                 String channelName= name + String.valueOf(j);
                 for ( int i=0; i<jds1.length(); i++ ) {
-                    form.format( channelName, DDataSet.copy( jds1.slice(i) ), false ); //TODO: remove DDataSet.copy used for debugging.
+                    form.format( name, channelName, jds1.slice(i), false ); //TODO: remove DDataSet.copy used for debugging.
                 }            
             }
         } else {
+            form.maybeFormat( null, (QDataSet) ds.property(QDataSet.DEPEND_1), true );
             for ( int i=0; i<ds.length(); i++ ) {
                 //TODO: we should just send all the data explicitly rather than requiring that a 
                 // dataset be formed for each packet: form.format( name, tt, ds.slice(i) ), false );
-                form.format( name, DDataSet.copy( ds.slice(i) ), false ); //TODO: remove DDataSet.copy used for debugging.
+                form.format( name, ds.slice(i), false ); //TODO: remove DDataSet.copy used for debugging.
             }
         }
 
