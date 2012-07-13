@@ -12,6 +12,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Writes the stream based on the messages sent to it.  This overlaps with the SimpleStreamFormatter,
@@ -32,7 +34,27 @@ public class FormatStreamHandler implements StreamHandler {
     public void setOutputStream( OutputStream outs ) {
         this.out= Channels.newChannel(outs);
     }
-    
+
+
+    public StreamDescriptor createStreamDescriptor( String name, boolean asciiTypes, boolean isBigEndian ) {
+        try {
+            StreamDescriptor sd = new StreamDescriptor(DocumentBuilderFactory.newInstance());
+            Document document = sd.newDocument(sd);
+
+            Element streamElement = document.createElement("stream");
+
+            streamElement.setAttribute("dataset_id", name);
+            if (asciiTypes == false) {
+                streamElement.setAttribute("byte_order", isBigEndian ? "big_endian" : "little_endian");
+            }
+            return sd;
+
+        } catch ( ParserConfigurationException ex ) {
+            throw new RuntimeException(ex);
+        }
+        
+    }
+
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         this.sd= sd;
         this.sd.setFactory( DocumentBuilderFactory.newInstance() );
