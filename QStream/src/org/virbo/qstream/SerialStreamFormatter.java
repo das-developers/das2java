@@ -59,6 +59,7 @@ public class SerialStreamFormatter {
     Map<String,PlaneDescriptor> planes;
     Map<String,PacketDescriptor> pds;
     Map<String,TransferType> transferTypes;
+    Map<Units,TransferType> unitsTransferTypes;
 
     /**
      * keeps track of names assigned to each dataset.  Presently these are automatically assigned, but there
@@ -96,6 +97,7 @@ public class SerialStreamFormatter {
         names= new LinkedHashMap();
         namesRev= new LinkedHashMap();
         transferTypes= new LinkedHashMap();
+        unitsTransferTypes= new LinkedHashMap();
     }
 
     /**
@@ -197,9 +199,23 @@ public class SerialStreamFormatter {
         return name;
     }
 
+    /**
+     * return the transfer type for this unit.
+     * @param ds
+     * @return
+     */
+    private TransferType getUnitTransferType( QDataSet ds ) {
+        Units u= SemanticOps.getUnits(ds);
+        return unitsTransferTypes.get(u);
+    }
+
     private TransferType getTransferType( String name, QDataSet ds1 ) {
         TransferType tt= transferTypes.get(name);
         if ( tt==null ) {
+            tt= getUnitTransferType(ds1);
+            if ( tt!=null ) {
+                return tt;
+            }
             if ( asciiTypes ) {
                 Units u= SemanticOps.getUnits(ds1);
                 if ( UnitsUtil.isTimeLocation(u) ) {
@@ -213,6 +229,20 @@ public class SerialStreamFormatter {
         }
         return tt;
     }
+
+    /**
+     * explicitly set the transfer type used to transfer data that is convertible to this
+     * unit.
+     * @param name
+     * @param tt
+     */
+    public void setUnitTransferType( Units u, TransferType tt ) {
+        if ( asciiTypes && !tt.isAscii() ) {
+            throw new IllegalArgumentException("stream is declared as ascii stream, but non-ascii transfer type specified for times: "+tt );
+        }
+        unitsTransferTypes.put( u, tt );
+    }
+
 
     /**
      * explicitly set the transfer type.
@@ -722,7 +752,6 @@ public class SerialStreamFormatter {
         SerialStreamFormatter form= new SerialStreamFormatter();
 
         String name= "Flux";
-        String dep0name= "Epoch";
 
         //File f = new File( name + ".qds" );
         //FileOutputStream out = new FileOutputStream(f);
@@ -731,8 +760,7 @@ public class SerialStreamFormatter {
         // configure the tool
         form.setAsciiTypes(true);
         form.setTransferType( name, new AsciiTransferType(10,false) );
-        form.setTransferType( dep0name, new AsciiTimeTransferType(17,Units.us2000 ) ); //Danger: units must match.
-
+        form.setUnitTransferType( Units.us2000, new AsciiTimeTransferType(17,Units.us2000 ) );
         form.init( name, Channels.newChannel( new FileOutputStream("/tmp/foo.serialStreamFormatter.qds") ) );
         //form.init( name, Channels.newChannel( System.out ) ); //
 
