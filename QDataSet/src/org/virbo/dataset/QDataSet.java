@@ -147,7 +147,7 @@ public interface QDataSet {
      *
      * Seth's file vap+cdfj:file:///home/jbf/ct/hudson/data.backup/cdf/lanl/rbspa_pre_ect-mageisHIGH-sp-L1_20130213_v1.0.0.cdf?Count_Rate_elec
      */
-    public final static int MAX_UNIT_BUNDLE_COUNT=65;
+    public final static int MAX_UNIT_BUNDLE_COUNT=50;
 
     /**
      * this is the highest rank supported by the library.  Rank 0 is supported though Rank0DataSet.  High rank datasets are supported through
