@@ -188,6 +188,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             for (int i = 0; i < nodes.getLength(); i++) {
                 Element n = (Element) nodes.item(i);
                 String name = n.getAttribute("id");
+                System.err.print( " "+name );
                 int rank = Integer.parseInt(n.getAttribute("rank"));
                 DataSetBuilder builder=null;
                 String sdims=null;
@@ -284,7 +285,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                                 }
 
                                 if (join == null) {
-                                    join = new JoinDataSet(rank);
+                                    join = new JoinDataSet(rank+1);
                                     joinDataSets.put(name, join);
                                 }
                                 MutablePropertyDataSet mds= resolveProps( builder.getDataSet() );
@@ -312,6 +313,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
+        System.err.println("");
     }
 
     private MutablePropertyDataSet resolveProps( MutablePropertyDataSet result ) {
