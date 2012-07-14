@@ -410,7 +410,7 @@ public class EventsRenderer extends Renderer {
                 for ( int i=ivds0; i<ivds1; i++ ) {
 
                     if ( i%10==0 && System.currentTimeMillis()-t0 > 300 ) {
-                        parent.postMessage( this, "renderer ran out of time", DasPlot.SEVERE, null, null);
+                        parent.postMessage( this, "renderer ran out of time, dataset truncated", DasPlot.WARNING, null, null);
                         break;
                     }
 
