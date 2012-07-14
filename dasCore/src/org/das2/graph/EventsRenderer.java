@@ -382,6 +382,8 @@ public class EventsRenderer extends Renderer {
         Units eu= SemanticOps.getUnits( msgs );
         QDataSet lcolor= cds.length(0)>3 ? DataSetOps.unbundle( cds,2 ) : null;
 
+        long t0= System.currentTimeMillis();
+
         if ( lastException!=null ) {
             renderException( g, xAxis, yAxis, lastException );
             
@@ -403,12 +405,21 @@ public class EventsRenderer extends Renderer {
 
                 GrannyTextRenderer gtr= new GrannyTextRenderer();
 
+                int ixmax0= -999;
+
                 for ( int i=ivds0; i<ivds1; i++ ) {
-                    
+
+                    if ( i%10==0 && System.currentTimeMillis()-t0 > 300 ) {
+                        parent.postMessage( this, "renderer ran out of time", DasPlot.SEVERE, null, null);
+                        break;
+                    }
+
                     int ixmin= (int)xAxis.transform( xmins.value(i),xunits);
                     int ixmax= (int)xAxis.transform( xmaxs.value(i),xunits);
 
-                    int iwidth= Math.max( ixmax- ixmin, 1 );
+                    // TODO: coalesce bars. see ftp://papco@stevens.lanl.gov/rbsp/rbspa/mageis/level1/pre-launch/rbspa_pre_ect-mageisLOW-ns-L1_20130214_v1.0.0.cdf?Inst_Mode
+                    // this has thousands of adjacent bars that together form a giant black mass that takes too long to draw
+                    int iwidth= Math.max( ixmax- ixmin, 1 ); 
 
                     if ( lcolor!=null ) {
                         int irgb= (int)lcolor.value(i);
