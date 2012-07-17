@@ -9,6 +9,7 @@
 package org.virbo.dataset;
 
 import java.lang.reflect.Array;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.IllegalFormatConversionException;
@@ -20,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
@@ -1679,7 +1681,7 @@ public class DataSetUtil {
         }
         QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
         if ( bds!=null ) {
-            for ( int i=0; i<bds.length(); i++ ) {
+            for ( int i=0; i< Math.min(1,bds.length()); i++ ) {
                 QDataSet bds1= DataSetOps.unbundle(ds,i,true); // assumes rank1, so we have excessive work for rank>1
                 Object o= bds1.property(QDataSet.DEPEND_1);
                 if ( o!=null && !(o instanceof QDataSet) ) {
@@ -2085,6 +2087,12 @@ public class DataSetUtil {
                 return asDataSet( (Datum)arr );
             } else if ( arr.getClass().isPrimitive() ) {
                 return asDataSet( (Double)arr );
+            } else if ( arr instanceof String ) {
+                try {
+                    return asDataSet(DatumUtil.parse((String) arr));
+                } catch (ParseException ex) {
+                    throw new IllegalArgumentException(ex);
+                }
             }
             throw new IllegalArgumentException("unsupported type: "+arr.getClass());
         }
@@ -2363,6 +2371,28 @@ public class DataSetUtil {
         }
         return s;
     }
+
+
+    /**
+     * make a proper bundle ds from a simple bundle containing ordinal units
+     * This assumes that labels is a unique set of labels.
+     * See http://autoplot.org/QDataSet#DataSet_Properties under BUNDLE_1.
+     * See DataSetOps.unbundle
+     * @param labelsDs
+     * @throws IllegalArgumentException if the input is not rank 1.
+     * @return a BundleDescriptor to be set as BUNDLE_i.  See BundleDataSet
+     */
+    public static MutablePropertyDataSet toBundleDs( QDataSet labels ) {
+        if ( labels.rank()!=1 ) throw new IllegalArgumentException("labels must be rank 1");
+        IDataSet result=  IDataSet.createRank2( labels.length(), 0 );
+        Units u= SemanticOps.getUnits(labels);
+        for ( int i=0; i<labels.length(); i++ ) {
+            result.putProperty( QDataSet.NAME, i, Ops.safeName( u.createDatum( labels.value(i) ).toString() ) );
+            result.putProperty( QDataSet.LABEL, i, u.createDatum( labels.value(i) ).toString() );
+        }
+        return result;
+    }
+
 }
 
 
