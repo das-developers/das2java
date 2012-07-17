@@ -34,6 +34,7 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
+import org.virbo.dsutil.DataSetBuilder;
 
 
 /**
@@ -239,6 +240,48 @@ public class EventsRenderer extends Renderer {
     private QDataSet cds=null;
     
     /**
+     * make the canonical dataset smaller by combining adjacent records.  This is introduced
+     * because we now support event datasets with a regular cadence.
+     * @param vds
+     * @return
+     */
+    private QDataSet coalesce( QDataSet vds ) {
+        QDataSet bds= (QDataSet) vds.property(QDataSet.BUNDLE_1);
+        DataSetBuilder build= new DataSetBuilder(2,100,4);
+        DDataSet v= DDataSet.createRank1(4);
+
+        double tlim= 1e-31;
+
+        int count=0;
+
+        v.putValue( 0,vds.value(0,0) );
+        v.putValue( 1,vds.value(0,1) );
+        v.putValue( 2,vds.value(0,2) );
+        v.putValue( 3,vds.value(0,3) );
+
+        for ( int i=1; i<vds.length(); i++ ) {
+            if ( Math.abs( vds.value(i,0)-vds.value(i-1,1) ) > tlim       // they don't connect
+                    || vds.value(i,3)!=vds.value(i-1,3)                   // the message changed
+                    || Math.abs( vds.value(i,2)-vds.value(i-1,2) ) > tlim // the color changed
+                    ) {
+                build.putValues( -1, v, 4 );
+                build.nextRecord();
+                v.putValue( 0,vds.value(i,0) );
+                v.putValue( 1,vds.value(i,1) );
+                v.putValue( 2,vds.value(i,2) );
+                v.putValue( 3,vds.value(i,3) );
+                count=1;
+            } else {
+                v.putValue( 1,vds.value(i,1) );
+                count++;
+            }
+        }
+        build.putValues( -1, v, 4 );
+        build.putProperty( QDataSet.BUNDLE_1, bds );
+        return build.getDataSet();
+    }
+
+    /**
      * make canonical rank 2 bundle dataset of min,max,color,text
      * @param vds
      * @return
@@ -352,6 +395,8 @@ public class EventsRenderer extends Renderer {
 
         QDataSet ds= Ops.bundle( Ops.bundle( Ops.bundle( xmins, xmaxs ), colors ), msgs );
 
+        ds= coalesce(ds);
+        
         return ds;
 
     }
