@@ -133,14 +133,17 @@ public class Slice1DataSet extends AbstractDataSet {
         return ds.rank() - 1;
     }
 
+    @Override
     public double value(int i) {
         return ds.value(i, index);
     }
 
+    @Override
     public double value(int i0, int i1) {
         return ds.value(i0, index, i1);
     }
 
+    @Override
     public double value(int i0, int i1, int i2) {
         return ds.value(i0, index, i1, i2 );
     }
@@ -149,6 +152,7 @@ public class Slice1DataSet extends AbstractDataSet {
      * @param name
      * @return
      */
+    @Override
     public Object property(String name) {
         if (properties.containsKey(name)) {
             return properties.get(name);
@@ -161,6 +165,7 @@ public class Slice1DataSet extends AbstractDataSet {
         }
     }
 
+    @Override
     public int length() {
         return ds.length();
     }
@@ -170,6 +175,7 @@ public class Slice1DataSet extends AbstractDataSet {
         return ds.length( i, index );
     }
     
+    @Override
     public int length(int i0,int i1) {
         return ds.length( i0, index, i1 );
     }
