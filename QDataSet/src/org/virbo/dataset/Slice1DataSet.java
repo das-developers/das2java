@@ -48,9 +48,9 @@ public class Slice1DataSet extends AbstractDataSet {
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
 
         QDataSet bundle1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
-        if ( bundle1!=null && !unbundle ) {
-            System.err.println("we're not going to do this correctly, use unbundle instead");
-        }
+//        if ( bundle1!=null && !unbundle ) {
+//            System.err.println("we're not going to do this correctly, use unbundle instead");
+//        }
         String label=null;
         Units dep1units= dep1==null ? null : (Units) dep1.property(QDataSet.UNITS);//TODO stupid hurry, need to drive Sarah to work
         if ( dep1!=null && dep1.rank()==1 && ( dep1units instanceof EnumerationUnits ) ) { // check for legacy bundle where DEPEND_1 is labels.
