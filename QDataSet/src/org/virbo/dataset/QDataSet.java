@@ -89,6 +89,12 @@ public interface QDataSet {
      * bundle has property( UNITS,0 ) as "Hertz" then "Hertz" is used.
      */
     public final static String BUNDLE_0="BUNDLE_0";
+
+    /**
+     * type QDataSet.  When multiple BUNDLES are present, they must be simple bundles, bundling just
+     * rank 1 datasets.
+     */
+    public final static String BUNDLE_2="BUNDLE_2";
     
     /**
      * type Integer.  Only found in a bundle descriptor (BUNDLE_0 or BUNDLE_1), this returns the integer
