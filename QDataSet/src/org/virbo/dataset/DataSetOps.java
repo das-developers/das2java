@@ -1429,6 +1429,10 @@ public class DataSetOps {
                 fillDs= Ops.log10(fillDs);
             } else if ( cmd.equals("|exp10") ) {
                 fillDs= Ops.exp10(fillDs);
+            } else if ( cmd.equals("|trim") ) {
+                int d0= s.nextInt();
+                int d1= s.nextInt();
+                fillDs= fillDs.trim(d0,d1);
             } else if ( cmd.startsWith("|collapse") ) {
                 int dim= cmd.charAt(9)-'0';
                 fillDs= Ops.reduceMean(fillDs,dim);
