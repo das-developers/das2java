@@ -20,6 +20,8 @@ import java.util.List;
  * introduced, so this code is suspect.  TODO: review and ensure compatibility
  * with updates to bundle dataset semantics.
  *
+ * Modification History:
+ *   2012-07-17: allow rank 2 datasets to be bundled.
  * @author jbf
  */
 public final class BundleDataSet extends AbstractDataSet {
@@ -65,10 +67,10 @@ public final class BundleDataSet extends AbstractDataSet {
      * rank 1 datasets with the same depend_0.
      */
     public BundleDataSet( int rank ) {
-        if ( rank>2 ) throw new IllegalArgumentException("only rank 1 and 2 are supported.");
+        if ( rank>2 ) System.err.println("This is experimental, only rank 1 and rank 2 have been used in production.");
         this.rank= rank;
         datasets= new ArrayList<QDataSet>();
-        if ( rank==2 ) {
+        if ( rank>=2 ) {
             putProperty( QDataSet.BUNDLE_1, new BundleDescriptor() );
             putProperty( QDataSet.QUBE, Boolean.TRUE );
         } else {
@@ -90,7 +92,9 @@ public final class BundleDataSet extends AbstractDataSet {
      * @param ds
      */
     public void bundle( QDataSet ds ) {
-        if ( ds.rank()!=this.rank-1 ) throw new IllegalArgumentException("dataset rank must be "+(this.rank-1));
+        if ( ds.rank()!=this.rank-1 ) {
+            throw new IllegalArgumentException("dataset rank must be "+(this.rank-1));
+        }
         if ( this.rank>1 ) {
             if ( len0==-1 ) {
                 len0= ds.length();
@@ -178,6 +182,14 @@ public final class BundleDataSet extends AbstractDataSet {
         return datasets.get(i1).value(i0);
     }
 
+    public double value(int i0, int i1, int i2) { // experimental
+        return datasets.get(i1).value(i0,i2);
+    }
+
+    public double value(int i0, int i1, int i2, int i3) {
+        return datasets.get(i1).value(i0,i2,i3);
+    }
+
     public Object property(String name, int i0) {
         if ( rank==1 ) {
             return datasets.get(i0).property(name);
@@ -197,7 +209,15 @@ public final class BundleDataSet extends AbstractDataSet {
     public int length(int i0) {
         return datasets.size();
     }
-    
+
+    public int length(int i0,int i1) { // experimental https://sourceforge.net/tracker/?func=detail&atid=970685&aid=3545095&group_id=199733
+        return datasets.get(i0).length(i1);
+    }
+
+    public int length(int i0,int i1, int i2) {
+        return datasets.get(i0).length(i1,i2);
+    }
+
     public String toString() {
         if ( rank==1 ) {
             return DataSetUtil.format(this);
