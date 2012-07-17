@@ -4,6 +4,10 @@
  */
 package org.virbo.dataset;
 
+import org.das2.datum.EnumerationUnits;
+import org.das2.datum.Units;
+import org.virbo.dsops.Ops;
+
 /**
  * return a rank N-1 dataset from a rank N dataset by slicing on the first
  * dimension.  (Rank 3 and 4 supported.)
@@ -34,19 +38,29 @@ public class Slice2DataSet extends AbstractDataSet {
         this.index = index;
 
         if ( addContext ) {
-            QDataSet dep2= (QDataSet) ds.property(QDataSet.DEPEND_2);
-            if ( dep2!=null ) {
-                if ( dep2.rank()==1 ) {
-                    DataSetUtil.addContext( this, new Slice0DataSet(dep2,index,false) );
-                } else if ( dep2.rank()==2 ) {
-                    DataSetUtil.addContext( this, new Slice1DataSet(dep2,index,false) );
-                } else {
-                    System.err.println( "slice on non-qube, dep3 has rank="+dep2.rank() );
+            QDataSet bundle= (QDataSet) ds.property( QDataSet.BUNDLE_2 );
+            if ( bundle!=null ) {
+                QDataSet context=null;
+                if ( addContext ) {
+                    String tlabel= (String) bundle.property(QDataSet.NAME,index);
+                    context= (Ops.labels( new String[] { tlabel } )).slice(0);
+                    DataSetUtil.addContext( this, context );
                 }
             } else {
-                DRank0DataSet context= DataSetUtil.asDataSet(index);
-                context.putProperty( QDataSet.NAME, "slice2" );
-                DataSetUtil.addContext( this, context );
+                QDataSet dep2= (QDataSet) ds.property(QDataSet.DEPEND_2);
+                if ( dep2!=null ) {
+                    if ( dep2.rank()==1 ) {
+                        DataSetUtil.addContext( this, new Slice0DataSet(dep2,index,false) );
+                    } else if ( dep2.rank()==2 ) {
+                        DataSetUtil.addContext( this, new Slice1DataSet(dep2,index,false) );
+                    } else {
+                        System.err.println( "slice on non-qube, dep3 has rank="+dep2.rank() );
+                    }
+                } else {
+                    DRank0DataSet context= DataSetUtil.asDataSet(index);
+                    context.putProperty( QDataSet.NAME, "slice2" );
+                    DataSetUtil.addContext( this, context );
+                }
             }
         }
 
