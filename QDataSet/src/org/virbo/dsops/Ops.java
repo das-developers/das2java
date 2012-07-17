@@ -3762,7 +3762,7 @@ public class Ops {
             if ( ds2.rank()==0 ) {
                 ds= BundleDataSet.createRank0Bundle();
             } else {
-                ds = new BundleDataSet( );
+                ds = new BundleDataSet( ds2.rank()+1 );
             }
             ds.bundle(ds2);
             return ds;
@@ -3859,7 +3859,7 @@ public class Ops {
     public static boolean isBundle( QDataSet zds ) {
         if ( zds.rank()==1 ) {
             return zds.property(QDataSet.BUNDLE_0)!=null;
-        } else if ( zds.rank()==2 ) {
+        } else if ( zds.rank()>=2 ) {
             return zds.property(QDataSet.BUNDLE_1)!=null;
         } else {
             return false;
