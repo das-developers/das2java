@@ -14,6 +14,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.util.DasMath;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 
@@ -47,7 +48,7 @@ public class PropertiesTreeModel extends DefaultTreeModel {
         for ( String key: properties.keySet() ) {
             Object value= properties.get(key);
             MutableTreeNode nextChild;
-            if ( key.equals("BUNDLE_1") && ( value instanceof QDataSet ) ) {
+            if ( key.startsWith("BUNDLE_") && ( value instanceof QDataSet ) ) {
                 QDataSet bdsd= (QDataSet)value;
                 String svalue= "";
                 if ( bdsd.length()>0 ) svalue+= bdsd.property( QDataSet.NAME, 0 );
@@ -84,6 +85,8 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                             svalue= "fill" + " (" + svalue + ")";
                         }
                     }
+                } else if ( key.equals(QDataSet.FILL_VALUE ) && value instanceof Number ) { // round N digits.
+                    svalue= String.valueOf( DasMath.roundNSignificantDigits( ((Number)value).doubleValue(), 6 ) ); 
                 }
                 nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
             }
