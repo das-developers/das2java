@@ -210,6 +210,7 @@ public final class RequestProcessor {
                         if (run != null) {
                             setJob(run);
                             run.run();
+                            run= null; // Maybe fix GC leak
                             logger.fine("completed "+run);
                         }                             
                         synchronized (THREAD_COUNT_LOCK) {
