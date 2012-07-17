@@ -886,7 +886,7 @@ public class DataSetOps {
         
         QDataSet bundle=null;
 
-        if ( bundleDs.rank()==2 ) {
+        if ( bundleDs.rank()>=2 ) { // unbundle now allows rank >2 ...
             QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
             if ( bundle1==null ) {
                 bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
@@ -976,7 +976,7 @@ public class DataSetOps {
                 // DataSetOps.slice1(bundleDs,offsets[j]); // this results in error message saying "we're not going to do this correctly, use unbundle instead", oops...
                 if ( bundleDs.rank()==1 ) {
                     result= DataSetOps.makePropertiesMutable( bundleDs.slice(j) );
-                } else if ( bundleDs.rank()==2 ) {
+                } else if ( bundleDs.rank()>=2 ) {
                     result= new Slice1DataSet( bundleDs, j, true );
                 } else {
                     throw new IllegalArgumentException("BundleDs must be rank 1 or rank 2"); // this is handled above and findbugs doesn't see that we can't get here.
