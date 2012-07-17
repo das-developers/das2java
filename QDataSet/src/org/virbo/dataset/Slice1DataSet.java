@@ -6,6 +6,7 @@ package org.virbo.dataset;
 
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
+import org.virbo.dsops.Ops;
 
 /**
  * return a rank N-1 dataset from a rank N dataset by slicing on the first
@@ -57,7 +58,25 @@ public class Slice1DataSet extends AbstractDataSet {
         }
 
 
-        if ( dep1!=null ) {
+        // add the CONTEXT_0 property.
+        if ( bundle1!=null ) {
+            QDataSet context=null;
+            if ( addContext ) {
+                String tlabel= (String) bundle1.property(QDataSet.NAME,index);
+                context= (Ops.labels( new String[] { tlabel } )).slice(0);
+            }
+            if ( label!=null ) {
+                if ( addContext ) {
+                    DataSetUtil.addContext( this, context );
+                }
+                putProperty( QDataSet.LABEL, label );
+                putProperty( QDataSet.NAME, org.virbo.dsops.Ops.safeName(label) );
+            } else {
+                if ( addContext ) {
+                    DataSetUtil.addContext( this, context );
+                }
+            }
+        } else if ( dep1!=null ) {
             if ( dep1.rank()==1 ) {
                 if ( label!=null ) {
                     putProperty( QDataSet.LABEL, label ); // special code is like unbundle operator
@@ -83,9 +102,12 @@ public class Slice1DataSet extends AbstractDataSet {
         putProperty( QDataSet.DEPEND_2, ds.property(QDataSet.DEPEND_3) );
 
         putProperty( QDataSet.BUNDLE_0, ds.property(QDataSet.BUNDLE_0) );
-        putProperty( QDataSet.BUNDLE_1, null );
+        putProperty( QDataSet.BUNDLE_1, ds.property(QDataSet.BUNDLE_2) );
+        putProperty( QDataSet.BUNDLE_2, ds.property("BUNDLE_3") );
+        
         putProperty( QDataSet.BINS_0, ds.property( QDataSet.BINS_0 ) );
-        putProperty( QDataSet.BINS_1, null );
+        putProperty( QDataSet.BINS_1, ds.property( "BINS_2") );
+        putProperty( "BINS_2", ds.property( "BINS_3") );
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             String prop= "PLANE_"+i;
