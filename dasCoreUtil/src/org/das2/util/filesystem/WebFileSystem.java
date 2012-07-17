@@ -158,6 +158,9 @@ public abstract class WebFileSystem extends FileSystem {
                         int i= s.indexOf("#");
                         if ( i>-1 ) s= s.substring(0,i);
                         if ( s.trim().length()>0 ) {
+                            if ( s.startsWith("http:") || s.startsWith("https:") || s.startsWith("ftp:") ) {
+                                throw new IllegalArgumentException("ro_cache should contain the name of a local folder");
+                            }
                             String sf= s.trim();
                             result= new File(sf);
                             break;
