@@ -1569,6 +1569,7 @@ public class DataSetOps {
         s.useDelimiter("[\\(\\),]");
         Scanner s2= new Scanner( c2 );
         s2.useDelimiter("[\\(\\),]");
+        boolean slicesChangesDim= false;
         while ( s.hasNext() && s2.hasNext() ) {
             String cmd= s.next();
             if ( !s2.next().equals(cmd) ) return true;
@@ -1578,18 +1579,22 @@ public class DataSetOps {
                     if ( s.hasNextInt() && s2.hasNextInt() ) {
                         s.nextInt();
                         s2.nextInt();
+                    } else if ( s.hasNext( skipPattern ) && s2.hasNext( skipPattern ) ) {
+                        s.next();
+                        s2.next();
                     } else {
+                        slicesChangesDim= true;
                         s.next();
                         s2.next();
                     }
                 }
-                if ( s.hasNext() ) s.next();
+                if ( s.hasNext() ) s.next(); // ?? why TODO: verify this
             } else if (cmd.startsWith("|slice") && cmd.length() > 6) {
                 s.nextInt();
                 s2.nextInt();
             }
         }
-        return s.hasNext() || s2.hasNext();
+        return slicesChangesDim || s.hasNext() || s2.hasNext();
     }
 
     /**
