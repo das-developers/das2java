@@ -260,7 +260,7 @@ public class DataSetUtil {
      *       USER_PROPERTIES
      * These are dimension properties, as opposed to structural
      * see dimensionProperties() for a list of dimension properties.
-     * This DOES NOT support join datasets yet.
+     * TODO: This DOES NOT support join datasets yet.
      * @param source
      * @param dest
      */
