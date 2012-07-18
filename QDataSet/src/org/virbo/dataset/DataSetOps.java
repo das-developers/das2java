@@ -518,6 +518,14 @@ public class DataSetOps {
             throw new IllegalArgumentException("both DEPEND_0 and DEPEND_1 have rank>1");
         }
 
+        if ( props.containsKey(QDataSet.CONTEXT_0) ) {
+            for ( int i=0; i<QDataSet.MAX_RANK; i++ ) {
+                QDataSet con= (QDataSet) props.get("CONTEXT_"+i);
+                if ( con!=null ) {
+                    result.put("CONTEXT_"+i, con);
+                }
+            }
+        }
         if ( dep1!=null ) { //DEPEND_1 rank 1 implies qube
             if ( dep1!=null && dep1.rank()==2 ) {
                 result.put( QDataSet.DEPEND_0, dep1.slice( index ) );
@@ -1382,7 +1390,7 @@ public class DataSetOps {
                 }
                 fillDs= Ops.slices( fillDs, args.toArray() );
                 
-            } else if(cmd.startsWith("|slice")) {
+            } else if(cmd.startsWith("|slice") && cmd.length()>6 ) {
                 int dim= cmd.charAt(6)-'0';
                 int idx= s.nextInt();
                 if ( dim==0 ) {
@@ -1425,7 +1433,7 @@ public class DataSetOps {
                 int d0= s.nextInt();
                 int d1= s.nextInt();
                 fillDs= fillDs.trim(d0,d1);
-            } else if ( cmd.startsWith("|collapse") ) {
+            } else if ( cmd.startsWith("|collapse") && cmd.length()>9 ) {
                 int dim= cmd.charAt(9)-'0';
                 fillDs= Ops.reduceMean(fillDs,dim);
             } else if ( cmd.equals("|autoHistogram") ) {
