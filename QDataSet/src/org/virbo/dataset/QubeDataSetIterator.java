@@ -443,8 +443,8 @@ public class QubeDataSetIterator implements DataSetIterator {
      * the result should have its own iterator.
      *
      * 20101006 jbf: copy dimensional metadata DEPEND_0, etc where possible
-     *
-     * @return
+     * 20120718 jbf: bugfix with ds[7,16,4,:]. Support BINS.
+     * @return empty dataset with structural properties set.
      */
     public DDataSet createEmptyDs() {
         List<Integer> qqube = new ArrayList<Integer>();
@@ -460,20 +460,23 @@ public class QubeDataSetIterator implements DataSetIterator {
             }
         }
         
-        int[] qube;
+        int[] qube1;
         if (isAllIndexLists) {  // a=[1,2,3]; b=[2,3,1]; Z[a,b] is rank 1
-            qube=  new int[] { this.it[0].length() };
+            qube1=  new int[] { this.it[0].length() };
         } else {
-            qube = new int[qqube.size()];
+            qube1 = new int[qqube.size()];
             for (int i = 0; i < qqube.size(); i++) {
-                qube[i] = qqube.get(i);
+                qube1[i] = qqube.get(i);
             }
         }
-        DDataSet result = DDataSet.create(qube);
+        DDataSet result = DDataSet.create(qube1);
+
+        // move the structural properties like DEPEND_i and BUNDLE_i.  idim refers to the source, i refers to the result.
         for ( int i=0; i<dimMap.size(); i++ ) {
             int idim= dimMap.get(i);
-            QDataSet dep= (QDataSet) this.ds.property("DEPEND_"+i);
-            QDataSet bund= (QDataSet) this.ds.property("BUNDLE_"+i);
+            QDataSet dep= (QDataSet) this.ds.property("DEPEND_"+idim);
+            QDataSet bund= (QDataSet) this.ds.property("BUNDLE_"+idim);
+            String bins= (String) this.ds.property("BINS_"+idim);
             if ( fit[idim] instanceof StartStopStepIteratorFactory ) {
                 if ( dep!=null && dep.rank()==1 ) {
                     StartStopStepIterator sssi= (StartStopStepIterator)it[idim];
@@ -485,8 +488,12 @@ public class QubeDataSetIterator implements DataSetIterator {
                         QDataSet depSlice= DataSetOps.trim( dep, sssi.start, sssi.stop, sssi.step );
                         result.putProperty( "DEPEND_"+i, depSlice );
                     }
-                } else if ( bund!=null && dep!=null && it[idim].length()==dep.length() ) { //TODO: verify this
-                    result.putProperty( "BUNDLE_"+i, dep );
+                }
+                if ( bund!=null && it[idim].length()==bund.length() ) { 
+                    result.putProperty( "BUNDLE_"+i, bund );
+                }
+                if ( bins!=null && it[idim].length()==bins.split(",").length ) { //TODO: verify this
+                    result.putProperty( "BINS_"+i, bins );
                 }
             }
         }
