@@ -80,6 +80,9 @@ public class KeyChain {
                             System.err.println("skipping line because wrong number of fields: "+line );
                         } else {
                             String hash= ss[0].trim();
+                            if ( hash.endsWith("/") ) {
+                                hash= hash.substring(0,hash.length()-1);
+                            }
                             String storedUserInfo= ss[1].trim();
                             keys.put( hash, storedUserInfo );
                         }
