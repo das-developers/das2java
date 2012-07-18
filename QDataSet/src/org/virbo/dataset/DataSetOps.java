@@ -622,44 +622,36 @@ public class DataSetOps {
 
     /**
      * we've sliced a dataset, removing an index.  move the properties.  This was Ops.sliceProperties
+     * @see MetadataUtil.sliceProperties
      * @param result
      * @param removeDim
      * @return
      */
-    public static Map<String,Object> sliceProperties( Map<String,Object> props, int removeDim ) {
-        Map<String,Object> result= new HashMap();
-        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
-            if (i < removeDim) {
-                Object v= props.get("DEPEND_" + i);
-                if ( v!=null ) result.put("DEPEND_" + i, v );
-            } else {
-                Object v= props.get("DEPEND_" + (i+1) );
-                if ( v!=null ) result.put("DEPEND_" + i, v );
-            }
+    public static Map<String,Object> sliceProperties( Map<String,Object> properties, int sliceDimension ) {
+        Map<String,Object> result = new LinkedHashMap();
+        String[] ss= DataSetUtil.dimensionProperties();
+        for ( String s: ss ) {
+            Object val= properties.get(s);
+            if ( val!=null ) result.put( s, val );
         }
 
-        if ( removeDim==0 ) {
-            String bins1= (String) props.get( QDataSet.BINS_1 );
-            QDataSet bundle1= (QDataSet) props.get( QDataSet.BUNDLE_1 );
-            if ( bins1!=null ) {
-                result.put( QDataSet.BINS_0, bins1 );
-            }
-            if ( bundle1!=null ) {
-                result.put( QDataSet.BUNDLE_0, bundle1 );
-            }
-        } else if ( removeDim==1 ) {
-            String bins0= (String) props.get( QDataSet.BINS_0 );
-            QDataSet bundle0= (QDataSet) props.get( QDataSet.BUNDLE_0 );
-            if ( bins0!=null ) {
-                result.put( QDataSet.BINS_0, bins0 );
-            }
-            if ( bundle0!=null ) {
-                result.put( QDataSet.BUNDLE_0, bundle0 );
-            }
+        List<Object> deps = new ArrayList(QDataSet.MAX_RANK);
+        List<Object> bund = new ArrayList(QDataSet.MAX_RANK);
+        List<Object> bins = new ArrayList(QDataSet.MAX_RANK);
+        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
+            deps.add(i, properties.get("DEPEND_" + i));
+            bund.add(i, properties.get("BUNDLE_" + i));
+            bins.add(i, properties.get("BINS_" + i));
         }
-        for ( String prop: DataSetUtil.dimensionProperties() ) {
-            Object v= props.get(prop);
-            if ( v!=null ) result.put( prop, v );
+
+        deps.remove(sliceDimension);
+        bund.remove(sliceDimension);
+        bins.remove(sliceDimension);
+
+        for (int i = 0; i < QDataSet.MAX_RANK-1; i++) {
+            if ( deps.get(i)!=null ) result.put("DEPEND_" + i, deps.get(i));
+            if ( bund.get(i)!=null ) result.put("BUNDLE_" + i, bund.get(i));
+            if ( bins.get(i)!=null ) result.put("BINS_" + i, bins.get(i));
         }
 
         return result;
