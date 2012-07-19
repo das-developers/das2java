@@ -1370,9 +1370,11 @@ public class DataSetOps {
      * but the change should be at a major version change in case it breaks things.
      * @param c
      * @param fillDs
+     * @throws ParseException when the string cannot be parsed
+     * @throws Exception when a function cannot be processed (e.g. index out of bounds)
      * @return
      */
-    public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) throws ParseException {
+    public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) throws Exception {
         int i=1;
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
