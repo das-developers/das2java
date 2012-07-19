@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1371,187 +1372,193 @@ public class DataSetOps {
      * @param fillDs
      * @return
      */
-    public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) {
+    public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) throws ParseException {
         int i=1;
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
 
-        while ( s.hasNext() ) {
-            String cmd= s.next();
-            if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
-                Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
-                List<Object> args= new ArrayList();
-                while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
-                    if ( s.hasNextInt() ) {
-                        args.add( s.nextInt() );
-                    } else {
-                        args.add( s.next() );
+        try {
+            while ( s.hasNext() ) {
+                String cmd= s.next();
+                i= c.indexOf(cmd,i);
+                if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
+                    Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
+                    List<Object> args= new ArrayList();
+                    while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
+                        if ( s.hasNextInt() ) {
+                            args.add( s.nextInt() );
+                        } else {
+                            args.add( s.next() );
+                        }
                     }
-                }
-                fillDs= Ops.slices( fillDs, args.toArray() );
-                
-            } else if(cmd.startsWith("|slice") && cmd.length()>6 ) {
-                int dim= cmd.charAt(6)-'0';
-                int idx= s.nextInt();
-                if ( dim==0 ) {
-                    if ( idx>=fillDs.length() ) idx=fillDs.length()-1;
-                    if ( idx<0 ) idx=0;
-                    fillDs= slice0(fillDs, idx); //TODO: use fillDs.slice
-                } else if ( dim==1 ) {
-                    if ( idx>=fillDs.length(0) ) idx=fillDs.length(0)-1;
-                    if ( idx<0 ) idx=0;
-                    fillDs= slice1(fillDs, idx);
-                } else if ( dim==2 ) {
-                    if ( idx>=fillDs.length(0,0) ) idx=fillDs.length(0,0)-1;
-                    if ( idx<0 ) idx=0;
-                    fillDs= slice2(fillDs, idx);
-                } else if ( dim==3 ) {
-                    if ( idx>=fillDs.length(0,0,0) ) idx=fillDs.length(0,0,0)-1;
-                    if ( idx<0 ) idx=0;
-                    fillDs= slice3(fillDs, idx);
-                }
-            } else if ( cmd.equals("|reducex") ) {
-                String arg= getStringArg( s.next() );
-                try {
-                    Datum r = DatumUtil.parse(arg);
-                    fillDs= Reduction.reduce2D( fillDs, DataSetUtil.asDataSet(r),null);
-                } catch (ParseException ex) {
-                    Logger.getLogger(DataSetOps.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                    fillDs= Ops.slices( fillDs, args.toArray() );
 
-            } else if ( cmd.equals("|nop") ) {
-                //fillDs= fillDs;
-            } else if ( cmd.equals("|diff") ) {
-                fillDs= Ops.diff(fillDs);
-            } else if ( cmd.equals("|accum") ) {
-                fillDs= Ops.accum(fillDs);
-            } else if ( cmd.equals("|log10") ) {
-                fillDs= Ops.log10(fillDs);
-            } else if ( cmd.equals("|exp10") ) {
-                fillDs= Ops.exp10(fillDs);
-            } else if ( cmd.equals("|trim") ) {
-                int d0= s.nextInt();
-                int d1= s.nextInt();
-                fillDs= fillDs.trim(d0,d1);
-            } else if ( cmd.startsWith("|collapse") && cmd.length()>9 ) {
-                int dim= cmd.charAt(9)-'0';
-                fillDs= Ops.reduceMean(fillDs,dim);
-            } else if ( cmd.equals("|autoHistogram") ) {
-                fillDs= Ops.autoHistogram(fillDs);
-            } else if ( cmd.equals("|histogram") ) {
-                fillDs= Ops.autoHistogram(fillDs);
-            } else if ( cmd.equals("|extent") ) {
-                fillDs= Ops.extent(fillDs);
-            } else if ( cmd.equals("|logHistogram") ) {
-                fillDs= Ops.autoHistogram(Ops.log10(fillDs));
-                MutablePropertyDataSet dep0= DDataSet.copy( (QDataSet) fillDs.property(QDataSet.DEPEND_0));
-                QDataSet cadence= (QDataSet) dep0.property( QDataSet.CADENCE );
-                dep0= (MutablePropertyDataSet) Ops.pow( Ops.replicate(10,dep0.length()), dep0 );
-                dep0.putProperty( QDataSet.SCALE_TYPE, "log" );
-                dep0.putProperty( QDataSet.CADENCE, cadence );
-                ((MutablePropertyDataSet)fillDs).putProperty( QDataSet.DEPEND_0, dep0 );
-            } else if ( cmd.equals("|transpose") ) {
-                if ( fillDs.rank()==2 ) {
-                    fillDs= Ops.transpose(fillDs);
-                } else {
-                    System.err.println("unable to transpose dataset, not rank 2"); //TODO: error handling
-                }
-            } else if ( cmd.startsWith("|fftWindow" ) ) {
-                int size= s.nextInt();
-                fillDs= Ops.fftWindow(fillDs, size);
-            } else if ( cmd.equals("|flatten" ) ) {
-                if ( fillDs.rank()!=2 ) throw new IllegalArgumentException("only rank2 supported");
-                fillDs= flattenRank2(fillDs);
-            } else if ( cmd.equals("|grid" ) ) {
-                if ( fillDs.rank()!=2 ) throw new IllegalArgumentException("only rank2 supported");
-                fillDs= grid(fillDs);
-            } else if ( cmd.equals("|magnitude") ) {
-                fillDs= Ops.magnitude(fillDs);
-            } else if ( cmd.equals("|abs") ) {
-                fillDs= Ops.abs(fillDs);
-            } else if ( cmd.equals("|pow")) {
-                int idx= s.nextInt();
-                fillDs= Ops.pow(fillDs,idx);
-            } else if ( cmd.equals("|total")) {
-                int idx= s.nextInt();
-                fillDs= Ops.total(fillDs, idx);
-            } else if ( cmd.equals("|valid")) {
-                fillDs= Ops.valid(fillDs);
-            } else if ( cmd.equals("|sqrt")) {
-                fillDs= Ops.sqrt(fillDs);
-            } else if ( cmd.equals("|fftPower" ) ) {
-                if ( fillDs.length()>0 ) {
-                    if ( s.hasNextInt() ) {
-                        int len= s.nextInt();
-                        fillDs= Ops.fftPower(fillDs,len, mon);
+                } else if(cmd.startsWith("|slice") && cmd.length()>6 ) {
+                    int dim= cmd.charAt(6)-'0';
+                    int idx= s.nextInt();
+                    if ( dim==0 ) {
+                        if ( idx>=fillDs.length() ) idx=fillDs.length()-1;
+                        if ( idx<0 ) idx=0;
+                        fillDs= slice0(fillDs, idx); //TODO: use fillDs.slice
+                    } else if ( dim==1 ) {
+                        if ( idx>=fillDs.length(0) ) idx=fillDs.length(0)-1;
+                        if ( idx<0 ) idx=0;
+                        fillDs= slice1(fillDs, idx);
+                    } else if ( dim==2 ) {
+                        if ( idx>=fillDs.length(0,0) ) idx=fillDs.length(0,0)-1;
+                        if ( idx<0 ) idx=0;
+                        fillDs= slice2(fillDs, idx);
+                    } else if ( dim==3 ) {
+                        if ( idx>=fillDs.length(0,0,0) ) idx=fillDs.length(0,0,0)-1;
+                        if ( idx<0 ) idx=0;
+                        fillDs= slice3(fillDs, idx);
+                    }
+                } else if ( cmd.equals("|reducex") ) {
+                    String arg= getStringArg( s.next() );
+                    try {
+                        Datum r = DatumUtil.parse(arg);
+                        fillDs= Reduction.reduce2D( fillDs, DataSetUtil.asDataSet(r),null);
+                    } catch (ParseException ex) {
+                        Logger.getLogger(DataSetOps.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                } else if ( cmd.equals("|nop") ) {
+                    //fillDs= fillDs;
+                } else if ( cmd.equals("|diff") ) {
+                    fillDs= Ops.diff(fillDs);
+                } else if ( cmd.equals("|accum") ) {
+                    fillDs= Ops.accum(fillDs);
+                } else if ( cmd.equals("|log10") ) {
+                    fillDs= Ops.log10(fillDs);
+                } else if ( cmd.equals("|exp10") ) {
+                    fillDs= Ops.exp10(fillDs);
+                } else if ( cmd.equals("|trim") ) {
+                    int d0= s.nextInt();
+                    int d1= s.nextInt();
+                    fillDs= fillDs.trim(d0,d1);
+                } else if ( cmd.startsWith("|collapse") && cmd.length()>9 ) {
+                    int dim= cmd.charAt(9)-'0';
+                    fillDs= Ops.reduceMean(fillDs,dim);
+                } else if ( cmd.equals("|autoHistogram") ) {
+                    fillDs= Ops.autoHistogram(fillDs);
+                } else if ( cmd.equals("|histogram") ) {
+                    fillDs= Ops.autoHistogram(fillDs);
+                } else if ( cmd.equals("|extent") ) {
+                    fillDs= Ops.extent(fillDs);
+                } else if ( cmd.equals("|logHistogram") ) {
+                    fillDs= Ops.autoHistogram(Ops.log10(fillDs));
+                    MutablePropertyDataSet dep0= DDataSet.copy( (QDataSet) fillDs.property(QDataSet.DEPEND_0));
+                    QDataSet cadence= (QDataSet) dep0.property( QDataSet.CADENCE );
+                    dep0= (MutablePropertyDataSet) Ops.pow( Ops.replicate(10,dep0.length()), dep0 );
+                    dep0.putProperty( QDataSet.SCALE_TYPE, "log" );
+                    dep0.putProperty( QDataSet.CADENCE, cadence );
+                    ((MutablePropertyDataSet)fillDs).putProperty( QDataSet.DEPEND_0, dep0 );
+                } else if ( cmd.equals("|transpose") ) {
+                    if ( fillDs.rank()==2 ) {
+                        fillDs= Ops.transpose(fillDs);
+                    } else {
+                        System.err.println("unable to transpose dataset, not rank 2"); //TODO: error handling
+                    }
+                } else if ( cmd.startsWith("|fftWindow" ) ) {
+                    int size= s.nextInt();
+                    fillDs= Ops.fftWindow(fillDs, size);
+                } else if ( cmd.equals("|flatten" ) ) {
+                    if ( fillDs.rank()!=2 ) throw new IllegalArgumentException("only rank2 supported");
+                    fillDs= flattenRank2(fillDs);
+                } else if ( cmd.equals("|grid" ) ) {
+                    if ( fillDs.rank()!=2 ) throw new IllegalArgumentException("only rank2 supported");
+                    fillDs= grid(fillDs);
+                } else if ( cmd.equals("|magnitude") ) {
+                    fillDs= Ops.magnitude(fillDs);
+                } else if ( cmd.equals("|abs") ) {
+                    fillDs= Ops.abs(fillDs);
+                } else if ( cmd.equals("|pow")) {
+                    int idx= s.nextInt();
+                    fillDs= Ops.pow(fillDs,idx);
+                } else if ( cmd.equals("|total")) {
+                    int idx= s.nextInt();
+                    fillDs= Ops.total(fillDs, idx);
+                } else if ( cmd.equals("|valid")) {
+                    fillDs= Ops.valid(fillDs);
+                } else if ( cmd.equals("|sqrt")) {
+                    fillDs= Ops.sqrt(fillDs);
+                } else if ( cmd.equals("|fftPower" ) ) {
+                    if ( fillDs.length()>0 ) {
+                        if ( s.hasNextInt() ) {
+                            int len= s.nextInt();
+                            fillDs= Ops.fftPower(fillDs,len, mon);
+                        } else {
+                            fillDs= Ops.fftPower(fillDs);
+                        }
                     } else {
                         fillDs= Ops.fftPower(fillDs);
                     }
-                } else {
-                    fillDs= Ops.fftPower(fillDs);
-                }
-            } else if ( cmd.equals("|hanning") ) {
-                if ( fillDs.length()>0 ) {
-                    if ( s.hasNextInt() ) {
-                        int len= s.nextInt();
-                        fillDs= Ops.fftFilter( fillDs, len, Ops.FFTFilterType.Hanning );
-                    } else {
-                        throw new IllegalArgumentException("expected argument to hanning filter");
+                } else if ( cmd.equals("|hanning") ) {
+                    if ( fillDs.length()>0 ) {
+                        if ( s.hasNextInt() ) {
+                            int len= s.nextInt();
+                            fillDs= Ops.fftFilter( fillDs, len, Ops.FFTFilterType.Hanning );
+                        } else {
+                            throw new IllegalArgumentException("expected argument to hanning filter");
+                        }
                     }
-                }
 
-            } else if ( cmd.equals("|unbundle" ) ) {
-                String comp= getStringArg( s.next() );
-                try {
+                } else if ( cmd.equals("|unbundle" ) ) {
+                    String comp= getStringArg( s.next() );
+                    try {
+                        int icomp= Integer.parseInt(comp);
+                        fillDs= DataSetOps.unbundle( fillDs, icomp );
+                    } catch ( NumberFormatException ex ) {
+                        fillDs= DataSetOps.unbundle( fillDs, comp );
+                    }
+                } else if ( cmd.equals("|negate") ) {
+                    fillDs= Ops.negate(fillDs);
+                } else if ( cmd.equals("|cos") ) {
+                    fillDs= Ops.cos(fillDs);
+                } else if ( cmd.equals("|sin") ) {
+                    fillDs= Ops.sin(fillDs);
+                } else if ( cmd.equals("|toRadians") ) {
+                    fillDs= Ops.toRadians(fillDs);
+                } else if ( cmd.equals("|toDegrees") ) {
+                    fillDs= Ops.toDegrees(fillDs);
+                } else if ( cmd.equals("|smooth") ) {
+                    String comp= s.next();
                     int icomp= Integer.parseInt(comp);
-                    fillDs= DataSetOps.unbundle( fillDs, icomp );
-                } catch ( NumberFormatException ex ) {
-                    fillDs= DataSetOps.unbundle( fillDs, comp );
-                }
-            } else if ( cmd.equals("|negate") ) {
-                fillDs= Ops.negate(fillDs);
-            } else if ( cmd.equals("|cos") ) {
-                fillDs= Ops.cos(fillDs);
-            } else if ( cmd.equals("|sin") ) {
-                fillDs= Ops.sin(fillDs);
-            } else if ( cmd.equals("|toRadians") ) {
-                fillDs= Ops.toRadians(fillDs);
-            } else if ( cmd.equals("|toDegrees") ) {
-                fillDs= Ops.toDegrees(fillDs);
-            } else if ( cmd.equals("|smooth") ) {
-                String comp= s.next();
-                int icomp= Integer.parseInt(comp);
-                fillDs= Ops.smooth(fillDs, icomp);
-            } else if ( cmd.equals("|contour") ) {
+                    fillDs= Ops.smooth(fillDs, icomp);
+                } else if ( cmd.equals("|contour") ) {
 
-                List<Double> args= new ArrayList();
+                    List<Double> args= new ArrayList();
 
-                args.add( s.nextDouble() );
-                while ( s.hasNextDouble() ) {
                     args.add( s.nextDouble() );
+                    while ( s.hasNextDouble() ) {
+                        args.add( s.nextDouble() );
+                    }
+                    double[] aa= new double[args.size()];
+                    for ( int j=0; j<aa.length; j++ ) aa[j]= args.get(j).doubleValue();
+                    fillDs= Ops.contour( fillDs, DataSetUtil.asDataSet( aa ) );
+
+                } else if ( cmd.equals("|dbAboveBackgroundDim1") ) { // remove the background across slices
+                    String qrg= s.next();
+                    int iarg= Integer.parseInt(qrg);
+                    fillDs= DataSetOps.dbAboveBackgroundDim1( fillDs, iarg );
+
+                } else if ( cmd.equals("|dbAboveBackgroundDim0") ) { // remove the background within slices
+                    String qrg= s.next();
+                    int iarg= Integer.parseInt(qrg);
+                    fillDs= DataSetOps.dbAboveBackgroundDim0( fillDs, iarg );
+
+                } else if ( cmd.equals("|setUnits" ) ) {
+                    String arg= getStringArg( s.next() );
+                    Units newu= SemanticOps.lookupUnits(arg);
+                    fillDs= ArrayDataSet.copy(fillDs).setUnits(newu);
+
+                } else {
+                    if ( !cmd.equals("") ) throw new ParseException( c + " (command not recognized: \""+cmd +"\")", i );
                 }
-                double[] aa= new double[args.size()];
-                for ( int j=0; j<aa.length; j++ ) aa[j]= args.get(j).doubleValue();
-                fillDs= Ops.contour( fillDs, DataSetUtil.asDataSet( aa ) );
-                
-            } else if ( cmd.equals("|dbAboveBackgroundDim1") ) { // remove the background across slices
-                String qrg= s.next();
-                int iarg= Integer.parseInt(qrg);
-                fillDs= DataSetOps.dbAboveBackgroundDim1( fillDs, iarg );
-
-            } else if ( cmd.equals("|dbAboveBackgroundDim0") ) { // remove the background within slices
-                String qrg= s.next();
-                int iarg= Integer.parseInt(qrg);
-                fillDs= DataSetOps.dbAboveBackgroundDim0( fillDs, iarg );
-
-            } else if ( cmd.equals("|setUnits" ) ) {
-                String arg= getStringArg( s.next() );
-                Units newu= SemanticOps.lookupUnits(arg);
-                fillDs= ArrayDataSet.copy(fillDs).setUnits(newu);
-
-            } else {
-                if ( !cmd.equals("") ) System.err.println( "command not recognized: \""+cmd +"\"" );
             }
+        } catch ( InputMismatchException ex ) {
+            ParseException ex2= new ParseException( c + " ("+ex.getLocalizedMessage()+")", i );
+            throw ex2;
         }
         return fillDs;
     }
