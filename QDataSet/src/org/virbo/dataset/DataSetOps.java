@@ -372,7 +372,7 @@ public class DataSetOps {
         }
 
         int n = (int) Math.ceil((max - min) / binsize);
-        MutablePropertyDataSet tags = DataSetUtil.tagGenDataSet(n, min, binsize, (Units)ds.property(QDataSet.UNITS) );
+        MutablePropertyDataSet tags = DataSetUtil.tagGenDataSet(n, min+binsize/2, binsize, (Units)ds.property(QDataSet.UNITS) );
         
         tags.putProperty( QDataSet.NAME, ds.property(QDataSet.NAME) );
         tags.putProperty( QDataSet.LABEL, ds.property(QDataSet.LABEL) );
