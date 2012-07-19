@@ -358,12 +358,19 @@ public class DataSetOps {
      *   count, the total number of valid values.
      *   nonZeroMin, the smallest non-zero, positive number
      * @param ds rank N dataset
-     * @param min the min of the first bin.
+     * @param min the min of the first bin.  If min=-1 and max=-1, then automatically set the min and max.
      * @param max the max of the last bin.
      * @param binsize the size of each bin.
      * @return a rank 1 dataset with each bin's count.  DEPEND_0 indicates the bin locations.
      */
-    public static QDataSet histogram(QDataSet ds, final double min, final double max, final double binsize) {
+    public static QDataSet histogram(QDataSet ds, double min, double max, final double binsize) {
+
+        if ( min==-1 && max==-1 ) {
+            QDataSet range= Ops.extent(ds);
+            min= (Math.floor(range.value(0)/binsize)) * binsize;
+            max= (Math.ceil(range.value(1)/binsize)) * binsize;
+        }
+
         int n = (int) Math.ceil((max - min) / binsize);
         MutablePropertyDataSet tags = DataSetUtil.tagGenDataSet(n, min, binsize, (Units)ds.property(QDataSet.UNITS) );
         
@@ -399,6 +406,7 @@ public class DataSetOps {
         result.putProperty( QDataSet.DEPEND_0, tags );
         result.putProperty( "count", count );
         result.putProperty( "positiveMin", positiveMin );
+        result.putProperty( QDataSet.RENDER_TYPE, "stairSteps" );  
         
         return result;
     }
@@ -1443,8 +1451,20 @@ public class DataSetOps {
                     fillDs= Ops.reduceMean(fillDs,dim);
                 } else if ( cmd.equals("|autoHistogram") ) {
                     fillDs= Ops.autoHistogram(fillDs);
-                } else if ( cmd.equals("|histogram") ) {
-                    fillDs= Ops.autoHistogram(fillDs);
+                } else if ( cmd.equals("|histogram") ) { // 0=auto, 1=binsize
+                    if ( s.hasNextDouble() ) {
+                        double binSize= s.nextDouble();
+                        if ( s.hasNextDouble() ) {
+                            double min= binSize;
+                            double max= s.nextDouble();
+                            binSize= s.nextDouble();
+                            fillDs= Ops.histogram(fillDs,min,max,binSize);
+                        } else {
+                            fillDs= Ops.histogram(fillDs,-1,-1,binSize);
+                        }
+                    } else {
+                        fillDs= Ops.autoHistogram(fillDs);
+                    }
                 } else if ( cmd.equals("|extent") ) {
                     fillDs= Ops.extent(fillDs);
                 } else if ( cmd.equals("|logHistogram") ) {
