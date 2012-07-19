@@ -115,7 +115,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
 
         int xhigh1= (int)topPlot.getXAxis().transform(context.min());
         int xhigh2= (int)bottomPlot.getXAxis().getColumn().getDMiddle();
-        int xlow1= (int)topPlot.getXAxis().transform(context.min());
+        int xlow1= (int)topPlot.getXAxis().transform(context.max());
         int xlow2= (int)bottomPlot.getXAxis().getColumn().getDMiddle();
 
         //if ( xhigh1 > xhigh2 ) return;
@@ -130,7 +130,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         int xhigh1= (int)topPlot.getXAxis().getColumn().getDMiddle();
         int xhigh2= (int)bottomPlot.getXAxis().transform(context.min());
         int xlow1= (int)topPlot.getXAxis().getColumn().getDMiddle();
-        int xlow2= (int)bottomPlot.getXAxis().transform(context.min());
+        int xlow2= (int)bottomPlot.getXAxis().transform(context.max());
 
         //if ( xhigh1 > xhigh2 ) return;
         paintIt( g, xhigh1, xhigh2, xlow1, xlow2 );
