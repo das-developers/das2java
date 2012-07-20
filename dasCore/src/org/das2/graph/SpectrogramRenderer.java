@@ -226,7 +226,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         Graphics2D g2 = (Graphics2D) g;
 
         if ( parent==null ) return;
-        
+
+System.err.println("parent renderer count= "+ parent.getRenderers().length )        ;
+
         renderCount++;
         reportCount();
         synchronized (lockObject) {
