@@ -1433,8 +1433,6 @@ public class DataSetOps {
                         Logger.getLogger(DataSetOps.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                } else if ( cmd.equals("|nop") ) {
-                    //fillDs= fillDs;
                 } else if ( cmd.equals("|diff") ) {
                     fillDs= Ops.diff(fillDs);
                 } else if ( cmd.equals("|accum") ) {
@@ -1574,6 +1572,9 @@ public class DataSetOps {
                     String arg= getStringArg( s.next() );
                     Units newu= SemanticOps.lookupUnits(arg);
                     fillDs= ArrayDataSet.copy(fillDs).setUnits(newu);
+
+                } else if ( cmd.equals("|nop") ) { // no operation, for testing.
+                    //fillDs= fillDs;
 
                 } else {
                     if ( !cmd.equals("") ) throw new ParseException( c + " (command not recognized: \""+cmd +"\")", i );
