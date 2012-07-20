@@ -458,6 +458,24 @@ public class SeriesRenderer extends Renderer {
         }
     }
 
+    /**
+     * isolate allow bad units logic.
+     * @param d the datum.
+     * @param u target units.
+     * @return the double value.
+     */
+    private double doubleValue( Datum d, Units u ) {
+        if ( d.getUnits().isConvertableTo(u) ) {
+            return d.doubleValue(u);
+        } else {
+            try {
+                return d.value();
+            } catch ( IllegalArgumentException ex ) {
+                throw new InconvertibleUnitsException(d.getUnits(),u);
+            }
+        }
+    }
+
     class PsymConnectorRenderElement implements RenderElement {
 
         private GeneralPath path1;
@@ -525,7 +543,7 @@ public class SeriesRenderer extends Renderer {
                     xSampleWidth = sw.doubleValue(Units.logERatio);
                     logStep= true;
                 } else {
-                    xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+                    xSampleWidth = doubleValue( sw, xUnits.getOffsetUnits() );
                     logStep= false;
                 }
             } else {
@@ -751,7 +769,7 @@ public class SeriesRenderer extends Renderer {
                     xSampleWidth = sw.doubleValue(Units.logERatio);
                     logStep= true;
                 } else {
-                    xSampleWidth = sw.doubleValue(xUnits.getOffsetUnits());
+                    xSampleWidth = doubleValue( sw, xUnits.getOffsetUnits() );
                     logStep= false;
                 }
             } else {
@@ -764,16 +782,11 @@ public class SeriesRenderer extends Renderer {
             double xSampleWidthExact= xSampleWidth;
             xSampleWidth = xSampleWidth * 1.20;
 
-            if (reference != null && reference.getUnits() != yAxis.getUnits()) {
-                // switch the units to the axis units.
-                reference = yAxis.getUnits().createDatum(reference.doubleValue(reference.getUnits()));
-            }
-
             if (reference == null) {
                 reference = yUnits.createDatum(yAxis.isLog() ? 1.0 : 0.0);
             }
 
-            double yref = (double) reference.doubleValue(yUnits);
+            double yref = doubleValue( reference, yUnits );
 
             double x = Double.NaN;
             double y = Double.NaN;
@@ -986,6 +999,10 @@ public class SeriesRenderer extends Renderer {
         Boolean xMono = SemanticOps.isMonotonic( xds );
         if (xMono != null && xMono.booleanValue()) {
             DatumRange visibleRange = xAxis.getDatumRange();
+            Units xdsu= SemanticOps.getUnits(xds);
+            if ( !visibleRange.getUnits().isConvertableTo( xdsu ) ) {
+                visibleRange= new DatumRange( visibleRange.min().value(), visibleRange.max().value(), xdsu );
+            }
             firstIndex_v = DataSetUtil.getPreviousIndex( xds, visibleRange.min());
             lastIndex_v = DataSetUtil.getNextIndex( xds, visibleRange.max()) + 1; // +1 is for exclusive.
             if (lparent.isOverSize()) {
@@ -1366,10 +1383,6 @@ public class SeriesRenderer extends Renderer {
         lastIndex= -1;
         
         if (vds != null) {
-            if ( !xAxis.getUnits().isConvertableTo( SemanticOps.getUnits(xds) ) ) {
-                xunitsWarning= true;
-                return;
-            }
 
             updateFirstLast(xAxis, yAxis, xds, vds );
 
