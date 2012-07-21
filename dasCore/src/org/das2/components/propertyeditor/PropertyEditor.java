@@ -87,6 +87,7 @@ public class PropertyEditor extends JComponent {
     }
     private JTable table;
     private JButton closeButton;
+    private JPanel buttonPanel;
     private JDialog dialog;
     private Object bean;
     /* row of the last mouse click.  This object is the fellow who is edited when
@@ -345,7 +346,7 @@ public class PropertyEditor extends JComponent {
     }
 
     private void initButtonPanel(boolean saveLoadButton) {
-        JPanel buttonPanel = new JPanel();
+        buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
         if (saveLoadButton) {
             //JButton saveButton = new JButton(createSaveAction(this.bean));
@@ -513,6 +514,20 @@ public class PropertyEditor extends JComponent {
             closeButton.setVisible(false);
         }
         super.doLayout();
+    }
+
+    /**
+     * add a save button, and perform the given action.
+     * @param abstractAction
+     */
+    public void addSaveAction(final AbstractAction abstractAction) {
+        buttonPanel.add( new JButton( new AbstractAction( "Save") {
+            public void actionPerformed(ActionEvent e) {
+                globalApplyChanges();
+                refresh();
+                abstractAction.actionPerformed(e);
+            }
+        }));
     }
 
     class PropertyTableMouseListener extends MouseAdapter {
