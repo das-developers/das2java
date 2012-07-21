@@ -67,7 +67,6 @@ public final class BundleDataSet extends AbstractDataSet {
      * rank 1 datasets with the same depend_0.
      */
     public BundleDataSet( int rank ) {
-        if ( rank>2 ) System.err.println("This is experimental, only rank 1 and rank 2 have been used in production.");
         this.rank= rank;
         datasets= new ArrayList<QDataSet>();
         if ( rank>=2 ) {
