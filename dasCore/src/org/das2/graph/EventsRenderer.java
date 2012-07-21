@@ -31,6 +31,7 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
@@ -250,7 +251,13 @@ public class EventsRenderer extends Renderer {
         DataSetBuilder build= new DataSetBuilder(2,100,4);
         DDataSet v= DDataSet.createRank1(4);
 
+        QDataSet dep0= DataSetOps.unbundle( vds,0 );
+
         double tlim= 1e-31;
+        RankZeroDataSet cad= org.virbo.dataset.DataSetUtil.guessCadenceNew( dep0, null );
+        if ( cad!=null ) {
+            tlim= cad.value()/1000;
+        }
 
         int count=0;
 
