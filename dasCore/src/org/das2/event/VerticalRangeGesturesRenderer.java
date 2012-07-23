@@ -85,8 +85,8 @@ public class VerticalRangeGesturesRenderer implements DragRenderer {
     
     
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
-        double dx= p2.x-p1.x;
-        double dy= -1* ( p2.y-p1.y );        
+        //double dx= p2.x-p1.x;
+        //double dy= -1* ( p2.y-p1.y );
         if ( gr.isGesture(p1,p2) ) {
             return gr.getMouseDragEvent(source,p1,p2,isModified);             
         } else {           
