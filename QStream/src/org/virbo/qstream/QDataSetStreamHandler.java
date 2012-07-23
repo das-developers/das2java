@@ -318,14 +318,21 @@ public class QDataSetStreamHandler implements StreamHandler {
 
     private MutablePropertyDataSet resolveProps( MutablePropertyDataSet result ) {
        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
-            String s = (String) result.property("DEPEND_" + i);
+            String s = (String) result.property("DEPENDNAME_" + i);
             if (s != null) {
                 result.putProperty("DEPEND_" + i, getDataSet(s));
             }
         }
-        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
+       for (int i = 0; i < QDataSet.MAX_RANK; i++) {
+            Object o = result.property("DEPEND_" + i);
+            if (o != null && o instanceof String ) {
+                System.err.println("QDataSetStreamHandler: still strings in DEPEND_"+i);
+                result.putProperty("DEPEND_" + i, getDataSet((String)o));
+            }
+        }
+       for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             Object o= result.property("BUNDLE_" + i);
-            if ( o instanceof String ) {
+            if ( o instanceof String ) { //TODO: still need to clean up messages here, maybe...
 		String s = (String) o;
 		if (s != null) {
 		    result.putProperty("BUNDLE_" + i, getDataSet(s));
@@ -493,7 +500,12 @@ public class QDataSetStreamHandler implements StreamHandler {
                             System.err.println("skipping DELTA_MINUS and DELTA_PLUS because bug");
                             continue;
                         }
-                        builder.putProperty(pname, svalue);
+                        if ( pname.matches( "DEPEND_\\d+") ) {
+                            String si= pname.substring(7);
+                            builder.putProperty( "DEPENDNAME_"+si, svalue );
+                        } else {
+                            builder.putProperty(pname, svalue);
+                        }
                     } else {
                         SerializeDelegate delegate = SerializeRegistry.getByName(stype);
                         if (delegate == null) {
