@@ -549,6 +549,13 @@ public class Ops {
         props= DataSetOps.sliceProperties( props, dim );
         DataSetUtil.putProperties( props, result );
         result.putProperty(QDataSet.FILL_VALUE,fill);
+
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dim==0 && dep0!=null ) {
+            QDataSet extent= Ops.extent(dep0);
+            DataSetUtil.addContext( result, extent );
+        }
+
         return result;
     }
 
