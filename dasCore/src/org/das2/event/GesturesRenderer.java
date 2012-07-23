@@ -75,8 +75,8 @@ public class GesturesRenderer implements DragRenderer {
         double angle= Math.atan2(dy, dx) * 180 / Math.PI;
         double radius= Math.sqrt(dy*dy+dx*dx);
         
-        int width= parent.getWidth();
-        int xOffset= 0;  // note the inconsistency with getMouseDragEvent--yuk!!!
+        //int width= parent.getWidth();
+        //int xOffset= 0;  // note the inconsistency with getMouseDragEvent--yuk!!!
         
         if (radius>4) {
             
