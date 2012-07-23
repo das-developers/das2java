@@ -27,6 +27,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DefaultDatumFormatter;
 import org.das2.datum.format.FormatStringFormatter;
+import org.das2.util.DasMath;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
 
@@ -2145,6 +2146,21 @@ public class DataSetUtil {
         props.put( "CONTEXT_"+idx, cds );
     }
 
+    /**
+     * round the range to a range within 1% of original range, to improve readability.
+     * @param cds
+     * @return
+     */
+    private static QDataSet contextRound( QDataSet cds ) {
+        if ( cds.rank()==0 ) throw new IllegalArgumentException("rank 1 expected");
+        DatumRange w= DataSetUtil.asDatumRange( cds, true );
+        double res= DasMath.roundNSignificantDigits( w.width().value() / 1000, 3 ) * 1000;
+        double d1= Math.floor( cds.value(0) / res ) * res;
+        double d2= Math.ceil( cds.value(0) / res ) * res;
+        return DataSetUtil.asDataSet( DatumRange.newDatumRange( d1, d2, w.getUnits() ) );
+
+    }
+
     public static String contextAsString( QDataSet ds ) {
         StringBuilder result= new StringBuilder();
         QDataSet cds= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
@@ -2152,7 +2168,12 @@ public class DataSetUtil {
         while ( cds!=null ) {
             if ( cds.rank()>0 ) {
                 if ( cds.rank()==1 && cds.property(QDataSet.BINS_0)!=null ) {
-                    result.append( DataSetUtil.format(cds,false) );
+                    if ( cds.value(1)-cds.value(0) > 0 ) {
+                        QDataSet fcds= contextRound( cds );
+                        result.append( DataSetUtil.format(fcds,false) );
+                    } else {
+                        result.append( DataSetUtil.format(cds,false) );
+                    }
                 } else {
                     QDataSet extent= Ops.extent(cds);
                     if ( extent.value(1)==extent.value(0) ) {
