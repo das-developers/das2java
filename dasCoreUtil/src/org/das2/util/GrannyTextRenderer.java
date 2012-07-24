@@ -23,11 +23,16 @@
 
 package org.das2.util;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Stack;
-import java.util.Vector;
 
 /**
  * Renders Grandle and Nystrom strings, like "E=mc!e2"
@@ -243,7 +248,7 @@ public class GrannyTextRenderer {
      */
     private void draw(Graphics ig, Font baseFont, float ix, float iy, boolean draw ) {
         Graphics2D g = null;
-        Rectangle bounds = null;
+        Rectangle boundsl = null;
         
         if (draw) {
             g = (Graphics2D)ig.create();
@@ -264,7 +269,7 @@ public class GrannyTextRenderer {
         final int SUB_A = 11;
         final int SUB_B = 12;
         
-        class TextPosition {
+        final class TextPosition {
             public TextPosition(int sub, int ei, float x, float y) {
                 this.sub = sub; this.ei = ei; this.x = x; this.y = y; }
             public TextPosition(TextPosition p) {
@@ -297,16 +302,16 @@ public class GrannyTextRenderer {
         }
         
         if (!draw) {
-            bounds= new Rectangle((int)ix,(int)iy,0,0);
+            boundsl= new Rectangle((int)ix,(int)iy,0,0);
         }
         
         Stack saveStack = new Stack();
         
         for (int i = 0; i < tokens.length; i++) {
-            String str = tokens[i];
-            if ( !str.equals("!!") && str.charAt(0) == '!') {
-                if ( str.length()==1 ) break;
-                switch (str.charAt(1)) {
+            String strl = tokens[i];
+            if ( !strl.equals("!!") && strl.charAt(0) == '!') {
+                if ( strl.length()==1 ) break;
+                switch (strl.charAt(1)) {
                     case 'A':
                     case 'a':
                         current.sub= SUB_A;
@@ -334,8 +339,8 @@ public class GrannyTextRenderer {
                         }
                         saveStack.clear();
                         if (!draw) {
-                            lineBounds.add(bounds);
-                            bounds = new Rectangle((int)current.x, (int)current.y, 0, 0);
+                            lineBounds.add(boundsl);
+                            boundsl = new Rectangle((int)current.x, (int)current.y, 0, 0);
                         }
                         break;
                     case 'U':
@@ -426,24 +431,24 @@ public class GrannyTextRenderer {
                         break;
                     default:break;
                 }
-                if ( str.equals("!!") ) str= "!";
+                if ( strl.equals("!!") ) strl= "!";
                 if (draw) {
                     g.setFont(font);
-                    g.drawString(str, current.x, y);
-                    current.x += g.getFontMetrics(font).stringWidth(str);
+                    g.drawString(strl, current.x, y);
+                    current.x += g.getFontMetrics(font).stringWidth(strl);
                     //bounds.translate((int)ix,(int)iy);
                     //g.draw(bounds);  //useful for debugging
                     //g.drawLine((int)ix,(int)iy,(int)ix+4,(int)iy);
                 } else {
                     FontMetrics fm= ig.getFontMetrics(font);
-                    bounds.add(current.x, y+fm.getDescent());
-                    bounds.add(current.x+fm.stringWidth(str),y-fm.getAscent() ); // removed -5.0 pixels
-                    current.x += ig.getFontMetrics(font).stringWidth(str);
+                    boundsl.add(current.x, y+fm.getDescent());
+                    boundsl.add(current.x+fm.stringWidth(strl),y-fm.getAscent() ); // removed -5.0 pixels
+                    current.x += ig.getFontMetrics(font).stringWidth(strl);
                 }
             }
         } // for (int i = 0; i < tokens.length; i++)
         if (!draw) {
-            lineBounds.add(bounds);
+            lineBounds.add(boundsl);
         }
         if (draw) {
             g.dispose();
@@ -451,10 +456,9 @@ public class GrannyTextRenderer {
     }
     
     private static String[] buildTokenArray(String str) {
-        Vector vector = new Vector();
+        java.util.List<String> vector = new ArrayList();
         int begin;
         int end = 0;
-        int index = 0;
         while(end < str.length()) {
             begin = end;
             if (str.charAt(begin) == '!') {
@@ -466,19 +470,18 @@ public class GrannyTextRenderer {
             }
             vector.add(str.substring(begin, end));
         }
-        
-        String[] list = new String[vector.size()];
-        
-        vector.copyInto((Object[])list);
+
+        String[] list= vector.toArray( new String[vector.size()] );
         
         return list;
     }
     
+    @Override
     public String toString() {
         maybeInitBounds();
-        StringBuffer buffer = new StringBuffer(getClass().getName());
+        StringBuilder buffer = new StringBuilder(getClass().getName());
         buffer.append(": ").append(str).append(", ");
-        buffer.append("bounds: "+bounds).append(", ").append("lineBounds:"+lineBounds).append(", ");
+        buffer.append("bounds: ").append(bounds).append(", ").append("lineBounds:").append(lineBounds).append(", ");
         return buffer.toString();
     }
     
