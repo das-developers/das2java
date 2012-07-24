@@ -960,10 +960,10 @@ public class DasPlot extends DasCanvasComponent {
                 // check mementos before drawing.  They should all be the same.  See https://sourceforge.net/tracker/index.php?func=detail&aid=3075655&group_id=199733&atid=970682
                 Renderer[] rends= getRenderers();
 
-                for ( int i=0; i<rends.length; i++ ) {
-                    System.err.println( "renderer #"+i+": " +rends[i] + " ds="+rends[i].getDataSet() );
+                //for ( int i=0; i<rends.length; i++ ) {
+                //    System.err.println( "renderer #"+i+": " +rends[i] + " ds="+rends[i].getDataSet() );
+                //}
 
-                }
                 if ( rends.length>0 ) {
                     Memento xmem= getXAxis().getMemento();
                     Memento ymem= getYAxis().getMemento();
