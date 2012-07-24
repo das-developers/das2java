@@ -161,6 +161,19 @@ public class DatumRangeUtil {
         }
     }
 
+    private static double getDouble( String val, double deft ) {
+        if ( val==null ) {
+            if ( deft!=-99 ) return deft; else throw new IllegalArgumentException("bad digit");
+        }
+        int n= val.length()-1;
+        if ( Character.isLetter( val.charAt(n) ) ) {
+            return Double.parseDouble(val.substring(0,n));
+        } else {
+            return Double.parseDouble(val);
+        }
+    }
+
+
     private static Pattern time1, time2, time3, time4, time5;
     static {
         String d= "[-:]"; // delim
@@ -220,7 +233,8 @@ public class DatumRangeUtil {
         return null;
     }
 
-    public static final String iso8601duration= "P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?";
+    private static final String digit= "\\d?\\.?\\d+";
+    public static final String iso8601duration= "P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?("+digit+"S)?)?";
     public static final Pattern iso8601DurationPattern= Pattern.compile(iso8601duration);
 
     /**
@@ -251,7 +265,10 @@ public class DatumRangeUtil {
         if ( d1 ) {
             m= iso8601DurationPattern.matcher(parts[0]);
             if ( m.matches() ) {
-                digits1= new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ), getInt( m.group(7), 0 ) };
+                double dsec=getDouble( m.group(7),0 );
+                int sec= (int)dsec;
+                int nanosec= (int)( ( dsec - sec ) * 1e9 );
+                digits1= new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ), sec, nanosec };
             }
         } else {
             digits1= parseISO8601( parts[0] );
@@ -260,7 +277,10 @@ public class DatumRangeUtil {
         if ( d2 ) {
             m= iso8601DurationPattern.matcher(parts[1]);
             if ( m.matches() ) {
-                digits2= new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ), getInt( m.group(7), 0 ) };
+                double dsec=getDouble( m.group(7),0 );
+                int sec= (int)dsec;
+                int nanosec= (int)( ( dsec - sec ) * 1e9 );
+                digits2= new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ),  sec, nanosec };
             }
         } else {
             digits2= parseISO8601( parts[1] );
