@@ -537,7 +537,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void setDatumRange(DatumRange dr) {
         //System.err.println("setDatumRange("+dr+")");
-        if ( !rangeIsAcceptable(dr) ) {
+        if ( !rangeIsAcceptable(dr) ) { 
             System.err.println( "invalid range ignored"+dr );
             return;
         }
