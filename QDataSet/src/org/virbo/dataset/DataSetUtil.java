@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
@@ -2147,21 +2148,32 @@ public class DataSetUtil {
     }
 
     /**
-     * round the range to a range within 1% of original range, to improve readability.
-     * @param cds
-     * @return
+     * provide the context as a string, for example to label a plot.  The dataset CONTEXT_i properties are inspected,
+     * each of which must be one of:
+     * <li>rank 0 dataset
+     * <li>rank 1 bins dataset
+     * <li>rank 1 bundle
+     * Here a comma is used as the delimiter.
+     *
+     * @param ds the dataset containing context properties which are rank 0 datums or rank 1 datum ranges.
+     * @return a string describing the context.
      */
-    private static QDataSet contextRound( QDataSet cds ) {
-        if ( cds.rank()==0 ) throw new IllegalArgumentException("rank 1 expected");
-        DatumRange w= DataSetUtil.asDatumRange( cds, true );
-        double res= DasMath.roundNSignificantDigits( w.width().value() / 1000, 3 ) * 1000;
-        double d1= Math.floor( cds.value(0) / res ) * res;
-        double d2= Math.ceil( cds.value(0) / res ) * res;
-        return DataSetUtil.asDataSet( DatumRange.newDatumRange( d1, d2, w.getUnits() ) );
-
+    public static String contextAsString( QDataSet ds ) {
+        return contextAsString( ds, ", " );
     }
 
-    public static String contextAsString( QDataSet ds ) {
+    /**
+     * provide the context as a string, for example to label a plot.  The dataset CONTEXT_i properties are inspected,
+     * each of which must be one of:
+     * <li>rank 0 dataset
+     * <li>rank 1 bins dataset
+     * <li>rank 1 bundle
+     *
+     * @param ds the dataset containing context properties which are rank 0 datums or rank 1 datum ranges.
+     * @param the delimiter between context elements, such as "," or "!c"
+     * @return a string describing the context.
+     */
+    public static String contextAsString( QDataSet ds, String delim ) {
         StringBuilder result= new StringBuilder();
         QDataSet cds= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
         int idx=0;
@@ -2169,7 +2181,7 @@ public class DataSetUtil {
             if ( cds.rank()>0 ) {
                 if ( cds.rank()==1 && cds.property(QDataSet.BINS_0)!=null ) {
                     if ( cds.value(1)-cds.value(0) > 0 ) {
-                        QDataSet fcds= contextRound( cds );
+                        QDataSet fcds= DataSetUtil.asDataSet( DatumRangeUtil.roundSections( DataSetUtil.asDatumRange( cds, true ), 1000 ) );
                         result.append( DataSetUtil.format(fcds,false) );
                     } else {
                         result.append( DataSetUtil.format(cds,false) );
@@ -2187,7 +2199,7 @@ public class DataSetUtil {
             }
             idx++;
             cds= (QDataSet) ds.property( "CONTEXT_"+idx );
-            if ( cds!=null ) result.append(", ");
+            if ( cds!=null ) result.append(delim);
         }
         return result.toString();
     }
