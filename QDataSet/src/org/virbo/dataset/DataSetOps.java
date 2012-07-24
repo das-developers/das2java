@@ -1378,10 +1378,12 @@ public class DataSetOps {
      * if the command is not recognized, then it is ignored.  We should probably change this,
      * but the change should be at a major version change in case it breaks things.
      * @param c
-     * @param fillDs
+     * @param fillDs The dataset loaded from the data source controller, with initial filters (like fill) applied.
      * @throws ParseException when the string cannot be parsed
      * @throws Exception when a function cannot be processed (e.g. index out of bounds)
-     * @return
+     * @return the dataset after the process string is applied.
+     * @see http://autoplot.org/developer.dataset.filters
+     * @see http://autoplot.org/developer.panel_rank_reduction
      */
     public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) throws Exception {
         int i=1;
@@ -1392,6 +1394,17 @@ public class DataSetOps {
             while ( s.hasNext() ) {
                 String cmd= s.next();
                 i= c.indexOf(cmd,i);
+
+                if ( false ) { // this has proved useful for debugging.
+                    System.err.println( "---------------------" );
+                    System.err.println( fillDs );
+                    System.err.println( "dep0=" + fillDs.property(QDataSet.DEPEND_0) );
+                    System.err.println( "bundle0=" + fillDs.property(QDataSet.BUNDLE_0) );
+                    System.err.println( "dep1=" + fillDs.property(QDataSet.DEPEND_1) );
+                    System.err.println( "bundle1=" + fillDs.property(QDataSet.BUNDLE_1) );
+                    System.err.println( "  the next command is "+ cmd );
+                }
+
                 if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
                     Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
                     List<Object> args= new ArrayList();
