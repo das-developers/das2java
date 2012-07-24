@@ -1428,4 +1428,28 @@ public class DatumRangeUtil {
         
     }
 
+    /**
+     * round to a nice interval with very roughly n divisions.  For example,
+     * <pre>
+     *   -0.048094730687625806 to 0.047568, 100  -> -0.048 to 0.048
+     *   2012-04-18 0:00:00 to 23:59:40, 24 -> 2012-04-18 
+     * </pre>
+     * @param dr
+     * @param n
+     * @return dr when its width is zero, or a rounded range.
+     */
+    public static DatumRange roundSections( DatumRange dr, int n ) {
+        if ( dr.width().value()==0 ) {
+            return dr;
+        }
+        DomainDivider dd= DomainDividerUtil.getDomainDivider( dr.min(), dr.max() );
+        while ( dd.boundaryCount( dr.min(), dr.max() ) > n ) {
+            dd= dd.coarserDivider(false);
+        }
+        while ( dd.boundaryCount( dr.min(), dr.max() ) < n ) {
+            dd= dd.finerDivider(false);
+        }
+        return union( dd.rangeContaining( dr.min() ), dd.rangeContaining( dr.max() ) );
+    }
+
 }
