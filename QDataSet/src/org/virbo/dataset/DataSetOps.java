@@ -1460,6 +1460,15 @@ public class DataSetOps {
                     fillDs= fillDs.trim(d0,d1);
                 } else if ( cmd.startsWith("|collapse") && cmd.length()>9 ) {
                     int dim= cmd.charAt(9)-'0';
+                    if ( s.hasNextInt() ) {
+                        if ( dim==0 ) {
+                            int st= s.nextInt();
+                            int en= s.nextInt();
+                            fillDs= fillDs.trim(st,en);
+                        } else {
+                            throw new IllegalArgumentException("trim is only allowed with collapse0");
+                        }
+                    }
                     fillDs= Ops.reduceMean(fillDs,dim);
                 } else if ( cmd.equals("|autoHistogram") ) {
                     fillDs= Ops.autoHistogram(fillDs);
