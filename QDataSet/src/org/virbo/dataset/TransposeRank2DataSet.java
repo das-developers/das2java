@@ -36,13 +36,29 @@ public class TransposeRank2DataSet extends AbstractDataSet {
     @Override
     public Object property(String name) {
         Object v= properties.get(name);
-        return ( v==null ) ? source.property(name) : v;
+        if ( v!=null ) {
+            return v;
+        } else {
+            if ( DataSetUtil.isInheritedProperty(name) ) {
+                return source.property(name);
+            } else {
+                return null;
+            }
+        }
     }
 
     @Override
     public Object property(String name, int i) {
         Object v= properties.get(name);
-        return ( v==null ) ? source.property(name,i) : v;
+        if ( v!=null ) {
+            return v;
+        } else {
+            if ( DataSetUtil.isInheritedProperty(name) ) {
+                return source.property(name,i);
+            } else {
+                return null;
+            }
+        }
     }
 
     @Override
