@@ -433,7 +433,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             public void actionPerformed(ActionEvent e) {
                 String command = e.getActionCommand();
-                DasLogger.getLogger(DasLogger.GUI_LOG).fine("event " + command);
+                DasLogger.getLogger(DasLogger.GUI_LOG).log(Level.FINE, "event {0}", command);
                 if (command.equals(SCAN_PREVIOUS_LABEL)) {
                     if ( scanRange==null || scanRange.intersects(getDatumRange().previous()) ) scanPrevious();
                 } else if (command.equals(SCAN_NEXT_LABEL)) {
@@ -537,6 +537,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void setDatumRange(DatumRange dr) {
         //System.err.println("setDatumRange("+dr+")");
+        if ( !rangeIsAcceptable(dr) ) {
+            System.err.println( "invalid range ignored"+dr );
+            return;
+        }
         if (getUnits().isConvertableTo(dr.getUnits())) {
             this.setDataRange(dr.min(), dr.max());
         } else {
@@ -572,10 +576,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         DatumRange newRange = new DatumRange(minimum, maximum);
-        logger.fine("enter dasAxis.setDataRange( " + newRange + " )");
+        logger.log(Level.FINE, "enter dasAxis.setDataRange( {0} )", newRange);
 
         if (!rangeIsAcceptable(newRange)) {
-            logger.warning("invalid range ignored");
+            logger.log(Level.WARNING, "invalid range ignored: {0}", newRange);
             return;
         }
 
@@ -820,7 +824,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (dasPlot != null) {
                 dasPlot.invalidateCacheImage();
             }
-            logger.finest("replaceRange(" + range + ")");
+            logger.log(Level.FINEST, "replaceRange({0})", range);
             dataRange.resetRange(range);
         } else {
             dataRange.setRange(range);
@@ -1038,7 +1042,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if ( !u.isConvertableTo(tickVDV.getUnits()) ) {
             return; // transitional state
         }
-        double[] tickV = tickVDV.toDoubleArray(u);
+        double[] ltickV = tickVDV.toDoubleArray(u);
         
         JoinDataSet ltcaData= new JoinDataSet(2);
         ArrayDataSet ex= ArrayDataSet.copy( ltcaFunction.exampleInput() );
@@ -1059,26 +1063,26 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         uc= UnitsConverter.getConverter( u, tcaUnits );
 
         DatumRange context= getDatumRange(); // this may not contain all the ticks.
-        context= DatumRangeUtil.union( context, u.createDatum( uc.convert(tickV[0]) ) );
-        context= DatumRangeUtil.union( context, u.createDatum( uc.convert(tickV[tickV.length-1]) ) );
+        context= DatumRangeUtil.union( context, u.createDatum( uc.convert(ltickV[0]) ) );
+        context= DatumRangeUtil.union( context, u.createDatum( uc.convert(ltickV[ltickV.length-1]) ) );
         ex.putProperty( QDataSet.CONTEXT_0, 0, org.virbo.dataset.DataSetUtil.asDataSet( context ) );
         QDataSet dx= org.virbo.dataset.DataSetUtil.asDataSet( getDatumRange().width().divide( getColumn().getWidth() ) );
         ex.putProperty( QDataSet.DELTA_PLUS, 0, dx );
         ex.putProperty( QDataSet.DELTA_MINUS, 0, dx );
 
-        DDataSet dep0= DDataSet.createRank1(tickV.length);
+        DDataSet dep0= DDataSet.createRank1(ltickV.length);
         dep0.putProperty(QDataSet.UNITS,u);
 
         QDataSet outDescriptor=null;
 
-        for ( int i=0; i<tickV.length; i++ ) {
-            ex.putValue( 0,uc.convert(tickV[i]) );
+        for ( int i=0; i<ltickV.length; i++ ) {
+            ex.putValue( 0,uc.convert(ltickV[i]) );
             QDataSet ticks= ltcaFunction.value(ex);
             if ( outDescriptor==null ) {
                 outDescriptor= (QDataSet) ticks.property(QDataSet.BUNDLE_0);
             }
             ltcaData.join(ticks);
-            dep0.putValue(i,tickV[i]);
+            dep0.putValue(i,ltickV[i]);
         }
         ltcaData.putProperty( QDataSet.BUNDLE_1, outDescriptor );
         ltcaData.putProperty( QDataSet.DEPEND_0, dep0 );
@@ -1621,6 +1625,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 //    }
 
     /** paints the axis component.  The tickV's and bounds should be calculated at this point */
+    @Override
     protected void paintComponent(Graphics graphics) {
         logger.finest("enter DasAxis.paintComponent");
 
@@ -1641,7 +1646,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         graphics.setClip(null);
         }
          */
-        logger.finest("DasAxis clip=" + graphics.getClip() + " @ " + getX() + "," + getY());
+        logger.log(Level.FINEST, "DasAxis clip={0} @ {1},{2}", new Object[]{graphics.getClip(), getX(), getY()});
 //  Here's an effective way to debug axis bounds:
 //        if ( "axis_0".equals( getDasName() ) ) {
 //            System.err.println("DasAxis clip=" + graphics.getClip() + " @ " + getX() + "," + getY());
@@ -2233,6 +2238,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return hash;
         }
 
+        @Override
         public boolean equals(Object o) {
             if ( o==null || !( o instanceof Memento) ) {
                 return false;
@@ -2247,6 +2253,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
 
+        @Override
         public String toString() {
             return (log ? "log " : "") + range.toString() + " (" + ( DatumUtil.asOrderOneUnits(range.width()).toString() ) + ") " + (dmax - dmin) + " pixels @ " + dmin;
         }
@@ -2346,9 +2353,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** TODO
-     * @return
+    /** 
+     * @return a copy of the axis, also cloning the dataRange that backs the axis.
      */
+    @Override
     public Object clone() {
         try {
             DasAxis result = (DasAxis) super.clone();
@@ -2420,7 +2428,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** TODO */
+    /** 
+     * reset bounds (and unused transform), invalidate the tickV, etc.
+     */
+    @Override
     public void resize() {
         resetTransform();
         if ( getFont()==null ) {
@@ -3063,23 +3074,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 frames++;
             }
 
-            logger.fine("animation frames/sec= " + (1000. * frames / transitionTime));
+            logger.log(Level.FINE, "animation frames/sec= {0}", (1000. * frames / transitionTime));
             setDrawTca(drawTca0);
 
             this.dataRange = dataRange0;
         }
     }
 
-    /** TODO */
+    /** 
+     * reset the transform and update the tick locations.
+     */
+    @Override
     protected void updateImmediately() {
         super.updateImmediately();
-        logger.finer("updateImmadiately" + getDatumRange() + " " + isLog());
+        logger.log(Level.FINER, "updateImmadiately{0} {1}", new Object[]{getDatumRange(), isLog()});
         resetTransform();
         updateTickV();
     }
 
-    /** TODO
-     * @return
+    /** 
      * @deprecated use isTickLabelsVisible
      */
     public boolean areTickLabelsVisible() {
@@ -3177,6 +3190,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @return
      */
+    @Override
     public Shape getActiveRegion() {
         Rectangle primaryBounds = primaryInputPanel.getBounds();
         primaryBounds.translate(getX(), getY());
@@ -3199,21 +3213,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * the DasPlot between them should get the events, and the DasPlot does
      * not have a simple rectangular boundary.
      */
+    @Override
     public void addMouseWheelListener(MouseWheelListener l) {
         maybeInitializeInputPanels();
         primaryInputPanel.addMouseWheelListener(l);
         secondaryInputPanel.addMouseWheelListener(l);
     }
 
+    @Override
     public void removeMouseWheelListener(MouseWheelListener l) {
         maybeInitializeInputPanels();
         primaryInputPanel.removeMouseWheelListener(l);
         secondaryInputPanel.removeMouseWheelListener(l);
     }
 
-    /** TODO
+    /** TODO: where are these used?
      * @param l
      */
+    @Override
     public void addMouseListener(MouseListener l) {
         maybeInitializeInputPanels();
         primaryInputPanel.addMouseListener(l);
@@ -3223,6 +3240,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @param l
      */
+    @Override
     public void removeMouseListener(MouseListener l) {
         maybeInitializeInputPanels();
         primaryInputPanel.removeMouseListener(l);
@@ -3232,6 +3250,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @param l
      */
+    @Override
     public void addMouseMotionListener(MouseMotionListener l) {
         maybeInitializeInputPanels();
         primaryInputPanel.addMouseMotionListener(l);
@@ -3241,6 +3260,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO
      * @param l
      */
+    @Override
     public void removeMouseMotionListener(MouseMotionListener l) {
         maybeInitializeInputPanels();
         primaryInputPanel.removeMouseMotionListener(l);
@@ -3349,6 +3369,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
 
+    @Override
     public String toString() {
         String retValue;
         retValue = super.toString() + "(" + getUnits() + ")";
@@ -3605,6 +3626,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         /** TODO
          * @param g
          */
+        @Override
         protected void paintComponent(Graphics g) {
             if ( getCanvas().isPrintingThread() ) return;
             if (hover || pressed) {
@@ -3622,6 +3644,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         /** TODO
          * @param g
          */
+        @Override
         protected void paintBorder(Graphics g) {
             if (hover || pressed) {
                 super.paintBorder(g);
