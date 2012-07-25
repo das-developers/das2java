@@ -1406,6 +1406,7 @@ public class DataSetOps {
                 }
 
                 if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
+                    int[] dims= DataSetUtil.qubeDims(fillDs);
                     Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
                     List<Object> args= new ArrayList();
                     while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
@@ -1413,6 +1414,16 @@ public class DataSetOps {
                             args.add( s.nextInt() );
                         } else {
                             args.add( s.next() );
+                        }
+                    }
+                    if ( dims!=null ) {
+                        for ( int j=0; j<dims.length; j++ ) {
+                            if ( args.get(j) instanceof Integer ) {
+                                int dim= ((Integer)args.get(j) );
+                                if ( dim<0 ) dim=0;
+                                if ( dim>=dims[j] ) dim= dims[j]-1;
+                                args.set(j,dim);
+                            }
                         }
                     }
                     fillDs= Ops.slices( fillDs, args.toArray() );
