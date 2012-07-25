@@ -300,7 +300,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         parent.postMessage( this, "dataset x units are \""+SemanticOps.getUnits(xds)+"\" while xaxis is \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
                     }
                     if ( ! SemanticOps.getUnits(zds).isConvertableTo(colorBar.getUnits()) ) {
-                        parent.postMessage( this, "dataset z units are \""+SemanticOps.getUnits(zds)+"\" while xaxis is \"" + colorBar.getUnits() + "\"", DasPlot.INFO, null, null );
+                        parent.postMessage( this, "dataset z units are \""+SemanticOps.getUnits(zds)+"\" while zaxis is \"" + colorBar.getUnits() + "\"", DasPlot.INFO, null, null );
                     }
                 }
                 
