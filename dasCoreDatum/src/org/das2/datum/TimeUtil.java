@@ -951,7 +951,9 @@ public final class TimeUtil {
                         break;
                     }
                 }
-                if (want[MONTH]) throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
+                if (want[MONTH]) {
+                    throw new java.text.ParseException( "Error at token '"+tok[i]+"' in '"+s+"'", 0 );
+                }
                 continue;
             }
             
