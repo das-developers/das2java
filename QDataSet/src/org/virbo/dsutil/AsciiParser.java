@@ -1131,6 +1131,7 @@ public class AsciiParser {
                 return false;
             }
 
+            Exception firstException= null;
             for (j = 0; j < fieldCount; j++) {
                 tryCount++;
                 if (doParseField[j]) {
@@ -1140,18 +1141,20 @@ public class AsciiParser {
                         if ( builder!=null ) builder.putValue(irec, j, d );
                         okayCount++;
                     } catch (ParseException e) {
-                        if ( showException ) {
-                            e.printStackTrace();
-                            showException= false;
-                        }
+                        if ( firstException==null ) firstException= e;
                         failCount++;
                         if ( builder!=null ) builder.putValue(irec, j, -1e31 ); //TODO
                     } catch (NumberFormatException e) {
+                        if ( firstException==null ) firstException= e;
                         failCount++;
                         if ( builder!=null ) builder.putValue(irec, j, -1e31 ); //TODO
                     }
                 }
             }
+            if ( showException && firstException!=null && failCount>0 && failCount<fieldCount ) {
+                firstException.printStackTrace();
+            }
+            
             // the record is parsable if there are two or more parsable fields.
             // it is not parsable if no fields can be parsed.
             return ( failCount < tryCount ) && ( okayCount > 1 || failCount < 3 );
