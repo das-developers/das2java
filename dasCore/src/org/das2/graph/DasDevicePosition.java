@@ -137,6 +137,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * Note px is acceptable, but pt is proper. 
      * Ems are rounded to the nearest hundredth.
      * Percents are returned as normal (0-1) and rounded to the nearest thousandth.
+     * @see formatFormatStr
      */
     public static double[] parseFormatStr( String s ) throws ParseException {
         double[] result= new double[] { 0, 0, 0 };
@@ -175,7 +176,22 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         result[1]= Math.round(result[1]*10)/10.;
         return result;
     }
-    
+
+    /**
+     * like parseFormatStr.
+     * @param arr
+     * @return String
+     * @see parseFormatStr
+     */
+    public static String formatFormatStr( double[] arr ) {
+        StringBuffer buf= new StringBuffer();
+        if ( arr[0]!=0 ) buf.append( String.format( Locale.US, "%.2f%%", arr[0]*100 ) );
+        if ( arr[1]!=0 ) buf.append( String.format(Locale.US, "%+.1fem", arr[1] ) );
+        if ( arr[2]!=0 ) buf.append( String.format(Locale.US, "%+dpt", arr[2] ) );
+        return buf.toString();
+    }
+
+
     public static void parseLayoutStr( DasDevicePosition pos, String spec ) throws ParseException {
         String[] ss= spec.split(",");
         double[] pmin= parseFormatStr( ss[0] );
@@ -206,7 +222,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         if ( buf.length()==0 ) return "0%";
         return buf.toString();
     }
-    
+
     public DasDevicePosition(DasCanvas parent, double minimum, double maximum, boolean width) {
         this( parent, width, null, minimum, maximum, 0., 0., 0, 0 );
     }
