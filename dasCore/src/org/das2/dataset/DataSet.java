@@ -95,7 +95,12 @@ public interface DataSet {
     final static String PROPERTY_Y_LABEL="yLabel";
     
     final static String PROPERTY_Z_LABEL="zLabel";
-    
+
+    /**
+     * finally, this data model is done with the addition of title.
+     */
+    final static String PROPERTY_TITLE="title";
+
     /**
      * Boolean assuring that the dataset is monotonic in X.  This allows 
      * some optimizations to be made.
