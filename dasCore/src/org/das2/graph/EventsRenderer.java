@@ -23,6 +23,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Rectangle2D;
 import javax.swing.ImageIcon;
 import org.das2.datum.Units;
 import org.das2.util.GrannyTextRenderer;
@@ -36,6 +37,7 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 
 /**
@@ -256,7 +258,7 @@ public class EventsRenderer extends Renderer {
         double tlim= 1e-31;
         RankZeroDataSet cad= org.virbo.dataset.DataSetUtil.guessCadenceNew( dep0, null );
         if ( cad!=null ) {
-            tlim= cad.value()/1000;
+            tlim= cad.value()/100;
         }
 
         int count=0;
@@ -267,9 +269,9 @@ public class EventsRenderer extends Renderer {
         v.putValue( 3,vds.value(0,3) );
 
         for ( int i=1; i<vds.length(); i++ ) {
-            if ( Math.abs( vds.value(i,0)-vds.value(i-1,1) ) > tlim       // they don't connect
-                    || vds.value(i,3)!=vds.value(i-1,3)                   // the message changed
-                    || Math.abs( vds.value(i,2)-vds.value(i-1,2) ) > tlim // the color changed
+            if ( Math.abs( vds.value(i,0)-vds.value(i-1,1) ) > tlim        // they don't connect
+                    || vds.value(i,3)!=vds.value(i-1,3)                    // the message changed
+                    || Math.abs( vds.value(i,2)-vds.value(i-1,2) ) > 1e-31 // the color changed
                     ) {
                 build.putValues( -1, v, 4 );
                 build.nextRecord();
@@ -461,7 +463,8 @@ public class EventsRenderer extends Renderer {
 
                 for ( int i=ivds0; i<ivds1; i++ ) {
 
-                    if ( i%10==0 && System.currentTimeMillis()-t0 > 300 ) {
+                    long dt= System.currentTimeMillis()-t0;
+                    if ( i%10==0 && dt > 300 ) {
                         parent.postMessage( this, "renderer ran out of time, dataset truncated", DasPlot.WARNING, null, null);
                         break;
                     }
@@ -469,8 +472,6 @@ public class EventsRenderer extends Renderer {
                     int ixmin= (int)xAxis.transform( xmins.value(i),xunits);
                     int ixmax= (int)xAxis.transform( xmaxs.value(i),xunits);
 
-                    // TODO: coalesce bars. see ftp://papco@stevens.lanl.gov/rbsp/rbspa/mageis/level1/pre-launch/rbspa_pre_ect-mageisLOW-ns-L1_20130214_v1.0.0.cdf?Inst_Mode
-                    // this has thousands of adjacent bars that together form a giant black mass that takes too long to draw
                     int iwidth= Math.max( ixmax- ixmin, 1 ); 
 
                     if ( lcolor!=null ) {
@@ -484,7 +485,7 @@ public class EventsRenderer extends Renderer {
                     
                     if ( column.getDMinimum() < ixmax || column.getDMaximum() > ixmin ) { // if any part is visible
                         if ( iwidth==0 ) iwidth=1;
-                        sa.append( new Rectangle( ixmin-2, row.getDMinimum(), iwidth+4, row.getHeight() ), false );
+                        if ( dt<100 ) sa.append( new Rectangle( ixmin-2, row.getDMinimum(), iwidth+4, row.getHeight() ), false );
                         g.fill( new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() ) );
                         int im= ixmin-column.getDMinimum();
                         int em0= im-1;
@@ -511,6 +512,12 @@ public class EventsRenderer extends Renderer {
                         }
                     }
                 }
+            }
+
+            long dt= System.currentTimeMillis()-t0;
+            if ( dt>100 ) {
+                sa= new GeneralPath();
+                sa.append( org.das2.graph.DasDevicePosition.toRectangle( row, column ), false );
             }
         }
         g.dispose();
