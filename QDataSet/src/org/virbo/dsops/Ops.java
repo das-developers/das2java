@@ -1606,7 +1606,7 @@ public class Ops {
         } else {
             DDataSet result = (DDataSet)DDataSet.copy(ds1);
             if ( ds2.rank()==0 && ds1.rank()==1 ) {
-                DDataSet t= DDataSet.createRank1(1);
+                DDataSet t= DDataSet.createRank1(1); //TODO: better promote rank is found on add, etc.
                 t.putValue(ds2.value());
                 DataSetUtil.putProperties( DataSetUtil.getProperties(ds2), t );
                 ds2= t;
