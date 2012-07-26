@@ -1545,8 +1545,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
             for ( Painter p : getCanvas().topDecorators ) {
                 try {
+                    long t0= System.currentTimeMillis();
                     Graphics2D g22= (Graphics2D) g2.create(); // create a graphics object in case they reset colors, etc.
                     p.paint(g22);
+                    long dt= System.currentTimeMillis()-t0;
+                    if (  dt > 120 ) { // warn if painters are taking more than 120 ms to paint.
+                        System.err.println("painter is taking too long to paint ("+dt+" ms): "+p );
+                    }
                 } catch ( Exception ex ) {
                     g.drawString( "topDecorator causes exception: "+ex.toString(), 20, 20 );
                     ex.printStackTrace();
