@@ -289,11 +289,11 @@ public class DatumRangeUtil {
         if ( digits1==null || digits2==null ) return null;
         
         if ( d1 ) {
-            for ( int i=0; i<6; i++ ) digits1[i] = digits2[i] - digits1[i];
+            for ( int i=0; i<7; i++ ) digits1[i] = digits2[i] - digits1[i];
         }
 
         if ( d2 ) {
-            for ( int i=0; i<6; i++ ) digits2[i] = digits1[i] + digits2[i];
+            for ( int i=0; i<7; i++ ) digits2[i] = digits1[i] + digits2[i];
         }
 
         Datum t1= TimeUtil.toDatum(digits1);
