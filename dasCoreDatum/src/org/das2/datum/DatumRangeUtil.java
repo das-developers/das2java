@@ -178,7 +178,7 @@ public class DatumRangeUtil {
     static {
         String d= "[-:]"; // delim
         String i4= "(\\d\\d\\d\\d)";
-        String i3= "(\\d\\d\\d)";
+        String i3= "(\\d+)";
         String i2= "(\\d\\d)";
 
         String iso8601time= i4 + d + i2 + d + i2 + "T" + i2 + d + i2 + "((" + d + i2 + "(\\." + i3 + ")?)?)Z?" ;  // "2012-03-27T12:22:36.786Z"
@@ -208,7 +208,10 @@ public class DatumRangeUtil {
 
         m= time1.matcher(str);
         if ( m.matches() ) {
-            return new int[] { Integer.parseInt( m.group(1) ), Integer.parseInt( m.group(2) ), Integer.parseInt( m.group(3) ), getInt( m.group(4), 0 ), getInt( m.group(5), 0 ), getInt( m.group(8), 0), 1000000 * getInt( m.group(10), 0) };
+            String sf= m.group(10);
+            if ( sf!=null && sf.length()>9 ) throw new IllegalArgumentException("too many digits in nanoseconds part");
+            int nanos= sf==null ? 0 : ( Integer.parseInt(sf) * (int)Math.pow( 10, ( 9 - sf.length() ) ) );
+            return new int[] { Integer.parseInt( m.group(1) ), Integer.parseInt( m.group(2) ), Integer.parseInt( m.group(3) ), getInt( m.group(4), 0 ), getInt( m.group(5), 0 ), getInt( m.group(8), 0), nanos };
         } else {
             m= time2.matcher(str);
             if ( m.matches() ) {
