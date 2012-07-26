@@ -122,6 +122,7 @@ public class DataSetAdapter {
         Vector( VectorDataSet source ) {
             super();
             this.source= source;
+            properties.put( QDataSet.TITLE, source.getProperty( source.PROPERTY_TITLE ) );
             properties.put( QDataSet.UNITS, source.getYUnits() );
             properties.put( QDataSet.LABEL, source.getProperty( source.PROPERTY_Y_LABEL ) );
             properties.put( QDataSet.DEPEND_0, new XTagsDataSet( source ) );
@@ -175,6 +176,7 @@ public class DataSetAdapter {
             this.source= source;
             properties.put( QDataSet.UNITS, source.getZUnits() );
             properties.put( QDataSet.LABEL, source.getProperty( source.PROPERTY_Z_LABEL ) );
+            properties.put( QDataSet.TITLE, source.getProperty( source.PROPERTY_TITLE ) );
             QDataSet xtags= new XTagsDataSet( source );
             properties.put( QDataSet.DEPEND_0, xtags );
             QDataSet ytags= new YTagsDataSet( source, 0 );
@@ -211,6 +213,7 @@ public class DataSetAdapter {
             properties.put( QDataSet.JOIN_0, DDataSet.create( new int[0] ) );
             properties.put( QDataSet.UNITS, source.getZUnits() );
             properties.put( PROPERTY_SOURCE, source );
+            properties.put( QDataSet.TITLE, source.getProperty( source.PROPERTY_TITLE ) );
         }
 
         public int rank() {
