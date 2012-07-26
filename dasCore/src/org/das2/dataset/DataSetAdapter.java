@@ -74,6 +74,7 @@ public class DataSetAdapter {
             this.offset= offset;
             this.length= length;
             properties.put( QDataSet.UNITS, source.getXUnits() );
+            properties.put( QDataSet.LABEL, source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_LABEL ) );
             Object o= source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC );
             if ( o!=null ) properties.put( QDataSet.MONOTONIC, o );
         }
@@ -96,6 +97,7 @@ public class DataSetAdapter {
         XTagsDataSet( org.das2.dataset.DataSet source ) {
             this.source= source;
             properties.put( QDataSet.UNITS, source.getXUnits() );
+            properties.put( QDataSet.LABEL, source.getProperty( source.PROPERTY_X_LABEL ) );
             Object o= source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC );
             if ( o!=null ) properties.put( QDataSet.MONOTONIC, o );
         }
@@ -121,6 +123,7 @@ public class DataSetAdapter {
             super();
             this.source= source;
             properties.put( QDataSet.UNITS, source.getYUnits() );
+            properties.put( QDataSet.LABEL, source.getProperty( source.PROPERTY_Y_LABEL ) );
             properties.put( QDataSet.DEPEND_0, new XTagsDataSet( source ) );
             properties.put( PROPERTY_SOURCE, source );
         }
@@ -146,7 +149,8 @@ public class DataSetAdapter {
             this.source= source;
             this.table= table;
             properties.put( QDataSet.UNITS, source.getYUnits() );
-            
+            properties.put( QDataSet.LABEL, source.getProperty( source.PROPERTY_Y_LABEL ) );
+
         }
         public int rank() {
             return 1;
@@ -170,8 +174,11 @@ public class DataSetAdapter {
             
             this.source= source;
             properties.put( QDataSet.UNITS, source.getZUnits() );
-            properties.put( QDataSet.DEPEND_0, new XTagsDataSet( source ) );
-            properties.put( QDataSet.DEPEND_1, new YTagsDataSet( source, 0 ) ); 
+            properties.put( QDataSet.LABEL, source.getProperty( source.PROPERTY_Z_LABEL ) );
+            QDataSet xtags= new XTagsDataSet( source );
+            properties.put( QDataSet.DEPEND_0, xtags );
+            QDataSet ytags= new YTagsDataSet( source, 0 );
+            properties.put( QDataSet.DEPEND_1, ytags );
             properties.put( QDataSet.QUBE, Boolean.TRUE );
             properties.put( PROPERTY_SOURCE, source );
         }
