@@ -753,6 +753,21 @@ public class SimpleStreamFormatter {
             }
         }
 
+        for (int i = 0; i < 2; i++) {
+            QDataSet minmax= null;
+            if ( i==0 ) {
+                minmax= (QDataSet) ds.property( "DELTA_MINUS" );
+            } else {
+                minmax= (QDataSet) ds.property( "DELTA_PLUS" );
+            }
+            if ( minmax != null) {
+                PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, minmax, streamRank);
+                packetDescriptor.addPlane(planeDescriptor);
+                packetElement.appendChild(planeDescriptor.getDomElement());
+            } else {
+                break;
+            }
+        }
         if ( newBundle && SemanticOps.isBundle(ds) ) {
             for ( int i=0; i<ds.length(0); i++ ) {
                 QDataSet ds1= DataSetOps.unbundle(ds,i);
