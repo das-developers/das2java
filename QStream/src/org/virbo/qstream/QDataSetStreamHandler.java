@@ -347,6 +347,15 @@ public class QDataSetStreamHandler implements StreamHandler {
                 break;
             }
         }
+       for ( int i=0; i<2; i++ ) {
+           String pname= i==0 ? "DELTA_MINUS" : "DELTA_PLUS";
+           String s = (String) result.property( pname );
+           if (s != null) {
+                result.putProperty( pname, getDataSet(s) );
+            } else {
+                break;
+            }
+       }
        return result;
     }
 
@@ -498,7 +507,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     if (stype.equals("qdataset")) {
                         if (pname.equals(QDataSet.DELTA_MINUS) || pname.equals(QDataSet.DELTA_PLUS) ) {
                             System.err.println("skipping DELTA_MINUS and DELTA_PLUS because bug");
-                            continue;
+                            builder.putProperty( pname, svalue );
                         }
                         if ( pname.matches( "DEPEND_\\d+") ) {
                             String si= pname.substring(7);
