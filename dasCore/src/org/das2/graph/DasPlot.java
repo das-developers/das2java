@@ -1308,6 +1308,26 @@ public class DasPlot extends DasCanvasComponent {
         firePropertyChange( PROP_CONTEXT, old, context );
     }
 
+    public static final String PROP_DISPLAY_CONTEXT= "displayContext";
+
+    /**
+     * necessary place to put the range of the data actually displayed.  The context is the controller,
+     * and the displayContext closes the loop.  This is mostly here to provide legacy support to Autoplot which
+     * abused the context property as both a write and read, and note there's a small problem that displayed
+     * items may have different display contexts.  So this property should be used carefully, and generally
+     * when just one thing is visible.
+     */
+    DatumRange displayContext= null;
+
+    public DatumRange getDisplayContext() {
+        return displayContext;
+    }
+
+    public void setDisplayContext(DatumRange displayContext) {
+        DatumRange old= this.displayContext;
+        this.displayContext = displayContext;
+        firePropertyChange( PROP_DISPLAY_CONTEXT, old, displayContext );
+    }
 
 
     private List<Renderer> renderers = null;
