@@ -353,7 +353,7 @@ public class QDataSetStreamHandler implements StreamHandler {
            if (s != null) {
                 result.putProperty( pname, getDataSet(s) );
             } else {
-                break;
+                continue;
             }
        }
        return result;
