@@ -133,7 +133,7 @@ public class Slice1DataSet extends AbstractDataSet {
                    putProperty( prop, new Slice1DataSet( s, index, addContext ) );
                }
             } else {
-                break;
+                continue;
             }
         }
         
