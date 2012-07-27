@@ -123,6 +123,20 @@ public class Slice1DataSet extends AbstractDataSet {
             }
         }
 
+        for ( int i=0; i<2; i++ ) {
+           String prop= i==0 ? "DELTA_MINUS" : "DELTA_PLUS";
+           QDataSet s = (QDataSet) ds.property( prop );
+           if (s != null) {
+               if ( s.rank()<2 ) {
+                   putProperty( prop, s );
+               } else {
+                   putProperty( prop, new Slice1DataSet( s, index, addContext ) );
+               }
+            } else {
+                break;
+            }
+        }
+        
         putProperty( QDataSet.WEIGHTS_PLANE, null );
 
         DataSetUtil.copyDimensionProperties( ds, this );
