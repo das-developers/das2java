@@ -7,9 +7,6 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeListener;
-import java.text.ParseException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -92,10 +89,12 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         return result;
     }
     
+    @Override
     public Shape getActiveRegion() {
         return getMyBounds();
     }
     
+    @Override
     public void resize() {
         setBounds(getMyBounds());
     }
@@ -167,19 +166,21 @@ public class ColumnColumnConnector extends DasCanvasComponent {
 
     }
 
+    @Override
     protected void paintComponent(Graphics g1) {
 
         if ( ! topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() ) ) {
             //context plots
             // check to see if bottom panel is slice of top
-            DatumRange bottomContext= bottomPlot.getContext(); //TODO: this is not a closed-loop system.  We should indicate timerange found in dataset.
-            DatumRange topContext= topPlot.getContext();
+            DatumRange bottomContext= bottomPlot.getDisplayContext(); //TODO: this is not a closed-loop system.  We should indicate timerange found in dataset.
+            DatumRange topContext= topPlot.getDisplayContext();
 
             boolean topIsInterestingContext= topContext!=null && topContext.getUnits()!=Units.dimensionless;
 
             boolean useTop= bottomContext==null || ( bottomContext.getUnits()==Units.dimensionless && topIsInterestingContext );
 
             //problem: Autoplot uses "0 to 100" as the default context.
+            //problem: the context property is the setting for the axis, not the feedback.
 
             if ( !useTop ) {
                 boolean isContext= bottomContext!=null && topPlot.getXAxis().getUnits().isConvertableTo( bottomContext.getUnits() );
@@ -191,7 +192,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
                 }
             } else {
                 boolean isContext= topContext!=null && bottomPlot.getXAxis().getUnits().isConvertableTo( topContext.getUnits() );
-                bottomContext= topPlot.getContext();
+                bottomContext= topPlot.getDisplayContext();
                 if ( isContext ) {
                     Graphics2D g2=(Graphics2D)g1.create();
                     paintTopContext( g2, bottomContext );
@@ -315,6 +316,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
      * Adds a PropertyChangeListener to the listener list.
      * @param l The listener to add.
      */
+    @Override
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(l);
     }
@@ -323,6 +325,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
      * Removes a PropertyChangeListener from the listener list.
      * @param l The listener to remove.
      */
+    @Override
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(l);
     }
