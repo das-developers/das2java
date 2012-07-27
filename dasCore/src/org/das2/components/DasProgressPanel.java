@@ -80,6 +80,9 @@ public class DasProgressPanel implements ProgressMonitor {
     public static final String MSG_CANCEL_TASK = "cancel task";
     public static final String MSG_TASK_CANNOT_BE_CANCELED = "task cannot be cancelled";
 
+    private static final int PROGRESS_MESSAGE_LEN_LIMIT = 40;
+    private static final int LABEL_LEN_LIMIT = 34;
+
     private long taskStartedTime;
     private long currentTaskPosition;
     private long maximumTaskPosition;
@@ -137,8 +140,9 @@ public class DasProgressPanel implements ProgressMonitor {
     ImageIcon cancelGrey= new ImageIcon( DasProgressPanel.class.getResource("/images/cancelGrey14.png") );
     
     public DasProgressPanel(String label) {
-        
+
         componentsInitialized = false;
+        label= abbrevateStringEllipsis( label, LABEL_LEN_LIMIT);
         this.label = label;
 
         transferRateFormat = NumberFormatUtil.getDecimalFormat();
@@ -240,6 +244,7 @@ public class DasProgressPanel implements ProgressMonitor {
     }
 
     public void setLabel(String label) {
+        label= abbrevateStringEllipsis( label, LABEL_LEN_LIMIT);
         this.label = label;
         this.labelDirty = true;
         if (thePanel != null)
@@ -262,6 +267,7 @@ public class DasProgressPanel implements ProgressMonitor {
         taskLabel.setFont(new Font("Dialog", 1, 14));
         taskLabel.setHorizontalAlignment(JLabel.CENTER);
         taskLabel.setText(label);
+        System.err.println("taskLabel: "+label );
         taskLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
         progressMessageLabel = new JLabel() {
@@ -448,6 +454,21 @@ public class DasProgressPanel implements ProgressMonitor {
     }
 
     /**
+     * return a string of no longer than s long.  Currently this just takes a bit of the front and end, but
+     * a future version of this might look for the bit that's changing.
+     * @param s the unabbreviated string.  This is any length, and contains a message
+     * @param lenLimit
+     * @return a string of no more that lenLimit+2 chars.  (why +2?  because the ellipse used is short.)
+     */
+    private String abbrevateStringEllipsis( String s, int lenLimit ) {
+        if (s.length() > lenLimit ) {
+            int n = s.length();
+            s = s.substring(0, 10) + "..." + s.substring( n - (lenLimit-11), n );
+        }
+        return s;
+    }
+
+    /**
      * this must be run on the event thread
      */
     private void updateUIComponents() {
@@ -474,11 +495,8 @@ public class DasProgressPanel implements ProgressMonitor {
         }
 
         if (progressMessageDirty) {
-            if (progressMessageString.length() > 33) {
-                int n = progressMessageString.length();
-                progressMessageString = progressMessageString.substring(0, 10) + "..." + progressMessageString.substring(n - 22, n);
-            }
-            progressMessageLabel.setText(progressMessageString);
+            String s= abbrevateStringEllipsis( progressMessageString, PROGRESS_MESSAGE_LEN_LIMIT);
+            progressMessageLabel.setText(s);
             progressMessageDirty = false;
         }
 
