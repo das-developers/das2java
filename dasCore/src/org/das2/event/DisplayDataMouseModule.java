@@ -144,6 +144,10 @@ public class DisplayDataMouseModule extends MouseModule {
             } else {
                 if ( firstActive==-1 ) firstActive= i;
             }
+            QDataSet ds= rends1[i].getDataSet();
+            if ( ds!=null ) {
+                label= label + ": "+ ds.toString();
+            }
             rlabels[i]= label;
         };
         if ( firstActive==-1 ) firstActive=0;
