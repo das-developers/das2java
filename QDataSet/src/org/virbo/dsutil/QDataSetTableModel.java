@@ -84,13 +84,17 @@ public class QDataSetTableModel extends AbstractTableModel {
             if (dep1Units == null) {
                 dep1Units = Units.dimensionless;
             }
-            for (int k = 0; k < dep1.length(); k++) {
+            int dep1len= dep1.rank()==1 ? dep1.length() : dep1.length(0);
+            for (int k = 0; k < dep1len; k++) {
                 units[i] = SemanticOps.getUnits(ds);
                 df[i]= units[i].getDatumFormatterFactory().defaultFormatter();
-                labels[i] = dep1Units.createDatum(dep1.value(k)).toString();
+                if ( dep1.rank()==1 ) {
+                    labels[i] = dep1Units.createDatum(dep1.value(k)).toString();
+                } else {
+                    labels[i] = dep1Units.createDatum(dep1.value(0,k)).toString() + "*";
+                }
                 i++;
             }
-
         }
         if ( this.ds.rank()==1 ) {
             labels[i]= (String) this.ds.property(QDataSet.LABEL);
