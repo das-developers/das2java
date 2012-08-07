@@ -206,13 +206,19 @@ public class DisplayDataMouseModule extends MouseModule {
         TableColumnModel tcm= new DefaultTableColumnModel();
         try {
             QDataSet tds;
-            if ( DataSetUtil.isQube(ds) ) {
+            boolean isQube= DataSetUtil.isQube(ds);
+            QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1); // kludge code because isQube returns true.  It probably should return false.
+            if ( dep1!=null && dep1.rank()==2 ) isQube= false;
+            if ( isQube) {
                 tds=SemanticOps.trim( ds, xrange, yrange );
             } else {
                 tds=SemanticOps.trim( ds, xrange, null ); // this may cause problems else where...
             }
             tm= new QDataSetTableModel(tds);
             tcm= ((QDataSetTableModel)tm).getTableColumnModel();
+            if ( dep1!=null && dep1.rank()==2 ) {
+                myEdit.getTableHeader().setToolTipText("Column labels reported are from the first record");
+            }
         } catch ( RuntimeException ex ) {
             System.err.println("exception in mouseRangeSelected: "+ex);
             ex.printStackTrace();
