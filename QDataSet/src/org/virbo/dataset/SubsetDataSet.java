@@ -40,18 +40,27 @@ public class SubsetDataSet extends AbstractDataSet {
         if ( nonQube && idim>0 ) throw new IllegalArgumentException("unable to applyIndex on non-qube source dataset");
         sorts[idim]= idx;
         lens[idim]= idx.length();
-        if ( idx.rank()>1 ) throw new IllegalArgumentException("rank>1");
-        QDataSet dep= (QDataSet) source.property( "DEPEND_"+idim );
+        if ( idx.rank()>1 ) {
+            throw new IllegalArgumentException("rank>1");
+        }
+        QDataSet dep= (QDataSet)property( "DEPEND_"+idim );
+        if ( dep==null ) {
+            dep= (QDataSet) source.property( "DEPEND_"+idim );
+        }
         if ( dep!=null ) {
             SubsetDataSet dim= new SubsetDataSet( (QDataSet)source.property("DEPEND_"+idim) );
-            if ( idim==0 ) {
-                QDataSet dep1= (QDataSet)source.property(QDataSet.DEPEND_1); // note this is not a qube...
-                if ( dep1!=null && dep1.rank()>1 ) {
-                    throw new IllegalArgumentException("not supported--we need to deal with this at some point");
-                }
-            }
             dim.applyIndex(0,idx);
             putProperty("DEPEND_"+idim,dim);
+        }
+        if ( idim==0 ) { // DEPEND_1-4 can be rank 2, where the 0th dimension corresponds to DEPEND_0.
+            for ( int i=1; i<QDataSet.MAX_RANK; i++ ) {
+                QDataSet depi= (QDataSet)source.property("DEPEND_"+i); // note this is not a qube...
+                if ( depi!=null && depi.rank()>1 ) {
+                    SubsetDataSet dim= new SubsetDataSet( depi );
+                    dim.applyIndex( 0, idx );
+                    putProperty("DEPEND_"+i, dim );
+                }
+            }
         }
     }
 
