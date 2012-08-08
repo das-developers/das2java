@@ -2433,6 +2433,46 @@ public class Ops {
     }
 
     /**
+     * @see ds.slice
+     * @param ds
+     * @param idx
+     * @return
+     */
+    public static QDataSet slice0( QDataSet ds, int idx ) {
+        return ds.slice(idx);
+    }
+    
+    /**
+     * @see DataSetOps.slice1
+     * @param ds
+     * @param idx
+     * @return
+     */
+    public static QDataSet slice1( QDataSet ds, int idx ) {
+        return DataSetOps.slice1(ds, idx);
+    }
+
+    /**
+     * @see DataSetOps.slice2
+     * @param ds
+     * @param idx
+     * @return
+     */
+    public static QDataSet slice2( QDataSet ds, int idx ) {
+        return DataSetOps.slice2(ds, idx);
+    }
+
+    /**
+     * @see DataSetOps.slice3
+     * @param ds
+     * @param idx
+     * @return
+     */
+    public static QDataSet slice3( QDataSet ds, int idx ) {
+        return DataSetOps.slice3(ds, idx);
+    }
+
+    /**
      *@see #fftFilter
      */
     public static enum FFTFilterType{ Hanning, TenPercentEdgeCosine };
