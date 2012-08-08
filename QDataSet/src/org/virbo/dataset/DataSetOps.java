@@ -1481,6 +1481,18 @@ public class DataSetOps {
                         }
                     }
                     fillDs= Ops.reduceMean(fillDs,dim);
+                } else if ( cmd.startsWith("|total") && cmd.length()>6 ) {
+                    int dim= cmd.charAt(6)-'0';
+                    if ( s.hasNextInt() ) {
+                        if ( dim==0 ) {
+                            int st= s.nextInt();
+                            int en= s.nextInt();
+                            fillDs= fillDs.trim(st,en);
+                        } else {
+                            throw new IllegalArgumentException("trim is only allowed with total0");
+                        }
+                    }
+                    fillDs= Ops.total(fillDs,dim);
                 } else if ( cmd.equals("|autoHistogram") ) {
                     fillDs= Ops.autoHistogram(fillDs);
                 } else if ( cmd.equals("|histogram") ) { // 0=auto, 1=binsize
