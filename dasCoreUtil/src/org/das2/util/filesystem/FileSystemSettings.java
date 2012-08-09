@@ -153,9 +153,11 @@ public class FileSystemSettings {
     }
 
     /**
+     * If true, then force the filesystems to be offline.  If false, then use each filesystem's status.
+     * FileSystem.reset() should be called after this.
      * @param offline
      */
-    protected void setOffline( boolean offline ) {
+    public void setOffline( boolean offline ) {
         boolean v= this.offline;
         this.offline= offline;
         propertyChangeSupport.firePropertyChange( PROP_OFFLINE, v, offline);
