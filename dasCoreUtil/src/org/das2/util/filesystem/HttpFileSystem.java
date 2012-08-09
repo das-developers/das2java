@@ -106,7 +106,7 @@ public class HttpFileSystem extends WebFileSystem {
 
 
             boolean offline = true;
-            if ( doCheck ) {
+            if ( doCheck && !FileSystem.settings().isOffline() ) {
                 // verify URL is valid and accessible
                 HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
                 urlc.setConnectTimeout(3000);
