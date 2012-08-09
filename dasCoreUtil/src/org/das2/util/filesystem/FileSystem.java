@@ -307,9 +307,11 @@ public abstract class FileSystem  {
 
        }
 
+       if ( settings.isOffline() && result instanceof WebFileSystem ) {
+           ((WebFileSystem)result).setOffline(true);
+       }
 
-        
-        return result;
+       return result;
     }
     
     public static FileSystemSettings settings() {
