@@ -69,6 +69,11 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     private final static Logger logger= Logger.getLogger( TearoffTabbedPane.class.getCanonicalName() );
 
+    /**
+     * size of top region that accepts drop
+     */
+    private static int TOP_DROP_MARGIN=200;
+
     HashMap<Component, TabDesc> tabs = new HashMap<Component, TabDesc>();
     int lastSelected; /* keep track of selected index before context menu */
 
@@ -196,7 +201,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                             dropDirty.setLocation( 0,0 );
                             dropDirty.repaint();
                         }
-                        
+
                         if ( drop!=null ) {
                             drop.setLocation( 4,4 );
                             drop.repaint();
@@ -333,7 +338,9 @@ public class TearoffTabbedPane extends JTabbedPane {
                         draggingFrame.setLocation(p);
 
                         TearoffTabbedPane drop=null;
-                        if ( TearoffTabbedPane.this.parentPane.contains( SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), TearoffTabbedPane.this.parentPane ) ) ) {
+                        Point o1= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), TearoffTabbedPane.this.parentPane );
+                        if ( TearoffTabbedPane.this.parentPane.contains( o1 )
+                                && Math.abs( o1.getY() - TearoffTabbedPane.this.parentPane.getY() )< TOP_DROP_MARGIN )  {
                             drop= TearoffTabbedPane.this.parentPane;
                         }
 
@@ -460,7 +467,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 Component maybe= getTabbedPane(d.babysitter);
                 if ( maybe!=null && maybe!=me ) {
                     Point p= SwingUtilities.convertPoint( myFrame, myPosition, maybe );
-                    if ( maybe.getBounds().contains(p) ) {
+                    if ( maybe.getBounds().contains(p) && ( p.getY() - maybe.getY() ) < TOP_DROP_MARGIN ) {
                         last= (TearoffTabbedPane)maybe;
                     }
                 }
