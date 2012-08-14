@@ -89,7 +89,7 @@ public class WebFileObject extends FileObject {
         if (isFolder) {
             throw new IllegalArgumentException("is a folder");
         }
-        if (!localFile.exists()) {
+        if ( !localFile.exists() || ( this.modifiedDate.getTime()-localFile.lastModified() > 10 ) ) { //TODO: test me!
             File partFile = new File(localFile.toString() + ".part");
             wfs.downloadFile(pathname, localFile, partFile, monitor);
         }
