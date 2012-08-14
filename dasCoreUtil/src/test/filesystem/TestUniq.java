@@ -10,7 +10,7 @@ import org.das2.util.filesystem.FileSystem;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 
 /**
- *
+ * This should demo that the same object is returned.
  * @author jbf
  */
 public class TestUniq {
