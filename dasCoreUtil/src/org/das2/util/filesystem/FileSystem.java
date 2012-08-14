@@ -556,4 +556,18 @@ public abstract class FileSystem  {
          */
         public long modified;
     }
+
+    /**
+     * part of the refactoring to cache time stamps as well, this convenience method returns the old string.
+     * This returns des.name, plus '/' if it's a directory.
+     * @param des
+     * @return des.name, and
+     */
+    public static String[] getListing( DirectoryEntry[] des ) {
+        String[] result= new String[des.length];
+        for ( int i=0; i<des.length; i++ ) {
+            result[i]= des[i].name + ( des[i].type=='d' ? "/" : "" );
+        }
+        return result;
+    }
 }
