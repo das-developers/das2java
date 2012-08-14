@@ -3814,6 +3814,8 @@ public class Ops {
                 ds = new BundleDataSet( ds2.rank()+1 );
             }
             ds.bundle(ds2);
+            QDataSet dep0= (QDataSet) ds2.property(QDataSet.DEPEND_0);
+            if ( dep0!=null ) ds.putProperty( QDataSet.DEPEND_0, dep0 );
             return ds;
         } else if (ds1.rank() == ds2.rank()) {
             BundleDataSet ds= new BundleDataSet( );
