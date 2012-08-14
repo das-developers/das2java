@@ -405,8 +405,10 @@ public class HttpFileSystem extends WebFileSystem {
 
     public String[] listDirectory(String directory) throws IOException {
 
-        String[] cached= listDirectoryFromMemory( directory );
-        if ( cached!=null ) return cached;
+        DirectoryEntry[] cached= listDirectoryFromMemory( directory );
+        if ( cached!=null ) {
+            return FileSystem.getListing( cached );
+        }
 
         if ( protocol!=null && protocol instanceof AppletHttpProtocol ) { // support applets.  This could check for local write access, but DefaultHttpProtocol shows a problem here too.
             InputStream in=null;
@@ -432,7 +434,7 @@ public class HttpFileSystem extends WebFileSystem {
 
         directory = toCanonicalFolderName(directory);
 
-        String[] result;
+        DirectoryEntry[] result;
         if ( isListingCached(directory) ) {
             logger.log(Level.FINE, "using cached listing for {0}", directory);
 
@@ -449,16 +451,21 @@ public class HttpFileSystem extends WebFileSystem {
                 if ( fin!=null ) fin.close();
             }
             
-            result = new String[list.length];
+            result = new DirectoryEntry[list.length];
             int n = directory.length();
             for (int i = 0; i < list.length; i++) {
                 URL url = list[i];
-                result[i] = getLocalName(url).substring(n);
+                DirectoryEntry de1= new DirectoryEntry();
+                de1.modified= 0; //TODO: dates, etc.
+                de1.name= getLocalName(url).substring(n);
+                de1.type= 'f';
+                de1.size= 0;
+                result[i]= de1;
             }
 
             cacheListing(directory, result );
 
-            return result;
+            return FileSystem.getListing(result);
         }
 
         boolean successOrCancel= false;
@@ -506,16 +513,22 @@ public class HttpFileSystem extends WebFileSystem {
                     if ( fin!=null ) fin.close();
                 }
 
-                result = new String[list.length];
+                result = new DirectoryEntry[list.length];
                 int n = directory.length();
                 for (int i = 0; i < list.length; i++) {
                     URL url = list[i];
-                    result[i] = getLocalName(url).substring(n);
+                    DirectoryEntry de1= new DirectoryEntry();
+                    de1.modified= 0;
+                    de1.name= getLocalName(url).substring(n);
+                    de1.type= 'f';
+                    de1.size= 0;
+                    result[i] = de1;
                 }
 
                 cacheListing( directory, result );
 
-                return result;
+                return FileSystem.getListing(result);
+                
             } catch (CancelledOperationException ex) {
                 throw new IOException( "user cancelled at credentials" ); // JAVA6
             } catch ( IOException ex ) {
