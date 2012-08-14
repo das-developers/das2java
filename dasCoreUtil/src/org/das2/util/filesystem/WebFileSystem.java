@@ -403,7 +403,7 @@ public abstract class WebFileSystem extends FileSystem {
         return listing;
     }
 
-    private Map<String,String[]> listings= new HashMap();
+    private Map<String,DirectoryEntry[]> listings= new HashMap();
     private Map<String,Long> listingFreshness= new HashMap();
 
     public synchronized boolean isListingCached( String directory ) {
@@ -416,16 +416,16 @@ public abstract class WebFileSystem extends FileSystem {
         }
     }
 
-    public synchronized void cacheListing( String directory, String[] listing ) {
+    public synchronized void cacheListing( String directory, DirectoryEntry[] listing ) {
          listings.put( directory, listing );
          listingFreshness.put( directory, new Long( System.currentTimeMillis() ) );
     }
 
-    protected synchronized String[] listDirectoryFromMemory( String directory ) {
+    protected synchronized DirectoryEntry[] listDirectoryFromMemory( String directory ) {
         Long freshness= listingFreshness.get(directory);
         if ( freshness==null ) return null;
         if ( System.currentTimeMillis()-freshness < MEMORY_LISTING_TIMEOUT_MS ) {
-            String [] result= listings.get(directory);
+            DirectoryEntry [] result= listings.get(directory);
             return result;
         } else {
             listings.remove(directory);
