@@ -534,7 +534,7 @@ public abstract class WebFileSystem extends FileSystem {
             // this won't exist.
             return new WebFileObject( this, filename, new Date( Long.MAX_VALUE ) );
         } else {
-            return new WebFileObject( this, filename, new Date( result.modified ) );
+            return new WebFileObject( this, filename, new Date( result.modified ) );  // note result.modified may be Long.MAX_VALUE, indicating need to load.
         }
     }
 
