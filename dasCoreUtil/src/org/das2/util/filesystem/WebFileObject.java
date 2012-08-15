@@ -89,6 +89,9 @@ public class WebFileObject extends FileObject {
         if (isFolder) {
             throw new IllegalArgumentException("is a folder");
         }
+        System.err.println( "this="+ new Date( this.modifiedDate.getTime() ) );
+        System.err.println( "local=" + new Date( localFile.lastModified() ) );
+
         if ( !localFile.exists() || ( this.modifiedDate.getTime()-localFile.lastModified() > 10 ) ) { //TODO: test me!
             File partFile = new File(localFile.toString() + ".part");
             wfs.downloadFile(pathname, localFile, partFile, monitor);
@@ -205,7 +208,6 @@ public class WebFileObject extends FileObject {
                     }
                 } else {
                     this.isFolder = localFile.isDirectory();
-                    this.modifiedDate= new Date( localFile.lastModified() );
                 }
                 this.isFolderResolved= true;
             } catch (IOException ex) {
