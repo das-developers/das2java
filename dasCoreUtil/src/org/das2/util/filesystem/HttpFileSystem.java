@@ -26,7 +26,6 @@
  */
 package org.das2.util.filesystem;
 
-import java.util.logging.Logger;
 import org.das2.util.monitor.CancelledOperationException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,7 +51,6 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
-import org.das2.util.FileUtil;
 import org.das2.util.monitor.NullProgressMonitor;
 
 /**
@@ -456,10 +454,10 @@ public class HttpFileSystem extends WebFileSystem {
             for (int i = 0; i < list.length; i++) {
                 URL url = list[i];
                 DirectoryEntry de1= new DirectoryEntry();
-                de1.modified= 0; //TODO: dates, etc.
+                de1.modified= Long.MAX_VALUE; // HTTP is somewhat expensive to get dates and sizes, so put in Long.MAX_VALUE to indicate need to load.
                 de1.name= getLocalName(url).substring(n);
                 de1.type= 'f';
-                de1.size= 0;
+                de1.size= Long.MAX_VALUE;
                 result[i]= de1;
             }
 
@@ -518,10 +516,10 @@ public class HttpFileSystem extends WebFileSystem {
                 for (int i = 0; i < list.length; i++) {
                     URL url = list[i];
                     DirectoryEntry de1= new DirectoryEntry();
-                    de1.modified= 0;
+                    de1.modified= Long.MAX_VALUE;
                     de1.name= getLocalName(url).substring(n);
                     de1.type= 'f';
-                    de1.size= 0;
+                    de1.size= Long.MAX_VALUE;
                     result[i] = de1;
                 }
 
