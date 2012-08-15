@@ -63,8 +63,14 @@ public class WebFileObject extends FileObject {
         return true;
     }
 
-    synchronized void maybeLoadMetadata() throws IOException {
-        if ( metadata==null ) {
+    /**
+     * load the metadata for the file object, presently only for HTTP doing a HEAD request.
+     * This is nasty and needs to be rewritten...
+     * For thread safety, metadata should only be read by other threads, and only if it exists.
+     * @throws IOException
+     */
+    protected synchronized void maybeLoadMetadata() throws IOException {
+        if ( metadata==null && wfs.protocol!=null ) {
             metadata= wfs.protocol.getMetadata( this );
         }
     }
@@ -89,9 +95,10 @@ public class WebFileObject extends FileObject {
         if (isFolder) {
             throw new IllegalArgumentException("is a folder");
         }
-        System.err.println( "this="+ new Date( this.modifiedDate.getTime() ) );
-        System.err.println( "local=" + new Date( localFile.lastModified() ) );
 
+        if ( this.modifiedDate.getTime()==0 ) {
+            lastModified(); // trigger load of the modifiedDate
+        }
         if ( !localFile.exists() || ( this.modifiedDate.getTime()-localFile.lastModified() > 10 ) ) { //TODO: test me!
             File partFile = new File(localFile.toString() + ".part");
             wfs.downloadFile(pathname, localFile, partFile, monitor);
@@ -147,6 +154,21 @@ public class WebFileObject extends FileObject {
     }
 
     public java.util.Date lastModified() {
+        if ( modifiedDate.getTime()==Long.MAX_VALUE ) { 
+            try {
+                maybeLoadMetadata();
+            } catch ( IOException ex ) {
+                System.err.println("unable to load metadata: "+ex);
+                modifiedDate= new Date( localFile.lastModified() );
+            }
+            if ( metadata.containsKey("Last-Modified") ) {
+                long date= Date.parse( metadata.get("Last-Modified") );
+                modifiedDate= new Date( date );
+            } else {
+                System.err.println("metadata doesn't contain Last-Modified, using localFile" );
+                modifiedDate= new Date( localFile.lastModified() );
+            }
+        }
         return modifiedDate;
     }
 
