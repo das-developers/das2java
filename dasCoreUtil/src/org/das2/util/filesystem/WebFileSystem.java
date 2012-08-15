@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -505,8 +506,36 @@ public abstract class WebFileSystem extends FileSystem {
     }
 
     public FileObject getFileObject(String filename) {
-        WebFileObject f = new WebFileObject(this, filename, new Date(System.currentTimeMillis()));//TODO: huh?  really?  Because it's intensive to get a listing with Html head requests.
-        return f;
+        String path= toCanonicalFilename(filename);
+        int i= path.lastIndexOf("/");
+
+        String dir= path.substring(0, i+1);
+
+        try {
+            listDirectory(dir); // load the listing into memory to get file object
+        } catch (IOException ex) {
+            Logger.getLogger(WebFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        // we should be able to get the listing that we just did from memory.
+        DirectoryEntry[] des= listDirectoryFromMemory(dir);
+        DirectoryEntry result= null;
+
+        if ( des!=null ) {
+            String fname= path.substring(i+1);
+            for ( i=0; i<des.length; i++ ) {
+                if ( fname.equals(des[i].name) ) {
+                    result= des[i];
+                }
+            }
+        }
+
+        if ( result==null ) {
+            // this won't exist.
+            return new WebFileObject( this, filename, new Date( Long.MAX_VALUE ) );
+        } else {
+            return new WebFileObject( this, filename, new Date( result.modified ) );
+        }
     }
 
     /**
