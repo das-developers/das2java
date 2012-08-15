@@ -43,7 +43,11 @@ public class EnumerationDatumFormatter extends DatumFormatter {
     }
     
     public String format(Datum datum) {
-        String s= ((EnumerationUnits)datum.getUnits()).getObject(datum).toString();
+        Object o= ((EnumerationUnits)datum.getUnits()).getObject(datum);
+        if ( o==null ) {
+            System.err.println("bad enumeration datum contains ordinal with no mapping to object");
+        }
+        String s= String.valueOf( o );
         return s;
     }
     
