@@ -74,6 +74,51 @@ public class SemanticOps {
         }
     }
 
+/**
+     * return the labels for a dataset where DEPEND_1 is a bundle dimension.
+     * Look for the BUNDLE_1.
+     * @param ds
+     * @return
+     */
+    public final static String[] getComponentNames(QDataSet ds) {
+        int n = ds.length(0);
+        QDataSet bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        if ( bdesc!=null && bdesc.rank()==2 ) {
+            String[] result= new String[n];
+                for ( int i=0; i<n; i++ ) {
+                    result[i]= (String) bdesc.property(QDataSet.NAME, i);
+                    if ( result[i]==null ) result[i]="ch_"+i;
+                }
+            return result;
+        }
+        QDataSet labels;
+        if ( bdesc!=null && bdesc.rank()==1 ) {
+            labels= bdesc;
+        } else {
+            labels= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        }
+
+        if (labels == null) {
+            String[] result = new String[n];
+            for (int i = 0; i < n; i++) {
+                result[i] = "ch_" + i;
+            }
+            return result;
+        } else {
+            Units u = getUnits(labels);
+            String[] slabels = new String[n];
+            for (int i = 0; i < n; i++) {
+                if (labels == null) {
+                    slabels[i] = String.valueOf(i);
+                } else {
+                    slabels[i] = String.valueOf(u.createDatum(labels.value(i)));
+                }
+            }
+            return slabels;
+        }
+    }
+
+
     /**
      * return the labels for a dataset where DEPEND_1 is a bundle dimension.
      * Look for the BUNDLE_1.
@@ -86,7 +131,9 @@ public class SemanticOps {
         if ( bdesc!=null && bdesc.rank()==2 ) {
             String[] result= new String[n];
                 for ( int i=0; i<n; i++ ) {
-                    result[i]= (String) bdesc.property(QDataSet.NAME, i);
+                    //result[i]= (String) bdesc.property(QDataSet.NAME, i);
+                    result[i]= (String) bdesc.property(QDataSet.LABEL, i);
+                    if ( result[i]==null ) result[i]= (String) bdesc.property(QDataSet.NAME, i); // whoops!  It was like this for years!
                     if ( result[i]==null ) result[i]="ch_"+i;
                 }
             return result;
