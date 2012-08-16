@@ -244,6 +244,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     if ( zds==null ) {
                         parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
                     } else {
+                        if ( !SemanticOps.isTableDataSet( zds ) ) {
+                            if ( !SemanticOps.isBundle( zds ) ) {
+                                parent.postMessage(this, "expected table dataset, got "+zds, DasPlot.INFO, null, null );
+                                return;
+                            }
+                        }
+
                         if ( zds.rank()==2 ) {
                             xds= SemanticOps.xtagsDataSet(zds);
                             yds= SemanticOps.ytagsDataSet(zds);
@@ -270,10 +277,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 parent.postMessage(this, "inconvertible "+message, DasPlot.INFO, null, null);
                             }
                             if ( !SemanticOps.isTableDataSet( zds ) ) {
-                                if ( !SemanticOps.isBundle( zds ) ) {
-                                    parent.postMessage(this, "expected table dataset", DasPlot.INFO, null, null );
-                                    return;
-                                } else {
+                                if ( SemanticOps.isBundle( zds ) ) { // this should be true because of code above
                                     zds= SemanticOps.getDependentDataSet(zds);
                                 }
                             }
@@ -470,6 +474,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         } else {
                             yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds) );
                         }
+                    } else if ( fds.rank()<2 ) {
+                        logger.log(Level.FINE, "dataset rank is less than 2: {0}", fds);
+
                     } else {
                         xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds.slice(0)) );
                         yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds.slice(0)) );
@@ -525,6 +532,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             } else {
                                 yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds) );
                             }
+                        } else if ( fds.rank()<2 ) {
+                            xunits= xAxis.getUnits(); // there's code later to catch the error
+                            yunits= yAxis.getUnits();
                         } else {
                             xunits= SemanticOps.getUnits( SemanticOps.xtagsDataSet(fds.slice(0)) );
                             yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds.slice(0)) );
