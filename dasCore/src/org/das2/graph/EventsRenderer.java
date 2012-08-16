@@ -23,7 +23,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Rectangle2D;
 import javax.swing.ImageIcon;
 import org.das2.datum.Units;
 import org.das2.util.GrannyTextRenderer;
@@ -37,7 +36,6 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 
 /**
