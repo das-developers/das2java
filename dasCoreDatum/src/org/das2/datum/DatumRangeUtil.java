@@ -545,7 +545,7 @@ public class DatumRangeUtil {
             this.ipos= 0;
 
             if ( stringIn.length()==0 ) {
-                throw new ParseException("empty string",0);
+                throw new ParseException("Unable to parse timerange: empty string",0);
             }
             ArrayList beforeToUnresolved= new ArrayList();
             ArrayList afterToUnresolved= new ArrayList();
