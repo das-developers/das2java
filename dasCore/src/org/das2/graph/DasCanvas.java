@@ -106,6 +106,8 @@ import javax.swing.event.MouseInputListener;
 import javax.swing.filechooser.FileFilter;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.das2.system.ChangesSupport;
 
 /** Canvas for das2 graphics.  The DasCanvas contains any number of DasCanvasComponents such as axes, plots, colorbars, etc.
@@ -792,8 +794,99 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     /**
+     * encode the plot in a JSON fragment.
+     * @param plot the plot to describe.
+     * @param indent indent new lines this amount
+     * @param isInList is in list, so append a comma after the y_axis.
+     * @return
+     */
+    private String getJSONForPlot( DasPlot plot, String indent, boolean isInList ) {
+        StringBuilder json= new StringBuilder();
+        json.append( String.format( "%s\"title\":\"%s\", \n", indent, plot.getTitle().replaceAll("\"", "\\\"") ) );
+        DasAxis axis= plot.getXAxis();
+        String minstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ?
+            String.format( "\"%s\"", axis.getDataMinimum().toString() ) :
+            String.valueOf( axis.getDataMinimum( axis.getUnits() ) );
+        String maxstr= UnitsUtil.isTimeLocation( axis.getDataMaximum().getUnits() ) ?
+            String.format( "\"%s\"", axis.getDataMaximum().toString() ) :
+            String.valueOf( axis.getDataMaximum( axis.getUnits() ) );
+        String unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
+        json.append( String.format( "%s\"x_axis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"minpixel\":%d, \"maxpixel\":%d, \"type\":\"%s\", \"units\":\"%s\" },\n",
+                indent,
+                plot.getXAxis().getLabel().replaceAll("\"", "\\\"") ,
+                minstr, maxstr, (int)plot.getColumn().getDMinimum(), (int)plot.getColumn().getDMaximum(),
+                plot.getXAxis().isLog() ? "log" : "lin",
+                unitsstr ) );
+        axis= plot.getYAxis();
+        minstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ?
+            String.format( "'%s'", axis.getDataMinimum().toString() ) :
+            String.valueOf( axis.getDataMinimum( axis.getUnits() ) );
+        maxstr= UnitsUtil.isTimeLocation( axis.getDataMaximum().getUnits() ) ?
+            String.format( "'%s'", axis.getDataMaximum().toString() ) :
+            String.valueOf( axis.getDataMaximum( axis.getUnits() ) );
+        unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
+        json.append( String.format( "%s\"y_axis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"minpixel\":%d, \"maxpixel\":%d, \"type\":\"%s\", \"units\":\"%s\" }%s\n",
+                indent,
+                plot.getYAxis().getLabel().replaceAll("\"", "\\\"") ,
+                minstr, maxstr, (int)plot.getRow().getDMinimum(), (int)plot.getRow().getDMaximum(),
+                plot.getYAxis().isLog() ? "log" : "lin",
+                unitsstr, isInList ? "," : "" ) );
+        return json.toString();
+    }
+
+    /**
+     * returns JSON code that can be used to get plot positions and axes.
+     * @return
+     */
+    public String getImageMetadata() {
+        List<DasPlot> plots= new ArrayList();
+        DasPlot plot= null;
+        int plotHeight= 0;
+        for ( Component c: this.getCanvasComponents() ) {
+            if ( c instanceof DasPlot ) {
+                plots.add( (DasPlot)c );
+                if ( ((DasPlot)c).getRow().getHeight()>plotHeight ) {
+                    plot= ((DasPlot)c);
+                    plotHeight= ((DasPlot)c).getRow().getHeight();
+                }
+            }
+        }
+
+        if ( plot==null ) return "{ \"number_of_plots_on_canvas\":0 }";
+
+        StringBuilder json= new StringBuilder();
+
+        json.append("{\n");
+        json.append( String.format("  \"size\":[%d,%d],\n", this.getWidth(),this.getHeight() ) );
+        String json1= getJSONForPlot( plot, "  ", plots.size()>1 );
+        json.append( json1 );
+        if ( plots.size()>1 ) {
+            json.append("  \"plots\": [\n");
+            DasPlot lastPlot= plots.get( plots.size()-1 );
+            for ( DasPlot p: plots ) {
+                json.append( "  {\n");
+                json.append( getJSONForPlot( p, "    ", false ) );
+                json.append( "  }");
+                if ( p!=lastPlot ) json.append(",");
+                json.append( "\n" );
+            }
+            json.append(" ]");
+        }
+        json.append("}" );
+        return json.toString();
+
+    }
+
+    /**
      * uses getImage to get an image of the canvas and encodes it
      * as a png.
+     *
+     * Note this now puts in a JSON representation of plot locations in the "plotInfo" tag.  The plotInfo
+     * tag will contain:
+     *   "number_of_plots_on_canvas:0"   or
+     *   "size" "title" "x_axis" and "y_axis"  or
+     *   "size" "title" "x_axis" "y_axis" and "plots" when there is more than one plot.  The tallest plot is used as the default.
+     *
      *
      * TODO: this should take an output stream, and then a helper class
      * manages the file. (e.g. web servers)
@@ -819,6 +912,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         DasPNGEncoder encoder = new DasPNGEncoder();
         encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
+        encoder.addText("plotInfo", getImageMetadata() );
         try {
             logger.fine("Encoding image into png");
             encoder.write((BufferedImage) image, out);
