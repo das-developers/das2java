@@ -314,6 +314,7 @@ public class AsciiParser {
                 }
                 if ( line!=null ) {
                     p= guessDelimParser(line);
+                    p.showException= false;
                     parseCount= p.tryParseRecord(line, iline, null) ? 1 : 0;
                     for ( int i=0; i<lines.size(); i++ ) {
                             if ( p.tryParseRecord(lines.get(i), 0, null) ) {
@@ -1116,6 +1117,10 @@ public class AsciiParser {
             return delimRegex;
         }
 
+        public void setShowException( boolean s ) {
+            this.showException= s;
+        }
+        
         public boolean tryParseRecord(String line, int irec, DataSetBuilder builder) {
             int j = 0;
             int okayCount = 0;
@@ -1151,8 +1156,11 @@ public class AsciiParser {
                     }
                 }
             }
-            if ( showException && firstException!=null && failCount>0 && failCount<fieldCount ) {
-                firstException.printStackTrace();
+            if ( firstException!=null && failCount>0 && failCount<fieldCount ) {
+                if ( showException ) {
+                    firstException.printStackTrace();
+                    showException= false;
+                }
             }
             
             // the record is parsable if there are two or more parsable fields.
