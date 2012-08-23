@@ -3329,7 +3329,8 @@ public class Ops {
         int n = vv.length();
 
         QDataSet wds= DataSetUtil.weightsDataSet( vv );
-        double fill= (Double)wds.property(QDataSet.FILL_VALUE);
+        Double fill= (Double)wds.property(QDataSet.FILL_VALUE);
+        if ( fill==null ) fill= -1e38;
         result.putProperty( QDataSet.FILL_VALUE, fill );
 
         while (it.hasNext()) {
