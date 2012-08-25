@@ -52,6 +52,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -84,6 +85,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
@@ -108,6 +110,7 @@ import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.event.DasUpdateEvent;
 import org.das2.system.ChangesSupport;
 
 /** Canvas for das2 graphics.  The DasCanvas contains any number of DasCanvasComponents such as axes, plots, colorbars, etc.
@@ -1056,6 +1059,19 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         logger.fine("canvas is idle");
         /* should be in static state */
         return;
+    }
+
+    /**
+     * return a list of pending changes.
+     * @see waitUntilIdle
+     * @param result
+     */
+    public void pendingChanges( Map<Object,Object> result ) {
+        stateSupport.pendingChanges(result);
+        if ( Toolkit.getDefaultToolkit().getSystemEventQueue().peekEvent(DasUpdateEvent.DAS_UPDATE_EVENT_ID) != null ) {
+            result.put( "dasUpdate", "eventQueueContainsUpdateEvents");
+            //TODO: it would be better to check for the eventQueueBlocker object as well.
+        }
     }
 
     /**
