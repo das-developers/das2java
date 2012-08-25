@@ -71,6 +71,16 @@ public class ChangesSupport {
     }
 
     /**
+     * return a list of all the pending changes.  These are returned in a
+     * Map that goes from pending change to change manager.  
+     *
+     * @param changes a Map to which the changes will be added.
+     */
+    public synchronized void pendingChanges( Map<Object,Object> changes ) {
+        changes.putAll( changesPending );
+    }
+
+    /**
      * performingChange tells that the change is about to be performed.  This
      * is a place holder in case we use a mutator lock, but currently does
      * nothing.  If the change has not been registered, it will be registered implicitly.
