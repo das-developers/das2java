@@ -1765,7 +1765,12 @@ public class DataSetUtil {
      * 
      */
     public static QDataSet weightsDataSet(final QDataSet ds) {
-        QDataSet result = (QDataSet) ds.property(QDataSet.WEIGHTS_PLANE);
+        Object o= ds.property(QDataSet.WEIGHTS_PLANE);
+        if ( o!=null && !(o instanceof QDataSet) ) {
+            System.err.println("WEIGHTS_PLANE contained something that was not a qdataset: "+o);
+            o=null;
+        }
+        QDataSet result = (QDataSet) o;
         if (result == null) {
             QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
             if ( bds!=null ) {
