@@ -3323,6 +3323,10 @@ public class Ops {
      * @return the result.  
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex) {
+        if ( vv.rank()!=1 ) {
+            throw new IllegalArgumentException("vv is not rank1");
+        }
+        
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex));
         QubeDataSetIterator it = new QubeDataSetIterator(findex);
         int ic0, ic1;
