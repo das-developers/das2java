@@ -126,7 +126,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         putProperty( QDataSet.WEIGHTS_PLANE, null );
 
         DataSetUtil.copyDimensionProperties( ds, this );
-        
+        DataSetUtil.maybeCopyRenderType( ds, this );
     }
 
     public int rank() {

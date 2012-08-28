@@ -140,6 +140,7 @@ public class Slice1DataSet extends AbstractDataSet {
         putProperty( QDataSet.WEIGHTS_PLANE, null );
 
         DataSetUtil.copyDimensionProperties( ds, this );
+        DataSetUtil.maybeCopyRenderType( ds, this );
                 
     }
 
