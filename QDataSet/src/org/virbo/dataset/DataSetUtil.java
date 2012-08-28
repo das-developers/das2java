@@ -275,6 +275,22 @@ public class DataSetUtil {
     }
 
     /**
+     * copy over the render type, if it is still appropriate.  This nasty bit of code was introduced
+     * to support LANL data, where high-rank data is preferably plotted as a spectrogram, but can be
+     * plotted as a stack of lineplots.
+     * @param source
+     * @param dest
+     */
+    public static void maybeCopyRenderType( QDataSet source, MutablePropertyDataSet dest ) {
+        String rt= (String) source.property(QDataSet.RENDER_TYPE);
+        if ( rt==null ) return;
+        if ( rt.equals("spectrogram") || rt.equals("nnSpectrogram") ) {
+            if ( dest.rank()>1 ) dest.putProperty( QDataSet.RENDER_TYPE, rt );
+        }
+    }
+
+
+    /**
      * return the list of properties that pertain to the dimension that dataset
      * values exist.  These are the properties that survive through most operations.
      * For example, if you flattened the dataset, what properties 
