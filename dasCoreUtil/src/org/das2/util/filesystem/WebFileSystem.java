@@ -475,13 +475,37 @@ public abstract class WebFileSystem extends FileSystem {
 
     /**
      * return the root of the filesystem as a URL.
+     * Since the root is stored as a URI and "ftp://jbf@mysite.com:@ftpproxy.net/temp/" is a legal address, check for this case.
      * @return the root of the filesystem as a URL.
      */
     public URL getRootURL() {
         try {
             return root.toURL();
         } catch (MalformedURLException ex) {
-            throw new RuntimeException(ex);
+
+            String auth= root.getAuthority();
+            String[] ss= auth.split("@");
+
+            String userInfo= null;
+            if ( ss.length>3 ) {
+                throw new IllegalArgumentException("user info section can contain at most two at (@) symbols");
+            } else if ( ss.length==3 ) {//bugfix 3299977.  UMich server uses email:password@umich.  Java doesn't like this.
+                // the user didn't escape the at (@) in the email.  escape it here.
+                StringBuilder userInfo_= new StringBuilder( ss[0] );
+                for ( int i=1;i<2;i++ ) userInfo_.append("%40").append(ss[i]);
+                auth= ss[2];
+                try {
+                    URI rooturi2= new URI( root.getScheme() + "://" + userInfo_.toString()+"@"+auth + root.getPath() );
+                    return rooturi2.toURL();
+                } catch ( URISyntaxException ex2 ) {
+                    throw new RuntimeException(ex2);
+                } catch ( MalformedURLException ex2 ) {
+                    throw new RuntimeException(ex2);
+                }
+            } else {
+                throw new RuntimeException(ex);
+            }
+            
         }
     }
     /**
