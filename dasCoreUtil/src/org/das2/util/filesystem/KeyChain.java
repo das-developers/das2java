@@ -178,6 +178,7 @@ public class KeyChain {
      * get the user credentials, maybe throwing CancelledOperationException if the
      * user hits cancel.  If the password is "pass" or "password" then don't use
      * it, prompt for it instead.
+     * Note a %40 in the username is converted to @.
      * @param url
      * @param userInfo that is available separately.  (Java doesn't like user@usersHost:password@server)
      * @return
@@ -263,7 +264,11 @@ public class KeyChain {
         String[] ss= userInfo.split(":",-2);
         if ( !ss[0].equals("user") ) {
             userName= ss[0];
+            if ( userName.contains("%40") ) {
+                userName= userName.replaceAll( "%40", "@" );
+            }
         }
+        
         String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost();
 
         String storedUserInfo= keys.get(hash);
