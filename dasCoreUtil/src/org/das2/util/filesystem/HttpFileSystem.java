@@ -107,7 +107,7 @@ public class HttpFileSystem extends WebFileSystem {
             if ( doCheck && !FileSystem.settings().isOffline() ) {
                 // verify URL is valid and accessible
                 HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
-                urlc.setConnectTimeout(3000);
+                urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
 
                 //urlc.setRequestMethod("HEAD"); // Causes problems with the LANL firewall.
 
