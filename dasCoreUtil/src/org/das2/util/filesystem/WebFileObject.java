@@ -70,8 +70,15 @@ public class WebFileObject extends FileObject {
      * @throws IOException
      */
     protected synchronized void maybeLoadMetadata() throws IOException {
-        if ( metadata==null && wfs.protocol!=null ) {
-            metadata= wfs.protocol.getMetadata( this );
+        if ( metadata==null ) {
+            if ( this.wfs.offline ) {
+                metadata= new HashMap();
+                metadata.put( WebProtocol.META_EXIST, isLocal() ? "true" : "false" );
+            } else {
+                if ( wfs.protocol!=null ) {
+                    metadata= wfs.protocol.getMetadata( this );
+                }
+            }
         }
     }
     
@@ -88,7 +95,7 @@ public class WebFileObject extends FileObject {
     }
 
     public InputStream getInputStream(ProgressMonitor monitor) throws FileNotFoundException, IOException {
-        if ( wfs.protocol !=null ) {
+        if ( wfs.protocol !=null && !this.wfs.offline ) {
             FileSystem.logger.log(Level.FINE, "get inputstream from {0}", wfs.protocol);
             return wfs.protocol.getInputStream(this, monitor);
         }
@@ -275,7 +282,7 @@ public class WebFileObject extends FileObject {
 
         if ( monitor==null ) throw new NullPointerException("monitor may not be null");
         Date remoteDate;
-        if (wfs instanceof HttpFileSystem) {
+        if (wfs instanceof HttpFileSystem && !wfs.isOffline() ) {
             URL url = wfs.getURL(this.getNameExt());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD");
@@ -366,7 +373,7 @@ public class WebFileObject extends FileObject {
      * returns true is the file is locally available, meaning clients can 
      * call getFile() and the readable File reference will be available in
      * interactive time.  For FileObjects from HttpFileSystem, a HEAD request
-     * is made to ensure that the local file is as new as the website one.
+     * is made to ensure that the local file is as new as the website one (when offline=false).
      */
     public boolean isLocal() {
         if ( wfs.isAppletMode() ) return false;
@@ -374,34 +381,38 @@ public class WebFileObject extends FileObject {
         boolean download = false;
 
         if (localFile.exists()) {
-            synchronized ( wfs ) {
-                Date remoteDate;
-                long localFileLastAccessed = wfs.getLastAccessed( this.getNameExt() );
-                if ( System.currentTimeMillis() - localFileLastAccessed > 60000 ) {
-                    try {
-                        if ( wfs instanceof HttpFileSystem ) {
-                                URL url = wfs.getURL(this.getNameExt());
-                                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                                connection.setRequestMethod("HEAD");
-                                connection.connect();
-                                remoteDate = new Date(connection.getLastModified());
-                        } else {
-                            // this is the old logic
-                            remoteDate = new Date(localFile.lastModified());
+            if ( !wfs.isOffline() ) {
+                synchronized ( wfs ) {
+                    Date remoteDate;
+                    long localFileLastAccessed = wfs.getLastAccessed( this.getNameExt() );
+                    if ( System.currentTimeMillis() - localFileLastAccessed > 60000 ) {
+                        try {
+                            if ( wfs instanceof HttpFileSystem ) {
+                                    URL url = wfs.getURL(this.getNameExt());
+                                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                                    connection.setRequestMethod("HEAD");
+                                    connection.connect();
+                                    remoteDate = new Date(connection.getLastModified());
+                            } else {
+                                // this is the old logic
+                                remoteDate = new Date(localFile.lastModified());
+                            }
+
+                            Date localFileLastModified = new Date(localFile.lastModified());
+                            if (remoteDate.after(localFileLastModified)) {
+                                FileSystem.logger.info("remote file is newer than local copy of " + this.getNameExt() + ", download.");
+                                download = true;
+                            }
+                            wfs.markAccess(this.getNameExt());
+                        } catch ( IOException ex ) {
+                            return false;
                         }
 
-                        Date localFileLastModified = new Date(localFile.lastModified());
-                        if (remoteDate.after(localFileLastModified)) {
-                            FileSystem.logger.info("remote file is newer than local copy of " + this.getNameExt() + ", download.");
-                            download = true;
-                        }
-                        wfs.markAccess(this.getNameExt());
-                    } catch ( IOException ex ) {
-                        return false;
                     }
 
                 }
-
+            } else {
+                return true;
             }
 
         } else {
