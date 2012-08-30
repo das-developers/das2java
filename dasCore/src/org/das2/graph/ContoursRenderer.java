@@ -58,7 +58,7 @@ public class ContoursRenderer extends Renderer {
 
         DasPlot lparent= getParent();
         
-        Graphics2D g = (Graphics2D) g1;
+        Graphics2D g = (Graphics2D) g1.create();
 
         if (lparent.getCanvas().isAntiAlias()) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
