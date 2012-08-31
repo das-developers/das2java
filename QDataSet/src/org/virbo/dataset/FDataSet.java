@@ -78,6 +78,8 @@ public final class FDataSet extends ArrayDataSet {
             return new FDataSet( 3, qube[0], qube[1], qube[2], 1, data );
         } else if (qube.length == 4) {
             return new FDataSet( 4, qube[0], qube[1], qube[2], qube[3], data);
+        } else if (qube.length == 0 ) {
+            return new FDataSet( 0, 1, 1, 1, 1, data);
         } else {
             throw new IllegalArgumentException("bad qube");
         }
