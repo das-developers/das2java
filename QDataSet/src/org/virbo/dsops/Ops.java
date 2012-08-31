@@ -243,43 +243,56 @@ public class Ops {
     }
 
     /**
+     * returns the BinaryOp that handles the addition operation.  Properties will have the units inserted.
+     * @param ds1
+     * @param ds2
+     * @param properties
+     * @return
+     */
+    private static BinaryOp addGen( QDataSet ds1, QDataSet ds2, Map properties ) {
+        Units units1 = SemanticOps.getUnits( ds1 );
+        Units units2 = SemanticOps.getUnits( ds2 );
+        BinaryOp result;
+        if ( units2.isConvertableTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
+            result= new BinaryOp() {
+                public double op(double d1, double d2) {
+                    return d1 + uc.convert(d2);
+                }
+            };
+            if ( units1!=Units.dimensionless ) properties.put( QDataSet.UNITS, units1 );
+        } else if ( UnitsUtil.isIntervalMeasurement(units1) ) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
+            result= new BinaryOp() {
+                public double op(double d1, double d2) {
+                    return d1 + uc.convert(d2);
+                }
+            };
+            properties.put( QDataSet.UNITS, units1 );
+        } else if ( UnitsUtil.isIntervalMeasurement(units2) ) {
+            final UnitsConverter uc= UnitsConverter.getConverter( units1, units2.getOffsetUnits() );
+            result= new BinaryOp() {
+                public double op(double d1, double d2) {
+                    return uc.convert(d1) + d2;
+                }
+            };
+            properties.put( QDataSet.UNITS, units2 );
+        } else {
+            throw new IllegalArgumentException("units cannot be added: " + units1 + ", "+ units2 );
+        }
+        return result;
+    }
+    /**
      * add the two datasets have the same geometry.
      * @param ds1
      * @param ds2
      * @return
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
-        Units units1 = SemanticOps.getUnits( ds1 );
-        Units units2 = SemanticOps.getUnits( ds2 );
-        MutablePropertyDataSet result;
-        if ( units2.isConvertableTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
-            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
-            result= (MutablePropertyDataSet)  applyBinaryOp(ds1, ds2, new BinaryOp() {
-                public double op(double d1, double d2) {
-                    return d1 + uc.convert(d2);
-                }
-            } );
-            if ( units1!=Units.dimensionless ) result.putProperty( QDataSet.UNITS, units1 );
-        } else if ( UnitsUtil.isIntervalMeasurement(units1) ) {
-            final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
-            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
-                public double op(double d1, double d2) {
-                    return d1 + uc.convert(d2);
-                }
-            } );
-            result.putProperty( QDataSet.UNITS, units1 );
-        } else if ( UnitsUtil.isIntervalMeasurement(units2) ) {
-            final UnitsConverter uc= UnitsConverter.getConverter( units1, units2.getOffsetUnits() );
-            result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
-                public double op(double d1, double d2) {
-                    return uc.convert(d1) + d2;
-                }
-            } );
-            result.putProperty( QDataSet.UNITS, units2 );
-        } else {
-            throw new IllegalArgumentException("units cannot be added: " + units1 + ", "+ units2 );
-
-        }
+        Map<String,Object> props= new HashMap();
+        BinaryOp b= addGen( ds1, ds2, props );
+        MutablePropertyDataSet result= applyBinaryOp( ds1, ds2, b );
+        result.putProperty( QDataSet.UNITS, props.get(QDataSet.UNITS) );
         result.putProperty(QDataSet.NAME, null );
         result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "+" ) );
         return result;
@@ -3175,6 +3188,27 @@ public class Ops {
     }
 
     /**
+     * returns outerSum of two rank 1 datasets, a rank 2 dataset with
+     * elements R[i,j]= ds1[i] + ds2[j].
+     *
+     * @param ds1 a rank 1 dataset of length m
+     * @param ds2 a rank 1 dataset of length n
+     * @return a rank 2 dataset[m,n]
+     */
+    public static QDataSet outerSum(QDataSet ds1, QDataSet ds2) {
+        DDataSet result = DDataSet.createRank2(ds1.length(), ds2.length());
+        Map<String,Object> props= new HashMap();
+        BinaryOp b= addGen( ds1, ds2, props );
+        for (int i = 0; i < ds1.length(); i++) {
+            for (int j = 0; j < ds2.length(); j++) {
+                result.putValue(i, j, b.op( ds1.value(i), ds2.value(j) ) );
+            }
+        }
+        result.putProperty( QDataSet.UNITS, props.get(QDataSet.UNITS ) );
+        return result;
+    }
+
+    /**
      * element-wise ceil function.
      * @param ds1
      * @return
@@ -3198,6 +3232,19 @@ public class Ops {
 
             public double op(double a) {
                 return Math.ceil(a);
+            }
+        });
+    }
+
+    /**
+     * element-wise round function.
+     * @param ds1
+     * @return
+     */
+    public static QDataSet round(QDataSet ds1) {
+        return applyUnaryOp(ds1, new UnaryOp() {
+            public double op(double a) {
+                return Math.round(a);
             }
         });
     }
