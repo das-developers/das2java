@@ -38,7 +38,9 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         if (graphics != null) {
             return graphics;
         }
-        return (graphics = cb.createGraphics(width, height));
+        graphics = cb.createGraphicsShapes(width, height);
+
+        return graphics;
     }
 
     public void finish() throws IOException {
@@ -63,6 +65,8 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         try {
             Rectangle rect = new Rectangle(width, height);
             doc = new Document(rect, 0f, 0f, 0f, 0f);
+            doc.addCreator("das2.org");
+            doc.addCreationDate();
             writer = PdfWriter.getInstance(doc, out);
             doc.open();
             cb = writer.getDirectContent();
