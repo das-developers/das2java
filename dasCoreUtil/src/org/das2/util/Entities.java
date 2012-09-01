@@ -13,7 +13,7 @@ public class Entities {
     static final String[] encoder = new String[0x100];
 
     /**
-     * utility method for decoding entities like &rho; into unicode.
+     * utility method for decoding entities like &amp;rho; into unicode.
      * @param str
      * @return string with unicode characters for entities.
      */
