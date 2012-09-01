@@ -723,15 +723,7 @@ public class Ops {
 
     /**
      * for Jython, we handle this because the double isn't coerced.
-     * @param x
-     * @return
-     */
-    public static int abs( int x ) {
-        return Math.abs( x );
-    }
-
-    /**
-     * for Jython, we handle this because the double isn't coerced.
+     * Note that abs(3) returns a long, not an int like Python 2.6.5
      * @param x
      * @return
      */
@@ -766,7 +758,8 @@ public class Ops {
     }
 
     /**
-     * for Jython, we define this because the doubles aren't coerced.
+     * for Jython, we define this because the doubles aren't coerced.  
+     * Note that pow(2,4) returns a long, not an int like Python 2.6.5
      * @param x
      * @param y
      * @return
@@ -787,7 +780,7 @@ public class Ops {
     }
 
     /**
-     * element-wise pow.  (** in FORTRAN, ^ in IDL)
+     * element-wise pow.  (** in FORTRAN or Jython, ^ in IDL)
      * Note Jython conflict needs to be resolved.
      * @param ds1
      * @param pow
@@ -795,7 +788,6 @@ public class Ops {
      */
     public static QDataSet pow(QDataSet ds1, double pow) {
         MutablePropertyDataSet result= applyBinaryOp(ds1, pow, new BinaryOp() {
-
             public double op(double d1, double d2) {
                 return Math.pow(d1, d2);
             }
@@ -3237,7 +3229,16 @@ public class Ops {
     }
 
     /**
-     * element-wise round function.
+     * for Jython, we handle this because the double isn't coerced.
+     * @param x
+     * @return
+     */
+    public static double round( double x ) {
+        return Math.round( x );
+    }
+
+    /**
+     * element-wise round function.  0.5 is round up.
      * @param ds1
      * @return
      */
