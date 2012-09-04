@@ -202,9 +202,9 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
             if ( value!=null ) {
                 setDatumRange( value ); // cause reformat of old Datum
                 if ( UnitsUtil.isTimeLocation(value.getUnits()) ) {
-                    showErrorUsage( text, "unable to parse time range" );
+                    showErrorUsage( text, "String cannot be parsed to time range" );
                 } else {
-                    showErrorUsage( text, "unable to parse range" );
+                    showErrorUsage( text, "String cannot be parsed to range with units \""+value.getUnits()+"\"" );
                 }
                 return value;
             } else {
@@ -214,7 +214,7 @@ public class DatumRangeEditor extends JComponent implements PropertyEditor, Tabl
             if ( value!=null ) {
                 setDatumRange( value ); // cause reformat of old Datum
                 if ( e.getMessage().contains("min > max") ) {
-                    showErrorUsage( text, "min cannot be greater than max" );
+                    showErrorUsage( text, "Min cannot be greater than max" );
                 } else {
                     showErrorUsage( text, e.getMessage() );
                 }
