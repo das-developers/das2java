@@ -2444,6 +2444,11 @@ public class DataSetUtil {
             result.putProperty( QDataSet.NAME, i, Ops.safeName( u.createDatum( labels.value(i) ).toString() ) );
             result.putProperty( QDataSet.LABEL, i, u.createDatum( labels.value(i) ).toString() );
         }
+        String name= (String) labels.property(QDataSet.NAME);
+        if ( name!=null ) result.putProperty( QDataSet.NAME, name );
+        String label= (String) labels.property(QDataSet.LABEL);
+        if ( label!=null ) result.putProperty( QDataSet.LABEL, label );
+
         return result;
     }
 
