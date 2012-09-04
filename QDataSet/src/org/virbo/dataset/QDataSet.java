@@ -97,6 +97,12 @@ public interface QDataSet {
     public final static String BUNDLE_2="BUNDLE_2";
     
     /**
+     * type QDataSet.  When multiple BUNDLES are present, they must be simple bundles, bundling just
+     * rank 1 datasets.
+     */
+    public final static String BUNDLE_3="BUNDLE_3";
+
+    /**
      * type Integer.  Only found in a bundle descriptor (BUNDLE_0 or BUNDLE_1), this returns the integer
      * index of the start of the current dataset.  If this is null, then the index used to access
      * the value may be used.  (E.g. a bundle of Rank 1 datasets.)
