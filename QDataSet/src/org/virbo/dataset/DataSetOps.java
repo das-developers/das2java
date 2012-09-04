@@ -672,6 +672,15 @@ public class DataSetOps {
             if ( bins.get(i)!=null ) result.put("BINS_" + i, bins.get(i));
         }
 
+        if ( properties.containsKey(QDataSet.CONTEXT_0) ) {
+            for ( int i=0; i<QDataSet.MAX_RANK; i++ ) {
+                QDataSet con= (QDataSet) properties.get("CONTEXT_"+i);
+                if ( con!=null ) {
+                    result.put("CONTEXT_"+i, con);
+                }
+            }
+        }
+        
         return result;
     }
 
