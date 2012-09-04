@@ -154,8 +154,14 @@ public class NumberUnits extends Units {
         } else {
             try {
                 s= s.trim();
-                if ( s.endsWith(this.getId()) ) { //TODO: bug Units.seconds.parse("1 days"), Units.seconds.parse("1 microseconds"),
-                    s= s.substring(0,s.length()-this.getId().length());
+                if ( s.endsWith(this.getId())  ) { //TODO: bug Units.seconds.parse("1 days"), Units.seconds.parse("1 microseconds"),
+                    char cbefore= 0;
+                    if ( s.length()>(this.getId().length()+1) ) {
+                        cbefore= s.charAt(s.length()-2);
+                    }
+                    if ( !Character.isLetter(cbefore) ) {
+                        s= s.substring(0,s.length()-this.getId().length());
+                    }
                 }
                 if ( s.length()==0 ) {
                     throw new ParseException("String contains no numeric part to parse into Datum",0);
