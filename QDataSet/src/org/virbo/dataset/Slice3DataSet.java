@@ -32,19 +32,28 @@ public class Slice3DataSet extends AbstractDataSet {
         this.index = index;
 
         if ( addContext ) {
-            QDataSet dep3= (QDataSet) ds.property(QDataSet.DEPEND_3);
-            if ( dep3!=null ) {
-                if ( dep3.rank()==1 ) {
-                    DataSetUtil.addContext( this, new Slice0DataSet(dep3,index,false) );
-                } else if ( dep3.rank()==2 ) {
-                    DataSetUtil.addContext( this, new Slice1DataSet(dep3,index,false) );
-                } else {
-                    System.err.println( "slice on non-qube, dep3 has rank="+dep3.rank() );
+            QDataSet bundle= (QDataSet) ds.property( QDataSet.BUNDLE_3 );
+            if ( bundle!=null ) {
+                QDataSet context=null;
+                if ( addContext ) {
+                    context= DataSetOps.getContextForUnbundle( bundle, index );
+                    DataSetUtil.addContext( this, context );
                 }
             } else {
-                DRank0DataSet context= DataSetUtil.asDataSet(index);
-                context.putProperty( QDataSet.NAME, "slice3" );
-                DataSetUtil.addContext( this, context );
+                QDataSet dep3= (QDataSet) ds.property(QDataSet.DEPEND_3);
+                if ( dep3!=null ) {
+                    if ( dep3.rank()==1 ) {
+                        DataSetUtil.addContext( this, new Slice0DataSet(dep3,index,false) );
+                    } else if ( dep3.rank()==2 ) {
+                        DataSetUtil.addContext( this, new Slice1DataSet(dep3,index,false) );
+                    } else {
+                        System.err.println( "slice on non-qube, dep3 has rank="+dep3.rank() );
+                    }
+                } else {
+                    DRank0DataSet context= DataSetUtil.asDataSet(index);
+                    context.putProperty( QDataSet.NAME, "slice3" );
+                    DataSetUtil.addContext( this, context );
+                }
             }
         }
 
@@ -55,6 +64,7 @@ public class Slice3DataSet extends AbstractDataSet {
 
         putProperty( QDataSet.BUNDLE_0, ds.property( QDataSet.BUNDLE_0 ) );
         putProperty( QDataSet.BUNDLE_1, ds.property( QDataSet.BUNDLE_1 ) );
+        putProperty( QDataSet.BUNDLE_2, ds.property( QDataSet.BUNDLE_2 ) );
         putProperty( QDataSet.BINS_0, ds.property( QDataSet.BINS_0 ) );
         putProperty( QDataSet.BINS_1, ds.property( QDataSet.BINS_1 ) );
         
