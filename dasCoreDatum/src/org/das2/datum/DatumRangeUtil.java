@@ -1163,24 +1163,21 @@ public class DatumRangeUtil {
             return parseTimeRange( str );
         } else {
             // consider Patterns -- dash not handled because of negative sign.
-            String[] ss= str.split("to");
+            // 0to4 apples -> 0 to 4 units=apples
+            // 0 to 35 sector -> 0 to 35 units=sector  note "to" in sector.
+            String[] ss= str.split("to",2);
             if ( ss.length==1 ) {
                 ss= str.split("\u2013");
             }
             if ( ss.length != 2 ) {
-                if ( ss.length==3 ) {
-                    ss[0]= "-"+ss[1];
-                    ss[1]= ss[2];
-                } else {
-                    throw new ParseException("failed to parse: "+str,0);
-                }
+                throw new ParseException("failed to parse: "+str,0);
             }
             
             // TODO: handle "124.0 to 140.0 kHz" when units= Units.hertz
             Datum d2;
             try {
                 d2= DatumUtil.parse(ss[1]);
-                if ( d2.getUnits()==Units.dimensionless ) d2= units.parse( ss[1] );
+                if ( d2.getUnits()==Units.dimensionless && units!=Units.dimensionless ) d2= units.parse( ss[1] );
             } catch ( ParseException e ) {
                 d2= units.parse( ss[1] );
             }
