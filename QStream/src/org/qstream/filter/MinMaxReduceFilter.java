@@ -5,6 +5,7 @@
 
 package org.qstream.filter;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -303,12 +304,18 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
     }
 
     public static void main( String[] args ) throws StreamException, MalformedURLException, IOException, ParseException {
+        InputStream in= System.in;
         if ( args.length!=1 ) {
-            System.err.println("java -jar autoplot.jar org.qstream.filter.MinMaxFilter <seconds>");
-            System.exit(-1);
+            if ( args.length==2 && args[1].startsWith("file:") ) {
+                in= new FileInputStream( args[1].substring(5) );
+            } else {
+                System.err.println("java -jar autoplot.jar org.qstream.filter.MinMaxFilter <seconds>");
+                System.err.println(  "arg2 can be set to input file: file:...");
+                System.exit(-1);
+            }
         }
         Datum cadence= Units.seconds.parse(args[0]);
-        doit( System.in, System.out, cadence );
+        doit( in, System.out, cadence );
         //doit( new java.net.URL("file:///home/jbf/project/autoplot/data.nobackup/qds/fm2_jmp_2012_03_13_msim3.qds").openStream(), new java.io.FileOutputStream("/tmp/fm2_jmp_2012_03_13_msim3.qds"), cadence );
         //doit( new java.net.URL("file:///tmp/0B000800408DD710.20120302.qds").openStream(), new FileOutputStream("/tmp/0B000800408DD710.20120302.reduce.qds"), cadence );
         //doit( new java.net.URL("file:///tmp/po_h0_hyd_20000128.qds").openStream(), new FileOutputStream("/tmp/po_h0_hyd_20000128.reduce.qds"), cadence );
