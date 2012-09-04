@@ -1402,6 +1402,7 @@ public class DataSetOps {
      * @return the dataset after the process string is applied.
      * @see http://autoplot.org/developer.dataset.filters
      * @see http://autoplot.org/developer.panel_rank_reduction
+     * @see org.virbo.metatree.MetadataUtil.java which also handles the metadata (for now).
      */
     public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) throws Exception {
         int i=1;
