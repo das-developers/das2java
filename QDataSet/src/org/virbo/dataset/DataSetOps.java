@@ -1103,6 +1103,24 @@ public class DataSetOps {
     }
 
     /**
+     * given the bundle descriptor bds, return the dataset to be put in the context property.
+     * @param bundle1 rank 2 bundle descriptor of length n with indexed properties.  This was introduced
+     * when sloppy slice code was using the NAME and dropping the LABEL.
+     * @param index 0<=index<n index of the unbundle
+     * @return rank 0 QDataSet.
+     */
+    protected static QDataSet getContextForUnbundle( QDataSet bundle1, int index ) {
+        String tname= (String) bundle1.property(QDataSet.NAME);
+        if ( tname==null ) tname=(String) bundle1.property(QDataSet.NAME,index);
+        String tlabel= (String) bundle1.property(QDataSet.LABEL,index);
+        MutablePropertyDataSet context= (MutablePropertyDataSet) ( Ops.labels( new String[] { tlabel } )).slice(0);
+        if ( !Ops.safeName(tlabel).equals(tname) ) {
+            context.putProperty( QDataSet.NAME, tname );
+        }
+        return context;
+    }
+
+    /**
      * returns the value from within a distribution that is the nth percentile division.  This
      * returns a fill dataset (Units.dimensionless.getFillDouble()) when the data is all fill.
      * @param ds
