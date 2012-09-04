@@ -5,15 +5,13 @@
 
 package org.qstream.filter;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,16 +25,16 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.das2.datum.Datum;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.qstream.FormatStreamHandler;
 import org.virbo.qstream.PacketDescriptor;
 import org.virbo.qstream.PlaneDescriptor;
-import org.virbo.qstream.QDataSetStreamHandler;
 import org.virbo.qstream.Rank0DataSetSerializeDelegate;
-import org.virbo.qstream.SimpleStreamFormatter;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamTool;
@@ -286,33 +284,34 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
 
     }
 
-    public static void main( String[] args ) throws StreamException, IOException  {
-        File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
+    public static void doit( InputStream in, OutputStream out, Datum cadence ) throws StreamException {
 
-        InputStream in = new FileInputStream(f);
-        QDataSetStreamHandler handler = new QDataSetStreamHandler();
+        ReduceFilter pipe= new ReduceFilter();
+        pipe.setCadence( cadence );
 
-        MinMaxReduceFilter filter= new MinMaxReduceFilter();
-        filter.lengthSeconds= 3600; //TODO: client must know the units of the qstream.
+        StreamTool stin= new StreamTool();
 
-        filter.sink= new QDataSetsFilter.QDataSetSink() {
+        ReadableByteChannel rin= java.nio.channels.Channels.newChannel( in );
 
-            @Override
-            public void packetData(PacketDescriptor pd, PlaneDescriptor pld, QDataSet ds) {
-                System.err.println( "From "+pld.getName() + ": " + ds );
-            }
+        FormatStreamHandler fsh= new FormatStreamHandler();
+        fsh.setOutputStream( out );
 
-        };
+        pipe.sink= fsh;
 
-        StreamTool.readStream( Channels.newChannel(in), filter );
-        //StreamTool.readStream( Channels.newChannel(in), handler ); // test without filter.
+        stin.readStream( rin, pipe );
 
-        QDataSet qds = handler.getDataSet();
+    }
 
-        System.err.println( "result= "+qds );
-
-        SimpleStreamFormatter format= new SimpleStreamFormatter();
-        format.format( qds, new FileOutputStream("/tmp/proton_density.reduced.qds"), true );
-
+    public static void main( String[] args ) throws StreamException, MalformedURLException, IOException, ParseException {
+        if ( args.length!=1 ) {
+            System.err.println("java -jar autoplot.jar org.qstream.filter.MinMaxFilter <seconds>");
+            System.exit(-1);
+        }
+        Datum cadence= Units.seconds.parse(args[0]);
+        doit( System.in, System.out, cadence );
+        //doit( new java.net.URL("file:///home/jbf/project/autoplot/data.nobackup/qds/fm2_jmp_2012_03_13_msim3.qds").openStream(), new java.io.FileOutputStream("/tmp/fm2_jmp_2012_03_13_msim3.qds"), cadence );
+        //doit( new java.net.URL("file:///tmp/0B000800408DD710.20120302.qds").openStream(), new FileOutputStream("/tmp/0B000800408DD710.20120302.reduce.qds"), cadence );
+        //doit( new java.net.URL("file:///tmp/po_h0_hyd_20000128.qds").openStream(), new FileOutputStream("/tmp/po_h0_hyd_20000128.reduce.qds"), cadence );
+        //doit( new java.net.URL("file:///home/jbf/data.nobackup/qds/doesntReduce.ascii.qds").openStream(), new java.io.FileOutputStream("/home/jbf/data.nobackup/qds/doesntReduce.reduced.qds"), cadence );
     }
 }

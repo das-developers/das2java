@@ -288,7 +288,7 @@ public class QDataSetsFilter implements StreamHandler {
     }
 
 
-    public static void main( String[] args ) throws IOException, StreamException {
+    public static void main( String[] args ) throws IOException, StreamException, Exception {
         //File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );
         File f = new File( "/home/jbf/data.nobackup/qds/waveformTable2.qds" );
 
