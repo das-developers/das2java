@@ -8,6 +8,7 @@ package org.qstream.filter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -287,7 +288,7 @@ public class QDataSetsFilter implements StreamHandler {
     }
 
 
-    public static void main( String[] args ) throws FileNotFoundException, StreamException {
+    public static void main( String[] args ) throws IOException, StreamException {
         //File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );
         File f = new File( "/home/jbf/data.nobackup/qds/waveformTable2.qds" );
 
