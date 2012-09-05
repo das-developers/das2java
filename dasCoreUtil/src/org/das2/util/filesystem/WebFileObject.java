@@ -361,6 +361,10 @@ public class WebFileObject extends FileObject {
                 File partFile = new File(localFile.toString() + ".part");
                 wfs.downloadFile(pathname, localFile, partFile, monitor);
 
+                if ( !localFile.setLastModified(remoteDate.getTime()) ) {
+                    System.err.println("unable to modify date of "+localFile);
+                }
+
                 FileSystem.logger.log(Level.FINE, "downloaded local file has date {0}", new Date(localFile.lastModified()));
 
             } catch (FileNotFoundException e) {
