@@ -33,6 +33,7 @@ import java.nio.channels.Channels;
 import java.util.*;
 import java.util.logging.Logger;
 import org.das2.util.Base64;
+import org.das2.util.filesystem.FileSystem.DirectoryEntry;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import org.das2.util.monitor.CancelledOperationException;
 
@@ -161,7 +162,7 @@ public class WebFileObject extends FileObject {
     }
 
     public java.util.Date lastModified() {
-        if ( modifiedDate.getTime()==Long.MAX_VALUE ) { 
+        if ( modifiedDate.getTime()==Long.MAX_VALUE ) {
             try {
                 maybeLoadMetadata();
             } catch ( IOException ex ) {
@@ -177,6 +178,18 @@ public class WebFileObject extends FileObject {
             }
         }
         return modifiedDate;
+    }
+
+    /**
+     * allow subclasses, such as FtpBeanFileSystem, to delay loading of the date.
+     * @param d
+     */
+    protected void setLastModified( Date d ) {
+        if ( this.modifiedDate.getTime()==0 || this.modifiedDate.getTime()==Long.MAX_VALUE ) {
+            this.modifiedDate= d;
+        } else {
+            throw new IllegalArgumentException("valid date cannot be modified");
+        }
     }
 
     /**
@@ -312,8 +325,12 @@ public class WebFileObject extends FileObject {
                 }
             }
         } else {
-            // this is the old logic
-            remoteDate = new Date(localFile.lastModified());
+            if ( this.lastModified().getTime()==0 || this.lastModified().getTime()==Long.MAX_VALUE ) {
+                DirectoryEntry result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true ); // trigger load of the modifiedDate
+                this.setLastModified( new Date( result.modified ) );
+            }
+
+            remoteDate = this.lastModified();
         }
 
         if (localFile.exists()) {

@@ -435,6 +435,38 @@ public abstract class WebFileSystem extends FileSystem {
         return null;
     }
 
+    /**
+     * trigger an update of the in-memory listing, or check to see if it is in memory.
+     * @param filename the particular file for which we need a listing.
+     * @param force if true, then list if it isn't available.
+     * @return null if the listing is not available, the DirectoryEntry otherwise.
+     */
+    public DirectoryEntry maybeUpdateDirectoryEntry( String filename, boolean force ) throws IOException {
+        // we should be able to get the listing that we just did from memory.
+        String path= toCanonicalFilename(filename);
+        int i= path.lastIndexOf("/");
+        DirectoryEntry[] des= listDirectoryFromMemory(path.substring(0,i+1));
+        int itry= 10;
+        while ( force && des==null && itry-->0 ) {
+            listDirectory(path.substring(0,i+1));
+            des= listDirectoryFromMemory(path.substring(0,i+1));
+        }
+        if ( des==null ) {
+            throw new IOException("unable to get listing");
+        }
+        DirectoryEntry result= null;
+        if ( des!=null ) {
+            String fname= path.substring(i+1);
+            for ( i=0; i<des.length; i++ ) {
+                if ( fname.equals(des[i].name) ) {
+                    result= des[i];
+                }
+            }
+        }
+        return result;
+    }
+    
+
     abstract public boolean isDirectory(String filename) throws IOException;
 
     abstract public String[] listDirectory(String directory) throws IOException;
