@@ -451,7 +451,7 @@ public abstract class WebFileSystem extends FileSystem {
             listDirectory(path.substring(0,i+1));
             des= listDirectoryFromMemory(path.substring(0,i+1));
         }
-        if ( des==null ) {
+        if ( force && des==null ) {
             throw new IOException("unable to get listing");
         }
         DirectoryEntry result= null;
