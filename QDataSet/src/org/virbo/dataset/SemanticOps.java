@@ -80,7 +80,7 @@ public class SemanticOps {
      * @param ds
      * @return
      */
-    public final static String[] getComponentNames(QDataSet ds) {
+    public static String[] getComponentNames(QDataSet ds) {
         int n = ds.length(0);
         QDataSet bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
         if ( bdesc!=null && bdesc.rank()==2 ) {
@@ -125,7 +125,7 @@ public class SemanticOps {
      * @param ds
      * @return
      */
-    public final static String[] getComponentLabels(QDataSet ds) {
+    public static String[] getComponentLabels(QDataSet ds) {
         int n = ds.length(0);
         QDataSet bdesc= (QDataSet) ds.property(QDataSet.BUNDLE_1);
         if ( bdesc!=null && bdesc.rank()==2 ) {
