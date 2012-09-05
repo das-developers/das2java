@@ -28,6 +28,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.UnitsUtil;
+import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
@@ -1399,7 +1400,59 @@ public class DataSetOps {
         }
         return comp;
     }
-    
+
+    /**
+     * apply process to the data.  This is like sprocess, except that the component can be extracted as the first step.
+     * In general these can be done on the same thread (like
+     * slice1), but some are slow (like fftPower).  This is a copy of PlotElementController.processDataSet.
+     *
+     * @param c
+     * @param fillDs
+     * @return
+     * @throws RuntimeException
+     * @throws Exception when the processStr cannot be processed.
+     */
+    public static QDataSet processDataSet( String c, QDataSet fillDs, ProgressMonitor mon ) throws RuntimeException, Exception {
+        c= c.trim();
+        if ( c.length()>0 && !c.startsWith("|") ) {  // grab the component, then apply processes after the pipe.
+            if (!c.equals("") && fillDs.length() > 0 && fillDs.rank() == 2) {
+                String[] labels = SemanticOps.getComponentNames(fillDs);
+                String comp= c;
+                int ip= comp.indexOf("|");
+                if ( ip!=-1 ) {
+                    comp= comp.substring(0,ip);
+                }
+                comp= Ops.saferName(comp);
+                if ( fillDs.property(QDataSet.BUNDLE_1)!=null ) {
+                    fillDs= DataSetOps.unbundle( fillDs,comp ); //TODO: illegal argument exception
+                } else {
+                    boolean found= false;
+                    for (int i = 0; i < labels.length; i++) {
+                        if ( Ops.saferName(labels[i]).equals(comp)) {
+                            fillDs = DataSetOps.slice1(fillDs, i);
+                            found= true;
+                            break;
+                        }
+                    }
+                    if ( !found ) {
+                        throw new IllegalArgumentException("component not found: "+comp );
+                    }
+                }
+            }
+            int idx= c.indexOf("|");
+            if ( idx==-1 ) {
+                c="";
+            } else {
+                c= c.substring(idx);
+            }
+        }
+        if (c.length() > 5 && c.startsWith("|")) {
+            fillDs = DataSetOps.sprocess(c, fillDs, mon );
+        }
+        return fillDs;
+    }
+
+
     /**
      * see http://www.papco.org/wiki/index.php/DataReductionSpecs.  There's a big problem here:
      * if the command is not recognized, then it is ignored.  We should probably change this,
