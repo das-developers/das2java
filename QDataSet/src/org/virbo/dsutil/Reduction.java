@@ -142,7 +142,7 @@ public class Reduction {
                     continue;
                 }
 
-                if ( Math.abs(dx) < dxLimit ) {
+                if ( dx>= 0 && dx < dxLimit ) {
                     double pyy = yy.value(j);
 
                     sy0[j] += pyy*ww.value(j);
@@ -154,7 +154,7 @@ public class Reduction {
                 }
             }
 
-            if ( Math.abs(dx)>= dxLimit ) { // clear the accumulators
+            if ( dx<0 || dx>= dxLimit ) { // clear the accumulators
 
                 x0 = Math.floor(pxx/dxLimit) * dxLimit;
 
