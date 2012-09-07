@@ -155,27 +155,31 @@ public class Reduction {
             }
 
             if ( Math.abs(dx)>= dxLimit ) { // clear the accumulators
+
+                x0 = Math.floor(pxx/dxLimit) * dxLimit;
+
                 for ( int j=0; j<ny; j++ ) {
-                    x0 = Math.floor(pxx/dxLimit) * dxLimit;
 
                     if ( nx>0 ) {
+                        boolean nv= nn0[j]==0;
                         ax0 = sx0 / nx;
-                        ay0[j] = nn0[j]==0 ? fill : sy0[j] / nn0[j];
+                        ay0[j] = nv ? fill : sy0[j] / nn0[j];
                         if (j==0 ) xbuilder.putValue( points, ax0 );
                         ybuilder.putValue( points, j, ay0[j] );
-                        yminbuilder.putValue( points, j, nn0[j]==0 ? fill : miny0[j] );
-                        ymaxbuilder.putValue( points, j, nn0[j]==0 ? fill : maxy0[j] );
+                        yminbuilder.putValue( points, j, nv ? fill : miny0[j] );
+                        ymaxbuilder.putValue( points, j, nv ? fill : maxy0[j] );
                         wbuilder.putValue( points, j, nn0[j] );
 
                     }
 
                     double pyy = yy.value(j);
+                    double wwj= ww.value(j);
 
                     if ( j==0 ) sx0 = pxx*wx;
-                    sy0[j] = pyy*ww.value(j);
-                    nn0[j] = ww.value(j);
+                    sy0[j] = pyy*wwj;
+                    nn0[j] = wwj;
                     nx= 1;
-                    if ( ww.value(j)>0 ) {
+                    if ( wwj>0 ) {
                         miny0[j] = pyy;
                         maxy0[j] = pyy;
                     } else {
@@ -194,12 +198,13 @@ public class Reduction {
 
         if ( nx>0 ) {
             for ( int j=0; j<ny; j++ ) {
+                boolean nv= nn0[j]==0;
                 ax0 = sx0 / nx;
-                ay0[j] = nn0[j]==0 ? fill : sy0[j] / nn0[j];
+                ay0[j] = nv ? fill : sy0[j] / nn0[j];
                 if ( j==0 ) xbuilder.putValue( points, ax0 );
                 ybuilder.putValue( points, j, ay0[j] );
-                yminbuilder.putValue( points, j, nn0[j]==0 ? fill : miny0[j] );
-                ymaxbuilder.putValue( points, j, nn0[j]==0 ? fill : maxy0[j] );
+                yminbuilder.putValue( points, j, nv ? fill : miny0[j] );
+                ymaxbuilder.putValue( points, j, nv ? fill : maxy0[j] );
                 wbuilder.putValue( points, j, nn0[j] );
             }
             points++;
