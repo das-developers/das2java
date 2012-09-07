@@ -88,6 +88,7 @@ public class DasPlot extends DasCanvasComponent {
     DasAxis.Memento ymemento;
     protected String offsetTime = "";
     protected String plotTitle = "";
+    protected boolean displayTitle= true;
     protected double[] psym_x;
     protected double[] psym_y;
     protected RebinListener rebinListener = new RebinListener();
@@ -1009,7 +1010,7 @@ public class DasPlot extends DasCanvasComponent {
         if ( clip0!=null ) clip0.translate( getX(), getY() );
         graphics.setClip(clip0);
 
-        if (plotTitle != null && plotTitle.length() != 0) {
+        if ( displayTitle && plotTitle != null && plotTitle.length() != 0) {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT);
             gtr.setString(graphics, plotTitle);
@@ -1288,6 +1289,21 @@ public class DasPlot extends DasCanvasComponent {
         return plotTitle;
     }
 
+
+    public static final String PROP_DISPLAYTITLE="displayTitle";
+
+    public boolean isDisplayTitle() {
+        return this.displayTitle;
+    }
+
+    public void setDisplayTitle(boolean v) {
+        boolean old= this.displayTitle;
+        this.displayTitle= v;
+        firePropertyChange( PROP_DISPLAYTITLE, old, v );
+        resize();
+        invalidateCacheImage();
+    }
+    
     public static final String PROP_CONTEXT= "context";
     
     /**
