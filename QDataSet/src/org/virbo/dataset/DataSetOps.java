@@ -1123,6 +1123,8 @@ public class DataSetOps {
         String tname= (String) bundle1.property(QDataSet.NAME);
         if ( tname==null ) tname=(String) bundle1.property(QDataSet.NAME,index);
         String tlabel= (String) bundle1.property(QDataSet.LABEL,index);
+        tname= String.valueOf(tname); // guard against null
+        tlabel= String.valueOf(tlabel);
         MutablePropertyDataSet context= (MutablePropertyDataSet) ( Ops.labels( new String[] { tlabel } )).slice(0);
         if ( !Ops.safeName(tlabel).equals(tname) ) {
             context.putProperty( QDataSet.NAME, tname );
