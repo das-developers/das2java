@@ -3765,6 +3765,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROP_USEDOMAINDIVIDER, oldUseDomainDivider, useDomainDivider);
     }
 
+    @Override
+    public void setVisible(boolean aFlag) {
+        this.setTickLabelsVisible(aFlag);
+        super.setVisible(aFlag);
+    }
 
     /**
      * set a hint at the format string.  Examples include:
