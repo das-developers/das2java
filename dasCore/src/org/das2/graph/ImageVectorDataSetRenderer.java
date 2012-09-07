@@ -502,6 +502,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
     /**
      * calculate the area that describes roughly where the data lie.  The
      * variable "selectionArea" is set.
+     *
+     * This is fast, less than 50ms with 5 million points.  When the image gets big, this gets slow...
      */
     private void calcSelectionArea() {
         BufferedImage plotImage= this.plotImage; // make local copy
@@ -516,13 +518,20 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int parenty = (int)parent.getCacheImageBounds().getY();
         int overx= imagex - parentx;
         GeneralPath result= new GeneralPath();
-        for ( int i=0; i<w; i+=5 ) {
-            for ( int j=0; j<h; j+=5 ) {
+        int d= 5;
+        int dd= 5;
+        if ( w*h>100000 ) {
+            d= 10;
+        }
+        if ( w*h>500000 ) d= 30;
+
+        for ( int i=0; i<w; i+=d ) {
+            for ( int j=0; j<h; j+=d ) {
                 int n=0;
                 int x= 0;
                 int y= 0;
-                for ( int ii=0; ii<10; ii++ ) {
-                    for ( int jj=0; jj<10; jj++ ) {
+                for ( int ii=0; ii<d; ii++ ) {
+                    for ( int jj=0; jj<d; jj++ ) {
                         if ( i+ii<w && j+jj<h ) {
                             if ( ( plotImage.getRGB(i+ii,j+jj) & 0xff000000 ) != 0 ) {
                                 n++;
@@ -533,7 +542,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     }
                 }
                 if ( n>0 ) {
-                    result.append( new Rectangle( (int)( overx + i+((float)x)/n+parentx-5 + dx ), (int)( j+((float)y)/n+parenty-5 ), 10, 10 ), true );
+                    result.append( new Rectangle( (int)( overx + i+((float)x)/n+parentx-dd/2 + dx ), (int)( j+((float)y)/n+parenty-dd/2 ), dd, dd ), true );
                 }
             }
         }
