@@ -83,8 +83,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
     }
 
 
-    public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
+        //long t0= System.currentTimeMillis();
+        
         if ( ds==null ) {
             parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             return;
@@ -144,6 +146,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 g2.drawImage(plotImage, x, y, getParent());
             }
         }
+
+         //System.err.println("done render "+ ( System.currentTimeMillis()-t0 )+ " ms" );
 
     }
 
@@ -218,8 +222,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
 
         logger.fine("done");
-        plotImage = image;
-        selectionArea= null;
+        synchronized (this) {
+            plotImage = image;
+            selectionArea= null;
+        }
         
     }
 
@@ -348,17 +354,26 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
         }
 
-        plotImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage plotImage1 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         selectionArea= null;
-        WritableRaster r = plotImage.getRaster();
+        WritableRaster r = plotImage1.getRaster();
         r.setDataElements(0, 0, w, h, raster);
 
+        synchronized (this) {
+            plotImage= plotImage1;
+        }
         imageXRange = xrange;
     }
 
     @Override
-    public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
 
+        //System.err.println("enter updatePlotImage");
+        //long t0= System.currentTimeMillis();
+
+        //if ( java.swing.SwingUtilities.isEventDispatchThread() ) {
+        //    System.err.println("called on event thread");
+        //}
         super.updatePlotImage(xAxis, yAxis, monitor);
 
         QDataSet ds1 = getDataSet();
@@ -425,7 +440,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
             ghostlyImage2(xAxis, yAxis, ds1, plotImageBounds);
         }
         logger.fine("done updatePlotImage");
+        //System.err.println("done updatePlotImage "+ ( System.currentTimeMillis()-t0 )+ " ms" );
+
     }
+
+
     int saturationHitCount = 5;
 
     public void setSaturationHitCount(int d) {
