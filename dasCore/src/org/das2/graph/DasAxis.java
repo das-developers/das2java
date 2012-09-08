@@ -2541,7 +2541,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else {
             bounds = getVerticalAxisBounds();
         }
-        if (getOrientation() == BOTTOM && isTickLabelsVisible()) {
+        if (getOrientation() == BOTTOM && isVisible() && isTickLabelsVisible()) {
             QDataSet ltcaData= tcaData;
             if (drawTca && ltcaData != null && ltcaData.length() != 0) {
                 int DMin = getColumn().getDMinimum();
@@ -2629,7 +2629,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int width = DWidth;
             int height = Math.abs( tickLen );
             //The last tick is at position (x + width), so add 1 to width
-            blTickRect = setRectangleBounds(blTickRect, x, y, width + 1, height );
+            if ( isVisible() ) {
+                blTickRect = setRectangleBounds(blTickRect, x, y, width + 1, height );
+            } else {
+                blTickRect = setRectangleBounds(blTickRect, x, y, width + 1, 1 );
+            }
         }
         if (topTicks) {
             int x = DMin;
@@ -2637,7 +2641,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int width = DWidth;
             int height = Math.abs( tickLen );
             //The last tick is at position (x + width), so add 1 to width
-            trTickRect = setRectangleBounds(trTickRect, x, y, width + 1, height );
+            if ( isVisible() ) {
+                trTickRect = setRectangleBounds(trTickRect, x, y, width + 1, height );
+            } else {
+                trTickRect = setRectangleBounds(trTickRect, x, y, 1, height );
+            }
+            
         }
         //int maxLabelWidth = getMaxLabelWidth();
         //int tick_label_gap = getFontMetrics(tickLabelFont).stringWidth(" ");
@@ -2669,14 +2678,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         GrannyTextRenderer gtr = new GrannyTextRenderer();
         gtr.setString(labelFont, getLabel());
         int labelSpacing = (int) gtr.getHeight() + labelFont.getSize() / 2;
-        if (bottomLabel) {
+
+        boolean v= isVisible();
+
+        if (bottomLabel && v ) {
             int x = DMin;
             int y = blLabelRect.y + blLabelRect.height;
             int width = DMax - DMin;
             int height = labelSpacing;
             blTitleRect = setRectangleBounds(blTitleRect, x, y, width, height);
         }
-        if (topLabel) {
+        if (topLabel && v ) {
             int x = DMin;
             int y = trLabelRect.y - labelSpacing;
             int width = DMax - DMin;
@@ -2685,24 +2697,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
 
         bounds = new Rectangle((orientation == BOTTOM) ? blLineRect : trLineRect);
-        if (bottomTicks) {
+        if (bottomTicks && v ) {
             bounds.add(blLineRect);
             bounds.add(blTickRect);
         }
-        if (bottomTickLabels) {
+        if (bottomTickLabels && v ) {
             bounds.add(blLabelRect);
         }
-        if (bottomLabel) {
+        if (bottomLabel && v ) {
             bounds.add(blTitleRect);
         }
-        if (topTicks) {
+        if (topTicks && v ) {
             bounds.add(trLineRect);
             bounds.add(trTickRect);
         }
-        if (topTickLabels) {
+        if (topTickLabels && v ) {
             bounds.add(trLabelRect);
         }
-        if (topLabel) {
+        if (topLabel && v ) {
             bounds.add(trTitleRect);
         }
 
@@ -2811,25 +2823,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             trTitleRect = setRectangleBounds(trTitleRect, x, y, width, height);
         }
 
+        boolean v= isVisible();
+
         bounds = new Rectangle((orientation == LEFT) ? blLineRect : trLineRect);
-        if (leftTicks) {
+        if (leftTicks && v ) {
             bounds.add(blLineRect);
             bounds.add(blTickRect);
         }
-        if (leftTickLabels) {
+        if (leftTickLabels && v ) {
             bounds.add(blLabelRect);
         }
-        if (leftLabel) {
+        if (leftLabel && v ) {
             bounds.add(blTitleRect);
         }
-        if (rightTicks) {
+        if (rightTicks && v ) {
             bounds.add(trLineRect);
             bounds.add(trTickRect);
         }
-        if (rightTickLabels) {
+        if (rightTickLabels && v ) {
             bounds.add(trLabelRect);
         }
-        if (rightLabel) {
+        if (rightLabel && v ) {
             bounds.add(trTitleRect);
         }
 
@@ -3765,10 +3779,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROP_USEDOMAINDIVIDER, oldUseDomainDivider, useDomainDivider);
     }
 
+    /**
+     * set the component visible or invisible. The axis bounds are updated.  So in addition to the JComponent visibility, this
+     * also makes a useful property to completely hide the axis.  drawTickLabels hides the labels but still draws the ticks, this
+     * completely hides the axis.  Note too that even though it is not visible, tick positions are still updated to support
+     * drawing a grid on the plot.
+     * @param aFlag
+     */
     @Override
     public void setVisible(boolean aFlag) {
-        this.setTickLabelsVisible(aFlag);
         super.setVisible(aFlag);
+        update();
     }
 
     /**
