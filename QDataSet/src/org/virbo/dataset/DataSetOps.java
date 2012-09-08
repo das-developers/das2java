@@ -1535,7 +1535,7 @@ public class DataSetOps {
                     String arg= getStringArg( s.next() );
                     try {
                         Datum r = DatumUtil.parse(arg);
-                        fillDs= Reduction.reduce2D( fillDs, DataSetUtil.asDataSet(r),null);
+                        fillDs= Reduction.reducex( fillDs, DataSetUtil.asDataSet(r) );
                     } catch (ParseException ex) {
                         Logger.getLogger(DataSetOps.class.getName()).log(Level.SEVERE, null, ex);
                     }
