@@ -443,10 +443,10 @@ public class DasPlot extends DasCanvasComponent {
         if (drawMinorGrid) {
             DatumVector xticks = null;
             DatumVector yticks = null;
-            if (getXAxis().isVisible() && xtickv!=null ) {
+            if ( xtickv!=null ) {
                 xticks = xtickv.getMinorTicks();
             }
-            if (getYAxis().isVisible() && ytickv!=null ) {
+            if ( ytickv!=null ) {
                 yticks = ytickv.getMinorTicks();
             }
             plotGraphics.setColor(minorGridColor);
@@ -456,10 +456,10 @@ public class DasPlot extends DasCanvasComponent {
         if (drawGrid) {
             DatumVector xticks = null;
             DatumVector yticks = null;
-            if (getXAxis().isVisible() && xtickv!=null ) {
+            if ( xtickv!=null ) {
                 xticks = xtickv.getMajorTicks();
             }
-            if (getYAxis().isVisible() && ytickv!=null ) {
+            if ( ytickv!=null ) {
                 yticks = ytickv.getMajorTicks();
             }
             plotGraphics.setColor(gridColor);
@@ -878,7 +878,7 @@ public class DasPlot extends DasCanvasComponent {
         Rectangle clip0= graphics.getClipBounds();
         Rectangle plotClip= DasDevicePosition.toRectangle( getRow(), getColumn() );
         plotClip.height+=2;
-        plotClip.height+=titleHeight;
+        if ( displayTitle ) plotClip.height+=titleHeight;
         plotClip.width+=2;
         plotClip.translate(-x, -y);
         if ( clip!=null ) plotClip= plotClip.intersection(clip);
@@ -1235,7 +1235,7 @@ public class DasPlot extends DasCanvasComponent {
 
             bounds.width = getColumn().getDMaximum() - bounds.x + 1;
             bounds.height = getRow().getDMaximum() - bounds.y + 1;
-            if (!getTitle().equals("")) {
+            if ( displayTitle && !getTitle().equals("") ) {
                 bounds.y -= titleHeight;
                 bounds.height += titleHeight;
             }
@@ -1256,7 +1256,6 @@ public class DasPlot extends DasCanvasComponent {
                    }
                 });
             }
-            
         }
     }
 
