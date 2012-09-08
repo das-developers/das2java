@@ -541,6 +541,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int dd= 5;
         if ( w*h>100000 ) {
             d= 10;
+            dd= 10; // this is used to evaluate mouse click focus as well.
         }
         if ( w*h>500000 ) d= 30;
 
