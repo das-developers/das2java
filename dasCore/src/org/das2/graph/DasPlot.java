@@ -137,6 +137,14 @@ public class DasPlot extends DasCanvasComponent {
                     if ( ir>-1 ) {
                         r= (Renderer) renderers.get(ir);
                     }
+                    if ( r==null ) {
+                        for ( int i=renderers.size()-1; i>=0; i-- ) {
+                            if ( renderers.get(i).isActive()==false ) {
+                                r= renderers.get(i);
+                                break;
+                            }
+                        }
+                    }
                     setFocusRenderer(r);
                 }
                 if (editRendererMenuItem != null) {
