@@ -612,6 +612,29 @@ public class FileStorageModelNew {
         }
         return result;
     }
+
+    /**
+     * hide the contents of parameters as in
+     *   product_%(o,id=ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/rbspa_pp).png -->
+     *   product_%(______________________________________________________________________).png -->
+     * @param template
+     * @return
+     */
+    private static String hideParams( String template ) {
+        StringBuilder result= new StringBuilder();
+        boolean withinArg= false;
+        for ( int i=0; i<template.length(); i++ ) {
+            if ( withinArg ) {
+                if ( template.charAt(i)==')' ) withinArg= false;
+                if ( withinArg ) result.append("_"); else result.append(template.charAt(i) );
+            } else {
+                if ( template.charAt(i)=='(' ) withinArg= true;
+                result.append(template.charAt(i) );
+            }
+
+        }
+        return result.toString();
+    }
     /**
      * creates a FileStorageModel for the given template, which uses:
      *    %Y-%m-%dT%H:%M:%S.%{milli}Z";
@@ -625,6 +648,7 @@ public class FileStorageModelNew {
      *    %v  best version by number  Also %(v,sep) for 4.3.2  or %(v,alpha)
      *    %{milli}  3-digit milliseconds
      *
+     * product_%(o,id=ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/rbspa_pp).png
      * @param root FileSystem source of the files.
      * @param template describes how filenames are constructed.  This is converted to a regular expression and may contain regex elements without groups.  The
      *   string may contain $ instead of percents as long as there are no percents in the string.
@@ -633,13 +657,15 @@ public class FileStorageModelNew {
      */
     public static FileStorageModelNew create( FileSystem root, String template ) {
         template= makeCanonical(template);
-        int i= template.lastIndexOf("/");
+        String templatebr= hideParams( template );
+        int i= templatebr.lastIndexOf("/");
 
         if ( template.contains("$") && !template.contains("%") ) {
             template= template.replaceAll("\\$", "%");
+            templatebr= templatebr.replaceAll("\\$", "%");
         }
         
-        int i2= template.lastIndexOf("%",i);
+        int i2= templatebr.lastIndexOf("%",i);
         if ( i2 != -1 ) {
             String parentTemplate= template.substring(0,i);
             FileStorageModelNew parentFSM= FileStorageModelNew.create( root, parentTemplate );
