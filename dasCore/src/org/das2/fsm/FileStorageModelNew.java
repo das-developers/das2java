@@ -616,7 +616,7 @@ public class FileStorageModelNew {
     /**
      * hide the contents of parameters as in
      *   product_%(o,id=ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/rbspa_pp).png -->
-     *   product_%(______________________________________________________________________).png -->
+     *   product_%(______________________________________________________________________).png
      * @param template
      * @return
      */
