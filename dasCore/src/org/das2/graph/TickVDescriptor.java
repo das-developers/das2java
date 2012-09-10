@@ -181,8 +181,9 @@ public class TickVDescriptor {
         double maj = 0;
         double absissa=0;
         double mag=0;
+        int nTicks= 0;
 
-        while ( maj<2 ) {
+        while ( nTicks<2 ) {
             maj = ( maximum - minimum) / (targetTicks - 1);
             mag = Math.pow(10,Math.floor(Math.log10(maj)));
 
@@ -210,7 +211,7 @@ public class TickVDescriptor {
             double majorTickSize = absissa * mag;
             double firstTick = majorTickSize * Math.ceil( minimum / majorTickSize );
             double lastTick =  majorTickSize * Math.floor( maximum / majorTickSize );
-            int nTicks = 1 + (int) Math.round((lastTick - firstTick) / majorTickSize);
+            nTicks= 1 + (int) Math.round((lastTick - firstTick) / majorTickSize);
             if ( nTicks<2 ) {
                 targetTicks= targetTicks+1;
             }
@@ -245,7 +246,7 @@ public class TickVDescriptor {
                 minorTickSize= 1;
             }
         }
-        int nTicks = 1 + (int) Math.round((lastTick - firstTick) / majorTickSize);
+        nTicks = 1 + (int) Math.round((lastTick - firstTick) / majorTickSize);
 
         double[] result = new double[nTicks];
         for (int i = 0; i < nTicks; i++) {
