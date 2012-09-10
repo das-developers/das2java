@@ -67,6 +67,7 @@ import org.das2.DasException;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
+import org.das2.datum.OrbitDatumRange;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.system.RequestProcessor;
@@ -546,7 +547,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             this.resetRange(dr);
             firePropertyChange(PROP_UNITS, oldUnits, dr.getUnits());
         }
-
+        this.dataRange.setRange(dr);
     }
 
     public DatumRange getDatumRange() {
@@ -1826,6 +1827,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             sdr= DatumRangeUtil.formatTimeRange(dr,true);
         } else {
             sdr= dr.toString();
+        }
+        if ( dr instanceof OrbitDatumRange ) {
+            String abbrevName= ((OrbitDatumRange)dr).toString();
+            String[] ss= abbrevName.split(":");
+            if ( abbrevName.split(":").length>3 ) {
+                abbrevName= ss[0]+":"+ss[ss.length-1];
+            }
+            sdr= sdr+" ("+abbrevName +")";
         }
         result= resolveString( result, "RANGE", sdr );
         result= resolveString( result, "SCAN_RANGE", String.valueOf(getScanRange()) );
