@@ -178,19 +178,42 @@ public class TickVDescriptor {
 
         int targetTicks = Math.max(Math.min(6, nTicksMax), nTicksMin);
 
-        double maj = (maximum - minimum) / (targetTicks - 1);
-        double mag = Math.pow(10,Math.floor(Math.log10(maj)));
-        double absissa = maj / mag;
+        double maj = 0;
+        double absissa=0;
+        double mag=0;
 
-        if (absissa < 1.666) {
-            absissa = 1.0;
-        } else if (absissa < 3.333) {
-            absissa = 2.0;
-        } else if (absissa < 9.0) {
-            absissa = 5.0;
-        } else {
-            absissa = 1.;
-            mag *= 10;
+        while ( maj<2 ) {
+            maj = ( maximum - minimum) / (targetTicks - 1);
+            mag = Math.pow(10,Math.floor(Math.log10(maj)));
+
+            absissa = maj / mag;
+
+            if (absissa < 1.666) {
+                absissa = 1.0;
+                double abmag= absissa*mag;
+                maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
+            } else if (absissa < 3.333) {
+                absissa = 2.0;
+                double abmag= absissa*mag;
+                maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
+            } else if (absissa < 9.0) {
+                absissa = 5.0;
+                double abmag= absissa*mag;
+                maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
+            } else {
+                absissa = 1.;
+                mag *= 10;
+                double abmag= mag;
+                maj = ( Math.floor(maximum/abmag)*abmag -  Math.ceil(minimum/abmag)*abmag ) / (targetTicks - 1);
+            }
+
+            double majorTickSize = absissa * mag;
+            double firstTick = majorTickSize * Math.ceil( minimum / majorTickSize );
+            double lastTick =  majorTickSize * Math.floor( maximum / majorTickSize );
+            int nTicks = 1 + (int) Math.round((lastTick - firstTick) / majorTickSize);
+            if ( nTicks<2 ) {
+                targetTicks= targetTicks+1;
+            }
         }
 
         if ( UnitsUtil.isNominalMeasurement(res.units) || UnitsUtil.isOrdinalMeasurement(res.units) ) {
