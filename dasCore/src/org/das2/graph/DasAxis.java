@@ -83,6 +83,7 @@ import org.virbo.dataset.SemanticOps;
  * and provides controls for navigating the 1-D data space.
  * @author eew
  */
+
 public class DasAxis extends DasCanvasComponent implements DataRangeSelectionListener, TimeRangeSelectionListener, Cloneable {
 
     public static final String PROP_LABEL = "label";
@@ -1079,6 +1080,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             QDataSet ticks= ltcaFunction.value(ex);
             if ( outDescriptor==null ) {
                 outDescriptor= (QDataSet) ticks.property(QDataSet.BUNDLE_0);
+                if ( outDescriptor!=null && outDescriptor.property(QDataSet.NAME,0)==null ) {
+                    outDescriptor= null;
+                }
             }
             ltcaData.join(ticks);
             dep0.putValue(i,ltickV[i]);
@@ -1780,6 +1784,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         idlt.setString( g, "???" );
                     } else {
                         String label=  (String) bds.property( QDataSet.LABEL, i ) ;
+                        if ( label==null ) label= (String) bds.property( QDataSet.NAME, i );
                         if ( label==null ) {
                             idlt.setString( g, "????" ); // This shouldn't happen, but does...  We need to check earlier
                         } else {
