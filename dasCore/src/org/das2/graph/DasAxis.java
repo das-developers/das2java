@@ -2574,7 +2574,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 idlt.setString(tickLabelFont, "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
                 QDataSet bds= (QDataSet) ltcaData.property(QDataSet.BUNDLE_1);
-                if ( bds.length()<lines ) {
+                if ( bds!=null && bds.length()<lines ) {
                     //TODO: transitional state--I hope...
                     return bounds;
                 }
