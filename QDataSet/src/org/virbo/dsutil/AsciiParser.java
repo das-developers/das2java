@@ -769,7 +769,17 @@ public class AsciiParser {
                 try {
 
                     if (firstRecord == null) {
-                        firstRecord = line;
+                        int nonAsciiCount= 0;
+                        if ( line.length()>3 ) {
+                            for ( int i=0; i<line.length(); i++ ) {
+                                char ch= line.charAt(i);
+                                if ( ch<32 || ch>126 ) nonAsciiCount++;
+                            }
+                            if ( nonAsciiCount>20 || nonAsciiCount*100/line.length()>20 ) {
+                                throw new IOException("stream does not appear to be ascii");
+                            }
+                        }
+                        firstRecord = line.length()>132 ? ( line.substring(0,132)+"..." ) : line;
                         builder.putProperty(PROPERTY_FIRST_RECORD, firstRecord);
                     }
 
