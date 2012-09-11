@@ -717,7 +717,6 @@ public class Ops {
                 return Math.sqrt(d1);
             }
         } );
-        result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds, "sqrt" ) );
         return result;
     }
 
