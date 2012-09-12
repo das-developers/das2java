@@ -1079,10 +1079,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             ex.putValue( 0,uc.convert(ltickV[i]) );
             QDataSet ticks= ltcaFunction.value(ex);
             if ( outDescriptor==null ) {
-                outDescriptor= (QDataSet) ticks.property(QDataSet.BUNDLE_0);
-                if ( outDescriptor!=null && outDescriptor.property(QDataSet.NAME,0)==null ) {
-                    outDescriptor= null;
-                }
+               outDescriptor= (QDataSet) ticks.property(QDataSet.BUNDLE_0);
+               int n= outDescriptor.length();
+               if ( outDescriptor.property(QDataSet.NAME,0)==null && ( n<1 || outDescriptor.property(QDataSet.NAME,n-1)==null ) ) {
+                   outDescriptor= null;
+               }
             }
             ltcaData.join(ticks);
             dep0.putValue(i,ltickV[i]);
