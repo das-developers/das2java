@@ -236,7 +236,7 @@ public class KeyChain {
                     throw new CancelledOperationException();
                 }
             } else {
-                if ( "true".equals( System.getProperty("java.awt.headless") ) ) {
+                if ( "true".equals( System.getProperty("java.awt.headless") ) ) { 
                     System.err.println("** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried");
                 }
                 return userInfo;
