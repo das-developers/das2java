@@ -78,7 +78,9 @@ public abstract class Units {
     public static final Units hours= new NumberUnits("hr");
     public static final Units minutes= new NumberUnits("min");
     public static final Units seconds= new NumberUnits("s");
+    public static final Units seconds2= new NumberUnits("sec");
     public static final Units milliseconds= new NumberUnits("ms");
+    public static final Units milliseconds2= new NumberUnits("msec");
     public static final Units microseconds= new NumberUnits("microseconds");
     public static final Units nanoseconds= new NumberUnits("nanoseconds");
     public static final Units picoseconds= new NumberUnits("picoseconds");
@@ -88,7 +90,9 @@ public abstract class Units {
         seconds.registerConverter(microseconds, UnitsConverter.MICRO);
         seconds.registerConverter(nanoseconds,UnitsConverter.NANO);
         seconds.registerConverter(picoseconds,UnitsConverter.PICO);
+        seconds.registerConverter(seconds2,UnitsConverter.IDENTITY);
         microseconds.registerConverter(nanoseconds, UnitsConverter.MILLI); // to support time formatting, often from us2000 to microseconds offset.
+        milliseconds.registerConverter(milliseconds2, UnitsConverter.IDENTITY);
         hours.registerConverter(seconds, new UnitsConverter.ScaleOffset( 3600.,0.0));
         minutes.registerConverter(seconds, new UnitsConverter.ScaleOffset( 60.,0.0));
         days.registerConverter(seconds, new UnitsConverter.ScaleOffset(8.64e4, 0.0));
@@ -104,7 +108,7 @@ public abstract class Units {
     }
     
     public static final Units hertz= new NumberUnits("Hz");
-    public static final Units kiloHertz = new NumberUnits("kHz");
+    public static final Units kiloHertz = new NumberUnits("kHz"); // I verified that this should be lower case k.  I wonder why...
     public static final Units megaHertz = new NumberUnits("MHz");
     public static final Units gigaHertz = new NumberUnits("GHz");
     static {
@@ -133,12 +137,17 @@ public abstract class Units {
      */
     public static final Units wpm2= new NumberUnits("W/m!a-2!n");
 
-    public static final Units inches = new NumberUnits("inch");
     
     public static final Units meters = new NumberUnits("m");
+    public static final Units millimeters = new NumberUnits("mm");
+    public static final Units centimeters = new NumberUnits("cm");
     public static final Units kiloMeters = new NumberUnits("km");
+    public static final Units inches = new NumberUnits("inch");
     static {
         meters.registerConverter(kiloMeters, UnitsConverter.KILO);
+        meters.registerConverter(centimeters, UnitsConverter.CENTI );
+        meters.registerConverter(millimeters, UnitsConverter.MILLI );
+        meters.registerConverter(inches, new UnitsConverter.ScaleOffset(0.0254,0.0) );
     }
 
     /**** begin of LocationUnits.  These must be defined after the physical units to support Basis. ****/
