@@ -244,10 +244,10 @@ public class JoinDataSet extends AbstractDataSet {
             if ( props.size()>0 ) {
                 //System.err.println("slice result is being mutated with "+props );
             }
-            Object odep0= props.get( QDataSet.DEPEND_0 );
-            if ( odep0!=null ) {
-                props.put( QDataSet.DEPEND_0, null ); //TODO: we can put DEPEND_0 in.
-            }
+            //Object odep0= props.get( QDataSet.DEPEND_0 );
+            //if ( odep0!=null ) {
+            //    props.put( QDataSet.DEPEND_0, null ); //TODO: we can put DEPEND_0 in.
+            //}
             DataSetUtil.putProperties(props, mpds); //TODO: this is a little dangerous because we mutate the original datasets.
         }
         return result;
