@@ -389,7 +389,7 @@ public class SimpleStreamFormatter {
                 String sliceName= (String) qds.property(QDataSet.NAME);
                 // kludge to avoid formatting slice name, which is intended for help humans.
                 if ( ds instanceof Slice0DataSet && sliceName!=null && sliceName.startsWith("slice") ) continue;
-                if ( this.names.get(value)==null ) continue; // we're not going to serialize this.
+                if ( ((QDataSet)value).rank()>0 && this.names.containsKey((QDataSet)value)==false ) continue; // we're not going to serialize this.
                 prop = document.createElement("property");
                 prop.setAttribute("name", name);
                 if (qds.rank() == 0) {
