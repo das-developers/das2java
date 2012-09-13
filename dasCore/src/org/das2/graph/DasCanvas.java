@@ -118,7 +118,38 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-/** Canvas for das2 graphics.  The DasCanvas contains any number of DasCanvasComponents such as axes, plots, colorbars, etc.
+/** Canvas for das2 graphics.  The DasCanvas contains any number of DasCanvasComponents 
+ * such as axes, plots, colorbars, etc.
+ *
+ * A basic hierarchy of ownership is:
+ *<pre>
+ * DasCanvas
+ *  |
+ *  +- {@link DasDevicePosition} (2-N objects)
+ *  |
+ *  +- {@link DasCanvasComponent} (0-N objects)
+ *</pre>
+ * For example: For a 2-D line plot the basic components are:
+ *<pre>
+ * DasCavas
+ *  |
+ *  +- {@link DasRow} (a DasDevicePosition)
+ *  |
+ *  +- {@link DasColumn} (a DasDevicePosition)
+ *  |
+ *  +- {@link DasAxis} (a DasCanvasComponent)
+ *  |
+ *  +- {@link DasAxis} (a DasCanvasComponent)
+ *  |
+ *  +- {@link DasPlot} (a DasCanvasComponent)
+ *     |
+ *     +- {@link SymbolLineRenderer} (Helper for DasPlot, implements a data painting style.)
+ *</pre>
+ * Note that {@link DasPlot}s don't know how to paint data, that job is delegated to one or
+ * more {@link Renderer} objects.  {@link SymbolLineRenderer}s know how to draw simple line
+ * plots.
+ *
+ * @see DasColumn DasRow DasAxis DasPlot Renderer
  * @author eew
  */
 public class DasCanvas extends JLayeredPane implements Printable, Editable, FormComponent, Scrollable {

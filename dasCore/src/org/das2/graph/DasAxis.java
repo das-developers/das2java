@@ -2698,14 +2698,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return element;
     }
 
+	 /** Create a new axis that uses the same DataRange object as this axis.
+	  *
+	  * @return A new DasAxis with the same "backing store" (i.e. the DataRange object)
+	  *  as this axis.
+	  */
     public DasAxis createAttachedAxis() {
         return new DasAxis(this.dataRange, this.getOrientation());
     }
 
-    /** TODO
-     * @param row
-     * @param column
-     * @param orientation
+    /** 
+     * Note: This is commonly used for pop-up slicer windows.
      * @return
      */
     public DasAxis createAttachedAxis(int orientation) {
