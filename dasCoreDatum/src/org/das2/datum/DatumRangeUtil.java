@@ -980,6 +980,10 @@ public class DatumRangeUtil {
             }
             stopRes= Math.max( stopRes, idigit );
         }
+
+        if ( Math.abs( time2.subtract(time).doubleValue( Units.seconds ) ) > 3600 ) {
+            stopRes= Math.min( stopRes, 4 );
+        }
         
         int[] arr= TimeUtil.toTimeArray(time);
         if ( stopRes>3 ) {
