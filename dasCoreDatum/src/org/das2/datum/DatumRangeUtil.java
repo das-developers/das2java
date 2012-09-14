@@ -902,6 +902,7 @@ public class DatumRangeUtil {
     /**
      * parse the string into a DatumRange with time location units.
      * @throws ParseException when the string cannot be parsed.
+     * @throws IllegalArgumentException when an orbits file cannot be read
      * @param s
      * @return
      */
