@@ -313,7 +313,7 @@ public class EventsRenderer extends Renderer {
                 if ( vds.length(0)>3 ) {
                     colors= DataSetOps.unbundle( vds,2 );
                 } else {
-                    colors= Ops.replicate( 0x808080, xmins.length() );
+                    colors= Ops.replicate( getColor().getRGB(), xmins.length() );
                 }
                 
             } else if ( dep0.rank()==2 ) {
@@ -335,7 +335,7 @@ public class EventsRenderer extends Renderer {
                 Datum width= SemanticOps.guessXTagWidth( dep0, null ).divide(2);
                 xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
                 xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
-                colors= Ops.replicate( 0x808080, xmins.length() );
+                colors= Ops.replicate( getColor().getRGB(), xmins.length() );
 
             } else {
                 parent.postMessage( this, "rank 2 dataset must have dep0 of rank 1 or rank 2 bins", DasPlot.WARNING, null, null );
@@ -374,7 +374,7 @@ public class EventsRenderer extends Renderer {
                 return null;
             }
             Color c0= getColor();
-            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), 128 );
+            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
             int irgb= c1.getRGB();
             
             colors= Ops.replicate( irgb, xmins.length() );
@@ -430,9 +430,9 @@ public class EventsRenderer extends Renderer {
 
         QDataSet xmins= DataSetOps.unbundle( cds,0 );
         QDataSet xmaxs= DataSetOps.unbundle( cds,1 );
-        QDataSet msgs= DataSetOps.unbundle( cds,cds.length(0)-1 );
+        QDataSet msgs= DataSetOps.unbundle( cds,3 );
         Units eu= SemanticOps.getUnits( msgs );
-        QDataSet lcolor= cds.length(0)>3 ? DataSetOps.unbundle( cds,2 ) : null;
+        QDataSet lcolor= DataSetOps.unbundle( cds,2 );
 
         long t0= System.currentTimeMillis();
 
@@ -477,7 +477,7 @@ public class EventsRenderer extends Renderer {
                         int rr= ( irgb & 0xFF0000 ) >> 16;
                         int gg= ( irgb & 0x00FF00 ) >> 8;
                         int bb= ( irgb & 0x0000FF );
-                        int aa= 128;
+                        int aa= ( irgb >> 24 & 0xFF );
                         g.setColor( new Color( rr, gg, bb, aa ) );
                     }
                     
@@ -535,16 +535,27 @@ public class EventsRenderer extends Renderer {
     public Icon getListIcon() {
         return new ImageIcon(SpectrogramRenderer.class.getResource("/images/icons/eventsBar.png"));
     }
-    
-    private Color color= new Color(100,100,100,180); // note this alpha=180 is ignored
+
+    @Override
+    public void setControl(String s) {
+        super.setControl(s);
+        this.setShowLabels( getBooleanControl( "showLabels", isShowLabels() ) );
+    }
+
+    private Color color= new Color(100,100,100); 
     
     public Color getColor() {
         return color;
     }
     
+    /**
+     * set the color to use when the data doesn't specify a color.  If an alpha channel is specified, then
+     * this alpha value is used, otherwise 80% is used.
+     * @param color
+     */
     public void setColor( Color color ) {
         Color old= this.color;
-        this.color= new Color( color.getRed(), color.getGreen(), color.getBlue(), 180 );// note this alpha=180 is ignored
+        this.color= color;
         cds= makeCanonical(getDataSet());
         propertyChangeSupport.firePropertyChange(  PROP_COLOR, old , color);
         super.invalidateParentCacheImage();
@@ -563,8 +574,10 @@ public class EventsRenderer extends Renderer {
     public void setShowLabels(boolean showLabels) {
         boolean oldShowLabels = this.showLabels;
         this.showLabels = showLabels;
-        parent.invalidateCacheImage();
-        parent.repaint();
+        if ( parent!=null ) {
+            parent.invalidateCacheImage();
+            parent.repaint();
+        }
         propertyChangeSupport.firePropertyChange(PROP_SHOWLABELS, oldShowLabels, showLabels);
     }
 
