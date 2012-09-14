@@ -264,6 +264,7 @@ public class Orbits {
     /**
      * return the orbits for the named spacecraft.
      * @param sc missions in http://das2.org/wiki/index.php/Orbits/ or URL to mission orbit file.
+     * @throws IllegalArgumentException when the orbits file cannot be read
      * @return
      */
     public static synchronized Orbits getOrbitsFor( String sc ) {
