@@ -68,7 +68,9 @@ public class Orbits {
 
         InputStream in;
         try {
-            in= url.openConnection().getInputStream();
+            URLConnection connect= url.openConnection();
+            connect.setConnectTimeout(3000);
+            in= connect.getInputStream();
         } catch ( IOException ex ) {
             if ( sc.contains(":") ) {
                 throw new IllegalArgumentException("I/O Exception prevents reading orbits from \""+sc+"\"",ex );
