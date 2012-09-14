@@ -202,11 +202,11 @@ public class DatumRange implements Comparable {
     }
     
     /**
-     * returns DatumRange relative to this, where 0. is the minimum, and 1. is the maximum.
+     * returns DatumRange relative to this, where 0.0 is the minimum, and 1.0 is the maximum.
      * For example rescale(1,2) is scanNext, rescale(0.5,1.5) is zoomOut.
-     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * @param min the new min normalized with respect to this range.  0.0 is this range's min, 1.0 is this range's max
      * min-width.
-     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max, 0 is 
+     * @param max the new max with normalized with respect to this range.  0.0 is this range's min, 1.0 is this range's max
      * min-width.
      * @return new DatumRange.
      * @deprecated.  Use DatumRangeUtil.rescale
