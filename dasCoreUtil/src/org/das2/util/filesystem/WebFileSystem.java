@@ -439,7 +439,7 @@ public abstract class WebFileSystem extends FileSystem {
      * trigger an update of the in-memory listing, or check to see if it is in memory.
      * @param filename the particular file for which we need a listing.
      * @param force if true, then list if it isn't available.
-     * @return null if the listing is not available, the DirectoryEntry otherwise.
+     * @return null if the listing is not available, or if the element is not in the folder, the DirectoryEntry otherwise.
      */
     public DirectoryEntry maybeUpdateDirectoryEntry( String filename, boolean force ) throws IOException {
         // we should be able to get the listing that we just did from memory.
