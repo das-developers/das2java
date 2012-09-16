@@ -36,7 +36,7 @@ public class TearoffTabbedPaneDemo {
         sublabel.setFont( Font.decode( "HELVETICA" ).deriveFont(Font.ITALIC,8.0f) );
         panel.add( sublabel );
 
-        JButton action= new JButton( new AbstractAction("Remove First Tab") {
+        JButton action= new JButton( new AbstractAction("Remove Second Tab") {
             public void actionPerformed(ActionEvent e) {
                 System.err.println("Button "+index);
                 if ( pane.getTabCount()>1 ) {
