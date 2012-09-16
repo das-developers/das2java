@@ -5,6 +5,7 @@
  */
 package org.das2.components;
 
+import java.util.Arrays;
 import org.das2.event.CommentDataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
 import org.das2.event.DataPointSelectionEvent;
@@ -38,6 +39,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.*;
@@ -47,7 +49,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
 
 /**
- *
+ * DataPointRecorder is a GUI for storing data points selected by the user.  This has not been
+ * tested on the Autoplot community branch and probably needs work.
  * @author  jbf
  */
 public class DataPointRecorder extends JPanel implements DataPointSelectionListener {
@@ -72,7 +75,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
 
-    protected class DataPoint implements Comparable {
+    /**
+     * Note this is all pre-QDataSet.  QDataSet would be a much better way of implementing this.
+     */
+    private static class DataPoint implements Comparable {
 
         Datum[] data;
         Map planes;
@@ -104,6 +110,20 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         public int compareTo(Object o) {
             DataPoint that = (DataPoint) o;
             return this.data[0].lt(that.data[0]) ? -1 : this.data[0].gt(that.data[0]) ? 1 : 0;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 97 * hash + Arrays.deepHashCode(this.data);
+            hash = 97 * hash + (this.planes != null ? this.planes.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals( Object o ) {
+            if ( !( o instanceof DataPoint ) ) return false;
+            return compareTo(o)==0;
         }
 
         @Override
@@ -170,7 +190,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
     }
 
-    class MyDataSetDescriptor extends DataSetDescriptor {
+    private class MyDataSetDescriptor extends DataSetDescriptor {
 
         MyDataSetDescriptor() {
             super(null);
@@ -822,10 +842,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             planesArray[0] = "x";
             planesArray[1] = "y";
             int index = 2;
-            for (Iterator i = planes.keySet().iterator(); i.hasNext();) {
-                Object key = i.next();
+            for ( Iterator i = planes.entrySet().iterator(); i.hasNext();) {
+                Entry entry= (Entry)i.next();
+                Object key = entry.getKey();
                 planesArray[index] = String.valueOf(key);
-                Object value = planes.get(key);
+                Object value = entry.getValue();
                 if (value instanceof String) {
                     unitsArray[index] = null;
                 } else {
