@@ -1522,6 +1522,28 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     }
 
+    /**
+     * update the TCA (ephemeris) axis on the current thread, using the lock provided.
+     * The lock will have pendingChange and changePerformed with it.
+     * @param tcaLock 
+     */
+    private synchronized void updateTCAImmediately(Object tcaLock) {
+        getCanvas().performingChange( DasAxis.this, tcaLock );
+        updateTCADataSet();
+        repaint();
+        getCanvas().changePerformed( DasAxis.this, tcaLock );
+    }
+
+    private synchronized void updateTCASoon() {
+        final Object tcaLock= "tcaload_"+this.getDasName();
+        getCanvas().registerPendingChange( this, tcaLock );
+        RequestProcessor.invokeLater( new Runnable() {
+            public void run() {
+               updateTCAImmediately(tcaLock);
+            }
+        }, DasAxis.this );
+    }
+
     public synchronized void updateTickV() {
         if (!valueIsAdjusting()) {
             if ( getTickLabelFont()==null ) return;
@@ -1546,16 +1568,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                 }
                 if (drawTca && tcaFunction != null) {
-                    final Object tcaLock= "tcaload_"+this.getDasName();
-                    getCanvas().registerPendingChange( this, tcaLock );
-                    RequestProcessor.invokeLater( new Runnable() {
-                        public void run() {
-                            getCanvas().performingChange( DasAxis.this, tcaLock );
-                            updateTCADataSet();
-                            repaint();
-                            getCanvas().changePerformed( DasAxis.this, tcaLock );
-                        }
-                    }, DasAxis.this );
+                    updateTCASoon();
                 }
 
                 firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
@@ -1567,16 +1580,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     if (majorTicksDomainDivider != null) {
                         updateTickVDomainDivider();
                         if (drawTca && tcaFunction != null) {
-                            final Object tcaLock= "tcaload_"+this.getDasName();
-                            getCanvas().registerPendingChange( this, tcaLock );
-                            RequestProcessor.invokeLater( new Runnable() {
-                                public void run() {
-                                    getCanvas().performingChange( DasAxis.this, tcaLock );
-                                    updateTCADataSet();
-                                    repaint();
-                                    getCanvas().changePerformed( DasAxis.this, tcaLock );
-                                }
-                            }, DasAxis.this );
+                            updateTCASoon();
                         }
                     } else {
                         if (getUnits() instanceof TimeLocationUnits) {
