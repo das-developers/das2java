@@ -122,8 +122,6 @@ public class ContoursRenderer extends Renderer {
 
         g.setFont(font);
 
-        String[] cons = this.contours.trim().split(",");
-        
         double minLength= 20;
         for (int i = 0; i < paths.length; i++) {
             if (paths[i] == null) {
@@ -283,7 +281,7 @@ public class ContoursRenderer extends Renderer {
 
         GeneralPath currentPath = null;
 
-        double n0 = 0; // node counter.  Breaks are indicated by increment, so keep track of the last node.
+        int n0 = 0; // node counter.  Breaks are indicated by increment, so keep track of the last node.
 
         double slen = 0.; // path length
 
