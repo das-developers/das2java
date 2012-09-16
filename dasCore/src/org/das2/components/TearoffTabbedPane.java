@@ -946,10 +946,10 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     @Override
     public void remove( Component c ) {
-        //TODO: this does not work properly if the tab is undocked.
         TabDesc desc= tabs.get(c);
         if ( desc==null ) {
-            System.err.println("here c has no desc");
+            //System.err.println("here c has no desc");
+            throw new IllegalArgumentException("Component does not appear to be associated with this TearoffTabbedPane");
         }
         if ( desc.babysitter!=null ) {
             this.dock(c);
