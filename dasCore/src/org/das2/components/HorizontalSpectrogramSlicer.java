@@ -51,6 +51,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
@@ -176,6 +177,10 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
                         rend= (SpectrogramRenderer) r;
                         break;
                     }
+                }
+                if ( rend==null ) {
+                    JOptionPane.showMessageDialog( null, "Unable to find associated Spectrogram" );
+                    return;
                 }
                 SliceSettings settings= new SliceSettings();
                 settings.setSliceRebinnedData( rend.isSliceRebinnedData() );
