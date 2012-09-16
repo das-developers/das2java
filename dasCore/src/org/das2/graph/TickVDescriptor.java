@@ -143,7 +143,6 @@ public class TickVDescriptor {
     public DatumRange enclosingRange(DatumRange dr, boolean minor) {
         Datum s1 = findTick(dr.min(), 0, minor);
         Datum s2 = findTick(dr.max(), 0, minor);
-        DatumRange result;
         if (s1.equals(s2)) {
             s1 = findTick(dr.min(), -1, true);
             s2 = findTick(dr.max(), 1, true);
@@ -159,6 +158,7 @@ public class TickVDescriptor {
      * @return a String representation of the TickVDescriptor.
      *
      */
+    @Override
     public String toString() {
         String s = "tickV=" + getMajorTicks();
         s += ",minor=" + getMinorTicks();
@@ -369,9 +369,7 @@ public class TickVDescriptor {
             }
             double[] t = tickV;
             tickV = new double[i2];
-            for (int i = 0; i < i2; i++) {
-                tickV[i] = t[i];
-            }
+            System.arraycopy(t, 0, tickV, 0, i2);
 
             if ( tickV.length<2 ) {
                 System.err.println("Unable to calculate linear ticks, less than 2 found.  Brace for crash.");
@@ -529,7 +527,6 @@ public class TickVDescriptor {
             iyear = (iyear / biggerUnitsCount) * biggerUnitsCount;  // round to mantissa
             first = TimeUtil.createTimeDatum(iyear, 1, 1, 0, 0, 0, 0);
         } else {
-            int[] digits = TimeUtil.toTimeArray(minD);
             first = TimeUtil.prev(units.getOrdinal() - 1, minD);
         }
 
@@ -606,9 +603,7 @@ public class TickVDescriptor {
         Datum lengthMax = maxD.subtract(minD).divide(Math.max(1, nTicksMin - 1));
 
         long lengthNanosMax = (long) lengthMax.doubleValue(Units.nanoseconds);
-        double lengthDaysMax = lengthMax.doubleValue(Units.days);
         long lengthNanosMin = (long) lengthMin.doubleValue(Units.nanoseconds);
-        double lengthDaysMin = lengthMin.doubleValue(Units.days);
 
         TimeUtil.TimeDigit[] units = new TimeUtil.TimeDigit[]{TimeUtil.TD_NANO, TimeUtil.TD_SECOND,
             TimeUtil.TD_MINUTE, TimeUtil.TD_HOUR, TimeUtil.TD_DAY, TimeUtil.TD_MONTH, TimeUtil.TD_YEAR
@@ -713,8 +708,6 @@ public class TickVDescriptor {
     }
 
     public static TickVDescriptor bestTickVTime(Datum minD, Datum maxD, int nTicksMin, int nTicksMax, boolean fin) {
-
-        Datum length = maxD.subtract(minD);
 
         Datum minute = Datum.create(60.0, Units.seconds);
         if (maxD.subtract(minD).lt(minute)) {
