@@ -1534,6 +1534,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         getCanvas().changePerformed( DasAxis.this, tcaLock );
     }
 
+    /**
+     * update the TCA dataset.  This will load the TCAs on a RequestProcessor thread sometime soon.
+     */
     private synchronized void updateTCASoon() {
         final Object tcaLock= "tcaload_"+this.getDasName();
         getCanvas().registerPendingChange( this, tcaLock );
