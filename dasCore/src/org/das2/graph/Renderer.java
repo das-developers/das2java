@@ -338,7 +338,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
 
-    public static String PROP_CONTROL= "control";
+    public static final String PROP_CONTROL= "control";
 
     /**
      * generic control string, that is handled by the renderer.  In general, this should be
@@ -354,7 +354,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public void setControl( String s ) {
         String oldValue= this.control;
         this.control= s;
-        if (oldValue != null && s != null && oldValue.equals(s)) {
+        if ( oldValue==s || ( oldValue != null && oldValue.equals(s) ) ) {
 	    return;
 	}
         controls= parseControl(s);
@@ -390,15 +390,18 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     /**
      * convenient and official location for method that parses control string.
-     * @param c
-     * @return
+     * @param c the control string or null.
+     * @return the control string, parsed.
      */
     public static Map<String,String> parseControl( String c ) {
+        Map<String,String> result= new LinkedHashMap();
+        if ( c==null ) {
+            return result;
+        }
         String ampstr= "&";
         if ( c.contains("&amp;") ) {
             ampstr= "&amp;";
         }
-        Map<String,String> result= new LinkedHashMap();
         if ( c.trim().length()==0 ) return result;
         String[] ss= c.split(ampstr);
         for ( int i=0; i<ss.length; i++ ) {
