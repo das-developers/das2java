@@ -184,10 +184,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * @see parseFormatStr
      */
     public static String formatFormatStr( double[] arr ) {
-        StringBuffer buf= new StringBuffer();
+        StringBuilder buf= new StringBuilder();
         if ( arr[0]!=0 ) buf.append( String.format( Locale.US, "%.2f%%", arr[0]*100 ) );
         if ( arr[1]!=0 ) buf.append( String.format(Locale.US, "%+.1fem", arr[1] ) );
-        if ( arr[2]!=0 ) buf.append( String.format(Locale.US, "%+dpt", arr[2] ) );
+        if ( arr[2]!=0 ) buf.append( String.format(Locale.US, "%+dpt", (int)arr[2] ) );
         return buf.toString();
     }
 
@@ -209,7 +209,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     public static String formatLayoutStr( DasDevicePosition pos, boolean min ) {
-        StringBuffer buf= new StringBuffer();
+        StringBuilder buf= new StringBuilder();
         if ( min ) {
             if ( pos.getMinimum()!=0 ) buf.append( String.format( Locale.US, "%.2f%%", pos.getMinimum()*100 ) );
             if ( pos.getEmMinimum()!=0 ) buf.append( String.format(Locale.US, "%+.1fem", pos.getEmMinimum() ) );
