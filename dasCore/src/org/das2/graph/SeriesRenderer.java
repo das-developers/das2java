@@ -98,8 +98,6 @@ public class SeriesRenderer extends Renderer {
     private int lastIndex_v=-1;/* the non-inclusive index of the last point that is visible. */
     private int dslen=-1; // length of dataset, compare to firstIndex_v.
 
-    boolean updating = false;
-
     boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
     boolean xunitsWarning= false;
 
@@ -1295,8 +1293,6 @@ public class SeriesRenderer extends Renderer {
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
         logger.log(Level.FINE, "enter {0}.updatePlotImage: {1}", new Object[]{id, String.valueOf(getDataSet()) });
 
-        updating = true;
-
         updateImageCount++;
 
         reportCount();
@@ -1428,7 +1424,7 @@ public class SeriesRenderer extends Renderer {
         }
 
         logger.log(Level.FINE, "done updatePlotImage in {0} ms", (System.currentTimeMillis() - t0));
-        updating = false;
+        
         long milli = System.currentTimeMillis();
         long renderTime = (milli - t0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
