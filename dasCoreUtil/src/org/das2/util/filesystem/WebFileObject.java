@@ -328,7 +328,7 @@ public class WebFileObject extends FileObject {
             if ( this.lastModified().getTime()==0 || this.lastModified().getTime()==Long.MAX_VALUE ) {
                 DirectoryEntry result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true ); // trigger load of the modifiedDate
                 if ( result==null ) {
-                    WebFileSystem.logger.fine("file does not exist on remote filesystem");
+                    WebFileSystem.logger.fine("file does not exist on remote filesystem"); 
                 } else {
                     result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true );
                     this.setLastModified( new Date( result.modified ) );
