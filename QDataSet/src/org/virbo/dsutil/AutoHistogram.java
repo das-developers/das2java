@@ -81,11 +81,11 @@ public final class AutoHistogram {
     QDataSet context;  // range over which histogram is taken.
 
     /**
-     * list of outliers and thier count.  When we rescale, we see if any outliers can be added to the distribution.
+     * list of outliers and their count.  When we rescale, we see if any outliers can be added to the distribution.
      */
     SortedMap<Double, Integer> outliers;
 
-    private final static Logger logger= Logger.getLogger(AutoHistogram.class.getCanonicalName());
+    private final static Logger logger= Logger.getLogger("qdataset");
 
     private final static void log( java.util.logging.Level level, String message ) {
         if ( logger.isLoggable(level) ) logger.log( level, message);
@@ -121,7 +121,7 @@ public final class AutoHistogram {
     }
 
     /**
-     * add the value to the distribution, updateing zeroesLeft and zeroesRight.
+     * add the value to the distribution, updating zeroesLeft and zeroesRight.
      * See http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Weighted_incremental_algorithm
      * vv is "S" in wikipedia  Variance = S * n / ((n-1) * sumweight). Std Dev= sqrt(Variance)
      * @param ibin

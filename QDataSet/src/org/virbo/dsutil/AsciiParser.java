@@ -62,6 +62,8 @@ import org.virbo.dsops.Ops;
  */
 public class AsciiParser {
 
+    private static final Logger logger= Logger.getLogger("qdataset.ascii");
+
     Pattern propertyPattern = null;
     String commentPrefix = "#";
 
@@ -123,7 +125,7 @@ public class AsciiParser {
     public static final String DELIM_COMMA = ",";
     public static final String DELIM_TAB = "\t";
     public static final String DELIM_WHITESPACE = "\\s+";
-    private static final Logger logger = Logger.getLogger("virbo.dataset.asciiparser");
+
     private static final int HEADER_LENGTH_LIMIT=1000;
 
 
@@ -362,7 +364,7 @@ public class AsciiParser {
                     System.err.println( String.format( "rich header buffer not the same length as the dataset (%d!=%d)", Integer.valueOf(bundleDescriptor.length()), Integer.valueOf(fieldNames.length) ) );
                 }
             } catch (ParseException ex) {
-                Logger.getLogger(AsciiParser.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
                 ex.printStackTrace();
             }
             result.header= header;
@@ -854,7 +856,7 @@ public class AsciiParser {
                 }
 
             } catch (ParseException ex) {
-                Logger.getLogger(AsciiParser.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
                 System.err.println(ex);
                 if ( propertyPattern!=null ) {
                 Map<String,String> userProps= new LinkedHashMap();

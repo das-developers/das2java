@@ -40,6 +40,8 @@ import org.virbo.dsutil.Reduction;
  */
 public class DataSetOps {
 
+    private static final Logger logger= Logger.getLogger("qdataset");
+
     /**
      * absolute length limit for plots.  This is used to limit the elements used in autoranging, etc.
      */
@@ -1537,7 +1539,7 @@ public class DataSetOps {
                         Datum r = DatumUtil.parse(arg);
                         fillDs= Reduction.reducex( fillDs, DataSetUtil.asDataSet(r) );
                     } catch (ParseException ex) {
-                        Logger.getLogger(DataSetOps.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     }
 
                 } else if ( cmd.equals("|diff") ) {
