@@ -66,7 +66,7 @@ public class SerialStreamFormatter {
 
 
     private static final char CHAR_NEWLINE = '\n';
-    private static final Logger logger= Logger.getLogger("autoplot.qstream");
+    private static final Logger logger= Logger.getLogger("qstream");
 
     protected boolean asciiTypes = true;
 

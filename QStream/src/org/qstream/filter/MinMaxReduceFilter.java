@@ -151,7 +151,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
             this.nextTags.put( pd, 0. );
 
         } catch (XPathExpressionException ex) {
-            Logger.getLogger(ReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
 
         sink.packetDescriptor(pd);

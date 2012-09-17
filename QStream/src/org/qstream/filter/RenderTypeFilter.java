@@ -38,6 +38,8 @@ import org.w3c.dom.NodeList;
  */
 public class RenderTypeFilter implements StreamHandler {
 
+    private static final Logger logger= Logger.getLogger("qstream");
+    
     StreamHandler sink;
     ByteOrder byteOrder;
 
@@ -84,7 +86,7 @@ public class RenderTypeFilter implements StreamHandler {
             sink.packetDescriptor(pd);
 
         } catch (XPathExpressionException ex) {
-            Logger.getLogger(ReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
             throw new StreamException(ex);
         }
 

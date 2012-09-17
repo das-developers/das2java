@@ -36,6 +36,9 @@ import org.w3c.dom.NodeList;
  * @author jbf
  */
 public class QDataSetStreamHandler implements StreamHandler {
+
+    private static final Logger logger= Logger.getLogger("qstream");
+
     public static final String BUILDER_JOIN_CHILDREN = "join";
 
     Map<String, DataSetBuilder> builders;
@@ -129,7 +132,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 
             }
         } catch (XPathExpressionException ex) {
-            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -310,7 +313,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 // TODO: a lot of work is done twice here, but this takes a trivial amount of time.
             }
         } catch (XPathExpressionException ex) {
-            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
         System.err.println("");
@@ -518,7 +521,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     } else {
                         SerializeDelegate delegate = SerializeRegistry.getByName(stype);
                         if (delegate == null) {
-                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "!!! No delegate found for \"{0}\"", stype); // chris and I didn't see this invisible message
+                            logger.log(Level.SEVERE, "!!! No delegate found for \"{0}\"", stype); // chris and I didn't see this invisible message
                             continue;
                         }
                         Object oval;
@@ -530,7 +533,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                             }
                             builder.putProperty(pname, oval);
                         } catch (ParseException ex) {
-                            Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+                            logger.log(Level.SEVERE, null, ex);
                         }
                     }
          }
@@ -566,7 +569,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             } else {
                 SerializeDelegate delegate = SerializeRegistry.getByName(stype);
                 if (delegate == null) {
-                    Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "no delegate found for \"{0}\"", stype);
+                    logger.log(Level.SEVERE, "no delegate found for \"{0}\"", stype);
                     continue;
                 }
                 Object oval;
@@ -578,7 +581,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     }
                     join.putProperty(pname, index, oval);
                 } catch (ParseException ex) {
-                    Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
                 }
             }
          }

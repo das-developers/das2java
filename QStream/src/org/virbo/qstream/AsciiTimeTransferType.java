@@ -64,7 +64,7 @@ class AsciiTimeTransferType extends AsciiTransferType {
                 buffer.put((byte) 32);
             }
         } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(AsciiTimeTransferType.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, "write", ex);
         }
     }
 

@@ -7,6 +7,8 @@ package org.virbo.qstream;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A transfer type is an encoding of a double on to the stream.  It must have a fixed length in bytes.
@@ -15,6 +17,8 @@ import java.util.Map;
  */
 public abstract class TransferType {
 
+    protected static final Logger logger= Logger.getLogger("qstream");
+
     /**
      * returns a TranferType for the given name, or null if none is found.
      * @param ttype
@@ -22,6 +26,9 @@ public abstract class TransferType {
      * @return returns a TranferType for the given name, or null if none is found.
      */
     public static TransferType getForName(String ttype, Map<String,Object> properties ) {
+
+        logger.log(Level.FINEST, "getForName({0})", ttype);
+
         TransferType tt;
         
         tt= DoubleTransferType.getByName(ttype, properties);

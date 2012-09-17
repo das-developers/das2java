@@ -32,6 +32,8 @@ import org.w3c.dom.NodeList;
  */
 public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDelegate {
 
+    private static final Logger logger= Logger.getLogger("qstream");
+
     public String format(Object o) {
         if (true) {
             return format2(o);
@@ -44,7 +46,7 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
                 out.close();
                 return Base64.encodeBytes(out.toByteArray());
             } catch (IOException ex) {
-                Logger.getLogger(MapSerializeDelegate.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
                 return "";
             }
         }

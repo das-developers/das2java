@@ -50,7 +50,7 @@ public class SimpleStreamFormatter {
     Map<PlaneDescriptor, QDataSet> planeToDataSet;
     boolean asciiTypes = true;
     boolean isBigEndian = true; //ByteOrder.nativeOrder() .equals( ByteOrder.BIG_ENDIAN );
-    private static final Logger logger= Logger.getLogger("autoplot.qstream");
+    private static final Logger logger= Logger.getLogger("qstream");
 
     /**
      * newBundle true indicates try to format the bundle with new code.

@@ -9,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.util.FixedWidthFormatter;
@@ -66,7 +65,7 @@ public class AsciiTransferType extends TransferType {
                 return "0.####";
             }
         } else {
-            StringBuffer buffer = new StringBuffer(length);
+            StringBuilder buffer = new StringBuilder(length);
             buffer.append("+0.");
             for (int i = 0; i < length - 7; i++) {
                 buffer.append('0');
@@ -89,7 +88,7 @@ public class AsciiTransferType extends TransferType {
         try {
             bytes = s.getBytes("US-ASCII");
         } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(AsciiTransferType.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, "write", ex);
         }
         if ( bytes.length!=sizeBytes ) {
             throw new IllegalAccessError();
@@ -106,7 +105,7 @@ public class AsciiTransferType extends TransferType {
             str = new String(bytes, "US-ASCII").trim();
             return Double.parseDouble(str);
         } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(AsciiTransferType.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, "read", ex);
             throw new RuntimeException(ex);
         }
     }

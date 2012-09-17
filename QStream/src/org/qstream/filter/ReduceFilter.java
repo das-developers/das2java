@@ -55,6 +55,8 @@ import org.w3c.dom.Node;
  */
 public class ReduceFilter implements StreamHandler {
 
+    protected static final Logger logger= Logger.getLogger("qstream");
+
     StreamHandler sink;
     ByteOrder byteOrder;
 
@@ -157,7 +159,7 @@ public class ReduceFilter implements StreamHandler {
             this.nextTags.put( pd, 0. );
 
         } catch (XPathExpressionException ex) {
-            Logger.getLogger(ReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
 
         sink.packetDescriptor(pd);

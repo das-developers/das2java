@@ -24,6 +24,8 @@ import static org.junit.Assert.*;
  */
 public class AsciiTimeTransferTypeTest {
 
+    private static final Logger logger= Logger.getLogger("qstream");
+
     public AsciiTimeTransferTypeTest() {
     }
 
@@ -63,7 +65,7 @@ public class AsciiTimeTransferTypeTest {
         try {
             buffer = ByteBuffer.wrap("2000-01-01T00:00:00.000 ".getBytes("US-ASCII"));
         } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(AsciiTimeTransferTypeTest.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
         AsciiTimeTransferType instance = new AsciiTimeTransferType(24,Units.us2000);
         double expResult = 0.0;

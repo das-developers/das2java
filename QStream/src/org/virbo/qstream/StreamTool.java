@@ -75,6 +75,8 @@ public class StreamTool {
     ByteOrder byteOrder;
     private static final int PACKET_LENGTH_LIMIT=100000;
 
+    private static final Logger logger= Logger.getLogger("qstream");
+    
     /** Creates a new instance of StreamTool */
     public StreamTool() {
     }
@@ -534,7 +536,7 @@ public class StreamTool {
                         try {
                             units = (Units) delegate.parse(stype,sunits);
                         } catch (ParseException ex) {
-                            Logger.getLogger(StreamTool.class.getName()).log(Level.SEVERE, null, ex);
+                            logger.log(Level.SEVERE, null, ex);
                         }
                     }
                 }

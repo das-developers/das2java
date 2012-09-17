@@ -55,6 +55,8 @@ import org.w3c.dom.NodeList;
  */
 public class QDataSetsFilter implements StreamHandler {
 
+    protected static final Logger logger= Logger.getLogger("qstream");
+
     /**
      * implement this to receive QDataSets packet-by-packet.
      */
@@ -148,7 +150,7 @@ public class QDataSetsFilter implements StreamHandler {
                 } else {
                     SerializeDelegate delegate = SerializeRegistry.getByName(stype);
                     if (delegate == null) {
-                        Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, "!!! No delegate found for \"{0}\"", stype); // chris and I didn't see this invisible message
+                        logger.log(Level.SEVERE, "!!! No delegate found for \"{0}\"", stype); // chris and I didn't see this invisible message
                         continue;
                     }
                     Object oval;
@@ -160,7 +162,7 @@ public class QDataSetsFilter implements StreamHandler {
                         }
                         props.put(pname, oval);
                     } catch (ParseException ex) {
-                        Logger.getLogger(QDataSetStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     }
                 }
              }
@@ -268,7 +270,7 @@ public class QDataSetsFilter implements StreamHandler {
                 j++;
 
             } catch ( XPathExpressionException ex ) {
-
+                logger.log( Level.SEVERE, "packet", ex );
             }
 
             sink.packetData( pd, planed, ds );
