@@ -25,7 +25,7 @@ public class ChangesSupport {
 
     Map<Object, Object> changesPending;
     Object parent;
-    private static final Logger logger = Logger.getLogger("dom");
+    private static final Logger logger = Logger.getLogger("das2.system");
 
     /**
      * if the propertyChangeSupport is provided, then change messages will be sent to
