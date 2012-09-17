@@ -344,7 +344,7 @@ public class SimpleStreamFormatter {
                 }
             } else {
                 if ( ds.length()==0 ) {
-                    System.err.println("here");
+                    logger.severe("here ds.length()==0");
                 }
             }
         }
