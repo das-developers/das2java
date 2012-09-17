@@ -126,6 +126,8 @@ import org.w3c.dom.NodeList;
  * DasCanvas
  *  |
  *  +- {@link DasDevicePosition} (2-N objects)
+ *  |   |
+ *  |   +- {@link DasDevicePosition} (sub positions, 0-N objects)
  *  |
  *  +- {@link DasCanvasComponent} (0-N objects)
  *</pre>
@@ -149,7 +151,11 @@ import org.w3c.dom.NodeList;
  * more {@link Renderer} objects.  {@link SymbolLineRenderer}s know how to draw simple line
  * plots.
  *
- * @see DasColumn DasRow DasAxis DasPlot Renderer
+ * @see DasColumn
+ * @see DasRow
+ * @see DasAxis
+ * @see DasPlot
+ * @see Renderer
  * @author eew
  */
 public class DasCanvas extends JLayeredPane implements Printable, Editable, FormComponent, Scrollable {
@@ -1055,6 +1061,27 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         setPreferredSize(pref);
         if (getParent() != null) ((JComponent) getParent()).revalidate();
     }
+
+
+	 protected boolean scaleFonts = true;
+
+    /**
+     * The font used should be the base font scaled based on the canvas size.
+     * If this is false, then the canvas font is simply the base font.
+     */
+    public static final String PROP_SCALEFONTS = "scaleFonts";
+
+    public boolean isScaleFonts() {
+        return scaleFonts;
+    }
+
+    public void setScaleFonts(boolean scaleFonts) {
+        boolean oldScaleFonts = this.scaleFonts;
+        this.scaleFonts = scaleFonts;
+        setBaseFont(getBaseFont());
+        firePropertyChange(PROP_SCALEFONTS, oldScaleFonts, scaleFonts);
+    }
+
     private Font baseFont = null;
 
     /** TODO
@@ -1075,8 +1102,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     public void setBaseFont(Font font) {
         Font oldFont = getFont();
         this.baseFont = font;
-        setFont(getFontForSize(getWidth(), getHeight()));
-        firePropertyChange("font", oldFont, getFont());
+		  if ( scaleFonts ) {
+            setFont(getFontForSize(getWidth(), getHeight()));
+        } else {
+            setFont( font );
+        }
+        firePropertyChange("font", oldFont, getFont()); //TODO: really?
         repaint();
     }
     private static final int R_1024_X_768 = 1024 * 768;
@@ -1107,8 +1138,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private ComponentListener createResizeListener() {
         return new ComponentAdapter() {
 
+			@Override
             public void componentResized(ComponentEvent e) {
-                Font aFont = getFontForSize(getWidth(), getHeight());
+                Font aFont;
+                if ( scaleFonts ) {
+                    aFont= getFontForSize(getWidth(), getHeight());
+                } else {
+                    aFont= getBaseFont();
+                }
                 if (!aFont.equals(getFont())) {
                     setFont(aFont);
                 }

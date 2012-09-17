@@ -31,27 +31,58 @@ import java.text.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-/**
+/** A DasRow defines a horizontal region of a DasCanvas.
  *
+ * When placing {@link DasCanvasComponent}s, a DasRow and DasColumn are typically supplied
+ * to define the position of the component on the canvas.
+ * 
+ * @see DasCanvas
+ * @see DasColumn
  * @author  jbf
  */
 public class DasRow extends DasDevicePosition {
-    
+
+	/** Create a new row region on a {@link DasCanvas}, simplified constructor.
+	 *
+	 * @param parent The {@link DasCanvas} on which to define a horizontal region.
+	 *<br><br>
+	 * @param top Sets the position the top of the Row, 0.0 = Top of the canvas,
+	 *            1.0 = Bottom of the canvas.
+	 * <br><br>
+	 * @param bottom Sets the position the bottom of the Row, 0.0 = Top of Parent object,
+	 *            1.0 = Bottom of Parent object.
+	 * <br><br>
+	 */
     public DasRow( DasCanvas parent, double top, double bottom) {
         super(parent,top,bottom,false );
     }
 
-	 /** Create a new row layout object.
+	 /** Create a new row region on a {@link DasCanvas}.
 	  * 
-	  * @param canvas
-	  * @param parent This can be null.
-	  * @param nMin Fraction of the canvas height up from the bottom of the canvas.
-	  * @param nMax Fraction of the canvas height up from the bottom of the canvas,
-	  *             if this ain't bigger then nMin you ain't doing it right.
-	  * @param emMin Bottom boarder size in EM's, if ptMin is
-	  * @param emMax Top boarder size in EM's.
-	  * @param ptMin
-	  * @param ptMax
+	  * @param canvas Set positions relative to a DasCanvas parent.  Should be NULL
+	  *        if parent is non-null.
+	  *<br><br>
+	  * @param parent Set positions relative to DasRow parent.  Should be null if
+	  *        canvas is non-null.
+	  * <br><br>
+	  * @param nMin Sets the position the top of the Row, 0.0 = Top of Parent object,
+	  *             1.0 = Bottom of Parent object.
+	  * <br><br>
+	  * @param nMax Sets the position the bottom of the Row, 0.0 = Top of Parent object,
+	  *             1.0 = Bottom of Parent object.
+	  * <br><br>
+	  * @param emMin Adjust the top boarder position in EM's (An EM is the size of a
+	  *              capital M in the current Canvas font.)  Positive numbers move the
+	  *              top border down, Negative numbers move it up.
+	  * <br><br>
+	  * @param emMax Adjust the bottom boarder position in EM's (An EM is the size of a
+	  *              capital M in the current Canvas font.)  Positive numbers move the
+	  *              bottom border down, Negative numbers move it up.
+	  * <br><br>
+	  * @param ptMin Similar to emMin, but move the top border in pixels.
+	  *
+	  * <br><br>
+	  * @param ptMax Similar to emMax, but move the bottom border in pixels.
 	  */
     public DasRow( DasCanvas canvas, DasRow parent, double nMin, double nMax, 
             double emMin, double emMax, int ptMin, int ptMax ) {
@@ -111,7 +142,23 @@ public class DasRow extends DasDevicePosition {
         double max= 0.099 + ( iplot + 1 ) * ( 0.8 ) / nplot;
         return new DasRow( parent, min, max );
     }
-    
+
+	 /** Create a sub-row of a parent row.
+	  *
+	  * The canvas coordinates for objects in this row will be calculated as fractional
+	  * offsets from the top and bottom of the parent row.
+	  *
+	  * @param ptop Fractional distance from the top of the parent row, to the top
+	  *        of the new sub-row.  Here 0.0 would mean make the top of the sub-row
+	  *        coterminus with the top of the parent.
+	  *
+	  * @param pbottom Fractional distance from the top of the parent row, to the bottom
+	  *        of the new sub-row.  Here 1.0 would mean make the bottom of the sub-row
+	  *        coterminus with bottom of the parent.
+	  * 
+	  * @return a new DasRow object with top and bottom positions defined in relation to
+	  *         this row, instead of the Canvas.
+	  */
     public DasRow createAttachedRow(double ptop, double pbottom) {
         return new DasRow(null,this,ptop,pbottom,0,0,0,0);
     }
