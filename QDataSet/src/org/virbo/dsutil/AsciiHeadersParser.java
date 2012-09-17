@@ -63,7 +63,7 @@ public class AsciiHeadersParser {
      */
     public static final String PROP_ELEMENT_LABELS = "ELEMENT_LABELS";
 
-    private static final Logger logger= Logger.getLogger("virbo.dataset.AsciiHeadersParser");
+    private static final Logger logger= Logger.getLogger("qdataset.ascii");
 
     char commented= '?'; // tri-state: '?' 'T' 'F'
 
@@ -300,7 +300,7 @@ public class AsciiHeadersParser {
                     if ( olabels instanceof JSONArray ) {
                         labels= toStringArray((JSONArray)olabels);
                     } else {
-                        logger.log(Level.INFO, "unable to use ELEMENT_LABELS in {0}, should be array", jsonName);
+                        logger.log(Level.FINE, "unable to use ELEMENT_LABELS in {0}, should be array", jsonName);
                     }
                 }
                 String[] elementNames= null;
@@ -309,7 +309,7 @@ public class AsciiHeadersParser {
                     if ( oelements instanceof JSONArray ) {
                         elementNames= toStringArray((JSONArray)oelements);
                     } else {
-                        logger.log(Level.INFO, "unable to use ELEMENT_NAMES in {0}, should be array", jsonName);
+                        logger.log(Level.FINE, "unable to use ELEMENT_NAMES in {0}, should be array", jsonName);
                     }
                 }
 
