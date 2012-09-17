@@ -114,6 +114,11 @@ public abstract class Units implements Displayable {
      * volts / m<sup>2</sup> Hz 
      */
     public static final Units v2pm2Hz= new NumberUnits("V!a2!nm!a-2!nHz!a-1");
+
+	/**
+	 * volts / meter
+	 */
+	public static final Units V_m = new NumberUnits("V/m");
     
     /**
      * Watts / m<sup>2</sup>
