@@ -80,7 +80,7 @@ public class KeyChain {
                     if ( line.length()>0 ) {
                         String[] ss= line.split("\\s+");
                         if ( ss.length!=2 ) {
-                            System.err.println("skipping line because wrong number of fields: "+line );
+                            logger.log( Level.WARNING, "skipping line because wrong number of fields: {0}", line);
                         } else {
                             String hash= ss[0].trim();
                             if ( hash.endsWith("/") ) {
