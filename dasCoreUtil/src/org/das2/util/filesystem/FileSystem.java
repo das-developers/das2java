@@ -194,7 +194,7 @@ public abstract class FileSystem  {
      * @throws IllegalArgumentException if the local root does not exist.
      */
     public static FileSystem create( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
-        logger.log(Level.FINE, "create filesystem {0}", root);
+        logger.log(Level.FINER, "request for filesystem {0}", root);
 
         FileSystem result;
 
@@ -237,6 +237,7 @@ public abstract class FileSystem  {
             result= instances.get(root);
 
             if ( result!=null ) {
+                logger.log( Level.FINE,"using existing filesystem {0}", root );
                 return result;
             } else {
                 // assume the other thread told them what was going on.
@@ -273,6 +274,7 @@ public abstract class FileSystem  {
             } catch (IOException ex) {
                 throw new FileSystemOfflineException(ex);
             } finally {
+                logger.log( Level.FINE,"created zip new filesystem {0}", root );
                 if ( result!=null ) instances.put(root, result);
                 blocks.remove(root);
             }
@@ -285,6 +287,7 @@ public abstract class FileSystem  {
             synchronized( waitObject ) {
                 waitObject.notifyAll(); //TODO: the other threads are going to think it's offline.
             }
+            logger.log(Level.SEVERE, "unsupported protocol: {0}", root);
             throw new IllegalArgumentException( "unsupported protocol: "+root );
             
         } else {
@@ -296,6 +299,7 @@ public abstract class FileSystem  {
                 }
 
             } finally {
+                logger.log( Level.FINE,"created new filesystem {0}", root );
                 if ( result!=null ) instances.put(root, result);
                 blocks.remove(root);
 
@@ -308,6 +312,7 @@ public abstract class FileSystem  {
        }
 
        if ( settings.isOffline() && result instanceof WebFileSystem ) {
+           logger.log( Level.FINE,"filesystem is now offline because of settings {0}", root );
            ((WebFileSystem)result).setOffline(true);
        }
 
