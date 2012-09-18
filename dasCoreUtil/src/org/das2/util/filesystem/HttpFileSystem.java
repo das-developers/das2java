@@ -116,7 +116,8 @@ public class HttpFileSystem extends WebFileSystem {
                 try {
                     userInfo = KeyChain.getDefault().getUserInfo(root);
                 } catch (CancelledOperationException ex) {
-                    throw new FileSystemOfflineException("user cancelled credentials");
+                    logger.log( Level.FINE, "user cancelled credentials for {0}", rooturi);
+                    throw new FileSystemOfflineException("user cancelled credentials for "+rooturi );
                 }
                 if ( userInfo != null) {
                     String encode = Base64.encodeBytes( userInfo.getBytes());
@@ -145,7 +146,7 @@ public class HttpFileSystem extends WebFileSystem {
                     if ( code==401 ) {
                         connectFail= false;
                     } else {
-                        ex.printStackTrace();
+                        logger.log( Level.SEVERE, "code="+code, ex );
                         if ( FileSystem.settings().isAllowOffline() ) {
                             logger.info("remote filesystem is offline, allowing access to local cache.");
                         } else {
@@ -282,7 +283,7 @@ public class HttpFileSystem extends WebFileSystem {
                         try {
                             partFile.setLastModified(d.getTime()+10); // add 10 secs because of bad experiences with Windows filesystems.  Also this is probably a good idea in case local clock is not set properly.
                         } catch ( Exception ex ) {
-                            ex.printStackTrace();
+                            logger.log( Level.SEVERE, "unable to setLastModified", ex );
                         }
                     }
                     if ( f.exists() ) {

@@ -23,6 +23,8 @@ import org.das2.util.monitor.ProgressMonitor;
  */
 public class VFSFileObject extends org.das2.util.filesystem.FileObject {
 
+    private static final Logger logger= Logger.getLogger("das2.filesystem");
+    
     private org.apache.commons.vfs.FileObject vfsob;
     private VFSFileSystem vfsfs;
     private boolean local = false;
@@ -160,7 +162,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
         try {
             size = vfsob.getContent().getSize();
         } catch (FileSystemException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE,"unable to getSize",e);
         } finally {
             return size;
         }
@@ -236,7 +238,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
         try {
             when = vfsob.getContent().getLastModifiedTime();
         } catch (FileSystemException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE,"unable get last modified",e);
         } finally {
             return new Date(when);
         }

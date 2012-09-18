@@ -47,6 +47,8 @@ import org.das2.util.monitor.CancelledOperationException;
  */
 public class WebFileObject extends FileObject {
 
+    private static final Logger logger= Logger.getLogger("das2.filesystem");
+    
     WebFileSystem wfs;
     String pathname;
     File localFile;
@@ -253,7 +255,7 @@ public class WebFileObject extends FileObject {
                 }
                 this.isFolderResolved= true;
             } catch (IOException ex) {
-                ex.printStackTrace();
+                logger.log(Level.SEVERE,"unable construct web file object",ex);
                 this.isFolderResolved = false;
             }
         }
@@ -381,7 +383,7 @@ public class WebFileObject extends FileObject {
                 }
                 if ( this.wfs instanceof HttpFileSystem && !(ex instanceof InterruptedIOException )  ) { //TODO: when would we use this--it needs to be more precise.
                     if ( this.wfs.isOffline() ) {
-                        ex.printStackTrace();
+                        logger.log(Level.SEVERE,"unable getFile",ex);
                         throw new FileSystem.FileSystemOfflineException("not found in local cache: "+getNameExt() );
                     }
                 }

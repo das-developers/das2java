@@ -48,6 +48,8 @@ public class KeyChain {
      * @return
      */
 
+    private static final Logger logger= Logger.getLogger("das2.filesystem");
+
     private static KeyChain instance;
 
     public static synchronized KeyChain getDefault() {
@@ -66,6 +68,7 @@ public class KeyChain {
         File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
         if ( keysFile.exists() ) {
             System.err.println("loading keys from "+ keysFile );
+            logger.log( Level.FINE, "loading keys from {0}", keysFile);
             BufferedReader r=null;
             try {
                 r= new BufferedReader( new FileReader(keysFile) );
@@ -90,13 +93,14 @@ public class KeyChain {
                     line= r.readLine();
                 }
             } catch ( IOException ex ) {
-                ex.printStackTrace();
+                logger.log( Level.SEVERE, "while loading keychain.txt file "+keysFile, ex );
             } finally {
                 if ( r!=null ) {
                     try {
                         r.close();
+                        logger.log(Level.FINE, "loaded keys from keychain file {0}", keysFile);
                     } catch (IOException ex) {
-                        Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     }
                 }
             }
@@ -119,7 +123,7 @@ public class KeyChain {
                 w.println( key.getKey() + "\t" + key.getValue() );
             }
         } catch ( IOException ex ) {
-            ex.printStackTrace();
+            logger.log(Level.SEVERE,"unable to write keys file",ex);
         } finally {
             if ( w!=null ) {
                 w.close();
@@ -238,6 +242,7 @@ public class KeyChain {
             } else {
                 if ( "true".equals( System.getProperty("java.awt.headless") ) ) { 
                     System.err.println("** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried");
+                    logger.log( Level.WARNING, "** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried" );
                 }
                 return userInfo;
             }
