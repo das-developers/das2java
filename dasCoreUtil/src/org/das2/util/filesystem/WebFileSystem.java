@@ -410,7 +410,7 @@ public abstract class WebFileSystem extends FileSystem {
     public synchronized boolean isListingCached( String directory ) {
         File listing = listingFile( directory );
         if ( listing.exists() && ( System.currentTimeMillis() - listing.lastModified() ) < LISTING_TIMEOUT_MS ) {
-            logger.fine(String.format( "listing date is %f5.2 seconds old", (( System.currentTimeMillis() - listing.lastModified() ) /1000.) ));
+            logger.fine(String.format( "listing date is %5.2f seconds old", (( System.currentTimeMillis() - listing.lastModified() ) /1000.) ));
             return true;
         } else {
             return false;
