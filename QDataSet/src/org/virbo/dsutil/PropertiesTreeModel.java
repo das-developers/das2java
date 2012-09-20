@@ -106,7 +106,22 @@ public class PropertiesTreeModel extends DefaultTreeModel {
             MutableTreeNode mrt= ((MutableTreeNode)getRoot());
             for ( Object o : values.entrySet() ) {
                 Entry val= (Entry)o;
-                mrt.insert( new DefaultMutableTreeNode(""+val.getKey()+"="+val.getValue() ),mrt.getChildCount() );
+                Object value= val.getValue();
+                if ( value.getClass().isArray() ) {
+                    value.getClass().getComponentType();
+                    List list= new ArrayList();
+                    int nn= Math.min( Array.getLength(value), 5 );
+                    for ( int i=0; i<nn; i++ ){
+                        list.add( Array.get( value, i) );
+                    }
+                    if ( Array.getLength(value)>5 ) {
+                        list.add("...");
+                    }
+                    DefaultMutableTreeNode nextChild= new DefaultMutableTreeNode(""+val.getKey()+"="+list);
+                    mrt.insert( nextChild, mrt.getChildCount() );
+                } else {
+                    mrt.insert( new DefaultMutableTreeNode(""+val.getKey()+"="+val.getValue() ),mrt.getChildCount() );
+                }
             }
         }
 
