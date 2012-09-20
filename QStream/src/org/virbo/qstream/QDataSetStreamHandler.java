@@ -186,12 +186,12 @@ public class QDataSetStreamHandler implements StreamHandler {
 
             List<PlaneDescriptor> planes= pd.getPlanes();
             if ( planes.size()!=nodes.getLength() ) {
-                System.err.println("these should be the same length, QDSSH line 172");
+                logger.log( Level.WARNING, "these should be the same length, QDataSetStreamHandler line 189" );
             }
             for (int i = 0; i < nodes.getLength(); i++) {
                 Element n = (Element) nodes.item(i);
                 String name = n.getAttribute("id");
-                System.err.print( " "+name );
+                logger.log( Level.FINER, "got packetDescriptor for {0}", name);
                 int rank = Integer.parseInt(n.getAttribute("rank"));
                 DataSetBuilder builder=null;
                 String sdims=null;
@@ -208,7 +208,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     if ( bundles.getLength()==0 ) {
                         throw new IllegalArgumentException("no values node in "+n.getNodeName() + " " +n.getAttribute("id") );
                     } else {
-                        System.err.println("newBundle");
+                        logger.log( Level.FINER, "newBundle");
                     }
                 }
 
@@ -316,7 +316,6 @@ public class QDataSetStreamHandler implements StreamHandler {
             logger.log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
-        System.err.println("");
     }
 
     private MutablePropertyDataSet resolveProps( MutablePropertyDataSet result ) {
@@ -329,7 +328,7 @@ public class QDataSetStreamHandler implements StreamHandler {
        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             Object o = result.property("DEPEND_" + i);
             if (o != null && o instanceof String ) {
-                System.err.println("QDataSetStreamHandler: still strings in DEPEND_"+i);
+                logger.log(Level.WARNING, "QDataSetStreamHandler: still strings in DEPEND_{0}", i);
                 result.putProperty("DEPEND_" + i, getDataSet((String)o));
             }
         }
@@ -397,7 +396,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     }
 
     public QDataSet getDataSet(String name) {
-        System.err.println("getDataSet("+name+")");
+        logger.log(Level.FINE, "getDataSet({0})", name);
         DataSetBuilder builder = builders.get(name);
         String[] sbds= bundleDataSets.get(name);
         JoinDataSet join = joinDataSets.get(name);
@@ -422,9 +421,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                             MutablePropertyDataSet sliceDs1= childBuilder.getDataSet();
                             resolveProps(sliceDs1);
                             childDataSets.add( sliceDs1 );
-                            System.err.println("child: "+sliceDs1.toString());
+                            logger.log(Level.FINER, "child: {0}", sliceDs1.toString());
                         } else {
-                            System.err.println("missing child: "+children[i]);
+                            logger.log(Level.WARNING, "missing child: {0}", children[i]);
                         }
                     }
                 }
@@ -489,9 +488,6 @@ public class QDataSetStreamHandler implements StreamHandler {
          for (int j = 0; j < odims.getLength(); j++) {
                     Element n2 = (Element) odims.item(j);
                     String pname = n2.getAttribute("name");
-                    if ( pname.equals(QDataSet.USER_PROPERTIES) ) {
-                        //System.err.println("ehre");
-                    }
                     String svalue;
                     if ( n2.hasAttribute("value") ){
                         svalue= n2.getAttribute("value");
@@ -509,7 +505,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     }
                     if (stype.equals("qdataset")) {
                         if (pname.equals(QDataSet.DELTA_MINUS) || pname.equals(QDataSet.DELTA_PLUS) ) {
-                            System.err.println("skipping DELTA_MINUS and DELTA_PLUS because bug");
+                            logger.warning("skipping DELTA_MINUS and DELTA_PLUS because bug");
                             builder.putProperty( pname, svalue );
                         }
                         if ( pname.matches( "DEPEND_\\d+") ) {
@@ -546,9 +542,6 @@ public class QDataSetStreamHandler implements StreamHandler {
             String sidx= ((Element)n2.getParentNode()).getAttribute("index");
             int index= Integer.parseInt(sidx);
             String pname = n2.getAttribute("name");
-            if ( pname.equals(QDataSet.USER_PROPERTIES) ) {
-                //System.err.println("ehre");
-            }
             String svalue;
             if ( n2.hasAttribute("value") ){
                 svalue= n2.getAttribute("value");
