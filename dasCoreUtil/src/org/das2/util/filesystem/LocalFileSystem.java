@@ -65,7 +65,7 @@ public class LocalFileSystem extends FileSystem {
 //        try { // simulate slow web site
 //            Thread.sleep(5000);
 //        } catch (InterruptedException ex) {
-//            Logger.getLogger(LocalFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+//            logger.log(Level.SEVERE, null, ex);
 //        }
         if ( !localRoot.exists() ) {
             File[] roots= File.listRoots();
@@ -130,7 +130,7 @@ public class LocalFileSystem extends FileSystem {
 //        try { // simulate slow filesystem
 //            Thread.sleep(1000);
 //        } catch (InterruptedException ex) {
-//            Logger.getLogger(LocalFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+//            logger.log(Level.SEVERE, null, ex);
 //        }
         return new LocalFileObject( this, localRoot, filename );
     }

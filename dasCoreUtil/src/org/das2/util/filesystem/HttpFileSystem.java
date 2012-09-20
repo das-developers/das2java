@@ -50,6 +50,7 @@ import org.das2.util.Base64;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.das2.util.monitor.NullProgressMonitor;
 
@@ -61,6 +62,8 @@ import org.das2.util.monitor.NullProgressMonitor;
  * @author  Jeremy
  */
 public class HttpFileSystem extends WebFileSystem {
+
+    protected static final Logger logger= org.das2.util.LoggerManager.getLogger( "das2.filesystem.http" );
 
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URI root, File localRoot) {

@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  */
 public class FileSystemSettings {
 
-    private static final Logger logger= Logger.getLogger("org.das2.util.filesystem");
+    private static final Logger logger= org.das2.util.LoggerManager.getLogger("org.das2.util.filesystem");
 
     /**
      * check the security manager to see if all permissions are allowed,

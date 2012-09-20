@@ -48,7 +48,7 @@ public class KeyChain {
      * @return
      */
 
-    private static final Logger logger= Logger.getLogger("das2.filesystem");
+    private static final Logger logger= org.das2.util.LoggerManager.getLogger("das2.filesystem");
 
     private static KeyChain instance;
 
@@ -255,7 +255,7 @@ public class KeyChain {
         try {
             clearUserPassword(uri.toURL());
         } catch (MalformedURLException ex) {
-            Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
     }
     /**

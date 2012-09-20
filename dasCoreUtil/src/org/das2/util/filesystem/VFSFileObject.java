@@ -23,7 +23,7 @@ import org.das2.util.monitor.ProgressMonitor;
  */
 public class VFSFileObject extends org.das2.util.filesystem.FileObject {
 
-    private static final Logger logger= Logger.getLogger("das2.filesystem");
+    private static final Logger logger= org.das2.util.LoggerManager.getLogger("das2.filesystem.vfs");
     
     private org.apache.commons.vfs.FileObject vfsob;
     private VFSFileSystem vfsfs;

@@ -45,11 +45,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.monitor.ProgressMonitor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.das2.util.FileUtil;
 
@@ -60,6 +59,8 @@ import org.das2.util.FileUtil;
  * @author  Jeremy
  */
 public abstract class WebFileSystem extends FileSystem {
+
+    protected static final Logger logger= org.das2.util.LoggerManager.getLogger( "das2.filesystem.wfs" );
 
     /**
      * we keep a cached listing in on disk.  This is backed by the the website.
@@ -169,12 +170,12 @@ public abstract class WebFileSystem extends FileSystem {
                         s = read.readLine();
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger(WebFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
                 } finally {
                     try {
                         if ( read!=null ) read.close();
                     } catch (IOException ex) {
-                        Logger.getLogger(WebFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     }
                 }
                 break;
@@ -570,7 +571,7 @@ public abstract class WebFileSystem extends FileSystem {
         try {
             listDirectory(dir); // load the listing into memory to get file object
         } catch (IOException ex) {
-            Logger.getLogger(WebFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
 
         // we should be able to get the listing that we just did from memory.

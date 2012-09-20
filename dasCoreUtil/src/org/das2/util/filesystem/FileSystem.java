@@ -50,7 +50,7 @@ import org.das2.util.monitor.ProgressMonitor;
 public abstract class FileSystem  {
 
     URI root;
-    protected static final Logger logger= Logger.getLogger(  "das2.filesystem" );
+    protected static final Logger logger= org.das2.util.LoggerManager.getLogger( "das2.filesystem" );
     
     public static class FileSystemOfflineException extends IOException {
         public FileSystemOfflineException() {
@@ -231,7 +231,7 @@ public abstract class FileSystem  {
                     //System.err.println("done waiting for "+root);
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
             }
 
             result= instances.get(root);
@@ -344,7 +344,7 @@ public abstract class FileSystem  {
             try {
                 root = new URI(s + "/");
             } catch (URISyntaxException ex) {
-                Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
                 throw new RuntimeException(ex); // shouldn't happen
             }
         }

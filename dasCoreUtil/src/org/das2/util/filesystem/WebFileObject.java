@@ -47,7 +47,7 @@ import org.das2.util.monitor.CancelledOperationException;
  */
 public class WebFileObject extends FileObject {
 
-    private static final Logger logger= Logger.getLogger("das2.filesystem");
+    private static final Logger logger= org.das2.util.LoggerManager.getLogger("das2.filesystem");
     
     WebFileSystem wfs;
     String pathname;
@@ -99,7 +99,7 @@ public class WebFileObject extends FileObject {
 
     public InputStream getInputStream(ProgressMonitor monitor) throws FileNotFoundException, IOException {
         if ( wfs.protocol !=null && !this.wfs.offline ) {
-            FileSystem.logger.log(Level.FINE, "get inputstream from {0}", wfs.protocol);
+            logger.log(Level.FINE, "get inputstream from {0}", wfs.protocol);
             return wfs.protocol.getInputStream(this, monitor);
         }
         if (isFolder) {
@@ -212,7 +212,7 @@ public class WebFileObject extends FileObject {
                     return "true".equals( metadata.get( WebProtocol.META_EXIST ) );
                 } else {
                     // TODO: use HTTP HEAD, etc
-                    Logger.getLogger("das2.filesystem").info("This implementation of WebFileObject.exists() is not optimal");
+                    logger.info("This implementation of WebFileObject.exists() is not optimal");
                     File partFile = new File(localFile.toString() + ".part");
                     wfs.downloadFile(pathname, localFile, partFile, new NullProgressMonitor());
                     return localFile.exists();
