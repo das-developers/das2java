@@ -137,7 +137,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
                         editRendererMenuItem.setText("Renderer Properties");
                         if (ir > -1) {
                             editRendererMenuItem.setEnabled(true);
-                            Renderer r = (Renderer) renderers.get(ir);
+                            Renderer r = renderers.get(ir);
                             if (r instanceof Displayable) {
                                 Displayable d = (Displayable) r;
                                 editRendererMenuItem.setIcon(d.getListIcon());
@@ -345,7 +345,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         boolean noneActive = true;
         for (int i = 0; i < renderers.size(); i++) {
-            Renderer rend = (Renderer) renderers.get(i);
+            Renderer rend = renderers.get(i);
             if (rend.isActive()) {
                 logger.finest("rendering #" + i + ": " + rend);
                 rend.render(plotGraphics, xAxis, yAxis, new NullProgressMonitor());
@@ -390,7 +390,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         }
         
         for (int i = renderers.size() - 1; i >= 0; i--) {
-            Renderer rend = (Renderer) renderers.get(i);
+            Renderer rend = renderers.get(i);
             if (rend.isActive() && rend.acceptContext(x, y)) {
                 return i;
             }
@@ -459,7 +459,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
             if (renderers.isEmpty()) {
                 return;
             }
-            Renderer renderer = (Renderer) renderers.get(0);
+            Renderer renderer =  renderers.get(0);
             JFileChooser chooser = new JFileChooser();
             int result = chooser.showSaveDialog(DasPlot.this);
             if (result == JFileChooser.APPROVE_OPTION) {
@@ -579,7 +579,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         paintImmediately(0, 0, getWidth(), getHeight());
         logger.finer("DasPlot.updateImmediately");
         for (int i = 0; i < renderers.size(); i++) {
-            Renderer rend = (Renderer) renderers.get(i);
+            Renderer rend =  renderers.get(i);
             rend.update();
         }
     }
@@ -971,7 +971,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     public String getTitle() {
         return plotTitle;
     }
-    private List renderers = null;
+    private List<Renderer> renderers = null;
 
     public DasAxis getXAxis() {
         return this.xAxis;
@@ -1081,7 +1081,7 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     }
 
     public Renderer getRenderer(int index) {
-        return (Renderer) renderers.get(index);
+        return  renderers.get(index);
     }
 
     public Renderer[] getRenderers() {
@@ -1541,4 +1541,14 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
     protected Rectangle getCacheImageBounds() {
         return cacheImageBounds;
     }
+
+	 /** Reload and repaint the current data.
+	  * Internally this tells the renderers to reload and repaint.
+	  */
+	@Override
+	public void reload(){
+		for(Renderer rndr: renderers){
+			rndr.reload();
+		}
+	}
 }

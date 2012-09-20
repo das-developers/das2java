@@ -2003,6 +2003,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
 
+	 /** Support reloading and refreshing all data on the canvas
+	  */
+	public void reload(){
+		int nLen = getComponentCount();
+		Component cmp;
+		for(int i = 0; i < nLen; i++){
+			cmp = getComponent(i);
+			if( cmp instanceof DasCanvasComponent)
+				((DasCanvasComponent)cmp).reload();
+		}
+	}
+
     public DasCanvasComponent getCanvasComponents(int index) {
         return (DasCanvasComponent) getComponent(index + 1);
     }
@@ -2016,6 +2028,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         return result;
     }
 
+	@Override
     public String toString() {
         return "[DasCanvas " + this.getWidth() + "x" + this.getHeight() + " " + this.getDasName() + "]";
     }

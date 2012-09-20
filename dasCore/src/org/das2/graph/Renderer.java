@@ -517,4 +517,17 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
     }
+
+	 /** Reload the current dataset */
+	void reload(){
+
+		// If we have a data set factory, have it remake the data set, otherwise, just
+		// repaint.
+		if( getDataSetDescriptor() != null){
+			loader.setReloadDataSet(true);
+			loader.update();
+		}
+
+		refresh();
+	}
 }

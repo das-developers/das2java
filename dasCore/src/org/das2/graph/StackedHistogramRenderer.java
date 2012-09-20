@@ -123,6 +123,8 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         this.yAxis= yAxis;
         this.zAxis= zAxis;
+
+		  this.peaksIndicator= PeaksIndicator.MaxLines;
         
         zAxis.addPropertyChangeListener(rebinListener);
         
@@ -156,8 +158,6 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         yAxis.setFloppyItemSpacing(true);
         yAxis.setOutsidePadding(1);
-        
-        this.peaksIndicator= PeaksIndicator.MaxLines;
         
         DasMouseInputAdapter mouseAdapter = parent.getDasMouseInputAdapter();
         
@@ -335,19 +335,22 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                         //yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
                         if ( peaks!=null ) {
                             double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
-                            if (peakValue <= zAxisMax) {
-                                int yMax= (int)zAxis.transform( peakValue, data.getZUnits(), yBase, yBase1 );
-                                yMax= (y0-yMax)>(0) ? yMax : (y0);
-                                if (peaksIndicator==PeaksIndicator.MaxLines) {
-                                    g.drawLine(x0,yMax,x0,yMax);
-                                } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
-                                    g.setColor(Color.lightGray);
-                                    g.drawLine(x0,yMax,x0,y0);
-                                    g.setColor(BAR_COLOR);
-                                } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {
-                                    g.setColor(BAR_COLOR);
-                                    g.drawLine(x0,yMax,x0,y0);
-                                }
+									 // Changed so that the peak line doesn't disappear when
+									 // greater than the max value.  -cwp 2012-09-19 (arrrg).
+                            if (peakValue > zAxisMax)
+										  peakValue = zAxisMax;
+									 
+                            int yMax= (int)zAxis.transform( peakValue, data.getZUnits(), yBase, yBase1 );
+                            yMax= (y0-yMax)>(0) ? yMax : (y0);
+                            if (peaksIndicator==PeaksIndicator.MaxLines) {
+                                g.drawLine(x0,yMax,x0,yMax);
+                            } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
+                                g.setColor(Color.lightGray);
+                                g.drawLine(x0,yMax,x0,y0);
+                                g.setColor(BAR_COLOR);
+                            } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {
+                                g.setColor(BAR_COLOR);
+                                g.drawLine(x0,yMax,x0,y0);
                             }
                         }
                         if ( zz>=zAxisMin ) g.drawLine(x0, yAvg, x0, yAvg+yHeight );
