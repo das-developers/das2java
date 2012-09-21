@@ -27,7 +27,7 @@ import org.das2.datum.Orbits.OrbitFieldHandler;
  */
 public class TimeParser {
 
-    final static Logger logger = Logger.getLogger("TimeParser");
+    final static Logger logger = Logger.getLogger("das2.datum.timeparser");
     /**
      * %Y-%m-%dT%H:%M:%S.%{milli}Z
      */
@@ -1079,7 +1079,7 @@ public class TimeParser {
                 DatumRange d2= new OrbitDatumRange( ofh.o.getSpacecraft(), ofh.o.last() );
                 return DatumRangeUtil.union( d1,d2 );
             } catch (ParseException ex) {
-                Logger.getLogger(TimeParser.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
             }
 
             return DatumRangeUtil.parseTimeRangeValid( "1000-9000" );

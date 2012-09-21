@@ -24,7 +24,7 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
     private boolean units;
     private boolean integer;
 
-    private static final Logger logger= Logger.getLogger("org.das2.datum.format");
+    private static final Logger logger= Logger.getLogger("das2.datum.format");
     
     /**
      * create a new instance based on the Java format string.
