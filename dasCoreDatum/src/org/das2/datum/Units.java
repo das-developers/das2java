@@ -32,13 +32,17 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.format.DatumFormatterFactory;
 /**
  *
  * @author  jbf
  */
 public abstract class Units {
-    
+
+    private static final Logger logger= Logger.getLogger("datum.units");
+
     private static Map unitsMap = new HashMap();
     
     public static final Units dimensionless= new NumberUnits("","dimensionless quantities");
@@ -347,6 +351,7 @@ public abstract class Units {
      * @throws InconvertibleUnitsException when the conversion is not possible.
      */
     public static UnitsConverter getConverter( final Units fromUnits, final Units toUnits ) {
+        logger.log(Level.FINE, "getConverter( {0} to {1} )", new Object[]{fromUnits, toUnits});
         UnitsConverter result= getConverterInternal(fromUnits, toUnits);
         if ( result==null ) {
             throw new InconvertibleUnitsException( fromUnits, toUnits );
