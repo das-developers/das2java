@@ -1,6 +1,7 @@
 package org.das2.datum;
 
 import java.text.ParseException;
+import java.util.logging.Logger;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.DefaultDatumFormatter;
@@ -10,6 +11,9 @@ import org.das2.datum.format.DefaultDatumFormatter;
  * @author Ed Jackson
  */
 public final class DomainDividerUtil {
+
+    private static final Logger logger= LoggerManager.getLogger("datum.ddiv");
+    
     // Still need to decide what all should be in here.
 
     public static DomainDivider getDomainDivider(Datum min, Datum max, boolean log) {
@@ -28,7 +32,7 @@ public final class DomainDividerUtil {
     }
 
     private static String exp(int power) {
-        StringBuffer buffer = new StringBuffer(power + 4);
+        StringBuilder buffer = new StringBuilder(power + 4);
         for (int i = 0; i < power - 1; i++) {
             buffer.append('#');
         }
@@ -87,7 +91,7 @@ public final class DomainDividerUtil {
             // There is kludginess here because of shortcomings in implementaiton of boundaries
             if (boundaries.getLength() <= 1) {
                 try{
-                    System.err.println("fall back to here, no formatting");
+                    logger.info( "fall back to here, no formatting" );
                     return new DefaultDatumFormatter("0");
                 } catch (ParseException ex) {
                     //This will never happen if the string literal above is okay
@@ -128,7 +132,7 @@ public final class DomainDividerUtil {
             DatumFormatter df = getDatumFormatter(ldd, range);
             DatumVector dv = ldd.boundaries(range.min(), range.max());
             for (int i = 0; i < dv.getLength(); i++) {
-                System.err.println(df.format(dv.get(i)));
+                System.err.println(df.format(dv.get(i))); // logger okay
             }
         }
         if (false) {
@@ -143,11 +147,11 @@ public final class DomainDividerUtil {
             DatumFormatter df = getDatumFormatter(ldd, range);
             DatumVector dv = ldd.boundaries(range.min(), range.max());
             for (int i = 0; i < dv.getLength(); i++) {
-                System.err.println(df.format(dv.get(i)));
+                System.err.println(df.format(dv.get(i))); // logger okay
             }
         }
         if (false) {
-            System.err.println(""+TimeUtil.isLeapYear(2000)); // initialize class to define time ordinals
+            System.err.println(""+TimeUtil.isLeapYear(2000)); // initialize class to define time ordinals // logger okay
             DomainDivider ldd = new OrdinalTimeDomainDivider();
             for (int i = 0; i < 13; i++) {
                 ldd = ldd.finerDivider(false);
@@ -158,7 +162,7 @@ public final class DomainDividerUtil {
             DatumFormatter df = getDatumFormatter(ldd, range);
             DatumVector dv = ldd.boundaries(range.min(), range.max());
             for (int i = 0; i < dv.getLength(); i++) {
-                System.err.println(df.format(dv.get(i)));
+                System.err.println(df.format(dv.get(i))); // logger okay
             }
         }
     }

@@ -27,7 +27,7 @@ import org.das2.datum.Orbits.OrbitFieldHandler;
  */
 public class TimeParser {
 
-    final static Logger logger = Logger.getLogger("das2.datum.timeparser");
+    final static Logger logger = LoggerManager.getLogger("datum.timeparser");
     /**
      * %Y-%m-%dT%H:%M:%S.%{milli}Z
      */

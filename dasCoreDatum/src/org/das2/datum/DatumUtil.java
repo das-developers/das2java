@@ -38,7 +38,9 @@ import org.das2.datum.format.TimeDatumFormatter;
  * @author  Edward West
  */
 public final class DatumUtil {
-    
+
+    private static final Logger logger = LoggerManager.getLogger("datum");
+
     /** Creates a new instance of DatumUtil */
     private DatumUtil() {
     }
@@ -284,7 +286,6 @@ public final class DatumUtil {
             }
         }
         catch (java.text.ParseException pe) {
-            Logger logger = Logger.getLogger("das2.datum");
             //Should not happen under normal circumstances, so bail.
             RuntimeException re = new RuntimeException(pe);
             logger.log(Level.SEVERE, pe.getMessage(), re);

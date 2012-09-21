@@ -9,6 +9,7 @@ import java.util.IllegalFormatException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
+import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 
@@ -24,7 +25,7 @@ public class FormatStringFormatter extends DefaultDatumFormatter {
     private boolean units;
     private boolean integer;
 
-    private static final Logger logger= Logger.getLogger("das2.datum.format");
+    private static final Logger logger= LoggerManager.getLogger("datum.format");
     
     /**
      * create a new instance based on the Java format string.

@@ -13,12 +13,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * TT2000 converter that takes leap seconds into account from us2000.
  * @author jbf
  */
 public class LeapSecondsConverter extends UnitsConverter {
+
+    private static Logger logger= LoggerManager.getLogger("datum.uc");
+
     public static final int T1972_LEAP = 10;
 
     private static List<Long> leapSeconds; // number of leap seconds is the index, value is in tt2000.
@@ -41,7 +45,7 @@ public class LeapSecondsConverter extends UnitsConverter {
         } catch ( IOException ex ) {
             url= LeapSecondsConverter.class.getResource("CDFLeapSeconds.txt");
             in= url.openStream();
-            System.err.println("Using local copy of leap seconds!!!");
+            logger.info("Using local copy of leap seconds!!!");
         }
         
         BufferedReader r = new BufferedReader(new InputStreamReader(in));
@@ -152,21 +156,21 @@ public class LeapSecondsConverter extends UnitsConverter {
     @Override
     public synchronized double convert(double value) {
         try {
-            int leapSeconds;
+            int leapSec;
             if ( this.us2000ToTT2000 ) {
                 if ( us2000_st <= value && value<us2000_en ) {
-                    leapSeconds= us2000_c;
+                    leapSec= us2000_c;
                 } else {
-                    leapSeconds= getLeapSecondCountForUs2000( value );
+                    leapSec= getLeapSecondCountForUs2000( value );
                 }
-                return ( value * 1000 - 43200000000000L ) + ( leapSeconds - 32 + 64.184 ) * 1000000000L;
+                return ( value * 1000 - 43200000000000L ) + ( leapSec - 32 + 64.184 ) * 1000000000L;
             } else {
                 if ( tt2000_st <= value && value<tt2000_en ) { // DANGER--rounding...
-                    leapSeconds= tt2000_c;
+                    leapSec= tt2000_c;
                 } else {
-                    leapSeconds= getLeapSecondCountForTT2000( (long)value );
+                    leapSec= getLeapSecondCountForTT2000( (long)value );
                 }
-                return ( ( value - (  leapSeconds - 32 + 64.184  ) * 1000000000L ) + 43200000000000L ) / 1000.; // tt = TAI + 32.184 s = UTC + 32 + 32.184 = UTC + 64.184s, see jbf@space.physics.uiowa.edu email at 2012-02-23 12:57 CST
+                return ( ( value - (  leapSec - 32 + 64.184  ) * 1000000000L ) + 43200000000000L ) / 1000.; // tt = TAI + 32.184 s = UTC + 32 + 32.184 = UTC + 64.184s, see jbf@space.physics.uiowa.edu email at 2012-02-23 12:57 CST
             }
         } catch ( IOException ex ) {
             throw new RuntimeException("LeapSeconds file not available.  This should never happen since there is a leapSeconds file within code.",ex);

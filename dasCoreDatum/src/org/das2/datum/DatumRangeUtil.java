@@ -18,7 +18,9 @@ import org.das2.datum.format.TimeDatumFormatter;
  * @author  Jeremy
  */
 public class DatumRangeUtil {
-    
+
+    private static final Logger logger= LoggerManager.getLogger("datum");
+
     private static final int DATEFORMAT_USA= 1;
     private static final int DATEFORMAT_EUROPE= 0;
     private static final int DATEFORMAT_YYYY_DDD= 2;
@@ -536,8 +538,6 @@ public class DatumRangeUtil {
         
         public DatumRange parse( String stringIn ) throws ParseException {
             
-            Logger logger= Logger.getLogger("das2.datum");
-
             DatumRange check= parseISO8601Range( stringIn );
             if ( check!=null ) return check;
 
@@ -820,11 +820,11 @@ public class DatumRangeUtil {
             } // unresolved entities
             
             {
-                StringBuffer stringBuffer= new StringBuffer("ts1: ");
-                for ( int i=0; i<7; i++ ) stringBuffer.append(""+ts1[i]+" ");
+                StringBuilder stringBuffer= new StringBuilder("ts1: ");
+                for ( int i=0; i<7; i++ ) stringBuffer.append("").append(ts1[i]).append(" ");
                 logger.fine( stringBuffer.toString() );
-                stringBuffer= new StringBuffer("ts2: ");
-                for ( int i=0; i<7; i++ ) stringBuffer.append(""+ts2[i]+" ");
+                stringBuffer= new StringBuilder("ts2: ");
+                for ( int i=0; i<7; i++ ) stringBuffer.append("").append(ts2[i]).append(" ");
                 logger.fine( stringBuffer.toString() );
                 logger.fine( format );
             }

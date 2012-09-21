@@ -23,9 +23,11 @@
 
 package org.das2.datum.format;
 
+import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
+import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 
 /**
@@ -33,6 +35,8 @@ import org.das2.datum.Units;
  * @author  Edward West
  */
 public abstract class DatumFormatter {
+
+    protected static final Logger logger= LoggerManager.getLogger("datum.formatter");
 
     protected DatumFormatter() {}
     
