@@ -236,6 +236,9 @@ public class TimeParser {
      * @param fieldHandlers a map of special handlers
      */
     private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers) {
+
+        logger.fine("new TimeParser("+formatString+",...)");
+        
         time = new TimeUtil.TimeStruct();
         this.fieldHandlers = fieldHandlers;
         this.formatString = formatString;
@@ -247,6 +250,9 @@ public class TimeParser {
         if ( formatString.contains(".*") ) {
             formatString= formatString.replaceAll("\\.\\*", "\\%\\{ignore\\}");
         }
+        //if ( formatString.contains("%(v,sep)") ) { // it would be nice to clean up this implementation.  The following wasn't needed.
+        //    formatString= formatString.replaceAll("\\%\\(v,sep\\)", "%{v,sep}");
+        //}
         
         String[] ss = formatString.split("%");
         fc = new String[ss.length];
@@ -277,6 +283,7 @@ public class TimeParser {
                 lengths[i] = 0; // determine later by field type
             }
 
+            logger.log( Level.FINE, "ss[i]={0}", ss[i] );
             if (ss[i].charAt(pp) != '{' && ss[i].charAt(pp)!='(' ) {
                 fc[i] = ss[i].substring(pp, pp + 1);
                 delim[i] = ss[i].substring(pp + 1);
@@ -420,7 +427,11 @@ public class TimeParser {
                         else if ( name.equals("span") ) span= Integer.parseInt(val);
                         else if ( name.equals("resolution") ) span= Integer.parseInt(val);
                         else if ( name.equals("id") ) ; //TODO: orbit plug in handler...
-                        else throw new IllegalArgumentException("unrecognized/unsupported field: "+name + " in "+qual );
+                        else {
+                            if ( !fieldHandlers.containsKey(fc[i]) ) {
+                                throw new IllegalArgumentException("unrecognized/unsupported field: "+name + " in "+qual );
+                            }
+                        }
                         okay= true;
                     }
                     if ( !okay && ( qual.equals("Y") || qual.equals("m") || qual.equals("d") || qual.equals("j") ||
@@ -428,9 +439,11 @@ public class TimeParser {
                         throw new IllegalArgumentException( String.format( "%s must be assigned an integer value (e.g. %s=1) in %s", qual, qual, ss[i] ) );
                     }
                     if ( !okay ) {
-                        logger.log(Level.WARNING, "unrecognized/unsupported field:{0} in {1}", new Object[]{qual, ss[i]});
-                        //TODO: check plug-in handlers like orbit...
-                        //throw new IllegalArgumentException("unrecognized/unsupported field:"+qual+ " in " +ss[i] );
+                        if ( !fieldHandlers.containsKey(fc[i]) ) {
+                            logger.log(Level.WARNING, "unrecognized/unsupported field:{0} in {1}", new Object[]{qual, ss[i]});
+                            //TODO: check plug-in handlers like orbit...
+                            //throw new IllegalArgumentException("unrecognized/unsupported field:"+qual+ " in " +ss[i] );
+                        }
                     }
                 }
             }
