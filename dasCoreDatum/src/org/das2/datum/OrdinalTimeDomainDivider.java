@@ -403,36 +403,36 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
 
     public static void main(String[] args) throws Exception {
 
-        System.err.println(primeFactors(1000));
+        System.err.println(primeFactors(1000)); // logger okay
         List<Integer> factors = factors(primeFactors(1000));
         for (int i = 0; i < factors.size(); i++) {
-            System.err.print(" " + factors.get(i));
+            System.err.print(" " + factors.get(i)); // logger okay
         }
-        System.err.println("");
+        System.err.println(""); // logger okay
 
         DomainDivider div = new OrdinalTimeDomainDivider();
         DatumRange dr = DatumRangeUtil.parseTimeRange("2009");
-        System.err.println(div.boundaryCount(dr.min(), dr.max()));
-        System.err.println(div.boundaries(dr.min(), dr.max()));
-        System.err.println(div.rangeContaining(dr.min()));
-        System.err.println(div.coarserDivider(false).boundaryCount(dr.min(), dr.max()));
-        System.err.println(div.finerDivider(false).boundaryCount(dr.min(), dr.max()));
+        System.err.println(div.boundaryCount(dr.min(), dr.max())); // logger okay
+        System.err.println(div.boundaries(dr.min(), dr.max())); // logger okay
+        System.err.println(div.rangeContaining(dr.min())); // logger okay
+        System.err.println(div.coarserDivider(false).boundaryCount(dr.min(), dr.max())); // logger okay
+        System.err.println(div.finerDivider(false).boundaryCount(dr.min(), dr.max())); // logger okay
         div = new OrdinalTimeDomainDivider(1000, ARR_YEAR,null);
         for (int i = 0; i < 100; i++) {
-            System.err.println(div);
+            System.err.println(div); // logger okay
             div = div.finerDivider(false);
         }
         for (int i = 0; i < 100; i++) {
             div = div.coarserDivider(false);
-            System.err.println(div);
+            System.err.println(div); // logger okay
         }
         for (int i = 0; i < 30; i++) {
-            System.err.println(div);
+            System.err.println(div); // logger okay
             div = div.finerDivider(true);
         }
         for (int i = 0; i < 30; i++) {
             div = div.coarserDivider(true);
-            System.err.println(div);
+            System.err.println(div); // logger okay
         }
 
     }

@@ -84,14 +84,14 @@ public class LogDomainDivider implements DomainDivider {
     public static void main(String[] args) {
         DomainDivider div = new LogDomainDivider();
         DatumRange dr = DatumRangeUtil.newDimensionless(0.2, 1000);
-        System.err.println(div.boundaryCount(dr.min(), dr.max()));
-        System.err.println(div.boundaries(dr.min(), dr.max()));
-        System.err.println(div.rangeContaining(dr.min()));
+        System.err.println(div.boundaryCount(dr.min(), dr.max())); // logger okay
+        System.err.println(div.boundaries(dr.min(), dr.max())); // logger okay
+        System.err.println(div.rangeContaining(dr.min())); // logger okay
         DomainDivider div2 = div.coarserDivider(false);
-        System.err.println(div2.boundaryCount(dr.min(), dr.max()));
-        System.err.println(div2.boundaries(dr.min(), dr.max()));
+        System.err.println(div2.boundaryCount(dr.min(), dr.max())); // logger okay
+        System.err.println(div2.boundaries(dr.min(), dr.max())); // logger okay
         div2 = div.finerDivider(false);
-        System.err.println(div2.boundaryCount(dr.min(), dr.max()));
-        System.err.println(div2.boundaries(dr.min(), dr.max()));
+        System.err.println(div2.boundaryCount(dr.min(), dr.max())); // logger okay
+        System.err.println(div2.boundaries(dr.min(), dr.max())); // logger okay
     }
 }

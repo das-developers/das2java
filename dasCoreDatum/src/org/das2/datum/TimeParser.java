@@ -390,9 +390,10 @@ public class TimeParser {
             if ( qualifiers[i]!=null ) {
                 String[] ss2= qualifiers[i].split(";");
                 if ( ss2.length==1 && ss2[0].split(",").length>1 ) {
-                    System.err.println( "--------------------------------------------------");
-                    System.err.println( "maybe use semicolons instead of commas in template");
-                    System.err.println( "--------------------------------------------------");
+                    System.err.println( "--------------------------------------------------"); // logger okay
+                    System.err.println( "maybe use semicolons instead of commas in template"); // logger okay
+                    System.err.println( "--------------------------------------------------"); // logger okay
+                    logger.fine("maybe use semicolons instead of commas in template");
                 }
                 for ( int i2=0; i2<ss2.length; i2++ ) {
                     boolean okay=false;
@@ -427,7 +428,7 @@ public class TimeParser {
                         throw new IllegalArgumentException( String.format( "%s must be assigned an integer value (e.g. %s=1) in %s", qual, qual, ss[i] ) );
                     }
                     if ( !okay ) {
-                        System.err.println("unrecognized/unsupported field:"+qual+ " in " +ss[i] );
+                        logger.log(Level.WARNING, "unrecognized/unsupported field:{0} in {1}", new Object[]{qual, ss[i]});
                         //TODO: check plug-in handlers like orbit...
                         //throw new IllegalArgumentException("unrecognized/unsupported field:"+qual+ " in " +ss[i] );
                     }
@@ -1218,7 +1219,7 @@ public class TimeParser {
                         throw new RuntimeException("shouldn't get here");
                 }
                 if ( span>1 ) {
-                    if ( handlers[idigit]>0 && handlers[idigit]<5 ) System.err.println("uh-oh, span used on ordinal like month, day");
+                    if ( handlers[idigit]>0 && handlers[idigit]<5 ) logger.warning("uh-oh, span used on ordinal like month, day");
                     digit= ( digit / span ) * span;
                 }
                 if ( len<0 ) {

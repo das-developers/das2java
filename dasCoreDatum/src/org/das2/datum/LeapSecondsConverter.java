@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -56,7 +57,7 @@ public class LeapSecondsConverter extends UnitsConverter {
         while (s != null) {
             s = r.readLine();
             if (s == null) {
-                System.err.println( "Last leap second read from "+url+" "+lastLine );
+                logger.log( Level.FINE, "Last leap second read from {0} {1}", new Object[]{url, lastLine});
                 continue;
             }
             if (s.startsWith(";")) {
@@ -115,6 +116,7 @@ public class LeapSecondsConverter extends UnitsConverter {
                 return i+10;
             }
         }
+        logger.severe("code shouldn't get to this point: implementation error...");
         throw new RuntimeException("code shouldn't get to this point: implementation error...");
     }
 

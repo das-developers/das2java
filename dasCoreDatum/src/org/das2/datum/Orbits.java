@@ -135,12 +135,12 @@ public class Orbits {
                         }
                     }
                     if ( d1.gt(d2) ) {
-                        System.err.println("dropping invalid orbit: "+s );
+                        logger.log(Level.WARNING, "dropping invalid orbit: {0}", s);
                     } else {
                         try {
                             result.put( trimOrbit(s0), new DatumRange(d1,d2) );
                         } catch ( IllegalArgumentException ex ) {
-                            System.err.println(ex.getMessage()+": " +s );
+                            logger.log(Level.WARNING, "{0}: {1}", new Object[]{ex.getMessage(), s});
                         }
                     }
                 }
@@ -300,7 +300,7 @@ public class Orbits {
         public String configure(Map<String, String> args) {
             String id= args.get("id");
             if ( id==null ) {
-                id= "rbspa-pp";
+                id= "x"; //TODO: throw exception here soon!
             }
 
             o= getOrbitsFor( id );
@@ -393,32 +393,32 @@ public class Orbits {
 
     public static void main( String[] args ) throws ParseException {
         Orbits o= getOrbitsFor( "cassini" );
-        System.err.println(o.getDatumRange("120"));
+        System.err.println(o.getDatumRange("120")); //logger okay
 
         {
             TimeParser tp= TimeParser.create( "$5(o,id=cassini)", "o", new OrbitFieldHandler() );
             DatumRange dr= tp.parse( "____C").getTimeRange();
-            System.err.println( dr );
-            System.err.println( tp.format(dr) );
+            System.err.println( dr ); //logger okay
+            System.err.println( tp.format(dr) ); //logger okay
         }
 
         {
             TimeParser tp= TimeParser.create( "$5(o,id=crres)", "o", new OrbitFieldHandler() );
             DatumRange dr= tp.parse( "__132").getTimeRange();
-            System.err.println( dr );
-            System.err.println( tp.format(dr) );
+            System.err.println( dr ); //logger okay
+            System.err.println( tp.format(dr) ); //logger okay
         }
 
         {
             // CRRES orbit 599 and 600 are the same interval.
             DatumRange dr= TimeParser.create("$(o,id=crres)").parse("599").getTimeRange();
-            System.err.println( dr );
+            System.err.println( dr ); //logger okay
             DatumRange o600= dr.next();
-            System.err.println( o600 );
-            System.err.println( "-generate a list--" );
+            System.err.println( o600 ); //logger okay
+            System.err.println( "-generate a list--" ); //logger okay
             List<DatumRange> drs= DatumRangeUtil.generateList( DatumRangeUtil.parseTimeRangeValid("1991-03-27 through 1991-03-29"), o600 );
             for ( DatumRange dr1: drs ) {
-                System.err.println( dr1 );
+                System.err.println( dr1 ); //logger okay
             }
 
         }

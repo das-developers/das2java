@@ -1172,25 +1172,25 @@ public final class TimeUtil {
     
     public static void main(String[] args) throws Exception {
         //System.out.println( "TimeUtil.parse="+TimeUtil.parseTime("1"));
-        System.out.println(""+isLeapYear(1900) );
-        System.out.println(""+isLeapYear(2000) );
-        System.out.println(""+isLeapYear(1996) );
-        System.out.println(""+isLeapYear(1999) );
-        System.out.println(""+isLeapYear(2100) );
+        System.out.println(""+isLeapYear(1900) ); //logger okay
+        System.out.println(""+isLeapYear(2000) ); //logger okay
+        System.out.println(""+isLeapYear(1996) ); //logger okay
+        System.out.println(""+isLeapYear(1999) ); //logger okay
+        System.out.println(""+isLeapYear(2100) ); //logger okay
 
-        System.out.println( "TimeUtil.parse="+TimeUtil.parseTime("2010"));
-        System.out.println( TimeUtil.now() );
-        System.out.println( Datum.create( TimeUtil.convert(2000,1,2, 0, 0, 0, Units.us2000 ), Units.us2000 ));
+        System.out.println( "TimeUtil.parse="+TimeUtil.parseTime("2010")); //logger okay
+        System.out.println( TimeUtil.now() ); //logger okay
+        System.out.println( Datum.create( TimeUtil.convert(2000,1,2, 0, 0, 0, Units.us2000 ), Units.us2000 )); //logger okay
         Datum x=create( "2000-1-1 0:00:33.45" );
-        System.out.println( x );
+        System.out.println( x ); //logger okay
         
         TimeStruct ts= TimeUtil.toTimeStruct(x);
-        System.out.println( TimeUtil.toDatum(ts) );
+        System.out.println( TimeUtil.toDatum(ts) ); //logger okay
         
         TimeDatumFormatter tf = TimeDatumFormatter.DEFAULT;
         
         for ( int i=0; i<44; i++ ) {
-            System.out.println(tf.format(x)+"\t"+(long)x.doubleValue(Units.us2000));
+            System.out.println(tf.format(x)+"\t"+(long)x.doubleValue(Units.us2000)); //logger okay
             x= TimeUtil.prev(SECOND,x);
         }
 
@@ -1206,8 +1206,8 @@ public final class TimeUtil {
                 Datum d1= TimeUtil.toDatum(ts);
                 if ( !d1.equals(d) ) {
                     if ( d1.subtract(d).doubleValue(Units.microseconds)< 0.000001 ) continue;
-                    System.err.println( d1.subtract(d) );
-                    System.err.println( ""+i+" "+j+": " +d + " "+d1 +" "+ ts );
+                    System.err.println( d1.subtract(d) ); //logger okay
+                    System.err.println( ""+i+" "+j+": " +d + " "+d1 +" "+ ts ); //logger okay
                     ts= toTimeStruct(d);
                 }
             }

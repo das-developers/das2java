@@ -148,26 +148,26 @@ public class LogLinDomainDivider implements DomainDivider {
     public static void main(String[] args) {
         DomainDivider d = new LogLinDomainDivider();
         DatumRange dr = DatumRangeUtil.newDimensionless(7.9, 218);
-        System.err.println(d.boundaryCount(dr.min(), dr.max()));
+        System.err.println(d.boundaryCount(dr.min(), dr.max())); // logger okay
         DatumVector dv = d.boundaries(dr.min(), dr.max());
         for (int i = 0; i < dv.getLength(); i++)
-            System.err.print(dv.get(i).doubleValue() + ", ");
-        System.err.println();
-        System.err.println(d.rangeContaining(Datum.create(27.3)));
+            System.err.print(dv.get(i).doubleValue() + ", "); // logger okay
+        System.err.println(); // logger okay
+        System.err.println(d.rangeContaining(Datum.create(27.3))); // logger okay
 
-        System.err.println(d.coarserDivider(true).coarserDivider(true).boundaries(dr.min(), dr.max()));
-        System.err.println(d.finerDivider(true).finerDivider(true).boundaries(dr.min(), dr.max()));
+        System.err.println(d.coarserDivider(true).coarserDivider(true).boundaries(dr.min(), dr.max())); // logger okay
+        System.err.println(d.finerDivider(true).finerDivider(true).boundaries(dr.min(), dr.max())); // logger okay
 
         d= d.finerDivider(true);
         d= d.finerDivider(true);
         
         for ( int i=0; i<10; i++ ) {
             d= d.coarserDivider(false);
-            System.err.println(d);
+            System.err.println(d); // logger okay
         }
         for ( int i=0; i<10; i++ ) {
             d= d.finerDivider(false);
-            System.err.println(d);
+            System.err.println(d); // logger okay
         }
     }
 }

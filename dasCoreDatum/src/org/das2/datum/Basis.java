@@ -87,9 +87,9 @@ public class Basis {
     public static void main( String[] args ) {
         Basis since2010x= new Basis( "since2010", "since 2010-01-01T00:00Z", Basis.since2000, 315619200000000.0, Units.microseconds );
         Basis since2011= new Basis( "since2011", "since 2011-01-01T00:00Z", Basis.since2000, 347155200000000.0, Units.microseconds );
-        System.err.println( since2011.getOffset(since2010x, Units.days ));
+        System.err.println( since2011.getOffset(since2010x, Units.days )); // logger okay
         
-        System.err.println( centigrade.getOffset( fahrenheit, Units.fahrenheitDegrees ) );
+        System.err.println( centigrade.getOffset( fahrenheit, Units.fahrenheitDegrees ) ); // logger okay
         
     }
 }
