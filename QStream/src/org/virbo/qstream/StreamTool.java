@@ -57,8 +57,6 @@ import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathExpressionException;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.Units;
-import org.das2.datum.UnitsUtil;
-import org.virbo.dataset.SemanticOps;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -409,7 +407,7 @@ public class StreamTool {
                 if (struct.bigBuffer.get(bpos) == '>') {
                     break;
                 } else {
-                    //System.err.println((char) struct.bigBuffer.get(bpos));
+                    //logger.fine((char) struct.bigBuffer.get(bpos));
                 }
             }
             for (; i < bufOffset + struct.bigBuffer.position(); i++) {
@@ -577,6 +575,7 @@ public class StreamTool {
         }
         struct.bigBuffer.get(struct.four);
         if (isPacketDescriptorHeader(struct.four)) {
+            logger.log(Level.FINEST, "packet descriptor {0} at {1}", new Object[] { new String(struct.four), struct.byteOffset } );
             if (struct.bigBuffer.remaining() < 6) {
                 struct.bigBuffer.reset();
                 return false;
@@ -604,7 +603,8 @@ public class StreamTool {
                 DescriptorFactory factory = DescriptorRegistry.get(root.getTagName());
                 if ( factory==null ) {
                     if ( root.getTagName().equals("stream") ) {
-                        System.err.println("ignoring secondary stream descriptor");
+                        // two streams appended into one should be valid. 
+                        logger.fine("ignoring second stream descriptor");
                         return true;
                     } else {
                         throw new StreamException("Unrecognized tag name \""+root.getTagName()+"\"");
@@ -702,7 +702,7 @@ public class StreamTool {
             byte[] bytes = new byte[xml.limit() - xml.position()];
             xml.get(bytes);
             xml.position(pos);
-            //System.err.println(new String(bytes));
+            //logger.fine(new String(bytes));
         }
         ByteBufferInputStream bbin = new ByteBufferInputStream(xml);
         InputStreamReader isr = new InputStreamReader(bbin);
@@ -749,7 +749,7 @@ public class StreamTool {
             // Ed's nice trick for finding the implementation
             String name = serializer.getClass().getSimpleName();
             java.net.URL u = serializer.getClass().getResource(name+".class");
-            //System.err.println(u);
+            //logger.fine(u);
             e.printStackTrace();
         }
         serializer.write(document, output);
