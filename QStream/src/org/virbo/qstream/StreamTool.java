@@ -750,7 +750,7 @@ public class StreamTool {
             String name = serializer.getClass().getSimpleName();
             java.net.URL u = serializer.getClass().getResource(name+".class");
             //logger.fine(u);
-            e.printStackTrace();
+            logger.log( Level.SEVERE, "formatHeader", e );
         }
         serializer.write(document, output);
 
