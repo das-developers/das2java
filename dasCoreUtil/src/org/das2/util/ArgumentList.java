@@ -412,8 +412,8 @@ public class ArgumentList {
      * exactly what was specified.
      * @return a Map of the specified values, without defaults.
      */
-    public Map getOptions() {
-        HashMap result= new HashMap();
+    public Map<String,String> getOptions() {
+        HashMap<String,String> result= new HashMap<String,String>();
         List exclude= Arrays.asList( positionKeys );
         for ( Iterator i=values.keySet().iterator(); i.hasNext(); ) {
             String key= (String)i.next();
@@ -533,19 +533,24 @@ public class ArgumentList {
      * see Vg1pws app for example use.
      */
     public void printPrefsSettings() {
-        StringBuilder s= new StringBuilder( "Explicit Settings: \n" );
+        String s= getPrefsSettings();
+        System.err.println(s);
+    }
+
+    private String getPrefsSettings() {
+        StringBuilder s= new StringBuilder( "" );
         s.append( this.programName ).append( " " );
-        
+
         for ( int i=0; i<this.nposition; i++ ) {
             String key= positionKeys[i];
             if ( formUsed.get(key)!=null ) {
                 s.append( formUsed.get(key) );
             }
         }
-        
+
         Set<String> set= names.keySet();
         Iterator<String> i= set.iterator();
-        
+
         while ( i.hasNext() ) {
             String name= i.next();
             String key= names.get(name);
@@ -553,15 +558,25 @@ public class ArgumentList {
             if ( value !=null ) {
                 if ( value.equals(this.TRUE) ) {
                     s.append( "--" ).append( name );
-                } if ( value.equals(this.FALSE ) ) {  
+                } if ( value.equals(this.FALSE ) ) {
                     // do nothing
                 } else {
-                    s.append( "--" ).append( name ).append( "=" ).append( value ).append(" ");
+                    s.append( value ).append(" ");
                 }
             }
         }
-        
-        System.err.println(s);
+
+        return s.toString();
+
+    }
+
+    /**
+     * dump the configuration to the given logger at Level.CONFIG.
+     * @param logger
+     */
+    public void logPrefsSettings( Logger logger ) {
+        String s= getPrefsSettings();
+        logger.log(Level.CONFIG,s);
     }
     
 }
