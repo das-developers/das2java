@@ -6,7 +6,7 @@
 package org.virbo.qstream;
 
 import java.text.ParseException;
-import org.das2.dataset.CacheTag;
+import org.das2.datum.CacheTag;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.Units;
 

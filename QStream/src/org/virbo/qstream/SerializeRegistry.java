@@ -8,7 +8,7 @@ package org.virbo.qstream;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
-import org.das2.dataset.CacheTag;
+import org.das2.datum.CacheTag;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
