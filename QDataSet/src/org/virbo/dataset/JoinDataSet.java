@@ -12,7 +12,6 @@ package org.virbo.dataset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.das2.datum.UnitsUtil;
 
 /**
  * Create a higher rank dataset with dim 0 being a JOIN dimension.  Join implies
@@ -63,7 +62,7 @@ public class JoinDataSet extends AbstractDataSet {
     }
 
     /**
-     * copy this without copying each dataset.
+     * copy the JoinDataSet without copying each dataset it contains.
      * @param joinDataSet
      * @return
      */
