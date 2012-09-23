@@ -10,6 +10,7 @@
 package org.virbo.dataset;
 
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
 
@@ -89,7 +90,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
             if ( value instanceof QDataSet ) { // BUNDLES can have string value here
                 QDataSet dep0= ((QDataSet)value);
                 if ( this.rank()>0 && dep0.length()!=this.length() ) {
-                    logger.warning("DEPEND_0 is incorrect length, its length is "+dep0.length()+ " should be "+this.length() );
+                    logger.log(Level.WARNING, "DEPEND_0 is incorrect length, its length is {0} should be {1}", new Object[]{dep0.length(), this.length()});
                 }
             } else if ( value instanceof String ) {
                 logger.warning("Use DEPENDNAME_0 instead of DEPEND_0");
@@ -101,7 +102,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
                 if ( value instanceof QDataSet ) { // BUNDLES can have string value here
                     QDataSet dep1= ((QDataSet)value);
                     if ( this.rank()>0 && this.length()>0 && dep1.rank()==1 && dep1.length()!=this.length(0) ) {
-                        logger.warning("DEPEND_1 is incorrect length, its length is "+dep1.length()+ " should be "+this.length(0) );
+                        logger.log(Level.WARNING, "DEPEND_1 is incorrect length, its length is {0} should be {1}", new Object[]{dep1.length(), this.length(0)});
                     }
                 } else if ( value instanceof String ) {
                     logger.warning("Use DEPENDNAME_1 instead of DEPEND_1");
