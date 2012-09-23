@@ -10,6 +10,8 @@
 package org.virbo.dataset;
 
 import java.util.HashMap;
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 /**
  * Abstract class to simplify defining datasets.  Implement rank,
@@ -18,7 +20,8 @@ import java.util.HashMap;
  * @author jbf
  */
 public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSet {
-    
+
+    private static final Logger logger= LoggerManager.getLogger("qdataset");
     protected HashMap<String,Object> properties;
     
     public AbstractDataSet() {
@@ -74,7 +77,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         if ( name.equals(QDataSet.DELTA_MINUS) || name.equals(QDataSet.DELTA_PLUS)
                 || name.equals(QDataSet.DEPEND_0) ) {
             if ( value!=null && !( value instanceof QDataSet ) ) {
-                System.err.println( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet (%s)", name, value.toString() ) );
+                logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet (%s)", name, value.toString() ) );
             }
         } 
     }
@@ -86,22 +89,22 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
             if ( value instanceof QDataSet ) { // BUNDLES can have string value here
                 QDataSet dep0= ((QDataSet)value);
                 if ( this.rank()>0 && dep0.length()!=this.length() ) {
-                    System.err.println("DEPEND_0 is incorrect length, its length is "+dep0.length()+ " should be "+this.length() );
+                    logger.warning("DEPEND_0 is incorrect length, its length is "+dep0.length()+ " should be "+this.length() );
                 }
             } else if ( value instanceof String ) {
-                System.err.println("Use DEPENDNAME_0 instead of DEPEND_0");
+                logger.warning("Use DEPENDNAME_0 instead of DEPEND_0");
             }
         } else if ( name.equals( QDataSet.DEPEND_1 ) && value!=null ) {
             if ( this.rank()<=1 ) {
-                System.err.println("DEPEND_1 was set on dataset of rank 0 or rank 1.  Ignoring...");
+                logger.warning("DEPEND_1 was set on dataset of rank 0 or rank 1.  Ignoring...");
             } else {
                 if ( value instanceof QDataSet ) { // BUNDLES can have string value here
                     QDataSet dep1= ((QDataSet)value);
                     if ( this.rank()>0 && this.length()>0 && dep1.rank()==1 && dep1.length()!=this.length(0) ) {
-                        System.err.println("DEPEND_1 is incorrect length, its length is "+dep1.length()+ " should be "+this.length(0) );
+                        logger.warning("DEPEND_1 is incorrect length, its length is "+dep1.length()+ " should be "+this.length(0) );
                     }
                 } else if ( value instanceof String ) {
-                    System.err.println("Use DEPENDNAME_1 instead of DEPEND_1");
+                    logger.warning("Use DEPENDNAME_1 instead of DEPEND_1");
                 }
             }
         }

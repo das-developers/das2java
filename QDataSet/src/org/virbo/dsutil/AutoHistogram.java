@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.DasMath;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetIterator;
@@ -85,7 +86,7 @@ public final class AutoHistogram {
      */
     SortedMap<Double, Integer> outliers;
 
-    private final static Logger logger= Logger.getLogger("qdataset");
+    private final static Logger logger= LoggerManager.getLogger("qdataset");
 
     private final static void log( java.util.logging.Level level, String message ) {
         if ( logger.isLoggable(level) ) logger.log( level, message);

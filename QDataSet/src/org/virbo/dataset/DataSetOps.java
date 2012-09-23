@@ -17,7 +17,6 @@ import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,7 +27,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.UnitsUtil;
-import org.das2.util.monitor.NullProgressMonitor;
+import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
@@ -40,7 +39,7 @@ import org.virbo.dsutil.Reduction;
  */
 public class DataSetOps {
 
-    private static final Logger logger= Logger.getLogger("qdataset");
+    private static final Logger logger= LoggerManager.getLogger("qdataset");
 
     /**
      * absolute length limit for plots.  This is used to limit the elements used in autoranging, etc.
