@@ -337,7 +337,7 @@ public class DataSetBuilder {
             case 2: dims= "*,"+this.dim1; break;
             case 3: dims= "*,"+this.dim1+","+this.dim2; break;
         }
-        return "DataSetBuilder rank=" + this.rank + "(" + dims + ") reccount="+(this.index+this.offset);
+        return "DataSetBuilder rank=" + this.rank + " dims=[" + dims + "] reccount="+(this.index+this.offset);
     }
 
     /**
