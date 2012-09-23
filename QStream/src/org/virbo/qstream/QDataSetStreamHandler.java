@@ -407,6 +407,11 @@ public class QDataSetStreamHandler implements StreamHandler {
     public void streamException(StreamException se) throws StreamException {
     }
 
+    /**
+     * return the dataset from the stream
+     * @param name the name of the dataset to retrieve.
+     * @return the dataset
+     */
     public QDataSet getDataSet(String name) {
         logger.log(Level.FINE, "getDataSet({0})", name);
         DataSetBuilder builder = builders.get(name);
@@ -419,12 +424,12 @@ public class QDataSetStreamHandler implements StreamHandler {
         MutablePropertyDataSet sliceDs= null;
             
         if (join != null) {
+            String joinChild= (String)join.property(BUILDER_JOIN_CHILDREN);
             join= JoinDataSet.copy(join);
             if ( builder.rank()>0 ) {
                 sliceDs= builder.getDataSet();
                 List<QDataSet> childDataSets=null;
                 if ( sliceDs!=null && sliceDs.property(BUILDER_JOIN_CHILDREN)!=null ) {
-                    String joinChild= (String)join.property(BUILDER_JOIN_CHILDREN);
                     if ( joinChild==null ) joinChild= (String)sliceDs.property(BUILDER_JOIN_CHILDREN);
                     String[] children= joinChild.split(",");
                     childDataSets= new ArrayList();
