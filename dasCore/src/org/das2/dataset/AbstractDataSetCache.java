@@ -23,6 +23,7 @@
 
 package org.das2.dataset;
 
+import org.das2.datum.CacheTag;
 import java.awt.Graphics2D;
 import java.util.logging.Level;
 import org.das2.components.propertyeditor.Displayable;
@@ -150,13 +151,13 @@ public abstract class AbstractDataSetCache implements DataSetCache {
     public DataSet coalese( List result ) {
        Collections.sort( result, new Comparator() {
             public int compare( Object o1, Object o2 ) {
-                return ((Entry)o1).cacheTag.range.compareTo( ((Entry)o2).cacheTag.range );
+                return ((Entry)o1).cacheTag.getRange().compareTo( ((Entry)o2).cacheTag.getRange() );
             }
         } );
         
         Entry e0= (Entry)result.get(0);
         CacheTag ct= e0.cacheTag;
-        Datum t1= ct.range.max();        
+        Datum t1= ct.getRange().max();
 
         DataSet ds= e0.data;
 
@@ -164,11 +165,11 @@ public abstract class AbstractDataSetCache implements DataSetCache {
         for ( int i=1; i<result.size(); i++ ) {
             Entry entryTest= (Entry)result.get(i);
             CacheTag ctTest= entryTest.cacheTag;
-            if ( ctTest.range.min().equals(t1) && 
-                 ( ( ct.resolution==null && ctTest.resolution==null ) || 
-                    ( ct.resolution!=null && ct.resolution.equals( ctTest.resolution ) ) ) ) {
+            if ( ctTest.getRange().min().equals(t1) &&
+                 ( ( ct.getResolution()==null && ctTest.getResolution()==null ) ||
+                    ( ct.getResolution()!=null && ct.getResolution().equals( ctTest.getResolution() ) ) ) ) {
                 ds= DataSetUtil.append( ds, entryTest.data );
-                t1= ctTest.range.max();
+                t1= ctTest.getRange().max();
             }
         }
         

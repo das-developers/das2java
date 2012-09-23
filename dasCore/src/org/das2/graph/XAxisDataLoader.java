@@ -12,7 +12,7 @@ package org.das2.graph;
 
 import java.util.logging.Level;
 import org.das2.CancelledOperationException;
-import org.das2.dataset.CacheTag;
+import org.das2.datum.CacheTag;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.DataSetUpdateEvent;

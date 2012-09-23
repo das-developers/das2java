@@ -11,7 +11,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.TimeUtil.TimeStruct;
 import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
-import org.das2.dataset.CacheTag;
+import org.das2.datum.CacheTag;
 import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;

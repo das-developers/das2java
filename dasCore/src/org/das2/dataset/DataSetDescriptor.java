@@ -21,6 +21,7 @@
  */
 package org.das2.dataset;
 
+import org.das2.datum.CacheTag;
 import java.awt.Graphics2D;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.datum.DatumRange;

@@ -22,6 +22,9 @@
  */
 
 package org.das2.dataset;
+
+import org.das2.datum.CacheTag;
+
 /**
  *
  * @author  jbf

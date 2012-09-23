@@ -6,6 +6,7 @@
 
 package org.das2.dataset;
 
+import org.das2.datum.CacheTag;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import java.util.*;

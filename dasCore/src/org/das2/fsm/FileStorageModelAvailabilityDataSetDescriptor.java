@@ -15,7 +15,7 @@ import java.util.Map;
 import org.das2.datum.TimeUtil.TimeStruct;
 import org.das2.util.filesystem.FileSystem;
 import org.das2.DasException;
-import org.das2.dataset.CacheTag;
+import org.das2.datum.CacheTag;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.VectorDataSetBuilder;

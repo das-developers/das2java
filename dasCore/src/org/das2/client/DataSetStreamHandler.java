@@ -33,7 +33,7 @@ import org.das2.stream.SkeletonDescriptor;
 import org.das2.stream.PacketDescriptor;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
-import org.das2.dataset.CacheTag;
+import org.das2.datum.CacheTag;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.TableDataSetBuilder;
 import org.das2.dataset.VectorDataSetBuilder;
