@@ -17,6 +17,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.das2.dataset.CacheTag;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetUtil;
@@ -287,7 +288,8 @@ public class QDataSetStreamHandler implements StreamHandler {
                                     join= joinDataSets.get(joinParent);
                                 }
 
-                                if (join == null) {
+                                if (join == null) { // /home/jbf/ct/hudson/data.backup/qds/aggregation.qds
+                                    logger.log( Level.FINE, "repeat of packet type for {0}, increasing rank.", name );
                                     join = new JoinDataSet(rank+1);
                                     joinDataSets.put(name, join);
                                 }
@@ -322,7 +324,13 @@ public class QDataSetStreamHandler implements StreamHandler {
        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             String s = (String) result.property("DEPENDNAME_" + i);
             if (s != null) {
-                result.putProperty("DEPEND_" + i, getDataSet(s));
+                QDataSet dep0ds= getDataSet(s);
+                if ( dep0ds.rank()<=result.rank() ) {
+                    result.putProperty("DEPEND_" + i, dep0ds );
+                } else {
+                    //we're building DEPEND_0 as well, so this is resolved at the end.
+                    //System.err.println("dropping DEPEND_0 for now");
+                }
             }
         }
        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
@@ -381,6 +389,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                         builder.nextRecord();
                     }
                 } else {
+                    TransferType tt= planeDescriptor.getType();
+                    if ( tt==null ) {
+                        logger.severe("here planeDescriptor.getType() is null");
+                    }
                     builder.putValue(-1, planeDescriptor.getType().read(data));
                     builder.nextRecord();
                 }
@@ -407,10 +419,11 @@ public class QDataSetStreamHandler implements StreamHandler {
         MutablePropertyDataSet sliceDs= null;
             
         if (join != null) {
+            join= JoinDataSet.copy(join);
             if ( builder.rank()>0 ) {
                 sliceDs= builder.getDataSet();
                 List<QDataSet> childDataSets=null;
-                if ( sliceDs.property(BUILDER_JOIN_CHILDREN)!=null ) {
+                if ( sliceDs!=null && sliceDs.property(BUILDER_JOIN_CHILDREN)!=null ) {
                     String joinChild= (String)join.property(BUILDER_JOIN_CHILDREN);
                     if ( joinChild==null ) joinChild= (String)sliceDs.property(BUILDER_JOIN_CHILDREN);
                     String[] children= joinChild.split(",");
@@ -434,6 +447,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                 }
                 DataSetUtil.putProperties( builder.getProperties(), join );
                 //if ( sliceDs!=null ) join.join(sliceDs);
+                if ( sliceDs!=null && sliceDs.length()>0 ) {
+                    logger.fine("aggregation has one last dataset to append");
+                    join.join(sliceDs);
+                }
             } else {
                 DataSetUtil.putProperties( builder.getProperties(), join );
                 sliceDs= (MutablePropertyDataSet) join.slice(join.length()-1); //wha??  when do we use this?
