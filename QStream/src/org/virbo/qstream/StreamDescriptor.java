@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -64,6 +65,40 @@ public class StreamDescriptor implements Descriptor {
         }
         if ( found==-1 ) throw new IllegalArgumentException("ran out of numbers, use retire to free");
         addDescriptor( pd, found );
+    }
+
+    /**
+     * If a second PacketDescriptor contains the same descriptor information, then the PacketDescriptor can be
+     * dropped.  This was introduced when two daily streams appended did not create a valid stream.
+     * 
+     * It has the descriptor if:
+     * * the number is the same
+     * * the planes within are the same ids.
+     * @param pd0
+     * @param descriptorId
+     * @return
+     */
+    public synchronized boolean hasDescriptor( Descriptor pd0, int descriptorId ) {
+        if ( pd0 instanceof PacketDescriptor ) {
+            PacketDescriptor ppd0= (PacketDescriptor)pd0;
+            Descriptor o= descriptors.get(descriptorId);
+            if ( o instanceof PacketDescriptor ) {
+                PacketDescriptor ppd1= (PacketDescriptor)o;
+                List<PlaneDescriptor> planed0= ppd0.getPlanes();
+                List<PlaneDescriptor> planed1= ppd1.getPlanes();
+                if ( planed0.size()==planed1.size() ) {
+                    boolean same= true;
+                    for ( int i=0; i<planed1.size(); i++ ) {
+                        if ( !planed0.get(i).getName().equals(planed1.get(i).getName()) ) {
+                            same= false;
+                        }
+                    }
+                    if ( same ) return true;
+                }
+            }
+        }
+        return false;
+
     }
 
     /**
