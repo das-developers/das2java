@@ -17,13 +17,15 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import org.das2.dataset.CacheTag;
+import org.das2.datum.CacheTag;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -602,4 +604,44 @@ public class QDataSetStreamHandler implements StreamHandler {
          }
     }
 
+    /**
+     * this is a bit of a kludge, where I don't want to flatten a dataset automatically, but we probably want to.
+     *
+     * @param ds
+     * @return
+     */
+    public static boolean isFlattenableJoin( QDataSet ds ) {
+        if ( ds.rank()==2 && ds.property(QDataSet.DEPEND_0)==null && ds.property(QDataSet.DEPENDNAME_0)!=null ) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * since an appended series of rank 1 datasets will return as a rank 2 join, this utility provides
+     * a standard place to flatten it.
+     * This will also flatten DEPENDNAME_0.
+     * @param ds
+     * @return
+     */
+    public QDataSet flattenJoin( QDataSet ds ) {
+        int len= 0;
+        for ( int i=0; i<ds.length(); i++ ) {
+            len+= ds.length(i);
+        }
+        ArrayDataSet result= ArrayDataSet.maybeCopy( ds.slice(0) );
+        result.grow(len);
+        for ( int i=1; i<ds.length(); i++ ) {
+            result.append( ArrayDataSet.maybeCopy( ds.slice(i)) );
+        }
+        String s= (String)ds.property(QDataSet.DEPENDNAME_0);
+        if ( s!=null ) {
+            MutablePropertyDataSet dep0= (MutablePropertyDataSet) getDataSet(s);
+            dep0= (MutablePropertyDataSet)flattenJoin(dep0);
+            ((MutablePropertyDataSet)result).putProperty( QDataSet.DEPEND_0, dep0 );
+            ((MutablePropertyDataSet)result).putProperty( QDataSet.DEPENDNAME_0, null );
+        }
+        return result;
+
+    }
 }
