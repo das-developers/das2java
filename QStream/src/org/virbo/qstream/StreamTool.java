@@ -57,6 +57,7 @@ import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathExpressionException;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.Units;
+import org.das2.util.LoggerManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -73,7 +74,7 @@ public class StreamTool {
     ByteOrder byteOrder;
     private static final int PACKET_LENGTH_LIMIT=100000;
 
-    private static final Logger logger= Logger.getLogger("qstream");
+    private static final Logger logger= LoggerManager.getLogger("qstream");
     
     /** Creates a new instance of StreamTool */
     public StreamTool() {
@@ -253,20 +254,38 @@ public class StreamTool {
         private StreamHandler handler;
         private Map descriptors = new HashMap();
         private StreamDescriptor sd;
-        private int byteOffset = 0;  // byte offset into file of the end of the buffer.
-        private int descriptorCount = 0; // successfully read descriptors
-        private int packetCount = 0; // successfully read packets
+
+        /**
+         * byte offset into file of the end of the buffer.
+         */
+        private int byteOffset = 0;
+        /**
+         * successfully read descriptors
+         */
+        private int descriptorCount = 0;
+        /**
+         * successfully read packets
+         */
+        private int packetCount = 0;
 
         private ReadStreamStructure(ReadableByteChannel stream, StreamHandler handler) {
             this.stream = stream;
             this.handler = handler;
         }
 
+        /**
+         * return the position of the tool within the stream, in bytes since the beginning of stream.
+         * @return
+         */
+        protected long getCarotPosition() {
+            return (byteOffset - bigBuffer.limit() + bigBuffer.position());
+        }
+
         public String toString() {
             return "\ndescriptorCount=" + descriptorCount +
                     "\npacketCount=" + packetCount +
                     "\nbyteOffset=" + byteOffset +
-                    "\ncarotPos=" + (byteOffset - bigBuffer.limit() + bigBuffer.position()) +
+                    "\ncarotPos=" + getCarotPosition() +
                     "\nbuffer=" + String.valueOf(bigBuffer);
         }
     }
@@ -361,7 +380,7 @@ public class StreamTool {
             }
         } else {
             String s = readMore(struct);
-            throw new StreamException("Expecting stream descriptor header, found: '" + asciiBytesToString(struct.four, 0, 4) + "' beginning \n'" + s + "'");
+            throw new StreamException("Expecting stream descriptor header, found: '" + getIdString(struct.four) + "' beginning \n'" + s + "'");
         }
     }
 
@@ -575,12 +594,13 @@ public class StreamTool {
         }
         struct.bigBuffer.get(struct.four);
         if (isPacketDescriptorHeader(struct.four)) {
-            logger.log(Level.FINEST, "packet descriptor {0} at {1}", new Object[] { new String(struct.four), struct.byteOffset } );
+            logger.log(Level.FINER, "packet descriptor {0} ending at {1}", new Object[] { new String(struct.four), struct.getCarotPosition() } );
             if (struct.bigBuffer.remaining() < 6) {
                 struct.bigBuffer.reset();
                 return false;
             }
             int contentLength = getContentLength(struct.bigBuffer);
+            logger.log(Level.FINEST, "packet descriptor content length is {0}", new Object[] { contentLength } );
             if (contentLength == 0) {
                 throw new StreamException("packetDescriptor content length is 0.");
             }
@@ -614,14 +634,17 @@ public class StreamTool {
                 Descriptor pd = factory.create(ele);
 
                 if (pd instanceof PacketDescriptor) {
-                    struct.descriptors.put(asciiBytesToString(struct.four, 1, 2), pd);
-                    StreamTool.interpretPlanes((PacketDescriptor)pd);
                     int id= -1;
                     try {
-                        id= Integer.parseInt( asciiBytesToString(struct.four, 1, 2) );
+                        id= Integer.parseInt( getIdString(struct.four) );
                     } catch ( NumberFormatException ex ) {
                         throw new StreamException( "packet descriptor id must be an integer from 1-99");
                     }
+                    StreamTool.interpretPlanes((PacketDescriptor)pd);
+                    if ( struct.sd.hasDescriptor(pd,id) ) {
+                        logger.fine("found repeat packetDescriptor");
+                    }
+                    struct.descriptors.put( getIdString(struct.four), pd );
                     struct.sd.addDescriptor((PacketDescriptor) pd,id);
                     struct.handler.packetDescriptor( (PacketDescriptor) pd );
                 } else if (root.getTagName().equals("exception")) {
@@ -638,8 +661,9 @@ public class StreamTool {
             }
 
         } else if (isPacketHeader(struct.four)) {
-            String key = asciiBytesToString(struct.four, 1, 2);
+            String key = getIdString(struct.four);
             PacketDescriptor pd = (PacketDescriptor) struct.descriptors.get(key);
+            logger.log(Level.FINEST, "packet {0} at {1}", new Object[] { new String(struct.four), struct.getCarotPosition() } );
             if ( pd==null ) {
                 throw new StreamException( String.format( "No packet found for key \"%s\"",key ) ); //TODO
             }
@@ -664,16 +688,21 @@ public class StreamTool {
             String s = new String(struct.four);
             s = s.replaceAll("\n", "\\\\n"); 
             msg += s;
-            msg += "' at byteOffset=" + (struct.byteOffset - struct.bigBuffer.limit() + struct.bigBuffer.position() - 4 - 10);
+            msg += "' at byteOffset=" + (struct.getCarotPosition() - 4 - 10);
             msg += " after reading " + struct.descriptorCount + " descriptors and " + struct.packetCount + " packets.";
             throw new StreamException(msg);
         }
         return true;
     }
 
-    private static final String asciiBytesToString(byte[] bytes, int offset, int length) {
+    /**
+     * return the String id (either "xx" or "00", "01", etc.)
+     * @param bytes
+     * @return
+     */
+    private static String getIdString(byte[] bytes) {
         try {
-            return new String(bytes, offset, length, "US-ASCII");
+            return new String(bytes, 1, 2, "US-ASCII");
         } catch (UnsupportedEncodingException uee) {
             //All JVM implementations are required to support US-ASCII
             throw new RuntimeException(uee);
@@ -691,7 +720,7 @@ public class StreamTool {
     private static boolean isPacketHeader(byte[] four) {
         return four[0] == (byte) ':' && four[3] == (byte) ':' && Character.isDigit((char) four[1]) && Character.isDigit((char) four[2]);
     }
-
+    
     private static Document getXMLDocument(ByteBuffer buffer, int contentLength) throws StreamException, IOException, SAXException {
         ByteBuffer xml = buffer.duplicate();
         xml.limit(xml.position() + contentLength);
