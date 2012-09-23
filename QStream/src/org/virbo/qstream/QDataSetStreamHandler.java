@@ -130,8 +130,8 @@ public class QDataSetStreamHandler implements StreamHandler {
                 } else {
                     throw new StreamException("dataset_id attribute expected in the stream descriptor.  Expected to find stream.");
                 }
-                
             }
+            logger.log( Level.FINE, "got streamDescriptor with default dataset {0}", dsname );
         } catch (XPathExpressionException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
