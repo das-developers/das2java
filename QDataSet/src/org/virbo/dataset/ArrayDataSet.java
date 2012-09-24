@@ -8,10 +8,11 @@ package org.virbo.dataset;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.das2.datum.CacheTag;
-import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
+import org.das2.util.LoggerManager;
 
 /**
  * A number of static methods were initially defined in DDataSet, then
@@ -20,6 +21,9 @@ import org.das2.datum.UnitsConverter;
  * @author jbf
  */
 public abstract class ArrayDataSet extends AbstractDataSet implements WritableDataSet {
+
+    private static final Logger logger= LoggerManager.getLogger("qdataset.array");
+
     int rank;
 
     int len0;
@@ -534,7 +538,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             QDataSet dep0= (QDataSet) ths.property( QDataSet.PLANE_0 );
             ArrayDataSet djoin=  copy( dep0 );
             ArrayDataSet dd1=  maybeCopy(dep1);
-            djoin.append( djoin, dd1 );
+            djoin= append( djoin, dd1 );
             result.put( QDataSet.PLANE_0, djoin );
         }
         String[] props= DataSetUtil.dimensionProperties();
@@ -569,7 +573,16 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         org.das2.datum.CacheTag ct0= (CacheTag) ths.property( QDataSet.CACHE_TAG );
         org.das2.datum.CacheTag ct1= (CacheTag) ds.property( QDataSet.CACHE_TAG );
         if ( ct0!=null && ct1!=null ) {
-            result.put( QDataSet.CACHE_TAG, CacheTag.append( ct0, ct1 ) );
+            // If cache tags are not adjacent, the range between them is included in the new tag.
+            CacheTag newTag= null;
+            try {
+                newTag= CacheTag.append(ct0, ct1);
+            } catch ( IllegalArgumentException ex ) {
+                logger.fine( "append of two datasets that have CACHE_TAGs and are not adjacent, dropping CACHE_TAG" );
+            }
+            if ( newTag!=null ) {
+                result.put( QDataSet.CACHE_TAG, newTag );
+            }
         }
 
         // special handling of TYPICAL_MIN _MAX properties
