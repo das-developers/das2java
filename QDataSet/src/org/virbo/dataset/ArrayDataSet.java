@@ -8,6 +8,7 @@ package org.virbo.dataset;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
+import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
@@ -307,9 +308,9 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
-     * Copy the dataset to a DDataSet only if the dataset is not already a DDataSet.
+     * Copy the dataset to an ArrayDataSet only if the dataset is not already an ArrayDataSet.
      * @param ds
-     * @return
+     * @return an ArrayDataSet.
      */
     public static ArrayDataSet maybeCopy( QDataSet ds ) {
         if ( ds instanceof ArrayDataSet ) {
@@ -323,7 +324,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * Copy the dataset to a ArrayDataSet only if the dataset is not already a
      * particular instance of ArrayDataSet.
      * @param ds
-     * @return
+     * @return ArrayDayaSet of component type c.
      */
     public static ArrayDataSet maybeCopy( Class c, QDataSet ds ) {
         if ( ds instanceof ArrayDataSet && ((ArrayDataSet)ds).getComponentType()==c ) {
@@ -549,6 +550,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         if ( o!=null && o.equals( ds.property(QDataSet.CADENCE) ) ) {
             result.put( QDataSet.CADENCE, o );
         }
+
+        // special handling for monotonic property.
         Boolean m= (Boolean) ths.property( QDataSet.MONOTONIC );
         if ( m!=null && m.equals(Boolean.TRUE) && m.equals( ds.property( QDataSet.MONOTONIC ) ) ) {
             // check to see that result would be monotonic
@@ -561,6 +564,21 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 result.put( QDataSet.MONOTONIC, Boolean.TRUE );
             }
         }
+
+        // special handling for cacheTag property.
+        org.das2.datum.CacheTag ct0= (CacheTag) ths.property( QDataSet.CACHE_TAG );
+        org.das2.datum.CacheTag ct1= (CacheTag) ds.property( QDataSet.CACHE_TAG );
+        if ( ct0!=null && ct1!=null ) {
+            result.put( QDataSet.CACHE_TAG, CacheTag.append( ct0, ct1 ) );
+        }
+
+        // special handling of TYPICAL_MIN _MAX properties
+        Double dmin0= (Double) ths.property(QDataSet.TYPICAL_MIN );
+        Double dmax0= (Double) ths.property(QDataSet.TYPICAL_MAX );
+        Double dmin1= (Double) ths.property(QDataSet.TYPICAL_MIN );
+        Double dmax1= (Double) ths.property(QDataSet.TYPICAL_MAX );
+        if ( dmin0!=null && dmin1!=null ) result.put( QDataSet.TYPICAL_MIN, Math.min( dmin0, dmin1 ) );
+        if ( dmax0!=null && dmax1!=null ) result.put( QDataSet.TYPICAL_MAX, Math.max( dmin0, dmin1 ) );
 
         return result;
     }
