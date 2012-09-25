@@ -327,7 +327,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             String s = (String) result.property("DEPENDNAME_" + i);
             if (s != null) {
                 QDataSet dep0ds= getDataSet(s);
-                if ( dep0ds.rank()<=result.rank() ) {
+                if ( dep0ds.rank()==1 ) {
                     result.putProperty("DEPEND_" + i, dep0ds );
                 } else {
                     //we're building DEPEND_0 as well, so this is resolved at the end.
@@ -612,6 +612,21 @@ public class QDataSetStreamHandler implements StreamHandler {
      */
     public static boolean isFlattenableJoin( QDataSet ds ) {
         if ( ds.rank()==2 && ds.property(QDataSet.DEPEND_0)==null && ds.property(QDataSet.DEPENDNAME_0)!=null ) {
+            return true;
+        } else if ( ds.rank()==3 && ds.length()>0 && ds.property(QDataSet.DEPEND_0)==null && ds.property(QDataSet.DEPENDNAME_0)!=null ) {
+            QDataSet dep1= (QDataSet) ds.slice(0).property(QDataSet.DEPEND_1);
+            for ( int i=1; i<ds.length(); i++ ) {
+                if ( dep1==null ) {
+                    if ( ds.length(0)!=ds.length(i) ) {
+                        return false;
+                    }
+                } else {
+                    QDataSet dep1t= (QDataSet) ds.slice(i).property(QDataSet.DEPEND_1);
+                    if ( !Ops.equivalent( dep1, dep1t ) ){
+                        return false;
+                    }
+                }
+            }
             return true;
         }
         return false;
