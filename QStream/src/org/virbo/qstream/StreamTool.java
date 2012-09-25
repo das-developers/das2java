@@ -367,6 +367,10 @@ public class StreamTool {
                         sd.setByteOrder(b.equals("little_endian") ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
                         struct.bigBuffer.order(sd.getByteOrder());
                     }
+                    // insert minimal logic to detect das2stream.
+                    if ( root.getAttribute("properties").length()>0 && root.getAttribute("dataset_id").length()==0 ) {
+                        throw new StreamException("stream appears to be a das2stream, not a qstream");
+                    }
                     struct.bigBuffer.clear();
                     return sd;
                 } else if (root.getTagName().equals("exception")) {
