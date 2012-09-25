@@ -364,7 +364,7 @@ public class SemanticOps {
      */
     public static boolean isBins(QDataSet ds ) {
         String binsProp= (String) ds.property( "BINS_"+(ds.rank()-1) );
-        boolean bins= binsProp!=null && ( "min,max".equals( binsProp ) || "min,maxInclusive".equals( binsProp ) );
+        boolean bins= binsProp!=null && ( QDataSet.VALUE_BINS_MIN_MAX.equals( binsProp ) || "min,maxInclusive".equals( binsProp ) );
         return bins;
     }
     

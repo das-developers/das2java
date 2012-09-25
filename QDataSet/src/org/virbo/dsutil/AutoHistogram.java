@@ -252,7 +252,7 @@ public final class AutoHistogram {
         }
         if ( imin<imax ) {
             DDataSet result= DDataSet.createRank1(2);
-            result.putProperty( QDataSet.BINS_0, "min,max" );
+            result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
             result.putProperty( QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
             result.putValue( 0, dep0.value(imin) );
             result.putValue( 1, dep0.value(imax) );
@@ -900,7 +900,7 @@ public final class AutoHistogram {
         DDataSet result;
         if ( imin==-1 ) {
             result= DDataSet.wrap( new double[] { -1e31, -1e31 } );
-            result.putProperty( QDataSet.BINS_0, "min,max" );
+            result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
             result.putProperty( QDataSet.FILL_VALUE, -1e31 );
         } else {
             QDataSet dep0= (QDataSet) hist2.property(QDataSet.DEPEND_0);
@@ -911,14 +911,14 @@ public final class AutoHistogram {
             if ( cadence==null ) {
                 // huh?
                 result= DDataSet.wrap( new double[] { dep0.value(imin), dep0.value(imax) } );
-                result.putProperty( QDataSet.BINS_0, "min,max" );
+                result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
             } else {
                 if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits(dep0 ) ) ) {
                     result= DDataSet.wrap( new double[] { dep0.value(imin), dep0.value(imax) } );
                     result.putProperty( QDataSet.BINS_0, "min,maxInclusive" );
                 } else {
                     result= DDataSet.wrap( new double[] { dep0.value(imin), dep0.value(imax) + cadence.value() } );
-                    result.putProperty( QDataSet.BINS_0, "min,max" );
+                    result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
                 }
             }
             result.putProperty( QDataSet.UNITS, dep0.property(QDataSet.UNITS) );

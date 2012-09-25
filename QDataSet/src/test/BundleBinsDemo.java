@@ -70,7 +70,7 @@ public class BundleBinsDemo {
                     }
                 }
                 if ( i==0 || i==1 ) {
-                    if ( QDataSet.BINS_1.equals(name) ) return "min,max";
+                    if ( QDataSet.BINS_1.equals(name) ) return QDataSet.VALUE_BINS_MIN_MAX;
                     if ( QDataSet.UNITS.equals(name) ) return Units.us2000;
                     //if ( QDataSet.NAME.equals(name) ) return "TimeBins";
                     if ( QDataSet.ELEMENT_NAME.equals(name) ) return "TimeBins";

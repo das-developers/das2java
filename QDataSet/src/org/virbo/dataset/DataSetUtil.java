@@ -13,12 +13,14 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.IllegalFormatConversionException;
+import java.util.logging.Level;
 import org.das2.datum.Units;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
@@ -28,7 +30,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DefaultDatumFormatter;
 import org.das2.datum.format.FormatStringFormatter;
-import org.das2.util.DasMath;
+import org.das2.util.LoggerManager;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
 
@@ -37,6 +39,8 @@ import org.virbo.dsutil.AutoHistogram;
  * @author jbf
  */
 public class DataSetUtil {
+
+    private static final Logger logger= LoggerManager.getLogger("qdataset");
 
     /**
      * creates a dataset of integers 0,1,2,...,n-1.
@@ -582,7 +586,7 @@ public class DataSetUtil {
             }
         }
 
-        if ( ds.rank()==1 && "min,max".equals(ds.property(QDataSet.BINS_0)) ) {
+        if ( ds.rank()==1 && QDataSet.VALUE_BINS_MIN_MAX.equals(ds.property(QDataSet.BINS_0)) ) {
             DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
             return dr.toString();
         }
@@ -868,6 +872,13 @@ public class DataSetUtil {
         if ( o!=null ) {
             if ( o instanceof RankZeroDataSet ) {
                 return (RankZeroDataSet) o;
+            } else if ( o instanceof QDataSet ) {
+                QDataSet q= (QDataSet)o;
+                while ( q.rank()>0 ) {
+                    logger.log( Level.SEVERE, "averaging CADENCE rank 0: {0}", q);
+                    q= Ops.reduceMax( q, 0 );
+                }
+                return DRank0DataSet.create( DataSetUtil.asDatum(q) );
             } else {
                 return DataSetUtil.asDataSet( ((Number)o).doubleValue(), u.getOffsetUnits() );
                 //TODO: This legacy behavior should be removed.
@@ -1465,7 +1476,7 @@ public class DataSetUtil {
                 if ( i<ds.length()-1 ) result.append(", ");
             }
             return result.toString();
-        } else if ( "min,max".equals( ds.property(QDataSet.BINS_0) ) && ds.rank()==1) {
+        } else if ( QDataSet.VALUE_BINS_MIN_MAX.equals( ds.property(QDataSet.BINS_0) ) && ds.rank()==1) {
             StringBuilder result= new StringBuilder();
             Units u= (Units) ds.property(QDataSet.UNITS);
             if ( u==null ) u= Units.dimensionless;
@@ -1783,7 +1794,7 @@ public class DataSetUtil {
     public static QDataSet weightsDataSet(final QDataSet ds) {
         Object o= ds.property(QDataSet.WEIGHTS_PLANE);
         if ( o!=null && !(o instanceof QDataSet) ) {
-            System.err.println("WEIGHTS_PLANE contained something that was not a qdataset: "+o);
+            logger.log(Level.WARNING, "WEIGHTS_PLANE contained something that was not a qdataset: {0}", o);
             o=null;
         }
         QDataSet result = (QDataSet) o;
@@ -1917,7 +1928,7 @@ public class DataSetUtil {
     public static DatumRange asDatumRange( QDataSet ds, boolean sloppy ) {
         Units u= SemanticOps.getUnits(ds);
         if ( sloppy==false ) {
-            if ( !ds.property( QDataSet.BINS_0 ).equals("min,max") ) {
+            if ( !ds.property( QDataSet.BINS_0 ).equals(QDataSet.VALUE_BINS_MIN_MAX) ) {
                 throw new IllegalArgumentException("expected min,max for BINS_0 because we are not allowing sloppy.");
             }
         }
@@ -1936,7 +1947,7 @@ public class DataSetUtil {
     }
 
     /**
-     * return a 2-element rank 1 bins dataset with BINS_0="min,max"
+     * return a 2-element rank 1 bins dataset with BINS_0=QDataSet.VALUE_BINS_MIN_MAX
      * @param dr
      * @return
      */
@@ -1946,7 +1957,7 @@ public class DataSetUtil {
         result.putValue( 0, dr.min().doubleValue(u) );
         result.putValue( 1, dr.max().doubleValue(u) );
         result.putProperty( QDataSet.UNITS,u );
-        result.putProperty( QDataSet.BINS_0, "min,max" );
+        result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
         return result;
     }
 
