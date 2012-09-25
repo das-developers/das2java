@@ -5,10 +5,13 @@
 
 package org.qstream.filter;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 import java.text.ParseException;
 import org.das2.datum.Datum;
@@ -41,12 +44,30 @@ public class PipeFilter {
     }
     
     public static void main( String[] args ) throws StreamException, MalformedURLException, IOException, ParseException {
-        if ( args.length!=1 ) {
-            System.err.println("java -jar autoplot.jar org.qstream.filter.PipeFilter <seconds>");
+        if ( args.length<1 ) {
+            System.err.println("java -jar autoplot.jar org.qstream.filter.PipeFilter <seconds> [urlin] [fileout]");
             System.exit(-1);
         }
+        InputStream in= System.in;
+        OutputStream out= System.out;
+
+        if ( args.length>1 ) {
+            if ( args[1].startsWith("/") ) {
+                in= new FileInputStream(args[1]);
+                System.err.println("reading "+args[1] );
+            } else {
+                URL urlin= new java.net.URL(args[1]);
+                in= urlin.openStream();
+                System.err.println("reading "+urlin );
+            }
+        }
+        if ( args.length>2 ) {
+            out= new FileOutputStream(args[2]);
+            System.err.println("writing "+args[2] );
+        }
         Datum cadence= Units.seconds.parse(args[0]);
-        doit( System.in, System.out, cadence );
+        doit( in, out, cadence );
+
         //doit( new java.net.URL("file:///home/jbf/project/autoplot/data.nobackup/qds/fm2_jmp_2012_03_13_msim3.qds").openStream(), new java.io.FileOutputStream("/tmp/fm2_jmp_2012_03_13_msim3.qds"), cadence );
         //doit( new java.net.URL("file:///tmp/0B000800408DD710.20120302.qds").openStream(), new FileOutputStream("/tmp/0B000800408DD710.20120302.reduce.qds"), cadence );
         //doit( new java.net.URL("file:///tmp/po_h0_hyd_20000128.qds").openStream(), new FileOutputStream("/tmp/po_h0_hyd_20000128.reduce.qds"), cadence );
