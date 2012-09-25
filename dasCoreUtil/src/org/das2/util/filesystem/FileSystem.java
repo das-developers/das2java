@@ -318,7 +318,7 @@ public abstract class FileSystem  {
 
        return result;
     }
-    
+
     public static FileSystemSettings settings() {
         return settings;
     }
@@ -574,5 +574,14 @@ public abstract class FileSystem  {
             result[i]= des[i].name + ( des[i].type=='d' ? "/" : "" );
         }
         return result;
+    }
+
+    /**
+     * return a copy of all cached filesystems
+     * @return
+     */
+    public static FileSystem[] peekInstances() {
+        int s= instances.size();
+        return instances.values().toArray( new FileSystem[s] );
     }
 }
