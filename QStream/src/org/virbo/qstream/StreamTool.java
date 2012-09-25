@@ -368,7 +368,8 @@ public class StreamTool {
                         struct.bigBuffer.order(sd.getByteOrder());
                     }
                     // insert minimal logic to detect das2stream.
-                    if ( root.getAttribute("properties").length()>0 && root.getAttribute("dataset_id").length()==0 ) {
+                    NodeList props= root.getElementsByTagName("properties");
+                    if ( props.getLength()>0 && root.getAttribute("dataset_id").length()==0 ) {
                         throw new StreamException("stream appears to be a das2stream, not a qstream");
                     }
                     struct.bigBuffer.clear();
