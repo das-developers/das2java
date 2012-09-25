@@ -575,8 +575,18 @@ public class SeriesRenderer extends Renderer {
 
             // first point //
             logger.log(Level.FINE, "firstPoint moveTo,LineTo= {0},{1}", new Object[]{x, y});
-            fx = (float) xAxis.transform(x, xUnits);
-            fy = (float) yAxis.transform(y, yUnits);
+            try {
+                fx = (float) xAxis.transform(x, xUnits);
+            } catch ( InconvertibleUnitsException ex ) {
+                xunitsWarning= true;
+                return;
+            }
+            try {
+                fy = (float) yAxis.transform(y, yUnits);
+            } catch ( InconvertibleUnitsException ex ) {
+                unitsWarning= true;
+                return;
+            }
 
             visible0= window.contains(fx,fy);
             visible= visible0;
@@ -1464,7 +1474,8 @@ public class SeriesRenderer extends Renderer {
             ds2= DataSetOps.slice1( ds2, 0 );
         }
 
-        QDataSet reduce = VectorUtil.reduce2D(
+        try {
+            QDataSet reduce = VectorUtil.reduce2D(
                 xds, ds2,
                 firstIndex,
                 Math.min( firstIndex+20000, lastIndex),
@@ -1472,13 +1483,13 @@ public class SeriesRenderer extends Renderer {
                 widthy.divide(yaxis.getRow().getHeight()/5)
                 );
 
-        try {
             GeneralPath path = GraphUtil.getPath(xaxis, yaxis, reduce, histogram, true );
 
             Shape s = new BasicStroke(5.f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND).createStrokedShape(path);
             return s;
 
         } catch ( InconvertibleUnitsException ex ) {
+            logger.fine("failed to convert units in calcSelectionArea");
             return SelectionUtil.NULL; // transient state, hopefully...
 
         }
