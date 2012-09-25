@@ -5,6 +5,7 @@
 
 package org.virbo.dsutil;
 
+import java.util.Map;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DataSetUtil;
@@ -213,11 +214,17 @@ public class Reduction {
         MutablePropertyDataSet result= ybuilder.getDataSet();
         MutablePropertyDataSet xds= xbuilder.getDataSet();
 
-        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result );
-        yminbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(ds) );
-        ymaxbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(ds) );
-        DataSetUtil.putProperties( DataSetUtil.getProperties(x), xds );
-        if ( xds.property( QDataSet.CADENCE ) != null ) xds.putProperty( QDataSet.CADENCE, xLimit );
+        Map<String,Object> xprops= DataSetUtil.getProperties(x);
+        if ( xprops.containsKey( QDataSet.CADENCE ) ) xprops.put( QDataSet.CADENCE, xLimit );
+        if ( xprops.containsKey( QDataSet.CACHE_TAG ) ) xprops.put( QDataSet.CACHE_TAG, null );
+        DataSetUtil.putProperties( xprops, xds );
+
+        Map<String,Object> yprops= DataSetUtil.getProperties(ds);
+        yprops.put( QDataSet.DEPEND_0, xds );
+        DataSetUtil.putProperties( yprops, result );
+        yminbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(result) );
+        ymaxbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(result) );
+
         result.putProperty( QDataSet.DEPEND_0, xds );
         result.putProperty( QDataSet.WEIGHTS_PLANE, wbuilder.getDataSet() );
 
@@ -374,11 +381,17 @@ public class Reduction {
         MutablePropertyDataSet yds= ybuilder.getDataSet();
         MutablePropertyDataSet xds= xbuilder.getDataSet();
 
-        DataSetUtil.putProperties( DataSetUtil.getProperties(y), yds );
+        Map<String,Object> xprops= DataSetUtil.getProperties(x);
+        if ( xprops.containsKey( QDataSet.CADENCE ) ) xprops.put( QDataSet.CADENCE, xLimit );
+        if ( xprops.containsKey( QDataSet.CACHE_TAG ) ) xprops.put( QDataSet.CACHE_TAG, null );
+        DataSetUtil.putProperties( xprops, xds );
+
+        Map<String,Object> yprops= DataSetUtil.getProperties(y);
+        yprops.put( QDataSet.DEPEND_0, xds );
+        DataSetUtil.putProperties( yprops, yds );
         yminbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(y) );
         ymaxbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(y) );
-        DataSetUtil.putProperties( DataSetUtil.getProperties(x), xds );
-        if ( xds.property( QDataSet.CADENCE ) != null ) xds.putProperty( QDataSet.CADENCE, xLimit );
+        
         yds.putProperty( QDataSet.DEPEND_0, xds );
         yds.putProperty( QDataSet.WEIGHTS_PLANE, wbuilder.getDataSet() );
 
