@@ -4319,6 +4319,7 @@ public class Ops {
     /**
      * returns true iff the dataset values are equivalent.  Note this
      * may promote rank, etc.
+     * If the two datasets have enumerations, then we create datums and check .equals.
      * @param ds1
      * @param ds2
      * @return
@@ -4326,14 +4327,28 @@ public class Ops {
     public static boolean equivalent( QDataSet ds1, QDataSet ds2 ) {
         Units u1= SemanticOps.getUnits(ds1);
         Units u2= SemanticOps.getUnits(ds2);
-        if ( !u1.isConvertableTo(u2) ) return false;
-        QDataSet eq= eq( ds1, ds2 );
-        QubeDataSetIterator it= new QubeDataSetIterator(eq);
-        while ( it.hasNext() ) {
-            it.next();
-            if ( it.getValue(eq)==0 ) return false;
+        if ( u1!=u2 && u1 instanceof EnumerationUnits && u2 instanceof EnumerationUnits ) {
+            if ( !CoerceUtil.equalGeom( ds1, ds2 ) ) return false;
+            QubeDataSetIterator it= new QubeDataSetIterator(ds1);
+            while ( it.hasNext() ) {
+                it.next();
+                try {
+                    if ( !u1.createDatum(it.getValue(ds1)).toString().equals( u2.createDatum(it.getValue(ds2) ).toString() ) ) return false;
+                } catch ( IndexOutOfBoundsException ex ) {
+                    return false; //
+                }
+            }
+            return true;
+        } else {
+            if ( !u1.isConvertableTo(u2) ) return false;
+            QDataSet eq= eq( ds1, ds2 );
+            QubeDataSetIterator it= new QubeDataSetIterator(eq);
+            while ( it.hasNext() ) {
+                it.next();
+                if ( it.getValue(eq)==0 ) return false;
+            }
+            return true;
         }
-        return true;
     }
 
     /**
