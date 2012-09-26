@@ -142,8 +142,9 @@ public class ReduceFilter implements StreamHandler {
                 if ( xp!=null ) {
                     String scadence= xp.getNodeValue();
                     double oldCadenceSeconds=0;
+                    SerializeDelegate ser= new Rank0DataSetSerializeDelegate();
                     try {
-                        QDataSet o = (QDataSet) new Rank0DataSetSerializeDelegate().parse( "rank0dataset", scadence );
+                        QDataSet o = (QDataSet) ser.parse( "rank0dataset", scadence );
                         oldCadenceSeconds= DataSetUtil.asDatum(o).doubleValue( Units.seconds );
                         if ( lengthSeconds<oldCadenceSeconds ) {
                             lengthSeconds= oldCadenceSeconds;
@@ -151,7 +152,7 @@ public class ReduceFilter implements StreamHandler {
                     } catch ( ParseException ex ) {
                         throw new StreamException( String.format( "unable to parse cadence \"%s\"", scadence ), ex );
                     }
-                    xp.setNodeValue( String.format( "%f units:UNITS=s", lengthSeconds ) );
+                    xp.setNodeValue( ser.format( DataSetUtil.asDataSet( lengthSeconds, Units.seconds ) ) );
                 } else {
                     // don't install the cadence when there wasn't one already.  Let the client guess as they would have
                     // if the cadence were not specified.

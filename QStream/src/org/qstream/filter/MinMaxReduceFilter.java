@@ -26,16 +26,19 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.das2.datum.CacheTag;
 import org.das2.datum.Datum;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.qstream.CacheTagSerializeDelegate;
 import org.virbo.qstream.FormatStreamHandler;
 import org.virbo.qstream.PacketDescriptor;
 import org.virbo.qstream.PlaneDescriptor;
 import org.virbo.qstream.Rank0DataSetSerializeDelegate;
+import org.virbo.qstream.SerializeDelegate;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamTool;
@@ -131,8 +134,9 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
                 if ( xp!=null ) {
                     String scadence= xp.getNodeValue();
                     double oldCadenceSeconds=0;
+                    SerializeDelegate ser= new Rank0DataSetSerializeDelegate();
                     try {
-                        QDataSet o = (QDataSet) new Rank0DataSetSerializeDelegate().parse( "rank0dataset", scadence );
+                        QDataSet o = (QDataSet)ser.parse( "rank0dataset", scadence );
                         oldCadenceSeconds= DataSetUtil.asDatum(o).doubleValue( Units.seconds );
                         if ( lengthSeconds<oldCadenceSeconds ) {
                             lengthSeconds= oldCadenceSeconds;
@@ -140,11 +144,35 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
                     } catch ( ParseException ex ) {
                         System.err.println("unable to parse cadence");
                     }
-                    xp.setNodeValue( String.format( "%f units:UNITS=s", lengthSeconds ) );
+                    xp.setNodeValue( ser.format( DataSetUtil.asDataSet( lengthSeconds, Units.seconds ) ) );
                 } else {
                     // don't install the cadence when there wasn't one already.  Let the client guess as they would have
                     // if the cadence were not specified.
                 }
+
+                // reset/set the cache tag
+                expr= xpath.compile("/packet/qdataset[1]/properties/property[@name='CACHE_TAG']/@value");
+                xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
+                if ( xp!=null ) {
+                    String scachetag= xp.getNodeValue();
+                    SerializeDelegate ser= new CacheTagSerializeDelegate();
+                    try {
+                        CacheTag ct0= (CacheTag)( ser.parse( "cacheTag", scachetag ) );
+                        CacheTag ct1= new CacheTag( ct0.getRange(), Units.seconds.createDatum(lengthSeconds) );
+                        xp.setNodeValue( ser.format(ct1) );
+                    } catch ( ParseException ex ) {
+                        throw new StreamException( String.format( "unable to parse cacheTag \"%s\"", scachetag ), ex );
+                    }
+                } else {
+                    // We can't install a cachetag, because we don't know the bounds of the data coming.
+                    // Clients must make sure a cache tag is provided in the stream.
+                    // I think this is where the code in Autoplot/Das2ServerDataSource that plugs in CacheTags must have come from--me serving my
+                    // temperature sensor data, where I just start kicking out daily files.  The das2server should make sure that
+                    // cacheTags are provided.
+
+                    //TODO: untested CACHE_TAG code is not in production.
+                }
+                
             }
 
             this.skip.put(pd, skip);
