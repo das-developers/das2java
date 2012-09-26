@@ -46,7 +46,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- *
+ * Reduce packets of the same type, providing min and max channels.
  * @author jbf
  */
 public class MinMaxReduceFilter extends QDataSetsFilter {
@@ -79,6 +79,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
         nextTags= new HashMap();
     }
 
+    @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         this.sd= sd;
         sink.streamDescriptor(sd);
@@ -99,7 +100,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
             XPathExpression expr;
             Node xp;
 
-            boolean skip= false;
+            boolean skipit= false;
 
             // figure out units.
             Units xunits= null;
@@ -112,15 +113,15 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
                     double secmult= Units.seconds.getConverter( xunits.getOffsetUnits() ).convert(1);
                     length= secmult * lengthSeconds;
                 } catch ( InconvertibleUnitsException ex ) {
-                    skip= true;
+                    skipit= true;
                 } catch ( ParseException ex ) {
-                    skip= true;
+                    skipit= true;
                 }
             } else {
-                skip= true;
+                skipit= true;
             }
 
-            if ( !skip ) {
+            if ( !skipit ) {
 
                 int n= pd.getPlanes().size();
                 PlaneDescriptor min= pd.getPlanes().get(n-1);
@@ -142,7 +143,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
                             lengthSeconds= oldCadenceSeconds;
                         }
                     } catch ( ParseException ex ) {
-                        System.err.println("unable to parse cadence");
+                        throw new StreamException( String.format( "unable to parse cadence \"%s\"", scadence ), ex );
                     }
                     xp.setNodeValue( ser.format( DataSetUtil.asDataSet( lengthSeconds, Units.seconds ) ) );
                 } else {
@@ -175,7 +176,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
                 
             }
 
-            this.skip.put(pd, skip);
+            this.skip.put(pd, skipit);
             this.nextTags.put( pd, 0. );
 
         } catch (XPathExpressionException ex) {
@@ -318,8 +319,6 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
         ReduceFilter pipe= new ReduceFilter();
         pipe.setCadence( cadence );
 
-        StreamTool stin= new StreamTool();
-
         ReadableByteChannel rin= java.nio.channels.Channels.newChannel( in );
 
         FormatStreamHandler fsh= new FormatStreamHandler();
@@ -327,12 +326,13 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
 
         pipe.sink= fsh;
 
-        stin.readStream( rin, pipe );
+        StreamTool.readStream( rin, pipe );
 
     }
 
     public static void main( String[] args ) throws StreamException, MalformedURLException, IOException, ParseException {
         InputStream in= System.in;
+        args= new String[] { "360" };
         if ( args.length!=1 ) {
             if ( args.length==2 && args[1].startsWith("file:") ) {
                 in= new FileInputStream( args[1].substring(5) );
@@ -343,7 +343,11 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
             }
         }
         Datum cadence= Units.seconds.parse(args[0]);
-        doit( in, System.out, cadence );
+
+        System.err.println( "this does not appear to be implemented, testing with sftp://jbf@papco.org:/home/jbf/ct/hudson/data.backup/qds/aggregation.qds" );
+        doit( new java.net.URL("file:///home/jbf/ct/hudson/data.backup/qds/aggregation.qds").openStream(), new java.io.FileOutputStream("/home/jbf/ct/hudson/data.backup/qds/aggregation.reduce.minmax.qds"), cadence );
+        //doit( in, System.out, cadence );
+        
         //doit( new java.net.URL("file:///home/jbf/project/autoplot/data.nobackup/qds/fm2_jmp_2012_03_13_msim3.qds").openStream(), new java.io.FileOutputStream("/tmp/fm2_jmp_2012_03_13_msim3.qds"), cadence );
         //doit( new java.net.URL("file:///tmp/0B000800408DD710.20120302.qds").openStream(), new FileOutputStream("/tmp/0B000800408DD710.20120302.reduce.qds"), cadence );
         //doit( new java.net.URL("file:///tmp/po_h0_hyd_20000128.qds").openStream(), new FileOutputStream("/tmp/po_h0_hyd_20000128.reduce.qds"), cadence );
