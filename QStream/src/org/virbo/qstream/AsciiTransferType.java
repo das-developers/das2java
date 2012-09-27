@@ -31,6 +31,8 @@ public class AsciiTransferType extends TransferType {
         formatter = NumberFormatUtil.getDecimalFormat( formatStr );
     }
 
+    //TODO: see Chris' qstream where ascii5 didn't work...  
+
     /**
      * return a transfer type with the given number of decimal places.
      * TODO: this is not in use and has little testing.
