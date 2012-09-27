@@ -113,7 +113,7 @@ public class WebFileObject extends FileObject {
             File partFile = new File(localFile.toString() + ".part");
             wfs.downloadFile(pathname, localFile, partFile, monitor);
         }
-        FileSystem.logger.log( Level.FINE, "read local file {0}", localFile);
+        logger.log( Level.FINE, "read local file {0}", localFile);
         return new FileInputStream(localFile);
     }
 
@@ -330,7 +330,7 @@ public class WebFileObject extends FileObject {
             if ( this.lastModified().getTime()==0 || this.lastModified().getTime()==Long.MAX_VALUE ) {
                 DirectoryEntry result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true ); // trigger load of the modifiedDate
                 if ( result==null ) {
-                    WebFileSystem.logger.fine("file does not exist on remote filesystem"); 
+                    logger.fine("file does not exist on remote filesystem"); 
                 } else {
                     result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true );
                     this.setLastModified( new Date( result.modified ) );
@@ -343,7 +343,7 @@ public class WebFileObject extends FileObject {
         if (localFile.exists()) {
             Date localFileLastModified = new Date(localFile.lastModified()); // TODO: I think this is a bug...
             if (remoteDate.after(localFileLastModified)) {
-                FileSystem.logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
+                logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
                 download = true;
             }
         } else {
@@ -361,7 +361,7 @@ public class WebFileObject extends FileObject {
 
         if (download) {
             try {
-                FileSystem.logger.log(Level.FINE, "downloading file {0}", getNameExt());
+                logger.log(Level.FINE, "downloading file {0}", getNameExt());
                 if (!localFile.getParentFile().exists()) {
                     FileSystemUtil.maybeMkdirs( localFile.getParentFile() );
                 }
@@ -372,7 +372,7 @@ public class WebFileObject extends FileObject {
                     logger.log(Level.INFO, "unable to modify date of {0}", localFile);
                 }
 
-                FileSystem.logger.log(Level.FINE, "downloaded local file has date {0}", new Date(localFile.lastModified()));
+                logger.log(Level.FINE, "downloaded local file has date {0}", new Date(localFile.lastModified()));
 
             } catch (FileNotFoundException e) {
                 // TODO: do something with part file.
@@ -428,7 +428,7 @@ public class WebFileObject extends FileObject {
 
                             Date localFileLastModified = new Date(localFile.lastModified());
                             if (remoteDate.after(localFileLastModified)) {
-                                FileSystem.logger.info("remote file is newer than local copy of " + this.getNameExt() + ", download.");
+                                logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
                                 download = true;
                             }
                             wfs.markAccess(this.getNameExt());
