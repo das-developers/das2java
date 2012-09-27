@@ -27,10 +27,12 @@ import org.das2.components.propertyeditor.Displayable;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.graph.DasCanvasComponent;
 
-import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
+import java.util.logging.Logger;
+import org.das2.datum.LoggerManager;
+import org.das2.system.DasLogger;
 
 /** A MouseModule is a pluggable unit that promotes simple
  * mouse events into human events or actions that are useful
@@ -43,7 +45,8 @@ import java.util.Vector;
  * @author jbf
  */
 public class MouseModule implements Editable, Displayable, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener  {
-    
+
+    protected static final Logger logger= LoggerManager.getLogger(DasLogger.GUI_LOG.toString() );
     //protected DasCanvasComponent parent;
     protected DragRenderer dragRenderer;
     private String label;

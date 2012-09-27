@@ -7,6 +7,7 @@
  */
 package org.das2.event;
 
+import java.util.logging.Level;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -69,7 +70,7 @@ public class BoxSelectorMouseModule extends MouseModule {
         double nx = DatumRangeUtil.normalize(lastSelectionEvent.getXRange(), xaxis.invTransform(p.getX()));
         double ny = DatumRangeUtil.normalize(lastSelectionEvent.getYRange(), yaxis.invTransform(p.getY()));
 
-        System.err.println("" + nx + " " + ny);
+        logger.log(Level.FINE, "{0} {1}", new Object[]{nx, ny});
         Datum otherx = null;
         Datum othery = null;
 

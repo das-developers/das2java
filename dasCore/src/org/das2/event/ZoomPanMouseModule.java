@@ -8,6 +8,7 @@
  */
 package org.das2.event;
 
+import java.util.logging.Level;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
@@ -184,7 +185,7 @@ public class ZoomPanMouseModule extends MouseModule {
         DatumRange xdrnew=null;
         DatumRange ydrnew=null;
 
-        //System.err.println(":ns:  "+(System.nanoTime()-tbirth)+"  "+clickMag);
+        logger.log(Level.FINEST, ":ns:  {0}  {1}", new Object[]{System.nanoTime() - tbirth, clickMag});
         if (axisIsAdjustable(xAxis)) {
             DatumRange dr = xAxis.getDatumRange();
             for (int i = 0; i < clickMag; i++) {

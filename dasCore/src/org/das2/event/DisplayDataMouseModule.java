@@ -19,6 +19,7 @@ import java.awt.Font;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ItemListener;
+import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -224,8 +225,7 @@ public class DisplayDataMouseModule extends MouseModule {
                 myEdit.getTableHeader().setToolTipText("Column labels reported are from the first record");
             }
         } catch ( RuntimeException ex ) {
-            System.err.println("exception in mouseRangeSelected: "+ex);
-            ex.printStackTrace();
+            logger.log( Level.SEVERE, null, ex );
             tm= new QDataSetTableModel(ds);
             tcm= ((QDataSetTableModel)tm).getTableColumnModel();
         }
