@@ -132,7 +132,7 @@ public class WebFileObject extends FileObject {
         try {
             maybeLoadMetadata();
         } catch ( IOException ex ) {
-            System.err.println("unable to load metadata: "+ex);
+            logger.log(Level.INFO, "unable to load metadata: {0}", ex);
             return localFile.length();
         }
         if ( metadata.containsKey("Content-Length") ) {
@@ -168,14 +168,14 @@ public class WebFileObject extends FileObject {
             try {
                 maybeLoadMetadata();
             } catch ( IOException ex ) {
-                System.err.println("unable to load metadata: "+ex);
+                logger.log(Level.INFO, "unable to load metadata: {0}", ex);
                 modifiedDate= new Date( localFile.lastModified() );
             }
             if ( metadata.containsKey("Last-Modified") ) {
                 long date= Date.parse( metadata.get("Last-Modified") );
                 modifiedDate= new Date( date );
             } else {
-                System.err.println("metadata doesn't contain Last-Modified, using localFile" );
+                logger.info("metadata doesn't contain Last-Modified, using localFile" );
                 modifiedDate= new Date( localFile.lastModified() );
             }
         }
@@ -289,7 +289,7 @@ public class WebFileObject extends FileObject {
         // calling EventQueue.isDispatchThread() starts the event thread, causing problems when called from RSI's IDL.
         if ( false ) {
             if ( EventQueue.isDispatchThread() ) {
-                System.err.println("download on event thread! "+this.getNameExt());
+                logger.log(Level.SEVERE, "download on event thread! {0}", this.getNameExt());
             }
         }
 
@@ -354,7 +354,7 @@ public class WebFileObject extends FileObject {
         if ( download && this.wfs.getReadOnlyCache()!=null ) {
             File cacheFile= new File( this.wfs.getReadOnlyCache(), this.getNameExt() );
             if ( cacheFile.exists() ) {
-                System.err.println("using file from ro_cache: "+this.getNameExt() );
+                logger.log(Level.FINE, "using file from ro_cache: {0}", this.getNameExt());
                 return cacheFile;
             }
         }
@@ -369,7 +369,7 @@ public class WebFileObject extends FileObject {
                 wfs.downloadFile(pathname, localFile, partFile, monitor);
 
                 if ( !localFile.setLastModified(remoteDate.getTime()) ) {
-                    System.err.println("unable to modify date of "+localFile);
+                    logger.log(Level.INFO, "unable to modify date of {0}", localFile);
                 }
 
                 FileSystem.logger.log(Level.FINE, "downloaded local file has date {0}", new Date(localFile.lastModified()));

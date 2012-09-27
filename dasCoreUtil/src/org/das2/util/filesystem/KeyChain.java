@@ -67,8 +67,7 @@ public class KeyChain {
     private void loadInitial() {
         File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
         if ( keysFile.exists() ) {
-            System.err.println("loading keys from "+ keysFile );
-            logger.log( Level.FINE, "loading keys from {0}", keysFile);
+            logger.log( Level.INFO, "loading keys from {0}", keysFile);
             BufferedReader r=null;
             try {
                 r= new BufferedReader( new FileReader(keysFile) );
@@ -130,11 +129,11 @@ public class KeyChain {
             }
         }
 
-        System.err.println("******************************");
-        System.err.println("created world-readable file ");
-        System.err.println( keysFile);
-        System.err.println("that contains all passwords!!!");
-        System.err.println("******************************");
+        System.err.println("******************************"); //logger okay
+        System.err.println("created world-readable file ");   //logger okay
+        System.err.println( keysFile);                        //logger okay
+        System.err.println("that contains all passwords!!!"); //logger okay
+        System.err.println("******************************"); //logger okay
 
         JOptionPane.showMessageDialog( null,
                 "<html>******************************<br>"

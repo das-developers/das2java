@@ -181,7 +181,7 @@ public abstract class FileSystem  {
     public synchronized static void reset() {
         instances.clear();
         blocks.clear();
-        System.err.println("memory caches cleared, but cache listings may exist on the file caches");
+        logger.info("memory caches cleared, but cache listings may exist on the file caches");
     }
 
     /**
@@ -219,16 +219,16 @@ public abstract class FileSystem  {
             } else {
                 waitObject= String.valueOf( Long.valueOf( System.currentTimeMillis() ) ); // just to be sure it's unique.
                 blocks.put( root, waitObject );
-                //System.err.println("created waitObject "+waitObject + " "+root );
+                logger.log(Level.FINE, "created waitObject {0} {1}", new Object[]{waitObject, root});
             }
         }
 
         if ( ishouldwait ) { // wait until the other thread is done.  If the other thread doesn't put the result in instances, then there's a problem...
             try {
                 synchronized ( waitObject ) {
-                    //System.err.println("waiting for "+waitObject + " " + root );
+                    logger.log(Level.FINE, "waiting for {0} {1}", new Object[]{waitObject, root});
                     waitObject.wait();
-                    //System.err.println("done waiting for "+root);
+                    logger.log(Level.FINE, "done waiting for {0}", root);
                 }
             } catch (InterruptedException ex) {
                 logger.log(Level.SEVERE, null, ex);
@@ -283,7 +283,7 @@ public abstract class FileSystem  {
         }
 
         if ( factory==null ) {
-            //System.err.println("releasing "+waitObject);
+            logger.log(Level.FINE, "releasing {0}", waitObject);
             synchronized( waitObject ) {
                 waitObject.notifyAll(); //TODO: the other threads are going to think it's offline.
             }
@@ -303,7 +303,7 @@ public abstract class FileSystem  {
                 if ( result!=null ) instances.put(root, result);
                 blocks.remove(root);
 
-                //System.err.println("releasing "+waitObject); // need to do this in the finally block in case there was an Exception.
+                logger.log(Level.FINE, "releasing {0}", waitObject); // need to do this in the finally block in case there was an Exception.
                 synchronized( waitObject ) {
                     waitObject.notifyAll();
                 }

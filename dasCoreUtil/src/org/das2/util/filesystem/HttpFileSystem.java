@@ -100,7 +100,7 @@ public class HttpFileSystem extends WebFileSystem {
             if ( parentURI!=null ) {
                 HttpFileSystem parent= (HttpFileSystem) peek( parentURI );
                 if ( parent!=null && parent.isOffline() ) {
-                    System.err.println("parent is offline, don't check...");
+                    logger.fine("parent is offline, don't check...");
                     doCheck= false;
                 }
             }
@@ -535,8 +535,8 @@ public class HttpFileSystem extends WebFileSystem {
                 throw new IOException( "user cancelled at credentials" ); // JAVA6
             } catch ( IOException ex ) {
                 if ( isOffline() ) {
-                    System.err.println("** using local listing because remote is not available");
-                    System.err.println("or some other error occurred. **");
+                    logger.info("** using local listing because remote is not available");
+                    logger.info("or some other error occurred. **");
                     File localFile= new File( localRoot, directory );
                     return localFile.list();
                 } else {

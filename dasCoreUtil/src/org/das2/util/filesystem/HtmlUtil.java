@@ -29,15 +29,18 @@ import org.das2.util.Base64;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.das2.util.LoggerManager;
 
 /**
  *
  * @author  Jeremy
  */
 public class HtmlUtil {
-    
+
+    private final static Logger logger= LoggerManager.getLogger( "das2.filesystem" );
     public static boolean isDirectory( URL url ) {
         String file= url.getFile();
         return file.charAt(file.length()-1) != '/';
@@ -58,6 +61,8 @@ public class HtmlUtil {
     public static URL[] getDirectoryListing( URL url, InputStream urlStream ) throws IOException, CancelledOperationException {
         // search the input stream for links
         // first, read in the entire URL
+
+        long t0= System.currentTimeMillis();
         byte b[] = new byte[10000];
         int numRead = urlStream.read(b);
         StringBuilder contentBuffer = new StringBuilder( 10000 );
@@ -73,7 +78,7 @@ public class HtmlUtil {
         }
         urlStream.close();
 
-        // System.err.println("read listing data in "+( System.currentTimeMillis() - t0 )+" millis" );
+        logger.log(Level.FINE, "read listing data in {0} millis", (System.currentTimeMillis() - t0));
         String content= contentBuffer.toString();
 
         String hrefRegex= "(?i)href\\s*=\\s*([\"'])(.+?)\\1";
@@ -94,7 +99,7 @@ public class HtmlUtil {
                 urlLink = new URL(url, strLink);
                 strLink = urlLink.toString();
             } catch (MalformedURLException e) {
-                System.err.println("bad URL: "+url+" "+strLink);
+                logger.log(Level.SEVERE, "bad URL: {0} {1}", new Object[]{url, strLink});
                 continue;
             }
 
@@ -118,6 +123,9 @@ public class HtmlUtil {
      * @throws CancelledOperationException
      */
     public static URL[] getDirectoryListing( URL url ) throws IOException, CancelledOperationException {
+
+        long t0= System.currentTimeMillis();
+
         FileSystem.logger.log(Level.FINER, "listing {0}", url);
         
         String file= url.getFile();
@@ -135,7 +143,7 @@ public class HtmlUtil {
 
         //int contentLength=10000;
         
-        //System.err.println("connected in "+( System.currentTimeMillis() - t0 )+" millis" );
+        logger.log(Level.FINE, "connected in {0} millis", (System.currentTimeMillis() - t0));
         if ( userInfo != null) {
             String encode = Base64.encodeBytes( userInfo.getBytes());
             urlConnection.setRequestProperty("Authorization", "Basic " + encode);

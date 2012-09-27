@@ -23,6 +23,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+import org.das2.util.LoggerManager;
 
 /**
  *
@@ -30,6 +31,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class FileSystemUtil {
 
+    private final static Logger logger= LoggerManager.getLogger( "das2.filesystem" );
     /**
      * Dump the contents of the inputstream into a file.  If the inputStream comes
      * from a file, then java.nio is used to transfer the data quickly.
@@ -116,10 +118,10 @@ public class FileSystemUtil {
                 //TODO: actually list the parent to make sure it contains the child.
                 return new URL(folder).toURI();
             } catch (URISyntaxException ex) {
-                System.err.println("couldn't create URI from parent URL: " + ex);
+                logger.log( Level.SEVERE, "couldn't create URI from parent URL", ex);
                 return null;
             } catch (MalformedURLException ex) {
-                System.err.println("url caused malformed URL exception when creating parent URL: "+ex);
+                logger.log( Level.SEVERE, "url caused malformed URL exception when creating parent URL: ", ex);
                 return null;
             }
         } else {
@@ -144,10 +146,10 @@ public class FileSystemUtil {
             try {
                 return new URL(folder).toURI();
             } catch (URISyntaxException ex) {
-                System.err.println("couldn't create URI from parent URL: " + ex);
+                logger.log( Level.SEVERE, "couldn't create URI from parent URL", ex);
                 return null;
             } catch (MalformedURLException ex) {
-                System.err.println("url caused malformed URL exception when creating parent URL: "+ex);
+                logger.log( Level.SEVERE, "url caused malformed URL exception when creating parent URL: ", ex);
                 return null;
             }
         } else {
@@ -166,7 +168,7 @@ public class FileSystemUtil {
             if ( file.exists() ) {
                 return; // somebody else made the file.
             } else {
-                System.err.println("Unable to mkdirs "+file ); // print it in case the IOException is misinterpretted.
+                logger.log( Level.SEVERE, "Unable to mkdirs {0}", file); // print it in case the IOException is misinterpretted.
                 throw new IOException( "Unable to mkdirs "+file );
             }
         }

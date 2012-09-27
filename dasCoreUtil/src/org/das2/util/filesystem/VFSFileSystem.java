@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
@@ -388,13 +389,12 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
 
         try {
             if ( filename.startsWith(fsuri.getPath()) ) {
-                System.err.println("something is funny, we have the path twice:"+filename+" " +fsuri );
+                logger.log( Level.INFO, "something is funny, we have the path twice:{0} {1}", new Object[]{filename, fsuri});
             }
             filename = fsuri.getPath() + filename;
             org.apache.commons.vfs.FileObject vfsob = vfsSystem.resolveFile(filename);
 
             if(!vfsob.exists()) {
-                //System.err.println("Uh oh! Attempt to download non-existent file via VFS.");
                 throw new FileNotFoundException("attempt to download non-existent file: "+vfsob);
             }
 
@@ -403,7 +403,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
 
             // If necessary, create destination folder
             if (!f.getParentFile().exists()) {
-                logger.fine("Creating destination directory " + f.getParentFile());
+                logger.log(Level.FINE, "Creating destination directory {0}", f.getParentFile());
                 FileSystemUtil.maybeMkdirs( f.getParentFile() );
             }
 
