@@ -218,8 +218,9 @@ public class DataSetOps {
             @Override
             public Object property(String name) {
                 Object v= super.property(name);
+                if ( v==null ) v= ds.property(name);
                 if ( v==null ) {
-                    if ( !DataSetUtil.isInheritedProperty(name)) {
+                    if ( DataSetUtil.isInheritedProperty(name)) {
                         return ds.property(name);
                     } else {
                         return null;
@@ -252,7 +253,7 @@ public class DataSetOps {
                 if ( name.equals(QDataSet.CADENCE) ) {
                     return dsdep1.property(QDataSet.CADENCE);
                 } else {
-                    if ( !DataSetUtil.isInheritedProperty(name) ) {
+                    if ( DataSetUtil.isInheritedProperty(name) ) {
                         return dsdep0.property(name);
                     } else {
                         return null;
