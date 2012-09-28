@@ -27,13 +27,18 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
+import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.AbstractDataSet;
+import org.virbo.dataset.ArrayDataSet;
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.FDataSet;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -83,6 +88,66 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     }
 
+    private static QDataSet doRange( QDataSet xds ) {
+        QDataSet xrange= Ops.extent(xds);
+        if ( xrange.value(1)==xrange.value(0) ) {
+            if ( !"log".equals( xrange.property(QDataSet.SCALE_TYPE)) ) {
+                xrange= DDataSet.wrap( new double[] { xrange.value(0)-1, xrange.value(1)+1 } ).setUnits( SemanticOps.getUnits(xrange) );
+            } else {
+                xrange= DDataSet.wrap( new double[] { xrange.value(0)/10, xrange.value(1)*10 } ).setUnits( SemanticOps.getUnits(xrange) );
+            }
+        }
+        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
+        return xrange;
+    }
+
+    private static QDataSet fastRank2Range( QDataSet ds ) {
+        double min= Double.POSITIVE_INFINITY;
+        double max= Double.NEGATIVE_INFINITY;
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        for ( int i=0; i<ds.length(); i++ ) {
+            int n= ds.length(i);
+            for ( int j=0; j<n; j++ ) {
+                double w= wds.value(i,j);
+                if ( w>0 ) {
+                    double d= ds.value(i,j);
+                    min= d < min ? d : min;
+                    max= d > max ? d : max;
+                }
+            }
+        }
+        Units u= SemanticOps.getUnits(ds);
+        DDataSet result= DDataSet.createRank1(2);
+        result.putValue( 0, min );
+        result.putValue( 1, max );
+        result.putProperty( QDataSet.UNITS, u );
+        return Ops.rescaleRange( result, -0.1, 1.1 );
+    }
+    
+    public static QDataSet doAutorange( QDataSet ds ) {
+
+        QDataSet xrange;
+        QDataSet yrange;
+
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+
+        if ( SemanticOps.isRank2Waveform(ds) ) {
+            yrange= fastRank2Range(ds);
+        } else if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
+            QDataSet vds= DataSetOps.unbundleDefaultDataSet( ds );
+            yrange= doRange( vds );
+        } else {
+            yrange= doRange( ds );
+        }
+        xrange= doRange( xds );
+
+        JoinDataSet bds= new JoinDataSet(2);
+        bds.join(xrange);
+        bds.join(yrange);
+
+        return bds;
+
+    }
 
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
@@ -169,7 +234,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         g.setStroke(new BasicStroke(1.f / saturationHitCount));
 
         g.translate( -plotImageBounds2.x, -plotImageBounds2.y);
-        
+
         imageXRange= GraphUtil.invTransformRange( xAxis, plotImageBounds2.x, plotImageBounds2.x+plotImageBounds2.width );
 
         DatumRange visibleRange = imageXRange;
@@ -179,8 +244,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
             vds= DataSetOps.unbundleDefaultDataSet( ds );
-        } else if ( ds.rank()==2 ) {
-            vds= DataSetOps.flattenWaveform( ds );
         } else {
             vds= ds;
         }
@@ -232,10 +295,112 @@ public class ImageVectorDataSetRenderer extends Renderer {
             plotImage = image;
             selectionArea= null;
         }
+
+    }
+
+
+    /**
+     * super fast implementation for rank 2 waveform dataset, where DEPEND_1 is the offset from DEPEND_0.
+     * @param xAxis
+     * @param yAxis
+     * @param ds
+     * @param plotImageBounds2
+     */
+    private void ghostlyImageRank2(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
+        int ny = plotImageBounds2.height;
+        int nx = plotImageBounds2.width;
+
+        logger.fine("create Image");
+        BufferedImage image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) image.getGraphics();
+
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g.setColor(color);
+        g.setStroke(new BasicStroke(1.f / saturationHitCount));
+
+        g.translate( -plotImageBounds2.x, -plotImageBounds2.y);
+        
+        imageXRange= GraphUtil.invTransformRange( xAxis, plotImageBounds2.x, plotImageBounds2.x+plotImageBounds2.width );
+
+        DatumRange visibleRange = imageXRange;
+
+        QDataSet xds = SemanticOps.xtagsDataSet(ds);
+
+        boolean xmono = Boolean.TRUE == SemanticOps.isMonotonic(xds);
+
+        int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds, visibleRange.min()) : 0;
+        int lastIndex = xmono ? ( DataSetUtil.getNextIndex(xds, visibleRange.max()) + 1 ) : xds.length();
+
+        final int STATE_LINETO = -991;
+        final int STATE_MOVETO = -992;
+
+        int state = STATE_MOVETO;
+
+        int ix0 = 0, iy0 = 0;
+        if (xds.length() > 0) {
+            QDataSet wds = DataSetUtil.weightsDataSet(ds);
+            Units dsunits= SemanticOps.getUnits(ds);
+            Units xunits= SemanticOps.getUnits(xds);
+            ArrayDataSet xoffsets= ArrayDataSet.copy( ( QDataSet) ds.property(QDataSet.DEPEND_1) );
+            if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
+            final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
+
+            for ( int j=0; j<xoffsets.length(); j++ ) {
+                xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
+            }
+            
+            for (int i = firstIndex; i < lastIndex; i++) {
+                int nj= ds.length(i);
+
+                for ( int j=0; j<nj; j++ ) {
+                boolean isValid = wds.value(i,j)>0;
+                    if (!isValid) {
+                        state = STATE_MOVETO;
+                    } else {
+                        int iy = (int) yAxis.transform( ds.value(i,j), dsunits );
+                        int ix = (int) xAxis.transform( xds.value(i) + xoffsets.value(j), xunits );
+                        if ( (ix-ix0)*(ix-ix0) > ixstepLimitSq ) state=STATE_MOVETO;
+                        switch (state) {
+                            case STATE_MOVETO:
+                                g.fillRect(ix, iy, 1, 1);
+                                ix0 = ix;
+                                iy0 = iy;
+                                break;
+                            case STATE_LINETO:
+                                g.draw(new Line2D.Float(ix0, iy0, ix, iy));
+                                g.fillRect(ix, iy, 1, 1);
+                                ix0 = ix;
+                                iy0 = iy;
+                                break;
+                        }
+                        state = STATE_LINETO;
+                    }
+                }
+            }
+        }
+
+        logger.fine("done");
+        synchronized (this) {
+            plotImage = image;
+            selectionArea= null;
+        }
         
     }
 
+    private boolean isWaveform( QDataSet ds ) {
+        if ( ds.rank()==2 ) {
+            QDataSet xds= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            Units xunits= SemanticOps.getUnits(xds);
+            QDataSet xoffsets= (QDataSet) ds.property(QDataSet.DEPEND_1);
+            Units xoffsetunits= SemanticOps.getUnits(xoffsets);
+            return ( xoffsets!=Units.dimensionless && xoffsetunits.isConvertableTo(xunits.getOffsetUnits()) );
+        }
+        return false;
+    }
+
     private QDataSet histogram(RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds) {
+        logger.fine("histogram");
         ddx.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         ddy.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         FDataSet tds = FDataSet.createRank2( ddx.numberOfBins(), ddy.numberOfBins() );
@@ -244,11 +409,21 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
             QDataSet xds = SemanticOps.xtagsDataSet(ds);
             QDataSet vds;
+            ArrayDataSet xoffsets= null;
 
+            boolean isWaveform= false;
             if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
                 vds = DataSetOps.unbundleDefaultDataSet( ds );
-            } else if ( ds.rank()==2 ) {
-                vds= DataSetOps.flattenWaveform( ds );
+            } else if ( isWaveform(ds) ) {
+                vds= ds;
+                xds = SemanticOps.xtagsDataSet(ds);
+                isWaveform= true;
+                xoffsets= ArrayDataSet.copy( ( QDataSet) ds.property(QDataSet.DEPEND_1) );
+                if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
+                final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
+                for ( int j=0; j<xoffsets.length(); j++ ) {
+                    xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
+                }
             } else {
                 vds = (QDataSet) ds;
             }
@@ -265,14 +440,32 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
             int i = firstIndex;
             int n = lastIndex;
-            for (; i <= n; i++) {
-                boolean isValid = wds.value(i)>0;
-                if ( isValid ) {
-                    int ix = ddx.whichBin(xds.value(i), xunits);
-                    int iy = ddy.whichBin(vds.value(i), yunits);
-                    if (ix != -1 && iy != -1) {
-                        double d = tds.value(ix, iy);
-                        tds.putValue( ix, iy, d+1 );
+            int nj= isWaveform ? vds.length(i) : 1;
+
+            if ( isWaveform ) {
+                for (; i <= n; i++) {
+                    for ( int j=0; j<nj; j++ ) {
+                        boolean isValid = wds.value(i,j)>0;
+                        if ( isValid ) {
+                            int ix = ddx.whichBin( xds.value(i) + xoffsets.value(j), xunits );
+                            int iy = ddy.whichBin( vds.value(i,j), yunits );
+                            if (ix != -1 && iy != -1) {
+                                double d = tds.value(ix, iy);
+                                tds.putValue( ix, iy, d+1 );
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (; i <= n; i++) {
+                    boolean isValid = wds.value(i)>0;
+                    if ( isValid ) {
+                        int ix = ddx.whichBin(xds.value(i), xunits);
+                        int iy = ddy.whichBin(vds.value(i), yunits);
+                        if (ix != -1 && iy != -1) {
+                            double d = tds.value(ix, iy);
+                            tds.putValue( ix, iy, d+1 );
+                        }
                     }
                 }
             }
@@ -440,13 +633,23 @@ public class ImageVectorDataSetRenderer extends Renderer {
             ixstepLimitSq= 100000000;
         }
 
-        if ((lastIndex - firstIndex) > 20 * xAxis.getColumn().getWidth()) {
+        int nj= 1;
+        if ( isWaveform(ds1) ) nj= ds1.length(0);
+
+        if ( nj*(lastIndex-firstIndex) > 20 * xAxis.getColumn().getWidth()) {
             logger.fine("rendering with histogram");
             ghostlyImage(xAxis, yAxis, ds1, plotImageBounds);
         } else {
-            logger.fine("rendinging with lines");
-            ghostlyImage2(xAxis, yAxis, ds1, plotImageBounds);
+            if ( isWaveform(ds1) ) {
+
+                logger.fine("renderinging with lines");
+                ghostlyImageRank2(xAxis, yAxis, ds1, plotImageBounds);
+            } else {
+                logger.fine("renderinging with lines");
+                ghostlyImage2(xAxis, yAxis, ds1, plotImageBounds);
+            }
         }
+
         logger.fine("done updatePlotImage");
         //System.err.println("done updatePlotImage "+ ( System.currentTimeMillis()-t0 )+ " ms" );
 
