@@ -22,7 +22,7 @@ import org.das2.util.LoggerManager;
  */
 public abstract class ArrayDataSet extends AbstractDataSet implements WritableDataSet {
 
-    private static final Logger logger= LoggerManager.getLogger("qdataset.array");
+    protected static final Logger logger= LoggerManager.getLogger("qdataset.array");
 
     int rank;
 
