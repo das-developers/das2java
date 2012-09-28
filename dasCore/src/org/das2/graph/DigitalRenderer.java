@@ -83,7 +83,6 @@ public class DigitalRenderer extends Renderer {
             }
         }
         xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
-        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
         return xrange;
     }
 
