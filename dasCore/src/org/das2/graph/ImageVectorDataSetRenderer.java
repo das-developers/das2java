@@ -28,6 +28,7 @@ import java.awt.image.WritableRaster;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.QDataSet;
@@ -93,12 +94,15 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
 
         QDataSet xds = SemanticOps.xtagsDataSet(ds);
-        QDataSet vds;
-
+        
+//TODO: support WAVE type.
+        Units yunits=null;
         if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
-            vds = DataSetOps.unbundleDefaultDataSet( ds );
+            QDataSet vds = DataSetOps.unbundleDefaultDataSet( ds );
+            yunits= SemanticOps.getUnits( vds );
         } else {
-            vds = (QDataSet) ds;
+            QDataSet vds = ds;
+            yunits= SemanticOps.getUnits( vds );
         }
 
 
@@ -107,7 +111,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             return;
         }
 
-        if ( !yAxis.getUnits().isConvertableTo( SemanticOps.getUnits((QDataSet) vds) )) {
+        if ( !yAxis.getUnits().isConvertableTo( yunits ) ) {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
             return;
         }
@@ -174,9 +178,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
         QDataSet vds;
 
         if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
-            vds = DataSetOps.unbundleDefaultDataSet( ds );
+            vds= DataSetOps.unbundleDefaultDataSet( ds );
+        } else if ( ds.rank()==2 ) {
+            vds= DataSetOps.flattenWaveform( ds );
         } else {
-            vds = (QDataSet) ds;
+            vds= ds;
         }
 
         boolean xmono = Boolean.TRUE == SemanticOps.isMonotonic(xds);
@@ -241,6 +247,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
             if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
                 vds = DataSetOps.unbundleDefaultDataSet( ds );
+            } else if ( ds.rank()==2 ) {
+                vds= DataSetOps.flattenWaveform( ds );
             } else {
                 vds = (QDataSet) ds;
             }
