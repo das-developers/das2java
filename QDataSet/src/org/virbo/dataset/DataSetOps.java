@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
@@ -185,6 +186,56 @@ public class DataSetOps {
             return zds;
         }
         
+    }
+
+    /**
+     * flatten a rank 2 dataset where the y depend variable is just an offset from the xtag.  This is
+     * a nice example of the advantage of using a class to represent the data: this requires no additional
+     * storage to handle the huge waveform.
+     * @param ds
+     * @return
+     */
+    public static QDataSet flattenWaveform( final QDataSet ds ) {
+        final int n= ds.length(0);
+        System.err.println("flattenWaveform v2.0");
+        MutablePropertyDataSet result= new AbstractDataSet() {
+            @Override
+            public int rank() {
+                return 1;
+            }
+
+            @Override
+            public int length() {
+                return n*ds.length();
+            }
+
+
+            @Override
+            public double value(int i0) {
+                return ds.value(i0/n,i0%n);
+            }
+
+        };
+        final QDataSet dsdep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        final QDataSet dsdep1 = (QDataSet) ds.property(QDataSet.DEPEND_1);
+        final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(dsdep1), SemanticOps.getUnits(dsdep0).getOffsetUnits() );
+        MutablePropertyDataSet dep0= new AbstractDataSet() {
+            @Override
+            public int rank() {
+                return 1;
+            }
+            @Override
+            public int length() {
+                return n*ds.length();
+            }
+            @Override
+            public double value(int i0) {
+                return dsdep0.value(i0/n)+uc.convert(dsdep1.value(i0%n));
+            }
+
+        };
+        result.putProperty( QDataSet.DEPEND_0, dep0 );
+        return result;
     }
 
     /**
