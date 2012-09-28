@@ -339,6 +339,26 @@ public class SemanticOps {
     }
 
     /**
+     * Test for rank 2 waveform dataset, where DEPEND_1 is offset from DEPEND_0, and the data is the waveform.
+     * @param fillDs
+     * @return
+     */
+    public static boolean isRank2Waveform(QDataSet fillDs ) {
+        if ( fillDs.rank()==2 ) {
+            QDataSet dep0= (QDataSet) fillDs.property(QDataSet.DEPEND_0);
+            QDataSet dep1= (QDataSet) fillDs.property(QDataSet.DEPEND_1);
+            if ( dep0!=null && dep1!=null ) {
+                Units dep0units= SemanticOps.getUnits( dep0 );
+                Units dep1units= SemanticOps.getUnits( dep1 );
+                if ( dep0units!=Units.dimensionless && dep1units.isConvertableTo( dep0units.getOffsetUnits() ) ) {
+                    return( true );
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * See Ops.isLegacyBundle
      * @param zds
      * @return
