@@ -77,7 +77,10 @@ public final class LDataSet extends ArrayDataSet {
        this.len0= len0;
        this.len1= len1;
        this.len2= len2;
-       this.len3 = len3;
+       this.len3= len3;
+       if ( this.back.length < len0 * len1 * len2 * len3 ) {
+           logger.warning("backing array appears to be too short");
+       }
        if ( rank>1 ) putProperty(QDataSet.QUBE, Boolean.TRUE);
     }
 

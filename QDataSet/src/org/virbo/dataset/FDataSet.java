@@ -94,13 +94,16 @@ public final class FDataSet extends ArrayDataSet {
     }
 
     protected FDataSet( int rank, int len0, int len1, int len2, int len3, float[] back ) {
-       this.back= back;
-       this.rank= rank;
-       this.len0= len0;
-       this.len1= len1;
-       this.len2= len2;
-       this.len3= len3;
-       if ( rank>1 ) putProperty(QDataSet.QUBE, Boolean.TRUE);
+        this.back= back;
+        this.rank= rank;
+        this.len0= len0;
+        this.len1= len1;
+        this.len2= len2;
+        this.len3= len3;
+        if ( this.back.length < len0 * len1 * len2 * len3 ) {
+           logger.warning("backing array appears to be too short");
+        }
+        if ( rank>1 ) putProperty(QDataSet.QUBE, Boolean.TRUE);
     }
 
     protected Object getBack() {
