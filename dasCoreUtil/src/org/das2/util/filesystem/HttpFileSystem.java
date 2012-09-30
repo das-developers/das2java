@@ -145,6 +145,7 @@ public class HttpFileSystem extends WebFileSystem {
                         code= urlc.getResponseCode();
                     } catch ( IOException ex2 ) {
                         // do nothing in this case, just try to get a response code.
+                        logger.log(Level.SEVERE,null,ex2);
                     }
                     if ( code==401 ) {
                         connectFail= false;
