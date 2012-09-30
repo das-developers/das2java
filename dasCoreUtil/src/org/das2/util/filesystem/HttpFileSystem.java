@@ -149,7 +149,7 @@ public class HttpFileSystem extends WebFileSystem {
                     if ( code==401 ) {
                         connectFail= false;
                     } else {
-                        logger.log( Level.SEVERE, "code="+code, ex );
+                        logger.log( Level.SEVERE, String.format( "%d: failed to connect to %s", code, root ), ex );
                         if ( FileSystem.settings().isAllowOffline() ) {
                             logger.info("remote filesystem is offline, allowing access to local cache.");
                         } else {
