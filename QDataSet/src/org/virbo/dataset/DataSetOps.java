@@ -1839,8 +1839,11 @@ public class DataSetOps {
 
     /**
      * return a bounding qube of the independent dimensions containing
-     * the dataset.
-     * Only for tables right now.
+     * the dataset.  If r is the result of the function, then for
+     *   rank 1: r.slice(0) x bounds, r.slice(1) y bounds
+     *   rank 2 waveform: r.slice(0) x bounds, r.slice(1) y bounds
+     *   rank 2 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
+     *   rank 3 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
      * @param ds
      * @return
      */
@@ -1848,9 +1851,23 @@ public class DataSetOps {
         QDataSet xrange;
         QDataSet yrange;
 
-        if( ds.rank() == 2) {
+        if ( ds.rank()==1 ) {
             xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
-            yrange= Ops.extent( SemanticOps.ytagsDataSet(ds) );
+            yrange= Ops.extent( ds );
+        } else if( ds.rank() == 2 ) {
+            if ( SemanticOps.isRank2Waveform(ds) ) {
+                xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
+                yrange= Ops.extent( ds );
+            } else if ( SemanticOps.isBundle(ds) ) {
+                xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
+                yrange= null;
+                for ( int i=0; i<ds.length(0); i++ ) {
+                    yrange= Ops.extent( DataSetOps.unbundle( ds, i ), yrange );
+                }
+            } else {
+                xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
+                yrange= Ops.extent( SemanticOps.ytagsDataSet(ds) );
+            }
         } else if ( ds.rank()==3 ) {
             QDataSet ds1= ds.slice(0);
             xrange= Ops.extent( SemanticOps.xtagsDataSet(ds1) );
@@ -1864,7 +1881,8 @@ public class DataSetOps {
             throw new IllegalArgumentException("bad rank");
         }
 
-        QDataSet result= Ops.join( xrange, yrange );
+        QDataSet result= makePropertiesMutable( Ops.join( xrange, yrange ) );
+        ((MutablePropertyDataSet)result).putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
 
         return result;
     }
