@@ -4,6 +4,8 @@
  */
 package org.virbo.dsops;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.virbo.dataset.BundleDataSet.BundleDescriptor;
 import org.virbo.dataset.QubeDataSetIterator;
 import org.das2.datum.Datum;
@@ -25,6 +27,7 @@ import java.util.regex.Pattern;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
@@ -65,6 +68,7 @@ import org.virbo.math.Contour;
  */
 public class Ops {
 
+    private static final Logger logger= LoggerManager.getLogger("qdataSet");
     /**
      * UnaryOps are one-argument operations, such as sin, abs, and sqrt
      */
@@ -1880,6 +1884,27 @@ public class Ops {
         } catch (ParseException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+
+    /**
+     * return fake waveform data for testing
+     * result is rank 2 bundle [len,512]
+     * @param len
+     * @return
+     */
+    public static QDataSet ripplesWaveformTimeSeries( int len ) {
+        MutablePropertyDataSet rip= (MutablePropertyDataSet) add( ripples( len,512 ), sin( divide( findgen(len,512), DataSetUtil.asDataSet(10.) ) ) );
+        QDataSet toffset= Ops.linspace( 0, 0.1, 512 );
+        ((MutablePropertyDataSet)toffset).putProperty( QDataSet.UNITS, Units.seconds );
+        rip.putProperty( QDataSet.DEPEND_1, toffset );
+        try {
+            QDataSet ttag = timegen("2012-10-02T12:03", "0.1 s", len);
+            rip.putProperty( QDataSet.DEPEND_0, ttag );
+        } catch (ParseException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        return rip;
     }
 
     /**
