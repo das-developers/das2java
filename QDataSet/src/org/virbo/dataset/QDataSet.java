@@ -388,6 +388,11 @@ public interface QDataSet {
      * typical bin is min,max with min inclusive and max exclusive.
      */
     public static String VALUE_BINS_MIN_MAX="min,max";
+
+    /**
+     * the minimum length of each of the waveform packets in a rank 2 waveform dataset.
+     */
+    public static int MIN_WAVEFORM_LENGTH=128;
     
     /**
      * returns the rank of the dataset, which is the number of indeces used to access data.  Only rank 1, 2, and 3 datasets
