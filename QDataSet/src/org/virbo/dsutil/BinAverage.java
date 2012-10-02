@@ -10,9 +10,11 @@ package org.virbo.dsutil;
 
 import org.das2.datum.Units;
 import java.util.Arrays;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
 /**
@@ -167,7 +169,16 @@ public class BinAverage {
         int s3 = s2 + size % 2;   // one greater than s2 if s2 is odd.
 
         if (ds.rank() != 1) {
-            throw new IllegalArgumentException("dataset must be rank 1");
+            if ( SemanticOps.isRank2Waveform(ds) ) {
+                DDataSet result= (DDataSet) ArrayDataSet.createRank2( double.class, ds.length(), ds.length(0) );
+                for ( int i=0; i<ds.length(); i++ ) {
+                    DDataSet r1= boxcar( ds.slice(i), size );
+                    DDataSet.copyElements( r1, 0, result, i, r1.length() ); // careful
+                }
+                return result;
+            } else {
+                throw new IllegalArgumentException("dataset must be rank 1");
+            }
         }
         if (ds.length() < size) {
             throw new IllegalArgumentException("dataset length is less than window size");
