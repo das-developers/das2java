@@ -1894,8 +1894,8 @@ public class Ops {
      * @return
      */
     public static QDataSet ripplesWaveformTimeSeries( int len ) {
-        MutablePropertyDataSet rip= (MutablePropertyDataSet) add( ripples( len,512 ), sin( divide( findgen(len,512), DataSetUtil.asDataSet(10.) ) ) );
-        QDataSet toffset= Ops.linspace( 0, 0.1, 512 );
+        MutablePropertyDataSet rip= (MutablePropertyDataSet) multiply( add( ripples( len,512 ), sin( divide( findgen(len,512), DataSetUtil.asDataSet(10.) ) ) ), DataSetUtil.asDataSet(5000.) );
+        QDataSet toffset= Ops.taggen( 0., 0.1/512, 512, Units.seconds );
         ((MutablePropertyDataSet)toffset).putProperty( QDataSet.UNITS, Units.seconds );
         rip.putProperty( QDataSet.DEPEND_1, toffset );
         try {
