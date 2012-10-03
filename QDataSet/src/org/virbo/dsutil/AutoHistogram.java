@@ -86,13 +86,13 @@ public final class AutoHistogram {
      */
     SortedMap<Double, Integer> outliers;
 
-    private final static Logger logger= LoggerManager.getLogger("qdataset");
+    private final static Logger logger= LoggerManager.getLogger("qdataset.autohistogram");
 
-    private final static void log( java.util.logging.Level level, String message ) {
+    private static void log( java.util.logging.Level level, String message ) {
         if ( logger.isLoggable(level) ) logger.log( level, message);
     }
-    //TODO: check to see if this gets in-lined by the compiler.
-    private final static void log( java.util.logging.Level level, String message, Object... args ) {
+    //TODO: verify that this gets in-lined by the compiler.
+    private static void log( java.util.logging.Level level, String message, Object... args ) {
         if ( logger.isLoggable(level) ) logger.log( level, String.format(message,args) );
     }
 
