@@ -1784,6 +1784,9 @@ public class DataSetOps {
 
                 } else if ( cmd.equals("|nop") ) { // no operation, for testing.
                     //fillDs= fillDs;
+
+                } else if ( cmd.equals("|copy") ) { // force a copy of the dataset.
+                    //fillDs= fillDs;
                     fillDs= Ops.copy(fillDs);
 
                 } else {
