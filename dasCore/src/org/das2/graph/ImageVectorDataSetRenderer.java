@@ -388,17 +388,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
     }
 
-    private boolean isWaveform( QDataSet ds ) {
-        if ( ds.rank()==2 ) {
-            QDataSet xds= (QDataSet) ds.property(QDataSet.DEPEND_0);
-            Units xunits= SemanticOps.getUnits(xds);
-            QDataSet xoffsets= (QDataSet) ds.property(QDataSet.DEPEND_1);
-            Units xoffsetunits= SemanticOps.getUnits(xoffsets);
-            return ( xoffsets!=Units.dimensionless && xoffsetunits.isConvertableTo(xunits.getOffsetUnits()) );
-        }
-        return false;
-    }
-
     private QDataSet histogram(RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds) {
         logger.fine("histogram");
         ddx.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
@@ -414,7 +403,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             boolean isWaveform= false;
             if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
                 vds = DataSetOps.unbundleDefaultDataSet( ds );
-            } else if ( isWaveform(ds) ) {
+            } else if ( SemanticOps.isRank2Waveform(ds) ) {
                 vds= ds;
                 xds = SemanticOps.xtagsDataSet(ds);
                 isWaveform= true;
@@ -634,13 +623,13 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
 
         int nj= 1;
-        if ( isWaveform(ds1) ) nj= ds1.length(0);
+        if ( SemanticOps.isRank2Waveform(ds1) ) nj= ds1.length(0);
 
         if ( nj*(lastIndex-firstIndex) > 20 * xAxis.getColumn().getWidth()) {
             logger.fine("rendering with histogram");
             ghostlyImage(xAxis, yAxis, ds1, plotImageBounds);
         } else {
-            if ( isWaveform(ds1) ) {
+            if ( SemanticOps.isRank2Waveform(ds1) ) {
 
                 logger.fine("renderinging with lines");
                 ghostlyImageRank2(xAxis, yAxis, ds1, plotImageBounds);
