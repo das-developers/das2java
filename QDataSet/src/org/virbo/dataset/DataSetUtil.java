@@ -1797,7 +1797,8 @@ public class DataSetUtil {
      * Note, when FILL_VALUE is not specified, -1e31 is used.  This is to
      * support legacy logic.
      * 
-     * For convenience, the property FILL_VALUE is set to the fill value used.
+     * For convenience, the property FILL_VALUE is set to the fill value used.  If a dataset contains WEIGHTS_PLANE,
+     * the value must contain this property otherwise a new one is calculated.
      * 
      */
     public static QDataSet weightsDataSet(final QDataSet ds) {
