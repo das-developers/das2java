@@ -1797,8 +1797,7 @@ public class DataSetUtil {
      * Note, when FILL_VALUE is not specified, -1e31 is used.  This is to
      * support legacy logic.
      * 
-     * For convenience, the property FILL_VALUE is set to the fill value used.  If a dataset contains WEIGHTS_PLANE,
-     * the value must contain this property otherwise a new one is calculated.
+     * For convenience, the property FILL_VALUE is set to the fill value used.  
      * 
      */
     public static QDataSet weightsDataSet(final QDataSet ds) {
@@ -1812,8 +1811,11 @@ public class DataSetUtil {
         if ( result!=null ) {
             ofill= (Number)result.property(QDataSet.FILL_VALUE);
             if ( ofill==null ) {
-                logger.fine( "improperly formed weights dataset does not contain a FILL_VALUE, can't use it...");
-                result= null;
+                MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable( result );
+                mpds.putProperty( QDataSet.FILL_VALUE, QDataSet.DEFAULT_FILL_VALUE );
+                return mpds;
+            } else {
+                return result;
             }
         }
         if (result == null) {
