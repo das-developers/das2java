@@ -7,6 +7,7 @@
 package org.das2.system;
 
 import java.util.logging.*;
+import org.das2.util.LoggerManager;
 
 /**
  *
@@ -17,8 +18,12 @@ public class LoggerId {
     private Logger logger;
     public LoggerId( String name ) { // public to change to protected after DasApplication.getLogger factored out
         this.name= name;
-        this.logger= Logger.getLogger(name);
-        this.logger.fine( name +" logging at "+this.logger.getLevel() );
+        if ( name.length()==0 ) { // don't register the default logger.
+            this.logger= Logger.getLogger(name);
+        } else {
+            this.logger= LoggerManager.getLogger(name);
+        }
+        this.logger.log( Level.FINE, "{0} logging at {1}", new Object[]{name, this.logger.getLevel()});
     }
     public String toString() {
         return this.name;
