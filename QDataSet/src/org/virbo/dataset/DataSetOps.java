@@ -1784,6 +1784,7 @@ public class DataSetOps {
 
                 } else if ( cmd.equals("|nop") ) { // no operation, for testing.
                     //fillDs= fillDs;
+                    fillDs= Ops.copy(fillDs);
 
                 } else {
                     if ( !cmd.equals("") ) throw new ParseException( c + " (command not recognized: \""+cmd +"\")", i );
