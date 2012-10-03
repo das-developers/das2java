@@ -1466,7 +1466,7 @@ public class DataSetOps {
      * @return
      */
     public static boolean isProcessAsync(String c) {
-        return c.contains("fft") || c.contains("contour") || c.contains("dbAboveBackgroundDim") || c.contains("reducex");
+        return c.contains("copy") || c.contains("fft") || c.contains("contour") || c.contains("dbAboveBackgroundDim") || c.contains("reducex");
     }
 
     /**
@@ -1550,6 +1550,9 @@ public class DataSetOps {
      * @see org.virbo.metatree.MetadataUtil.java which also handles the metadata (for now).
      */
     public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) throws Exception {
+
+        logger.log(Level.FINE, "sprocess({0},{1})", new Object[] { c, fillDs } );
+
         int i=1;
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
@@ -1797,6 +1800,7 @@ public class DataSetOps {
             ParseException ex2= new ParseException( c + " ("+ex.getLocalizedMessage()+")", i );
             throw ex2;
         }
+        logger.log(Level.FINE, "...sprocess({0})->{1}", new Object[] { c, fillDs } );
         return fillDs;
     }
 
