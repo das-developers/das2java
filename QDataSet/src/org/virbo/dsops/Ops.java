@@ -69,7 +69,7 @@ import org.virbo.math.Contour;
  */
 public class Ops {
 
-    private static final Logger logger= LoggerManager.getLogger("qdataSet");
+    private static final Logger logger= LoggerManager.getLogger("qdataset");
     /**
      * UnaryOps are one-argument operations, such as sin, abs, and sqrt
      */
@@ -2114,6 +2114,7 @@ public class Ops {
      * @return a copy of src.
      */
     public static WritableDataSet copy( QDataSet src ) {
+        logger.log(Level.FINE, "copy({0})", src);
         if ( SemanticOps.isJoin(src) ) {
             WritableJoinDataSet result= new WritableJoinDataSet( src.rank() );
             for ( int i=0; i<src.length(); i++ ) {
