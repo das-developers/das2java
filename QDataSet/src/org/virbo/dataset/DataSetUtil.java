@@ -1806,7 +1806,15 @@ public class DataSetUtil {
             logger.log(Level.WARNING, "WEIGHTS_PLANE contained something that was not a qdataset: {0}", o);
             o=null;
         }
+        Number ofill= null;
         QDataSet result = (QDataSet) o;
+        if ( result!=null ) {
+            ofill= (Number)result.property(QDataSet.FILL_VALUE);
+            if ( ofill==null ) {
+                logger.fine( "improperly formed weights dataset does not contain a FILL_VALUE, can't use it...");
+                result= null;
+            }
+        }
         if (result == null) {
             QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
             if ( bds!=null ) {
@@ -1817,7 +1825,7 @@ public class DataSetUtil {
             Number validMax = (Number) ds.property(QDataSet.VALID_MAX);
             if (validMax == null) validMax = Double.POSITIVE_INFINITY;
             Units u = (Units) ds.property(QDataSet.UNITS);
-            Number ofill = (Number) ds.property(QDataSet.FILL_VALUE);
+            ofill = (Number) ds.property(QDataSet.FILL_VALUE);
             double fill = (ofill == null ? Double.NaN : ofill.doubleValue());
             boolean check = (validMin.doubleValue() > -1 * Double.MAX_VALUE || validMax.doubleValue() < Double.MAX_VALUE || !(Double.isNaN(fill)));
             if (check) {
