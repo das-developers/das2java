@@ -432,15 +432,37 @@ public class ImageVectorDataSetRenderer extends Renderer {
             int nj= isWaveform ? vds.length(i) : 1;
 
             if ( isWaveform ) {
-                for (; i <= n; i++) {
-                    for ( int j=0; j<nj; j++ ) {
-                        boolean isValid = wds.value(i,j)>0;
-                        if ( isValid ) {
-                            int ix = ddx.whichBin( xds.value(i) + xoffsets.value(j), xunits );
-                            int iy = ddy.whichBin( vds.value(i,j), yunits );
-                            if (ix != -1 && iy != -1) {
-                                double d = tds.value(ix, iy);
-                                tds.putValue( ix, iy, d+1 );
+                int ix0= ddx.whichBin( xds.value(i) + xoffsets.value(0), xunits );
+                int ix1= ddx.whichBin( xds.value(i) + xoffsets.value(xoffsets.length()-1), xunits );
+                boolean wowReduce= false;
+                if ( ix0==ix1 ) wowReduce= true;
+
+                if ( wowReduce ) {
+                    logger.fine("wowReduce");
+                    for (; i <= n; i++) {
+                        int ix = ddx.whichBin( xds.value(i), xunits );
+                        for ( int j=0; j<nj; j++ ) {
+                            boolean isValid = wds.value(i,j)>0;
+                            if ( isValid ) {
+                                int iy = ddy.whichBin( vds.value(i,j), yunits );
+                                if (ix != -1 && iy != -1) {
+                                    double d = tds.value(ix, iy);
+                                    tds.putValue( ix, iy, d+1 );
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    for (; i <= n; i++) {
+                        for ( int j=0; j<nj; j++ ) {
+                            boolean isValid = wds.value(i,j)>0;
+                            if ( isValid ) {
+                                int ix = ddx.whichBin( xds.value(i) + xoffsets.value(j), xunits );
+                                int iy = ddy.whichBin( vds.value(i,j), yunits );
+                                if (ix != -1 && iy != -1) {
+                                    double d = tds.value(ix, iy);
+                                    tds.putValue( ix, iy, d+1 );
+                                }
                             }
                         }
                     }
