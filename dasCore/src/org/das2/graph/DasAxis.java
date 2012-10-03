@@ -71,6 +71,7 @@ import org.das2.datum.OrbitDatumRange;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.system.RequestProcessor;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -127,16 +128,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     public void setUserDatumFormatter(DatumFormatter userDatumFormatter) {
+        logger.log(Level.FINE, "setUserDatumFormatter({0})", userDatumFormatter);
         DatumFormatter old= this.userDatumFormatter;
         this.userDatumFormatter = userDatumFormatter;
-        if ( old!=userDatumFormatter ) updateTickV();//TODO: this results in data read on event thread
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
-                    resize();
-                    repaint();
-                }
-            });
-        }
+        if ( old!=userDatumFormatter ) {
+            updateTickV();
+        }//TODO: this results in data read on event thread
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                resize();
+                repaint();
+            }
+        });
+    }
+
     /**
      * if non-null, try to use this formatter.
      */
@@ -223,7 +228,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private DasPlot dasPlot;
     private JMenu bookmarksMenu;
     private JMenu backMenu;
-    private static final Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
+    private static final Logger logger = LoggerManager.getLogger("das2.graphics.axis");
 
     /** TODO
      * @param min
