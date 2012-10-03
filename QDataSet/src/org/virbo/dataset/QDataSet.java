@@ -395,6 +395,11 @@ public interface QDataSet {
     public static int MIN_WAVEFORM_LENGTH=128;
     
     /**
+     * the fill value often used in codes.
+     */
+    public static double DEFAULT_FILL_VALUE= -1e31;
+
+    /**
      * returns the rank of the dataset, which is the number of indeces used to access data.  Only rank 1, 2, and 3 datasets
      * are supported in the interface.   When a dataset's rank is 4 or greater, it should implement the HighRankDataSet interface
      * which affords a slice operation to reduce rank.  When a dataset's rank is 0, it should implement the RankZeroDataSet interface,
