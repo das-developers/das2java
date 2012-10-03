@@ -52,6 +52,7 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.WritableDataSet;
+import org.virbo.dataset.WritableJoinDataSet;
 import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.BinAverage;
 import org.virbo.dsutil.DataSetBuilder;
@@ -2074,13 +2075,58 @@ public class Ops {
         return circle( radius );
     }
 
+
     /**
-     * copy the dataset to make a new one that is writable.
+     * copies the properties, copying depend datasets as well.  Copied from ArrayDataSet.
+     */
+    private static Map copyProperties( QDataSet ds ) {
+        Map result = new HashMap();
+        Map srcProps= DataSetUtil.getProperties(ds);
+
+        result.putAll(srcProps);
+
+        for ( int i=0; i < ds.rank(); i++) {
+            QDataSet dep = (QDataSet) ds.property("DEPEND_" + i);
+            if (dep == ds) {
+                throw new IllegalArgumentException("dataset is dependent on itsself!");
+            }
+            if (dep != null) {
+                result.put("DEPEND_" + i, copy(dep) ); // for timetags
+            }
+        }
+
+        for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
+            QDataSet plane0 = (QDataSet) ds.property("PLANE_" + i);
+            if (plane0 != null) {
+                result.put("PLANE_" + i, copy(plane0));
+            } else {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * copy the dataset to make a new one that is writable.  When a join dataset is copied, a WritableJoinDataSet is used
+     * to copy each dataset.  This is a deep copy, so for example DEPEND_0 is copied as well.
      * @param src
-     * @return
+     * @return a copy of src.
      */
     public static WritableDataSet copy( QDataSet src ) {
-        return ArrayDataSet.copy(src);
+        if ( SemanticOps.isJoin(src) ) {
+            WritableJoinDataSet result= new WritableJoinDataSet( src.rank() );
+            for ( int i=0; i<src.length(); i++ ) {
+                result.join( ArrayDataSet.copy(src.slice(i)) );
+            }
+            Map<String,Object> props= copyProperties(src);
+            for ( Entry<String,Object> en: props.entrySet() ) {
+                result.putProperty( en.getKey(), en.getValue() );
+            }
+            return result;
+        } else {
+            return ArrayDataSet.copy(src);
+        }
     }
 
     /**
