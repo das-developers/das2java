@@ -623,7 +623,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
             if ( xAxis.isLog() ) {
                 ixstepLimitSq= 100000000;
             } else {
-                RankZeroDataSet d= DataSetUtil.guessCadenceNew(xds,ds1);
+                RankZeroDataSet d;
+                if ( SemanticOps.isRank2Waveform(ds1) ) {
+                    d= DataSetUtil.guessCadenceNew( (QDataSet) ds1.property(QDataSet.DEPEND_1), null );
+                } else {
+                    d= DataSetUtil.guessCadenceNew(xds,ds1);
+                }
                 if ( d!=null ) {
                     Datum sw = DataSetUtil.asDatum( d ); //TODO! check ratiometric
                     Datum xmax= xAxis.getDataMaximum();
