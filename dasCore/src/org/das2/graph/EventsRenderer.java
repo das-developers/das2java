@@ -261,6 +261,10 @@ public class EventsRenderer extends Renderer {
 
         int count=0;
 
+        if ( vds.length()==0 ) {
+            return vds;
+        }
+
         v.putValue( 0,vds.value(0,0) );
         v.putValue( 1,vds.value(0,1) );
         v.putValue( 2,vds.value(0,2) );
