@@ -478,7 +478,11 @@ public class EventsRenderer extends Renderer {
                         int gg= ( irgb & 0x00FF00 ) >> 8;
                         int bb= ( irgb & 0x0000FF );
                         int aa= ( irgb >> 24 & 0xFF );
-                        g.setColor( new Color( rr, gg, bb, aa ) );
+                        if ( aa>0 ) {
+                            g.setColor( new Color( rr, gg, bb, aa ) );
+                        } else {
+                            g.setColor( new Color( rr, gg, bb ) );
+                        }
                     }
                     
                     if ( column.getDMinimum() < ixmax || column.getDMaximum() > ixmin ) { // if any part is visible
