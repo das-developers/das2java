@@ -1533,23 +1533,29 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param tcaLock 
      */
     private synchronized void updateTCAImmediately(Object tcaLock) {
-        getCanvas().performingChange( DasAxis.this, tcaLock );
-        updateTCADataSet();
-        repaint();
-        getCanvas().changePerformed( DasAxis.this, tcaLock );
+        DasCanvas lcanvas= getCanvas();
+        if ( lcanvas!=null ) {
+            lcanvas.performingChange( DasAxis.this, tcaLock );
+            updateTCADataSet();
+            repaint();
+            lcanvas.changePerformed( DasAxis.this, tcaLock );
+        }
     }
 
     /**
      * update the TCA dataset.  This will load the TCAs on a RequestProcessor thread sometime soon.
      */
     private synchronized void updateTCASoon() {
-        final Object tcaLock= "tcaload_"+this.getDasName();
-        getCanvas().registerPendingChange( this, tcaLock );
-        RequestProcessor.invokeLater( new Runnable() {
-            public void run() {
-               updateTCAImmediately(tcaLock);
-            }
-        }, DasAxis.this );
+        DasCanvas lcanvas= getCanvas();
+        if ( lcanvas!=null ) {
+            final Object tcaLock= "tcaload_"+this.getDasName();
+            lcanvas.registerPendingChange( this, tcaLock );
+            RequestProcessor.invokeLater( new Runnable() {
+                public void run() {
+                   updateTCAImmediately(tcaLock);
+                }
+            }, DasAxis.this );
+        }
     }
 
     public synchronized void updateTickV() {
