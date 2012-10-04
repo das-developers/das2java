@@ -434,8 +434,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
             if ( isWaveform ) {
                 int ix0= ddx.whichBin( xds.value(i) + xoffsets.value(0), xunits );
                 int ix1= ddx.whichBin( xds.value(i) + xoffsets.value(xoffsets.length()-1), xunits );
-                boolean wowReduce= false;
-                if ( ix0==ix1 ) wowReduce= true;
+                if ( ix0==-1 && i+1<n ) {
+                    ix0= ddx.whichBin( xds.value(i+1) + xoffsets.value(0), xunits );
+                    ix1= ddx.whichBin( xds.value(i+1) + xoffsets.value(xoffsets.length()-1), xunits );
+                }
+                
+                boolean wowReduce= ix0!=-1 && ix0==ix1;
 
                 if ( wowReduce ) {
                     logger.fine("wowReduce");
