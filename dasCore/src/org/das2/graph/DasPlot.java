@@ -1628,7 +1628,7 @@ public class DasPlot extends DasCanvasComponent {
         //repaintCount++;
     }
 
-    protected synchronized void invalidateCacheImage() {
+    protected void invalidateCacheImage() {
         if ( cacheImageValid==false ) return;
         cacheImageValid = false;
         repaint();
