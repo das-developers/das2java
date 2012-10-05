@@ -89,6 +89,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     }
 
+    //TODO: other Renderers use similar code and probably don't handle all-fill properly.
     private static QDataSet doRange( QDataSet xds ) {
         QDataSet xrange= Ops.extent(xds);
         if ( xrange.value(1)==xrange.value(0) ) {
