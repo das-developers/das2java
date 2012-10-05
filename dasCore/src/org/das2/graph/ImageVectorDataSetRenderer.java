@@ -38,6 +38,7 @@ import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dsops.Ops;
 
 /**
@@ -91,10 +92,16 @@ public class ImageVectorDataSetRenderer extends Renderer {
     private static QDataSet doRange( QDataSet xds ) {
         QDataSet xrange= Ops.extent(xds);
         if ( xrange.value(1)==xrange.value(0) ) {
-            if ( !"log".equals( xrange.property(QDataSet.SCALE_TYPE)) ) {
-                xrange= DDataSet.wrap( new double[] { xrange.value(0)-1, xrange.value(1)+1 } ).setUnits( SemanticOps.getUnits(xrange) );
+            QDataSet wds=  WeightsDataSet.applyRules( xds,xrange );
+            if ( wds.value(0)*wds.value(1) ==0 ) {
+                xrange= DDataSet.wrap( new double[] { 0, 10 } ).setUnits( SemanticOps.getUnits(xrange) );
+                return xrange;
             } else {
-                xrange= DDataSet.wrap( new double[] { xrange.value(0)/10, xrange.value(1)*10 } ).setUnits( SemanticOps.getUnits(xrange) );
+                if ( !"log".equals( xrange.property(QDataSet.SCALE_TYPE)) ) {
+                    xrange= DDataSet.wrap( new double[] { xrange.value(0)-1, xrange.value(1)+1 } ).setUnits( SemanticOps.getUnits(xrange) );
+                } else {
+                    xrange= DDataSet.wrap( new double[] { xrange.value(0)/10, xrange.value(1)*10 } ).setUnits( SemanticOps.getUnits(xrange) );
+                }
             }
         }
         xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
