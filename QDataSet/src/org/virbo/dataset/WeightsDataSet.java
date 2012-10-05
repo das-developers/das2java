@@ -242,4 +242,16 @@ public abstract class WeightsDataSet implements QDataSet {
             return weight(ds.value(i0, i1, i2, i3));
         }
     }
+
+    /**
+     * applies the rules from src to dataset v, returning an array of 0 or non-zero.
+     * @param src
+     * @param v
+     * @return
+     */
+    public static QDataSet applyRules( QDataSet src, QDataSet v ) {
+        WeightsDataSet wds= new ValidRangeFillFinite(src);
+        wds.ds= v;
+        return wds;
+    }
 }
