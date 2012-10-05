@@ -1866,12 +1866,12 @@ public class DataSetOps {
             if ( SemanticOps.isRank2Waveform(ds) ) {
                 xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
                 yrange= Ops.extent( ds );
-            } else if ( SemanticOps.isBundle(ds) ) {
-                xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
-                yrange= null;
-                for ( int i=0; i<ds.length(0); i++ ) {
-                    yrange= Ops.extent( DataSetOps.unbundle( ds, i ), yrange );
-                }
+            //} else if ( SemanticOps.isBundle(ds) ) { //bug: spectrogram rend of rbspb_pre_ect-mageisM75-sp-L1_20120908_v1.0.0.cdf?Count_Rate_SpinSetAvg
+            //    xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
+            //    yrange= null;
+            //    for ( int i=0; i<ds.length(0); i++ ) {
+            //        yrange= Ops.extent( DataSetOps.unbundle( ds, i ), yrange );
+            //    }
             } else {
                 xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
                 yrange= Ops.extent( SemanticOps.ytagsDataSet(ds) );
