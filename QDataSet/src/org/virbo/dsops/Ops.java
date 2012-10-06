@@ -3503,6 +3503,9 @@ public class Ops {
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
 
+        if ( findex0.rank()>0 && findex0.length()!=findex1.length() ) {
+            throw new IllegalArgumentException("findex0 and findex1 must have the same geometry.");
+        }
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex0));
 
         QDataSet wds= DataSetUtil.weightsDataSet(vv);
