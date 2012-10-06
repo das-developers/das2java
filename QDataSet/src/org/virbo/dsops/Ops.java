@@ -3430,7 +3430,7 @@ public class Ops {
      * in rank N findex.  For example, findex=1.5 means interpolate
      * the 1st and 2nd indeces with equal weight, 1.1 means
      * 90% of the first mixed with 10% of the second.  No extrapolation is
-     * done, data with findex<0 or findex>(vv.length()-1) are assigned the
+     * done, data with findex&lt;0 or findex&gt;(vv.length()-1) are assigned the
      * first or last value.
      *
      * Note there is no check on CADENCE.
@@ -3495,7 +3495,8 @@ public class Ops {
     /**
      * interpolate values from rank 2 dataset vv using fractional indeces
      * in rank N findex, using bilinear interpolation.
-     * 
+     *
+     * @see findex the 1-D findex command.
      * @param vv rank 2 dataset.
      * @param findex0 rank N dataset of fractional indeces for the zeroth index.
      * @param findex1 rank N dataset of fractional indeces for the first index.
