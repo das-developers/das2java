@@ -39,9 +39,16 @@ import org.virbo.dsutil.DataSetBuilder;
 
 
 /**
- * draw bars for the dataset.  This expects a QDataSet with the scheme:
- * Events[:] where DEPEND_0 is rank 2 bins dataset [:,"min,max"]
- * Note fill values in Events are under-implemented, we don't check validMin,validMax.
+ * Draw colored horizontal bars for the dataset, marking events datasets or modes of the data.  This expects
+ * a QDataSet with the canonical scheme:
+ *    Events[:,BUNDLE_1=4] where the columns are:
+ *      BUNDLE_1=startTime,stopTime,Color,Message
+ *    startTime,stopTime are in some time location unit.  stopTime may also be an offset from startTime (e.g. seconds)
+ *    Color is an int, that is either 0xRRGGBB or 0xAARRGGBB.
+ *    Message is any datum, so typically an enumeration unit is used.
+ * Note this also contains systems for coloring data in old schemes, such as the colorSpecifier interface and textSpecifier.
+ * These should not be used when a dataset will be sufficient.
+ *
  * @author Jeremy
  */
 public class EventsRenderer extends Renderer {
