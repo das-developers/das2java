@@ -64,7 +64,7 @@ import org.das2.graph.DasCanvas;
  * Here's an Autoplot script demoing its operation:
  * monitor.setTaskSize( 100 )
  * monitor.started()
-
+ *
  * for i in range(100):
  *   if ( i>50 and monitor.isCancelled() ):
  *     raise Exception('cancel pressed')
@@ -73,10 +73,13 @@ import org.das2.graph.DasCanvas;
  *   monitor.setTaskProgress(i)
  *
  * monitor.finished()
-
+ *
  * @author  eew
  */
 public class DasProgressPanel implements ProgressMonitor {
+
+    private static final Logger logger = DasLogger.getLogger(DasLogger.SYSTEM_LOG);
+
     public static final String MSG_CANCEL_TASK = "cancel task";
     public static final String MSG_TASK_CANNOT_BE_CANCELED = "task cannot be cancelled";
 
@@ -106,7 +109,6 @@ public class DasProgressPanel implements ProgressMonitor {
     private boolean running = false;
     private boolean finished = false;
     private Thread updateThread;
-    private static final Logger logger = DasLogger.getLogger(DasLogger.SYSTEM_LOG);
     private boolean showProgressRate;
     private JPanel thePanel;
     private boolean componentsInitialized;
@@ -259,7 +261,7 @@ public class DasProgressPanel implements ProgressMonitor {
         // get a stack trace so we can see what caused this.
 
         createComponentCount++;
-        //System.err.println("createComponentCount="+createComponentCount );
+        logger.log(Level.FINER, "createComponentCount={0}", createComponentCount);
         JPanel mainPanel, buttonPanel;
 
         taskLabel = new JLabel();
@@ -267,7 +269,7 @@ public class DasProgressPanel implements ProgressMonitor {
         taskLabel.setFont(new Font("Dialog", 1, 14));
         taskLabel.setHorizontalAlignment(JLabel.CENTER);
         taskLabel.setText(label);
-        System.err.println("taskLabel: "+label );
+        logger.log( Level.FINE, "taskLabel: {0}", label);
         taskLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
         progressMessageLabel = new JLabel() {
@@ -406,7 +408,7 @@ public class DasProgressPanel implements ProgressMonitor {
         }
 
         if (position != 0 && position < currentTaskPosition) {
-            logger.finest("progress position goes backwards");
+            logger.finest("progress position goes backwards, this is allowed.");
         }
 
         if (!cancelChecked) {
@@ -599,7 +601,6 @@ public class DasProgressPanel implements ProgressMonitor {
                     }
                     if (running) {
                         logger.log(Level.FINE, "hide time={0}", (System.currentTimeMillis() - taskStartedTime));
-                        System.err.println( DasProgressPanel.this.getLabel() );
                         setVisible(true);
                     }
                 }
