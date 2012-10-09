@@ -18,6 +18,7 @@ import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  * Form a rank 2 dataset with L and Time for tags by identifying monotonic sweeps
@@ -178,6 +179,107 @@ public class LSpec {
         return rebin( lds, zds, lgrid, 0 );
     }
     
+    /**
+     * alternate algorithm following Brian Larson's algorithm that rebin the datasets to rank 2 dataset ( time, LShell ), by interpolating along sweeps.  This
+     * dataset has the property "sweeps", which is a dataset that indexes the input datasets.
+     * @param lds The L values corresponding to y axis position, which should be a function of time.
+     * @param tt The Time values corresponding to x axis position.  If null, then use lds.property(QDataSet.DEPEND_0).
+     * @param zds the Z values corresponding to the parameter we wish to organize
+     * @param tspace rank 0 cadence, such as dataset('9 hr')
+     * @param lgrid rank 1 data is the grid points, such as  linspace( 2.,8.,30 )
+     * @param dir =1 increasing (outward) only, =-1 decreasing (inward) only, 0 both
+     * @return rank 2 dataset with
+     */
+    public static QDataSet rebin( QDataSet tt, QDataSet lds, QDataSet zds, QDataSet tspace, QDataSet lgrid, int dir ) {
+        final QDataSet sweeps= identifySweeps( lds, dir );
+
+        if ( tt==null ) {
+            tt= (QDataSet) lds.property(QDataSet.DEPEND_0);
+        }
+        
+        Units tu= SemanticOps.getUnits(tt);
+        
+        Double dfill= (Double) zds.property( QDataSet.FILL_VALUE );
+        if ( dfill==null ) {
+            dfill= -1e31;
+        }
+
+        QDataSet wds= DataSetUtil.weightsDataSet(zds);
+
+        int ny= lgrid.length();
+        double[] ss= new double[ny];
+        double[] nn= new double[ny];
+
+        DataSetBuilder builder= new DataSetBuilder( 2, 100, ny );
+        DataSetBuilder tbuilder= new DataSetBuilder( 1, 100 );
+        tbuilder.putProperty( QDataSet.UNITS, tu );
+        
+        builder.putProperty( QDataSet.FILL_VALUE,dfill );
+        
+        int ix=-1;
+        double nextx= Double.MAX_VALUE;
+        double dt= DataSetUtil.asDatum( tspace ).doubleValue( tu.getOffsetUnits() );
+        double t0= -1;
+        double dg= lgrid.value(1)-lgrid.value(0);
+        double g0= lgrid.value(0);
+        int n= ny-1;
+        for ( int i=2; i<n; i++ ) {
+           //if ( (lgrid.value(i)-lgrid.value(i-1)/dg ) throw new IllegalArgumentException( "lgrid must be uniform linear" );
+        }
+        for ( int i=0; i<sweeps.length(); i++ ) {
+            int ist= (int)sweeps.value(i,0);
+            int ien= (int)sweeps.value(i,1);
+            for ( int j= ist; j<ien; j++ ) {
+                if ( ix==-1 || tt.value(j)-nextx >= 0  ) { //reset the accumulators
+                    nextx= dt * Math.ceil( tt.value(j) / dt );  // next threshold
+                    if ( ix>-1 ) {
+                        for ( int k=0; k<ny; k++ ) {
+                            if ( nn[k]==0 ) {
+                                builder.putValue( -1, k, dfill );
+                            } else {
+                                builder.putValue( -1, k, ss[k]/nn[k] );
+                            }
+                        }
+                        builder.nextRecord();
+                        tbuilder.putValue( -1, t0+dt/2 );
+                        tbuilder.nextRecord();
+                    }
+                    t0= nextx; 
+
+                    for ( int k=0; k<ny; k++ ) {
+                        ss[k]=0;
+                        nn[k]=0;
+                    }
+
+                    ix++;
+                }
+                int iy= (int)Math.floor( ( lds.value(j) - g0 ) / dg );
+                if ( iy>=0 && iy<ny ) {
+                    double w= wds.value(j);
+                    ss[iy]+= w*zds.value(j);
+                    nn[iy]+= w;
+                }
+            }
+        }
+
+        DDataSet result= builder.getDataSet();
+        result.putProperty(QDataSet.DEPEND_0,tbuilder.getDataSet());
+        result.putProperty(QDataSet.DEPEND_1,lgrid);
+        DataSetUtil.copyDimensionProperties( zds, result );
+
+        String title= (String) result.property( QDataSet.TITLE );
+        if ( title==null ) title="";
+        if ( dir==-1 ) {
+            title+= "!cinward";
+        } else if ( dir==1 ) {
+            title+= "!coutward";
+        }
+        result.putProperty( QDataSet.TITLE, title );
+
+        result.putProperty( QDataSet.FILL_VALUE, dfill );
+        return result;
+
+    }
     /**
      * rebin the datasets to rank 2 dataset ( time, LShell ), by interpolating along sweeps.  This
      * dataset has the property "sweeps", which is a dataset that indexes the input datasets.
