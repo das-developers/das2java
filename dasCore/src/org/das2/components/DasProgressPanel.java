@@ -497,6 +497,7 @@ public class DasProgressPanel implements ProgressMonitor {
         }
 
         if (progressMessageDirty) {
+            progressMessageLabel.setToolTipText( progressMessageString );
             String s= abbrevateStringEllipsis( progressMessageString, PROGRESS_MESSAGE_LEN_LIMIT);
             progressMessageLabel.setText(s);
             progressMessageDirty = false;
