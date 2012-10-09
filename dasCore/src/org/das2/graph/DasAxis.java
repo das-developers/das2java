@@ -1797,7 +1797,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 idlt.draw( graphics, (float)(rightEdge-idlt.getWidth()), (float)baseLine );
             } else {
                 QDataSet bds= (QDataSet) tcaData.property(QDataSet.BUNDLE_1);
-                if ( bds==null ) System.err.println("expected TCA data to have BUNDLE dataset");
+                if ( bds==null ) {
+                    logger.fine("expected TCA data to have BUNDLE dataset");
+                }
                 int lines= Math.min( MAX_TCA_LINES, tcaData.length(0) );
                 for (int i = 0; i < lines; i++) {
                     baseLine += lineHeight;
