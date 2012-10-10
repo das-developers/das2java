@@ -117,6 +117,16 @@ public class DasProgressPanel implements ProgressMonitor {
     private Container removeFromComponent= null; // this is the parent we need to remove the monitor from when finished.
     private static int createComponentCount = 0;
 
+    /**
+     * string representing the units, such as "M" or "K"
+     */
+    private String units;
+
+    /**
+     * factor for units
+     */
+    private int unitsf=1;
+
     class MyPanel extends JPanel {
 
         @Override
@@ -491,7 +501,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
         String bytesReadLabel;
         if (maximumTaskPosition > 0) {
-            bytesReadLabel = "" + kb + "/" + maximumTaskPosition + "";
+            bytesReadLabel = "" + (kb/unitsf) + "/" + (maximumTaskPosition/unitsf) + "" + units;
         } else {
             bytesReadLabel = "" + kb + "";
         }
@@ -513,6 +523,7 @@ public class DasProgressPanel implements ProgressMonitor {
         } else {
             kbLabel.setText(bytesReadLabel);
         }
+        kbLabel.setToolTipText(""+kb+"/"+maximumTaskPosition);
 
         boolean cancelEnabled = cancelCheckFailures < 2;
         if (cancelEnabled != cancelButton.isEnabled()) {
@@ -551,6 +562,13 @@ public class DasProgressPanel implements ProgressMonitor {
                     }
                 } );
             }
+        }
+        if ( taskSize>100000000 ) {
+            units= "M";
+            unitsf= 1000000;
+        } else if ( taskSize>100000 ) {
+            units= "K";
+            unitsf= 1000;
         }
         maximumTaskPosition = taskSize;
     }
