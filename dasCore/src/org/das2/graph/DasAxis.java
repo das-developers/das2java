@@ -2478,10 +2478,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         setBounds(getAxisBounds());
         //setBounds(getAxisBoundsNew());
         invalidate();
-        synchronized (this) {
-            if (tickV == null || tickV.tickV.getUnits().isConvertableTo(getUnits())) {
-                validate();
-            }
+        TickVDescriptor ltickV= tickV;
+        if (ltickV == null || ltickV.tickV.getUnits().isConvertableTo(getUnits())) {
+            validate();
         }
         firePropertyChange(PROP_BOUNDS, oldBounds, getBounds());
     }
