@@ -501,7 +501,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
         String bytesReadLabel;
         if (maximumTaskPosition > 0) {
-            bytesReadLabel = "" + (kb/unitsf) + "/" + (maximumTaskPosition/unitsf) + "" + units;
+            bytesReadLabel = "" + (kb/unitsf) + units + "/" + (maximumTaskPosition/unitsf) + "" + units;
         } else {
             bytesReadLabel = "" + kb + "";
         }
@@ -569,6 +569,9 @@ public class DasProgressPanel implements ProgressMonitor {
         } else if ( taskSize>100000 ) {
             units= "K";
             unitsf= 1000;
+        } else {
+            units= "";
+            unitsf= 1;
         }
         maximumTaskPosition = taskSize;
     }
