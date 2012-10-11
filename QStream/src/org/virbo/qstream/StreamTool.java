@@ -295,14 +295,7 @@ public class StreamTool {
         ReadStreamStructure struct = new ReadStreamStructure(stream, handler);
 
         try {
-            StreamDescriptor sd = getStreamDescriptor(struct);
-            if ("deflate".equals(sd.getCompression())) {
-                stream = getInflaterChannel(stream);
-            }
 
-            struct.sd= sd;
-            handler.streamDescriptor(sd);
-            struct.descriptorCount++;
             int bytesRead;
             int totalBytesRead = 0;
 
@@ -316,7 +309,7 @@ public class StreamTool {
                 }
                 struct.bigBuffer.compact();
             }
-            handler.streamClosed(sd);
+            handler.streamClosed( struct.sd );
         } catch (StreamException se) {
             handler.streamException(se);
             throw se;
@@ -327,34 +320,9 @@ public class StreamTool {
         }
     }
 
-    private static StreamDescriptor getStreamDescriptor(ReadStreamStructure struct) throws StreamException, IOException {
+    private static StreamDescriptor getStreamDescriptor(ReadStreamStructure struct, int contentLength ) throws StreamException, IOException {
 
-        struct.bigBuffer.clear().limit(10);
-        while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1) {
-            ;
-        }
-        if (struct.bigBuffer.hasRemaining()) {
-            throw new StreamException("Reached end of stream before encountering stream descriptor");
-        }
-        struct.byteOffset += struct.bigBuffer.position();
-        struct.bigBuffer.flip();
-        struct.bigBuffer.get(struct.four);
         if (isStreamDescriptorHeader(struct.four)) {
-            int contentLength = getContentLength(struct.bigBuffer);
-            if (contentLength == 0) {
-                throw new StreamException("streamDescriptor content length is 0.");
-            }
-            struct.byteOffset += struct.bigBuffer.position();
-            struct.bigBuffer.clear().limit(contentLength);
-            while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1) {
-                ;
-            }
-            if (struct.bigBuffer.hasRemaining()) {
-                throw new StreamException("Reached end of stream before encountering stream descriptor");
-            }
-            struct.byteOffset += struct.bigBuffer.position();
-            struct.bigBuffer.flip();
-
             try {
                 Document doc = getXMLDocument(struct.bigBuffer, contentLength);
                 Element root = doc.getDocumentElement();
@@ -372,7 +340,6 @@ public class StreamTool {
                     if ( props.getLength()>0 && root.getAttribute("dataset_id").length()==0 ) {
                         throw new StreamException("stream appears to be a das2stream, not a qstream");
                     }
-                    struct.bigBuffer.clear();
                     return sd;
                 } else if (root.getTagName().equals("exception")) {
                     throw exception(root);
@@ -597,9 +564,12 @@ public class StreamTool {
         if (struct.bigBuffer.remaining() < 4) {
             return false;
         }
+        
         struct.bigBuffer.get(struct.four);
+
         if (isPacketDescriptorHeader(struct.four)) {
-            logger.log(Level.FINER, "packet descriptor {0} ending at {1}", new Object[] { new String(struct.four), struct.getCarotPosition() } );
+
+           logger.log(Level.FINER, "packet descriptor {0} ending at {1}", new Object[] { new String(struct.four), struct.getCarotPosition() } );
             if (struct.bigBuffer.remaining() < 6) {
                 struct.bigBuffer.reset();
                 return false;
@@ -621,48 +591,57 @@ public class StreamTool {
                 return false;
             }
 
-            try {
-                Document doc = getXMLDocument(struct.bigBuffer, contentLength);
-                Element root = doc.getDocumentElement();
+            if ( isStreamDescriptorHeader(struct.four) ) {
+                StreamDescriptor sd = getStreamDescriptor(struct,contentLength);
 
-                DescriptorFactory factory = DescriptorRegistry.get(root.getTagName());
-                if ( factory==null ) {
-                    if ( root.getTagName().equals("stream") ) {
-                        // two streams appended into one should be valid. 
-                        logger.fine("ignoring second stream descriptor");
-                        return true;
-                    } else {
-                        throw new StreamException("Unrecognized tag name \""+root.getTagName()+"\"");
-                    }
-                }
-                Element ele= doc.getDocumentElement();
-                Descriptor pd = factory.create(ele);
-
-                if (pd instanceof PacketDescriptor) {
-                    int id= -1;
-                    try {
-                        id= Integer.parseInt( getIdString(struct.four) );
-                    } catch ( NumberFormatException ex ) {
-                        throw new StreamException( "packet descriptor id must be an integer from 1-99");
-                    }
-                    StreamTool.interpretPlanes((PacketDescriptor)pd);
-                    if ( struct.sd.hasDescriptor(pd,id) ) {
-                        logger.fine("found repeat packetDescriptor");
-                    }
-                    struct.descriptors.put( getIdString(struct.four), pd );
-                    struct.sd.addDescriptor((PacketDescriptor) pd,id);
-                    struct.handler.packetDescriptor( (PacketDescriptor) pd );
-                } else if (root.getTagName().equals("exception")) {
-                    throw exception(root);
-                } else if (pd instanceof StreamComment) {
-                    //struct.handler.streamComment( (StreamComment)pd);
-                } else {
-                    throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
-                }
+                struct.sd= sd;
+                struct.handler.streamDescriptor(sd);
                 struct.descriptorCount++;
-            } catch (SAXException ex) {
-                String msg = getSAXParseExceptionMessage(ex, struct, contentLength);
-                throw new StreamException(msg);
+
+            } else {
+                try {
+                    Document doc = getXMLDocument(struct.bigBuffer, contentLength);
+                    Element root = doc.getDocumentElement();
+
+                    DescriptorFactory factory = DescriptorRegistry.get(root.getTagName());
+                    if ( factory==null ) {
+                        if ( root.getTagName().equals("stream") ) {
+                            // two streams appended into one should be valid.
+                            logger.fine("ignoring second stream descriptor");
+                            return true;
+                        } else {
+                            throw new StreamException("Unrecognized tag name \""+root.getTagName()+"\"");
+                        }
+                    }
+                    Element ele= doc.getDocumentElement();
+                    Descriptor pd = factory.create(ele);
+
+                    if (pd instanceof PacketDescriptor) {
+                        int id= -1;
+                        try {
+                            id= Integer.parseInt( getIdString(struct.four) );
+                        } catch ( NumberFormatException ex ) {
+                            throw new StreamException( "packet descriptor id must be an integer from 1-99");
+                        }
+                        StreamTool.interpretPlanes((PacketDescriptor)pd);
+                        if ( struct.sd.hasDescriptor(pd,id) ) {
+                            logger.fine("found repeat packetDescriptor");
+                        }
+                        struct.descriptors.put( getIdString(struct.four), pd );
+                        struct.sd.addDescriptor((PacketDescriptor) pd,id);
+                        struct.handler.packetDescriptor( (PacketDescriptor) pd );
+                    } else if (root.getTagName().equals("exception")) {
+                        throw exception(root);
+                    } else if (pd instanceof StreamComment) {
+                        //struct.handler.streamComment( (StreamComment)pd);
+                    } else {
+                        throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
+                    }
+                    struct.descriptorCount++;
+                } catch (SAXException ex) {
+                    String msg = getSAXParseExceptionMessage(ex, struct, contentLength);
+                    throw new StreamException(msg);
+                }
             }
 
         } else if (isPacketHeader(struct.four)) {
@@ -725,7 +704,14 @@ public class StreamTool {
     private static boolean isPacketHeader(byte[] four) {
         return four[0] == (byte) ':' && four[3] == (byte) ':' && Character.isDigit((char) four[1]) && Character.isDigit((char) four[2]);
     }
-    
+
+
+    private static boolean isDescriptor(byte[] four) {
+        return four[0] == (byte) ':' && four[3] == (byte) ':'
+                && ( ( Character.isDigit((char) four[1]) && Character.isDigit((char) four[2]) )
+                || ( four[1]=='x' && four[2]=='x' ) )  ;
+    }
+
     private static Document getXMLDocument(ByteBuffer buffer, int contentLength) throws StreamException, IOException, SAXException {
         ByteBuffer xml = buffer.duplicate();
         xml.limit(xml.position() + contentLength);
