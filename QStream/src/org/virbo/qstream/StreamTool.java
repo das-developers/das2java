@@ -591,7 +591,7 @@ public class StreamTool {
                 return false;
             }
 
-            if ( isStreamDescriptorHeader(struct.four) ) {
+            if ( isStreamDescriptorHeader(struct.four) ) { 
                 StreamDescriptor sd = getStreamDescriptor(struct,contentLength);
 
                 struct.sd= sd;
