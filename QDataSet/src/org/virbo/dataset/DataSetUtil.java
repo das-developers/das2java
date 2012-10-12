@@ -320,7 +320,7 @@ public class DataSetUtil {
      */
     public static String[] globalProperties() {
         return new String[] {
-            QDataSet.USER_PROPERTIES, QDataSet.NOTES, QDataSet.VERSION, QDataSet.METADATA, QDataSet.METADATA_MODEL, QDataSet.SOURCE,
+            QDataSet.USER_PROPERTIES, QDataSet.NOTES, QDataSet.VERSION, QDataSet.METADATA, QDataSet.METADATA_MODEL, QDataSet.SOURCE, 
         };
     }
 
