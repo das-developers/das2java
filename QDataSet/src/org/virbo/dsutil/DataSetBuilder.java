@@ -45,6 +45,7 @@ public class DataSetBuilder {
      */
     public DataSetBuilder( int rank, int guessRecCount ) {
         this( rank, guessRecCount, 1, 1 );
+        if ( rank>1 ) throw new IllegalArgumentException( String.format( "rank %d dataset when dim1 not specified.", rank ) );
     }
     
     /**
@@ -54,6 +55,7 @@ public class DataSetBuilder {
      */
     public DataSetBuilder( int rank, int guessRecCount, int dim1 ) {
         this( rank, guessRecCount, dim1, 1 );
+        if ( rank>2 ) throw new IllegalArgumentException(String.format( "rank %d dataset when dim2 not specified.", rank ) );
     }
     
     /**
