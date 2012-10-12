@@ -47,6 +47,9 @@ public class PropertiesTreeModel extends DefaultTreeModel {
         
         for ( String key: properties.keySet() ) {
             Object value= properties.get(key);
+            if ( key.equals(QDataSet.QUBE) && ( ds.rank()<2 || ds.property(QDataSet.BUNDLE_1)!=null ) ) {
+                continue;
+            }
             MutableTreeNode nextChild;
             if ( key.startsWith("BUNDLE_") && ( value instanceof QDataSet ) ) {
                 QDataSet bdsd= (QDataSet)value;

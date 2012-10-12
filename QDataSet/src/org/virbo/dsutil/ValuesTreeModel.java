@@ -117,7 +117,12 @@ public class ValuesTreeModel extends DefaultTreeModel {
         }
         try {
             if ( wds.value(i) > 0. ) {
-                return DataSetUtil.getStringValue( ds, ds.value(i) );
+                QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_0);
+                if ( bds!=null ) {
+                    return DataSetUtil.getStringValue( ds, ds.value(i), i );
+                } else {
+                    return DataSetUtil.getStringValue( ds, ds.value(i) );
+                }
             } else {
                 return "fill ("+ds.value(i)+")";
             }
