@@ -253,6 +253,7 @@ public class DataSetUtil {
                     QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
                     QDataSet.WEIGHTS_PLANE,
                     QDataSet.USER_PROPERTIES,
+                    QDataSet.NOTES,
                     QDataSet.METADATA, QDataSet.METADATA_MODEL,
                 };
     }
@@ -308,7 +309,7 @@ public class DataSetUtil {
             QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
             QDataSet.VALID_MIN, QDataSet.VALID_MAX, QDataSet.FILL_VALUE,
             QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
-            QDataSet.USER_PROPERTIES
+            QDataSet.USER_PROPERTIES, QDataSet.NOTES,
         };
     }
 
@@ -319,7 +320,7 @@ public class DataSetUtil {
      */
     public static String[] globalProperties() {
         return new String[] {
-            QDataSet.USER_PROPERTIES, QDataSet.VERSION, QDataSet.METADATA, QDataSet.METADATA_MODEL, QDataSet.SOURCE,
+            QDataSet.USER_PROPERTIES, QDataSet.NOTES, QDataSet.VERSION, QDataSet.METADATA, QDataSet.METADATA_MODEL, QDataSet.SOURCE,
         };
     }
 
@@ -2405,6 +2406,26 @@ public class DataSetUtil {
     public static Object getProperty( QDataSet ds, String name, Object deflt ) {
         Object o= ds.property(name);
         if ( o!=null ) return o; else return deflt;
+    }
+
+
+    /**
+     * return the value, which gets units from index i. from rank 1 bundle dataset.
+     * @param yds
+     * @param value
+     * @param i
+     * @return
+     */
+    public static String getStringValue( QDataSet ds, double value, int i ) {
+        QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_0);
+        if ( bds!=null ) {
+            Units u= (Units) bds.property(QDataSet.UNITS,i);
+            if ( u==null ) u=Units.dimensionless;
+            Datum d= u.createDatum(value);
+            return d.toString();
+        } else {
+            return DataSetUtil.getStringValue( ds, value );
+        }
     }
 
     /**
