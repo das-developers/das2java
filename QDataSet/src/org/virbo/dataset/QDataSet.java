@@ -352,6 +352,14 @@ public interface QDataSet {
      */
     public final static String SOURCE="SOURCE";
 
+    /**
+     * QDataSet of events scheme, containing a list of messages encountered during processing that annotate the data.  
+     * For example, the AggregatingDataSource in Autoplot would add an event to the dataset when a file could not be used.
+     * This is a rank 2 dataset with BUNDLE_1=startTime,stopTime,message for now, but may soon allow for bounding qubes:
+     * BUNDLE_1=startTime,stopTime,startEn,stopEn,message, and this should be visualized via the EventsRenderer.  
+     */
+    public final static String NOTES="NOTES";
+
     /** Bundle Descriptor properties */
 
     /**
