@@ -1,5 +1,7 @@
 package org.virbo.dataset;
 
+import org.virbo.dsops.Ops;
+
 /**
  * Extracts a subset of the source dataset by using a rank 1 subset of indeces on each index.
  * @author jbf
@@ -51,6 +53,12 @@ public class SubsetDataSet extends AbstractDataSet {
             SubsetDataSet dim= new SubsetDataSet( (QDataSet)source.property("DEPEND_"+idim) );
             dim.applyIndex(0,idx);
             putProperty("DEPEND_"+idim,dim);
+        }
+        if ( idx.rank()==1 ) {
+            QDataSet max= Ops.reduceMax( idx, 0 );
+            if ( max.value()>=lens[idim] ) {
+                throw new IndexOutOfBoundsException("idx dataset contains maximum that is out-of-bounds: "+max );
+            }
         }
         if ( idim==0 ) { // DEPEND_1-4 can be rank 2, where the 0th dimension corresponds to DEPEND_0.
             for ( int i=1; i<QDataSet.MAX_RANK; i++ ) {
