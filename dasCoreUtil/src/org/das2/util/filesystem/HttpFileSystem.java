@@ -229,6 +229,7 @@ public class HttpFileSystem extends WebFileSystem {
             URL remoteURL = new URL(root.toString() + filename);
 
             URLConnection urlc = remoteURL.openConnection();
+            urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
             String userInfo;
             try {
                 userInfo = KeyChain.getDefault().getUserInfo(root);
