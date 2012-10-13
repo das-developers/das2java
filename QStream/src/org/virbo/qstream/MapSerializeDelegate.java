@@ -60,7 +60,7 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
             Object oval= e.getValue();
             SerializeDelegate sd= SerializeRegistry.getDelegate(oval.getClass());
             if ( sd==null ) {
-                System.err.println("sorry, can't serialize "+e);
+                logger.log(Level.FINE, "sorry, can''t serialize {0}", e);
                 continue;
             }
             Element child= doc.createElement("entry");
@@ -92,14 +92,18 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
                 eval= Util.singletonChildElement(child);
                 stype= eval.getTagName();
             }
-            SerializeDelegate sd= SerializeRegistry.getByName(stype);
-            if ( sd instanceof XMLSerializeDelegate ) {
-                Object oval= ((XMLSerializeDelegate)sd).xmlParse(eval);
-                result.put( key, oval );
-            } else {
-                String sval= child.getAttribute("value");
-                Object oval= sd.parse(stype, sval);
-                result.put( key, oval );
+            try {
+                SerializeDelegate sd= SerializeRegistry.getByName(stype);
+                if ( sd instanceof XMLSerializeDelegate ) {
+                    Object oval= ((XMLSerializeDelegate)sd).xmlParse(eval);
+                    result.put( key, oval );
+                } else {
+                    String sval= child.getAttribute("value");
+                    Object oval= sd.parse(stype, sval);
+                    result.put( key, oval );
+                }
+            } catch ( ParseException ex ) {
+                
             }
         }
         return result;
@@ -108,20 +112,20 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
 
     private String format2(Object o) {
         Map m= (Map)o;
-        StringBuffer buf= new StringBuffer();
+        StringBuilder buf= new StringBuilder();
         buf.append("map[");
         for ( Object o2: m.entrySet() ) {
             Entry e= (Entry)o2;
             Object oval= e.getValue();
             SerializeDelegate sd= SerializeRegistry.getDelegate(oval.getClass());
             if ( sd==null ) {
-                System.err.println("sorry, can't serialize "+e);
+                logger.log(Level.WARNING, "sorry, can''t serialize {0}", e);
                 continue;
             }
             buf.append( (String)e.getKey() );
             buf.append( "=" );
             String sval= sd.format(oval);
-            buf.append( sd.typeId(oval.getClass())+":"+URLEncoder.encode(sval) );
+            buf.append(sd.typeId(oval.getClass())).append(":").append( URLEncoder.encode(sval));
             buf.append(" ");
         }
         buf.append("]");
@@ -138,14 +142,16 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
             LinkedHashMap result= new LinkedHashMap();
             for ( String s1 : ss ) {
                 try {
-                String[] nv= s1.split("=");
-                int i= nv[1].indexOf(":");
-                String stype= nv[1].substring(0,i);
-                SerializeDelegate sd= SerializeRegistry.getByName(stype);
-                String sval= URLDecoder.decode(nv[1].substring(i+1));
-                Object oval= sd.parse(stype, sval);
-                result.put( nv[0], oval );
+                    String[] nv= s1.split("=");
+                    int i= nv[1].indexOf(":");
+                    String stype= nv[1].substring(0,i);
+                    SerializeDelegate sd= SerializeRegistry.getByName(stype);
+                    String sval= URLDecoder.decode(nv[1].substring(i+1));
+                    Object oval= sd.parse(stype, sval);
+                    result.put( nv[0], oval );
                 } catch ( ArrayIndexOutOfBoundsException ex ) {
+                    throw ex;
+                } catch ( ParseException ex ) {
                     throw ex;
                 }
             }

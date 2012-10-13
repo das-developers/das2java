@@ -34,7 +34,8 @@ public class SerializeRegistry {
         DefaultSerializeDelegate.registerDelegates();
     }
     
-    
+    private static NumberArraySerializeDelegate numsd= new NumberArraySerializeDelegate();
+
     public static void register( Class clas, SerializeDelegate sd ) {
         delegates.put(clas, sd);
         sdelegates.put(sd.typeId(clas), sd);
@@ -46,11 +47,19 @@ public class SerializeRegistry {
      * @return
      */
     public static SerializeDelegate getDelegate( Class clas ) {
-        return delegates.get(clas);
+        if ( clas.isArray() && clas.getComponentType().isPrimitive() ) {
+            return numsd;
+        } else {
+            return delegates.get(clas);
+        }
     }
     
     public static SerializeDelegate getByName( String name ) {
-        return sdelegates.get(name);
+        if ( name.equals(NumberArraySerializeDelegate.TYPE_NUMBER_ARRAY) ) {
+            return numsd;
+        } else {
+            return sdelegates.get(name);
+        }
     }
     
 }
