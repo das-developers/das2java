@@ -754,18 +754,23 @@ public class SemanticOps {
                 QDataSet yds= SemanticOps.getDependentDataSet(ds);
                 QDataSet xinside= xrange==null ? null :
                     Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
-                QDataSet yinside= yrange==null ? null :
-                    Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
+                QDataSet yinside= null; //yrange==null ? null :
+                    //Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
                 QDataSet ok;
-                if ( xrange==null ) {
+                SubsetDataSet sds= new SubsetDataSet(ds);
+                if ( xrange==null && yrange==null ) {
+                    return ds;
+                } else if ( xrange==null ) {
                     ok= Ops.where( yinside );
+                    sds.applyIndex( 1, ok );
                 } else if ( yrange==null ) {
                     ok= Ops.where( xinside );
+                    sds.applyIndex( 0, ok );
                 } else {
-                    ok= Ops.where( Ops.and( xinside, yinside ) );
+                    //ok= Ops.where( Ops.and( xinside, yinside ) );
+                    ok= Ops.where( xinside );
+                    sds.applyIndex( 0, ok );
                 }
-                SubsetDataSet sds= new SubsetDataSet(ds);
-                sds.applyIndex( 1, ok );
                 return sds;
                 
             } else { // simple table
