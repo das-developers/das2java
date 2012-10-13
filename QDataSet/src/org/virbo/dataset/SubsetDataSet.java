@@ -1,5 +1,8 @@
 package org.virbo.dataset;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 import org.virbo.dsops.Ops;
 
 /**
@@ -7,6 +10,8 @@ import org.virbo.dsops.Ops;
  * @author jbf
  */
 public class SubsetDataSet extends AbstractDataSet {
+
+    private static final Logger logger= LoggerManager.getLogger("qdataset");
 
     QDataSet source;
 
@@ -57,7 +62,7 @@ public class SubsetDataSet extends AbstractDataSet {
         if ( idx.rank()==1 ) {
             QDataSet max= Ops.reduceMax( idx, 0 );
             if ( max.value()>=lens[idim] ) {
-                throw new IndexOutOfBoundsException("idx dataset contains maximum that is out-of-bounds: "+max );
+                logger.log(Level.WARNING, "idx dataset contains maximum that is out-of-bounds: {0}", max);
             }
         }
         if ( idim==0 ) { // DEPEND_1-4 can be rank 2, where the 0th dimension corresponds to DEPEND_0.
