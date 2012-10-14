@@ -903,6 +903,24 @@ public class DataSetOps {
                 }
             }
         }
+
+        for ( int j=0; j<bundle1.length(); j++ ) { // allow label to be used to access data, since old vap files may contain these.
+            String n1= (String) bundle1.property( QDataSet.LABEL, j );
+            if ( n1!=null ) n1= Ops.saferName(n1);
+            if ( n1!=null && n1.equals(name) ) {
+                ib= j;
+            }
+            if ( bundle1.length(j)>0 ) {
+                n1= (String) bundle1.property( QDataSet.ELEMENT_LABEL, j );
+                if ( n1!=null ) n1= Ops.saferName(n1);
+                if ( n1!=null && n1.equals(name) ) {
+                    ib= j;
+                    highRank= true;
+                    break;
+                }
+            }
+        }
+
         if ( ib==-1 ) {
             if ( name.matches("ch_\\d+") ) {
                 int ich= Integer.parseInt(name.substring(3) );
