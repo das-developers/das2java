@@ -1561,8 +1561,8 @@ public class DataSetOps {
             while ( s.hasNext() ) {
                 String cmd= s.next();
                 i= c.indexOf(cmd,i);
-
-                if ( false ) { // this has proved useful for debugging.
+                logger.log(Level.FINER, "  cmd {0}", cmd );
+                if ( logger.isLoggable(Level.FINEST) ) { // this has proved useful for debugging.
                     System.err.println( "---------------------" );
                     System.err.println( fillDs );
                     System.err.println( "dep0=" + fillDs.property(QDataSet.DEPEND_0) );
