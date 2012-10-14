@@ -109,6 +109,8 @@ public class AsciiTransferType extends TransferType {
         } catch (UnsupportedEncodingException ex) {
             logger.log(Level.SEVERE, "read", ex);
             throw new RuntimeException(ex);
+        } catch ( NumberFormatException ex ) {
+            return Double.NaN;
         }
     }
 
