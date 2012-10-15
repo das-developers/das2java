@@ -1571,6 +1571,8 @@ public class DataSetOps {
 
         logger.log(Level.FINE, "sprocess({0},{1})", new Object[] { c, fillDs } );
 
+        QDataSet ds0= fillDs;
+        
         int i=1;
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
@@ -1579,7 +1581,7 @@ public class DataSetOps {
             while ( s.hasNext() ) {
                 String cmd= s.next();
                 i= c.indexOf(cmd,i);
-                logger.log(Level.FINER, "  cmd {0}", cmd );
+                logger.log(Level.FINER, "  cmd \"{0}\"", cmd );
                 if ( logger.isLoggable(Level.FINEST) ) { // this has proved useful for debugging.
                     System.err.println( "---------------------" );
                     System.err.println( fillDs );
@@ -1818,7 +1820,7 @@ public class DataSetOps {
             ParseException ex2= new ParseException( c + " ("+ex.getLocalizedMessage()+")", i );
             throw ex2;
         }
-        logger.log(Level.FINE, "...sprocess({0})->{1}", new Object[] { c, fillDs } );
+        logger.log(Level.FINE, "{0}->sprocess(\"{1}\")->{2}", new Object[] { ds0, c, fillDs } );
         return fillDs;
     }
 
@@ -1860,7 +1862,9 @@ public class DataSetOps {
                 s2.nextInt();
             }
         }
-        return slicesChangesDim || s.hasNext() || s2.hasNext();
+        boolean res= slicesChangesDim || s.hasNext() || s2.hasNext();
+        logger.log(Level.FINE, "  changesDimensions {0} , {1} ->{2}", new Object[]{c0, c2, res});
+        return res;
     }
 
     /**
