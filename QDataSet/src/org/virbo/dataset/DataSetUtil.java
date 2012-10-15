@@ -2229,6 +2229,7 @@ public class DataSetUtil {
     public static String contextAsString( QDataSet ds, String delim ) {
         StringBuilder result= new StringBuilder();
         QDataSet cds= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
+        logger.log(Level.FINE, "contextAsString {0} CONTEXT_0={1}", new Object[]{ds, cds});
         int idx=0;
         while ( cds!=null ) {
             if ( cds.rank()>0 ) {
