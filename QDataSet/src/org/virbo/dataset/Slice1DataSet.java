@@ -59,7 +59,7 @@ public class Slice1DataSet extends AbstractDataSet {
 
 
         // add the CONTEXT_0 property.
-        if ( bundle1!=null ) {
+        if ( bundle1!=null && dep1==null ) {
             QDataSet context=null;
             if ( addContext ) {
                 context= DataSetOps.getContextForUnbundle( bundle1, index );

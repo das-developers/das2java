@@ -39,14 +39,14 @@ public class Slice2DataSet extends AbstractDataSet {
 
         if ( addContext ) {
             QDataSet bundle= (QDataSet) ds.property( QDataSet.BUNDLE_2 );
-            if ( bundle!=null ) {
+            QDataSet dep2= (QDataSet) ds.property(QDataSet.DEPEND_2);
+            if ( bundle!=null && dep2==null ) {
                 QDataSet context=null;
                 if ( addContext ) {
                     context= DataSetOps.getContextForUnbundle( bundle, index );
                     DataSetUtil.addContext( this, context );
                 }
             } else {
-                QDataSet dep2= (QDataSet) ds.property(QDataSet.DEPEND_2);
                 if ( dep2!=null ) {
                     if ( dep2.rank()==1 ) {
                         DataSetUtil.addContext( this, new Slice0DataSet(dep2,index,false) );
