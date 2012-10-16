@@ -492,7 +492,7 @@ public class EventsRenderer extends Renderer {
                         if ( aa>0 ) {
                             g.setColor( new Color( rr, gg, bb, aa ) );
                         } else {
-                            g.setColor( new Color( rr, gg, bb ) );
+                            g.setColor( new Color( rr, gg, bb, 128 ) );
                         }
                     }
                     
