@@ -69,6 +69,7 @@ public class JoinDataSet extends AbstractDataSet {
     public static JoinDataSet copy(JoinDataSet joinDataSet) {
         JoinDataSet result= new JoinDataSet(joinDataSet.rank());
         result.datasets.addAll( joinDataSet.datasets );
+        DataSetUtil.putProperties( joinDataSet.properties, result );
         DataSetUtil.putProperties( DataSetUtil.getProperties(joinDataSet), result );
         result.putProperty(QDataSet.DEPEND_0, joinDataSet.property(QDataSet.DEPEND_0));
         result.putProperty(QDataSet.JOIN_0, joinDataSet.property(QDataSet.JOIN_0) ); //might need to clear it if DEPEND_0 is set.
