@@ -5,6 +5,8 @@
 
 package org.das2.datum;
 
+import com.sun.java.browser.net.ProxyInfo;
+import com.sun.java.browser.net.ProxyService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,19 +75,37 @@ public class Orbits {
         InputStream in;
         try {
             logger.log(Level.FINE, "Orbits trying to connect to {0}", url);
+            try {
+                ProxyInfo info[] = ProxyService.getProxyInfo(url);
+                if ( info!=null && info.length>0 ) {
+                    for ( ProxyInfo pi : info ) {
+                        logger.log(Level.FINER,pi.toString());
+                    }
+                } else {
+                    logger.log(Level.FINER,"no proxy info");
+                }
+            } catch ( IOException ex ) {
+                logger.fine( ex.getMessage() );
+            }
+            
             URLConnection connect= url.openConnection();
-            connect.setConnectTimeout(3000);
+            connect.setConnectTimeout(5000);
             in= connect.getInputStream();
+            logger.log(Level.FINE, "  got input stream from {0}", url);
         } catch ( IOException ex ) {
+            logger.log( Level.FINE, "", ex );
             if ( sc.contains(":") ) {
                 throw new IllegalArgumentException("I/O Exception prevents reading orbits from \""+sc+"\"",ex );
             }
             url= Orbits.class.getResource("/orbits/"+sc+".dat");
             if ( url==null ) {
                 throw new IllegalArgumentException("unable to find orbits file for \""+sc+"\"" );
+            } else {
+                logger.log(Level.FINE, "found build-in orbit file on class path: {0}", url);
             }
             try {
                 in= url.openConnection().getInputStream();
+                logger.log(Level.FINE, "got input stream from {0}", url);
             } catch ( IOException ex2 ) {
                 throw new IllegalArgumentException("I/O Exception prevents reading orbits for \""+sc+"\"",ex2 );
             }
@@ -172,6 +192,8 @@ public class Orbits {
         DatumRange s= orbits.get(orbit);
         if ( s==null ) {
             throw new ParseException("unable to find orbit: "+orbit+" for "+sc, 0 );
+        } else {
+            logger.log( Level.FINEST, "orbit {0} -> {1} to {2}", new Object[]{ s.min(), s.max() });
         }
         return s;
     }
