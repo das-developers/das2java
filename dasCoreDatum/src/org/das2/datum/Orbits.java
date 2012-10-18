@@ -166,10 +166,13 @@ public class Orbits {
                 }
                 s= rin.readLine();
             }
-            logger.log(Level.FINE, "read orbits for {0}", sc);
         } finally {
             rin.close();
             logger.log(Level.FINE, "read orbits for {0}", sc);
+        }
+
+        if ( result.size()==0 ) {
+            throw new IOException("no orbits found in file: "+url);
         }
         
         return result;
