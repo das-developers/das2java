@@ -23,9 +23,9 @@ import java.io.InterruptedIOException;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.*;
-import org.das2.datum.TimeUtil;
 import org.das2.util.filesystem.FileSystemUtil;
 
 /**
@@ -346,6 +346,7 @@ public class FileStorageModelNew {
                         }
                     }
                 } catch ( IllegalArgumentException e ) {
+                    logger.log( Level.WARNING, "", e );
                     if ( !e.getMessage().contains("invalid time before year 0001") ) {
                         System.err.println(e);
                     }
