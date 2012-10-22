@@ -75,8 +75,14 @@ public class WebFileObject extends FileObject {
     protected synchronized void maybeLoadMetadata() throws IOException {
         if ( metadata==null ) {
             if ( this.wfs.offline ) {
-                metadata= new HashMap();
-                metadata.put( WebProtocol.META_EXIST, isLocal() ? "true" : "false" );
+                if ( FileSystem.settings().isOffline() ) { //bug https://sourceforge.net/tracker/?func=detail&aid=3578171&group_id=199733&atid=970682
+                    metadata= new HashMap();
+                    metadata.put( WebProtocol.META_EXIST, isLocal() ? "true" : "false" );
+                } else {
+                    if ( wfs.protocol!=null ) {
+                       metadata= wfs.protocol.getMetadata( this );
+                    }
+                }
             } else {
                 if ( wfs.protocol!=null ) {
                     metadata= wfs.protocol.getMetadata( this );
