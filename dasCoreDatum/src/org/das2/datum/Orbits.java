@@ -226,11 +226,13 @@ public class Orbits {
     }
 
     /**
-     * remove trailing _'s and 0's.
+     * Orbit numbers are typically just a number, but some missions like Cassini had letter names for orbits
+     * as well.  This encapsulates the code to identify the canonical orbit from the string, by
+     * removing trailing _'s and 0's.  
      * @param o
      * @return
      */
-    private static String trimOrbit( String orbit ) {
+    public static String trimOrbit( String orbit ) {
         orbit= orbit.trim();
         int i;
         for ( i=0; i<orbit.length() && orbit.charAt(i)=='_'; i++ ) ; // pass
