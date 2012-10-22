@@ -1416,7 +1416,13 @@ public class SeriesRenderer extends Renderer {
                     colorHSV[1] = 0.7f;
                 }
                 extraConnectorElements[i].color = Color.getHSBColor(i / 6.f, colorHSV[1], colorHSV[2]);
-                vds = DataSetOps.unbundle(tds,i);
+                try {
+                    vds = DataSetOps.unbundle(tds,i);
+                } catch ( IllegalArgumentException ex ) { // rank 2 depend_1 is one way to get here.
+                    vds = DataSetOps.slice1( tds, i);
+                    //super.setException(ex);
+                    //return;
+                }
 
                 if (i == 0) {
                     updateFirstLast(xAxis, yAxis, xds, vds ); // minimal support assumes vert slice data is all valid or all invalid.
