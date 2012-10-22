@@ -22,7 +22,7 @@ public class OrbitDatumRange extends DatumRange {
     public OrbitDatumRange( String sc, String orbit ) throws ParseException {
         super( Orbits.getOrbitsFor(sc).getDatumRange(orbit).min(), Orbits.getOrbitsFor(sc).getDatumRange(orbit).max() );
         this.sc= sc;
-        this.orbit= orbit;
+        this.orbit= Orbits.trimOrbit(orbit);
     }
     
     @Override
