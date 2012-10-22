@@ -617,7 +617,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         Datum start = Datum.create(  bounds.value(0,0), xunits );
                         Datum end = Datum.create( bounds.value(0,1), xunits );
-                        if ( compare( start, imageXRange.max() )> 0 ) {
+                        if ( xunits.isFill(  bounds.value(0,0) ) ) {
+                            xrangeWarning= "no valid timetags in dataset";
+                            throw new NoDataInIntervalException(xrangeWarning);
+                        } else if ( compare( start, imageXRange.max() )> 0 ) {
                             xrangeWarning= "data starts after range";
                         } else if ( compare( end, imageXRange.min() ) < 0 ) {
                             xrangeWarning= "data ends before range";
