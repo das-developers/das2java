@@ -5,9 +5,13 @@
 
 package org.das2.util.filesystem;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -23,12 +27,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JSeparator;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -113,34 +120,36 @@ public class KeyChain {
      */
     public void writeKeysFile() {
         File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
-        if ( keysFile.exists() ) throw new IllegalArgumentException("keys file "+keysFile + " already exists, delete it first");
+        
         PrintWriter w=null;
-        try {
-            w= new PrintWriter( new FileWriter(keysFile) );
-            w.println("# keys file produced on "+ new java.util.Date() );
-            for ( Entry<String,String> key : keys.entrySet() ) {
-                w.println( key.getKey() + "\t" + key.getValue() );
-            }
-        } catch ( IOException ex ) {
-            logger.log(Level.SEVERE,"unable to write keys file",ex);
-        } finally {
-            if ( w!=null ) {
-                w.close();
-            }
+        final ByteArrayOutputStream out= new ByteArrayOutputStream();
+
+        w= new PrintWriter( out );
+        w.println("# keys file produced on "+ new java.util.Date() );
+        w.println("# "+keysFile );
+        for ( Entry<String,String> key : keys.entrySet() ) {
+            w.println( key.getKey() + "\t" + key.getValue() );
+        }
+        if ( w!=null ) {
+            w.close();
         }
 
-        System.err.println("******************************"); //logger okay
-        System.err.println("created world-readable file ");   //logger okay
-        System.err.println( keysFile);                        //logger okay
-        System.err.println("that contains all passwords!!!"); //logger okay
-        System.err.println("******************************"); //logger okay
-
-        JOptionPane.showMessageDialog( null,
-                "<html>******************************<br>"
-                +"created world-readable file <br>"
+        JButton button= new JButton( new AbstractAction( "Show Passwords") {
+            public void actionPerformed(ActionEvent e) {
+                JTextArea ta= new JTextArea();
+                ta.setText( new String( out.toByteArray() ) );
+                JOptionPane.showMessageDialog(parent, ta );
+            }
+        });
+        JPanel p= new JPanel(new BorderLayout());
+        p.add( new JLabel("<html>******************************<br>"
+                +"You must create a protected file <br>"
                 +keysFile +"<br>"
-                +"that contains all passwords!!!<br>"
-                +"******************************" );
+                +"that contains all passwords.<br>"
+                +"Click the button below to show content, <b>which contains passwords.</b><br>"
+                +"******************************" ) );
+        p.add( button, BorderLayout.SOUTH );
+        JOptionPane.showMessageDialog( parent, p );
         
     }
 
