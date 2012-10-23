@@ -100,6 +100,7 @@ public class SeriesRenderer extends Renderer {
 
     boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
     boolean xunitsWarning= false;
+    boolean cunitsWarning= false;
 
     private static final Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     /**
@@ -303,6 +304,9 @@ public class SeriesRenderer extends Renderer {
             Units cunits = null;
             if (colorByDataSet1 != null) {
                 cunits = SemanticOps.getUnits( colorByDataSet1 );
+                if ( cunits.isConvertableTo(colorBar.getUnits()) ) {
+                    cunits= colorBar.getUnits();
+                }
             }
 
             double x, y;            
