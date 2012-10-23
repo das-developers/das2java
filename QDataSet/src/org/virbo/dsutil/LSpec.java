@@ -241,11 +241,11 @@ public class LSpec {
                             }
                         }
                         builder.nextRecord();
-                        tbuilder.putValue( -1, t0+dt/2 );
+                        tbuilder.putValue( -1, t0-dt/2 );
                         tbuilder.nextRecord();
                     }
-                    t0= nextx; 
-
+                    t0= nextx;
+                    
                     for ( int k=0; k<ny; k++ ) {
                         ss[k]=0;
                         nn[k]=0;
