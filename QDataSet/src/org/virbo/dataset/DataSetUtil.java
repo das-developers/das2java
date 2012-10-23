@@ -659,11 +659,11 @@ public class DataSetUtil {
         }
 
         if ( ds.property(QDataSet.BINS_0)!=null ) {
-            depNames[0]= (String)ds.property(QDataSet.BINS_0);
+            depNames[0]= ((String)ds.property(QDataSet.BINS_0)).replaceAll(","," ");
         }
 
         if ( ds.property(QDataSet.BINS_1)!=null ) {
-            depNames[1]= (String)ds.property(QDataSet.BINS_1);
+            depNames[1]= ((String)ds.property(QDataSet.BINS_1)).replaceAll(","," ");
         }
 
         if ( ds.property(QDataSet.JOIN_0)!=null ) {
