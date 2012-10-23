@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
+import java.util.zip.GZIPInputStream;
 import org.das2.util.monitor.NullProgressMonitor;
 
 /**
@@ -36,12 +37,14 @@ import org.das2.util.monitor.NullProgressMonitor;
 public class LocalFileObject extends FileObject {
     
     File localFile;
+    File localGzFile;
     File localRoot;
     LocalFileSystem lfs;
 
     protected LocalFileObject( LocalFileSystem lfs, File localRoot, String filename ) {
         this.lfs= lfs;
         this.localFile= new File( localRoot, filename );
+        this.localGzFile= new File( localRoot, filename+".gz" );
         this.localRoot= localRoot;
     }
         
@@ -60,8 +63,12 @@ public class LocalFileObject extends FileObject {
         return result;
     }
     
-    public java.io.InputStream getInputStream( ProgressMonitor monitor ) throws java.io.FileNotFoundException {
-        return new FileInputStream( localFile );
+    public java.io.InputStream getInputStream( ProgressMonitor monitor ) throws IOException {
+        if ( !localFile.exists() && localGzFile.exists() ) {
+            return new GZIPInputStream( new FileInputStream( localGzFile ) );
+        } else {
+            return new FileInputStream( localFile );
+        }
     }
     
     public FileObject getParent() {        
@@ -77,7 +84,11 @@ public class LocalFileObject extends FileObject {
     }
     
     public boolean isData() {
-        return localFile.isFile();
+        if ( !localFile.exists() && localGzFile.exists() ) {
+            return true;
+        } else {
+            return localFile.isFile();
+        }
     }
     
     public boolean isFolder() {
@@ -97,7 +108,7 @@ public class LocalFileObject extends FileObject {
     }
     
     public boolean exists() {
-        return localFile.exists();
+        return localFile.exists() || localGzFile.exists();
     }
     
     public String getNameExt() {
@@ -108,7 +119,7 @@ public class LocalFileObject extends FileObject {
         return "["+lfs+"]"+getNameExt();
     }
     
-    public java.nio.channels.ReadableByteChannel getChannel( ProgressMonitor monitor ) throws FileNotFoundException {
+    public java.nio.channels.ReadableByteChannel getChannel( ProgressMonitor monitor ) throws IOException {
         return ((FileInputStream)getInputStream( monitor )).getChannel();
     }
 
