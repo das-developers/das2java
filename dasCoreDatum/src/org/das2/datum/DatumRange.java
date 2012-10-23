@@ -135,7 +135,11 @@ public class DatumRange implements Comparable {
      */
     public String toString() {
         if ( this.s1.getUnits() instanceof TimeLocationUnits ) {
-            return DatumRangeUtil.formatTimeRange(this);
+            try {
+                return DatumRangeUtil.formatTimeRange(this);
+            } catch ( IllegalArgumentException ex ) {
+                return String.format( "%f %f \"%s\"", this.s1.doubleValue(this.getUnits()), this.s2.doubleValue(this.getUnits()), this.getUnits() );
+            }
         } else {
             Units u= getUnits();
             return ""+ this.s1.getFormatter().format(this.s1,u) + " to " + this.s1.getFormatter().format(this.s2,u) + " " + u;
