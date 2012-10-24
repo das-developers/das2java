@@ -39,9 +39,9 @@ public class LSpec {
     /**
      * identify monotonically increasing or decreasing segments of the dataset.
      *
-     * @return rank 2 data set of sweep indeces, dim0 is sweep number, dim1 is two-element [ start, end(exclusive) ].
+     * @return rank 2 data set of sweep indeces, dim0 is sweep number, dim1 is two-element [ start, end(inclusive) ].
      */
-    private static QDataSet identifySweeps( QDataSet lds, int dir ) {
+    public static QDataSet identifySweeps( QDataSet lds, int dir ) {
 
         DataSetBuilder builder= new DataSetBuilder( 2, 100, 2 );
         DataSetBuilder dep0builder= new DataSetBuilder( 2, 100, 2 );
@@ -51,6 +51,7 @@ public class LSpec {
 
         QDataSet wds= SemanticOps.weightsDataSet(lds);
         QDataSet tds= SemanticOps.xtagsDataSet(lds);
+        wds= Ops.multiply( wds, SemanticOps.weightsDataSet(tds) );
         QDataSet nonGap= SemanticOps.cadenceCheck(tds,lds);
 
         for ( int i=1; i<lds.length(); i++ ) {
@@ -59,10 +60,10 @@ public class LSpec {
             if ( slope0 * slope1 <= 0. || ( nonGap.value(i-1)==1 && nonGap.value(i)==0 ) ) {
                 if ( slope0!=0. && ( dir==0 || ( slope0*dir>0 && end-start>1 ) ) ) {  //TODO: detect jumps in the LShell, e.g. only downward: \\\\\
                     builder.putValue( -1, 0, start );
-                    builder.putValue( -1, 1, end );
+                    builder.putValue( -1, 1, end-1 );
                     builder.nextRecord();
                     dep0builder.putValue( -1, 0, tds.value(start) );
-                    dep0builder.putValue( -1, 1, tds.value(end) );
+                    dep0builder.putValue( -1, 1, tds.value(end-1) );
                     dep0builder.nextRecord();
                 }
                 if ( slope1!=0. || nonGap.value(i)>0 ) {
@@ -77,12 +78,13 @@ public class LSpec {
             slope0= slope1;
         }
         
-        dep0builder.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+        dep0builder.putProperty( QDataSet.BINS_1, "min,maxInclusive" );
         dep0builder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(tds) );
         
         DDataSet result= builder.getDataSet();
         result.putProperty( QDataSet.DEPEND_0, dep0builder.getDataSet() );
         result.putProperty( QDataSet.RENDER_TYPE, "eventsBar" );
+        dep0builder.putProperty( QDataSet.BINS_1, "min,maxInclusive" );
         return result;
         
     }
