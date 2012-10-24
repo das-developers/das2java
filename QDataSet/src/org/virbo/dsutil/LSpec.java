@@ -55,25 +55,30 @@ public class LSpec {
         QDataSet nonGap= SemanticOps.cadenceCheck(tds,lds);
 
         for ( int i=1; i<lds.length(); i++ ) {
-            if ( wds.value(i)==0 ) continue;
             double slope1=  lds.value(i) - lds.value(i-1);
             if ( slope0 * slope1 <= 0. || ( nonGap.value(i-1)==1 && nonGap.value(i)==0 ) ) {
                 if ( slope0!=0. && ( dir==0 || ( slope0*dir>0 && end-start>1 ) ) ) {  //TODO: detect jumps in the LShell, e.g. only downward: \\\\\
-                    builder.putValue( -1, 0, start );
-                    builder.putValue( -1, 1, end-1 );
-                    builder.nextRecord();
-                    dep0builder.putValue( -1, 0, tds.value(start) );
-                    dep0builder.putValue( -1, 1, tds.value(end-1) );
-                    dep0builder.nextRecord();
+                    if ( start<end ) {
+                        builder.putValue( -1, 0, start );
+                        builder.putValue( -1, 1, end-1 );
+                        builder.nextRecord();
+                        dep0builder.putValue( -1, 0, tds.value(start) );
+                        dep0builder.putValue( -1, 1, tds.value(end-1) );
+                        dep0builder.nextRecord();
+                    } else {
+                        // all fill.
+                    }
                 }
                 if ( slope1!=0. || nonGap.value(i)>0 ) {
                     start= i;
                 }
-            } else if ( nonGap.value(i-1)==0 && nonGap.value(i)==1 ) {
-                start= i;
-                end= i+1;
-            } else {
-                end= i+1; // end is not inclusive
+            } else if ( wds.value(i)>0 ) {
+                if ( nonGap.value(i-1)==0 && nonGap.value(i)==1 ) {
+                    start= i;
+                    end= i+1;
+                } else {
+                    end= i+1; // end is not inclusive
+                }
             }
             slope0= slope1;
         }
@@ -91,11 +96,11 @@ public class LSpec {
     
     /**
      *
-     * @param datax
-     * @param start
-     * @param end
-     * @param x
-     * @param guess
+     * @param datax data series that is aggregation of monotonic series (up and down)
+     * @param start start index limiting search
+     * @param end end index inclusive limiting search
+     * @param x the value to locate.
+     * @param guess guess index, because we are calling this repeatedly
      * @param dir 1 if datax is increasing, -1 if decreasing
      * @return index
      */
@@ -108,7 +113,6 @@ public class LSpec {
             while ( index<end && datax.value(index+1) > x ) index++;
             while ( index>start && datax.value(index) < x ) index--;
         }
-        if ( index==end ) index--; // end is non-inclusive
         return index;
     }
     
@@ -123,8 +127,8 @@ public class LSpec {
         
         int index= start;
         
-        int dir= (int) Math.signum( lds.value(end-1) - lds.value( start ) );
-        if ( dir > 0 ) index= start; else index= end-1;
+        int dir= (int) Math.signum( lds.value(end) - lds.value( start ) );
+        if ( dir > 0 ) index= start; else index= end;
         
         for ( int i=0; i<lgrid.length(); i++ ) {
             double ll= lgrid.value(i);
