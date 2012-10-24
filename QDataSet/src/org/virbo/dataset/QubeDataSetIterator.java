@@ -140,7 +140,11 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
 
         public DimensionIterator newIterator(int length) {
-            return new IndexListIterator(ds);
+            ArrayDataSet list= ArrayDataSet.copy(ds);
+            for ( int i=0; i<list.length(); i++ ) {
+                if ( list.value(i)<0 ) list.putValue(i,list.value(i)+length);
+            }
+            return new IndexListIterator(list);
         }
     }
 
@@ -185,7 +189,12 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
 
         public DimensionIterator newIterator(int length) {
-            return new SingletonIterator(index);
+            if ( index<0 ) {
+                return new SingletonIterator(length+index);
+            } else {
+                return new SingletonIterator(index);
+            }
+            
         }
     }
     private DimensionIterator[] it = new DimensionIterator[4];
