@@ -588,13 +588,21 @@ public class DataSetUtil {
         }
 
         if ( ds.rank()==1 && QDataSet.VALUE_BINS_MIN_MAX.equals(ds.property(QDataSet.BINS_0)) ) {
-            DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
-            return dr.toString();
+            if (  ds.value(0) <= ds.value(1) ) {
+                DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
+                return dr.toString();
+            } else {
+                return String.format( "%s %s (invalid because BINS_0=min,max)", ds.slice(0), ds.slice(1) );
+            }
         }
 
         if ( ds.rank()==1 && "min,maxInclusive".equals(ds.property(QDataSet.BINS_0)) ) {
-            DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
-            return dr.toString() + "  (inclusive)";
+            if (  ds.value(0) <= ds.value(1) ) {
+                DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
+                return dr.toString() + "  (inclusive)";
+            } else {
+                return String.format( "%s %s (invalid because BINS_0=min,maxInclusive)", ds.slice(0), ds.slice(1) );
+            }
         }
 
         if ( ds.rank()==1 && Ops.isLegacyBundle(ds) && ds.length()<8 ) { // introduced to support where or rank 2 dataset.
