@@ -3208,16 +3208,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * TODO: this should check for any ordinal, for example months, hours, or 10 kg.
      */
     public void scanPrevious() {
-        Datum delta = (getDataMaximum().subtract(getDataMinimum())).multiply(1.0);
-        if ( UnitsUtil.isTimeLocation( getDataMinimum().getUnits() ) ) {
-            double days= delta.doubleValue(Units.days);
-            if ( days>0.5 && DasMath.modp( days, 1. ) < 0.1 ) {
-                delta= Units.days.createDatum( Math.round( delta.doubleValue(Units.days) ) );
-            }
-        }
-        Datum tmin = getDataMinimum().subtract(delta);
-        Datum tmax = getDataMaximum().subtract(delta);
-        setDataRange(tmin, tmax);
+        setDatumRange( getDatumRange().previous() );
     }
 
     /**
@@ -3225,16 +3216,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * scan to the next day.
      */
     public void scanNext() {
-        Datum delta = (getDataMaximum().subtract(getDataMinimum())).multiply(1.0);
-        if ( UnitsUtil.isTimeLocation( getDataMinimum().getUnits() ) ) {
-            double days= delta.doubleValue(Units.days);
-            if ( days>0.5 && DasMath.modp( days, 1. ) < 0.1 ) {
-                delta= Units.days.createDatum( Math.round( delta.doubleValue(Units.days) ) );
-            }
-        }
-        Datum tmin = getDataMinimum().add(delta);
-        Datum tmax = getDataMaximum().add(delta);
-        setDataRange(tmin, tmax);
+        setDatumRange( getDatumRange().next() );
     }
 
     /** TODO
