@@ -111,15 +111,15 @@ public interface QDataSet {
 
     /**
      * type String.  This comma-delimited list of keywords that describe the boundary
-     * type for each column.  For example, "min,max" or "c95min,mean,c95max"  A bins dimension
-     * doesn't add a physical dimension.
+     * type for each column.  For example, "min,max" "min,maxInclusive" or "c95min,mean,c95max".
+     * A bins dimension doesn't add a physical dimension.  Autoplot uses just "min,max" and "min,maxInclusive"
      */
     public final static String BINS_1="BINS_1";
 
     /**
      * type String.  This comma-delimited list of keywords that describe the boundary
-     * type for each column.  For example, "min,max" or "c95min,mean,c95max"  A bins dimension
-     * doesn't add a physical dimension.  TODO: describe boundaries Autoplot uses.
+     * type for each column.  For example, "min,max" "min,maxInclusive" or "c95min,mean,c95max".
+     * A bins dimension doesn't add a physical dimension.   Autoplot uses just "min,max" and "min,maxInclusive"
      */
     public final static String BINS_0="BINS_0";
 
