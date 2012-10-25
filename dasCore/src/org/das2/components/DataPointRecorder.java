@@ -1137,4 +1137,22 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         this.snapToGrid = snapToGrid;
     }
+
+    /**
+     *  call this before closing parent.  This should be called from the event thread.
+     */
+    public ActionListener getApplicationClosingCallback() {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if ( !DataPointRecorder.this.modified ) {
+                    return;
+                }
+                if ( JOptionPane.YES_OPTION==JOptionPane.showConfirmDialog( null, "Save changes to data point recorder?", "Save changes", JOptionPane.YES_NO_OPTION ) ) {
+                    getSaveAction().actionPerformed( e );
+                }
+                return;
+            }
+        };
+    }
+    
 }
