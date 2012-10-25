@@ -1164,7 +1164,9 @@ public class SeriesRenderer extends Renderer {
         if ( !haveReportedUnitProblem && !yaxisUnitsOkay ) {
             if ( unitsWarning ) {
                 //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
-                lparent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                if ( vds!=null ) { // don't bother with the other mode.
+                    lparent.postMessage( this, "yaxis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                }
             } else {
                 lparent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
                 return;
