@@ -2492,12 +2492,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * 
      * @return Rectangle in the canvas coordinate frame.
      */
-    protected synchronized Rectangle getLabelBounds(Rectangle bounds) {
-        if ( this.getTickV()==null || !this.getTickV().tickV.getUnits().isConvertableTo(getUnits() ) ) {
+    protected Rectangle getLabelBounds(Rectangle bounds) {
+        TickVDescriptor ltickV= this.getTickV();
+        DatumRange dr= getDatumRange();
+
+        if ( ltickV==null || !ltickV.tickV.getUnits().isConvertableTo(getUnits() ) ) {
             return bounds;
         }
 
-        String[] labels = tickFormatter(this.getTickV().tickV, getDatumRange());
+        String[] labels = tickFormatter( ltickV.tickV, dr );
 
         GrannyTextRenderer gtr = new GrannyTextRenderer();
 
@@ -2512,10 +2515,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             dmax= getRow().getDMaximum();
         }
 
-        DatumVector ticks = this.getTickV().tickV;
+        DatumVector ticks = ltickV.tickV;
         for (int i = 0; i < labels.length; i++) {
             Datum d = ticks.get(i);
-            DatumRange dr = getDatumRange();
             if (DatumRangeUtil.sloppyContains(dr, d)) {
                 gtr.setString(labelFont, labels[i]);
                 Rectangle rmin = gtr.getBounds();
