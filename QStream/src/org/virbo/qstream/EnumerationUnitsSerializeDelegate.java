@@ -34,7 +34,7 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
     }
 
     public Object parse( String typeId, String s ) {
-        Pattern p= Pattern.compile("(.+)\\[(.*)\\]");
+        Pattern p= Pattern.compile("(.+?)\\[(.*)\\]");
         Matcher m= p.matcher(s);
         if ( !m.matches() ) {
             throw new IllegalArgumentException("bad format!");
