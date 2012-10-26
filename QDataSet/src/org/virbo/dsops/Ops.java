@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.regex.Pattern;
 import org.das2.datum.DatumUtil;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
@@ -3731,6 +3732,25 @@ public class Ops {
      */
     public static QDataSet accum( QDataSet ds ) {
         return accum( null, ds );
+    }
+
+    /**
+     * convert the dataset to the target units
+     * @param ds the original dataset.
+     * @param u units of the new dataset
+     * @return a new dataset with all the same properties but with the new units.
+     * @throws InconvertibleUnitsException
+     */
+    public static QDataSet convertUnitsTo( QDataSet ds, Units u ) {
+        UnitsConverter uc= Units.getConverter( SemanticOps.getUnits(ds), u );
+        ArrayDataSet ds2= ArrayDataSet.copy(ds);
+        DataSetIterator iter= new QubeDataSetIterator( ds2 );
+        while ( iter.hasNext() ) {
+            iter.next();
+            iter.putValue( ds2, uc.convert( iter.getValue(ds) ) );
+        }
+        ds2.putProperty( QDataSet.UNITS, u );
+        return ds2;
     }
 
     /**
