@@ -1141,7 +1141,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * return true when the data point recorder has been modified.
      */
-    public boolean getModified() {
+    public boolean isModified() {
         return modified;
     }
     
