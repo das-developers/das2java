@@ -121,6 +121,9 @@ public abstract class WeightsDataSet implements QDataSet {
     }
 
 
+    /**
+     *  return 1 for finite (Non-NaN) values that are not equal to fill, or outside (not including) vmin to vmax.
+     */
     public static final class ValidRangeFillFinite extends WeightsDataSet {
 
         public ValidRangeFillFinite( QDataSet ds ) {
@@ -152,7 +155,10 @@ public abstract class WeightsDataSet implements QDataSet {
         }
 
     }
-    
+
+    /**
+     *  return 1 for finite (Non-NaN) values that are not equal to fill, or (float)fill.
+     */
     public static final class FillFinite extends WeightsDataSet {
         public FillFinite( QDataSet ds ) {
             super(ds);
@@ -182,7 +188,10 @@ public abstract class WeightsDataSet implements QDataSet {
             return weight(ds.value(i0, i1, i2, i3));
         }
     }
-    
+
+    /**
+     * return 1 for finite (Non-NaN) values.
+     */
     public static final class Finite extends WeightsDataSet {
         public Finite( QDataSet ds ) {
             super(ds);
@@ -212,34 +221,33 @@ public abstract class WeightsDataSet implements QDataSet {
             return weight(ds.value(i0, i1, i2, i3));
         }
     }    
-    
+
+    /**
+     * return 1 for any value.
+     */
     public static final class AllValid extends WeightsDataSet {
         public AllValid( QDataSet ds ) {
             super(ds);
         }
         
-        private double weight(double v) {
+        public double value() {
             return 1.0;
         }
 
-        public double value() {
-            return weight(ds.value());
-        }
-
         public double value(int i) {
-            return weight(ds.value(i));
+            return 1.0;
         }
 
         public double value(int i0, int i1) {
-            return weight(ds.value(i0, i1));
+            return 1.0;
         }
 
         public double value(int i0, int i1, int i2) {
-            return weight(ds.value(i0, i1, i2));
+            return 1.0;
         }
 
         public double value(int i0, int i1, int i2, int i3) {
-            return weight(ds.value(i0, i1, i2, i3));
+            return 1.0;
         }
     }
 
