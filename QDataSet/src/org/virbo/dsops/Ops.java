@@ -52,6 +52,7 @@ import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
+import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
 import org.virbo.dsutil.AutoHistogram;
@@ -3062,16 +3063,29 @@ public class Ops {
     }
 
     /**
-     * returns a two element, rank 1 dataset containing the extent of the data.
-     * Note this accounts for DELTA_PLUS, DELTA_MINUS properties.
+     * returns a two element, rank 1 dataset containing the extent (min to max) of the data.
+     * Note this accounts for DELTA_PLUS, DELTA_MINUS properties.  If no valid data is found then [fill,fill] is returned.
      * The property QDataSet.SCALE_TYPE is set to lin or log.
      * The property count is set to the number of valid measurements.
      * 2010-10-14: add branch for monotonic datasets.
-     * @param ds
+     * @param ds the dataset to measure the extent
      * @param range, if non-null, return the union of this range and the extent.  This must not contain fill!
      * @return two element, rank 1 "bins" dataset.
      */
-    public static QDataSet extent( QDataSet ds, QDataSet range ) {
+    public static QDataSet extent( QDataSet ds, QDataSet range  ) {
+        QDataSet wds = DataSetUtil.weightsDataSet(ds);
+        return extent( ds, wds, range );
+    }
+
+    /**
+     * returns a two element, rank 1 dataset containing the extent (min to max) of the data, allowing an external
+     * evaluation of the weightsDataSet.  If no valid data is found then [fill,fill] is returned.
+     * @param ds the dataset to measure the extent
+     * @param wds a weights dataset, containing zero where the data is not valid, positive non-zero otherwise.  If null, then all finite data is treated as valid.
+     * @param range, if non-null, return the union of this range and the extent.  This must not contain fill!
+     * @return two element, rank 1 "bins" dataset.
+     */
+    public static QDataSet extent( QDataSet ds, QDataSet wds, QDataSet range ) {
 
         QDataSet max = ds;
         QDataSet min = ds;
@@ -3081,11 +3095,15 @@ public class Ops {
         deltaplus = (QDataSet) ds.property(QDataSet.DELTA_PLUS);
         deltaminus = (QDataSet) ds.property(QDataSet.DELTA_MINUS);
 
-        QDataSet w = DataSetUtil.weightsDataSet(ds);
         int count=0;
 
+        if ( wds==null ) {
+            wds= new WeightsDataSet.Finite(ds);
+        }
+
         double [] result;
-        double fill= ((Number)w.property(QDataSet.FILL_VALUE)).doubleValue();
+        Number dfill= ((Number)wds.property(QDataSet.FILL_VALUE));
+        double fill= dfill!=null ? dfill.doubleValue() : -1e31;
 
         if ( range==null ) {
             result= new double[]{ Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
@@ -3098,9 +3116,9 @@ public class Ops {
             int ifirst=0;
             int n= ds.length();
             int ilast= n-1;
-            while ( ifirst<n && w.value(ifirst)==0.0 ) ifirst++;
+            while ( ifirst<n && wds.value(ifirst)==0.0 ) ifirst++;
 
-            while ( ilast>=0 && w.value(ilast)==0.0 ) ilast--;
+            while ( ilast>=0 && wds.value(ilast)==0.0 ) ilast--;
             count= Math.max( 0, ilast - ifirst + 1 );
             if ( count>0 ) {
                 result[0]= Math.min( result[0], ds.value(ifirst) );
@@ -3124,7 +3142,7 @@ public class Ops {
 
             while (it.hasNext()) {
                 it.next();
-                if (it.getValue(w) > 0.) {
+                if (it.getValue(wds) > 0.) {
                     count++;
                     result[0] = Math.min(result[0], it.getValue(min));
                     result[1] = Math.max(result[1], it.getValue(max));
