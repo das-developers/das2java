@@ -1561,6 +1561,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public synchronized void updateTickV() {
         if (!valueIsAdjusting()) {
             if ( getTickLabelFont()==null ) return;
+            try {
+                getFontMetrics(getTickLabelFont()); // transitional state seen in hudson tests.
+            } catch ( NullPointerException ex ) {
+                return;
+            }
             //if ( getCanvas()==null || getCanvas().getHeight()==0 ) return;
             //if ( ( isHorizontal() ? getColumn().getWidth() : getRow().getHeight() ) < 2 ) return; // canvas is not sized yet
             if ( useDomainDivider ) {
