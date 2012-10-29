@@ -177,7 +177,7 @@ public class WebFileObject extends FileObject {
                 logger.log(Level.INFO, "unable to load metadata: {0}", ex);
                 modifiedDate= new Date( localFile.lastModified() );
             }
-            if ( metadata.containsKey("Last-Modified") ) {
+            if ( metadata!=null && metadata.containsKey("Last-Modified") ) {
                 long date= Date.parse( metadata.get("Last-Modified") );
                 modifiedDate= new Date( date );
             } else {
