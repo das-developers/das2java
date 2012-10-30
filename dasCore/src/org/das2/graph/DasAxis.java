@@ -1197,7 +1197,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * Sets the TickVDescriptor for this axis.  If null is passed in, the
      * axis will put into autoTickV mode, where the axis will attempt to
-     * determine ticks using an appropriate algortithm.
+     * determine ticks using an appropriate algorithm.
      *
      * @param tickV the new ticks for this axis, or null
      */
@@ -1220,6 +1220,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     private void updateTickVLog() {
 
+        DatumRange dr= getDatumRange();
+
         GrannyTextRenderer idlt = new GrannyTextRenderer();
         idlt.setString(this.getTickLabelFont(), "10!U-10");
 
@@ -1232,7 +1234,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         nTicksMax = (nTicksMax < 7) ? nTicksMax : 7;
 
-        tickV = TickVDescriptor.bestTickVLogNew(getDataMinimum(), getDataMaximum(), 3, nTicksMax, true);
+        tickV = TickVDescriptor.bestTickVLogNew( dr.min(), dr.max(), 3, nTicksMax, true);
         datumFormatter = resolveFormatter(tickV);
 
         return;
@@ -1240,6 +1242,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private void updateTickVLinear() {
+
+        DatumRange dr= getDatumRange();
+
         int nTicksMax;
         int axisSize;
         if (isHorizontal()) {
@@ -1254,7 +1259,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         nTicksMax = (nTicksMax < 7) ? nTicksMax : 7;
 
-        this.tickV = TickVDescriptor.bestTickVLinear(getDataMinimum(), getDataMaximum(), 3, nTicksMax, false);
+        this.tickV = TickVDescriptor.bestTickVLinear( dr.min(), dr.max(), 3, nTicksMax, false);
 
         DatumFormatter tdf = resolveFormatter(tickV);
 
@@ -1272,7 +1277,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 nTicksMax = axisSize / tickSizePixels;
             }
 
-            this.tickV = TickVDescriptor.bestTickVLinear(getDataMinimum(), getDataMaximum(), 3, nTicksMax, true);
+            this.tickV = TickVDescriptor.bestTickVLinear( dr.min(), dr.max(), 3, nTicksMax, true);
             datumFormatter = resolveFormatter(tickV);
 
             once = false;
@@ -1444,17 +1449,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Datum pixel = dr.width().divide(getDLength());
         DatumFormatter tdf;
 
+        TickVDescriptor ltickV;
+        FontMetrics fm = getFontMetrics(getTickLabelFont());
+
         if (isHorizontal()) {
             // two passes to avoid clashes -- not guarenteed
-            tickV = TickVDescriptor.bestTickVTime(dr.min().subtract(pixel), dr.max().add(pixel), 3, 8, false);
+            ltickV = TickVDescriptor.bestTickVTime(dr.min().subtract(pixel), dr.max().add(pixel), 3, 8, false);
 
-            tdf = resolveFormatter(tickV);
-            Rectangle bounds = getMaxBounds(tdf, tickV);
+            tdf = resolveFormatter(ltickV);
+            Rectangle bounds = getMaxBounds(tdf, ltickV);
 
             int tickSizePixels = (int) (bounds.width + getEmSize() * 2);
 
             if (drawTca) {
-                FontMetrics fm = getFontMetrics(getTickLabelFont());
                 String item = format(99999.99, "(f8.2)");
                 int width = fm.stringWidth(item) + (int) (getEmSize() * 2);
                 if (width > tickSizePixels) {
@@ -1465,14 +1472,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int axisSize = getColumn().getWidth();
             nTicksMax = Math.max(2, axisSize / tickSizePixels);
 
-            tickV = TickVDescriptor.bestTickVTime(getDataMinimum(), getDataMaximum(), 2, nTicksMax, false);
-            tdf = resolveFormatter(tickV);
+            ltickV = TickVDescriptor.bestTickVTime( dr.min(), dr.max(), 2, nTicksMax, false);
+            tdf = resolveFormatter(ltickV);
 
-            bounds = getMaxBounds(tdf, tickV);
+            bounds = getMaxBounds(tdf, ltickV);
             tickSizePixels = (int) (bounds.getWidth() + getEmSize() * 2);
 
             if (drawTca) {
-                FontMetrics fm = getFontMetrics(getTickLabelFont());
                 String item = format(99999.99, "(f8.2)");
                 int width = fm.stringWidth(item);
                 if (width > tickSizePixels) {
@@ -1487,21 +1493,21 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             boolean overlap = true;
             while (overlap && nTicksMax > 2) {
 
-                tickV = TickVDescriptor.bestTickVTime(getDataMinimum(), getDataMaximum(), 2, nTicksMax, false);
+                ltickV = TickVDescriptor.bestTickVTime( dr.min(), dr.max(), 2, nTicksMax, false);
 
-                if (tickV.getMajorTicks().getLength() <= 1) {
+                if (ltickV.getMajorTicks().getLength() <= 1) {
                     // we're about to have an assertion error, time to debug;
-                    System.err.println("about to assert error: " + tickV.getMajorTicks());
+                    System.err.println("about to assert error: " + ltickV.getMajorTicks());
                 }
-                assert (tickV.getMajorTicks().getLength() > 1);
+                assert (ltickV.getMajorTicks().getLength() > 1);
 
-                tdf = resolveFormatter(tickV);
+                tdf = resolveFormatter(ltickV);
 
-                bounds = getMaxBounds(tdf, tickV);
+                bounds = getMaxBounds(tdf, ltickV);
                 tickSizePixels = (int) (bounds.getWidth() + getEmSize() * 2);
 
-                double x0 = transform(tickV.getMajorTicks().get(0));
-                double x1 = transform(tickV.getMajorTicks().get(1));
+                double x0 = transform(ltickV.getMajorTicks().get(0));
+                double x1 = transform(ltickV.getMajorTicks().get(1));
 
                 if (x1 - x0 > tickSizePixels) {
                     overlap = false;
@@ -1509,21 +1515,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     nTicksMax = nTicksMax - 1;
                 }
             }
-            tickV = TickVDescriptor.bestTickVTime(getDataMinimum(), getDataMaximum(), 2, nTicksMax, true);
+            ltickV = TickVDescriptor.bestTickVTime( dr.min(), dr.max(), 2, nTicksMax, true);
 
         } else {
-            int tickSizePixels = getFontMetrics(getTickLabelFont()).getHeight();
+            int tickSizePixels = fm.getHeight();
             int axisSize = getRow().getHeight();
             nTicksMax = axisSize / tickSizePixels;
 
             nTicksMax = (nTicksMax > 1 ? nTicksMax : 2);
             nTicksMax = (nTicksMax < 10 ? nTicksMax : 10);
 
-            tickV = TickVDescriptor.bestTickVTime(getDataMinimum(), getDataMaximum(), 3, nTicksMax, true);
+            ltickV = TickVDescriptor.bestTickVTime( dr.min(), dr.max(), 3, nTicksMax, true);
 
         }
 
-        datumFormatter = resolveFormatter(tickV);
+        datumFormatter = resolveFormatter(ltickV);
+
+        this.tickV= ltickV;
 
     }
 
@@ -1545,7 +1553,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * update the TCA dataset.  This will load the TCAs on a RequestProcessor thread sometime soon.
      */
-    private synchronized void updateTCASoon() {
+    private void updateTCASoon() {
         DasCanvas lcanvas= getCanvas();
         if ( lcanvas!=null ) {
             final Object tcaLock= "tcaload_"+this.getDasName();
@@ -1558,7 +1566,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    public synchronized void updateTickV() {
+    public void updateTickV() {
         if (!valueIsAdjusting()) {
             if ( getTickLabelFont()==null ) return;
             try {
