@@ -550,47 +550,80 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     private Action getSaveAsAction() {
         return new AbstractAction("Save As...") {
-
             public void actionPerformed(ActionEvent e) {
-                JFileChooser jj = new JFileChooser();
-                String lastFileString = prefs.get("components.DataPointRecorder.lastFileSave", "");
-                File lastFile = null;
-                if (lastFileString.length()>0) {
-                    lastFile = new File(lastFileString);
-                    jj.setSelectedFile(lastFile);
-                }
-
-                int status = jj.showSaveDialog(DataPointRecorder.this);
-                if (status == JFileChooser.APPROVE_OPTION) {
-                    try {
-                        DataPointRecorder.this.saveFile = jj.getSelectedFile();
-                        saveToFile(saveFile);
-                    //messageLabel.setText("saved data to "+saveFile);
-                    } catch (IOException e1) {
-                        DasExceptionHandler.handle(e1);
-                    }
-
-                }
+                saveAs();
             }
         };
     }
 
     private Action getSaveAction() {
         return new AbstractAction("Save") {
-
             public void actionPerformed(ActionEvent e) {
-                if (saveFile == null) {
-                    getSaveAsAction().actionPerformed(e);
-                } else {
-                    try {
-                        saveToFile(saveFile);
-                    } catch (IOException ex) {
-                        DasExceptionHandler.handle(ex);
-                    }
-
-                }
+                save();
             }
         };
+    }
+
+    /**
+     * return true if the file was saved, false if cancel
+     * @return
+     */
+    public boolean saveAs() {
+        JFileChooser jj = new JFileChooser();
+        String lastFileString = prefs.get("components.DataPointRecorder.lastFileSave", "");
+        File lastFile = null;
+        if (lastFileString.length()>0) {
+            lastFile = new File(lastFileString);
+            jj.setSelectedFile(lastFile);
+        }
+
+        int status = jj.showSaveDialog(DataPointRecorder.this);
+        if (status == JFileChooser.APPROVE_OPTION) {
+            try {
+                DataPointRecorder.this.saveFile = jj.getSelectedFile();
+                saveToFile(saveFile);
+            //messageLabel.setText("saved data to "+saveFile);
+            } catch (IOException e1) {
+                DasExceptionHandler.handle(e1);
+                return false;
+            }
+        } else if ( status == JFileChooser.CANCEL_OPTION ) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean save() {
+        if (saveFile == null) {
+            return saveAs();
+        } else {
+            try {
+                saveToFile(saveFile);
+                return true;
+            } catch (IOException ex) {
+                DasExceptionHandler.handle(ex);
+                return false;
+            }
+        }
+    }
+
+    /**
+     * return true if the file was saved or don't save was pressed by the user.
+     * @return
+     */
+    public boolean saveBeforeExit( ) {
+        if ( this.modified ) {
+            int i= JOptionPane.showConfirmDialog( this, "Save changes before exiting?");
+            if ( i==JOptionPane.OK_OPTION ) {
+                return save();
+            } else if ( i==JOptionPane.CANCEL_OPTION ) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
     }
 
     private Action getLoadAction() {
