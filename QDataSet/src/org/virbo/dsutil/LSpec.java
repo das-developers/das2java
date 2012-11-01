@@ -118,10 +118,11 @@ public class LSpec {
     
     private static void interpolate( QDataSet lds, QDataSet zds, int start, int end, int col, QDataSet lgrid, DDataSet ds ) {
         
-        Units u= (Units) ds.property( QDataSet.UNITS );
+        Units u= SemanticOps.getUnits( ds );
+
         double fill= u.getFillDouble();
         
-        if ( ! u.equals(  (Units) zds.property( QDataSet.UNITS ) ) ) {
+        if ( ! u.equals(  SemanticOps.getUnits( zds ) ) ) {
             throw new IllegalArgumentException("zds units must be the same as ds units!");
         }
         
