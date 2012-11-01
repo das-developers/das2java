@@ -114,6 +114,9 @@ public class LocalFileSystem extends FileSystem {
                 return pattern.matcher(name).matches() && ! file.isHidden();
             }
         } );
+        if ( files==null ) {
+            throw new IllegalStateException("unable to list directory: "+f );
+        }
         String[] result= new String[files.length];
         for ( int i=0; i<files.length; i++ ) result[i]= files[i].getName() + ( files[i].isDirectory() ? "/" : "" );
         return result;
