@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -57,58 +58,61 @@ public class Orbits {
      * ISO8601 string.  The ISO8601 strings must start with 4-digit years, either
      * Note the input can then be html, with a pre section containing the orbits.
      *
+     * This now uses special code for rbspb-pp and rbspa-pp that looks at UIowa and LANL.
+     * 
      * @param sc
      * @return
      */
     private static LinkedHashMap<String,DatumRange> readOrbits( String sc ) throws IOException {
-        URL url;
+        List<URL> urls= new ArrayList<URL>();
         try {
             if ( sc.contains(":") ) {
-                url= new URL( sc );  // orbit:http://das2.org/wiki/index.php/Orbits/crres:6 allowed.
+                urls.add( new URL( sc ) );  // orbit:http://das2.org/wiki/index.php/Orbits/crres:6 allowed.
             } else {
-                url= new URL( "http://das2.org/wiki/index.php/Orbits/"+sc );
+                if ( sc.equals("rbspa-pp") || sc.equals("rbspb-pp") ) {
+                    String fsc= sc.replace("-","_");
+                    urls.add( new URL( "http://www-pw.physics.uiowa.edu/rbsp/orbits/"+fsc ) );
+                    urls.add( new URL( "ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
+                } else {
+                    urls.add( new URL( "http://das2.org/wiki/index.php/Orbits/"+sc ) );
+                }
             }
         } catch ( MalformedURLException ex ) {
             throw new RuntimeException(ex);
         }
 
-        InputStream in;
-        try {
-            logger.log(Level.FINE, "Orbits trying to connect to {0}", url);
+        InputStream in=null;
+        Exception exfirst=null;
+
+        for ( URL url: urls ) {
             try {
-                ProxyInfo info[] = ProxyService.getProxyInfo(url);
-                if ( info!=null && info.length>0 ) {
-                    for ( ProxyInfo pi : info ) {
-                        logger.log(Level.FINER,pi.toString());
-                    }
-                } else {
-                    logger.log(Level.FINER,"no proxy info");
-                }
+                logger.log(Level.FINE, "Orbits trying to connect to {0}", url);
+//                try {
+//                    ProxyInfo info[] = ProxyService.getProxyInfo(url);
+//                    if ( info!=null && info.length>0 ) {
+//                        for ( ProxyInfo pi : info ) {
+//                            logger.log(Level.FINER,pi.toString());
+//                        }
+//                    } else {
+//                        logger.log(Level.FINER,"no proxy info");
+//                    }
+//                } catch ( IOException ex ) {
+//                    logger.fine( ex.getMessage() );
+//                }
+
+                URLConnection connect= url.openConnection();
+                connect.setConnectTimeout(5000);
+                in= connect.getInputStream();
+                logger.log(Level.FINE, "  got input stream from {0}", url);
+                break;
             } catch ( IOException ex ) {
-                logger.fine( ex.getMessage() );
+                logger.log( Level.FINE, "", ex );
+                if ( exfirst==null ) exfirst= ex;
             }
-            
-            URLConnection connect= url.openConnection();
-            connect.setConnectTimeout(5000);
-            in= connect.getInputStream();
-            logger.log(Level.FINE, "  got input stream from {0}", url);
-        } catch ( IOException ex ) {
-            logger.log( Level.FINE, "", ex );
-            if ( sc.contains(":") ) {
-                throw new IllegalArgumentException("I/O Exception prevents reading orbits from \""+sc+"\"",ex );
-            }
-            url= Orbits.class.getResource("/orbits/"+sc+".dat");
-            if ( url==null ) {
-                throw new IllegalArgumentException("unable to find orbits file for \""+sc+"\"" );
-            } else {
-                logger.log(Level.FINE, "found build-in orbit file on class path: {0}", url);
-            }
-            try {
-                in= url.openConnection().getInputStream();
-                logger.log(Level.FINE, "got input stream from {0}", url);
-            } catch ( IOException ex2 ) {
-                throw new IllegalArgumentException("I/O Exception prevents reading orbits for \""+sc+"\"",ex2 );
-            }
+        }
+
+        if ( in==null ) {
+            throw new IllegalArgumentException("I/O Exception prevents reading orbits from \""+urls.get(0)+"\"",exfirst );
         }
 
         LinkedHashMap<String,DatumRange> result= new LinkedHashMap();
@@ -119,6 +123,7 @@ public class Orbits {
             int col= -1; // the first time column, 0 is the first column.
             while ( s!=null ) {
                 String[] ss= s.trim().split("\\s+");
+                if ( ss.length>0 && ss[0].startsWith("#") ) continue;
                 if ( ss.length==3 && ( ss[1].startsWith("1") || ss[1].startsWith("2") ) ) { // quick checks
                     Datum d1;
                     Datum d2;
@@ -172,7 +177,7 @@ public class Orbits {
         }
 
         if ( result.size()==0 ) {
-            throw new IOException("no orbits found in file: "+url);
+            throw new IOException("no orbits found in files: "+urls);
         }
         
         return result;
