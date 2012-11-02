@@ -326,6 +326,8 @@ public class Orbits {
      *
      * This now uses special code for rbspb-pp and rbspa-pp that looks at UIowa, LANL and at virbo.org.
      *
+     * This should not be called from the event thread, because it may block briefly while the orbits are loaded.
+     * 
      * @param sc the string identifier for the spacecraft, such as "rbspa-pp", or URL to orbit file.
      * @return the Orbits file which can be used to query orbits.
      * @throws IllegalArgumentException when the orbits file cannot be read
