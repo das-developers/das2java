@@ -5,8 +5,6 @@
 
 package org.das2.datum;
 
-import com.sun.java.browser.net.ProxyInfo;
-import com.sun.java.browser.net.ProxyService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,6 +71,7 @@ public class Orbits {
                     String fsc= sc.replace("-","_");
                     urls.add( new URL( "http://www-pw.physics.uiowa.edu/rbsp/orbits/"+fsc ) );
                     urls.add( new URL( "ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
+                    urls.add( new URL( "ftp://virbo.org/mirror/stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
                 } else {
                     urls.add( new URL( "http://das2.org/wiki/index.php/Orbits/"+sc ) );
                 }
