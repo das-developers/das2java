@@ -80,10 +80,16 @@ public class Orbits {
             } else {
                 if ( sc.equals("rbspa-pp") || sc.equals("rbspb-pp") ) {
                     String fsc= sc.replace("-","_");
-                    urls.add( Orbits.class.getResource("/orbits/"+fsc ) );
                     urls.add( new URL( "http://www-pw.physics.uiowa.edu/rbsp/orbits/"+fsc ) );
                     urls.add( new URL( "ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
                     urls.add( new URL( "ftp://virbo.org/mirror/stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
+                    URL lurl= Orbits.class.getResource("/orbits/"+fsc );
+                    if ( lurl==null ) {
+                        logger.warning("null found in orbits URLs indicates expected orbit was not found on classpath");
+                    } else {
+                        urls.add( lurl );
+                    }
+
                 } else {
                     urls.add( new URL( "http://das2.org/wiki/index.php/Orbits/"+sc ) );
                 }
@@ -100,19 +106,6 @@ public class Orbits {
         for ( URL url: urls ) {
             try {
                 logger.log(Level.FINE, "Orbits trying to connect to {0}", url);
-//                try {
-//                    ProxyInfo info[] = ProxyService.getProxyInfo(url);
-//                    if ( info!=null && info.length>0 ) {
-//                        for ( ProxyInfo pi : info ) {
-//                            logger.log(Level.FINER,pi.toString());
-//                        }
-//                    } else {
-//                        logger.log(Level.FINER,"no proxy info");
-//                    }
-//                } catch ( IOException ex ) {
-//                    logger.fine( ex.getMessage() );
-//                }
-
                 URLConnection connect= url.openConnection();
                 connect.setConnectTimeout(5000);
                 in= connect.getInputStream();
