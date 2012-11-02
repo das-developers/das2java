@@ -6,6 +6,7 @@
 package org.das2.datum;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -77,6 +78,7 @@ public class Orbits {
                     urls.add( new URL( "http://www-pw.physics.uiowa.edu/rbsp/orbits/"+fsc ) );
                     urls.add( new URL( "ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
                     urls.add( new URL( "ftp://virbo.org/mirror/stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
+                    urls.add( Orbits.class.getResource("/orbits/"+fsc ) );
                 } else {
                     urls.add( new URL( "http://das2.org/wiki/index.php/Orbits/"+sc ) );
                 }
