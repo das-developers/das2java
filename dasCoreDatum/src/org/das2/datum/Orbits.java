@@ -50,16 +50,21 @@ public class Orbits {
     private static HashMap<String,Orbits> missions= new HashMap();
 
     /**
-     * read the orbits file.  The file may be on the wiki page http://das2.org/wiki/index.php/Orbits.&lt;SC%gt;,
+     * Read the orbits file.  Example files may be on the wiki page http://das2.org/wiki/index.php/Orbits.&lt;SC%gt;,
      * or on the classpath in /orbits/&lt;SC%gt;.dat  The orbits file will be read by ignoring any line
      * that does not contain three non-space blobs, and either the first two or last two should parse as an
      * ISO8601 string.  The ISO8601 strings must start with 4-digit years, either
      * Note the input can then be html, with a pre section containing the orbits.
      *
+     * Note the wiki page is the source for cassini and crres, but other missions may come from special places encoded here.
+     * Mediawiki introduced two problems: first, that typos were not identified clearly because a 200 (ok) code is returned
+     * for any URL.  Second, it's not trivial to set up mirrors that put data into the wiki.  For this reason, the wiki
+     * should only be used as a reference for humans and other use is discouraged.
+     *
      * This now uses special code for rbspb-pp and rbspa-pp that looks at UIowa, LANL and at virbo.org.
      * 
-     * @param sc
-     * @return
+     * @param sc the string identifier for the spacecraft, such as "rbspa-pp"
+     * @return the list of orbits found for the spacecraft.
      */
     private static LinkedHashMap<String,DatumRange> readOrbits( String sc ) throws IOException {
         List<URL> urls= new ArrayList<URL>();
@@ -293,8 +298,24 @@ public class Orbits {
     }
 
     /**
-     * return the orbits for the named spacecraft.
-     * @param sc missions in http://das2.org/wiki/index.php/Orbits/ or URL to mission orbit file.
+     * Return the orbits for the named spacecraft, or those described in the file pointed to the URL when
+     * the "sc" identifier is a URL.
+     *
+     * Example files may be on the wiki page http://das2.org/wiki/index.php/Orbits.&lt;SC%gt;,
+     * or on the classpath in /orbits/&lt;SC%gt;.dat  The orbits file will be read by ignoring any line
+     * that does not contain three non-space blobs, and either the first two or last two should parse as an
+     * ISO8601 string.  The ISO8601 strings must start with 4-digit years, either
+     * Note the input can then be html, with a pre section containing the orbits.
+     *
+     * Note the wiki page is the source for cassini and crres, but other missions may come from special places encoded here.
+     * Mediawiki introduced two problems: first, that typos were not identified clearly because a 200 (ok) code is returned
+     * for any URL.  Second, it's not trivial to set up mirrors that put data into the wiki.  For this reason, the wiki
+     * should only be used as a reference for humans and other use is discouraged.
+     *
+     * This now uses special code for rbspb-pp and rbspa-pp that looks at UIowa, LANL and at virbo.org.
+     *
+     * @param sc the string identifier for the spacecraft, such as "rbspa-pp", or URL to orbit file.
+     * @return the Orbits file which can be used to query orbits.
      * @throws IllegalArgumentException when the orbits file cannot be read
      * @return
      */
