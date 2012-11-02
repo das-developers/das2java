@@ -56,7 +56,7 @@ public class Orbits {
      * ISO8601 string.  The ISO8601 strings must start with 4-digit years, either
      * Note the input can then be html, with a pre section containing the orbits.
      *
-     * This now uses special code for rbspb-pp and rbspa-pp that looks at UIowa and LANL.
+     * This now uses special code for rbspb-pp and rbspa-pp that looks at UIowa, LANL and at virbo.org.
      * 
      * @param sc
      * @return
