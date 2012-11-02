@@ -44,6 +44,11 @@ public class Orbits {
     private LinkedHashMap<String,DatumRange> orbits;
 
     /**
+     * the resource used to populate the orbits.
+     */
+    private URL url;
+
+    /**
      * the last orbit
      */
     private String last;
@@ -67,7 +72,7 @@ public class Orbits {
      * @param sc the string identifier for the spacecraft, such as "rbspa-pp"
      * @return the list of orbits found for the spacecraft.
      */
-    private static LinkedHashMap<String,DatumRange> readOrbits( String sc ) throws IOException {
+    private static LinkedHashMap<String,DatumRange> readOrbits( String sc, List<URL> source ) throws IOException {
         List<URL> urls= new ArrayList<URL>();
         try {
             if ( sc.contains(":") ) {
@@ -75,10 +80,10 @@ public class Orbits {
             } else {
                 if ( sc.equals("rbspa-pp") || sc.equals("rbspb-pp") ) {
                     String fsc= sc.replace("-","_");
+                    urls.add( Orbits.class.getResource("/orbits/"+fsc ) );
                     urls.add( new URL( "http://www-pw.physics.uiowa.edu/rbsp/orbits/"+fsc ) );
                     urls.add( new URL( "ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
                     urls.add( new URL( "ftp://virbo.org/mirror/stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/"+fsc ) );
-                    urls.add( Orbits.class.getResource("/orbits/"+fsc ) );
                 } else {
                     urls.add( new URL( "http://das2.org/wiki/index.php/Orbits/"+sc ) );
                 }
@@ -89,6 +94,8 @@ public class Orbits {
 
         InputStream in=null;
         Exception exfirst=null;
+
+        URL sourceUrl=null;
 
         for ( URL url: urls ) {
             try {
@@ -110,6 +117,7 @@ public class Orbits {
                 connect.setConnectTimeout(5000);
                 in= connect.getInputStream();
                 logger.log(Level.FINE, "  got input stream from {0}", url);
+                sourceUrl= url;
                 break;
             } catch ( IOException ex ) {
                 logger.log( Level.FINE, "", ex );
@@ -185,6 +193,8 @@ public class Orbits {
         if ( result.size()==0 ) {
             throw new IOException("no orbits found in files: "+urls);
         }
+        
+        source.add(sourceUrl);
         
         return result;
 
@@ -327,18 +337,28 @@ public class Orbits {
             return orbits;
         } else {
             try {
-                LinkedHashMap<String,DatumRange> lorbits= readOrbits(sc);
+                List<URL> source= new ArrayList();
+                LinkedHashMap<String,DatumRange> lorbits= readOrbits(sc,source);
                 orbits= new Orbits(sc,lorbits);
                 Iterator<String> o= lorbits.keySet().iterator();
                 String last= o.hasNext() ? o.next() : null;
                 while ( o.hasNext() ) last= o.next();
                 orbits.last= last;
+                if ( source.size()==1 ) orbits.url= source.get(0);
                 missions.put( sc, orbits );
             } catch ( IOException ex ) {
                 throw new IllegalArgumentException( "Unable to read orbits file for "+sc, ex );
             }
             return orbits;
         }
+    }
+
+    /**
+     * return the URL used to populate the orbits.
+     * @return
+     */
+    public URL getURL() {
+        return this.url;
     }
 
     /**
