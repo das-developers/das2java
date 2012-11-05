@@ -6,7 +6,6 @@
 package org.das2.components;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -15,11 +14,12 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.GeneralPath;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.Timer;
+import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
-import org.das2.util.monitor.ProgressMonitor;
 
 /**
  *
@@ -27,14 +27,20 @@ import org.das2.util.monitor.ProgressMonitor;
  */
 public class DasProgressWheel extends NullProgressMonitor {
 
+    private static final Logger logger= LoggerManager.getLogger("das2.graphics.progress");
+
     class MyPanel extends JComponent {
 
         @Override
         protected void paintComponent(Graphics g1) {
             Graphics2D g2 = (Graphics2D) g1;
 
+            String txt= ""+DasProgressWheel.this.getTaskProgress()+" of "+DasProgressWheel.this.getTaskSize();
             g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
                     RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+
+            logger.log(Level.FINEST, "painting {0}", txt);
+
             Color c= Color.GRAY;
             //g2.setColor(new Color(0xdcFFFFFF, true));
             g2.setColor(c);
@@ -48,16 +54,16 @@ public class DasProgressWheel extends NullProgressMonitor {
             
             Rectangle rect = g2.getClipBounds();
             GeneralPath gp= new GeneralPath();
-            gp.moveTo( r,r );
+            gp.moveTo( r-r*Math.sin(a), r-r*(Math.cos(a)) );
             gp.lineTo( r+r*Math.cos(a), r+r*(Math.sin(a)) );
             gp.lineTo( r+r*Math.cos(a+da), r+r*(Math.sin(a+da)) );
-            gp.lineTo( r,r );
+            gp.lineTo( r-r*Math.sin(a), r-r*(Math.cos(a)) );
             if (rect == null) {
                 g2.fill( gp );
             } else {
                 g2.fill( gp );
             }
-            this.setToolTipText(""+DasProgressWheel.this.getTaskProgress()+" of "+DasProgressWheel.this.getTaskSize() );
+            this.setToolTipText( txt );
             super.paintComponent(g1);
 
         }
@@ -75,6 +81,7 @@ public class DasProgressWheel extends NullProgressMonitor {
             public void actionPerformed(ActionEvent e) {
                 c++;
                 thePanel.repaint();
+                logger.finest("repaint");
             }
         } );
         timer.setRepeats(true);
@@ -112,7 +119,7 @@ public class DasProgressWheel extends NullProgressMonitor {
             thePanel= new MyPanel();
             thePanel.setBounds( new Rectangle(0,0,16,16) );
             parent.add(thePanel);
-            System.err.println(parent.getLayout());
+            theParent= parent;
             init();
         }
         return thePanel;
