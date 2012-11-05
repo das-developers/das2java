@@ -64,6 +64,7 @@ import java.util.regex.*;
 import org.das2.system.DasLogger;
 import java.util.logging.Logger;
 import org.das2.DasException;
+import org.das2.components.DasProgressWheel;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
@@ -1544,7 +1545,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         DasCanvas lcanvas= getCanvas();
         if ( lcanvas!=null ) {
             lcanvas.performingChange( DasAxis.this, tcaLock );
+            DasProgressWheel tcaProgress= new DasProgressWheel();
+            tcaProgress.started();
+            tcaProgress.getPanel(this);
             updateTCADataSet();
+            tcaProgress.finished();
             repaint();
             lcanvas.changePerformed( DasAxis.this, tcaLock );
         }
