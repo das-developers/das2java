@@ -88,6 +88,9 @@ public class Orbits {
                     } else {
                         urls.add( lurl );
                     }
+                } else if ( sc.equals("crres" ) ) {
+                    urls.add( new URL( "ftp://virbo.org/mirror/das2.org/wiki/index.php/Oribts/crres/crres-orbits.dat" ) );
+                    urls.add( new URL( "http://das2.org/wiki/index.php/Orbits/crres" ) );
 
                 } else {
                     urls.add( new URL( "http://das2.org/wiki/index.php/Orbits/"+sc ) );
