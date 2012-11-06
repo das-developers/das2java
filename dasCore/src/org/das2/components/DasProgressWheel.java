@@ -28,6 +28,7 @@ import org.das2.util.monitor.NullProgressMonitor;
 public class DasProgressWheel extends NullProgressMonitor {
 
     private static final Logger logger= LoggerManager.getLogger("das2.graphics.progress");
+    private static final int size= 16;
 
     class MyPanel extends JComponent {
 
@@ -37,32 +38,37 @@ public class DasProgressWheel extends NullProgressMonitor {
 
             String txt= ""+DasProgressWheel.this.getTaskProgress()+" of "+DasProgressWheel.this.getTaskSize();
             g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                    RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
 
             logger.log(Level.FINEST, "painting {0}", txt);
 
-            Color c= Color.GRAY;
+            Color c= Color.BLUE;
             //g2.setColor(new Color(0xdcFFFFFF, true));
             g2.setColor(c);
             g2.getClip();
 
-            int h=16;
-            int r= 8;
+            int h= size;
+            int r= size/2;
 
             double a= ( System.currentTimeMillis()-t0 )/5000. * 2 * Math.PI;
-            double da= 30*Math.PI/180;
+            double da= 60*Math.PI/180;
             
             Rectangle rect = g2.getClipBounds();
             GeneralPath gp= new GeneralPath();
-            gp.moveTo( (float)(r-r*Math.sin(a)), (float)(r-r*(Math.cos(a))) );
+            gp.moveTo( r, r );
             gp.lineTo( (float)(r+r*Math.cos(a)), (float)(r+r*(Math.sin(a))) );
             gp.lineTo( (float)(r+r*Math.cos(a+da)), (float)(r+r*(Math.sin(a+da))) );
-            gp.lineTo( (float)(r-r*Math.sin(a)), (float)(r-r*(Math.cos(a))) );
+            gp.lineTo( r, r );
             if (rect == null) {
                 g2.fill( gp );
             } else {
                 g2.fill( gp );
             }
+            g2.setColor( Color.GRAY );
+            g2.draw( new Rectangle(0,0,size-1,size-1) );
             this.setToolTipText( txt );
             super.paintComponent(g1);
 
@@ -73,11 +79,11 @@ public class DasProgressWheel extends NullProgressMonitor {
     private void init() {
         Container parentComponent= thePanel.getParent();
         if (parentComponent != null) {
-            int x = parentComponent.getBounds().x + parentComponent.getBounds().width/2;
-            int y = parentComponent.getBounds().y + parentComponent.getBounds().height/2;
-            thePanel.setLocation(x - thePanel.getWidth() / 2, y - thePanel.getHeight() / 2);
+            int x = 0;
+            int y = 0;
+            thePanel.setLocation( x, y );
         }
-        timer= new Timer( 300, new ActionListener() {
+        timer= new Timer( 100, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 c++;
                 thePanel.repaint();
@@ -117,7 +123,7 @@ public class DasProgressWheel extends NullProgressMonitor {
     public JComponent getPanel( JComponent parent ) {
         if ( thePanel==null ) {
             thePanel= new MyPanel();
-            thePanel.setBounds( new Rectangle(0,0,16,16) );
+            thePanel.setBounds( new Rectangle(0,0,size,size) );
             parent.add(thePanel);
             theParent= parent;
             init();
