@@ -22,7 +22,7 @@ import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 
 /**
- *
+ * Small 16x16 pixel progress wheel, designed intentionally for loading TCAs with X axis.
  * @author jbf
  */
 public class DasProgressWheel extends NullProgressMonitor {
