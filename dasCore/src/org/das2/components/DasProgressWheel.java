@@ -67,8 +67,8 @@ public class DasProgressWheel extends NullProgressMonitor {
             } else {
                 g2.fill( gp );
             }
-            g2.setColor( Color.GRAY );
-            g2.draw( new Rectangle(0,0,size-1,size-1) );
+            //g2.setColor( Color.GRAY );
+            //g2.draw( new Rectangle(0,0,size-1,size-1) );
             this.setToolTipText( txt );
             super.paintComponent(g1);
 
