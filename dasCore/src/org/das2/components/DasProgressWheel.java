@@ -54,10 +54,10 @@ public class DasProgressWheel extends NullProgressMonitor {
             
             Rectangle rect = g2.getClipBounds();
             GeneralPath gp= new GeneralPath();
-            gp.moveTo( r-r*Math.sin(a), r-r*(Math.cos(a)) );
-            gp.lineTo( r+r*Math.cos(a), r+r*(Math.sin(a)) );
-            gp.lineTo( r+r*Math.cos(a+da), r+r*(Math.sin(a+da)) );
-            gp.lineTo( r-r*Math.sin(a), r-r*(Math.cos(a)) );
+            gp.moveTo( (float)(r-r*Math.sin(a)), (float)(r-r*(Math.cos(a))) );
+            gp.lineTo( (float)(r+r*Math.cos(a)), (float)(r+r*(Math.sin(a))) );
+            gp.lineTo( (float)(r+r*Math.cos(a+da)), (float)(r+r*(Math.sin(a+da))) );
+            gp.lineTo( (float)(r-r*Math.sin(a)), (float)(r-r*(Math.cos(a))) );
             if (rect == null) {
                 g2.fill( gp );
             } else {
