@@ -28,7 +28,8 @@ import org.das2.util.monitor.NullProgressMonitor;
 public class DasProgressWheel extends NullProgressMonitor {
 
     private static final Logger logger= LoggerManager.getLogger("das2.graphics.progress");
-    private static final int size= 16;
+    private static final int SIZE= 16;
+    private static final int HIDE_MS= 300;
 
     class MyPanel extends JComponent {
 
@@ -50,8 +51,12 @@ public class DasProgressWheel extends NullProgressMonitor {
             g2.setColor(c);
             g2.getClip();
 
-            int h= size;
-            int r= size/2;
+            int h= SIZE;
+            int r= SIZE/2;
+
+            if (  System.currentTimeMillis()-t0 < HIDE_MS ) {
+                return;
+            }
 
             double a= ( System.currentTimeMillis()-t0 )/5000. * 2 * Math.PI;
             double da= 30*Math.PI/180;
@@ -124,7 +129,7 @@ public class DasProgressWheel extends NullProgressMonitor {
     public JComponent getPanel( JComponent parent ) {
         if ( thePanel==null ) {
             thePanel= new MyPanel();
-            thePanel.setBounds( new Rectangle(0,0,size,size) );
+            thePanel.setBounds( new Rectangle(0,0,SIZE,SIZE) );
             parent.add(thePanel);
             theParent= parent;
             init();
