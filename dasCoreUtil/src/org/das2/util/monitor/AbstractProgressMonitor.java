@@ -48,8 +48,16 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     public long getTaskSize( ) { 
         return taskSize; 
     }
-    
-    public void setProgressMessage( String message ) {} ;
+
+    private String progressMessage;
+
+    public void setProgressMessage( String message ) {
+        this.progressMessage= message;
+    }
+
+    public String getProgressMessage() {
+        return this.progressMessage;
+    }
         
     private long position=0;
     
