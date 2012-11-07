@@ -1541,7 +1541,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * The lock will have pendingChange and changePerformed with it.
      * @param tcaLock 
      */
-    private synchronized void updateTCAImmediately(Object tcaLock) {
+    private void updateTCAImmediately(Object tcaLock) {
         DasCanvas lcanvas= getCanvas();
         if ( lcanvas!=null ) {
             lcanvas.performingChange( DasAxis.this, tcaLock );
