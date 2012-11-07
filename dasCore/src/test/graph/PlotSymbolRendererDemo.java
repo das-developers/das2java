@@ -163,5 +163,7 @@ public class PlotSymbolRendererDemo {
         p.setLegendPosition( LegendPosition.SE );
         p.getRenderer(0).setLegendLabel("Test!cTest");
         p.getRenderer(0).setDrawLegendLabel(true);
+
+        System.err.println("done");
     }
 }
