@@ -19,13 +19,13 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.Timer;
 import org.das2.util.LoggerManager;
-import org.das2.util.monitor.NullProgressMonitor;
+import org.das2.util.monitor.AbstractProgressMonitor;
 
 /**
  * Small 16x16 pixel progress wheel, designed intentionally for loading TCAs with X axis.
  * @author jbf
  */
-public class DasProgressWheel extends NullProgressMonitor {
+public class DasProgressWheel extends AbstractProgressMonitor {
 
     private static final Logger logger= LoggerManager.getLogger("das2.graphics.progress");
     private static final int SIZE= 16;
@@ -75,7 +75,7 @@ public class DasProgressWheel extends NullProgressMonitor {
             }
             //g2.setColor( Color.GRAY );
             //g2.draw( new Rectangle(0,0,size-1,size-1) );
-            this.setToolTipText( txt );
+            this.setToolTipText( "<html>" + txt + "<br><b>" + DasProgressWheel.this.getLabel() + "</b><br>" + DasProgressWheel.this.getProgressMessage() );
             super.paintComponent(g1);
 
         }
