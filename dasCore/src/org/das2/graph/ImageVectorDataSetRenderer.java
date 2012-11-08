@@ -178,16 +178,18 @@ public class ImageVectorDataSetRenderer extends Renderer {
             yunits= SemanticOps.getUnits( vds );
         }
 
-
         if ( !xAxis.getUnits().isConvertableTo( SemanticOps.getUnits((QDataSet) xds) ) ) {
             parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
-            return;
         }
 
         if ( !yAxis.getUnits().isConvertableTo( yunits ) ) {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
-            return;
         }
+
+        if ( !yunits.isConvertableTo(yAxis.getUnits()) ) {
+            yunits= yAxis.getUnits();
+        }
+
         Graphics2D g2 = (Graphics2D) g1;
         if (plotImage == null) {
             if (lastException != null) {
@@ -272,6 +274,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
             QDataSet wds = DataSetUtil.weightsDataSet(vds);
             Units dsunits= SemanticOps.getUnits(vds);
             Units xunits= SemanticOps.getUnits(xds);
+            if ( !dsunits.isConvertableTo(yAxis.getUnits()) ) {
+                dsunits= yAxis.getUnits();
+            }
+            if ( !xunits.isConvertableTo(xAxis.getUnits() ) ) {
+                xunits= xAxis.getUnits();
+            }
             for (int i = firstIndex; i < lastIndex; i++) {
                 boolean isValid = wds.value(i)>0;
                 if (!isValid) {
@@ -350,6 +358,14 @@ public class ImageVectorDataSetRenderer extends Renderer {
             QDataSet wds = DataSetUtil.weightsDataSet(ds);
             Units dsunits= SemanticOps.getUnits(ds);
             Units xunits= SemanticOps.getUnits(xds);
+            
+            if ( !dsunits.isConvertableTo(yAxis.getUnits()) ) {
+                dsunits= yAxis.getUnits();
+            }
+            if ( !xunits.isConvertableTo(xAxis.getUnits() ) ) {
+                xunits= xAxis.getUnits();
+            }
+
             ArrayDataSet xoffsets= ArrayDataSet.copy( ( QDataSet) ds.property(QDataSet.DEPEND_1) );
             if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
             final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
@@ -430,6 +446,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
             Units xunits = SemanticOps.getUnits(xds);
             Units yunits = SemanticOps.getUnits(vds);
 
+            if ( !yunits.isConvertableTo(ddy.getUnits()) ) {
+                yunits= ddy.getUnits();
+            }
+            if ( !xunits.isConvertableTo(ddx.getUnits() ) ) {
+                xunits= ddx.getUnits();
+            }
             boolean xmono = SemanticOps.isMonotonic(xds);
 
             int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds,  ddx.binStart(0) ) : 0;
@@ -609,12 +631,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         if (!xAxis.getUnits().isConvertableTo( SemanticOps.getUnits(xds) )) {
             parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
-            return;
         }
 
         if (!yAxis.getUnits().isConvertableTo( SemanticOps.getUnits(ds1) )) {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
-            return;
         }
 
         plotImageBounds = parent.getCacheImageBounds();
