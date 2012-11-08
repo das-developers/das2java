@@ -1340,6 +1340,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param font the font used to derive all other fonts.
      */
     public void setBaseFont(Font font) {
+        logger.fine("setBaseFont("+font+")");
         Font oldFont = getFont();
         Font oldBaseFont= baseFont;
         this.baseFont = font;
