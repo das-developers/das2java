@@ -27,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
+import org.das2.datum.TimeUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.AbstractDataSet;
@@ -95,13 +96,19 @@ public class ImageVectorDataSetRenderer extends Renderer {
         if ( xrange.value(1)==xrange.value(0) ) {
             QDataSet wds=  WeightsDataSet.applyRules( xds,xrange );
             if ( wds.value(0)*wds.value(1) ==0 ) {
-                xrange= DDataSet.wrap( new double[] { 0, 10 } ).setUnits( SemanticOps.getUnits(xrange) );
+                xrange= DDataSet.createRank1Bins( 0, 10, SemanticOps.getUnits(xrange) );
                 return xrange;
             } else {
                 if ( !"log".equals( xrange.property(QDataSet.SCALE_TYPE)) ) {
-                    xrange= DDataSet.wrap( new double[] { xrange.value(0)-1, xrange.value(1)+1 } ).setUnits( SemanticOps.getUnits(xrange) );
+                    Units xunits= SemanticOps.getUnits(xrange);
+                    if ( UnitsUtil.isTimeLocation(xunits) ) {
+                        Datum dx= Units.nanoseconds.createDatum(1000).convertTo(xunits.getOffsetUnits());
+                        xrange= DDataSet.createRank1Bins( xrange.value(0)-dx.value(),xrange.value(1)+dx.value(), xunits);
+                    } else {
+                        xrange= DDataSet.createRank1Bins( xrange.value(0)-1, xrange.value(1)+1, xunits );
+                    }
                 } else {
-                    xrange= DDataSet.wrap( new double[] { xrange.value(0)/10, xrange.value(1)*10 } ).setUnits( SemanticOps.getUnits(xrange) );
+                    xrange= DDataSet.createRank1Bins(  xrange.value(0)/10, xrange.value(1)*10, SemanticOps.getUnits(xrange) );
                 }
             }
         }
@@ -141,13 +148,19 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         if ( SemanticOps.isRank2Waveform(ds) ) {
             yrange= fastRank2Range(ds);
+            QDataSet offsrange= doRange( (QDataSet) ds.property(QDataSet.DEPEND_1) );
+            xrange= doRange( xds );
+            xrange= Ops.add( xrange, offsrange );
+            
         } else if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
             QDataSet vds= DataSetOps.unbundleDefaultDataSet( ds );
             yrange= doRange( vds );
+            xrange= doRange( xds );
         } else {
             yrange= doRange( ds );
+            xrange= doRange( xds );
         }
-        xrange= doRange( xds );
+        
 
         JoinDataSet bds= new JoinDataSet(2);
         bds.join(xrange);
