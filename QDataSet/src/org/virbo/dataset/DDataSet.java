@@ -69,6 +69,21 @@ public final class DDataSet extends ArrayDataSet {
     }
 
     /**
+     * convenient method for creating DatumRanges bins datasets.
+     * @param min the minumum value
+     * @param max the maximum value
+     * @param u the ratiometric or time location units
+     * @return the rank1 bins dataset
+     */
+    public static DDataSet createRank1Bins( double min, double max, Units u ) {
+        DDataSet result= new DDataSet(1, 2, 1, 1, 1);
+        if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
+        result.putValue(0,min);
+        result.putValue(1,max);
+        result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
+        return result;
+    }
+    /**
      * Wraps an array from array of dimension sizes.  The result will have
      * rank qube.length(). 
      * @param data array containing the data, with the last dimension contiguous in memory.
