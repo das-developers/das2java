@@ -101,7 +101,7 @@ public class DasProgressPanel implements ProgressMonitor {
     private Window jframe = null;  // created when createFramed() is used.
     private boolean isCancelled = false;
     private JButton cancelButton;
-    private int cancelCheckFailures = 0; // number of times client codes failed to check cancelled before setTaskProgress.
+    private int cancelCheckFailures = 2; // number of times client codes failed to check cancelled before setTaskProgress.  Start with disabled.
     private boolean cancelChecked = false;
     private String label;
     private static final int hideInitiallyMilliSeconds = 300;
@@ -326,6 +326,7 @@ public class DasProgressPanel implements ProgressMonitor {
         cancelButton.setMargin( new Insets( 2,2,2,2 ) );
         cancelButton.setToolTipText(MSG_TASK_CANNOT_BE_CANCELED);
         cancelButton.setEnabled(false);
+        cancelButton.setIcon( cancelGrey );
         cancelButton.setVerticalAlignment( SwingConstants.CENTER );
         cancelButton.setOpaque(false);
         //cancelButton.setBorder(border);
