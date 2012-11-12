@@ -1493,7 +1493,7 @@ public class DataSetOps {
      * @return the string without the quotes.
      */
     private static String getStringArg( String s ) {
-        String comp= s;
+        String comp= s.trim();
         if ( comp.startsWith("'") && comp.endsWith("'") ) {
             comp= comp.substring(1,comp.length()-1);
         } else if ( comp.startsWith("\"") && comp.endsWith("\"") ) {
@@ -1580,6 +1580,7 @@ public class DataSetOps {
         try {
             while ( s.hasNext() ) {
                 String cmd= s.next();
+                cmd= cmd.replaceAll( "\\|\\s*", "|" ); // https://sourceforge.net/tracker/?func=detail&aid=3586477&group_id=199733&atid=970685
                 i= c.indexOf(cmd,i);
                 logger.log(Level.FINER, "  cmd \"{0}\"", cmd );
                 if ( logger.isLoggable(Level.FINEST) ) { // this has proved useful for debugging.
@@ -1792,12 +1793,12 @@ public class DataSetOps {
 
                 } else if ( cmd.equals("|dbAboveBackgroundDim1") ) { // remove the background across slices
                     String qrg= s.next();
-                    int iarg= Integer.parseInt(qrg);
+                    int iarg= Integer.parseInt(qrg.trim());
                     fillDs= DataSetOps.dbAboveBackgroundDim1( fillDs, iarg );
 
                 } else if ( cmd.equals("|dbAboveBackgroundDim0") ) { // remove the background within slices
                     String qrg= s.next();
-                    int iarg= Integer.parseInt(qrg);
+                    int iarg= Integer.parseInt(qrg.trim());
                     fillDs= DataSetOps.dbAboveBackgroundDim0( fillDs, iarg );
 
                 } else if ( cmd.equals("|setUnits" ) ) {
