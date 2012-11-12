@@ -23,7 +23,6 @@
 package org.das2.graph;
 
 import java.awt.EventQueue;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
@@ -43,13 +42,11 @@ import org.das2.util.DasExceptionHandler;
 import java.beans.PropertyChangeListener;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.propertyeditor.Editable;
-import org.das2.system.DasLogger;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.ParseException;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,13 +57,15 @@ import javax.swing.JFileChooser;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.Datum;
-import org.das2.datum.DatumRange;
+import org.das2.system.DasLogger;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
 public abstract class Renderer implements DataSetConsumer, Editable, Displayable {
 
+    protected static final Logger logger= LoggerManager.getLogger("das2.graphics.renderer");
     /**
      * identifies the dataset (in the DataSetDescriptor sense) being plotted
      * by the Renderer.  May be null if no such identifier exists.  See
@@ -113,7 +112,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     protected int firstValidIndex=-1;
     protected int lastValidIndex=-1;
 
-    protected static final Logger logger = DasLogger.getLogger(DasLogger.RENDERER_LOG);
     private static final String PROPERTY_ACTIVE = "active";
     private static final String PROPERTY_DATASET = "dataSet";
 
