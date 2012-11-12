@@ -11,6 +11,18 @@
  */
 package org.das2.graph;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
 import javax.swing.Icon;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.RebinDescriptor;
@@ -20,17 +32,13 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.DasException;
 import org.das2.util.monitor.ProgressMonitor;
-import java.awt.*;
-import java.awt.geom.*;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
-import org.das2.datum.TimeUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
-import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -170,9 +178,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     }
 
-    public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         //long t0= System.currentTimeMillis();
+
+        logger.fine("entering ImageVectorDataSetRenderer.render");
         
         if ( ds==null ) {
             parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
@@ -247,7 +257,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int ny = plotImageBounds2.height;
         int nx = plotImageBounds2.width;
 
-        logger.fine("create Image");
+        logger.fine("create Image (ghostlyImage2): nx="+nx+" ny="+ny);
+
         BufferedImage image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -339,7 +350,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int ny = plotImageBounds2.height;
         int nx = plotImageBounds2.width;
 
-        logger.fine("create Image");
+        logger.fine("create Image (ghostlyImageRank2): nx="+nx+" ny="+ny);
         BufferedImage image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -568,6 +579,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int h = ddy.numberOfBins();
         int w = ddx.numberOfBins();
 
+        logger.fine("ghostlyImage: h="+h+" w="+w);
+
         int[] raster = new int[h * w];
         int colorInt = color.getRGB() & 0x00ffffff;
         // Following code for scatter plot temporarily removed
@@ -625,7 +638,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     }
 
     @Override
-    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
+    public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
 
         //System.err.println("enter updatePlotImage");
         //long t0= System.currentTimeMillis();
@@ -633,6 +646,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
         //if ( java.swing.SwingUtilities.isEventDispatchThread() ) {
         //    System.err.println("called on event thread");
         //}
+
+        logger.fine("entering ImageVectorDataSetRenderer.updatePlotImage");
+        
         super.updatePlotImage(xAxis, yAxis, monitor);
 
         QDataSet ds1 = getDataSet();
@@ -650,7 +666,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
         }
 
-        plotImageBounds = parent.getCacheImageBounds();
+        plotImageBounds= parent.getUpdateImageBounds();
+        //plotImageBounds = parent.getCacheImageBounds();
         if ( plotImageBounds==null ) {
             //transient state in parent component.  TODO: fix these
             return;
@@ -698,15 +715,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
         if ( SemanticOps.isRank2Waveform(ds1) ) nj= ds1.length(0);
 
         if ( nj*(lastIndex-firstIndex) > 20 * xAxis.getColumn().getWidth()) {
-            logger.fine("rendering with histogram");
             ghostlyImage(xAxis, yAxis, ds1, plotImageBounds);
         } else {
             if ( SemanticOps.isRank2Waveform(ds1) ) {
-
-                logger.fine("renderinging with lines");
                 ghostlyImageRank2(xAxis, yAxis, ds1, plotImageBounds);
             } else {
-                logger.fine("renderinging with lines");
                 ghostlyImage2(xAxis, yAxis, ds1, plotImageBounds);
             }
         }
@@ -834,7 +847,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     }
                 }
                 if ( n>0 ) {
-                    result.append( new Rectangle( (int)( overx + i+((float)x)/n+parentx-dd/2 + dx ), (int)( j+((float)y)/n+parenty-dd/2 ), dd, dd ), true );
+                    // why 2*overx?  I have no idea...
+                    result.append( new Rectangle( (int)( 2* overx + i+((float)x)/n+parentx-dd/2 + dx ), (int)( j+((float)y)/n+parenty-dd/2 ), dd, dd ), true );
                 }
             }
         }
