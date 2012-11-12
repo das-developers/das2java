@@ -17,6 +17,7 @@ import java.awt.geom.GeneralPath;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.AbstractProgressMonitor;
@@ -105,14 +106,20 @@ public class DasProgressWheel extends AbstractProgressMonitor {
     public void finished() {
         super.finished();
         timer.stop();
-        theParent.remove(thePanel);
+        Runnable run= new Runnable() {
+            public void run() {
+                thePanel.setVisible(false);
+                theParent.remove(thePanel);
+            }
+        };
+        SwingUtilities.invokeLater(run);
     }
 
     @Override
     public void cancel() {
         super.cancel();
         timer.stop();
-        theParent.remove(thePanel);
+        finished();
     }
 
     JComponent thePanel;
