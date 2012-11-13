@@ -23,6 +23,9 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.ImageIcon;
 import org.das2.datum.Units;
 import org.das2.util.GrannyTextRenderer;
@@ -55,6 +58,11 @@ public class EventsRenderer extends Renderer {
     
     public static final String PROP_COLOR = "color";
 
+    /**
+     * if true, then only then eventsMap is used, otherwise we look though all the events for hits.
+     */
+    private boolean useOnlyEventsMap= false;
+    
     /**
      * return bounding cube 
      * @param ds
@@ -195,40 +203,80 @@ public class EventsRenderer extends Renderer {
             QDataSet msgs= DataSetOps.unbundle(ds,ds.length(0)-1);
 
             int ix= (int)p2.getX() - parent.getColumn().getDMinimum();
-            
+
+            Datum px= parent.getXAxis().invTransform( p2.getX() );
+
             if ( ix<0 || ix >= eventMap.length ) {
                 setLabel(null);
             } else {
-                int i= eventMap[ix];
-                if ( i>=0 ) {
-                    double sxmin= xmins.value(i);
-                    double sxmax= xmaxs.value(i);
-                    Units sxunits= SemanticOps.getUnits(xmins);
-                    Units zunits= SemanticOps.getUnits(msgs);
-                    Units sxmaxunits= SemanticOps.getUnits( xmaxs );
-                    if ( !sxmaxunits.isConvertableTo(sxunits) ) {
-                        if ( sxmaxunits.isConvertableTo(sxunits.getOffsetUnits() ) ) {
-                            sxmax= sxmin + sxmaxunits.convertDoubleTo( sxunits.getOffsetUnits(), sxmax );
-                        } else {
-                            sxmax= sxmin;
-                        }
-                    } else {
-                        sxmax= sxmaxunits.convertDoubleTo( sxunits, sxmax );
-                    }
+                Units sxunits= SemanticOps.getUnits(xmins);
+                Units zunits= SemanticOps.getUnits(msgs);
+                Units sxmaxunits= SemanticOps.getUnits( xmaxs );
 
-                    if ( sxmax<sxmin ) {
-                        setLabel( "Error, sxmax<sxmin");
-                    } else {
-                        String ss= "";
-                        DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
-                        try {
-                            Datum sz= zunits.createDatum( msgs.value(i) );
-                            ss= textSpecifier.getText( dr, sz );
-                        } catch ( RuntimeException ex ) {
-                            ss= "" + dr + " fill";
+                List<Integer> ii= new ArrayList();
+                if ( useOnlyEventsMap==true && eventMap[ix]>-1 ) {
+                    ii.add( eventMap[ix] );
+                } else {
+                    if ( eventMap[ix]>-1 ) ii.add( eventMap[ix] );
+                    for ( int i=0; i<xmaxs.length(); i++ ) {
+                        double sxmin= xmins.value(i);
+                        double sxmax= xmaxs.value(i);
+                        if ( !sxmaxunits.isConvertableTo(sxunits) ) {
+                            if ( sxmaxunits.isConvertableTo(sxunits.getOffsetUnits() ) ) {
+                                sxmax= sxmin + sxmaxunits.convertDoubleTo( sxunits.getOffsetUnits(), sxmax );
+                            } else {
+                                sxmax= sxmin;
+                            }
+                        } else {
+                            sxmax= sxmaxunits.convertDoubleTo( sxunits, sxmax );
                         }
-                        setLabel( ss );
+
+                        if ( sxmax<sxmin ) {
+                            setLabel( "Error, sxmax<sxmin");
+                        } else {                            
+                            DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
+                            if ( dr.contains(px) ) {
+                                if ( !ii.contains(i) )  ii.add(i);
+                            }
+                        }
                     }
+                }
+
+                if ( ii.size()>=0 ) {
+                    StringBuilder sb= new StringBuilder();
+                    int n= Math.min( ii.size(), 4 );
+                    for ( int iii=0; iii<ii.size(); iii++ ) {
+                        int i= ii.get(iii);
+                        double sxmin= xmins.value(i);
+                        double sxmax= xmaxs.value(i);
+                        if ( !sxmaxunits.isConvertableTo(sxunits) ) {
+                            if ( sxmaxunits.isConvertableTo(sxunits.getOffsetUnits() ) ) {
+                                sxmax= sxmin + sxmaxunits.convertDoubleTo( sxunits.getOffsetUnits(), sxmax );
+                            } else {
+                                sxmax= sxmin;
+                            }
+                        } else {
+                            sxmax= sxmaxunits.convertDoubleTo( sxunits, sxmax );
+                        }
+
+                        if ( sxmax<sxmin ) {
+                            sb.append( "Error, sxmax<sxmin!c");
+                        } else {
+                            String ss= "";
+                            DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
+                            try {
+                                Datum sz= zunits.createDatum( msgs.value(i) );
+                                ss= textSpecifier.getText( dr, sz );
+                            } catch ( RuntimeException ex ) {
+                                ss= "" + dr + " fill";
+                            }
+                            sb.append( ss + "!c");
+                        }
+                    }
+                    if ( ii.size()>4 ) {
+                        sb.append( "("+(ii.size()-4)+" more items not shown)" );
+                    }
+                    setLabel( sb.toString() );
                 } else {
                     setLabel(null);
                 }
