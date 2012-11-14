@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.*;
+import org.das2.util.LoggerManager;
 import org.das2.util.filesystem.FileSystemUtil;
 
 /**
@@ -52,7 +53,7 @@ public class FileStorageModelNew {
 
     String template;
 
-    static Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
+    static Logger logger= LoggerManager.getLogger("das2.system.fsm");
     
     HashMap fileNameMap=null;
     private boolean allowGz= true;  // if true, the getFile can use a .gz version to retrieve a file.
@@ -282,6 +283,7 @@ public class FileStorageModelNew {
      * @throws IOException
      */
     private String[] getNamesFor( final DatumRange targetRange, boolean versioning, ProgressMonitor monitor ) throws IOException {
+        logger.fine( "getNamesFor "+this.root );
         String listRegex;
 
         FileSystem[] fileSystems;
@@ -329,6 +331,7 @@ public class FileStorageModelNew {
                 theListRegex= theListRegex+"(.gz)?";
             }
             String[] files1= fileSystems[i].listDirectory( "/", theListRegex );
+            logger.finer( "listDirectory("+theListRegex+")->"+files1.length );
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
@@ -344,6 +347,7 @@ public class FileStorageModelNew {
                             if ( extra.get("v")==null ) throw new RuntimeException("expected version");
                             versionList.add( extra.get("v") );
                         }
+                        logger.finer( "  add "+ff );
                     }
                 } catch ( IllegalArgumentException e ) {
                     logger.log( Level.WARNING, "", e );
