@@ -122,6 +122,10 @@ public abstract class Units {
     }
     
     public static final Units eV= new NumberUnits("eV");
+    public static final Units keV= new NumberUnits("keV");
+    static {
+        eV.registerConverter(Units.keV, UnitsConverter.KILO);
+    }
     
     /**
      * 1 / cm<sup>3</sup>
