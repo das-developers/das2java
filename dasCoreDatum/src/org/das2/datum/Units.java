@@ -83,16 +83,19 @@ public abstract class Units {
     public static final Units minutes= new NumberUnits("min");
     public static final Units seconds= new NumberUnits("s");
     public static final Units seconds2= new NumberUnits("sec");
-    public static final Units milliseconds= new NumberUnits("ms");
+    public static final Units milliseconds= new NumberUnits("ms","milliseconds");
     public static final Units milliseconds2= new NumberUnits("msec");
     public static final Units microseconds= new NumberUnits("microseconds");
     public static final Units nanoseconds= new NumberUnits("nanoseconds");
+    public static final Units ns= new NumberUnits("ns","nanoseconds");
     public static final Units picoseconds= new NumberUnits("picoseconds");
     public static final Units days= new NumberUnits("days");
     static {
         seconds.registerConverter(milliseconds, UnitsConverter.MILLI);
         seconds.registerConverter(microseconds, UnitsConverter.MICRO);
         seconds.registerConverter(nanoseconds,UnitsConverter.NANO);
+        seconds.registerConverter(ns,UnitsConverter.NANO);
+        nanoseconds.registerConverter( ns, UnitsConverter.IDENTITY );
         seconds.registerConverter(picoseconds,UnitsConverter.PICO);
         seconds.registerConverter(seconds2,UnitsConverter.IDENTITY);
         microseconds.registerConverter(nanoseconds, UnitsConverter.MILLI); // to support time formatting, often from us2000 to microseconds offset.
