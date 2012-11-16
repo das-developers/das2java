@@ -832,7 +832,7 @@ public class DasPlot extends DasCanvasComponent {
 
     @Override
     protected synchronized void paintComponent(Graphics graphics0) {
-        //System.err.println("dasPlot.paintComponent "+ getDasName() );
+        logger.log(Level.FINE, "dasPlot.paintComponent {0}", getDasName());
         if ( getCanvas().isValueAdjusting() ) {
             repaint();
             return;
@@ -851,7 +851,6 @@ public class DasPlot extends DasCanvasComponent {
             throw new RuntimeException("not event thread: " + Thread.currentThread().getName());
         }
         //paintComponentCount++;
-        logger.finest("entering DasPlot.paintComponent");
 
         if (getCanvas().isPrintingThread()) {
             logger.fine("* printing thread *");
@@ -926,7 +925,7 @@ public class DasPlot extends DasCanvasComponent {
                 //atGraphics.setClip(clip);
 
                 if ( cacheImageBounds.width!=cacheImage.getWidth() ) {
-                    System.err.println( " cbw: "+ cacheImageBounds.width + "  ciw:" + cacheImage.getWidth() );
+                    logger.log( Level.WARNING, " cbw: {0}  ciw:{1}", new Object[]{cacheImageBounds.width, cacheImage.getWidth()});
                 }
                 atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
                     //atGraphics.setClip(null);
@@ -1457,7 +1456,7 @@ public class DasPlot extends DasCanvasComponent {
         logger.log( Level.FINE, "removeRenderer({0})", new Object[] { rend } );
         //System.err.println("removeRenderer "+rend);
         if ( !renderers.contains(rend ) ) {
-            System.err.println("*** plot doesn't contain renderer: "+rend);
+            logger.log(Level.WARNING, "*** plot doesn''t contain renderer: {0}", rend);
         }
         if (getCanvas() != null) {
             rend.uninstallRenderer();
@@ -1868,7 +1867,7 @@ public class DasPlot extends DasCanvasComponent {
             Datum otherScale = otherRange.width().divide(otherAxis.getDLength());
             double expand = (scale.divide(otherScale).value() - 1) / 2;
             if (Math.abs(expand) > 0.0001) {
-                System.err.println("expand="+expand + " scale="+scale + " otherScale="+otherScale );
+                logger.log(Level.FINER, "expand={0} scale={1} otherScale={2}", new Object[]{expand, scale, otherScale});
                 DatumRange newOtherRange = DatumRangeUtil.rescale(otherRange, 0 - expand, 1 + expand);
                 otherAxis.setDatumRange(newOtherRange);
             }
