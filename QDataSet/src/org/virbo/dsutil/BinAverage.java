@@ -12,8 +12,10 @@ import org.das2.datum.Units;
 import java.util.Arrays;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
@@ -69,6 +71,63 @@ public class BinAverage {
         return result;
     }
 
+
+    /**
+     * takes rank 2 bundle (x,y,z) and averages it into table z(x,y).  This is similar to what happens in the
+     * spectrogram routine.
+     * @param ds rank 2 bundle(x,y,z)
+     * @param dep0 the depend0 for the result
+     * @param dep1 the depend1 for the result
+     * @return rank 2 dataset of z averages with depend_0 and depend_1.
+     */
+    public static DDataSet rebinBundle( QDataSet ds, QDataSet dep0, QDataSet dep1 ) {
+        DDataSet sresult= DDataSet.createRank2( dep0.length(), dep1.length() );
+        IDataSet nresult= IDataSet.createRank2( dep0.length(), dep1.length() );
+        QDataSet wds= DataSetUtil.weightsDataSet( DataSetOps.slice1(ds,2) );
+
+        double xscal= dep0.value(1) - dep0.value(0);
+        double xbase= dep0.value(0) - ( xscal / 2);
+        int nx= dep0.length();
+
+        double yscal= dep1.value(1) - dep1.value(0);
+        double ybase= dep1.value(0) - ( yscal / 2);
+        int ny= dep1.length();
+
+        for ( int ids=0; ids<ds.length(); ids++ ) {
+            if ( wds.value(ids)>0 ) {
+                double x= ds.value(ids,0);
+                double y= ds.value(ids,1);
+                double z= ds.value(ids,2);
+                int i= (int)( ( x-xbase ) / xscal );
+                int j= (int)( ( y-ybase ) / yscal );
+                if ( i<0 || j<0 ) continue;
+                if ( i>=nx || j>=ny ) continue;
+                sresult.putValue( i, j, z + sresult.value( i, j ) );
+                nresult.putValue( i, j, 1 + nresult.value( i, j ) );
+            }
+        }
+
+        double fill= -1e31;
+        for ( int i=0; i<nx; i++ ) {
+            for ( int j=0; j<ny; j++ ) {
+                int n= (int)nresult.value( i,j );
+                if ( n>0 ) {
+                    sresult.putValue( i,j, sresult.value(i,j)/n );
+                } else {
+                    sresult.putValue( i,j, fill );
+                }
+            }
+        }
+
+        DataSetUtil.copyDimensionProperties( ds, sresult );
+        sresult.putProperty( QDataSet.DEPEND_0, dep0 );
+        sresult.putProperty( QDataSet.DEPEND_1, dep1 );
+        sresult.putProperty( QDataSet.FILL_VALUE, fill );
+        sresult.putProperty( QDataSet.RENDER_TYPE, "nnSpectrogram" );
+
+        return sresult;
+    }
+
     /**
      * returns a dataset with tags specified by newTags
      * @param ds a rank 2 dataset.
@@ -80,6 +139,10 @@ public class BinAverage {
 
         if (ds.rank() != 2) {
             throw new IllegalArgumentException("ds must be rank2");
+        }
+
+        if ( SemanticOps.isBundle(ds) ) {
+            return rebinBundle( ds, newTags0, newTags1 );
         }
 
         QDataSet dstags0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
