@@ -3776,6 +3776,8 @@ public class Ops {
      * The result for rank 2 is an n,3 dataset of [x,y,z], or if there are no tags, just [z].
      * The last index will be the dependent variable, and the first indeces will
      * be the independent variables sorted by dimension.
+     * @see DataSetOps.flattenRank2
+     * @see DataSetOps.grid
      * @param ds
      * @return
      */
