@@ -704,6 +704,21 @@ public class SemanticOps {
     }
 
     /**
+     * returns true if the dataset is a time series.  This is either something that has DEPEND_0 as a dataset with time
+     * location units, or a join of other datasets that are time series.
+     * @param ds
+     * @return
+     */
+    public static boolean isTimeSeries( QDataSet ds ) {
+        if ( isJoin(ds) ) {
+            return isTimeSeries( ds.slice(0) );
+        } else {
+            QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+            return dep0!=null && UnitsUtil.isTimeLocation( SemanticOps.getUnits(ds) );
+        }
+    }
+
+    /**
      * returns the Double value of the number, preserving null and NaN.
      * @param value
      * @return
