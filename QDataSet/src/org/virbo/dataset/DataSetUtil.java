@@ -1811,10 +1811,16 @@ public class DataSetUtil {
      */
     public static QDataSet weightsDataSet(final QDataSet ds) {
         Object o= ds.property(QDataSet.WEIGHTS_PLANE);
-        if ( o!=null && !(o instanceof QDataSet) ) {
-            logger.log(Level.WARNING, "WEIGHTS_PLANE contained something that was not a qdataset: {0}", o);
-            o=null;
+        if ( o!=null ) {
+            if ( !(o instanceof QDataSet) ) {
+                logger.log(Level.WARNING, "WEIGHTS_PLANE contained something that was not a qdataset: {0}", o);
+                o=null;
+            } else if ( ((QDataSet)o).length()!=ds.length() ) {
+                logger.log(Level.WARNING, "WEIGHTS_PLANE was dataset with the wrong length: {0}", o);
+                o=null;
+            }
         }
+
         Number ofill= null;
         QDataSet result = (QDataSet) o;
         if ( result!=null ) {
