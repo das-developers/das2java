@@ -764,7 +764,19 @@ public class SemanticOps {
             DataSetUtil.putProperties( DataSetUtil.getProperties(ds), jds );
             return jds;
         } else if ( rank==2 ) {
-            if ( SemanticOps.isBundle(ds) ) { // copy over elements where
+            if ( isSimpleTableDataSet(ds) ) {
+                QDataSet xds= SemanticOps.xtagsDataSet(ds);
+                QDataSet yds= SemanticOps.ytagsDataSet(ds);
+                QDataSet xinside= xrange==null ? null :
+                    Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
+                QDataSet yinside= yrange==null ? null :
+                    Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
+                SubsetDataSet sds= new SubsetDataSet(ds);
+                if ( xinside!=null ) sds.applyIndex( 0, Ops.where(xinside) );  //TODO: consider the use of trim which would be more efficient.
+                if ( yinside!=null ) sds.applyIndex( 1, Ops.where(yinside) );
+                return sds;
+
+            } else { // copy over elements where
                 QDataSet xds= SemanticOps.xtagsDataSet(ds);
                 QDataSet yds= SemanticOps.getDependentDataSet(ds);
                 QDataSet xinside= xrange==null ? null :
@@ -788,17 +800,6 @@ public class SemanticOps {
                 }
                 return sds;
                 
-            } else { // simple table
-                QDataSet xds= SemanticOps.xtagsDataSet(ds);
-                QDataSet yds= SemanticOps.ytagsDataSet(ds);
-                QDataSet xinside= xrange==null ? null :
-                    Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
-                QDataSet yinside= yrange==null ? null :
-                    Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
-                SubsetDataSet sds= new SubsetDataSet(ds);
-                if ( xinside!=null ) sds.applyIndex( 0, Ops.where(xinside) );  //TODO: consider the use of trim which would be more efficient.
-                if ( yinside!=null ) sds.applyIndex( 1, Ops.where(yinside) );
-                return sds;
             }
         } else if ( rank==1 ) { 
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
