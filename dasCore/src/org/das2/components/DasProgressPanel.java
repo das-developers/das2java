@@ -148,8 +148,8 @@ public class DasProgressPanel implements ProgressMonitor {
     Exception source;
     Exception consumer;
 
-    ImageIcon cancel= new ImageIcon( DasProgressPanel.class.getResource("/images/cancel14.png") );
-    ImageIcon cancelGrey= new ImageIcon( DasProgressPanel.class.getResource("/images/cancelGrey14.png") );
+    ImageIcon cancel= new ImageIcon( DasProgressPanel.class.getResource("/images/icons/cancel14.png") );
+    ImageIcon cancelGrey= new ImageIcon( DasProgressPanel.class.getResource("/images/icons/cancelGrey14.png") );
     
     public DasProgressPanel(String label) {
 
