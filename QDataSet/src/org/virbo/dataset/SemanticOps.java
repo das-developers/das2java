@@ -714,7 +714,7 @@ public class SemanticOps {
             return isTimeSeries( ds.slice(0) );
         } else {
             QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
-            return dep0!=null && UnitsUtil.isTimeLocation( SemanticOps.getUnits(ds) );
+            return dep0!=null && UnitsUtil.isTimeLocation( SemanticOps.getUnits(dep0) );
         }
     }
 
