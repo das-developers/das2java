@@ -310,7 +310,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         BufferedWriter r = new BufferedWriter(new OutputStreamWriter(out));
 
         StringBuilder header = new StringBuilder();
-        header.append("## ");
+        //header.append("## "); // don't use comment characters so that labels and units are used in Autoplot's ascii parser.
         for (int j = 0; j < planesArray.length; j++) {
             header.append(myTableModel.getColumnName(j)).append("\t");
         }
