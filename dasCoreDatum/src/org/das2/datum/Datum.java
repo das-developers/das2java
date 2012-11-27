@@ -490,10 +490,14 @@ public class Datum implements Comparable {
      */
     @Override
     public String toString() {
+        Datum d= this;
+        if ( this.getUnits().isConvertableTo(Units.seconds ) ) {
+            d= DatumUtil.asOrderOneUnits(d);
+        }
         if (formatter==null) {
-            return units.getDatumFormatterFactory().defaultFormatter().format(this);
+            return units.getDatumFormatterFactory().defaultFormatter().format(d);
         } else {
-            return formatter.format(this);
+            return formatter.format(d);
         }
     }
     
