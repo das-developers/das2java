@@ -410,6 +410,7 @@ public final class DatumUtil {
         if ( dunits==Units.dimensionless ) return d;                
         if ( dunits==Units.dB ) return d;
         if ( dunits instanceof LocationUnits ) return d;
+        if ( dunits instanceof EnumerationUnits ) return d;
         
         Units[] conversions = dunits.getConvertableUnits();
         
@@ -418,6 +419,8 @@ public final class DatumUtil {
         for (int i = 0; i < conversions.length; i++) {
             Datum dd = d.convertTo(conversions[i]);
             Number n = dd.getValue();
+
+            if ( n.equals( d.getValue() ) ) continue;
             
             double nn = Math.abs(n.doubleValue());
             
