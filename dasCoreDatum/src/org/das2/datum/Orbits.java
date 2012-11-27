@@ -58,7 +58,7 @@ public class Orbits {
      * Read the orbits file.  Example files may be on the wiki page http://das2.org/wiki/index.php/Orbits.&lt;SC%gt;,
      * or on the classpath in /orbits/&lt;SC%gt;.dat  The orbits file will be read by ignoring any line
      * that does not contain three non-space blobs, and either the first two or last two should parse as an
-     * ISO8601 string.  The ISO8601 strings must start with 4-digit years, either
+     * ISO8601 string.  The ISO8601 strings must start with 4-digit years, either 19xx or 20xx.
      * Note the input can then be html, with a pre section containing the orbits.
      *
      * Note the wiki page is the source for cassini and crres, but other missions may come from special places encoded here.
