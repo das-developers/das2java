@@ -104,8 +104,14 @@ public class ReduceFilter implements StreamHandler {
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
 
-        unload( sd.descriptorId(pd) );
-        clear( sd.descriptorId(pd) );
+        try {
+            int id= sd.descriptorId(pd); 
+            unload( id );
+            clear( id );
+        } catch ( IllegalArgumentException ex ) {
+            //old id has already been cleared
+            // vap+das2server:http://emfisis.physics.uiowa.edu/das/das2Server?dataset=rbsp/RBSP-A/HFR_spectra.dsdf&start_time=2012-11-01T23:17&end_time=2012-11-02T08:16
+        }
 
         try {
             XPathExpression expr;
