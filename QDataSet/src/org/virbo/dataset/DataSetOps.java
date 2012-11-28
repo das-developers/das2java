@@ -603,8 +603,10 @@ public class DataSetOps {
         QDataSet dep2= (QDataSet) props.get( QDataSet.DEPEND_2 );
         QDataSet dep3= (QDataSet) props.get( QDataSet.DEPEND_3 );
         String bins1= (String) props.get( QDataSet.BINS_1 );
-        QDataSet bundle1= (QDataSet) props.get( QDataSet.BUNDLE_1 );
-        QDataSet bundle0= (QDataSet) props.get( QDataSet.BUNDLE_0 );
+        Object sbundle= props.get( QDataSet.BUNDLE_1 );
+        QDataSet bundle1= ( sbundle instanceof QDataSet ) ? (QDataSet) sbundle : null; // kludge to handle where QStream reader hasn't resolved this.
+        sbundle= props.get( QDataSet.BUNDLE_0 );
+        QDataSet bundle0= ( sbundle instanceof QDataSet ) ? (QDataSet) sbundle : null;
 
         if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
             throw new IllegalArgumentException("both DEPEND_0 and DEPEND_1 have rank>1");
