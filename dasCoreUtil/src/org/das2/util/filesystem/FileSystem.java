@@ -25,8 +25,10 @@ package org.das2.util.filesystem;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -411,10 +413,52 @@ public abstract class FileSystem  {
     /**
      * returns a list of the names of the files in a directory that match regex.
      * Trailing slashes on directory names are not part of the name and need
-     * not be part of the regex.
+     * not be part of the regex.  
+     * Note regex is a regular expression (.*\.dat), not a glob (*.dat)
+     * @param directory the directory
+     * @param regex regular expression
+     * @return
+     * @throws IOException
      */
     abstract public String[] listDirectory( String directory, String regex ) throws IOException;
     
+    /**
+     * do a deep listing of directories, resolving wildcards along the way.  Note this
+     * can be quite expensive, so be careful when levels are too deep.
+     * @param directory
+     * @param regex regular expression (.*\.dat) (not a glob like *.dat).
+     * @return
+     * @throws IOException
+     */
+    public String[] listDirectoryDeep( String directory, String regex ) throws IOException {
+        List<String> result= new ArrayList();
+        int i= regex.indexOf( "/" );
+        System.err.printf("listDirectoryDeep(%s,%s)\n",directory,regex);
+        if ( i==-1 ) {
+            return listDirectory( directory, regex );
+        } else if ( i==0 ) {
+            return listDirectory( directory, regex.substring(1) );
+        } else {
+            String[] ss= listDirectory( directory, regex.substring(0,i) );
+            if ( ss.length==1 && ss[0].length()==(i+1) && ss[0].substring(0,i).equals(regex.substring(0,i) ) ) {
+                String dir= ss[0];
+                String[] ss1= listDirectoryDeep( directory + dir, regex.substring(dir.length()) );
+                for ( int j=0; j<ss1.length; j++ ) {
+                    ss1[j]= dir + ss1[j];
+                }
+                return ss1;
+            }
+            for ( String s: ss ) {
+                if ( s.endsWith("/") ) {
+                    String[] ss1= listDirectoryDeep( directory+s, regex.substring(i+1) );
+                    for ( String s1: ss1 ) {
+                        result.add( directory + s + s1 );
+                    }
+                }
+            }
+        }
+        return result.toArray( new String[result.size()] );
+    }
     /**
      * Boolean.TRUE if the filesystem ignores case, such as Windows local filesystem.
      */
