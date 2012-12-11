@@ -274,10 +274,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      *   ds[t,y] rank 2 table dataset
      *   ds[n,t,y]  rank 3 dataset with the first dimension join
      * See each renderer's documentation for the schemes it takes.
+     * Note the lastException property is cleared, even when the dataset is null.
      * @param ds
      */
     public void setDataSet(QDataSet ds) {
-        logger.log(Level.FINE, "Renderer.setDataSet {0}: {1}", new Object[]{id, ds});
+        logger.log(Level.FINE, "Renderer.setDataSet {0}: {1}", new Object[]{id, String.valueOf(ds) });
 
         QDataSet oldDs = this.ds;
         this.lastException = null;
@@ -298,7 +299,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * set the exception to be rendered instead of the dataset.
      */
     public void setException(Exception e) {
-        logger.log(Level.FINE, "Renderer.setException: {0}", e);
+        logger.log(Level.FINE, "Renderer.setException {0}: {1}", new Object[] { id, String.valueOf(e) });
         Exception oldException = this.lastException;
         this.lastException = e;
         this.renderException = lastException;
