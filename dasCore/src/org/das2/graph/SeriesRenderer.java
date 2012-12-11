@@ -1322,6 +1322,7 @@ public class SeriesRenderer extends Renderer {
 
 
         QDataSet dataSet = getDataSet();
+        selectionArea= null;
 
         if (dataSet == null ) {
             logger.fine("dataset was null");
