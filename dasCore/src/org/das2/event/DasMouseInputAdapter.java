@@ -518,17 +518,20 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             }
             for (int i = 0; i < dd.length; i++) {
                 if (dd[i] != null) {
-                    parent.getCanvas().paintImmediately(dd[i]);
+                    //parent.getCanvas().paintImmediately(dd[i]);
+                    parent.getCanvas().repaint(dd[i]);
                 }
             }
             for (int i = 0; i < dirtyBoundsList.length; i++) {
                 if (dirtyBoundsList[i] != null) {
-                    parent.getCanvas().paintImmediately(dirtyBoundsList[i]);
+                    //parent.getCanvas().paintImmediately(dirtyBoundsList[i]);
+                    parent.getCanvas().repaint(dirtyBoundsList[i]);
                 }
             }
         } else {
             if (active != null) {
-                parent.getCanvas().paintImmediately(0, 0, parent.getCanvas().getWidth(), parent.getCanvas().getHeight());
+                //parent.getCanvas().paintImmediately(0, 0, parent.getCanvas().getWidth(), parent.getCanvas().getHeight());
+                parent.getCanvas().repaint();
             }
         }
         if (active == null) {
