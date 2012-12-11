@@ -1457,6 +1457,8 @@ public class SeriesRenderer extends Renderer {
 
     private Shape calcSelectionArea( DasAxis xaxis, DasAxis yaxis, QDataSet xds, QDataSet ds ) {
 
+        long t0= System.currentTimeMillis();
+
         Datum widthx;
         if (xaxis.isLog()) {
             widthx = Units.logERatio.createDatum(Math.log(xaxis.getDataMaximum(xaxis.getUnits()) - xaxis.getDataMinimum(xaxis.getUnits())));
@@ -1496,6 +1498,7 @@ public class SeriesRenderer extends Renderer {
                 widthy.divide(yaxis.getRow().getHeight()/5)
                 );
 
+            logger.fine( String.format( "reduce path in calcSelectionArea: %s\n", reduce ) );
             GeneralPath path = GraphUtil.getPath(xaxis, yaxis, reduce, histogram, true );
 
             Shape s = new BasicStroke(5.f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND).createStrokedShape(path);
@@ -1505,6 +1508,8 @@ public class SeriesRenderer extends Renderer {
             logger.fine("failed to convert units in calcSelectionArea");
             return SelectionUtil.NULL; // transient state, hopefully...
 
+        } finally {
+            logger.fine( String.format( "time to calcSelectionArea: %6.3f\n", ((System.currentTimeMillis()-t0)/1000.)) );
         }
 
         
