@@ -18,11 +18,13 @@ import org.das2.event.MouseModule;
 import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -514,9 +516,23 @@ public class EventsRenderer extends Renderer {
                 int ivds0= 0;
                 int ivds1= xmins.length();
 
+                Font f= getParent().getFont();
+                if ( getFontSize()!=null && getFontSize().length()>0 && !getFontSize().equals("1em") ) {
+                    try {
+                        double[] size= DasDevicePosition.parseFormatStr(getFontSize());
+                        double s= f.getSize2D() * size[0]/100 + f.getSize2D() * size[1] + size[2];
+                        f= f.deriveFont((float)s);
+                    } catch ( ParseException ex ) {
+                        ex.printStackTrace();
+                    }
+                }
+                g1.setFont(f);
+
                 GrannyTextRenderer gtr= new GrannyTextRenderer();
 
                 int ixmax0= -999;
+
+                int lastMessageTailX= -10000; // avoid overlaps by keeping track of last right side.
 
                 for ( int i=ivds0; i<ivds1; i++ ) {
 
@@ -528,6 +544,13 @@ public class EventsRenderer extends Renderer {
 
                     int ixmin= (int)xAxis.transform( xmins.value(i),xunits);
                     int ixmax= (int)xAxis.transform( xmaxs.value(i),xunits);
+
+                    if ( ixmax<=-10000 ) {
+                        continue;
+                    }
+                    if ( ixmin>=10000 ) {
+                        continue;
+                    }
 
                     int iwidth= Math.max( ixmax- ixmin, 1 ); 
 
@@ -543,11 +566,18 @@ public class EventsRenderer extends Renderer {
                             g.setColor( new Color( rr, gg, bb, 128 ) );
                         }
                     }
-                    
+
+                    gtr.setString( g1,"xxx" );
+                    int textHeight= (int)gtr.getHeight();
+
                     if ( column.getDMinimum() < ixmax || column.getDMaximum() > ixmin ) { // if any part is visible
                         if ( iwidth==0 ) iwidth=1;
                         if ( dt<100 ) sa.append( new Rectangle( ixmin-2, row.getDMinimum(), iwidth+4, row.getHeight() ), false );
-                        g.fill( new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() ) );
+                        if ( this.orbitMode ) {
+                            g.fill( new Rectangle( ixmin, row.getDMaximum()-textHeight, iwidth-1, textHeight ) );
+                        } else {
+                            g.fill( new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() ) );
+                        }
                         int im= ixmin-column.getDMinimum();
                         int em0= im-1;
                         int em1= im+iwidth+1;
@@ -560,6 +590,14 @@ public class EventsRenderer extends Renderer {
                             String text= textSpecifier.getText( dr, d );
                             gtr.setString(g1,text);
                             gtr.draw( g1, ixmin+2, row.getDMinimum()+(int)gtr.getAscent() );
+                        }
+                        if ( this.orbitMode ) {
+                            if ( ixmax+2>lastMessageTailX ) {
+                                String text= eu.createDatum( msgs.value(i) ).toString();
+                                gtr.setString(g1,text);
+                                gtr.draw( g1, ixmin+2, row.getDMaximum()-textHeight+(int)gtr.getAscent() );
+                                lastMessageTailX= ixmin+2 + (int)gtr.getWidth();
+                            }
                         }
                     }
                 }
@@ -602,7 +640,9 @@ public class EventsRenderer extends Renderer {
     @Override
     public void setControl(String s) {
         super.setControl(s);
-        this.setShowLabels( getBooleanControl( "showLabels", isShowLabels() ) );
+        this.setShowLabels( getBooleanControl( "showLabels", false ) );
+        this.setOrbitMode( getBooleanControl( "orbitMode", false ));
+        this.setFontSize( getControl( "fontSize", "1em" ));
     }
 
     private Color color= new Color(100,100,100); 
@@ -642,6 +682,38 @@ public class EventsRenderer extends Renderer {
             parent.repaint();
         }
         propertyChangeSupport.firePropertyChange(PROP_SHOWLABELS, oldShowLabels, showLabels);
+    }
+
+    /**
+     * orbitMode true means don't show times, draw bars with 1-pixel breaks
+     */
+    protected boolean orbitMode = false;
+    public static final String PROP_ORBITMODE = "orbitMode";
+
+    public boolean isOrbitMode() {
+        return orbitMode;
+    }
+
+    public void setOrbitMode(boolean orbitMode) {
+        boolean oldOrbitMode = this.orbitMode;
+        this.orbitMode = orbitMode;
+        propertyChangeSupport.firePropertyChange(PROP_ORBITMODE, oldOrbitMode, orbitMode);
+    }
+
+    /**
+     * fontSize allows the font to be rescaled.  1em is the default size.  2em is twice the size.  12pt is 12 pixels.
+     */
+    protected String fontSize = "1em";
+    public static final String PROP_FONTSIZE = "fontSize";
+
+    public String getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(String fontSize) {
+        String oldFontSize = this.fontSize;
+        this.fontSize = fontSize;
+        propertyChangeSupport.firePropertyChange(PROP_FONTSIZE, oldFontSize, fontSize);
     }
 
     public static final String PROP_COLOR_SPECIFIER= "colorSpecifier";
