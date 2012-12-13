@@ -449,13 +449,13 @@ public class AsciiHeadersParser {
                 }
 
             } catch ( JSONException ex ) {
-                ex.printStackTrace();
+                logger.warning( ex.toString() );
             }
         }
 
         if ( messages.size()>0 ) {
             for ( Entry<JSONObject,String> jos1: messages.entrySet() ) {
-                System.err.println(""+messages.get(jos1.getValue()) );
+                logger.log( Level.INFO, "{0}", jos1.getValue() );
             }
         }
 
@@ -676,7 +676,7 @@ public class AsciiHeadersParser {
                 if ( inlineDataSets.containsKey((String)v) ) {
                     props1.put( name, inlineDataSets.get((String)v) );
                 } else {
-                    //System.err.println("unable to resolve property "+name+"="+v+" of "+datasets2.get(i)+".  No such dataset found." );
+                    logger.log(Level.WARNING, "unable to resolve property {0}={1} of {2}.  No such dataset found.", new Object[]{name, v, datasets2.get(i)});
                     throw new IllegalArgumentException("unable to resolve property "+name+"="+v+" of "+datasets2.get(i)+".  No such dataset found." );
                     //props1.put( name, v );
                 }
@@ -734,7 +734,7 @@ public class AsciiHeadersParser {
                     String name= positionToDs.get(column);
                     Integer ioldIndex= datasets.get(name);
                     if ( ioldIndex==null ) {
-                        System.err.println("here");
+                        logger.log(Level.WARNING, "unable to find dataset for \"{0}\"", name);
                     }
                     int oldIndex= datasets.get(name);
                     int[] qube= qubes.get(name);
@@ -787,11 +787,11 @@ public class AsciiHeadersParser {
                 return String.valueOf( propValue );
             }
         } catch ( ParseException ex ) {
-            System.err.println("unable to parse value for "+propName+": "+propValue );
+            logger.log(Level.WARNING, "unable to parse value for {0}: {1}", new Object[]{propName, propValue});
             return null;
             
         } catch ( NumberFormatException ex ) {
-            System.err.println("unable to parse value for "+propName+": "+propValue );
+            logger.log(Level.WARNING, "unable to parse value for {0}: {1}", new Object[]{propName, propValue});
             return null;
         }
     }
@@ -811,7 +811,7 @@ public class AsciiHeadersParser {
                  String key= (String) it.next();
                  Object o= jo.get(key);
                  if ( !( o instanceof JSONObject ) ) {
-                     System.err.println("expected JSONObject for value: "+key );
+                     logger.log(Level.WARNING, "expected JSONObject for value: {0}", key);
                      continue;
                  } else {
                      String name= Ops.safeName(key);
@@ -890,10 +890,10 @@ public class AsciiHeadersParser {
                                     Object v= coerceToType( prop, item );
                                     bd.putProperty( prop, ids, v );
                                 } else {
-                                    System.err.println("invalid value for property "+prop+ ": "+sv );
+                                    logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
                                 }
                              } else if ( sv instanceof JSONObject ) {
-                                System.err.println("invalid value for property "+prop+ ": "+sv );
+                                logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
                             } else {
                                 Object v= coerceToType( prop, sv );
                                 bd.putProperty( prop, ids, v );
