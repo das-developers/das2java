@@ -258,7 +258,6 @@ public class AsciiHeadersParser {
         for ( int ivar=0; ivar<names.length; ivar++ ) {
             String jsonName= names[ivar];
             String name= Ops.safeName(jsonName);
-            String altName= null;
             logger.log( Level.FINE, "processing name[{0}]={1}", new Object[]{ivar, jsonName});
             try {
                 JSONObject jo1= jo.getJSONObject(jsonName);
@@ -269,15 +268,6 @@ public class AsciiHeadersParser {
                     continue; 
                 }
                 int[] idims;
-                
-                if ( jo1.has("LABEL") ) {
-                    String label= jo1.getString("LABEL");
-                    int ip= label.indexOf("("); // "By (GSM)" -> "By"
-                    if ( ip>-1 ) {
-                        altName= label.substring(0,ip).trim();
-                    }
-                }
-                
                 if ( !jo1.has(PROP_DIMENSION) ) {
                     idims= new int[0];
 
@@ -416,18 +406,6 @@ public class AsciiHeadersParser {
                         }
                     }
                     if ( icol==-1 ) {
-                        lookFor= altName;
-                        for ( int j=0; j<columns.length; j++ ) {
-                            if ( columns[j].equals(lookFor) ) {
-                                logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
-                                icol= j;
-                                name= altName;
-                                bd.addDataSet( name, ids, idims, null, labels ); // findbugs NP_LOAD_OF_KNOWN_NULL_VALUE
-                                break;
-                            }
-                        }
-                    }
-                    if ( icol==-1 ) {
                         if ( jo1.has("START_COLUMN") ) {
                             icol=  jo1.getInt("START_COLUMN");
                             logger.log( Level.FINE, "using START_COLUMN={1} property for {0}", new Object[]{lookFor, icol } );
@@ -475,12 +453,6 @@ public class AsciiHeadersParser {
         if ( messages.size()>0 ) {
             for ( Entry<JSONObject,String> jos1: messages.entrySet() ) {
                 System.err.println(""+messages.get(jos1.getValue()) );
-            }
-        }
-
-        for ( int i=0; i<snames.length; i++ ) {
-            if ( snames[i]==null ) {
-                dsToPosition.put( "_dummy"+i, i );
             }
         }
 
@@ -746,31 +718,22 @@ public class AsciiHeadersParser {
         BundleDescriptor resortDataSets( Map<String,Integer> dsToPosition ) {
             Map<Integer,String> positionToDs= new LinkedHashMap();
 
-            int max= -1;
             for ( Entry<String,Integer> entry: dsToPosition.entrySet() ) {
                 positionToDs.put( entry.getValue(), entry.getKey() );
-                if ( entry.getValue()>max ) max= entry.getValue();
             }
 
             BundleDescriptor newb= new BundleDescriptor();
 
             int column=0;
             int i=0;
-
-            while ( i<=max ) {
+            while ( i< this.length() ) {
                 if ( positionToDs.containsKey(column) ) {
                     String name= positionToDs.get(column);
                     Integer ioldIndex= datasets.get(name);
                     if ( ioldIndex==null ) {
-                        System.err.println("here placeholder data");
-                        newb.props.put( i, new HashMap<String,Object>() ); // danger: shallow copy
-                        newb.datasets.put( name,  i );
-                        newb.datasets2.put( i, name );
-                        i+=1;
-                        column++;
-                        continue;
+                        System.err.println("here");
                     }
-                    int oldIndex= ioldIndex;
+                    int oldIndex= datasets.get(name);
                     int[] qube= qubes.get(name);
                     int len= DataSetUtil.product( qube );
                     newb.addDataSet( name, i, qube );
@@ -778,8 +741,6 @@ public class AsciiHeadersParser {
                     pp.put( QDataSet.START_INDEX, i );
                     newb.props.put( i, pp ); // danger: shallow copy
                     i+= len;
-                } else {
-                    i+= 1;
                 }
                 column++;
             }
