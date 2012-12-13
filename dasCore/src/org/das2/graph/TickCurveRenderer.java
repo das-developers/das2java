@@ -348,7 +348,7 @@ public class TickCurveRenderer extends Renderer {
 
         g.setFont( parent.getFont() );
         
-        g.setColor( Color.black );
+        //g.setColor( parent.getForeground() );
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
         QDataSet ds3= ds2;
