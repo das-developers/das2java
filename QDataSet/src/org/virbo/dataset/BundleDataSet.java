@@ -201,7 +201,12 @@ public final class BundleDataSet extends AbstractDataSet {
         } else {
             Object result= super.property(name);
             if ( result==null ) {
-                return datasets.get(i0).property(name);
+                return null;
+//                try {
+//                    return datasets.get(i0).property(name);
+//                } catch ( Exception ex ) {
+//                    return null;
+//                }
             } else {
                 return result;
             }
