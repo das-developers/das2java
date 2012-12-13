@@ -449,7 +449,7 @@ public class AsciiHeadersParser {
                 }
 
             } catch ( JSONException ex ) {
-                logger.warning( ex.toString() );
+                logger.log( Level.WARNING, "When handling {0}: {1}", new Object[]{jsonName, ex.toString()});
             }
         }
 
