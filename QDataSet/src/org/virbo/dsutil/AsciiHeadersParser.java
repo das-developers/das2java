@@ -9,9 +9,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -23,7 +25,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.virbo.dataset.AbstractDataSet;
-import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
@@ -317,16 +318,18 @@ public class AsciiHeadersParser {
                         String lookFor= elementNames[0]; //Note ELEMENT_NAMES must correspond to adjacent columns.
                         int icol= -1;
                         int count= 0;
+                        List<Integer> icols= new ArrayList();
                         for ( int j=0; j<columns.length; j++ ) {
                             if ( columns[j].equals(lookFor) ) {
                                 logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
                                 if ( count==0 ) icol= j;
                                 count++;
+                                icols.add(j);
                             }
                         }
                         if ( icol!=-1 ) {
                             if ( count>1 ) {
-                                logger.log(Level.WARNING, "Multiple columns have label \"{0}\"", lookFor);
+                                logger.log(Level.WARNING, "Multiple columns have label \"{0}\": {1}", new Object[] { lookFor, icols } );
                                 if ( jo1.has("START_COLUMN") ) {
                                     icol=  jo1.getInt("START_COLUMN");
                                     logger.log( Level.FINE, "using START_COLUMN={1} property for {0}", new Object[]{lookFor, icol } );
@@ -752,7 +755,12 @@ public class AsciiHeadersParser {
 
     }
 
-
+    /**
+     * provide mapping from JSON object type to QDataSet property type.
+     * @param propName
+     * @param propValue
+     * @return
+     */
     private static Object coerceToType( String propName, Object propValue ) {
         try {
             if ( propName.equals( QDataSet.UNITS ) ) {
@@ -809,8 +817,14 @@ public class AsciiHeadersParser {
                      String name= Ops.safeName(key);
                      int ids= bd.indexOf( name );
                      if ( ids==-1 ) {
-                         logger.log(Level.WARNING, "metadata found for key {0}, but this is not found in the ascii file parser", key);
-                         continue;
+                         JSONObject inlineObject= (JSONObject)o;
+                         if ( !inlineObject.has("VALUES") ) {
+                             logger.log(Level.WARNING, "metadata found for key {0}, but this is not found in the ascii file parser", key);
+                             continue;
+                         } else {
+                             // inline dataset already has metadata.
+                             continue;
+                         }
                      }
                      JSONObject propsj= ((JSONObject)o);
                      bd.putProperty( QDataSet.NAME, ids, name );
@@ -818,7 +832,7 @@ public class AsciiHeadersParser {
                      for ( ; props.hasNext(); ) {
                          String prop= (String) props.next();
                          Object sv= propsj.get(prop);
-                         if ( prop.equals( PROP_DIMENSION ) || prop.equals( "START_COLUMN") || prop.equals("ELEMENT_NAMES") ) {
+                         if ( prop.equals( PROP_DIMENSION ) || prop.equals( "START_COLUMN") || prop.equals("ELEMENT_NAMES") || prop.equals("ELEMENT_LABELS") ) {
                              if ( prop.equals("ELEMENT_NAMES") && sv instanceof JSONArray ) {
 //                                 String[] ss= toStringArray( (JSONArray)sv );
 //                                 String[] labels= toStringArray( (JSONArray)sv );
@@ -865,7 +879,20 @@ public class AsciiHeadersParser {
                                 bd.putProperty( QDataSet.LABEL, ids, sv );
                             }
                          } else {
-                            if ( sv instanceof JSONArray || sv instanceof JSONObject ) {
+                            if ( sv instanceof JSONArray ) {
+                                JSONArray asv= (JSONArray)sv;
+                                Object item= asv.get(0);
+                                boolean homogenious= true;
+                                for ( int i=1; i<asv.length(); i++ ) {
+                                    if ( !item.equals(asv.get(i)) ) homogenious= false;
+                                }
+                                if ( homogenious ) {
+                                    Object v= coerceToType( prop, item );
+                                    bd.putProperty( prop, ids, v );
+                                } else {
+                                    System.err.println("invalid value for property "+prop+ ": "+sv );
+                                }
+                             } else if ( sv instanceof JSONObject ) {
                                 System.err.println("invalid value for property "+prop+ ": "+sv );
                             } else {
                                 Object v= coerceToType( prop, sv );
