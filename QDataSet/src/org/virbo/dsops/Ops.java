@@ -713,6 +713,76 @@ public class Ops {
     }
 
     /**
+     * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the zeroth dimension.
+     *   collapse1( ds[30,20] ) -> ds[20]
+     * @param fillDs
+     * @param st the start index
+     * @param en the non-inclusive end index
+     * @return the averaged dataset
+     */
+    public static QDataSet collapse0( QDataSet fillDs, int st, int en ) {
+        fillDs= fillDs.trim( st,en );
+        fillDs= Ops.reduceMean(fillDs,0);
+        return fillDs;
+    }
+
+    /**
+     * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the zeroth dimension.
+     *   collapse1( ds[30,20] ) -> ds[20]
+     * @param fillDs
+     * @return the averaged dataset
+     */
+    public static QDataSet collapse0( QDataSet fillDs ) {
+        fillDs= Ops.reduceMean(fillDs,0);
+        return fillDs;
+    }
+
+    /**
+     * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the first dimension
+     *   collapse1( ds[30,20] ) -> ds[30]
+     * @param fillDs
+     * @return the averaged dataset
+     */
+    public static QDataSet collapse1( QDataSet fillDs ) {
+        fillDs= Ops.reduceMean(fillDs,1);
+        return fillDs;
+    }
+
+    /**
+     * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the first dimension
+     *   collapse2( ds[30,20,10,5] ) -> ds[30,20,5]
+     * @param fillDs
+     * @return the averaged dataset
+     */
+    public static QDataSet collapse2( QDataSet fillDs ) {
+        fillDs= Ops.reduceMean(fillDs,2);
+        return fillDs;
+    }
+
+    /**
+     * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the first dimension
+     *   collapse3( ds[30,20,10,5] ) -> ds[30,20,10]
+     * @param fillDs
+     * @return the averaged dataset
+     */
+    public static QDataSet collapse3( QDataSet fillDs ) {
+        fillDs= Ops.reduceMean(fillDs,3);
+        return fillDs;
+    }
+
+    /**
+     * trim the dataset to the indeces on the zeroth dimension.  Note
+     * the trim function can also be called directly.
+     * @param ds the dataset to be trimmed.
+     * @param st the start index
+     * @param en the non-inclusive end index
+     * @return
+     */
+    public static QDataSet trim( QDataSet ds, int st, int en ) {
+        return ds.trim( st, en );
+    }
+
+    /**
      * element-wise sqrt.
      * @param ds
      * @return
