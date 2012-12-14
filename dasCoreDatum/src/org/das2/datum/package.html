@@ -5,14 +5,15 @@ also contains a convention for identifying locations in time with units like
 Units.t1970, the number of microseconds elapsed since midnight, January 1, 1970.
 The Units class also contains a registry of Units and the conversions between them.
 </p>
-<p>A Datum is a number in the context of a Unit, for example "15 microseconds.".  
+<p>A Datum is a number in the context of a Unit, for example "15 microseconds." 
     A Datum object has methods for formatting itself as a String, representing 
-    itsself as a double in the context of another Unit, and mathematical
+    itself as a double in the context of another Unit, and mathematical
 operators that allow simple calculations to be made at the physical quantities.
-Also a Datum's precision can be limited to improve formatting.
+Also, a Datum's precision can be limited to improve formatting.
 </p>
 <p>A DatumRange is a pair of Datums that identify a range in the physical space
-of a Unit.  An example of a formatted DatumRange is "January, 2005" or "0 to 50Hz."</p>
+of a Unit.  An example of a formatted DatumRange is "January, 2005" or "0 to 50Hz"
+or "2012-12-14T00:00/2012-12-14T01:00"</p>
 <p>Also there are utility classes for parsing and formatting times.</p>
 
-</p></body>
+</body>
