@@ -24,6 +24,7 @@
 package org.das2.datum;
 
 import java.text.ParseException;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.format.DatumFormatter;
@@ -341,7 +342,36 @@ public final class DatumUtil {
             return TimeDatumFormatter.YEARS;
         }
     }
-    
+
+    /**
+     * Split the string to separate magnitude component from units component.
+     * "5" -> [ "5" ]
+     * "5 m" -> [ "5", "m" ]
+     * "5m" -> [ "5", "m" ]
+     * "4.5m^2" -> [ "4.5", "m^2" ] 
+     * "4.5e6m^2" -> [ "4.5e6", "m^2" ]
+     * @param s
+     * @return one or two element array
+     */
+    public static String[] splitDatumString( String s ) {
+        String[] ss= s.trim().split("\\s",2); //DONE: "5 Deg N" ->  "5" "Deg N"
+        if ( ss.length==1 ) { // sweep through to check for units.
+            int i=0;
+            int n= ss[0].length();
+            char t= ss[0].charAt(i);
+            boolean noexp= true;
+            while ( i<n && ( Character.isDigit(t) || t=='.' || ( ( t=='E' || t=='e' ) && noexp && ( i<n-1 ) && Character.isDigit(ss[0].charAt(i+1)) ) ) ) {
+                i++;
+                if ( t=='E' || t=='e' ) noexp= false;
+                if ( i<n ) t= ss[0].charAt(i);
+            }
+            if ( i<n ) {
+                ss= new String[] { ss[0].substring(0,i), ss[0].substring(i) };
+            }
+        }
+        return ss;
+    }
+
     /**
      * attempt to parse the string as a datum.  Note that if the
      * units aren't specified, then of course the Datum will be
@@ -349,7 +379,7 @@ public final class DatumUtil {
      * @throws ParseException when the double can't be parsed or the units aren't recognized.
      */
     public static Datum parse(java.lang.String s) throws ParseException {
-        String[] ss= s.trim().split("\\s",2); //DONE: "5 Deg N" ->  "5" "Deg N"
+        String[] ss= splitDatumString(s);
         Units units;
         if ( ss.length==1 ) {
                 units= Units.dimensionless;
@@ -360,6 +390,7 @@ public final class DatumUtil {
                 throw new ParseException( e.getMessage(), 0 );
             }
         }
+
         return Datum.create( Double.parseDouble(ss[0]), units );
     }
     
