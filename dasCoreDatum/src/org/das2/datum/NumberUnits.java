@@ -167,8 +167,9 @@ public class NumberUnits extends Units {
                     throw new ParseException("String contains no numeric part to parse into Datum",0);
                 }
                 String[] ss= s.split("\\s+");
-                if ( ss.length==1 && !s.startsWith("N") && !s.startsWith("n") && Character.isLetter(s.charAt(s.length()-1)) ) {   // "1hr", watch for nan
-                    for ( int i=s.length()-1; i>=0; i-- ) {  // find the last number.
+                // "1hr", watch for nan
+                if ( ss.length==1 && !s.startsWith("N") && !s.startsWith("n") && Character.isLetter(s.charAt(s.length()-1)) ) {   
+                    for ( int i=s.length()-1; i>=0; i-- ) {  // find the last number.  TODO: see DatumUtil.splitDatumString( String s )
                         if ( Character.isDigit(s.charAt(i)) ) {
                             String[] ss2= new String[2];
                             ss2[0]= ss[0].substring(0,i+1);
