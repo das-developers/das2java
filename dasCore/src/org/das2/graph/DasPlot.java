@@ -807,26 +807,34 @@ public class DasPlot extends DasCanvasComponent {
 
     /**
      * we need to call each renderer's updatePlotImage method, otherwise we assume
-     * the session is interactive.
+     * the session is interactive.  We call the getCanvas().isPrintingThread because this is very expensive to
+     * run when we are actually printing, where we redo updatePlotImage etc, but we might just be looking to
+     * create a thumbnail and existing images may work fine.  All this was introduced because Autoplot was calling
+     * canvas.getImage to get thumbnails and for its layout tab, and a quick way to get the canvas image was needed.
      * @param g
      */
     @Override
     protected void printComponent(Graphics g) {
-        resetCacheImageBounds(true);
-        List<Renderer> renderers1= Arrays.asList(getRenderers());
-        for (int i = 0; i < renderers1.size(); i++) {
-            Renderer rend = (Renderer) renderers1.get(i);
-            if (rend.isActive()) {
-                logger.log(Level.FINEST, "updating renderer #{0}: {1}", new Object[]{i, rend});
-                try {
-                    rend.updatePlotImage(xAxis, yAxis, new NullProgressMonitor());
-                } catch (DasException ex) {
-                    Logger.getLogger(DasPlot.class.getName()).log(Level.SEVERE, null, ex);
+        boolean doInvalidate= getCanvas().isPrintingThread();
+        if ( doInvalidate ) { // only if we really are printing from the canvas print method.  getImageNonPrint
+            resetCacheImageBounds(true);
+            List<Renderer> renderers1= Arrays.asList(getRenderers());
+            for (int i = 0; i < renderers1.size(); i++) {
+                Renderer rend = (Renderer) renderers1.get(i);
+                if (rend.isActive()) {
+                    logger.log(Level.FINEST, "updating renderer #{0}: {1}", new Object[]{i, rend});
+                    try {
+                        rend.updatePlotImage(xAxis, yAxis, new NullProgressMonitor());
+                    } catch (DasException ex) {
+                        Logger.getLogger(DasPlot.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
         super.printComponent(g);  // this calls paintComponent
-        invalidateCacheImage();
+        if ( doInvalidate ) {
+            invalidateCacheImage();
+        }
     }
 
 

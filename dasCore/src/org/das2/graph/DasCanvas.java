@@ -1166,6 +1166,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      */
     public Image getImage(int width, int height) {
 
+        long t0= System.currentTimeMillis();
 
         String msg = "dasCanvas.getImage(" + width + "," + height + ")";
         logger.fine(msg);
@@ -1193,6 +1194,54 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
 
+        logger.log(Level.FINE, "time to getImage: {0}ms", (System.currentTimeMillis() - t0));
+        return image;
+    }
+
+    /**
+     * Creates a BufferedImage by blocking until the image is ready.  This
+     * includes waiting for datasets to load, etc.  Works by submitting
+     * an invokeAfter request to the RequestProcessor that calls
+     * {@link #writeToImageImmediately(Image)}.
+     *
+     * Note, this calls writeToImageImmediatelyNonPrint, which avoids the usual overhead of
+     * revalidating the DasPlot elements we normally do when printing to a new device.
+     *
+     * @param width
+     * @param height
+     * @return
+     */
+    public Image getImageNonPrint(int width, int height) {
+
+        long t0= System.currentTimeMillis();
+
+        String msg = "dasCanvas.getImage(" + width + "," + height + ")";
+        logger.fine(msg);
+
+        prepareForOutput(width, height);
+
+        final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            writeToImageImmediatelyNonPrint(image);
+        } else {
+            Runnable run = new Runnable() {
+
+                public void run() {
+                    logger.fine("writeToImageImmediately");
+                    writeToImageImmediatelyNonPrint(image);
+                }
+            };
+            try {
+                SwingUtilities.invokeAndWait(run);
+            } catch (InvocationTargetException ex) {
+                application.getExceptionHandler().handle(ex);
+            } catch (InterruptedException ex) {
+                application.getExceptionHandler().handle(ex);
+            }
+        }
+
+        logger.log(Level.FINE, "time to getImageNonPaint: {0}ms", (System.currentTimeMillis() - t0));
         return image;
     }
 
@@ -1215,6 +1264,56 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         graphics.setColor(this.getForeground());
         graphics.setBackground(this.getBackground());
         print(graphics);
+    }
+
+    /**
+     * This by passes the normal print method used in writeToImageImmedately, which sets the printing flags which
+     * tell the components, like DasPlot, to fully reset.  This was introduced so that Autoplot could get thumbnails
+     * and an image of the canvas for its layout tab without having to reset.
+     */
+     public void writeToImageImmediatelyNonPrint( Image image ) {
+        long t0= System.currentTimeMillis();
+        Graphics2D graphics;
+        try {
+            synchronized (displayLockObject) {
+                if (displayLockCount != 0) {
+                    displayLockObject.wait();
+                }
+            }
+        } catch (InterruptedException ex) {
+        }
+        graphics = (Graphics2D) image.getGraphics();
+
+        // code from print method.  Here we do the print stuff, but don't turn on the printing flag.
+            setOpaque(false);
+
+            Graphics2D g= (Graphics2D)graphics;
+            // if svg
+            g.setColor( this.getBackground() );
+            g.fillRect(0,0,getWidth(),getHeight());
+            g.setColor( this.getForeground() );
+            g.setBackground( this.getBackground() );
+
+            //logger.fine("*** print graphics: " + g);
+            //logger.fine("*** print graphics clip: " + g.getClip());
+
+            //for (int i = 0; i < getComponentCount(); i++) {
+              //  Component c = getComponent(i);
+                //if (c instanceof DasPlot) {
+                //    DasPlot p = (DasPlot) c;
+                //logger.fine("    DasPlot.isDirty()=" + p.isDirty());
+                //logger.fine("    DasPlot.getBounds()=" + p.getBounds());
+                //System.err.println("    DasPlot.isDirty()=" + p.isDirty());
+                //System.err.println("    DasPlot.getBounds()=" + p.getBounds());
+               // }
+            //}
+
+            System.err.println( "isPrintingThread= "+isPrintingThread() );
+            
+            // avoid calling the overrided print method, which turns on flags for printing.
+            super.print(g);
+
+        logger.log(Level.FINE, "time to writeToImageImmediatelyNonPaint: {0}ms", (System.currentTimeMillis() - t0));
     }
 
     private PropertyChangeListener repaintListener= new PropertyChangeListener() {
