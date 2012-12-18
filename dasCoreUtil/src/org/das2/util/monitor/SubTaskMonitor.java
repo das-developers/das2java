@@ -34,36 +34,36 @@ package org.das2.util.monitor;
  * @author Jeremy
  */
 public class SubTaskMonitor implements ProgressMonitor {
-    
+
     ProgressMonitor parent;
     long min, max, progress, size;
     String label;
-    
+
     private SubTaskMonitor( ProgressMonitor parent, long min, long max ) {
         this.parent= parent;
         this.min= min;
         this.max= max;
         this.size= -1;
     }
-    
+
     public static SubTaskMonitor create( ProgressMonitor parent, long min, long max ) {
         return new SubTaskMonitor( parent, min, max );
     }
-        
+
     public void cancel() {
         parent.cancel();
     }
 
     private boolean finished= false;
-    
-    public void finished() {        
+
+    public void finished() {
         this.finished= true; // only to support the bean property
     }
 
     public boolean isFinished() {
         return this.finished;
     }
-    
+
     public long getTaskProgress() {
         return progress;
     }
@@ -72,7 +72,7 @@ public class SubTaskMonitor implements ProgressMonitor {
         return parent.isCancelled();
     }
 
-	@Deprecated
+    @Deprecated
     public void setAdditionalInfo(String s) {
         // ignore
     }
@@ -93,9 +93,9 @@ public class SubTaskMonitor implements ProgressMonitor {
     public long getTaskSize() {
         return this.size;
     }
-    
+
     boolean started= false;
-    
+
     public void started() {
         this.started= true;
         if ( parent.isStarted()==false ) parent.started();
@@ -104,7 +104,7 @@ public class SubTaskMonitor implements ProgressMonitor {
     public boolean isStarted() {
         return started;
     }
-    
+
     public void setLabel(String label) {
         this.label= label;
     }
@@ -112,9 +112,14 @@ public class SubTaskMonitor implements ProgressMonitor {
     public String getLabel() {
         return label;
     }
-    
+
+    @Override
     public String toString() {
-        return parent.toString()+">"+label;
+        if (label == null) {
+            return parent.toString();
+        } else {
+            return parent.toString() + ">" + label;
+        }
     }
 
     public void setProgressMessage(String message) {
