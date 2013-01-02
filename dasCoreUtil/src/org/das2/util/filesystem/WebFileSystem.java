@@ -72,6 +72,11 @@ public abstract class WebFileSystem extends FileSystem {
      */
     public static final int MEMORY_LISTING_TIMEOUT_MS= 60000;
 
+    /**
+     * timestamp checks will occur no more often than this.
+     */
+    public static final int HTTP_CHECK_TIMESTAMP_LIMIT_MS = 60000;
+
     public static File getDownloadDirectory() {
         File local = FileSystem.settings().getLocalCacheDir();
         return local;

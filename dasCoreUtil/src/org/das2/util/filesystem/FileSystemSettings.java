@@ -74,6 +74,8 @@ public class FileSystemSettings {
         return 5000;
     }
 
+    // NOTE WebFileSystem contains some settings as well!!
+
     public enum Persistence {
         /**
          * No persistence.  No files are cached locally.
