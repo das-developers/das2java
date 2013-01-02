@@ -12,7 +12,6 @@ import org.das2.datum.TimeUtil.TimeStruct;
 import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
 import org.das2.datum.CacheTag;
-import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
@@ -53,7 +52,7 @@ public class FileStorageModelNew {
 
     String template;
 
-    static Logger logger= LoggerManager.getLogger("das2.system.fsm");
+    static final Logger logger= LoggerManager.getLogger("das2.system.fsm");
     
     HashMap fileNameMap=null;
     private boolean allowGz= true;  // if true, the getFile can use a .gz version to retrieve a file.
@@ -283,7 +282,7 @@ public class FileStorageModelNew {
      * @throws IOException
      */
     private String[] getNamesFor( final DatumRange targetRange, boolean versioning, ProgressMonitor monitor ) throws IOException {
-        logger.fine( "getNamesFor "+this.root );
+        logger.log( Level.FINE, "getNamesFor {0}", this.root);
         String listRegex;
 
         FileSystem[] fileSystems;
@@ -331,7 +330,7 @@ public class FileStorageModelNew {
                 theListRegex= theListRegex+"(.gz)?";
             }
             String[] files1= fileSystems[i].listDirectory( "/", theListRegex );
-            logger.finer( "listDirectory("+theListRegex+")->"+files1.length );
+            logger.log( Level.FINER, "listDirectory({0})->{1}", new Object[]{theListRegex, files1.length});
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
@@ -347,14 +346,11 @@ public class FileStorageModelNew {
                             if ( extra.get("v")==null ) throw new RuntimeException("expected version");
                             versionList.add( extra.get("v") );
                         }
-                        logger.finer( "  add "+ff );
+                        logger.log( Level.FINER, "  add {0}", ff);
                     }
                 } catch ( IllegalArgumentException e ) {
-                    logger.log( Level.WARNING, "", e );
-                    if ( !e.getMessage().contains("invalid time before year 0001") ) {
-                        System.err.println(e);
-                    }
-                    System.err.println("ignoring file "+ff +" because of error when parsing as "+template);
+                    //logger.log( Level.WARNING, "", e ); // this just means file doesn't match template.
+                    //System.err.println("ignoring file "+ff +" because of error when parsing as "+template);
                 }
                 monitor.setTaskProgress( i*10 + j * 10 / files1.length );
             }
@@ -378,7 +374,7 @@ public class FileStorageModelNew {
                         bestVersions.put( key, thss );
                         bestFiles.put( key,ff );
                     } catch ( Exception ex ) {
-                        ex.printStackTrace();
+                        logger.log( Level.WARNING, "", ex );
                         // doesn't match if comparator (e.g. version isn't a decimal number)
                     }
                 } else {
@@ -388,7 +384,7 @@ public class FileStorageModelNew {
                             bestFiles.put( key,ff );
                         }
                     } catch ( Exception ex ) {
-                        ex.printStackTrace();
+                        logger.log( Level.WARNING, "", ex );
                         // doesn't match
                     }
                 }
