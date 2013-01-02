@@ -441,7 +441,7 @@ public class WebFileObject extends FileObject {
                 synchronized ( wfs ) {
                     Date remoteDate;
                     long localFileLastAccessed = wfs.getLastAccessed( this.getNameExt() );
-                    if ( System.currentTimeMillis() - localFileLastAccessed > FileSystemSettings.HTTP_CHECK_TIMESTAMP_LIMIT_MS ) {
+                    if ( System.currentTimeMillis() - localFileLastAccessed > WebFileSystem.HTTP_CHECK_TIMESTAMP_LIMIT_MS ) {
                         try {
                             if ( wfs instanceof HttpFileSystem ) {
                                     URL url = wfs.getURL(this.getNameExt());
