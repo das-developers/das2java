@@ -49,7 +49,7 @@ public class WebFileObject extends FileObject {
 
     private static final Logger logger= org.das2.util.LoggerManager.getLogger("das2.filesystem");
     
-    WebFileSystem wfs;
+    final WebFileSystem wfs;
     String pathname;
     File localFile;
     Date modifiedDate;
@@ -303,7 +303,20 @@ public class WebFileObject extends FileObject {
 
         if ( monitor==null ) throw new NullPointerException("monitor may not be null");
         Date remoteDate;
-        if (wfs instanceof HttpFileSystem && !wfs.isOffline() ) {
+
+        //check readonly cache for file.
+        if ( this.wfs.getReadOnlyCache()!=null ) {
+            File cacheFile= new File( this.wfs.getReadOnlyCache(), this.getNameExt() );
+            if ( cacheFile.exists() ) {
+                logger.log(Level.FINE, "using file from ro_cache: {0}", this.getNameExt());
+                return cacheFile;
+            }
+        }
+
+        if ( isLocal() ) { // isLocal does a careful check of timestamps, and minds the limits on access.
+            remoteDate = new Date(localFile.lastModified());
+            
+        } else if (wfs instanceof HttpFileSystem && !wfs.isOffline() ) {
             URL url = wfs.getURL(this.getNameExt());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD");
@@ -398,7 +411,8 @@ public class WebFileObject extends FileObject {
                 monitor.finished();
             }
         }
-
+        wfs.markAccess(this.getNameExt());
+        
         return localFile;
 
     }
@@ -414,12 +428,20 @@ public class WebFileObject extends FileObject {
 
         boolean download = false;
 
+        if ( this.wfs.getReadOnlyCache()!=null ) {
+            File cacheFile= new File( this.wfs.getReadOnlyCache(), this.getNameExt() );
+            if ( cacheFile.exists() ) {
+                logger.log(Level.FINE, "file exists in ro_cache, so trivially local: {0}", this.getNameExt());
+                return true;
+            }
+        }
+
         if (localFile.exists()) {
             if ( !wfs.isOffline() ) {
                 synchronized ( wfs ) {
                     Date remoteDate;
                     long localFileLastAccessed = wfs.getLastAccessed( this.getNameExt() );
-                    if ( System.currentTimeMillis() - localFileLastAccessed > 60000 ) {
+                    if ( System.currentTimeMillis() - localFileLastAccessed > FileSystemSettings.HTTP_CHECK_TIMESTAMP_LIMIT_MS ) {
                         try {
                             if ( wfs instanceof HttpFileSystem ) {
                                     URL url = wfs.getURL(this.getNameExt());
@@ -438,6 +460,9 @@ public class WebFileObject extends FileObject {
                                 download = true;
                             }
                             wfs.markAccess(this.getNameExt());
+
+                            localFileLastAccessed = wfs.getLastAccessed( this.getNameExt() );
+
                         } catch ( IOException ex ) {
                             return false;
                         }
