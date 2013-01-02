@@ -430,6 +430,7 @@ public abstract class WebFileSystem extends FileSystem {
             DirectoryEntry [] result= listings.get(directory);
             return result;
         } else {
+            logger.log(Level.FINE, "remove old directory listing for {0}", directory);
             listings.remove(directory);
             listingFreshness.remove(directory);
         }
