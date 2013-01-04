@@ -872,8 +872,8 @@ public class DatumRangeUtil {
             if ( ts1[0]>9000 ) {
                 throw new ParseException("Year cannot be greater than 9000: "+ts1[0], 0 );
             }
-            if ( ts2[0]>9000 ) {
-                throw new ParseException("Year cannot be greater than 9000: "+ts1[0], 0 );
+            if ( ts2[0]>9001 ) { // little slop needed for http://www.sarahandjeremy.net:8080/hudson/job/autoplot-test026/
+                throw new ParseException("Year cannot be greater than 9000: "+ts2[0], 0 );
             }
             
             if ( ts1lsd < DAY ) {

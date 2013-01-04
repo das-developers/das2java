@@ -1243,7 +1243,7 @@ public final class TimeUtil {
      */
     public static Datum createTimeDatum( int year, int month, int day, int hour, int minute, int second, int nano ) {
         if ( year<1000 ) throw new IllegalArgumentException("year must not be < 1000, and 2 digit years are not allowed(year="+year+")");
-        if ( year>9000 ) throw new IllegalArgumentException("year must be smaller than 9000");
+        if ( year>9001 ) throw new IllegalArgumentException("year must be smaller than 9000");
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
