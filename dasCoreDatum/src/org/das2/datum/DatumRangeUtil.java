@@ -869,6 +869,12 @@ public class DatumRangeUtil {
             
             if ( ts1[0]<1900 ) ts1[0]= y2k(""+ts1[0]);
             if ( ts2[0]<1900 ) ts2[0]= y2k(""+ts2[0]);
+            if ( ts1[0]>9000 ) {
+                throw new ParseException("Year cannot be greater than 9000: "+ts1[0], 0 );
+            }
+            if ( ts2[0]>9000 ) {
+                throw new ParseException("Year cannot be greater than 9000: "+ts1[0], 0 );
+            }
             
             if ( ts1lsd < DAY ) {
                 try {
