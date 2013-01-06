@@ -230,6 +230,10 @@ public class HttpFileSystem extends WebFileSystem {
 
             URLConnection urlc = remoteURL.openConnection();
             urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
+
+            //TODO: consider setting the following:
+            //urlc.setUseCaches(false);
+
             String userInfo;
             try {
                 userInfo = KeyChain.getDefault().getUserInfo(root);
