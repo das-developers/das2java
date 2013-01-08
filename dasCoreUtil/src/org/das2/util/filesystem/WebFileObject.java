@@ -209,6 +209,11 @@ public class WebFileObject extends FileObject {
     }
 
     public boolean exists() {
+        if ( wfs.getReadOnlyCache()!=null ) {
+            File f= wfs.getReadOnlyCache();
+            File ff= new File( f, this.pathname );
+            if ( ff.exists() ) return true;
+        }
         if ( localFile!=null && localFile.exists()) { // applet support
             return true;
         } else {
@@ -241,7 +246,7 @@ public class WebFileObject extends FileObject {
         this.isFolderResolved = false;
         
         if ( ! wfs.isAppletMode() ) {
-            this.localFile = new File(wfs.getLocalRoot(), pathname);
+            this.localFile = new File(wfs.getLocalRoot(), pathname); // TODO: perhaps this should be ro_cache.txt...
 
             if ( FileSystem.settings().getPersistence()==FileSystemSettings.Persistence.SESSION ) this.localFile.deleteOnExit();
 
