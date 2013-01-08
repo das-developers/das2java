@@ -26,6 +26,7 @@ package org.das2.util.filesystem;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -609,7 +610,7 @@ public abstract class FileSystem  {
     /**
      * part of the refactoring to cache time stamps as well, this convenience method returns the old string.
      * This returns des.name, plus '/' if it's a directory.
-     * @param des
+     * @param des array of directory entries.
      * @return des.name, and
      */
     public static String[] getListing( DirectoryEntry[] des ) {
@@ -620,6 +621,23 @@ public abstract class FileSystem  {
         return result;
     }
 
+    /**
+     * part of the refactoring to cache time stamps as well, this convenience method returns the old string.
+     * This returns des.name, plus '/' if it's a directory.
+     * @param des Map of directory entries.
+     * @return des.name, and
+     */
+    public static String[] getListing( Map<String,DirectoryEntry> des ) {
+        String[] result= new String[des.size()];
+        Collection<DirectoryEntry> ddes= des.values();
+        int i=0;
+        for ( DirectoryEntry ent : ddes ) {
+            result[i]= ent.name + ( ent.type=='d' ? "/" : "" );
+            i=i+1;
+        }
+        return result;
+    }
+    
     /**
      * return a copy of all cached filesystems
      * @return
