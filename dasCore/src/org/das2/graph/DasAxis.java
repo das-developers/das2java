@@ -2845,6 +2845,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             //int height = DMax - DMin + tickLabelFont.getSize() * 2;
             //blLabelRect = setRectangleBounds(blLabelRect, x, y, width, height);
             blLabelRect = getLabelBounds(new Rectangle(blTickRect.x - 10, DMin, 10, DWidth));
+        } else {
+            blLabelRect = blTickRect;
         }
         if (rightTickLabels) {
             trLabelRect = getLabelBounds(new Rectangle(trTickRect.x + trTickRect.width, DMin, 10, DWidth));
@@ -2853,6 +2855,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         //int width = maxLabelWidth + tick_label_gap;
         //int height = DMax - DMin + tickLabelFont.getSize() * 2;
         //trLabelRect = setRectangleBounds(trLabelRect, x, y, width, height);
+        } else {
+            trLabelRect = trTickRect;
         }
 
         //Add room for the axis label
