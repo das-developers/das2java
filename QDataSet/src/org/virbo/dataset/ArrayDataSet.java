@@ -513,7 +513,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
 
     /**
-     * join the properties of the two datasets.
+     * join the properties of the two datasets.  (for append, really...)
      * Note MONOTONIC assumes the ds will be added after ths.
      * @param ds
      */
@@ -531,6 +531,22 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             } else if ( thatDep!=null && thatDep.rank()==1 ) {
                 //TODO: check properties equal.
                 result.put( "DEPEND_"+i, thatDep );
+            }
+            QDataSet thatBundle= (QDataSet) ds.property( "BUNDLE_"+i );
+            QDataSet thisBundle= (QDataSet) ths.property("BUNDLE_"+i );
+            if ( i>0 && thatBundle!=null && thisBundle!=null ) {
+                if ( thisBundle.length()!=thatBundle.length() ) {
+                    throw new IllegalArgumentException("BUNDLE_"+i+" should be the same length to append, but they are not");
+                }
+                for ( int j=0; j<thatBundle.length(); j++ ) {
+                    Units thatu= (Units)thatBundle.property( QDataSet.UNITS, j );
+                    Units thisu= (Units)thisBundle.property( QDataSet.UNITS, j );
+                    if ( thisu!=thatu ) {
+                        throw new IllegalArgumentException("units in BUNDLE_"+i+" change...");
+                    }
+                }
+                //TODO: other safety checks...
+                result.put( "BUNDLE_"+i, thatBundle );
             }
         }
         String[] props;
