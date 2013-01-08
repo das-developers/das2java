@@ -43,6 +43,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -410,7 +411,43 @@ public class HttpFileSystem extends WebFileSystem {
         }
     }
 
+    /**
+     * Allow the local RO Cache to contain files that are not yet in the remote filesystem, to support the case
+     * where a data provider tests locally available products before mirroring them out to the public website.
+     * @param directory
+     * @param remoteList
+     * @return
+     */
+    private Map<String,DirectoryEntry> addRoCacheEntries( String directory, Map<String,DirectoryEntry> remoteList ) {
+        File f= this.getReadOnlyCache();
+        if ( f!=null ) {
+            String[] ss= new File( f, directory ).list();
+            List<DirectoryEntry> add= new ArrayList<DirectoryEntry>();
+            for ( String s: ss ) {
+                if ( !remoteList.containsKey(s) ) {
+                    File f1= new File( f, directory+s );
+                    DirectoryEntry de1= new DirectoryEntry();
+                    de1.modified= f1.lastModified();
+                    de1.name= s;
+                    de1.type= f1.isDirectory() ? 'd': 'f';
+                    de1.size= f1.length();
+                    add.add( de1 );
+                }
+            }
+            for ( DirectoryEntry de1: add ) {
+                remoteList.put( de1.name, de1 );
+            }
+        }
+        return remoteList;
+    }
 
+    /**
+     * list the directory, using the cached entry from listDirectoryFromMemory, or
+     * by HtmlUtil.getDirectoryListing.  If there is a ro_cache, then add extra entries from here as well.
+     * @param directory
+     * @return
+     * @throws IOException
+     */
     public String[] listDirectory(String directory) throws IOException {
 
         DirectoryEntry[] cached= listDirectoryFromMemory( directory );
@@ -442,7 +479,7 @@ public class HttpFileSystem extends WebFileSystem {
 
         directory = toCanonicalFolderName(directory);
 
-        DirectoryEntry[] result;
+        Map<String,DirectoryEntry> result;
         if ( isListingCached(directory) ) {
             logger.log(Level.FINE, "using cached listing for {0}", directory);
 
@@ -459,21 +496,23 @@ public class HttpFileSystem extends WebFileSystem {
                 if ( fin!=null ) fin.close();
             }
             
-            result = new DirectoryEntry[list.length];
+            result = new LinkedHashMap(list.length);
             int n = directory.length();
             for (int i = 0; i < list.length; i++) {
                 URL url = list[i];
                 DirectoryEntry de1= new DirectoryEntry();
                 de1.modified= Long.MAX_VALUE; // HTTP is somewhat expensive to get dates and sizes, so put in Long.MAX_VALUE to indicate need to load.
                 de1.name= getLocalName(url).substring(n);
-                de1.type= 'f';
+                de1.type= 'f'; //TODO: directories mis-marked?
                 de1.size= Long.MAX_VALUE;
-                result[i]= de1;
+                result.put(de1.name,de1);
             }
 
-            cacheListing(directory, result );
+            result= addRoCacheEntries( directory, result );
 
-            return FileSystem.getListing(result);
+            cacheListing( directory, result.values().toArray( new DirectoryEntry[result.size()] ) );
+
+            return FileSystem.getListing( result );
         }
 
         boolean successOrCancel= false;
@@ -492,6 +531,14 @@ public class HttpFileSystem extends WebFileSystem {
                     result1.add( f1.getName() + "/" );
                 } else {
                     result1.add( f1.getName() );
+                }
+            }
+            result= addRoCacheEntries( directory, new LinkedHashMap() );
+            for ( DirectoryEntry f1: result.values() ) {
+                if ( f1.type=='d' ) {
+                    result1.add( f1.name + "/" );
+                } else {
+                    result1.add( f1.name );
                 }
             }
             return result1.toArray( new String[result1.size()] );
@@ -521,7 +568,7 @@ public class HttpFileSystem extends WebFileSystem {
                     if ( fin!=null ) fin.close();
                 }
 
-                result = new DirectoryEntry[list.length];
+                result = new LinkedHashMap();
                 int n = directory.length();
                 for (int i = 0; i < list.length; i++) {
                     URL url = list[i];
@@ -530,10 +577,11 @@ public class HttpFileSystem extends WebFileSystem {
                     de1.name= getLocalName(url).substring(n);
                     de1.type= 'f';
                     de1.size= Long.MAX_VALUE;
-                    result[i] = de1;
+                    result.put(de1.name,de1);
                 }
 
-                cacheListing( directory, result );
+                result= addRoCacheEntries( directory, result );
+                cacheListing( directory, result.values().toArray( new DirectoryEntry[result.size()] ) );
 
                 return FileSystem.getListing(result);
                 
