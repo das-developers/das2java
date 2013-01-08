@@ -146,6 +146,9 @@ public class BinAverage {
         }
 
         QDataSet dstags0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dstags0==null ) {
+            throw new IllegalArgumentException("expected ds to have DEPEND_0");
+        }
 
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
