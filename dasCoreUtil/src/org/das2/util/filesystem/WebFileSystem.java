@@ -413,6 +413,11 @@ public abstract class WebFileSystem extends FileSystem {
     private Map<String,DirectoryEntry[]> listings= new HashMap();
     private Map<String,Long> listingFreshness= new HashMap();
 
+    /**
+     * return true if the listing file (.listing) is available in the cache, and is still fresh.
+     * @param directory
+     * @return
+     */
     public synchronized boolean isListingCached( String directory ) {
         File listing = listingFile( directory );
         if ( listing.exists() && ( System.currentTimeMillis() - listing.lastModified() ) < LISTING_TIMEOUT_MS ) {
@@ -428,6 +433,13 @@ public abstract class WebFileSystem extends FileSystem {
          listingFreshness.put( directory, new Long( System.currentTimeMillis() ) );
     }
 
+    /**
+     * list the directory using the ram memory cache.  MEMORY_LISTING_TIMEOUT_MS=60s limits the lifespan
+     * of a cache entry, and this is really to avoid expensive listings of the same resource when searches are
+     * done.
+     * @param directory
+     * @return
+     */
     protected synchronized DirectoryEntry[] listDirectoryFromMemory( String directory ) {
         Long freshness= listingFreshness.get(directory);
         if ( freshness==null ) return null;
@@ -474,8 +486,20 @@ public abstract class WebFileSystem extends FileSystem {
     }
     
 
+    /**
+     * return true if the name refers to a directory, not a file.
+     * @param filename
+     * @return
+     * @throws IOException
+     */
     abstract public boolean isDirectory(String filename) throws IOException;
 
+    /**
+     * return the directory listing for the name.  
+     * @param directory
+     * @return
+     * @throws IOException
+     */
     abstract public String[] listDirectory(String directory) throws IOException;
 
     public String[] listDirectory(String directory, String regex) throws IOException {
