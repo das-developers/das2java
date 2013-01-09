@@ -93,6 +93,7 @@ public class KeyChain {
                                 hash= hash.substring(0,hash.length()-1);
                             }
                             String storedUserInfo= ss[1].trim();
+                            //TODO: shouldn't "http://ectsoc@www.rbsp-ect.lanl.gov" match "http://www.rbsp-ect.lanl.gov    ectsoc:..."
                             keys.put( hash, storedUserInfo );
                         }
                     }
@@ -217,6 +218,7 @@ public class KeyChain {
         String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost();
 
         String storedUserInfo= keys.get(hash);
+        //TODO: shouldn't "http://ectsoc@www.rbsp-ect.lanl.gov" match "http://www.rbsp-ect.lanl.gov    ectsoc:"
         if ( storedUserInfo!=null ) return storedUserInfo;
 
         String proto= url.getProtocol();
