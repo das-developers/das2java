@@ -422,10 +422,15 @@ public class HttpFileSystem extends WebFileSystem {
         File f= this.getReadOnlyCache();
         if ( f!=null ) {
             String[] ss= new File( f, directory ).list();
+            if ( ss==null ) return remoteList;
             List<DirectoryEntry> add= new ArrayList<DirectoryEntry>();
             for ( String s: ss ) {
+                File f1= new File( f, directory+s );
+                if ( f1.isDirectory() ) {
+                    s= s+"/"; //TODO: verify windows.
+                }
                 if ( !remoteList.containsKey(s) ) {
-                    File f1= new File( f, directory+s );
+                    
                     DirectoryEntry de1= new DirectoryEntry();
                     de1.modified= f1.lastModified();
                     de1.name= s;
@@ -519,6 +524,8 @@ public class HttpFileSystem extends WebFileSystem {
 
         if ( this.isOffline() ) {
             File f= new File(localRoot, directory).getCanonicalFile();
+            logger.log(Level.FINE, "this filesystem is offline, using local listing: {0}", f);
+
             if ( !f.exists() ) throw new FileSystemOfflineException("unable to list "+f+" when offline");
             File[] listing = f.listFiles();
 
