@@ -202,6 +202,11 @@ public class HttpFileSystem extends WebFileSystem {
                 logger.log(Level.FINER, "initializing httpfs {0} in applet mode", root);
             }
             HttpFileSystem result = new HttpFileSystem(rooturi, local);
+
+            if ( offline ) {
+                logger.log( Level.WARNING, "filesystem is offline: {0}", rooturi );
+            }
+            
             result.offline = offline;
 
             return result;
