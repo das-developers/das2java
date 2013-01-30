@@ -2098,6 +2098,21 @@ public class Ops {
     }
 
     /**
+     * return an example of a QDataSet containing a pitch angle distribution.  This is
+     * a rank 2 dataset with angle in radians for DEPEND_0 and radius for DEPEND_1.
+     * @return
+     */
+    public static QDataSet ripplesPitchAngleDistribution() {
+        ArrayDataSet rip= ArrayDataSet.maybeCopy( ripples( 30, 15 ) );
+        QDataSet angle= linspace( PI/30/2, PI-PI/30/2, 30 );
+        QDataSet rad= linspace( 1, 5, 15 );
+        rip.putProperty( QDataSet.DEPEND_0, angle );
+        rip.putProperty( QDataSet.DEPEND_1, rad );
+        rip.putProperty( QDataSet.RENDER_TYPE, "pitchAngleDistribution" );
+        return rip;
+    }
+
+    /**
      * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
      * @param radius rank 0 dataset
      * @return QDataSet that when plotted is a circle.
