@@ -101,6 +101,31 @@ public class TickCurveRenderer extends Renderer {
     }
 
     /**
+     * return true if the data is ds[:,3] or ds[x[t]]  t->x->y
+     * @param ds
+     * @return
+     */
+    public static boolean acceptsData( QDataSet ds ) {
+        if ( ds.rank()==2 && ds.length(0)==3 ) {
+            return true;
+        }
+        QDataSet xx;
+        QDataSet yy;
+        QDataSet tt;
+
+        if ( ds.rank()==1 ) {
+            yy= ds;
+            if ( yy.property(QDataSet.DEPEND_0)==null ) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
      *
      * @param fillDs

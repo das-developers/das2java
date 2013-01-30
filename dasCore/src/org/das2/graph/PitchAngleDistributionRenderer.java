@@ -33,6 +33,32 @@ public class PitchAngleDistributionRenderer extends Renderer {
         setColorBar(cb);
     }
 
+    /**
+     * accepts data that is rank 2 and not a timeseries.  Angles
+     * may be in radians or in Units.degrees.
+     * @param ds
+     * @return
+     */
+    public static boolean acceptsData( QDataSet ds ) {
+        if ( ds.rank()==2 ) {
+            if ( SemanticOps.isTimeSeries(ds) ) return false;
+            if ( SemanticOps.isBundle(ds) ) return false;
+            QDataSet yds= SemanticOps.ytagsDataSet(ds);
+            if ( SemanticOps.getUnits(yds)==Units.degrees ) {
+                return true;
+            } else {
+                QDataSet extent= Ops.extent(yds);
+                if ( extent.value(0)<-2*PI || extent.value(1)>2*PI ) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        } else {
+            return false;
+        }
+    }
+
     PropertyChangeListener rebinListener= new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent e) {
             update();

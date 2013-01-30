@@ -26,6 +26,14 @@ import org.virbo.dsops.Ops;
  */
 public class VectorPlotRenderer extends Renderer {
 
+    public static boolean acceptsData( QDataSet ds ) {
+        if ( ds.rank()!=2 ) {
+            return false;
+        } else {
+            return ds.length()==0 || ds.length(0)==4;
+        }
+    }
+
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
      *

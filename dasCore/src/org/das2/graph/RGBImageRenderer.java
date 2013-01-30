@@ -148,6 +148,25 @@ public class RGBImageRenderer extends Renderer {
     }
 
     /**
+     * accepts either rank2 data with grey scale 0-255, or rank3(w,h,3-4)
+     * @param ds
+     * @return
+     */
+    public static boolean acceptsData( QDataSet ds ) {
+        if ( ds.rank()==2 ) {
+            return true;
+        } else if ( ds.rank()==3 ) {
+            if ( ds.length(0,0)>2 && ds.length(0,0)<5 ) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
      *
      * @param fillDs
