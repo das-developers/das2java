@@ -50,11 +50,11 @@ public class PitchAngleDistributionRenderer extends Renderer {
     public final void setColorBar(DasColorBar colorBar) {
         DasColorBar oldColorBar = this.colorBar;
         if ( this.colorBar!=null ) {
-            colorBar.removePropertyChangeListener("dataMinimum", rebinListener);
-            colorBar.removePropertyChangeListener("dataMaximum", rebinListener);
-            colorBar.removePropertyChangeListener("log", rebinListener);
-            colorBar.removePropertyChangeListener(DasColorBar.PROPERTY_TYPE, rebinListener);
-            colorBar.removePropertyChangeListener(DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
+            this.colorBar.removePropertyChangeListener("dataMinimum", rebinListener);
+            this.colorBar.removePropertyChangeListener("dataMaximum", rebinListener);
+            this.colorBar.removePropertyChangeListener("log", rebinListener);
+            this.colorBar.removePropertyChangeListener(DasColorBar.PROPERTY_TYPE, rebinListener);
+            this.colorBar.removePropertyChangeListener(DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
 
         }
         this.colorBar = colorBar;
