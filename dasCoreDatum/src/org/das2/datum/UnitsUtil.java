@@ -17,6 +17,9 @@ public class UnitsUtil {
      * space, such as decibels or percent increase.  Note Units.dimensionless
      * are not considered ratiometric.  (Of course, all ratiometic
      * units are dimensionless...)
+     *
+     * Do not confuse this with isRatioMeasurement.  "5kg" is ratio measurement.
+     * "105%" is ratiometric.
      */
     public static boolean isRatiometric( Units unit ) {
         return unit!=Units.dimensionless && unit.isConvertableTo(Units.logERatio);
