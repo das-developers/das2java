@@ -118,7 +118,7 @@ public class TickCurveRenderer extends Renderer {
             if ( yy.property(QDataSet.DEPEND_0)==null ) {
                 return false;
             } else {
-                return true;
+                return org.das2.datum.UnitsUtil.isIntervalOrRatioMeasurement( SemanticOps.getUnits(ds) );
             }
         } else {
             return false;
