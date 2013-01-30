@@ -55,6 +55,20 @@ public class UnitsUtil {
     public static boolean isIntervalMeasurement( Units unit ) {
         return !(unit instanceof EnumerationUnits) && unit.getOffsetUnits()!=unit;
     }
+
+    /**
+     * returns true if the unit is a interval measurement or is a ratio measurement,
+     * and not a nominal or ordinal measurement.  These are things that are plotted
+     * by showing a location on an axis.
+     * See http://en.wikipedia.org/wiki/Level_of_measurement
+     * Examples include "2008-04-09T14:27:00Z" and "5 km"
+     * @param unit
+     * @return
+     */
+    public static boolean isIntervalOrRatioMeasurement( Units unit ) {
+        return !(unit instanceof EnumerationUnits);
+    }
+
     /**
      * returns true if the unit is nominal, meaning that Datums with this unit
      * can only be equal or not equal.  Currently all nominal data is stored
