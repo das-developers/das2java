@@ -154,7 +154,11 @@ public class RGBImageRenderer extends Renderer {
      */
     public static boolean acceptsData( QDataSet ds ) {
         if ( ds.rank()==2 ) {
-            return true;
+            if ( SemanticOps.isBundle(ds) ) {
+                return false;
+            } else {
+                return true;
+            }
         } else if ( ds.rank()==3 ) {
             if ( ds.length(0,0)>2 && ds.length(0,0)<5 ) {
                 return true;
