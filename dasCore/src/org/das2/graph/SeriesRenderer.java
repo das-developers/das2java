@@ -397,6 +397,7 @@ public class SeriesRenderer extends Renderer {
             }
 
             count = i;
+            if ( count==0 ) haveValidColor= true; // don't show this warning when all the points are off the page.
 
         }
 
