@@ -700,7 +700,7 @@ public class DataSetUtil {
 
         StringBuilder dimStr = new StringBuilder("" + depNames[0] + ds.length());
         for ( int i=1; i<ds.rank(); i++ ) {
-            if ( depNames[i].endsWith("=") ) {
+            if ( depNames[i].length()==0 || depNames[i].endsWith("=") ) {
                 dimStr.append(",").append(depNames[i]).append(qubeDims[i]).append(qubeStr);
             } else {
                 dimStr.append(",").append(depNames[i]);
