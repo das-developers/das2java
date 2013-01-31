@@ -126,6 +126,8 @@ public class SeriesRenderer extends Renderer {
     public static final String PROPERTY_Y_DELTA_PLUS = "Y_DELTA_PLUS";
     public static final String PROPERTY_Y_DELTA_MINUS = "Y_DELTA_MINUS";
 
+    boolean haveValidColor= true;
+
     interface RenderElement {
 
         int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon);
@@ -294,12 +296,24 @@ public class SeriesRenderer extends Renderer {
             } else {
                 i = renderDraw(graphics, xAxis, yAxis, vds, mon);
             }
+
+            if ( haveValidColor==false ) {
+                lparent.postMessage( SeriesRenderer.this, "no valid data to color plot symbols", Level.INFO, null, null );
+            }
+
             return i;
         }
 
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
             QDataSet colorByDataSet1 = colorByDataSet(dataSet);
+            QDataSet wdsz= null;
+            if ( colorByDataSet1!=null ) {
+                wdsz= SemanticOps.weightsDataSet(colorByDataSet1);
+                haveValidColor= false;
+            } else {
+                haveValidColor= true; // just so we don't show a message.
+            }
 
             Units cunits = null;
             if (colorByDataSet1 != null) {
@@ -372,6 +386,7 @@ public class SeriesRenderer extends Renderer {
                     dpsymsPath[i * 2] = dx;
                     dpsymsPath[i * 2 + 1] = dy;
                     if (colorByDataSet1 != null) {
+                        if ( wdsz.value(index)>0 ) haveValidColor= true;
                         colors[i] = colorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
                     }
                     i++;
