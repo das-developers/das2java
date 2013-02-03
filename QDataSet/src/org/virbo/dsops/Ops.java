@@ -2711,6 +2711,9 @@ public class Ops {
             QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
             QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
 
+            if ( dep0==null ) dep0= findgen( ds.length() );
+            if ( dep1==null ) dep1= findgen( ds.length(0) );
+
             UnitsConverter uc= UnitsConverter.IDENTITY;
             Units dep0u= SemanticOps.getUnits(dep0);
             Units dep1u= SemanticOps.getUnits(dep1);
