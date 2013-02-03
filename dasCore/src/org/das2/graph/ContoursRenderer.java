@@ -70,6 +70,10 @@ public class ContoursRenderer extends Renderer {
             lparent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             return;
         }
+        if (tds.rank()!=2 ) {
+            lparent.postMessage(this, "dataset must be rank 2", DasPlot.INFO, null, null);
+            return;
+        }
 
         if (paths == null) {
             return;
@@ -215,6 +219,10 @@ public class ContoursRenderer extends Renderer {
         if (tds == null) {
             return;
         }
+        if (tds.rank()!=2 ) {
+            return;
+        }
+
         tds = new ClippedTableDataSet(tds, xAxis.getDatumRange(), yAxis.getDatumRange());
         Units units = SemanticOps.getUnits(tds);
 
@@ -260,7 +268,8 @@ public class ContoursRenderer extends Renderer {
             }
         }
 
-        QDataSet vds = Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
+        QDataSet vds;
+        vds= Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
         //TODO: why do we contour each time???
 
         paths = new GeneralPath[dv.getLength()];
