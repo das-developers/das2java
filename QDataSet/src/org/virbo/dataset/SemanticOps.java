@@ -35,7 +35,7 @@ public class SemanticOps {
      * @param ds
      * @return
      */
-    public final static Units getUnits(QDataSet ds) {
+    public static Units getUnits(QDataSet ds) {
         Units u = (Units) ds.property(QDataSet.UNITS);
         if ( u==null && isJoin(ds) ) {
             u= (Units) ds.slice(0).property(QDataSet.UNITS);
@@ -43,7 +43,7 @@ public class SemanticOps {
         return u == null ? Units.dimensionless : u;
     }
 
-    public final static UnitsConverter getUnitsConverter( QDataSet src, QDataSet dst ) {
+    public static UnitsConverter getUnitsConverter( QDataSet src, QDataSet dst ) {
         Units usrc= getUnits(src);
         Units udst= getUnits(dst);
         return usrc.getConverter(udst);
@@ -56,7 +56,7 @@ public class SemanticOps {
      * @return
      * @throws InconvertableUnitsException when it just can't be done (EnumerationUnits and Ratiometric)
      */
-    public final static UnitsConverter getLooseUnitsConverter( QDataSet src, QDataSet dst ) {
+    public static UnitsConverter getLooseUnitsConverter( QDataSet src, QDataSet dst ) {
         Units usrc= getUnits(src);
         Units udst= getUnits(dst);
         try {
