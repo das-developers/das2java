@@ -445,14 +445,14 @@ public final class DatumUtil {
         
         Units[] conversions = dunits.getConvertableUnits();
         
-        double bestScore = 0;
+        double bestScore = 1;
         Datum bestDatum = d;
         for (int i = 0; i < conversions.length; i++) {
             Datum dd = d.convertTo(conversions[i]);
             Number n = dd.getValue();
 
             if ( n.equals( d.getValue() ) ) continue;
-            
+
             double nn = Math.abs(n.doubleValue());
             
             double score;
@@ -460,7 +460,7 @@ public final class DatumUtil {
                 score = 100/nn;
             else
                 score = nn;
-            
+
             if (score > bestScore) {
                 bestScore = score;
                 bestDatum = dd;
