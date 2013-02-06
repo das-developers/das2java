@@ -548,13 +548,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return;
         }
         if (getUnits().isConvertableTo(dr.getUnits())) {
-            this.setDataRange(dr.min(), dr.max());
+            //this.setDataRange(dr.min(), dr.max());
+            this.dataRange.setRange(dr);
         } else {
             Units oldUnits = getUnits();
             this.resetRange(dr);
             firePropertyChange(PROP_UNITS, oldUnits, dr.getUnits());
         }
-        this.dataRange.setRange(dr);
     }
 
     public DatumRange getDatumRange() {
