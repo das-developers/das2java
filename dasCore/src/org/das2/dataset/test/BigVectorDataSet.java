@@ -1,0 +1,43 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.das2.dataset.test;
+
+import org.das2.dataset.DataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.dataset.VectorDataSetBuilder;
+import org.das2.datum.Units;
+import org.das2.util.monitor.ProgressMonitor;
+import java.util.Random;
+
+/**
+ *
+ * @author jbf
+ */
+public class BigVectorDataSet {
+
+    public static VectorDataSet getDataSet( int size, ProgressMonitor mon ) {
+        double dsize= (double)size;
+        
+        System.err.println("enter getDataSet");
+        long t0 = System.currentTimeMillis();
+
+        Random random = new Random(0);
+
+        VectorDataSetBuilder vbd = new VectorDataSetBuilder(Units.dimensionless, Units.dimensionless);
+        double y = 0;
+        for (int i = 0; i < size; i += 1) {
+            y += random.nextDouble() - 0.5;
+            if (i % 100 == 10) {
+                vbd.insertY( i / dsize, Units.dimensionless.getFillDouble());
+            } else {
+                vbd.insertY( i / dsize, y);
+            }
+        }
+        vbd.setProperty(DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
+        VectorDataSet vds = vbd.toVectorDataSet();
+        System.err.println("done getDataSet in " + (System.currentTimeMillis() - t0) + " ms");
+        return vds;
+    }
+}

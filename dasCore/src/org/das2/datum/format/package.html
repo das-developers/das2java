@@ -1,0 +1,19 @@
+<body>
+    <p>
+        Classes for formatting a Datum to a String.  The DatumFormatter
+base class identifies four methods: format(Datum), format( Datum, Units ), 
+grannyFormat( Datum ), and grannyFormat( Datum, Units ).  format(Datum)
+should return a string accurately representing the datum out-of-context, 
+generally meaning the datum's units are displayed along with the double 
+value.  format(Datum,Units) means that the string will be used in the context
+of the given units.  For example, say you want to output an ascii table
+with column headers.  Each column header indicates a title and a unit, for 
+example, "delay(sec)."  Then to format a datum for displaying in this column
+format( datum, Units.seconds ) would return an appropriate number.  The
+grannyFormat methods work the same way, except the formatter may return
+a "granny string" (see GrannyTextRenderer) like "cm!e-3!n"
+<p>format(Datum) is the
+only abstract class, and by default all other methods simply return the result
+of the format(Datum) method.</p>
+    
+</body>

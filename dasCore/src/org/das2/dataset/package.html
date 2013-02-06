@@ -1,0 +1,19 @@
+<body>
+    <p>Provides classes and interfaces for combining Datums into structured DataSets, and operators
+    for working with DataSets.  The DataSet interface is the base for all DataSets, which all
+    contain a set of monotonically-increasing xtags.  DataSets also contain a set of arbitary
+    properties, which are String->Object mappings.  These are used to store metadata such as 
+    axis labels.  DataSets can have auxiliary "planes" attached to them.  This
+    mechanism was first introduced as a means to keep track of the weights
+    after averaging, but we also use them for peaks-and-averages plots and
+    orbits. </p>
+    <p>DataSetDescriptors are used to provide access to datasets that are parametric over a long interval 
+    (generally time),
+    such as Voyager 1 power spectrum.  Clients request data from a DataSetDescriptor for a given time
+    interval and resolution.  The base class DataSetDescriptor is abstract and implements DataSet
+    caching. 
+    </p>
+    <p>Rebinners are DataSet operators that rebin data to a precisely-controlled set of X and Y tags.  Various
+    methods for rebinning data such as bin averaging and nearest neighbor sampling are provided.</p>
+    <p>Lastly, objects for caching datasets are provided.</p>
+</body>

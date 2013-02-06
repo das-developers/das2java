@@ -1,0 +1,4 @@
+build.timestamp: 
+build.user.name: 
+build.svnurl: $URL$
+build.svnrevision: $Revision$

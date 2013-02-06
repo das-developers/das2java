@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:simpleType name="direction-type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="horizontal" />
+			<xs:enumeration value="vertical" />
+		</xs:restriction>
+	</xs:simpleType>
+        
+        <xs:simpleType name="axis-orientation-type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="horizontal" />
+                        <xs:enumeration value="top" />
+                        <xs:enumeration value="bottom" />
+			<xs:enumeration value="vertical" />
+                        <xs:enumeration value="left" />
+                        <xs:enumeration value="right" />
+		</xs:restriction>
+        </xs:simpleType>
+        
+        <xs:simpleType name="colorbar-color-type">
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="color_wedge" />
+                <xs:enumeration value="grayscale" />
+                <xs:enumeration value="inverse_grayscale" />
+            </xs:restriction>
+        </xs:simpleType>
+		
+	<xs:simpleType name="alignment-type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="left" />
+			<xs:enumeration value="right" />
+			<xs:enumeration value="center" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="selectionMode-type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="single" />
+			<xs:enumeration value="mutiple" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="int-int-type">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="\(-?[0-9]+,-?[0-9]+\)" />
+		</xs:restriction>
+	</xs:simpleType>
+        
+        <xs:simpleType name="java-boolean">
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="true" />
+                <xs:enumeration value="false" />
+            </xs:restriction>
+        </xs:simpleType>
+        
+        <xs:simpleType name="normalized-double">
+            <xs:restriction base="xs:double">
+                <xs:minInclusive value="0.0" />
+                <xs:maxInclusive value="1.0" />
+            </xs:restriction>
+        </xs:simpleType>
+
+</xs:schema>

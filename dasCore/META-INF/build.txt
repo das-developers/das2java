@@ -1,0 +1,6 @@
+#Build Information
+#Tue Feb 19 15:50:39 CST 2008
+build.user.name=jbf
+build.timestamp=20080219_155039
+build.svnurl: $URL$
+build.svnrevision: $Revision$

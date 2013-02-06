@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:complexType name="commandblock-type">
+        <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="set" type="set-type" />
+                <xs:element name="update" type="update-type" />
+                <xs:element name="invoke" type="invoke-type" />
+                <xs:sequence>
+                    <xs:element name="if"
+                        type="if-elseif-type"
+                        minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="elseif"
+                        type="if-elseif-type"
+                        minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="else"
+                        type="commandblock-type"
+                        minOccurs="0" maxOccurs="1"/>
+                </xs:sequence>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="set-type">
+        <xs:attribute name="property" type="xs:string" use="required" />
+        <xs:attribute name="value" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="update-type">
+        <xs:attribute name="target" type="xs:string" use="required" />
+    </xs:complexType>
+        
+    <xs:complexType name="invoke-type">
+        <xs:attribute name="method" type="xs:string" use="required" />
+        <xs:attribute name="args" type="xs:string" default="" />
+    </xs:complexType>
+	
+    <xs:complexType name="if-elseif-type">
+        <xs:complexContent>
+            <xs:extension base="commandblock-type">
+                <xs:attribute name="test" type="xs:string" use="required" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>
