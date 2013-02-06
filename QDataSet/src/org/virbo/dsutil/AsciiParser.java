@@ -215,6 +215,8 @@ public class AsciiParser {
             iline++;
         }
 
+        if ( iline==HEADER_LENGTH_LIMIT ) line= null;
+        
         reader.close();
 
         return line;
