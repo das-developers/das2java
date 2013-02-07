@@ -543,6 +543,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void setDatumRange(DatumRange dr) {
         //System.err.println("setDatumRange("+dr+")");
+        DatumRange oldRange= dataRange.getDatumRange();
         if ( !rangeIsAcceptable(dr) ) { 
             System.err.println( "invalid range ignored"+dr );
             return;
@@ -555,6 +556,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             this.resetRange(dr);
             firePropertyChange(PROP_UNITS, oldUnits, dr.getUnits());
         }
+        firePropertyChange( PROPERTY_DATUMRANGE, oldRange, dr );
     }
 
     public DatumRange getDatumRange() {
