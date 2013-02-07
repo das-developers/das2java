@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.das2.server.reader;
+package org.das2.util.reader;
 
 /**
  *

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.das2.server.reader;
+package org.das2.util.reader;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  *
  * @author cwp
  */
-public interface Interface {
+public interface StreamSource {
 
 	/** Does this reader support connected operations over a BEEP channel */
 	public boolean canConnect();
@@ -25,7 +25,7 @@ public interface Interface {
 	 * @param format The data and header output format requested
 	 * @param stream The stream where the bytes should be emitted.
 	 */
-	public void retrieve(Selector[] selectors, Format format, OutputStream stream,
+	public void retrieve(Selector[] selectors, OutputFormat format, OutputStream stream,
 	                     Logger logger) throws IOException, NoDataException;
 
 	/** Setup a bidirectional communications channel with a client.
@@ -38,6 +38,6 @@ public interface Interface {
 	 * @returns 0 if the connection was properly closed, or a non zero value from the
 	 *          underlying beep library if an improper shutdown occurred.
 	 */
-	public int connect(Selector[] selectors, Format format, Object beepChannel,
+	public int connect(Selector[] selectors, OutputFormat format, Object beepChannel,
 		                Logger logger) throws IOException;
 }
