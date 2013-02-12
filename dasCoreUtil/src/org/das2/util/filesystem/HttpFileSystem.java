@@ -313,6 +313,7 @@ public class HttpFileSystem extends WebFileSystem {
                 } catch (IOException e) {
                     out.close();
                     in.close();
+                    logger.log( Level.FINE, "deleting partial download file {0}", partFile);
                     if ( partFile.exists() && !partFile.delete() ) {
                         throw new IllegalArgumentException("unable to delete "+partFile );
                     }
