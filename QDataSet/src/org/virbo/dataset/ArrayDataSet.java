@@ -571,9 +571,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             }
         }
         // special handling for QDataSet.CADENCE, and QDataSet.MONOTONIC
-        RankZeroDataSet o= (RankZeroDataSet) ths.property(QDataSet.CADENCE);
-        if ( o!=null && o.equals( ds.property(QDataSet.CADENCE) ) ) {
-            result.put( QDataSet.CADENCE, o );
+        props= new String[] { QDataSet.CADENCE, QDataSet.BINS_1 };
+        for ( int iprop= 0; iprop<props.length; iprop++ ) {
+            Object o= ths.property( props[iprop] );
+            if ( o!=null && o.equals( ds.property( props[iprop] ) ) ) {
+                result.put( props[iprop], o );
+            }
         }
 
         // special handling for monotonic property.
