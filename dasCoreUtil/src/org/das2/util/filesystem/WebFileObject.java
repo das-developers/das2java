@@ -47,7 +47,7 @@ import org.das2.util.monitor.CancelledOperationException;
  */
 public class WebFileObject extends FileObject {
 
-    private static final Logger logger= org.das2.util.LoggerManager.getLogger("das2.filesystem");
+    private static final Logger logger= org.das2.util.LoggerManager.getLogger("das2.filesystem.wfs");
     
     final WebFileSystem wfs;
     String pathname;
@@ -472,6 +472,8 @@ public class WebFileObject extends FileObject {
                             return false;
                         }
 
+                    } else {
+                        logger.log( Level.FINE, "limiting timestamp head checks to once per {0}sec.", (WebFileSystem.HTTP_CHECK_TIMESTAMP_LIMIT_MS / 1000));
                     }
 
                 }
