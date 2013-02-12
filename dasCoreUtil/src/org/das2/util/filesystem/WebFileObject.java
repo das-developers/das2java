@@ -272,6 +272,7 @@ public class WebFileObject extends FileObject {
         }
     }
 
+    @Override
     public String toString() {
         return "[" + wfs + "]" + getNameExt();
     }
