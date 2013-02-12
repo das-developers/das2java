@@ -629,6 +629,8 @@ public abstract class WebFileSystem extends FileSystem {
      * reduce the number of hits to a server by caching last access times for local files.
      * Note subclasses of this must call markAccess to indicate the file is accessed.
      *
+     * For example, we will not do a head request to check for an update more than once per minute.
+     *
      * @return
      */
     protected synchronized long getLastAccessed( String filename ) {
