@@ -7,6 +7,8 @@ package org.das2.util.filesystem;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This simply reduces invocations of an expensive operation by
@@ -16,6 +18,8 @@ import java.util.Map;
  * @author jbf
  */
 public class ExpensiveOpCache {
+
+    private static final Logger logger= Logger.getLogger("das2.filesystem.wfs");
 
     public static interface Op {
         Object doOp( String key );
@@ -56,6 +60,8 @@ public class ExpensiveOpCache {
                 times.put( key, t0 );
                 results.put( key, result );
             }
+        } else {
+            logger.log(Level.FINE, "using cached value for {0}: {1}", new Object[]{key, result.toString()});
         }
         return result;
     }
