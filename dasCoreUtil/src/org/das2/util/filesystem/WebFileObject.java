@@ -445,38 +445,15 @@ public class WebFileObject extends FileObject {
         if (localFile.exists()) {
             if ( !wfs.isOffline() ) {
                 synchronized ( wfs ) {
-                    Date remoteDate;
-                    long localFileLastAccessed = wfs.getLastAccessed( this.getNameExt() );
-                    if ( System.currentTimeMillis() - localFileLastAccessed > WebFileSystem.HTTP_CHECK_TIMESTAMP_LIMIT_MS ) {
-                        try {
-                            if ( wfs instanceof HttpFileSystem ) {
-                                    URL url = wfs.getURL(this.getNameExt());
-                                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                                    connection.setRequestMethod("HEAD");
-                                    connection.connect();
-                                    remoteDate = new Date(connection.getLastModified());
-                            } else {
-                                // this is the old logic
-                                remoteDate = new Date(localFile.lastModified());
-                            }
+                    Date remoteDate= (Date) wfs.accessCache.doOp( this.getNameExt() );
+                    Long localFileLastModifiedLong = localFile.lastModified();
+                    Date localFileLastModified= new Date( localFileLastModifiedLong );
 
-                            Date localFileLastModified = new Date(localFile.lastModified());
-                            if (remoteDate.after(localFileLastModified)) {
-                                logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
-                                download = true;
-                            }
-                            wfs.markAccess(this.getNameExt());
-
-                            localFileLastAccessed = wfs.getLastAccessed( this.getNameExt() );
-
-                        } catch ( IOException ex ) {
-                            return false;
-                        }
-
-                    } else {
-                        logger.log( Level.FINE, "limiting timestamp head checks to once per {0}sec.", (WebFileSystem.HTTP_CHECK_TIMESTAMP_LIMIT_MS / 1000));
+                    if (remoteDate.after(localFileLastModified)) {
+                        logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
+                        download = true;
                     }
-
+                    
                 }
             } else {
                 return true;
