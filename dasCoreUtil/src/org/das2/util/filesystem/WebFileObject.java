@@ -293,6 +293,13 @@ public class WebFileObject extends FileObject {
         return Channels.newChannel(in);
     }
 
+    /**
+     * return the file for the WebFileObject.
+     * @param monitor
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
     public File getFile(ProgressMonitor monitor) throws FileNotFoundException, IOException {
         
         if ( wfs.isAppletMode() ) throw new SecurityException("getFile cannot be used with applets.");
@@ -417,7 +424,6 @@ public class WebFileObject extends FileObject {
                 monitor.finished();
             }
         }
-        wfs.markAccess(this.getNameExt());
         
         return localFile;
 
