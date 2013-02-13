@@ -126,8 +126,10 @@ public abstract class Units {
     
     public static final Units eV= new NumberUnits("eV");
     public static final Units keV= new NumberUnits("keV");
+    public static final Units MeV= new NumberUnits("MeV");
     static {
         eV.registerConverter(Units.keV, UnitsConverter.KILO);
+        eV.registerConverter(Units.MeV, UnitsConverter.MEGA);
     }
     
     /**
@@ -137,7 +139,12 @@ public abstract class Units {
     
     public static final Units kelvin= new NumberUnits("K");
     public static final Units cmps= new NumberUnits("cm/s");
-    
+
+    public static final Units cm_2s_1keV_1= new NumberUnits( "cm!U-2!N s!U-1!N keV!U-1!N" );
+    public static final Units cm_2s_1MeV_1= new NumberUnits( "cm!U-2!N s!U-1!N MeV!U-1!N" );
+    static {
+        cm_2s_1keV_1.registerConverter( Units.cm_2s_1MeV_1, UnitsConverter.KILO );
+    }
     /**
      * Volts <sup>2</sup> m<sup>-2</sup> Hz<sup>-1</sup>
      */
