@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -82,7 +83,10 @@ public abstract class WebFileSystem extends FileSystem {
         return local;
     }
 
-    Map<String,Long> lastAccessed= new HashMap();
+    /**
+     * get access times via ExpensiveOpCache, which limits the number of HEAD requests to the server.
+     */
+    ExpensiveOpCache accessCache;
 
     protected final File localRoot;
     /**
@@ -219,9 +223,27 @@ public abstract class WebFileSystem extends FileSystem {
             if ( f!=null ) {
                 setReadOnlyCache( f );
             }
-
         }
 
+        ExpensiveOpCache.Op accessTime= new LastAccessTime();
+        this.accessCache= new ExpensiveOpCache( accessTime, HTTP_CHECK_TIMESTAMP_LIMIT_MS );
+
+    }
+
+    private class LastAccessTime implements ExpensiveOpCache.Op {
+
+        public Object doOp(String key) {
+            try {
+                logger.fine("doing HEAD request to get timestamp");
+                URL url = getURL(key);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("HEAD");
+                connection.connect();
+                return new Date( connection.getLastModified() );
+            } catch (IOException ex) {
+                return new Date( 0 );
+            }
+        }
     }
 
     static protected File localRoot(URI root) {
@@ -631,19 +653,11 @@ public abstract class WebFileSystem extends FileSystem {
      *
      * For example, we will not do a head request to check for an update more than once per minute.
      *
-     * @return
+     * @return the last time the file was accessed via a HEAD request.
      */
     protected synchronized long getLastAccessed( String filename ) {
-        Long lastAccess= lastAccessed.get(filename);
-        if ( lastAccess==null ) {
-            return 0;
-        } else {
-            return lastAccess.longValue();
-        }
-    }
-
-    protected synchronized void markAccess( String filename ) {
-        lastAccessed.put( filename, System.currentTimeMillis() );
+        Date result= (Date) accessCache.doOp( filename );
+        return result.getTime();
     }
 
     /**
