@@ -1118,6 +1118,12 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
+        //study 20130214.  Why does http://sarahandjeremy.net/~jbf/geothermal20130106.vap sometimes fail to repaint?
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        QDataSet xrange= Ops.extent(xds);
+        logger.log( Level.FINE, "{0} {1},  drawing de indeces {2} to {3}", new Object[]{ color, String.valueOf( xrange ), this.firstIndex, this.lastIndex});
+        //end study 20130214.
+
         renderCount++;
         reportCount();
 
