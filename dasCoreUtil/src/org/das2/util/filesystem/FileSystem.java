@@ -36,6 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.DefaultExceptionHandler;
 import org.das2.util.ExceptionHandler;
+import org.das2.util.FileUtil;
 import org.das2.util.ThrowRuntimeExceptionHandler;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
@@ -184,7 +185,9 @@ public abstract class FileSystem  {
     public synchronized static void reset() {
         instances.clear();
         blocks.clear();
-        logger.info("memory caches cleared, but cache listings may exist on the file caches");
+        if ( !FileUtil.deleteWithinFileTree( settings().getLocalCacheDir(), ".listing" ) ) {
+            logger.log(Level.WARNING, "delete all .listing files within tree {0} failed.", settings().getLocalCacheDir());
+        }
     }
 
     /**
