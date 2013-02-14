@@ -629,7 +629,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                     re.printStackTrace();
                     renderException = re;
                     lparent.invalidateCacheImage();
-                    lparent.repaint();
                     throw re;
                 } finally {
                     // this code used to call finished() on the progressPanel
@@ -638,11 +637,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                 logger.fine("invalidate parent cacheImage and repaint");
 
                 lparent.invalidateCacheImage();
-                lparent.repaint();
             }
         };
 
-        boolean async = false;  // updating is done on the event thread...
+        boolean async = true;  // updating is done on the event thread...
         if (EventQueue.isDispatchThread()) {
             if (async) {
                 new Thread(run, "updatePlotImage").start();
