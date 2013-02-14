@@ -372,7 +372,8 @@ public abstract class FileSystem  {
      * contains backslashes and might not have the leading /
      * and trailing slashes.  Also, double slashes (//) are
      * removed.  Note this is the name of the FileObject
-     * within the FileSystem.
+     * within the FileSystem.  Folder names will not necessarily
+     * be suffixed with '/'
      */
     protected static String toCanonicalFilename( String filename ) {
         filename= filename.replaceAll( "\\\\", "/" );
@@ -609,6 +610,11 @@ public abstract class FileSystem  {
          */
         public long modified;
     }
+
+    /**
+     * result from failed listing, etc.
+     */
+    public static DirectoryEntry NULL= new DirectoryEntry();
 
     /**
      * part of the refactoring to cache time stamps as well, this convenience method returns the old string.

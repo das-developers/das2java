@@ -22,7 +22,7 @@ public class ExpensiveOpCache {
     private static final Logger logger= Logger.getLogger("das2.filesystem.wfs");
 
     public static interface Op {
-        Object doOp( String key );
+        Object doOp( String key ) throws Exception;
     }
 
     /**
@@ -44,9 +44,10 @@ public class ExpensiveOpCache {
      * Do the operation if it has not been done, or if it has not been
      * done recently.
      * @param key
-     * @return
+     * @throws Exception, see the given op.
+     * @return the result of the operation
      */
-    public Object doOp( String key ) {
+    public Object doOp( String key ) throws Exception {
         Long t;
         Object result;
         synchronized (this ) {

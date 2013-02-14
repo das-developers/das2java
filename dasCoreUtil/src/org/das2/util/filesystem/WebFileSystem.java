@@ -225,27 +225,55 @@ public abstract class WebFileSystem extends FileSystem {
             }
         }
 
-        ExpensiveOpCache.Op accessTime= new LastAccessTime();
+        ExpensiveOpCache.Op accessTime;
+        
+        if ( root.getScheme().equals("http") || root.getScheme().equals("https") ) {
+            accessTime= new LastAccessTime();
+        } else {
+            accessTime= new ListingsLastAccessTime();
+        }
         this.accessCache= new ExpensiveOpCache( accessTime, HTTP_CHECK_TIMESTAMP_LIMIT_MS );
 
     }
 
     private class LastAccessTime implements ExpensiveOpCache.Op {
 
-        public Object doOp(String key) {
-            try {
-                logger.fine("doing HEAD request to get timestamp");
-                URL url = getURL(key);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("HEAD");
-                connection.connect();
-                return new Date( connection.getLastModified() );
-            } catch (IOException ex) {
-                return new Date( 0 );
-            }
+        public Object doOp(String key) throws IOException {
+            logger.fine("doing HEAD request to get timestamp");
+            URL url = getURL(key);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("HEAD");
+            connection.connect();
+            DirectoryEntry result= new DirectoryEntry();
+            result.modified= connection.getLastModified();
+            result.name= key;
+            result.size= connection.getContentLength();
+            return result;
         }
     }
 
+    /**
+     * assume local files contain the last access time. This uses the .listings file and
+     * assumes that listDirectory will be keeping things up-to-date.
+     */
+    private class ListingsLastAccessTime implements ExpensiveOpCache.Op {
+        public Object doOp(String key) throws IOException {
+            File localFile= new File( getLocalRoot(), key );
+            String name= localFile.getName(); // remove the path information
+            String parent= WebFileSystem.this.getLocalName( localFile.getParentFile() );
+            parent= parent + '/';
+            String[] ss= listDirectory( parent); // fill the cache
+            DirectoryEntry[] des= listDirectoryFromMemory(parent);
+            if ( des==null ) return new Date(0);
+            for ( int i=0; i<des.length; i++ ) {
+                if ( des[i].name.equals(name) ) {
+                    return des[i];
+                }
+            }
+            return FileSystem.NULL;
+        }
+    }
+    
     static protected File localRoot(URI root) {
 
         File local = FileSystem.settings().getLocalCacheDir();
@@ -463,6 +491,7 @@ public abstract class WebFileSystem extends FileSystem {
      * @return
      */
     protected synchronized DirectoryEntry[] listDirectoryFromMemory( String directory ) {
+        directory= toCanonicalFilename(directory);
         Long freshness= listingFreshness.get(directory);
         if ( freshness==null ) return null;
         if ( System.currentTimeMillis()-freshness < MEMORY_LISTING_TIMEOUT_MS ) {
@@ -656,8 +685,13 @@ public abstract class WebFileSystem extends FileSystem {
      * @return the last time the file was accessed via a HEAD request.
      */
     protected synchronized long getLastAccessed( String filename ) {
-        Date result= (Date) accessCache.doOp( filename );
-        return result.getTime();
+        try {
+            DirectoryEntry result = (DirectoryEntry) accessCache.doOp( filename );
+            return result.modified;
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "returning 1970-01-01", ex);
+            return 0;
+        }
     }
 
     /**

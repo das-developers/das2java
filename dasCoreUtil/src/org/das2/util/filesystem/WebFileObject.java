@@ -367,6 +367,7 @@ public class WebFileObject extends FileObject {
                     result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true );
                     this.setLastModified( new Date( result.modified ) );
                 }
+                if ( !( wfs instanceof HttpFileSystem ) ) download= true; //FTP filesystem timetags are very course.
             }
 
             remoteDate = this.lastModified();
@@ -450,16 +451,22 @@ public class WebFileObject extends FileObject {
 
         if (localFile.exists()) {
             if ( !wfs.isOffline() ) {
-                synchronized ( wfs ) {
-                    Date remoteDate= (Date) wfs.accessCache.doOp( this.getNameExt() );
-                    Long localFileLastModifiedLong = localFile.lastModified();
-                    Date localFileLastModified= new Date( localFileLastModifiedLong );
+                try {
+                    synchronized ( wfs ) {
+                        DirectoryEntry remoteDate= (DirectoryEntry) wfs.accessCache.doOp( this.getNameExt() );
+                        long localFileLastModified = localFile.lastModified();
 
-                    if (remoteDate.after(localFileLastModified)) {
-                        logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
-                        download = true;
+                        if ( remoteDate.modified > localFileLastModified ) {
+                            logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
+                            download = true;
+                        } else if ( remoteDate.size!= localFile.length() ) {
+                            download = true;
+                        } else {
+                            download = false;
+                        }
                     }
-                    
+                } catch ( Exception ex ) {
+                    return false;
                 }
             } else {
                 return true;
