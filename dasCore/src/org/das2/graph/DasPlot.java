@@ -1638,7 +1638,7 @@ public class DasPlot extends DasCanvasComponent {
     protected void invalidateCacheImage() {
         if ( cacheImageValid==false ) return;
         cacheImageValid = false;
-        repaint();
+        update();
     }
 
     @Override
