@@ -57,7 +57,7 @@ public class FileStorageModelNew {
     HashMap fileNameMap=null;
     private boolean allowGz= true;  // if true, the getFile can use a .gz version to retrieve a file.
 
-    enum VersioningType {
+    static enum VersioningType {
         none(null),
         numeric( new Comparator() {       // 4.01
                 public int compare(Object o1, Object o2) {
@@ -743,8 +743,8 @@ public class FileStorageModelNew {
             public String format( TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra ) {
                 return extra.get("v"); //TODO: length
             }
-
         };
+
 
         if ( fieldName==null ) {
             this.timeParser= TimeParser.create( template, f, vh );
