@@ -1807,15 +1807,20 @@ public class DataSetOps {
                     String arg= getStringArg( s.next() );
                     Units newu= SemanticOps.lookupUnits(arg);
                     fillDs= ArrayDataSet.copy(fillDs).setUnits(newu);
-                } else if ( cmd.equals("|add") ) { //secret feature
+                } else if ( cmd.equals("|add") ) { 
                     String arg= getStringArg( s.next() );
                     Datum d= SemanticOps.getUnits(fillDs).parse(arg);
                     fillDs= Ops.add( fillDs, DataSetUtil.asDataSet(d) );
 
-                } else if ( cmd.equals("|multiply") ) { //secret feature
+                } else if ( cmd.equals("|multiply") ) { 
                     String arg= getStringArg( s.next() );
                     Datum d= DatumUtil.parse(arg);
                     fillDs= Ops.multiply( fillDs, DataSetUtil.asDataSet(d) );
+
+                } else if ( cmd.equals("|divide") ) { 
+                    String arg= getStringArg( s.next() );
+                    Datum d= DatumUtil.parse(arg);
+                    fillDs= Ops.divide( fillDs, DataSetUtil.asDataSet(d) );
 
                 } else if ( cmd.equals("|nop") ) { // no operation, for testing.
                     //fillDs= fillDs;
