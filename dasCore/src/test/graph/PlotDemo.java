@@ -20,6 +20,7 @@ import org.das2.graph.GraphUtil;
 public class PlotDemo {
 
     JPanel contentPane;
+    protected DasPlot plot;
 
     private synchronized JPanel getContentPane() {
         if (contentPane == null) {
@@ -28,12 +29,13 @@ public class PlotDemo {
         return contentPane;
     }
 
-    public void showFrame() {
+    public JFrame showFrame() {
         JFrame frame= new JFrame( "Axis Demo");
         frame.getContentPane().add(getContentPane());
         frame.pack();
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.setVisible(true);
+        return frame;
     }
 
     public PlotDemo() {
@@ -50,7 +52,7 @@ public class PlotDemo {
         //DatumRange xrange= DatumRangeUtil.parseTimeRangeValid("2009");
         DatumRange yrange= DatumRange.newDatumRange(0.1,100, Units.dimensionless);
 
-        DasPlot plot= GraphUtil.newDasPlot(canvas, xrange, yrange);
+        plot= GraphUtil.newDasPlot(canvas, xrange, yrange);
 
         //plot.getXAxis().setMajorTicksDomainDivider(DomainDividerUtil.getDomainDivider( xrange.min(), xrange.max() ) );
         //plot.getXAxis().setMajorTicksDomainDivider( DomainDividerUtil.getDomainDivider( xrange.min(), xrange.max() ) );
