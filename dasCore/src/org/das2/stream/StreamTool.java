@@ -481,10 +481,22 @@ public class StreamTool {
         } else {
             String msg = "Expected four byte header, found '";
             String s = new String(struct.four);
-            s = s.replaceAll("\n", "\\\\n"); // TODO: what's the right wat to say this?
+            s = s.replaceAll("\n", "\\\\n"); // TODO: what's the right way to say this?
             msg += s;
             msg += "' at byteOffset=" + (struct.byteOffset + struct.bigBuffer.position() - 4);
             msg += " after reading " + struct.descriptorCount + " descriptors and " + struct.packetCount + " packets.";
+
+            if ( s.contains("\\n==") ) {
+                byte[] buf= new byte[struct.bigBuffer.limit()-struct.bigBuffer.position()];
+                struct.bigBuffer.get(buf);
+                String ss= new String( buf );
+                if ( ss.contains("SPICELIB") ) {
+                    msg+= "\nThis appears to be a message from SPICE:\n";
+                    msg+= ss;
+                }
+                
+            }
+
             throw new StreamException(msg);
         }
         return true;
