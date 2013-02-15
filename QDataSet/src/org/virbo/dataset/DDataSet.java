@@ -283,6 +283,18 @@ public final class DDataSet extends ArrayDataSet {
     }
 
     /**
+     * add the value to the position.  This is done all over the place with code like:
+     *   dd.putValue( i0,i1, dd.getValue( i0,i1 ) + z )
+     * which is inefficient.
+     * @param i0
+     * @param i1
+     * @param value
+     */
+    public void accumValue( int i0, int i1, double value ) {
+        back[i0 * len1 + i1] += value;
+    }
+
+    /**
      * Shorten the dataset by changing it's dim 0 length parameter.  The same backing array is used, 
      * so the element that remain will be the same.
      * This can only shorten!
