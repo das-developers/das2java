@@ -55,9 +55,11 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.Arrays;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.das2.dataset.LanlNNRebinner;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetOps;
@@ -118,7 +120,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum nearestNeighbor;
         public static final RebinnerEnum binAverageNoInterpolate;
         public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
-        
+        public static final RebinnerEnum lanlNN;
+
 
         static {
             AverageTableRebinner rebinner = new AverageTableRebinner();
@@ -133,6 +136,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             rebinner = new AverageTableRebinner();
             rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
             nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
+
+            DataSetRebinner r1 = new LanlNNRebinner();
+            lanlNN= new RebinnerEnum( r1, "lanlNN" );
+            //Note: to add RebinModes, see getListIcon.
         }
 
         /*public static final RebinnerEnum binAverage= new RebinnerEnum(new AverageTableRebinner(),"binAverage");
@@ -150,9 +157,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         binAverageNoInterpolateNoEnlarge = new RebinnerEnum(rebinner, "noInterpolateNoEnlarge");
         }*/
         public Icon getListIcon() {
-            return new ImageIcon(SpectrogramRenderer.class.getResource("/images/icons/rebin." + label + ".png"));
+            URL url = SpectrogramRenderer.class.getResource("/images/icons/rebin." + label + ".png");
+            if ( url==null ) {
+                throw new IllegalArgumentException("icon not found at /images/icons/rebin." + label + ".png");
+            }
+            return new ImageIcon();
         }
 
+        @Override
         public String toString() {
             return this.label;
         }
@@ -630,6 +642,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
                         } catch ( RuntimeException ex ) {
                             ex.printStackTrace(); //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
+                            parent.postException( this,ex );
                             return;
                         }
                         //System.err.println( "rebin (ms): " + ( System.currentTimeMillis()-t0) );
