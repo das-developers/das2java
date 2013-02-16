@@ -29,7 +29,7 @@ package org.virbo.dataset;
  * 
  * <p>This is inspired by the CDF data model and PaPCo's dataset model.</p>
  *
- * <p>See http://www.das2.org/wiki/index.php/Das2_DataSet_Abstraction_3.0</p>
+ * <p>See http://autoplot.org/QDataSet</p>
  *
  * @author jbf
  */
@@ -255,7 +255,7 @@ public interface QDataSet {
     /**
      * QDataSet of rank 0, or correlated plane limits accuracy.  This should
      * be interpreted as the one standard deviation confidence level.  See
-     * also BINS for measurement intervals.
+     * also BINS for measurement intervals.  
      */
     public final static String DELTA_PLUS="DELTA_PLUS";
     
@@ -265,6 +265,20 @@ public interface QDataSet {
      * also BINS for measurement intervals.
      */
     public final static String DELTA_MINUS="DELTA_MINUS";
+
+    /**
+     * QDataSet of rank 0 or correlated plane identifies boundary. This is added to the
+     * measurements and should be interpreted as the upper limit of 100% confidence interval where a measurement was collected.   See
+     * also DELTA_PLUS for one-standard deviation confidence interval.
+     */
+    public final static String BIN_PLUS="BIN_PLUS";
+
+    /**
+     * QDataSet of rank 0 or correlated plane identifies boundary. This is subtracted from the
+     * measurements and should be interpreted as the lower limit of the 100% confidence interval where a measurement was collected.
+     * See also DELTA_MINUS for one-standard deviation confidence interval.
+     */
+    public final static String BIN_MINUS="BIN_MINUS";
     
     /**
      * CacheTag, to be attached to tags datasets.  This is an object that represents
