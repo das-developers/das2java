@@ -3139,6 +3139,7 @@ public class Ops {
     /**
      * returns a two element, rank 1 dataset containing the extent of the data.
      * Note this accounts for DELTA_PLUS, DELTA_MINUS properties.
+     * Note this accounts for BIN_PLUS, BIN_MINUS properties.
      * The property QDataSet.SCALE_TYPE is set to lin or log.
      * The property count is set to the number of valid measurements.
      * TODO: this could use MONOTONIC, but it doesn't.  DELTA_PLUS, DELTA_MINUS make that more difficult.
@@ -3152,7 +3153,9 @@ public class Ops {
 
     /**
      * returns a two element, rank 1 dataset containing the extent (min to max) of the data.
-     * Note this accounts for DELTA_PLUS, DELTA_MINUS properties.  If no valid data is found then [fill,fill] is returned.
+     * Note this accounts for DELTA_PLUS, DELTA_MINUS properties.  
+     * Note this accounts for BIN_PLUS, BIN_MINUS properties.
+     * If no valid data is found then [fill,fill] is returned.
      * The property QDataSet.SCALE_TYPE is set to lin or log.
      * The property count is set to the number of valid measurements.
      * 2010-10-14: add branch for monotonic datasets.
@@ -3182,6 +3185,8 @@ public class Ops {
 
         deltaplus = (QDataSet) ds.property(QDataSet.DELTA_PLUS);
         deltaminus = (QDataSet) ds.property(QDataSet.DELTA_MINUS);
+        if ( ds.property(QDataSet.BIN_PLUS )!=null ) deltaplus= (QDataSet)ds.property(QDataSet.BIN_PLUS );
+        if ( ds.property(QDataSet.BIN_MINUS )!=null ) deltaminus= (QDataSet)ds.property(QDataSet.BIN_MINUS );
 
         int count=0;
 

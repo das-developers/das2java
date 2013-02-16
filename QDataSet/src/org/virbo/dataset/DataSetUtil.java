@@ -251,6 +251,7 @@ public class DataSetUtil {
                     QDataSet.CACHE_TAG,
                     QDataSet.COORDINATE_FRAME,
                     QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
+                    QDataSet.BIN_MINUS, QDataSet.BIN_PLUS,
                     QDataSet.WEIGHTS_PLANE,
                     QDataSet.USER_PROPERTIES,
                     QDataSet.NOTES,
@@ -325,6 +326,19 @@ public class DataSetUtil {
     }
 
     /**
+     * properties that go along with the zeroth index.  These are all QDataSets with dimensions compatible with the datasets.
+     * If you trim the dataset, then these must be trimmed as well.
+     * @return
+     */
+    public static String[] correlativeProperties() {
+        return new String[] {
+            QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS, QDataSet.WEIGHTS_PLANE,
+        };
+    }
+
+
+
+    /**
      * true if the property is one that is global and is relevant throughout the
      * dataset, such as a title or the units.
      *    property( "TITLE",0,0 ) often returns property("TITLE"), but
@@ -386,10 +400,11 @@ public class DataSetUtil {
         if ( dep0!=null ) result.put( QDataSet.DEPEND_0, dep0.trim(start,stop) );
 
         QDataSet dsp;
-        dsp= (QDataSet) ds.property(QDataSet.DELTA_PLUS);
-        if ( dsp!=null ) result.put( QDataSet.DELTA_PLUS, dsp.trim(start,stop) );
-        dsp= (QDataSet) ds.property(QDataSet.DELTA_MINUS);
-        if ( dsp!=null ) result.put( QDataSet.DELTA_MINUS, dsp.trim(start,stop) );
+        String [] props= DataSetUtil.correlativeProperties();
+        for ( String s: props ) {
+            dsp= (QDataSet) ds.property( s );
+            if ( dsp!=null ) result.put( s, dsp.trim(start,stop) );
+        }
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             QDataSet p= (QDataSet) ds.property("PLANE_"+i);

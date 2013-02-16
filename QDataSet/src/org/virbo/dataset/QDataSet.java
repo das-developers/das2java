@@ -269,7 +269,8 @@ public interface QDataSet {
     /**
      * QDataSet of rank 0 or correlated plane identifies boundary. This is added to the
      * measurements and should be interpreted as the upper limit of 100% confidence interval where a measurement was collected.   See
-     * also DELTA_PLUS for one-standard deviation confidence interval.
+     * also DELTA_PLUS for one-standard deviation confidence interval.  Note if both DELTA_PLUS and BIN_PLUS are found,
+     * then BIN_PLUS must be greater than DELTA_PLUS.
      */
     public final static String BIN_PLUS="BIN_PLUS";
 

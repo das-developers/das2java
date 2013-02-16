@@ -6,7 +6,7 @@ package org.virbo.dataset;
 
 /**
  * Implements Trim operation by wrapping dataset.
- * Supports rank 2 depend_1 datasets.  Supports CONTEXT_0, DELTA_PLUS, DELTA_MINUS
+ * Supports rank 2 depend_1 datasets.  Supports CONTEXT_0, DataSetUtil.correlativeProperties()
  * @author jbf
  */
 public class TrimDataSet extends AbstractDataSet {
@@ -53,7 +53,7 @@ public class TrimDataSet extends AbstractDataSet {
             }
         }
 
-        String[] p= new String[] { QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS };
+        String[] p= DataSetUtil.correlativeProperties();
 
         for ( int i=0; i<p.length; i++ ) {
             QDataSet delta= (QDataSet) ds.property( p[i] );

@@ -703,8 +703,7 @@ public class DataSetOps {
             }
         }
 
-        String[] p= new String[] { QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.WEIGHTS_PLANE };
-
+        String[] p= DataSetUtil.correlativeProperties();
         for ( int i=0; i<p.length; i++ ) {
             QDataSet delta= (QDataSet) props.get( p[i] );
             if ( delta!=null && delta.rank()>0 ) {
@@ -1183,9 +1182,9 @@ public class DataSetOps {
             o= bundle.property(QDataSet.ELEMENT_LABEL,j);
             if ( o!=null ) props.put( QDataSet.LABEL, o );
             DataSetUtil.putProperties( props, result );
-            String[] testProps= new String[] { QDataSet.DEPEND_0, QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.PLANE_0 };
-            for ( int i=0; i<testProps.length; i++ ) {
-                String prop= testProps[i];
+            String[] testProps= DataSetUtil.correlativeProperties();
+            for ( int i=-1; i<testProps.length; i++ ) {
+                String prop= ( i==-1 ) ? "DEPEND_0" : testProps[i];
                 Object dep0= result.property(prop);
                 if ( dep0!=null ) {
                     if ( dep0 instanceof String ) {

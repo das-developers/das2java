@@ -115,7 +115,7 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
             }
         }
 
-        String[] p= new String[] { QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS };
+        String[] p= DataSetUtil.correlativeProperties();
         for ( int i=0; i<p.length; i++ ) {
             QDataSet delta= (QDataSet) ds.property( p[i] );
             if ( delta!=null && delta.rank()>0 ) {

@@ -550,15 +550,16 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             }
         }
         String[] props;
-        props= new String[] { QDataSet.PLANE_0, QDataSet.WEIGHTS_PLANE, QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS };
-        for ( int iprop= 0; iprop<props.length; iprop++ ) {
-            QDataSet w1= (QDataSet) ds.property( props[iprop] );
+        props= DataSetUtil.correlativeProperties();
+        for ( int iprop= -1; iprop<props.length; iprop++ ) {
+            String prop= iprop==-1 ? QDataSet.PLANE_0 : props[iprop];
+            QDataSet w1= (QDataSet) ds.property( prop );
             if ( w1!=null ) {
-                QDataSet dep0= (QDataSet) ths.property( props[iprop] );
+                QDataSet dep0= (QDataSet) ths.property( prop );
                 ArrayDataSet djoin=  copy( dep0 );
                 ArrayDataSet dd1=  maybeCopy(w1);
                 djoin= append( djoin, dd1 );
-                result.put( props[iprop], djoin );
+                result.put( prop, djoin );
             }
         }
 

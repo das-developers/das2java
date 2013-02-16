@@ -122,8 +122,9 @@ public class Slice1DataSet extends AbstractDataSet {
             }
         }
 
-        for ( int i=0; i<2; i++ ) {
-           String prop= i==0 ? "DELTA_MINUS" : "DELTA_PLUS";
+        String[] props= DataSetUtil.correlativeProperties();
+        for ( int i=0; i<props.length; i++ ) {
+           String prop= props[i];
            QDataSet s = (QDataSet) ds.property( prop );
            if (s != null) {
                if ( s.rank()<2 ) {

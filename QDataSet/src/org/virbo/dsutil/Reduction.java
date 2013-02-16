@@ -395,6 +395,7 @@ public class Reduction {
         yds.putProperty( QDataSet.DEPEND_0, xds );
         yds.putProperty( QDataSet.WEIGHTS_PLANE, wbuilder.getDataSet() );
 
+        //TODO: this should probably be BIN_PLUS, BIN_MINUS
         yds.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( yds, yminbuilder.getDataSet() ) );
         yds.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), yds ) );
 

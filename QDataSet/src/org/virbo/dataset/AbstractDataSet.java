@@ -75,12 +75,19 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
      * @param value
      */
     private void checkPropertyType( String name, Object value ) {
-        if ( name.equals(QDataSet.DELTA_MINUS) || name.equals(QDataSet.DELTA_PLUS)
-                || name.equals(QDataSet.DEPEND_0) ) {
+        String[] props= DataSetUtil.correlativeProperties();
+        for ( int i=0; i<props.length; i++ ) {
+            if ( name.equals(props[i]) ) {
+                if ( value!=null && !( value instanceof QDataSet ) ) {
+                    logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet (%s)", name, value.toString() ) );
+                }
+            }
+        }
+        if ( name.equals(QDataSet.DEPEND_0) ) {
             if ( value!=null && !( value instanceof QDataSet ) ) {
                 logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet (%s)", name, value.toString() ) );
             }
-        } 
+        }
     }
 
     public void putProperty( String name, Object value ) {
