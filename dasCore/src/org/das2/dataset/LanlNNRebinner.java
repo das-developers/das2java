@@ -22,25 +22,17 @@
  */
 package org.das2.dataset;
 
-import org.das2.datum.DatumRange;
+import java.util.WeakHashMap;
 import org.das2.datum.Units;
-import org.das2.datum.Datum;
-import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.UnitsUtil;
 import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.logging.*;
 import org.das2.datum.UnitsConverter;
-import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetIterator;
-import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.QubeDataSetIterator;
-import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
@@ -53,13 +45,12 @@ public class LanlNNRebinner implements DataSetRebinner {
 
     private static final Logger logger = DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG);
 
-    public static enum Interpolate {
-        None, Linear, NearestNeighbor
-    }
-
     /** Creates a new instance of TableAverageRebinner */
     public LanlNNRebinner() {
     }
+
+    WeakHashMap<QDataSet,QDataSet> yds0c= new WeakHashMap();
+    WeakHashMap<QDataSet,QDataSet> yds1c= new WeakHashMap();
 
     /**
      * rebin the data, using the interpolate control to define the interpolation between measurements.  Data that fall into the
@@ -111,34 +102,44 @@ public class LanlNNRebinner implements DataSetRebinner {
         }
         QDataSet yds= SemanticOps.ytagsDataSet(tds1);
         QDataSet yds0, yds1;
-        binPlus= (QDataSet) yds.property(QDataSet.BIN_PLUS);
-        binMinus= (QDataSet) yds.property(QDataSet.BIN_MINUS);
-        if ( SemanticOps.isBins(yds) ) {
-            yds0= Ops.slice1( yds, 0 );
-            yds1= Ops.slice1( yds, 1 );
-        } else if ( binPlus!=null && binMinus!=null ) {
-            yds0= Ops.subtract( yds, binMinus );
-            yds1= Ops.add( yds, binPlus );
-        } else {
-            if ( yds.rank()==2 ) yds= yds.slice(0);
-            QDataSet dy= DataSetUtil.guessCadenceNew( yds, null );
-            if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dy) ) ) {
-                yds0= Ops.divide( yds, dy );
-                yds1= Ops.multiply( yds, dy );
+        boolean rank2y;
+
+        yds0= yds0c.get(yds); // let's cache the result of this, since rank 2 yds datasets are slow. (http://www.rbsp-ect.lanl.gov/data_pub/rbspa/mageis/level2/rbspa_pre_ect-mageis-L2_$Y$m$d_v$(v,sep).cdf?FEDO)
+        yds1= yds1c.get(yds);
+
+        if ( yds0==null || yds1==null ) {
+            binPlus= (QDataSet) yds.property(QDataSet.BIN_PLUS);
+            binMinus= (QDataSet) yds.property(QDataSet.BIN_MINUS);
+            if ( SemanticOps.isBins(yds) ) {
+                yds0= Ops.slice1( yds, 0 );
+                yds1= Ops.slice1( yds, 1 );
+            } else if ( binPlus!=null && binMinus!=null ) {
+                yds0= Ops.subtract( yds, binMinus );
+                yds1= Ops.add( yds, binPlus );
             } else {
-                yds0= Ops.subtract( yds, dy );
-                yds1= Ops.add( yds, dy );
+                QDataSet dy= DataSetUtil.guessCadenceNew( yds.rank()==2 ? yds.slice(0): yds, null );
+                if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dy) ) ) {
+                    yds0= Ops.divide( yds, dy );
+                    yds1= Ops.multiply( yds, dy );
+                } else {
+                    yds0= Ops.subtract( yds, dy );
+                    yds1= Ops.add( yds, dy );
+                }
             }
+            yds0c.put( yds, yds0 );
+            yds1c.put( yds, yds1 );
         }
+
+        rank2y= yds0.rank()==2;
 
         Units xunits= SemanticOps.getUnits( xds );
         Units yunits= SemanticOps.getUnits( yds );
 
         if ( ddX != null && tds.length() > 0 ) {
             UnitsConverter xc= xunits.getConverter(ddX.getUnits());
-            QDataSet bounds= SemanticOps.bounds(tds); //TODO: inefficient, this does bounds of Y as well.
-            double start = xc.convert( bounds.value(0,0) );
-            double end = xc.convert( bounds.value(0,1) );
+            QDataSet bounds= SemanticOps.bounds(xds); 
+            double start = xc.convert( bounds.value(1,0) );
+            double end = xc.convert( bounds.value(1,1) );
             if (start > ddX.binStop(ddX.numberOfBins()-1).doubleValue(ddX.getUnits()) ) {
                 throw new NoDataInIntervalException("data starts after range");
             } else if (end < ddX.binStart(0).doubleValue(ddX.getUnits())) {
@@ -161,6 +162,9 @@ public class LanlNNRebinner implements DataSetRebinner {
         double dxpixel= ddX.getUnits().getOffsetUnits().convertDoubleTo( xunits.getOffsetUnits(), ddX.binWidth() );
         double dypixel= ddY.getUnits().getOffsetUnits().convertDoubleTo( yunits.getOffsetUnits(), ddY.binWidth() );
 
+        double y0,y1;
+        int nYData= rank2y ? yds0.length(0) : yds0.length();
+
         for ( int i=0; i<xds0.length(); i++) {
             double x0= xds0.value(i);
             double x1= xds1.value(i);
@@ -169,10 +173,15 @@ public class LanlNNRebinner implements DataSetRebinner {
             int px1= ddX.whichBin( x1, xunits );
             int sx0= Math.max( 0, px0 );
             int sx1= Math.min( nx-1, px1 );
-            for ( int j=0; j<yds0.length(); j++ ) {
+            for ( int j=0; j<nYData; j++ ) {
                 double z= tds1.value( i,j );
-                double y0= yds0.value(j);
-                double y1= yds1.value(j);
+                if ( rank2y ) {
+                    y0= yds0.value(i,j);
+                    y1= yds1.value(i,j);
+                } else {
+                    y0= yds0.value(j);
+                    y1= yds1.value(j);
+                }
                 double wy= (y1-y0)/dypixel;
                 int py0= ddY.whichBin( y0, yunits );
                 int py1= ddY.whichBin( y1, yunits );
