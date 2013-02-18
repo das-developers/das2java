@@ -47,6 +47,16 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         throw new IllegalArgumentException("class not supported: "+c);
     }
 
+    public static ArrayDataSet createRank0( Class c ) {
+        if ( c==double.class ) return new DDataSet( 0, 1, 1, 1, 1 );
+        if ( c==float.class ) return new FDataSet( 0, 1, 1, 1, 1 );
+        if ( c==long.class ) return new LDataSet( 0, 1, 1, 1, 1 );
+        if ( c==int.class ) return new IDataSet( 0, 1, 1, 1, 1 );
+        if ( c==short.class ) return new SDataSet( 0, 1, 1, 1, 1 );
+        if ( c==byte.class ) return new BDataSet( 0, 1, 1, 1, 1 );
+        throw new IllegalArgumentException("class not supported: "+c);
+    }
+    
     public static ArrayDataSet createRank1( Class c, int len0 ) {
         if ( c==double.class ) return new DDataSet( 1, len0, 1, 1, 1 );
         if ( c==float.class ) return new FDataSet( 1, len0, 1, 1, 1 );
@@ -373,6 +383,10 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         ArrayDataSet result;
 
         switch (rank) {
+            case 0:
+                result= createRank0( c );
+                result.putValue( ds.value() );
+                break;
             case 1:
                 result= createRank1( c, ds.length() );
                 for ( int i=0; i<ds.length(); i++ ) {
