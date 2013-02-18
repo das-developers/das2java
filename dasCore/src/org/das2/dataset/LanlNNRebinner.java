@@ -32,14 +32,14 @@ import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
 /**
- * DataSetRebinner implementing either bi-linear interpolation in blocks of 4 points, or nearest neighbor interpolation by
- * grabbing close points, or no interpolation at all..  Points the land on the same pixel are averaged together.
- * @author  Edward West
+ * DataSetRebinner for explicitly doing NN rebinning.  The AverageTableRebinner had been used for the purpose, and
+ * there were numerous problems.  Also, this looks for BIN_PLUS and BIN_MINUS properties in the dataset.
  */
 public class LanlNNRebinner implements DataSetRebinner {
 
@@ -81,125 +81,153 @@ public class LanlNNRebinner implements DataSetRebinner {
             tds= tdsx;
         }
 
-        QDataSet weights = SemanticOps.weightsDataSet( ds );
-
-        QDataSet tds1= tds.slice(0);
-
-        QDataSet xds= SemanticOps.xtagsDataSet(tds1);
-        QDataSet xds0, xds1;
-        QDataSet binPlus= (QDataSet) xds.property(QDataSet.BIN_PLUS);
-        QDataSet binMinus= (QDataSet) xds.property(QDataSet.BIN_MINUS);
-        if ( SemanticOps.isBins(xds) ) {
-            xds0= Ops.slice1( xds, 0 );
-            xds1= Ops.slice1( xds, 1 );
-        } else if ( binPlus!=null && binMinus!=null ) {
-            xds0= Ops.subtract( xds, binMinus );
-            xds1= Ops.add( xds, binPlus );
-        }else {
-            QDataSet dx= Ops.divide( DataSetUtil.guessCadenceNew( xds, null ), DataSetUtil.asDataSet(2) );
-            xds0= Ops.subtract( xds, dx );
-            xds1= Ops.add( xds, dx );
-        }
-        QDataSet yds= SemanticOps.ytagsDataSet(tds1);
-        QDataSet yds0, yds1;
-        boolean rank2y;
-
-        yds0= yds0c.get(yds); // let's cache the result of this, since rank 2 yds datasets are slow. (http://www.rbsp-ect.lanl.gov/data_pub/rbspa/mageis/level2/rbspa_pre_ect-mageis-L2_$Y$m$d_v$(v,sep).cdf?FEDO)
-        yds1= yds1c.get(yds);
-
-        if ( yds0==null || yds1==null ) {
-            binPlus= (QDataSet) yds.property(QDataSet.BIN_PLUS);
-            binMinus= (QDataSet) yds.property(QDataSet.BIN_MINUS);
-            if ( SemanticOps.isBins(yds) ) {
-                yds0= Ops.slice1( yds, 0 );
-                yds1= Ops.slice1( yds, 1 );
-            } else if ( binPlus!=null && binMinus!=null ) {
-                yds0= Ops.subtract( yds, binMinus );
-                yds1= Ops.add( yds, binPlus );
-            } else {
-                QDataSet dy= DataSetUtil.guessCadenceNew( yds.rank()==2 ? yds.slice(0): yds, null );
-                if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dy) ) ) {
-                    yds0= Ops.divide( yds, dy );
-                    yds1= Ops.multiply( yds, dy );
-                } else {
-                    yds0= Ops.subtract( yds, dy );
-                    yds1= Ops.add( yds, dy );
-                }
-            }
-            yds0c.put( yds, yds0 );
-            yds1c.put( yds, yds1 );
-        }
-
-        rank2y= yds0.rank()==2;
-
-        Units xunits= SemanticOps.getUnits( xds );
-        Units yunits= SemanticOps.getUnits( yds );
-
-        if ( ddX != null && tds.length() > 0 ) {
-            UnitsConverter xc= xunits.getConverter(ddX.getUnits());
-            QDataSet bounds= SemanticOps.bounds(xds); 
-            double start = xc.convert( bounds.value(1,0) );
-            double end = xc.convert( bounds.value(1,1) );
-            if (start > ddX.binStop(ddX.numberOfBins()-1).doubleValue(ddX.getUnits()) ) {
-                throw new NoDataInIntervalException("data starts after range");
-            } else if (end < ddX.binStart(0).doubleValue(ddX.getUnits())) {
-                throw new NoDataInIntervalException("data ends before range");
-            }
-        }
-
-        int nx = (ddX == null ? tds1.length() : ddX.numberOfBins());
-        int ny = (ddY == null ? tds1.length(0) : ddY.numberOfBins());
-
-        if ( ddY==null && rank!=2 ) {
-            throw new IllegalArgumentException("ddY was null but there was rank 3 dataset");
-        }
-
-        logger.log(Level.FINEST, "Allocating rebinData and rebinWeights: {0} x {1}", new Object[]{nx, ny});
+        int nx = ddX.numberOfBins();
+        int ny = ddY.numberOfBins();
 
         DDataSet S= DDataSet.createRank2( nx, ny );
         DDataSet N= DDataSet.createRank2( nx, ny );
 
-        double dxpixel= ddX.getUnits().getOffsetUnits().convertDoubleTo( xunits.getOffsetUnits(), ddX.binWidth() );
-        double dypixel= ddY.getUnits().getOffsetUnits().convertDoubleTo( yunits.getOffsetUnits(), ddY.binWidth() );
+        boolean rs= false;
+        boolean re= false;
 
-        double y0,y1;
-        int nYData= rank2y ? yds0.length(0) : yds0.length();
+        for ( int itable=0; itable<tds.length(); itable++ ) {
+            QDataSet tds1= tds.slice(itable);
+            QDataSet weights = SemanticOps.weightsDataSet( tds1 );
 
-        for ( int i=0; i<xds0.length(); i++) {
-            double x0= xds0.value(i);
-            double x1= xds1.value(i);
-            double wx= (x1-x0)/dxpixel;
-            int px0= ddX.whichBin( x0, xunits );
-            int px1= ddX.whichBin( x1, xunits );
-            int sx0= Math.max( 0, px0 );
-            int sx1= Math.min( nx-1, px1 );
-            for ( int j=0; j<nYData; j++ ) {
-                double z= tds1.value( i,j );
-                if ( rank2y ) {
-                    y0= yds0.value(i,j);
-                    y1= yds1.value(i,j);
+            // We don't cache the x tags, because often they are timetags and this could cause problems with memory.
+
+            QDataSet xds= SemanticOps.xtagsDataSet(tds1);
+            QDataSet xds0, xds1;
+            QDataSet binPlus= (QDataSet) xds.property(QDataSet.BIN_PLUS);
+            QDataSet binMinus= (QDataSet) xds.property(QDataSet.BIN_MINUS);
+            if ( SemanticOps.isBins(xds) ) {
+                xds0= Ops.slice1( xds, 0 );
+                xds1= Ops.slice1( xds, 1 );
+            } else if ( binPlus!=null && binMinus!=null ) {
+                xds0= Ops.subtract( xds, binMinus );
+                xds1= Ops.add( xds, binPlus );
+            }else {
+                QDataSet dx= DataSetUtil.guessCadenceNew( xds, null );
+                if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dx) ) ) {
+                    double ddx= Math.sqrt( 1. + dx.value()/100. );
+                    xds0= Ops.divide( xds, DataSetUtil.asDataSet(ddx) );
+                    xds1= Ops.multiply( xds, DataSetUtil.asDataSet(ddx) );
                 } else {
-                    y0= yds0.value(j);
-                    y1= yds1.value(j);
+                    dx= Ops.divide( dx, DataSetUtil.asDataSet(2) );
+                    xds0= Ops.subtract( xds, dx );
+                    xds1= Ops.add( xds, dx );
                 }
-                double wy= (y1-y0)/dypixel;
-                int py0= ddY.whichBin( y0, yunits );
-                int py1= ddY.whichBin( y1, yunits );
-                double w= wx*wy*weights.value(i,j);
-                int sy0= Math.max( 0, py0 );
-                int sy1= Math.min( ny-1, py1 );
-                for ( int k=sx0; k<=sx1; k++ ) {
-                    for ( int l=sy0; l<=sy1; l++ ) {
-                        if ( w>N.value(k,l) ) {
-                            S.putValue(k,l,z*w);
-                            N.putValue(k,l,w);
+            }
+            QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+            QDataSet yds0, yds1;
+            boolean rank2y;
+
+            yds0= yds0c.get(yds); // let's cache the result of this, since rank 2 yds datasets are slow. (http://www.rbsp-ect.lanl.gov/data_pub/rbspa/mageis/level2/rbspa_pre_ect-mageis-L2_$Y$m$d_v$(v,sep).cdf?FEDO)
+            yds1= yds1c.get(yds);
+
+            if ( false ) { // set to true for debugging.
+                yds0= null;
+                yds1= null;
+            }
+
+            if ( yds0==null || yds1==null ) {
+                binPlus= (QDataSet) yds.property(QDataSet.BIN_PLUS);
+                binMinus= (QDataSet) yds.property(QDataSet.BIN_MINUS);
+                if ( SemanticOps.isBins(yds) ) {
+                    yds0= Ops.slice1( yds, 0 );
+                    yds1= Ops.slice1( yds, 1 );
+                } else if ( binPlus!=null && binMinus!=null ) {
+                    yds0= Ops.subtract( yds, binMinus );
+                    yds1= Ops.add( yds, binPlus );
+                } else {
+                    QDataSet dy= DataSetUtil.guessCadenceNew( yds.rank()==2 ? yds.slice(0): yds, null );
+                    if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dy) ) ) {
+                        dy= Ops.convertUnitsTo(dy, Units.percentIncrease );
+                        double ddy= Math.sqrt( 1. + dy.value()/100. );
+                        yds0= Ops.divide( yds, DataSetUtil.asDataSet(ddy) );
+                        yds1= Ops.multiply( yds, DataSetUtil.asDataSet(ddy) );
+                    } else {
+                        dy= Ops.divide( dy, DataSetUtil.asDataSet(2) );
+                        yds0= Ops.subtract( yds, dy );
+                        yds1= Ops.add( yds, dy );
+                    }
+                }
+                yds0c.put( yds, yds0 );
+                yds1c.put( yds, yds1 );
+            }
+
+            rank2y= yds0.rank()==2;
+
+            Units xunits= SemanticOps.getUnits( xds );
+            Units yunits= SemanticOps.getUnits( yds );
+
+            if ( ddX != null && tds.length() > 0 ) {
+                UnitsConverter xc= xunits.getConverter(ddX.getUnits());
+                QDataSet bounds= SemanticOps.bounds(xds);
+                double start = xc.convert( bounds.value(1,0) );
+                double end = xc.convert( bounds.value(1,1) );
+                if (start <= ddX.binStop(ddX.numberOfBins()-1).doubleValue(ddX.getUnits()) ) {
+                    rs= true;
+                }
+                if (end >= ddX.binStart(0).doubleValue(ddX.getUnits())) {
+                    re= true;
+                }
+            }
+
+            if ( ddY==null && rank!=2 ) {
+                throw new IllegalArgumentException("ddY was null but there was rank 3 dataset");
+            }
+
+            logger.log(Level.FINEST, "Allocating rebinData and rebinWeights: {0} x {1}", new Object[]{nx, ny});
+
+            double dxpixel= ddX.getUnits().getOffsetUnits().convertDoubleTo( xunits.getOffsetUnits(), ddX.binWidth() );
+            double dypixel= ddY.getUnits().getOffsetUnits().convertDoubleTo( yunits.getOffsetUnits(), ddY.binWidth() );
+
+            double y0,y1;
+            int nYData= rank2y ? yds0.length(0) : yds0.length();
+
+            for ( int i=0; i<xds0.length(); i++) {
+                double x0= xds0.value(i);
+                double x1= xds1.value(i);
+                double wx= (x1-x0)/dxpixel;
+                int px0= ddX.whichBin( x0, xunits );
+                int px1= ddX.whichBin( x1, xunits );
+                int sx0= Math.max( 0, px0 );
+                int sx1= Math.min( nx-1, px1 );
+                for ( int j=0; j<nYData; j++ ) {
+                    double z= tds1.value( i,j );
+                    if ( rank2y ) {
+                        y0= yds0.value(i,j);
+                        y1= yds1.value(i,j);
+                    } else {
+                        y0= yds0.value(j);
+                        y1= yds1.value(j);
+                    }
+                    double wy= (y1-y0)/dypixel;
+                    int py0= ddY.whichBin( y0, yunits );
+                    int py1= ddY.whichBin( y1, yunits );
+                    double w= wx*wy*weights.value(i,j);
+                    int sy0= Math.max( 0, py0 );
+                    int sy1= Math.min( ny-1, py1 );
+                    for ( int k=sx0; k<=sx1; k++ ) {
+                        for ( int l=sy0; l<=sy1; l++ ) {
+                            if ( w>N.value(k,l) ) {
+                                S.putValue(k,l,z*w);
+                                N.putValue(k,l,w);
+                            }
                         }
                     }
                 }
             }
         }
+
+        if ( !rs ) throw new NoDataInIntervalException("data starts after range");
+        if ( !re ) throw new NoDataInIntervalException("data ends before range");
+
+        MutablePropertyDataSet mds= (MutablePropertyDataSet) Ops.divide( S, N );
+        RebinDescriptor.putDepDataSet( ds, mds, ddX, ddY );
         
-        return Ops.divide( S, N );
+        return mds;
 
     }
 
