@@ -27,6 +27,11 @@ import org.das2.datum.DatumVector;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
+import org.virbo.dataset.ArrayDataSet;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.MutablePropertyDataSet;
+import org.virbo.dataset.QDataSet;
 
 /**
  *
@@ -237,6 +242,53 @@ public class RebinDescriptor {
     
     public Units getUnits() {
         return units;
+    }
+
+    /**
+     * taken from AverageTableRebinner
+     * @param ds the original dataset
+     * @param result the rank 2 rebin target.
+     * @param ddX the descriptor, or null.
+     * @param ddY the descriptor, or null.
+     */
+    public static void putDepDataSet( QDataSet ds, MutablePropertyDataSet result, RebinDescriptor ddX, RebinDescriptor ddY ) {
+        QDataSet xds= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+        MutablePropertyDataSet xx;
+        if ( ddX!=null ) {
+            DDataSet xxx= DDataSet.createRank1( ddX.numberOfBins() );
+            for ( int i=0; i<xxx.length(); i++ ) xxx.putValue(i, ddX.binCenter(i,ddX.units));
+            xxx.putProperty( QDataSet.UNITS, ddX.units );
+            xx= xxx;
+        } else {
+            xx= DataSetOps.makePropertiesMutable(xds); //TODO: untested branch
+        }
+
+        QDataSet yds= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+        MutablePropertyDataSet yy;
+        if ( ddY!=null ) {
+            DDataSet yyy= DDataSet.createRank1( ddY.numberOfBins() );
+            for ( int i=0; i<yyy.length(); i++ ) yyy.putValue(i, ddY.binCenter(i,ddY.units));
+            yyy.putProperty( QDataSet.UNITS, ddY.units );
+            yy= yyy;
+        } else {
+            yy= DataSetOps.makePropertiesMutable( yds );
+        }
+
+        for ( String s: org.virbo.dataset.DataSetUtil.dimensionProperties() ) {
+            if ( ds.property(s)!=null ) result.putProperty(s,ds.property(s));
+            if ( xds.property(s)!=null ) xx.putProperty(s,xds.property(s));
+            if ( yds.property(s)!=null ) yy.putProperty(s,yds.property(s));
+        }
+        if (ddX != null) {
+            xx.putProperty(QDataSet.CADENCE, org.virbo.dataset.DataSetUtil.asDataSet(ddX.binWidthDatum()) );
+        }
+        if (ddY != null) {
+            yy.putProperty(QDataSet.CADENCE, org.virbo.dataset.DataSetUtil.asDataSet(ddY.binWidthDatum()) );
+        }
+
+        result.putProperty( QDataSet.DEPEND_0, xx );
+        result.putProperty( QDataSet.DEPEND_1, yy );
+        
     }
     
     @Override

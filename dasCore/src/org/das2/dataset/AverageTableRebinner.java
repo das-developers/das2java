@@ -184,39 +184,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             }
         }
 
-        ArrayDataSet xx;
-        if ( ddX==null ) {
-            xx= ArrayDataSet.copy(xds); //TODO: untested branch
-        } else {
-            xx= DDataSet.createRank1( ddX.numberOfBins() );
-            for ( int i=0; i<xx.length(); i++ ) xx.putValue(i, ddX.binCenter(i,xunits));
-            xx.putProperty( QDataSet.UNITS, xunits );
-        }
-
-        MutablePropertyDataSet yy;
-        if ( ddY!=null ) {
-            DDataSet yyy= DDataSet.createRank1( ddY.numberOfBins() );
-            for ( int i=0; i<yyy.length(); i++ ) yyy.putValue(i, ddY.binCenter(i,yunits));
-            yyy.putProperty( QDataSet.UNITS, yunits );
-            yy= yyy;
-        } else {
-            yy= DataSetOps.makePropertiesMutable( yds );
-        }
-
-        for ( String s: DataSetUtil.dimensionProperties() ) {
-            if ( ds.property(s)!=null ) result.putProperty(s,ds.property(s));
-            if ( xds.property(s)!=null ) xx.putProperty(s,xds.property(s));
-            if ( yds.property(s)!=null ) yy.putProperty(s,yds.property(s));
-        }
-        if (ddX != null) {
-            xx.putProperty(QDataSet.CADENCE, DataSetUtil.asDataSet(ddX.binWidthDatum()) );
-        }
-        if (ddY != null) {
-            yy.putProperty(QDataSet.CADENCE, DataSetUtil.asDataSet(ddY.binWidthDatum()) );
-        }
-
-        result.putProperty( QDataSet.DEPEND_0, xx );
-        result.putProperty( QDataSet.DEPEND_1, yy );
+        RebinDescriptor.putDepDataSet( ds, result, ddX, ddY );
         result.putProperty( QDataSet.WEIGHTS_PLANE, weightResult );
 
         logger.finest("done, AverageTableRebinner.rebin");
