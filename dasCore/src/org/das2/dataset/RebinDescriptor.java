@@ -276,8 +276,8 @@ public class RebinDescriptor {
 
         for ( String s: org.virbo.dataset.DataSetUtil.dimensionProperties() ) {
             if ( ds.property(s)!=null ) result.putProperty(s,ds.property(s));
-            if ( xds.property(s)!=null ) xx.putProperty(s,xds.property(s));
-            if ( yds.property(s)!=null ) yy.putProperty(s,yds.property(s));
+            if ( xds!=null && xds.property(s)!=null ) xx.putProperty(s,xds.property(s));
+            if ( yds!=null && yds.property(s)!=null ) yy.putProperty(s,yds.property(s));
         }
         if (ddX != null) {
             xx.putProperty(QDataSet.CADENCE, org.virbo.dataset.DataSetUtil.asDataSet(ddX.binWidthDatum()) );
