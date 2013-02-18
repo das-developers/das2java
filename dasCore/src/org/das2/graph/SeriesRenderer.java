@@ -56,6 +56,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.das2.components.ColorBarComponent;
 import org.das2.dataset.VectorUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
@@ -1821,6 +1822,9 @@ public class SeriesRenderer extends Renderer {
     PropertyChangeListener colorBarListener= new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
            if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
+               if ( evt.getPropertyName().equals(DasColorBar.PROPERTY_TYPE) ) {
+                   updatePsym();
+               }
                update();
            }
         }
