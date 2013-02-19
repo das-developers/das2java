@@ -1585,13 +1585,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( c instanceof DasAxis ) {
                 DasAxis otherAxis= (DasAxis)c;
                 if ( otherAxis.orientation== this.orientation &&
-                        otherAxis.getColumn()== this.getColumn() &&
-                        otherAxis.getDatumRange().equals( this.getDatumRange() ) ) {
+                        otherAxis.getColumn()== this.getColumn() ) {
                     if ( otherAxis.isVisible() && otherAxis.isTickLabelsVisible() ) {
-                        if ( otherAxis.getDrawTca() ) {
-                            leader= otherAxis;
-                        } else if ( leader==null ) {
-                            leader= otherAxis;
+                        if ( otherAxis.getDatumRange().equals( this.getDatumRange() ) ) {
+                            if ( otherAxis.getDrawTca() ) {
+                                leader= otherAxis;
+                            } else if ( leader==null ) {
+                                leader= otherAxis;
+                            }
+                        } else {
+                            if ( DatumRangeUtil.rescale( otherAxis.getDatumRange(), -1, 2 ).intersects( this.getDatumRange() ) ) {
+                                // it probably is a bit ahead or behind this axis.
+                                if ( otherAxis.getDrawTca() ) {
+                                   leader= otherAxis;
+                                } else if ( leader==null ) {
+                                   leader= otherAxis;
+                                }
+                            }
                         }
                     }
                 }
@@ -1622,11 +1632,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             if (autoTickV) {
                 TickVDescriptor oldTicks = this.tickV;
-                if ( !this.isTickLabelsVisible() || !this.isVisible() ) {
+                if ( this.isHorizontal() && ( !this.isTickLabelsVisible() || !this.isVisible() ) ) {
                     if ( findSomeoneElsesTicks() ) {
                         firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
                         repaint();
                         return;
+                    } else {
+                        System.err.println("failed to find someone else's labels.");
+                        findSomeoneElsesTicks();
                     }
                 }
                 if (majorTicksDomainDivider != null) {
