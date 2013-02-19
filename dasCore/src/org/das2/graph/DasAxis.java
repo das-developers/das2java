@@ -1573,6 +1573,38 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /**
+     * Bill pointed out a bug where axes without the ticks printed would use
+     * different ticks than the axis showing the labels.  This is a quick-n-dirty
+     * way to make sure the same ticks are used.
+     */
+    private boolean findSomeoneElsesTicks() {
+        DasCanvasComponent[] cc= this.getCanvas().getCanvasComponents();
+        DasAxis leader= null;
+        for ( DasCanvasComponent c: cc ) {
+            if ( c instanceof DasAxis ) {
+                DasAxis otherAxis= (DasAxis)c;
+                if ( otherAxis.orientation== this.orientation &&
+                        otherAxis.getColumn()== this.getColumn() &&
+                        otherAxis.getDatumRange().equals( this.getDatumRange() ) ) {
+                    if ( otherAxis.isVisible() && otherAxis.isTickLabelsVisible() ) {
+                        if ( otherAxis.getDrawTca() ) {
+                            leader= otherAxis;
+                        } else if ( leader==null ) {
+                            leader= otherAxis;
+                        }
+                    }
+                }
+            }
+        }
+        if ( leader!=null ) {
+            this.tickV= leader.getTickV();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public void updateTickV() {
         if (!valueIsAdjusting()) {
             if ( getTickLabelFont()==null ) return;
@@ -1590,6 +1622,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             if (autoTickV) {
                 TickVDescriptor oldTicks = this.tickV;
+                if ( !this.isTickLabelsVisible() || !this.isVisible() ) {
+                    if ( findSomeoneElsesTicks() ) {
+                        firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
+                        repaint();
+                        return;
+                    }
+                }
                 if (majorTicksDomainDivider != null) {
                     updateTickVDomainDivider();
                 } else {
