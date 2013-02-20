@@ -120,7 +120,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum nearestNeighbor;
         public static final RebinnerEnum binAverageNoInterpolate;
         public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
-        public static final RebinnerEnum lanlNN;
+        //public static final RebinnerEnum lanlNN;
 
 
         static {
@@ -133,12 +133,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             rebinner.setEnlargePixels(false);
             binAverageNoInterpolateNoEnlarge = new RebinnerEnum(rebinner, "noInterpolateNoEnlarge");
             
-            rebinner = new AverageTableRebinner();
-            rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
-            nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
+            //rebinner = new AverageTableRebinner();
+            //rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
+            //nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
 
             DataSetRebinner r1 = new LanlNNRebinner();
-            lanlNN= new RebinnerEnum( r1, "lanlNN" );
+            nearestNeighbor= new RebinnerEnum( r1, "nearestNeighbor" );
             //Note: to add RebinModes, see getListIcon.
         }
 
@@ -161,7 +161,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             if ( url==null ) {
                 throw new IllegalArgumentException("icon not found at /images/icons/rebin." + label + ".png");
             }
-            return new ImageIcon();
+            return new ImageIcon(url);
         }
 
         @Override
