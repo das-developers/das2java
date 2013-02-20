@@ -28,6 +28,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.logging.*;
+import org.das2.datum.Datum;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
@@ -52,6 +53,20 @@ public class LanlNNRebinner implements DataSetRebinner {
     WeakHashMap<QDataSet,QDataSet> yds0c= new WeakHashMap();
     WeakHashMap<QDataSet,QDataSet> yds1c= new WeakHashMap();
 
+    /**
+     * get cadence that checks for null and returns the pixel cadence in this case.
+     * @param ds the xtags or ytags 
+     * @param res fall-back cadence, that is the axis resolution
+     * @return
+     */
+    private QDataSet getCadence( QDataSet ds, Datum res ) {
+        QDataSet dds= DataSetUtil.guessCadenceNew( ds, null );
+        if ( dds==null ) {
+            return DataSetUtil.asDataSet(res);
+        } else {
+            return dds;
+        }
+    }
     /**
      * rebin the data, using the interpolate control to define the interpolation between measurements.  Data that fall into the
      * same pixel are always averaged in the linear space, regardless of interpolation method.
@@ -107,7 +122,7 @@ public class LanlNNRebinner implements DataSetRebinner {
                 xds0= Ops.subtract( xds, binMinus );
                 xds1= Ops.add( xds, binPlus );
             }else {
-                QDataSet dx= DataSetUtil.guessCadenceNew( xds, null );
+                QDataSet dx= getCadence( xds, ddX.binWidthDatum() );
                 if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dx) ) ) {
                     double ddx= Math.sqrt( 1. + dx.value()/100. );
                     xds0= Ops.divide( xds, DataSetUtil.asDataSet(ddx) );
@@ -140,7 +155,7 @@ public class LanlNNRebinner implements DataSetRebinner {
                     yds0= Ops.subtract( yds, binMinus );
                     yds1= Ops.add( yds, binPlus );
                 } else {
-                    QDataSet dy= DataSetUtil.guessCadenceNew( yds.rank()==2 ? yds.slice(0): yds, null );
+                    QDataSet dy= getCadence( yds.rank()==2 ? yds.slice(0): yds, ddY.binWidthDatum() );
                     if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dy) ) ) {
                         dy= Ops.convertUnitsTo(dy, Units.percentIncrease );
                         double ddy= Math.sqrt( 1. + dy.value()/100. );
