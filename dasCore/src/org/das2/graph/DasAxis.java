@@ -306,6 +306,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             }
         });
+
+        TickMaster.getInstance().register(this); // weak map will unregister
+
     }
 
     private void addListenersToDataRange(DataRange range, PropertyChangeListener listener) {
@@ -1221,7 +1224,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private void checkTickV(TickVDescriptor tickV) throws IllegalArgumentException {
     }
 
-    private void updateTickVLog() {
+    private TickVDescriptor updateTickVLog() {
 
         DatumRange dr= getDatumRange();
 
@@ -1237,16 +1240,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         nTicksMax = (nTicksMax < 7) ? nTicksMax : 7;
 
-        tickV = TickVDescriptor.bestTickVLogNew( dr.min(), dr.max(), 3, nTicksMax, true);
-        datumFormatter = resolveFormatter(tickV);
+        TickVDescriptor tickV1 = TickVDescriptor.bestTickVLogNew( dr.min(), dr.max(), 3, nTicksMax, true);
 
-        return;
+        return tickV1;
 
     }
 
-    private void updateTickVLinear() {
+    private TickVDescriptor updateTickVLinear() {
 
         DatumRange dr= getDatumRange();
+
+        TickVDescriptor tickV1;
 
         int nTicksMax;
         int axisSize;
@@ -1262,31 +1266,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         nTicksMax = (nTicksMax < 7) ? nTicksMax : 7;
 
-        this.tickV = TickVDescriptor.bestTickVLinear( dr.min(), dr.max(), 3, nTicksMax, false);
+        tickV1 = TickVDescriptor.bestTickVLinear( dr.min(), dr.max(), 3, nTicksMax, false);
 
-        DatumFormatter tdf = resolveFormatter(tickV);
+        DatumFormatter tdf = resolveFormatter(tickV1);
 
-        boolean once = true;
+        Rectangle maxBounds = getMaxBounds(tdf, tickV1);
 
-        while (once) {
-
-            Rectangle maxBounds = getMaxBounds(tdf, tickV);
-
-            if (isHorizontal()) {
-                int tickSizePixels = (int) (maxBounds.width + getEmSize() * 2);
-                nTicksMax = axisSize / tickSizePixels;
-            } else {
-                int tickSizePixels = (int) (maxBounds.height);
-                nTicksMax = axisSize / tickSizePixels;
-            }
-
-            this.tickV = TickVDescriptor.bestTickVLinear( dr.min(), dr.max(), 3, nTicksMax, true);
-            datumFormatter = resolveFormatter(tickV);
-
-            once = false;
+        if (isHorizontal()) {
+            int tickSizePixels = (int) (maxBounds.width + getEmSize() * 2);
+            nTicksMax = axisSize / tickSizePixels;
+        } else {
+            int tickSizePixels = (int) (maxBounds.height);
+            nTicksMax = axisSize / tickSizePixels;
         }
 
-        return;
+        tickV1 = TickVDescriptor.bestTickVLinear( dr.min(), dr.max(), 3, nTicksMax, true);
+
+        return tickV1;
 
     }
 
@@ -1423,28 +1419,29 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     }
 
-    private void updateTickVDomainDivider() {
+    private TickVDescriptor updateTickVDomainDivider() {
         DatumRange dr = getDatumRange();
 
         try {
             long nminor= minorTicksDomainDivider.boundaryCount( dr.min(), dr.max() );
             while ( nminor>=DomainDivider.MAX_BOUNDARIES ) {
                 //TODO: what should we do here?  Transitional state?
-                return;
+                return this.tickV;
             }
             DatumVector major = majorTicksDomainDivider.boundaries(dr.min(), dr.max());
             DatumVector minor = minorTicksDomainDivider.boundaries(dr.min(), dr.max());
 
-            this.tickV = TickVDescriptor.newTickVDescriptor(major, minor);
-            this.tickV.datumFormatter= dividerDatumFormatter;
+            TickVDescriptor tickV1 = TickVDescriptor.newTickVDescriptor(major, minor);
+            tickV1.datumFormatter= dividerDatumFormatter;
 
-            datumFormatter = resolveFormatter(tickV);
+            return tickV1;
         } catch ( InconvertibleUnitsException ex ) {
             // it's okay to do nothing.
+            return tickV;
         }
     }
 
-    private void updateTickVTime() {
+    private TickVDescriptor updateTickVTime() {
 
         int nTicksMax;
 
@@ -1534,7 +1531,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         datumFormatter = resolveFormatter(ltickV);
 
-        this.tickV= ltickV;
+        return ltickV;
 
     }
 
@@ -1644,15 +1641,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                 }
                 if (majorTicksDomainDivider != null) {
-                    updateTickVDomainDivider();
+                    TickVDescriptor newTicks= null;
+                    newTicks= updateTickVDomainDivider();
+
+                   //TickMaster.getInstance().offerTickV( this, newTicks );
+                    this.tickV= newTicks;
+                    datumFormatter = resolveFormatter(tickV); 
+            
                 } else {
+                    TickVDescriptor newTicks= null;
                     if (getUnits() instanceof TimeLocationUnits) {
-                        updateTickVTime();
+                        newTicks= updateTickVTime();
                     } else if (dataRange.isLog()) {
-                        updateTickVLog();
+                        newTicks= updateTickVLog();
                     } else {
-                        updateTickVLinear();
+                        newTicks= updateTickVLinear();
                     }
+                    //TickMaster.getInstance().offerTickV( this, newTicks );
+                    this.tickV= newTicks;
+                    datumFormatter = resolveFormatter(tickV);
+
+
                 }
                 if (drawTca && tcaFunction != null) {
                     updateTCASoon();
