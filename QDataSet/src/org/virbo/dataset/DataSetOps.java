@@ -174,13 +174,13 @@ public class DataSetOps {
         }
 
         DDataSet zds= builder.getDataSet();
-        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), zds );
+        DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(ds,null), zds );
 
         if ( dep1!=null && dep0!=null ) {
             DDataSet xds= xbuilder.getDataSet();
-            DataSetUtil.putProperties( DataSetUtil.getProperties(dep0), xds );
+            DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep0,null), xds );
             DDataSet yds= ybuilder.getDataSet();
-            DataSetUtil.putProperties( DataSetUtil.getProperties(dep1), yds );
+            DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep1,null), yds );
             return Ops.link( xds, yds, zds );
         } else  {
             return zds;
