@@ -486,24 +486,31 @@ public class DigitalRenderer extends Renderer {
 
         GrannyTextRenderer gtr = new GrannyTextRenderer();
 
-        QDataSet xds= SemanticOps.xtagsDataSet(ds);
-        QDataSet yds= SemanticOps.ytagsDataSet(ds);
-        QDataSet fds= DataSetOps.flattenRank2(ds);
+        QDataSet ds1;
+        if ( firstIndex<lastIndex ) {
+            ds1= ds.trim( firstIndex, lastIndex );
+        } else {
+            ds1= ds;
+        }
+
+        QDataSet xds= SemanticOps.xtagsDataSet(ds1);
+        QDataSet yds= SemanticOps.ytagsDataSet(ds1);
+        QDataSet fds= DataSetOps.flattenRank2(ds1);
         QDataSet zds;
-        Units u = SemanticOps.getUnits(ds);
+        Units u = SemanticOps.getUnits(ds1);
 
         if ( fds.length(0)>1 ) {
             xds= DataSetOps.unbundle(fds, 0);
             yds= DataSetOps.unbundle(fds, 1);
             zds= DataSetOps.unbundle(fds, fds.length(0)-1 );
         } else {
-            xds= Ops.div( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds.length(0) ) );
-            yds= Ops.mod( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds.length(0) ) );
+            xds= Ops.div( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds1.length(0) ) );
+            yds= Ops.mod( Ops.dindgen(fds.length()), DataSetUtil.asDataSet(ds1.length(0) ) );
             zds= fds;
         }
 
         String form=this.format;
-        String dsformat= (String) ds.property(QDataSet.FORMAT);
+        String dsformat= (String) ds1.property(QDataSet.FORMAT);
         if ( form.length()==0 && dsformat!=null ) {
             form= dsformat;
         }
