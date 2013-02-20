@@ -1632,7 +1632,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             if (autoTickV) {
                 TickVDescriptor oldTicks = this.tickV;
-                if ( this.isHorizontal() && ( !this.isTickLabelsVisible() || !this.isVisible() ) ) {
+                boolean tryBorrowCode= false;
+                if ( tryBorrowCode && this.isHorizontal() && ( !this.isTickLabelsVisible() || !this.isVisible() ) ) {
                     if ( findSomeoneElsesTicks() ) {
                         firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
                         repaint();
