@@ -133,12 +133,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             rebinner.setEnlargePixels(false);
             binAverageNoInterpolateNoEnlarge = new RebinnerEnum(rebinner, "noInterpolateNoEnlarge");
             
-            //rebinner = new AverageTableRebinner();
-            //rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
-            //nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
+            rebinner = new AverageTableRebinner();
+            rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
+            nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
 
-            DataSetRebinner r1 = new LanlNNRebinner();
-            nearestNeighbor= new RebinnerEnum( r1, "nearestNeighbor" );
+            //DataSetRebinner r1 = new LanlNNRebinner();
+            //nearestNeighbor= new RebinnerEnum( r1, "nearestNeighbor" );
             //Note: to add RebinModes, see getListIcon.
         }
 
