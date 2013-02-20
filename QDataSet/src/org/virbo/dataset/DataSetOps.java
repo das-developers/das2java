@@ -1088,6 +1088,9 @@ public class DataSetOps {
                     rc.putProperty( QDataSet.DEPEND_0, dep0 );
                     return rc;
                 } else {
+                    if ( r.property(QDataSet.BUNDLE_1)!=null ) {
+                        logger.warning("unbundled dataset still has BUNDLE_1");
+                    }
                     return r;
                 }
 
