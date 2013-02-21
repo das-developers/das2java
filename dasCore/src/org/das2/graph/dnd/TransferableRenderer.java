@@ -36,12 +36,13 @@ import java.io.IOException;
  */
 public class TransferableRenderer implements Transferable {
     
-    public static final DataFlavor RENDERER_FLAVOR = localJVMFlavor("org.das2.graph.Renderer");
+    public static final DataFlavor RENDERER_FLAVOR = localJVMFlavor(org.das2.graph.Renderer.class);
 
-    private static DataFlavor localJVMFlavor(String className) {
+    private static DataFlavor localJVMFlavor(Class cl) {
         try {
+			String className = cl.getName();
             String x = DataFlavor.javaJVMLocalObjectMimeType;
-            return new DataFlavor(x + ";class=" + className);
+            return new DataFlavor(x + ";class=" + className,null,cl.getClassLoader());
         }
         catch (ClassNotFoundException cnfe) {
             throw new RuntimeException(cnfe);

@@ -53,7 +53,7 @@ public class TransferableCanvas implements Transferable {
         try {
             String typeStr = DataFlavor.javaJVMLocalObjectMimeType
                 + ";class=org.das2.graph.DasCanvas";
-            CANVAS_FLAVOR = new DataFlavor(typeStr);
+            CANVAS_FLAVOR = new DataFlavor(typeStr,null,DasCanvas.class.getClassLoader());
         }
         catch (ClassNotFoundException cnfe) {
             throw new RuntimeException(cnfe);

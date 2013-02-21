@@ -40,18 +40,19 @@ import org.das2.graph.DasPlot;
  */
 public class TransferableCanvasComponent implements Transferable {
     
-    public static final DataFlavor CANVAS_COMPONENT_FLAVOR = localJVMFlavor("org.das2.graph.DasCanvasComponent");
-    public static final DataFlavor AXIS_FLAVOR = localJVMFlavor("org.das2.graph.DasAxis");
-    public static final DataFlavor PLOT_FLAVOR = localJVMFlavor("org.das2.graph.DasPlot");
-    public static final DataFlavor COLORBAR_FLAVOR = localJVMFlavor("org.das2.graph.DasColorBar");
+    public static final DataFlavor CANVAS_COMPONENT_FLAVOR = localJVMFlavor(org.das2.graph.DasCanvasComponent.class);
+    public static final DataFlavor AXIS_FLAVOR = localJVMFlavor(org.das2.graph.DasAxis.class);
+    public static final DataFlavor PLOT_FLAVOR = localJVMFlavor(org.das2.graph.DasPlot.class);
+    public static final DataFlavor COLORBAR_FLAVOR = localJVMFlavor(org.das2.graph.DasColorBar.class);
     
     private List flavorList;
     private DasCanvasComponent component;
     
-    private static DataFlavor localJVMFlavor(String className) {
+    private static DataFlavor localJVMFlavor(Class cl) {
         try {
+			String className = cl.getName();
             String x = DataFlavor.javaJVMLocalObjectMimeType;
-            return new DataFlavor(x + ";class=" + className);
+            return new DataFlavor(x + ";class=" + className,null,cl.getClassLoader());
         }
         catch (ClassNotFoundException cnfe) {
             throw new RuntimeException(cnfe);
