@@ -1655,6 +1655,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     } else {
                         newTicks= updateTickVLinear();
                     }
+                    //resetTickV(newTicks);
                     TickMaster.getInstance().offerTickV( this, newTicks );
                 }
             }
@@ -1673,6 +1674,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         } else {
                             newTicks= updateTickVLinear();
                         }
+                        //resetTickV(newTicks);
                         TickMaster.getInstance().offerTickV( this, newTicks );
                     }
                 } catch ( NullPointerException ex ) {
@@ -2566,6 +2568,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         DatumRange dr= getDatumRange();
 
         if ( ltickV==null || !ltickV.tickV.getUnits().isConvertableTo(getUnits() ) ) {
+            logger.fine("tickV cannot be used because of units.");
             return bounds;
         }
 
@@ -2636,7 +2639,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     protected Rectangle getAxisBounds() {
         Rectangle bounds;
-        
+
         try {
             updateTickLength();
         } catch (ParseException ex) {
