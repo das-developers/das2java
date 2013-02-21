@@ -26,8 +26,8 @@ public class TickMaster {
 
     private static final Logger logger= LoggerManager.getLogger("das2.graphics.axis");;
 
-    HashSet<WeakReference<DasAxis>> axes= new HashSet();
-    HashSet<WeakReference<DasAxis>> pendingAxes= new HashSet();
+    private HashSet<WeakReference<DasAxis>> axes= new HashSet();
+    private HashSet<WeakReference<DasAxis>> pendingAxes= new HashSet();
 
     private static TickMaster instance= new TickMaster();
 
@@ -40,6 +40,9 @@ public class TickMaster {
     }
 
     public synchronized void offerTickV( DasAxis h, TickVDescriptor ticks ) {
+
+        logger.log( Level.FINE, "axes {0} offers ticks: {1}", new Object[] { h.getDasName(), ticks.toString() } );
+
         HashSet<WeakReference<DasAxis>> rm= new HashSet();
         for ( WeakReference<DasAxis> da : this.pendingAxes ) {
             if ( da.get().getCanvas()!=null ) {
@@ -51,9 +54,11 @@ public class TickMaster {
 
         if ( true ) { //h.isVisible() && h.isTickLabelsVisible() ) {
             int count=0;
+            int mecount=0; // how many times to do I see myself in the list?
             rm= new HashSet();
             for ( WeakReference<DasAxis> da : this.axes ) {
                 DasAxis a= da.get();
+                if ( a==h ) mecount++;
                 if ( a==null ) {
                     rm.add(da);
                 } else {
@@ -68,8 +73,8 @@ public class TickMaster {
                     }
                 }
             }
-            if ( count==0 ) {
-                h.resetTickV( ticks ); // TODO: why does this happen?  file:///home/jbf/ct/pw/rbsp/vap/bill/tick.vap
+            if ( mecount==0 ) {
+                h.resetTickV( ticks );
             }
             if ( rm.size()>0 ) {
                 logger.log( Level.FINE, "remove old axes: {0}", rm );
