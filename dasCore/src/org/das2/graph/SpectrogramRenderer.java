@@ -120,7 +120,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum nearestNeighbor;
         public static final RebinnerEnum binAverageNoInterpolate;
         public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
-        //public static final RebinnerEnum lanlNN;
+        public static final RebinnerEnum oldNearestNeighbor;
 
 
         static {
@@ -135,10 +135,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             
             rebinner = new AverageTableRebinner();
             rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
-            nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
+            oldNearestNeighbor = new RebinnerEnum(rebinner, "oldNearestNeighbor");
 
-            //DataSetRebinner r1 = new LanlNNRebinner();
-            //nearestNeighbor= new RebinnerEnum( r1, "nearestNeighbor" );
+            DataSetRebinner r1 = new LanlNNRebinner();
+            nearestNeighbor= new RebinnerEnum( r1, "nearestNeighbor" );
             //Note: to add RebinModes, see getListIcon.
         }
 
