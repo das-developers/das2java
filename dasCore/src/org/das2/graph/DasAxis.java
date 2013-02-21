@@ -1612,6 +1612,21 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /**
+     * call-back for TickMaster
+     * @param ticks
+     */
+    protected void resetTickV( TickVDescriptor ticks ) {
+        TickVDescriptor oldTicks = this.tickV;
+        this.tickV= ticks;
+        datumFormatter = resolveFormatter(tickV);
+        if (drawTca && tcaFunction != null) {
+             updateTCASoon();
+        }
+        firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
+        repaint();
+    }
+
     public void updateTickV() {
         if (!valueIsAdjusting()) {
             if ( getTickLabelFont()==null ) return;
@@ -1628,26 +1643,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 this.majorTicksDomainDivider= null;
             }
             if (autoTickV) {
-                TickVDescriptor oldTicks = this.tickV;
-                boolean tryBorrowCode= false;
-                if ( tryBorrowCode && this.isHorizontal() && ( !this.isTickLabelsVisible() || !this.isVisible() ) ) {
-                    if ( findSomeoneElsesTicks() ) {
-                        firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
-                        repaint();
-                        return;
-                    } else {
-                        System.err.println("failed to find someone else's labels.");
-                        findSomeoneElsesTicks();
-                    }
-                }
                 if (majorTicksDomainDivider != null) {
-                    TickVDescriptor newTicks= null;
-                    newTicks= updateTickVDomainDivider();
-
-                   //TickMaster.getInstance().offerTickV( this, newTicks );
-                    this.tickV= newTicks;
-                    datumFormatter = resolveFormatter(tickV); 
-            
+                    TickVDescriptor newTicks= updateTickVDomainDivider();
+                    TickMaster.getInstance().offerTickV( this, newTicks );
                 } else {
                     TickVDescriptor newTicks= null;
                     if (getUnits() instanceof TimeLocationUnits) {
@@ -1657,37 +1655,26 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     } else {
                         newTicks= updateTickVLinear();
                     }
-                    //TickMaster.getInstance().offerTickV( this, newTicks );
-                    this.tickV= newTicks;
-                    datumFormatter = resolveFormatter(tickV);
-
-
+                    TickMaster.getInstance().offerTickV( this, newTicks );
                 }
-                if (drawTca && tcaFunction != null) {
-                    updateTCASoon();
-                }
-
-                firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
             }
-            repaint();
         } else {
             if (autoTickV) {
                 try {
                     if (majorTicksDomainDivider != null) {
-                        updateTickVDomainDivider();
-                        if (drawTca && tcaFunction != null) {
-                            updateTCASoon();
-                        }
+                        TickVDescriptor newTicks= updateTickVDomainDivider();
+                        TickMaster.getInstance().offerTickV( this, newTicks );
                     } else {
+                        TickVDescriptor newTicks= null;
                         if (getUnits() instanceof TimeLocationUnits) {
-                            updateTickVTime();
+                            newTicks= updateTickVTime();
                         } else if (dataRange.isLog()) {
-                            updateTickVLog();
+                            newTicks= updateTickVLog();
                         } else {
-                            updateTickVLinear();
+                            newTicks= updateTickVLinear();
                         }
+                        TickMaster.getInstance().offerTickV( this, newTicks );
                     }
-                    repaint();
                 } catch ( NullPointerException ex ) {
                     ex.printStackTrace(); // why do we get this now?
                 }
