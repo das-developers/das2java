@@ -49,7 +49,7 @@ public class TickMaster {
         pendingAxes.removeAll(rm);
         this.axes.addAll(rm);
 
-        if ( h.isVisible() && h.isTickLabelsVisible() ) {
+        if ( true ) { //h.isVisible() && h.isTickLabelsVisible() ) {
             int count=0;
             rm= new HashSet();
             for ( WeakReference<DasAxis> da : this.axes ) {
@@ -67,6 +67,9 @@ public class TickMaster {
                         count++;
                     }
                 }
+            }
+            if ( count==0 ) {
+                h.resetTickV( ticks ); // TODO: why does this happen?  file:///home/jbf/ct/pw/rbsp/vap/bill/tick.vap
             }
             if ( rm.size()>0 ) {
                 logger.log( Level.FINE, "remove old axes: {0}", rm );
