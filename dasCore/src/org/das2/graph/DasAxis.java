@@ -1656,6 +1656,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         newTicks= updateTickVLinear();
                     }
                     //resetTickV(newTicks);
+                    if ( this.tickV==null ) this.tickV= newTicks;  // transition cases
                     TickMaster.getInstance().offerTickV( this, newTicks );
                 }
             }
@@ -1675,6 +1676,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                             newTicks= updateTickVLinear();
                         }
                         //resetTickV(newTicks);
+                        if ( this.tickV==null ) this.tickV= newTicks;  // transition cases
                         TickMaster.getInstance().offerTickV( this, newTicks );
                     }
                 } catch ( NullPointerException ex ) {
@@ -2493,6 +2495,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         try {
             Font f = getTickLabelFont();
             TickVDescriptor ticks = getTickV();
+            if ( ticks==null ) return 10;
             DatumVector tickv = ticks.tickV;
             int size = Integer.MIN_VALUE;
             for (int i = 0; i < tickv.getLength(); i++) {
