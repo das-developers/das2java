@@ -52,7 +52,7 @@ public class TickMaster {
         pendingAxes.removeAll(rm);
         this.axes.addAll(rm);
 
-        if ( true ) { //h.isVisible() && h.isTickLabelsVisible() ) {
+        if ( h.isVisible() && h.isTickLabelsVisible() ) {
             int count=0;
             int mecount=0; // how many times to do I see myself in the list?
             rm= new HashSet();
