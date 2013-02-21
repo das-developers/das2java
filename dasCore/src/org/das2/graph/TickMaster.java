@@ -5,7 +5,11 @@
 
 package org.das2.graph;
 
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 /**
  * Class for managing ticks.  When a set of plots shares a common column and
@@ -20,7 +24,10 @@ import java.util.HashSet;
  */
 public class TickMaster {
 
-    HashSet<DasAxis> axes= new HashSet<DasAxis>();
+    private static final Logger logger= LoggerManager.getLogger("das2.graphics.axis");;
+
+    HashSet<WeakReference<DasAxis>> axes= new HashSet();
+    HashSet<WeakReference<DasAxis>> pendingAxes= new HashSet();
 
     private static TickMaster instance= new TickMaster();
 
@@ -28,24 +35,44 @@ public class TickMaster {
         return instance;
     }
 
-    public void register( DasAxis h ) {
-        this.axes.add(h);
+    public synchronized void register( DasAxis h ) {
+        this.pendingAxes.add( new WeakReference(h) );
     }
 
-    public void unregister( DasAxis h ) {
-        this.axes.remove(h);
-    }
+    public synchronized void offerTickV( DasAxis h, TickVDescriptor ticks ) {
+        HashSet<WeakReference<DasAxis>> rm= new HashSet();
+        for ( WeakReference<DasAxis> da : this.pendingAxes ) {
+            if ( da.get().getCanvas()!=null ) {
+                rm.add(da);
+            }
+        }
+        pendingAxes.removeAll(rm);
+        this.axes.addAll(rm);
 
-    public void offerTickV( DasAxis h, TickVDescriptor ticks ) {
         if ( h.isVisible() && h.isTickLabelsVisible() ) {
-            for ( DasAxis a : this.axes ) {
-                if ( ( a.getOrientation()==h.getOrientation() )
-                        && ( Math.abs( a.getDLength()-h.getDLength() )<2 )
-                        && ( a.isLog()==h.isLog() )
-                        && ( a.getDatumRange().equals(h.getDatumRange() ) ) ) {
-                    a.setTickV( ticks );
+            int count=0;
+            rm= new HashSet();
+            for ( WeakReference<DasAxis> da : this.axes ) {
+                DasAxis a= da.get();
+                if ( a==null ) {
+                    rm.add(da);
+                } else {
+                    if ( a.getCanvas()==null ) {
+                        rm.add(da);
+                    } else if ( ( a.getOrientation()==h.getOrientation() )
+                            && ( Math.abs( a.getDLength()-h.getDLength() )<2 )
+                            && ( a.isLog()==h.isLog() )
+                            && ( a.getDatumRange().equals(h.getDatumRange() ) ) ) {
+                        a.resetTickV( ticks );
+                        count++;
+                    }
                 }
             }
+            if ( rm.size()>0 ) {
+                logger.log( Level.FINE, "remove old axes: {0}", rm );
+                this.axes.removeAll(rm);
+            }
+            logger.log( Level.FINE, "axes using these ticks: {0}", count);
         }
     }
 
