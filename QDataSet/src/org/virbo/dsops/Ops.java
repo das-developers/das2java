@@ -2638,7 +2638,7 @@ public class Ops {
     /**
      *@see #fftFilter
      */
-    public static enum FFTFilterType{ Hanning, TenPercentEdgeCosine };
+    public static enum FFTFilterType{ Hanning, TenPercentEdgeCosine, Unity };
 
     /**
      * Apply Hanning windows to the data to prepare for FFT.  The data is reformed into a rank 2 dataset [N,len].
@@ -2724,6 +2724,8 @@ public class Ops {
                 filter= FFTUtil.getWindowHanning(len);
             } else if ( filt==FFTFilterType.TenPercentEdgeCosine ) {
                 filter= FFTUtil.getWindow10PercentEdgeCosine(len);
+            } else if ( filt==FFTFilterType.Unity ) {
+                filter= FFTUtil.getWindowUnity(len);
             } else {
                 throw new UnsupportedOperationException("unsupported op: "+filt );
             }
@@ -2802,7 +2804,7 @@ public class Ops {
      */
     public static QDataSet fftPower( QDataSet ds, int len, ProgressMonitor mon ) {
         QDataSet unity= ones(len);
-        return fftPower( ds, unity, mon );
+        return fftPower( ds, unity, -1, mon );
     }
 
     /**
@@ -2813,11 +2815,16 @@ public class Ops {
             return FFTUtil.getWindowHanning(len);
         } else if ( filt==FFTFilterType.TenPercentEdgeCosine ) {
             return FFTUtil.getWindow10PercentEdgeCosine(len);
+        } else if ( filt==FFTFilterType.Unity ) {
+            return FFTUtil.getWindowUnity(len);
         } else {
             throw new UnsupportedOperationException("unsupported op: "+filt );
         }
     }
 
+    public static QDataSet fftPower( QDataSet ds, QDataSet window, ProgressMonitor mon ) {
+        return fftPower( ds, window, -1, mon );
+    }
     /**
      * create a power spectrum on the dataset by breaking it up and
      * doing ffts on each segment.
@@ -2832,16 +2839,19 @@ public class Ops {
      *
      * @param ds rank 2 dataset ds(N,M) with M>len
      * @param window window to apply to the data before performing FFT
+     * @param step step size, or -1 for window.length();
      * @param mon a ProgressMonitor for the process
      * @return rank 2 fft spectrum
      */
-    public static QDataSet fftPower( QDataSet ds, QDataSet window, ProgressMonitor mon ) {
+    public static QDataSet fftPower( QDataSet ds, QDataSet window, int step, ProgressMonitor mon ) {
         if ( mon==null ) {
             mon= new NullProgressMonitor();
         }
 
         int len= window.length();
-        boolean windowNonUnity= false;
+        if ( step<0 ) step=len;
+        
+        boolean windowNonUnity= false; // true if a non-unity window is to be applied.
         for ( int i=0; windowNonUnity==false && i<len; i++ ) {
             if ( window.value(i)!=1.0 ) windowNonUnity=true;
         }
@@ -2869,7 +2879,7 @@ public class Ops {
             mon.started();
             for ( int i=0; i<ds.length(); i++ ) {
                 mon.setTaskProgress(i*10);
-                QDataSet pow1= fftPower( ds.slice(i), window, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
+                QDataSet pow1= fftPower( ds.slice(i), window, step, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
                 result.join(pow1);
             }
             mon.finished();
@@ -2881,8 +2891,8 @@ public class Ops {
             JoinDataSet result= new JoinDataSet(2);
             result.putProperty(QDataSet.JOIN_0, null);
 
-            int nsam= ds.length()*(ds.length(0)/len); // approx
-            DataSetBuilder dep0b= new DataSetBuilder(1,nsam );
+            int nsam= ds.length()*(ds.length(0)/step); // approx
+            DataSetBuilder dep0b= new DataSetBuilder( 1,nsam );
 
             QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
             if ( dep0!=null ) { // make sure these are really units we can use
@@ -2906,6 +2916,7 @@ public class Ops {
                     }
                 }
             }
+            if ( translation!=null ) logger.fine("translation will be applied");
 
             double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
             if ( dep1!=null && dep1.rank()==1 ) {
@@ -2918,7 +2929,7 @@ public class Ops {
                 if ( dep0.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0.property(QDataSet.VALID_MAX)).doubleValue();
             }
 
-            int len1= ds.length(0)/len;
+            int len1= ( ( ds.length(0)-len ) / step ) + 1;
 
             mon.setTaskSize(ds.length()*len1); // assumes all are the same length.
             mon.started();
@@ -2940,7 +2951,7 @@ public class Ops {
 
                 for ( int j=0; j<len1; j++ ) {
                     GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
-                    QDataSet wave= slicei.trim(j*len,(j+1)*len );
+                    QDataSet wave= slicei.trim( j*step,j*step+len );
                     QDataSet weig= DataSetUtil.weightsDataSet(wave);
                     boolean hasFill= false;
                     for ( int k=0; k<weig.length(); k++ ) {
@@ -2970,11 +2981,11 @@ public class Ops {
 
                     double d0=0;
                     if ( dep0!=null && dep1!=null ) {
-                        d0= dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  );
+                        d0= dep0.value(i) + uc.convert( dep1.value( j*step + len/2 )  );
                     } else if ( dep0!=null ) {
                         d0= dep0.value(i);
                     } else if ( dep0i!=null ) {
-                        d0= dep0i.value(j*len);
+                        d0= dep0i.value(j*step+len/2);
                     } else {
                         dep0b= null;
                     }
