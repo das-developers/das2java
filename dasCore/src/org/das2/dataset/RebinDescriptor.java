@@ -274,11 +274,15 @@ public class RebinDescriptor {
             yy= DataSetOps.makePropertiesMutable( yds );
         }
 
-        for ( String s: org.virbo.dataset.DataSetUtil.dimensionProperties() ) {
-            if ( ds.property(s)!=null ) result.putProperty(s,ds.property(s));
+        String[] props= new String[] { QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE };
+        for ( String s: props ) {
             if ( xds!=null && xds.property(s)!=null ) xx.putProperty(s,xds.property(s));
             if ( yds!=null && yds.property(s)!=null ) yy.putProperty(s,yds.property(s));
         }
+        for ( String s: org.virbo.dataset.DataSetUtil.dimensionProperties() ) {
+            if ( ds.property(s)!=null ) result.putProperty(s,ds.property(s));
+        }
+        
         if (ddX != null) {
             xx.putProperty(QDataSet.CADENCE, org.virbo.dataset.DataSetUtil.asDataSet(ddX.binWidthDatum()) );
         }
