@@ -2839,7 +2839,7 @@ public class Ops {
      *
      * @param ds rank 2 dataset ds(N,M) with M>len
      * @param window window to apply to the data before performing FFT
-     * @param step step size, or -1 for window.length();
+     * @param step step size, or -1 is fraction of length (-1 for length, -2 for half steps, -4 for quarters);
      * @param mon a ProgressMonitor for the process
      * @return rank 2 fft spectrum
      */
@@ -2849,7 +2849,7 @@ public class Ops {
         }
 
         int len= window.length();
-        if ( step<0 ) step=len;
+        if ( step<0 ) step=len/(-1*step);
         
         boolean windowNonUnity= false; // true if a non-unity window is to be applied.
         for ( int i=0; windowNonUnity==false && i<len; i++ ) {
