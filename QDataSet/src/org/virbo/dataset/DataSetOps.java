@@ -31,6 +31,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dsops.Ops;
+import org.virbo.dsops.Ops.FFTFilterType;
 import org.virbo.dsutil.DataSetBuilder;
 import org.virbo.dsutil.Reduction;
 
@@ -1744,7 +1745,21 @@ public class DataSetOps {
                     if ( fillDs.length()>0 ) {
                         if ( s.hasNextInt() ) {
                             int len= s.nextInt();
-                            fillDs= Ops.fftPower(fillDs,len, mon);
+                            if ( s.hasNextInt() ) {
+                                int step= s.nextInt();
+                                if ( step<0 ) {
+                                    step= len;
+                                } else if ( step<32 ) { // allow 2,4,8,16
+                                    step= len/step;
+                                }
+                                String window= getStringArg( s.next() );
+                                if ( window.length()==0 ) window= "Unity";
+                                FFTFilterType ff= Ops.FFTFilterType.valueOf(window);
+                                QDataSet wqds= Ops.windowFunction( ff, len );
+                                fillDs= Ops.fftPower( fillDs, wqds, step, mon);
+                            } else {
+                                fillDs= Ops.fftPower(fillDs,len, mon);
+                            }
                         } else {
                             fillDs= Ops.fftPower(fillDs);
                         }
