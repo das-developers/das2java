@@ -407,9 +407,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     break;
                 }
                 mon.setTaskProgress(linenum);
-                if (line.startsWith("## ")) {
+                if (line.startsWith("## ") || line.length()>0 && Character.isJavaIdentifierStart( line.charAt(0) ) ) {
                     if ( unitsArray1!=null ) continue;
-                    line = line.substring(3);
+                    while ( line.startsWith("#") ) line = line.substring(1);
                     if ( line.indexOf("\t")==-1 ) delim= "\\s+";
                     String[] s = line.trim().split(delim);
                     Pattern p = Pattern.compile("(.+)\\((.*)\\)");
@@ -450,9 +450,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
                 try {
 
-                    x = unitsArray1[0].parse(s[0]);
-                    y = unitsArray1[1].parse(s[1]);
-
                     planes = new LinkedHashMap();
 
                     for (int i = 2; i < s.length; i++) {
@@ -472,6 +469,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             }
                         }
                     }
+
+                    x = unitsArray1[0].parse(s[0]);
+                    y = unitsArray1[1].parse(s[1]);
 
                     DataPointSelectionEvent e;
                     e = new DataPointSelectionEvent(this, x, y, planes);
