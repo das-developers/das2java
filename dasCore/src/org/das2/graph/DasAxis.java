@@ -1656,7 +1656,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         newTicks= updateTickVLinear();
                     }
                     //resetTickV(newTicks);
-                    if ( this.tickV==null ) this.tickV= newTicks;  // transition cases
+                    if ( this.tickV==null ) resetTickV( newTicks );  // transition cases, pngwalk.
                     TickMaster.getInstance().offerTickV( this, newTicks );
                 }
             }
