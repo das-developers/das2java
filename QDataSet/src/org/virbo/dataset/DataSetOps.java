@@ -1749,9 +1749,9 @@ public class DataSetOps {
                             if ( s.hasNextInt() ) {
                                 int step= s.nextInt();
                                 if ( step<0 ) {
-                                    step= len;
-                                } else if ( step<32 ) { // allow 2,4,8,16
-                                    step= len/step;
+                                    step= len/(-1*step);
+                                } else if ( step < 9 ) {
+                                    step= len/step; // don't advertise this...
                                 }
                                 String window= getStringArg( s.next() );
                                 if ( window.length()==0 ) window= "Unity";
