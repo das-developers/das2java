@@ -2850,7 +2850,9 @@ public class Ops {
 
         int len= window.length();
         if ( step<0 ) step=len/(-1*step);
-        
+        if ( step < 9 ) { 
+            step= len/step; // don't advertise this...
+        }
         boolean windowNonUnity= false; // true if a non-unity window is to be applied.
         for ( int i=0; windowNonUnity==false && i<len; i++ ) {
             if ( window.value(i)!=1.0 ) windowNonUnity=true;
