@@ -1582,9 +1582,10 @@ public class DataSetOps {
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
 
+        String cmd="";
         try {
             while ( s.hasNext() ) {
-                String cmd= s.next();
+                cmd= s.next();
                 cmd= cmd.replaceAll( "\\|\\s*", "|" ); // https://sourceforge.net/tracker/?func=detail&aid=3586477&group_id=199733&atid=970685
                 i= c.indexOf(cmd,i);
                 logger.log(Level.FINER, "  cmd \"{0}\"", cmd );
@@ -1851,7 +1852,14 @@ public class DataSetOps {
                 }
             }
         } catch ( InputMismatchException ex ) {
-            ParseException ex2= new ParseException( c + " ("+ex.getLocalizedMessage()+")", i );
+            String msg= ex.getLocalizedMessage();
+            if ( msg==null ) msg= ex.toString();
+            ParseException ex2;
+            if ( c.length()>cmd.length() ) {
+                ex2= new ParseException( c + " at "+cmd+" ("+msg+")", i );
+            } else {
+                ex2= new ParseException( c + " ("+msg+")", i );
+            }
             throw ex2;
         }
         logger.log(Level.FINE, "{0}->sprocess(\"{1}\")->{2}", new Object[] { ds0, c, fillDs } );
