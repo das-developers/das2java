@@ -6,7 +6,9 @@
 package org.das2.graph;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
@@ -24,7 +26,7 @@ import org.das2.util.LoggerManager;
  */
 public class TickMaster {
 
-    private static final Logger logger= LoggerManager.getLogger("das2.graphics.axis");;
+    private static final Logger logger= LoggerManager.getLogger("das2.graphics.axis.tickmaster");;
 
     private HashSet<WeakReference<DasAxis>> axes= new HashSet();
     private HashSet<WeakReference<DasAxis>> pendingAxes= new HashSet();
@@ -41,8 +43,6 @@ public class TickMaster {
 
     public synchronized void offerTickV( DasAxis h, TickVDescriptor ticks ) {
 
-        logger.log( Level.FINE, "axes {0} offers ticks: {1}", new Object[] { h.getDasName(), ticks.toString() } );
-
         HashSet<WeakReference<DasAxis>> rm= new HashSet();
         for ( WeakReference<DasAxis> da : this.pendingAxes ) {
             if ( da.get().getCanvas()!=null ) {
@@ -52,7 +52,11 @@ public class TickMaster {
         pendingAxes.removeAll(rm);
         this.axes.addAll(rm);
 
+        List<String> axesUsing= new ArrayList();
+
         if ( h.isVisible() && h.isTickLabelsVisible() ) {
+            logger.log( Level.FINE, "axes {0} offers ticks: {1}", new Object[] { h.getDasName(), ticks.toString() } );
+
             int count=0;
             int mecount=0; // how many times to do I see myself in the list?
             rm= new HashSet();
@@ -70,6 +74,7 @@ public class TickMaster {
                             && ( a.getDatumRange().equals(h.getDatumRange() ) ) ) {
                         a.resetTickV( ticks );
                         count++;
+                        axesUsing.add(a.getDasName());
                     }
                 }
             }
@@ -80,7 +85,7 @@ public class TickMaster {
                 logger.log( Level.FINE, "remove old axes: {0}", rm );
                 this.axes.removeAll(rm);
             }
-            logger.log( Level.FINE, "axes using these ticks: {0}", count);
+            logger.log( Level.FINE, "axes using these ticks: {0} {1}", new Object[] { count, axesUsing } );
         }
     }
 
