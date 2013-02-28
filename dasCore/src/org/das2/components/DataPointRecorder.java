@@ -57,6 +57,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     protected JTable table;
     protected JScrollPane scrollPane;
+    protected JButton updateButton;
     protected List dataPoints;
     private int selectRow; // this row needs to be selected after the update.
     /**
@@ -201,7 +202,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, ProgressMonitor monitor) throws DasException {
-            if (dataPoints.size() == 0) {
+            if (dataPoints.isEmpty()) {
                 return null;
             } else {
                 VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
@@ -233,7 +234,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * returns a data set of the table data.
      */
     public VectorDataSet getDataSet() {
-        if (dataPoints.size() == 0) {
+        if (dataPoints.isEmpty()) {
             return null;
         } else {
             VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
@@ -715,7 +716,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         return new AbstractAction("Update") {
 
             public void actionPerformed(ActionEvent e) {
-                // what if no one is listening?
                 if (dataSetDescriptor != null) {
                     dataSetDescriptor.fireUpdate();
                 }
@@ -785,7 +785,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         final JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
 
-        JButton updateButton = new JButton(getUpdateAction());
+        updateButton = new JButton(getUpdateAction());
+        updateButton.setVisible(false);
+        updateButton.setEnabled(false);
 
         controlPanel.add(updateButton);
 
@@ -865,7 +867,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     public void addDataPoint(Datum x, Datum y, Map planes) {
         if ( planes==null ) planes= new HashMap();
-        if (dataPoints.size() == 0) {
+        if (dataPoints.isEmpty()) {
             unitsArray =
                     new Units[2 + planes.size()];
             unitsArray[0] = x.getUnits();
@@ -991,20 +993,37 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         addDataPoint(x, e.getY(), planesMap);
         updateClients();
     }
+
+    /**
+     * hide the update button if no one is listening.
+     * @return true if it is now visible
+     */
+    boolean checkUpdateEnable() {
+        if ( listenerList1.getListenerCount()>0 && selectedListenerList.getListenerCount()>0 ) {
+            updateButton.setEnabled(true);
+            updateButton.setVisible(true);
+            updateButton.setToolTipText(null);
+            return true;
+        } else {
+            updateButton.setEnabled(false);
+            updateButton.setToolTipText("no listeners. See File->Save to save table.");
+            updateButton.setVisible(false);
+            return false;
+        }
+
+    }
     private javax.swing.event.EventListenerList listenerList1 = null;
 
     public synchronized void addDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
         if (listenerList1 == null) {
             listenerList1 = new javax.swing.event.EventListenerList();
         }
-
-
-
-
+        checkUpdateEnable();
         listenerList1.add(org.das2.dataset.DataSetUpdateListener.class, listener);
     }
 
     public synchronized void removeDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+        checkUpdateEnable();
         listenerList1.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
     }
 
@@ -1017,9 +1036,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
             listeners= listenerList1.getListenerList();
         }
-        for (int i = listeners.length - 2; i >=
-                0; i -=
-                        2) {
+        for (int i = listeners.length - 2; i >=0; i-= 2) {
             if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
                 ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
             }
@@ -1032,15 +1049,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         if (selectedListenerList == null) {
             selectedListenerList = new javax.swing.event.EventListenerList();
         }
-
-
-
-
+        checkUpdateEnable();
         selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
     }
 
     public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
         selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
     }
 
     private void fireSelectedDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
@@ -1049,9 +1064,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         Object[] listeners = selectedListenerList.getListenerList();
-        for (int i = listeners.length - 2; i >=
-                0; i -=
-                        2) {
+        for ( int i = listeners.length - 2; i >=0; i-=2 ) {
             if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
                 ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
             }
