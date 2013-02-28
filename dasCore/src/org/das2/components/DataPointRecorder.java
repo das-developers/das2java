@@ -188,7 +188,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         modified = true;
         updateClients();
         updateStatus();
-        fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+        if ( active ) {
+            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+        }
     }
 
     private class MyDataSetDescriptor extends DataSetDescriptor {
@@ -489,7 +491,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
             if ( r!=null ) r.close();
 
-            active = true;
+            //active = true;
             modified = false;
 
             updateStatus();
@@ -497,8 +499,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             updateClients();
 
             prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
-            fireDataSetUpdateListenerDataSetUpdated(
-                    new DataSetUpdateEvent(this));
+            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
 
             //table.getColumnModel().getColumn(0).setPreferredWidth(200);
 
@@ -506,6 +507,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             table.repaint();
         }
 
+    }
+
+    /**
+     * active=true means fire off events on any change.  false= wait for update button.
+     * @param active
+     */
+    public void setActive( boolean active ) {
+        this.active= active;
     }
 
     private class MyMouseAdapter extends MouseAdapter {
@@ -607,6 +616,15 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
     }
+
+    /**
+     * shows the current name for the file.
+     * @return
+     */
+    public File getCurrentFile() {
+        return this.saveFile;
+    }
+
 
     /**
      * return true if the file was saved or don't save was pressed by the user.
@@ -999,7 +1017,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * @return true if it is now visible
      */
     boolean checkUpdateEnable() {
-        if ( listenerList1.getListenerCount()>0 && selectedListenerList.getListenerCount()>0 ) {
+        if ( ( listenerList1!=null && listenerList1.getListenerCount()>0 ) || ( selectedListenerList!=null && selectedListenerList.getListenerCount()>0 ) ) {
             updateButton.setEnabled(true);
             updateButton.setVisible(true);
             updateButton.setToolTipText(null);
@@ -1010,7 +1028,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             updateButton.setVisible(false);
             return false;
         }
-
     }
     private javax.swing.event.EventListenerList listenerList1 = null;
 
@@ -1018,13 +1035,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         if (listenerList1 == null) {
             listenerList1 = new javax.swing.event.EventListenerList();
         }
-        checkUpdateEnable();
         listenerList1.add(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
     }
 
     public synchronized void removeDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-        checkUpdateEnable();
         listenerList1.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
     }
 
     private void fireDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
@@ -1045,18 +1062,18 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     private javax.swing.event.EventListenerList selectedListenerList = null;
 
-    public synchronized void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-        if (selectedListenerList == null) {
-            selectedListenerList = new javax.swing.event.EventListenerList();
-        }
-        checkUpdateEnable();
-        selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
-    }
-
-    public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-        selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
-        checkUpdateEnable();
-    }
+//    public synchronized void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+//        if (selectedListenerList == null) {
+//            selectedListenerList = new javax.swing.event.EventListenerList();
+//        }
+//        selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
+//        checkUpdateEnable();
+//    }
+//
+//    public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+//        selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
+//        checkUpdateEnable();
+//    }
 
     private void fireSelectedDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
         if (selectedListenerList == null) {
