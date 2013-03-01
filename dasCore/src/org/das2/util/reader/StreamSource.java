@@ -19,6 +19,9 @@ public interface StreamSource {
 	/** Does this reader support connected operations over a BEEP channel */
 	public boolean canConnect();
 
+	/** Does this reader support a particular stream format */
+	public boolean supportsFormat(OutputFormat format);
+
 	/** Outputs all data in the range denoted by the selectors into the given
 	 * output stream.
 	 * @param selectors An array of selectors, must have at least one specified
@@ -26,7 +29,8 @@ public interface StreamSource {
 	 * @param stream The stream where the bytes should be emitted.
 	 */
 	public void retrieve(Selector[] selectors, OutputFormat format, OutputStream stream,
-	                     Logger logger) throws IOException, NoDataException;
+	                     Logger logger) 
+								throws IOException, NoDataException, BadQueryException;
 
 	/** Setup a bidirectional communications channel with a client.
 	 * Once the channel is connected, the server may no longer be involved.
@@ -39,5 +43,5 @@ public interface StreamSource {
 	 *          underlying beep library if an improper shutdown occurred.
 	 */
 	public int connect(Selector[] selectors, OutputFormat format, Object beepChannel,
-		                Logger logger) throws IOException;
+		                Logger logger) throws IOException, BadQueryException;
 }

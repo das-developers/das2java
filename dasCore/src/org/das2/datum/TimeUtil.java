@@ -104,9 +104,21 @@ public final class TimeUtil {
         
         public boolean isLocation= false;
         
+		@Override
         public String toString() {
             return year+"/"+month+"/"+day+" "+hour+":"+minute+":"+seconds;
         }
+
+		  public String toISOString(){
+			  return String.format("%04d-%02d-%02dT%02d:%02d:%09.6f", year,
+				      month, day, hour, minute, seconds);
+		  }
+
+		  public String toISOOrdinal(){
+			  return String.format("%04d-%03dT%02d:%02d:%09.6f", year,
+				      doy, hour, minute, seconds);
+		  }
+
         public boolean[] want;
         
         public TimeStruct copy() {
