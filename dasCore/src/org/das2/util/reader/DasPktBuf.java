@@ -8,8 +8,10 @@ package org.das2.util.reader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import org.das2.util.reader.OutputFormat;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.charset.Charset;
 
 /** Tiny class to count packets in a Das2 or QStream and then write it to a stream
  *
@@ -20,6 +22,7 @@ public final class DasPktBuf {
 	private OutputFormat m_fmt;
 	private ByteArrayOutputStream m_buf;
 
+	private static final Charset m_csAscii = Charset.forName("US-ASCII");
 
 	/** Make a new buffer for Das2/QStream packet data
 	 *  This version does not prepend lengths to the packet ID tags.
@@ -46,26 +49,70 @@ public final class DasPktBuf {
 		}
 		m_nPktId = nPktId;
 		m_buf = new ByteArrayOutputStream();
+		m_fmt = fmt;
 	}
 
+	/** Add generic bytes to the packet
+	 *
+	 * @param bytes The bytes to add
+	 */
 	public void add(byte[] bytes){
 		m_buf.write(bytes, 0, bytes.length);
 	}
 
-	public void send(OutputStream fOut) throws UnsupportedEncodingException, IOException{
+	/** Add an array of floats to the packet with selectable byte order.
+	 * Warning: 'byte_order' attribute
+	 * @param lFloats the floats to add to the packet
+	 * @param bo define whether bytes should be sent in big-endian or little endian
+	 *           format.  Warning: It's up to you to make sure that the byte order
+	 *           matches the value in the 'byte_order' attribute for the stream header.
+	 */
+	public void addFloats(float[] lFloats, ByteOrder bo){
+
+		if((bo == ByteOrder.LITTLE_ENDIAN)&&(m_fmt == OutputFormat.DAS1))
+			throw new IllegalArgumentException("DAS1 streams only support big endian values");
+
+		//Successfully do nothing
+		if(lFloats.length == 0) return;
+
+		byte[] lBytes = new byte[lFloats.length * 4];
+		ByteBuffer bbTmp = ByteBuffer.wrap( lBytes );
+		bbTmp.order(bo);
+		FloatBuffer fbTmp = bbTmp.asFloatBuffer();
+		fbTmp.put(lFloats);
+		m_buf.write(lBytes, 0, lBytes.length);
+	}
+
+	/** Encode a string in US-ASCII format, and add it to the output buffer
+	 *
+	 * @param s The string to encode
+	 */
+	public void addAscii(String s){
+		byte[] lBytes = s.getBytes(m_csAscii);
+		m_buf.write(lBytes, 0, lBytes.length);
+	}
+
+	/** Kick the encoded packet data onto the stream.
+	 * @param fOut Where to write the packet
+	 * @throws IOException
+	 */
+	public void send(OutputStream fOut) throws IOException{
 		byte[] u1Tmp;
 		switch(m_fmt){
 		case DAS3:
-			u1Tmp = String.format("|%02d|%06d", m_nPktId, m_buf.size()).getBytes("US-ASCII");
+			u1Tmp = String.format("|%02d|%06d", m_nPktId, m_buf.size()).getBytes(m_csAscii);
 			assert u1Tmp.length == 10;
 			break;
 		default:
-			u1Tmp = String.format(":%02d:", m_nPktId).getBytes("US-ASCII");
+			u1Tmp = String.format(":%02d:", m_nPktId).getBytes(m_csAscii);
 			assert u1Tmp.length == 4;
 		}
 		fOut.write(u1Tmp);
 		m_buf.writeTo(fOut);
 		m_buf = new ByteArrayOutputStream();
 	}
+
+
+	
 
 }
