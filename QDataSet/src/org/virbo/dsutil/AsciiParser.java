@@ -12,10 +12,8 @@ import java.util.logging.Level;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
-import org.das2.util.monitor.NullProgressMonitor;
 import java.io.*;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -24,7 +22,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.datum.EnumerationUnits;
-import org.das2.datum.TimeParser;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -939,15 +936,6 @@ public class AsciiParser {
         int fieldCount(String line);
 
         /**
-         * return the string for each field.  This is useful
-         * for discovery, and is not used in the bulk parsing.
-         * @param line
-         * @deprecated, use splitRecord instead
-         * @return
-         */
-        String[] fields(String line);
-
-        /**
          * attempts to extract fields from the record, returning true if
          * the record could be split.
          * @param line
@@ -1194,7 +1182,13 @@ public class AsciiParser {
             this.doParseField[ifield] = !skip;
         }
 
-        public String[] fields(String line) {
+        /**
+         * return the string for each field.  This is useful
+         * for discovery, and is not used in the bulk parsing.
+         * @param line
+         * @return
+         */
+        private String[] fields(String line) {
             String[] many= new String[1000];
             splitRecord(line, many);
             int count=0;
@@ -1290,14 +1284,102 @@ public class AsciiParser {
         }
     }
 
+
+    /**
+     * see <tt>private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers)</tt>, which is very similar.
+     *   "%5d%5d%9f%s"
+     * @param format
+     * @return
+     */
+    public RegexParser getRegexParserForFormat(String format) {
+        String[] ss= format.split("%");
+        if ( ss.length==1 ) { // support $ as well as %, since % is not nice in URIs.
+            String[] ss1= format.split("\\$");
+            if ( ss1.length>1 ) ss= ss1;
+        }
+        int count= 0;
+        for ( int i=0; i<ss.length; i++ ) {
+            if ( !ss[i].toLowerCase().endsWith("x") ) {
+                count++;
+            }
+        }
+        String[] fc = new String[count];
+        int[] lengths = new int[ss.length];
+        for (int i = 0; i < lengths.length; i++) {
+            lengths[i] = -1; // -1 indicates not known, but we'll figure out as many as we can.
+
+        }
+        String[] delim = new String[count + 1];
+
+        StringBuilder build = new StringBuilder(100);
+        delim[0] = ss[0];
+
+        int ifield= 0;
+        for (int i = 1; i < ss.length; i++) {
+            int pp = 0;
+            while (Character.isDigit(ss[i].charAt(pp)) || ss[i].charAt(pp) == '-') {
+                pp++;
+            }
+            if (pp > 0) {
+                lengths[i] = Integer.parseInt(ss[i].substring(0, pp));
+            } else {
+                lengths[i] = -1; // determine later by field type
+            }
+
+            logger.log( Level.FINE, "ss[i]={0}", ss[i] );
+
+            String fci;
+            if ( ss[i].toLowerCase().endsWith("x") ) {
+                if ( lengths[i]==-1 ) {
+                    fci= "\\s*\\S+";
+                } else {
+                    //fc[i]= "(" + "...................................................................".substring(0,lengths[i]) + ")";
+                    fci= "" + ".{"+lengths[i]+"}";
+                }                
+            } else {
+                if ( lengths[i]==-1 ) {
+                    fci= "\\s*(\\S+)";
+                } else {
+                    //fc[i]= "(" + "...................................................................".substring(0,lengths[i]) + ")";
+                    fci= "(" + ".{"+lengths[i]+"})";
+                }
+                fc[ifield++]= fci;
+            }
+
+            build.append(fci);
+            build.append("\\s*");
+            
+        }
+
+        String regex= build.toString();
+        System.err.println( "regex= "+ regex );
+
+        RegexParser rp= new RegexParser(regex);
+        setRecordParser(rp);
+        return rp;
+    }
+
+
     public final class RegexParser implements RecordParser {
 
         Pattern recordPattern;
         int fieldCount;
 
-        public RegexParser(String regex) {
+        protected RegexParser(String regex) {
             recordPattern = Pattern.compile(regex);
             this.fieldCount = recordPattern.matcher("").groupCount();
+            fieldNames = new String[fieldCount];
+            fieldParsers = new FieldParser[fieldCount];
+            for (int i = 0; i < fieldCount; i++) {
+                fieldParsers[i] = DOUBLE_PARSER;
+                fieldNames[i] = "field" + (i);
+            }
+            units = new Units[fieldCount]; //TODO: why is there all this repeated code?
+            fieldUnits= new String[fieldCount];
+            for (int i = 0; i < fieldCount; i++) {
+                units[i] = Units.dimensionless;
+                fieldUnits[i] = "";
+            }
         }
 
         public int fieldCount() {
