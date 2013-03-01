@@ -47,6 +47,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
+import org.virbo.dataset.SemanticOps;
 
 /**
  * DataPointRecorder is a GUI for storing data points selected by the user.  This has not been
@@ -424,7 +425,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             //System.err.printf("%d %s\n", i, m.group(1) );
                             planesArray1[i] = m.group(1);
                             try {
-                                unitsArray1[i] = Units.getByName(m.group(2));
+                                unitsArray1[i] = SemanticOps.lookupUnits(m.group(2));
                             } catch (IndexOutOfBoundsException e) {
                                 throw e;
                             }
