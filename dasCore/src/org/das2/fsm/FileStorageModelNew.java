@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Level;
@@ -636,6 +637,35 @@ public class FileStorageModelNew {
         }
         return result.toString();
     }
+
+    /**
+     * This returns the index splitting the static part of the filename from the templated part.
+     * For example, http://autoplot.org/data/C1_CP_EDI_EGD__$Y$m$d_V$v.cef is split into:<br>
+     * <tt>http://autoplot.org/data/  and  C1_CP_EDI_EGD__$Y$m$d_V$v.cef  </tt> and
+     * http://emfisis.physics.uiowa.edu/Flight/RBSP-A/Quick-Look/$Y/$m/$d/rbsp-a_magnetometer_4sec-gsm_emfisis-Quick-Look_$Y$m$d_v$(v,sep).cdf<br>
+     * <tt>http://emfisis.physics.uiowa.edu/Flight/RBSP-A/Quick-Look/ and $Y/$m/$d/rbsp-a_magnetometer_4sec-gsm_emfisis-Quick-Look_$Y$m$d_v$(v,sep).cdf</tt>
+     *
+     * This new version uses regexs and is more complete than versions found in Autoplot, and they should
+     * eventually use this instead.  Note the Autoplot one returns the index of the last /, whereas this
+     * returns that index plus one.
+     * 
+     * Taken from Autoplot's AggregatingDataSourceFactory, where Autoplot just has a URI and needs to get a file list.
+     * See also org/autoplot/pngwalk/WalkUtil.java splitIndex, which also allows wildcards like *.
+     * @param surl a string like http://autoplot.org/data/C1_CP_EDI_EGD__$Y$m$d_V$v.cef
+     * @return an integer indicating the split index, so that surl.substring(0,i) returns the slash.
+     */
+    public static int splitIndex(String surl) { 
+        String regex= "([\\$\\%][yY\\(\\{])";
+        Matcher m= Pattern.compile(regex).matcher(surl);
+        if ( m.find() ) {
+            int i= m.start();
+            i = surl.lastIndexOf('/', i);
+            return i+1;
+        } else {
+            return -1;
+        }
+    }
+
     /**
      * creates a FileStorageModel for the given template, which uses:
      *    %Y-%m-%dT%H:%M:%S.%{milli}Z";
@@ -649,7 +679,7 @@ public class FileStorageModelNew {
      *    %v  best version by number  Also %(v,sep) for 4.3.2  or %(v,alpha)
      *    %{milli}  3-digit milliseconds
      *
-     * product_%(o,id=ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/rbspa_pp).png
+     * product_$(o,id=ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/rbspa_pp).png
      * @param root FileSystem source of the files.
      * @param template describes how filenames are constructed.  This is converted to a regular expression and may contain regex elements without groups.  The
      *   string may contain $ instead of percents as long as there are no percents in the string.
