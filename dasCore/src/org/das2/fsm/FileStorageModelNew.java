@@ -641,16 +641,21 @@ public class FileStorageModelNew {
     /**
      * This returns the index splitting the static part of the filename from the templated part.
      * For example, http://autoplot.org/data/C1_CP_EDI_EGD__$Y$m$d_V$v.cef is split into:<br>
-     * <tt>http://autoplot.org/data/  and  C1_CP_EDI_EGD__$Y$m$d_V$v.cef  </tt> and
-     * http://emfisis.physics.uiowa.edu/Flight/RBSP-A/Quick-Look/$Y/$m/$d/rbsp-a_magnetometer_4sec-gsm_emfisis-Quick-Look_$Y$m$d_v$(v,sep).cdf<br>
-     * <tt>http://emfisis.physics.uiowa.edu/Flight/RBSP-A/Quick-Look/ and $Y/$m/$d/rbsp-a_magnetometer_4sec-gsm_emfisis-Quick-Look_$Y$m$d_v$(v,sep).cdf</tt>
+     * <pre>http://autoplot.org/data/
+     *C1_CP_EDI_EGD__$Y$m$d_V$v.cef</pre> and
+     * http://emfisis.physics.uiowa.edu/Flight/RBSP-A/Quick-Look/$Y/$m/$d/rbsp-a_magnetometer_4sec-gsm_emfisis-Quick-Look_$Y$m$d_v$(v,sep).cdf:<br>
+     * <pre>http://emfisis.physics.uiowa.edu/Flight/RBSP-A/Quick-Look/
+     *$Y/$m/$d/rbsp-a_magnetometer_4sec-gsm_emfisis-Quick-Look_$Y$m$d_v$(v,sep).cdf</pre>
+     * <tt></tt><br>
      *
+     * <p>
      * This new version uses regexs and is more complete than versions found in Autoplot, and they should
      * eventually use this instead.  Note the Autoplot one returns the index of the last /, whereas this
      * returns that index plus one.
+     * </p>
      * 
-     * Taken from Autoplot's AggregatingDataSourceFactory, where Autoplot just has a URI and needs to get a file list.
-     * See also org/autoplot/pngwalk/WalkUtil.java splitIndex, which also allows wildcards like *.
+     * <p>Taken from Autoplot's AggregatingDataSourceFactory, where Autoplot just has a URI and needs to get a file list.
+     * See also org/autoplot/pngwalk/WalkUtil.java splitIndex, which also allows wildcards like *.</p>
      * @param surl a string like http://autoplot.org/data/C1_CP_EDI_EGD__$Y$m$d_V$v.cef
      * @return an integer indicating the split index, so that surl.substring(0,i) returns the slash.
      */
@@ -668,7 +673,7 @@ public class FileStorageModelNew {
 
     /**
      * creates a FileStorageModel for the given template, which uses:
-     *    %Y-%m-%dT%H:%M:%S.%{milli}Z";
+     * <pre>%Y-%m-%dT%H:%M:%S.%{milli}Z";
      *    %Y  4-digit year
      *    %m  2-digit month
      *    %d  2-digit day of month
@@ -677,8 +682,7 @@ public class FileStorageModelNew {
      *    %M  2-digit Minute
      *    %S  2-digit second
      *    %v  best version by number  Also %(v,sep) for 4.3.2  or %(v,alpha)
-     *    %{milli}  3-digit milliseconds
-     *
+     *    %{milli}  3-digit milliseconds </pre>
      * product_$(o,id=ftp://stevens.lanl.gov/pub/projects/rbsp/autoplot/orbits/rbspa_pp).png
      * @param root FileSystem source of the files.
      * @param template describes how filenames are constructed.  This is converted to a regular expression and may contain regex elements without groups.  The
