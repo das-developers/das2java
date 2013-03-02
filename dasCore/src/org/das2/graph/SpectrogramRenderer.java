@@ -116,11 +116,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             this.label = label;
         }
         public static final RebinnerEnum binAverage = new RebinnerEnum(new AverageTableRebinner(), "binAverage");
-        //public static final RebinnerEnum nearestNeighbor = new RebinnerEnum(new NearestNeighborTableRebinner(), "nearestNeighbor");
         public static final RebinnerEnum nearestNeighbor;
         public static final RebinnerEnum binAverageNoInterpolate;
         public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
-        //public static final RebinnerEnum oldNearestNeighbor;
+        public static final RebinnerEnum oldNearestNeighbor;
 
 
         static {
@@ -135,7 +134,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             
             rebinner = new AverageTableRebinner();
             rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
-            //oldNearestNeighbor = new RebinnerEnum(rebinner, "oldNearestNeighbor");
+            oldNearestNeighbor = new RebinnerEnum(rebinner, "oldNearestNeighbor");
             //nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
             
             DataSetRebinner r1 = new LanlNNRebinner();
