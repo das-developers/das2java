@@ -622,7 +622,7 @@ public class DataSetOps {
             }
         }
         if ( dep1!=null ) { //DEPEND_1 rank 1 implies qube
-            if ( dep1!=null && dep1.rank()==2 ) {
+            if ( dep1.rank()==2 ) {
                 result.put( QDataSet.DEPEND_0, dep1.slice( index ) );
             } else {
                 result.put( QDataSet.DEPEND_0, dep1 );
@@ -630,7 +630,7 @@ public class DataSetOps {
         }
 
         if ( dep0!=null && dep0.rank()==1 ) { //TODO: find documentation for rank 2 depend_0...
-            if ( dep0!=null ) DataSetUtil.addContext( result, dep0.slice( index ) );
+            DataSetUtil.addContext( result, dep0.slice( index ) );
         } else {
             if ( dep1==null && props.get( "DEPEND_0__"+index )==null ) { // bundle dataset  //TODO: this needs more review
                 result.put( QDataSet.DEPEND_0, null );    // DANGER--uses indexed property convention.
@@ -638,7 +638,8 @@ public class DataSetOps {
         }
 
         // UNITS__2_3=foo   property( UNITS, 2, 3 ) = foo
-        for ( String ss: props.keySet() ) {
+        for ( Map.Entry<String, Object> sse: props.entrySet() ) {
+            String ss= sse.getKey();
             int ii= ss.indexOf("__");
             if ( ii>-1 ) {
                 String hd= ss.substring(ii+2);
@@ -653,7 +654,7 @@ public class DataSetOps {
                         } else {
                             slicePropName= ss.substring(0,ii);
                         }
-                        result.put(slicePropName,props.get(ss));
+                        result.put(slicePropName,sse.getValue());
                     }
                 }
             }
@@ -879,13 +880,9 @@ public class DataSetOps {
                     }
                 }
                 throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
-            } else if ( bundle1==null ) {
+            } else {
                 throw new IllegalArgumentException("expected to find BUNDLE_1 or DEPEND_1 with ordinal units." );
             }
-        }
-
-        if ( bundle1==null ) {
-            throw new IllegalArgumentException("unbundle called but no bundle dataset found in BUNDLE_1 or DEPEND_1");
         }
 
         boolean highRank= false;
@@ -1014,7 +1011,7 @@ public class DataSetOps {
                 if ( bundle1==null ) {
                     return new Slice1DataSet( bundleDs, ib ); //TODO: this was   throw new IllegalArgumentException( "Neither BUNDLE_1 nor DEPEND_1 found on dataset passed to unbundle command.");
                 }
-                if ( bundle1!=null && bundle1.rank()>1 ) {
+                if ( bundle1.rank()>1 ) {
                     throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
                 } else {
 //                    Units u= SemanticOps.getUnits( bundle1 );
@@ -1031,7 +1028,7 @@ public class DataSetOps {
                 if ( bundle0==null ) {
                     return new Slice0DataSet( bundleDs, ib );
                 }
-                if ( bundle0!=null && bundle0.rank()>1 ) {
+                if ( bundle0.rank()>1 ) {
                     throw new IllegalArgumentException("high rank DEPEND_0 found where rank 1 was expected");
                 } else {
                     Units u= SemanticOps.getUnits( bundle0 );
@@ -1115,10 +1112,11 @@ public class DataSetOps {
                 }
                 // allow unindexed properties to define property for all bundled datasets, for example USER_PROPERTIES or FILL
                 Map<String,Object> props3= DataSetUtil.getProperties(bundle, DataSetUtil.globalProperties(), null );
-                for ( String ss: props3.keySet() ) {
+                for ( Map.Entry<String, Object> ss1: props3.entrySet() ) {
+                    String ss= ss1.getKey();
                     Object vv= result.property( ss );
                     if ( vv==null ) {
-                        result.putProperty( ss, props3.get(ss) );
+                        result.putProperty( ss, ss1.getValue() );
                     }
                 }
 
