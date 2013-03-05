@@ -53,6 +53,7 @@ import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
 import org.das2.util.monitor.NullProgressMonitor;
 
 /**
@@ -228,11 +229,13 @@ public class HttpFileSystem extends WebFileSystem {
         if (lock == null) {
             return;
         }
-
+        
+        filename = toCanonicalFilename(filename);
+                
         logger.log(Level.FINE, "downloadFile({0})", filename);
 
         try {
-            URL remoteURL = new URL(root.toString() + filename);
+            URL remoteURL = new URL(root.toString() + filename.substring(1) );
 
             URLConnection urlc = remoteURL.openConnection();
             urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
@@ -250,7 +253,9 @@ public class HttpFileSystem extends WebFileSystem {
                 String encode = Base64.encodeBytes(userInfo.getBytes());
                 urlc.setRequestProperty("Authorization", "Basic " + encode);
             }
-
+            
+            InputStream in= urlc.getInputStream();
+            
             HttpURLConnection hurlc = (HttpURLConnection) urlc;
             if (hurlc.getResponseCode() == 404) {
                 logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
@@ -282,8 +287,8 @@ public class HttpFileSystem extends WebFileSystem {
             }
 
             if (partFile.createNewFile()) {
-                InputStream in;
-                in = urlc.getInputStream();
+                //InputStream in;
+                //in = urlc.getInputStream();
 
                 logger.log(Level.FINE, "transferring bytes of {0}", filename);
                 FileOutputStream out = new FileOutputStream(partFile);
