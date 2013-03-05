@@ -273,8 +273,8 @@ public class WaveformToSpectrum {
 
     }
     
-    /** Creates a new instance of WaveformToSpectrum */
-    public WaveformToSpectrum() {
+    private WaveformToSpectrum() {
+        // utility class should not be instantiated
     }
     
 }
