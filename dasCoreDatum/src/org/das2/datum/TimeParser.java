@@ -120,6 +120,24 @@ public class TimeParser {
         public abstract String format( TimeStruct startTime, TimeStruct timeWidth, int length, Map<String,String> extra ) throws IllegalArgumentException;
 
     }
+    
+    /**
+     * handy FieldHandler that ignores the contents.  For example,
+     * tp= TimeParser.create(sagg,"v", TimeParser.IGNORE_FIELD_HANDLER );
+     */
+    public static FieldHandler IGNORE_FIELD_HANDLER= new TimeParser.FieldHandler() {
+        public String configure(Map<String, String> args) {
+            return null;
+        }
+        public String getRegex() {
+            return null;
+        }
+        public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
+        }
+        public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
+            return null;
+        }
+    };
 
     /**
      * must contain T or space to delimit date and time.
