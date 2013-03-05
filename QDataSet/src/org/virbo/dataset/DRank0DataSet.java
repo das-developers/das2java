@@ -23,6 +23,7 @@ public class DRank0DataSet extends AbstractDataSet implements RankZeroDataSet {
             putProperty( QDataSet.FILL_VALUE, d );
         }
         this.d= d;
+        this.u= u;
     }
 
     public static DRank0DataSet create( double d ) {
