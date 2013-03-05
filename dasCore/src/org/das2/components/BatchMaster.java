@@ -56,7 +56,7 @@ public class BatchMaster {
     
     public static Timer timer= new Timer();
     
-    private interface TaskOutputDescriptor {
+    public interface TaskOutputDescriptor {
         public void completeTask( DatumRange range );
     }
     
@@ -101,9 +101,7 @@ public class BatchMaster {
             s= s.trim();
             if ( !( s.equals("") || s.startsWith("#" ) ) ) {
                 DatumRange dr= DatumRangeUtil.parseTimeRange(s);
-                Datum begin= dr.min();
-                Datum end= dr.max();
-                addTask( begin, end );
+                addTask( dr );
             }
             s= r.readLine();
         }
