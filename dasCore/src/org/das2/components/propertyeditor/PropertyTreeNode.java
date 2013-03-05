@@ -12,7 +12,7 @@ import java.util.Enumeration;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
-class PropertyTreeNode implements PropertyTreeNodeInterface {
+public class PropertyTreeNode implements PropertyTreeNodeInterface {
     
     protected static final Object[] NULL_ARGS = new Object[0];
     
