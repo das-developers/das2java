@@ -43,8 +43,7 @@ public class URLBuddy {
         "(?:[" + ALPHA + DIGIT + "\\.\\-\\*\\_\\+]|\\%(" + HEX + HEX + "))*"
     );
     
-    /** Creates a new instance of URLBuddy */
-    public URLBuddy() {
+    private URLBuddy() {
     }
     
     public static String encodeUTF8(String str) {
@@ -95,9 +94,9 @@ public class URLBuddy {
         return Collections.unmodifiableMap(map);
     }
     
-    private static final void throwUnexpectedToken(String token, String input, String expecting) {
+    private static void throwUnexpectedToken(String token, String input, String expecting) {
         int index = input.indexOf(token);
-        StringBuffer messageBuffer = new StringBuffer();
+        StringBuilder messageBuffer = new StringBuilder();
         messageBuffer.append("Error parsing query string: Expecting ");
         messageBuffer.append(expecting).append(", found '");
         messageBuffer.append(token).append("'\n");
@@ -111,7 +110,7 @@ public class URLBuddy {
     }
     
     public static String formatQueryString(Map m) {
-        StringBuffer query = new StringBuffer();
+        StringBuilder query = new StringBuilder();
         for (Iterator i = m.entrySet().iterator(); i.hasNext();) {
             Map.Entry entry = (Map.Entry)i.next();
             String name = (String)entry.getKey();

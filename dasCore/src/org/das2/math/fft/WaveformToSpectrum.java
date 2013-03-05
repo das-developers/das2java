@@ -231,8 +231,8 @@ public class WaveformToSpectrum {
         return tdsb.toTableDataSet();
     }
     
-    /** Creates a new instance of WaveformToSpectrum */
-    public WaveformToSpectrum() {
+    private WaveformToSpectrum() {
+        // utility class cannot be instanciated
     }
     
 }
