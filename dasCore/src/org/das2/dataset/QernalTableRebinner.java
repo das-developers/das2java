@@ -23,11 +23,11 @@ import java.util.logging.Logger;
  */
 public class QernalTableRebinner { // implements DataSetRebinner {
     
-    interface QernalFactory {
+    public interface QernalFactory {
         Qernal getQernal( RebinDescriptor ddx, RebinDescriptor ddy, Datum xBinWidth, Datum yBinWidth );
     }
     
-    interface Qernal {
+    public interface Qernal {
         void apply( int x, int y, double value, double weight, double[][] s, double[][]w );
     }
     
