@@ -35,28 +35,37 @@ import java.awt.*;
  */
 public interface DragRenderer
 { 
-    /* use this color when drawing ghostly backgrounds for contrast */
+    /**
+     * use this color when drawing ghostly backgrounds for contrast. 
+     */
     public Color ghostColor= new Color(255,255,255,100);
     
-    /* draws the drag for mousing from p1 to p2, and returns an array of
+    /**
+     * draws the drag for mousing from p1 to p2, and returns an array of
      * Rectangles covering the rendering.  If nothing is drawn, then an 
      * array of length zero should be returned, and nulls are allowed in the
      * array. p1 and p2, and g are in the canvas frame of reference.
      */
     public abstract Rectangle[] renderDrag(Graphics g, Point p1, Point p2);
     
-    /* clears whatever renderDrag rendered.  This is not used by the DasMouseInputAdapter,
+    /** clears whatever renderDrag rendered.  This is not used by the DasMouseInputAdapter,
      * but must still be supported for now.
      */
     public abstract void clear(Graphics g);
     
-    /* promotes the drag begin and end into a mouseDragEvent */
+    /**
+     * promotes the drag begin and end into a mouseDragEvent.
+     */
     public abstract MouseDragEvent getMouseDragEvent( Object source, Point p1, Point p2, boolean isModified ); 
     
-    /* indicates that MM.mousePointSelected() should called as new mouse events come in */
+    /**
+     * indicates that MM.mousePointSelected() should called as new mouse events come in.
+     */
     public boolean isPointSelection();
     
-    /* range selection events should be fired during drag */
+    /**
+     * range selection events should be fired during drag.
+     */
     public boolean isUpdatingDragSelection();
     
 }
