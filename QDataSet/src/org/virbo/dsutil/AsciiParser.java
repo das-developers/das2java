@@ -1285,10 +1285,50 @@ public class AsciiParser {
         }
     }
 
+    /**
+     * convert F77 style to C style.
+     * X3,I3,F8 -> 3x,3i,8f
+     * Repeats are not supported.
+     * @param format
+     * @return 
+     */
+    private String[] f77FormatToCFormat( String[] format ) {
+        String[] ss= new String[format.length+1];
+        for ( int i=1;i<ss.length;i++ ) {
+            String field= format[i-1];
+            if ( field.length()>1 ) {// I3 -> 3i;
+                Pattern p= Pattern.compile( "(\\d*)(\\D)(\\d*).*");  // the .* is for F8.3 so the .3 is ignored
+                Matcher m= p.matcher(field);
+                if ( m.matches() ) {
+                    String type= m.group(2);
+                    int repeat= !m.group(1).equals("") ? Integer.parseInt(m.group(1)) : 1;
+                    int len= !m.group(3).equals("") ? Integer.parseInt(m.group(3)) : -1;
+                    if ( type.toLowerCase().equals("x") ) {
+                        if ( len==-1 ) len= repeat; else len= repeat*len;
+                        ss[i]= String.valueOf(len) + type;
+                    } else {
+                        if ( repeat!=1 ) {
+                            throw new IllegalArgumentException("repeats are only allowed for X: "+field);
+                        } else {
+                            ss[i]= String.valueOf(len) + type;
+                        }
+                    }
+                    
+                } else {
+                    throw new IllegalArgumentException("unable to parse: "+field);
+                }
+            } else {
+                ss[i]= field;
+            }
+        }
+        ss[0]="";
+        return ss;
+    }
 
     /**
      * see <tt>private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers)</tt>, which is very similar.
      *   "%5d%5d%9f%s"
+     *   "d5,d5,f9,a"
      * @param format
      * @return
      */
@@ -1299,11 +1339,9 @@ public class AsciiParser {
             if ( ss1.length>1 ) ss= ss1;
         }
         if ( ss.length==1 ) {
-            String[] ss2= format.split(",");
+            String[] ss2= format.split(","); //FORTRAN style <repeat>F<len>
             if ( ss2.length>1 ) {
-                ss= new String[ss2.length+1];
-                for ( int i=1;i<ss.length;i++ ) ss[i]= ss2[i-1];
-                ss[0]="";
+                ss= f77FormatToCFormat( ss2 );
             }        
         }
         
