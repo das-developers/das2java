@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.das2.util.reader;
+package org.das2.reader;
 
 /** Output format for a reader.
  * This is used in the ReaderInterface definition.

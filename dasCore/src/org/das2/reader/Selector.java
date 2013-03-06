@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.das2.util.reader;
+package org.das2.reader;
 
 import java.text.ParseException;
 import org.das2.datum.TimeUtil;

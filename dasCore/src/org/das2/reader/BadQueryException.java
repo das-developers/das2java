@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.das2.util.reader;
+package org.das2.reader;
 
 /** Readers throw this type of exception when the set of selectors does not sufficiently
  * nail down a dataset to return.  Usually a request validator will catch bad queries
