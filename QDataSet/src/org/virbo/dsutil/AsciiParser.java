@@ -14,6 +14,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -1297,6 +1298,15 @@ public class AsciiParser {
             String[] ss1= format.split("\\$");
             if ( ss1.length>1 ) ss= ss1;
         }
+        if ( ss.length==1 ) {
+            String[] ss2= format.split(",");
+            if ( ss2.length>1 ) {
+                ss= new String[ss2.length+1];
+                for ( int i=1;i<ss.length;i++ ) ss[i]= ss2[i-1];
+                ss[0]="";
+            }        
+        }
+        
         int count= 0;
         for ( int i=0; i<ss.length; i++ ) {
             if ( !ss[i].toLowerCase().endsWith("x") ) {
@@ -1347,7 +1357,7 @@ public class AsciiParser {
             }
 
             build.append(fci);
-            build.append("\\s*");
+            if ( lengths[i]==-1 ) build.append("\\s*");
             
         }
 
