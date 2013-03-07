@@ -1705,7 +1705,7 @@ public class DataSetUtil {
      * @param ds a dataset which may not be valid.
      * @param problems null or a list of problems that is appended.
      * @param dimOffset used to check the slices as well for high rank datasets.
-     * @return
+     * @return true if the dataset is valid.
      */
     private static boolean validate(QDataSet ds, List<String> problems, int dimOffset) {
         if (problems == null) problems = new ArrayList<String>();
@@ -1827,7 +1827,8 @@ public class DataSetUtil {
      * support legacy logic.
      * 
      * For convenience, the property FILL_VALUE is set to the fill value used.  
-     * 
+     * @param ds the dataset 
+     * @return a dataset with the same geometry with zero or positive weights.
      */
     public static QDataSet weightsDataSet(final QDataSet ds) {
         Object o= ds.property(QDataSet.WEIGHTS_PLANE);
@@ -1907,10 +1908,10 @@ public class DataSetUtil {
     }
 
     /**
-     * convert the dataset to the given units.
-     * @param ds
-     * @param u
-     * @return
+     * convert the dataset to the given units.  
+     * @param ds the dataset
+     * @param u new Units
+     * @return equivalent dataset with the new units.
      */
     public static QDataSet convertTo( QDataSet ds, Units u ) {
         Units su= (Units) ds.property(QDataSet.UNITS);
@@ -1976,9 +1977,9 @@ public class DataSetUtil {
     /**
      * return the DatumRange equivalent of this 2-element, rank 1 bins dataset.
      *
-     * @param ds
+     * @param ds a rank 1, 2-element bins dataset.
      * @param sloppy true indicates we don't check BINS_0 property.
-     * @return
+     * @return an equivalent DatumRange 
      */
     public static DatumRange asDatumRange( QDataSet ds, boolean sloppy ) {
         Units u= SemanticOps.getUnits(ds);
@@ -2003,8 +2004,8 @@ public class DataSetUtil {
 
     /**
      * return a 2-element rank 1 bins dataset with BINS_0=QDataSet.VALUE_BINS_MIN_MAX
-     * @param dr
-     * @return
+     * @param dr a Das2 DatumRange
+     * @return a 2-element rank 1 bins dataset.
      */
     public static QDataSet asDataSet( DatumRange dr ) {
         DDataSet result= DDataSet.createRank1(2);
