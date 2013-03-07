@@ -264,8 +264,13 @@ public class FFTUtil {
         Units frequencyUnit= UnitsUtil.getInverseUnit( timeUnit.getOffsetUnits() );
         if ( T>0.5 ) {
             if ( frequencyUnit==Units.megaHertz ) {
-                frequencyUnit= Units.kiloHertz;
-                T= T/1000;
+                if ( T>1000 ) {
+                    frequencyUnit= Units.hertz;
+                    T= T/1000000;                    
+                } else {
+                    frequencyUnit= Units.kiloHertz;
+                    T= T/1000;
+                }
             } else if ( frequencyUnit==Units.gigaHertz ) {
                 if ( T>1000000 ) {
                     frequencyUnit= Units.hertz;
