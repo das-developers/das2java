@@ -2859,6 +2859,14 @@ public class Ops {
             if ( window.value(i)!=1.0 ) windowNonUnity=true;
         }
 
+        double normalization; // the normalization needed because of the window.
+
+        if ( windowNonUnity ) {
+            normalization= total( Ops.pow( window, 2 ) ) / window.length();
+        } else {
+            normalization= 1.0;
+        }
+
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
             JoinDataSet dep0=null;
@@ -2969,6 +2977,10 @@ public class Ops {
                     }
 
                     QDataSet vds= FFTUtil.fftPower( fft, wave );
+
+                    if ( windowNonUnity ) {
+                        vds= Ops.multiply( vds, DataSetUtil.asDataSet( 1/normalization ) );
+                    }
 
                     if ( translation!=null ) {
                         QDataSet fftDep1= (QDataSet) vds.property( QDataSet.DEPEND_0 );
