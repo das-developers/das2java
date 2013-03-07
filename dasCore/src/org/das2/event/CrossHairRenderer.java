@@ -106,12 +106,12 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
     private String getZString( QDataSet tds, Datum x, Datum y, int[] ij) {
         QDataSet xds= SemanticOps.xtagsDataSet(tds);
-        QDataSet yds= SemanticOps.ytagsDataSet(tds);
         int i = DataSetUtil.closestIndex(xds, x);
-        int j = DataSetUtil.closestIndex(yds, y); //TODO: check multiple tables?
-        
-        double d= tds.value(i,j);
-        Datum zValue = SemanticOps.getDatum( tds, d );
+        QDataSet tds1= tds.slice(i);
+        QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+        int j= DataSetUtil.closestIndex(yds, y);
+        double d= tds1.value(j);
+        Datum zValue = SemanticOps.getDatum( tds1, d );
 
         if (ij != null) {
             ij[0] = i;
