@@ -163,30 +163,29 @@ public class Ops {
             it1.putValue(result, w==0 ? fill : op.op(d1, d2));
         }
 
-        Map<String, Object> m1 = DataSetUtil.getProperties(ds1);
-        Map<String, Object> m2 = DataSetUtil.getProperties(ds2);
-        if ( m2.isEmpty() && !m1.isEmpty() && ds2.rank()==0 ) {
+        Map<String, Object> m1 = DataSetUtil.getProperties(operands[0]);
+        Map<String, Object> m2 = DataSetUtil.getProperties(operands[1]);
+        if ( m2.isEmpty() && !m1.isEmpty() ) {
             m2.put( QDataSet.DEPEND_0, m1.get(QDataSet.DEPEND_0 ) );
             m2.put( QDataSet.DEPEND_1, m1.get(QDataSet.DEPEND_1 ) );
             m2.put( QDataSet.DEPEND_2, m1.get(QDataSet.DEPEND_2 ) );
             m2.put( QDataSet.DEPEND_3, m1.get(QDataSet.DEPEND_3 ) );
         }
-        if ( m1.isEmpty() && !m2.isEmpty() && ds1.rank()==0 ) {
+        if ( m1.isEmpty() && !m2.isEmpty() ) {
             m1.put( QDataSet.DEPEND_0, m2.get(QDataSet.DEPEND_0 ) );
             m1.put( QDataSet.DEPEND_1, m2.get(QDataSet.DEPEND_1 ) );
             m1.put( QDataSet.DEPEND_2, m2.get(QDataSet.DEPEND_2 ) );
             m1.put( QDataSet.DEPEND_3, m2.get(QDataSet.DEPEND_3 ) );
         }
         Map<String, Object> m3 = equalProperties(m1, m2);
-        m3.remove( QDataSet.VALID_MIN );
-        m3.remove( QDataSet.VALID_MAX );
-        m3.remove( QDataSet.TITLE );
-        m3.remove( QDataSet.LABEL );
-        m3.remove( QDataSet.MONOTONIC );
-        m3.remove( QDataSet.METADATA_MODEL );
-        m3.remove( QDataSet.METADATA );
-        m3.remove( QDataSet.UNITS );
-        m3.remove( QDataSet.BUNDLE_1 ); // because this contains FILL_VALUE, etc that are no longer correct.
+        String[] ss= DataSetUtil.dimensionProperties();
+        for ( String s: ss ) {
+            m3.remove( s );
+        }
+        // because this contains FILL_VALUE, etc that are no longer correct.  
+        // My guess is that anything with a BUNDLE_1 property shouldn't have 
+        // been passed into this routine anyway.
+        m3.remove( QDataSet.BUNDLE_1 ); 
 
         DataSetUtil.putProperties(m3, result);
         result.putProperty( QDataSet.FILL_VALUE, fill );
@@ -2838,20 +2837,22 @@ public class Ops {
      * No normalization is done with non-unity windows.
      *
      * @param ds rank 2 dataset ds(N,M) with M>len
-     * @param window window to apply to the data before performing FFT
-     * @param step step size, or -1 is fraction of length (-1 for length, -2 for half steps, -4 for quarters);
+     * @param window window to apply to the data before performing FFT (Hann,Unity,etc.)
+     * @param step step size, expressed as a fraction of the length (1 for no slide, 2 for half steps, 4 for quarters);
      * @param mon a ProgressMonitor for the process
      * @return rank 2 fft spectrum
      */
-    public static QDataSet fftPower( QDataSet ds, QDataSet window, int step, ProgressMonitor mon ) {
+    public static QDataSet fftPower( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
         if ( mon==null ) {
             mon= new NullProgressMonitor();
         }
 
         int len= window.length();
-        if ( step<0 ) step=len/(-1*step);
-        if ( step < 9 ) { 
-            step= len/step; // don't advertise this...
+        int step;
+        if ( stepFraction <= 32 ) { 
+            step= len/stepFraction;
+        } else {
+            throw new IllegalArgumentException( String.format( "fractional step size (%d) is bigger than 32, the max allowed.", stepFraction ) );
         }
         boolean windowNonUnity= false; // true if a non-unity window is to be applied.
         for ( int i=0; windowNonUnity==false && i<len; i++ ) {
@@ -2881,7 +2882,7 @@ public class Ops {
             mon.started();
             for ( int i=0; i<ds.length(); i++ ) {
                 mon.setTaskProgress(i*10);
-                QDataSet pow1= fftPower( ds.slice(i), window, step, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
+                QDataSet pow1= fftPower( ds.slice(i), window, stepFraction, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
                 result.join(pow1);
             }
             mon.finished();
@@ -2964,7 +2965,7 @@ public class Ops {
                     if ( hasFill ) continue;
 
                     if ( windowNonUnity ) {
-                        wave= Ops.multiply(wave,window);
+                        wave= Ops.multiply(wave,window); 
                     }
 
                     QDataSet vds= FFTUtil.fftPower( fft, wave );
