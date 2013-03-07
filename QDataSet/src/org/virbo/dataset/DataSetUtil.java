@@ -302,6 +302,7 @@ public class DataSetUtil {
      * For example, if you flattened the dataset, what properties 
      * would still exist?  If you shuffled the data?  These are not structural
      * properties like DEPEND_0, BUNDLE_1, etc.
+     * Note that BUNDLE_1 will carry dimension properties as well.
      * @return
      */
     public static String[] dimensionProperties() {
