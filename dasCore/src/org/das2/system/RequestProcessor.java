@@ -60,7 +60,7 @@ public final class RequestProcessor {
     private static final Runner runner = new Runner();
     private static final Runnable SHUTDOWN = new Runnable() { public void run() {} };
     
-    private static int maxThreadCount = 6;
+    private static int maxThreadCount = 8;
     private static int threadCount = 0;
     private static final Object THREAD_COUNT_LOCK = new Object();
     
