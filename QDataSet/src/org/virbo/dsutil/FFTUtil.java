@@ -267,8 +267,13 @@ public class FFTUtil {
                 frequencyUnit= Units.kiloHertz;
                 T= T/1000;
             } else if ( frequencyUnit==Units.gigaHertz ) {
-                frequencyUnit= Units.kiloHertz;
-                T= T/1000000;
+                if ( T>1000000 ) {
+                    frequencyUnit= Units.hertz;
+                    T= T/1000000000;    
+                } else {
+                    frequencyUnit= Units.kiloHertz;
+                    T= T/1000000;
+                }
             }
         }
         for ( int i=0; i<n21; i++ ) {
