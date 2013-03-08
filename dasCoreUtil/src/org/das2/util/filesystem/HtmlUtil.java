@@ -104,7 +104,10 @@ public class HtmlUtil {
             }
 
             if ( strLink.startsWith(surl) && strLink.length() > surl.length() && null==urlLink.getQuery() ) {
-                urlList.add( urlLink );
+                String file= strLink.substring( surl.length() );
+                if ( !file.startsWith("../") ) {
+                    urlList.add( urlLink );
+                }
             }
         }
 
