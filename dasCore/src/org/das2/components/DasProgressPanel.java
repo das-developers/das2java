@@ -389,8 +389,10 @@ public class DasProgressPanel implements ProgressMonitor {
             public void run() {
                 if ( removeFromComponent!=null ) {
                     removeFromComponent.remove(thePanel);
-                    removeFromComponent.revalidate();
-                    removeFromComponent.repaint(); //TODO: thePanel.getBounds...
+                    removeFromComponent.invalidate();
+                    removeFromComponent.validate();
+                    Rectangle b= thePanel.getBounds();
+                    removeFromComponent.repaint(b.x,b.y,b.width,b.height); 
                 }
                 if (jframe == null) {
                     setVisible(false);
