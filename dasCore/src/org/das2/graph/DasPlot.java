@@ -1035,8 +1035,6 @@ public class DasPlot extends DasCanvasComponent {
             gtr.draw(graphics, (float) titleX, (float) titleY);
         }
 
-        graphics.setClip(null);
-
         // --- draw messages ---
         if (messages.size() > 0) {
             drawMessages(graphics);
@@ -1045,6 +1043,8 @@ public class DasPlot extends DasCanvasComponent {
         if (legendElements.size() > 0) {
             drawLegend(graphics);
         }
+
+        graphics.setClip(null);
 
         graphics.dispose();
 
