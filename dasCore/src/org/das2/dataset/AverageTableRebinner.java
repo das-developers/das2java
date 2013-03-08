@@ -69,7 +69,7 @@ public class AverageTableRebinner implements DataSetRebinner {
     /**
      * rebin the data, using the interpolate control to define the interpolation between measurements.  Data that fall into the
      * same pixel are always averaged in the linear space, regardless of interpolation method.
-     * @param ds rank 2 table or rank 3 join of tables.
+     * @param ds rank 2 table or rank 3 join of tables.  New: rank 2 bundle of (X,Y,Z)
      * @param ddX
      * @param ddY
      * @return
@@ -82,8 +82,14 @@ public class AverageTableRebinner implements DataSetRebinner {
         if (ds == null) {
             throw new NullPointerException("null data set");
         }
-        if (! SemanticOps.isTableDataSet(ds) ) {
-            throw new IllegalArgumentException("Data set must be an instanceof TableDataSet: " + ds.getClass().getName());
+        boolean bundle= false;
+        
+        if ( ! SemanticOps.isTableDataSet(ds) ) {
+            if ( SemanticOps.isBundle(ds) ) {
+                bundle=true;
+            } else {
+                throw new IllegalArgumentException("Data set must be an instanceof TableDataSet or Bundle: " + ds.getClass().getName());
+            }
         }
 
         QDataSet tds = (QDataSet) ds;
@@ -103,7 +109,8 @@ public class AverageTableRebinner implements DataSetRebinner {
         QDataSet yds= SemanticOps.ytagsDataSet(tds1);
         Units xunits= SemanticOps.getUnits( xds );
         Units yunits= SemanticOps.getUnits( yds );
-
+        QDataSet zds= tds1;
+        
         if ( ddX != null && tds.length() > 0 ) {
             UnitsConverter xc= xunits.getConverter(ddX.getUnits());
             QDataSet bounds= SemanticOps.bounds(tds);
@@ -117,7 +124,13 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
 
         int nx = (ddX == null ? tds1.length() : ddX.numberOfBins());
-        int ny = (ddY == null ? tds1.length(0) : ddY.numberOfBins());
+        int ny;
+        if ( ddY == null ) {
+            if ( SemanticOps.isBundle(ds) ) throw new IllegalArgumentException("not supported, must specify ddY bins");
+            ny= tds1.length(0);
+        } else {
+            ny= ddY.numberOfBins();
+        }
 
         if ( ddY==null && rank!=2 ) {
             throw new IllegalArgumentException("ddY was null but there was rank 3 dataset");
@@ -129,31 +142,41 @@ public class AverageTableRebinner implements DataSetRebinner {
         double[][] rebinWeights = new double[nx][ny];
 
         // average all the measurements that fall onto the same pixel together.
-        average( tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType );
-
-        if (interpolate) { // I think these calculate the interpolated value at the edge.  Note there's a bug in here...
-            doBoundaries2RL(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
-            doBoundaries2TB(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
-            doCorners(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
+        if ( bundle ) {
+            averageBundle( tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType );
+            zds= SemanticOps.getDependentDataSet(tds1);
+            interpolate= false;
+        } else {
+            average( tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType );
+            if (interpolate) { // I think these calculate the interpolated value at the edge.  Note there's a bug in here...
+                doBoundaries2RL(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
+                doBoundaries2TB(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
+                doCorners(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
+            }
+            zds= tds1;
         }
 
         if (interpolate) {
-            Datum xTagWidth = getXTagWidth(xds, tds1);
+            Datum xTagWidth = getXTagWidth(xds, zds);
             if ( xTagWidth.value()<0 ) xTagWidth= xTagWidth.multiply(-1);
 
             RankZeroDataSet yTagWidth0;
-            if ( tds.rank()<3 ) {
-                QDataSet yds1= yds;
-                if ( yds1.rank()>1 ) yds1= yds1.slice(0); //TODO: rank 2 yds.
-                yTagWidth0= DataSetUtil.guessCadenceNew( yds1, null );
+            if ( bundle ) {
+                yTagWidth0= DataSetUtil.guessCadenceNew( yds, zds );
             } else {
-                QDataSet yds1= SemanticOps.ytagsDataSet( tds.slice(0) );
-                if ( yds1.rank()>1 ) yds1= yds1.slice(0);
-                yTagWidth0= DataSetUtil.guessCadenceNew( yds1, null );
-                for ( int i=1;i<tds.length(); i++ ) {
-                    yds1= SemanticOps.ytagsDataSet( tds.slice(i) );
+                if ( tds.rank()<3 ) {
+                    QDataSet yds1= yds;
+                    if ( yds1.rank()>1 ) yds1= yds1.slice(0); //TODO: rank 2 yds.
+                    yTagWidth0= DataSetUtil.guessCadenceNew( yds1, null );
+                } else {
+                    QDataSet yds1= SemanticOps.ytagsDataSet( tds.slice(0) );
                     if ( yds1.rank()>1 ) yds1= yds1.slice(0);
-                    yTagWidth0= DataSetUtil.courserCadence( yTagWidth0, DataSetUtil.guessCadenceNew( yds1, null ) );
+                    yTagWidth0= DataSetUtil.guessCadenceNew( yds1, null );
+                    for ( int i=1;i<tds.length(); i++ ) {
+                        yds1= SemanticOps.ytagsDataSet( tds.slice(i) );
+                        if ( yds1.rank()>1 ) yds1= yds1.slice(0);
+                        yTagWidth0= DataSetUtil.courserCadence( yTagWidth0, DataSetUtil.guessCadenceNew( yds1, null ) );
+                    }
                 }
             }
 
@@ -507,6 +530,75 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
+    static void averageBundle( QDataSet tds, QDataSet weights, double[][] rebinData, double[][] rebinWeights, 
+            RebinDescriptor ddX, RebinDescriptor ddY,
+            Interpolate interpolateType ) {
+        
+        QDataSet tds1= tds.slice(0);
+        QDataSet xds= SemanticOps.xtagsDataSet( tds1 );
+        QDataSet yds= SemanticOps.ytagsDataSet( tds1 );
+        QDataSet zds= SemanticOps.getDependentDataSet( tds1 );
+
+        QDataSet wds= SemanticOps.weightsDataSet( zds );
+
+        Units yunits = SemanticOps.getUnits(yds);
+        Units xunits = SemanticOps.getUnits(xds);
+
+        QDataSet vyds= SemanticOps.weightsDataSet(yds);
+        QDataSet vxds= SemanticOps.weightsDataSet(xds);
+
+        double fill= -1e31;
+
+        int nx= ddX.numberOfBins();
+        int ny= ddY.numberOfBins();
+
+        for (int i = 0; i < zds.length(); i++) {
+
+            int ibinx,ibiny;
+
+            if ( vxds.value(i)>0 ) {
+                ibinx = ddX.whichBin( xds.value(i), xunits );
+            } else {
+                continue;
+            }
+
+            if ( vyds.value(i)>0 ) {
+                ibiny = ddY.whichBin( yds.value(i), yunits );
+            } else {
+                continue;
+            }
+
+
+            double z = zds.value( i );
+            double w = wds.value( i );
+
+            if (ibiny >= 0 && ibiny < ny && ibinx >= 0 && ibinx < nx ) {
+                if ( interpolateType==Interpolate.NearestNeighbor ) { // propogate fill points through average
+                    if ( w==0 ) {
+                        if ( rebinWeights[ibinx][ibiny]==0 ) {
+                            rebinData[ibinx][ibiny] = fill;
+                            rebinWeights[ibinx][ibiny] = 1;
+                        }
+                    } else {
+                        if ( rebinWeights[ibinx][ibiny]==1 && rebinData[ibinx][ibiny]==fill ) {
+                            rebinData[ibinx][ibiny] = z;
+                            rebinWeights[ibinx][ibiny] = w;
+                        } else {
+                            rebinData[ibinx][ibiny] += z * w;
+                            rebinWeights[ibinx][ibiny] += w;
+                        }
+                    }
+                } else {
+                    rebinData[ibinx][ibiny] += z * w;
+                    rebinWeights[ibinx][ibiny] += w;
+                }
+            }
+        }
+
+        multiplyWeights( rebinData, rebinWeights, fill );
+        
+    }
+    
     /**
      * average data that falls onto the same pixel location.
      * @param tds the dataset to average, either rank 2 table or rank 3 array of tables.
