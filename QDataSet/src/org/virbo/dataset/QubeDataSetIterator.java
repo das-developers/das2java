@@ -287,6 +287,9 @@ public class QubeDataSetIterator implements DataSetIterator {
      * @param fit
      */
     public void setIndexIteratorFactory(int dim, DimensionIteratorFactory fit) {
+        if ( dim >= this.rank ) {
+            throw new IllegalArgumentException( String.format( "rank limit: rank %d dataset %s has no index %d", ds.rank(), ds, dim ) );
+        }
         this.fit[dim] = fit;
         initialize();
     }
