@@ -154,7 +154,15 @@ public class Selector {
 			return new String [] {m_sValAry[0], m_sValAry[1]};
 	}
 
-
+	/** Get the selection as a single string, no matter the type of selector */
+	@Override
+	public String toString(){
+		if(m_type != Type.RANGE)
+			return String.format("%s %s", m_sKey, m_sValAry[0]);
+		else
+			return String.format("%s %s to %s %s",m_sKey,m_sValAry[0],m_sKey,m_sValAry[1]);
+	}
+	
 	/** Get the selection as true/false value(s). */
 	public boolean [] getBool(){
 		if(m_format != Format.BOOLEAN)
