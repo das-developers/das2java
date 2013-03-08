@@ -834,7 +834,7 @@ public class AsciiParser {
         if ( doJSON ) {
             try {
                 //System.err.println( "== JSON Header == \n"+header );
-                System.err.println("Parsing Rich JSON Header...");
+                logger.fine("Parsing Rich JSON Header...");
                 bundleDescriptor = AsciiHeadersParser.parseMetadata(header, getFieldNames(), getFieldLabels() );
                 builder.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
                 bundleDescriptor.property(QDataSet.LABEL, 1);
@@ -852,12 +852,11 @@ public class AsciiParser {
                     }
                 }
                 if ( bundleDescriptor.length()!=this.fieldParsers.length ) {
-                    System.err.println("lengths check didn't work out");
+                    logger.warning("lengths check didn't work out");
                 }
 
             } catch (ParseException ex) {
                 logger.log(Level.SEVERE, null, ex);
-                System.err.println(ex);
                 if ( propertyPattern!=null ) {
                 Map<String,String> userProps= new LinkedHashMap();
                 for ( String line2: header.split("\n") ) {
