@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.datum.Datum;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
@@ -484,14 +485,23 @@ public class AsciiHeadersParser {
      */
     private static DDataSet getDataSet( JSONObject jo, JSONArray values, int[] dims ) throws JSONException {
         double[] dd= new double[ values.length() ];
+        Units u= Units.dimensionless;
         for ( int i=0; i<values.length(); i++ ) {
             try {
                 dd[i] = values.getDouble(i);
             } catch (JSONException ex) {
-                throw ex;
+                String s= values.getString(i);
+                try {
+                    dd[i]= Units.us2000.parse(s).doubleValue(Units.us2000);
+                    u= Units.us2000;
+                } catch ( ParseException ex2 ) {
+                    // "-7.846400, -24.376616, 30485.856600" "UNITS":"Deg., Deg., km","DIMENSION":[2],"NAME":"Apogee Pos Geodetic",
+                    throw ex;
+                }
             }
         }
         DDataSet result= DDataSet.wrap( dd, dims );
+        if ( u!=Units.dimensionless ) result.putProperty( QDataSet.UNITS, u );
         fillMetadata1( result, jo );
 
         return result;
