@@ -576,17 +576,22 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             }
                         }
 
+                        QDataSet zds= fds;
                         if ( !( SemanticOps.isTableDataSet(fds) ) ) {
-                            logger.fine("dataset is not TableDataSet.");
-                            plotImage = null;
-                            plotImageBounds= null;
-                            return;
+                            if ( SemanticOps.isBundle( fds ) ) { // this should be true because of code above
+                                zds= SemanticOps.getDependentDataSet(fds);
+                            } else {
+                                logger.fine("dataset is not TableDataSet.");
+                                plotImage = null;
+                                plotImageBounds= null;
+                                return;
+                            }
                         }
 
                         boolean plottable = false;
-                        plottable = SemanticOps.getUnits(fds).isConvertableTo(colorBar.getUnits());
+                        plottable = SemanticOps.getUnits(zds).isConvertableTo(colorBar.getUnits());
                         if ( !plottable ) {
-                            if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(fds) ) && UnitsUtil.isRatioMeasurement( colorBar.getUnits() ) ) {
+                            if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(zds) ) && UnitsUtil.isRatioMeasurement( colorBar.getUnits() ) ) {
                                 plottable= true; // we'll provide a warning
                                 unitsWarning= true;
                             }
