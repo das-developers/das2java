@@ -72,10 +72,11 @@ public class CoerceUtil {
      * if a rank 1 and a rank 2 dataset are to be combined and both have equal dim 0 length, then the
      * rank 1 is promoted to rank 2 by repeating its values.  This implements the rule that dimensions
      * in QDataSet have nested context.  The second dimension elements are to be understood in the context of
-     * the first dimension element. (Except for qubes the order is arbitrary.)
+     * the first dimension element. (Except for qubes, where the order is arbitrary.)
      * @param ds1 the first operand
      * @param ds2 the second operand
      * @param createResult if true, then a dataset is created where the result can be installed.
+     * @param operands the array in which the promoted operands are inserted.
      * @param result an empty dataset where the results can be inserted, or null if createResult is false.
      * @return
      */
