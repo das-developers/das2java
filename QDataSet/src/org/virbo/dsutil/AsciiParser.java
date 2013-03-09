@@ -146,6 +146,34 @@ public class AsciiParser {
     }
 
     /**
+     * quick-n-dirty check to see if a string appears to be an ISO8601 time.
+     * minimally 2000-002T00:00, but also 2000-01-01T00:00:00Z etc. 
+     * Note that an external code may explicitly indicate that the field is a time,
+     * This is just to catch things that are obviously times.
+     * @param s
+     * @return true if this is clearly an ISO time.
+     */
+    public final boolean isIso8601Time( String s ) {
+        if ( s.length()>13 && s.contains("T") ) {
+            if ( ( s.startsWith("20") || s.startsWith("19") || s.startsWith("18") ) && Character.isDigit(s.charAt(2)) && Character.isDigit(s.charAt(3)) ) {
+                int charCount=4;
+                for ( int i=4; i<s.length(); i++ ) {
+                    if ( Character.isDigit( s.charAt(i) ) ) charCount++;
+                }
+                if ( charCount>10 ) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+        
+    }
+    /**
      * return the first record that the parser would parse.  If skipLines is 
      * more than the total number of lines, or all lines are comments, then null
      * is returned.
@@ -325,13 +353,26 @@ public class AsciiParser {
                     }
                 }
             }
-
+            
             result= p;
 
             for ( int i=0; i<lines.size(); i++ ) {
                 if ( p.fieldCount(lines.get(i))==p.fieldCount() ) {
                     result= createDelimParser( lines.get(i), p.getDelim() ); // set column names
                     break;
+                }
+            }
+                            
+            // check for ISO8601 times.
+            if ( result.tryParseRecord(line, iline, null) ) {
+                String[] fields= new String[p.fieldCount];
+                if ( p.splitRecord(line, fields ) ) {
+                    for ( int i=0; i<fields.length; i++ ) {
+                        if ( isIso8601Time(fields[i]) ) {
+                            this.setFieldParser( i, UNITS_PARSER );
+                            this.setUnits( i,Units.t2000 );
+                        }
+                    }
                 }
             }
             
