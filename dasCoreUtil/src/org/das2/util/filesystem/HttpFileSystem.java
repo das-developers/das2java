@@ -41,6 +41,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -458,6 +459,14 @@ public class HttpFileSystem extends WebFileSystem {
     }
 
     /**
+     * always hide these file types.
+     * @return Arrays.asList( new String[] { ".css", ... } ).
+     */
+    private List<String> hideExtensions() {
+        return Arrays.asList( new String[] { ".css", ".php", ".jnlp", ".part" } );
+    }
+    
+    /**
      * list the directory, using the cached entry from listDirectoryFromMemory, or
      * by HtmlUtil.getDirectoryListing.  If there is a ro_cache, then add extra entries from here as well.
      * @param directory
@@ -585,6 +594,18 @@ public class HttpFileSystem extends WebFileSystem {
                 } finally {
                     if ( fin!=null ) fin.close();
                 }
+                
+                //remove .css stuff
+                ArrayList newlist= new ArrayList();
+                List<String> hideExtensions= hideExtensions();
+                for ( URL s: list ) {
+                    boolean hide= false;
+                    for ( String e : hideExtensions ) {
+                        if ( s.getFile().endsWith(e) ) hide= true;
+                    }
+                    if ( !hide ) newlist.add(s);
+                }
+                list= (URL[]) newlist.toArray( new URL[newlist.size()] );
 
                 result = new LinkedHashMap();
                 int n = directory.length();
