@@ -165,6 +165,9 @@ public class Ops {
 
         Map<String, Object> m1 = DataSetUtil.getProperties(operands[0]);
         Map<String, Object> m2 = DataSetUtil.getProperties(operands[1]);
+        boolean resultIsQube= Boolean.TRUE.equals( m1.get(QDataSet.QUBE) ) || Boolean.TRUE.equals( m2.get(QDataSet.QUBE) );
+        if ( m1.size()==1 ) m1.remove( QDataSet.QUBE ); // kludge: CoerceUtil.coerce would copy over a QUBE property, so just remove this.
+        if ( m2.size()==1 ) m2.remove( QDataSet.QUBE );
         if ( m2.isEmpty() && !m1.isEmpty() ) {
             m2.put( QDataSet.DEPEND_0, m1.get(QDataSet.DEPEND_0 ) );
             m2.put( QDataSet.DEPEND_1, m1.get(QDataSet.DEPEND_1 ) );
@@ -178,6 +181,9 @@ public class Ops {
             m1.put( QDataSet.DEPEND_3, m2.get(QDataSet.DEPEND_3 ) );
         }
         Map<String, Object> m3 = equalProperties(m1, m2);
+        if ( resultIsQube ) {
+            m3.put( QDataSet.QUBE, Boolean.TRUE );
+        }
         String[] ss= DataSetUtil.dimensionProperties();
         for ( String s: ss ) {
             m3.remove( s );
