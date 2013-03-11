@@ -108,7 +108,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         QDataSet xds= SemanticOps.xtagsDataSet(tds);
         int i = DataSetUtil.closestIndex(xds, x);
         QDataSet tds1= tds.slice(i);
-        QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+        QDataSet yds= SemanticOps.xtagsDataSet(tds1);
         int j= DataSetUtil.closestIndex(yds, y);
         double d= tds1.value(j);
         Datum zValue = SemanticOps.getDatum( tds1, d );
