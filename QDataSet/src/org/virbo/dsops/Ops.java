@@ -2809,7 +2809,7 @@ public class Ops {
      */
     public static QDataSet fftPower( QDataSet ds, int len, ProgressMonitor mon ) {
         QDataSet unity= ones(len);
-        return fftPower( ds, unity, -1, mon );
+        return fftPower( ds, unity, 1, mon );
     }
 
     /**
@@ -2828,7 +2828,7 @@ public class Ops {
     }
 
     public static QDataSet fftPower( QDataSet ds, QDataSet window, ProgressMonitor mon ) {
-        return fftPower( ds, window, -1, mon );
+        return fftPower( ds, window, 1, mon );
     }
     /**
      * create a power spectrum on the dataset by breaking it up and
@@ -2855,7 +2855,9 @@ public class Ops {
 
         int len= window.length();
         int step;
-        if ( stepFraction <= 32 ) { 
+        if ( stepFraction < 0 ) {
+            throw new IllegalArgumentException( String.format( "fractional step size (%d) is negative.", stepFraction ) );
+        } else if ( stepFraction <= 32 ) { 
             step= len/stepFraction;
         } else {
             throw new IllegalArgumentException( String.format( "fractional step size (%d) is bigger than 32, the max allowed.", stepFraction ) );
