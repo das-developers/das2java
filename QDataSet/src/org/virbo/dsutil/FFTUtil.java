@@ -12,6 +12,7 @@ import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IndexGenDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
@@ -211,6 +212,7 @@ public class FFTUtil {
             powTags.putValue(i-1,xtags.value(i));
         }
         powTags.putProperty( QDataSet.UNITS, xUnits );
+        powTags.putProperty( QDataSet.CADENCE, xtags.property(QDataSet.CADENCE) );
         synchronized (FFTUtil.class ) {
             freqDomainTagsForPowerBuf= new TTagBufElement();
             freqDomainTagsForPowerBuf.data= powTags;
@@ -287,7 +289,8 @@ public class FFTUtil {
         for ( int i=0; i<n21-2; i++ ) {
             result[i+n21]= (n21-n+i) / ( n*T );
         }
-        MutablePropertyDataSet r= DDataSet.wrap(result);
+        MutablePropertyDataSet r= DDataSet.wrap(result);  //TODO: we go through here too many times...
+        r.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet( 1/(n*T),frequencyUnit) );
         r.putProperty( QDataSet.UNITS, frequencyUnit );
         return r;
     }
