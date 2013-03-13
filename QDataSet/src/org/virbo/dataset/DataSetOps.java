@@ -1863,42 +1863,63 @@ public class DataSetOps {
      * indicate if the operators change dimensions of the dataset.  Often
      * this will result in true when the dimensions do not change, this is the better way to err.
      * @param c0 process string like "slice0(0)"
-     * @param c2 process string like "slice0(0)|slice1(0)"
+     * @param c1 process string like "slice0(0)|slice1(0)"
      * @return
      */
-    public static boolean changesDimensions( String c0, String c2 ) {
+    public static boolean changesDimensions( String c0, String c1 ) {
         //if ( c.length()==0 && !c2.startsWith("|") ) return false;  //TODO: kludge to avoid true when adding component child.
-        Scanner s= new Scanner( c0 );
-        s.useDelimiter("[\\(\\),]");
-        Scanner s2= new Scanner( c2 );
-        s2.useDelimiter("[\\(\\),]");
+        Scanner s0= new Scanner( c0 );
+        s0.useDelimiter("[\\(\\),]");
+        Scanner s1= new Scanner( c1 );
+        s1.useDelimiter("[\\(\\),]");
         boolean slicesChangesDim= false;
-        while ( s.hasNext() && s2.hasNext() ) {
-            String cmd= s.next();
-            if ( !s2.next().equals(cmd) ) return true;
-            if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
+        while ( s0.hasNext() && s1.hasNext() ) {
+            String cmd0= s0.next();
+            String cmd1= s1.next();
+            if ( !cmd1.equals(cmd0) ) {
+                return true;
+            }
+            if ( cmd0.startsWith("|slices") && cmd0.length()==7 ) { // multi dimensional slice
                 Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
-                while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
-                    if ( s.hasNextInt() && s2.hasNextInt() ) {
-                        s.nextInt();
-                        s2.nextInt();
-                    } else if ( s.hasNext( skipPattern ) && s2.hasNext( skipPattern ) ) {
-                        s.next();
-                        s2.next();
+                while ( s0.hasNextInt() || s0.hasNext( skipPattern ) ) {
+                    if ( s0.hasNextInt() && s1.hasNextInt() ) {
+                        s0.nextInt();
+                        s1.nextInt();
+                    } else if ( s0.hasNext( skipPattern ) && s1.hasNext( skipPattern ) ) {
+                        s0.next();
+                        s1.next();
                     } else {
                         slicesChangesDim= true;
-                        s.next();
-                        s2.next();
+                        s0.next();
+                        s1.next();
                     }
                 }
-                if ( s.hasNext() ) s.next(); // ?? why TODO: verify this
-            } else if (cmd.startsWith("|slice") && cmd.length() > 6) {
-                s.nextInt();
-                s2.nextInt();
+                if ( s0.hasNext() ) s0.next(); // ?? why TODO: verify this
+            } else if (cmd0.startsWith("|slice") && cmd0.length() > 6) {
+                s0.nextInt();
+                s1.nextInt();
+            } else if (cmd0.equals("|smooth") ) {
+                s0.nextInt();
+                s1.nextInt();
+            } else if (cmd0.equals("|hanning") ) {
+                s0.nextInt();
+                s1.nextInt();
+            } else if (cmd0.equals("|fftPower") ) {
+                s0.nextInt();
+                s1.nextInt();
+                if ( s0.hasNextInt() && s1.hasNextInt() ) {
+                    s0.nextInt();  // don't care if they change the slide
+                    s1.nextInt();            
+                }
+                Pattern p= Pattern.compile("\'[a-zA-Z0-9_]*\'");
+                if ( s0.hasNext(p) && s1.hasNext(p) ) { // don't care if they change the window
+                    s0.next();
+                    s1.next();    
+                }
             }
         }
-        boolean res= slicesChangesDim || s.hasNext() || s2.hasNext();
-        logger.log(Level.FINE, "  changesDimensions {0} , {1} ->{2}", new Object[]{c0, c2, res});
+        boolean res= slicesChangesDim || s0.hasNext() || s1.hasNext();
+        logger.log(Level.FINE, "  changesDimensions {0} , {1} ->{2}", new Object[]{c0, c1, res});
         return res;
     }
 
