@@ -121,7 +121,6 @@ public class DasPlot extends DasCanvasComponent {
     private int titleHeight= 0;
 
     private boolean drawInactiveInLegend= false;
-    private boolean drawLegend= true;
 
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         super();
@@ -1041,7 +1040,7 @@ public class DasPlot extends DasCanvasComponent {
             drawMessages(graphics);
         }
 
-        if ( legendElements.size() > 0 && drawLegend ) {
+        if ( legendElements.size() > 0 && displayLegend ) {
             drawLegend(graphics);
         }
 
@@ -1681,6 +1680,8 @@ public class DasPlot extends DasCanvasComponent {
         boolean oldDisplayLegend = this.displayLegend;
         this.displayLegend = displayLegend;
         firePropertyChange(PROP_DISPLAYLEGEND, oldDisplayLegend, displayLegend);
+        resize();
+        repaint();
     }
 
 
