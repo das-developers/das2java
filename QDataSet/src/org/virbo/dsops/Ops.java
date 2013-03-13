@@ -235,7 +235,7 @@ public class Ops {
      * @param m2 map of dataset properties, including DEPEND properties.
      * @return
      */
-    private static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
+    public static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
         HashMap result = new HashMap();
         for ( Entry<String,Object> e : m1.entrySet()) {
             String k= e.getKey();
