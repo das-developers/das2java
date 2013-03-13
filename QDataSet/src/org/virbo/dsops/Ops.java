@@ -2875,6 +2875,11 @@ public class Ops {
             normalization= 1.0;
         }
 
+        String title= (String) ds.property(QDataSet.TITLE);
+        if ( title!=null ) {
+            title= "FFTPower of "+title;
+        }
+        
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
             JoinDataSet dep0=null;
@@ -2904,6 +2909,8 @@ public class Ops {
             mon.finished();
 
             result.putProperty( QDataSet.QUBE, Boolean.TRUE );
+            if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
+            
             return result;
 
         } else if ( ds.rank()==2 ) {
@@ -3030,7 +3037,7 @@ public class Ops {
                 
             }
             mon.finished();
-            if (dep0!=null ) {
+            if ( dep0!=null && dep0b!=null ) {
                 dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
                 if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
                 result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
@@ -3039,6 +3046,7 @@ public class Ops {
                 result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
             }
 
+            if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
             result.putProperty( QDataSet.QUBE, Boolean.TRUE );
             
             return result;
