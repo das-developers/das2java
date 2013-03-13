@@ -1394,6 +1394,7 @@ public class DataSetUtil {
             }
         }
         if ( ds instanceof MutablePropertyDataSet ) {
+            logger.fine("putProperty(QDataSet.QUBE,Boolean.TRUE)");
             ((MutablePropertyDataSet)ds).putProperty( QDataSet.QUBE, Boolean.TRUE );
         }
         return true;
@@ -1428,7 +1429,8 @@ public class DataSetUtil {
                     }
                 }
                 if ( ds instanceof MutablePropertyDataSet ) {
-                   ((MutablePropertyDataSet)ds).putProperty( QDataSet.QUBE, Boolean.TRUE );
+                    logger.fine("putProperty(QDataSet.QUBE,Boolean.TRUE)");
+                    ((MutablePropertyDataSet)ds).putProperty( QDataSet.QUBE, Boolean.TRUE );
                 }
                 return true;
             } else {
