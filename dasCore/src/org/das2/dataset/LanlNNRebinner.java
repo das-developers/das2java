@@ -52,7 +52,7 @@ public class LanlNNRebinner implements DataSetRebinner {
 
     WeakHashMap<QDataSet,QDataSet> yds0c= new WeakHashMap();
     WeakHashMap<QDataSet,QDataSet> yds1c= new WeakHashMap();
-
+    WeakHashMap<QDataSet,QDataSet> cadence= new WeakHashMap();
     /**
      * get cadence that checks for null and returns the pixel cadence in this case.
      * @param ds the xtags or ytags 
@@ -60,7 +60,11 @@ public class LanlNNRebinner implements DataSetRebinner {
      * @return
      */
     private QDataSet getCadence( QDataSet ds, Datum res ) {
-        QDataSet dds= DataSetUtil.guessCadenceNew( ds, null );
+        QDataSet dds= cadence.get(ds);
+        if ( dds==null && !cadence.containsKey(ds) ) {
+            dds= DataSetUtil.guessCadenceNew( ds, null );
+            cadence.put( ds,dds );
+        }
         if ( dds==null ) {
             return DataSetUtil.asDataSet(res);
         } else {
