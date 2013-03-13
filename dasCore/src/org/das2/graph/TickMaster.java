@@ -45,7 +45,8 @@ public class TickMaster {
 
         HashSet<WeakReference<DasAxis>> rm= new HashSet();
         for ( WeakReference<DasAxis> da : this.pendingAxes ) {
-            if ( da.get().getCanvas()!=null ) {
+            DasAxis a= da.get();
+            if ( a==null || a.getCanvas()!=null ) {
                 rm.add(da);
             }
         }
