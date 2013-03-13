@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -57,8 +58,8 @@ import org.xml.sax.SAXParseException;
 
 public class StreamTool {
 
-    /** Creates a new instance of StreamTool */
-    public StreamTool() {
+    private StreamTool() {
+        // utility class 
     }
 
     public static class DelimeterNotFoundException extends Exception {
@@ -248,6 +249,7 @@ public class StreamTool {
             this.stream = stream;
             this.handler = handler;
         }
+        @Override
         public String toString() {
             return "\ndescriptorCount="+descriptorCount+
                     "\npacketCount="+packetCount+
@@ -298,6 +300,7 @@ public class StreamTool {
     private static StreamDescriptor getStreamDescriptor(ReadStreamStructure struct) throws StreamException, IOException {
         struct.bigBuffer.clear().limit(10);
         while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1) {
+            //do nothing
             ;
         }
         if (struct.bigBuffer.hasRemaining()) {
@@ -314,6 +317,7 @@ public class StreamTool {
             struct.byteOffset += struct.bigBuffer.position();
             struct.bigBuffer.clear().limit(contentLength);
             while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1) {
+                // do nothing
                 ;
             }
             if (struct.bigBuffer.hasRemaining()) {
@@ -356,6 +360,7 @@ public class StreamTool {
         struct.bigBuffer.limit(1000);
         struct.bigBuffer.position(0);
         while (struct.bigBuffer.hasRemaining() && struct.stream.read(struct.bigBuffer) != -1) {
+            // do nothing
             ;
         }
         int p = struct.bigBuffer.position();
@@ -627,7 +632,7 @@ public class StreamTool {
             throw se;
         }
     }
-    private static HashMap typesMap;
+    private final static HashMap typesMap;
 
     static {
         typesMap = new HashMap();
