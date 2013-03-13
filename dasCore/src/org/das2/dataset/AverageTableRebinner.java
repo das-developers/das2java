@@ -30,15 +30,10 @@ import org.das2.datum.UnitsUtil;
 import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.logging.*;
-import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsConverter;
-import org.das2.util.DasMath;
-import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -59,7 +54,7 @@ public class AverageTableRebinner implements DataSetRebinner {
     private boolean enlargePixels = true;
 
     public static enum Interpolate {
-        None, Linear, NearestNeighbor
+        None, Linear, NearestNeighbor, BinXInterpY;
     }
 
     /** Creates a new instance of TableAverageRebinner */
@@ -849,7 +844,10 @@ public class AverageTableRebinner implements DataSetRebinner {
 
         double xSampleWidth;
         double fudge = 1.5 * 0.9; // 0.9 was removed from another code.
-        if (interpolateType == Interpolate.NearestNeighbor) {
+        
+        boolean isNN= interpolateType == Interpolate.NearestNeighbor || interpolateType==Interpolate.BinXInterpY;
+        
+        if ( isNN ) {
             fudge = 1.01; 
         }
         if (xTagWidth == null) {
@@ -880,7 +878,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                     i1[i] = -1;
                     i2[i] = -1;
                     ii1 = i;
-                    if (interpolateType == Interpolate.NearestNeighbor) {
+                    if ( isNN ) {
                         for (int iii = 0; iii < i; iii++) {
                             i2[iii] = ii1;
                         }
@@ -901,14 +899,14 @@ public class AverageTableRebinner implements DataSetRebinner {
                     i2[i] = -1;
                 }
             }
-            if (interpolateType == Interpolate.NearestNeighbor && ii1 > -1) {
+            if ( isNN && ii1 > -1) {
                 for (int iii = ii1; iii < nx; iii++) {
                     i1[iii] = ii1;
                 }
             }
-            if (interpolateType == Interpolate.NearestNeighbor) {
+            if ( isNN ) {
                 for (int i = 0; i < nx; i++) {
-                    boolean doInterp;
+                    boolean doInterp; //TODO? Really, this is the name?  I think doGrow is better
                     if ( i1[i]!= -1 && i2[i] != -1) {
                         boolean doInterpR= ( xTagTemp[i2[i]] - xTagTemp[i] ) < xSampleWidth/2;
                         doInterp= doInterpR || ( xTagTemp[i] - xTagTemp[i1[i]] ) < xSampleWidth/2;
@@ -992,9 +990,11 @@ public class AverageTableRebinner implements DataSetRebinner {
             System.arraycopy(yTags, 0, yTagTemp, 0, ny);
         }
 
+        boolean isNN= interpolateType == Interpolate.NearestNeighbor;
+                
         double ySampleWidth;
         double fudge = 1.5 * 0.9; // 0.9 was removed from another code.
-        if (interpolateType == Interpolate.NearestNeighbor) {
+        if ( isNN ) {
             fudge = 1.01;
         }
         if (yTagWidth == null) {
@@ -1039,7 +1039,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                     i1[j] = -1;
                     i2[j] = -1;
                     ii1 = j;
-                    if (interpolateType == Interpolate.NearestNeighbor) {
+                    if ( isNN ) {
                         for (int jjj = 0; jjj < j; jjj++) {
                             i2[jjj] = ii1;
                         }
@@ -1062,12 +1062,12 @@ public class AverageTableRebinner implements DataSetRebinner {
                     i2[j] = -1;
                 }
             }
-            if (interpolateType == Interpolate.NearestNeighbor && ii1 > -1) {
+            if ( isNN && ii1 > -1) {
                 for (int jjj = ii1; jjj < ny; jjj++) {
                     i1[jjj] = ii1;
                 }
             }
-            if (interpolateType == Interpolate.NearestNeighbor) {
+            if ( isNN ) {
                 for (int j = 0; j < ny; j++) {
                     boolean doInterp;
                     if ( i1[j]!= -1 && i2[j] != -1) {
@@ -1162,16 +1162,16 @@ public class AverageTableRebinner implements DataSetRebinner {
     }
 
     /**
-     * Getter for property interpolate.
-     * @return Value of property interpolate.
+     * "Interpolate" here simply means connecting the data points.
+     * @return true indicates we should connect the data points.
      */
     public boolean isInterpolate() {
         return this.interpolate;
     }
 
     /**
-     * Setter for property interpolate.
-     * @param interpolate New value of property interpolate.
+     * "Interpolate" here simply means connecting the data points.
+     * @param interpolate true indicates we should connect the data points.
      */
     public void setInterpolate(boolean interpolate) {
         this.interpolate = interpolate;
