@@ -467,7 +467,7 @@ public class TickVDescriptor {
             first = TimeUtil.createTimeDatum(iyear, 1, 1, 0, 0, 0, 0);
         } else {
             int[] digits = TimeUtil.toTimeArray(minD);
-            first = TimeUtil.prev(units.getOrdinal() - 1, minD);
+            first = TimeUtil.prev(CalendarTime.Step.HigerStep(units.getOrdinal()), minD);
         }
 
 
@@ -488,7 +488,7 @@ public class TickVDescriptor {
         int majorMantissa = mantissa;
 
         if (majorMantissa == 1) {
-            minorUnits = TimeUtil.TimeDigit.fromOrdinal(majorUnits.getOrdinal() + 1);
+            minorUnits = TimeUtil.TimeDigit.fromOrdinal(CalendarTime.Step.LowerStep(majorUnits.getOrdinal()));
             minorMantissa = majorUnits==TimeUtil.TD_MONTH ? 10 : majorUnits.divisions() / 4;
         }
 
@@ -682,8 +682,8 @@ public class TickVDescriptor {
         }
 
         if (maxD.subtract(minD).gt(Datum.create(10 * 365, Units.days))) {
-            int yearMin = new CalendarTime(minD).year;
-            int yearMax = new CalendarTime(maxD).year;
+            int yearMin = new CalendarTime(minD).year();
+            int yearMax = new CalendarTime(maxD).year();
             TickVDescriptor yearTicks = bestTickVLinear(Units.dimensionless.createDatum(yearMin),
                     Units.dimensionless.createDatum(yearMax), nTicksMin, nTicksMax, fin);
             yearTicks.units = minD.getUnits();

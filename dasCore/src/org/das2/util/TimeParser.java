@@ -331,31 +331,31 @@ public class TimeParser {
     }
 
     private double toUs2000(CalendarTime d) {
-        int year = d.year;
-        int month = d.month;
-        int day = d.day;
+        int year = d.year();
+        int month = d.month();
+        int day = d.day();
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
-        int hour = d.hour;
-        int minute = d.minute;
-        double seconds = d.second + hour * (float) 3600.0 + minute * (float) 60.0;
+        int hour = d.hour();
+        int minute = d.minute();
+        double seconds = d.second() + hour * (float) 3600.0 + minute * (float) 60.0;
         int mjd1958 = (jd - 2436205);
-        double us2000 = (mjd1958 - 15340) * 86400000000. + seconds * 1e6 + d.nanosecond / 1000;
+        double us2000 = (mjd1958 - 15340) * 86400000000. + seconds * 1e6 + d.nanosecond() / 1000;
         return us2000;
     }
 
     private double toUs1980(CalendarTime d) {
-        int year = d.year;
-        int month = d.month;
-        int day = d.day;
+        int year = d.year();
+        int month = d.month();
+        int day = d.day();
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
-        int hour = d.hour;
-        int minute = d.minute;
-        double seconds = d.second + hour * (float) 3600.0 + minute * (float) 60.0;
-        double us1980 = (jd - 2436205 - 8035) * 86400000000. + seconds * 1e6 + d.nanosecond / 1000;
+        int hour = d.hour();
+        int minute = d.minute();
+        double seconds = d.second() + hour * (float) 3600.0 + minute * (float) 60.0;
+        double us1980 = (jd - 2436205 - 8035) * 86400000000. + seconds * 1e6 + d.nanosecond() / 1000;
         return us1980;
     }
 
@@ -364,7 +364,7 @@ public class TimeParser {
      * fractional part in the seconds.
      */
     public void resetSeconds() {
-        time.second= 0;
+        time.setSecond(0);
     }
     
     /**
@@ -383,11 +383,7 @@ public class TimeParser {
         int offs = 0;
         int len = 0;
 
-        time.month = 1;
-        time.day = 1;
-        time.hour = 0;
-        time.minute = 0;
-        time.nanosecond = 0;
+        time.set( new int[]{0,1,1,0,0,0} );
         
         for (int idigit = 1; idigit < ndigits; idigit++) {
             if (offsets[idigit] != -1) {  // note offsets[0] is always known
@@ -415,35 +411,35 @@ public class TimeParser {
                 int digit = Integer.parseInt(timeString.substring(offs, offs + len).trim());
                 switch (handlers[idigit]) {
                     case 0:
-                        time.year = digit;
+                        time.setYear(digit);
                         break;
                     case 1:
-                        time.year = digit < 58 ? 2000 + digit : 1900 + digit;
+                        time.setYear( digit < 58 ? 2000 + digit : 1900 + digit);
                         break;
                     case 2:
-                        time.month = 1;
-                        time.day = digit;
+                        time.setMonth(1);
+                        time.setDay(digit);
                         break;
                     case 3:
-                        time.month = digit;
+                        time.setMonth(digit);
                         break;
                     case 4:
-                        time.day = digit;
+                        time.setDay(digit);
                         break;
                     case 5:
-                        time.hour = digit;
+                        time.setHour(digit);
                         break;
                     case 6:
-                        time.minute = digit;
+                        time.setMinute(digit);
                         break;
                     case 7:
-                        time.second = digit;
+                        time.setSecond( digit);
                         break;
                     case 8:
-                        time.nanosecond += digit * 1000000;
+                        time.setNanoSecond( digit * 1000000 );
                         break;
                     case 9:
-                        time.nanosecond += digit * 1000;
+                        time.setNanoSecond( digit * 1000 );
                         break;
                 }
             } else if (handlers[idigit] == 100) {
@@ -452,223 +448,29 @@ public class TimeParser {
             } else if (handlers[idigit] == 10) {
                 char ch = timeString.charAt(offs);
                 if (ch == 'P' || ch == 'p') {
-                    time.hour += 12;
+                    time.setHour( time.hour() + 12 );
                 }
             } else if (handlers[idigit] == 11) {
                 int offset = Integer.parseInt(timeString.substring(offs, offs + len));
-                time.hour -= offset / 100;   // careful!
+                time.setHour( time.hour() - offset / 100);   // careful!
 
-                time.minute -= offset % 100;
+                time.setMinute( time.minute() - offset % 100);
             } else if (handlers[idigit] == 13) {
-                time.month = TimeUtil.monthNumber(timeString.substring(offs, offs + len));
+                time.setMonth( TimeUtil.monthNumber(timeString.substring(offs, offs + len)));
 
             }
         }
         return this;
     }
 
-    /**
-     * set the digit with the integer part, and move the fractional part to the less significant digits.
-     * @param format
-     * @param value
-     */
-    public void setDigit( String format, double value ) {
-        if ( value<0 ) throw new IllegalArgumentException("value must not be negative");
-        String[] ss = format.split("%", -2);
-        if ( ss.length>2 ) throw new IllegalArgumentException("multiple fields not supported");
-        for (int i = ss.length-1; i > 0; i--) {
-            int digit= (int)value;
-            double fp= value-digit;
-            
-            switch ( ss[i].charAt(0) ) {
-                case 'Y':
-                    time.year = digit;
-                    if ( TimeUtil.isLeapYear(time.year) ) {
-                        time.second+= 366 * 24 * 3600 * fp;
-                    } else {
-                        time.second+= 365 * 24 * 3600 * fp;
-                    }
-                    break;
-                case 'y':
-                    time.year = digit < 58 ? 2000 + digit : 1900 + digit;
-                    if ( TimeUtil.isLeapYear(time.year) ) {
-                        time.second+= 366 * 24 * 3600 * fp;
-                    } else {
-                        time.second+= 365 * 24 * 3600 * fp;
-                    }
-                    break;
-                case 'j':
-                    time.month = 1;
-                    time.day = digit;
-                    time.second+= 24 * 3600 * fp;
-                    break;
-                case 'm':
-                    time.month = digit;
-                    time.second+= TimeUtil.daysInMonth(time.month,time.year) * 24 * 3600 * fp;
-                    break;
-                case 'd':
-                    time.day = digit;
-                    time.second+= 24 * 3600 * fp;
-                    break;
-                case 'H':
-                    time.hour = digit;
-                    time.second+= 3600 * fp;
-                    break;
-                case 'M':
-                    time.minute = digit;
-                    time.second+= 60 * fp;
-                    break;
-                case 'S':
-                    time.second = (int) (digit + fp);
-                    break;
-                case '{':
-                    if ( ss[i].substring(1).equals("milli}") ) {
-                        time.nanosecond = digit * 1000000L;
-                        time.nanosecond += 1000 * fp;
-                        time.second += ( ( 1000*fp)-(time.nanosecond/1000) ) * 1e-6;
-                    } else if ( ss[i].substring(1).equals("micro}") ) {
-                        time.nanosecond = digit * 1000;
-                        time.second += fp * 1e-6;
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException("format code not supported");
-            }
-        }
-    }
     
-    /**
-     * Set the digit using the format code.  If multiple digits are found, then
-     * the integer provided should be the misinterpreted integer.  For example,
-     * if the format is "%Y%m%d", the integer 20080830 is split apart into 
-     * 2008,08,30.
-     * @param format spec like "%Y%m%d"
-     * @param value integer like 20080830.
-     * @return
-     */
-    public TimeParser setDigit(String format, int value) {
-        String[] ss = format.split("%", -2);
-        for (int i = ss.length-1; i > 0; i--) {
-            int mod=0;
-            int digit;
-            switch ( ss[i].charAt(0) ) {
-                case 'Y':
-                    mod= 10000;
-                    digit= value % mod;
-                    time.year = digit;
-                    break;
-                case 'y':
-                    mod=100;
-                    digit= value % mod;
-                    time.year = digit < 58 ? 2000 + digit : 1900 + digit;
-                    break;
-                case 'j':
-                    mod= 1000;
-                    digit= value % mod;
-                    time.month = 1;
-                    time.day = digit;
-                    break;
-                case 'm':
-                    mod=100;
-                    digit= value % mod;
-                    time.month = digit;
-                    break;
-                case 'd':
-                    mod=100;
-                    digit= value % mod;
-                    time.day = digit;
-                    break;
-                case 'H':
-                    mod=100;
-                    digit= value % mod;
-                    time.hour = digit;
-                    break;
-                case 'M':
-                    mod=100;
-                    digit= value % mod;
-                    time.minute = digit;
-                    break;
-                case 'S':
-                    mod=100;
-                    digit= value % mod;
-                    time.second = digit;
-                    break;
-                case '{':
-                    mod=1000;
-                    digit= value % mod;
-                    if ( ss[i].substring(1).equals("milli}") ) {
-                        time.nanosecond = digit * 1000000L;
-                    } else {
-                        time.nanosecond = digit * 1000L;
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException("format code not supported");
-            }
-            value= value / mod;
-        }
-        return this;
-
-    }
-
-    /**
-     * This allows for string split into elements to be interpretted here.  This
-     * is to add flexibility to external parsers that have partially parsed the
-     * number already.
-     * examples:
-     *   TimeParser p= TimeParser.create("%Y %m %d");
-     *   p.setDigit(0,2007).setDigit(1,12).setDigit(2,5).getTime( Units.us2000 );
-     *   p.format();  // maybe in the future
-     * @throws IllegalArgumentException if the digit has a custom field handler
-     * @throws IllegalArgumentException if the digit does not exist.
-     * @param digitNumber, the digit to set (starting with 0).
-     */
-    public TimeParser setDigit(int digitNumber, int digit) {
-        switch (handlers[digitNumber + 1]) {
-            case 0:
-                time.year = digit;
-                break;
-            case 1:
-                time.year = digit < 58 ? 2000 + digit : 1900 + digit;
-                break;
-            case 2:
-                time.month = 1;
-                time.day = digit;
-                break;
-            case 3:
-                time.month = digit;
-                break;
-            case 13:
-                time.month = digit;
-                break;
-            case 4:
-                time.day = digit;
-                break;
-            case 5:
-                time.hour = digit;
-                break;
-            case 6:
-                time.minute = digit;
-                break;
-            case 7:
-                time.second = digit;
-                break;
-            case 8:
-                time.nanosecond = digit * 1000000L;
-                break;
-            case 9:
-                time.nanosecond = digit * 1000L;
-                break;
-        }
-        return this;
-    }
 
     public double getTime(Units units) {
         return Units.us2000.convertDoubleTo(units, toUs2000(time));
     }
 
     public Datum getTimeDatum() {
-        if (time.year < 1990) {
+        if (time.year() < 1990) {
             return Units.us1980.createDatum(toUs1980(time));
         } else {
             return Units.us2000.createDatum(toUs2000(time));
@@ -734,34 +536,34 @@ public class TimeParser {
                 int digit;
                 switch (handlers[idigit]) {
                     case 0:
-                        digit = timel.year;
+                        digit = timel.year();
                         break;
                     case 1:
-                        digit = (timel.year < 2000) ? timel.year - 1900 : timel.year - 2000;
+                        digit = (timel.year() < 2000) ? timel.year() - 1900 : timel.year() - 2000;
                         break;
                     case 2:
-                        digit = TimeUtil.dayOfYear(timel.month, timel.day, timel.year);
+                        digit = timel.dayOfYear();
                         break;
                     case 3:
-                        digit = timel.month;
+                        digit = timel.month();
                         break;
                     case 4:
-                        digit = timel.day;
+                        digit = timel.day();
                         break;
                     case 5:
-                        digit = timel.hour;
+                        digit = timel.hour();
                         break;
                     case 6:
-                        digit = timel.minute;
+                        digit = timel.minute();
                         break;
                     case 7:
-                        digit = timel.second;
+                        digit = timel.second();
                         break;
                     case 8:
-								digit = (int) (timel.nanosecond / 1000000);
+								digit = (int) (timel.nanosecond() / 1000000);
                         break;
                     case 9:
-                        digit = (int) (timel.nanosecond / 1000);
+                        digit = (int) (timel.nanosecond() / 1000);
                         break;
                     default:
                         throw new RuntimeException("shouldn't get here");
@@ -771,7 +573,7 @@ public class TimeParser {
 
             } else if (handlers[idigit] == 13) { // month names
 
-                result.insert(offs, TimeUtil.monthNameAbbrev(timel.month));
+                result.insert(offs, TimeUtil.monthNameAbbrev(timel.month()));
                 offs += len;
 
             } else if (handlers[idigit] == 100) {

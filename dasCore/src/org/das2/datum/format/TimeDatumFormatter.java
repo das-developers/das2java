@@ -123,39 +123,39 @@ public class TimeDatumFormatter extends DatumFormatter {
     
     /**
      * returns a TimeDatumFormatter suitable for the specified scale and context.
-     * Context may be null to indicate that the formatted string will be interpretted
+     * Context may be null to indicate that the formatted string will be interpreted
      * outside of any context.
      * @param scale the length we wish to represent, such as TimeUtil.HOUR
      * @param context the context for the formatter, or null if the formatted string
-     *   will be interpretted outside of any context.
+     *   will be interpreted outside of any context.
      * @throws IllegalArgumentException if the scale is TimeUtil.NANOS or is not found in TimeUtil.
      */
-    public static TimeDatumFormatter formatterForScale( int scale, DatumRange context ) {
+    public static TimeDatumFormatter formatterForScale(CalendarTime.Step scale, DatumRange context ) {
         try {
             if ( context!=null ) {
                 switch ( scale ) {
-                    case CalendarTime.YEAR: return YEARS;
-                    case CalendarTime.MONTH: return MONTHS;
-                    case CalendarTime.DAY: return DAYS;
-                    case CalendarTime.HOUR: return MINUTES;
-                    case CalendarTime.MINUTE: return MINUTES;
-                    case CalendarTime.SECOND: return SECONDS;
-                    case CalendarTime.MILLISEC: return MILLISECONDS;
-                    case CalendarTime.MICROSEC: return MICROSECONDS;
-                    case CalendarTime.NANOSEC: return NANOSECONDS;
+                    case YEAR: return YEARS;
+                    case MONTH: return MONTHS;
+                    case DAY: return DAYS;
+                    case HOUR: return MINUTES;
+                    case MINUTE: return MINUTES;
+                    case SECOND: return SECONDS;
+                    case MILLISEC: return MILLISECONDS;
+                    case MICROSEC: return MICROSECONDS;
+                    case NANOSEC: return NANOSECONDS;
                     default: throw new IllegalArgumentException("unsupported scale: "+scale);
                 }
             } else {
                 switch ( scale ) {
-                    case CalendarTime.YEAR: return YEARS;
-                    case CalendarTime.MONTH: return MONTHS;
-                    case CalendarTime.DAY: return DAYS;
-                    case CalendarTime.HOUR: return HOURS;
-                    case CalendarTime.MINUTE: return new TimeDatumFormatter("yyyy-MM-dd HH:mm");
-                    case CalendarTime.SECOND: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss");
-                    case CalendarTime.MILLISEC: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSS");
-                    case CalendarTime.MICROSEC: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSS");
-                    case CalendarTime.NANOSEC: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+                    case YEAR: return YEARS;
+                    case MONTH: return MONTHS;
+                    case DAY: return DAYS;
+                    case HOUR: return HOURS;
+                    case MINUTE: return new TimeDatumFormatter("yyyy-MM-dd HH:mm");
+                    case SECOND: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss");
+                    case MILLISEC: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSS");
+                    case MICROSEC: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSS");
+                    case NANOSEC: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
                     default: throw new IllegalArgumentException("unsupported scale: "+scale);
                 }                
             }
@@ -322,20 +322,17 @@ public class TimeDatumFormatter extends DatumFormatter {
         int maxScale = scaleSeconds == null ? 10 : (int)Math.pow(10, max(scaleSeconds));
         int fieldCount = TIMESTAMP_FIELD_COUNT + secondsFieldCount;
         Number[] array = new Number[fieldCount];
-        int seconds = (int)Math.round(ts.second * maxScale) / maxScale;
-        double fracSeconds = ts.second - seconds;
-        ts.second = seconds;
-        ts.nanosecond = (long)(fracSeconds * 1e9);
+        int seconds = (int)Math.round(ts.second() * maxScale) / maxScale;
+        double fracSeconds = ts.second() - seconds;
+        ts.set(new int[]{0,0,0,0,0,seconds,(int)fracSeconds});
         
-        ts.normalize();
-        
-        array[YEAR_FIELD_INDEX] = new Integer(ts.year);
-        array[MONTH_FIELD_INDEX] = new Integer(ts.month);
-        array[DAY_FIELD_INDEX] = new Integer(ts.day);
-        array[DOY_FIELD_INDEX] = new Integer(ts.getDoy());
-        array[HOUR_FIELD_INDEX] = new Integer(ts.hour);
-        array[MINUTE_FIELD_INDEX] = new Integer(ts.minute);
-        array[SECONDS_FIELD_INDEX] = new Integer(ts.second);
+        array[YEAR_FIELD_INDEX] = new Integer(ts.year());
+        array[MONTH_FIELD_INDEX] = new Integer(ts.month());
+        array[DAY_FIELD_INDEX] = new Integer(ts.day());
+        array[DOY_FIELD_INDEX] = new Integer(ts.dayOfYear());
+        array[HOUR_FIELD_INDEX] = new Integer(ts.hour());
+        array[MINUTE_FIELD_INDEX] = new Integer(ts.minute());
+        array[SECONDS_FIELD_INDEX] = new Integer(ts.second());
         for (int i = TIMESTAMP_FIELD_COUNT; i < array.length; i++) {
             int value = (int)Math.round(fracSeconds * Math.pow(10, scaleSeconds[i - TIMESTAMP_FIELD_COUNT]));
             array[i] = new Integer(value);

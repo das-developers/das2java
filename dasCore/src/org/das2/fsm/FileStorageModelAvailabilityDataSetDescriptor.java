@@ -74,9 +74,8 @@ public class FileStorageModelAvailabilityDataSetDescriptor extends DataSetDescri
             public void handleValue(String fieldContent, CalendarTime startTime, int[] timeWidth) {
                 int i= Integer.decode("0x"+fieldContent).intValue();
                 double seconds = (86400 * i) / 256;
-                startTime.nanosecond= (long) seconds * 1000000000;
-					 startTime.normalize();
-					 startTime = startTime.step(CalendarTime.MILLISEC, (int)(86400000 / 256.));
+                startTime.setNanoSecond( Math.round(seconds * 1000000000.0) );
+					 startTime = startTime.step(CalendarTime.Step.MILLISEC, (int)(86400000 / 256.));
             }
         };
         

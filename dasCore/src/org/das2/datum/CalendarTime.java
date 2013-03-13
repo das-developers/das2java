@@ -9,52 +9,52 @@ import java.util.StringTokenizer;
  * 
  * @author ljg, eew, jbf, cwp
  */
-public final class CalendarTime{
+public class CalendarTime{
 
 	/** The time point's year number.
 	 *  Note: that year 1 BC is represented year 0 in this field.
 	 */
-	public int year;
+	protected int m_nYear;
 
 	/** The time point's month of year, normalized range is 1 to 12 */
-	public int month;
+	protected int m_nMonth;
 
 	/** The time point's day of month, normalized range is 1 up to 31
 	 * depending on the month rValue.
 	 */
-	public int day;
+	protected int m_nDom;
 
 	// Cash the day of year calculation after a normalize.
-	private int m_nDoy;
+	protected int m_nDoy;
 	
 	/** The time point's hour of day, normalized range is 0 to 23 */
-	public int hour;
+	protected int m_nHour;
 
 	/** The time point's minute of hour, normalized range is 0 to 59 */
-	public int minute;
+	protected int m_nMinute;
 
 	/** The time point's second of minute, normalized range is 0 to 59.
 	 * Note that leap seconds are <b>not</b> handled by this class, though it
 	 * wouldn't be hard to do so.
 	 */
-	public int second;
+	protected int m_nSecond;
 
 	/** The time point's nanosecond of second, normalized range is 0 to 999,999,999 */
-	public long nanosecond;
+	protected long m_nNanoSecond;
 
 
 	////////////////////////////////////////////////////////////////////////////////////
 	/** Empty constructor */
 
 	public CalendarTime(){
-		year = 1;
-		month = 1;
-		day = 1;
+		m_nYear = 1;
+		m_nMonth = 1;
+		m_nDom = 1;
 		m_nDoy = 1;
-		hour = 0;
-		minute = 0;
-		second = 0;
-		nanosecond = 0;
+		m_nHour = 0;
+		m_nMinute = 0;
+		m_nSecond = 0;
+		m_nNanoSecond = 0;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -65,23 +65,23 @@ public final class CalendarTime{
 	 *        nanosecond.
 	 */
 	public CalendarTime(int[] lFields){
-		year = 1;
-		month = 1;
-		day = 1;
+		m_nYear = 1;
+		m_nMonth = 1;
+		m_nDom = 1;
 		m_nDoy = 1;
-		hour = 0;
-		minute = 0;
-		second = 0;
-		nanosecond = 0;
+		m_nHour = 0;
+		m_nMinute = 0;
+		m_nSecond = 0;
+		m_nNanoSecond = 0;
 
 		if(lFields == null) return;
-		if(lFields.length > 0) year = lFields[0];
-		if(lFields.length > 1) month = lFields[1];
-		if(lFields.length > 2) day = lFields[2];
-		if(lFields.length > 3) hour = lFields[3];
-		if(lFields.length > 4) minute = lFields[4];
-		if(lFields.length > 5) second = lFields[5];
-		if(lFields.length > 6) nanosecond = lFields[6];
+		if(lFields.length > 0) m_nYear = lFields[0];
+		if(lFields.length > 1) m_nMonth = lFields[1];
+		if(lFields.length > 2) m_nDom = lFields[2];
+		if(lFields.length > 3) m_nHour = lFields[3];
+		if(lFields.length > 4) m_nMinute = lFields[4];
+		if(lFields.length > 5) m_nSecond = lFields[5];
+		if(lFields.length > 6) m_nNanoSecond = lFields[6];
 
 		normalize();
 	}
@@ -89,14 +89,14 @@ public final class CalendarTime{
 	////////////////////////////////////////////////////////////////////////////////////
 	/** Copy constructor */
 	public CalendarTime(CalendarTime other){
-		year = other.year;
-		month = other.month;
-		day = other.day;
+		m_nYear = other.m_nYear;
+		m_nMonth = other.m_nMonth;
+		m_nDom = other.m_nDom;
 		m_nDoy = other.m_nDoy;
-		hour = other.hour;
-		minute = other.minute;
-		second = other.second;
-		nanosecond = other.nanosecond;
+		m_nHour = other.m_nHour;
+		m_nMinute = other.m_nMinute;
+		m_nSecond = other.m_nSecond;
+		m_nNanoSecond = other.m_nNanoSecond;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -126,14 +126,14 @@ public final class CalendarTime{
 		};
 
 		// Starting values for this object, does not default to current year.
-		year = 0;
-		month = 0;
-		day = 0;
+		m_nYear = 0;
+		m_nMonth = 0;
+		m_nDom = 0;
 		m_nDoy = 0;
-		hour = 0;
-		minute = 0;
-		second = 0;
-		nanosecond = 0;
+		m_nHour = 0;
+		m_nMinute = 0;
+		m_nSecond = 0;
+		m_nNanoSecond = 0;
 
 		String[] lToks = new String[10];
 		
@@ -225,13 +225,13 @@ public final class CalendarTime{
 				for(int j = 0; j < 12; j++){
 					if(lToks[i].equalsIgnoreCase(months[j]) ||
 						lToks[i].equalsIgnoreCase(mons[j]))   {
-						month = j + 1;
+						m_nMonth = j + 1;
 						lWant[MONTH] = false;
 						if(hold > 0){
-							if(day > 0)
+							if(m_nDom > 0)
 								throw new ParseException("Ambiguous dates in token '" + lToks[i] +
 									                      "' in '" + s + "'", 0);
-							day = hold;
+							m_nDom = hold;
 							hold = 0;
 							lWant[DAY] = false;
 						}
@@ -247,8 +247,8 @@ public final class CalendarTime{
 				if(lWant[SECOND]){
 					//Round normally to nearest nanosecond
 					long nTmp = Math.round( rValue * 1.0e+9);
-					second = (int) nTmp / 1000000000;
-					nanosecond = nTmp % 1000000000;
+					m_nSecond = (int) nTmp / 1000000000;
+					m_nNanoSecond = nTmp % 1000000000;
 					break;
 				}
 				else{
@@ -268,19 +268,19 @@ public final class CalendarTime{
 				}
 
 				if(number >= 10000000 && lWant[YEAR]){ // %Y%m%d
-					year = number / 10000;
+					m_nYear = number / 10000;
 					lWant[YEAR] = false;
-					month = number / 100 % 100;
+					m_nMonth = number / 100 % 100;
 					lWant[MONTH] = false;
-					day = number % 100;
+					m_nDom = number % 100;
 					m_nDoy = 0;
 					lWant[DAY] = false;
 				}
 				else if(number >= 1000000 && lWant[YEAR]){ //%Y%j
-					year = number / 1000;
+					m_nYear = number / 1000;
 					lWant[YEAR] = false;
 					m_nDoy = number % 1000;
-					month = 0;
+					m_nMonth = 0;
 					lWant[MONTH] = false;
 					lWant[DAY] = false;
 
@@ -288,15 +288,15 @@ public final class CalendarTime{
 				else if(number > 31){
 
 					if(lWant[YEAR]){
-						year = number;
-						if(year < 1000){
-							year += 1900;
+						m_nYear = number;
+						if(m_nYear < 1000){
+							m_nYear += 1900;
 						}
 						lWant[YEAR] = false;
 					}
 					else if(lWant[MONTH]){
 						lWant[MONTH] = false;
-						month = 0;
+						m_nMonth = 0;
 						m_nDoy = number;
 						lWant[DAY] = false;
 					}
@@ -309,19 +309,19 @@ public final class CalendarTime{
 
 					if(lWant[DAY]){
 						if(hold > 0){
-							month = hold;
+							m_nMonth = hold;
 							lWant[MONTH] = false;
 						}
 						if(nTokLen == 3){
-							if(month > 0){
+							if(m_nMonth > 0){
 								throw new ParseException("Error at token '" + lToks[i] + "' in '" + s + "'", 0);
 							}
 							m_nDoy = number;
-							day = 0;
+							m_nDom = 0;
 							lWant[MONTH] = false;
 						}
 						else{
-							day = number;
+							m_nDom = number;
 						}
 						lWant[DAY] = false;
 					}
@@ -332,13 +332,13 @@ public final class CalendarTime{
 				}
 				else if(!lWant[MONTH]){
 
-					if(month > 0){
-						day = number;
+					if(m_nMonth > 0){
+						m_nDom = number;
 						m_nDoy = 0;
 					}
 					else{
 						m_nDoy = number;
-						day = 0;
+						m_nDom = 0;
 					}
 					lWant[DAY] = false;
 
@@ -348,27 +348,27 @@ public final class CalendarTime{
 					if(m_nDoy > 0){
 						throw new ParseException("Error at token '" + lToks[i] + "' in '" + s + "'", 0);
 					}
-					month = number;
+					m_nMonth = number;
 					lWant[MONTH] = false;
 
 				}
 				else if(!lWant[YEAR]){
 
 					if(nTokLen == 3){
-						if(month > 0){
+						if(m_nMonth > 0){
 							throw new ParseException("Error at token '" + lToks[i] + "' in '" + s + "'", 0);
 						}
 						m_nDoy = number;
-						day = 0;
+						m_nDom = 0;
 						lWant[DAY] = false;
 					}
 					else{
 						if(m_nDoy > 0){
 							throw new ParseException("Error at token '" + lToks[i] + "' in '" + s + "'", 0);
 						}
-						month = number;
+						m_nMonth = number;
 						if(hold > 0){
-							day = hold;
+							m_nDom = hold;
 							lWant[DAY] = false;
 						}
 					}
@@ -377,10 +377,10 @@ public final class CalendarTime{
 				}
 				else if(hold > 0){
 
-					month = hold;
+					m_nMonth = hold;
 					hold = 0;
 					lWant[MONTH] = false;
-					day = number;
+					m_nDom = number;
 					lWant[DAY] = false;
 
 				}
@@ -402,19 +402,19 @@ public final class CalendarTime{
 					if(hold > 23){
 						throw new ParseException("Error at token '" + lToks[i] + "' in '" + s + "'", 0);
 					}
-					hour = hold;
+					m_nHour = hold;
 					hold = number % 100;
 					if(hold > 59){
 						throw new ParseException("Error at token '" + lToks[i] + "' in '" + s + "'", 0);
 					}
-					minute = hold;
+					m_nMinute = hold;
 					lWant[MINUTE] = false;
 				}
 				else{
 					if(number > 23){
 						throw new ParseException("Error at token '" + lToks[i] + "' in '" + s + "'", 0);
 					}
-					hour = number;
+					m_nHour = number;
 				}
 				lWant[HOUR] = false;
 
@@ -424,7 +424,7 @@ public final class CalendarTime{
 				if(number > 59){
 					throw new ParseException("Error at token '" + lToks[i] + "' in '" + s + "'", 0);
 				}
-				minute = number;
+				m_nMinute = number;
 				lWant[MINUTE] = false;
 
 			}
@@ -433,7 +433,7 @@ public final class CalendarTime{
 				if(number > 61){
 					throw new ParseException("Error at token '" + lToks[i] + "' in '" + s + "'", 0);
 				}
-				second = number;
+				m_nSecond = number;
 				lWant[SECOND] = false;
 
 			}
@@ -444,36 +444,36 @@ public final class CalendarTime{
 		}
 		// End of token parsing loop
 
-		if(month > 12){
+		if(m_nMonth > 12){
 			throw new ParseException("Month is greater than 12 in '" + s + "'", 0);
 		}
-		if(month > 0 && day <= 0){
-			day = 1;
+		if(m_nMonth > 0 && m_nDom <= 0){
+			m_nDom = 1;
 		}
 
-		int iLeap = ((year % 4) != 0 ? 0 : ((year % 100) > 0 ? 1 : ((year % 400) > 0 ? 0 : 1)));
+		int iLeap = ((m_nYear % 4) != 0 ? 0 : ((m_nYear % 100) > 0 ? 1 : ((m_nYear % 400) > 0 ? 0 : 1)));
 
-		if((month > 0) && (day > 0) && (m_nDoy == 0)){
-			if(day > TimeUtil.daysInMonth[iLeap][month]){
+		if((m_nMonth > 0) && (m_nDom > 0) && (m_nDoy == 0)){
+			if(m_nDom > TimeUtil.daysInMonth[iLeap][m_nMonth]){
 				throw new java.text.ParseException("day of month too high in '" + s + "'", 0);
 			}
-			m_nDoy = TimeUtil.dayOffset[iLeap][month] + day;
+			m_nDoy = TimeUtil.dayOffset[iLeap][m_nMonth] + m_nDom;
 		}
-		else if((m_nDoy > 0) && (month == 0) && (day == 0)){
+		else if((m_nDoy > 0) && (m_nMonth == 0) && (m_nDom == 0)){
 			if(m_nDoy > (365 + iLeap)){
 				throw new java.text.ParseException("day of year too high in '" + s + "'", 0);
 			}
 			int i = 2;
 			while(i < 14 && m_nDoy > TimeUtil.dayOffset[iLeap][i]) i++;
 			i--;
-			month = i;
-			day = m_nDoy - TimeUtil.dayOffset[iLeap][i];
+			m_nMonth = i;
+			m_nDom = m_nDoy - TimeUtil.dayOffset[iLeap][i];
 		}
 		else{
-			if(month == 0){
-				month = 1;
+			if(m_nMonth == 0){
+				m_nMonth = 1;
 			}
-			day = 1;
+			m_nDom = 1;
 		}
 
 		// Okay, hit nomalize, looking at the code above, we know that the seconds
@@ -497,57 +497,25 @@ public final class CalendarTime{
 			throw new IllegalArgumentException("julian day is negative.");
 		
 		int[] lDate = TimeUtil.julianToGregorian(jd);
-		year = lDate[0];
-		month = lDate[1];
-		day = lDate[2];
-		nanosecond = Math.round( microseconds * 1000);
+		m_nYear = lDate[0];
+		m_nMonth = lDate[1];
+		m_nDom = lDate[2];
+		m_nNanoSecond = Math.round( microseconds * 1000);
 		normalize();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public String toString(){
-		return year + "/" + month + "/" + day + " " + hour + ":" + minute + ":" + second +
-			    "." + nanosecond;
+		return m_nYear + "/" + m_nMonth + "/" + m_nDom + " " + m_nHour + ":" + m_nMinute + ":" + m_nSecond +
+			    "." + m_nNanoSecond;
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////
-	/** Get the computed Day of Year for the current date
-	 *
-	 * @return The Day of year which is a value from 1 - 366 when the calendar time is
-	 *         normalized.
-	 */
-	public int getDoy(){
-		return m_nDoy;
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////
-	/** Set the day of year, and recompute the month and day of month.
-	 * @param nDoy the new day of year.
-	 * @throws  IllegalArgumentException if the value is outside the range 1 to 365 (or
-	 *          366 on a leap year)
-	 */
-	public void setDoy(int nDoy){
-		if( (nDoy < 1) || ((!TimeUtil.isLeapYear(year)) && (nDoy > 365)) ||
-			 (nDoy > 366))
-			throw new IllegalArgumentException("Day of year value "+nDoy+" is out of range.");
-
-		m_nDoy = nDoy;
-
-		int iLeap = TimeUtil.isLeapYear(year)?1:0;
-		while(m_nDoy <= TimeUtil.dayOffset[iLeap][month]){
-			month--;
-		}
-		while(m_nDoy > TimeUtil.dayOffset[iLeap][month + 1]){
-			month++;
-		}
-		day = m_nDoy - TimeUtil.dayOffset[iLeap][month];
-
-	}
+	public boolean isLeapYear(){ 	return TimeUtil.isLeapYear(m_nYear); }
 
 	////////////////////////////////////////////////////////////////////////////////////
 	/** Resolution flags to use when requesting time point as a string */
-	static public enum RESOLUTION {
+	public static enum Resolution {
 		YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, MILLISEC, MICROSEC, NANOSEC
 	};
 
@@ -558,33 +526,33 @@ public final class CalendarTime{
 	 * @param res The resolution of the returned string.
 	 * @return
 	 */
-	public String toISO8601(RESOLUTION res){
+	public String toISO8601(Resolution res){
 		switch(res){
 		case YEAR:
-			return String.format("%04d", year);
+			return String.format("%04d", m_nYear);
 		case MONTH:
-			return String.format("%04d-%02d", year, month);
+			return String.format("%04d-%02d", m_nYear, m_nMonth);
 		case DAY:
-			return String.format("%04d-%02d-%02d", year, month, day);
+			return String.format("%04d-%02d-%02d", m_nYear, m_nMonth, m_nDom);
 		case HOUR:
-			return String.format("%04d-%02d-%02dT%02d", year, month, day, hour);
+			return String.format("%04d-%02d-%02dT%02d", m_nYear, m_nMonth, m_nDom, m_nHour);
 		case MINUTE:
-			return String.format("%04d-%02d-%02dT%02d:%02d", year, month, day, hour, minute);
+			return String.format("%04d-%02d-%02dT%02d:%02d", m_nYear, m_nMonth, m_nDom, m_nHour, m_nMinute);
 		case SECOND:
-			return String.format("%04d-%02d-%02dT%02d:%02d:02d%", year, month, day, hour,
-				                  minute, second);
+			return String.format("%04d-%02d-%02dT%02d:%02d:%02d", m_nYear, m_nMonth, m_nDom, m_nHour,
+				                  m_nMinute, m_nSecond);
 		case MILLISEC:
 			// Let string.format handle rounding for me.
-			return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03.0f", year, month, day,
-				                  hour, minute, second, nanosecond / 1000000.0);
+			return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03.0f", m_nYear, m_nMonth, m_nDom,
+				                  m_nHour, m_nMinute, m_nSecond, m_nNanoSecond / 1000000.0);
 		case MICROSEC:
 			// Let string.format handle rounding for me.
-			return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%06.0f", year, month, day,
-				                  hour, minute, second, nanosecond / 1000.0);
+			return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%06.0f", m_nYear, m_nMonth, m_nDom,
+				                  m_nHour, m_nMinute, m_nSecond, m_nNanoSecond / 1000.0);
 		case NANOSEC:
 			// Let string.format handle rounding for me.
-			return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%09d", year, month, day,
-				                  hour, minute, second, nanosecond);
+			return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%09d", m_nYear, m_nMonth, m_nDom,
+				                  m_nHour, m_nMinute, m_nSecond, m_nNanoSecond);
 		}
 		return null; // added to make the compilier happy.
 	}
@@ -597,34 +565,34 @@ public final class CalendarTime{
 	 * @param res The resolution of the returned string.
 	 * @return
 	 */
-	public String toAltISO8601(RESOLUTION res){
+	public String toAltISO8601(Resolution res){
 		switch(res){
 		case YEAR:
-			return String.format("%04d", year);
+			return String.format("%04d", m_nYear);
 		case MONTH:
 			throw new IllegalArgumentException("Alternate ISO time point format doesn't "
 				+ "contain a month number.");
 		case DAY:
-			return String.format("%04d-%03d", year, m_nDoy);
+			return String.format("%04d-%03d", m_nYear, m_nDoy);
 		case HOUR:
-			return String.format("%04d-%03dT%02d", year, m_nDoy, hour);
+			return String.format("%04d-%03dT%02d", m_nYear, m_nDoy, m_nHour);
 		case MINUTE:
-			return String.format("%04d-%03dT%02d:%02d", year, m_nDoy, hour, minute);
+			return String.format("%04d-%03dT%02d:%02d", m_nYear, m_nDoy, m_nHour, m_nMinute);
 		case SECOND:
-			return String.format("%04d-%03dT%02d:%02d:02d%", year, m_nDoy, hour,
-				                  minute, second);
+			return String.format("%04d-%03dT%02d:%02d:%02d", m_nYear, m_nDoy, m_nHour,
+				                  m_nMinute, m_nSecond);
 		case MILLISEC:
 			// Let string.format handle rounding for me.
-			return String.format("%04d-%03dT%02d:%02d:%02d.%03.0f", year, m_nDoy, hour,
-				                  minute, second, nanosecond / 1000000.0);
+			return String.format("%04d-%03dT%02d:%02d:%02d.%03.0f", m_nYear, m_nDoy, m_nHour,
+				                  m_nMinute, m_nSecond, m_nNanoSecond / 1000000.0);
 		case MICROSEC:
 			// Let string.format handle rounding for me.
-			return String.format("%04d-%03dT%02d:%02d:%02d.%06.0f", year, m_nDoy, hour,
-				                  minute, second, nanosecond / 1000.0);
+			return String.format("%04d-%03dT%02d:%02d:%02d.%06.0f", m_nYear, m_nDoy, m_nHour,
+				                  m_nMinute, m_nSecond, m_nNanoSecond / 1000.0);
 		case NANOSEC:
 			// Let string.format handle rounding for me.
-			return String.format("%04d-%03dT%02d:%02d:%02d.%09d", year, m_nDoy, hour, 
-				                  minute, second, nanosecond);
+			return String.format("%04d-%03dT%02d:%02d:%02d.%09d", m_nYear, m_nDoy, m_nHour,
+				                  m_nMinute, m_nSecond, m_nNanoSecond);
 		}
 		return null; // added to make the compilier happy.
 	}
@@ -634,128 +602,239 @@ public final class CalendarTime{
 	 *
 	 * From Larry Granroth's original Das1 libs.
 	 */
-	public void normalize(){
+	protected void normalize(){
 
 		// month is required input -- first adjust month
-		if( month > 12 || month < 1){
+		if( m_nMonth > 12 || m_nMonth < 1){
 			// temporarily make month zero-based
-			month--;
-			year += month / 12;
-			month %= 12;
-			if(month < 0){
-				month += 12;
-				year--;
+			m_nMonth--;
+			m_nYear += m_nMonth / 12;
+			m_nMonth %= 12;
+			if(m_nMonth < 0){
+				m_nMonth += 12;
+				m_nYear--;
 			}
-			month++;
+			m_nMonth++;
 		}
 
 		// index for leap year
-		int iLeap = TimeUtil.isLeapYear(year)?1:0;
+		int iLeap = TimeUtil.isLeapYear(m_nYear)?1:0;
 
 		// day of year is output only -- calculate it
-		m_nDoy = TimeUtil.dayOffset[iLeap][month] + day;
+		m_nDoy = TimeUtil.dayOffset[iLeap][m_nMonth] + m_nDom;
 
 		// now adjust other items . . .
 
 		// New addition, handle nanoseconds
-		if(nanosecond >= 1000000000 || nanosecond < 0){
-			second += nanosecond / 1000000000;
-			nanosecond = nanosecond % 1000000000;
-			if(nanosecond < 0){
-				nanosecond += 1000000000;
-				second--;
+		if(m_nNanoSecond >= 1000000000 || m_nNanoSecond < 0){
+			m_nSecond += m_nNanoSecond / 1000000000;
+			m_nNanoSecond = m_nNanoSecond % 1000000000;
+			if(m_nNanoSecond < 0){
+				m_nNanoSecond += 1000000000;
+				m_nSecond--;
 			}
 		}
 
 		// again, we're ignoring leap seconds
-		if( second >= 60 || second < 0){
-			minute += second / 60;
-			second = second % 60;
-			if(second < 0){
-				second += 60;
-				minute--;
+		if( m_nSecond >= 60 || m_nSecond < 0){
+			m_nMinute += m_nSecond / 60;
+			m_nSecond = m_nSecond % 60;
+			if(m_nSecond < 0){
+				m_nSecond += 60;
+				m_nMinute--;
 			}
 		}
 
-		if(minute >= 60 || minute < 0){
-			hour += minute / 60;
-			minute %= 60;
-			if(minute < 0){
-				minute += 60;
-				hour--;
+		if(m_nMinute >= 60 || m_nMinute < 0){
+			m_nHour += m_nMinute / 60;
+			m_nMinute %= 60;
+			if(m_nMinute < 0){
+				m_nMinute += 60;
+				m_nHour--;
 			}
 		}
 
-		if(hour >= 24 ||hour < 0){
-			m_nDoy += hour / 24;
-			hour %= 24;
-			if(hour < 0){
-				hour += 24;
+		if(m_nHour >= 24 ||m_nHour < 0){
+			m_nDoy += m_nHour / 24;
+			m_nHour %= 24;
+			if(m_nHour < 0){
+				m_nHour += 24;
 				m_nDoy--;
 			}
 		}
 
 		/* final adjustments for year and day of year */
-		int ndays = TimeUtil.isLeapYear(year) ? 366 : 365;
+		int ndays = TimeUtil.isLeapYear(m_nYear) ? 366 : 365;
 		if(m_nDoy > ndays || m_nDoy < 1){
 			while(m_nDoy > ndays){
-				year++;
+				m_nYear++;
 				m_nDoy -= ndays;
-				ndays = TimeUtil.isLeapYear(year) ? 366 : 365;
+				ndays = TimeUtil.isLeapYear(m_nYear) ? 366 : 365;
 			}
 			while(m_nDoy < 1){
-				year--;
-				ndays = TimeUtil.isLeapYear(year) ? 366 : 365;
+				m_nYear--;
+				ndays = TimeUtil.isLeapYear(m_nYear) ? 366 : 365;
 				m_nDoy += ndays;
 			}
 		}
 
 		/* and finally convert day of year back to month and day */
-		iLeap = TimeUtil.isLeapYear(year)?1:0;
-		while(m_nDoy <= TimeUtil.dayOffset[iLeap][month]){
-			month--;
+		iLeap = TimeUtil.isLeapYear(m_nYear)?1:0;
+		while(m_nDoy <= TimeUtil.dayOffset[iLeap][m_nMonth]){
+			m_nMonth--;
 		}
-		while(m_nDoy > TimeUtil.dayOffset[iLeap][month + 1]){
-			month++;
+		while(m_nDoy > TimeUtil.dayOffset[iLeap][m_nMonth + 1]){
+			m_nMonth++;
 		}
-		day = m_nDoy - TimeUtil.dayOffset[iLeap][month];
+		m_nDom = m_nDoy - TimeUtil.dayOffset[iLeap][m_nMonth];
 	}
 
-	/** Used to step a calendar time by 1 or more years */
-	public static final int YEAR = 0;
+	////////////////////////////////////////////////////////////////////////////////////
 
-	/** Used to step a calendar time by 1 or more months */
-	public static final int MONTH = 1;
+	/** Set the year field.  Use set() if you have multiple fields to set. */
+	public void setYear(int nYear){
+		m_nYear = nYear;
+		normalize();
+	}
+	/** Set the month field.  Use set() if you have multiple fields to set. */
+	public void setMonth(int nMonth){
+		m_nMonth = nMonth;
+		normalize();
+	}
+	/** Set the day of month field.  Use set() if you have multiple fields to set. */
+	public void setDay(int nDay){
+		m_nDom = nDay;
+		normalize();
+	}
 
-	/** Used to step a calendar time by 1 or more days */
-	public static final int DAY = 2;
+	/** Set the day of year, and recompute the month and day of month.
+	 * @param nDoy the new day of year.
+	 */
+	public void setDayOfYear(int nDoy){
+		m_nDoy = nDoy;
 
-	/** Used to step a calendar time by 1 or more hours */
-	public static final int HOUR = 3;
+		/* final adjustments for year and day of year */
+		int ndays = TimeUtil.isLeapYear(m_nYear) ? 366 : 365;
+		if(m_nDoy > ndays || m_nDoy < 1){
+			while(m_nDoy > ndays){
+				m_nYear++;
+				m_nDoy -= ndays;
+				ndays = TimeUtil.isLeapYear(m_nYear) ? 366 : 365;
+			}
+			while(m_nDoy < 1){
+				m_nYear--;
+				ndays = TimeUtil.isLeapYear(m_nYear) ? 366 : 365;
+				m_nDoy += ndays;
+			}
+		}
 
-	/** Used to step a calendar time by 1 or more minutes */
-	public static final int MINUTE = 4;
+		/* and finally convert day of year back to month and day */
+		int iLeap = TimeUtil.isLeapYear(m_nYear)?1:0;
+		while(m_nDoy <= TimeUtil.dayOffset[iLeap][m_nMonth]){
+			m_nMonth--;
+		}
+		while(m_nDoy > TimeUtil.dayOffset[iLeap][m_nMonth + 1]){
+			m_nMonth++;
+		}
+		m_nDom = m_nDoy - TimeUtil.dayOffset[iLeap][m_nMonth];
+	}
 
-	/** Used to step a calendar time by 1 or more seconds */
-	public static final int SECOND = 5;
+	/** Set the hour field.  Use set() if you have multiple fields to set. */
+	public void setHour(int nHour){
+		m_nHour = nHour;
+		normalize();
+	}
+	/** Set the minute field.  Use set() if you have multiple fields to set. */
+	public void setMinute(int nMinute){
+		m_nMinute = nMinute;
+		normalize();
+	}
+	/** Set the second field.  Use set() if you have multiple fields to set. */
+	public void setSecond(int nSecond){
+		m_nSecond = nSecond;
+		normalize();
+	}
+	/** Set the nanosecond field.  Use set() if you have multiple fields to set. */
+	public void setNanoSecond(long nNano){
+		m_nNanoSecond = nNano;
+		normalize();
+	}
 
-	/** Used to step a calendar time by 1 or more nanoseconds */
-	public static final int NANOSEC = 6;
+	/** Set (upto) all fields of a calendar time
+	 *
+	 * @param lFields An array of 1 to 7 items whose values will be assigned to the
+	 *        year, month, day, hour, minute, second and nanosecond respectively.  Also
+	 *        integers can be specified one at a time in var-args fashion
+	 */
+	public void set(int... lFields){
 
-	/** Used to step a calendar time by 1 or more half-years */
-	public static final int HALF_YEAR = 101;
+		if(lFields.length < 1) return;
 
-	/** Used to step a calendar time by 1 or more quarters */
-	public static final int QUARTER = 102;
+		// Cool case fall through (good idea Ed!)
+		switch(lFields.length){
+		default: m_nNanoSecond = lFields[6];
+		case 6:  m_nSecond = lFields[5];
+		case 5:  m_nMinute = lFields[4];
+		case 4:  m_nHour = lFields[3];
+		case 3:  m_nDom = lFields[2];
+		case 2:  m_nMonth = lFields[1];
+		case 1:  m_nYear = lFields[0];
+		}
+		
+		normalize();
+	}
 
-	/** Used to step a calendar time by 1 or more milliseconds */
-	public static final int MILLISEC = 103;
+	/////////////////////////////////////////////////////////////////////////////////////
+	
+	public int year(){return m_nYear;}
+	public int month(){return m_nMonth;}
+	public int day(){return m_nDom;}
+	public int dayOfYear(){	return m_nDoy;	}
+	public int hour(){return m_nHour;}
+	public int minute(){return m_nMinute;}
+	public int second(){return m_nSecond;}
+	public int nanosecond(){return (int)m_nNanoSecond;}
 
-	/** Used to step a calendar time by 1 or more microseconds */
-	public static final int MICROSEC = 104;
+	public int[] get(){
+		return new int[]{m_nYear, m_nMonth, m_nDom, m_nHour, m_nMinute, m_nSecond,
+		                 (int)m_nNanoSecond};
+	}
 
 
 	////////////////////////////////////////////////////////////////////////////////////
+
+	/** Used to step add to a calendar time by 1 or more integer units. */
+	public enum Step {
+		YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, NANOSEC, HALF_YEAR, QUARTER,
+		MILLISEC, MICROSEC;
+
+		public static Step HigerStep(Step step){
+			switch(step){
+			case DAY: return MONTH;
+			case HOUR: return DAY;
+			case MINUTE: return HOUR;
+			case SECOND: return MINUTE;
+			case MILLISEC: return SECOND;
+			case MICROSEC: return MILLISEC;
+			case NANOSEC: return MICROSEC;
+			default: return YEAR;
+			}
+		}
+
+		public static Step LowerStep(Step step){
+			switch(step){
+			case YEAR: return MONTH;
+			case MONTH: return DAY;
+			case DAY: return HOUR;
+			case HOUR: return MINUTE;
+			case MINUTE: return SECOND;
+			case SECOND: return MILLISEC;
+			case MILLISEC: return MICROSEC;
+			default: return NANOSEC;
+			}
+		}
+	}
+
 	/** A convenience method for handling multiple steps at once.
 	 *
 	 * @param steps An array of upto 7 items, each one will step succeedingly smaller
@@ -767,15 +846,15 @@ public final class CalendarTime{
 	public CalendarTime step(int lSteps[]){
 		CalendarTime ct = new CalendarTime(this);
 
-		// This works because of the definition of YEAR, MONTH, DAY etc.
+		Step fields[] = {Step.YEAR, Step.MONTH, Step.DAY, Step.HOUR, Step.MINUTE,
+		                 Step.SECOND, Step.NANOSEC};
 		for(int i = 0; i < 7; i++){
 			if((lSteps.length > i)&&(lSteps[i] != 0))
-				ct = ct.step(i, lSteps[i]);
+				ct = ct.step(fields[i], lSteps[i]);
 		}
 
 		return ct;
 	}
-
 
 	////////////////////////////////////////////////////////////////////////////////////
 	/** Introduced as a way to increase the efficiency of the time axis tick calculation.
@@ -787,7 +866,7 @@ public final class CalendarTime{
     * @param steps number of positive or negative steps to take
     * @return
     */
-    public CalendarTime step(int field, int steps) {
+    public CalendarTime step(Step field, int steps) {
 
 		CalendarTime ct = new CalendarTime(this);
 
@@ -795,17 +874,17 @@ public final class CalendarTime{
 
 		// First change the relavent field
       switch(field){
-		case NANOSEC:   ct.nanosecond += steps; break;
-		case MICROSEC:  ct.nanosecond += 1000*steps; break;
-		case MILLISEC:  ct.nanosecond += 1000000*steps; break;
-		case SECOND:    ct.second += steps; break;
-		case MINUTE:    ct.minute += steps; break;
-		case HOUR:      ct.hour += steps; break;
-		case DAY:       ct.day += steps; break;
-		case MONTH:     ct.month += steps; break;
-		case QUARTER:   ct.month += steps*3; break;
-		case HALF_YEAR: ct.month += steps*6; break;
-		case YEAR:      ct.year += steps*1; break;
+		case NANOSEC:   ct.m_nNanoSecond += steps; break;
+		case MICROSEC:  ct.m_nNanoSecond += 1000*steps; break;
+		case MILLISEC:  ct.m_nNanoSecond += 1000000*steps; break;
+		case SECOND:    ct.m_nSecond += steps; break;
+		case MINUTE:    ct.m_nMinute += steps; break;
+		case HOUR:      ct.m_nHour += steps; break;
+		case DAY:       ct.m_nDom += steps; break;
+		case MONTH:     ct.m_nMonth += steps; break;
+		case QUARTER:   ct.m_nMonth += steps*3; break;
+		case HALF_YEAR: ct.m_nMonth += steps*6; break;
+		case YEAR:      ct.m_nYear += steps*1; break;
 		default:
 			throw new IllegalArgumentException("Unknown time field designator: "+field);
 		}
@@ -814,32 +893,41 @@ public final class CalendarTime{
 		// Handle zeroing out lower level fields (case fall throught can be handy)
 		switch(field){
 		case YEAR:
-			ct.month = 1;
+			ct.m_nMonth = 1;
 		case HALF_YEAR:
 			//Map months to a 0-1 half year scale
-			double dHalfYears = (ct.month - 1)/6.0;
-			ct.month = (((int)dHalfYears) * 6) + 1;  //Truncates towards zero
+			double dHalfYears = (ct.m_nMonth - 1)/6.0;
+			ct.m_nMonth = (((int)dHalfYears) * 6) + 1;  //Truncates towards zero
 		case QUARTER:
 			//Map months to a 0-3 quarterly scale
-			double dQuarters = (ct.month - 1)/3.0;
-			ct.month = (((int)dQuarters) * 3) + 1;   //Truncates towards zero
+			double dQuarters = (ct.m_nMonth - 1)/3.0;
+			ct.m_nMonth = (((int)dQuarters) * 3) + 1;   //Truncates towards zero
 		case MONTH:
-			ct.day = 1;
+			ct.m_nDom = 1;
 		case DAY:
-			ct.hour = 0;
+			ct.m_nHour = 0;
 		case HOUR:
-			ct.minute = 0;
+			ct.m_nMinute = 0;
 		case MINUTE:
-			ct.second = 0;
+			ct.m_nSecond = 0;
 		case MILLISEC:
-			ct.nanosecond = (ct.nanosecond / 1000000) * 1000000;
+			ct.m_nNanoSecond = (ct.m_nNanoSecond / 1000000) * 1000000;
 		case MICROSEC:
-			ct.nanosecond = (ct.nanosecond / 1000) * 1000;
+			ct.m_nNanoSecond = (ct.m_nNanoSecond / 1000) * 1000;
 		}
 
 		 ct.normalize();
 		 return ct;
     }
+
+	/** Special handler for changing the nanoseconds, as this field is a long */
+	public CalendarTime stepNano(long steps) {
+		CalendarTime ct = new CalendarTime(this);
+		ct.m_nNanoSecond += steps;
+		ct.normalize();
+		return ct;
+	}
+
 
 	 ///////////////////////////////////////////////////////////////////////////////////
 	 /** Get a time datum in us2000 units.
@@ -848,14 +936,14 @@ public final class CalendarTime{
 	  * 2000-01-01, ignoring leap seconds.
 	  */
 	 public Datum toDatum(){
-		 int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4
-			 - 3 * ((year + (month - 9) / 7) / 100 + 1) / 4
-			 + 275 * month / 9 + day + 1721029;
+		 int jd = 367 * m_nYear - 7 * (m_nYear + (m_nMonth + 9) / 12) / 4
+			 - 3 * ((m_nYear + (m_nMonth - 9) / 7) / 100 + 1) / 4
+			 + 275 * m_nMonth / 9 + m_nDom + 1721029;
 		 
 		 double us2000 = (jd - 2451545) * 86400e6; // TODO: leap seconds
 
-		 return Datum.create(hour*3600.0e6 + minute*60e6 + second*1e6
-			                  + nanosecond/1000 + us2000, Units.us2000);
+		 return Datum.create(m_nHour*3600.0e6 + m_nMinute*60e6 + m_nSecond*1e6
+			                  + m_nNanoSecond/1000 + us2000, Units.us2000);
 	 }
 	 
 

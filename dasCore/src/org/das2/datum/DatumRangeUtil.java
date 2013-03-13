@@ -444,13 +444,13 @@ public class DatumRangeUtil {
                     Datum width= DatumUtil.parse( newString.substring(ipos) );
                     Datum stop= start.add(width);
                     CalendarTime tt= new CalendarTime(stop);
-                    ts2[DAY]= tt.day;
-                    ts2[MONTH]= tt.month;
-                    ts2[YEAR]= tt.year;
-                    ts2[HOUR]= tt.hour;
-                    ts2[MINUTE]= tt.minute;
-                    ts2[SECOND]= (int)tt.second;
-                    ts2[NANO]= (int)(( tt.second - ts2[SECOND] ) * 1e9);
+                    ts2[DAY]= tt.m_nDom;
+                    ts2[MONTH]= tt.m_nMonth;
+                    ts2[YEAR]= tt.m_nYear;
+                    ts2[HOUR]= tt.m_nHour;
+                    ts2[MINUTE]= tt.m_nMinute;
+                    ts2[SECOND]= (int)tt.m_nSecond;
+                    ts2[NANO]= (int)(( tt.m_nSecond - ts2[SECOND] ) * 1e9);
                     ipos= newString.length();
                 }
                 
@@ -750,11 +750,11 @@ public class DatumRangeUtil {
         
         int stopRes= 4;
         if ( TimeUtil.getSecondsSinceMidnight(time)==0. && time.equals(context.max()) ) {
-            ts.hour=24;
-            ts.day--;
+            ts.m_nHour=24;
+            ts.m_nDom--;
         }
         
-        timeString= ""+ts.hour+":";
+        timeString= ""+ts.m_nHour+":";
         
         Datum[] times= new Datum[] { time, time2 };
         for ( int i=0;i<times.length;i++ ) {
@@ -802,34 +802,34 @@ public class DatumRangeUtil {
         boolean isMidnight1= TimeUtil.getSecondsSinceMidnight( self.min() ) == 0.;
         boolean isMidnight2= TimeUtil.getSecondsSinceMidnight( self.max() ) == 0.;
         
-        boolean isMonthBoundry1= isMidnight1 && ts1.day == 1;
-        boolean isMonthBoundry2= isMidnight2 && ts2.day == 1;
+        boolean isMonthBoundry1= isMidnight1 && ts1.m_nDom == 1;
+        boolean isMonthBoundry2= isMidnight2 && ts2.m_nDom == 1;
         
-        boolean isYearBoundry1= isMonthBoundry1 && ts1.month == 1;
-        boolean isYearBoundry2= isMonthBoundry2 && ts2.month == 1;
+        boolean isYearBoundry1= isMonthBoundry1 && ts1.m_nMonth == 1;
+        boolean isYearBoundry2= isMonthBoundry2 && ts2.m_nMonth == 1;
         
         //String toDelim= " \u2013 ";
         String toDelim= " through ";
         if ( isYearBoundry1 && isYearBoundry2 ) {  // no need to indicate month
-            if (  ts2.year-ts1.year == 1 ) {
-                return "" + ts1.year;
+            if (  ts2.m_nYear-ts1.m_nYear == 1 ) {
+                return "" + ts1.m_nYear;
             } else {
-                return "" + ts1.year + toDelim + (ts2.year-1);
+                return "" + ts1.m_nYear + toDelim + (ts2.m_nYear-1);
             }
         } else if ( isMonthBoundry1 && isMonthBoundry2 ) { // no need to indicate day of month
-            if ( ts2.month == 1 ) {
-                ts2.month=13;
-                ts2.year--;
+            if ( ts2.m_nMonth == 1 ) {
+                ts2.m_nMonth=13;
+                ts2.m_nYear--;
             }
-            if ( ts2.year == ts1.year ) {
-                if ( ts2.month-ts1.month == 1 ) {
-                    return monthStr[ts1.month-1] + " " + ts1.year;
+            if ( ts2.m_nYear == ts1.m_nYear ) {
+                if ( ts2.m_nMonth-ts1.m_nMonth == 1 ) {
+                    return monthStr[ts1.m_nMonth-1] + " " + ts1.m_nYear;
                 } else {
-                    return monthStr[ts1.month-1]+ toDelim  + monthStr[ts2.month-1-1] + " " + ts1.year;
+                    return monthStr[ts1.m_nMonth-1]+ toDelim  + monthStr[ts2.m_nMonth-1-1] + " " + ts1.m_nYear;
                 }
             } else {
-                return monthStr[ts1.month-1] + " " + ts1.year + toDelim
-                        + monthStr[ts2.month-1-1] + " " + ts2.year;
+                return monthStr[ts1.m_nMonth-1] + " " + ts1.m_nYear + toDelim
+                        + monthStr[ts2.m_nMonth-1-1] + " " + ts2.m_nYear;
             }
         }
         

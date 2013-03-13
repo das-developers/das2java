@@ -22,9 +22,9 @@
 
 package org.das2.datum;
 
-import java.util.*;
-
 import java.text.ParseException;
+import java.util.Map;
+import java.util.HashMap;
 import org.das2.datum.format.TimeDatumFormatter;
 
 /**
@@ -65,40 +65,41 @@ public final class TimeUtil {
 
 	 // intruduced to aid in debugging
 	 public static class TimeDigit{
-		int ordinal; // YEAR, MONTH, etc.
+		CalendarTime.Step ordinal; // YEAR, MONTH, etc.
 		String label;
 		int divisions; // approximate
-		private static TimeDigit[] digits = new TimeDigit[10];
+		private static Map<CalendarTime.Step,TimeDigit> digits =
+			new HashMap<CalendarTime.Step, TimeDigit>();
 		@Override
 		public String toString(){
 			return label;
 		}
-		private TimeDigit(int ordinal, String label, int divisions){
+		private TimeDigit(CalendarTime.Step ordinal, String label, int divisions){
 			this.ordinal = ordinal;
 			this.label = label;
 			this.divisions = divisions;
-			digits[ordinal] = this;
+			digits.put(ordinal, this);
 		}
-		public int getOrdinal(){
+		public CalendarTime.Step getOrdinal(){
 			return ordinal;
 		}
 		public int divisions(){
 			return divisions;
 		}
-		public static TimeDigit fromOrdinal(int ordinal){
-			return digits[ordinal];
+		public static TimeDigit fromOrdinal(CalendarTime.Step ordinal){
+			return digits.get(ordinal);
 		}
 	}
 
-    public static final TimeDigit TD_YEAR = new TimeDigit( CalendarTime.YEAR, "YEAR", 12 );
-    public static final TimeDigit TD_MONTH = new TimeDigit( CalendarTime.MONTH, "MONTH", 30 );
-    public static final TimeDigit TD_DAY = new TimeDigit( CalendarTime.DAY, "DAY", 24 );
-    public static final TimeDigit TD_HOUR = new TimeDigit( CalendarTime.HOUR, "HOUR", 60 );
-    public static final TimeDigit TD_MINUTE = new TimeDigit( CalendarTime.MINUTE, "MINUTE", 60 );
-    public static final TimeDigit TD_SECOND = new TimeDigit( CalendarTime.SECOND, "SECOND", 1000 );
-    public static final TimeDigit TD_MILLI= new TimeDigit( CalendarTime.MILLISEC, "MILLISECONDS", 1000 );
-    public static final TimeDigit TD_MICRO = new TimeDigit( CalendarTime.MICROSEC, "MICROSECONDS", 1000 );
-    public static final TimeDigit TD_NANO = new TimeDigit( CalendarTime.NANOSEC, "NANOSECONDS", 1000 );
+    public static final TimeDigit TD_YEAR = new TimeDigit( CalendarTime.Step.YEAR, "YEAR", 12 );
+    public static final TimeDigit TD_MONTH = new TimeDigit( CalendarTime.Step.MONTH, "MONTH", 30 );
+    public static final TimeDigit TD_DAY = new TimeDigit( CalendarTime.Step.DAY, "DAY", 24 );
+    public static final TimeDigit TD_HOUR = new TimeDigit( CalendarTime.Step.HOUR, "HOUR", 60 );
+    public static final TimeDigit TD_MINUTE = new TimeDigit( CalendarTime.Step.MINUTE, "MINUTE", 60 );
+    public static final TimeDigit TD_SECOND = new TimeDigit( CalendarTime.Step.SECOND, "SECOND", 1000 );
+    public static final TimeDigit TD_MILLI= new TimeDigit( CalendarTime.Step.MILLISEC, "MILLISECONDS", 1000 );
+    public static final TimeDigit TD_MICRO = new TimeDigit( CalendarTime.Step.MICROSEC, "MICROSECONDS", 1000 );
+    public static final TimeDigit TD_NANO = new TimeDigit( CalendarTime.Step.NANOSEC, "NANOSECONDS", 1000 );
     
     public static double getSecondsSinceMidnight(Datum datum) {
         double xx= datum.doubleValue(Units.t2000);
@@ -178,10 +179,10 @@ public final class TimeUtil {
     public static int[] toTimeArray( Datum time ) {
 
 		 CalendarTime ts= new CalendarTime( time );
-		 int millis = (int) (ts.nanosecond / 1000000);
-		 int micros = (int) (ts.nanosecond / 1000);
+		 int millis = (int) (ts.m_nNanoSecond / 1000000);
+		 int micros = (int) (ts.m_nNanoSecond / 1000);
 		  
-       return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second,
+       return new int[] { ts.m_nYear, ts.m_nMonth, ts.m_nDom, ts.m_nHour, ts.m_nMinute, ts.m_nSecond,
 		                     millis, micros };
     }
     
@@ -220,7 +221,7 @@ public final class TimeUtil {
         return result;
     }
     
-    public static final Datum next( int step, Datum datum ) {
+    public static Datum next(CalendarTime.Step step, Datum datum ) {
         CalendarTime ct = new CalendarTime(datum).step(step, 1);
 		  return ct.toDatum();
     }
@@ -232,7 +233,7 @@ public final class TimeUtil {
      * @param datum
      * @return
      */
-    public static Datum prev( int step, Datum datum ) {  
+    public static Datum prev(CalendarTime.Step step, Datum datum ) {
 		CalendarTime ct= new CalendarTime(datum).step(step, -1);
 		return ct.toDatum();
     }
@@ -349,7 +350,7 @@ public final class TimeUtil {
      * @return
      */
     public static Datum nextMidnight( Datum datum ) {
-		 CalendarTime ct = new CalendarTime(datum).step(CalendarTime.DAY, 1);
+		 CalendarTime ct = new CalendarTime(datum).step(CalendarTime.Step.DAY, 1);
 		 return ct.toDatum();
     }
     /**
@@ -390,7 +391,7 @@ public final class TimeUtil {
 
         for ( int i=0; i<44; i++ ) {
             System.out.println(tf.format(x)+"\t"+(long)x.doubleValue(Units.us2000));
-            x= TimeUtil.prev(CalendarTime.SECOND,x);
+            x= TimeUtil.prev(CalendarTime.Step.SECOND,x);
         }
     }
     
