@@ -325,7 +325,7 @@ public class AverageTableRebinner implements DataSetRebinner {
 //                    }
                     if ( canInterpolate( dr, xTagWidth ) ) {
                         double alpha = DatumRangeUtil.normalize(dr, xx);
-                        if ( interpolateType==Interpolate.NearestNeighbor ) {
+                        if ( interpolateType==Interpolate.NearestNeighbor || interpolateType==Interpolate.BinXInterpY ) {
                             alpha= alpha < 0.5 ? 0.0 : 1.0;
                         }
                         int ny = ddY == null ? yds.length() : ddY.numberOfBins();
@@ -480,7 +480,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                             xunits.createDatum( xds.value(i0) ),
                             xunits.createDatum( xds.value(i1) ) );
                 double xalpha = DatumRangeUtil.normalize(xdr, xx);
-                if (interpolateType == Interpolate.NearestNeighbor) {
+                if (interpolateType == Interpolate.NearestNeighbor || interpolateType==Interpolate.BinXInterpY ) {
                     xalpha = xalpha < 0.5 ? 0.0 : 1.0;
                 }
 
@@ -1071,9 +1071,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                 for (int j = 0; j < ny; j++) {
                     boolean doInterp;
                     if ( i1[j]!= -1 && i2[j] != -1) {
-                        boolean doInterpR= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidth;
-                        doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidth;
-                        doInterp= doInterp || ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth;
+                        boolean doInterpR= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidths[j];
+                        doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidths[j];
+                        doInterp= doInterp || ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidths[j];
                     } else {
                         //kludge for bug 000321
                         if ( ddY.isLog() && !UnitsUtil.isRatiometric(yTagUnits) ) {
@@ -1110,7 +1110,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             } else {
                 for (int j = 0; j < ny; j++) { //yunits on sample width
-                    if ((i1[j] != -1) && ((yTagTemp[i2[j]] - yTagTemp[i1[j]]) < ySampleWidth || i2[j] - i1[j] == 2)) { //kludge for bug 000321
+                    if ((i1[j] != -1) && ((yTagTemp[i2[j]] - yTagTemp[i1[j]]) < ySampleWidths[j] || i2[j] - i1[j] == 2)) { //kludge for bug 000321
 
                         a2 = ((yTagTemp[j] - yTagTemp[i1[j]]) / (yTagTemp[i2[j]] - yTagTemp[i1[j]]));
                         a1 = 1. - a2;
