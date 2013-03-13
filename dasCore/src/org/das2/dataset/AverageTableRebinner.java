@@ -1011,8 +1011,20 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
 
         double pixelSize= ddY.binWidth();
-        ySampleWidth= ySampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
 
+        final double[] ySampleWidths= new double[ddY.numberOfBins()];
+        for ( int j=0; j<ny; j++ ) {
+            if ( ddY.isLog ) {
+                double l0= ddY.binCenter(j,yTagUnits)-ySampleWidth/2;
+                double l1= ddY.binCenter(j,yTagUnits)+ySampleWidth/2;
+                int il1= Math.min( ddY.whichBin( l1, yTagUnits ), ddY.numberOfBins()-1 );
+                int il0= Math.max( ddY.whichBin( l0, yTagUnits ), 0 );
+                ySampleWidths[j]= ( yTagTemp[ il1 ] - yTagTemp[ il0 ] ) + pixelSize;
+            } else {
+                ySampleWidths[j]= ySampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
+            }
+        }
+        
         for (int i = 0; i < nx; i++) {
             int ii1 = -1;
             int ii2 = -1;
@@ -1059,8 +1071,8 @@ public class AverageTableRebinner implements DataSetRebinner {
                 for (int j = 0; j < ny; j++) {
                     boolean doInterp;
                     if ( i1[j]!= -1 && i2[j] != -1) {
-                        boolean doInterpR= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidth/2;
-                        doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidth/2;
+                        boolean doInterpR= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidth;
+                        doInterp= doInterpR || ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidth;
                         doInterp= doInterp || ( yTagTemp[i2[j]]-yTagTemp[i1[j]] ) < ySampleWidth;
                     } else {
                         //kludge for bug 000321
@@ -1070,9 +1082,9 @@ public class AverageTableRebinner implements DataSetRebinner {
                             if ( i1[j]==-1 && i2[j]==-1 ) {
                                 doInterp= false;
                             } else if ( i1[j]==-1 ) {
-                                doInterp= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidth/2;
+                                doInterp= ( yTagTemp[i2[j]] - yTagTemp[j] ) < ySampleWidths[j]/2;
                             } else {
-                                doInterp= ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidth/2;
+                                doInterp= ( yTagTemp[j] - yTagTemp[i1[j]] ) < ySampleWidths[j]/2;
                             }
                         }
                     }
