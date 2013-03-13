@@ -10,6 +10,8 @@
 package org.virbo.dataset;
 
 import java.util.HashMap;
+import java.util.logging.Logger;
+import org.das2.datum.LoggerManager;
 import org.virbo.dsops.Ops;
 
 /**
@@ -19,6 +21,8 @@ import org.virbo.dsops.Ops;
  * @author jbf
  */
 public class SortDataSet extends AbstractDataSet {
+    
+    private static final Logger logger= LoggerManager.getLogger("qdataset.sort");
     
     QDataSet source;
     QDataSet sort;
@@ -35,7 +39,13 @@ public class SortDataSet extends AbstractDataSet {
         QDataSet range= Ops.extent(sort);
 
         if ( range.value(0)< 0 ) throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(0) );
-        if ( range.value(1)>= source.length() ) throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(1) );
+        if ( range.value(1)>= source.length() ) {
+            logger.warning("sort index contains out-of-bounds element: "+range.value(1) );
+            logger.warning("  range: "+range );
+            logger.warning("  source: "+source );
+            logger.warning("  sort: "+sort );
+            throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(1) );
+        }
         
         properties= new HashMap();
         QDataSet dep0= (QDataSet) source.property( QDataSet.DEPEND_0 );
