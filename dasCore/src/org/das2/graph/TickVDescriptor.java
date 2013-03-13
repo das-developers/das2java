@@ -15,6 +15,8 @@ import org.das2.datum.TimeUtil;
 import org.das2.util.DasMath;
 import java.text.ParseException;
 import java.util.*;
+import org.das2.datum.CalendarTime;
+import org.das2.datum.TimeUtil.TimeDigit;
 
 /** A TickVDescriptor describes the position that ticks
  * should be drawn, so that a fairly generic tick drawing routine
@@ -590,7 +592,7 @@ public class TickVDescriptor {
 
             int mantissa;
 
-            TimeUtil.TimeDigit biggerUnits;
+            TimeDigit biggerUnits;
             if (units[lessThanIndex] == TimeUtil.TD_YEAR) {
                 biggerUnits = TimeUtil.TD_YEAR;
             } else {
@@ -680,8 +682,8 @@ public class TickVDescriptor {
         }
 
         if (maxD.subtract(minD).gt(Datum.create(10 * 365, Units.days))) {
-            int yearMin = TimeUtil.toTimeStruct(minD).year;
-            int yearMax = TimeUtil.toTimeStruct(maxD).year;
+            int yearMin = new CalendarTime(minD).year;
+            int yearMax = new CalendarTime(maxD).year;
             TickVDescriptor yearTicks = bestTickVLinear(Units.dimensionless.createDatum(yearMin),
                     Units.dimensionless.createDatum(yearMax), nTicksMin, nTicksMax, fin);
             yearTicks.units = minD.getUnits();

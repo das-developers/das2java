@@ -25,6 +25,7 @@ package org.das2.datum.format;
 
 import java.text.*;
 import java.util.regex.*;
+import org.das2.datum.CalendarTime;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.TimeUtil;
@@ -133,28 +134,28 @@ public class TimeDatumFormatter extends DatumFormatter {
         try {
             if ( context!=null ) {
                 switch ( scale ) {
-                    case TimeUtil.YEAR: return YEARS;
-                    case TimeUtil.MONTH: return MONTHS;
-                    case TimeUtil.DAY: return DAYS;
-                    case TimeUtil.HOUR: return MINUTES;
-                    case TimeUtil.MINUTE: return MINUTES;
-                    case TimeUtil.SECOND: return SECONDS;
-                    case TimeUtil.MILLI: return MILLISECONDS;
-                    case TimeUtil.MICRO: return MICROSECONDS;
-                    case TimeUtil.NANO: return NANOSECONDS;
+                    case CalendarTime.YEAR: return YEARS;
+                    case CalendarTime.MONTH: return MONTHS;
+                    case CalendarTime.DAY: return DAYS;
+                    case CalendarTime.HOUR: return MINUTES;
+                    case CalendarTime.MINUTE: return MINUTES;
+                    case CalendarTime.SECOND: return SECONDS;
+                    case CalendarTime.MILLISEC: return MILLISECONDS;
+                    case CalendarTime.MICROSEC: return MICROSECONDS;
+                    case CalendarTime.NANOSEC: return NANOSECONDS;
                     default: throw new IllegalArgumentException("unsupported scale: "+scale);
                 }
             } else {
                 switch ( scale ) {
-                    case TimeUtil.YEAR: return YEARS;
-                    case TimeUtil.MONTH: return MONTHS;
-                    case TimeUtil.DAY: return DAYS;
-                    case TimeUtil.HOUR: return HOURS;
-                    case TimeUtil.MINUTE: return new TimeDatumFormatter("yyyy-MM-dd HH:mm");
-                    case TimeUtil.SECOND: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss");
-                    case TimeUtil.MILLI: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSS");
-                    case TimeUtil.MICRO: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSS");
-                    case TimeUtil.NANO: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+                    case CalendarTime.YEAR: return YEARS;
+                    case CalendarTime.MONTH: return MONTHS;
+                    case CalendarTime.DAY: return DAYS;
+                    case CalendarTime.HOUR: return HOURS;
+                    case CalendarTime.MINUTE: return new TimeDatumFormatter("yyyy-MM-dd HH:mm");
+                    case CalendarTime.SECOND: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss");
+                    case CalendarTime.MILLISEC: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSS");
+                    case CalendarTime.MICROSEC: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSS");
+                    case CalendarTime.NANOSEC: return new TimeDatumFormatter("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
                     default: throw new IllegalArgumentException("unsupported scale: "+scale);
                 }                
             }
@@ -169,8 +170,8 @@ public class TimeDatumFormatter extends DatumFormatter {
     
     public String format(Datum datum) {
         if ( datum.isFill() ) return "fill";
-        TimeUtil.TimeStruct ts = TimeUtil.toTimeStruct(datum);
-        Number[] array = timeStructToArray(ts);
+        CalendarTime ct = new CalendarTime(datum);
+        Number[] array = timeStructToArray(ct);
         return format.format(array);
     }
     
@@ -316,25 +317,25 @@ public class TimeDatumFormatter extends DatumFormatter {
      *
      * Note: TimeUtil.TimeStruct ts is modified.
      */
-    private Number[] timeStructToArray(TimeUtil.TimeStruct ts) {
+    private Number[] timeStructToArray(CalendarTime ts) {
         int secondsFieldCount = scaleSeconds == null ? 0 : scaleSeconds.length;
         int maxScale = scaleSeconds == null ? 10 : (int)Math.pow(10, max(scaleSeconds));
         int fieldCount = TIMESTAMP_FIELD_COUNT + secondsFieldCount;
         Number[] array = new Number[fieldCount];
-        int seconds = (int)Math.round(ts.seconds * maxScale) / maxScale;
-        double fracSeconds = ts.seconds - seconds;
-        ts.seconds= seconds;
-        ts.micros= (int)(fracSeconds * 1e6);
+        int seconds = (int)Math.round(ts.second * maxScale) / maxScale;
+        double fracSeconds = ts.second - seconds;
+        ts.second = seconds;
+        ts.nanosecond = (long)(fracSeconds * 1e9);
         
-        TimeUtil.carry(ts);
+        ts.normalize();
         
         array[YEAR_FIELD_INDEX] = new Integer(ts.year);
         array[MONTH_FIELD_INDEX] = new Integer(ts.month);
         array[DAY_FIELD_INDEX] = new Integer(ts.day);
-        array[DOY_FIELD_INDEX] = new Integer(ts.doy);
+        array[DOY_FIELD_INDEX] = new Integer(ts.getDoy());
         array[HOUR_FIELD_INDEX] = new Integer(ts.hour);
         array[MINUTE_FIELD_INDEX] = new Integer(ts.minute);
-        array[SECONDS_FIELD_INDEX] = new Integer((int)ts.seconds);
+        array[SECONDS_FIELD_INDEX] = new Integer(ts.second);
         for (int i = TIMESTAMP_FIELD_COUNT; i < array.length; i++) {
             int value = (int)Math.round(fracSeconds * Math.pow(10, scaleSeconds[i - TIMESTAMP_FIELD_COUNT]));
             array[i] = new Integer(value);

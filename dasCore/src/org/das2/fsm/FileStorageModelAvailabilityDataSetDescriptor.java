@@ -25,6 +25,7 @@ import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.TimeParser;
 import java.net.URL;
+import org.das2.datum.CalendarTime;
 
 /**
  *
@@ -71,11 +72,13 @@ public class FileStorageModelAvailabilityDataSetDescriptor extends DataSetDescri
         fs = FileSystem.create(new URL("http://www-pw.physics.uiowa.edu/~jbf/cluster/obtdata/"));
         
         TimeParser.FieldHandler hexHandler= new TimeParser.FieldHandler() {
-            public void handleValue(String fieldContent, TimeUtil.TimeStruct startTime, TimeUtil.TimeStruct timeWidth) {
+            public void handleValue(String fieldContent, CalendarTime startTime, TimeDifference timeWidth) {
                 int i= Integer.decode("0x"+fieldContent).intValue();
                 double seconds= 86400 * i / 256;
-                startTime.seconds= seconds;
-                timeWidth.seconds= 86400 / 256.;
+                startTime.nanosecond= (long) seconds * 1000000000;
+                timeWidth.nanosecond= (long) (86400 / 256.)*1000000000;
+					 startTime.normalize();
+					 timeWidth.normalize();
             }
         };
         

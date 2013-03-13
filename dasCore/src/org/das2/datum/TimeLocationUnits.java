@@ -47,7 +47,8 @@ public class TimeLocationUnits extends LocationUnits {
     }
         
     public Datum parse(String s) throws java.text.ParseException {
-        return TimeUtil.toDatum(TimeUtil.parseTime(s));
+		 CalendarTime ct = new CalendarTime(s);
+        return ct.toDatum();
     }
     
     public String getTimeZone() {

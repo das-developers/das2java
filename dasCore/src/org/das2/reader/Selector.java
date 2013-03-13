@@ -6,6 +6,7 @@
 package org.das2.reader;
 
 import java.text.ParseException;
+import org.das2.datum.CalendarTime;
 import org.das2.datum.TimeUtil;
 
 /** A selector encapsulates a request parameter, or parameter set, for a reader.
@@ -36,7 +37,7 @@ public class Selector {
 	private int [] m_nValAry = null;
 	private double [] m_dValAry = null;
 	private boolean [] m_bValAry = null;
-	private TimeUtil.TimeStruct [] m_tValAry = null;
+	private CalendarTime[] m_tValAry = null;
 
 	// Argument parsing helper
 	private void storeArg(Format fmt, int iSlot, String sArg) throws ParseException{
@@ -54,7 +55,7 @@ public class Selector {
 			m_dValAry[iSlot] = Double.parseDouble(sArg);
 			break;
 		case DATETIME:
-			m_tValAry[iSlot] = TimeUtil.parseTime(sArg);
+			m_tValAry[iSlot] = new CalendarTime(sArg);
 			break;
 		}
 	}
@@ -78,7 +79,7 @@ public class Selector {
 		case BOOLEAN:  m_bValAry = new boolean [] {false, false}; break;
 		case INTEGER:  m_nValAry = new int [] {0,0}; break;
 		case REAL:     m_dValAry = new double [] {0,0}; break;
-		case DATETIME: m_tValAry = new TimeUtil.TimeStruct [] {null, null}; break;
+		case DATETIME: m_tValAry = new CalendarTime [] {null, null}; break;
 		}
 
 		storeArg(fmt, 0, sBeg);
@@ -106,7 +107,7 @@ public class Selector {
 		case BOOLEAN:  m_bValAry = new boolean [] {false}; break;
 		case INTEGER:  m_nValAry = new int [] {0}; break;
 		case REAL:     m_dValAry = new double [] {0}; break;
-		case DATETIME: m_tValAry = new TimeUtil.TimeStruct [] {null}; break;
+		case DATETIME: m_tValAry = new CalendarTime [] {null}; break;
 		}
 		storeArg(fmt, 0, sValue);
 	}
@@ -205,14 +206,14 @@ public class Selector {
 
 	/** Get the selection as time structure(s)
 	 */
-	public TimeUtil.TimeStruct [] getTimeStruct(){
+	public CalendarTime [] getTimeStruct(){
 		if(m_format != Format.DATETIME)
 			throw new UnsupportedOperationException("Selector format is not DATETIME");
 
 		if(m_type != Type.RANGE)
-			return new TimeUtil.TimeStruct [] {m_tValAry[0]};
+			return new CalendarTime [] {m_tValAry[0]};
 		else
-			return new TimeUtil.TimeStruct [] {m_tValAry[0], m_tValAry[1]};
+			return new CalendarTime [] {m_tValAry[0], m_tValAry[1]};
 	}
 	
 }

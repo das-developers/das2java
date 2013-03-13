@@ -403,13 +403,13 @@ public class DatumRangeUtil {
             
             boolean isThroughNotTo= false;
             
-            final int YEAR=0;
-            final int MONTH=1;
-            final int DAY=2;
-            final int HOUR=3;
-            final int MINUTE=4;
-            final int SECOND=5;
-            final int NANO=6;
+            //final int YEAR=0;
+            //final int MONTH=1;
+            //final int DAY=2;
+            //final int HOUR=3;
+            //final int MINUTE=4;
+            //final int SECOND=5;
+            //final int NANO=6;
             
             final int STATE_OPEN=89;
             final int STATE_TS1TIME=90;
@@ -443,14 +443,14 @@ public class DatumRangeUtil {
                     Datum start= TimeUtil.toDatum(ts1);
                     Datum width= DatumUtil.parse( newString.substring(ipos) );
                     Datum stop= start.add(width);
-                    TimeUtil.TimeStruct tt= TimeUtil.toTimeStruct(stop);
+                    CalendarTime tt= new CalendarTime(stop);
                     ts2[DAY]= tt.day;
                     ts2[MONTH]= tt.month;
                     ts2[YEAR]= tt.year;
                     ts2[HOUR]= tt.hour;
                     ts2[MINUTE]= tt.minute;
-                    ts2[SECOND]= (int)tt.seconds;
-                    ts2[NANO]= (int)(( tt.seconds - ts2[SECOND] ) * 1e9);
+                    ts2[SECOND]= (int)tt.second;
+                    ts2[NANO]= (int)(( tt.second - ts2[SECOND] ) * 1e9);
                     ipos= newString.length();
                 }
                 
@@ -744,7 +744,7 @@ public class DatumRangeUtil {
      * time context that can further make the display of the time more efficient.
      */
     private static String efficientTime( Datum time, Datum time2, DatumRange context ) {
-        TimeUtil.TimeStruct ts= TimeUtil.toTimeStruct(time);
+        CalendarTime ts= new CalendarTime(time);
         
         String timeString;
         
@@ -793,8 +793,8 @@ public class DatumRangeUtil {
         
         double seconds= self.width().doubleValue(Units.seconds);
         
-        TimeUtil.TimeStruct ts1= TimeUtil.toTimeStruct(self.min());
-        TimeUtil.TimeStruct ts2= TimeUtil.toTimeStruct(self.max());
+        CalendarTime ts1= new CalendarTime(self.min());
+        CalendarTime ts2= new CalendarTime(self.max());
         
         //        ts1= [ year1, month1, dom1, hour1, minute1, second1, nanos1 ]
         //        ts2= [ year2, month2, dom2, hour2, minute2, second2, nanos2 ]

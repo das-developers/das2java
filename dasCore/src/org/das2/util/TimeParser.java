@@ -10,7 +10,7 @@ package org.das2.util;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.TimeUtil;
-import org.das2.datum.TimeUtil.TimeStruct;
+import org.das2.datum.CalendarTime;
 import org.das2.datum.Units;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -18,6 +18,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.das2.datum.TimeDifference;
 
 /**
  * TimeParser designed to quickly parse strings with a specified format.  This parser has been
@@ -32,8 +33,8 @@ public class TimeParser {
      * %Y-%m-%dT%H:%M:%S.%{milli}Z
      */
     public static final String TIMEFORMAT_Z = "%Y-%m-%dT%H:%M:%S.%{milli}Z";
-    TimeStruct time;
-    TimeStruct timeWidth;
+    CalendarTime time;
+    TimeDifference timeWidth;
     int ndigits;
     String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b"};
     String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
@@ -64,7 +65,7 @@ public class TimeParser {
 
     public interface FieldHandler {
 
-        public void handleValue(String fieldContent, TimeStruct startTime, TimeStruct timeWidth);
+        public void handleValue(String fieldContent, CalendarTime startTime, TimeDifference timeWidth);
     }
 
     /**
@@ -142,7 +143,7 @@ public class TimeParser {
     }
 
     private TimeParser(String formatString, Map/*<String,FieldHandler>*/ fieldHandlers) {
-        time = new TimeUtil.TimeStruct();
+        time = new CalendarTime();
         this.fieldHandlers = fieldHandlers;
         this.formatString = formatString;
 
@@ -253,31 +254,31 @@ public class TimeParser {
 
         }
 
-        timeWidth = new TimeStruct();
+        timeWidth = new TimeDifference();
         switch (lsd) {
             case 0:
-                timeWidth.year = 1;
+                timeWidth.years = 1;
                 break;
             case 1:
-                timeWidth.month = 1;
+                timeWidth.months = 1;
                 break;
             case 2:
-                timeWidth.day = 1;
+                timeWidth.days = 1;
                 break;
             case 3:
-                timeWidth.hour = 1;
+                timeWidth.hours = 1;
                 break;
             case 4:
-                timeWidth.minute = 1;
+                timeWidth.minutes = 1;
                 break;
             case 5:
                 timeWidth.seconds = 1;
                 break;
             case 6:
-                timeWidth.millis = 1;
+                timeWidth.nanoseconds = 1000000;
                 break;
             case 7:
-                timeWidth.micros = 1;
+                timeWidth.nanoseconds = 1000;
                 break;
             case 100: /* do nothing */ break;
         }
@@ -330,7 +331,7 @@ public class TimeParser {
         return new TimeParser(formatString, map);
     }
 
-    private double toUs2000(TimeStruct d) {
+    private double toUs2000(CalendarTime d) {
         int year = d.year;
         int month = d.month;
         int day = d.day;
@@ -339,13 +340,13 @@ public class TimeParser {
                 275 * month / 9 + day + 1721029;
         int hour = d.hour;
         int minute = d.minute;
-        double seconds = d.seconds + hour * (float) 3600.0 + minute * (float) 60.0;
+        double seconds = d.second + hour * (float) 3600.0 + minute * (float) 60.0;
         int mjd1958 = (jd - 2436205);
-        double us2000 = (mjd1958 - 15340) * 86400000000. + seconds * 1e6 + d.millis * 1000 + d.micros;
+        double us2000 = (mjd1958 - 15340) * 86400000000. + seconds * 1e6 + d.nanosecond / 1000;
         return us2000;
     }
 
-    private double toUs1980(TimeStruct d) {
+    private double toUs1980(CalendarTime d) {
         int year = d.year;
         int month = d.month;
         int day = d.day;
@@ -354,8 +355,8 @@ public class TimeParser {
                 275 * month / 9 + day + 1721029;
         int hour = d.hour;
         int minute = d.minute;
-        double seconds = d.seconds + hour * (float) 3600.0 + minute * (float) 60.0;
-        double us1980 = (jd - 2436205 - 8035) * 86400000000. + seconds * 1e6 + d.millis * 1e3 + d.micros;
+        double seconds = d.second + hour * (float) 3600.0 + minute * (float) 60.0;
+        double us1980 = (jd - 2436205 - 8035) * 86400000000. + seconds * 1e6 + d.nanosecond / 1000;
         return us1980;
     }
 
@@ -364,7 +365,7 @@ public class TimeParser {
      * fractional part in the seconds.
      */
     public void resetSeconds() {
-        time.seconds= 0;
+        time.second= 0;
     }
     
     /**
@@ -387,8 +388,7 @@ public class TimeParser {
         time.day = 1;
         time.hour = 0;
         time.minute = 0;
-        time.seconds = 0;
-        time.micros = 0;
+        time.nanosecond = 0;
         
         for (int idigit = 1; idigit < ndigits; idigit++) {
             if (offsets[idigit] != -1) {  // note offsets[0] is always known
@@ -438,13 +438,13 @@ public class TimeParser {
                         time.minute = digit;
                         break;
                     case 7:
-                        time.seconds = digit;
+                        time.second = digit;
                         break;
                     case 8:
-                        time.millis = digit;
+                        time.nanosecond += digit * 1000000;
                         break;
                     case 9:
-                        time.micros = digit;
+                        time.nanosecond += digit * 1000;
                         break;
                 }
             } else if (handlers[idigit] == 100) {
@@ -485,51 +485,51 @@ public class TimeParser {
                 case 'Y':
                     time.year = digit;
                     if ( TimeUtil.isLeapYear(time.year) ) {
-                        time.seconds+= 366 * 24 * 3600 * fp;
+                        time.second+= 366 * 24 * 3600 * fp;
                     } else {
-                        time.seconds+= 365 * 24 * 3600 * fp;
+                        time.second+= 365 * 24 * 3600 * fp;
                     }
                     break;
                 case 'y':
                     time.year = digit < 58 ? 2000 + digit : 1900 + digit;
                     if ( TimeUtil.isLeapYear(time.year) ) {
-                        time.seconds+= 366 * 24 * 3600 * fp;
+                        time.second+= 366 * 24 * 3600 * fp;
                     } else {
-                        time.seconds+= 365 * 24 * 3600 * fp;
+                        time.second+= 365 * 24 * 3600 * fp;
                     }
                     break;
                 case 'j':
                     time.month = 1;
                     time.day = digit;
-                    time.seconds+= 24 * 3600 * fp;
+                    time.second+= 24 * 3600 * fp;
                     break;
                 case 'm':
                     time.month = digit;
-                    time.seconds+= TimeUtil.daysInMonth(time.month,time.year) * 24 * 3600 * fp;
+                    time.second+= TimeUtil.daysInMonth(time.month,time.year) * 24 * 3600 * fp;
                     break;
                 case 'd':
                     time.day = digit;
-                    time.seconds+= 24 * 3600 * fp;
+                    time.second+= 24 * 3600 * fp;
                     break;
                 case 'H':
                     time.hour = digit;
-                    time.seconds+= 3600 * fp;
+                    time.second+= 3600 * fp;
                     break;
                 case 'M':
                     time.minute = digit;
-                    time.seconds+= 60 * fp;
+                    time.second+= 60 * fp;
                     break;
                 case 'S':
-                    time.seconds = digit + fp;
+                    time.second = (int) (digit + fp);
                     break;
                 case '{':
                     if ( ss[i].substring(1).equals("milli}") ) {
-                        time.millis = digit;
-                        time.micros += 1000 * fp;
-                        time.seconds += ( ( 1000*fp)-time.micros ) * 1e-6;
+                        time.nanosecond = digit * 1000000L;
+                        time.nanosecond += 1000 * fp;
+                        time.second += ( ( 1000*fp)-(time.nanosecond/1000) ) * 1e-6;
                     } else if ( ss[i].substring(1).equals("micro}") ) {
-                        time.micros = digit;
-                        time.seconds += fp * 1e-6;
+                        time.nanosecond = digit * 1000;
+                        time.second += fp * 1e-6;
                     }
                     break;
                 default:
@@ -592,15 +592,15 @@ public class TimeParser {
                 case 'S':
                     mod=100;
                     digit= value % mod;
-                    time.seconds = digit;
+                    time.second = digit;
                     break;
                 case '{':
                     mod=1000;
                     digit= value % mod;
                     if ( ss[i].substring(1).equals("milli}") ) {
-                        time.millis = digit;
+                        time.nanosecond = digit * 1000000L;
                     } else {
-                        time.micros = digit;
+                        time.nanosecond = digit * 1000L;
                     }
                     break;
                 default:
@@ -652,13 +652,13 @@ public class TimeParser {
                 time.minute = digit;
                 break;
             case 7:
-                time.seconds = digit;
+                time.second = digit;
                 break;
             case 8:
-                time.millis = digit;
+                time.nanosecond = digit * 1000000L;
                 break;
             case 9:
-                time.micros = digit;
+                time.nanosecond = digit * 1000L;
                 break;
         }
         return this;
@@ -682,7 +682,7 @@ public class TimeParser {
      * and getDatumRange() would go from midnight to mignight.
      */
     public DatumRange getTimeRange() {
-        TimeStruct time2 = time.add(timeWidth);
+        CalendarTime time2 = time.add(timeWidth);
         double t1 = toUs2000(time);
         double t2 = toUs2000(time2);
         return new DatumRange(t1, t2, Units.us2000);
@@ -709,7 +709,7 @@ public class TimeParser {
         int offs = 0;
         int len = 0;
 
-        TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
+        CalendarTime timel = new CalendarTime(start);
 
         NumberFormat[] nf = new NumberFormat[5];
         nf[2] = new DecimalFormat("00");
@@ -756,14 +756,13 @@ public class TimeParser {
                         digit = timel.minute;
                         break;
                     case 7:
-                        digit = (int) timel.seconds;
+                        digit = timel.second;
                         break;
                     case 8:
-                        digit = (int)Math.round( 1000 * ( timel.seconds - (int)timel.seconds ) );
-                        digit = digit + timel.millis;
+								digit = (int) (timel.nanosecond / 1000000);
                         break;
                     case 9:
-                        digit = timel.micros;
+                        digit = (int) (timel.nanosecond / 1000);
                         break;
                     default:
                         throw new RuntimeException("shouldn't get here");

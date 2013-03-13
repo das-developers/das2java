@@ -6,7 +6,7 @@
 
 package org.das2.fsm;
 
-import org.das2.datum.TimeUtil.TimeStruct;
+import org.das2.datum.CalendarTime;
 import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
 import org.das2.datum.Datum;
@@ -87,16 +87,16 @@ public class FileStorageModel {
     //  public string format( DatumRange dr );
     //
     public interface FieldHandler {
-        public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 );
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 );
+        public void handle( String s, CalendarTime ts1, CalendarTime ts2 );
+        public String format( CalendarTime ts1, CalendarTime ts2 );
     }
     
     public static abstract class IntegerFieldHandler implements FieldHandler {
-        public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) {
+        public void handle( String s, CalendarTime ts1, CalendarTime ts2 ) {
             handleInt( Integer.parseInt(s), ts1, ts2 );
         }
-        abstract void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 );
-        public abstract String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 );
+        abstract void handleInt( int i, CalendarTime ts1, CalendarTime ts2 );
+        public abstract String format( CalendarTime ts1, CalendarTime ts2 );
     }
     
     static final NumberFormat nf4= new DecimalFormat("0000");
@@ -107,27 +107,27 @@ public class FileStorageModel {
             "", "jan", "feb", "mar", "apr", "may", "jun",
             "jul", "aug", "sep", "oct", "nov", "dec" } ;
     private static final FieldHandler StartMonthNameHandler= new FieldHandler() {
-        public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) {
+        public void handle( String s, CalendarTime ts1, CalendarTime ts2 ) {
             try {
                 ts1.month= TimeUtil.monthNumber( s );
             } catch ( ParseException e ) {
                 DasExceptionHandler.handle(e);
             }
         }
-        public String format(TimeStruct ts1, TimeStruct ts2) {
+        public String format(CalendarTime ts1, CalendarTime ts2) {
             return mons[ ts1.month ];
         }
     };
     
     private static final FieldHandler EndMonthNameHandler= new FieldHandler() {
-        public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) {
+        public void handle( String s, CalendarTime ts1, CalendarTime ts2 ) {
             try {
                 ts2.month= TimeUtil.monthNumber( s );
             } catch ( ParseException e ) {
                 DasExceptionHandler.handle(e);
             }
         }
-        public String format(TimeStruct ts1, TimeStruct ts2) {
+        public String format(CalendarTime ts1, CalendarTime ts2) {
             return mons[ ts2.month ];
         }
         
@@ -135,78 +135,78 @@ public class FileStorageModel {
     
     
     private static final FieldHandler StartYear4Handler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts1.year= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf4.format(ts1.year); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts1.year= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf4.format(ts1.year); }
     };
     
     private static final FieldHandler StartYear2Handler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts1.year= i<58 ? i+2000 : i+1900;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts1.year % 100 ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts1.year= i<58 ? i+2000 : i+1900;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts1.year % 100 ); }
     };
     
     private static final FieldHandler StartMonthHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts1.month= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts1.month ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts1.month= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts1.month ); }
     };
     
     private static final FieldHandler StartDayHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts1.day= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts1.day ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts1.day= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts1.day ); }
     };
     private static final FieldHandler StartDoyHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts1.doy= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf3.format( ts1.doy ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts1.setDoy(i);  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf3.format( ts1.getDoy() ); }
     };
     private static final FieldHandler StartHourHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts1.hour= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts1.hour ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts1.hour= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts1.hour ); }
     };
     private static final FieldHandler StartMinuteHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts1.minute= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts1.minute ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts1.minute= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts1.minute ); }
     };
     private static final FieldHandler StartSecondHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts1.seconds= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts1.seconds ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts1.second= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts1.second ); }
     };
     
     private static final FieldHandler EndYear4Handler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts2.year= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf4.format( ts2.year ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts2.year= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf4.format( ts2.year ); }
     };
     private static final FieldHandler EndYear2Handler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts2.year= i<58 ? i+2000 : i+1900;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts2.year ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts2.year= i<58 ? i+2000 : i+1900;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts2.year ); }
     };
     
     private static final FieldHandler EndMonthHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts2.month= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts2.month ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts2.month= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts2.month ); }
     };
     private static final FieldHandler EndDayHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts2.day= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts2.day ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts2.day= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts2.day ); }
     };
     private static final FieldHandler EndDoyHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts2.doy= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf3.format( ts2.doy ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts2.setDoy(i);  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf3.format( ts2.getDoy() ); }
     };
     private static final FieldHandler EndHourHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts2.hour= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts2.hour ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts2.hour= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts2.hour ); }
     };
     private static final FieldHandler EndMinuteHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts2.minute= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts2.minute ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts2.minute= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts2.minute ); }
     };
     private static final FieldHandler EndSecondHandler= new IntegerFieldHandler() {
-        public void handleInt( int i, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { ts2.seconds= i;  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return nf2.format( ts2.seconds ); }
+        public void handleInt( int i, CalendarTime ts1, CalendarTime ts2 ) { ts2.second= i;  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return nf2.format( ts2.second ); }
     };
     
     private static final FieldHandler IgnoreHandler= new FieldHandler() {
-        public void handle( String s, TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) {  }
-        public String format( TimeUtil.TimeStruct ts1, TimeUtil.TimeStruct ts2 ) { return "*"; }
+        public void handle( String s, CalendarTime ts1, CalendarTime ts2 ) {  }
+        public String format( CalendarTime ts1, CalendarTime ts2 ) { return "*"; }
     };
     
     
@@ -323,16 +323,9 @@ public class FileStorageModel {
             return DatumRange.newDatumRange( -1e30, 1e30, Units.mj1958 );
         }
         
-        TimeUtil.TimeStruct ts1= new TimeUtil.TimeStruct();
-        ts1.year=0;
-        ts1.day=0;
-        ts1.month=1;
-        ts1.doy=0;
-        ts1.hour=0;
-        ts1.minute=0;
-        ts1.seconds=0;
+        CalendarTime ts1= new CalendarTime(new int[]{1,1,1,0,0,0,0});
         
-        TimeUtil.TimeStruct ts2= new TimeUtil.TimeStruct();
+        CalendarTime ts2= new CalendarTime();
         if ( File.separatorChar=='\\' ) filename= filename.replaceAll("\\\\", "/");
         
         Matcher m= pattern.matcher(filename);
@@ -341,18 +334,17 @@ public class FileStorageModel {
                 String s= m.group(i+1);
                 fieldHandlers[i].handle(s,ts1,ts2);
             }
-            if ( ts1.doy==0 && ts1.day==0 ) ts1.day= 1;
-            TimeUtil.normalize(ts1);
+            
             if ( copyToEndTime[1] ) ts2.year= ts1.year;
             if ( copyToEndTime[2] ) ts2.month= ts1.month;
             if ( copyToEndTime[3] ) ts2.day= ts1.day;
-            if ( copyToEndTime[4] ) ts2.doy= ts1.doy;
+            if ( copyToEndTime[4] ) ts2.setDoy( ts1.getDoy());
             if ( copyToEndTime[5] ) ts2.hour= ts1.hour;
             if ( copyToEndTime[6] ) ts2.minute= ts1.minute;
-            if ( copyToEndTime[7] ) ts2.seconds= ts1.seconds;
+            if ( copyToEndTime[7] ) ts2.second= ts1.second;
             
-            Datum s1= TimeUtil.toDatum(ts1);
-            Datum s2= TimeUtil.next( timeWidth, TimeUtil.toDatum(ts2) );
+            Datum s1= ts1.toDatum();
+            Datum s2= TimeUtil.next( timeWidth, ts2.toDatum() );
             for ( int ii=1; ii<timeWidthMultiplier; ii++ ) {
                 s2= TimeUtil.next( timeWidth, s2 );
             }
@@ -365,8 +357,8 @@ public class FileStorageModel {
     }
     
     public String getFilenameFor( Datum start, Datum end ) {
-        TimeUtil.TimeStruct ts1= TimeUtil.toTimeStruct(start);
-        TimeUtil.TimeStruct ts2= TimeUtil.toTimeStruct(end);
+        CalendarTime ts1= new CalendarTime(start);
+        CalendarTime ts2= new CalendarTime(end);
         
         // the following code does not work, but serves as a reminder of what this was going to do.
         StringBuffer result= new StringBuffer(30);
@@ -752,12 +744,12 @@ public class FileStorageModel {
     public void setFileWidth( int multiplier, char digitCode ) {
         int widthCode= -1;
         switch ( digitCode ) {
-            case 'Y': widthCode= TimeUtil.YEAR; break;
-            case 'm': widthCode= TimeUtil.MONTH; break;
-            case 'd': widthCode= TimeUtil.DAY; break;
-            case 'H': widthCode= TimeUtil.HOUR; break;
-            case 'M': widthCode= TimeUtil.MINUTE; break;
-            case 'S': widthCode= TimeUtil.SECOND; break;
+            case 'Y': widthCode= CalendarTime.YEAR; break;
+            case 'm': widthCode= CalendarTime.MONTH; break;
+            case 'd': widthCode= CalendarTime.DAY; break;
+            case 'H': widthCode= CalendarTime.HOUR; break;
+            case 'M': widthCode= CalendarTime.MINUTE; break;
+            case 'S': widthCode= CalendarTime.SECOND; break;
             default: throw new IllegalArgumentException("bad digit code: "+digitCode+", must be Y,m,d,H,M,or S");
         }
         this.timeWidthMultiplier= multiplier;
