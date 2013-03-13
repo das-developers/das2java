@@ -925,9 +925,12 @@ public class DataSetUtil {
 
         if (yds == null) {
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
+        } else {
+            if ( xds.length()!=yds.length() ) {
+               throw new IllegalArgumentException("xds.length()!=yds.length()");
+            }
         }
-        assert (xds.length() == yds.length());  // note we need to turn assertions on as a test.  test012_003 shows where this is ignored.
-
+        
         if ( yds.rank()>1 ) { //TODO: check for fill columns.  Note the fill check was to support a flakey dataset.
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
@@ -1021,6 +1024,7 @@ public class DataSetUtil {
         QDataSet diffs;
         if ( yds.rank()==1 && xds.rank()==1 ) { // ftp://virbo.org/tmp/poes_n17_20041228.cdf?P1_90[0:300] has every other value=fill.
             QDataSet r= Ops.where( Ops.valid(yds) );
+            
             if ( r.length()<2 ) {
                 diffs=  Ops.diff( xds );
             } else {
