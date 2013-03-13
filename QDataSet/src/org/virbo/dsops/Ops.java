@@ -4584,6 +4584,7 @@ public class Ops {
             return true;
         } else {
             if ( !u1.isConvertableTo(u2) ) return false;
+            if ( !CoerceUtil.equalGeom( ds1, ds2 ) ) return false;
             QDataSet eq= eq( ds1, ds2 );
             QubeDataSetIterator it= new QubeDataSetIterator(eq);
             while ( it.hasNext() ) {
