@@ -128,7 +128,7 @@ public final class AutoHistogram {
      * @param ibin
      * @param d
      */
-    private final void addToDistribution(int ibin, double d, int count) {
+    private void addToDistribution(int ibin, double d, int count) {
         try {
             if (ibin < zeroesLeft) {
                 zeroesLeft = ibin;
@@ -610,12 +610,12 @@ public final class AutoHistogram {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    private final int binOf(double d) {
+    private int binOf(double d) {
         //int ibin= (int) Math.floor((d - firstb) * binwDenom / binw); // firstBin done
         return (int) Math.floor((d * binwDenom - firstBin) / binw);
     }
 
-    private final int shiftLeft(int ibin, int shift) {
+    private int shiftLeft(int ibin, int shift) {
         if ( logger.isLoggable(java.util.logging.Level.FINEST) ) logger.finest( String.format("shiftLeft(%d)\n", shift) ) ;
         // shift hist to the left
         checkTotal();
@@ -634,7 +634,7 @@ public final class AutoHistogram {
         return ibin;
     }
 
-    private final int expandAndShiftRight(int ibin, int shift, int factor) {
+    private int expandAndShiftRight(int ibin, int shift, int factor) {
         log( Level.FINEST, "expandAndShiftRight(%d,%d,%d)\n", ibin, shift, factor );
         factor = factor * 2; // TODO: kludge
         checkTotal();
@@ -669,7 +669,7 @@ public final class AutoHistogram {
         return ibin;
     }
 
-    private final int shiftRight(int ibin, int shift) {
+    private int shiftRight(int ibin, int shift) {
         log( Level.FINEST, "shiftRight(%d)\n", shift);
         // shift hist to the right
         checkTotal();
@@ -712,7 +712,7 @@ public final class AutoHistogram {
      * @param ibin
      * @return
      */
-    private final int rescaleRight(int ibin) {
+    private int rescaleRight(int ibin) {
         int factor = nextFactor();
         ibin = rescaleLeft(ibin, false);
         try {
@@ -729,7 +729,7 @@ public final class AutoHistogram {
      * @param ibin
      * @return
      */
-    private final int rescaleLeft(int ibin, boolean checkOutliers) {
+    private int rescaleLeft(int ibin, boolean checkOutliers) {
         rescaleCount++;
         int factor = nextFactor();
         log( Level.FINEST, "rescaleLeft to " + binw / binwDenom + "*" + factor);
