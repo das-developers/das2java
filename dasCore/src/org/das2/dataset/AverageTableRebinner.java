@@ -997,6 +997,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         if ( isNN ) {
             fudge = 1.01;
         }
+        boolean ySampleWidthRatiometric= false;
         if (yTagWidth == null) {
             double d = Double.MAX_VALUE / 4;  // avoid roll-over when *1.5
             ySampleWidth = d;
@@ -1004,6 +1005,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             if (UnitsUtil.isRatiometric(yTagWidth.getUnits())) {
                 double p = yTagWidth.doubleValue(Units.logERatio);
                 ySampleWidth = p * fudge;
+                ySampleWidthRatiometric= true;
             } else {
                 double d = yTagWidth.doubleValue(yTagUnits.getOffsetUnits());
                 ySampleWidth = d * fudge;
@@ -1015,13 +1017,21 @@ public class AverageTableRebinner implements DataSetRebinner {
         final double[] ySampleWidths= new double[ddY.numberOfBins()];
         for ( int j=0; j<ny; j++ ) {
             if ( ddY.isLog ) {
-                double l0= ddY.binCenter(j,yTagUnits)-ySampleWidth/2;
-                double l1= ddY.binCenter(j,yTagUnits)+ySampleWidth/2;
-                int il1= Math.min( ddY.whichBin( l1, yTagUnits ), ddY.numberOfBins()-1 );
-                int il0= Math.max( ddY.whichBin( l0, yTagUnits ), 0 );
-                ySampleWidths[j]= ( yTagTemp[ il1 ] - yTagTemp[ il0 ] ) + pixelSize;
+                if ( ySampleWidthRatiometric ) {
+                    ySampleWidths[j]= ySampleWidth + pixelSize; 
+                } else {
+                    double l0= ddY.binCenter(j,yTagUnits)-ySampleWidth/2;
+                    double l1= ddY.binCenter(j,yTagUnits)+ySampleWidth/2;
+                    int il1= Math.min( ddY.whichBin( l1, yTagUnits ), ddY.numberOfBins()-1 );
+                    int il0= Math.max( ddY.whichBin( l0, yTagUnits ), 0 );
+                    ySampleWidths[j]= ( yTagTemp[ il1 ] - yTagTemp[ il0 ] ) + pixelSize;
+                }
             } else {
-                ySampleWidths[j]= ySampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
+                if ( ySampleWidthRatiometric ) {
+                    ySampleWidths[j]= ySampleWidth * ddY.binCenter( j, yTagUnits ) + pixelSize; // THIS IS A GUESS!                    
+                } else {
+                    ySampleWidths[j]= ySampleWidth+ pixelSize; // there's a bug where two close measurements can fall into bins where the centers are more than xSampleWidth apart, so add a pixel width fuzz here.
+                }
             }
         }
         
