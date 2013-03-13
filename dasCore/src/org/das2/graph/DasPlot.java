@@ -121,6 +121,7 @@ public class DasPlot extends DasCanvasComponent {
     private int titleHeight= 0;
 
     private boolean drawInactiveInLegend= false;
+    private boolean drawLegend= true;
 
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         super();
@@ -231,7 +232,7 @@ public class DasPlot extends DasCanvasComponent {
             LegendElement le = legendElements.get(i);
             if ( ( le.renderer!=null && le.renderer.isActive() ) || drawInactiveInLegend ) {
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
-                gtr.setString(graphics, String.valueOf(le.label)); // protect from nulls, which seems to happen
+                gtr.setString(graphics, String.valueOf(le.label).trim()); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
                 maxIconWidth = Math.max(maxIconWidth, le.icon.getIconWidth());
                 int theheight = Math.max(mrect.height, le.icon.getIconHeight());
@@ -326,7 +327,7 @@ public class DasPlot extends DasCanvasComponent {
 
             if ( ( le.renderer!=null && le.renderer.isActive() ) || drawInactiveInLegend ) {
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
-                gtr.setString(graphics, String.valueOf(le.label)); // protect from nulls, which seems to happen
+                gtr.setString(graphics, String.valueOf(le.label).trim()); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
                 mrect.translate(msgx, msgy + (int) gtr.getAscent());
                 int theheight= Math.max(mrect.height, le.icon.getIconHeight());
@@ -1040,7 +1041,7 @@ public class DasPlot extends DasCanvasComponent {
             drawMessages(graphics);
         }
 
-        if (legendElements.size() > 0) {
+        if ( legendElements.size() > 0 && drawLegend ) {
             drawLegend(graphics);
         }
 
@@ -1667,6 +1668,19 @@ public class DasPlot extends DasCanvasComponent {
         firePropertyChange(PROP_LEGENDPOSITION, oldlegendPosition, newlegendPosition);
         resize();
         repaint();
+    }
+
+    protected boolean displayLegend = true;
+    public static final String PROP_DISPLAYLEGEND = "displayLegend";
+
+    public boolean isDisplayLegend() {
+        return displayLegend;
+    }
+
+    public void setDisplayLegend(boolean displayLegend) {
+        boolean oldDisplayLegend = this.displayLegend;
+        this.displayLegend = displayLegend;
+        firePropertyChange(PROP_DISPLAYLEGEND, oldDisplayLegend, displayLegend);
     }
 
 
