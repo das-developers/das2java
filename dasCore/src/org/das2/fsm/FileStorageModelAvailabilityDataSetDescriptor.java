@@ -20,7 +20,6 @@ import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.VectorDataSetBuilder;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
-import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.TimeParser;
@@ -72,18 +71,18 @@ public class FileStorageModelAvailabilityDataSetDescriptor extends DataSetDescri
         fs = FileSystem.create(new URL("http://www-pw.physics.uiowa.edu/~jbf/cluster/obtdata/"));
         
         TimeParser.FieldHandler hexHandler= new TimeParser.FieldHandler() {
-            public void handleValue(String fieldContent, CalendarTime startTime, TimeDifference timeWidth) {
+            public void handleValue(String fieldContent, CalendarTime startTime, int[] timeWidth) {
                 int i= Integer.decode("0x"+fieldContent).intValue();
-                double seconds= 86400 * i / 256;
+                double seconds = (86400 * i) / 256;
                 startTime.nanosecond= (long) seconds * 1000000000;
-                timeWidth.nanosecond= (long) (86400 / 256.)*1000000000;
 					 startTime.normalize();
-					 timeWidth.normalize();
+					 startTime = startTime.step(CalendarTime.MILLISEC, (int)(86400000 / 256.));
             }
         };
         
         int cl= 4;
-        FileStorageModelNew fsm= FileStorageModelNew.create( fs, "%y%2m/%y%2m%2d%2{hex}\\..C"+cl, "hex", hexHandler );
+        FileStorageModelNew fsm= FileStorageModelNew.create(fs, "%y%2m/%y%2m%2d%2{hex}\\..C"+cl,
+			                                                   "hex", hexHandler );
 
     }
 }

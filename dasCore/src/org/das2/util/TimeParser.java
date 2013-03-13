@@ -18,7 +18,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.das2.datum.TimeDifference;
 
 /**
  * TimeParser designed to quickly parse strings with a specified format.  This parser has been
@@ -34,7 +33,7 @@ public class TimeParser {
      */
     public static final String TIMEFORMAT_Z = "%Y-%m-%dT%H:%M:%S.%{milli}Z";
     CalendarTime time;
-    TimeDifference timeWidth;
+    int[] timeWidth;
     int ndigits;
     String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b"};
     String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
@@ -65,7 +64,7 @@ public class TimeParser {
 
     public interface FieldHandler {
 
-        public void handleValue(String fieldContent, CalendarTime startTime, TimeDifference timeWidth);
+        public void handleValue(String fieldContent, CalendarTime startTime, int timeWidth[]);
     }
 
     /**
@@ -254,31 +253,31 @@ public class TimeParser {
 
         }
 
-        timeWidth = new TimeDifference();
+        timeWidth = new int[]{0,0,0,0,0,0,0};
         switch (lsd) {
             case 0:
-                timeWidth.years = 1;
+                timeWidth[0] = 1;
                 break;
             case 1:
-                timeWidth.months = 1;
+                timeWidth[1] = 1;
                 break;
             case 2:
-                timeWidth.days = 1;
+                timeWidth[2] = 1;
                 break;
             case 3:
-                timeWidth.hours = 1;
+                timeWidth[3] = 1;
                 break;
             case 4:
-                timeWidth.minutes = 1;
+                timeWidth[4] = 1;
                 break;
             case 5:
-                timeWidth.seconds = 1;
+                timeWidth[5] = 1;
                 break;
             case 6:
-                timeWidth.nanoseconds = 1000000;
+                timeWidth[6] = 1000000;
                 break;
             case 7:
-                timeWidth.nanoseconds = 1000;
+                timeWidth[7] = 1000;
                 break;
             case 100: /* do nothing */ break;
         }
@@ -682,7 +681,7 @@ public class TimeParser {
      * and getDatumRange() would go from midnight to mignight.
      */
     public DatumRange getTimeRange() {
-        CalendarTime time2 = time.add(timeWidth);
+        CalendarTime time2 = time.step(timeWidth);
         double t1 = toUs2000(time);
         double t2 = toUs2000(time2);
         return new DatumRange(t1, t2, Units.us2000);

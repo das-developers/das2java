@@ -630,20 +630,6 @@ public final class CalendarTime{
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	/** Add a time span to this time point */
-	public CalendarTime add(TimeDifference offset){
-		
-		CalendarTime result = new CalendarTime(this);
-		result.day += offset.days;
-		result.hour += offset.hours;
-		result.minute += offset.minutes;
-		result.second += offset.seconds;
-		result.nanosecond += offset.nanoseconds;
-		result.normalize();
-		return result;
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////
 	/** Normalize date and time components for the Gregorian calendar ignoring leap seconds
 	 *
 	 * From Larry Granroth's original Das1 libs.
@@ -736,25 +722,25 @@ public final class CalendarTime{
 	}
 
 	/** Used to step a calendar time by 1 or more years */
-	public static final int YEAR = 1;
+	public static final int YEAR = 0;
 
 	/** Used to step a calendar time by 1 or more months */
-	public static final int MONTH = 2;
+	public static final int MONTH = 1;
 
 	/** Used to step a calendar time by 1 or more days */
-	public static final int DAY = 3;
+	public static final int DAY = 2;
 
 	/** Used to step a calendar time by 1 or more hours */
-	public static final int HOUR = 4;
+	public static final int HOUR = 3;
 
 	/** Used to step a calendar time by 1 or more minutes */
-	public static final int MINUTE = 5;
+	public static final int MINUTE = 4;
 
 	/** Used to step a calendar time by 1 or more seconds */
-	public static final int SECOND = 6;
+	public static final int SECOND = 5;
 
 	/** Used to step a calendar time by 1 or more nanoseconds */
-	public static final int NANOSEC = 7;
+	public static final int NANOSEC = 6;
 
 	/** Used to step a calendar time by 1 or more half-years */
 	public static final int HALF_YEAR = 101;
@@ -767,7 +753,29 @@ public final class CalendarTime{
 
 	/** Used to step a calendar time by 1 or more microseconds */
 	public static final int MICROSEC = 104;
-	
+
+
+	////////////////////////////////////////////////////////////////////////////////////
+	/** A convenience method for handling multiple steps at once.
+	 *
+	 * @param steps An array of upto 7 items, each one will step succeedingly smaller
+	 *        time fields if present.  So the array items are taken to be:
+	 *        [year, month, day, hour, minute, second, nanosecond].
+	 *
+	 * @return A new calendar time stepped as specified.
+	 */
+	public CalendarTime step(int lSteps[]){
+		CalendarTime ct = new CalendarTime(this);
+
+		// This works because of the definition of YEAR, MONTH, DAY etc.
+		for(int i = 0; i < 7; i++){
+			if((lSteps.length > i)&&(lSteps[i] != 0))
+				ct = ct.step(i, lSteps[i]);
+		}
+
+		return ct;
+	}
+
 
 	////////////////////////////////////////////////////////////////////////////////////
 	/** Introduced as a way to increase the efficiency of the time axis tick calculation.
