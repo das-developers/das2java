@@ -1339,7 +1339,7 @@ public class DataSetUtil {
 
     /**
      * calculate cadence by averaging the smallest set of consistent inter-point
-     * distance.  Assumes all points are valid.  This number needs to be interpretted
+     * distance.  Assumes all points are valid.  This number needs to be interpreted
      * in the context of the dataset, for example using the properties UNITS and
      * SCALE_TYPE.  If SCALE_TYPE is "log", then this number should be interpreted
      * as the ratiometric spacing in natural log space.  
@@ -1354,7 +1354,91 @@ public class DataSetUtil {
     }
 
     /**
-     * test to see that the dataset is a qube.
+     * return true if each record of DEPEND_0 is the same.  Rank 0 datasets
+     * are trivially constant.
+     * @param ds any dataset
+     * @return true if the dataset doesn't change with DEPEND_0 or is rank 0.
+     */
+    public static boolean isConstant( QDataSet ds ) {
+        if ( ds.rank()==0 || ds.length()==0 ) {
+            return true;
+        } else {
+            QDataSet s1= ds.slice(0);
+            for ( int i=1; i<ds.length(); i++ ) {
+                if ( !s1.equals(ds.slice(i)) ) return false;
+            }
+            return true;
+        }
+    }
+    
+    /**
+     * special check to see if joined datasets really are a qube.  This
+     * will putProperty(QDataSet.QUBE,Boolean.TRUE) when the dataset really is
+     * a qube.
+     * @param ds
+     * @return 
+     */
+    private static boolean checkQubeJoin( QDataSet ds ) {
+        QDataSet d0= ds.slice(0);
+        Map<String,Object> p0= DataSetUtil.getProperties(d0);
+        int n=p0.size();
+        for ( int i=1; i<ds.length(); i++ ) {
+            QDataSet d1= ds.slice(i);
+            if ( d0.length()!=d1.length() ) {
+                return false;
+            }
+            Map<String,Object> p1= DataSetUtil.getProperties(d1);
+            Map<String,Object> eqp= Ops.equalProperties( p0, p1 );
+            if ( eqp.size()!=n ) {
+                return false;
+            }
+        }
+        if ( ds instanceof MutablePropertyDataSet ) {
+            ((MutablePropertyDataSet)ds).putProperty( QDataSet.QUBE, Boolean.TRUE );
+        }
+        return true;
+    }
+    
+    /**
+     * check to see if a dataset really is a qube, even if there is a
+     * rank 2 dep1.  Note this ignores BUNDLE_1 property if there is a DEPEND_1.
+     * This was motivated by the fftPower routine, which returned a rank 2 DEPEND_1,
+     * but is typically constant, and RBSP/ECT datasets that often have rank 2 
+     * DEPEND_1s that are constant.  This
+     * will putProperty(QDataSet.QUBE,Boolean.TRUE) when the dataset really is
+     * a qube.
+     * @param ds any dataset
+     * @return true if the dataset really is a qube.
+     */
+    public static boolean checkQube( QDataSet ds ) {
+        if ( ds.rank()<2 ) {
+            return true;
+        } else {
+            Boolean q = (Boolean) ds.property(QDataSet.QUBE);
+            if ( q == null || q.equals(Boolean.FALSE)) {
+                if ( SemanticOps.isJoin(ds) ) {
+                    return checkQubeJoin(ds);
+                }
+                for ( int i=1; i<ds.rank(); i++ ) {
+                    QDataSet dep= (QDataSet) ds.property( "DEPEND_"+i );
+                    if ( dep!=null && dep.rank()>1 ) {
+                        if ( !isConstant(dep) ) {
+                            return false;
+                        }
+                    }
+                }
+                if ( ds instanceof MutablePropertyDataSet ) {
+                   ((MutablePropertyDataSet)ds).putProperty( QDataSet.QUBE, Boolean.TRUE );
+                }
+                return true;
+            } else {
+                return true;
+            }
+        }
+    }
+    
+    /**
+     * test to see that the dataset is a qube.  
      * @param ds QDataSet of any rank.
      * @return true if the dataset is a qube.
      */
@@ -1389,8 +1473,8 @@ public class DataSetUtil {
         } else if ( ds.rank()== 0 ) {
             return new int[]{};  // rank 0 datasets are trivially qubes
         }
-        Boolean q = (Boolean) ds.property(QDataSet.QUBE);
-        if (q == null || q.equals(Boolean.FALSE)) {
+        boolean q= checkQube( ds );
+        if ( !q ) {
             return null;
         }
         int[] qube = new int[ds.rank()];
