@@ -247,8 +247,8 @@ public class CalendarTime{
 				if(lWant[SECOND]){
 					//Round normally to nearest nanosecond
 					long nTmp = Math.round( rValue * 1.0e+9);
-					m_nSecond = (int) nTmp / 1000000000;
-					m_nNanoSecond = nTmp % 1000000000;
+					m_nSecond = (int) ((long)nTmp / 1000000000L);
+					m_nNanoSecond = (long)nTmp % 1000000000L;
 					break;
 				}
 				else{
