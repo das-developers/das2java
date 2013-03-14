@@ -887,23 +887,31 @@ public class DataSetUtil {
     }
     
     /**
-     * Make a unicode spark line http://www.ssec.wisc.edu/~tomw/java/unicode.html#x0080
+     * Make a unicode spark line http://www.ssec.wisc.edu/~tomw/java/unicode.html.
+     * This should be for human consumption, because future versions may include data
+     * reduction and doubling up characters.
+     * @param ds the rank N (typically 1) dataset
+     * @param extent None or the range, see Ops.extent(ds)
+     * @param bar true indicates bars should be used instead of scatter
      */
-    public static String toSparkline( QDataSet xds, QDataSet extent, boolean bar ) {
-        if ( extent==null ) extent= Ops.extent(xds);
+    public static String toSparkline( QDataSet ds, QDataSet extent, boolean bar ) {
+        if ( ds.length()>1000 ) {
+            throw new IllegalArgumentException("dataset is too large (ds.length()>1000)");
+        }
+        if ( extent==null ) extent= Ops.extent(ds);
         String charsScatter= "\u2840\u2804\u2802\u2801"; //\u2800  is blank
         String charsBar= "\u2840\u2844\u2846\u2847";
         String bb= bar ? charsBar : charsScatter;
         int maxn= bb.length();
-        StringBuilder build= new StringBuilder(DataSetUtil.totalLength(xds));
-        QubeDataSetIterator it= new QubeDataSetIterator(xds);
-        QDataSet wds= DataSetUtil.weightsDataSet(xds);
+        StringBuilder build= new StringBuilder(DataSetUtil.totalLength(ds));
+        QubeDataSetIterator it= new QubeDataSetIterator(ds);
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
         double min= extent.value(0);
         double range= extent.value(1)-min;
         while ( it.hasNext() ) {
             it.next();
             if ( it.getValue(wds)>0 ) {
-                int n= (int)( maxn * ( it.getValue(xds) - min ) / range );
+                int n= (int)( maxn * ( it.getValue(ds) - min ) / range );
                 if ( bar ) n= Math.max( 0, Math.min( n, (maxn-1) ) );
                 if ( n>=0 && n<maxn ) {
                     char c= bb.charAt( n );
