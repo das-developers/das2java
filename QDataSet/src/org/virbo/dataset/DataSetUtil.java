@@ -902,6 +902,9 @@ public class DataSetUtil {
      *       will be the offset unit for interval units like Units.t2000.
      */
     public static RankZeroDataSet guessCadenceNew( QDataSet xds, QDataSet yds) {
+        
+        Logger logger= LoggerManager.getLogger("qdataset.guesscadence");
+        
         Object o= xds.property( QDataSet.CADENCE );
         Units u= (Units) xds.property( QDataSet.UNITS );
 
@@ -1119,7 +1122,7 @@ public class DataSetUtil {
             int logHighestPeak=0;
             t=0;
 
-            mean= AutoHistogram.mean(loghist).value();
+            //mean= AutoHistogram.mean(loghist).value();
             for ( int i=0; i<loghist.length(); i++ ) {
                 t+= loghist.value(i);
                 if ( loghist.value(i)>logPeakv ) {
@@ -1208,6 +1211,7 @@ public class DataSetUtil {
                     }
                 }
             }
+            logger.log(Level.FINE, "guessCadence({0})->null because of log,skip,not bigSkip", new Object[]{xds});
             if ( bigSkip==0 && skip>0 ) return null;
         }
 
@@ -1215,11 +1219,12 @@ public class DataSetUtil {
             MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
             result.putProperty( QDataSet.UNITS, Units.logERatio );
             result.putProperty( QDataSet.SCALE_TYPE, "log" );
+            logger.log(Level.FINE, "guessCadence({0})->{1} (log)", new Object[]{xds, result});
             return (RankZeroDataSet)result;
         } else {
             MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
             result.putProperty( QDataSet.UNITS, xunits.getOffsetUnits() );
-        
+            logger.log(Level.FINE, "guessCadence({0})->{1} (linear)", new Object[]{xds, result});
             return (RankZeroDataSet)result;
         }
     }
