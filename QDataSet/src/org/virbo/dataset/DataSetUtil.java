@@ -887,6 +887,36 @@ public class DataSetUtil {
     }
     
     /**
+     * Make a unicode spark line http://www.ssec.wisc.edu/~tomw/java/unicode.html#x0080
+     */
+    public static String toSparkline( QDataSet xds, QDataSet extent, boolean bar ) {
+        if ( extent==null ) extent= Ops.extent(xds);
+        String charsScatter= "\u2840\u2804\u2802\u2801"; //\u2800  is blank
+        String charsBar= "\u2840\u2844\u2846\u2847";
+        String bb= bar ? charsBar : charsScatter;
+        int maxn= bb.length();
+        StringBuilder build= new StringBuilder(DataSetUtil.totalLength(xds));
+        QubeDataSetIterator it= new QubeDataSetIterator(xds);
+        QDataSet wds= DataSetUtil.weightsDataSet(xds);
+        double min= extent.value(0);
+        double range= extent.value(1)-min;
+        while ( it.hasNext() ) {
+            it.next();
+            if ( it.getValue(wds)>0 ) {
+                int n= (int)( maxn * ( it.getValue(xds) - min ) / range );
+                if ( bar ) n= Math.max( 0, Math.min( n, (maxn-1) ) );
+                if ( n>=0 && n<maxn ) {
+                    char c= bb.charAt( n );
+                    build.append( c );
+                } else {
+                    build.append( "\u2800" );
+                }
+            }
+        }
+        return build.toString();
+    }
+    
+    /**
      * returns a rank 0 dataset indicating the cadence of the dataset.  Using a
      * dataset as the result allows the result to indicate SCALE_TYPE and UNITS.
      * History:
@@ -1078,6 +1108,8 @@ public class DataSetUtil {
 
         double mean= AutoHistogram.mean( hist ).value();
 
+        int firstPositiveBin= Integer.MAX_VALUE;
+        QDataSet dep0= (QDataSet) hist.property(QDataSet.DEPEND_0 );
         for ( int i=0; i<hist.length(); i++ ) {
             t+= hist.value(i);
             if ( hist.value(i)>peakv ) {
@@ -1089,6 +1121,9 @@ public class DataSetUtil {
             }
             if ( linMedian==-1 && t>total/2 ) {
                 linMedian= i;
+            }
+            if ( dep0.value(i)>0 && firstPositiveBin==Integer.MAX_VALUE ) {
+                firstPositiveBin= i;
             }
         }
         int linLowestPeak=0;
@@ -1107,11 +1142,14 @@ public class DataSetUtil {
         double firstBin= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_START)).doubleValue();
         double binWidth= ((Number)((Map) hist.property(QDataSet.USER_PROPERTIES)).get(AutoHistogram.USER_PROP_BIN_WIDTH)).doubleValue();
         firstBin= firstBin - binWidth;  // kludge, since the firstBin left side is based on the first point.
-
-        if ( UnitsUtil.isRatioMeasurement(xunits) && extent.value(0)>0 &&
+  
+        boolean bunch0= firstPositiveBin<Integer.MAX_VALUE && ipeak==firstPositiveBin && extent.value(0)-Math.abs(mean) < 0 && ( total<10 || firstBin<=0. );
+        boolean isratiomeas= UnitsUtil.isRatioMeasurement(xunits);
+        logger.log( Level.FINER, "consider log: isratio={0} allPositive={1} bunch0={2}", new Object[]{ isratiomeas, extent.value(0)>0, bunch0 });            
+        if ( isratiomeas && extent.value(0)>0 &&
                 ( logScaleType 
                 || everIncreasing>everIncreasingLimit
-                || ( ipeak==0 && extent.value(0)-Math.abs(mean) < 0 && ( total<10 || firstBin<=0. ) ) ) ) {
+                || bunch0 ) ) {
             ah= new AutoHistogram();
             QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
             // ltotal can be different than total.  TODO: WHY?  maybe because of outliers?
@@ -1147,11 +1185,14 @@ public class DataSetUtil {
             int highestPeak= linHighestPeak;
 
             if ( everIncreasing>everIncreasingLimit || ( logPeak>1 && (1.*logMedian/loghist.length() > 1.*linMedian/hist.length() ) ) ) {
+                logger.finer( String.format( "switch to log everIncreasing=%s logPeak=%s logMedianPerc=%5.1f linMedianPerc=%5.1f", everIncreasing, logPeak, 1.*logMedian/loghist.length(), 1.*linMedian/hist.length() ) );
                 hist= loghist;
                 ipeak= logPeak;
                 peakv= logPeakv;
                 highestPeak= logHighestPeak;
                 log= true;
+            } else {
+                logger.finer( String.format( "stay linear everIncreasing=%s logPeak=%s logMedianPerc=%5.1f linMedianPerc=%5.1f", everIncreasing, logPeak, 1.*logMedian/loghist.length(), 1.*linMedian/hist.length() ) );            
             }
 
             if ( peakv<20 ) {
@@ -1199,11 +1240,11 @@ public class DataSetUtil {
 
         // one last sanity check, for the PlasmaWaveGroup file:///home/jbf/project/autoplot/data/qds/gapBug/gapBug.qds?Frequency
         if ( t<65 && log ) {
-            double s= ss/nn;
+            double s= Math.abs( ss/nn );
             int skip=0;
             int bigSkip=0;
             for ( int i=0; i<t-1; i++ ) {
-                double d= Math.log( xds.value(i+1) / xds.value(i) );
+                double d= Math.abs( Math.log( xds.value(i+1) / xds.value(i) ) );
                 if ( d > s*1.5 ) {
                     skip++;
                     if ( d > s*7 ) {
