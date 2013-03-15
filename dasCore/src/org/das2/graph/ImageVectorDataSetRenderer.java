@@ -265,7 +265,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         g.setColor(color);
-        g.setStroke(new BasicStroke(1.f / saturationHitCount));
+        g.setStroke(new BasicStroke(.15f / saturationHitCount));
 
         g.translate( -plotImageBounds2.x, -plotImageBounds2.y);
 
