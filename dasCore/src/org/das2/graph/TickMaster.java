@@ -41,6 +41,45 @@ public class TickMaster {
         this.pendingAxes.add( new WeakReference(h) );
     }
 
+    /**
+     * kludgy solution to problems where an axis didn't get the update from
+     * its parent.  This is only called as a last-ditch measure.
+     * @param h
+     * @return 
+     */
+    public synchronized TickVDescriptor requestTickV( DasAxis h ) {
+        DasAxis p= findParent(h);
+        if ( p!=null ) {
+            return p.getTickV();
+        } else {
+            return null;
+        }
+    }
+    
+    private DasAxis findParent(DasAxis h) {
+        DasAxis parent= null;
+        for ( WeakReference<DasAxis> da : this.axes ) {
+            DasAxis a= da.get();
+
+            if ( a==null ) {
+                //rm.add(da);
+            } else {
+                if ( a.getCanvas()==null ) {
+                    //rm.add(da);
+                } else if ( ( a.getOrientation()==h.getOrientation() )
+                        && ( Math.abs( a.getDLength()-h.getDLength() )<2 )
+                        && ( a.isLog()==h.isLog() )
+                        && ( a.getDatumRange().equals(h.getDatumRange() ) ) ) {
+                    if ( a.isVisible() && a.isTickLabelsVisible() ) {
+                        parent= a;
+                        break;
+                    }
+                }
+            }
+        }
+        return parent;
+    }
+    
     public synchronized void offerTickV( DasAxis h, TickVDescriptor ticks ) {
 
         HashSet<WeakReference<DasAxis>> rm= new HashSet();

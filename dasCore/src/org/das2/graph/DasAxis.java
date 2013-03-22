@@ -1942,7 +1942,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         return result;
     }
-
+    
     /** Paint the axis if it is horizontal  */
     protected void paintHorizontalAxis(Graphics2D g) {
         try {
@@ -1967,6 +1967,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             TickVDescriptor ticks = getTickV();
 
+            if ( getCanvas().isPrintingThread() ) {
+                // check that the ticks are up-to-date.  autoplot_test033 showed this was happening.
+                if ( ticks!=null ) {
+                    final DatumVector majorTicks = ticks.getMajorTicks();
+                    DatumRange x= DatumRangeUtil.union( majorTicks.get(0), majorTicks.get(majorTicks.getLength()-1));
+                    if ( ! x.intersects(this.getDatumRange() ) ) {
+                        logger.fine("last ditch effort to get useful ticks that we didn't get before because of thread order");
+                        ticks= TickMaster.getInstance().requestTickV(this);
+                    }
+                } else {
+                    throw new IllegalArgumentException("ticks are not calculated");
+                }
+            }
+            
             if (bottomLine) {
                 g.drawLine(DMin, bottomPosition, DMax, bottomPosition);
             }
