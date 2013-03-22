@@ -77,6 +77,9 @@ public class HttpFileSystem extends WebFileSystem {
         try {
 
             String auth= rooturi.getAuthority();
+            if ( auth==null ) {
+                throw new MalformedURLException("URL doesn't contain authority, check for ///");
+            }
             String[] ss= auth.split("@");
 
             URL root;
