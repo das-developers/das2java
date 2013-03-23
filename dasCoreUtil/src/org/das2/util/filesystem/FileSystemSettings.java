@@ -165,6 +165,11 @@ public class FileSystemSettings {
         propertyChangeSupport.firePropertyChange( PROP_OFFLINE, v, offline);
     }
 
+    /**
+     * the longest amount of time we'll wait for an external process to make progress downloading.
+     */
+    protected static long allowableExternalIdleMs= 60000;
+    
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
