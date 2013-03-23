@@ -890,6 +890,7 @@ public class DataSetUtil {
      * Make a unicode spark line http://www.ssec.wisc.edu/~tomw/java/unicode.html.
      * This should be for human consumption, because future versions may include data
      * reduction and doubling up characters.
+     * See commented code in MetadataPanel.histStr. (I knew I had done this before...)
      * @param ds the rank N (typically 1) dataset
      * @param extent None or the range, see Ops.extent(ds)
      * @param bar true indicates bars should be used instead of scatter
@@ -899,8 +900,9 @@ public class DataSetUtil {
             throw new IllegalArgumentException("dataset is too large (ds.length()>1000)");
         }
         if ( extent==null ) extent= Ops.extent(ds);
-        String charsScatter= "\u2840\u2804\u2802\u2801"; //\u2800  is blank
-        String charsBar= "\u2840\u2844\u2846\u2847";
+        //String charsScatter= "\u2840\u2804\u2802\u2801"; //\u2800  is blank
+        String charsScatter= "\u28C0\u2824\u2812\u2809"; //\u2800  is blank
+        String charsBar= "\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588";
         String bb= bar ? charsBar : charsScatter;
         int maxn= bb.length();
         StringBuilder build= new StringBuilder(DataSetUtil.totalLength(ds));
