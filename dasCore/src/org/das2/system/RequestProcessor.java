@@ -230,7 +230,7 @@ public final class RequestProcessor {
                     try {                        
                         Runnable run = queue.remove();
                         if (run == SHUTDOWN) {
-                            queue.add(run);
+                            queue.add(run); // all the runners need to see this message, requeue for them.
                             break;
                         }
                         logger.log(Level.FINE, "running {0}", String.valueOf(run));
@@ -291,7 +291,6 @@ public final class RequestProcessor {
         public void run() {
             Runnable run = null;
             RequestEntry entry = null;
-            Logger logger = DasLogger.getLogger(DasLogger.SYSTEM_LOG);
             while (run == null) {
                 synchronized (this) {
                     //entry = (RequestEntry)list.removeFirst();
