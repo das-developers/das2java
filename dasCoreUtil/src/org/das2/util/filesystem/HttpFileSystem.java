@@ -226,6 +226,32 @@ public class HttpFileSystem extends WebFileSystem {
 
     }
 
+    private boolean waitDownloadExternal( File f, File partFile ) {
+        while ( partFile.exists() && ( System.currentTimeMillis() - partFile.lastModified() ) < FileSystemSettings.allowableExternalIdleMs ) {
+            try {
+                Thread.sleep(300);
+                logger.log(Level.FINEST, "waiting for external process to download {0}", partFile);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(HttpFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if ( partFile.exists() ) {
+            logger.fine("timeout waiting for partFile to be deleted");
+            return false;
+        } else {
+            logger.fine("successfully waited for external download to complete");
+            return true;
+        }
+    }
+    
+    /**
+     * 
+     * @param filename filename within the filesystem.
+     * @param f the target filename where the file is to be download.
+     * @param partFile  use this file to stage the download
+     * @param monitor  monitor the progress.
+     * @throws IOException 
+     */
     protected void downloadFile(String filename, File f, File partFile, ProgressMonitor monitor) throws IOException {
 
         Lock lock = getDownloadLock(filename, f, monitor);
@@ -275,7 +301,6 @@ public class HttpFileSystem extends WebFileSystem {
                 d= new Date( sd.get(sd.size()-1) );
             }
             
-
             monitor.setTaskSize(urlc.getContentLength());
 
             if (!f.getParentFile().exists()) {
@@ -283,10 +308,19 @@ public class HttpFileSystem extends WebFileSystem {
                 FileSystemUtil.maybeMkdirs( f.getParentFile() );
             }
             if (partFile.exists()) {
-                logger.log(Level.FINE, "clobber file {0}", f);
-                if (!partFile.delete()) {
-                    logger.log(Level.INFO, "Unable to clobber file {0}, better use it for now.", f); //TODO: review this
-                    return;
+                logger.log(Level.FINE, "partFile exists {0}", partFile);
+                long ageMillis= System.currentTimeMillis() - partFile.lastModified(); // TODO: this is where OS-level locking would be nice...
+                if ( ageMillis<FileSystemSettings.allowableExternalIdleMs ) { // if it's been modified less than sixty seconds ago, then wait to see if it goes away, then check again.
+                    if ( waitDownloadExternal( f, partFile ) ) {
+                        return; // success
+                    } else {
+                        throw new IOException( "timeout waiting for external process to download "+partFile );
+                    }
+                } else {
+                    if (!partFile.delete()) {
+                        logger.log(Level.INFO, "Unable to delete part file {0}, using new name for part file.", partFile ); //TODO: review this
+                        partFile= new File( f.toString()+".part."+System.currentTimeMillis() );
+                    }
                 }
             }
 
@@ -317,6 +351,7 @@ public class HttpFileSystem extends WebFileSystem {
                         }
                     }
                     if ( !partFile.renameTo(f) ) {
+                        logger.log(Level.WARNING, "rename failed {0} to {1}", new Object[]{partFile, f});
                         throw new IllegalArgumentException( "rename failed " + partFile + " to "+f );
                     }
                 } catch (IOException e) {
