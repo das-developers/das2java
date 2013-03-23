@@ -27,8 +27,12 @@ import org.das2.util.ExceptionHandler;
 import org.das2.util.DasExceptionHandler;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.DasApplication;
+import org.das2.graph.DasCanvasComponent;
+import org.das2.util.LoggerManager;
 
 /** Utility class for synchronous execution.
  * This class maintains a pool of threads that are used to execute arbitrary
@@ -64,11 +68,32 @@ public final class RequestProcessor {
     private static int threadCount = 0;
     private static final Object THREAD_COUNT_LOCK = new Object();
     
-    private final static Logger logger= DasLogger.getLogger( DasLogger.SYSTEM_LOG );
+    private final static Logger logger= LoggerManager.getLogger( "das2.system.requestprocessor");
     
     private static int threadOrdinal = 0;
 
     private RequestProcessor() {}
+    
+    public static void printStatus() {
+        List c= new ArrayList( queue.list );
+        System.err.println( String.format( "== RequestProcessor (%d jobs) ==", c.size() ) );
+        for ( Object t: c ) {
+            System.err.println(t);
+        }
+        Set c2= new LinkedHashSet();
+        c2.addAll( runnableQueueMap.entrySet() );
+        System.err.println( String.format( "== RequestProcessor runnableQueueMap (%d) ==", c2.size() ) );
+        for ( Object t: c2 ) {
+            Entry e= (Entry)t;
+            RunnableQueue q= (RunnableQueue)e.getValue();
+            List c3= new ArrayList( q.list );
+            System.err.println( String.format( " === (%d jobs) ===", c3.size() ) );
+            for ( Object t3: c3 ) {
+                System.err.println(t3);
+            }
+            System.err.println(t);
+        }
+    }
     
     private static void setJob(Runnable job) {
         RequestThread thread = (RequestThread)Thread.currentThread();
@@ -99,7 +124,7 @@ public final class RequestProcessor {
      * @param run the task to be executed.
      */    
     public static void invokeLater(Runnable run) {
-        logger.fine("invokeLater "+run);
+        logger.log(Level.FINE, "invokeLater {0}", String.valueOf(run));
         
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
@@ -117,7 +142,7 @@ public final class RequestProcessor {
      * @param lock associates run with other tasks.
      */
     public static void invokeLater(Runnable run, Object lock) {
-        logger.fine("invokeLater "+run+" "+lock);
+        logger.log(Level.FINE, "invokeLater {0} {1}", new Object[]{String.valueOf(run), lock});
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
                 newThread();
@@ -126,7 +151,8 @@ public final class RequestProcessor {
         synchronized (runnableQueueMap) {
             RunnableQueue rq = (RunnableQueue)runnableQueueMap.get(lock);
             if (rq == null) {
-                rq = new RunnableQueue();
+                String name= ( lock instanceof DasCanvasComponent ) ? ((DasCanvasComponent)lock).getDasName() : lock.toString();
+                rq = new RunnableQueue("RQ_"+name );
                 runnableQueueMap.put(lock, rq);
             }
             rq.add(run, false);
@@ -139,11 +165,11 @@ public final class RequestProcessor {
      * {@link #invokeAfter(java.lang.Runnable, java.lang.Object)} or
      * {@link #invokeLater(java.lang.Runnable, java.lang.Object)} with the same
      * lock have finished.
-     * @param run the taks to be executed.
+     * @param run the task to be executed.
      * @param lock associates run with other tasks.
      */
     public static void invokeAfter(Runnable run, Object lock) {
-        logger.fine("invokeAfter "+run+" "+lock);
+        logger.log(Level.FINE, "invokeAfter {0} {1}", new Object[]{String.valueOf(run), lock});
         synchronized (THREAD_COUNT_LOCK) {
             if (threadCount < maxThreadCount) {
                 newThread();
@@ -152,7 +178,8 @@ public final class RequestProcessor {
         synchronized (runnableQueueMap) {
             RunnableQueue rq = (RunnableQueue)runnableQueueMap.get(lock);
             if (rq == null) {
-                rq = new RunnableQueue();
+                String name= ( lock instanceof DasCanvasComponent ) ? ((DasCanvasComponent)lock).getDasName() : lock.toString();
+                rq = new RunnableQueue("RQ_"+name );
                 runnableQueueMap.put(lock, rq);
             }
             rq.add(run, true);
@@ -206,12 +233,12 @@ public final class RequestProcessor {
                             queue.add(run);
                             break;
                         }
-                        logger.fine("running "+run);
+                        logger.log(Level.FINE, "running {0}", String.valueOf(run));
                         if (run != null) {
                             setJob(run);
                             run.run();
+                            logger.log(Level.FINE, "completed {0}", String.valueOf(run)); 
                             run= null; // Maybe fix GC leak
-                            logger.fine("completed "+run);
                         }                             
                         synchronized (THREAD_COUNT_LOCK) {
                             if (threadCount > maxThreadCount) {
@@ -224,7 +251,7 @@ public final class RequestProcessor {
                         throw td;
                     }
                     catch (Throwable t) {
-                        logger.fine("uncaught exception "+t);
+                        logger.log(Level.INFO, "uncaught exception {0}", t);
                         //Clear interrupted status (if set)
                         ExceptionHandler eh= DasApplication.getDefaultApplication().getExceptionHandler();
                         if ( eh==null ) {
@@ -255,6 +282,11 @@ public final class RequestProcessor {
         private LinkedList list = new LinkedList();
         private int readCount = 0;
         private Object writer;
+        private String name;
+        
+        private RunnableQueue( String name ) {
+            this.name= name;
+        }
         
         public void run() {
             Runnable run = null;
@@ -276,9 +308,11 @@ public final class RequestProcessor {
                     }
                 }
             }
-            logger.fine("Starting :" + run);
+            logger.log(Level.FINE, "Starting :{0}", String.valueOf(run));
+            assert run!=null;
+            assert entry!=null;
             run.run();
-            logger.fine("Finished :" + run);
+            logger.log(Level.FINE, "Finished :{0}", String.valueOf(run));
             synchronized (this) {
                 if (entry.async) {
                     writer = null;
@@ -295,6 +329,11 @@ public final class RequestProcessor {
             entry.run = run;
             entry.async = async;
             list.add(entry);
+        }
+        
+        @Override
+        public String toString() {
+            return "RunnableQueue["+name+"]";
         }
     }
     
