@@ -358,6 +358,7 @@ public class AsciiParser {
 
             for ( int i=0; i<lines.size(); i++ ) {
                 if ( p.fieldCount(lines.get(i))==p.fieldCount() ) {
+                    line= lines.get(i);
                     result= createDelimParser( lines.get(i), p.getDelim() ); // set column names
                     break;
                 }
