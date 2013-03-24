@@ -1571,48 +1571,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
-     * Bill pointed out a bug where axes without the ticks printed would use
-     * different ticks than the axis showing the labels.  This is a quick-n-dirty
-     * way to make sure the same ticks are used.
-     */
-    private boolean findSomeoneElsesTicks() {
-        DasCanvasComponent[] cc= this.getCanvas().getCanvasComponents();
-        DasAxis leader= null;
-        for ( DasCanvasComponent c: cc ) {
-            if ( c instanceof DasAxis ) {
-                DasAxis otherAxis= (DasAxis)c;
-                if ( otherAxis.orientation== this.orientation &&
-                        otherAxis.getColumn()== this.getColumn() ) {
-                    if ( otherAxis.isVisible() && otherAxis.isTickLabelsVisible() ) {
-                        if ( otherAxis.getDatumRange().equals( this.getDatumRange() ) ) {
-                            if ( otherAxis.getDrawTca() ) {
-                                leader= otherAxis;
-                            } else if ( leader==null ) {
-                                leader= otherAxis;
-                            }
-                        } else {
-                            if ( DatumRangeUtil.rescale( otherAxis.getDatumRange(), -1, 2 ).intersects( this.getDatumRange() ) ) {
-                                // it probably is a bit ahead or behind this axis.
-                                if ( otherAxis.getDrawTca() ) {
-                                   leader= otherAxis;
-                                } else if ( leader==null ) {
-                                   leader= otherAxis;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if ( leader!=null ) {
-            this.tickV= leader.getTickV();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * call-back for TickMaster
      * @param ticks
      */
@@ -1974,7 +1932,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     DatumRange x= DatumRangeUtil.union( majorTicks.get(0), majorTicks.get(majorTicks.getLength()-1));
                     if ( ! x.intersects(this.getDatumRange() ) ) {
                         logger.fine("last ditch effort to get useful ticks that we didn't get before because of thread order");
-                        ticks= TickMaster.getInstance().requestTickV(this);
+                        TickVDescriptor ticks2= TickMaster.getInstance().requestTickV(this);
+                        if ( ticks2!=null ) ticks= ticks2;
                     }
                 } else {
                     throw new IllegalArgumentException("ticks are not calculated");
