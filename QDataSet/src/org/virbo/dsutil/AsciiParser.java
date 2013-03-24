@@ -364,14 +364,12 @@ public class AsciiParser {
             }
                             
             // check for ISO8601 times.
-            if ( result.tryParseRecord(line, iline, null) ) {
-                String[] fields= new String[p.fieldCount];
-                if ( p.splitRecord(line, fields ) ) {
-                    for ( int i=0; i<fields.length; i++ ) {
-                        if ( isIso8601Time(fields[i]) ) {
-                            this.setFieldParser( i, UNITS_PARSER );
-                            this.setUnits( i,Units.t2000 );
-                        }
+            String[] fields= new String[result.fieldCount];
+            if ( result.splitRecord(line, fields ) ) {
+                for ( int i=0; i<fields.length; i++ ) {
+                    if ( isIso8601Time(fields[i]) ) {
+                        this.setFieldParser( i, UNITS_PARSER );
+                        this.setUnits( i,Units.t2000 );
                     }
                 }
             }
