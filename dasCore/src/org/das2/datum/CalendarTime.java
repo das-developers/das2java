@@ -9,7 +9,7 @@ import java.util.StringTokenizer;
  * 
  * @author ljg, eew, jbf, cwp
  */
-public class CalendarTime{
+public class CalendarTime implements Comparable<CalendarTime>{
 
 	/** The time point's year number.
 	 *  Note: that year 1 BC is represented year 0 in this field.
@@ -64,7 +64,7 @@ public class CalendarTime{
 	 *        be used from the array in the order: year, month, day, hour, min, sec,
 	 *        nanosecond.
 	 */
-	public CalendarTime(int[] lFields){
+	public CalendarTime(int... lFields){
 		m_nYear = 1;
 		m_nMonth = 1;
 		m_nDom = 1;
@@ -513,6 +513,50 @@ public class CalendarTime{
 
 	public boolean isLeapYear(){ 	return TimeUtil.isLeapYear(m_nYear); }
 
+	@Override
+	public int compareTo(CalendarTime o){
+		if(m_nYear != o.m_nYear)     return m_nYear - o.m_nYear;
+		if(m_nMonth != o.m_nMonth)   return m_nMonth - o.m_nMonth;
+		if(m_nDom != o.m_nDom)       return m_nDom - o.m_nDom;
+		if(m_nHour != o.m_nHour)     return m_nHour - o.m_nHour;
+		if(m_nMinute != o.m_nMinute) return m_nMinute - o.m_nMinute;
+		if(m_nSecond != o.m_nSecond) return m_nSecond - o.m_nSecond;
+		if(m_nNanoSecond < o.m_nNanoSecond) return -1;
+		if(m_nNanoSecond > o.m_nNanoSecond) return 1;
+
+		return 0;
+	}
+
+	@Override
+	public boolean equals(Object o){
+		if(! (o instanceof CalendarTime) ) return false;
+
+		CalendarTime ctO = (CalendarTime)o;
+
+		if(m_nYear != ctO.m_nYear)     return false;
+		if(m_nMonth != ctO.m_nMonth)   return false;
+		if(m_nDom != ctO.m_nDom)       return false;
+		if(m_nHour != ctO.m_nHour)     return false;
+		if(m_nMinute != ctO.m_nMinute) return false;
+		if(m_nSecond != ctO.m_nSecond) return false;
+		if(m_nNanoSecond != ctO.m_nNanoSecond) return false;
+		
+		return true;
+	}
+
+	@Override
+	public int hashCode(){
+		int hash = 7;
+		hash = 71 * hash + this.m_nYear;
+		hash = 71 * hash + this.m_nMonth;
+		hash = 71 * hash + this.m_nDom;
+		hash = 71 * hash + this.m_nHour;
+		hash = 71 * hash + this.m_nMinute;
+		hash = 71 * hash + this.m_nSecond;
+		hash = 71 * hash + (int) (this.m_nNanoSecond ^ (this.m_nNanoSecond >>> 32));
+		return hash;
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////
 	/** Resolution flags to use when requesting time point as a string */
 	public static enum Resolution {
@@ -602,7 +646,7 @@ public class CalendarTime{
 	 *
 	 * From Larry Granroth's original Das1 libs.
 	 */
-	protected void normalize(){
+	private void normalize(){
 
 		// month is required input -- first adjust month
 		if( m_nMonth > 12 || m_nMonth < 1){
