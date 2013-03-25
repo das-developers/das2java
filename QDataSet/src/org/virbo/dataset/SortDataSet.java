@@ -9,7 +9,13 @@
 
 package org.virbo.dataset;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
 import org.virbo.dsops.Ops;
@@ -40,10 +46,37 @@ public class SortDataSet extends AbstractDataSet {
 
         if ( range.value(0)< 0 ) throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(0) );
         if ( range.value(1)>= source.length() ) {
-            logger.warning("sort index contains out-of-bounds element: "+range.value(1) );
-            logger.warning("  range: "+range );
-            logger.warning("  source: "+source );
-            logger.warning("  sort: "+sort );
+            logger.log(Level.WARNING, "sort index contains out-of-bounds element: {0}", range.value(1));
+            logger.log(Level.WARNING, "  range: {0}", range);
+            logger.log(Level.WARNING, "  source: {0}", source);
+            logger.log(Level.WARNING, "  sort: {0}", sort);
+            File f= new File("/tmp/jbfaden.org.virbo.dataset.sortDataSet.line47.txt" );
+            if ( f.getParentFile().canWrite() && sort.rank()==1 ) {
+                PrintWriter fw = null;
+                try {
+                    logger.warning("  dumping data to /tmp/jbfaden.org.virbo.dataset.sortDataSet.line47.txt");
+                    fw = new PrintWriter( new FileWriter(f) );
+                    for ( Entry<String,Object> e: DataSetUtil.getProperties(sort).entrySet() ) {
+                        try {
+                            fw.println( "# "+e.getKey()+": " + String.valueOf(e.getValue()) );
+                        } catch ( RuntimeException ex ) {
+                            Logger.getLogger(SortDataSet.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    for ( int i=0; i<sort.length(); i++ ) {
+                        fw.printf( "%d %f\n", i, sort.value(i) );
+                    }
+                    fw.close();
+                } catch (RuntimeException ex ) {
+                    ex.printStackTrace();
+                    Logger.getLogger(SortDataSet.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(SortDataSet.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    if ( fw!=null ) fw.close();
+                }
+            }
+            
             throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(1) );
         }
         
