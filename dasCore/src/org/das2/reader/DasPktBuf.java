@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
+import java.nio.LongBuffer;
 import java.nio.charset.Charset;
 
 /** Tiny class to count packets in a Das2 or QStream and then write it to a stream
@@ -61,7 +63,6 @@ public final class DasPktBuf {
 	}
 
 	/** Add an array of floats to the packet with selectable byte order.
-	 * Warning: 'byte_order' attribute
 	 * @param lFloats the floats to add to the packet
 	 * @param bo define whether bytes should be sent in big-endian or little endian
 	 *           format.  Warning: It's up to you to make sure that the byte order
@@ -80,6 +81,50 @@ public final class DasPktBuf {
 		bbTmp.order(bo);
 		FloatBuffer fbTmp = bbTmp.asFloatBuffer();
 		fbTmp.put(lFloats);
+		m_buf.write(lBytes, 0, lBytes.length);
+	}
+
+	/** Add a single float to the packet with selectable byte order
+	 *
+	 * @param lDoubles the value to add to the packet
+	 * @param bo define whether bytes should be sent in big-endian or little endian
+	 *           format.  Warning: It's up to you to make sure that the byte order
+	 *           matches the value in the 'byte_order' attribute for the stream header.
+	 */
+	public void addDoubles(double[] lDoubles, ByteOrder bo){
+		if((bo == ByteOrder.LITTLE_ENDIAN)&&(m_fmt == OutputFormat.DAS1))
+			throw new IllegalArgumentException("DAS1 streams only support big endian values");
+
+		if(m_fmt == OutputFormat.DAS1)
+			throw new IllegalStateException("DAS1 streams do not support double precision values");
+
+		//Successfully do nothing
+		if(lDoubles.length == 0) return;
+
+		byte[] lBytes = new byte[lDoubles.length * 8];
+		ByteBuffer bbTmp = ByteBuffer.wrap( lBytes );
+		bbTmp.order(bo);
+		DoubleBuffer dbTmp = bbTmp.asDoubleBuffer();
+		dbTmp.put(lDoubles);
+		m_buf.write(lBytes, 0, lBytes.length);
+
+	}
+
+	public void addLongs(long[] lLongs, ByteOrder bo){
+		if((bo == ByteOrder.LITTLE_ENDIAN)&&(m_fmt == OutputFormat.DAS1))
+			throw new IllegalArgumentException("DAS1 streams only support big endian values");
+
+		if(m_fmt != OutputFormat.QSTREAM)
+			throw new IllegalStateException("Only QSTREAM format supports long integers.");
+
+		//Successfully do nothing
+		if(lLongs.length == 0) return;
+
+		byte[] lBytes = new byte[lLongs.length * 8];
+		ByteBuffer bbTmp = ByteBuffer.wrap( lBytes );
+		bbTmp.order(bo);
+		LongBuffer lbTmp = bbTmp.asLongBuffer();
+		lbTmp.put(lLongs);
 		m_buf.write(lBytes, 0, lBytes.length);
 	}
 
@@ -111,8 +156,6 @@ public final class DasPktBuf {
 		m_buf.writeTo(fOut);
 		m_buf = new ByteArrayOutputStream();
 	}
-
-
 	
 
 }
