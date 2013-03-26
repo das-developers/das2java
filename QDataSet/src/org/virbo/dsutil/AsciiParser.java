@@ -815,7 +815,7 @@ public class AsciiParser {
                         if ( line.length()>3 ) {
                             for ( int i=0; i<line.length(); i++ ) {
                                 char ch= line.charAt(i);
-                                if ( ch<32 || ch>126 ) nonAsciiCount++;
+                                if ( ( ch<32 || ch>126 ) && ch!=9 ) nonAsciiCount++;
                             }
                             if ( nonAsciiCount>20 || nonAsciiCount*100/line.length()>20 ) {
                                 throw new IOException("stream does not appear to be ascii");
