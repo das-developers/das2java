@@ -155,6 +155,8 @@ public class SimpleStreamFormatter {
                     planeDescriptor.setType(new DoubleTransferType());
                 } else if (u instanceof EnumerationUnits) {
                     planeDescriptor.setType(new IntegerTransferType());
+                } else if (u==Units.cdfTT2000 ) {
+                    planeDescriptor.setType(new LongTransferType()); //TODO: some cdfTT2000s will be truncated.
                 } else if (u instanceof TimeLocationUnits) {
                     planeDescriptor.setType(new DoubleTransferType());
                 } else {
