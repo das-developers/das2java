@@ -39,6 +39,9 @@ public abstract class TransferType {
         
         tt= IntegerTransferType.getByName(ttype, properties);
         if ( tt!=null ) return tt;
+
+        tt= LongTransferType.getByName(ttype, properties);
+        if ( tt!=null ) return tt;
         
         tt= ShortTransferType.getByName(ttype, properties);
         if ( tt!=null ) return tt;
