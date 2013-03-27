@@ -109,52 +109,60 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
     }
 
     public void putValue(int i0, double d) {
-        length0= Math.max( i0+1, length0 );
+        if ( qube==null ) {
+            length0= Math.max( i0+1, length0 );
+        }
         data.put( String.valueOf(i0), d );
     }
 
     public void putValue(int i0, int i1, double d) {
-        length0= Math.max( i0+1, length0 );
-        Integer length1= length.get( String.valueOf(i0) );
-        if ( length1==null || length1<=i1 ) {
-            length1= i1+1;
-            length.put( String.valueOf(i0), length1 );
-        }                
+        if ( qube==null ) {
+            length0= Math.max( i0+1, length0 );
+            Integer length1= length.get( String.valueOf(i0) );
+            if ( length1==null || length1<=i1 ) {
+                length1= i1+1;
+                length.put( String.valueOf(i0), length1 );
+            }
+        }
         data.put( String.valueOf(i0)+"_"+String.valueOf(i1), d );
     }
 
     public void putValue(int i0, int i1, int i2, double d) {
-        length0= Math.max( i0+1, length0 );
-        Integer length1= length.get( String.valueOf(i0) );
-        if ( length1==null || length1<=i1 ) {
-            length1= i1+1;
-            length.put( String.valueOf(i0), length1 );
-        }
-        Integer length2= length.get( String.valueOf(i0)+"_"+String.valueOf(i1) );
-        if ( length2==null || length2<=i1 ) {
-            length2= i2+1;
-            length.put( String.valueOf(i0)+"_"+String.valueOf(i1), length2 );
+        if ( qube==null ) {
+            length0= Math.max( i0+1, length0 );
+            Integer length1= length.get( String.valueOf(i0) );
+            if ( length1==null || length1<=i1 ) {
+                length1= i1+1;
+                length.put( String.valueOf(i0), length1 );
+            }
+            Integer length2= length.get( String.valueOf(i0)+"_"+String.valueOf(i1) );
+            if ( length2==null || length2<=i1 ) {
+                length2= i2+1;
+                length.put( String.valueOf(i0)+"_"+String.valueOf(i1), length2 );
+            }
         }
         data.put( String.valueOf(i0)+"_"+String.valueOf(i1)+"_"+String.valueOf(i2), d );
     }
 
     public void putValue(int i0, int i1, int i2, int i3, double d) {
-        length0= Math.max( i0+1, length0 );
-        Integer length1= length.get( String.valueOf(i0) );
-        if ( length1==null || length1<=i1 ) {
-            length1= i1+1;
-            length.put( String.valueOf(i0), length1 );
+        if ( qube==null ) {
+            length0= Math.max( i0+1, length0 );
+            Integer length1= length.get( String.valueOf(i0) );
+            if ( length1==null || length1<=i1 ) {
+                length1= i1+1;
+                length.put( String.valueOf(i0), length1 );
+            }
+            Integer length2= length.get( String.valueOf(i0)+"_"+String.valueOf(i1) );
+            if ( length2==null || length2<=i1 ) {
+                length2= i2+1;
+                length.put( String.valueOf(i0)+"_"+String.valueOf(i1), length2 );
+            }        
+            Integer length3= length.get( String.valueOf(i0)+"_"+String.valueOf(i1)+"_"+String.valueOf(i2) );
+            if ( length3==null || length3<=i1 ) {
+                length3= i3+1;
+                length.put( String.valueOf(i0)+"_"+String.valueOf(i1)+"_"+String.valueOf(i2), length3 );
+            }        
         }
-        Integer length2= length.get( String.valueOf(i0)+"_"+String.valueOf(i1) );
-        if ( length2==null || length2<=i1 ) {
-            length2= i2+1;
-            length.put( String.valueOf(i0)+"_"+String.valueOf(i1), length2 );
-        }        
-        Integer length3= length.get( String.valueOf(i0)+"_"+String.valueOf(i1)+"_"+String.valueOf(i2) );
-        if ( length3==null || length3<=i1 ) {
-            length3= i3+1;
-            length.put( String.valueOf(i0)+"_"+String.valueOf(i1)+"_"+String.valueOf(i2), length3 );
-        }        
         data.put( String.valueOf(i0)+"_"+String.valueOf(i1)+"_"+String.valueOf(i2)+"_"+String.valueOf(i3), d );
     }
 
