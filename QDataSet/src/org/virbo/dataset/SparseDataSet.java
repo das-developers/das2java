@@ -9,7 +9,13 @@ import java.util.Map;
 
 /**
  * DataSet for storing sparse data.  This is used initially to describe bundles.
- * This returns 0 where no data has been set.
+ * This returns 0 where no data has been set.  For example,
+ * <code>
+ * sp= SparseDataSet.createRank(2)
+ * sp.setLength(4)
+ * sp[2,2]= 1
+ * print sp[0,0]
+ * </code>
  * @author jbf
  */
 public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
@@ -20,12 +26,25 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
     int[] qube;
     Map<String,Integer> length;
     
-    public SparseDataSet( int rank ) {
+    /**
+     * this is private because calling the constructor from Jython won't adapt to PyQDataSet.
+     * @param rank 
+     */
+    private SparseDataSet( int rank ) {
         this.rank= rank;
         data= new HashMap();
         length= new HashMap();
     }
     
+    /**
+     * create the dataset with the given rank.  
+     * @param rank
+     * @return 
+     */
+    public static SparseDataSet createRank( int rank ) {
+        return new SparseDataSet(rank);
+    }
+
     /**
      * set the length of the zeroth dimension.  Other dimensions have length set implicitly by the highest value set.
      * If this is not set explicitly, then it will be implicit as well.
@@ -96,16 +115,46 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
 
     public void putValue(int i0, int i1, double d) {
         length0= Math.max( i0+1, length0 );
+        Integer length1= length.get( String.valueOf(i0) );
+        if ( length1==null || length1<=i1 ) {
+            length1= i1+1;
+            length.put( String.valueOf(i0), length1 );
+        }                
         data.put( String.valueOf(i0)+"_"+String.valueOf(i1), d );
     }
 
     public void putValue(int i0, int i1, int i2, double d) {
         length0= Math.max( i0+1, length0 );
+        Integer length1= length.get( String.valueOf(i0) );
+        if ( length1==null || length1<=i1 ) {
+            length1= i1+1;
+            length.put( String.valueOf(i0), length1 );
+        }
+        Integer length2= length.get( String.valueOf(i0)+"_"+String.valueOf(i1) );
+        if ( length2==null || length2<=i1 ) {
+            length2= i2+1;
+            length.put( String.valueOf(i0)+"_"+String.valueOf(i1), length2 );
+        }
         data.put( String.valueOf(i0)+"_"+String.valueOf(i1)+"_"+String.valueOf(i2), d );
     }
 
     public void putValue(int i0, int i1, int i2, int i3, double d) {
         length0= Math.max( i0+1, length0 );
+        Integer length1= length.get( String.valueOf(i0) );
+        if ( length1==null || length1<=i1 ) {
+            length1= i1+1;
+            length.put( String.valueOf(i0), length1 );
+        }
+        Integer length2= length.get( String.valueOf(i0)+"_"+String.valueOf(i1) );
+        if ( length2==null || length2<=i1 ) {
+            length2= i2+1;
+            length.put( String.valueOf(i0)+"_"+String.valueOf(i1), length2 );
+        }        
+        Integer length3= length.get( String.valueOf(i0)+"_"+String.valueOf(i1)+"_"+String.valueOf(i2) );
+        if ( length3==null || length3<=i1 ) {
+            length3= i3+1;
+            length.put( String.valueOf(i0)+"_"+String.valueOf(i1)+"_"+String.valueOf(i2), length3 );
+        }        
         data.put( String.valueOf(i0)+"_"+String.valueOf(i1)+"_"+String.valueOf(i2)+"_"+String.valueOf(i3), d );
     }
 
