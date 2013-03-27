@@ -51,7 +51,7 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
      * @param length 
      */
     public void setLength( int length ) {
-        this.length0= length0;
+        this.length0= length;
     }
     
     /**
