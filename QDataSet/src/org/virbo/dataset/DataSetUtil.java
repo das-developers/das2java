@@ -33,6 +33,7 @@ import org.das2.datum.format.FormatStringFormatter;
 import org.das2.util.LoggerManager;
 import org.virbo.dsops.Ops;
 import org.virbo.dsutil.AutoHistogram;
+import org.virbo.dsutil.LinFit;
 
 /**
  *
@@ -1030,34 +1031,58 @@ public class DataSetUtil {
         if ( monoMag==0 ) return null;
         
         double everIncreasing= 0.;
-        if ( xds.length()>2 ) {
-            // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
-            // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
-            // number in a ever increasing sequence.  Allow for one repeated length (POLAR/Hydra Energies)
-            sp= monoMag * ( xds.value(2) - xds.value(0) );
-            everIncreasing= xds.value(2) / xds.value(0);
-            double sp0= sp;
-            if ( xds.value(2)<=0 || xds.value(0)<=0 || xds.value(1)>(xds.value(0)+xds.value(2)) ) {
+        if ( xds.length()<100 && xds.rank()==1 ) {
+            QDataSet r= Ops.where( Ops.ne( wds, DataSetUtil.asDataSet(0) ) );  // r= where( wds!=0 )            
+            QDataSet xdsr;
+            LinFit f;
+            xdsr= DataSetOps.applyIndex( xds, 0, r, false );          // xdsr= xds[r]
+            f= new LinFit( Ops.findgen(xdsr.length()), xdsr );
+            double chilin= f.getChi2();
+            r= Ops.where( Ops.and( 
+                    Ops.gt( xds, DataSetUtil.asDataSet(0) ), 
+                    Ops.ne( wds, DataSetUtil.asDataSet(0) ) ) );
+            xdsr= DataSetOps.applyIndex( xds, 0, r, false );          // xdsr= xds[r]
+            if ( xdsr.length()<2 ) {
                 everIncreasing= 0;
-            }
-            for ( int i=3; everIncreasing>0 && i<xds.length(); i++ ) {
-                if ( wds.value(i)==0 || wds.value(i-2)==0 ) {
-                    continue;
-                }
-                if ( xds.value(i)<=0 || xds.value(i-2)<=0 ) {
-                    everIncreasing= 0;
-                    continue;
-                }
-                double sp1= monoMag * ( xds.value(i) - xds.value(i-2) );
-                if ( sp1 > sp0*1.00001  ) {
-                    everIncreasing= xds.value(i)/xds.value(0);
-                    sp0= sp1;
-                } else {
-                    everIncreasing= 0;
+            } else {
+                f= new LinFit( Ops.findgen(xdsr.length()), Ops.log(xdsr) );
+                double chilog= f.getChi2();
+                if ( chilog < ( chilin/2 ) ) {
+                    QDataSet ext= Ops.extent(xds);
+                    everIncreasing= ext.value(1)/ext.value(0);
                 }
             }
+            
+        } else {
+            if ( xds.length()>2 ) {
+                // check to see if spacing is ever-increasing, which is a strong hint that this is log spacing.
+                // everIncreasing is a measure of this.  When it is >0, it is the ratio of the last to the first
+                // number in a ever increasing sequence.  Allow for one repeated length (POLAR/Hydra Energies)
+                sp= monoMag * ( xds.value(2) - xds.value(0) );
+                everIncreasing= xds.value(2) / xds.value(0);
+                double sp0= sp;
+                if ( xds.value(2)<=0 || xds.value(0)<=0 || xds.value(1)>(xds.value(0)+xds.value(2)) ) {
+                    everIncreasing= 0;
+                }
+                for ( int i=3; everIncreasing>0 && i<xds.length(); i++ ) {
+                    if ( wds.value(i)==0 || wds.value(i-3)==0 ) {
+                        continue;
+                    }
+                    if ( xds.value(i)<=0 || xds.value(i-3)<=0 ) {
+                        everIncreasing= 0;
+                        continue;
+                    }
+                    double sp1= monoMag * ( xds.value(i) - xds.value(i-3) );
+                    if ( sp1 > sp0*1.00001  ) {
+                        everIncreasing= xds.value(i)/xds.value(0);
+                        sp0= sp1;
+                    } else {
+                        everIncreasing= 0;
+                    }
+                }
+            }
+            if ( everIncreasing>0 && monoMag==-1 ) everIncreasing= 1/everIncreasing;
         }
-        if ( everIncreasing>0 && monoMag==-1 ) everIncreasing= 1/everIncreasing;
 
         boolean logScaleType = "log".equals( xds.property(QDataSet.SCALE_TYPE) );
 
