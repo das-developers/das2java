@@ -1,6 +1,8 @@
 package org.virbo.dsutil;
 
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dsops.Ops;
 
 /**
  * Borrowed from pamguard, https://sourceforge.net/projects/pamguard/.
@@ -31,9 +33,16 @@ public class LinFit {
     }
 
     private void doFit( QDataSet x, QDataSet y, QDataSet sig ) {
+        if ( x.rank()!=1 || y.rank()!=1 ) {
+            throw new IllegalArgumentException("x and y must be rank 1");
+        }
         this.x = x;
         this.y = y;
+        QDataSet wds= Ops.multiply( DataSetUtil.weightsDataSet(x), DataSetUtil.weightsDataSet(y) );
         this.nData = x.length();
+        if ( Ops.reduceMin(wds,0).value()==0 ) {
+            throw new IllegalArgumentException("data cannot contain fill");
+        }
         this.sig = sig;
         doneErrors = false;
 
