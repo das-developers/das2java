@@ -1032,19 +1032,14 @@ public class DataSetUtil {
         
         double everIncreasing= 0.;
         if ( xds.length()<100 && xds.rank()==1 ) {
-            QDataSet r= Ops.where( Ops.ne( wds, DataSetUtil.asDataSet(0) ) );  // r= where( wds!=0 )            
-            QDataSet xdsr;
             LinFit f;
-            xdsr= DataSetOps.applyIndex( xds, 0, r, false );          // xdsr= xds[r]
-            f= new LinFit( Ops.findgen(xdsr.length()), xdsr );
+            f= new LinFit( Ops.findgen(xds.length()), xds );
             double chilin= f.getChi2();
-            r= Ops.where( Ops.and( 
-                    Ops.gt( xds, DataSetUtil.asDataSet(0) ), 
-                    Ops.ne( wds, DataSetUtil.asDataSet(0) ) ) );
-            xdsr= DataSetOps.applyIndex( xds, 0, r, false );          // xdsr= xds[r]
-            if ( xdsr.length()<2 ) {
+            QDataSet r= Ops.where( Ops.gt( Ops.abs(xds), DataSetUtil.asDataSet(0) ) );
+            if ( r.length()<2 ) {
                 everIncreasing= 0;
             } else {
+                QDataSet xdsr= DataSetOps.applyIndex( xds, 0, r, false );          // xdsr= xds[r]
                 f= new LinFit( Ops.findgen(xdsr.length()), Ops.log(xdsr) );
                 double chilog= f.getChi2();
                 if ( chilog < ( chilin/2 ) ) {
