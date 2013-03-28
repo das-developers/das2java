@@ -1,8 +1,8 @@
 package org.virbo.dsutil;
 
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dsops.Ops;
 
 /**
  * Borrowed from pamguard, https://sourceforge.net/projects/pamguard/.
@@ -24,10 +24,27 @@ public class LinFit {
     double wt, t, sxoss, sx = 0., sy = 0., st2 = 0., ss, sigdat;
     int mwt = 0;
 
+    /**
+     * do fit with uniform weights or weight=0 where fill is found.
+     * @param x
+     * @param y 
+     */
     public LinFit( QDataSet x, QDataSet y ) {
-        doFit(x, y, null);
+        FDataSet wds= FDataSet.createRank1( x.length() );
+        QDataSet wdsx= DataSetUtil.weightsDataSet(x);
+        QDataSet wdsy= DataSetUtil.weightsDataSet(y);
+        for ( int i=0; i<x.length(); i++ ) {
+            wds.putValue( i, ( wdsx.value(i)==0 || wdsy.value(i)==0 ? 0 : 1 ) );
+        }
+        doFit(x, y, wds );
     }
 
+    /**
+     * do fit with weights.  X and Y must not contain fill. where sig>0.
+     * @param x the x data
+     * @param y the y data
+     * @param sig the error bar, or zero for fill.
+     */
     public LinFit( QDataSet x, QDataSet y, QDataSet sig ) {
         doFit(x, y, sig);
     }
@@ -38,26 +55,26 @@ public class LinFit {
         }
         this.x = x;
         this.y = y;
-        QDataSet wds= Ops.multiply( DataSetUtil.weightsDataSet(x), DataSetUtil.weightsDataSet(y) );
         this.nData = x.length();
-        if ( Ops.reduceMin(wds,0).value()==0 ) {
-            throw new IllegalArgumentException("data cannot contain fill");
-        }
         this.sig = sig;
         doneErrors = false;
 
         int i;
         if (sig != null) {
             mwt = nData;
+        } else {
+            mwt= 0;
         }
         b = 0.;
         if (mwt > 0) {                 // Accumalative sums
             ss = 0.;
             for (i = 0; i < nData; i++) {     // with weights
-                wt = 1. / SQR(sig.value(i));
-                ss += wt;
-                sx += x.value(i) * wt;
-                sy += y.value(i) * wt;
+                if ( sig.value(i)>0 ) {
+                    wt = 1. / SQR(sig.value(i));
+                    ss += wt;
+                    sx += x.value(i) * wt;
+                    sy += y.value(i) * wt;
+                }
             }
         } else {
             for (i = 0; i < nData; i++) {
