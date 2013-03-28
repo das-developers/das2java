@@ -3247,13 +3247,28 @@ public class Ops {
             if ( range.value(0)==fill ) System.err.println("range passed into extent contained fill");
         }
 
-        if ( ds.rank()==1 && Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC )) && deltaplus==null ) {
-            int ifirst=0;
-            int n= ds.length();
-            int ilast= n-1;
+        // find the first and last valid points.
+        int ifirst=0;
+        int n= ds.length();
+        int ilast= n-1;
+        while ( ifirst<n && wds.value(ifirst)==0.0 ) ifirst++;
+        while ( ilast>=0 && wds.value(ilast)==0.0 ) ilast--;
+        
+        boolean monoCheck= Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC ));
+        if ( monoCheck ) {
             while ( ifirst<n && wds.value(ifirst)==0.0 ) ifirst++;
-
             while ( ilast>=0 && wds.value(ilast)==0.0 ) ilast--;
+            int imiddle= ( ifirst + ilast ) / 2;
+            if ( wds.value(imiddle)>0 ) {
+                double dir= ds.value(ilast) - ds.value(ifirst) ;
+                if ( ( ds.value(imiddle) - ds.value(ifirst) ) * dir < 0 ) {
+                    logger.fine("this data isn't really monotonic.");
+                    monoCheck= false;
+                }
+            }
+        }
+        
+        if ( ds.rank()==1 && monoCheck && deltaplus==null ) {
             count= Math.max( 0, ilast - ifirst + 1 );
             if ( count>0 ) {
                 result[0]= Math.min( result[0], ds.value(ifirst) );
@@ -3262,7 +3277,11 @@ public class Ops {
                 result[0] = range==null ? fill : range.value(0);
                 result[1] = range==null ? fill : range.value(1);
             }
-
+            if ( result[0]>result[1] ) { // okay with fill.
+                double t= result[1];
+                result[1]= result[0];
+                result[0]= t;
+            }
         } else {
 
             if (deltaplus != null) {
