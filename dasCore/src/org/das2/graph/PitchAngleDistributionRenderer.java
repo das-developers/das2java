@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import static java.lang.Math.*;
+import static org.das2.graph.ContoursRenderer.PROP_LINETHICK;
 import org.virbo.dataset.ArrayDataSet;
 
 /**
@@ -118,8 +119,10 @@ public class PitchAngleDistributionRenderer extends Renderer {
         xdesc= ArrayDataSet.maybeCopy( Ops.rescaleRange( xdesc, -1.1, 1.1 ) );
         ydesc= ArrayDataSet.maybeCopy( Ops.rescaleRange( ydesc, -1.1, 1.1 ) );
 
-        xdesc.putProperty( QDataSet.LABEL, rds.property(QDataSet.LABEL)) ;
-        ydesc.putProperty( QDataSet.LABEL, rds.property(QDataSet.LABEL)) ;
+        String l= rds.property(QDataSet.LABEL)==null ? "(Parallel)" : String.format( "%s (Parallel)", rds.property(QDataSet.LABEL));
+        xdesc.putProperty( QDataSet.LABEL, l ) ;
+        l= rds.property(QDataSet.LABEL)==null ? "(Perp)" : String.format( "%s (Perp)", rds.property(QDataSet.LABEL));
+        ydesc.putProperty( QDataSet.LABEL, l ) ;
         
         JoinDataSet bds= new JoinDataSet(2);
         bds.join(xdesc);
@@ -270,6 +273,13 @@ public class PitchAngleDistributionRenderer extends Renderer {
 //            colorBar.getCanvas().remove(colorBar);
 //        }
     }
+    
+
+    @Override
+    public void setControl(String s) {
+        super.setControl(s);
+        this.mirror= getBooleanControl( "mirror", mirror );
+    }    
 
     /**
      * if true, then angle=0 is in the positive Y direction, otherwise
