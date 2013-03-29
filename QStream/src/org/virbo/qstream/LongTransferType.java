@@ -18,7 +18,7 @@ public class LongTransferType extends TransferType {
 
     @Override
     public void write(double d, ByteBuffer buffer) {
-        buffer.putLong((int)d);
+        buffer.putLong((long)d);
     }
 
     @Override
