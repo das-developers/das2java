@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import static java.lang.Math.*;
+import org.virbo.dataset.ArrayDataSet;
 
 /**
  *
@@ -35,7 +36,9 @@ public class PitchAngleDistributionRenderer extends Renderer {
 
     /**
      * accepts data that is rank 2 and not a timeseries.  Angles
-     * may be in radians or in Units.degrees.
+     * may be in radians or in Units.degrees.  
+     * ds[Energy,Pitch] or ds[Pitch,Energy] where Pitch is in:
+     *   Units.degrees, Units.radians, or dimensionless and -2*PI to 2*PI.
      * @param ds
      * @return
      */
@@ -44,7 +47,8 @@ public class PitchAngleDistributionRenderer extends Renderer {
             if ( SemanticOps.isTimeSeries(ds) ) return false;
             if ( SemanticOps.isBundle(ds) ) return false;
             QDataSet yds= SemanticOps.ytagsDataSet(ds);
-            if ( SemanticOps.getUnits(yds)==Units.degrees ) {
+            QDataSet xds= SemanticOps.xtagsDataSet(ds);
+            if ( SemanticOps.getUnits(yds)==Units.degrees || SemanticOps.getUnits(xds)==Units.degrees || SemanticOps.getUnits(yds)==Units.radians || SemanticOps.getUnits(xds)==Units.radians ) {
                 return true;
             } else {
                 QDataSet extent= Ops.extent(yds);
@@ -108,12 +112,15 @@ public class PitchAngleDistributionRenderer extends Renderer {
             rds= SemanticOps.xtagsDataSet(tds);
         }
 
-        QDataSet xdesc= DDataSet.wrap( new double[] { 0, Ops.extent(rds).value(1) } );
-        QDataSet ydesc= xdesc;
+        ArrayDataSet xdesc= DDataSet.wrap( new double[] { 0, Ops.extent(rds).value(1) }, yunits );
+        ArrayDataSet ydesc= xdesc;
 
-        xdesc= Ops.rescaleRange( xdesc, -1.1, 1.1 );
-        ydesc= Ops.rescaleRange( ydesc, -1.1, 1.1 );
+        xdesc= ArrayDataSet.maybeCopy( Ops.rescaleRange( xdesc, -1.1, 1.1 ) );
+        ydesc= ArrayDataSet.maybeCopy( Ops.rescaleRange( ydesc, -1.1, 1.1 ) );
 
+        xdesc.putProperty( QDataSet.LABEL, rds.property(QDataSet.LABEL)) ;
+        ydesc.putProperty( QDataSet.LABEL, rds.property(QDataSet.LABEL)) ;
+        
         JoinDataSet bds= new JoinDataSet(2);
         bds.join(xdesc);
         bds.join(ydesc);
