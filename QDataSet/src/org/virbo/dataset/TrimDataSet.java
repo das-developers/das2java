@@ -122,8 +122,12 @@ public class TrimDataSet extends AbstractDataSet {
 
     @Override
     public QDataSet trim(int start, int end) {
-        if ( end>=len ) throw new IllegalArgumentException("end>len");
-        if ( start<0 ) throw new IllegalArgumentException("start<0" );
+        if ( end>len ) {
+            throw new IllegalArgumentException("end>len");
+        }
+        if ( start<0 ) {
+            throw new IllegalArgumentException("start<0" );
+        }
         return new TrimDataSet( ds, start+offset, start+offset+end );
     }
 
