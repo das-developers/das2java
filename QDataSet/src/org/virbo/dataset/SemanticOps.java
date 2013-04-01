@@ -5,6 +5,8 @@
 package org.virbo.dataset;
 
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Basis;
@@ -863,6 +865,57 @@ public class SemanticOps {
 
         return result;
         
+    }
+    
+    private static final Map<String,Class> propertyTypes= new HashMap();
+    static {
+        propertyTypes.put( QDataSet.UNITS, Units.class );
+        propertyTypes.put( QDataSet.TYPICAL_MIN, Number.class );
+        propertyTypes.put( QDataSet.TYPICAL_MAX, Number.class );
+        propertyTypes.put( QDataSet.VALID_MIN, Number.class );
+        propertyTypes.put( QDataSet.VALID_MAX, Number.class );
+        propertyTypes.put( QDataSet.FILL_VALUE, Number.class );
+        propertyTypes.put( QDataSet.CACHE_TAG, org.das2.datum.CacheTag.class );
+        propertyTypes.put( QDataSet.CADENCE, QDataSet.class );
+        propertyTypes.put( QDataSet.DEPEND_0, QDataSet.class );
+        propertyTypes.put( QDataSet.DEPEND_1, QDataSet.class );
+        propertyTypes.put( QDataSet.DEPEND_2, QDataSet.class );
+        propertyTypes.put( QDataSet.DEPEND_3, QDataSet.class );
+        propertyTypes.put( QDataSet.BUNDLE_0, QDataSet.class );
+        propertyTypes.put( QDataSet.BUNDLE_1, QDataSet.class );
+        propertyTypes.put( QDataSet.DELTA_PLUS, QDataSet.class );
+        propertyTypes.put( QDataSet.DELTA_MINUS, QDataSet.class );
+        propertyTypes.put( QDataSet.BIN_PLUS, QDataSet.class );
+        propertyTypes.put( QDataSet.BIN_MINUS, QDataSet.class );        
+    }
+    /**
+     * verifies property types.  For example, that UNITS is a org.das2.datum.Units, etc.
+     * Returns true for unrecognized property names (future expansion) and null.
+     * @param prop
+     * @param value
+     * @return 
+     */
+    public static boolean checkPropertyType( String prop, Object value, boolean throwException ) {
+        Class typ= propertyTypes.get(prop);
+        if ( typ==null || value==null || typ.isAssignableFrom( value.getClass() ) ) {
+            return true;
+        } else {
+            if ( throwException ) {
+                String styp= typ.toString();
+                if ( typ==Number.class ) {
+                    styp="Number";
+                } else if ( typ==QDataSet.class ) {
+                    styp="QDataSet";
+                }
+                if ( value instanceof String ) {
+                    throw new IllegalArgumentException("bad value for property "+prop+": \""+value+"\", expected "+styp );
+                } else {
+                    throw new IllegalArgumentException("bad value for property "+prop+": "+value+", expected "+styp );
+                }
+            } else {
+                return false;
+            }
+        }
     }
 
 }
