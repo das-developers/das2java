@@ -11,8 +11,7 @@ import java.util.Map;
  * DataSet for storing sparse data.  This is used initially to describe bundles.
  * This returns 0 where no data has been set.  For example,
  * <code>
- * sp= SparseDataSet.createRank(2)
- * sp.setLength(4)
+ * sp= SparseDataSet.createQube([2,4])
  * sp[2,2]= 1
  * print sp[0,0]
  * </code>
@@ -45,6 +44,33 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
         return new SparseDataSet(rank);
     }
 
+    /**
+     * create the dataset with the given rank and initial length.  This
+     * was introduced because setLength cannot be called from Jython scripts.
+     * Each record will have length(i) based on the highest index assigned.
+     * @param rank the result's rank.
+     * @param len0 the number of records in the result.  
+     * @see createRank(int[] qube)
+     * @return SparseDataSet with the given rank.
+     */
+    public static SparseDataSet createRankLen( int rank, int len0 ) {
+        SparseDataSet result= new SparseDataSet(rank);
+        result.setLength(len0);
+        return result;
+    }
+
+    /**
+     * create the qube dataset with the given dimensions.  This
+     * was introduced because setQube cannot be called from Jython scripts.
+     * @param qube the index dimensions.
+     * @return SparseDataSet with the given rank and dimensions based on qube.
+     */
+    public static SparseDataSet createQube( int[] qube ) {
+        SparseDataSet result= new SparseDataSet(qube.length);
+        result.setQube(qube);
+        return result;
+    }
+    
     /**
      * set the length of the zeroth dimension.  Other dimensions have length set implicitly by the highest value set.
      * If this is not set explicitly, then it will be implicit as well.
