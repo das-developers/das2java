@@ -888,11 +888,14 @@ public class SemanticOps {
         propertyTypes.put( QDataSet.BIN_PLUS, QDataSet.class );
         propertyTypes.put( QDataSet.BIN_MINUS, QDataSet.class );        
     }
+    
     /**
-     * verifies property types.  For example, that UNITS is a org.das2.datum.Units, etc.
-     * Returns true for unrecognized property names (future expansion) and null.
-     * @param prop
-     * @param value
+     * verify property types.  For example, that UNITS is a org.das2.datum.Units, etc.
+     * Returns true for unrecognized property names (future expansion) and null.  If 
+     * throwException is true, then an IllegalArgumentException is thrown.
+     * @param prop the property name, e.g. QDataSet.CADENCE
+     * @param value the candidate value for the property.
+     * @param throwException if true, throw descriptive exception instead of returning false.
      * @return 
      */
     public static boolean checkPropertyType( String prop, Object value, boolean throwException ) {
