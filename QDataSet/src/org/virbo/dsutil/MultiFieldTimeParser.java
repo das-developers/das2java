@@ -8,10 +8,13 @@ package org.virbo.dsutil;
 import java.text.ParseException;
 import org.das2.datum.Units;
 import org.das2.datum.TimeParser;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.MutablePropertyDataSet;
+import org.virbo.dataset.QDataSet;
 
 /**
  * Parse the record by recombining the separated fields, then parsing
- * the combined string.
+ * the combined string.  This is to be used with AsciiParser.
  *
  * 2010/03/11: Indeterminate field length is used when one field is in a record.
  * 2010/03/11: The last field, if just one digit type (%S), can contain fractional part.
@@ -49,7 +52,35 @@ public class MultiFieldTimeParser implements AsciiParser.FieldParser {
             return fieldCount( spec )==1;
         }
     }
+    
+    /**
+     * configure AsciiParser ap to use this field parser.  The parser is
+     * registered with each column and the units are set.
+     * @param ap
+     * @param firstColumn
+     * @param timeFormats 
+     */
+    public static MultiFieldTimeParser create( AsciiParser ap, int firstColumn, String[] timeFormats ) {
+       String format= timeFormats[0];
+       for ( int i=1; i<timeFormats.length; i++ ) {
+           format= " "+timeFormats[i];
+       }
+       TimeParser tp= TimeParser.create( format );
+       MultiFieldTimeParser mftp= new MultiFieldTimeParser( firstColumn, timeFormats, tp, Units.cdfTT2000 );
+       for ( int i=0; i<timeFormats.length; i++ ) {
+           ap.setFieldParser( i, mftp );
+           ap.setUnits( i, Units.dimensionless );
+       }
+       return mftp;
+    }
 
+    public QDataSet unpack( QDataSet rank2, Units u ) {
+        MutablePropertyDataSet ds= DataSetOps.slice1( rank2, lastColumn );
+        if ( u!=units ) throw new IllegalArgumentException("unable to convert units, my fault.");
+        ds.putProperty( QDataSet.UNITS, u );
+        return ds;
+    }
+    
     public MultiFieldTimeParser( int firstColumn, String[] timeFormats, TimeParser parser, Units units ) {
         this.firstColumn= firstColumn;
         this.lastColumn= firstColumn + timeFormats.length - 1;
@@ -140,6 +171,14 @@ public class MultiFieldTimeParser implements AsciiParser.FieldParser {
                 return parser.getTime(units);
             }
         }
+    }
+    
+    /**
+     * suggest units for unpacking.
+     * @return 
+     */
+    public Units getUnits() {
+        return units;
     }
 
 }
