@@ -7,7 +7,7 @@ package org.virbo.dataset;
 /**
  * Builder for SparseDataSets.  This was introduced to fix the problem where
  * we wish to calculate the SparseDataSet in one pass, but we can't do this because
- * PyQDataSets obscure the type.
+ * PyQDataSets obscure the type and there was no way to set the length.
  * @author jbf
  */
 public class SparseDataSetBuilder {
