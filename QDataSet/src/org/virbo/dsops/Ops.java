@@ -1111,6 +1111,41 @@ public class Ops {
     }
 
     /**
+     * element-wise function returns the greater of ds1 and ds2.
+     * @param ds1
+     * @param ds2
+     * @return the bigger of the two, in the units of ds1.
+     */
+    public static QDataSet greaterOf(QDataSet ds1, QDataSet ds2) {
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds2, ds1 );
+        MutablePropertyDataSet mpds=  applyBinaryOp(ds1, ds2, new BinaryOp() {
+            public double op(double d1, double d2) {
+                return uc.convert(d2) > d1 ? d2 : d1;
+            }
+        });
+        mpds.putProperty( QDataSet.UNITS, ds1.property(QDataSet.UNITS) );
+        return mpds;
+    }
+    
+    
+    /**
+     * element-wise function returns the smaller of ds1 and ds2.
+     * @param ds1
+     * @param ds2
+     * @return the smaller of the two, in the units of ds1.
+     */
+    public static QDataSet lesserOf(QDataSet ds1, QDataSet ds2) {
+        final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds2, ds1 );
+        MutablePropertyDataSet mpds=  applyBinaryOp(ds1, ds2, new BinaryOp() {
+            public double op(double d1, double d2) {
+                return uc.convert(d2) < d1 ? d2 : d1;
+            }
+        });
+        mpds.putProperty( QDataSet.UNITS, ds1.property(QDataSet.UNITS) );
+        return mpds;
+    }
+        
+    /**
      * element-wise function returns 1 where ds1&gt;=ds2.
      * @param ds1
      * @param ds2
