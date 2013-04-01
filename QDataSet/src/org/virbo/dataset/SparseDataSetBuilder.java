@@ -43,10 +43,12 @@ public class SparseDataSetBuilder {
     }
 
     public void putProperty(String name, Object value) {
+        SemanticOps.checkPropertyType( name, value, true );
         ds.putProperty( name, value );
     }
 
     public void putProperty(String name, int index, Object value) {
+        SemanticOps.checkPropertyType( name, value, true );
         ds.putProperty( name, index, value );
     }
 
