@@ -1189,7 +1189,7 @@ public class DataSetOps {
                 String prop= ( i==-1 ) ? "DEPEND_0" : testProps[i];
                 Object dep0= result.property(prop);
                 if ( dep0!=null ) {
-                    if ( dep0 instanceof String ) {
+                    if ( dep0 instanceof String ) { //TODO: we can get rid of this.  DEPEND_0 must never be a string.
                         try {
                             QDataSet dep0ds= unbundle( bundleDs, (String)dep0 );
                             result.putProperty( prop, dep0ds );
