@@ -61,6 +61,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -145,7 +146,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         binAverageNoInterpolateNoEnlarge = new RebinnerEnum(rebinner, "noInterpolateNoEnlarge");
         }*/
         public Icon getListIcon() {
-            return new ImageIcon(SpectrogramRenderer.class.getResource("/images/icons/rebin." + label + ".png"));
+			URL resource = SpectrogramRenderer.class.getResource("/images/icons/rebin." + label + ".png");
+			if (resource == null) {
+				return null;
+			}
+            return new ImageIcon(resource);
         }
 
         public String toString() {
