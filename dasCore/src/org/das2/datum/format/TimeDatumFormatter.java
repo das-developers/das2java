@@ -319,10 +319,9 @@ public class TimeDatumFormatter extends DatumFormatter {
      */
     private Number[] timeStructToArray(CalendarTime ts) {
         int secondsFieldCount = scaleSeconds == null ? 0 : scaleSeconds.length;
-        int maxScale = scaleSeconds == null ? 10 : (int)Math.pow(10, max(scaleSeconds));
+        //int maxScale = scaleSeconds == null ? 10 : (int)Math.pow(10, max(scaleSeconds));
         int fieldCount = TIMESTAMP_FIELD_COUNT + secondsFieldCount;
         Number[] array = new Number[fieldCount];
-        double fracSeconds = ts.nanosecond() / 1e9;
         
         array[YEAR_FIELD_INDEX] = new Integer(ts.year());
         array[MONTH_FIELD_INDEX] = new Integer(ts.month());
@@ -331,6 +330,8 @@ public class TimeDatumFormatter extends DatumFormatter {
         array[HOUR_FIELD_INDEX] = new Integer(ts.hour());
         array[MINUTE_FIELD_INDEX] = new Integer(ts.minute());
         array[SECONDS_FIELD_INDEX] = new Integer(ts.second());
+
+		  double fracSeconds = ts.nanosecond() / 1e9;
         for (int i = TIMESTAMP_FIELD_COUNT; i < array.length; i++) {
             int value = (int)Math.round(fracSeconds * Math.pow(10, scaleSeconds[i - TIMESTAMP_FIELD_COUNT]));
             array[i] = new Integer(value);

@@ -173,14 +173,16 @@ public final class TimeUtil {
         return lRet;
     }
     
-    /**
+    /** Here millis are the number of milliseconds after the second, and micros are
+	  * the number of micro seconds after the <b>millisecond</b> not the second.
+	  * 
      * returns int[] { year, month, day, hour, minute, second, millis, micros }
      */
     public static int[] toTimeArray( Datum time ) {
 
 		 CalendarTime ts= new CalendarTime( time );
 		 int millis = (int) (ts.m_nNanoSecond / 1000000);
-		 int micros = (int) (ts.m_nNanoSecond / 1000);
+		 int micros = (int) ((ts.m_nNanoSecond % 1000000)/ 1000);
 		  
        return new int[] { ts.m_nYear, ts.m_nMonth, ts.m_nDom, ts.m_nHour, ts.m_nMinute, ts.m_nSecond,
 		                     millis, micros };
