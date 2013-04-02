@@ -75,7 +75,17 @@ public class DasColorBar extends DasAxis {
         setLayout(new ColorBarLayoutManager());
         setType(DasColorBar.Type.COLOR_WEDGE);
     }
-    
+
+    public DasColorBar( DatumRange range, int orientation, boolean isLog) {
+		super(range, orientation);
+		setLog(isLog);
+        setLayout(new ColorBarLayoutManager());
+        setType(DasColorBar.Type.COLOR_WEDGE);
+	}
+
+	public DasColorBar( DatumRange range, boolean isLog) {
+		this(range, RIGHT, isLog);
+	}
     
     public int rgbTransform(double x, Units units) {
         int icolor= (int)transform(x,units,0, ncolor);
