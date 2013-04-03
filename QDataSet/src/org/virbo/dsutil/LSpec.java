@@ -11,6 +11,7 @@ package org.virbo.dsutil;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
@@ -50,8 +51,12 @@ public class LSpec {
         int end=0; // index of the right point of slope0.
 
         QDataSet wds= SemanticOps.weightsDataSet(lds);
-        QDataSet tds= SemanticOps.xtagsDataSet(lds);
+        ArrayDataSet tds= ArrayDataSet.copy( SemanticOps.xtagsDataSet(lds) );
         wds= Ops.multiply( wds, SemanticOps.weightsDataSet(tds) );
+        
+        Datum cadence= SemanticOps.guessXTagWidth( tds, lds );
+        cadence= cadence.multiply(10.0); // kludge for data on 2012-10-25
+        tds.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet(cadence) );
         QDataSet nonGap= SemanticOps.cadenceCheck(tds,lds);
 
         for ( int i=1; i<lds.length(); i++ ) {
@@ -89,7 +94,7 @@ public class LSpec {
         DDataSet result= builder.getDataSet();
         result.putProperty( QDataSet.DEPEND_0, dep0builder.getDataSet() );
         result.putProperty( QDataSet.RENDER_TYPE, "eventsBar" );
-        dep0builder.putProperty( QDataSet.BINS_1, "min,maxInclusive" );
+        
         return result;
         
     }
