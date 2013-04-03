@@ -1832,7 +1832,9 @@ public class Ops {
 
     /**
      * returns a rank 0 dataset of random numbers of a guassian (normal) distribution.
-     * System.currentTimeMillis() may be used for the seed.
+     * System.currentTimeMillis() may be used for the seed.  Note this is unlike
+     * the IDL randomn function because the seed is not modified.  (Any long parameter in Jython
+     * and Java is read-only.)
      * @param seed
      * @param len0
      * @return
@@ -1899,7 +1901,9 @@ public class Ops {
 
     /**
      * returns a rank 0 dataset of random numbers of a uniform distribution.
-     * System.currentTimeMillis() may be used for the seed.
+     * System.currentTimeMillis() may be used for the seed.  Note this is unlike
+     * the IDL randomn function because the seed is not modified.  (Any long parameter in Jython
+     * and Java is read-only.)
      * @param seed
      * @param len0
      * @return
