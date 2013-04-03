@@ -269,7 +269,8 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         }
 
         QDataSet yds= SemanticOps.ytagsDataSet(tds1);
-        QDataSet sliceDataSet= DataSetOps.slice1( tds1, org.virbo.dataset.DataSetUtil.closestIndex( yds, yValue ) );
+        int iy= yds.rank()==2 ? org.virbo.dataset.DataSetUtil.closestIndex( yds.slice(0), yValue ) : org.virbo.dataset.DataSetUtil.closestIndex( yds, yValue );
+        QDataSet sliceDataSet= DataSetOps.slice1( tds1, iy );
 
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");
         if (!isPopupVisible()) {
