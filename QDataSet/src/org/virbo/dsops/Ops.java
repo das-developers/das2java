@@ -1775,6 +1775,13 @@ public class Ops {
     }
 
     /**
+     * return returns a rank 0 dataset of random uniform numbers from [0,1].
+     */
+    public static QDataSet rand() {
+        return rand(new int[]{}, new Random());
+    }
+    
+    /**
      * return returns a rank 1 dataset of random uniform numbers from [0,1].
      */
     public static QDataSet rand(int len0) {
@@ -1796,6 +1803,13 @@ public class Ops {
     }
 
     /**
+     * return returns a rank 0 dataset of random numbers of a guassian (normal) distribution.
+     */
+    public static QDataSet randn() {
+        return randn(new int[]{}, new Random());
+    }
+    
+    /**
      * return returns a rank 1 dataset of random numbers of a guassian (normal) distribution.
      */
     public static QDataSet randn(int len0) {
@@ -1816,6 +1830,18 @@ public class Ops {
         return randn(new int[]{len0, len1, len2}, new Random());
     }
 
+    /**
+     * returns a rank 0 dataset of random numbers of a guassian (normal) distribution.
+     * System.currentTimeMillis() may be used for the seed.
+     * @param seed
+     * @param len0
+     * @return
+     */
+    public static QDataSet randomn(long seed) {
+        double[] back = randomnBack(seed,1);
+        return DDataSet.wrap( back, 0, 1, 1, 1);
+    }
+    
     /**
      * returns a rank 1 dataset of random numbers of a guassian (normal) distribution.
      * System.currentTimeMillis() may be used for the seed.
@@ -1871,6 +1897,18 @@ public class Ops {
         return back;
     }
 
+    /**
+     * returns a rank 0 dataset of random numbers of a uniform distribution.
+     * System.currentTimeMillis() may be used for the seed.
+     * @param seed
+     * @param len0
+     * @return
+     */
+    public static QDataSet randomu(long seed) {
+        double[] back = randomuBack(seed, 1);
+        return DDataSet.wrap(back, 0, 1, 1, 1);
+    }
+    
     /**
      * returns a rank 1 dataset of random numbers of a uniform distribution.
      * System.currentTimeMillis() may be used for the seed.
