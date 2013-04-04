@@ -39,7 +39,8 @@ public class LSpec {
     
     /**
      * identify monotonically increasing or decreasing segments of the dataset.
-     *
+     * @param lds the dataset which sweeps back and forth, such as LShell or MagLat (or a sine wave for testing).
+     * @param dir 0=both 1=outward 2= inward
      * @return rank 2 data set of sweep indeces, dim0 is sweep number, dim1 is two-element [ start, end(inclusive) ].
      */
     public static QDataSet identifySweeps( QDataSet lds, int dir ) {
@@ -312,26 +313,27 @@ public class LSpec {
             interpolate( lds, zds, (int) sweeps.value( i,0 ), (int) sweeps.value( i,1 ), i, lgrid, result );
         }
         
-        DDataSet xtags= DDataSet.createRank1( sweeps.length() );
-        for ( int i=0; i<sweeps.length(); i++ ) {
-            xtags.putValue( i, ( sweeps.value( i,0 ) + sweeps.value( i,1 ) ) / 2 );
-        }
+        DDataSet xtags= DDataSet.createRank2( sweeps.length(), 2 );
         
         QDataSet dep0= (QDataSet) lds.property(QDataSet.DEPEND_0);
         if ( dep0!=null ) {
             
             for ( int i=0; i<sweeps.length(); i++ ) {
-                xtags.putValue( i,
-                        ( dep0.value( (int)sweeps.value( i,0 ) )
-                        + dep0.value( (int)sweeps.value( i,1 ) ) ) / 2 );
-                
+                xtags.putValue( i,0,dep0.value( (int)sweeps.value( i,0 ) ) );
+                xtags.putValue( i,1,dep0.value( (int)sweeps.value( i,1 ) ) );
             }
 
             DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep0,null), xtags );
             Units xunits= SemanticOps.getUnits(dep0);
             xtags.putProperty( QDataSet.UNITS, xunits );
+            xtags.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
             xtags.putProperty( QDataSet.MONOTONIC, org.virbo.dataset.DataSetUtil.isMonotonic(dep0) );
-            xtags.putProperty( QDataSet.CADENCE, DRank0DataSet.create( 1.5 * guessCadence(xtags,2), xunits.getOffsetUnits() ) );
+
+        } else {
+            for ( int i=0; i<sweeps.length(); i++ ) {
+                xtags.putValue( i,0, sweeps.value( i,0 ) );
+                xtags.putValue( i,1, sweeps.value( i,1 ) );
+            }
         }
 
         Map<String,Object> userProps= new LinkedHashMap();
