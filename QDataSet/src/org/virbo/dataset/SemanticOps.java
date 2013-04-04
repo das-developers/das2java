@@ -551,6 +551,8 @@ public class SemanticOps {
         } else {
             if ( ds.rank()==1 ) {
                 return ds;
+            } else if ( ds.rank()==2 && isBins(ds) ) {
+                return ds;
             } else {
                 QDataSet result= (QDataSet) ds.property(QDataSet.DEPEND_1);
                 if ( result==null ) {
