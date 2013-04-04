@@ -2520,13 +2520,19 @@ public class DataSetUtil {
      * returns the index of the closest index in the data. "column" comes
      * from the legacy operator.
      * This assumes there is no invalid data!
+     * This supports rank 1 datasets, and rank 2 bins datasets where the bin is min,max.
+     * 
      * @param ds
      * @param datum
      * @return
      */
     public static int closestIndex( QDataSet ds, Datum datum ) {
         if ( ds.rank()!=1 ) {
-            throw new IllegalArgumentException("ds rank should be 1");
+            if ( ds.rank()==2 && SemanticOps.isBins(ds) ) {
+                ds= Ops.reduceMean(ds,1);
+            } else {
+                throw new IllegalArgumentException("ds rank should be 1");
+            }
         }
         if ( ds.length()==0 ) {
             throw new IllegalArgumentException("ds length is zero");
