@@ -207,6 +207,7 @@ public class FileStorageModelNew {
      */
     private synchronized DatumRange getDatumRangeFor( String filename, Map<String,String> extra ) {
         try {
+            extra.clear();
             if ( pattern.matcher(filename).matches() ) {
                 timeParser.parse( filename, extra );
                 return timeParser.getTimeRange();
@@ -767,7 +768,12 @@ public class FileStorageModelNew {
                 return null;
             }
             public void parse( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) {
-                extra.put( "v", fieldContent );
+                String v= extra.get("v");
+                if ( v!=null ) {
+                    versioningType= VersioningType.numericSplit; 
+                    fieldContent= v+"."+fieldContent; // Support $v.$v.$v
+                } 
+                extra.put( "v", fieldContent );                    
             }
 
             public String getRegex() {
