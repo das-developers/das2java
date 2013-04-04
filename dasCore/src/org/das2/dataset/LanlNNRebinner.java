@@ -94,7 +94,7 @@ public class LanlNNRebinner implements DataSetRebinner {
         QDataSet tds = (QDataSet) ds;
         int rank= tds.rank();
 
-        if ( rank==2 ) { // make it into a rank 3 table
+        if ( rank==2 ) { // make it into a rank 3 table so we are always working with the same scheme.
             JoinDataSet tdsx= new JoinDataSet(3);
             tdsx.join(tds);
             tds= tdsx;
