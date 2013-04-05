@@ -314,7 +314,7 @@ public class QubeDataSetIterator implements DataSetIterator {
      * @param idim
      * @return
      */
-    private final int dimLength(int idim) {
+    private int dimLength(int idim) {
         if (qube != null) {
             return qube[idim];
         } else {
@@ -344,6 +344,11 @@ public class QubeDataSetIterator implements DataSetIterator {
             return this.allnext;
         } else {
             if ( it[0].length()==0 ) return false; // check for empty datasets.
+            if ( qube!=null ) {
+                for ( int i=1; i<rank; i++ ) {
+                    if ( it[i].length()==0 ) return false; // this is true only for Qubes.
+                }
+            }
             int i = rank - 1;
             if (it[i].hasNext()) {
                 return true;
