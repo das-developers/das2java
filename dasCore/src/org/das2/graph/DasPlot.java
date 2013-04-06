@@ -956,6 +956,9 @@ public class DasPlot extends DasCanvasComponent {
                     resetCacheImageBounds(true);
                     logger.finest(" printing thread, drawing");
                 } else {
+                    if ( getWidth()==0 || getHeight()==0 ) {
+                        return;
+                    }
                     resetCacheImageBounds(false);
                     cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height,
                             BufferedImage.TYPE_4BYTE_ABGR);
