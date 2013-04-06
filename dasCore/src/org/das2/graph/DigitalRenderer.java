@@ -572,7 +572,7 @@ public class DigitalRenderer extends Renderer {
         if ( selectionArea!=null ) {
             return selectionArea.contains( x, y );
         } else {
-            return true;
+            return false;
         }
     }
 
