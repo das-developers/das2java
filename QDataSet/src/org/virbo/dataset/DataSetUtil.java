@@ -2022,7 +2022,7 @@ public class DataSetUtil {
         }
         if (result == null) {
             QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
-            if ( bds!=null ) {
+            if ( bds!=null && ds.length()>0 && ds.length(0)>0 ) {
                 return bundleWeightsDataSet(ds);
             }
             Number validMin = (Number) ds.property(QDataSet.VALID_MIN);
