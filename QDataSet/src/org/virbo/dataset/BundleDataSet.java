@@ -98,7 +98,7 @@ public final class BundleDataSet extends AbstractDataSet {
             if ( len0==-1 ) {
                 len0= ds.length();
             } else {
-                if ( ds.length()!=len0 ) throw new IllegalArgumentException("dataset length is not consistent with the bundle.");
+                if ( ds.length()!=len0 ) throw new IllegalArgumentException( String.format( "dataset length (%d) is not consistent with the bundle's length (%d)", ds.length(), len0) );
             }
         }
         datasets.add( ds );
