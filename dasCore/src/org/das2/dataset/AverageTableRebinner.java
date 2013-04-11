@@ -121,7 +121,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         int nx = (ddX == null ? tds1.length() : ddX.numberOfBins());
         int ny;
         if ( ddY == null ) {
-            if ( SemanticOps.isBundle(ds) ) throw new IllegalArgumentException("not supported, must specify ddY bins");
+            if ( SemanticOps.isBundle(ds) && !SemanticOps.isSimpleTableDataSet(ds) ) throw new IllegalArgumentException("not supported, must specify ddY bins");
             ny= tds1.length(0);
         } else {
             ny= ddY.numberOfBins();
