@@ -22,6 +22,8 @@
  */
 package org.das2.dataset;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
@@ -31,6 +33,7 @@ import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.logging.*;
 import org.das2.datum.UnitsConverter;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -61,6 +64,16 @@ public class AverageTableRebinner implements DataSetRebinner {
     public AverageTableRebinner() {
     }
 
+    private static QDataSet getRank1Tags( QDataSet xds ) {
+        QDataSet result;
+        if ( xds.rank()==2 && SemanticOps.isBins(xds) ) {
+            result= Ops.reduceMean( xds, 1 );
+        } else {
+            result= xds;
+        }
+        return result;
+    }
+    
     /**
      * rebin the data, using the interpolate control to define the interpolation between measurements.  Data that fall into the
      * same pixel are always averaged in the linear space, regardless of interpolation method.
@@ -100,8 +113,8 @@ public class AverageTableRebinner implements DataSetRebinner {
 
         QDataSet tds1= tds.slice(0);
 
-        QDataSet xds= SemanticOps.xtagsDataSet(tds1);
-        QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+        QDataSet xds= getRank1Tags( SemanticOps.xtagsDataSet(tds1) );
+        QDataSet yds= getRank1Tags( SemanticOps.ytagsDataSet(tds1) );
         Units xunits= SemanticOps.getUnits( xds );
         Units yunits= SemanticOps.getUnits( yds );
         QDataSet zds= tds1;
@@ -143,6 +156,14 @@ public class AverageTableRebinner implements DataSetRebinner {
             interpolate= false;
         } else {
             average( tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType );
+//            try {
+//                ArrayDataSet tdsc= ArrayDataSet.copy(tds.slice(0));
+//                tdsc.putProperty( QDataSet.DEPEND_0, Ops.collapse1((QDataSet)tdsc.property(QDataSet.DEPEND_0)));
+//                TableUtil.dumpToBinaryStream( (TableDataSet) DataSetAdapter.createLegacyDataSet(tdsc), new FileOutputStream("/tmp/foo.d2s") );
+//            } catch ( IOException ex ) {
+//                ex.printStackTrace();
+//                        
+//            }
             if (interpolate) { // I think these calculate the interpolated value at the edge.  Note there's a bug in here...
                 doBoundaries2RL(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
                 doBoundaries2TB(tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType);
@@ -291,8 +312,11 @@ public class AverageTableRebinner implements DataSetRebinner {
 
             QDataSet tds1= tds.slice(itable);
 
-            QDataSet xds= SemanticOps.xtagsDataSet(tds1);
+            QDataSet xds= getRank1Tags( SemanticOps.xtagsDataSet(tds1) );
             QDataSet yds= SemanticOps.ytagsDataSet(tds1);
+            if ( yds.rank()==2 && SemanticOps.isBins(yds) ) {
+                yds= getRank1Tags( yds );
+            }
             QDataSet wds= SemanticOps.weightsDataSet(tds1);
             
             Units xunits = SemanticOps.getUnits( xds );
@@ -451,10 +475,13 @@ public class AverageTableRebinner implements DataSetRebinner {
         for ( int itable=0; itable<tds.length(); itable++ ) {
             QDataSet tds1= tds.slice(itable);
 
-            QDataSet xds= SemanticOps.xtagsDataSet(tds1);
+            QDataSet xds= getRank1Tags( SemanticOps.xtagsDataSet(tds1) );
             QDataSet yds= SemanticOps.ytagsDataSet(tds1);
-            if ( yds.rank()==2 ) {
-                yds= yds.slice(0);
+            if ( yds.length()==1 && yds.rank()==2 && tds1.length()>1 ) {
+                yds= yds.slice(0); //TODO: kludge for RBSP.  Bad CDF file?  vap+cdfj:http://emfisis.physics.uiowa.edu/L1/2011/03/03/rbsp-a_HFR-spectra_emfisis-L1_20110303144809_v1.1.1.cdf?HFR_Spectra
+            }
+            if ( SemanticOps.isBins(yds) ) {
+                yds= getRank1Tags( yds );
             }
             QDataSet wds= SemanticOps.weightsDataSet(tds1);
 
@@ -622,10 +649,14 @@ public class AverageTableRebinner implements DataSetRebinner {
         nTables = tds.length();
         for (int iTable = 0; iTable < nTables; iTable++) {
             QDataSet tds1= tds.slice(iTable);
-            QDataSet xds= SemanticOps.xtagsDataSet( tds1 );
+            QDataSet xds= getRank1Tags( SemanticOps.xtagsDataSet( tds1 ) );
+            
             QDataSet yds= SemanticOps.ytagsDataSet( tds1 );
             if ( yds.length()==1 && yds.rank()==2 && tds1.length()>1 ) {
                 yds= yds.slice(0); //TODO: kludge for RBSP.  Bad CDF file?  vap+cdfj:http://emfisis.physics.uiowa.edu/L1/2011/03/03/rbsp-a_HFR-spectra_emfisis-L1_20110303144809_v1.1.1.cdf?HFR_Spectra
+            }
+            if ( yds.rank()==2 && SemanticOps.isBins(yds) ) {
+                yds= getRank1Tags( yds );
             }
             QDataSet wds= SemanticOps.weightsDataSet( tds1 );
 
