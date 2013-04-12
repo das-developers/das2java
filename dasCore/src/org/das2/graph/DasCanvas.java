@@ -41,6 +41,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -1056,9 +1057,27 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             waitUntilIdle();
         }
 
+        System.err.println("==Dump Future Events==");
+        EventQueueBlocker_1.dumpEventQueue( System.err );
+        System.err.println("======================");
+        
+        
+        EventQueue eventQueue= Toolkit.getDefaultToolkit().getSystemEventQueue();
+        while ( eventQueue.peekEvent( DasUpdateEvent.DAS_UPDATE_EVENT_ID )!=null ) {
+            try {
+                Thread.sleep(100);
+                System.err.println("==Dump Future Events...==");
+                EventQueueBlocker_1.dumpEventQueue( System.err );
+                System.err.println("=========================");
+                
+            }catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+                
         logger.fine("canvas is idle");
         /* should be in static state */
-        return;
+
     }
 
     /**
