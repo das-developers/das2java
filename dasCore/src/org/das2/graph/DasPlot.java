@@ -1397,10 +1397,11 @@ public class DasPlot extends DasCanvasComponent {
                 DasAxis axis= (DasAxis)e.getSource();
                 checkIsotropic( DasPlot.this, axis );
             }
-            BufferedImage ci= cacheImage;
-            if ( ci!=null ) {
-                ci.getGraphics().drawLine(0,0,ci.getWidth(),ci.getHeight());
-            }
+            //vandalize cacheImage so we can see what's happening
+            //BufferedImage ci= cacheImage;
+            //if ( ci!=null ) {
+            //    ci.getGraphics().drawLine(0,0,ci.getWidth(),ci.getHeight());
+            //}
             
             markDirty();
             DasPlot.this.update();
