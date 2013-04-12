@@ -3290,7 +3290,7 @@ public class Ops {
     /**
      * returns a two element, rank 1 dataset containing the extent (min to max) of the data, allowing an external
      * evaluation of the weightsDataSet.  If no valid data is found then [fill,fill] is returned.
-     * @param ds the dataset to measure the extent
+     * @param ds the dataset to measure the extent rank 1 or rank 2 bins
      * @param wds a weights dataset, containing zero where the data is not valid, positive non-zero otherwise.  If null, then all finite data is treated as valid.
      * @param range, if non-null, return the union of this range and the extent.  This must not contain fill!
      * @return two element, rank 1 "bins" dataset.
@@ -3307,6 +3307,13 @@ public class Ops {
         if ( ds.property(QDataSet.BIN_PLUS )!=null ) deltaplus= (QDataSet)ds.property(QDataSet.BIN_PLUS );
         if ( ds.property(QDataSet.BIN_MINUS )!=null ) deltaminus= (QDataSet)ds.property(QDataSet.BIN_MINUS );
 
+        if ( ds.rank()==2 && SemanticOps.isBins(ds) ) {
+            min= Ops.slice1(ds,0);
+            max= Ops.slice1(ds,1);
+            ds= min;
+            wds= Ops.slice1(wds,0);
+        }
+        
         int count=0;
 
         if ( wds==null ) {
@@ -3348,8 +3355,8 @@ public class Ops {
         if ( ds.rank()==1 && monoCheck && deltaplus==null ) {
             count= Math.max( 0, ilast - ifirst + 1 );
             if ( count>0 ) {
-                result[0]= Math.min( result[0], ds.value(ifirst) );
-                result[1]= Math.max( result[1], ds.value(ilast) );
+                result[0]= Math.min( result[0], min.value(ifirst) );
+                result[1]= Math.max( result[1], max.value(ilast) );
             } else {
                 result[0] = range==null ? fill : range.value(0);
                 result[1] = range==null ? fill : range.value(1);
@@ -3362,11 +3369,11 @@ public class Ops {
         } else {
 
             if (deltaplus != null) {
-                max = Ops.add(ds, deltaplus );
+                max = Ops.add(max, deltaplus );
             }
 
             if (deltaminus != null) {
-                min = Ops.subtract(ds, deltaminus);
+                min = Ops.subtract(min, deltaminus);
             }
 
             QubeDataSetIterator it = new QubeDataSetIterator(ds);
