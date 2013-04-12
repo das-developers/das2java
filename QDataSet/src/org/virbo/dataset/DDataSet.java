@@ -25,7 +25,8 @@ public final class DDataSet extends ArrayDataSet {
 
     Units units; // for debugging
 
-    private static final boolean RANGE_CHECK = false;
+    private static final boolean RANGE_CHECK = "true".equals( System.getProperty("rangeChecking","false") );
+    
     public static final String version = "20110217";
 
     public static DDataSet createRank1(int len0) {
