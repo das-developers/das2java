@@ -82,7 +82,7 @@ public final class EventQueueBlocker_1 {
         while ( eventQueue.peekEvent()!=null ) {
             try {
                 evt= eventQueue.getNextEvent();
-                out.println(evt);
+                out.println( String.format( "%6d %s",evt.getID(), evt.toString() ) );
             } catch (InterruptedException ex) {
             }
             queue.add(evt);
