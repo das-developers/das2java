@@ -119,7 +119,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         public static final RebinnerEnum nearestNeighbor;
         public static final RebinnerEnum binAverageNoInterpolate;
         public static final RebinnerEnum binAverageNoInterpolateNoEnlarge;
-        public static final RebinnerEnum lanlNearestNeighbor;
+        public static final RebinnerEnum altNearestNeighbor;
         public static final RebinnerEnum binXinterpY;
 
 
@@ -132,15 +132,20 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             rebinner.setInterpolate(false);
             rebinner.setEnlargePixels(false);
             binAverageNoInterpolateNoEnlarge = new RebinnerEnum(rebinner, "noInterpolateNoEnlarge");
-            
-            rebinner = new AverageTableRebinner();
-            rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
-            nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
-            //nearestNeighbor = new RebinnerEnum(rebinner, "nearestNeighbor");
-            
-            DataSetRebinner r1 = new LanlNNRebinner();
-            lanlNearestNeighbor= new RebinnerEnum( r1, "lanlNearestNeighbor" );
+                        
             //Note: to add RebinModes, see getListIcon.
+
+            if ( "true".equals( System.getProperty("useLanlNearestNeighbor","false") ) ) {
+                nearestNeighbor= new RebinnerEnum( new LanlNNRebinner(), "nearestNeighbor" );
+                rebinner = new AverageTableRebinner();
+                rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
+                altNearestNeighbor= new RebinnerEnum(rebinner, "altNearestNeighbor");
+            } else {
+                rebinner = new AverageTableRebinner();
+                rebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
+                nearestNeighbor= new RebinnerEnum(rebinner, "altNearestNeighbor");
+                altNearestNeighbor= new RebinnerEnum( new LanlNNRebinner(), "nearestNeighbor" );
+            }
             
             rebinner = new AverageTableRebinner();
             rebinner.setInterpolateType( AverageTableRebinner.Interpolate.BinXInterpY );
