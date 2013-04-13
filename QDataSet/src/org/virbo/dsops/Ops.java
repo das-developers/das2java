@@ -173,12 +173,16 @@ public class Ops {
             m2.put( QDataSet.DEPEND_1, m1.get(QDataSet.DEPEND_1 ) );
             m2.put( QDataSet.DEPEND_2, m1.get(QDataSet.DEPEND_2 ) );
             m2.put( QDataSet.DEPEND_3, m1.get(QDataSet.DEPEND_3 ) );
+            m2.put( QDataSet.BINS_0,   m1.get(QDataSet.BINS_0 ) );
+            m2.put( QDataSet.BINS_1,   m1.get(QDataSet.BINS_1 ) );
         }
         if ( m1.isEmpty() && !m2.isEmpty() ) {
             m1.put( QDataSet.DEPEND_0, m2.get(QDataSet.DEPEND_0 ) );
             m1.put( QDataSet.DEPEND_1, m2.get(QDataSet.DEPEND_1 ) );
             m1.put( QDataSet.DEPEND_2, m2.get(QDataSet.DEPEND_2 ) );
             m1.put( QDataSet.DEPEND_3, m2.get(QDataSet.DEPEND_3 ) );
+            m1.put( QDataSet.BINS_0,   m2.get(QDataSet.BINS_0 ) );
+            m1.put( QDataSet.BINS_1,   m2.get(QDataSet.BINS_1 ) );
         }
         Map<String, Object> m3 = equalProperties(m1, m2);
         if ( resultIsQube ) {
@@ -193,7 +197,7 @@ public class Ops {
         // been passed into this routine anyway.
         m3.remove( QDataSet.BUNDLE_1 ); 
 
-        DataSetUtil.putProperties(m3, result);
+        DataSetUtil.putProperties(m3, result);    
         result.putProperty( QDataSet.FILL_VALUE, fill );
         
         return result;
