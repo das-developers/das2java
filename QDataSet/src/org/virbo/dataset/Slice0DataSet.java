@@ -36,8 +36,9 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
         this.index = index;
         QDataSet dep0= (QDataSet) ds.property( QDataSet.DEPEND_0 );
         QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
-        if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 ) {
+        if ( dep0!=null && dep1!=null && dep0.rank()>1 && dep1.rank()>1 && !SemanticOps.isBins(dep0) && !SemanticOps.isBins(dep1) ) {
             // special case where we are pulling out a table, this used to be a runtime exception
+            // TODO: review this.  I can't imagine how this is valid.
             putProperty( QDataSet.DEPEND_0, new Slice0DataSet(dep0, index, false ));
             putProperty( QDataSet.DEPEND_1, new Slice0DataSet(dep1, index, false )); //TODO: really?  We need to think about this...
         } else if ( DataSetUtil.isQube(ds) || dep1!=null ) { //DEPEND_1 rank 1 implies qube
@@ -50,8 +51,10 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
                     DataSetUtil.addContext( this, context );
                 }
             }
-            if ( dep1!=null && dep1.rank()==2 ) {
+            if ( dep1!=null && dep1.rank()==2 && !SemanticOps.isBins(dep1) ) {
                 putProperty( QDataSet.DEPEND_0, new Slice0DataSet( dep1, index, false ) );
+            } else if ( dep1!=null && dep1.rank()==2 && SemanticOps.isBins(dep1) ) {
+                putProperty( QDataSet.DEPEND_0, dep1 );
             } else if ( ds.rank()>1 && dep1!=null ) {
                 putProperty( QDataSet.DEPEND_0, dep1 );
             }
