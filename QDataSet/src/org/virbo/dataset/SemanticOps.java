@@ -488,7 +488,7 @@ public class SemanticOps {
     public static QDataSet xtagsDataSet( QDataSet ds ) {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( dep0!=null ) return dep0;
-        if ( isBundle(ds) ){
+        if ( isBundle(ds) && !isBins(ds) ){
             return DataSetOps.unbundle(ds,0);
         } else if ( isLegacyBundle(ds) ) {
             return DataSetOps.unbundle(ds,0);
@@ -629,7 +629,7 @@ public class SemanticOps {
         QDataSet yrange;
 
         if ( ds.rank()==2 ) {
-            if ( ds.property(QDataSet.BUNDLE_1)!=null ) {
+            if ( ds.property(QDataSet.BUNDLE_1)!=null && ds.property(QDataSet.BINS_1)==null ) {
                 throw new IllegalArgumentException("scheme not supported: "+ds );
             } else {
                 xrange= Ops.extent( SemanticOps.xtagsDataSet(ds), null );
