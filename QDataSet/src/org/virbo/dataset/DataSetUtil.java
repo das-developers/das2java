@@ -1883,11 +1883,11 @@ public class DataSetUtil {
             if (ds.rank() > 1 && ds.length() > 0) {
                 QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
                 if ( dep1!=null && dep1.rank()>1 ) {
-                    if ( dep1.length()!=ds.length() ) {
+                    if ( dep1.length()!=ds.length() && !SemanticOps.isBins(dep1) ) {
                         problems.add(String.format("rank 2 DEPEND_1 length is %d while data length is %d.", dep1.length(), ds.length()));
                     }
                 }
-                 validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy. Note we only check the first assuming QUBE.
+                validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy. Note we only check the first assuming QUBE.
             }
         }
         if ( ds.property(QDataSet.JOIN_0)!=null ) {
