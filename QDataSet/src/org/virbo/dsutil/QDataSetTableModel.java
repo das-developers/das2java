@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
@@ -30,8 +31,8 @@ public class QDataSetTableModel extends AbstractTableModel {
     QDataSet ds;
     QDataSet wds;      // weights for ds;
     QDataSet bundle1;
-    QDataSet dep0;
-    QDataSet dep1;
+    QDataSet dep0;     // rank 1 or rank 2 bins dataset.
+    QDataSet dep1;     // rank 1 or rank 2 bins dataset.
     int dep0Offset;
     int colCount;
     Units[] units;
@@ -45,6 +46,9 @@ public class QDataSetTableModel extends AbstractTableModel {
         dep0Offset = dep0 == null ? 0 : 1;
         this.bundle1 = (QDataSet) ds.property(QDataSet.BUNDLE_1);
         this.dep1 = (QDataSet) ds.property(QDataSet.DEPEND_1);
+        if ( dep1.rank()>1 && !SemanticOps.isBins(dep1) ) {
+            System.err.println("dep1 is sliced at 0");
+        }
 
         colCount = dep0Offset;
         if ( ds.rank()==1 ) {
@@ -84,14 +88,19 @@ public class QDataSetTableModel extends AbstractTableModel {
             if (dep1Units == null) {
                 dep1Units = Units.dimensionless;
             }
-            int dep1len= dep1.rank()==1 ? dep1.length() : dep1.length(0);
+            int dep1len= ( dep1.rank()==1 || SemanticOps.isBins(dep1) ) ? dep1.length() : dep1.length(0);
             for (int k = 0; k < dep1len; k++) {
                 units[i] = SemanticOps.getUnits(ds);
                 df[i]= units[i].getDatumFormatterFactory().defaultFormatter();
                 if ( dep1.rank()==1 ) {
                     labels[i] = dep1Units.createDatum(dep1.value(k)).toString();
                 } else {
-                    labels[i] = dep1Units.createDatum(dep1.value(0,k)).toString() + "*";
+                    if ( SemanticOps.isBins(dep1) ) {
+                        DatumRange dr= DataSetUtil.asDatumRange( this.dep0.slice(k) );
+                        labels[i] = dr.toString();                     
+                    } else {
+                        labels[i] = dep1Units.createDatum(dep1.value(0,k)).toString() + "*";
+                    }
                 }
                 i++;
             }
@@ -148,8 +157,13 @@ public class QDataSetTableModel extends AbstractTableModel {
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (columnIndex < dep0Offset) {
-            Datum d= units[columnIndex].createDatum(this.dep0.value(rowIndex));
-            return df[columnIndex].format( d,units[columnIndex] );
+            if ( this.dep0.rank()==2 ) {
+                DatumRange dr= DataSetUtil.asDatumRange( this.dep0.slice(rowIndex) );
+                return dr.toString();
+            } else {
+                Datum d= units[columnIndex].createDatum(this.dep0.value(rowIndex));
+                return df[columnIndex].format( d,units[columnIndex] );
+            }
         } else {
             if ( this.ds.rank()==1 ) {
                 if ( wds.value(rowIndex)==0 ) {
