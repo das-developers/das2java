@@ -630,7 +630,7 @@ public class SemanticOps {
 
         if ( ds.rank()==2 ) {
             if ( ds.property(QDataSet.BUNDLE_1)!=null && ds.property(QDataSet.BINS_1)==null ) {
-                throw new IllegalArgumentException("scheme not supported: "+ds );
+                throw new IllegalArgumentException("scheme not supported: "+ds ); 
             } else {
                 xrange= Ops.extent( SemanticOps.xtagsDataSet(ds), null );
                 yrange= Ops.extent( SemanticOps.ytagsDataSet(ds), null );
