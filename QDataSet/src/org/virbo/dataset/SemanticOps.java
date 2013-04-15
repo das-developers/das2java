@@ -540,13 +540,17 @@ public class SemanticOps {
         } else if ( ds.length()>0 
                 && ds.property(QDataSet.DEPEND_1)==null
                 && ds.property(QDataSet.DEPEND_0,0)!=null ) { // For Juno pktid=91
-            QDataSet yds= xtagsDataSet( ds.slice(0) );
-            JoinDataSet result= new JoinDataSet(yds);
-            for ( int i=1; i<ds.length(); i++ ) {
-                result.join( xtagsDataSet(ds.slice(i) ) );
+            if ( DataSetUtil.isQube(ds) ) {
+                return xtagsDataSet( ds.slice(0) );
+            } else {
+                QDataSet yds= xtagsDataSet( ds.slice(0) );
+                JoinDataSet result= new JoinDataSet(yds);
+                for ( int i=1; i<ds.length(); i++ ) {
+                    result.join( xtagsDataSet(ds.slice(i) ) );
+                }
+                result.putProperty( QDataSet.UNITS,  yds.slice(0).property( QDataSet.UNITS ) );
+                return result;
             }
-            result.putProperty( QDataSet.UNITS,  yds.slice(0).property( QDataSet.UNITS ) );
-            return result;
 
         } else {
             if ( ds.rank()==1 ) {
@@ -690,7 +694,7 @@ public class SemanticOps {
      */
     public static boolean isSimpleTableDataSet(QDataSet ds) {
         QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
-        return ds.rank()==2 && ( dep1!=null || !Ops.isBundle(ds) ) && !Ops.isLegacyBundle(ds);
+        return ds.rank()==2 && ( ( dep1!=null && dep1.rank()==1 ) || !Ops.isBundle(ds) ) && !Ops.isLegacyBundle(ds);
     }
 
     /**
@@ -770,7 +774,7 @@ public class SemanticOps {
         } else if ( rank==2 ) {
             if ( isSimpleTableDataSet(ds) ) {
                 QDataSet xds= SemanticOps.xtagsDataSet(ds);
-                QDataSet yds= SemanticOps.ytagsDataSet(ds);
+                QDataSet yds= SemanticOps.xtagsDataSet(ds.slice(0));
                 QDataSet xinside= xrange==null ? null :
                     Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
                 QDataSet yinside= yrange==null ? null :
