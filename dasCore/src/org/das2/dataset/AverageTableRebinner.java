@@ -511,19 +511,24 @@ public class AverageTableRebinner implements DataSetRebinner {
                     xalpha = xalpha < 0.5 ? 0.0 : 1.0;
                 }
 
-
+                QDataSet yds1;
                 for (int j = 0; j < 2; j++) {
+                    if ( yds.rank()==2 ) {
+                        yds1= yds.slice(i0);
+                    } else {
+                        yds1= yds;
+                    }
                     int iy = j == 0 ? 0 : ddY.numberOfBins() - 1;
                     Datum yy = ddY.binCenter(iy);
 
-                    int j0 = getNextPrevIndex( yds, yy, -1 );
-                    int j1 = getNextPrevIndex( yds, yy, 1 );
+                    int j0 = getNextPrevIndex( yds1, yy, -1 );
+                    int j1 = getNextPrevIndex( yds1, yy, 1 );
                     if ( j0==-1 || j1==-1 ) continue;
 
                     if (j0 != j1) {
                         DatumRange ydr =  DatumRangeUtil.union(
-                            yunits.createDatum( yds.value(j0) ),
-                            yunits.createDatum( yds.value(j1) ) );
+                            yunits.createDatum( yds1.value(j0) ),
+                            yunits.createDatum( yds1.value(j1) ) );
 
                         if ( canInterpolate( xdr, xTagWidth ) ) {
                             double yalpha = DatumRangeUtil.normalize(ydr, yy);
