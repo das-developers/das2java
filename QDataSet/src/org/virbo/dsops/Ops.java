@@ -3339,11 +3339,9 @@ public class Ops {
         int ifirst=0;
         int n= ds.length();
         int ilast= n-1;
-        while ( ifirst<n && wds.value(ifirst)==0.0 ) ifirst++;
-        while ( ilast>=0 && wds.value(ilast)==0.0 ) ilast--;
         
         boolean monoCheck= Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC ));
-        if ( monoCheck ) {
+        if ( ds.rank()==1 && monoCheck ) {
             while ( ifirst<n && wds.value(ifirst)==0.0 ) ifirst++;
             while ( ilast>=0 && wds.value(ilast)==0.0 ) ilast--;
             int imiddle= ( ifirst + ilast ) / 2;
