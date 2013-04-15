@@ -26,6 +26,9 @@ public class SubsetDataSet extends AbstractDataSet {
         lens= new int[ QDataSet.MAX_RANK ];
         if ( !DataSetUtil.isQube(source) ) {
             nonQube= true;
+        } else { // flatten the qube immediately, because we are seeing this with FFTPower output.
+            QDataSet dep1= (QDataSet) source.slice(0).property(QDataSet.DEPEND_0);
+            putProperty( QDataSet.DEPEND_1, dep1 );
         }
         int[] lenss= DataSetUtil.qubeDims(source);
         if ( nonQube ) {
@@ -43,19 +46,25 @@ public class SubsetDataSet extends AbstractDataSet {
         }
     }
 
+    /**
+     * apply the subset indexes to a given dimension.  For example,
+     * if a=[10,20,30,40] then applyIndex( 0, [1,2] ) would result in [20,30].
+     * @param idim
+     * @param idx the rank 1 index list, for example from where on a rank 1 dataset.
+     */
     public void applyIndex( int idim, QDataSet idx ) {
         if ( nonQube && idim>0 ) throw new IllegalArgumentException("unable to applyIndex on non-qube source dataset");
         sorts[idim]= idx;
         lens[idim]= idx.length();
         if ( idx.rank()>1 ) {
-            throw new IllegalArgumentException("rank>1");
+            throw new IllegalArgumentException("indexes must be rank 1");
         }
         QDataSet dep= (QDataSet)property( "DEPEND_"+idim );
         if ( dep==null ) {
             dep= (QDataSet) source.property( "DEPEND_"+idim );
         }
         if ( dep!=null ) {
-            SubsetDataSet dim= new SubsetDataSet( (QDataSet)source.property("DEPEND_"+idim) );
+            SubsetDataSet dim= new SubsetDataSet( dep );
             dim.applyIndex(0,idx);
             putProperty("DEPEND_"+idim,dim);
         }
