@@ -1312,6 +1312,14 @@ public class DatumRangeUtil {
         return (dd-d0) / ( d1-d0 );
     }
     
+    public static double normalize( DatumRange dr, Datum d, boolean log ) {
+        if ( log ) {
+            return normalizeLog( dr, d );
+        } else {
+            return normalize( dr, d );   
+        }
+    }
+
     /**
      * returns the position within dr, where 0. is the dr.min(), and 1. is dr.max()
      * @param dr a datum range with non-zero width.
