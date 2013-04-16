@@ -12,7 +12,6 @@ import org.das2.datum.Datum;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasPlot;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.HashMap;
 
 /**
@@ -50,12 +49,14 @@ public class DataPointSelectorMouseModule extends MouseModule {
         return de;
     }
     
+    @Override
     public void mousePointSelected(MousePointSelectionEvent e) {
         lastMousePoint= e;
         if ( keyEvents ) parent.requestFocus();
         if ( dragEvents ) fireDataPointSelectionListenerDataPointSelected(getDataPointSelectionEvent(e));
     }
     
+    @Override
     public void keyPressed(KeyEvent e) {
         int keyCode= e.getKeyCode();
         
@@ -171,6 +172,7 @@ public class DataPointSelectorMouseModule extends MouseModule {
         this.keyEvents = keyEvents;
     }
     
+    @Override
     public void mouseReleased(java.awt.event.MouseEvent e) {
         super.mouseReleased(e);
         if ( releaseEvents ) {
