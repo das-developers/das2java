@@ -1644,7 +1644,10 @@ public class DasPlot extends DasCanvasComponent {
         //repaintCount++;
     }
 
-    protected void invalidateCacheImage() {
+    /**
+     * mark the dasPlot's cache image as invalid, forcing it to repaint.
+     */
+    public void invalidateCacheImage() {
         if ( cacheImageValid==false ) return;
         cacheImageValid = false;
         super.markDirty();
