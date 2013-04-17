@@ -53,9 +53,11 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.das2.dataset.DataSetUtil;
 import org.das2.graph.Renderer;
 import org.das2.graph.SeriesRenderer;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
@@ -185,7 +187,7 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         } else {
             popupWindow = new JDialog();
         }
-        popupWindow.setTitle("Vertical Slicer");
+        popupWindow.setTitle("Vertical Spectrogram Averager");
         popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         popupWindow.setContentPane(content);
         popupWindow.pack();
@@ -222,9 +224,19 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         ddX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         AverageTableRebinner rebinner = new AverageTableRebinner();
         try {
-            QDataSet rebinned = (QDataSet)rebinner.rebin(xtys, ddX, null);
-            QDataSet ds1 = rebinned.slice(0);
-            renderer.setDataSet(ds1);
+            if ( xtys.rank()==3 ) {
+                QDataSet jds= null;
+                for ( int i=0; i<xtys.length(); i++ ) {
+                    QDataSet rebinned = (QDataSet)rebinner.rebin(xtys.slice(i), ddX, null);
+                    QDataSet ds1 = rebinned.slice(0);
+                    jds= org.virbo.dsops.Ops.concatenate( jds, ds1 );
+                }
+                renderer.setDataSet(jds);                
+            } else {
+                QDataSet rebinned = (QDataSet)rebinner.rebin(xtys, ddX, null);
+                QDataSet ds1 = rebinned.slice(0);
+                renderer.setDataSet(ds1);
+            }
         } catch (DasException de) {
             //Do nothing.
         }
