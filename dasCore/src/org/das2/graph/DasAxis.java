@@ -1054,7 +1054,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return; // transitional state
         }
         double[] ltickV = tickVDV.toDoubleArray(u);
-        
+
         JoinDataSet ltcaData= new JoinDataSet(2);
         ArrayDataSet ex= ArrayDataSet.copy( ltcaFunction.exampleInput() );
         QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
@@ -1587,12 +1587,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void updateTickV() {
         if (!valueIsAdjusting()) {
-            if ( getTickLabelFont()==null ) return;
-            try {
-                getFontMetrics(getTickLabelFont()); // transitional state seen in hudson tests.
-            } catch ( NullPointerException ex ) {
-                return;
-            }
+            if ( getFont()==null ) return;
+            
             //if ( getCanvas()==null || getCanvas().getHeight()==0 ) return;
             //if ( ( isHorizontal() ? getColumn().getWidth() : getRow().getHeight() ) < 2 ) return; // canvas is not sized yet
             if ( useDomainDivider ) {
@@ -2274,31 +2270,30 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** TODO
-     * @return
+    /** get the font for tick labels.  If the component currently has null for the
+     * font, then Font.decode("sans-12") is used and a warning logged.
+     * @return the font to use for ticks.
      */
     public Font getTickLabelFont() {
-        return this.getFont();
+        Font f= this.getFont();
+        if ( f==null ) {
+            //logger.warning("2285: font was null, using sans-12.  Code should check first.");
+            f= Font.decode("sans-12");
+        }
+        return f;
     }
 
-    /** TODO
+    /** get the font for labels.  If the component currently has null for the
+     * font, then Font.decode("sans-12") is used.
      * @param tickLabelFont
      */
-    public void setTickLabelFont(Font tickLabelFont) {
-    }
-
-    /** TODO
-     * @return
-     */
     public Font getLabelFont() {
-        return this.getFont();
-    }
-
-    /** TODO
-     * @param labelFont
-     */
-    public void setLabelFont(Font labelFont) {
-        // TODO: whah?--jbf
+        Font f= this.getFont();
+        if ( f==null ) {
+            logger.warning("2285: font was null, using sans-12");
+            f= Font.decode("sans-12");
+        }
+        return f;
     }
 
     public static class Memento {
