@@ -46,6 +46,8 @@ import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -55,10 +57,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.datum.DatumRange;
 import org.das2.graph.Renderer;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
@@ -254,13 +258,14 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
 
     private boolean showSlice( QDataSet tds, Datum xValue, Datum yValue ) {
         QDataSet tds1 = null;
+        List<QDataSet> tdss= new ArrayList();
         if (tds.rank() == 3) {
             // slice to get the correct table;
             for (int i = 0; i < tds.length(); i++) {
                 QDataSet bounds = DataSetOps.dependBounds(tds.slice(i));
-                if (DataSetOps.boundsContains(bounds, xValue, yValue)) {
-                    tds1 = tds.slice(i);
-                    break;
+                DatumRange xrange= DataSetUtil.asDatumRange( bounds.slice(0), true );
+                if ( xrange.contains( xValue )) {
+                    tdss.add(tds.slice(i));
                 }
             }
         } else {
@@ -269,13 +274,31 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
                 tds1 = tds;
             }
         }
+        QDataSet sliceDataSet;
         if (tds1 == null) {
+            QDataSet jds= null;
+            for ( int i= 0; i<tdss.size(); i++ ) {
+                tds1= tdss.get(i);
+                QDataSet xds = SemanticOps.xtagsDataSet(tds1);
+                int index;
+                index = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
+                QDataSet s1 = tds1.slice(index);
+                jds= org.virbo.dsops.Ops.concatenate( jds, s1 );
+            }
+            sliceDataSet= jds;
+            
+        } else {
+        
+            QDataSet xds = SemanticOps.xtagsDataSet(tds1);
+            int index;
+            index = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
+            sliceDataSet = tds1.slice(index);
+        }
+        
+        if ( sliceDataSet==null ) {
             return false;
         }
-        QDataSet xds = SemanticOps.xtagsDataSet(tds1);
-        int index;
-        index = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
-        QDataSet sliceDataSet = tds1.slice(index);
+        
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");
         if (!isPopupVisible()) {
             showPopup();
