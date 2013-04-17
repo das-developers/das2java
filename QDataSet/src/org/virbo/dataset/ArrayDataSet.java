@@ -625,12 +625,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         }
 
         // special handling of TYPICAL_MIN _MAX properties
-        Double dmin0= (Double) ths.property(QDataSet.TYPICAL_MIN );
-        Double dmax0= (Double) ths.property(QDataSet.TYPICAL_MAX );
-        Double dmin1= (Double) ths.property(QDataSet.TYPICAL_MIN );
-        Double dmax1= (Double) ths.property(QDataSet.TYPICAL_MAX );
-        if ( dmin0!=null && dmin1!=null ) result.put( QDataSet.TYPICAL_MIN, Math.min( dmin0, dmin1 ) );
-        if ( dmax0!=null && dmax1!=null ) result.put( QDataSet.TYPICAL_MAX, Math.max( dmin0, dmin1 ) );
+        Number dmin0= (Number) ths.property(QDataSet.TYPICAL_MIN );
+        Number dmax0= (Number) ths.property(QDataSet.TYPICAL_MAX );
+        Number dmin1= (Number) ths.property(QDataSet.TYPICAL_MIN );
+        Number dmax1= (Number) ths.property(QDataSet.TYPICAL_MAX );
+        if ( dmin0!=null && dmin1!=null ) result.put( QDataSet.TYPICAL_MIN, Math.min( dmin0.doubleValue(), dmin1.doubleValue() ) );
+        if ( dmax0!=null && dmax1!=null ) result.put( QDataSet.TYPICAL_MAX, Math.max( dmin0.doubleValue(), dmin1.doubleValue() ) );
 
         return result;
     }
