@@ -548,7 +548,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         //System.err.println("setDatumRange("+dr+")");
         DatumRange oldRange= dataRange.getDatumRange();
         if ( !rangeIsAcceptable(dr) ) { 
-            System.err.println( "invalid range ignored"+dr );
+            logger.log(Level.INFO, "invalid range ignored{0}", dr);
             return;
         }
         if (getUnits().isConvertableTo(dr.getUnits())) {
@@ -678,7 +678,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         animateChange(t1, t2, min, max);
         DatumRange oldRange = dataRange.getDatumRange();
         if ( !DatumRangeUtil.isAcceptable( DatumRange.newDatumRange( min, max, getUnits() ), isLog() ) ) {
-            System.err.println("zoom out limit");
+            logger.info("zoom out limit");
             return;
         }
         dataRange.setRange(min, max);
@@ -1060,7 +1060,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
         Units tcaUnits;
         if ( bds==null ) {
-            System.err.println("no bundle descriptor, dealing with it.");
+            logger.info("no bundle descriptor, dealing with it.");
             tcaUnits= (Units) ex.property( QDataSet.UNITS, 0 );
         } else {
             tcaUnits= (Units)bds.property( QDataSet.UNITS, 0 );
@@ -1068,7 +1068,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         UnitsConverter uc;
         if ( !u.isConvertableTo(tcaUnits) ) {
-            System.err.println("tca units are not convertable");
+            logger.info("tca units are not convertable");
             return;
         }
         uc= UnitsConverter.getConverter( u, tcaUnits );
@@ -1497,7 +1497,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
                 if (ltickV.getMajorTicks().getLength() <= 1) {
                     // we're about to have an assertion error, time to debug;
-                    System.err.println("about to assert error: " + ltickV.getMajorTicks());
+                    logger.log(Level.INFO, "about to assert error: {0}", ltickV.getMajorTicks());
                 }
                 assert (ltickV.getMajorTicks().getLength() > 1);
 
@@ -1778,8 +1778,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( getCanvas().isPrintingThread() ) {
                 this.updateImmediately();
                 g.setClip(null);
-                System.err.println("calculated ticks on printing thread, this may cause problems");
-                //System.err.println("inconvertible units on printing thread!");
+                logger.info("calculated ticks on printing thread, this may cause problems");
                 if (isHorizontal()) {
                     paintHorizontalAxis(g);
                 } else {
@@ -2392,7 +2391,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double trans2 = -1 * memento.dmin * scale2 + getMemento().dmin;
 
         if ( dmin0==10000 || dmin0==-10000 | dmax0==10000 | dmax0==10000 ) {
-            System.err.println("unable to create transform");
+            logger.info("unable to create transform");
         }
 
         if (!(isHorizontal() ^ flipped)) {
