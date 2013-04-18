@@ -1048,6 +1048,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         logger.fine("updateTCADataSet");
 
+        if ( valueIsAdjusting() ) {
+            logger.finest("someone is adjusting this, wait until later to call.");
+            return; // this assumes someone is going to call update later, which appears to be true.
+        }
+        
         Units u= getUnits();
         DatumVector tickVDV= getTickV().tickV;
         if ( !u.isConvertableTo(tickVDV.getUnits()) ) {
@@ -1055,6 +1060,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         double[] ltickV = tickVDV.toDoubleArray(u);
 
+        logger.log(Level.FINEST, "update for {0} to {1}", new Object[]{tickVDV.get(0), tickVDV.get(tickVDV.getLength()-1)});
+        
         JoinDataSet ltcaData= new JoinDataSet(2);
         ArrayDataSet ex= ArrayDataSet.copy( ltcaFunction.exampleInput() );
         QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
