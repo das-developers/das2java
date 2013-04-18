@@ -96,6 +96,9 @@ public class LocalFileSystem extends FileSystem {
         File f= new File( localRoot, directory );
         if ( !f.canRead() || ( f.getParentFile()!=null && f.isHidden() ) ) throw new IllegalArgumentException("cannot read directory " +f );
         File[] files= f.listFiles();
+        if ( files==null ) { // On Windows, I was getting null with c:\Users\sklemuk\Documents.
+            return new String[0];
+        }
         List<String> result= new ArrayList();
         for ( int i=0; i<files.length; i++ ) {
             if ( ! files[i].isHidden() ) { // Windows 7 hides "c:/Documents and Settings", and we get bugs if this is presented.
