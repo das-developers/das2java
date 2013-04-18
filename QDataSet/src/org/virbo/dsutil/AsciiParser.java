@@ -1010,6 +1010,9 @@ public class AsciiParser {
             Units u = AsciiParser.this.units[columnIndex];
             return u.parse(field).doubleValue(u);
         }
+        public String toString() {
+            return "unitsParser";
+        }
     };
 
     /**
@@ -1018,8 +1021,11 @@ public class AsciiParser {
     public final FieldParser ENUMERATION_PARSER = new FieldParser() {
         public final double parseField(String field, int columnIndex) throws ParseException {
             EnumerationUnits u = (EnumerationUnits)AsciiParser.this.units[columnIndex];
-            return u.createDatum(field).doubleValue(u);
+            return u.createDatum(field).doubleValue(u);            
         }
+        public String toString() {
+            return "enumerationParser";
+        }        
     };
 
     /**
