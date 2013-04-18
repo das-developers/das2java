@@ -30,7 +30,7 @@ public class TickleTimer {
     boolean running;
     List<String> messages;
     
-    static final Logger log= org.das2.util.LoggerManager.getLogger("autoplot");
+    static final Logger log= org.das2.util.LoggerManager.getLogger("das2.util");
     
     /**
      * @param delay time in milliseconds to wait until firing off the change.  
