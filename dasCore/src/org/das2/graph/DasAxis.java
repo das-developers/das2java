@@ -73,6 +73,7 @@ import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.system.RequestProcessor;
 import org.das2.util.LoggerManager;
+import org.das2.util.TickleTimer;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -206,6 +207,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private QDataSet tcaData = null;
     private String dataset = "";
     private boolean drawTca;
+    
+    private TickleTimer tcaTimer;
+    
     public static final String PROPERTY_DATUMRANGE = "datumRange";
     /* DEBUGGING INSTANCE MEMBERS */
     private static final boolean DEBUG_GRAPHICS = false;
@@ -988,6 +992,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else {
             try {
                 tcaFunction= tcaFunction( dataset );
+                tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        updateTCASoon();
+                    }
+                });
+                tcaTimer.tickle("setDataPath");
                 this.tcaData= null;
                 if ( tcaFunction==null ) {
                     throw new IllegalArgumentException("unable to implement tca QFunction: "+dataset );
@@ -1049,6 +1059,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         logger.fine("updateTCADataSet");
 
         if ( valueIsAdjusting() ) {
+            //TODO: https://sourceforge.net/tracker/index.php?func=detail&aid=3611281&group_id=199733&atid=970682
+            // There's still a bug if another axis is adjusting, this will not wait to call.
             logger.finest("someone is adjusting this, wait until later to call.");
             return; // this assumes someone is going to call update later, which appears to be true.
         }
@@ -1586,7 +1598,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         this.tickV= ticks;
         datumFormatter = resolveFormatter(tickV);
         if (drawTca && tcaFunction != null) {
-             updateTCASoon();
+            tcaTimer.tickle("resetTickV");
         }
         firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
         repaint();
