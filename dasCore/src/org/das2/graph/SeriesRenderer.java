@@ -1039,8 +1039,13 @@ public class SeriesRenderer extends Renderer {
                 if ( plotBounds!=null ) {
                     visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
                 }
-                ixmin = DataSetUtil.getPreviousIndex( xds, visibleRange.min());
-                ixmax = DataSetUtil.getNextIndex( xds, visibleRange.max()) + 1; // +1 is for exclusive.
+                try {
+                    ixmin = DataSetUtil.getPreviousIndex( xds, visibleRange.min());
+                    ixmax = DataSetUtil.getNextIndex( xds, visibleRange.max()) + 1; // +1 is for exclusive.
+                } catch ( IllegalArgumentException ex ) {
+                    ixmin = firstIndex_v;
+                    ixmax = lastIndex_v;
+                }
 
             } else {
                 ixmin = firstIndex_v;
