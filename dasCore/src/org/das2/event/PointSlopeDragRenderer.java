@@ -11,11 +11,14 @@ import org.das2.graph.DasAxis;
 import org.das2.datum.Datum;
 import org.das2.util.GrannyTextRenderer;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.text.*;
+import org.das2.datum.DatumUtil;
 import org.das2.datum.InconvertibleUnitsException;
 
 /**
- *
+ * Shows the slope from the click point to the drag point.
  * @author  Owner
  */
 public class PointSlopeDragRenderer extends LabelDragRenderer {
@@ -35,8 +38,24 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
         nf= new DecimalFormat( "0.00E0" );       
     }
     
+    @Override
     public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
         Graphics2D g= ( Graphics2D ) g1;        
+        
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        double atan= Math.atan2( p2.y-p1.y, p2.x-p1.x );
+        
+        Line2D line2= new Line2D.Double( p1.x + (int)(6.0 * Math.cos(atan)), (int)(p1.y + 6.0*Math.sin(atan)), p2.x, p2.y );
+        
+        Color color0= g.getColor();
+        g.setColor(new Color(255,255,255,100));
+        g.setStroke(new BasicStroke( 3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+        g.draw( line2 );
+        g.draw( new Ellipse2D.Double( p1.x-4, p1.y-4, 8, 8 ) );
+
+        g.setStroke(new BasicStroke());
+        g.setColor(color0);
+        
         g1.drawLine( p1.x, p1.y, p2.x, p2.y );
         g1.drawOval(p1.x-1, p1.y-1, 3, 3 ) ;
         
@@ -53,12 +72,21 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
                 Datum slope= rise.divide(run);
                 setLabel( "m="+slope );
             } catch ( InconvertibleUnitsException ex ) {
+                run= DatumUtil.asOrderOneUnits(run);
+                rise= DatumUtil.asOrderOneUnits(rise);
                 double drise= rise.doubleValue(rise.getUnits());
                 double drun= run.doubleValue(run.getUnits());
                 double mag= drise/drun;
                 String units= "" + rise.getUnits() + " / " + run.getUnits();
-                setLabel( nf.format(mag) + " " + units );
-
+                setLabel( "m=" + nf.format(mag) + " " + units );
+            } catch ( IllegalArgumentException ex ) {  //  1/deg
+                run= DatumUtil.asOrderOneUnits(run);
+                rise= DatumUtil.asOrderOneUnits(rise);
+                double drise= rise.doubleValue(rise.getUnits());
+                double drun= run.doubleValue(run.getUnits());
+                double mag= drise/drun;
+                String units= "" + rise.getUnits() + " / " + run.getUnits();
+                setLabel( "m=" + nf.format(mag) + " " + units );
             }
         } else {
             setLabel( "" );
