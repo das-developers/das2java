@@ -14,8 +14,11 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.text.*;
+import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.InconvertibleUnitsException;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsConverter;
 
 /**
  * Shows the slope from the click point to the drag point.
@@ -67,21 +70,25 @@ public class PointSlopeDragRenderer extends LabelDragRenderer {
         Datum run= xaxis.invTransform(p2.x).subtract(xaxis.invTransform(p1.x));        
         Datum rise= yaxis.invTransform(p2.y).subtract(yaxis.invTransform(p1.y));
             
+        Datum xdr= xaxis.getDatumRange().width();
+        Datum ydr= yaxis.getDatumRange().width();
+        
+        Units xunits= DatumUtil.asOrderOneUnits(xdr).getUnits();
+        Units yunits= DatumUtil.asOrderOneUnits(ydr).getUnits();
+        run= run.convertTo(xunits);
+        rise= rise.convertTo(yunits);
+        
         if ( !p1.equals(p2) ) {
             try {
                 Datum slope= rise.divide(run);
                 setLabel( "m="+slope );
             } catch ( InconvertibleUnitsException ex ) {
-                run= DatumUtil.asOrderOneUnits(run);
-                rise= DatumUtil.asOrderOneUnits(rise);
                 double drise= rise.doubleValue(rise.getUnits());
                 double drun= run.doubleValue(run.getUnits());
                 double mag= drise/drun;
                 String units= "" + rise.getUnits() + " / " + run.getUnits();
                 setLabel( "m=" + nf.format(mag) + " " + units );
             } catch ( IllegalArgumentException ex ) {  //  1/deg
-                run= DatumUtil.asOrderOneUnits(run);
-                rise= DatumUtil.asOrderOneUnits(rise);
                 double drise= rise.doubleValue(rise.getUnits());
                 double drun= run.doubleValue(run.getUnits());
                 double mag= drise/drun;
