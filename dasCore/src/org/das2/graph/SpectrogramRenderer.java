@@ -477,6 +477,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
         byte[] lraster= this.raster;  // make a local copy for thread safety.
 
+        DasColorBar lcolorBar= colorBar; // make a local copy
+        if ( lcolorBar==null ) return;
+        
         try {
             try {
 
@@ -509,7 +512,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             && xmemento != null && ymemento != null 
                             && xAxis.getMemento().equals(xmemento)                             
                             && yAxis.getMemento().equals(ymemento) 
-                            && colorBar.getMemento().equals(cmemento)
+                            && lcolorBar.getMemento().equals(cmemento)
                             && plotImageBounds2.width==rasterWidth  // TODO: figure out how plotImageBounds2 and xmemento get out of sync.
                             && plotImageBounds2.height==rasterHeight ) {
                         logger.fine("same xaxis, yaxis, reusing raster");
@@ -595,9 +598,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
 
                         boolean plottable = false;
-                        plottable = SemanticOps.getUnits(zds).isConvertableTo(colorBar.getUnits());
+                        plottable = SemanticOps.getUnits(zds).isConvertableTo(lcolorBar.getUnits());
                         if ( !plottable ) {
-                            if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(zds) ) && UnitsUtil.isRatioMeasurement( colorBar.getUnits() ) ) {
+                            if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(zds) ) && UnitsUtil.isRatioMeasurement( lcolorBar.getUnits() ) ) {
                                 plottable= true; // we'll provide a warning
                                 unitsWarning= true;
                             }
@@ -653,13 +656,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
                         } catch ( RuntimeException ex ) {
                             ex.printStackTrace(); //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
-                            parent.postException( this,ex );
+                            lparent.postException( this,ex );
                             return;
                         }
                         //System.err.println( "rebin (ms): " + ( System.currentTimeMillis()-t0) );
                         xmemento = xAxis.getMemento();
                         ymemento = yAxis.getMemento();
-                        cmemento = colorBar.getMemento();
+                        cmemento = lcolorBar.getMemento();
 
                         logger.log(Level.FINE, "rebinning to pixel resolution: {0}  {1}", new Object[]{xmemento, ymemento});
 
@@ -667,9 +670,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         //t0= System.currentTimeMillis();
                         try {
-                            validCount= transformSimpleTableDataSet(rebinDataSet, colorBar, yAxis.isFlipped(), lraster );
+                            validCount= transformSimpleTableDataSet(rebinDataSet, lcolorBar, yAxis.isFlipped(), lraster );
                         } catch ( InconvertibleUnitsException ex ) {
-                            System.err.println("zunits="+ SemanticOps.getUnits(fds)+"  colorbar="+colorBar.getUnits() );
+                            System.err.println("zunits="+ SemanticOps.getUnits(fds)+"  colorbar="+lcolorBar.getUnits() );
                             return;
                         }
                         //System.err.println( "transformSimpleTable (ms): " + ( System.currentTimeMillis()-t0) );
@@ -679,7 +682,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         raster= lraster;
                     }
 
-                    IndexColorModel model = colorBar.getIndexColorModel();
+                    IndexColorModel model = lcolorBar.getIndexColorModel();
                     plotImage2 = new BufferedImage(plotImageBounds2.width, plotImageBounds2.height, BufferedImage.TYPE_BYTE_INDEXED, model);
 
                     WritableRaster r = plotImage2.getRaster();
@@ -701,7 +704,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     plotImageBounds= plotImageBounds2;
                     raster= lraster;
 
-                    Rectangle rr= DasDevicePosition.toRectangle( parent.getRow(), parent.getColumn() );
+                    Rectangle rr= DasDevicePosition.toRectangle( lparent.getRow(), lparent.getColumn() );
 
                     if ( fds!=null ) {
                         QDataSet bounds= bounds(fds);
