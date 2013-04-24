@@ -679,7 +679,12 @@ public class SemanticOps {
      * @return
      */
     public static boolean isTableDataSet(QDataSet ds) {
-         return ds.rank()==3 || isSimpleTableDataSet(ds);
+         if ( ds.rank()==3 || isSimpleTableDataSet(ds) ) return true;
+         QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+         if ( ds.rank()==2 && dep1!=null ) {
+             return true; // Y tags can be rank2, making it a table dataset but not a simple one.
+         }
+         return false;
     }
 
     /**
