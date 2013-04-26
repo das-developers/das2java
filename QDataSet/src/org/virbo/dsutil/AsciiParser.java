@@ -290,7 +290,7 @@ public class AsciiParser {
                 line = reader.readLine();
             }
         } finally {
-            reader.close();
+            if ( reader!=null ) reader.close();
         }
 
         return currentFirstRecord;
@@ -376,7 +376,7 @@ public class AsciiParser {
             }
             
         } finally {
-            reader.close();
+            if ( reader!=null ) reader.close();
         }
 
         String header= headerBuffer.toString();
@@ -493,9 +493,9 @@ public class AsciiParser {
      * The regex parser is a slow parser, but gives precise control.
      * 
      */
-    public RecordParser setRegexParser(String[] fieldNames) {
+    final public RecordParser setRegexParser(String[] fieldNames) {
         this.fieldCount = fieldNames.length;
-        this.fieldNames = fieldNames;
+        this.fieldNames = Arrays.copyOf( fieldNames, fieldNames.length );
         this.units = new Units[fieldCount];
         for (int i = 0; i < fieldCount; i++) {
             units[i] = Units.dimensionless;
@@ -1571,8 +1571,8 @@ public class AsciiParser {
         private int fieldCount;
 
         public FixedColumnsParser(int[] columnOffsets, int[] columnWidths) {
-            this.columnOffsets = columnOffsets;
-            this.columnWidths = columnWidths;
+            this.columnOffsets = Arrays.copyOf( columnOffsets, columnOffsets.length );
+            this.columnWidths = Arrays.copyOf( columnWidths, columnWidths.length );
             this.fieldCount = columnOffsets.length;
         }
 
