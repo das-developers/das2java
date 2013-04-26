@@ -526,7 +526,15 @@ public class AsciiParser {
      * @throws java.io.IOException
      */
     public FixedColumnsParser setFixedColumnsParser(String filename, String delim) throws IOException {
-        return setFixedColumnsParser(new FileReader(filename), delim);
+        Reader r=null;
+        FixedColumnsParser result;
+        try {
+            r= new FileReader(filename);
+            result= setFixedColumnsParser( r, delim);
+        } finally {
+            if ( r!=null ) r.close();
+        }
+        return result;
     }
 
     /**
