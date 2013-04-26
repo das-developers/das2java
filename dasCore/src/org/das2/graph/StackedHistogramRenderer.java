@@ -97,6 +97,8 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         public static final PeaksIndicator NoPeaks= new PeaksIndicator("None");
         public static final PeaksIndicator GrayPeaks= new PeaksIndicator("Gray Peaks");
+        public static final PeaksIndicator RedPeaks= new PeaksIndicator("Red Peaks");
+        public static final PeaksIndicator LinePeaks= new PeaksIndicator("Line Peaks");
         public static final PeaksIndicator BlackPeaks= new PeaksIndicator("Black Peaks");
         public static final PeaksIndicator MaxLines= new PeaksIndicator("Lines");
         
@@ -123,8 +125,6 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         this.yAxis= yAxis;
         this.zAxis= zAxis;
-
-		  this.peaksIndicator= PeaksIndicator.MaxLines;
         
         zAxis.addPropertyChangeListener(rebinListener);
         
@@ -158,6 +158,8 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         yAxis.setFloppyItemSpacing(true);
         yAxis.setOutsidePadding(1);
+        
+        this.peaksIndicator= PeaksIndicator.MaxLines;
         
         DasMouseInputAdapter mouseAdapter = parent.getDasMouseInputAdapter();
         
@@ -241,7 +243,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         BufferedImage plotImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         
         Graphics2D g = plotImage.createGraphics();
-        
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         if ( ! isTransparentBackground() ) {
             g.setColor( getParent().getBackground() );
             g.fillRect(0, 0, plotImage.getWidth(), plotImage.getHeight());
@@ -279,7 +281,6 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
         TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
-        TableDataSet weights= (TableDataSet)data.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         
         DasLabelAxis yAxis= (DasLabelAxis)yAxis_1;
         
@@ -289,7 +290,6 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         for (int j = 0; j < data.getYLength(0); j++) {
             
             int yBase;
-            Line2D.Float lBase;
             
             if ( j==(data.getYLength(0)-1) ) {   /* Draw top grey line */
                 yBase= yAxis.getItemMin(data.getYTagDatum(0, j)); 
@@ -304,7 +304,6 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             g.setColor(BAR_COLOR);
             
             int yBase1= yAxis.getItemMin(data.getYTagDatum(0, j));
-            double canvasHeight= parent.getHeight();
             
             if ( !haveLittleRow && yBase1 <= zmid  ) {
                 littleRow.setDPosition(yBase1,yBase);
@@ -323,10 +322,25 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             double zAxisMin= zAxis.getDataMinimum().doubleValue(xtysData.getZUnits());
             
             if ( yBase1 >= row.getDMinimum() && yBase <= row.getDMaximum() ) {
+                if ( peaksIndicator==PeaksIndicator.LinePeaks && peaks!=null ) {
+                    GeneralPath p= new GeneralPath();
+                    boolean lastWasFill=true;
+                    for (int ibin=0; ibin < data.getXLength(); ibin++) {
+                        int x0= (int)xAxis.transform(binStarts[ibin],xbins.getUnits());
+                        double zz= peaks.getDouble( ibin, j, data.getZUnits() );
+                        if ( !( data.getZUnits().isFill(zz) || Double.isNaN(zz) ) ) {
+                            int yMax= (int)zAxis.transform( zz, data.getZUnits(), yBase, yBase1 );
+                            if ( lastWasFill ) p.moveTo( x0, Math.min( yMax, y0 ) );
+                            p.lineTo( x0, Math.min( yMax, y0 ) );
+                            lastWasFill= false;
+                        } else {
+                            lastWasFill= true;
+                        }
+                    }
+                    g.draw(p);
+                }
                 for (int ibin=0; ibin < data.getXLength(); ibin++) {
                     int x0= (int)xAxis.transform(binStarts[ibin],xbins.getUnits());
-                    int x1;
-                    x1=x0+1; // 1 pixel wide
                     double zz= data.getDouble( ibin, j, data.getZUnits() );
                     if ( !( data.getZUnits().isFill(zz) || Double.isNaN(zz) ) ) {
                         int yAvg= (int)zAxis.transform( zz, data.getZUnits(), yBase, yBase1 );
@@ -335,22 +349,27 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                         //yHeight= yHeight < littleRowHeight ? yHeight : littleRowHeight;
                         if ( peaks!=null ) {
                             double peakValue = peaks.getDouble(ibin, j, peaks.getZUnits());
-									 // Changed so that the peak line doesn't disappear when
-									 // greater than the max value.  -cwp 2012-09-19 (arrrg).
-                            if (peakValue > zAxisMax)
-										  peakValue = zAxisMax;
-									 
-                            int yMax= (int)zAxis.transform( peakValue, data.getZUnits(), yBase, yBase1 );
-                            yMax= (y0-yMax)>(0) ? yMax : (y0);
-                            if (peaksIndicator==PeaksIndicator.MaxLines) {
-                                g.drawLine(x0,yMax,x0,yMax);
-                            } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
-                                g.setColor(Color.lightGray);
-                                g.drawLine(x0,yMax,x0,y0);
-                                g.setColor(BAR_COLOR);
-                            } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {
-                                g.setColor(BAR_COLOR);
-                                g.drawLine(x0,yMax,x0,y0);
+                            if (peakValue > zAxisMin) {
+                                int yMax= (int)zAxis.transform( peakValue, data.getZUnits(), yBase, yBase1 );
+                                yMax=  Math.min( yMax, y0 );
+                                yMax= yMax > ( y0 - littleRowHeight ) ? yMax : ( y0 - littleRowHeight );
+                                
+                                if (peaksIndicator==PeaksIndicator.MaxLines) {
+                                    g.drawLine(x0,yMax,x0,yMax);
+                                } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
+                                    g.setColor(Color.lightGray);
+                                    g.drawLine(x0,yMax,x0,y0);
+                                    g.setColor(BAR_COLOR);
+                                } else if ( peaksIndicator==PeaksIndicator.RedPeaks ) {
+                                    g.setColor(Color.red);
+                                    g.drawLine(x0,yMax,x0,y0);
+                                    g.setColor(BAR_COLOR);
+                                } else if ( peaksIndicator==PeaksIndicator.LinePeaks ) {
+                                    //nothing here
+                                } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {
+                                    g.setColor(BAR_COLOR);
+                                    g.drawLine(x0,yMax,x0,y0);
+                                }
                             }
                         }
                         if ( zz>=zAxisMin ) g.drawLine(x0, yAvg, x0, yAvg+yHeight );
