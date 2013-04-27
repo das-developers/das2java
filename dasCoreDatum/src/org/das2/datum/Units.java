@@ -428,9 +428,11 @@ public abstract class Units {
     }
     
     /**
-     *
+     * Get the converter that goes from this Unit to toUnits.  E.g. 
+     * Units.meters.getConverter(Units.centimeters) yields a converter that
+     * multiplies by 100.
      * @param toUnits
-     * @return
+     * @return a converter from this unit to toUnits.
      * @throws IllegalArgumentException if conversion between units is not possible
      */
     public UnitsConverter getConverter( Units toUnits ) {
