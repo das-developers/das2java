@@ -965,7 +965,10 @@ public class Ops {
 
     /**
      * element-wise multiply of two datasets with compatible geometry.
-     * @param ds
+     * Presently, either ds1 or ds2 should be dimensionless.
+     * TODO: units improvements.
+     * @param ds1
+     * @param ds2
      * @return
      */
     public static QDataSet multiply(QDataSet ds1, QDataSet ds2) {
@@ -982,7 +985,7 @@ public class Ops {
         } else {
             if ( !UnitsUtil.isRatioMeasurement(units1) ) throw new IllegalArgumentException("ds1 units are not ratio units: "+units1);
             if ( !UnitsUtil.isRatioMeasurement(units2) ) throw new IllegalArgumentException("ds2 units are not ratio units: "+units2);
-            logger.fine("throwing out units until we improve the units library, both arguments have physical units");
+            logger.info("throwing out units until we improve the units library, both arguments have physical units");
             resultUnits= null;
         }
 
@@ -997,19 +1000,28 @@ public class Ops {
     }
 
     /**
-     * element-wise divide of two datasets with compatible geometry.
-     * @param ds
-     * @return
+     * element-wise divide of two datasets with compatible geometry.  Either
+     * ds1 or ds2 should be dimensionless, or the units be convertible.
+     * TODO: units improvements.
+     * @param ds1
+     * @param ds2
+     * @return a data
      */
     public static QDataSet divide(QDataSet ds1, QDataSet ds2) {
         Units units1= SemanticOps.getUnits(ds1);
         Units units2= SemanticOps.getUnits(ds2);
         Units resultUnits;
+        final UnitsConverter uc;
 
         if ( units1==units2 ) {
             resultUnits= Units.dimensionless;
+            uc= UnitsConverter.IDENTITY;
         } else if ( units2==Units.dimensionless && UnitsUtil.isRatioMeasurement(units1) ) {
             resultUnits= units1;
+            uc= UnitsConverter.IDENTITY;
+        } else if ( units2.isConvertableTo(units1) ) {
+            resultUnits= Units.dimensionless;
+            uc= units2.getConverter(units1);
         } else {
             if ( !UnitsUtil.isRatioMeasurement(units1) ) throw new IllegalArgumentException("ds1 units are not ratio units: "+units1);
             if ( !UnitsUtil.isRatioMeasurement(units2) ) throw new IllegalArgumentException("ds2 units are not ratio units: "+units2);
@@ -1018,18 +1030,19 @@ public class Ops {
                 try {
                     resultUnits= UnitsUtil.getInverseUnit(units2);
                 } catch ( IllegalArgumentException ex ) {
-                    logger.fine( String.format( "unable to invert unit2=%s, arguments have unequal units", units2 ) );
+                    logger.info( String.format( "unable to invert unit2=%s, arguments have unequal units", units2 ) );
                     resultUnits= null;
                 }
             } else {
-                logger.fine("throwing out units until we improve the units library, arguments have unequal units");
+                logger.info("throwing out units until we improve the units library, arguments have unequal units");
                 resultUnits= null;
             }
+            uc= UnitsConverter.IDENTITY;
         }
 
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
-                return d1 / d2;
+                return d1 / uc.convert(d2);
             }
         });
 
@@ -1040,8 +1053,9 @@ public class Ops {
 
     /**
      * element-wise mod of two datasets with compatible geometry.
-     * TODO: I think there's a tacit assumption that the units are the same.
-     * @param ds
+     * TODO: I think there's a tacit assumption that the units are the same.  This should support Units.t2000 mod "24 hours" to get result in hours.
+     * @param ds1
+     * @param ds2
      * @return
      */
     public static QDataSet mod(QDataSet ds1, QDataSet ds2) {
