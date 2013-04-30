@@ -1646,6 +1646,7 @@ public class DasPlot extends DasCanvasComponent {
 
     /**
      * mark the dasPlot's cache image as invalid, forcing it to repaint.
+     * TODO: when should a user use invalidateCacheImage vs markDirty?
      */
     public void invalidateCacheImage() {
         if ( cacheImageValid==false ) return;
@@ -1654,6 +1655,14 @@ public class DasPlot extends DasCanvasComponent {
         update();
     }
 
+    /**
+     * introduced to debug Autoplot test018.  This should not be used otherwise.
+     * @return true if the cache image is marked as valid.
+     */
+    public boolean isCacheImageValid() {
+        return cacheImageValid;
+    }
+    
     @Override
     void markDirty() {
         logger.finer("DasPlot.markDirty");
