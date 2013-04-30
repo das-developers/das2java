@@ -85,8 +85,8 @@ public class GraphicalLogHandler extends Handler {
     
     private final int YAXIS_THREAD = -199;
     private final int YAXIS_CLASS = -198;
-    //private final int yaxisDimension = YAXIS_THREAD;
-    private final int yaxisDimension = YAXIS_CLASS;
+    private final int yaxisDimension = YAXIS_THREAD;
+    //private final int yaxisDimension = YAXIS_CLASS;
     
     DasAxis xaxis;
     Legend legend;
@@ -140,7 +140,7 @@ public class GraphicalLogHandler extends Handler {
         plot.getDasMouseInputAdapter().setSecondaryModule( mm );
         
         legend= new Legend();
-        canvas.add( legend, new DasRow( canvas, 0.1, 0.5 ), new DasColumn( canvas, 0.8, 0.98 ) );
+        canvas.add( legend, new DasRow( canvas, 0.1, 0.5 ), new DasColumn( canvas, 0.65, 0.98 ) );
         
         for ( Iterator i= loggerMap.keySet().iterator(); i.hasNext(); ) {
             Object key= i.next();
