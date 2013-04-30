@@ -96,8 +96,17 @@ public class GraphicalLogHandler extends Handler {
     // this is to avoid initialization failures
     long sleepInitiallyTime= 2000; // milliseconds
     
-    public GraphicalLogHandler() {
+    private GraphicalLogHandler() {
         time0= System.currentTimeMillis();
+    }
+    
+    private static GraphicalLogHandler instance= null;
+    
+    public static GraphicalLogHandler getInstance() {
+        if ( instance==null ) {
+            instance= new GraphicalLogHandler();
+        }
+        return instance;
     }
     
     private void createCanvas() {
