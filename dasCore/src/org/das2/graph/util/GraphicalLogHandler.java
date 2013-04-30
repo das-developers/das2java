@@ -71,7 +71,9 @@ import org.w3c.dom.Element;
 public class GraphicalLogHandler extends Handler {
     
     List records= new ArrayList();
-    List yAxisValues= new ArrayList();
+    List yAxisValuesThread= new ArrayList();
+    List yAxisValuesClass= new ArrayList();
+    List yAxisValuesLogger= new ArrayList();
     List times= new ArrayList();
     
     Renderer renderer;
@@ -81,12 +83,15 @@ public class GraphicalLogHandler extends Handler {
     long time0;
     
     HashMap loggerMap= new HashMap();
-    HashMap yaxisMap= new HashMap();
+    //HashMap yaxisMap= new HashMap();
+    HashMap yaxisMapThread=  new HashMap();
+    HashMap yaxisMapClass=  new HashMap();
+    HashMap yaxisMapLogger=  new HashMap();
     
     private final int YAXIS_THREAD = -199;
     private final int YAXIS_CLASS = -198;
-    private final int yaxisDimension = YAXIS_THREAD;
-    //private final int yaxisDimension = YAXIS_CLASS;
+    private final int YAXIS_LOGNAME = -197;
+    private int yaxisDimension = YAXIS_LOGNAME;
     
     DasAxis xaxis;
     Legend legend;
@@ -194,6 +199,14 @@ public class GraphicalLogHandler extends Handler {
         };
     }
     
+    public void setYAxisType( int type ) {
+        this.yaxisDimension= type;
+    }
+    
+    public int getYAxisType() {
+        return this.yaxisDimension;
+    }
+    
     private void update() {
         long endMillis= System.currentTimeMillis() - time0 + 2000;
         if ( endMillis < 10000 ) endMillis= 10000;
@@ -216,6 +229,11 @@ public class GraphicalLogHandler extends Handler {
         }
     }
     
+    /**
+     * check that the logger is not listening to itself.
+     * @param st
+     * @return 
+     */
     private boolean checkMyMessages( StackTraceElement[] st ) {
         String myName= this.getClass().getName();
         boolean result= false;
@@ -247,13 +265,32 @@ public class GraphicalLogHandler extends Handler {
             yAxisName= Thread.currentThread().getName() ;
         } else if ( yaxisDimension==YAXIS_CLASS ) {
             yAxisName= rec.getSourceClassName();
+        } else if ( yaxisDimension==YAXIS_LOGNAME ) {
+            yAxisName= rec.getLoggerName();
+        } else {
+            throw new IllegalArgumentException("bad yAxisName");
         }
         
-        Integer yValue= (Integer)yaxisMap.get( yAxisName );
+        Integer yValue;
+        yValue= (Integer)yaxisMapClass.get( rec.getSourceClassName() );
         if ( yValue==null ) {
-            yValue= new Integer( yaxisMap.size() );
-            yaxisMap.put( yAxisName, yValue );
+            yValue= new Integer( yaxisMapClass.size() );
+            yaxisMapClass.put( yAxisName, yValue );
         }
+        
+        yValue= (Integer)yaxisMapThread.get( rec.getSourceClassName() );
+        if ( yValue==null ) {
+            yValue= new Integer( yaxisMapThread.size() );
+            yaxisMapThread.put( yAxisName, yValue );
+        }
+        
+        yValue= (Integer)yaxisMapLogger.get( rec.getLoggerName() );
+        if ( yValue==null ) {
+            yValue= new Integer( yaxisMapLogger.size() );
+            yaxisMapLogger.put( yAxisName, yValue );
+        }
+        
+        
         synchronized (this) {
             Long time= new Long( rec.getMillis() - time0 ) ;
             int index= Collections.binarySearch(times, time );
@@ -269,7 +306,10 @@ public class GraphicalLogHandler extends Handler {
                 index= -1-index;
             }
             records.add( index, rec );
-            yAxisValues.add( index, yValue );
+            yAxisValuesClass.add( index, (Integer)yaxisMapClass.get( rec.getSourceClassName() ) );
+            yAxisValuesThread.add( index, (Integer)yaxisMapThread.get( rec.getSourceClassName() ) );
+            yAxisValuesLogger.add( index, (Integer)yaxisMapLogger.get( rec.getLoggerName() ) );
+            
             times.add( index, time );
             
         }
@@ -304,6 +344,20 @@ public class GraphicalLogHandler extends Handler {
             
             int ix0= (int) xAxis.transform( xAxis.getDataMinimum() );
             g.setColor( Color.lightGray );
+            
+            HashMap yaxisMap;
+            List yAxisValues;
+            if ( yaxisDimension==YAXIS_CLASS ) {
+                yaxisMap= yaxisMapClass;
+                yAxisValues= yAxisValuesClass;
+            } else if ( yaxisDimension==YAXIS_THREAD ) {
+                yaxisMap= yaxisMapThread;
+                yAxisValues= yAxisValuesThread;
+            } else {
+                yaxisMap= yaxisMapLogger;
+                yAxisValues= yAxisValuesLogger;
+            }
+            
             for ( Iterator iterator= yaxisMap.keySet().iterator(); iterator.hasNext(); ) {
                 Object name= iterator.next();
                 Integer ithread= (Integer)yaxisMap.get(name);
@@ -420,6 +474,15 @@ public class GraphicalLogHandler extends Handler {
             String label;
             Rectangle[] myDirtyBounds;
             
+            List yAxisValues;
+            if ( yaxisDimension==YAXIS_CLASS ) {
+                yAxisValues= yAxisValuesClass;
+            } else if ( yaxisDimension==YAXIS_THREAD ) {
+                yAxisValues= yAxisValuesThread;
+            } else {
+                yAxisValues= yAxisValuesLogger;
+            }
+            
             if ( select==null ) {
                 label= LABEL_NOT_AVAILABLE;
                 myDirtyBounds= new Rectangle[] { new Rectangle( 0,0,0,0 ), new Rectangle( 0,0,0,0 ) };
@@ -476,7 +539,16 @@ public class GraphicalLogHandler extends Handler {
                 ArrayList rec= new ArrayList();
                 DatumRange threadsRange= e.getYRange();
                 DatumRange timeRange= e.getXRange();
-                
+
+                List yAxisValues;
+                if ( yaxisDimension==YAXIS_CLASS ) {
+                    yAxisValues= yAxisValuesClass;
+                } else if ( yaxisDimension==YAXIS_THREAD ) {
+                    yAxisValues= yAxisValuesThread;
+                } else {
+                    yAxisValues= yAxisValuesLogger;
+                }
+            
                 int messageCount=0;
                 for ( int i=0; i<records.size(); i++ ) {
                     double time= ((Long)times.get( i )).doubleValue();
