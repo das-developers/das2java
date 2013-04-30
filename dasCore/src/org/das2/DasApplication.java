@@ -254,7 +254,12 @@ public class DasApplication {
         return local;
     }
     
-    public static boolean isHeadAvailable() {
+    /**
+     * return true if this doesn't have to be a headless application.
+     * This should not be used.
+     * @return 
+     */
+    private static boolean isHeadAvailable() {
         return true;
         /*
         return ( System.getProperty( "awt.toolkit" ) != null );
