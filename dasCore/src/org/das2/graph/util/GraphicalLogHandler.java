@@ -64,11 +64,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 
-
-
-
 /**
- *
+ * Class attempts to visualize messages sent to the loggers.
  * @author Jeremy
  */
 public class GraphicalLogHandler extends Handler {
@@ -140,7 +137,7 @@ public class GraphicalLogHandler extends Handler {
             Object key= i.next();
             String name= String.valueOf(key);
             if ( name.equals("") ) name="<default>";
-            legend.add( legend.getIcon( (Color)loggerMap.get(key) ), name );
+            legend.add( Legend.getIcon( (Color)loggerMap.get(key) ), name );
         }
         
         frame= DasApplication.getDefaultApplication().createMainFrame( "GraphicalLogHandler" );
@@ -390,6 +387,7 @@ public class GraphicalLogHandler extends Handler {
     }
     
     private class LookupDragRenderer extends LabelDragRenderer {
+        private static final String LABEL_NOT_AVAILABLE = "n/a";
         DasAxis xaxis, yaxis;
         DasPlot parent;
         
@@ -401,14 +399,15 @@ public class GraphicalLogHandler extends Handler {
         }
         
         public Rectangle[] renderDrag( Graphics g, Point p1, Point p2 ) {
-            LogRecord select= (LogRecord)objectLocator.closestObject( new Point( (int)p2.getX()+parent.getX(), (int)p2.getY() + parent.getY() ));
+            
+            LogRecord select= (LogRecord)objectLocator.closestObject( p2 );
             int iclosest= records.indexOf( select );
             
             String label;
             Rectangle[] myDirtyBounds;
             
             if ( select==null ) {
-                label= "n/a";
+                label= LABEL_NOT_AVAILABLE;
                 myDirtyBounds= new Rectangle[] { new Rectangle( 0,0,0,0 ), new Rectangle( 0,0,0,0 ) };
                 
             } else {
@@ -416,14 +415,14 @@ public class GraphicalLogHandler extends Handler {
                 
                 int ix= (int)xaxis.transform( Units.milliseconds.createDatum( ((Long)times.get(iclosest)).longValue() ) );
                 int iy= (int)yaxis.transform( Units.dimensionless.createDatum( ((Integer)yAxisValues.get(iclosest)).intValue() ) );
-                g.drawOval( ix-5 - parent.getX(),  iy-5 - parent.getY(), 10, 10 );
+                g.drawOval( ix-5,  iy-5, 10, 10 );
                 GrannyTextRenderer gtr= new GrannyTextRenderer();
                 gtr.setString(g, label);
                 gtr.draw( g, 5, g.getFontMetrics().getHeight() );
                 Rectangle gtrBounds= gtr.getBounds();
                 gtrBounds.translate(5,g.getFontMetrics().getHeight());
                 myDirtyBounds= new Rectangle[] {
-                    new Rectangle( ix-5 - parent.getX(),  iy-5 - parent.getY(), 11, 11 ),
+                    new Rectangle( ix-5,  iy-5, 11, 11 ),
                             gtrBounds };
             }
             
