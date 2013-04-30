@@ -159,6 +159,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         public void unlock();
     }
+    
+    /**
+     * synchronized block for calculating ticks uses this.
+     */
+    private final Object tickLock= new Object();
+    
     /* Affine Transform, dependent on min, max and axis position
      * pixel= at_m * data + at_b
      * where data is data point in linear space (i.e. log property implemented)
@@ -551,16 +557,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setDatumRange(DatumRange dr) {
         //System.err.println("setDatumRange("+dr+")");
         DatumRange oldRange= dataRange.getDatumRange();
+        Units oldUnits = getUnits();
         if ( !rangeIsAcceptable(dr) ) { 
             logger.log(Level.INFO, "invalid range ignored{0}", dr);
             return;
         }
-        if (getUnits().isConvertableTo(dr.getUnits())) {
-            //this.setDataRange(dr.min(), dr.max());
-            this.dataRange.setRange(dr);
-        } else {
-            Units oldUnits = getUnits();
-            this.resetRange(dr);
+        synchronized ( tickLock ) {
+            if (getUnits().isConvertableTo(dr.getUnits())) {
+                //this.setDataRange(dr.min(), dr.max());
+                this.dataRange.setRange(dr);
+            } else {
+                this.resetRange(dr);
+            }
+        }
+        if ( oldUnits!=dr.getUnits() ) {
             firePropertyChange(PROP_UNITS, oldUnits, dr.getUnits());
         }
         firePropertyChange( PROPERTY_DATUMRANGE, oldRange, dr );
@@ -836,11 +846,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public synchronized void resetRange(DatumRange range) {
         DatumRange oldRange= this.getDatumRange();
         if (range.getUnits() != this.getUnits()) {
-            if (dasPlot != null) {
-                dasPlot.invalidateCacheImage();
+            synchronized ( tickLock ) {
+                if (dasPlot != null) {
+                    dasPlot.invalidateCacheImage();
+                }
+                logger.log(Level.FINEST, "replaceRange({0})", range);
+                dataRange.resetRange(range);
             }
-            logger.log(Level.FINEST, "replaceRange({0})", range);
-            dataRange.resetRange(range);
         } else {
             dataRange.setRange(range);
         }
@@ -1621,12 +1633,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     TickMaster.getInstance().offerTickV( this, newTicks );
                 } else {
                     TickVDescriptor newTicks= null;
-                    if (getUnits() instanceof TimeLocationUnits) {
-                        newTicks= updateTickVTime();
-                    } else if (dataRange.isLog()) {
-                        newTicks= updateTickVLog();
-                    } else {
-                        newTicks= updateTickVLinear();
+                    synchronized ( tickLock ) {
+                        if (getUnits() instanceof TimeLocationUnits) {
+                            newTicks= updateTickVTime();
+                        } else if (dataRange.isLog()) {
+                            newTicks= updateTickVLog();
+                        } else {
+                            newTicks= updateTickVLinear();
+                        }
                     }
                     //resetTickV(newTicks);
                     if ( this.tickV==null ) resetTickV( newTicks );  // transition cases, pngwalk.
