@@ -214,6 +214,10 @@ public class QubeDataSetIterator implements DataSetIterator {
      * @param ds
      */
     public QubeDataSetIterator(QDataSet ds) {
+        List<String> problems= new ArrayList();
+        if ( ! DataSetUtil.validate(ds,problems) ) {
+            throw new IllegalArgumentException("data doesn't validate: "+problems );
+        }
         if (Boolean.TRUE.equals(ds.property(QDataSet.QUBE))) {
             this.qube = DataSetUtil.qubeDims(ds);
             this.ds = ds;
