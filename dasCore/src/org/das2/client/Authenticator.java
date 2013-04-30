@@ -161,13 +161,13 @@ public class Authenticator extends JPanel {
                 feedbackLabel.setText("stored credentials rejected by server");
             }
         }
-        
-        Component parent=DasApplication.getDefaultApplication().getMainFrame();
 
-        if ( !DasApplication.isHeadAvailable() ) {
+        if ( DasApplication.getDefaultApplication().isHeadless() ) {
             System.err.println("head is not available to query for credentials");
             return null;
         }
+        
+        Component parent=DasApplication.getDefaultApplication().getMainFrame();
 
         while ( okayCancel==JOptionPane.OK_OPTION && result==null ) {
             okayCancel=
