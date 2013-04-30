@@ -225,6 +225,11 @@ public class GraphicalLogHandler extends Handler {
         if ( checkMyMessages(st) ) return;
         if ( Thread.currentThread().getName().equals( "graphicalHandlerUpdateThread" ) ) return;
         
+        if ( DasApplication.getDefaultApplication().isHeadless() ) {
+            // simply disable this when there is no head available.
+            return;
+        }
+        
         if ( renderer==null &&
                 ( System.currentTimeMillis() - this.time0 ) > sleepInitiallyTime ) getRenderer();
         
