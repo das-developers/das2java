@@ -176,6 +176,52 @@ public class FFTUtil {
         return result;
     }
 
+    /**
+     * Perform the fft to get real and imaginary components for intervals.  
+     * @param fft FFT code to use, such as GeneralFFT.newDoubleFFT(len)
+     * @param vds QDataSet rank 1 dataset with depend 0 units TimeLocationUnits.
+     * @param weights QDataSet rank 1 dataset containing weights, as in hanning.  null indicates no weights.
+     */
+    public static QDataSet fft( GeneralFFT fft, QDataSet vds, QDataSet weights ) {
+        double [] yreal= new double[ fft.size() ];
+        
+        if ( weights==null ) {
+            for ( int i=0; i<fft.size(); i++ ) yreal[i]= vds.value( i );
+        } else {
+            for ( int i=0; i<fft.size(); i++ ) yreal[i]= vds.value( i ) * weights.value( i );
+        }
+
+        ComplexArray.Double ca= ComplexArray.newArray(yreal);
+        fft.transform( ca );  //TODO: get rid of ComplexArray, which can be represented as QDataSet.
+
+        QDataSet dep0= (QDataSet) vds.property( QDataSet.DEPEND_0 );
+        if ( dep0==null ) {
+            dep0= new IndexGenDataSet( vds.length() );
+        }
+
+        QDataSet xtags= getFrequencyDomainTags( dep0 );
+
+        Units xUnits= (Units)xtags.property( QDataSet.UNITS );
+        double binsize;
+        if ( xUnits.isConvertableTo(Units.hertz) ) {
+            UnitsConverter uc= xUnits.getConverter(Units.hertz);
+            binsize= 2 * ( uc.convert( xtags.value( xtags.length()/2 ) ) ) / fft.size();
+        } else {
+            binsize= 2 * ( xtags.value( xtags.length()/2 ) ) / fft.size();
+        }
+
+        DDataSet result= DDataSet.createRank2(xtags.length(),2);
+
+        for ( int i=1; i<xtags.length(); i++ ) {
+            result.putValue(i,0, ca.getReal(i) / binsize );
+            result.putValue(i,1, ca.getImag(i) / binsize );
+        }
+
+        result.putProperty( QDataSet.DEPEND_0, xtags );
+        return result;
+    }
+    
+    
     private static class TTagBufElement {
         QDataSet data;
         double dt;
