@@ -927,6 +927,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return drawTca;
     }
 
+    /**
+     * turn on additional tick labels using the TCA function.
+     * @param b 
+     */
     public void setDrawTca(boolean b) {
         boolean oldValue = drawTca;
         if (b && getOrientation() != BOTTOM) {
@@ -985,7 +989,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     /**
-     *
+     * @see setDrawTca, which turns on additional ticks.
      * @param dataset The URL identifier string of a TCA data set, or "" for no TCAs.
      */
     public void setDataPath(String dataset) {
@@ -1019,21 +1023,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange("dataPath", oldValue, dataset);
     }
 
-    /** Add auxilary data to an axis (usually OrbitAttitude data for a time axis).
-     * This function does the same thing as setDataPath, but with a different interface.
-     * @param will be called upon to generate auillary data sets.  To avoid nonsensical
-     * graphs the X axis for this dataset must be the same as the that handed to the
-     * renderer.
-     */
-    public void setDataSetDescriptor(DataSetDescriptor dsdAux) {
-        if (dsdAux == null) {
-            throw new NullPointerException("null DataSetDescriptor not allowed");
-        }
-
-        //TODO: adapt old to new
-         throw new IllegalArgumentException("need to implement");
-    }
-
     private void maybeStartTcaTimer() {
         if ( tcaTimer==null ) {
             tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
@@ -1042,15 +1031,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             });
             tcaTimer.tickle("startTcaTimer");
+        } else {
+            tcaTimer.tickle("startTcaTimer");
         }
     }
     
     /** 
      * Add auxiliary data to an axis (usually OrbitAttitude data for a time axis).
      * This function does the same thing as setDataPath, but with a different interface.
-     * @param will be called upon to generate auxiliary data sets.  To avoid nonsensical
-     * graphs the X axis for this dataset must be the same as the that handed to the
-     * renderer.
+     * The QFunction must have one input parameter which will be positions on this axis 
+     * (e.g. times from a time axis).
+     * @see setDrawTca, which turns on additional ticks.
+     * @param f will be called upon to generate auxiliary data sets.  
      */
     public synchronized void setTcaFunction( QFunction f ) {
         QFunction oldF= this.tcaFunction;
@@ -1103,6 +1095,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else {
             tcaUnits= (Units)bds.property( QDataSet.UNITS, 0 );
         }
+        if ( tcaUnits==null ) tcaUnits=Units.dimensionless;
 
         UnitsConverter uc;
         if ( !u.isConvertableTo(tcaUnits) ) {
