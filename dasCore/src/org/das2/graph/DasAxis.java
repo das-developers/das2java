@@ -1004,12 +1004,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         } else {
             try {
                 tcaFunction= tcaFunction( dataset );
-                tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        updateTCASoon();
-                    }
-                });
-                tcaTimer.tickle("setDataPath");
+                maybeStartTcaTimer();
                 this.tcaData= null;
                 if ( tcaFunction==null ) {
                     throw new IllegalArgumentException("unable to implement tca QFunction: "+dataset );
@@ -1039,16 +1034,28 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
          throw new IllegalArgumentException("need to implement");
     }
 
-    /** Add auxilary data to an axis (usually OrbitAttitude data for a time axis).
+    private void maybeStartTcaTimer() {
+        if ( tcaTimer==null ) {
+            tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    updateTCASoon();
+                }
+            });
+            tcaTimer.tickle("startTcaTimer");
+        }
+    }
+    
+    /** 
+     * Add auxiliary data to an axis (usually OrbitAttitude data for a time axis).
      * This function does the same thing as setDataPath, but with a different interface.
-     * @param will be called upon to generate auxillary data sets.  To avoid nonsensical
+     * @param will be called upon to generate auxiliary data sets.  To avoid nonsensical
      * graphs the X axis for this dataset must be the same as the that handed to the
      * renderer.
      */
-    public void setTcaFunction( QFunction f ) {
+    public synchronized void setTcaFunction( QFunction f ) {
         QFunction oldF= this.tcaFunction;
         this.tcaFunction= f;
-
+        maybeStartTcaTimer();
         markDirty();
         update();
 
@@ -1124,7 +1131,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 outDescriptor= (QDataSet) ticks.property(QDataSet.BUNDLE_0);
                 if ( outDescriptor!=null ) {
                     int n= outDescriptor.length();
-                    if ( outDescriptor.property(QDataSet.NAME,0)==null && ( n<1 || outDescriptor.property(QDataSet.NAME,n-1)==null ) ) {
+                    if ( outDescriptor.property(QDataSet.NAME,0)==null && 
+                         outDescriptor.property(QDataSet.LABEL,0)==null && 
+                         ( n<1 || ( outDescriptor.property(QDataSet.NAME,n-1)==null && 
+                                    outDescriptor.property(QDataSet.LABEL,n-1)==null ) ) ) {
                         outDescriptor= null;
                     }
                 }
@@ -1134,7 +1144,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         ltcaData.putProperty( QDataSet.BUNDLE_1, outDescriptor );
         ltcaData.putProperty( QDataSet.DEPEND_0, dep0 );
-
+                    
         this.tcaData= ltcaData;
         update();
         
@@ -1605,11 +1615,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * call-back for TickMaster
      * @param ticks
      */
-    protected void resetTickV( TickVDescriptor ticks ) {
+    protected synchronized void resetTickV( TickVDescriptor ticks ) {
         TickVDescriptor oldTicks = this.tickV;
         this.tickV= ticks;
         datumFormatter = resolveFormatter(tickV);
-        if (drawTca && tcaFunction != null) {
+        if ( drawTca && tcaFunction != null ) {  
             tcaTimer.tickle("resetTickV");
         }
         firePropertyChange(PROPERTY_TICKS, oldTicks, this.tickV);
