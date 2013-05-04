@@ -64,6 +64,7 @@ public class ReduceFilter implements StreamHandler {
     ByteOrder byteOrder;
 
     double lengthSeconds;
+    double reportCadenceSeconds; // this is the cadence we'll report.  It cannot be less than the cadence in the input stream.
     double length; // in the stream units.
     //double nextTag;
 
@@ -152,8 +153,8 @@ public class ReduceFilter implements StreamHandler {
                     try {
                         QDataSet o = (QDataSet) ser.parse( "rank0dataset", scadence );
                         oldCadenceSeconds= DataSetUtil.asDatum(o).doubleValue( Units.seconds );
-                        if ( lengthSeconds<oldCadenceSeconds ) {
-                            lengthSeconds= oldCadenceSeconds;
+                        if ( reportCadenceSeconds<oldCadenceSeconds ) {
+                            reportCadenceSeconds= oldCadenceSeconds;
                         }
                     } catch ( ParseException ex ) {
                         throw new StreamException( String.format( "unable to parse cadence \"%s\"", scadence ), ex );
@@ -172,7 +173,7 @@ public class ReduceFilter implements StreamHandler {
                     SerializeDelegate ser= new CacheTagSerializeDelegate();
                     try {
                         CacheTag ct0= (CacheTag)( ser.parse( "cacheTag", scachetag ) );
-                        CacheTag ct1= new CacheTag( ct0.getRange(), Units.seconds.createDatum(lengthSeconds) );
+                        CacheTag ct1= new CacheTag( ct0.getRange(), Units.seconds.createDatum(reportCadenceSeconds) );
                         xp.setNodeValue( ser.format(ct1) );
                     } catch ( ParseException ex ) {
                         throw new StreamException( String.format( "unable to parse cacheTag \"%s\"", scachetag ), ex );
@@ -389,6 +390,7 @@ public class ReduceFilter implements StreamHandler {
      */
     void setCadence(Datum cadence) {
         lengthSeconds= cadence.doubleValue( Units.seconds );
+        reportCadenceSeconds= lengthSeconds;
     }
 
     public static void main( String[] args ) throws StreamException, FileNotFoundException, IOException {
