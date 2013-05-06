@@ -4019,16 +4019,22 @@ public class Ops {
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
 
-        if ( findex0.rank()>0 && findex0.length()!=findex1.length() ) {
-            throw new IllegalArgumentException("findex0 and findex1 must have the same geometry.");
+        boolean slice0= false;
+        if ( findex0.rank()==0 ) {
+            slice0= true;
+            findex0= new JoinDataSet(findex0);
+        }
+        
+        boolean slice1= false;
+        if ( findex1.rank()==0 ) {
+            slice1= true;
+            findex1= new JoinDataSet(findex1);
         }
 
         DDataSet result = DDataSet.createRank2(findex0.length(),findex1.length());
 
         QDataSet wds= DataSetUtil.weightsDataSet(vv);
 
-        QubeDataSetIterator it = new QubeDataSetIterator(findex0);
-        QubeDataSetIterator it2= new QubeDataSetIterator(findex1);
 
         int ic00, ic01, ic10, ic11;
         int n0 = vv.length();
@@ -4037,11 +4043,15 @@ public class Ops {
         double fill= -1e38;
         result.putProperty( QDataSet.FILL_VALUE, fill );
         
+        QubeDataSetIterator it = new QubeDataSetIterator(findex0);
+        
         while (it.hasNext()) {
             it.next();
+            QubeDataSetIterator it2= new QubeDataSetIterator(findex1);
+            
             while ( it2.hasNext() ) {
+                it2.next();
                 double ff0 = it.getValue(findex0);
-                double ff1 = it2.getValue(findex1);
 
                 if (ff0 < 0) {
                     ic00 = 0; // extrapolate
@@ -4053,6 +4063,8 @@ public class Ops {
                     ic00 = (int) Math.floor(ff0);
                     ic01 = ic00 + 1;
                 }
+
+                double ff1 = it2.getValue(findex1);
 
                 if (ff1 < 0) {
                     ic10 = 0; // extrapolate
@@ -4068,10 +4080,10 @@ public class Ops {
                 double alpha0 = ff0 - ic00;
                 double alpha1 = ff1 - ic10;
 
-                double vv00 = vv.value(ic00, ic10);
-                double vv01 = vv.value(ic00, ic11);
-                double vv10 = vv.value(ic01, ic10);
-                double vv11 = vv.value(ic01, ic11);
+                double vv00 =  vv.value(ic00, ic10);
+                double vv01 =  vv.value(ic00, ic11);
+                double vv10 =  vv.value(ic01, ic10);
+                double vv11 =  vv.value(ic01, ic11);
 
                 double ww00=  wds.value(ic00, ic10);
                 double ww01 = wds.value(ic00, ic11);
@@ -4084,12 +4096,19 @@ public class Ops {
                     double value= vv00 * beta0 * beta1 + vv01 * beta0 * alpha1 + vv10 * alpha0 * beta1 + vv11 * alpha0 * alpha1;
                     result.putValue( it.index(0),it2.index(0),value );
                 } else {
-                    it.putValue(result, fill );
+                    result.putValue( it.index(0),it2.index(0),fill );
                 }
             } // second index
         }
 
-        return result;
+        QDataSet result1= result;
+        if ( slice0 ) {
+            result1= result1.slice(0);
+        }
+        if ( slice1 ) {
+            result1= DataSetOps.slice1(result1,0);
+        }
+        return result1;
     }
 
     /**
