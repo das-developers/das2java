@@ -4013,8 +4013,8 @@ public class Ops {
      *
      * @see findex the 1-D findex command.
      * @param vv rank 2 dataset.
-     * @param findex0 rank N dataset of fractional indeces for the zeroth index.
-     * @param findex1 rank N dataset of fractional indeces for the first index.
+     * @param findex0 rank 1 dataset of fractional indeces for the zeroth index.
+     * @param findex1 rank 1 dataset of fractional indeces for the first index.
      * @return rank N dataset 
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
@@ -4022,11 +4022,14 @@ public class Ops {
         if ( findex0.rank()>0 && findex0.length()!=findex1.length() ) {
             throw new IllegalArgumentException("findex0 and findex1 must have the same geometry.");
         }
-        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex0));
+
+        DDataSet result = DDataSet.createRank2(findex0.length(),findex1.length());
 
         QDataSet wds= DataSetUtil.weightsDataSet(vv);
 
         QubeDataSetIterator it = new QubeDataSetIterator(findex0);
+        QubeDataSetIterator it2= new QubeDataSetIterator(findex1);
+
         int ic00, ic01, ic10, ic11;
         int n0 = vv.length();
         int n1 = vv.length(0);
@@ -4036,51 +4039,54 @@ public class Ops {
         
         while (it.hasNext()) {
             it.next();
+            while ( it2.hasNext() ) {
+                double ff0 = it.getValue(findex0);
+                double ff1 = it2.getValue(findex1);
 
-            double ff0 = it.getValue(findex0);
-            double ff1 = it.getValue(findex1);
+                if (ff0 < 0) {
+                    ic00 = 0; // extrapolate
+                    ic01 = 1;
+                } else if (ff0 >= n0 - 1) {
+                    ic00 = n0 - 2; // extrapolate
+                    ic01 = n0 - 1;
+                } else {
+                    ic00 = (int) Math.floor(ff0);
+                    ic01 = ic00 + 1;
+                }
 
-            if (ff0 < 0) {
-                ic00 = 0; // extrapolate
-                ic01 = 1;
-            } else if (ff0 >= n0 - 1) {
-                ic00 = n0 - 2; // extrapolate
-                ic01 = n0 - 1;
-            } else {
-                ic00 = (int) Math.floor(ff0);
-                ic01 = ic00 + 1;
-            }
+                if (ff1 < 0) {
+                    ic10 = 0; // extrapolate
+                    ic11 = 1;
+                } else if (ff1 >= n1 - 1) {
+                    ic10 = n1 - 2; // extrapolate
+                    ic11 = n1 - 1;
+                } else {
+                    ic10 = (int) Math.floor(ff1);
+                    ic11 = ic10 + 1;
+                }
 
-            if (ff1 < 0) {
-                ic10 = 0; // extrapolate
-                ic11 = 1;
-            } else if (ff1 >= n1 - 1) {
-                ic10 = n1 - 2; // extrapolate
-                ic11 = n1 - 1;
-            } else {
-                ic10 = (int) Math.floor(ff1);
-                ic11 = ic10 + 1;
-            }
+                double alpha0 = ff0 - ic00;
+                double alpha1 = ff1 - ic10;
 
-            double alpha0 = ff0 - ic00;
-            double alpha1 = ff1 - ic10;
+                double vv00 = vv.value(ic00, ic10);
+                double vv01 = vv.value(ic00, ic11);
+                double vv10 = vv.value(ic01, ic10);
+                double vv11 = vv.value(ic01, ic11);
 
-            double vv00 = vv.value(ic00, ic10);
-            double vv01 = vv.value(ic00, ic11);
-            double vv10 = vv.value(ic01, ic10);
-            double vv11 = vv.value(ic01, ic11);
+                double ww00=  wds.value(ic00, ic10);
+                double ww01 = wds.value(ic00, ic11);
+                double ww10 = wds.value(ic01, ic10);
+                double ww11 = wds.value(ic01, ic11);
 
-            double ww00=  wds.value(ic00, ic10);
-            double ww01 = wds.value(ic00, ic11);
-            double ww10 = wds.value(ic01, ic10);
-            double ww11 = wds.value(ic01, ic11);
-
-            if ( ww00*ww01*ww10*ww11 > 0 ) {
-                it.putValue(result, vv00 * (1 - alpha0) * (1 - alpha1) + vv01 * (1 - alpha0) * (alpha1) + vv10 * (alpha0) * (1 - alpha1) + vv11 * (alpha0) * (alpha1));
-            } else {
-                it.putValue(result, fill );
-            }
-
+                if ( ww00*ww01*ww10*ww11 > 0 ) {
+                    double beta0= 1-alpha0;
+                    double beta1= 1-alpha1;
+                    double value= vv00 * beta0 * beta1 + vv01 * beta0 * alpha1 + vv10 * alpha0 * beta1 + vv11 * alpha0 * alpha1;
+                    result.putValue( it.index(0),it2.index(0),value );
+                } else {
+                    it.putValue(result, fill );
+                }
+            } // second index
         }
 
         return result;
