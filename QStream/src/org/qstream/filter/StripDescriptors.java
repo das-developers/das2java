@@ -1,0 +1,62 @@
+package org.qstream.filter;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.text.ParseException;
+import org.virbo.qstream.FormatStreamHandler;
+import org.virbo.qstream.PacketDescriptor;
+import org.virbo.qstream.QDataSetStreamHandler;
+import org.virbo.qstream.StreamDescriptor;
+import org.virbo.qstream.StreamException;
+import org.virbo.qstream.StreamHandler;
+import org.virbo.qstream.StreamTool;
+
+/**
+ * Remove the packets and retain only the descriptors, which is useful for debugging.
+ * @author jbf
+ */
+public class StripDescriptors implements StreamHandler {
+
+    StreamHandler sink;
+    
+    public void streamDescriptor(StreamDescriptor sd) throws StreamException {
+        sink.streamDescriptor(sd);
+    }
+
+    public void packetDescriptor(PacketDescriptor pd) throws StreamException {
+        sink.packetDescriptor(pd);
+    }
+
+    public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
+    }
+
+    public void streamClosed(StreamDescriptor sd) throws StreamException {
+        sink.streamClosed(sd);
+    }
+
+    public void streamException(StreamException se) throws StreamException {
+        sink.streamException(se);
+    }
+
+    public static void main( String[] args ) throws StreamException, MalformedURLException, IOException, ParseException {
+        //File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
+        File f = new File( "/home/cwp/tmp/juno_test/missing_freq.qds" );
+        InputStream in = new FileInputStream(f);
+        
+        //InputStream in= System.in;
+        
+        FormatStreamHandler fsh= new FormatStreamHandler();
+        fsh.setOutputStream( System.out );
+
+        StripDescriptors filter= new StripDescriptors();
+        filter.sink= fsh;
+
+        StreamTool.readStream( Channels.newChannel(in), filter );
+
+    }    
+}
