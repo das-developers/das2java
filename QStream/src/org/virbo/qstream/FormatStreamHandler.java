@@ -107,8 +107,23 @@ public class FormatStreamHandler implements StreamHandler {
         
     }
 
+    private String xmlSafe( String s ) {
+        s= s.replaceAll("\'", "");
+        return s;
+    }
+    
     public void streamException(StreamException se) throws StreamException {
-        String msg= String.format("<exception type='%s' message='%s'/>", se.getClass().toString(), se.getMessage() );
+        String msg= String.format("<exception type='%s' message='%s'/>\n", se.getClass().toString(), xmlSafe(se.getMessage()) );
+        try {
+            out.write( ByteBuffer.wrap( String.format( "[xx]%06d", msg.length() ).getBytes("US-ASCII") ) );
+            out.write( ByteBuffer.wrap( msg.getBytes("US-ASCII") ) );
+        } catch ( IOException ex ) {
+            throw new StreamException(ex);
+        }
+    }
+
+    public void streamComment(StreamComment se) throws StreamException {
+        String msg= String.format("<comment type='%s' message='%s'/>\n", se.getType(), xmlSafe(se.getMessage()) );
         try {
             out.write( ByteBuffer.wrap( String.format( "[xx]%06d", msg.length() ).getBytes("US-ASCII") ) );
             out.write( ByteBuffer.wrap( msg.getBytes("US-ASCII") ) );

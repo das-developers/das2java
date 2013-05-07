@@ -406,6 +406,9 @@ public class QDataSetStreamHandler implements StreamHandler {
     public void streamClosed(StreamDescriptor sd) throws StreamException {
     }
 
+    public void streamComment(StreamComment se) throws StreamException {
+    }
+
     public void streamException(StreamException se) throws StreamException {
     }
 

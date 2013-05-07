@@ -73,4 +73,12 @@ public interface StreamHandler {
      * @throws StreamException
      */
     void streamException(StreamException se) throws StreamException;
+
+    /**
+     * comments on the stream.
+     * @param sd
+     */
+    void streamComment(StreamComment sd) throws StreamException;
+    
+    
 }

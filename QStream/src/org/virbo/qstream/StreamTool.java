@@ -633,7 +633,7 @@ public class StreamTool {
                     } else if (root.getTagName().equals("exception")) {
                         throw exception(root);
                     } else if (pd instanceof StreamComment) {
-                        //struct.handler.streamComment( (StreamComment)pd);
+                        struct.handler.streamComment( (StreamComment)pd);
                     } else {
                         throw new StreamException("Unexpected xml header, expecting stream or exception, received: " + root.getTagName());
                     }

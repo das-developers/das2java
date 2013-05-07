@@ -33,6 +33,11 @@ public class StreamComment implements Descriptor {
 
     private Element element;
     
+    public StreamComment( String type, String message ) {
+        this.type= type;
+        this.message= message;
+    }
+    
     StreamComment( Element element ) {
         this.type= element.getAttribute("type");
         this.message= element.getAttribute("message");
