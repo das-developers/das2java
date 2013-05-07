@@ -17,6 +17,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.util.DasMath;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  * provides a TreeModel representation of the dataset's properties.
@@ -97,9 +98,23 @@ public class PropertiesTreeModel extends DefaultTreeModel {
         }
 
         if ( ds.rank()>0 ) {
-            MutableTreeNode values= new DefaultMutableTreeNode("values");
-            ValuesTreeModel.valuesTreeNode( "value(", values, ds ,valuesSizeLimit);
-            mroot.insert( values, mroot.getChildCount() );
+            if ( SemanticOps.isJoin(ds) ) {
+                int lin=19;
+                for ( int i=0; i<ds.length(); i++ ) {
+                    if ( i<lin || i>=ds.length()-3 ) { 
+                        QDataSet ds1= ds.slice(i);
+                        MutableTreeNode values= new DefaultMutableTreeNode( String.format( "slice(%d): %s",i, ds1 ) );
+                        ValuesTreeModel.valuesTreeNode( "value(", values, ds1, valuesSizeLimit );
+                        mroot.insert( values, mroot.getChildCount() );        
+                    } else if ( i==lin ) {
+                        mroot.insert( new DefaultMutableTreeNode("..."), mroot.getChildCount() );  
+                    }
+                }
+            } else {
+                MutableTreeNode values= new DefaultMutableTreeNode("values");
+                ValuesTreeModel.valuesTreeNode( "value(", values, ds ,valuesSizeLimit);
+                mroot.insert( values, mroot.getChildCount() );
+            }
         }
     }
 
