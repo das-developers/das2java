@@ -33,6 +33,7 @@ import org.virbo.qstream.PlaneDescriptor;
 import org.virbo.qstream.QDataSetStreamHandler;
 import org.virbo.qstream.SerializeDelegate;
 import org.virbo.qstream.SerializeRegistry;
+import org.virbo.qstream.StreamComment;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamHandler;
@@ -77,6 +78,9 @@ public class QDataSetsFilter implements StreamHandler {
         public void streamException(StreamException se) throws StreamException {
         }
 
+        public void streamComment(StreamComment se) throws StreamException {
+        }
+        
         /**
          * QDataSets or parts of datasets as they come in.
          * @param sd
@@ -289,6 +293,9 @@ public class QDataSetsFilter implements StreamHandler {
         sink.streamException(se);
     }
 
+    public void streamComment(StreamComment se) throws StreamException {
+        sink.streamComment(se);
+    }
 
     public static void main( String[] args ) throws IOException, StreamException, Exception {
         //File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );

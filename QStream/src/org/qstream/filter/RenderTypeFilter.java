@@ -25,6 +25,7 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.qstream.PacketDescriptor;
 import org.virbo.qstream.QDataSetStreamHandler;
 import org.virbo.qstream.SimpleStreamFormatter;
+import org.virbo.qstream.StreamComment;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamHandler;
@@ -100,6 +101,10 @@ public class RenderTypeFilter implements StreamHandler {
         sink.streamException(se);
     }
 
+    public void streamComment(StreamComment se) throws StreamException {
+        sink.streamComment(se);
+    }
+    
     final char CHAR_NEWLINE= '\n';
 
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {

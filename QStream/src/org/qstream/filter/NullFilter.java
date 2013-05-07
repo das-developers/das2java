@@ -18,6 +18,7 @@ import org.virbo.qstream.PacketDescriptor;
 import org.virbo.qstream.PlaneDescriptor;
 import org.virbo.qstream.QDataSetStreamHandler;
 import org.virbo.qstream.SimpleStreamFormatter;
+import org.virbo.qstream.StreamComment;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamHandler;
@@ -52,6 +53,11 @@ public class NullFilter implements StreamHandler {
     public void streamException(StreamException se) throws StreamException {
         System.err.println(se);
         sink.streamException(se);
+    }
+
+    public void streamComment(StreamComment se) throws StreamException {
+        System.err.println(se);
+        sink.streamComment(se);
     }
 
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
