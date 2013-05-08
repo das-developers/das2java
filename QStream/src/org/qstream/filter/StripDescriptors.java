@@ -27,6 +27,7 @@ public class StripDescriptors implements StreamHandler {
     StreamHandler sink;
     int[] count= new int[100];
     
+    @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {        
         sink.streamDescriptor(sd);
     }
@@ -34,7 +35,7 @@ public class StripDescriptors implements StreamHandler {
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         for ( int i=0; i<100; i++ ) {
             if ( count[i]>0 ) {
-                StreamComment sc= new StreamComment("log:INFO", String.format( "%d type %d packets", count[i], i ) );
+                StreamComment sc= new StreamComment("log:INFO", String.format( "%d type [%02d] packets", count[i], i ) );
                 sink.streamComment( sc );
                 count[i]=0;
             }
@@ -42,14 +43,16 @@ public class StripDescriptors implements StreamHandler {
         sink.packetDescriptor(pd);
     }
 
+    @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
-        count[0]++; //TODO: why can't we get the packet ID?
+        count[pd.getPacketId()]++; 
     }
 
+    @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         for ( int i=0; i<100; i++ ) {
             if ( count[i]>0 ) {
-                StreamComment sc= new StreamComment("log:INFO", String.format( "%d type %d packets", count[i], i ) );
+                StreamComment sc= new StreamComment("log:INFO", String.format( "%d type [%02d] packets", count[i], i ) );
                 sink.streamComment( sc );
                 count[i]=0;
             }
@@ -58,17 +61,19 @@ public class StripDescriptors implements StreamHandler {
     }
 
     
+    @Override
     public void streamException(StreamException se) throws StreamException {
         sink.streamException(se);
     }
 
+    @Override
     public void streamComment(StreamComment sd) throws StreamException {
         sink.streamComment(sd);
     }
     
     public static void main( String[] args ) throws StreamException, MalformedURLException, IOException, ParseException {
-        //File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
-        File f = new File( "/home/cwp/tmp/juno_test/missing_freq.qds" );
+        File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
+        //File f = new File( "/home/cwp/tmp/juno_test/missing_freq.qds" );
         InputStream in = new FileInputStream(f);
         
         //InputStream in= System.in;

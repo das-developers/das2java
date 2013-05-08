@@ -623,6 +623,7 @@ public class StreamTool {
                         } catch ( NumberFormatException ex ) {
                             throw new StreamException( "packet descriptor id must be an integer from 1-99");
                         }
+                        ((PacketDescriptor)pd).setPacketId( id );
                         StreamTool.interpretPlanes((PacketDescriptor)pd);
                         if ( struct.sd.hasDescriptor(pd,id) ) {
                             logger.fine("found repeat packetDescriptor");

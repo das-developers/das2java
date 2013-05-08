@@ -86,6 +86,7 @@ public class PacketDescriptor implements Descriptor {
         domElement = packetElement;
     }
 
+    @Override
     public Element getDomElement() {
         return domElement;
     }
@@ -101,6 +102,30 @@ public class PacketDescriptor implements Descriptor {
             sizeBytes+= pd.sizeBytes();
         }
         return sizeBytes;
+    }
+  
+    private int packetId=-1;
+    
+    /**
+     * return the packet ID, which is a number from 1-99.
+     * @return 
+     */
+    public int getPacketId() {
+        if ( packetId<1 || packetId>99 ) {
+            throw new IllegalStateException("packetId is invalid: "+packetId );
+        }
+        return packetId;
+    }
+    
+    /**
+     * keep track of the packet ID, which is a number from 1-99.
+     * @param packetId 
+     */
+    public void setPacketId( int packetId ) {
+        if ( packetId<1 || packetId>99 ) {
+            throw new IllegalArgumentException("packetId is invalid: "+packetId );
+        }
+        this.packetId= packetId;
     }
 
     public String toString() {
