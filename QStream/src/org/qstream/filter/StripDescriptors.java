@@ -10,13 +10,11 @@ import java.nio.channels.Channels;
 import java.text.ParseException;
 import org.virbo.qstream.FormatStreamHandler;
 import org.virbo.qstream.PacketDescriptor;
-import org.virbo.qstream.QDataSetStreamHandler;
 import org.virbo.qstream.StreamComment;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamHandler;
 import org.virbo.qstream.StreamTool;
-import org.w3c.dom.Element;
 
 /**
  * Remove the packets and retain only the descriptors, which is useful for debugging.
@@ -72,11 +70,11 @@ public class StripDescriptors implements StreamHandler {
     }
     
     public static void main( String[] args ) throws StreamException, MalformedURLException, IOException, ParseException {
-        File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
+        //File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
         //File f = new File( "/home/cwp/tmp/juno_test/missing_freq.qds" );
-        InputStream in = new FileInputStream(f);
+        //InputStream in = new FileInputStream(f);
         
-        //InputStream in= System.in;
+        InputStream in= System.in;
         
         FormatStreamHandler fsh= new FormatStreamHandler();
         fsh.setOutputStream( System.out );
