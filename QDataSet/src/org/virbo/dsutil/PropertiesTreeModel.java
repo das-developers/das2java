@@ -90,7 +90,11 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                         }
                     }
                 } else if ( key.equals(QDataSet.FILL_VALUE ) && value instanceof Number ) { // round N digits.
-                    svalue= String.valueOf( DasMath.roundNSignificantDigits( ((Number)value).doubleValue(), 6 ) ); 
+                    if ( value instanceof Long ||value instanceof Integer || value instanceof Short ) {
+                        svalue= String.valueOf( value ); 
+                    } else {
+                        svalue= String.valueOf( DasMath.roundNSignificantDigits( ((Number)value).doubleValue(), 6 ) ); 
+                    }
                 }
                 nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
             }
