@@ -33,7 +33,7 @@ public class StripDescriptors implements StreamHandler {
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         for ( int i=0; i<100; i++ ) {
             if ( count[i]>0 ) {
-                StreamComment sc= new StreamComment("log:INFO", String.format( "%d type [%02d] packets", count[i], i ) );
+                StreamComment sc= new StreamComment("log:INFO", String.format( "%d type [%02d] packet%s", count[i], i, count[i]==1 ? "s" : "" ) );
                 sink.streamComment( sc );
                 count[i]=0;
             }
@@ -50,7 +50,7 @@ public class StripDescriptors implements StreamHandler {
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         for ( int i=0; i<100; i++ ) {
             if ( count[i]>0 ) {
-                StreamComment sc= new StreamComment("log:INFO", String.format( "%d type [%02d] packets", count[i], i ) );
+                StreamComment sc= new StreamComment("log:INFO", String.format( "%d type [%02d] packet%s", count[i], i, count[i]==1 ? "s" : "" ) );
                 sink.streamComment( sc );
                 count[i]=0;
             }
