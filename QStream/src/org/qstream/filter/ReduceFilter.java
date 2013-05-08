@@ -65,7 +65,7 @@ public class ReduceFilter implements StreamHandler {
     ByteOrder byteOrder;
 
     double lengthSeconds;
-    //double reportCadenceSeconds; // this is the cadence we'll report.  It cannot be less than the cadence in the input stream.
+    double reportCadenceSeconds; // this is the cadence we'll report.  It cannot be less than the cadence in the input stream.
     double length; // in the stream units.
     //double nextTag;
 
@@ -155,13 +155,13 @@ public class ReduceFilter implements StreamHandler {
                         QDataSet o = (QDataSet) ser.parse( "rank0dataset", scadence );
                         oldCadenceSeconds= DataSetUtil.asDatum(o).doubleValue( Units.seconds );
                         if ( lengthSeconds<oldCadenceSeconds ) {
-                            //reportCadenceSeconds= oldCadenceSeconds;
-                            lengthSeconds= oldCadenceSeconds;
+                            reportCadenceSeconds= oldCadenceSeconds;
+                            //lengthSeconds= oldCadenceSeconds;
                         }
                     } catch ( ParseException ex ) {
                         throw new StreamException( String.format( "unable to parse cadence \"%s\"", scadence ), ex );
                     }
-                    xp.setNodeValue( ser.format( DataSetUtil.asDataSet( lengthSeconds, Units.seconds ) ) );
+                    xp.setNodeValue( ser.format( DataSetUtil.asDataSet( reportCadenceSeconds, Units.seconds ) ) );
                 } else {
                     // don't install the cadence when there wasn't one already.  Let the client guess as they would have
                     // if the cadence were not specified.
@@ -397,7 +397,7 @@ public class ReduceFilter implements StreamHandler {
      */
     void setCadence(Datum cadence) {
         lengthSeconds= cadence.doubleValue( Units.seconds );
-        //reportCadenceSeconds= lengthSeconds;
+        reportCadenceSeconds= lengthSeconds;
     }
 
     public static void main( String[] args ) throws StreamException, FileNotFoundException, IOException {
