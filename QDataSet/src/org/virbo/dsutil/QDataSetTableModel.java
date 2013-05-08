@@ -46,7 +46,7 @@ public class QDataSetTableModel extends AbstractTableModel {
         dep0Offset = dep0 == null ? 0 : 1;
         this.bundle1 = (QDataSet) ds.property(QDataSet.BUNDLE_1);
         this.dep1 = (QDataSet) ds.property(QDataSet.DEPEND_1);
-        if ( dep1.rank()>1 && !SemanticOps.isBins(dep1) ) {
+        if ( dep1!=null && dep1.rank()>1 && !SemanticOps.isBins(dep1) ) {
             System.err.println("dep1 is sliced at 0");
         }
 
