@@ -4009,15 +4009,98 @@ public class Ops {
 
     /**
      * interpolate values from rank 2 dataset vv using fractional indeces
-     * in rank N findex, using bilinear interpolation.
+     * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
+     *
+     * @see findex the 1-D findex command.
+     * @param vv rank 2 dataset.
+     * @param findex0 rank N dataset of fractional indeces for the zeroth index.
+     * @param findex1 rank N dataset of fractional indeces for the first index.
+     * @return rank N dataset 
+     */
+    public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
+
+        if ( findex0.rank()>0 && findex0.length()!=findex1.length() ) {
+            throw new IllegalArgumentException("findex0 and findex1 must have the same geometry.");
+        }
+        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex0));
+
+        QDataSet wds= DataSetUtil.weightsDataSet(vv);
+
+        QubeDataSetIterator it = new QubeDataSetIterator(findex0);
+        int ic00, ic01, ic10, ic11;
+        int n0 = vv.length();
+        int n1 = vv.length(0);
+
+        double fill= -1e38;
+        result.putProperty( QDataSet.FILL_VALUE, fill );
+        
+        while (it.hasNext()) {
+            it.next();
+
+            double ff0 = it.getValue(findex0);
+            double ff1 = it.getValue(findex1);
+
+            if (ff0 < 0) {
+                ic00 = 0; // extrapolate
+                ic01 = 1;
+            } else if (ff0 >= n0 - 1) {
+                ic00 = n0 - 2; // extrapolate
+                ic01 = n0 - 1;
+            } else {
+                ic00 = (int) Math.floor(ff0);
+                ic01 = ic00 + 1;
+            }
+
+            if (ff1 < 0) {
+                ic10 = 0; // extrapolate
+                ic11 = 1;
+            } else if (ff1 >= n1 - 1) {
+                ic10 = n1 - 2; // extrapolate
+                ic11 = n1 - 1;
+            } else {
+                ic10 = (int) Math.floor(ff1);
+                ic11 = ic10 + 1;
+            }
+
+            double alpha0 = ff0 - ic00;
+            double alpha1 = ff1 - ic10;
+
+            double vv00 = vv.value(ic00, ic10);
+            double vv01 = vv.value(ic00, ic11);
+            double vv10 = vv.value(ic01, ic10);
+            double vv11 = vv.value(ic01, ic11);
+
+            double ww00=  wds.value(ic00, ic10);
+            double ww01 = wds.value(ic00, ic11);
+            double ww10 = wds.value(ic01, ic10);
+            double ww11 = wds.value(ic01, ic11);
+
+            if ( ww00*ww01*ww10*ww11 > 0 ) {
+                double beta0= 1-alpha0;
+                double beta1= 1-alpha1;
+                double value= vv00 * beta0 * beta1 + vv01 * beta0 * alpha1 + vv10 * alpha0 * beta1 + vv11 * alpha0 * alpha1;
+                it.putValue(result, value);
+            } else {
+                it.putValue(result, fill );
+            }
+
+        }
+
+        return result;
+    }
+    
+    /**
+     * interpolate values from rank 2 dataset vv using fractional indeces
+     * in rank N findex, using bilinear interpolation.  Here the two rank1
+     * indexes form a grid and the result is rank 2.
      *
      * @see findex the 1-D findex command.
      * @param vv rank 2 dataset.
      * @param findex0 rank 1 dataset of fractional indeces for the zeroth index.
      * @param findex1 rank 1 dataset of fractional indeces for the first index.
-     * @return rank N dataset 
+     * @return rank 2 dataset 
      */
-    public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
+    public static QDataSet interpolateGrid(QDataSet vv, QDataSet findex0, QDataSet findex1) {
 
         boolean slice0= false;
         if ( findex0.rank()==0 ) {
