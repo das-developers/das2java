@@ -1608,7 +1608,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * call-back for TickMaster
      * @param ticks
      */
-    protected synchronized void resetTickV( TickVDescriptor ticks ) {
+    protected void resetTickV( TickVDescriptor ticks ) {
         TickVDescriptor oldTicks = this.tickV;
         this.tickV= ticks;
         datumFormatter = resolveFormatter(tickV);
