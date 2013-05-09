@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.das2.util.LoggerManager;
 
 /**
@@ -28,10 +29,10 @@ public class TickMaster {
 
     private static final Logger logger= LoggerManager.getLogger("das2.graphics.axis.tickmaster");;
 
-    private HashSet<WeakReference<DasAxis>> axes= new HashSet();
-    private HashSet<WeakReference<DasAxis>> pendingAxes= new HashSet();
+    private final HashSet<WeakReference<DasAxis>> axes= new HashSet();
+    private final HashSet<WeakReference<DasAxis>> pendingAxes= new HashSet();
 
-    private static TickMaster instance= new TickMaster();
+    private static final TickMaster instance= new TickMaster();
 
     public static TickMaster getInstance() {
         return instance;
@@ -80,7 +81,15 @@ public class TickMaster {
         return parent;
     }
     
-    public synchronized void offerTickV( DasAxis h, TickVDescriptor ticks ) {
+    /**
+     * offer a set of ticks.  This can be called from off or on the event thread,
+     * but a new thread is started so the task is performed off the event thread.
+     * @param h
+     * @param ticks 
+     */
+    public synchronized void offerTickV( final DasAxis h, final TickVDescriptor ticks ) {
+        
+        logger.finer("Enter offerTickV");
 
         HashSet<WeakReference<DasAxis>> rm= new HashSet();
         for ( WeakReference<DasAxis> da : this.pendingAxes ) {
@@ -127,6 +136,7 @@ public class TickMaster {
             }
             logger.log( Level.FINE, "axes using these ticks: {0} {1}", new Object[] { count, axesUsing } );
         }
+        logger.finer("Exit offerTickV");
     }
 
 
