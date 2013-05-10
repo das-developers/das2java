@@ -13,7 +13,9 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -281,6 +283,128 @@ public class TimeParser {
     }
     
     /**
+     * $(hrinterval,names=a|b|c|d)  "b" -> "06:00/12:00"
+     */
+    public static class HrintervalFieldHandler implements TimeParser.FieldHandler {
+
+        Map<String,Integer> values;
+        Map<Integer,String> revvalues;
+        int mult; // multiply by this to get the start hour
+        
+        public String configure(Map<String, String> args) {
+            String names= args.get("names");
+            if ( names==null ) names= args.get("values");
+            if ( names==null ) return "names must be specified for hrinterval";
+            String[] names1= names.split("\\|");
+            mult= 24 / names1.length;
+            if ( 24 - mult*names1.length != 0 ) {
+                throw new IllegalArgumentException("only 1,2,3,4,6,8 or 12 intervals");
+            }
+            values= new HashMap();
+            revvalues= new HashMap();
+            for ( int i=0; i<names1.length; i++ ) {
+                values.put( names1[i], i );
+                revvalues.put( i, names1[i] );
+            }
+            return null;
+        }
+
+        public String getRegex() {
+            Iterator<String> vv= values.keySet().iterator();            
+            String r= vv.next();
+            while ( vv.hasNext() ) {
+                r= r+"|"+vv.next();
+            }
+            return r;
+        }
+
+        public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
+            Integer ii= values.get(fieldContent);
+            if ( ii==null ) throw new ParseException( "expected one of "+getRegex(),0 );
+            int hour= mult * ii;
+            startTime.hour= hour;
+            timeWidth.hour= mult;
+            timeWidth.year= 0;
+            timeWidth.month= 0;
+            timeWidth.day= 0;
+        }
+
+        public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
+            String v= revvalues.get(startTime.hour);
+            if ( v==null ) throw new IllegalArgumentException("unable to identify enum for hour "+startTime.hour);
+            return revvalues.get(startTime.hour);
+        }
+        
+    }
+    
+    public static class PeriodicFieldHandler implements TimeParser.FieldHandler {
+
+        int offset;
+        int[] start;
+        int julday;
+        int[] period;
+        
+        public String configure( Map<String, String> args ) {
+            String s= args.get("start");
+            if ( s==null ) return "need start";
+            start= DatumRangeUtil.parseISO8601(s);
+            julday= TimeUtil.julianDay( start[0], start[1], start[2] );
+            start[0]= 0;
+            start[1]= 0;
+            start[2]= 0;
+            s= args.get("offset");
+            if ( s==null ) return "need offset";
+            offset= Integer.parseInt( s );
+            s= args.get("period");
+            if ( !s.startsWith("P") ) {
+                s= "PT" + s.toUpperCase(); //TODO: verify this.
+            }
+            period= DatumRangeUtil.parseISO8601Duration( s );
+            if ( period[0]==-9999 ) return "unable to parse period.";
+            return null;
+        }
+
+        public String getRegex() {
+            return "[0-9]+";
+        }
+
+        public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
+            int i= Integer.parseInt(fieldContent);
+            i= i-offset;
+            int[] t= new int[7];
+            int [] limits= new int[] { -1,-1,0,24,60,60,1000000 };
+            for ( i=6; i>2; i-- ) {
+                t[i]= start[i]+i*period[i];
+                while ( t[i]>limits[i] ) {
+                    t[i-1]++;
+                    t[i]-= limits[i];
+                }
+            }
+            timeWidth.year= 0;
+            timeWidth.month= 0;
+            timeWidth.day= period[2];
+            timeWidth.hour= period[3];
+            timeWidth.minute= period[4];
+            timeWidth.seconds= period[5];
+            timeWidth.micros= period[6]/1000;
+            TimeStruct ts= TimeUtil.julianToGregorian( julday + t[2] );
+            startTime.year= ts.year;
+            startTime.month= ts.month;
+            startTime.day= ts.day;
+            startTime.hour= t[3];
+            startTime.minute= t[4];
+            startTime.seconds= t[5];
+            startTime.millis= t[6];
+            return;
+        }
+
+        public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
+            throw new IllegalArgumentException("unable to format");
+        }
+        
+        
+    }
+    /**
      * create a new TimeParser.  
      * @param formatString
      * @param fieldHandlers a map of special handlers
@@ -295,6 +419,10 @@ public class TimeParser {
             fieldHandlers.put("subsec",new SubsecFieldHandler());
         }
         
+        if ( fieldHandlers.get("hrinterval")==null ) {
+            fieldHandlers.put("hrinterval",new HrintervalFieldHandler());
+        }
+
         logger.log(Level.FINE, "new TimeParser({0},...)", formatString);
         
         time = new TimeUtil.TimeStruct();
@@ -1383,5 +1511,28 @@ public class TimeParser {
         return result.toString();
     }
 
+    static boolean testTimeParser1( String spec, String test, String norm ) throws Exception {
+        TimeParser tp= TimeParser.create(spec);
+        DatumRange dr= tp.parse(test).getTimeRange();
+        DatumRange drnorm= org.das2.datum.DatumRangeUtil.parseTimeRangeValid(norm);
 
+        if ( !dr.equals(drnorm) ) {
+            throw new IllegalStateException("ranges do not match: "+spec + " " +test + "--> " + dr + ", should be "+norm );
+        }
+        return true;
+    }
+    
+    public static void main( String[] aa ) throws Exception {
+        testTimeParser();
+    }
+
+    /**
+     * test time parsing when the format is known.  This time parser is much faster than the time parser of Test009, which must
+     * infer the format as it parses.
+     * @throws Exception
+     */
+    public static void testTimeParser() throws Exception {
+        //LoggerManager.getLogger("datum.timeparser").setLevel(Level.ALL);
+        testTimeParser1( "$(j,Y=2012)$(hrinterval,names=01|02|03|04)", "01702", "2012-01-17T06:00/12:00");
+    }
 }
