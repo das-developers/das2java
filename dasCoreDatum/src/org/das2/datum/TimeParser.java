@@ -830,8 +830,8 @@ public class TimeParser {
     }
 
     /**
-     * return the pad for the spec, like "underscore" "space" or "none"
-     * For none, (char)0 is returned.
+     * return the pad for the spec, like "underscore" "space" "zero" or "none"
+     * For "none", space is returned, and clients allowing special behavior should check for this.
      * @param args
      * @return the char, or (char)0.
      */
@@ -844,6 +844,8 @@ public class TimeParser {
             return '0';
         } else if ( spad.equals("none")) {
             return ' ';
+        } else if ( spad.length()>1 ) {
+            throw new IllegalArgumentException("unrecognized pad: "+spad );
         } else {
             return spad.charAt(0);
         }
