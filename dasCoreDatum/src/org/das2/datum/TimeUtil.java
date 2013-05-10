@@ -32,7 +32,7 @@ import org.das2.datum.format.TimeDatumFormatter;
  * @author  jbf
  */
 public final class TimeUtil {
-    
+
     private TimeUtil() {
     }
     
@@ -49,17 +49,14 @@ public final class TimeUtil {
     public static int daysInMonth(int month, int year) {
         return daysInMonth[isLeapYear(year)?1:0][month];
     }
-
+    
     /**
-     * @deprecated use julianDay instead.
+     * return the julianDay for the year month and day.
+     * @see julianToGregorian
+     * @param year calendar year greater than 1800.
+     * @param month 
+     * @param day day of month. For day of year, use month=1 and doy for day.
      */
-    public static int julday( int month, int day, int year ) {
-        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
-                3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
-                275 * month / 9 + day + 1721029;
-        return jd;
-    }
-
     public static int julianDay( int year, int month, int day ) {
         if ( year<1800 ) throw new IllegalArgumentException("year must be more than 1800");
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
@@ -279,6 +276,7 @@ public final class TimeUtil {
      *Break the Julian day apart into month, day year.  This is based on
      *http://en.wikipedia.org/wiki/Julian_day (GNU Public License), and 
      *was introduced when toTimeStruct failed when the year was 1886.
+     *@see julianDay( int year, int mon, int day )
      *@param julian the (integer) number of days that have elapsed since the initial epoch at noon Universal Time (UT) Monday, January 1, 4713 BC
      *@return a TimeStruct with the month, day and year fields set.
      */
@@ -485,6 +483,7 @@ public final class TimeUtil {
     /**
      * Normalize the TimeStruct by incrementing higher digits.  For
      * example, 2002-01-01T24:00 -->  2002-01-02T00:00.
+     * This will only carry one to the next higher place, so 70 seconds is handled but not 130.
      */
     public static TimeStruct carry(TimeStruct t) {
         TimeStruct result= t;
@@ -563,6 +562,7 @@ public final class TimeUtil {
     /**
      * convert times like "2000-01-01T24:00" to "2000-01-02T00:00" and
      * "2000-002T00:00" to "2000-01-02T00:00".
+     * This will only carry one to the next higher place, so 70 seconds is handled but not 130.
      * @param t
      * @return
      */
