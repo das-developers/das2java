@@ -300,7 +300,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
         progressBar = new JProgressBar();
         progressBar.setOpaque(false);
-        progressBar.setPreferredSize( new Dimension(150,14) );
+        progressBar.setPreferredSize( new Dimension(220,14) );
         progressBar.setMaximumSize(progressBar.getPreferredSize());
         progressBar.setMinimumSize(progressBar.getPreferredSize());
         progressBar.setAlignmentX(JComponent.CENTER_ALIGNMENT);
