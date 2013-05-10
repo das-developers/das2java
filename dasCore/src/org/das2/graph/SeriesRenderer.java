@@ -56,7 +56,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import org.das2.components.ColorBarComponent;
 import org.das2.dataset.VectorUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
@@ -212,7 +211,7 @@ public class SeriesRenderer extends Renderer {
                         g.drawImage(psymImage, (int)dpsymsPath[i * 2] - cmx, (int)dpsymsPath[i * 2 + 1] - cmy, lparent);
                     }
                 } catch ( ArrayIndexOutOfBoundsException ex ) {
-                    ex.printStackTrace();
+                    logger.log( Level.WARNING, null, ex );
                 }
             }
 
@@ -267,7 +266,7 @@ public class SeriesRenderer extends Renderer {
                     try {
                         psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
                     } catch ( ArrayIndexOutOfBoundsException ex ) {
-                        ex.printStackTrace();
+                        logger.log( Level.WARNING, null, ex );
                     }
                 }
             }
@@ -333,7 +332,7 @@ public class SeriesRenderer extends Renderer {
 
             int index = firstIndex;
 
-            QDataSet vds = null;
+            QDataSet vds;
 
             QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
             vds= ytagsDataSet(dataSet);
@@ -346,13 +345,6 @@ public class SeriesRenderer extends Renderer {
             Units yUnits = SemanticOps.getUnits(vds);
             if ( unitsWarning ) yUnits= yAxis.getUnits();
             if ( xunitsWarning ) xUnits= xAxis.getUnits();
-
-            if ( index<lastIndex ) {
-                x = xds.value(index);
-                y = vds.value(index);
-                dx= xAxis.transform(x, xUnits);
-                dy= yAxis.transform(y, yUnits);
-            }
             
             double dx0=-99, dy0=-99; //last point.
 
@@ -386,7 +378,7 @@ public class SeriesRenderer extends Renderer {
                     }
                     dpsymsPath[i * 2] = dx;
                     dpsymsPath[i * 2 + 1] = dy;
-                    if (colorByDataSet1 != null) {
+                    if ( wdsz!=null && colorByDataSet1 != null ) {
                         if ( wdsz.value(index)>0 ) haveValidColor= true;
                         colors[i] = colorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
                     }
@@ -575,16 +567,16 @@ public class SeriesRenderer extends Renderer {
             double xSampleWidthExact= xSampleWidth;
             xSampleWidth = xSampleWidth * 1.20;
 
-            double x = Double.NaN;
-            double y = Double.NaN;
+            double x;
+            double y;
 
-            double x0 = Double.NaN; /* the last plottable point */
-            double y0 = Double.NaN; /* the last plottable point */
+            double x0; /* the last plottable point */
+            double y0; /* the last plottable point */
 
-            float fx = Float.NaN;
-            float fy = Float.NaN;
-            float fx0 = Float.NaN;
-            float fy0 = Float.NaN;
+            float fx;
+            float fy;
+            float fx0;
+            float fy0;
             boolean visible;  // true if this point can be seen
             boolean visible0; // true if the last point can be seen
             
@@ -610,7 +602,6 @@ public class SeriesRenderer extends Renderer {
             }
 
             visible0= window.contains(fx,fy);
-            visible= visible0;
             if (histogram) {
                 float fx1 = midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
                 newPath.moveTo(fx1, fy);
@@ -626,8 +617,6 @@ public class SeriesRenderer extends Renderer {
             fy0 = fy;
 
             index++;
-
-            QDataSet ydc= ArrayDataSet.copy(vds);
 
             // now loop through all of them. //
             boolean ignoreCadence= ! cadenceCheck;
@@ -817,17 +806,17 @@ public class SeriesRenderer extends Renderer {
 
             double yref = doubleValue( reference, yUnits );
 
-            double x = Double.NaN;
-            double y = Double.NaN;
+            double x;
+            double y;
 
-            double x0 = Double.NaN; /* the last plottable point */
-            double y0 = Double.NaN; /* the last plottable point */
+            double x0; /* the last plottable point */
+            double y0; /* the last plottable point */
 
             float fyref = (float) yAxis.transform(yref, yUnits);
-            float fx = Float.NaN;
-            float fy = Float.NaN;
-            float fx0 = Float.NaN;
-            float fy0 = Float.NaN;
+            float fx;
+            float fy;
+            float fx0;
+            float fy0;
 
             int index;
 
@@ -1025,8 +1014,7 @@ public class SeriesRenderer extends Renderer {
         if ( lparent==null ) return;
 
         dslen= xds.length();
-        Boolean xMono = SemanticOps.isMonotonic( xds );
-        if (xMono != null && xMono.booleanValue()) {
+        if ( SemanticOps.isMonotonic( xds )) {
             DatumRange visibleRange = xAxis.getDatumRange();
             Units xdsu= SemanticOps.getUnits(xds);
             if ( !visibleRange.getUnits().isConvertableTo( xdsu ) ) {
@@ -1060,20 +1048,13 @@ public class SeriesRenderer extends Renderer {
             lastIndex_v= ixmax;
         }
 
-        double x = Double.NaN;
-        double y = Double.NaN;
-
         int index;
 
         // find the first valid point, set x0, y0 //
         for (index = ixmin; index < ixmax; index++) {
-            x = (double) xds.value(index);
-            y = (double) yds.value(index);
-
             final boolean isValid = wds.value(index)>0 && wxds.value(index)>0 ;
             if (isValid) {
                 firstIndex = index;  // TODO: what if no valid points?
-
                 index++;
                 break;
             }
@@ -1087,10 +1068,7 @@ public class SeriesRenderer extends Renderer {
         // find the last valid point, minding the dataSetSizeLimit
         int pointsPlotted = 0;
         for (index = firstIndex; index < ixmax && pointsPlotted < dataSetSizeLimit; index++) {
-            y = yds.value(index);
-
             final boolean isValid = wds.value(index)>0 && wxds.value(index)>0;
-
             if (isValid) {
                 pointsPlotted++;
             }
@@ -1167,8 +1145,8 @@ public class SeriesRenderer extends Renderer {
 
         QDataSet tds = null;
         QDataSet vds = null;
-        boolean yaxisUnitsOkay = false;
-        boolean xaxisUnitsOkay= false;
+        boolean yaxisUnitsOkay;
+        boolean xaxisUnitsOkay;
 
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         xaxisUnitsOkay = SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits() );
@@ -1295,7 +1273,7 @@ public class SeriesRenderer extends Renderer {
         log.log(Level.FINEST, "connectCount: {0}", connectCount);
         errorElement.render(graphics, xAxis, yAxis, vds, mon);
 
-        int symCount= 0;
+        int symCount;
         if (psym != DefaultPlotSymbol.NONE) {
 
             symCount= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
@@ -1375,7 +1353,7 @@ public class SeriesRenderer extends Renderer {
             return;
         }
         
-        boolean plottable = true;
+        boolean plottable;
 
         QDataSet tds = null;
         QDataSet vds = null;
@@ -1388,7 +1366,6 @@ public class SeriesRenderer extends Renderer {
             plottable = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits());
             if ( !plottable ) {
                 if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
-                    plottable= true; // we'll provide a warning
                     unitsWarning= true;
                 }
             }
@@ -1398,7 +1375,6 @@ public class SeriesRenderer extends Renderer {
             plottable = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
             if ( !plottable ) {
                 if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(tds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
-                    plottable= true; // we'll provide a warning
                     unitsWarning= true;
                 }
             }
@@ -1617,7 +1593,6 @@ public class SeriesRenderer extends Renderer {
         getPsymConnector().drawLine(g, 2, 3, 13, 7, 1.5f);
         g.setStroke(stroke0);
         psym.draw(g, 7, 5, 3.f, fillStyle);
-        return;
     }
 
 
@@ -2102,7 +2077,7 @@ public class SeriesRenderer extends Renderer {
     public boolean acceptsDataSet(QDataSet dataSet) {
         QDataSet ds1= dataSet;
         //QDataSet vds, tds;
-        boolean plottable= false;
+        boolean plottable;
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
             if ( ds1.rank()==2 && SemanticOps.isBundle(ds1) ) {
             //    vds = DataSetOps.unbundleDefaultDataSet( ds );
@@ -2116,7 +2091,7 @@ public class SeriesRenderer extends Renderer {
             unitsWarning= false;
             plottable = true;
 
-        } else {
+        } else { // is table data set
             plottable = true;
         }
 
