@@ -371,12 +371,13 @@ public class Orbits {
         public String configure(Map<String, String> args) {
             String id= args.get("id");
             if ( id==null ) {
-                id= "x"; //TODO: throw exception here soon!
+                throw new IllegalArgumentException("orbit id not specified");
             }
 
             o= getOrbitsFor( id );
             if ( args.containsKey("pad") ) {
-                pad= args.get("pad").charAt(0);
+                pad= TimeParser.getPad( args );
+                if ( pad==0 ) pad=' ';
             }
             return null; // no errors
         }
