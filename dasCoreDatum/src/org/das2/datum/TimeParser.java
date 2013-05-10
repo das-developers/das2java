@@ -295,7 +295,7 @@ public class TimeParser {
             fieldHandlers.put("subsec",new SubsecFieldHandler());
         }
         
-        logger.fine("new TimeParser("+formatString+",...)");
+        logger.log(Level.FINE, "new TimeParser({0},...)", formatString);
         
         time = new TimeUtil.TimeStruct();
         this.fieldHandlers = fieldHandlers;
@@ -404,7 +404,7 @@ public class TimeParser {
             }
 
             if (handler == 9999) {
-                if (fieldHandlers == null || !fieldHandlers.containsKey(fc[i])) {
+                if ( !fieldHandlers.containsKey(fc[i]) ) {
                     throw new IllegalArgumentException("bad format code: \"" + fc[i] + "\"");
                 } else {
                     handler = 100;
@@ -900,8 +900,7 @@ public class TimeParser {
      * @param value
      */
     public void setDigit(String format, double value) {
-        if (format.equals("%{ignore}") ) return;
-        if (format.equals("%X") ) return;
+        if (format.equals("%{ignore}") || format.equals("%X") || format.equals("%x")) return;
         if (value < 0) {
             throw new IllegalArgumentException("value must not be negative on field:"+format+" value:"+value );
         }
