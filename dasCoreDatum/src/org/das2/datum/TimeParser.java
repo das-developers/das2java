@@ -43,11 +43,11 @@ public class TimeParser {
     OrbitDatumRange orbitDatumRange;
 
     int ndigits;
-    String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b", "X", };
+    String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b", "X", "x" };
     String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
-        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", };
-    int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3, -1 };
-    int[] precision = new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, 1, -1, };
+        "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", "ignore" };
+    int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3, -1, -1 };
+    int[] precision =          new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7,-1,-1, -1, 1, -1, -1 };
     int[] handlers;
     
     /**
@@ -199,10 +199,10 @@ public class TimeParser {
                     time = "%H" + delim + "%M" + delim + "%S";
                     break;
                 case 12:
-                    time = "%H" + delim + "%M" + delim + "%S.%{milli}";
+                    time = "%H" + delim + "%M" + delim + "%S.%{subsec,places=3}";
                     break;
                 case 15:
-                    time = "%H" + delim + "%M" + delim + "%S.%{milli}%{micro}";
+                    time = "%H" + delim + "%M" + delim + "%S.%{subsec,places=6}";
                     break;
                 default:
                     throw new IllegalArgumentException("unable to identify time format for " + exampleTime);
@@ -247,7 +247,39 @@ public class TimeParser {
         return ( startTimeOnly>0 );
     }
 
+    /**
+     * $(subsec,places=6)  "36" -> "36 microseconds"
+     */
+    public static class SubsecFieldHandler implements TimeParser.FieldHandler {
 
+        double places;
+        double factor;
+        String format;
+        
+        public String configure(Map<String, String> args) {
+            places= Integer.parseInt( args.get("places") );
+            factor= Math.pow( 10, (6-places) );
+            format= "%0"+places+"d";
+            return null;
+        }
+
+        public String getRegex() {
+            return "[0-9]*";
+        }
+
+        public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
+            double value= Double.parseDouble(fieldContent);
+            startTime.micros= (int)( value * factor ); //TODO: support nanos!
+            timeWidth.seconds= 0;
+            timeWidth.micros= (int)( 1*factor );
+        }
+
+        public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
+            return String.format( format, timeWidth.micros / factor );
+        }
+        
+    }
+    
     /**
      * create a new TimeParser.  
      * @param formatString
@@ -255,6 +287,14 @@ public class TimeParser {
      */
     private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers) {
 
+        if ( fieldHandlers.get("o")==null ) {
+            fieldHandlers.put("o",new OrbitFieldHandler());
+        }
+
+        if ( fieldHandlers.get("subsec")==null ) {
+            fieldHandlers.put("subsec",new SubsecFieldHandler());
+        }
+        
         logger.fine("new TimeParser("+formatString+",...)");
         
         time = new TimeUtil.TimeStruct();
@@ -266,7 +306,7 @@ public class TimeParser {
         }
 
         if ( formatString.contains(".*") ) {
-            formatString= formatString.replaceAll("\\.\\*", "\\%\\{ignore\\}");
+            formatString= formatString.replaceAll("\\.\\*", "\\%x");
         }
         //if ( formatString.contains("%(v,sep)") ) { // it would be nice to clean up this implementation.  The following wasn't needed.
         //    formatString= formatString.replaceAll("\\%\\(v,sep\\)", "%{v,sep}");
@@ -443,8 +483,10 @@ public class TimeParser {
                         else if ( name.equals("S") ) context.seconds= Integer.parseInt(val);
                         else if ( name.equals("cadence") ) span= Integer.parseInt(val);
                         else if ( name.equals("span") ) span= Integer.parseInt(val);
+                        else if ( name.equals("delta") ) span= Integer.parseInt(val); // see http://tsds.org/uri_templates
                         else if ( name.equals("resolution") ) span= Integer.parseInt(val);
                         else if ( name.equals("id") ) ; //TODO: orbit plug in handler...
+                        else if ( name.equals("places") ) ; //TODO: this all needs to be redone...
                         else {
                             if ( !fieldHandlers.containsKey(fc[i]) ) {
                                 throw new IllegalArgumentException("unrecognized/unsupported field: "+name + " in "+qual );
@@ -540,50 +582,55 @@ public class TimeParser {
      * Create a TimeParser object, which is the fast time parser for use when a known format specification is used to
      * parse many instances of a formatted string.  For example, this would be used to interpret the times in an text file,
      * but not times entered in a time range GUI to control an axis.  This can also be and is used for filenames,
-     * for example omni2_h0_mrg1hr_%Y%(m,span=6)01_v01.cdf.
+     * for example omni2_h0_mrg1hr_$Y$(m,span=6)01_v01.cdf.
      *
      * Note field lengths are used when formatting the data, but when parsing often fractional components are accepted.  For
      * example, the format might be "%Y %j %H", and "2012 365 12.003" is accepted.
      *
-     * Note also that often $(Y) is used where %{Y} is used.  These are equivalent, and useful when %{} interferes with parsing
+     * Note also that often $(Y) is used where %{Y} is used.  These are equivalent, and useful when $() interferes with parsing
      * elsewhere.
      *
+     * An effort has begun to try and unify to an agreeable specification for this.  See http://tsds.org/uri_templates
      * <pre>
-     *  %[fieldLength]<1-char code>  or
-     *  %[fieldLength]{<code>}
-     *  %[fieldLength]{<code>;qualifiers}
+     *  $[fieldLength]<1-char code>  or
+     *  $[fieldLength](<code>)
+     *  $[fieldLength](<code>;qualifiers)
      *
      *  fieldLength=0 --> makes field length indeterminate, deliminator must follow.
      *
-     *  %Y   4-digit year
-     *  %y   2-digit year
-     *  %j   3-digit day of year
-     *  %m   2-digit month
-     *  %b   3-char month name (jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec.  Sorry, rest of world...)
-     *  %d   2-digit day
-     *  %H   2-digit hour
-     *  %M   2-digit minute
-     *  %S   2-digit second
-     *  %{milli}  3-digit milliseconds
-     *  %{ignore} skip this field
+     *  $Y   4-digit year
+     *  $y   2-digit year
+     *  $j   3-digit day of year
+     *  $m   2-digit month
+     *  $b   3-char month name (jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec.  Sorry, rest of world...)
+     *  $d   2-digit day
+     *  $H   2-digit hour
+     *  $M   2-digit minute
+     *  $S   2-digit second
+     *  $(milli)  3-digit milliseconds
+     *  $(ignore) skip this field
+     *  $x   skip this field
+     *  $(enum)  skip this field
+     *  $v   skip this field
+     *  $(hrinterval,values=0,1,2,3)  enumeration of part of day
+     *  $(subsec,places=6)  fractional seconds (6->microseconds)
      *
      * Qualifiers:
      *    span=<int>
+     *    delta=<int>
      *    Y=2004  Also for Y,m,d,H,M,S
      *
      *   For example:
-     *      %{j,Y=2004} means the day-of-year, within the year 2004.
-     *      %{H,Y=2004,j=117} means the hour of day 2004-117
-     *      %{m,span=6} means the 6-month interval starting at the given month.
+     *      $(j,Y=2004) means the day-of-year, within the year 2004.
+     *      $(H,Y=2004,j=117) means the hour of day 2004-117
+     *      $(m,span=6) means the 6-month interval starting at the given month.
      *
      *  </pre>
      *
      */
     public static TimeParser create(String formatString) {
         HashMap map= new HashMap();
-        if ( map.get("o")==null ) {
-            map.put("o",new OrbitFieldHandler());
-        }
+        map.put("o",new OrbitFieldHandler());
         return new TimeParser(formatString,map);
     }
 
@@ -596,9 +643,6 @@ public class TimeParser {
                 handler= (FieldHandler)moreHandler[i+1];
                 map.put( fieldName, handler );
             }
-        }
-        if ( map.get("o")==null ) {
-            map.put("o",new OrbitFieldHandler());
         }
         return new TimeParser(formatString, map);
     }
@@ -767,12 +811,14 @@ public class TimeParser {
                     time.hour -= offset / 100;   // careful!
 
                     time.minute -= offset % 100;
-                } else if (handlers[idigit] == 12) {
+                } else if (handlers[idigit] == 12) { // $(ignore)
                     //ignore
                 } else if (handlers[idigit] == 13) { // month name
                     time.month = TimeUtil.monthNumber(timeString.substring(offs, offs + len));
 
-                } else if (handlers[idigit] == 14) {
+                } else if (handlers[idigit] == 14) { // "X"
+                    //ignore
+                } else if (handlers[idigit] == 15) { // "x"
                     //ignore
                 }
             } catch ( NumberFormatException ex ) {
@@ -783,6 +829,27 @@ public class TimeParser {
         return this;
     }
 
+    /**
+     * return the pad for the spec, like "underscore" "space" or "none"
+     * For none, (char)0 is returned.
+     * @param args
+     * @return the char, or (char)0.
+     */
+    public static char getPad(Map<String, String> args) {
+        String spad= args.get("pad");
+        if ( spad==null || spad.equals("underscore") ) return '_';
+        if ( spad.equals("space") ) {
+            return ' ';
+        } else if ( spad.equals("zero")) {
+            return '0';
+        } else if ( spad.equals("none")) {
+            return ' ';
+        } else {
+            return spad.charAt(0);
+        }
+    }
+
+    
     private static class FieldSpec {
         String spec=null;  // unparsed spec
         String fieldType= null;
