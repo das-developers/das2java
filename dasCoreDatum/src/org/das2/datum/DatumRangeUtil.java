@@ -238,10 +238,27 @@ public class DatumRangeUtil {
         return null;
     }
 
-    private static final String digit= "\\d?\\.?\\d+";
-    public static final String iso8601duration= "P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?("+digit+"S)?)?";
+    private static final String simpleFloat= "\\d?\\.?\\d+";
+    public static final String iso8601duration= "P(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?("+simpleFloat+"S)?)?";
     public static final Pattern iso8601DurationPattern= Pattern.compile(iso8601duration);
 
+    /**
+     * returns a 7 element array with [year,mon,day,hour,min,sec,nanos] or [-9999].
+     * @param stringIn
+     * @return 
+     */
+    public static int[] parseISO8601Duration( String stringIn ) {
+        Matcher m= iso8601DurationPattern.matcher(stringIn);
+        if ( m.matches() ) {
+            double dsec=getDouble( m.group(7),0 );
+            int sec= (int)dsec;
+            int nanosec= (int)( ( dsec - sec ) * 1e9 );
+            return new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ), sec, nanosec };
+        } else {
+            return new int[] { -9999 };
+        }
+    }
+    
     /**
      * returns the time found in an iso8601 string, or null.  This supports
      * periods (durations) as in: 2007-03-01T13:00:00Z/P1Y2M10DT2H30M
@@ -268,25 +285,13 @@ public class DatumRangeUtil {
         int[] digits2= null;
 
         if ( d1 ) {
-            m= iso8601DurationPattern.matcher(parts[0]);
-            if ( m.matches() ) {
-                double dsec=getDouble( m.group(7),0 );
-                int sec= (int)dsec;
-                int nanosec= (int)( ( dsec - sec ) * 1e9 );
-                digits1= new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ), sec, nanosec };
-            }
+            digits1= parseISO8601Duration(parts[0]);
         } else {
             digits1= parseISO8601( parts[0] );
         }
 
         if ( d2 ) {
-            m= iso8601DurationPattern.matcher(parts[1]);
-            if ( m.matches() ) {
-                double dsec=getDouble( m.group(7),0 );
-                int sec= (int)dsec;
-                int nanosec= (int)( ( dsec - sec ) * 1e9 );
-                digits2= new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ),  sec, nanosec };
-            }
+            digits1= parseISO8601Duration(parts[1]);
         } else {
             digits2= parseISO8601( parts[1] );
         }
