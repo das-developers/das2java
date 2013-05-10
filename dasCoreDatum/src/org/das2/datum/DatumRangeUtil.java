@@ -291,7 +291,7 @@ public class DatumRangeUtil {
         }
 
         if ( d2 ) {
-            digits1= parseISO8601Duration(parts[1]);
+            digits2= parseISO8601Duration(parts[1]);
         } else {
             digits2= parseISO8601( parts[1] );
         }
@@ -545,6 +545,9 @@ public class DatumRangeUtil {
             
             DatumRange check= parseISO8601Range( stringIn );
             if ( check!=null ) return check;
+            if ( stringIn.contains("/PT") ) {  // 2013-002/PT1D gave confusing error.
+                throw new ParseException( "appears to be malformed ISO8601 string: "+stringIn, 0 );
+            }
 
             this.string= stringIn+" ";
             this.ipos= 0;
