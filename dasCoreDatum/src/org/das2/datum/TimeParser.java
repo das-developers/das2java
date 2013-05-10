@@ -360,7 +360,7 @@ public class TimeParser {
                 s= "PT" + s.toUpperCase(); //TODO: verify this.
             }
             period= DatumRangeUtil.parseISO8601Duration( s );
-            if ( period[0]==-9999 ) return "unable to parse period.";
+            if ( period[0]==-9999 ) return "unable to parse period: "+s ;
             return null;
         }
 
@@ -370,11 +370,12 @@ public class TimeParser {
 
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
             int i= Integer.parseInt(fieldContent);
-            i= i-offset;
+            int addOffset= i-offset;
             int[] t= new int[7];
             int [] limits= new int[] { -1,-1,0,24,60,60,1000000 };
+            timeWidth.day= period[2];
             for ( i=6; i>2; i-- ) {
-                t[i]= start[i]+i*period[i];
+                t[i]= start[i]+addOffset*period[i];
                 while ( t[i]>limits[i] ) {
                     t[i-1]++;
                     t[i]-= limits[i];
@@ -382,12 +383,11 @@ public class TimeParser {
             }
             timeWidth.year= 0;
             timeWidth.month= 0;
-            timeWidth.day= period[2];
             timeWidth.hour= period[3];
             timeWidth.minute= period[4];
             timeWidth.seconds= period[5];
             timeWidth.micros= period[6]/1000;
-            TimeStruct ts= TimeUtil.julianToGregorian( julday + t[2] );
+            TimeStruct ts= TimeUtil.julianToGregorian( julday + timeWidth.day * addOffset + t[2] );
             startTime.year= ts.year;
             startTime.month= ts.month;
             startTime.day= ts.day;
@@ -421,6 +421,10 @@ public class TimeParser {
         
         if ( fieldHandlers.get("hrinterval")==null ) {
             fieldHandlers.put("hrinterval",new HrintervalFieldHandler());
+        }
+
+        if ( fieldHandlers.get("periodic")==null ) {
+            fieldHandlers.put("periodic",new PeriodicFieldHandler());
         }
 
         logger.log(Level.FINE, "new TimeParser({0},...)", formatString);
@@ -549,7 +553,10 @@ public class TimeParser {
                     String args= qualifiers[i];
                     Map<String,String> argv= new HashMap();
                     if ( args!=null ) {
-                        String[] ss2= args.split(",",-2);
+                        String[] ss2= args.split(";",-2);
+                        if ( ss2.length==1 ) {
+                            ss2= args.split(",",-2); // legacy
+                        }
                         for ( int i2=0; i2<ss2.length; i2++ ) {
                             int i3= ss2[i2].indexOf("=");
                             if ( i3==-1 ) {
@@ -1533,6 +1540,10 @@ public class TimeParser {
      */
     public static void testTimeParser() throws Exception {
         //LoggerManager.getLogger("datum.timeparser").setLevel(Level.ALL);
-        testTimeParser1( "$(j,Y=2012)$(hrinterval,names=01|02|03|04)", "01702", "2012-01-17T06:00/12:00");
+        org.das2.datum.DatumRangeUtil.parseTimeRangeValid("2000-022/P1D");
+        testTimeParser1( "$(periodic;offset=0;start=2000-001;period=P1D)", "0",  "2000-001");
+        testTimeParser1( "$(periodic;offset=0;start=2000-001;period=P1D)", "20", "2000-021");        
+        testTimeParser1( "$(periodic;offset=2285;start=2000-346;period=P27D)", "1", "1832-02-08/P27D");
+        testTimeParser1( "$(periodic;offset=2285;start=2000-346;period=P27D)", "2286", "2001-007/P27D");
     }
 }
