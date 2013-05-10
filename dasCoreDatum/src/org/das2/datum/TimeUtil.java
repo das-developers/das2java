@@ -117,7 +117,7 @@ public final class TimeUtil {
         
         @Override
         public String toString() {
-            return year+"/"+month+"/"+day+" "+hour+":"+minute+":"+seconds;
+            return String.format( "%4d/%02d/%02d %02d:%02d:%06.3f", year,month,day,hour,minute,seconds );
         }
         public boolean[] want;
         
