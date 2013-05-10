@@ -194,6 +194,82 @@ public class DatumRangeUtil {
         time4= Pattern.compile(iso8601time4);
         time5= Pattern.compile(iso8601time5);
     }
+    
+    /**
+     * new attempt to write a clean ISO8601 parser.  This should also parse 02:00
+     * in the context of 2010-002T00:00/02:00.  
+     * THIS IS UNTESTED.
+     * @param str
+     * @param context
+     * @return 
+     */
+    public static int[] parseISO8601New( String str, int[] context ) {
+        StringTokenizer st= new StringTokenizer( str, "-T/:Z", true );
+        int [] result= Arrays.copyOf( context, context.length );
+        String dir= null;
+        final String DIR_FORWARD = "f";
+        final String DIR_REVERSE = "r";
+        int want= 0;
+        while ( st.hasMoreTokens() ) {
+            String tok= st.nextToken();
+            if ( dir==null ) {
+                if ( tok.length()==4 ) { // typical route
+                    int iyear= Integer.parseInt( tok ); 
+                    context[0]= iyear;
+                    want= 1;
+                    dir=DIR_FORWARD;
+                } else if ( tok.length()==6 ) {
+                    int iyear= Integer.parseInt( tok.substring(0,2) );
+                    if ( iyear<50 ) {
+                        context[0]= 2000 + iyear;
+                    } else {
+                        context[0]= 1900 + iyear;
+                    }
+                    context[1]= Integer.parseInt( tok.substring(2,4) );
+                    context[2]= Integer.parseInt( tok.substring(4,6) );
+                    want= 3;
+                    dir=DIR_FORWARD; 
+                } else if ( tok.length()==7 ) {
+                    context[0]= Integer.parseInt( tok.substring(0,4) );
+                    context[1]= 1;
+                    context[2]= Integer.parseInt( tok.substring(4,7) );
+                    want= 3;                    
+                    dir=DIR_FORWARD; 
+                } else if ( tok.length()==8 ) {
+                    context[0]= Integer.parseInt( tok.substring(0,4) );
+                    context[1]= Integer.parseInt( tok.substring(4,6) );
+                    context[2]= Integer.parseInt( tok.substring(6,8) );
+                    want= 3;                    
+                    dir=DIR_FORWARD;
+                } else {
+                    dir= DIR_REVERSE;
+                    want= 3;  // just stick it on hours for now.
+                    context[want]= Integer.parseInt( tok );
+                    want++;
+                }
+            } else if ( dir==DIR_FORWARD) {
+                if ( want==1 && tok.length()==3 ) { // $j
+                    context[1]= 1;
+                    context[2]= Integer.parseInt( tok ); 
+                    want= 3;
+                } else {
+                    context[want]= Integer.parseInt( tok );
+                    want++;
+                }
+            } else if ( dir==DIR_REVERSE ) {
+                if ( tok.length()==3 ) { // $j
+                    context[1]= 1;
+                    context[2]= Integer.parseInt( tok ); 
+                    want= 3;
+                } else {
+                    context[want]= Integer.parseInt( tok );
+                    want++;
+                }
+            }
+        }
+        return context;
+    }
+    
     /**
      * Parser for ISO8601 formatted times.
      * returns null or int[7]: [ Y, m, d, H, M, S, nano ]
