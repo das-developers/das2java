@@ -305,8 +305,9 @@ public class TimeParser {
             formatString= formatString.replaceAll("\\$", "%");
         }
 
-        if ( formatString.contains(".*") ) {
-            formatString= formatString.replaceAll("\\.\\*", "\\%x");
+        if ( formatString.contains("*") ) {
+            formatString= formatString.replaceAll("\\*", "\\%x");
+            System.err.println(formatString);
         }
         //if ( formatString.contains("%(v,sep)") ) { // it would be nice to clean up this implementation.  The following wasn't needed.
         //    formatString= formatString.replaceAll("\\%\\(v,sep\\)", "%{v,sep}");
@@ -756,6 +757,9 @@ public class TimeParser {
             }
 
             String field= timeString.substring(offs, offs + len).trim();
+            
+            logger.log(Level.FINE, "handling {0} with {1}", new Object[]{field, handlers[idigit]});
+            
             try {
 
                 if (handlers[idigit] < 10) {
