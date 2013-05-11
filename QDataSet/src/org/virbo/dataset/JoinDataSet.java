@@ -111,6 +111,9 @@ public class JoinDataSet extends AbstractDataSet {
      * @throws IllegalArgumentException if the dataset rank is not consistent with the other datasets.
      */
     public final void join( QDataSet ds ) {
+        if ( ds==null ) {
+            throw new IllegalArgumentException("dataset is null");
+        }
         if ( ds.rank()!=this.rank-1 ) {
             throw new IllegalArgumentException("dataset rank must be "+(this.rank-1)+", it is rank "+ds.rank() );
         }
