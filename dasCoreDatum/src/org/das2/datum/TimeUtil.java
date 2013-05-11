@@ -795,12 +795,12 @@ public final class TimeUtil {
         // if month==0, then day is doy (day of year).
         int jd;
         if ( month>0 ) {
-            jd = julianDay(month,day,year);
+            jd = julianDay(year,month,day);
         } else {
-            // if month==0 then day is doy
+            // if month==0 then day is doy  (TODO: why? Clients should use 1 for doy.)
             int month1= 1;
             int day1= 1;
-            jd = julianDay(month1,day1,year);
+            jd = julianDay(year,month1,day1);
             jd+= ( day - 1 );
         }
         
