@@ -197,77 +197,120 @@ public class DatumRangeUtil {
     
     /**
      * new attempt to write a clean ISO8601 parser.  This should also parse 02:00
-     * in the context of 2010-002T00:00/02:00.  
-     * THIS IS UNTESTED.
+     * in the context of 2010-002T00:00/02:00.  This does not support 2-digit years, which
+     * were removed in ISO 8601:2004.
+     * 
      * @param str
      * @param context
      * @return 
      */
-    public static int[] parseISO8601New( String str, int[] context ) {
-        StringTokenizer st= new StringTokenizer( str, "-T/:Z", true );
-        int [] result= Arrays.copyOf( context, context.length );
-        String dir= null;
-        final String DIR_FORWARD = "f";
-        final String DIR_REVERSE = "r";
+    public static int parseISO8601Wow( String str, int[] result, int lsd ) {
+        StringTokenizer st= new StringTokenizer( str, "-T:.Z", true );
+        Object dir= null;
+        final Object DIR_FORWARD = "f";
+        final Object DIR_REVERSE = "r";
         int want= 0;
+        boolean haveDelim= false;
         while ( st.hasMoreTokens() ) {
+            char delim= ' ';
+            if ( haveDelim ) {
+                delim= st.nextToken().charAt(0);
+                if ( st.hasMoreElements()==false ) { // "Z"
+                    break;
+                }
+            } else {
+                haveDelim= true;
+            }
             String tok= st.nextToken();
             if ( dir==null ) {
                 if ( tok.length()==4 ) { // typical route
                     int iyear= Integer.parseInt( tok ); 
-                    context[0]= iyear;
+                    result[0]= iyear;
                     want= 1;
                     dir=DIR_FORWARD;
                 } else if ( tok.length()==6 ) {
-                    int iyear= Integer.parseInt( tok.substring(0,2) );
-                    if ( iyear<50 ) {
-                        context[0]= 2000 + iyear;
-                    } else {
-                        context[0]= 1900 + iyear;
-                    }
-                    context[1]= Integer.parseInt( tok.substring(2,4) );
-                    context[2]= Integer.parseInt( tok.substring(4,6) );
-                    want= 3;
-                    dir=DIR_FORWARD; 
+                    want= lsd;
+                    if ( want!=6 ) throw new IllegalArgumentException("lsd must be 6");
+                    result[want]= Integer.parseInt( tok.substring(0,2) );
+                    want--;
+                    result[want]= Integer.parseInt( tok.substring(2,4) );
+                    want--;
+                    result[want]= Integer.parseInt( tok.substring(4,6) );
+                    want--;
+                    dir=DIR_REVERSE; 
                 } else if ( tok.length()==7 ) {
-                    context[0]= Integer.parseInt( tok.substring(0,4) );
-                    context[1]= 1;
-                    context[2]= Integer.parseInt( tok.substring(4,7) );
+                    result[0]= Integer.parseInt( tok.substring(0,4) );
+                    result[1]= 1;
+                    result[2]= Integer.parseInt( tok.substring(4,7) );
                     want= 3;                    
                     dir=DIR_FORWARD; 
                 } else if ( tok.length()==8 ) {
-                    context[0]= Integer.parseInt( tok.substring(0,4) );
-                    context[1]= Integer.parseInt( tok.substring(4,6) );
-                    context[2]= Integer.parseInt( tok.substring(6,8) );
+                    result[0]= Integer.parseInt( tok.substring(0,4) );
+                    result[1]= Integer.parseInt( tok.substring(4,6) );
+                    result[2]= Integer.parseInt( tok.substring(6,8) );
                     want= 3;                    
                     dir=DIR_FORWARD;
                 } else {
                     dir= DIR_REVERSE;
-                    want= 3;  // just stick it on hours for now.
-                    context[want]= Integer.parseInt( tok );
-                    want++;
+                    want= lsd;  // we are going to have to reverse these when we're done.
+                    int i= Integer.parseInt( tok );
+                    result[want]= i;
+                    want--;
                 }
             } else if ( dir==DIR_FORWARD) {
                 if ( want==1 && tok.length()==3 ) { // $j
-                    context[1]= 1;
-                    context[2]= Integer.parseInt( tok ); 
+                    result[1]= 1;
+                    result[2]= Integer.parseInt( tok ); 
                     want= 3;
+                } else if ( want==3 && tok.length()==6 ) {
+                    result[want]= Integer.parseInt( tok.substring(0,2) );
+                    want++;
+                    result[want]= Integer.parseInt( tok.substring(2,4) );
+                    want++;
+                    result[want]= Integer.parseInt( tok.substring(4,6) );
+                    want++;
+                } else if ( want==3 && tok.length()==4 ) {
+                    result[want]= Integer.parseInt( tok.substring(0,2) );
+                    want++;
+                    result[want]= Integer.parseInt( tok.substring(2,4) );
+                    want++;
                 } else {
-                    context[want]= Integer.parseInt( tok );
+                    int i= Integer.parseInt( tok );
+                    if ( delim=='.' && want==6 ) {
+                        int n= 9-tok.length();
+                        result[want]= i * ((int)Math.pow(10,n));
+                    } else {
+                        result[want]= i;
+                    }
                     want++;
                 }
-            } else if ( dir==DIR_REVERSE ) {
-                if ( tok.length()==3 ) { // $j
-                    context[1]= 1;
-                    context[2]= Integer.parseInt( tok ); 
-                    want= 3;
+            } else if ( dir==DIR_REVERSE ) { // what about 1200 in reverse?
+                int i= Integer.parseInt( tok ); 
+                if ( delim=='.' ) {
+                    int n= 9-tok.length();
+                    result[want]= i * ((int)Math.pow(10,n));
                 } else {
-                    context[want]= Integer.parseInt( tok );
-                    want++;
+                    result[want]= i;
                 }
+                want--;
             }
         }
-        return context;
+        
+        if ( dir==DIR_REVERSE ) {
+            int iu= want+1;
+            int id= lsd;
+            while( iu<id ) {
+                int t= result[iu];
+                result[iu]= result[id];
+                result[id]= t;
+                iu= iu+1;
+                id= id-1;
+            }
+        } else {
+            lsd= want-1;
+        }
+        
+        return lsd;
     }
     
     /**
@@ -343,6 +386,7 @@ public class DatumRangeUtil {
      *   2007-03-01T13:00:00Z/P1Y2M10DT2H30M
      *   P1Y2M10DT2H30M/2008-05-11T15:30:00Z
      *   2007-03-01T00:00Z/P1D
+     *   2012-100T02:00/03:45
      * http://en.wikipedia.org/wiki/ISO_8601#Time_intervals
      * @param stringIn
      * @return null or a DatumRange
@@ -357,39 +401,53 @@ public class DatumRangeUtil {
 
         Matcher m;
 
-        int[] digits1= null;
-        int[] digits2= null;
+        int[] digits0;
+        int[] digits1;
+        int lsd= -1;
 
         if ( d1 ) {
-            digits1= parseISO8601Duration(parts[0]);
+            digits0= parseISO8601Duration( parts[0] );
         } else {
-            digits1= parseISO8601( parts[0] );
+            digits0= new int[7];
+            lsd= parseISO8601Wow( parts[0], digits0, lsd );
         }
 
         if ( d2 ) {
-            digits2= parseISO8601Duration(parts[1]);
+            digits1= parseISO8601Duration(parts[1]);
         } else {
-            digits2= parseISO8601( parts[1] );
+            int i=0;
+            int n= parts[1].length();
+            while ( i<n && Character.isDigit( parts[1].charAt(i) ) ) i++;
+            if ( i<4 || i==6 ) {
+                digits1= Arrays.copyOf( digits0, digits0.length );
+                parseISO8601Wow( parts[1], digits1, lsd );
+            } else {
+                digits1= parseISO8601( parts[1] );
+            }
         }
 
-        if ( digits1==null || digits2==null ) return null;
+        if ( digits0==null || digits1==null ) return null;
         
         if ( d1 ) {
-            for ( int i=0; i<7; i++ ) digits1[i] = digits2[i] - digits1[i];
+            for ( int i=0; i<7; i++ ) digits0[i] = digits1[i] - digits0[i];
         }
 
         if ( d2 ) {
-            for ( int i=0; i<7; i++ ) digits2[i] = digits1[i] + digits2[i];
+            for ( int i=0; i<7; i++ ) digits1[i] = digits0[i] + digits1[i];
         }
 
-        Datum t1= TimeUtil.toDatum(digits1);
-        Datum t2= TimeUtil.toDatum(digits2);
+        Datum t1= TimeUtil.toDatum(digits0);
+        Datum t2= TimeUtil.toDatum(digits1);
 
         return new DatumRange( t1, t2 );
 
 
     }
 
+    public static void main(String[]ss ) {
+        System.err.println( parseISO8601Range( "20000101T1300Z/PT1H" ) );
+        //System.err.println( parseISO8601Range( "2012-100T02:00/03:45" ) );
+    }
     /*;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     //;;
     //;; papco_parse_timerange, string -> timeRange
