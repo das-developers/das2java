@@ -51,14 +51,42 @@ public final class TimeUtil {
     }
     
     /**
-     * return the julianDay for the year month and day.
+     * calculation of julianDay based on http://www.imcce.fr/en/grandpublic/temps/jour_julien.php
+     * This is slightly slower because of a cusp at 1582, but is accurate
+     * before these times.
+     * @param YY  Gregorian year
+     * @param MM  Gregorian month
+     * @param day Gregorian day
+     * @return 
+     */
+    public static int julianDayIMCCE( int YY, int MM, int DD ) {
+        int GGG = 1;
+        if( YY < 1582 ) GGG = 0;
+        if( YY <= 1582 && MM < 10 ) GGG = 0;
+        if( YY <= 1582 && MM == 10 && DD < 5 ) GGG = 0;
+        int JD = -1 * (7 * ( ((MM + 9) / 12) + YY) / 4);
+        int S = 1;
+        if ((MM - 9) < 0) S = -1;
+        int A = Math.abs(MM - 9);
+        int J1 = (YY + S * (A / 7));
+        J1 = -1 * (((J1 / 100) + 1) * 3 / 4);
+        JD = JD + (275 * MM / 9) + DD + (GGG * J1);
+        JD = JD + 1721027 + 2 * GGG + 367 * YY;
+        return JD;
+    }
+    
+    /**
+     * return the julianDay for the year month and day.  This was verified
+     * against another calculation (julianDayWP, commented out above) from 
+     * http://en.wikipedia.org/wiki/Julian_day.  Both calculations have 20 operations.
+     * Note this does not match 
      * @see julianToGregorian
-     * @param year calendar year greater than 1800.
+     * @param year calendar year greater than 1582.
      * @param month 
      * @param day day of month. For day of year, use month=1 and doy for day.
      */
     public static int julianDay( int year, int month, int day ) {
-        if ( year<1800 ) throw new IllegalArgumentException("year must be more than 1800");
+        if ( year<=1582 ) throw new IllegalArgumentException("year must be more than 1582");
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
