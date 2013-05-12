@@ -66,9 +66,11 @@ public class PipeFilter {
             System.err.println("writing "+args[2] );
         }
         Datum cadence= Units.seconds.parse(args[0]);
-        //doit( in, out, cadence );
-        doit( new java.net.URL("file:///home/jbf/project/autoplot/vap/pw/bill/20130506/notreduced.okay.qds").openStream(), new java.io.FileOutputStream("/home/jbf/project/autoplot/vap/pw/bill/20130506/reduced.okay.reduced.qds"), cadence );
-        doit( new java.net.URL("file:///home/jbf/project/autoplot/vap/pw/bill/20130506/notreduced.notokay.qds").openStream(), new java.io.FileOutputStream("/home/jbf/project/autoplot/vap/pw/bill/20130506/reduced.notokay.reduced.qds"), cadence );
+
+        doit( in, out, cadence );
+        
+        //doit( new java.net.URL("file:///home/jbf/project/autoplot/vap/pw/bill/20130506/notreduced.okay.qds").openStream(), new java.io.FileOutputStream("/home/jbf/project/autoplot/vap/pw/bill/20130506/reduced.okay.reduced.qds"), cadence );
+        //doit( new java.net.URL("file:///home/jbf/project/autoplot/vap/pw/bill/20130506/notreduced.notokay.qds").openStream(), new java.io.FileOutputStream("/home/jbf/project/autoplot/vap/pw/bill/20130506/reduced.notokay.reduced.qds"), cadence );
         
         if ( in!=System.in ) in.close();
         if ( out!=System.out ) out.close();
