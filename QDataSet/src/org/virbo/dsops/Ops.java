@@ -3418,8 +3418,8 @@ public class Ops {
             Units dep1Units= (Units) dep1.property(QDataSet.UNITS);
             Units dep0Units= dep0==null ? null : (Units) dep0.property(QDataSet.UNITS);
             if ( dep0Units!=null && dep1Units!=null ) uc= dep1Units.getConverter(dep0Units.getOffsetUnits());
-            if ( dep0.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0.property(QDataSet.VALID_MIN)).doubleValue();
-            if ( dep0.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0.property(QDataSet.VALID_MAX)).doubleValue();
+            if ( dep0!=null && dep0.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0.property(QDataSet.VALID_MIN)).doubleValue();
+            if ( dep0!=null && dep0.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0.property(QDataSet.VALID_MAX)).doubleValue();
         }
 
         int len1= ( ( ds.length(0)-len ) / step ) + 1;
@@ -4408,7 +4408,7 @@ public class Ops {
      * Example:
      * <tt>dep1= labels( ["X","Y","Z"], "GSM" )</tt>
      * @param labels
-     * @param context
+     * @param context the namespace for the labels, to provide control over String->int mapping.
      * @return rank 1 QDataSet
      */
     public static QDataSet labels(String[] labels, String context) {
