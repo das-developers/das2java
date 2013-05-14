@@ -19,23 +19,24 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.NumberUnits;
 import org.das2.DasApplication;
-import org.das2.system.DasLogger;
 import org.das2.util.ClassMap;
 import java.awt.Color;
 import java.beans.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 
 /**
- *
+ * Utilities for JavaBeans conventions, allowing custom editors to be 
+ * used to edit JavaBeans with set/get properties.
  * @author Jeremy
  */
 public class BeansUtil {
 
-    static Logger log = DasLogger.getLogger(DasLogger.SYSTEM_LOG);
-    
+    private static final Logger logger = LoggerManager.getLogger("das2.system");
 
     static {
         String[] beanInfoSearchPath = {"org.das2.beans", "sun.beans.infos"};
@@ -56,11 +57,10 @@ public class BeansUtil {
             
         }
     }
+
     /**
      * See that the known editors are registered with the PropertyEditorManager
      */
-    
-
     static {
         if (DasApplication.hasAllPermission()) {
             registerEditor(Datum.class, DatumEditor.class);
@@ -93,10 +93,10 @@ public class BeansUtil {
      * sub-interactive at best.  Here we keep track of the results, either in a
      * list of nullPropertyEditors or by registering the editor we just found.
      */
-    static HashSet nullPropertyEditors = new HashSet();
+    private static HashSet nullPropertyEditors = new HashSet();
 
     public static java.beans.PropertyEditor findEditor(Class propertyClass) {
-        java.beans.PropertyEditor result = null;
+        java.beans.PropertyEditor result;
         if (nullPropertyEditors.contains(propertyClass)) {
             result = null;
         } else {
@@ -108,9 +108,9 @@ public class BeansUtil {
                     try {
                         result = (java.beans.PropertyEditor) resultClass.newInstance(); // TODO: this branch will cause excessive lookups for applets.
                     } catch (InstantiationException ex) {
-                        ex.printStackTrace();
+                        logger.log( Level.WARNING, null, ex );
                     } catch (IllegalAccessException ex) {
-                        ex.printStackTrace();
+                        logger.log( Level.WARNING, null, ex );
                     }
                 }
             }
@@ -221,7 +221,7 @@ public class BeansUtil {
         if (c.getPackage() == null) { // e.g. String array
             beanInfo = Introspector.getBeanInfo(c);
 
-            log.finer("using BeanInfo " + beanInfo.getClass().getName() + " for " + c.getName());
+            logger.log(Level.FINER, "using BeanInfo {0} for {1}", new Object[]{beanInfo.getClass().getName(), c.getName()});
         } else {
 
             String s;
@@ -232,7 +232,7 @@ public class BeansUtil {
             }
 
             Class maybeClass = null;
-            String beanInfoClassName = null;
+            String beanInfoClassName;
 
             try {
                 beanInfoClassName = c.getPackage() + "." + s + "BeanInfo";
@@ -247,7 +247,7 @@ public class BeansUtil {
                 }
             }
 
-            log.finer("using BeanInfo " + beanInfoClassName + " for " + c.getName());
+            logger.log(Level.FINER, "using BeanInfo {0} for {1}", new Object[]{beanInfoClassName, c.getName()});
 
             if (beanInfo == null) {
                 try {
@@ -273,7 +273,7 @@ public class BeansUtil {
     /**
      * Use reflection to get a list of all the property names for the class.
      * The properties are returned in the order specified, and put inherited properties
-     * at the end of the list.  This is motivated by the arbitary order that the
+     * at the end of the list.  This is motivated by the arbitrary order that the
      * Introspector presents the properties, which is in conflict with our desire to control
      * the property order.
      */
