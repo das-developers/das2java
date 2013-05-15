@@ -144,6 +144,14 @@ public class DasProgressPanel implements ProgressMonitor {
             }
             super.paintComponent(g1);
         }
+
+        @Override
+        public void print(Graphics g) {
+            System.err.println("this ought not be printed");
+            super.print(g); //To change body of generated methods, choose Tools | Templates.
+        }
+        
+        
     }    // provides details button, which shows who creates and who consumes the ProgressPanel
     Exception source;
     Exception consumer;
