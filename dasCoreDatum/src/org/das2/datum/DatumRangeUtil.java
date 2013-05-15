@@ -1394,8 +1394,8 @@ public class DatumRangeUtil {
     }
 
     /**
-     * returns DatumRange relative to this, where 0. is the minimum, and 1. is the maximum.
-     * For example rescale(1,2) is scanNext, rescale(0.5,1.5) is zoomOut.
+     * returns DatumRange relative to this, where 0 is the minimum, and 1 is the maximum.
+     * For example rescale(1,2) is scanNext, rescale(-0.5,1.5) is zoomOut.
      * @param dr a DatumRange with nonzero width.
      * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is
      * min-width.
