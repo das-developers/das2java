@@ -102,6 +102,10 @@ public class FileSystemSettings {
      */
     public static final String PROP_LOCALCACHEDIR = "localCacheDir";
 
+    /**
+     * setting for the location of where the local cache is kept.
+     * @return File that is the local cache directory.
+     */
     public File getLocalCacheDir() {
         return localCacheDir;
     }
@@ -118,6 +122,12 @@ public class FileSystemSettings {
      */
     public static final String PROP_PERSISTENCE = "persistence";
 
+    /**
+     * get the setting for how long files should be kept and using in the cache,
+     * e.g. Persistence.SESSION means during the session.
+     * 
+     * @return the setting
+     */
     public Persistence getPersistence() {
         return persistence;
     }
