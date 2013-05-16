@@ -5,6 +5,7 @@
 
 package test.filesystem;
 
+import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
 import org.das2.util.filesystem.FileSystem;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
@@ -14,7 +15,7 @@ import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
  * @author jbf
  */
 public class TestUniq {
-    public static void main( String[] args ) throws FileSystemOfflineException, UnknownHostException {
+    public static void main( String[] args ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         FileSystem fs1= FileSystem.create("http://sarahandjeremy.net/~jbf/1wire/data/2012");
         FileSystem fs2= FileSystem.create("http://sarahandjeremy.net/~jbf/1wire/data/2012/");
 
