@@ -48,6 +48,9 @@ public class DefaultMonitorFactory implements MonitorFactory {
                 desc= "..."+description.substring( description.length() - 50 );
             return String.valueOf(monitor)+" "+desc;
         }
+        public ProgressMonitor getMonitor() {
+            return monitor;
+        }
         
     }
     
