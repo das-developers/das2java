@@ -113,6 +113,10 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.event.DasUpdateEvent;
 import org.das2.system.ChangesSupport;
+import org.das2.system.DefaultMonitorFactory;
+import org.das2.system.DefaultMonitorFactory.MonitorEntry;
+import org.das2.system.MonitorFactory;
+import org.das2.util.monitor.ProgressMonitor;
 
 /** Canvas for das2 graphics.  The DasCanvas contains any number of DasCanvasComponents such as axes, plots, colorbars, etc.
  * @author eew
@@ -1004,6 +1008,44 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     /**
+     * return a progress monitor if there is one that is active, and we are
+     * using progress monitors.
+     * @return 
+     */
+    private ProgressMonitor getActiveMonitor() {
+        MonitorFactory mf= getApplication().getMonitorFactory();
+        if ( mf instanceof DefaultMonitorFactory ) {
+            DefaultMonitorFactory dmf= (DefaultMonitorFactory)mf;
+            MonitorEntry[] mfs= dmf.getMonitors();
+            for ( int i=0; i<mfs.length; i++ ) {
+                ProgressMonitor mon= mfs[i].getMonitor();
+                if ( mon.isStarted() && !( mon.isFinished() && mon.isCancelled() ) ) {
+                    return mon;
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * blocks until everything is idle, including no active monitors.
+     * @param monitors
+     * @throws InterruptedException 
+     */
+    public void waitUntilIdle( boolean monitors ) throws InterruptedException {
+        if ( monitors ) {
+            while ( true ) {
+                ProgressMonitor mon= getActiveMonitor();
+                if ( mon==null ) {
+                    break;
+                } else {
+                    Thread.sleep(200);
+                }
+            }
+        }
+        waitUntilIdle();
+    }
+    /**
      * Blocks the caller's thread until all events have been dispatched from the awt event thread, and
      * then waits for the RequestProcessor to finish all tasks with this canvas as the lock object.
      */
@@ -1161,7 +1203,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             resizeAllComponents();
         }
         try {
-            waitUntilIdle();
+            waitUntilIdle(true); // wait for monitors.
         } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
         }
