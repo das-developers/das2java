@@ -73,7 +73,7 @@ public class HttpFileSystem extends WebFileSystem {
         super(root, localRoot);
     }
 
-    public static HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException, UnknownHostException {
+    public static HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         try {
 
             String auth= rooturi.getAuthority();
@@ -135,7 +135,6 @@ public class HttpFileSystem extends WebFileSystem {
 
                 boolean connectFail= true;
 
-                byte[] buf= new byte[2048];
                 try {
                     logger.log( Level.FINE, "urlc={0}", urlc );
                     if ( userInfo!=null && !userInfo.contains(":") ) {
@@ -145,12 +144,7 @@ public class HttpFileSystem extends WebFileSystem {
                         logger.log( Level.FINE, "userInfo.length={0}", ( userInfo==null ? -1 : userInfo.length() ));
                     }
                     urlc.connect();
-                    InputStream is = urlc.getInputStream();
-                    int ret = 0;
-                    while ((ret = is.read(buf)) > 0) { //http://docs.oracle.com/javase/1.5.0/docs/guide/net/http-keepalive.html suggests that you "do not abandon connection"
-                       // empty out the input stream.
-                    }
-                    is.close();
+                    consumeStream( urlc.getInputStream() );
                     connectFail= false;
                 } catch ( IOException ex ) {
                     int code= 0;
@@ -162,6 +156,10 @@ public class HttpFileSystem extends WebFileSystem {
                     }
                     if ( code==401 ) {
                         connectFail= false;
+                    } else if ( code==404 ) {
+                        logger.log( Level.SEVERE, String.format( "%d: folder not found: %s", code, root ), ex );
+                        consumeStream( urlc.getErrorStream() );
+                        throw (FileNotFoundException)ex;
                     } else {
                         logger.log( Level.SEVERE, String.format( "%d: failed to connect to %s", code, root ), ex );
                         if ( FileSystem.settings().isAllowOffline() ) {
@@ -169,14 +167,7 @@ public class HttpFileSystem extends WebFileSystem {
                         } else {
                             throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
                         }
-                        InputStream err = urlc.getErrorStream();
-                        if ( err!=null ) {
-                            int ret = 0;
-                            while ((ret = err.read(buf)) > 0) {
-                               // empty out the error stream.
-                            }
-                            err.close();
-                        }
+                        consumeStream( urlc.getErrorStream() );
                     }
                 }
 
@@ -224,6 +215,8 @@ public class HttpFileSystem extends WebFileSystem {
             return result;
 
         } catch (FileSystemOfflineException e) {
+            throw e;
+        } catch (FileNotFoundException e) {
             throw e;
         } catch (UnknownHostException e) {
             throw e;

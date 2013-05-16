@@ -713,6 +713,27 @@ public abstract class WebFileSystem extends FileSystem {
         }
     }
 
+    /**
+     * nice clients consume both the stderr and stdout coming from websites.
+     * http://docs.oracle.com/javase/1.5.0/docs/guide/net/http-keepalive.html suggests that you "do not abandon connection"
+     * @param err
+     * @throws IOException 
+     */
+    protected static void consumeStream( InputStream err ) throws IOException {
+        byte[] buf= new byte[2048];
+        try {
+            if ( err!=null ) {
+                int ret = 0;
+                while ((ret = err.read(buf)) > 0) {
+                   // empty out the error stream.
+                }
+
+            }
+        } finally {
+            if ( err!=null ) err.close();
+        }
+    }
+    
     @Override
     public String toString() {
         return "wfs " + root;

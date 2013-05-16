@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.DefaultExceptionHandler;
@@ -88,7 +87,7 @@ public abstract class FileSystem  {
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws IllegalArgumentException if the url cannot be converted to a URI.
      */
-    public static FileSystem create(URL root) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem create(URL root) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         try {
             return create( root.toURI(), new NullProgressMonitor() );
         } catch (URISyntaxException ex) {
@@ -96,7 +95,7 @@ public abstract class FileSystem  {
         }
     }
 
-    public static FileSystem create( String s ) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem create( String s ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         try {
             return create( new URI(s), new NullProgressMonitor() );
         } catch (URISyntaxException ex) {
@@ -114,7 +113,7 @@ public abstract class FileSystem  {
      * @throws IllegalArgumentException if the url cannot be converted to a URI.
      * @throws IllegalArgumentException if the local root does not exist.
      */
-    public static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem create( URL root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         try {
             return create(root.toURI(), mon);
         } catch (URISyntaxException ex) {
@@ -129,8 +128,9 @@ public abstract class FileSystem  {
      * @return
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws UnknownHostException
+     * @throws FileNotFoundException if the remote folder is not found.
      */
-    public static FileSystem recreate( URI root ) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem recreate( URI root ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         return recreate( root, new NullProgressMonitor() );
     }
 
@@ -146,7 +146,7 @@ public abstract class FileSystem  {
      * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
      * @throws IllegalArgumentException if the local root does not exist.
      */
-    public static FileSystem create(URI root) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem create(URI root) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         return create(root, new NullProgressMonitor());
     }
 
@@ -157,8 +157,9 @@ public abstract class FileSystem  {
      * @return
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws UnknownHostException
+     * @throws FileNotFoundException if the file is not found on the remote host.
      */
-    public static FileSystem recreate( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem recreate( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         //TODO: there may be a need to synchronize here
         FileSystem result= instances.get(root);
         if ( result!=null ) {
@@ -199,7 +200,7 @@ public abstract class FileSystem  {
      * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
      * @throws IllegalArgumentException if the local root does not exist.
      */
-    public static FileSystem create( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException {
+    public static FileSystem create( URI root, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         logger.log(Level.FINER, "request for filesystem {0}", root);
 
         FileSystem result;
@@ -273,6 +274,8 @@ public abstract class FileSystem  {
                     result= new SubFileSystem(zipfs, subdir);
                 }
             } catch (UnknownHostException ex ) {
+                throw ex;
+            } catch ( FileNotFoundException ex ) {
                 throw ex;
             } catch (URISyntaxException ex) {
                 //this shouldn't happen

@@ -23,6 +23,7 @@
  */
 package org.das2.util.filesystem;
 
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.UnknownHostException;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
@@ -36,7 +37,7 @@ public class HttpFileSystemFactory implements FileSystemFactory {
     public HttpFileSystemFactory() {
     }
 
-    public FileSystem createFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException {
+    public FileSystem createFileSystem(URI root) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         HttpFileSystem hfs = HttpFileSystem.createHttpFileSystem(root);
         if (!FileSystemSettings.hasAllPermission()) hfs.setAppletMode(true);
         return hfs;

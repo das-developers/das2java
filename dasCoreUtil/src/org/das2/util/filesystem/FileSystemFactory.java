@@ -26,11 +26,12 @@ package org.das2.util.filesystem;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.io.FileNotFoundException;
 
 /**
  * creates a new instance of a type of filesystem
  * @author jbf
  */
 public interface FileSystemFactory {
-    FileSystem createFileSystem( URI root ) throws FileSystemOfflineException, UnknownHostException;
+    FileSystem createFileSystem( URI root ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException;
 }
