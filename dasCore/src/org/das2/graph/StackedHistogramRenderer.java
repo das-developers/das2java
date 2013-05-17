@@ -91,15 +91,31 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             this.id= id;
         }
         
+        @Override
         public String toString() {
             return this.id;
         }
         
         public static final PeaksIndicator NoPeaks= new PeaksIndicator("None");
+        /**
+         * draw grey bar up to max observed.
+         */
         public static final PeaksIndicator GrayPeaks= new PeaksIndicator("Gray Peaks");
+        /**
+         * draw red bar up to max observed.
+         */
         public static final PeaksIndicator RedPeaks= new PeaksIndicator("Red Peaks");
+        /**
+         * draw a connect-a-dot line from peak to peak.
+         */
         public static final PeaksIndicator LinePeaks= new PeaksIndicator("Line Peaks");
+        /**
+         * draw black bar up to max observed (only peaks are visible then).
+         */        
         public static final PeaksIndicator BlackPeaks= new PeaksIndicator("Black Peaks");
+        /**
+         * draw a point at the maximum observed.
+         */
         public static final PeaksIndicator MaxLines= new PeaksIndicator("Lines");
         
         public String getListLabel() {
