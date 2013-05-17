@@ -573,7 +573,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
                 height = metrics.getHeight();
 
                 g.setFont(font);
-                g.drawString(s, getWidth() - width - 2 * height, getHeight() - 2 * height);
+                g.drawString(s, getWidth() - width, getHeight() -height );
                 g.setFont(oldFont);
             }
         }
