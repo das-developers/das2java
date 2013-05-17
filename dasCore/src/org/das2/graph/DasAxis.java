@@ -1324,11 +1324,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             Font tickLabelFont = getTickLabelFont();
             FontMetrics tickLabelFontMetrics = getFontMetrics(tickLabelFont);
             int tickLength = tickLabelFont.getSize() * 2 / 3;
-            int tick_label_gap = tickLabelFontMetrics.stringWidth(" ");
+            int tickLabelGap = tickLabelFontMetrics.stringWidth(" ");
             int lineHeight = tickLabelFont.getSize() + getLineSpacing();
 
-            int baseLine = position + tickLength + tick_label_gap + tickLabelFont.getSize();
-            int rightEdge = DMin - tickLabelFontMetrics.stringWidth("0000") - tick_label_gap;
+            int baseLine = position + tickLength + tickLabelGap + tickLabelFont.getSize();
+            int rightEdge = DMin - tickLabelFontMetrics.stringWidth("000") - tickLabelGap; // Note assumes top label is date but lower labels are shorter.
 
             GrannyTextRenderer idlt = new GrannyTextRenderer();
             /*
