@@ -3089,32 +3089,37 @@ public class Ops {
             }
 
             QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+            if ( dep1==null ) {
+                dep1= (QDataSet)ds.slice(0).property(QDataSet.DEPEND_0);
+            }
+            
+            assert dep1!=null;
 
             UnitsConverter uc= UnitsConverter.IDENTITY;
 
             QDataSet translation= null;
-            if ( dep1!=null ) {
-                Map<String,Object> user= (Map<String, Object>) dep1.property(QDataSet.USER_PROPERTIES );
-                if ( user!=null ) {
-                    translation= (QDataSet) user.get( "FFT_Translation" ); // kludge for Plasma Wave Group
-                    if ( translation.rank()==1 ) {
-                        if ( translation.length()!=dep0.length() ) {
-                            throw new IllegalArgumentException("rank 1 FFT_Translation should be the same length as depend_0");
-                        }
+            Map<String,Object> user= (Map<String, Object>) dep1.property(QDataSet.USER_PROPERTIES );
+            if ( user!=null ) {
+                translation= (QDataSet) user.get( "FFT_Translation" ); // kludge for Plasma Wave Group
+                if ( translation.rank()==1 ) {
+                    if ( translation.length()!=dep0.length() ) {
+                        throw new IllegalArgumentException("rank 1 FFT_Translation should be the same length as depend_0");
                     }
                 }
             }
             if ( translation!=null ) logger.fine("translation will be applied");
 
+            QDataSet powxtags= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(0,len));
+            
             double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
-            if ( dep1!=null && dep1.rank()==1 ) {
-                QDataSet ytags= FFTUtil.getFrequencyDomainTagsForPower( dep1.trim(0,len) );
+            if ( dep1.rank()==1 ) {
+                QDataSet ytags= powxtags;
                 if ( translation==null ) result.putProperty( QDataSet.DEPEND_1, ytags );
                 Units dep1Units= (Units) dep1.property(QDataSet.UNITS);
-                Units dep0Units= (Units) dep0.property(QDataSet.UNITS);
+                Units dep0Units= dep0==null ? null : (Units) dep0.property(QDataSet.UNITS);
                 if ( dep0Units!=null && dep1Units!=null ) uc= dep1Units.getConverter(dep0Units.getOffsetUnits());
-                if ( dep0.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0.property(QDataSet.VALID_MIN)).doubleValue();
-                if ( dep0.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0.property(QDataSet.VALID_MAX)).doubleValue();
+                if ( dep0!=null && dep0.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0.property(QDataSet.VALID_MIN)).doubleValue();
+                if ( dep0!=null && dep0.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0.property(QDataSet.VALID_MAX)).doubleValue();
             }
 
             int len1= ( ( ds.length(0)-len ) / step ) + 1;
@@ -3136,7 +3141,7 @@ public class Ops {
                     if ( dep0i.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0i.property(QDataSet.VALID_MIN)).doubleValue(); else minD= Double.NEGATIVE_INFINITY;
                     if ( dep0i.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0i.property(QDataSet.VALID_MAX)).doubleValue(); else maxD= Double.POSITIVE_INFINITY;
                 }
-
+                
                 for ( int j=0; j<len1; j++ ) {
                     GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
                     QDataSet wave= slicei.trim( j*step,j*step+len );
@@ -3153,7 +3158,9 @@ public class Ops {
                         wave= Ops.multiply(wave,window); 
                     }
 
-                    QDataSet vds= FFTUtil.fftPower( fft, wave );
+                    
+                    QDataSet vds= FFTUtil.fftPower( fft, wave, window, powxtags );
+                    //QDataSet vds= FFTUtil.fftPower( fft, wave );
 
                     if ( windowNonUnity ) {
                         vds= Ops.multiply( vds, DataSetUtil.asDataSet( 1/normalization ) );
@@ -3172,7 +3179,7 @@ public class Ops {
                     }
 
                     double d0=0;
-                    if ( dep0!=null && dep1!=null ) {
+                    if ( dep0!=null ) {
                         d0= dep0.value(i) + uc.convert( dep1.value( j*step + len/2 )  );
                     } else if ( dep0!=null ) {
                         d0= dep0.value(i);
