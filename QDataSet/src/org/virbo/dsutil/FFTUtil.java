@@ -132,9 +132,25 @@ public class FFTUtil {
      * components squared, normalized by the bandwidth.  The result dataset has dimensionless yunits.
      * It's assumed that all the data is valid.
      * Note when the input is in mV/m, the result will be in (V/m)^2/Hz.
-     * @param vds QDataSet rank 1 dataset with depend 0 units TimeLocationUnits.
+     * @param fft FFT engine
+     * @param vds rank 1 dataset with depend 0 units TimeLocationUnits.
+     * @param weights rank 1 datasets that is the window to apply to the data.
      */
     public static QDataSet fftPower( GeneralFFT fft, QDataSet vds, QDataSet weights ) {
+        return fftPower( fft, vds, weights, null );
+    }
+    
+    /**
+     * Produces the power spectrum of the dataset.  This is the length of the fourier
+     * components squared, normalized by the bandwidth.  The result dataset has dimensionless yunits.
+     * It's assumed that all the data is valid.
+     * Note when the input is in mV/m, the result will be in (V/m)^2/Hz.
+     * @param fft FFT engine
+     * @param vds rank 1 dataset with depend 0 units TimeLocationUnits.
+     * @param weights rank 1 datasets that is the window to apply to the data.
+     * @param xtags if non-null, then use these xtags instead of calculating them for each record.
+     */
+    public static QDataSet fftPower( GeneralFFT fft, QDataSet vds, QDataSet weights, QDataSet powxTags ) {
         double [] yreal= new double[ fft.size() ];
         
         for ( int i=0; i<fft.size(); i++ ) yreal[i]= vds.value( i ) * weights.value( i );
@@ -142,28 +158,31 @@ public class FFTUtil {
         ComplexArray.Double ca= ComplexArray.newArray(yreal);
         fft.transform( ca );  //TODO: get rid of ComplexArray, which can be represented as QDataSet.
 
-        QDataSet dep0= (QDataSet) vds.property( QDataSet.DEPEND_0 );
-        if ( dep0==null ) {
-            dep0= new IndexGenDataSet( vds.length() );
-        }
-
-        QDataSet xtags= getFrequencyDomainTags( dep0 );//TODO: use tags for power to reduce code
-
-        Units xUnits= (Units)xtags.property( QDataSet.UNITS );
         double binsize;
+        if ( powxTags==null ) {
+            QDataSet dep0= (QDataSet) vds.property( QDataSet.DEPEND_0 );
+            if ( dep0==null ) {
+                dep0= new IndexGenDataSet( vds.length() );
+            }
+            powxTags= getFrequencyDomainTagsForPower(dep0);
+        } else {
+            
+        }
+        
+        Units xUnits= (Units)powxTags.property( QDataSet.UNITS );
         if ( xUnits.isConvertableTo(Units.hertz) ) {
             UnitsConverter uc= xUnits.getConverter(Units.hertz);
-            binsize= 2 * ( uc.convert( xtags.value( xtags.length()/2 ) ) ) / fft.size();
+            binsize= ( uc.convert( powxTags.value( 0 ) ) ) ;
         } else {
-            binsize= 2 * ( xtags.value( xtags.length()/2 ) ) / fft.size();
+            binsize= powxTags.value(0) ;
         }
-
-        DDataSet result= DDataSet.createRank1(xtags.length()/2-1);
-        QDataSet powTags= getFrequencyDomainTagsForPower(dep0);
-        for ( int i=1; i<xtags.length()/2; i++ ) {
+        
+        DDataSet result= DDataSet.createRank1( powxTags.length() );
+        
+        for ( int i=1; i<result.length(); i++ ) {
             result.putValue(i-1,4*ComplexArray.magnitude2(ca,i) / binsize );
         }
-
+        
         Units u= (Units) vds.property( QDataSet.UNITS );
         if ( u!=null && u.toString().equalsIgnoreCase("mV/m" ) ) { // kludge to support RPWS H7 H8 H9 files.
             for ( int i=0; i<result.length(); i++ ) {
@@ -172,7 +191,7 @@ public class FFTUtil {
             result.putProperty( QDataSet.UNITS, SemanticOps.lookupUnits("(V/m)^2/Hz") );
         }
 
-        result.putProperty( QDataSet.DEPEND_0, powTags );
+        result.putProperty( QDataSet.DEPEND_0, powxTags );
         return result;
     }
 
