@@ -396,11 +396,7 @@ public class Ops {
         if ( label1==null || label2==null ) return null;
         String l1Str= label1;
         String l2Str= label2;
-        if ( l1Str!=null && l2Str!=null ) {
-            return opStr + "(" + l1Str + "," + l2Str + ")";
-        } else {
-            return null;
-        }
+        return opStr + "(" + l1Str + "," + l2Str + ")";
     }
     
     /**
@@ -2839,8 +2835,8 @@ public class Ops {
                 c= dep0ds.slice(0);
             }
 
-            JoinDataSet dep0=null;
-            Units dep0u=null;
+            JoinDataSet dep0;
+            Units dep0u;
             JoinDataSet jds= new JoinDataSet(ds);
             if ( c!=null && c.rank()==0 ) {
                 dep0u= (Units) c.property(QDataSet.UNITS);
@@ -2880,7 +2876,7 @@ public class Ops {
             if ( dep0==null ) dep0= findgen( ds.length() );
             if ( dep1==null ) dep1= findgen( ds.length(0) );
 
-            UnitsConverter uc= UnitsConverter.IDENTITY;
+            UnitsConverter uc;
             Units dep0u= SemanticOps.getUnits(dep0);
             Units dep1u= SemanticOps.getUnits(dep1);
             uc= dep1u.getConverter( dep0u.getOffsetUnits() );
@@ -3022,8 +3018,8 @@ public class Ops {
         
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
-            JoinDataSet dep0=null;
-            Units dep0u=null;
+            JoinDataSet dep0;
+            Units dep0u;
             JoinDataSet jds= new JoinDataSet(ds);
             if ( c!=null && c.rank()==0 ) {
                 dep0u= (Units) c.property(QDataSet.UNITS);
@@ -3348,8 +3344,8 @@ public class Ops {
             
         } else if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
-            JoinDataSet dep0=null;
-            Units dep0u=null;
+            JoinDataSet dep0;
+            Units dep0u;
             JoinDataSet jds= new JoinDataSet(ds);
             if ( c!=null && c.rank()==0 ) {
                 dep0u= (Units) c.property(QDataSet.UNITS);
@@ -3921,7 +3917,6 @@ public class Ops {
             } else {
                 int index = DataSetUtil.binarySearch(uu, d, 0, uu.length() - 1);
                 if (index == -1) {
-                    index = 0; //insertion point is 0
                     ic0 = 0;
                     ic1 = 1;
                 } else if (index < (-n)) {
@@ -4895,7 +4890,8 @@ public class Ops {
      */
     public static QDataSet join(QDataSet ds1, QDataSet ds2) {
         if ( ds1==null && ds2==null ) throw new NullPointerException("both ds1 and ds2 are null");
-        if ( ds1==null && ds2!=null ) {
+        if ( ds2==null ) throw new NullPointerException("ds2 is null");
+        if ( ds1==null ) {
             JoinDataSet ds= new JoinDataSet( ds2.rank()+1 );
             ds.join(ds2);
             return ds;
