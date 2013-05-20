@@ -1036,7 +1036,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         if ( monitors ) {
             while ( true ) {
                 ProgressMonitor mon= getActiveMonitor();
-                if ( mon==null ) {
+                if ( mon==null || ( mon.getTaskProgress()==0 && mon.getTaskSize()==-1 ) ) {
                     break;
                 } else {
                     Thread.sleep(200);
