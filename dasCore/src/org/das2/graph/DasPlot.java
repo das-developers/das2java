@@ -75,7 +75,6 @@ import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.DatumRangeUtil;
-import org.das2.datum.Units;
 import org.das2.graph.DasAxis.Memento;
 
 public class DasPlot extends DasCanvasComponent {
@@ -150,7 +149,7 @@ public class DasPlot extends DasCanvasComponent {
                 if (editRendererMenuItem != null) {
                     //TODO: check out SwingUtilities, I think this is wrong:
                     editRendererMenuItem.setText("Renderer Properties");
-                    if (ir > -1) {
+                    if ( ir>-1 && r!=null ) {
                         editRendererMenuItem.setEnabled(true);
                         editRendererMenuItem.setIcon(r.getListIcon());
                     } else {
@@ -288,7 +287,7 @@ public class DasPlot extends DasCanvasComponent {
 
         Graphics2D graphics= (Graphics2D) g.create();
 
-        int em = (int) getEmSize();
+        int em;
         int msgx, msgy;
 
         Color backColor = GraphUtil.getRicePaperColor();
@@ -497,7 +496,7 @@ public class DasPlot extends DasCanvasComponent {
                 try {
                     rend.render(plotGraphics, xAxis, yAxis, new NullProgressMonitor());
                 } catch ( RuntimeException ex ) {
-                    ex.printStackTrace();
+                    logger.log( Level.WARNING, null, ex );
                     postException(rend,ex);
                 }
                 noneActive = false;
@@ -799,6 +798,21 @@ public class DasPlot extends DasCanvasComponent {
             cacheImageBounds = new Rectangle();
             cacheImageBounds.width = getWidth();
             cacheImageBounds.height = getHeight();
+            if ( printing && ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) ) {
+                try {
+                    System.err.println("cheesy code to fix getHeight=0 when printing");
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(DasPlot.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                cacheImageBounds.width = getWidth();
+                cacheImageBounds.height = getHeight();
+            }            
+            if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
+                getWidth();
+                getHeight();
+                throw new IllegalArgumentException("width or height is 0.");
+            }
             cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
             cacheImageBounds.x = x - 1;
             cacheImageBounds.y = y - 1;
@@ -914,13 +928,12 @@ public class DasPlot extends DasCanvasComponent {
                 paintInvalidScreen(atGraphics, at);
 
             } else {
-                String atDesc;
                 if (!at.isIdentity()) {    
-                    atDesc = GraphUtil.getATScaleTranslateString(at);
+                    String atDesc = GraphUtil.getATScaleTranslateString(at);
                     logger.log(Level.FINEST, " using cacheImage w/AT {0}", atDesc);
                     atGraphics.transform(at);
                 } else {
-                    atDesc= "identity";
+                    //atDesc= "identity";
                     logger.log(Level.FINEST, " using cacheImage {0} {1} {2}", new Object[]{cacheImageBounds, xmemento, ymemento});
                 }
 
@@ -994,10 +1007,8 @@ public class DasPlot extends DasCanvasComponent {
                             try {
                                 r.updatePlotImage(getXAxis(), getYAxis(), new NullProgressMonitor());
                             } catch (DasException ex) {
-                                Logger.getLogger(DasPlot.class.getName()).log(Level.SEVERE, null, ex);
-                                ex.printStackTrace();
+                                logger.log(Level.SEVERE, null, ex);
                             }
-                            dirt= false;
                         }
                     }
                 }
