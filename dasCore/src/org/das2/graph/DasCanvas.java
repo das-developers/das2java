@@ -1033,7 +1033,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @throws InterruptedException 
      */
     public void waitUntilIdle( boolean monitors ) throws InterruptedException {
-        if ( monitors ) {
+        if ( false && monitors ) {
             while ( true ) {
                 ProgressMonitor mon= getActiveMonitor();
                 if ( mon==null || ( mon.getTaskProgress()==0 && mon.getTaskSize()==-1 ) ) {
