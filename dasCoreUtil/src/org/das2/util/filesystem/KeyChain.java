@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -117,24 +118,40 @@ public class KeyChain {
 
     /**
      * dump the loaded keys into the file new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" )
-     * TODO: note Java1.6 has File.setReadable( true, ownerOnly ).
      */
     public void writeKeysFile() {
+        try {
+            writeKeysFile(false);
+        } catch ( IOException ex ) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    
+    public void writeKeysFile( boolean toFile ) throws IOException {
         File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
         
         PrintWriter w=null;
         final ByteArrayOutputStream out= new ByteArrayOutputStream();
-
+        
         w= new PrintWriter( out );
         w.println("# keys file produced on "+ new java.util.Date() );
         w.println("# "+keysFile );
         for ( Entry<String,String> key : keys.entrySet() ) {
             w.println( key.getKey() + "\t" + key.getValue() );
         }
-        if ( w!=null ) {
-            w.close();
-        }
+        w.close();
 
+        if ( toFile ) {
+            FileOutputStream fout= new FileOutputStream(keysFile);
+            fout.write( out.toByteArray() );
+            fout.close();
+            keysFile.setReadable(false);
+            keysFile.setReadable(false,false);
+            keysFile.setReadable(true,true);
+            keysFile.setWritable(false);
+            keysFile.setWritable(true,true);
+        }
+        
         JButton button= new JButton( new AbstractAction( "Show Passwords") {
             public void actionPerformed(ActionEvent e) {
                 JTextArea ta= new JTextArea();
@@ -142,9 +159,11 @@ public class KeyChain {
                 JOptionPane.showMessageDialog(parent, ta );
             }
         });
+        
+        String s= toFile ? "The keychain file has been created:" : "You must create a protected file";
         JPanel p= new JPanel(new BorderLayout());
         p.add( new JLabel("<html>******************************<br>"
-                +"You must create a protected file <br>"
+                + s + "<br>"
                 +keysFile +"<br>"
                 +"that contains all passwords.<br>"
                 +"Click the button below to show content, <b>which contains passwords.</b><br>"
