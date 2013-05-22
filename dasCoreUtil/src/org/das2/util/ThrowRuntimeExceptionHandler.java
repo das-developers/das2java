@@ -25,12 +25,12 @@ public class ThrowRuntimeExceptionHandler implements ExceptionHandler {
     }
 
     public void handle(Throwable t) {
-        t.printStackTrace();
+        //t.printStackTrace();
         throw new RuntimeException(t);
     }
 
     public void handleUncaught(Throwable t) {
-        t.printStackTrace();
+        //t.printStackTrace();
         throw new RuntimeException(t);
     }
     
