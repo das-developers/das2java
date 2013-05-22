@@ -64,7 +64,8 @@ public final class FDataSet extends ArrayDataSet {
     
     /**
      * Wraps an array from array of dimension sizes.  The result will have
-     * rank qube.length(). 
+     * rank qube.length().  The data is not copied, so be sure that no outside 
+     * codes modify the data unintentionally.
      * @param data array containing the data, with the last dimension contiguous in memory.
      * @param qube array specifying the rank and size of each dimension
      * @return FDataSet
@@ -85,10 +86,21 @@ public final class FDataSet extends ArrayDataSet {
         }
     }
     
+    /**
+     * wrap the array to make it into a dataset.  This is the same as
+     * wrap( back, qube ).  The data is not copied, so be sure that no outside 
+     * codes modify the data unintentionally.
+     * @param back the array
+     * @param rank the rank of the dataset
+     * @param len0 the length, or 1 if the index is not needed.
+     * @param len1 the length, or 1 if the index is not needed.
+     * @param len2 the length, or 1 if the index is not needed.
+     * @return the dataset wrapping the array.
+     */
     public static FDataSet wrap( float[] back, int rank, int len0, int len1, int len2 ) {
         return new FDataSet( rank, len0, len1, len2, 1, back );
     }
-    
+
     protected FDataSet( int rank, int len0, int len1, int len2, int len3 ) {
         this( rank, len0, len1, len2, len3, new float[ len0 * len1 * len2 * len3] );
     }
