@@ -9,8 +9,6 @@
 
 package org.das2.util;
 
-import org.das2.util.ExceptionHandler;
-
 /**
  * ExceptionHandler that throws a RuntimeException caused by the Exception.
  * This is useful for server-side applications that need to handle the 
@@ -25,12 +23,12 @@ public class ThrowRuntimeExceptionHandler implements ExceptionHandler {
     }
 
     public void handle(Throwable t) {
-        //t.printStackTrace();
+        t.printStackTrace();
         throw new RuntimeException(t);
     }
 
     public void handleUncaught(Throwable t) {
-        //t.printStackTrace();
+        t.printStackTrace();
         throw new RuntimeException(t);
     }
     
