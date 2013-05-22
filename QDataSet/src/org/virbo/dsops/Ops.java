@@ -1253,7 +1253,52 @@ public class Ops {
     // IDL,Matlab - inspired routines
     /**
      * returns rank 1 dataset with values [0,1,2,...]
-     * @param size
+     * @param len0
+     * @return
+     */
+    public static QDataSet indgen(int len0) {
+        int size = len0;
+        int[] back = new int[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = i;
+        }
+        return IDataSet.wrap(back, 1, len0, 1, 1);
+    }
+
+    /**
+     * returns rank 2 dataset with values increasing [ [0,1,2], [ 3,4,5] ]
+     * @param len0
+     * @param len1
+     * @return
+     */
+    public static QDataSet indgen(int len0, int len1) {
+        int size = len0 * len1;
+        int[] back = new int[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = i;
+        }
+        return IDataSet.wrap(back, 2, len0, len1, 1);
+    }
+
+    /**
+     * returns rank 3 dataset with values increasing
+     * @param len0
+     * @param len1
+     * @param len2
+     * @return
+     */
+    public static QDataSet indgen(int len0, int len1, int len2) {
+        int size = len0 * len1 * len2;
+        int[] back = new int[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = i;
+        }
+        return IDataSet.wrap(back, 3, len0, len1, len2);
+    }
+
+    /**
+     * returns rank 1 dataset with values [0.,1.,2.,...]
+     * @param len0
      * @return
      */
     public static QDataSet dindgen(int len0) {
@@ -1266,7 +1311,7 @@ public class Ops {
     }
 
     /**
-     * returns rank 2 dataset with values increasing [ [0,1,2], [ 3,4,5] ]
+     * returns rank 2 dataset with values increasing [ [0.,1.,2.], [ 3.,4.,5.] ]
      * @param len0
      * @param len1
      * @return
@@ -1297,8 +1342,25 @@ public class Ops {
     }
 
     /**
-     * returns rank 1 dataset with values [0,1,2,...]
-     * @param size
+     * returns rank 4 dataset with values increasing
+     * @param len0
+     * @param len1
+     * @param len2
+     * @param len3 
+     * @return
+     */
+    public static QDataSet dindgen(int len0, int len1, int len2, int len3 ) {
+        int size = len0 * len1 * len2 * len3;
+        double[] back = new double[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = i;
+        }
+        return DDataSet.wrap( back, new int[] { len0, len1, len2, len3 } );
+    }
+    
+    /**
+     * returns rank 1 dataset with values [0.,1.,2.,...]
+     * @param len0
      * @return
      */
     public static QDataSet findgen(int len0) {
@@ -1311,7 +1373,7 @@ public class Ops {
     }
 
     /**
-     * returns rank 2 dataset with values increasing [ [0,1,2], [ 3,4,5] ]
+     * returns rank 2 dataset with values increasing [ [0.,1.,2.], [ 3.,4.,5.] ]
      * @param len0
      * @param len1
      * @return
@@ -1341,6 +1403,23 @@ public class Ops {
         return FDataSet.wrap(back, 3, len0, len1, len2);
     }
 
+    /**
+     * returns rank 4 dataset with values increasing
+     * @param len0
+     * @param len1
+     * @param len2
+     * @param len3
+     * @return
+     */
+    public static QDataSet findgen(int len0, int len1, int len2, int len3) {
+        int size = len0 * len1 * len2 * len3;
+        float[] back = new float[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = i;
+        }
+        return FDataSet.wrap( back, new int[] { len0, len1, len2, len3 } );
+    }    
+    
     /**
      * create a dataset filled with zeros.
      * @param len0
