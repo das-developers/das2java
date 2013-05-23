@@ -34,8 +34,11 @@ public class TimeParser {
      * %Y-%m-%dT%H:%M:%S.%{milli}Z
      */
     public static final String TIMEFORMAT_Z = "%Y-%m-%dT%H:%M:%S.%{milli}Z";
+    public static final int AFTERSTOP_INIT = 999;
 
     TimeStruct time;
+    TimeStruct startTime;
+    TimeStruct stopTime;
     TimeStruct timeWidth;
     TimeStruct context;
 
@@ -68,6 +71,8 @@ public class TimeParser {
     String[] qualifiers;
     String regex;
     String formatString;
+    int stopTimeDigit=AFTERSTOP_INIT;  // if after stop, then timeWidth is being set.
+    
     /**
      * Least significant digit in format.
      *0=year, 1=month, 2=day, 3=hour, 4=min, 5=sec, 6=milli, 7=micro
@@ -429,7 +434,9 @@ public class TimeParser {
 
         logger.log(Level.FINE, "new TimeParser({0},...)", formatString);
         
-        time = new TimeUtil.TimeStruct();
+        startTime = new TimeUtil.TimeStruct();
+        stopTime = new TimeUtil.TimeStruct();
+
         this.fieldHandlers = fieldHandlers;
         this.formatString = formatString;
 
@@ -459,7 +466,6 @@ public class TimeParser {
         lengths = new int[ndigits];
         for (int i = 0; i < lengths.length; i++) {
             lengths[i] = -1; // -1 indicates not known, but we'll figure out as many as we can.
-
         }
 
         delim[0] = ss[0];
@@ -478,7 +484,7 @@ public class TimeParser {
             if (ss[i].charAt(pp) != '{' && ss[i].charAt(pp)!='(' ) {
                 fc[i] = ss[i].substring(pp, pp + 1);
                 delim[i] = ss[i].substring(pp + 1);
-            } else if ( ss[i].charAt(pp) == '{') {
+            } else if ( ss[i].charAt(pp) == '{') { // TODO: No longer supported, always use parens.
                 int endIndex = ss[i].indexOf('}', pp);
                 int comma = ss[i].indexOf(",", pp);
                 int semi= ss[i].indexOf(";", pp );
@@ -492,7 +498,7 @@ public class TimeParser {
                 delim[i] = ss[i].substring(endIndex + 1);
             } else if ( ss[i].charAt(pp) == '(') {
                 int endIndex = ss[i].indexOf(')', pp);
-                int comma = ss[i].indexOf(",", pp);
+                int comma = ss[i].indexOf(",", pp);  // TODO: No longer supported, always use semicolons.
                 int semi= ss[i].indexOf(";", pp );
                 if ( comma==-1 || semi>-1 && semi<comma ) comma= semi;
                 if (comma != -1) {
@@ -591,10 +597,7 @@ public class TimeParser {
             if ( qualifiers[i]!=null ) {
                 String[] ss2= qualifiers[i].split(";");
                 if ( ss2.length==1 && ss2[0].split(",").length>1 ) {
-                    System.err.println( "--------------------------------------------------"); // logger okay
-                    System.err.println( "maybe use semicolons instead of commas in template"); // logger okay
-                    System.err.println( "--------------------------------------------------"); // logger okay
-                    logger.fine("maybe use semicolons instead of commas in template");
+                    logger.warning("maybe use semicolons instead of commas in template");
                 }
                 for ( int i2=0; i2<ss2.length; i2++ ) {
                     boolean okay=false;
@@ -623,12 +626,26 @@ public class TimeParser {
                         else if ( name.equals("resolution") ) span= Integer.parseInt(val);
                         else if ( name.equals("id") ) ; //TODO: orbit plug in handler...
                         else if ( name.equals("places") ) ; //TODO: this all needs to be redone...
+                        else if ( name.equals(""));
+                        else if ( name.equals("end") ) {
+                            if ( stopTimeDigit==AFTERSTOP_INIT ) {
+                                stopTimeDigit= i;
+                            }
+                        }
                         else {
                             if ( !fieldHandlers.containsKey(fc[i]) ) {
                                 throw new IllegalArgumentException("unrecognized/unsupported field: "+name + " in "+qual );
                             }
                         }
                         okay= true;
+                    } else if ( !okay ) {
+                        String name= qual.trim();
+                        if ( name.equals("end") ) {
+                            if ( stopTimeDigit==AFTERSTOP_INIT ) {
+                                stopTimeDigit= i;
+                            }
+                            okay= true;
+                        }
                     }
                     if ( !okay && ( qual.equals("Y") || qual.equals("m") || qual.equals("d") || qual.equals("j") ||
                             qual.equals("H") || qual.equals("M") ||  qual.equals("S")) ) {
@@ -836,6 +853,16 @@ public class TimeParser {
         return parse( timeString, null );
     }
 
+    private void copyTime( TimeStruct src, TimeStruct dst ) {
+        dst.year = src.year;
+        dst.month = src.month;
+        dst.day = src.day;
+        dst.hour = src.hour;
+        dst.minute = src.minute;
+        dst.seconds = src.seconds;
+        dst.micros = src.micros;
+    }
+    
     /**
      * attempt to parse the string.  The parser itself is returned so that
      * so expressions can be chained like so:
@@ -853,15 +880,16 @@ public class TimeParser {
         
         orbitDatumRange=null;
         
-        time.year = context.year;
-        time.month = context.month;
-        time.day = context.day;
-        time.hour = context.hour;
-        time.minute = context.minute;
-        time.seconds = context.seconds;
-        time.micros = context.micros;
+        time= startTime;
+        
+        copyTime( context, startTime );
 
         for (int idigit = 1; idigit < ndigits; idigit++) {
+            if ( idigit==stopTimeDigit ) {
+                copyTime( startTime, stopTime );
+                time= stopTime;
+            }
+            
             if (offsets[idigit] != -1) {  // note offsets[0] is always known
 
                 offs = offsets[idigit];
@@ -1005,7 +1033,7 @@ public class TimeParser {
      * @param spec
      * @return
      */
-    FieldSpec parseSpec(String spec) {
+    private FieldSpec parseSpec(String spec) {
         FieldSpec result= new FieldSpec();
         int i0= spec.charAt(0)=='%' ? 1 : 0;
         result.spec= spec.substring(i0);
@@ -1039,6 +1067,9 @@ public class TimeParser {
      * @param value
      */
     public void setDigit(String format, double value) {
+        
+        time= startTime;
+        
         if (format.equals("%{ignore}") || format.equals("%X") || format.equals("%x")) return;
         if (value < 0) {
             throw new IllegalArgumentException("value must not be negative on field:"+format+" value:"+value );
@@ -1139,6 +1170,8 @@ public class TimeParser {
      * @return
      */
     public TimeParser setDigit(String format, int value) {
+        time= startTime;
+        
         String[] ss = format.split("%", -2);
         for (int i = ss.length - 1; i > 0; i--) {
             int mod = 0;
@@ -1249,6 +1282,7 @@ public class TimeParser {
      * @param digitNumber, the digit to set (starting with 0).
      */
     public TimeParser setDigit(int digitNumber, int digit) {
+        time= startTime;
         switch (handlers[digitNumber + 1]) {
             case 0:
                 time.year = digit;
@@ -1293,14 +1327,14 @@ public class TimeParser {
     }
 
     public double getTime(Units units) {
-        return Units.us2000.convertDoubleTo(units, toUs2000(time));
+        return Units.us2000.convertDoubleTo(units, toUs2000(startTime));
     }
 
     public Datum getTimeDatum() {
         if (time.year < 1990) {
-            return Units.us1980.createDatum(toUs1980(time));
+            return Units.us1980.createDatum(toUs1980(startTime));
         } else {
-            return Units.us2000.createDatum(toUs2000(time));
+            return Units.us2000.createDatum(toUs2000(startTime));
         }
     }
 
@@ -1344,17 +1378,34 @@ public class TimeParser {
         } else if ( orbitDatumRange!=null ) {
             return orbitDatumRange;
         } else {
-            TimeStruct time2 = time.add(timeWidth);
-            double t1 = toUs2000(time);
-            double t2 = toUs2000(time2);
-            return new DatumRange(t1, t2, Units.us2000);
+            if ( stopTimeDigit<AFTERSTOP_INIT ) {
+                double t1 = toUs2000(startTime);
+                double t2 = toUs2000(stopTime);
+                return new DatumRange(t1, t2, Units.us2000);
+                
+            } else {
+                TimeStruct lstopTime = startTime.add(timeWidth);
+                double t1 = toUs2000(startTime);
+                double t2 = toUs2000(lstopTime);
+                return new DatumRange(t1, t2, Units.us2000);
+            }
         }
     }
 
+    /**
+     * return the end time of the range in units, e.g. Units.us2000
+     * @param units
+     * @return 
+     */
     public double getEndTime(Units units) {
-        throw new IllegalArgumentException("not implemented for DatumRanges as of yet");
+        DatumRange dr= getTimeRange();
+        return dr.max().doubleValue(units);
     }
 
+    /**
+     * peek at the regular expression used.
+     * @return 
+     */
     public String getRegex() {
         return this.regex;
     }
@@ -1398,6 +1449,10 @@ public class TimeParser {
 
 
         for (int idigit = 1; idigit < ndigits; idigit++) {
+            if ( idigit>=stopTimeDigit ) {
+                timel= TimeUtil.toTimeStruct(end);
+            }
+            
             result.insert(offs, this.delims[idigit - 1]);
             if (offsets[idigit] != -1) {  // note offsets[0] is always known
 
@@ -1524,6 +1579,9 @@ public class TimeParser {
         DatumRange drnorm= org.das2.datum.DatumRangeUtil.parseTimeRangeValid(norm);
 
         if ( !dr.equals(drnorm) ) {
+            tp= TimeParser.create(spec);
+            dr= tp.parse(test).getTimeRange();
+            drnorm= org.das2.datum.DatumRangeUtil.parseTimeRangeValid(norm);
             throw new IllegalStateException("ranges do not match: "+spec + " " +test + "--> " + dr + ", should be "+norm );
         }
         return true;
@@ -1539,8 +1597,10 @@ public class TimeParser {
      * @throws Exception
      */
     public static void testTimeParser() throws Exception {
-        //LoggerManager.getLogger("datum.timeparser").setLevel(Level.ALL);
+        LoggerManager.getLogger("datum.timeparser").setLevel(Level.ALL);
         org.das2.datum.DatumRangeUtil.parseTimeRangeValid("2000-022/P1D");
+        testTimeParser1( "$Y$m$d-$(Y,end)$m$d", "20130202-20140303", "2013-02-02/2014-03-03" );
+        testTimeParser1( "$Y$m$d-$(d,end)", "20130202-13", "2013-02-02/2013-02-13" );
         testTimeParser1( "$(periodic;offset=0;start=2000-001;period=P1D)", "0",  "2000-001");
         testTimeParser1( "$(periodic;offset=0;start=2000-001;period=P1D)", "20", "2000-021");        
         testTimeParser1( "$(periodic;offset=2285;start=2000-346;period=P27D)", "1", "1832-02-08/P27D");
