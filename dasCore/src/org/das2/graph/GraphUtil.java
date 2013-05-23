@@ -14,11 +14,13 @@ import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.LoggerManager;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 //import org.apache.xml.serialize.*;
@@ -29,6 +31,8 @@ import org.virbo.dsops.Ops;
  */
 public class GraphUtil {
 
+    private static final Logger logger= LoggerManager.getLogger("das2.graphics.util");
+    
     public static DasPlot newDasPlot(DasCanvas canvas, DatumRange x, DatumRange y) {
         DasAxis xaxis = new DasAxis(x.min(), x.max(), DasAxis.HORIZONTAL);
         DasAxis yaxis = new DasAxis(y.min(), y.max(), DasAxis.VERTICAL);
@@ -344,6 +348,9 @@ public class GraphUtil {
      */
     public static int reducePath(PathIterator it, GeneralPath result, int res ) {
 
+        logger.fine( "enter reducePath" );
+        long t0= System.currentTimeMillis();
+        
         float[] p = new float[6];
 
         float x0 = Float.MAX_VALUE;
@@ -404,6 +411,11 @@ public class GraphUtil {
                     result.moveTo(ax0, ay0);
                     //System.err.println(" moveTo"+ String.format("[ %f %f ]", ax0, ay0));
                     break;
+                case PathIterator.SEG_CUBICTO:
+                    result.lineTo(ax0, ay0);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    break;                         
                 case -999:
                     //System.err.println(" ignore"+ String.format("[ %f %f ]", ax0, ay0));
                     break;
@@ -429,6 +441,11 @@ public class GraphUtil {
                 result.moveTo(ax0, ay0);
                 //System.err.println(" moveTo "+ String.format("[ %f %f ]", ax0, ay0) );
                 break;
+            case PathIterator.SEG_CUBICTO:
+                result.lineTo(ax0, ay0);
+                break;                
+            case PathIterator.SEG_CLOSE:
+                break;                
             case -999:
                 //System.err.println(" ignore");
                 break;
@@ -436,6 +453,7 @@ public class GraphUtil {
                 throw new IllegalArgumentException("not supported");
         }
 
+        logger.log(Level.FINE, "reduce {0} to {1} in {2}ms", new Object[]{inCount, points, System.currentTimeMillis()-t0 });
         return points;
     }
 
