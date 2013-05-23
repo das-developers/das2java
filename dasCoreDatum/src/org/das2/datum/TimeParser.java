@@ -1447,9 +1447,8 @@ public class TimeParser {
         nf[3] = new DecimalFormat("000");
         nf[4] = new DecimalFormat("0000");
 
-
         for (int idigit = 1; idigit < ndigits; idigit++) {
-            if ( idigit>=stopTimeDigit ) {
+            if ( idigit==stopTimeDigit ) {
                 timel= TimeUtil.toTimeStruct(end);
             }
             
