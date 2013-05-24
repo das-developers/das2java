@@ -261,7 +261,7 @@ public class TimeParser {
      */
     public static class SubsecFieldHandler implements TimeParser.FieldHandler {
 
-        double places;
+        int places;
         double factor;
         String format;
         
@@ -284,7 +284,7 @@ public class TimeParser {
         }
 
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
-            return String.format( format, timeWidth.micros / factor );
+            return String.format( format, (int) ( timeWidth.micros / factor ) );
         }
         
     }
