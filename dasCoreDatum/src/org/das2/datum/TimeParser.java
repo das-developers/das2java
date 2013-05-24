@@ -14,8 +14,8 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -32,9 +32,9 @@ public class TimeParser {
 
     final static Logger logger = LoggerManager.getLogger("datum.timeparser");
     /**
-     * %Y-%m-%dT%H:%M:%S.%{milli}Z
+     * $Y-$m-$dT$H:$M:$S.$(subsec;places=3)Z
      */
-    public static final String TIMEFORMAT_Z = "%Y-%m-%dT%H:%M:%S.%{milli}Z";
+    public static final String TIMEFORMAT_Z = "$Y-$m-$dT$H:$M:$S.$(subsec;places=3)Z";
     public static final int AFTERSTOP_INIT = 999;
 
     TimeStruct time;
@@ -401,7 +401,6 @@ public class TimeParser {
             startTime.minute= t[4];
             startTime.seconds= t[5];
             startTime.millis= t[6];
-            return;
         }
 
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
@@ -410,6 +409,56 @@ public class TimeParser {
         
         
     }
+
+    public static class EnumFieldHandler implements TimeParser.FieldHandler {
+
+        LinkedHashSet<String> values;
+        String id;
+        
+        public String configure( Map<String, String> args ) {
+            values= new LinkedHashSet();
+            String svalues= args.get("values");
+            String[] ss= svalues.split("|");
+            for ( String s: ss ) {
+                values.add(s);
+            }
+            
+            String s= args.get("id");
+            if ( s!=null ) id= s; else id="unindentifiedEnum";
+            
+            return null;
+        }
+
+        public String getRegex() {
+            Iterator<String> it= values.iterator();
+            StringBuilder b= new StringBuilder("[").append(it.next());
+            while ( it.hasNext() ) {
+                b.append("|").append(Pattern.quote(it.next()));
+            }
+            b.append("]");
+            return b.toString();
+        }
+
+        public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
+            if ( !values.contains(fieldContent) ) {
+                throw new ParseException("value is not in enum: "+fieldContent,0);
+            }
+            extra.put( id, fieldContent );
+        }
+
+        public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
+            String v= extra.get(id);
+            if ( v==null ) {
+                throw new IllegalArgumentException( "\"" + id + " is undefined in extras." );
+            }
+            if ( values.contains(v) ) {
+                return v;
+            } else {
+                throw new IllegalArgumentException(  id + " value is not within enum: "+values );
+            }
+        }
+    }
+
     
     /**
      * convert %() to standard $(), and support legacy modes in one
@@ -504,6 +553,11 @@ public class TimeParser {
         if ( fieldHandlers.get("periodic")==null ) {
             fieldHandlers.put("periodic",new PeriodicFieldHandler());
         }
+        
+        if ( fieldHandlers.get("enum")==null ) {
+            fieldHandlers.put("enum",new EnumFieldHandler());
+        }
+        
 
         logger.log(Level.FINE, "new TimeParser({0},...)", formatString);
         
@@ -1621,7 +1675,7 @@ public class TimeParser {
     public String toString() {
         StringBuilder result= new StringBuilder();
         for ( int i=0;i<this.fc.length; i++ ) {
-            if ( this.fc[i]!=null ) result.append("%").append( this.fc[i]);
+            if ( this.fc[i]!=null ) result.append("$").append( this.fc[i]);
             result.append( this.delims[i] );
         }
         return result.toString();
