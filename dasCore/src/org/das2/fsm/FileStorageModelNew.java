@@ -751,6 +751,9 @@ public class FileStorageModelNew {
         TimeParser.FieldHandler vh= new TimeParser.FieldHandler() {
             public String configure( Map<String,String> args ) {
                 String sep= args.get( "sep" );
+                if ( sep==null && args.containsKey("dotnotation")) {
+                    sep= ".";
+                }
                 String alpha= args.get( "alpha" );
                 if ( alpha!=null ) {
                     if ( sep!=null ) {
