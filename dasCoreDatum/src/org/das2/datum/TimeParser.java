@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -149,7 +150,7 @@ public class TimeParser {
     /**
      * must contain T or space to delimit date and time.
      * @param exampleTime "1992-353T02:00"
-     * @return "%Y-%jT%H%M" etc.
+     * @return "$Y-$jT$H$M" etc.
      */
     public static String iso8601String(String exampleTime) {
         int i = exampleTime.indexOf("T");
@@ -168,16 +169,16 @@ public class TimeParser {
             }
             switch (datePart.length()) {
                 case 10:
-                    date = "%Y" + delim + "%m" + delim + "%d";
+                    date = "$Y" + delim + "$m" + delim + "$d";
                     break;
                 case 9:
-                    date = "%Y" + delim + "%j";
+                    date = "$Y" + delim + "$j";
                     break;
                 case 8:
-                    date = hasDelim ? "%Y" + delim + "%j" : "%Y%m%d";
+                    date = hasDelim ? "$Y" + delim + "$j" : "$Y$m$d";
                     break;
                 case 7:
-                    date = "%Y%j";
+                    date = "$Y$j";
                     break;
                 default:
                     throw new IllegalArgumentException("unable to identify date format for " + exampleTime);
@@ -194,22 +195,22 @@ public class TimeParser {
             }
             switch (timePart.length()) {
                 case 4:
-                    time = "%H%M";
+                    time = "$H$M";
                     break;
                 case 5:
-                    time = "%H" + delim + "%M";
+                    time = "$H" + delim + "$M";
                     break;
                 case 6:
-                    time = "%H%M%S";
+                    time = "$H$M$S";
                     break;
                 case 8:
-                    time = "%H" + delim + "%M" + delim + "%S";
+                    time = "$H" + delim + "$M" + delim + "$S";
                     break;
                 case 12:
-                    time = "%H" + delim + "%M" + delim + "%S.%{subsec,places=3}";
+                    time = "$H" + delim + "$M" + delim + "$S.$(subsec,places=3)";
                     break;
                 case 15:
-                    time = "%H" + delim + "%M" + delim + "%S.%{subsec,places=6}";
+                    time = "$H" + delim + "$M" + delim + "$S.$(subsec,places=6)";
                     break;
                 default:
                     throw new IllegalArgumentException("unable to identify time format for " + exampleTime);
@@ -409,6 +410,77 @@ public class TimeParser {
         
         
     }
+    
+    /**
+     * convert %() to standard $(), and support legacy modes in one
+     * compact place.  Asterisk (*) is replaced with $x.
+     * Note, commas may still appear in qualifier lists, and 
+     * makeQualifiersCanonical will be called to remove them.
+     * @param formatString
+     * @return formatString containing canonical spec, $() and $x instead of *.
+     */
+    private static String makeCanonical( String formatString ) {
+        if ( formatString.contains("%") && !formatString.contains("$") ) {
+            formatString= formatString.replaceAll("\\%", "\\$");
+        }
+        if ( formatString.contains("${") && !formatString.contains("$(") ) {
+            formatString= formatString.replaceAll("\\$\\{", "\\$(");
+            formatString= formatString.replaceAll("\\}", "\\)");
+        }
+        if ( formatString.contains("*") ) {
+            formatString= formatString.replaceAll("\\*", "\\$x");
+            System.err.println(formatString);
+        }
+        return formatString;
+    }
+    
+    /**
+     * $(subsec,places=4) --> $(subsec;places=4)
+     * $(enum,values=01,02,03,id=foo) --> $(enum;values=01,02,03;id=foo)
+     * @param qualifiers
+     * @return 
+     */
+    private static String makeQualifiersCanonical( String qualifiers ) {
+        boolean noDelimiters= true;
+        for ( int i=0; noDelimiters && i<qualifiers.length(); i++ ) {
+            if ( qualifiers.charAt(i)==',' || qualifiers.charAt(i)==';' ) {
+                noDelimiters= false;
+            }
+        }
+        if ( noDelimiters ) return qualifiers;
+        
+        char[] result= new char[qualifiers.length()];
+        
+        int istart;
+        // We know that the first delimiter must be a semicolon.  
+        // If it is, then assume the qualifiers are properly formatted.
+        result[0]= qualifiers.charAt(0); // '('
+        for ( istart=1; istart<qualifiers.length(); istart++ ) {
+            char ch= qualifiers.charAt(istart);
+            if ( ch==';' ) return qualifiers; // assume the qualifiers are properly formatted
+            if ( ch==',' ) {
+                result[istart]=';';
+                break;
+            }
+            if ( Character.isLetter(ch) ) {
+                result[istart]=ch;
+            }
+        }
+
+        boolean expectSemi=false;
+        for ( int i= qualifiers.length()-1; i>istart; i-- ) {
+            result[i]= qualifiers.charAt(i);
+            char ch= qualifiers.charAt(i);
+            if ( ch=='=' ) expectSemi=true;
+            else if ( ch==',' && expectSemi ) {
+                result[i]= ';' ;
+            } else if ( ch==';' ) {
+                expectSemi= false;
+            }
+        }
+        return new String(result);
+    }
+    
     /**
      * create a new TimeParser.  
      * @param formatString
@@ -416,6 +488,7 @@ public class TimeParser {
      */
     private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers) {
 
+        // note this is outside of the spec at http://tsds.org//uri_templates
         if ( fieldHandlers.get("o")==null ) {
             fieldHandlers.put("o",new OrbitFieldHandler());
         }
@@ -438,21 +511,11 @@ public class TimeParser {
         stopTime = new TimeUtil.TimeStruct();
 
         this.fieldHandlers = fieldHandlers;
+
+        formatString= makeCanonical(formatString);
         this.formatString = formatString;
-
-        if ( formatString.contains("$") && !formatString.contains("%") ) {
-            formatString= formatString.replaceAll("\\$", "%");
-        }
-
-        if ( formatString.contains("*") ) {
-            formatString= formatString.replaceAll("\\*", "\\%x");
-            System.err.println(formatString);
-        }
-        //if ( formatString.contains("%(v,sep)") ) { // it would be nice to clean up this implementation.  The following wasn't needed.
-        //    formatString= formatString.replaceAll("\\%\\(v,sep\\)", "%{v,sep}");
-        //}
         
-        String[] ss = formatString.split("%");
+        String[] ss = formatString.split("\\$");
         fc = new String[ss.length];
         qualifiers= new String[ss.length];
         
@@ -474,36 +537,24 @@ public class TimeParser {
             while (Character.isDigit(ss[i].charAt(pp)) || ss[i].charAt(pp) == '-') {
                 pp++;
             }
-            if (pp > 0) {
+            if (pp > 0) { // Note length ($5Y) is not supported in http://tsds.org/uri_templates.
                 lengths[i] = Integer.parseInt(ss[i].substring(0, pp));
             } else {
                 lengths[i] = 0; // determine later by field type
             }
 
+            ss[i]= makeQualifiersCanonical(ss[i]);
+            
             logger.log( Level.FINE, "ss[i]={0}", ss[i] );
-            if (ss[i].charAt(pp) != '{' && ss[i].charAt(pp)!='(' ) {
+            if ( ss[i].charAt(pp)!='(' ) {
                 fc[i] = ss[i].substring(pp, pp + 1);
                 delim[i] = ss[i].substring(pp + 1);
-            } else if ( ss[i].charAt(pp) == '{') { // TODO: No longer supported, always use parens.
-                int endIndex = ss[i].indexOf('}', pp);
-                int comma = ss[i].indexOf(",", pp);
-                int semi= ss[i].indexOf(";", pp );
-                if ( comma==-1 || semi>-1 && semi<comma ) comma= semi;
-                if (comma != -1) {
-                    fc[i] = ss[i].substring(pp + 1, comma);
-                    qualifiers[i]= ss[i].substring(comma+1,endIndex);
-                } else {
-                    fc[i] = ss[i].substring(pp + 1, endIndex);
-                }
-                delim[i] = ss[i].substring(endIndex + 1);
             } else if ( ss[i].charAt(pp) == '(') {
                 int endIndex = ss[i].indexOf(')', pp);
-                int comma = ss[i].indexOf(",", pp);  // TODO: No longer supported, always use semicolons.
                 int semi= ss[i].indexOf(";", pp );
-                if ( comma==-1 || semi>-1 && semi<comma ) comma= semi;
-                if (comma != -1) {
-                    fc[i] = ss[i].substring(pp + 1, comma);
-                    qualifiers[i]= ss[i].substring(comma+1,endIndex);
+                if ( semi != -1) {
+                    fc[i] = ss[i].substring(pp + 1, semi );
+                    qualifiers[i]= ss[i].substring( semi+1,endIndex );
                 } else {
                     fc[i] = ss[i].substring(pp + 1, endIndex);
                 }
@@ -560,9 +611,6 @@ public class TimeParser {
                     Map<String,String> argv= new HashMap();
                     if ( args!=null ) {
                         String[] ss2= args.split(";",-2);
-                        if ( ss2.length==1 ) {
-                            ss2= args.split(",",-2); // legacy
-                        }
                         for ( int i2=0; i2<ss2.length; i2++ ) {
                             int i3= ss2[i2].indexOf("=");
                             if ( i3==-1 ) {
@@ -596,9 +644,6 @@ public class TimeParser {
 
             if ( qualifiers[i]!=null ) {
                 String[] ss2= qualifiers[i].split(";");
-                if ( ss2.length==1 && ss2[0].split(",").length>1 ) {
-                    logger.warning("maybe use semicolons instead of commas in template");
-                }
                 for ( int i2=0; i2<ss2.length; i2++ ) {
                     boolean okay=false;
                     String qual= ss2[i2].trim();
@@ -707,27 +752,36 @@ public class TimeParser {
             case 100: /* do nothing */ break;  //TODO: handler needs to report it's lsd, if it affects.
         }
 
+        if ( logger.isLoggable(Level.FINE) ) {
+            StringBuilder canonical= new StringBuilder( delim[0] );
+            for (int i = 1; i < ndigits; i++) { 
+                canonical.append("$");
+                if ( qualifiers[i]==null ) {
+                    canonical.append(fc[i]); 
+                } else {
+                    canonical.append("(").append(fc[i]).append(";").append(qualifiers[i]).append(")");
+                }
+                canonical.append(delim[i]); 
+            }
+            logger.log( Level.FINE, "Canonical: {0}", canonical.toString());
+        }
+        
         this.delims = delim;
         this.regex = regex1.toString();
     }
 
     /**
-     * provide standard means of indicating this appears to be a spec.
+     * Provide standard means of indicating this appears to be a spec by
+     * looking for something that would assert the year.
      * @param spec
-     * @return
+     * @return true if the string appears to be a spec.
      */
     public static boolean isSpec(String spec) {
-        if ( spec.contains("%") && !spec.contains("$") ) {
-            spec= spec.replaceAll("%","$");
-            if ( spec.contains("{") && !spec.contains("(") ) {
-                spec= spec.replaceAll("\\{","(");
-                spec= spec.replaceAll("\\}",")");
-            }
-        }
+        spec= makeCanonical( spec );
         if ( spec.contains("$Y")||spec.contains("$y") ) return true;
         if ( spec.contains(";Y=") ) return true;
-        if ( spec.contains(",Y=") ) return true; //yay, sloppy specs!
-        if ( spec.contains("$o")|| spec.contains("$(o,") ) return true;
+        if ( spec.contains("$o")|| spec.contains("$(o;") ) return true;
+        if ( spec.contains("$(periodic")) return true;
         return false;
     }
 
@@ -765,8 +819,9 @@ public class TimeParser {
      *  $x   skip this field
      *  $(enum)  skip this field
      *  $v   skip this field
-     *  $(hrinterval,values=0,1,2,3)  enumeration of part of day
-     *  $(subsec,places=6)  fractional seconds (6->microseconds)
+     *  $(hrinterval;values=0,1,2,3)  enumeration of part of day
+     *  $(subsec;places=6)  fractional seconds (6->microseconds)
+     *  $(periodic;offset=0;start=2000-001;period=P1D)
      *
      * Qualifiers:
      *    span=<int>
@@ -967,12 +1022,12 @@ public class TimeParser {
                     if ( handler instanceof Orbits.OrbitFieldHandler ) {
                         orbitDatumRange= ((Orbits.OrbitFieldHandler)handler).getOrbitRange();
                     }
-                } else if (handlers[idigit] == 10) {
+                } else if (handlers[idigit] == 10) { // AM/PM
                     char ch = timeString.charAt(offs);
                     if (ch == 'P' || ch == 'p') {
                         time.hour += 12;
                     }
-                } else if (handlers[idigit] == 11) {
+                } else if (handlers[idigit] == 11) { // TimeZone is not supported, see code elsewhere.
                     int offset;
                     offset= Integer.parseInt(timeString.substring(offs, offs + len));
                     time.hour -= offset / 100;   // careful!
@@ -1597,12 +1652,15 @@ public class TimeParser {
      */
     public static void testTimeParser() throws Exception {
         LoggerManager.getLogger("datum.timeparser").setLevel(Level.ALL);
+        logger.log(Level.FINE,"Are you there?");
+        logger.addHandler( new ConsoleHandler() );
+        logger.getHandlers()[0].setLevel(Level.ALL);
         org.das2.datum.DatumRangeUtil.parseTimeRangeValid("2000-022/P1D");
         testTimeParser1( "$Y$m$d-$(Y,end)$m$d", "20130202-20140303", "2013-02-02/2014-03-03" );
         testTimeParser1( "$Y$m$d-$(d,end)", "20130202-13", "2013-02-02/2013-02-13" );
         testTimeParser1( "$(periodic;offset=0;start=2000-001;period=P1D)", "0",  "2000-001");
         testTimeParser1( "$(periodic;offset=0;start=2000-001;period=P1D)", "20", "2000-021");        
-        testTimeParser1( "$(periodic;offset=2285;start=2000-346;period=P27D)", "1", "1832-02-08/P27D");
+        testTimeParser1( "$(periodic,offset=2285,start=2000-346,period=P27D)", "1", "1832-02-08/P27D");
         testTimeParser1( "$(periodic;offset=2285;start=2000-346;period=P27D)", "2286", "2001-007/P27D");
     }
 }
