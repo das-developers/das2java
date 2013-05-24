@@ -1652,7 +1652,6 @@ public class TimeParser {
      */
     public static void testTimeParser() throws Exception {
         LoggerManager.getLogger("datum.timeparser").setLevel(Level.ALL);
-        logger.log(Level.FINE,"Are you there?");
         logger.addHandler( new ConsoleHandler() );
         logger.getHandlers()[0].setLevel(Level.ALL);
         org.das2.datum.DatumRangeUtil.parseTimeRangeValid("2000-022/P1D");
