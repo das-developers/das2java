@@ -755,6 +755,9 @@ public class FileStorageModelNew {
                     sep= ".";
                 }
                 String alpha= args.get( "alpha" );
+                if ( alpha==null && args.containsKey("alphanumeric") ) {
+                    alpha="";
+                }
                 if ( alpha!=null ) {
                     if ( sep!=null ) {
                         return "alpha with split not supported";
