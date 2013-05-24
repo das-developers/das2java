@@ -67,6 +67,7 @@ public class TimeParser {
      */
     int[] offsets;
     int[] lengths;
+    int[] shift;  // any shifts to apply to each digit (used typically to make end time inclusive).
     String[] delims;
     String[] fc;
     String[] qualifiers;
@@ -584,6 +585,8 @@ public class TimeParser {
         for (int i = 0; i < lengths.length; i++) {
             lengths[i] = -1; // -1 indicates not known, but we'll figure out as many as we can.
         }
+        
+        shift= new int[ndigits];
 
         delim[0] = ss[0];
         for (int i = 1; i < ndigits; i++) {
@@ -725,6 +728,9 @@ public class TimeParser {
                         else if ( name.equals("resolution") ) span= Integer.parseInt(val);
                         else if ( name.equals("id") ) ; //TODO: orbit plug in handler...
                         else if ( name.equals("places") ) ; //TODO: this all needs to be redone...
+                        else if ( name.equals("shift") ) {
+                            shift[i]= Integer.parseInt(val);
+                        }
                         else if ( name.equals(""));
                         else if ( name.equals("end") ) {
                             if ( stopTimeDigit==AFTERSTOP_INIT ) {
@@ -871,7 +877,7 @@ public class TimeParser {
      *  $(milli)  3-digit milliseconds
      *  $(ignore) skip this field
      *  $x   skip this field
-     *  $(enum)  skip this field
+     *  $(enum)  skip this field.  If id is specified, then id can be retrieved.
      *  $v   skip this field
      *  $(hrinterval;values=0,1,2,3)  enumeration of part of day
      *  $(subsec;places=6)  fractional seconds (6->microseconds)
@@ -883,9 +889,9 @@ public class TimeParser {
      *    Y=2004  Also for Y,m,d,H,M,S
      *
      *   For example:
-     *      $(j,Y=2004) means the day-of-year, within the year 2004.
-     *      $(H,Y=2004,j=117) means the hour of day 2004-117
-     *      $(m,span=6) means the 6-month interval starting at the given month.
+     *      $(j;Y=2004) means the day-of-year, within the year 2004.
+     *      $(H;Y=2004;j=117) means the hour of day 2004-117
+     *      $(m;span=6) means the 6-month interval starting at the given month.
      *
      *  </pre>
      *
@@ -1036,7 +1042,7 @@ public class TimeParser {
 
                 if (handlers[idigit] < 10) {
                     int digit;
-                        digit= Integer.parseInt(field);
+                    digit= Integer.parseInt(field) + shift[idigit];
                     switch (handlers[idigit]) {
                         case 0:
                             time.year = digit;
