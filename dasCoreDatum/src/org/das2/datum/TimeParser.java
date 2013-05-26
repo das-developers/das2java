@@ -462,22 +462,25 @@ public class TimeParser {
 
     
     /**
-     * convert %() to standard $(), and support legacy modes in one
+     * convert %() and ${} to standard $(), and support legacy modes in one
      * compact place.  Asterisk (*) is replaced with $x.
      * Note, commas may still appear in qualifier lists, and 
      * makeQualifiersCanonical will be called to remove them.
-     * @param formatString
-     * @return formatString containing canonical spec, $() and $x instead of *.
+     * @param formatString like %{Y,m=02}*.dat
+     * @return formatString containing canonical spec, $() and $x instead of *, like $(Y,m=02)$x.dat
      */
     private static String makeCanonical( String formatString ) {
+        boolean wildcard= formatString.contains("*");
+        boolean oldSpec= formatString.contains("${");
+        if ( formatString.startsWith("$") && !wildcard && !oldSpec ) return formatString;
         if ( formatString.contains("%") && !formatString.contains("$") ) {
             formatString= formatString.replaceAll("\\%", "\\$");
         }
-        if ( formatString.contains("${") && !formatString.contains("$(") ) {
+        if ( oldSpec && !formatString.contains("$(") ) {
             formatString= formatString.replaceAll("\\$\\{", "\\$(");
             formatString= formatString.replaceAll("\\}", "\\)");
         }
-        if ( formatString.contains("*") ) {
+        if ( wildcard ) {
             formatString= formatString.replaceAll("\\*", "\\$x");
             System.err.println(formatString);
         }
@@ -1185,11 +1188,13 @@ public class TimeParser {
         
         time= startTime;
         
-        if (format.equals("%{ignore}") || format.equals("%X") || format.equals("%x")) return;
+        format= makeCanonical(format);
+        if (format.equals("$(ignore)") || format.equals("$X") || format.equals("$x")) return;
+        
         if (value < 0) {
             throw new IllegalArgumentException("value must not be negative on field:"+format+" value:"+value );
         }
-        String[] ss = format.split("%", -2);
+        String[] ss = format.split("\\$", -2);
         if (ss.length > 2) {
             throw new IllegalArgumentException("multiple fields not supported");
         }
