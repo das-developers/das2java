@@ -184,6 +184,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
     }
 
+    /**
+     * delete the specified row.
+     * @param row 
+     */
     public void deleteRow(int row) {
         dataPoints.remove(row);
         modified = true;
@@ -193,6 +197,25 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
         }
     }
+    
+    /**
+     * delete the specified rows.
+     * @param selectedRows 
+     */
+    public void deleteRows(int[] selectedRows) {
+        for ( int i = selectedRows.length-1; i>=0; i-- ) {
+            dataPoints.remove(selectedRows[i]);
+        }
+        modified = true;
+        
+        updateClients();
+        updateStatus();
+        if ( active ) {
+            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+        }
+        myTableModel.fireTableDataChanged();
+    }
+    
 
     private class MyDataSetDescriptor extends DataSetDescriptor {
 
@@ -532,12 +555,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
                 public void actionPerformed(ActionEvent e) {
                     int[] selectedRows = parent.getSelectedRows();
-                    for (int i = 0; i < selectedRows.length; i++) {
-                        deleteRow(selectedRows[i]);
-                        for (int j = i + 1; j < selectedRows.length; j++) {
-                            selectedRows[j]--; // indeces change because of deletion
-                        }
-                    }
+                    deleteRows(selectedRows);
+                    //for (int i = 0; i < selectedRows.length; i++) {
+                    //    deleteRow(selectedRows[i]);
+                    //    for (int j = i + 1; j < selectedRows.length; j++) {
+                    //        selectedRows[j]--; // indeces change because of deletion
+                    //    }
+                    //}
                 }
             });
             popup.add(menuItem);
@@ -773,8 +797,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         unitsArray =
                 new Units[]{null, null};
 
-        table =
-                new JTable(myTableModel);
+        table = new JTable(myTableModel);
 
         table.getTableHeader().setReorderingAllowed(true);
 
@@ -844,8 +867,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             if (selectRow != -1 && table.getRowCount()>selectRow ) {
                 table.setRowSelectionInterval(selectRow, selectRow);
                 table.scrollRectToVisible(table.getCellRect(selectRow, 0, true));
-                selectRow =
-                        -1;
+                selectRow = -1;
             }
 
         }
