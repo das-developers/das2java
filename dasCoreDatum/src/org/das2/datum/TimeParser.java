@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
 import org.das2.datum.Orbits.OrbitFieldHandler;
 
 /**
- * TimeParser designed to quickly parse strings with a specified format.  This parser has been
- * shown to perform around 20 times faster than that the generalized parser.
+ * TimeParser designed to quickly parse strings with a known format.  This parser has been
+ * shown to perform around 20 times faster than the discovery parser.
  *
  * @author Jeremy
  */
