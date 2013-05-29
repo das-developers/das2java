@@ -122,11 +122,22 @@ public class SubTaskMonitor implements ProgressMonitor {
         }
     }
 
+    /**
+     * these messages are lost.
+     * @param message 
+     */
     public void setProgressMessage(String message) {
         //parent.setProgressMessage(message);
     }
 
-    public ProgressMonitor getSubtaskMonitor(int start, int end) {
+    /**
+     * @param start start index
+     * @param end end index, exclusive
+     * @param label label or null.
+     * @return 
+     */
+    public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
+        //setProgressMessage(label);
         return SubTaskMonitor.create( this, start, end );
     }
     

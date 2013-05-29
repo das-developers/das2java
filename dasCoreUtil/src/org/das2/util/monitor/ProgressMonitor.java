@@ -85,7 +85,7 @@ public interface ProgressMonitor {
     long getTaskProgress();
     
     /**
-     * Set a consise string that describes the task being performed.  Monitors
+     * Set a concise string that describes the task being performed.  Monitors
      * don't necessarily need to display this label, and this request may be
      * ignored.  It is only provided so a process can describe the task that
      * is going on.  This is usually set by the client of the process to indicate
@@ -150,10 +150,13 @@ public interface ProgressMonitor {
     /**
      * return a monitor to use for a subtask.  This is provided mostly as
      * a convenience.  setTaskProgress calls to the subtask monitor are mapped to
-     * this monitor.
-     * @param start start position on this monitor
-     * @param end end position on this monitor.
+     * this monitor.  A label can also be specified for the subtask to improve
+     * user experience.
+     *
+     * @param start start position on this monitor.
+     * @param end end position on this monitor (exclusive).
+     * @param label a label for the subtask, often this is handled as progress message; or null.
      * @return a new progress monitor.  (generally type SubTaskMonitor)
      */
-    public ProgressMonitor getSubtaskMonitor( int start, int end );
+    public ProgressMonitor getSubtaskMonitor( int start, int end, String label);
 }
