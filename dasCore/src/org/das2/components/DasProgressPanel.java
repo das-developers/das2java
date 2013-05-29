@@ -128,7 +128,14 @@ public class DasProgressPanel implements ProgressMonitor {
      */
     private int unitsf=1;
 
-    public ProgressMonitor getSubtaskMonitor(int start, int end) {
+    /**
+     * @param start start index
+     * @param end end index, exclusive
+     * @param label label or null.
+     * @return 
+     */
+    public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
+        if ( label!=null ) setProgressMessage(label);
         return SubTaskMonitor.create( this, start, end );
     }
 
