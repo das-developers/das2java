@@ -94,8 +94,8 @@ public class FileStorageModelNew {
             }
     };
     VersioningType versioningType;
-    String versionGe= null; // the version must be greater than or equal to this if non-null.
-    String versionLt= null; // the version must be less than this if non-null.
+    String versionGe= null; // the version must be greater than or equal to this if non-null. 
+    String versionLt= null; // the version must be less than this if non-null. 
     
     /* need to map back to TimeUtil's enums, note that we have an extra for the 2 digit year */
     private int toTimeUtilEnum( int i ) {
