@@ -4336,7 +4336,7 @@ public class Ops {
         }
 
         fit= new LinFit( xx.trim(n-size,n), yysmooth.trim(n-size,n) );
-        for ( int i=n-size/2; i<n; i++ ){
+        for ( int i=n-(size+1)/2; i<n; i++ ){
             yysmooth.putValue( i, xx.value(i)*fit.getB() + fit.getA() );
         }
 
