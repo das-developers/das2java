@@ -757,18 +757,25 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     private Action getUpdateAction() {
         return new AbstractAction("Update") {
-
             public void actionPerformed(ActionEvent e) {
-                if (dataSetDescriptor != null) {
-                    dataSetDescriptor.fireUpdate();
-                }
-
-                fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
-                fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+                update();
             }
         };
     }
 
+    /**
+     * Notify listeners that the dataset has updated.  Pressing the "Update" 
+     * button calls this.
+     */
+    public void update() {
+        if (dataSetDescriptor != null) {
+            dataSetDescriptor.fireUpdate();
+        }
+
+        fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+        fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));        
+    }
+    
     /** Creates a new instance of DataPointRecorder */
     public DataPointRecorder() {
         super();
