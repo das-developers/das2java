@@ -94,7 +94,8 @@ public class FileStorageModelNew {
             }
     };
     VersioningType versioningType;
-
+    String versionGe= null; // the version must be greater than or equal to this if non-null.
+    String versionLt= null; // the version must be less than this if non-null.
     
     /* need to map back to TimeUtil's enums, note that we have an extra for the 2 digit year */
     private int toTimeUtilEnum( int i ) {
@@ -373,15 +374,20 @@ public class FileStorageModelNew {
                 if ( best==null ) {
                     try {
                         comp.compare( thss, thss ); // check for format exception
-                        bestVersions.put( key, thss );
-                        bestFiles.put( key,ff );
+                        if ( ( versionGe==null || comp.compare( thss, versionGe )>=0 )
+                                && ( versionLt==null || comp.compare( thss, versionLt )<0 ) ){
+                            bestVersions.put( key, thss );
+                            bestFiles.put( key,ff );
+                        }
                     } catch ( Exception ex ) {
                         logger.log( Level.WARNING, "", ex );
                         // doesn't match if comparator (e.g. version isn't a decimal number)
                     }
                 } else {
                     try {
-                        if ( comp.compare( best, thss ) < 0 ) {
+                        if ( ( ( versionGe==null || comp.compare( thss, versionGe )>=0 ) )
+                                && ( versionLt==null || comp.compare( thss, versionLt )<0 )
+                                && comp.compare( thss, best ) > 0 ) {
                             bestVersions.put( key,thss );
                             bestFiles.put( key,ff );
                         }
@@ -758,6 +764,14 @@ public class FileStorageModelNew {
                 if ( alpha==null && args.containsKey("alphanumeric") ) {
                     alpha="";
                 }
+                String ge= args.get("ge");
+                if ( ge!=null ) {
+                    versionGe= ge;
+                }
+                String lt= args.get("lt");
+                if ( lt!=null ) {
+                    versionLt= lt;
+                }
                 if ( alpha!=null ) {
                     if ( sep!=null ) {
                         return "alpha with split not supported";
@@ -835,7 +849,7 @@ public class FileStorageModelNew {
  
     @Override
     public String toString() {
-        return String.valueOf(root) + regex;
+        return String.valueOf(root) + template;
     }
 
 
