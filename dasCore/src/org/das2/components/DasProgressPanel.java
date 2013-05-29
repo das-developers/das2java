@@ -57,6 +57,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.das2.graph.DasCanvas;
+import org.das2.util.monitor.SubTaskMonitor;
 
 /**
  * ProgressMonitor component used throughout das2.
@@ -123,9 +124,13 @@ public class DasProgressPanel implements ProgressMonitor {
     private String units;
 
     /**
-     * factor for units
+     * factor for units (e.g. 1000,1000000)
      */
     private int unitsf=1;
+
+    public ProgressMonitor getSubtaskMonitor(int start, int end) {
+        return SubTaskMonitor.create( this, start, end );
+    }
 
     class MyPanel extends JPanel {
 
