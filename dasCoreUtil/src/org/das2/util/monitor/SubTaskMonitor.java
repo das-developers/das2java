@@ -125,4 +125,9 @@ public class SubTaskMonitor implements ProgressMonitor {
     public void setProgressMessage(String message) {
         //parent.setProgressMessage(message);
     }
+
+    public ProgressMonitor getSubtaskMonitor(int start, int end) {
+        return SubTaskMonitor.create( this, start, end );
+    }
+    
 }

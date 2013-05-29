@@ -40,7 +40,8 @@ package org.das2.util.monitor;
  * is called.  An
  * implementation may throw an <code>IllegalArgumentException</code> if
  * <code>setTaskProgress(int)</code> is called before <code>started()</code> or
- * after <code>finished()</code> is called.
+ * after <code>finished()</code> is called.  Note if isCancelled is not called
+ * by the process, then the cancel button will become disabled.
  * 
  * <p>A client codes receiving a monitor must do one of two things.
  * It should either call setTaskSize(long), started(), setTaskProgress(long) zero or more times, then
@@ -48,40 +49,10 @@ package org.das2.util.monitor;
  * monitor to a subprocess.  This is to ensure that it's easy to see that
  * the monitor lifecycle is properly performed. </p>
  *
- * TODO: check this, I think it's legal now for a process to ignore cancelled,
- * and the monitor should disable the client's ability to cancel in this case.
- *
- * TODO: what about exceptions and the monitor lifecycle?
- *
  * @author  jbf
  */
 public interface ProgressMonitor {
-    
-    /**
-     * Use NULL when you do not need or wish to use a progressMonitor.  It simply
-     * ignores the progress messages.
-     * @deprecated this should not be used.  Instead use new NullProgressMonitor();
-     */    
-    public static final ProgressMonitor NULL= new ProgressMonitor() {
-        public void setTaskSize(long taskSize) {} ;
-        public long getTaskSize( ) { return 1; }
-        public void setTaskProgress(long position) throws IllegalArgumentException {};
-        public void setProgressMessage( String message ) {} ;
-        public long getTaskProgress() { return 0; };
-        public void started() {  };
-        public boolean isStarted() {
-            return true;
-        }
-        public void finished() {};
-        public boolean isFinished() {
-            return false;
-        }
-        public void cancel() {};
-        public boolean isCancelled() { return false; };        
-        public void setAdditionalInfo(String s) { };
-        public void setLabel( String s ) { };
-        public String getLabel() { return ""; }
-    };
+
     
     public final static long SIZE_INDETERMINATE= -1;
     
@@ -176,4 +147,13 @@ public interface ProgressMonitor {
      */
     boolean isFinished();
     
+    /**
+     * return a monitor to use for a subtask.  This is provided mostly as
+     * a convenience.  setTaskProgress calls to the subtask monitor are mapped to
+     * this monitor.
+     * @param start start position on this monitor
+     * @param end end position on this monitor.
+     * @return a new progress monitor.  (generally type SubTaskMonitor)
+     */
+    public ProgressMonitor getSubtaskMonitor( int start, int end );
 }

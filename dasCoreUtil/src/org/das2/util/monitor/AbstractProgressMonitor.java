@@ -116,4 +116,8 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     public String toString() {
         return "" + this.position + " of "+ this.taskSize;
     }
+
+    public ProgressMonitor getSubtaskMonitor(int start, int end) {
+        return SubTaskMonitor.create( this, start, end );
+    }
 }
