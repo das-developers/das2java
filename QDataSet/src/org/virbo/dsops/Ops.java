@@ -61,6 +61,7 @@ import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.BinAverage;
 import org.virbo.dsutil.DataSetBuilder;
 import org.virbo.dsutil.FFTUtil;
+import org.virbo.dsutil.LinFit;
 import org.virbo.math.Contour;
 
 /**
@@ -4309,6 +4310,39 @@ public class Ops {
         return result;
     }
 
+    /**
+     * run boxcar average over the dataset, returning a dataset of same geometry.  
+     * Points near the edge are fit to a line and replaced.  The result dataset 
+     * contains a property "weights" that is the weights for each point.  
+     *
+     * @param xx a rank 1 dataset of size N
+     * @param yy a rank 1 dataset of size N
+     * @param size the number of adjacent bins to average
+     * @return rank 1 dataset of size N
+     */
+    public static QDataSet smoothFit( QDataSet xx, QDataSet yy, int size) {
+        if ( xx==null ) {
+            xx= findgen(yy.length());
+        }
+        DDataSet yysmooth= (DDataSet) ArrayDataSet.maybeCopy( double.class, smooth(yy,size));
+        int n= xx.length();
+        
+        yysmooth.putProperty( QDataSet.DEPEND_0, xx );
+        LinFit fit;
+        
+        fit= new LinFit( xx.trim(0,size), yysmooth.trim(0,size) );
+        for ( int i=0; i<size/2; i++ ) {
+            yysmooth.putValue( i, xx.value(i)*fit.getB() + fit.getA() );
+        }
+
+        fit= new LinFit( xx.trim(n-size,n), yysmooth.trim(n-size,n) );
+        for ( int i=n-size/2; i<n; i++ ){
+            yysmooth.putValue( i, xx.value(i)*fit.getB() + fit.getA() );
+        }
+
+        return yysmooth;
+    }
+    
     /**
      * contour the data in rank 2 table tds at rank 0 vv.  The result
      * is a rank 2 bundle of [:,'x,y,z'] where i is the contour number.
