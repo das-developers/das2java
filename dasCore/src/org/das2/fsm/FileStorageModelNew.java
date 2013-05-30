@@ -159,8 +159,13 @@ public class FileStorageModelNew {
             while ( j>=0 && result==null ) {
                 String ff= names[i].equals("") ? files1[ j ] : names[i]+"/"+files1[ j ];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                try {
-                    if ( timeParser.getValidRange().contains( timeParser.parse(ff).getTimeRange() ) ) {
+                //try {
+                    HashMap<String,String> extra= new HashMap();
+                    DatumRange tr= getDatumRangeFor( ff, extra );
+                    boolean versionOk= true;
+                    if ( versionGe!=null && versioningType.comp.compare( extra.get("v"), versionGe )<0 ) versionOk=false;
+                    if ( versionLt!=null && versioningType.comp.compare( extra.get("v"), versionLt )>0 ) versionOk=false;
+                    if ( versionOk && timeParser.getValidRange().contains( tr ) ) {
                         if ( childRegex!=null ) {
                             String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex);
                             if ( kids.length>0 ) {
@@ -170,9 +175,9 @@ public class FileStorageModelNew {
                             result= ff;
                         }
                     }
-                } catch ( ParseException ex ) {
-
-                }
+                //} catch ( ParseException ex ) {
+                // 
+                //}
                 if ( result==null ) j--;
             }
         }
@@ -702,12 +707,12 @@ public class FileStorageModelNew {
         String templatebr= hideParams( template );
         int i= templatebr.lastIndexOf("/");
 
-        if ( template.contains("$") && !template.contains("%") ) {
-            template= template.replaceAll("\\$", "%");
-            templatebr= templatebr.replaceAll("\\$", "%");
+        if ( template.contains("%") && !template.contains("$") ) {
+            template= template.replaceAll("\\%", "\\$");
+            templatebr= templatebr.replaceAll("\\%", "\\$");
         }
         
-        int i2= templatebr.lastIndexOf("%",i);
+        int i2= templatebr.lastIndexOf("$",i);
         if ( i2 != -1 ) {
             String parentTemplate= template.substring(0,i);
             FileStorageModelNew parentFSM= FileStorageModelNew.create( root, parentTemplate );
@@ -763,6 +768,12 @@ public class FileStorageModelNew {
                 String alpha= args.get( "alpha" );
                 if ( alpha==null && args.containsKey("alphanumeric") ) {
                     alpha="";
+                }
+                if ( args.get("gt")!=null ) {
+                    throw new IllegalArgumentException("gt specified but not supported: must be ge or lt");
+                }
+                if ( args.get("le")!=null ) {
+                    throw new IllegalArgumentException("le specified but not supported: must be ge or lt");
                 }
                 String ge= args.get("ge");
                 if ( ge!=null ) {
