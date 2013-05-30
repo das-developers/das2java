@@ -15,7 +15,6 @@ import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.VectorDataSet;
 import org.das2.dataset.DataSetUpdateListener;
-import org.das2.dataset.DataSetUtil;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
@@ -47,6 +46,9 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
+import org.das2.dataset.DataSetAdapter;
+import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
 /**
@@ -259,7 +261,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * returns a data set of the table data.
      */
-    public VectorDataSet getDataSet() {
+    public QDataSet getDataSet() {
         if (dataPoints.isEmpty()) {
             return null;
         } else {
@@ -281,14 +283,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             if (this.xTagWidth != null) {
                 builder.setProperty("xTagWidth", xTagWidth);
             }
-            return builder.toVectorDataSet();
+            return DataSetAdapter.create( builder.toVectorDataSet() );
         }
     }
 
     /**
      * returns a data set of the selected table data
      */
-    public VectorDataSet getSelectedDataSet() {
+    public QDataSet getSelectedDataSet() {
         int[] selectedRows = table.getSelectedRows();
         if (selectedRows.length == 0) {
             return null;
@@ -310,7 +312,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             if (this.xTagWidth != null) {
                 builder.setProperty("xTagWidth", xTagWidth);
             }
-            return builder.toVectorDataSet();
+            return DataSetAdapter.create( builder.toVectorDataSet() );
         }
     }
 
@@ -1030,11 +1032,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         // if a point exists within xTagWidth of the point, then have this point replace
         Datum x = e.getX();
         if (snapToGrid && xTagWidth != null && dataPoints.size() > 0) {
-            DataSet ds = getDataSet();
-            int i = DataSetUtil.closestColumn(ds, e.getX());
-            Datum diff = e.getX().subtract(ds.getXTagDatum(i));
-            if (Math.abs(diff.divide(xTagWidth).doubleValue(Units.dimensionless)) < 0.5) {
-                x = ds.getXTagDatum(i);
+            QDataSet ds = getDataSet();
+            QDataSet xds= (QDataSet)ds.property(QDataSet.DEPEND_0);
+            Units xunits= SemanticOps.getUnits(xds);
+            int i = DataSetUtil.closestIndex( xds, x );
+            Datum diff = e.getX().subtract( xunits.createDatum(xds.value(i)) );
+            if (Math.abs( diff.divide(xTagWidth).doubleValue(Units.dimensionless)) < 0.5 ) {
+                x = xunits.createDatum(xds.value(i));
             }
 
         }
@@ -1090,21 +1094,28 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
     }
+    
+    
+    /**
+     * the selection are the highlited points in the table.  Listeners can grab this data and do something with the
+     * dataset.
+     */
     private javax.swing.event.EventListenerList selectedListenerList = null;
 
-//    public synchronized void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-//        if (selectedListenerList == null) {
-//            selectedListenerList = new javax.swing.event.EventListenerList();
-//        }
-//        selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
-//        checkUpdateEnable();
-//    }
-//
-//    public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-//        selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
-//        checkUpdateEnable();
-//    }
+    public synchronized void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+        if (selectedListenerList == null) {
+            selectedListenerList = new javax.swing.event.EventListenerList();
+        }
+        selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
+    }
 
+    public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+        selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
+    }
+
+    
     private void fireSelectedDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
         if (selectedListenerList == null) {
             return;
