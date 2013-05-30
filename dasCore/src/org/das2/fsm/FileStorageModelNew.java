@@ -164,7 +164,7 @@ public class FileStorageModelNew {
                     DatumRange tr= getDatumRangeFor( ff, extra );
                     boolean versionOk= true;
                     if ( versionGe!=null && versioningType.comp.compare( extra.get("v"), versionGe )<0 ) versionOk=false;
-                    if ( versionLt!=null && versioningType.comp.compare( extra.get("v"), versionLt )>0 ) versionOk=false;
+                    if ( versionLt!=null && versioningType.comp.compare( extra.get("v"), versionLt )>=0 ) versionOk=false;
                     if ( versionOk && timeParser.getValidRange().contains( tr ) ) {
                         if ( childRegex!=null ) {
                             String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex);
