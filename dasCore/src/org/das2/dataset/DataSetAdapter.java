@@ -17,6 +17,7 @@ import org.virbo.dsops.Ops;
 
 /**
  * Presents legacy das2 datasets as QDataSets.
+ * See also TableDataSetAdapter,VectorDataSetAdapter
  * @author jbf
  */
 public class DataSetAdapter {
