@@ -34,6 +34,7 @@ import org.virbo.dataset.WritableDataSet;
 
 /**
  * Adapts QDataSets to legacy das2 TableDataSet.
+ * See also DataSetAdapter.
  * @author jbf
  */
 public class TableDataSetAdapter implements TableDataSet {
