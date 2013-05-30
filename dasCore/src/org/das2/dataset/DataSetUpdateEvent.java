@@ -8,6 +8,7 @@ package org.das2.dataset;
 
 import org.das2.event.DasEvent;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.QDataSet;
 
 /**
  *
@@ -15,33 +16,9 @@ import org.das2.util.monitor.ProgressMonitor;
  */
 public class DataSetUpdateEvent extends DasEvent {
     
-    private DataSet dataSet;
+    private QDataSet dataSet;
     private Exception exception;
     private ProgressMonitor monitor;
-    
-    /**
-     * @deprecated use {link
-     * #DataSetUpdateEvent(Object)}
-     */
-    public DataSetUpdateEvent(DataSetDescriptor source) {
-        this((Object)source);
-    }
-    
-    /**
-     * @deprecated use {link
-     * #DataSetUpdateEvent(Object,DataSet);
-     */
-    public DataSetUpdateEvent(DataSetDescriptor source, DataSet dataSet) {
-        this((Object)source,dataSet);        
-    }
-    
-    /**
-     * @deprecated use {link
-     * #DataSetUpdateEvent(Object,Exception);
-     */
-    public DataSetUpdateEvent(DataSetDescriptor source, Exception exception) {
-        this((Object)source,exception);        
-    }
     
     public DataSetUpdateEvent( Object source) {
         // null indicates that the state has changed and the consumer needs to read.
@@ -49,7 +26,7 @@ public class DataSetUpdateEvent extends DasEvent {
     }
     
     /** Creates a new instance of DataSetUpdateEvent */
-    public DataSetUpdateEvent( Object source, DataSet dataSet) {
+    public DataSetUpdateEvent( Object source, QDataSet dataSet) {
         super(source);
         this.dataSet = dataSet;
     }
@@ -59,7 +36,7 @@ public class DataSetUpdateEvent extends DasEvent {
         this.exception = exception;
     }    
     
-    public DataSet getDataSet() {
+    public QDataSet getDataSet() {
         return dataSet;
     }
     
