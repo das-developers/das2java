@@ -4317,10 +4317,13 @@ public class Ops {
      *
      * @param xx a rank 1 dataset of size N
      * @param yy a rank 1 dataset of size N
-     * @param size the number of adjacent bins to average
+     * @param size the number of adjacent bins to average.  If size is greater than yy.length, size is reset to yy.length.
      * @return rank 1 dataset of size N
      */
     public static QDataSet smoothFit( QDataSet xx, QDataSet yy, int size) {
+
+        if ( size>yy.length() ) size=yy.length();
+        
         if ( xx==null ) {
             xx= findgen(yy.length());
         }
@@ -4330,12 +4333,12 @@ public class Ops {
         yysmooth.putProperty( QDataSet.DEPEND_0, xx );
         LinFit fit;
         
-        fit= new LinFit( xx.trim(0,size), yysmooth.trim(0,size) );
+        fit= new LinFit( xx.trim(0,size), yy.trim(0,size) );
         for ( int i=0; i<size/2; i++ ) {
             yysmooth.putValue( i, xx.value(i)*fit.getB() + fit.getA() );
         }
 
-        fit= new LinFit( xx.trim(n-size,n), yysmooth.trim(n-size,n) );
+        fit= new LinFit( xx.trim(n-size,n), yy.trim(n-size,n) );
         for ( int i=n-(size+1)/2; i<n; i++ ){
             yysmooth.putValue( i, xx.value(i)*fit.getB() + fit.getA() );
         }
