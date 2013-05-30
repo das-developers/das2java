@@ -181,7 +181,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         builder.putProperty( QDataSet.DEPEND_0, xbuilder.getDataSet() );
         QDataSet vds= builder.getDataSet();
         
-        fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent( this,DataSetAdapter.createLegacyDataSet(vds) ) );
+        fireDataSetUpdateListenerDataSetUpdated( new DataSetUpdateEvent( vds ) );
         
     }
     
@@ -343,16 +343,17 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             tweakSlicer.setDragEvents(true); // only key events fire
             tweakSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
                 public void dataPointSelected( DataPointSelectionEvent e ) {
-                    Datum x= e.getX();
-                    HashMap properties= new HashMap();
-                    if ( e.getPlane("keyChar")!=null ) {
-                        properties.put("comment",e.getPlane("keyChar"));
-                    } else {
-                        properties.put("comment","tweak");
-                    }
-                    fireDataSetUpdateListenerDataSetUpdated(
-                            new DataSetUpdateEvent(this,
-                            new SingleVectorDataSet( xValue, e.getX(), properties ) ) );
+                    throw new IllegalArgumentException("Not implemented, since DataSetUpdateEvents take QDataSets.");
+//                    Datum x= e.getX();
+//                    HashMap properties= new HashMap();
+//                    if ( e.getPlane("keyChar")!=null ) {
+//                        properties.put("comment",e.getPlane("keyChar"));
+//                    } else {
+//                        properties.put("comment","tweak");
+//                    }
+//                    fireDataSetUpdateListenerDataSetUpdated(
+//                            new DataSetUpdateEvent(this,
+//                            new SingleVectorDataSet( xValue, e.getX(), properties ) ) );
                 }
             } );
             topPlot.addMouseModule( tweakSlicer );
