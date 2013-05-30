@@ -217,6 +217,24 @@ public class Orbits {
         return s;
     }
 
+    /**
+     * returns the first orbit containing the time, or null if none do.
+     * @param d
+     * @return
+     */
+    public String getOrbit( Datum d ) {
+        for ( String s: orbits.keySet() ) {
+            try {
+                if (getDatumRange(s).contains(d)) {
+                    return s;
+                }
+            } catch (ParseException ex) {
+                Logger.getLogger(Orbits.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return null;
+    }
+
     public String next( String orbit ) {//TODO: do this efficiently!
         boolean next= false;
         orbit= trimOrbit(orbit);
