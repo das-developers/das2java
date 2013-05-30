@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.das2.dataset.DataSetAdapter;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -216,18 +218,18 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                     // note this is hiding a bug.  Why did the dataset continue to load after we
                     // cancelled it? --jbf
                 } else {
-                    DataSet ds= e.getDataSet();
+                    QDataSet ds= e.getDataSet();
                     ProgressMonitor mon= e.getMonitor();
                     if ( mon==null || currentRequest.monitor==mon ) {
                         logger.log(Level.FINE, "got dataset update w/dataset: {0}", ds);
                         if ( ds!=null ) {
-                            if ( ds.getXLength()>0 ) {
-                                logger.log(Level.FINE, "  ds range: {0}", DataSetUtil.xRange(ds));
+                            if ( ds.length()>0 ) {
+                                logger.log(Level.FINE, "  ds range: {0}", Ops.extent(ds).slice(0) );
                             } else {
                                 logger.fine("  ds range: (empty)" );
                             }
                         }
-                        renderer.setDataSet( DataSetAdapter.create(ds) );
+                        renderer.setDataSet( ds );
 
                         logger.log(Level.FINE, "current request completed w/dataset: {0}", currentRequest.xmem);
                         currentRequest=null;
