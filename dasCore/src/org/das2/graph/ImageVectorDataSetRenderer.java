@@ -35,8 +35,10 @@ import org.das2.util.monitor.ProgressMonitor;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.ArrayDataSet;
@@ -191,8 +193,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         QDataSet xds = SemanticOps.xtagsDataSet(ds);
         
-//TODO: support WAVE type.
-        Units yunits=null;
+        Units yunits;
         if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
             QDataSet vds = DataSetOps.unbundleDefaultDataSet( ds );
             yunits= SemanticOps.getUnits( vds );
@@ -257,7 +258,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int ny = plotImageBounds2.height;
         int nx = plotImageBounds2.width;
 
-        logger.fine("create Image (ghostlyImage2): nx="+nx+" ny="+ny);
+        logger.log(Level.FINE, "create Image (ghostlyImage2): nx={0} ny={1}", new Object[]{nx, ny});
 
         BufferedImage image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
@@ -350,7 +351,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int ny = plotImageBounds2.height;
         int nx = plotImageBounds2.width;
 
-        logger.fine("create Image (ghostlyImageRank2): nx="+nx+" ny="+ny);
+        logger.log(Level.FINE, "create Image (ghostlyImageRank2): nx={0} ny={1}", new Object[]{nx, ny});
         BufferedImage image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -680,8 +681,13 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
         int firstIndex, lastIndex;
         if ( xmono ) {
-            firstIndex = DataSetUtil.getPreviousIndex(xds, visibleRange.min());
-            lastIndex = DataSetUtil.getNextIndex(xds, visibleRange.max()) ;
+            try {
+                firstIndex = DataSetUtil.getPreviousIndex(xds, visibleRange.min());
+                lastIndex = DataSetUtil.getNextIndex(xds, visibleRange.max()) ;
+            } catch ( InconvertibleUnitsException ex ) {
+                parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null );                
+                return;
+            }
             if ( xAxis.isLog() ) {
                 ixstepLimitSq= 100000000;
             } else {
@@ -694,7 +700,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 if ( d!=null ) {
                     Datum sw = DataSetUtil.asDatum( d ); //TODO! check ratiometric
                     Datum xmax= xAxis.getDataMaximum();
-                    int ixstepLimit= 0;
+                    int ixstepLimit;
                     if ( UnitsUtil.isRatiometric(sw.getUnits())) {
                         ixstepLimit= 1 + (int) (xAxis.transform(xmax) - xAxis.transform(xmax.divide(sw)));
                     } else {
@@ -810,12 +816,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
      * This is fast, less than 50ms with 5 million points.  When the image gets big, this gets slow...
      */
     private void calcSelectionArea() {
-        BufferedImage plotImage= this.plotImage; // make local copy
-        //System.err.println("in calc selection area");
-        //long t0= System.currentTimeMillis();
-        if ( plotImage==null ) return;
-        int w= plotImage.getWidth();
-        int h= plotImage.getHeight();
+        BufferedImage lplotImage= this.plotImage; // make local copy
+        logger.finer("in calc selection area");
+        long t0= System.currentTimeMillis();
+        if ( lplotImage==null ) return;
+        int w= lplotImage.getWidth();
+        int h= lplotImage.getHeight();
         int imagex = (int)parent.getCacheImageBounds().getX();
         int parentx= parent.getX();
         int dx= parent.getColumn().getDMinimum() - imagex;
@@ -838,7 +844,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 for ( int ii=0; ii<d; ii++ ) {
                     for ( int jj=0; jj<d; jj++ ) {
                         if ( i+ii<w && j+jj<h ) {
-                            if ( ( plotImage.getRGB(i+ii,j+jj) & 0xff000000 ) != 0 ) {
+                            if ( ( lplotImage.getRGB(i+ii,j+jj) & 0xff000000 ) != 0 ) {
                                 n++;
                                 x+= ii;
                                 y+= jj;
@@ -853,7 +859,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
         }
         selectionArea= result;
-        //System.err.println("done in calc selection area " + ( System.currentTimeMillis()-t0) + "ms");
+        logger.log(Level.FINER, "done in calc selection area {0}ms", ( System.currentTimeMillis()-t0));
     }
 
     /**
