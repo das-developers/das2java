@@ -807,7 +807,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public void setUnits(Units newUnits) {
         dataRange.setUnits(newUnits);
     }
-
+    
     /**
      * limit the scan buttons to operate within this range.
      * http://sourceforge.net/tracker/index.php?func=detail&aid=3059009&group_id=199733&atid=970682
@@ -2018,6 +2018,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             }
 
+            boolean debugBoundsBox= false;
+            if ( debugBoundsBox ) {
+                Color c0= g.getColor();
+                g.setColor( Color.MAGENTA );
+                g.draw(clip);
+                g.drawLine( clip.x, clip.y+clip.height-1, clip.x+clip.width-1,  clip.y+clip.height-1 );
+                g.setColor( c0 );
+            }
+                    
             if (!axisLabel.equals("")) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 int titlePositionOffset = getTitlePositionOffset();
@@ -3223,7 +3232,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         super.updateImmediately();
         logger.log(Level.FINER, "updateImmadiately{0} {1}", new Object[]{getDatumRange(), isLog()});
         resetTransform();
-        updateTickV();
+        try {
+            updateTickV();
+        } catch ( InconvertibleUnitsException ex ) {
+            // sometimes the units are changed while the ticks are being calculated.  This whole system needs review, but for now, avoid the RTE.
+            updateTickV();
+        }
     }
 
     /** 
