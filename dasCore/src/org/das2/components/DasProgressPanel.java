@@ -473,8 +473,10 @@ public class DasProgressPanel implements ProgressMonitor {
                     try {
                         SwingUtilities.invokeAndWait(new Runnable() {
                             public void run() {
-                                updateUIComponents();
-                                thePanel.repaint();
+                                if ( progressBar!=null ) {
+                                    updateUIComponents();
+                                    thePanel.repaint();
+                                }
                             }
                         });
                         Thread.sleep(refreshPeriodMilliSeconds);
@@ -512,7 +514,7 @@ public class DasProgressPanel implements ProgressMonitor {
         long elapsedTimeMs = System.currentTimeMillis() - taskStartedTime;
 
         long kb = currentTaskPosition;
-
+        
         if (maximumTaskPosition == -1) {
             progressBar.setIndeterminate(true);
         } else {
