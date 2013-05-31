@@ -210,9 +210,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
         }
 
-        if ( !yunits.isConvertableTo(yAxis.getUnits()) ) {
-            yunits= yAxis.getUnits();
-        }
+        //if ( !yunits.isConvertableTo(yAxis.getUnits()) ) {
+        //    yunits= yAxis.getUnits();
+        //}
 
         Graphics2D g2 = (Graphics2D) g1;
         if (plotImage == null) {
@@ -580,7 +580,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int h = ddy.numberOfBins();
         int w = ddx.numberOfBins();
 
-        logger.fine("ghostlyImage: h="+h+" w="+w);
+        logger.log(Level.FINE, "ghostlyImage: h={0} w={1}", new Object[]{h, w});
 
         int[] raster = new int[h * w];
         int colorInt = color.getRGB() & 0x00ffffff;
