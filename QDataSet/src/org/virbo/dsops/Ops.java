@@ -3412,6 +3412,15 @@ public class Ops {
         return result;
     }
 
+    /**
+     * perform ffts on the waveform as we do with fftPower, but keep real and
+     * imaginary components.
+     * @param ds the waveform rank 1,2,or 3 dataset.
+     * @param window the window function, like ones(1024) or windowFunction( FFTFilterType.Hanning, 1024 ).  This is used to infer window size.
+     * @param stepFraction step this fraction of the window size.  1 is no overlap, 2 is 50% overlap, 4 is 75% overlap, etc.
+     * @param mon progress monitor.
+     * @return result[ntime,nwindow,2]
+     */
     public static QDataSet fft( QDataSet ds, QDataSet window, int stepFraction, ProgressMonitor mon ) {
 
         String title= (String) ds.property(QDataSet.TITLE);
