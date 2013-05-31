@@ -204,7 +204,7 @@ public class DatumRangeUtil {
      * @param context
      * @return 
      */
-    public static int parseISO8601Wow( String str, int[] result, int lsd ) {
+    public static int parseISO8601Datum( String str, int[] result, int lsd ) {
         StringTokenizer st= new StringTokenizer( str, "-T:.Z", true );
         Object dir= null;
         final Object DIR_FORWARD = "f";
@@ -396,7 +396,7 @@ public class DatumRangeUtil {
         String[] parts= stringIn.split("/",-2);
         if ( parts.length!=2 ) return null;
 
-        boolean d1= parts[0].charAt(0)=='P';
+        boolean d1= parts[0].charAt(0)=='P'; // true if it is a duration
         boolean d2= parts[1].charAt(0)=='P';
 
         Matcher m;
@@ -409,21 +409,20 @@ public class DatumRangeUtil {
             digits0= parseISO8601Duration( parts[0] );
         } else {
             digits0= new int[7];
-            lsd= parseISO8601Wow( parts[0], digits0, lsd );
+            lsd= parseISO8601Datum( parts[0], digits0, lsd );
+            for ( int j=lsd+1; j<3; j++ ) digits0[j]=1; // month 1 is first month, not 0. day 1 
         }
 
         if ( d2 ) {
             digits1= parseISO8601Duration(parts[1]);
         } else {
-            int i=0;
-            int n= parts[1].length();
-            while ( i<n && Character.isDigit( parts[1].charAt(i) ) ) i++;
-            if ( i<4 || i==6 ) {
-                digits1= Arrays.copyOf( digits0, digits0.length );
-                parseISO8601Wow( parts[1], digits1, lsd );
+            if ( d1 ) {
+                digits1= new int[7];
             } else {
-                digits1= parseISO8601( parts[1] );
+                digits1= Arrays.copyOf( digits0, digits0.length );
             }
+            lsd= parseISO8601Datum( parts[1], digits1, lsd );
+            for ( int j=lsd+1; j<3; j++ ) digits1[j]=1; // month 1 is first month, not 0. day 1 
         }
 
         if ( digits0==null || digits1==null ) return null;
