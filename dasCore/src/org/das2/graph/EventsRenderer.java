@@ -627,8 +627,8 @@ public class EventsRenderer extends Renderer {
 
     @Override
     public void setDataSet(QDataSet ds) {
-        super.setDataSet(ds);
         cds= makeCanonical(ds);
+        super.setDataSet(ds);
     }
 
 
