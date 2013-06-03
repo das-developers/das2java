@@ -472,12 +472,18 @@ public class TimeParser {
     private static String makeCanonical( String formatString ) {
         boolean wildcard= formatString.contains("*");
         boolean oldSpec= formatString.contains("${");
-        if ( formatString.startsWith("$") && !wildcard && !oldSpec ) return formatString;
+        Pattern p= Pattern.compile("\\$[0-9]+\\{");
+        boolean oldSpec2= p.matcher(formatString).find();
+        if ( formatString.startsWith("$") && !wildcard && !oldSpec && !oldSpec2 ) return formatString;
         if ( formatString.contains("%") && !formatString.contains("$") ) {
             formatString= formatString.replaceAll("\\%", "\\$");
         }
         if ( oldSpec && !formatString.contains("$(") ) {
             formatString= formatString.replaceAll("\\$\\{", "\\$(");
+            formatString= formatString.replaceAll("\\}", "\\)");
+        }
+        if ( oldSpec2 && !formatString.contains("$(") ) {
+            formatString= formatString.replaceAll("\\$([0-9]+)\\{", "\\$$1(");
             formatString= formatString.replaceAll("\\}", "\\)");
         }
         if ( wildcard ) {
@@ -1720,6 +1726,7 @@ public class TimeParser {
         logger.addHandler( new ConsoleHandler() );
         logger.getHandlers()[0].setLevel(Level.ALL);
         org.das2.datum.DatumRangeUtil.parseTimeRangeValid("2000-022/P1D");
+        System.err.println( makeCanonical("$Y-$3{J}") );
         testTimeParser1( "$Y$m$d-$(Y,end)$m$d", "20130202-20140303", "2013-02-02/2014-03-03" );
         testTimeParser1( "$Y$m$d-$(d,end)", "20130202-13", "2013-02-02/2013-02-13" );
         testTimeParser1( "$(periodic;offset=0;start=2000-001;period=P1D)", "0",  "2000-001");
