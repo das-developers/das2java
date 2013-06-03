@@ -113,6 +113,26 @@ public class Datum implements Comparable {
         }
     }
 
+    /**
+     * return the absolute value (magnitude) of this Datum.  If this
+     * datum is fill then the result is fill.
+     * @return 
+     * @throws IllegalArgumentException if the datum is not a ratio measurement (like a timetag).
+     */
+    public Datum abs() {
+        if ( UnitsUtil.isRatioMeasurement(units) ) {
+            if ( this.getUnits().isFill(value) ) {
+                return this;
+            } else if ( this.value.doubleValue()>=0 ) {
+                return this;
+            } else {
+                return this.getUnits().createDatum( Math.abs(value.doubleValue()) );
+            }
+        } else {
+            throw new IllegalArgumentException("datum is not ratio measurement: "+this );
+        }
+    }
+    
 
     /**
      * returns the resolution (or precision) of the datum.  This is metadata for the datum, used
