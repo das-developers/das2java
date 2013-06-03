@@ -28,6 +28,8 @@ import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.system.DasLogger;
 import java.awt.BorderLayout;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.io.*;
 import java.text.ParseException;
@@ -78,6 +80,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     private boolean active = true; // false means don't fire updates
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
+    private final JButton clearSelectionButton;
 
     /**
      * Note this is all pre-QDataSet.  QDataSet would be a much better way of implementing this.
@@ -332,6 +335,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         for (int i = 0; i < selectMe.size(); i++) {
             int iselect = ((Integer) selectMe.get(i)).intValue();
             table.getSelectionModel().addSelectionInterval(iselect, iselect);
+        }
+        
+        if ( selectMe.size()>0 ) {
+            int iselect= (Integer)selectMe.get(0);
+            table.scrollRectToVisible(new Rectangle(table.getCellRect( iselect, 0, true)) );
         }
     }
 
@@ -602,6 +610,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         };
     }
 
+    private Action getClearSelectionAction() {
+        return new AbstractAction("Clear Selection") {
+            public void actionPerformed(ActionEvent e) {
+                table.getSelectionModel().clearSelection();
+                fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));  
+            }
+        };
+    }
+
+    
     /**
      * return true if the file was saved, false if cancel
      * @return
@@ -843,6 +861,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         controlPanel.add(updateButton);
 
+        clearSelectionButton = new JButton( getClearSelectionAction() );
+        controlPanel.add( clearSelectionButton );
+        
         messageLabel =
                 new JLabel("ready");
         messageLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
