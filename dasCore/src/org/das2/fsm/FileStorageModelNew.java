@@ -736,13 +736,15 @@ public class FileStorageModelNew {
      */
     public static FileStorageModelNew create( FileSystem root, String template, String fieldName, TimeParser.FieldHandler fieldHandler ) {
         template= makeCanonical(template);
-        int i= template.lastIndexOf("/");
+        String templatebr= hideParams( template );
+        int i= templatebr.lastIndexOf("/");
 
-        if ( template.contains("$") && !template.contains("%") ) {
-            template= template.replaceAll("\\$", "%");
+        if ( template.contains("%") && !template.contains("$") ) {
+            template= template.replaceAll("\\%", "\\$");
+            templatebr= templatebr.replaceAll("\\%", "\\$");
         }
         
-        int i2= template.lastIndexOf("%",i);
+        int i2= templatebr.lastIndexOf("$",i);
         if ( i2 != -1 ) {
             String parentTemplate= template.substring(0,i);
             FileStorageModelNew parentFSM= FileStorageModelNew.create( root, parentTemplate, fieldName, fieldHandler );
