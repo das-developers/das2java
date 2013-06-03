@@ -286,9 +286,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             return DataSetAdapter.create( builder.toVectorDataSet() );
         }
     }
-
+    
     /**
-     * returns a data set of the selected table data
+     * returns a data set of the selected table data.  
+     * @see select which selects part of the dataset.
      */
     public QDataSet getSelectedDataSet() {
         int[] selectedRows = table.getSelectedRows();
