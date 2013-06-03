@@ -30,7 +30,7 @@ import java.util.HashMap;
 import org.virbo.dataset.QDataSet;
 
 /**
- * This is the range anolog to the DataPointSelectionEvent.  The DPSE is a point,
+ * This is the range analog to the DataPointSelectionEvent.  The DPSE is a point,
  * and this is a box.
  *
  * Note that it's acceptable to have null xrange and yrange, so that the same
@@ -59,36 +59,69 @@ public class BoxSelectionEvent extends DasEvent {
         this.planes= planes;
     }
      
+    /**
+     * set the end coordinates of the mouse release.
+     * @param x
+     * @param y 
+     */
     public void setFinish( Datum x, Datum y ) {
         this.finishx = x;
         this.finishy = y;
     }
             
+    /**
+     * get the X coordinate of the mouse button release
+     * @return 
+     */
     public Datum getFinishX() {
         return this.finishx;
     }
     
+    /**
+     * get the Y coordinate of the mouse button release
+     * @return 
+     */
     public Datum getFinishY() {
         return this.finishy;
     }
     
+    /**
+     * set the coordinates of the mouse button press
+     * @return 
+     */    
     public void setStart( Datum x, Datum y ) {
         this.startx = x;
         this.starty = y;
     }
-            
+     
+    /**
+     * get the X coordinate or the mouse button press
+     * @return 
+     */
     public Datum getStartX() {
         return this.startx;
     }
     
+    /**
+     * get the Y coordinate or the mouse button press
+     * @return 
+     */
     public Datum getStartY() {
         return this.starty;
     }
     
+    /**
+     * get the data range of the gesture
+     * @return 
+     */
     public DatumRange getXRange() {
         return xrange;
     }
     
+    /**
+     * get the data range of the gesture
+     * @return 
+     */
     public DatumRange getYRange() {
         return yrange;
     }
@@ -113,6 +146,7 @@ public class BoxSelectionEvent extends DasEvent {
         return ds;
     }
     
+    @Override
     public String toString() {
         return "[BoxSelectionEvent x: "+xrange+", y: "+yrange+"]";
     }
