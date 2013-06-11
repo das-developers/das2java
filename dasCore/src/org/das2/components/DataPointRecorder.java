@@ -50,6 +50,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -60,6 +61,11 @@ import org.virbo.dataset.SemanticOps;
  * @author  jbf
  */
 public class DataPointRecorder extends JPanel implements DataPointSelectionListener {
+
+    /**
+     * width of time column
+     */
+    private static final int TIME_WIDTH = 180;
 
     protected JTable table;
     protected JScrollPane scrollPane;
@@ -428,10 +434,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     public void loadFromFile(File file) throws IOException {
 
-        ProgressMonitor mon= null;
+        ProgressMonitor mon= new NullProgressMonitor();
 
         BufferedReader r=null;
 
+        boolean active0= active;
+        
         try {
             active = false;
 
@@ -449,8 +457,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
             if (lineCount > 500) {
                 mon = DasProgressPanel.createFramed("reading file");
-            } else {
-                mon = new NullProgressMonitor();
             }
 
             // tabs detected in file.
@@ -547,6 +553,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             if ( r!=null ) r.close();
 
             //active = true;
+            active= active0;
             modified = false;
 
             updateStatus();
@@ -555,8 +562,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
             prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
             fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
-
-            //table.getColumnModel().getColumn(0).setPreferredWidth(200);
 
             table.getColumnModel();
             table.repaint();
@@ -781,6 +786,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     saveFile =  null;
                     updateStatus();
                     updateClients();
+                    table.repaint();
                 }
 
             }
@@ -820,10 +826,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /** Creates a new instance of DataPointRecorder */
     public DataPointRecorder() {
         super();
-        dataPoints =
-                new ArrayList();
-        myTableModel =
-                new MyTableModel();
+        dataPoints = new ArrayList();
+        myTableModel = new MyTableModel();
         this.setLayout(new BorderLayout());
 
         JMenuBar menuBar = new JMenuBar();
@@ -865,8 +869,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         });
 
-        scrollPane =
-                new JScrollPane(table);
+        scrollPane = new JScrollPane(table);
         this.add(scrollPane, BorderLayout.CENTER);
 
         JPanel controlStatusPanel = new JPanel();
@@ -884,8 +887,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         clearSelectionButton = new JButton( getClearSelectionAction() );
         controlPanel.add( clearSelectionButton );
         
-        messageLabel =
-                new JLabel("ready");
+        messageLabel = new JLabel("ready");
         messageLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
 
         controlStatusPanel.add(messageLabel);
@@ -920,14 +922,17 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 table.scrollRectToVisible(table.getCellRect(selectRow, 0, true));
                 selectRow = -1;
             }
-
+            table.repaint();
         }
     }
 
     private void updateStatus() {
         String statusString = (saveFile == null ? "" : (String.valueOf(saveFile) + " ")) +
                 (modified ? "(modified)" : "");
-        messageLabel.setText(statusString);
+        String t= messageLabel.getText();
+        if ( !statusString.equals(t) ) {
+            messageLabel.setText(statusString);
+        }
     }
 
     private void insertInternal(DataPoint newPoint) {
@@ -936,23 +941,19 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             int index = Collections.binarySearch(dataPoints, newPoint);
             if (index < 0) {
                 dataPoints.add(~index, newPoint);
-                newSelect =
-                        ~index;
+                newSelect = ~index;
             } else {
                 dataPoints.set(index, newPoint);
-                newSelect =
-                        index;
+                newSelect = index;
             }
 
         } else {
             dataPoints.add(newPoint);
-            newSelect =
-                    dataPoints.size() - 1;
+            newSelect = dataPoints.size() - 1;
         }
 
         selectRow = newSelect;
-        modified =
-                true;
+        modified = true;
         updateStatus();
         updateClients();
     }
@@ -960,12 +961,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     public void addDataPoint(Datum x, Datum y, Map planes) {
         if ( planes==null ) planes= new HashMap();
         if (dataPoints.isEmpty()) {
-            unitsArray =
-                    new Units[2 + planes.size()];
+            unitsArray    = new Units[2 + planes.size()];
             unitsArray[0] = x.getUnits();
             unitsArray[1] = y.getUnits();
-            planesArray =
-                    new String[2 + planes.size()];
+            planesArray    = new String[2 + planes.size()];
             planesArray[0] = "x";
             planesArray[1] = "y";
             int index = 2;
@@ -984,6 +983,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
 
             myTableModel.fireTableStructureChanged();
+            for ( int i=0; i<1; i++ ) { //i<unitsArray.length
+                if ( UnitsUtil.isTimeLocation( unitsArray[i] ) ) {
+                    table.getTableHeader().getColumnModel().getColumn(i).setMinWidth( TIME_WIDTH );   
+                }
+            }
+
         }
 
         if (!x.getUnits().isConvertableTo(unitsArray[0])) {
