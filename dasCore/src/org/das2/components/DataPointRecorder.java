@@ -567,6 +567,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
 
             table.getColumnModel();
+            myTableModel.fireTableStructureChanged();
             table.repaint();
         }
 
@@ -1036,7 +1037,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         updateClients();
-
+        
     }
 
     /**
