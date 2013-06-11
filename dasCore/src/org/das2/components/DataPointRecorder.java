@@ -49,6 +49,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
 import org.das2.dataset.DataSetAdapter;
+import org.das2.datum.TimeLocationUnits;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -114,9 +115,28 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             return planes.get(name);
         }
 
+        /**
+         * When times are the independent parameter, we have to add a 
+         * little fuzz because of rounding errors.
+         * @param o
+         * @return 
+         */
         public int compareTo(Object o) {
             DataPoint that = (DataPoint) o;
-            return this.data[0].lt(that.data[0]) ? -1 : this.data[0].gt(that.data[0]) ? 1 : 0;
+            Datum myt= this.data[0];
+            Datum xt= that.data[0].convertTo( myt.getUnits() );
+            Datum diff= myt.subtract(xt);
+            if ( myt.getUnits() instanceof TimeLocationUnits ) {
+                double micros= diff.doubleValue(Units.microseconds);
+                if ( micros<-100 ) {
+                    return -1;
+                } else if ( micros>100 ) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+            return diff.lt(xt) ? -1 : myt.gt(xt) ? 1 : 0;
         }
 
         @Override
