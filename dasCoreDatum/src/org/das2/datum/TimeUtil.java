@@ -301,6 +301,31 @@ public final class TimeUtil {
     }
     
     /**
+     * convert to a Datum with the given units.
+     * @param d
+     * @param u
+     * @return 
+     */
+    public static Datum toDatum( TimeStruct d, Units u ) {
+        int year = (int)d.year;
+        int month = (int)d.month;
+        int day = (int)d.day;
+        int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
+                3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
+                275 * month / 9 + day + 1721029;
+        if ( u!=Units.us2000 ) { // TODO: sub-optimal implementation...
+            double us2000= ( jd - 2451545 ) * 86400e6; 
+            Datum rus2000= Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
+            return rus2000.convertTo(u);
+        } else {
+            double us2000= ( jd - 2451545 ) * 86400e6; // TODO: leap seconds 
+            return Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
+        }
+    }
+    
+    
+    
+    /**
      *Break the Julian day apart into month, day year.  This is based on
      *http://en.wikipedia.org/wiki/Julian_day (GNU Public License), and 
      *was introduced when toTimeStruct failed when the year was 1886.
