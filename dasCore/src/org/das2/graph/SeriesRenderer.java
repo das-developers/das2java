@@ -1296,7 +1296,7 @@ public class SeriesRenderer extends Renderer {
             lparent.postMessage(this, "dataset clipped at " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
         }
 
-        if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) {
+        if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
             if ( messageCount++==0) {
                 if ( lastIndex_v<2 ) {
                     lparent.postMessage(this, "data starts after range", DasPlot.INFO, null, null);
