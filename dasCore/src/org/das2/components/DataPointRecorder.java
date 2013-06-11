@@ -322,6 +322,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      */
     public QDataSet getSelectedDataSet() {
         int[] selectedRows = table.getSelectedRows();
+        
         if (selectedRows.length == 0) {
             return null;
         } else {
@@ -331,12 +332,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
             for (int i = 0; i < selectedRows.length; i++) {
                 int irow = selectedRows[i];
-                DataPoint dp = (DataPoint) dataPoints.get(irow);
-                builder.insertY(dp.get(0), dp.get(1));
-                for (int j = 2; j < planesArray.length; j++) {
-                    builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
-                            ((Datum) dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
-                            planesArray[j]);
+                if ( irow<dataPoints.size() ) {
+                    DataPoint dp = (DataPoint) dataPoints.get(irow);
+                    builder.insertY(dp.get(0), dp.get(1));
+                    for (int j = 2; j < planesArray.length; j++) {
+                        builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
+                                ((Datum) dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
+                                planesArray[j]);
+                    }
                 }
             }
             if (this.xTagWidth != null) {
