@@ -2660,6 +2660,52 @@ public class Ops {
     }
     
     /**
+     * return the index of the maximum value.  This is to avoid inefficient 
+     * code like "where(slice.eq( max(slice) ))[0]"
+     * @param ds rank 1 dataset
+     * @return the index of the maximum value, or -1 if the data is all fill.
+     */
+    public static int imax( QDataSet ds ) {
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("rank 1 only");
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        int result= -1;
+        double v= Double.MIN_VALUE;
+        for ( int i=0; i<ds.length(); i++ ) {
+            if ( wds.value(i)>0 ) {
+                double d= ds.value(i);
+                if ( d>v ) {
+                    result= i;
+                    v= d;
+                }
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * return the index of the minimum value.  This is to avoid inefficient 
+     * code like "where(slice.eq( min(slice) ))[0]"
+     * @param ds rank 1 dataset
+     * @return the index of the maximum value, or -1 if the data is all fill.
+     */
+    public static int imin( QDataSet ds ) {
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("rank 1 only");
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        int result= -1;
+        double v= Double.MAX_VALUE;
+        for ( int i=0; i<ds.length(); i++ ) {
+            if ( wds.value(i)>0 ) {
+                double d= ds.value(i);
+                if ( d<v ) {
+                    result= i;
+                    v= d;
+                }
+            }
+        }
+        return result;
+    }
+    
+    /**
      * returns a dataset containing the indeces of where the dataset is non-zero.
      * For a rank 1 dataset, returns a rank 1 dataset with indeces for the values.
      * For a higher rank dataset, returns a rank 2 qube dataset with ds.rank()
