@@ -35,6 +35,7 @@ import java.io.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -215,6 +216,33 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
     }
 
+    /** 
+     * delete all the points within the interval.  This was introduced to support the
+     * case where we are going to reprocess an interval, as with the experimental 
+     * RBSP digitizer.
+     * 
+     * @param range 
+     */
+    public void deleteInterval( DatumRange range ) {
+        if ( !sorted ) {
+            throw new IllegalArgumentException("data must be sorted");
+        } else {
+            Comparator comp= new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    return ((DataPoint)o1).get(0).compareTo((Datum)o2);
+                }
+            };
+            int index1= Collections.binarySearch( dataPoints, range.min(), comp );
+            if ( index1<0 ) index1= ~index1;
+            int index2= Collections.binarySearch( dataPoints, range.max(), comp );
+            if ( index2<0 ) index2= ~index2;
+            if ( index1==index2 ) return;
+            int[] arr= new int[ index2-index1+1 ];
+            for ( int i=0; i<arr.length; i++ ) arr[i]= index1+i;
+            deleteRows( arr );
+        }
+    }
+    
     /**
      * delete the specified row.
      * @param row 
@@ -939,12 +967,31 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
     }
 
+    /**
+     * insert the point into the data points.  If the dataset is sorted, then we
+     * replace any point that is within 10milliseconds of the point.
+     * @param newPoint 
+     */
     private void insertInternal(DataPoint newPoint) {
         int newSelect;
         if (sorted) {
             int index = Collections.binarySearch(dataPoints, newPoint);
             if (index < 0) {
-                dataPoints.add(~index, newPoint);
+                DataPoint dp0= null;
+                if ( ~index<dataPoints.size() ) {
+                    dp0= (DataPoint)dataPoints.get(~index);
+                }
+                DataPoint dp1= null;
+                if  ( ~index<dataPoints.size() ) {
+                    dp1= (DataPoint)dataPoints.get(~index+1);
+                }
+                if ( dp0!=null && dp0.data[0].subtract(newPoint.data[0]).abs().lt(Units.microseconds.createDatum(10000)) ) {
+                    dataPoints.set( ~index, newPoint );
+                } else if ( dp1!=null && dp1.data[0].subtract(newPoint.data[0]).abs().lt(Units.microseconds.createDatum(10000)) ) {
+                    dataPoints.set( ~index+1, newPoint );
+                } else {
+                    dataPoints.add(~index, newPoint);
+                }
                 newSelect = ~index;
             } else {
                 dataPoints.set(index, newPoint);
