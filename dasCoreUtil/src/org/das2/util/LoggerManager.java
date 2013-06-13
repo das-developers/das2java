@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 
 /**
@@ -19,8 +20,9 @@ import java.util.logging.Logger;
  */
 public final class LoggerManager {
 
-    private static Set loggers= new HashSet();
+    private static Set<String> loggers= new HashSet();
     private static Map<String,Logger> log= new HashMap();
+    private static Set<Handler> extraHandlers= new HashSet();
 
     /**
      * return the requested logger, but add it to the list of known loggers.
@@ -34,6 +36,9 @@ public final class LoggerManager {
         } else {
             result= Logger.getLogger(id);
             log.put( id, result );
+            for ( Handler h: extraHandlers ) {
+                result.addHandler(h);
+            }
         }
         loggers.add(id);
         return Logger.getLogger(id);
@@ -45,5 +50,20 @@ public final class LoggerManager {
      */
     public static Set getLoggers() {
         return loggers;
+    }
+    
+    /**
+     * Add the handler to all loggers created by this manager, and all
+     * future.  Only call this once!  I would think that adding a handler to 
+     * the root would essentially add the handler to all loggers, but it doesn't 
+     * seem to. 
+     * 
+     * @param handler e.g. GraphicalLogHandler
+     */
+    public static void addHandlerToAll( Handler handler ) {
+        for ( String l: loggers ) {
+            log.get(l).addHandler(handler);
+        }
+        extraHandlers.add(handler);
     }
 }
