@@ -746,6 +746,16 @@ public class SimpleStreamFormatter {
             packetElement.appendChild(planeDescriptor.getDomElement());
         }
 
+        // datasets with time-varying y tags
+        for ( int i=1; i<QDataSet.MAX_RANK; i++ ) {
+            QDataSet depi= (QDataSet) ds.property( "DEPEND_"+i );
+            if ( depi!=null && depi.rank()==2 ) {
+                PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, depi, streamRank);
+                packetDescriptor.addPlane(planeDescriptor);
+                packetElement.appendChild(planeDescriptor.getDomElement());
+            }
+        }
+        
         for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
             QDataSet plane0 = (QDataSet) ds.property("PLANE_" + i);
             if (plane0 != null) {
@@ -903,25 +913,28 @@ public class SimpleStreamFormatter {
                                 ((MutablePropertyDataSet)depi).putProperty( QDataSet.NAME, name + "_1" );
                             }*/
                         }
-                        PacketDescriptor pd;
 
-                        boolean valuesInDescriptor = true; // because it's a non-qube
+                        if ( depi.rank()!=2 ) {  // if it's rank 2, we'll send it out in each packet.
+                            PacketDescriptor pd;
 
-                        if ( depi.length()>100 ) {
-                            valuesInDescriptor= false;
-                        }
+                            boolean valuesInDescriptor = true; // because it's a non-qube
 
-                        pd = doPacketDescriptor(sd, depi, false, valuesInDescriptor, 1, null);
+                            if ( depi.length()>100 ) {
+                                valuesInDescriptor= false;
+                            }
 
-                        pd.setValuesInDescriptor(valuesInDescriptor);
+                            pd = doPacketDescriptor(sd, depi, false, valuesInDescriptor, 1, null);
 
-                        sd.addDescriptor(pd);
+                            pd.setValuesInDescriptor(valuesInDescriptor);
 
-                        depPackets.add(pd);
-                        sd.send(pd, out);
+                            sd.addDescriptor(pd);
 
-                        if ( valuesInDescriptor ) {
-                            retire.add(pd);
+                            depPackets.add(pd);
+                            sd.send(pd, out);
+
+                            if ( valuesInDescriptor ) {
+                                retire.add(pd);
+                            }
                         }
                     }
                 }
