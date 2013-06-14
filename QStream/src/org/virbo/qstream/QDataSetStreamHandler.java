@@ -323,18 +323,23 @@ public class QDataSetStreamHandler implements StreamHandler {
     }
 
     private MutablePropertyDataSet resolveProps( MutablePropertyDataSet result ) {
+       // read datasets that need to be resolved.
        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
-            String s = (String) result.property("DEPENDNAME_" + i);
-            if (s != null) {
-                QDataSet dep0ds= getDataSet(s);
-                if ( dep0ds.rank()==1 ) {
-                    result.putProperty("DEPEND_" + i, dep0ds );
-                } else {
-                    //we're building DEPEND_0 as well, so this is resolved at the end.
-                    //System.err.println("dropping DEPEND_0 for now");
-                }
-            }
-        }
+           String s = (String) result.property("DEPENDNAME_" + i);
+           if (s != null) {
+               QDataSet dep0ds= getDataSet(s);
+               if ( dep0ds.rank()==1 ) {
+                   result.putProperty("DEPEND_" + i, dep0ds );
+               } else if ( i>0 && dep0ds.rank()==2 ) {
+                   result.putProperty("DEPEND_" + i, dep0ds );
+               } else {
+                   //we're building DEPEND_0 as well, so this is resolved at the end.
+                   //System.err.println("dropping DEPEND_0 for now");
+               }
+           }
+       }
+       
+       // check for legacy behavior where string was used to refer to dataset.
        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             Object o = result.property("DEPEND_" + i);
             if (o != null && o instanceof String ) {
