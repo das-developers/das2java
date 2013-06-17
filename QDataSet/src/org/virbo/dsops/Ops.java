@@ -3547,7 +3547,10 @@ public class Ops {
         UnitsConverter uc= UnitsConverter.IDENTITY;
 
         QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
-
+        if ( dep1==null ) {
+            dep1= (QDataSet)ds.slice(0).property(QDataSet.DEPEND_0);
+        }
+        
         double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
         if ( dep1!=null && dep1.rank()==1 ) {
             QDataSet ytags= FFTUtil.getFrequencyDomainTags( dep1.trim(0,len) );
