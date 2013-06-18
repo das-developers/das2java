@@ -459,6 +459,28 @@ public class TimeParser {
             }
         }
     }
+    
+    /**
+     * default for $v.
+     */
+    public static class IgnoreFieldHandler implements FieldHandler {
+
+        public String configure(Map<String, String> args) {
+            return null;
+        }
+
+        public String getRegex() {
+            return ".*";
+        }
+
+        public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
+        }
+
+        public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
+            return "";
+        }
+        
+    }
 
     
     /**
@@ -908,6 +930,7 @@ public class TimeParser {
     public static TimeParser create(String formatString) {
         HashMap map= new HashMap();
         map.put("o",new OrbitFieldHandler());
+        map.put("v",new IgnoreFieldHandler());
         return new TimeParser(formatString,map);
     }
 
@@ -1733,5 +1756,8 @@ public class TimeParser {
         testTimeParser1( "$(periodic;offset=0;start=2000-001;period=P1D)", "20", "2000-021");        
         testTimeParser1( "$(periodic,offset=2285,start=2000-346,period=P27D)", "1", "1832-02-08/P27D");
         testTimeParser1( "$(periodic;offset=2285;start=2000-346;period=P27D)", "2286", "2001-007/P27D");
+        TimeParser tp= TimeParser.create("$Y$m$d_v$v.dat");
+        System.err.println( tp.parse("20130618_v4.05.dat").getTimeRange() );
+        
     }
 }
