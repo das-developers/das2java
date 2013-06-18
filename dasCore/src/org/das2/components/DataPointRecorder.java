@@ -193,24 +193,28 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         public int getRowCount() {
-            int nrow = dataPoints.size();
-            nrow = nrow > 0 ? nrow : 1;
-            return dataPoints.size();
+            synchronized (DataPointRecorder.this) {
+                int nrow = dataPoints.size();
+                nrow = nrow > 0 ? nrow : 1;
+                return dataPoints.size();
+            }
         }
 
-        public Object getValueAt(int i, int j) {
-            DataPoint x = (DataPoint) dataPoints.get(i);
-            if (j < x.data.length) {
-                Datum d = x.get(j);
-                DatumFormatter format = d.getFormatter();
-                return format.format(d, unitsArray[j]);
-            } else {
-                Object o = x.getPlane(planesArray[j]);
-                if (o instanceof Datum) {
-                    Datum d = (Datum) o;
-                    return d.getFormatter().format(d, unitsArray[j]);
+        public synchronized Object getValueAt(int i, int j) {
+            synchronized (DataPointRecorder.this) {
+                DataPoint x = (DataPoint) dataPoints.get(i);
+                if (j < x.data.length) {
+                    Datum d = x.get(j);
+                    DatumFormatter format = d.getFormatter();
+                    return format.format(d, unitsArray[j]);
                 } else {
-                    return (String) o;
+                    Object o = x.getPlane(planesArray[j]);
+                    if (o instanceof Datum) {
+                        Datum d = (Datum) o;
+                        return d.getFormatter().format(d, unitsArray[j]);
+                    } else {
+                        return (String) o;
+                    }
                 }
             }
         }
@@ -223,7 +227,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * 
      * @param range 
      */
-    public void deleteInterval( DatumRange range ) {
+    public synchronized void deleteInterval( DatumRange range ) {
         if ( !sorted ) {
             throw new IllegalArgumentException("data must be sorted");
         } else {
@@ -237,8 +241,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             int index2= Collections.binarySearch( dataPoints, range.max(), comp );
             if ( index2<0 ) index2= ~index2;
             if ( index1==index2 ) return;
-            int[] arr= new int[ index2-index1+1 ];
-            for ( int i=0; i<arr.length; i++ ) arr[i]= index1+i;
+            if ( index2<dataPoints.size() ) index2= index2+1;
+            int[] arr= new int[ index2-index1 ];
+            for ( int i=0; i<arr.length ; i++ ) arr[i]= index1+i;
             deleteRows( arr );
         }
     }
@@ -247,7 +252,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * delete the specified row.
      * @param row 
      */
-    public void deleteRow(int row) {
+    public synchronized void deleteRow(int row) {
         dataPoints.remove(row);
         modified = true;
         updateClients();
@@ -261,7 +266,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * delete the specified rows.
      * @param selectedRows 
      */
-    public void deleteRows(int[] selectedRows) {
+    public synchronized void deleteRows(int[] selectedRows) {
         for ( int i = selectedRows.length-1; i>=0; i-- ) {
             dataPoints.remove(selectedRows[i]);
         }
@@ -287,15 +292,17 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, ProgressMonitor monitor) throws DasException {
-            if (dataPoints.isEmpty()) {
-                return null;
-            } else {
-                VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
-                for (int irow = 0; irow < dataPoints.size(); irow++) {
-                    DataPoint dp = (DataPoint) dataPoints.get(irow);
-                    builder.insertY(dp.get(0), dp.get(1));
+            synchronized ( DataPointRecorder.this ) {
+                if (dataPoints.isEmpty()) {
+                    return null;
+                } else {
+                    VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
+                    for (int irow = 0; irow < dataPoints.size(); irow++) {
+                        DataPoint dp = (DataPoint) dataPoints.get(irow);
+                        builder.insertY(dp.get(0), dp.get(1));
+                    }
+                    return builder.toVectorDataSet();
                 }
-                return builder.toVectorDataSet();
             }
         }
 
@@ -318,7 +325,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * returns a data set of the table data.
      */
-    public QDataSet getDataSet() {
+    public synchronized QDataSet getDataSet() {
         if (dataPoints.isEmpty()) {
             return null;
         } else {
@@ -348,7 +355,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * returns a data set of the selected table data.  
      * @see select which selects part of the dataset.
      */
-    public QDataSet getSelectedDataSet() {
+    public synchronized QDataSet getSelectedDataSet() {
         int[] selectedRows = table.getSelectedRows();
         
         if (selectedRows.length == 0) {
@@ -380,7 +387,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * Selects all the points within the DatumRange
      */
-    public void select(DatumRange xrange, DatumRange yrange) {
+    public synchronized void select(DatumRange xrange, DatumRange yrange) {
         List selectMe = new ArrayList();
         for (int i = 0; i < dataPoints.size(); i++) {
             DataPoint p = (DataPoint) dataPoints.get(i);
