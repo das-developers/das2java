@@ -71,7 +71,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     protected JTable table;
     protected JScrollPane scrollPane;
     protected JButton updateButton;
-    protected List dataPoints;
+    final protected List dataPoints;
     private int selectRow; // this row needs to be selected after the update.
     /**
      * units[index]==null if HashMap contains non-datum object.
@@ -193,15 +193,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         public int getRowCount() {
-            synchronized (DataPointRecorder.this) {
+            synchronized (dataPoints) {
                 int nrow = dataPoints.size();
-                nrow = nrow > 0 ? nrow : 1;
-                return dataPoints.size();
+                return nrow;
             }
         }
 
-        public synchronized Object getValueAt(int i, int j) {
-            synchronized (DataPointRecorder.this) {
+        public Object getValueAt(int i, int j) {
+            synchronized (dataPoints) {
                 DataPoint x = (DataPoint) dataPoints.get(i);
                 if (j < x.data.length) {
                     Datum d = x.get(j);
@@ -227,24 +226,26 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * 
      * @param range 
      */
-    public synchronized void deleteInterval( DatumRange range ) {
+    public void deleteInterval( DatumRange range ) {
         if ( !sorted ) {
             throw new IllegalArgumentException("data must be sorted");
         } else {
-            Comparator comp= new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return ((DataPoint)o1).get(0).compareTo((Datum)o2);
-                }
-            };
-            int index1= Collections.binarySearch( dataPoints, range.min(), comp );
-            if ( index1<0 ) index1= ~index1;
-            int index2= Collections.binarySearch( dataPoints, range.max(), comp );
-            if ( index2<0 ) index2= ~index2;
-            if ( index1==index2 ) return;
-            if ( index2<dataPoints.size() ) index2= index2+1;
-            int[] arr= new int[ index2-index1 ];
-            for ( int i=0; i<arr.length ; i++ ) arr[i]= index1+i;
-            deleteRows( arr );
+            synchronized ( dataPoints ) {
+                Comparator comp= new Comparator() {
+                    public int compare(Object o1, Object o2) {
+                        return ((DataPoint)o1).get(0).compareTo((Datum)o2);
+                    }
+                };
+                int index1= Collections.binarySearch( dataPoints, range.min(), comp );
+                if ( index1<0 ) index1= ~index1;
+                int index2= Collections.binarySearch( dataPoints, range.max(), comp );
+                if ( index2<0 ) index2= ~index2;
+                if ( index1==index2 ) return;
+                if ( index2<dataPoints.size() ) index2= index2+1;
+                int[] arr= new int[ index2-index1 ];
+                for ( int i=0; i<arr.length ; i++ ) arr[i]= index1+i;
+                deleteRows( arr );
+            }
         }
     }
     
@@ -252,26 +253,30 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * delete the specified row.
      * @param row 
      */
-    public synchronized void deleteRow(int row) {
-        dataPoints.remove(row);
-        modified = true;
-        updateClients();
-        updateStatus();
+    public void deleteRow(int row) {
+        synchronized (dataPoints) {
+            dataPoints.remove(row);
+            modified = true;
+            updateClients();
+            updateStatus();
+        }
         if ( active ) {
             fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
         }
+        myTableModel.fireTableDataChanged();
     }
     
     /**
      * delete the specified rows.
      * @param selectedRows 
      */
-    public synchronized void deleteRows(int[] selectedRows) {
-        for ( int i = selectedRows.length-1; i>=0; i-- ) {
-            dataPoints.remove(selectedRows[i]);
+    public void deleteRows(int[] selectedRows) {
+        synchronized ( dataPoints ) {
+            for ( int i = selectedRows.length-1; i>=0; i-- ) {
+               dataPoints.remove(selectedRows[i]);
+            }
+            modified = true;
         }
-        modified = true;
-        
         updateClients();
         updateStatus();
         if ( active ) {
@@ -325,30 +330,32 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * returns a data set of the table data.
      */
-    public synchronized QDataSet getDataSet() {
-        if (dataPoints.isEmpty()) {
-            return null;
-        } else {
-            VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
-            for (int i = 2; i < planesArray.length; i++) {
-                if (unitsArray[i] != null) {
-                    builder.addPlane(planesArray[i], unitsArray[i]);
-                }
-            }
-            for (int irow = 0; irow < dataPoints.size(); irow++) {
-                DataPoint dp = (DataPoint) dataPoints.get(irow);
-                builder.insertY(dp.get(0), dp.get(1));
+    public QDataSet getDataSet() {
+        VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
+        synchronized ( dataPoints ) {
+            if (dataPoints.isEmpty()) {
+                return null;
+            } else {
                 for (int i = 2; i < planesArray.length; i++) {
                     if (unitsArray[i] != null) {
-                        builder.insertY(dp.get(0), (Datum) dp.getPlane(planesArray[i]), planesArray[i]);
+                        builder.addPlane(planesArray[i], unitsArray[i]);
                     }
                 }
+                for (int irow = 0; irow < dataPoints.size(); irow++) {
+                    DataPoint dp = (DataPoint) dataPoints.get(irow);
+                    builder.insertY(dp.get(0), dp.get(1));
+                    for (int i = 2; i < planesArray.length; i++) {
+                        if (unitsArray[i] != null) {
+                            builder.insertY(dp.get(0), (Datum) dp.getPlane(planesArray[i]), planesArray[i]);
+                        }
+                    }
+                }
+                if (this.xTagWidth != null) {
+                    builder.setProperty("xTagWidth", xTagWidth);
+                }
             }
-            if (this.xTagWidth != null) {
-                builder.setProperty("xTagWidth", xTagWidth);
-            }
-            return DataSetAdapter.create( builder.toVectorDataSet() );
         }
+        return DataSetAdapter.create( builder.toVectorDataSet() );
     }
     
     /**
@@ -387,63 +394,72 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * Selects all the points within the DatumRange
      */
-    public synchronized void select(DatumRange xrange, DatumRange yrange) {
-        List selectMe = new ArrayList();
-        for (int i = 0; i < dataPoints.size(); i++) {
-            DataPoint p = (DataPoint) dataPoints.get(i);
-            if (xrange.contains(p.data[0]) && yrange.contains(p.data[1])) {
-                selectMe.add( i );
+    public void select(DatumRange xrange, DatumRange yrange) {
+        synchronized (dataPoints) {
+            List selectMe = new ArrayList();
+            for (int i = 0; i < dataPoints.size(); i++) {
+                DataPoint p = (DataPoint) dataPoints.get(i);
+                if (xrange.contains(p.data[0]) && yrange.contains(p.data[1])) {
+                    selectMe.add( i );
+                }
             }
-        }
-        table.getSelectionModel().clearSelection();
-        for (int i = 0; i < selectMe.size(); i++) {
-            int iselect = ((Integer) selectMe.get(i)).intValue();
-            table.getSelectionModel().addSelectionInterval(iselect, iselect);
-        }
-        
-        if ( selectMe.size()>0 ) {
-            int iselect= (Integer)selectMe.get(0);
-            table.scrollRectToVisible(new Rectangle(table.getCellRect( iselect, 0, true)) );
+            table.getSelectionModel().clearSelection();
+            for (int i = 0; i < selectMe.size(); i++) {
+                int iselect = ((Integer) selectMe.get(i)).intValue();
+                table.getSelectionModel().addSelectionInterval(iselect, iselect);
+            }
+
+            if ( selectMe.size()>0 ) {
+                int iselect= (Integer)selectMe.get(0);
+                table.scrollRectToVisible(new Rectangle(table.getCellRect( iselect, 0, true)) );
+            }
         }
     }
 
     public void saveToFile(File file) throws IOException {
+        List<DataPoint> dataPoints1;
+        synchronized (this.dataPoints) {
+            dataPoints1= new ArrayList(this.dataPoints);
+        }
         FileOutputStream out = new FileOutputStream(file);
         BufferedWriter r = new BufferedWriter(new OutputStreamWriter(out));
 
-        StringBuilder header = new StringBuilder();
-        //header.append("## "); // don't use comment characters so that labels and units are used in Autoplot's ascii parser.
-        for (int j = 0; j < planesArray.length; j++) {
-            header.append(myTableModel.getColumnName(j)).append("\t");
-        }
-        r.write(header.toString());
-        r.newLine();
-        for (int i = 0; i < dataPoints.size(); i++) {
-            DataPoint x = (DataPoint) dataPoints.get(i);
-            StringBuilder s = new StringBuilder();
-            for (int j = 0; j < 2; j++) {
-                DatumFormatter formatter = x.get(j).getFormatter();
-                s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
+        try {
+            StringBuilder header = new StringBuilder();
+            //header.append("## "); // don't use comment characters so that labels and units are used in Autoplot's ascii parser.
+            for (int j = 0; j < planesArray.length; j++) {
+                header.append(myTableModel.getColumnName(j)).append("\t");
             }
-            for (int j = 2; j < planesArray.length; j++) {
-                Object o = x.getPlane(planesArray[j]);
-                if (unitsArray[j] == null) {
-                    if (o == null) {
-                        o = "";
-                    }
-                    s.append("\"").append(o).append("\"\t");
-                } else {
-                    Datum d = (Datum) o;
-                    DatumFormatter f = d.getFormatter();
-                    s.append(f.format(d, unitsArray[j])).append("\t");
-                }
-            }
-            r.write(s.toString());
+            r.write(header.toString());
             r.newLine();
-            prefs.put("components.DataPointRecorder.lastFileSave", file.toString());
-            prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
+            for (int i = 0; i < dataPoints1.size(); i++) {
+                DataPoint x = (DataPoint) dataPoints1.get(i);
+                StringBuilder s = new StringBuilder();
+                for (int j = 0; j < 2; j++) {
+                    DatumFormatter formatter = x.get(j).getFormatter();
+                    s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
+                }
+                for (int j = 2; j < planesArray.length; j++) {
+                    Object o = x.getPlane(planesArray[j]);
+                    if (unitsArray[j] == null) {
+                        if (o == null) {
+                            o = "";
+                        }
+                        s.append("\"").append(o).append("\"\t");
+                    } else {
+                        Datum d = (Datum) o;
+                        DatumFormatter f = d.getFormatter();
+                        s.append(f.format(d, unitsArray[j])).append("\t");
+                    }
+                }
+                r.write(s.toString());
+                r.newLine();
+                prefs.put("components.DataPointRecorder.lastFileSave", file.toString());
+                prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
+            }
+        } finally {
+            if ( r!=null ) r.close();
         }
-        r.close();
         modified = false;
         updateStatus();
 
@@ -981,87 +997,91 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      */
     private void insertInternal(DataPoint newPoint) {
         int newSelect;
-        if (sorted) {
-            int index = Collections.binarySearch(dataPoints, newPoint);
-            if (index < 0) {
-                DataPoint dp0= null;
-                if ( ~index<dataPoints.size() ) {
-                    dp0= (DataPoint)dataPoints.get(~index);
-                }
-                DataPoint dp1= null;
-                if  ( ~index<dataPoints.size() ) {
-                    dp1= (DataPoint)dataPoints.get(~index+1);
-                }
-                if ( dp0!=null && dp0.data[0].subtract(newPoint.data[0]).abs().lt(Units.microseconds.createDatum(10000)) ) {
-                    dataPoints.set( ~index, newPoint );
-                } else if ( dp1!=null && dp1.data[0].subtract(newPoint.data[0]).abs().lt(Units.microseconds.createDatum(10000)) ) {
-                    dataPoints.set( ~index+1, newPoint );
+        synchronized ( dataPoints ) {
+            if (sorted) {
+                int index = Collections.binarySearch(dataPoints, newPoint);
+                if (index < 0) {
+                    DataPoint dp0= null;
+                    if ( ~index<dataPoints.size() ) {
+                        dp0= (DataPoint)dataPoints.get(~index);
+                    }
+                    DataPoint dp1= null;
+                    if  ( ~index<dataPoints.size() ) {
+                        dp1= (DataPoint)dataPoints.get(~index+1);
+                    }
+                    if ( dp0!=null && dp0.data[0].subtract(newPoint.data[0]).abs().lt(Units.microseconds.createDatum(10000)) ) {
+                        dataPoints.set( ~index, newPoint );
+                    } else if ( dp1!=null && dp1.data[0].subtract(newPoint.data[0]).abs().lt(Units.microseconds.createDatum(10000)) ) {
+                        dataPoints.set( ~index+1, newPoint );
+                    } else {
+                        dataPoints.add(~index, newPoint);
+                    }
+                    newSelect = ~index;
                 } else {
-                    dataPoints.add(~index, newPoint);
+                    dataPoints.set(index, newPoint);
+                    newSelect = index;
                 }
-                newSelect = ~index;
+
             } else {
-                dataPoints.set(index, newPoint);
-                newSelect = index;
+                dataPoints.add(newPoint);
+                newSelect = dataPoints.size() - 1;
             }
 
-        } else {
-            dataPoints.add(newPoint);
-            newSelect = dataPoints.size() - 1;
+            selectRow = newSelect;
         }
-
-        selectRow = newSelect;
         modified = true;
         updateStatus();
         updateClients();
     }
 
     public void addDataPoint(Datum x, Datum y, Map planes) {
-        if ( planes==null ) planes= new HashMap();
-        if (dataPoints.isEmpty()) {
-            unitsArray    = new Units[2 + planes.size()];
-            unitsArray[0] = x.getUnits();
-            unitsArray[1] = y.getUnits();
-            planesArray    = new String[2 + planes.size()];
-            planesArray[0] = "x";
-            planesArray[1] = "y";
-            int index = 2;
-            for ( Iterator i = planes.entrySet().iterator(); i.hasNext();) {
-                Entry entry= (Entry)i.next();
-                Object key = entry.getKey();
-                planesArray[index] = String.valueOf(key);
-                Object value = entry.getValue();
-                if (value instanceof String) {
-                    unitsArray[index] = null;
-                } else {
-                    unitsArray[index] = ((Datum) value).getUnits();
+        synchronized (dataPoints) {
+            if ( planes==null ) planes= new HashMap();
+            if (dataPoints.isEmpty()) {
+                unitsArray    = new Units[2 + planes.size()];
+                unitsArray[0] = x.getUnits();
+                unitsArray[1] = y.getUnits();
+                planesArray    = new String[2 + planes.size()];
+                planesArray[0] = "x";
+                planesArray[1] = "y";
+                int index = 2;
+                for ( Iterator i = planes.entrySet().iterator(); i.hasNext();) {
+                    Entry entry= (Entry)i.next();
+                    Object key = entry.getKey();
+                    planesArray[index] = String.valueOf(key);
+                    Object value = entry.getValue();
+                    if (value instanceof String) {
+                        unitsArray[index] = null;
+                    } else {
+                        unitsArray[index] = ((Datum) value).getUnits();
+                    }
+
+                    index++;
                 }
 
-                index++;
-            }
-
-            myTableModel.fireTableStructureChanged();
-            for ( int i=0; i<1; i++ ) { //i<unitsArray.length
-                if ( UnitsUtil.isTimeLocation( unitsArray[i] ) ) {
-                    table.getTableHeader().getColumnModel().getColumn(i).setMinWidth( TIME_WIDTH );   
+                myTableModel.fireTableStructureChanged();
+                for ( int i=0; i<1; i++ ) { //i<unitsArray.length
+                    if ( UnitsUtil.isTimeLocation( unitsArray[i] ) ) {
+                        table.getTableHeader().getColumnModel().getColumn(i).setMinWidth( TIME_WIDTH );   
+                    }
                 }
+
             }
 
-        }
+            if (!x.getUnits().isConvertableTo(unitsArray[0])) {
+                throw new RuntimeException("inconvertible units: " + x + " expected " + unitsArray[0]);
+            }
 
-        if (!x.getUnits().isConvertableTo(unitsArray[0])) {
-            throw new RuntimeException("inconvertible units: " + x + " expected " + unitsArray[0]);
-        }
+            if (!y.getUnits().isConvertableTo(unitsArray[1])) {
+                throw new RuntimeException("inconvertible units: " + y + " expected " + unitsArray[1]);
+            }
 
-        if (!y.getUnits().isConvertableTo(unitsArray[1])) {
-            throw new RuntimeException("inconvertible units: " + y + " expected " + unitsArray[1]);
+            insertInternal(new DataPoint(x, y, new LinkedHashMap(planes)));
         }
-
-        insertInternal(new DataPoint(x, y, new LinkedHashMap(planes)));
         if (active) {
             fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
         }
-
+ 
     }
 
     public void appendDataSet(VectorDataSet ds) {
@@ -1134,20 +1154,22 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         }
 
-        // if a point exists within xTagWidth of the point, then have this point replace
-        Datum x = e.getX();
-        if (snapToGrid && xTagWidth != null && dataPoints.size() > 0) {
-            QDataSet ds = getDataSet();
-            QDataSet xds= (QDataSet)ds.property(QDataSet.DEPEND_0);
-            Units xunits= SemanticOps.getUnits(xds);
-            int i = DataSetUtil.closestIndex( xds, x );
-            Datum diff = e.getX().subtract( xunits.createDatum(xds.value(i)) );
-            if (Math.abs( diff.divide(xTagWidth).doubleValue(Units.dimensionless)) < 0.5 ) {
-                x = xunits.createDatum(xds.value(i));
-            }
+        synchronized (dataPoints) {
+            // if a point exists within xTagWidth of the point, then have this point replace
+            Datum x = e.getX();
+            if (snapToGrid && xTagWidth != null && dataPoints.size() > 0) {
+                QDataSet ds = getDataSet();
+                QDataSet xds= (QDataSet)ds.property(QDataSet.DEPEND_0);
+                Units xunits= SemanticOps.getUnits(xds);
+                int i = DataSetUtil.closestIndex( xds, x );
+                Datum diff = e.getX().subtract( xunits.createDatum(xds.value(i)) );
+                if (Math.abs( diff.divide(xTagWidth).doubleValue(Units.dimensionless)) < 0.5 ) {
+                    x = xunits.createDatum(xds.value(i));
+                }
 
+            }
+            addDataPoint(x, e.getY(), planesMap);
         }
-        addDataPoint(x, e.getY(), planesMap);
         updateClients();
     }
 
