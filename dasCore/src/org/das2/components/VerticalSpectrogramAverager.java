@@ -190,7 +190,8 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         popupWindow.setContentPane(content);
         popupWindow.pack();
         
-        Point parentLocation = new Point();
+        Point parentLocation = new Point( 0, parentPlot.getY() );
+        parentLocation.translate( parentPlot.getX()/20, -1 * myPlot.getRow().getDMinimum() );
         SwingUtilities.convertPointToScreen(parentLocation, parentPlot.getCanvas());
         popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
     }
