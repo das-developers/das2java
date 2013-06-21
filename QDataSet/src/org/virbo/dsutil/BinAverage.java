@@ -370,8 +370,8 @@ public class BinAverage {
      * reduce the rank 2 dataset by averaging blocks of bins together.  depend
      * datasets reduced as well.
      * @param ds rank 2 dataset with M by N points
-     * @param binSize0
-     * @param binSize1
+     * @param binSize0 the number of bins to combine.  Note this is backwards from IDL!
+     * @param binSize1 the number of bins to combine
      * @return rank 2 dataset with M/binSize0 by N/binSize1 points, with a weights plane.
      */
     public static QDataSet rebin(QDataSet ds, int binSize0, int binSize1) {
