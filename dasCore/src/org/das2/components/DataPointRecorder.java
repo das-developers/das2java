@@ -50,6 +50,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
 import org.das2.dataset.DataSetAdapter;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetUtil;
@@ -395,13 +396,23 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * Selects all the points within the DatumRange
      */
     public void select(DatumRange xrange, DatumRange yrange) {
+        Datum mid= xrange.rescale( 0.5,0.5 ).min();
         synchronized (dataPoints) {
             List selectMe = new ArrayList();
+            int iclosest= -1;
+            Datum closestDist=null;
             for (int i = 0; i < dataPoints.size(); i++) {
                 DataPoint p = (DataPoint) dataPoints.get(i);
                 if (xrange.contains(p.data[0]) && yrange.contains(p.data[1])) {
                     selectMe.add( i );
                 }
+                if ( closestDist==null || p.data[0].subtract(mid).abs().lt( closestDist ) ) {
+                    iclosest= i;
+                    closestDist= p.data[0].subtract(mid).abs();
+                }
+            }
+            if ( iclosest!=-1 && selectMe.isEmpty() ) {
+                selectMe= Collections.singletonList(iclosest);
             }
             table.getSelectionModel().clearSelection();
             for (int i = 0; i < selectMe.size(); i++) {
