@@ -328,19 +328,18 @@ public class BinAverage {
     /**
      * reduce the rank 1 dataset by averaging blocks of bins together
      * @param ds rank 1 dataset with N points
-     * @param binSize0 number of adjacent bins to reduce.
-     * @return rank 1 dataset with N/binSize0 points.  Weights plane added.
+     * @param n0 number of bins in the result.  Note this changed in v2013a_6 from earlier versions of this routine.
+     * @return rank 1 dataset with n0 points.  Weights plane added.
      */
-    public static QDataSet rebin(QDataSet ds, int binSize0) {
-        int l0 = ds.length();
+    public static QDataSet rebin(QDataSet ds, int n0 ) {
 
-        DDataSet result = DDataSet.createRank1(l0 / binSize0);
-        DDataSet weights = DDataSet.createRank1(l0 / binSize0);
+        DDataSet result = DDataSet.createRank1( n0);
+        DDataSet weights = DDataSet.createRank1( n0 );
 
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
-        int n0 = l0 / binSize0;
-
+        int binSize0= ds.length() / n0;
+        
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
 
         for (int i0 = 0; i0 < n0; i0++) {
@@ -370,23 +369,26 @@ public class BinAverage {
      * reduce the rank 2 dataset by averaging blocks of bins together.  depend
      * datasets reduced as well.
      * @param ds rank 2 dataset with M by N points
-     * @param binSize0 the number of bins to combine.  Note this is backwards from IDL!
-     * @param binSize1 the number of bins to combine
+     * @param n0 the number of bins in the result. Note this changed in v2013a_6 from earlier versions of this routine.
+     * @param n1 the number of bins in the result.
      * @return rank 2 dataset with M/binSize0 by N/binSize1 points, with a weights plane.
      */
-    public static QDataSet rebin(QDataSet ds, int binSize0, int binSize1) {
+    public static QDataSet rebin(QDataSet ds, int n0, int n1) {
         int l0 = ds.length();
         int l1 = ds.length(0);
-        DDataSet result = DDataSet.createRank2(l0 / binSize0, l1 / binSize1);
-        DDataSet weights = DDataSet.createRank2(l0 / binSize0, l1 / binSize1);
+        DDataSet result = DDataSet.createRank2( n0, n1);
+        DDataSet weights = DDataSet.createRank2( n0, n1);
 
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
-        int n0 = l0 / binSize0;
-        int n1 = l1 / binSize1;
-
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
 
+        int binSize0= ds.length() / n0;
+        int binSize1= ds.length(0) / n1;
+        
+        if ( binSize0==0 ) throw new IllegalArgumentException("rebin can only be used to reduce data");
+        if ( binSize1==0 ) throw new IllegalArgumentException("rebin can only be used to reduce data");
+        
         for (int i0 = 0; i0 < n0; i0++) {
             for (int i1 = 0; i1 < n1; i1++) {
                 int j0 = i0 * binSize0;
@@ -410,12 +412,12 @@ public class BinAverage {
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep0 != null) {
-            result.putProperty(QDataSet.DEPEND_0, rebin(dep0, binSize0));
+            result.putProperty(QDataSet.DEPEND_0, rebin(dep0, n0));
         }
 
         QDataSet dep1 = (QDataSet) ds.property(QDataSet.DEPEND_1);
         if (dep1 != null) {
-            result.putProperty(QDataSet.DEPEND_1, rebin(dep1, binSize1));
+            result.putProperty(QDataSet.DEPEND_1, rebin(dep1, n1));
         }
 
         return result;
