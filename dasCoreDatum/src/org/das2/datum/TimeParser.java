@@ -500,6 +500,7 @@ public class TimeParser {
         if ( formatString.contains("%") && !formatString.contains("$") ) {
             formatString= formatString.replaceAll("\\%", "\\$");
         }
+        oldSpec= formatString.contains("${"); // it might contain this now.
         if ( oldSpec && !formatString.contains("$(") ) {
             formatString= formatString.replaceAll("\\$\\{", "\\$(");
             formatString= formatString.replaceAll("\\}", "\\)");
@@ -1758,6 +1759,6 @@ public class TimeParser {
         testTimeParser1( "$(periodic;offset=2285;start=2000-346;period=P27D)", "2286", "2001-007/P27D");
         TimeParser tp= TimeParser.create("$Y$m$d_v$v.dat");
         System.err.println( tp.parse("20130618_v4.05.dat").getTimeRange() );
-        
+        System.err.println( makeCanonical( "%Y-%m-%dT%H:%M:%S.%{milli}Z" ) );
     }
 }
