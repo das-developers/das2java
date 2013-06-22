@@ -566,7 +566,7 @@ public class DataSetUtil {
             }
         }
     }
-
+    
     /**
      * cleans up code by doing the cast, and handles default value.  The
      * result of this is for human-consumption!
@@ -2686,7 +2686,22 @@ public class DataSetUtil {
         return s;
     }
 
-
+    /**
+     * Return just the value encoded as richly as possible, for human consumption.
+     * Example results of this include "9.5 km" "Chicago" or "fill"
+     * see also format(ds), toString(ds), getStringValue(ds,d)
+     * @param ds
+     * @return just the value, without labels.
+     */
+    public static String getStringValue( QDataSet ds ) {
+        if ( ds.rank()==0 ) {
+            return getStringValue( ds, ds.value() );
+        } else {
+            return format(ds);
+        }
+    }
+    
+    
     /**
      * make a proper bundle ds from a simple bundle containing ordinal units
      * This assumes that labels is a unique set of labels.
