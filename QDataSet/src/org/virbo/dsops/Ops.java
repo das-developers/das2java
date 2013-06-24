@@ -4,6 +4,7 @@
  */
 package org.virbo.dsops;
 
+import java.lang.reflect.Array;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.virbo.dataset.BundleDataSet.BundleDescriptor;
@@ -2641,18 +2642,89 @@ public class Ops {
         return result;
     }
 
+    /** scalar math functions http://sourceforge.net/p/autoplot/bugs/1052/ */
+    
+    /**
+     * coerce Java objects like arrays Lists and scalars into a QDataSet.  
+     * This is introduced to mirror the useful Jython dataset command.
+     * This supports:
+     *   int, float, double, etc to Rank 0 datasets
+     *   List&lt;Number&gt; to Rank 1 datasets.
+     *   Java arrays of Number to Rank 1-4 qubes datasets
+     *   Strings to rank 0 datasets with units ("5 s" "2014-01-01T00:00")
+     *   Datums to rank 0 datasets
+     *   DatumRanges to rank 1 bins
+     * 
+     * @param arg0 null,QDataSet,Number,Datum,DatumRange,String,List,or array.
+     * @return QDataSet
+     */
+    public static QDataSet dataset( Object arg0 ) {
+        if ( arg0==null ) {  // there was a similar test in the Python code.
+            return null;
+        } else if ( arg0 instanceof QDataSet ) {
+            return (QDataSet)arg0;
+        } else if ( arg0 instanceof Number ) {
+            return DataSetUtil.asDataSet( ((Number)arg0).doubleValue() );
+        } else if ( arg0 instanceof Datum ) {
+            return DataSetUtil.asDataSet( (Datum)arg0 );
+        } else if ( arg0 instanceof DatumRange ) {
+            return DataSetUtil.asDataSet( (DatumRange)arg0 );
+        } else if ( arg0 instanceof String ) {
+            try {
+               return DataSetUtil.asDataSet( DatumUtil.parse(arg0.toString()) ); //TODO: someone is going to want lookupUnits that will allocate new units.
+            } catch (ParseException ex) {
+               throw new IllegalArgumentException( "unable to parse string: "+arg0 );
+            }
+        } else if ( arg0 instanceof List ) {
+            List p= (List)arg0;
+            double[] j= new double[ p.size() ];
+            for ( int i=0; i<p.size(); i++ ) {
+                Object n= p.get(i);
+                //TODO: consider enumerations for Strings.
+                j[i]= ((Number)n).doubleValue();
+            }
+            QDataSet q= DDataSet.wrap( j );
+            return q;            
+        } else if ( arg0.getClass().isArray() ) { // convert Java array into QDataSet.  Assumes qube.
+            //return DataSetUtil.asDataSet(arg0); // I think this is probably a better implementation.
+            List<Integer> qqube= new ArrayList( );
+            qqube.add( Array.getLength(arg0) );
+            Object slice= Array.get(arg0, 0);
+            while ( slice.getClass().isArray() ) {
+                qqube.add( Array.getLength(slice) );
+                slice= Array.get( slice, 0 );
+            }
+            int[] qube= new int[qqube.size()];
+            for ( int i=0; i<qube.length; i++ ) qube[i]= qqube.get(i);
+            return ArrayDataSet.wrap( arg0, qube, true );
+        } else {
+            throw new IllegalArgumentException("Ops.dataset is unable to coerce "+arg0+" to QDataSet");
+        }
+        
+    }
+    
+    /**
+     * convert the data to radians by multiplying each element by PI/180.
+     * This does not check the units of the data, but a future version might.
+     * @param ds
+     * @return 
+     */
     public static QDataSet toRadians(QDataSet ds) {
         return applyUnaryOp(ds, new UnaryOp() {
-
             public double op(double y) {
                 return y * Math.PI / 180.;
             }
         });
     }
 
+    /**
+     * convert the data to degrees by multiplying each element by 180/PI.
+     * This does not check the units of the data, but a future version might.
+     * @param ds
+     * @return 
+     */
     public static QDataSet toDegrees(QDataSet ds) {
         return applyUnaryOp(ds, new UnaryOp() {
-
             public double op(double y) {
                 return y * 180 / Math.PI;
             }
@@ -2924,12 +2996,13 @@ public class Ops {
     }
 
     /**
+     * Enumeration identifying windows applied to data before doing FFTs.
      *@see #fftFilter
      */
     public static enum FFTFilterType{ Hanning, TenPercentEdgeCosine, Unity };
 
     /**
-     * Apply Hanning windows to the data to prepare for FFT.  The data is reformed into a rank 2 dataset [N,len].
+     * Apply windows to the data to prepare for FFT.  The data is reformed into a rank 2 dataset [N,len].
      * The filter is applied to the data to remove noise caused by the discontinuity.
      * @param ds rank 1, 2, or 3 data
      * @param len
@@ -3806,11 +3879,12 @@ public class Ops {
 
     /**
      * returns rank 1 QDataSet range relative to range "dr", where 0. is the minimum, and 1. is the maximum.
-     * For example rescaleRange(ds,1,2) is scanNext, rescaleRange(ds,0.5,1.5) is zoomOut.
+     * For example rescaleRange(ds,1,2) is scanNext, rescaleRange(ds,0.5,1.5) is zoomOut.  This is similar
+     * to the DatumRange rescale functions.
      * @param dr a QDataSet with bins and with nonzero width.
-     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is
+     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, -1 is
      * min-width.
-     * @param max the new max width normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is
+     * @param max the new max normalized with respect to this range.  0. is this range's min, 1 is this range's max, -1 is
      * min-width.
      * @return new rank 1 QDataSet range.
      */
@@ -3928,7 +4002,7 @@ public class Ops {
     }
 
     /**
-     * element-wise ceil function.
+     * element-wise floor function.
      * @param ds1
      * @return
      */
@@ -3948,12 +4022,21 @@ public class Ops {
      */
     public static QDataSet ceil(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
-
             public double op(double a) {
                 return Math.ceil(a);
             }
         });
     }
+
+    public static double ceil( double x ) {
+        return Math.ceil(x);
+    }
+    
+    public static QDataSet ceil( Object x ) {
+        return ceil( dataset(x) );
+    }
+
+
 
     /**
      * for Jython, we handle this because the double isn't coerced.
@@ -3987,7 +4070,6 @@ public class Ops {
      */
     public static QDataSet signum(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
-
             public double op(double a) {
                 return Math.signum(a);
             }
@@ -3998,19 +4080,28 @@ public class Ops {
      * Returns the first floating-point argument with the sign of the
      * second floating-point argument.
      * @param magnitude
-     * @param sign
+     * @param sign 
      * @see signum
      * @return
      */
     public static QDataSet copysign(QDataSet magnitude, QDataSet sign) {
         return applyBinaryOp(magnitude, sign, new BinaryOp() {
-
             public double op(double m, double s) {
                 double s1 = Math.signum(s);
                 return Math.abs(m) * (s1 == 0 ? 1. : s1);
             }
         });
     }
+    
+    public static double copysign( double x, double y ) {
+        return Math.abs(x)*Math.signum(y);
+    }
+    
+    public static QDataSet copysign( Object x, Object y ) {
+        return multiply( abs(dataset(x)), signum( dataset(y) ) );
+    }
+    
+    
     
     /**
      * returns the "floating point index" of each element of vv within the monotonically
