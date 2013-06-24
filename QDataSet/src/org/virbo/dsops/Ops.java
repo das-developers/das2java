@@ -71,6 +71,8 @@ import org.virbo.math.Contour;
  * Most operations check for fill data. 
  * Few operations check units. (TODO: check units)
  * 
+ * 2013-06-24: add logic so that most routines handle arrays and scalars as well as QDataSets.
+ * 
  * @author jbf
  */
 public class Ops {
@@ -122,7 +124,11 @@ public class Ops {
         result.putProperty( QDataSet.FILL_VALUE, fill );
         return result;
     }
-
+    
+    public static MutablePropertyDataSet applyUnaryOp(Object ds1, UnaryOp op) {
+        return applyUnaryOp( dataset(ds1), op );
+    }
+    
     /**
      * BinaryOps are operations such as add, pow, atan2
      */
@@ -206,35 +212,39 @@ public class Ops {
         
         return result;
     }
-
-    public static MutablePropertyDataSet applyBinaryOp(QDataSet ds1, double d2, BinaryOp op) {
-        //TODO: handle JOIN from RPWS group, which is not a QUBE...
-        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
-
-        QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
-        QDataSet w1= DataSetUtil.weightsDataSet(ds1);
-
-        double fill= -1e38;
-        while (it1.hasNext()) {
-            it1.next();
-            double w= it1.getValue(w1);
-            it1.putValue(result, w==0 ? fill : op.op(it1.getValue(ds1), d2));
-        }
-        Map<String,Object> props= DataSetUtil.getProperties(ds1);
-        props.remove( QDataSet.VALID_MIN );
-        props.remove( QDataSet.VALID_MAX );
-        props.remove( QDataSet.TITLE );
-        props.remove( QDataSet.LABEL );
-        props.remove( QDataSet.MONOTONIC );
-        props.remove( QDataSet.METADATA_MODEL );
-        props.remove( QDataSet.METADATA );
-        props.remove( QDataSet.BUNDLE_1 ); // because this contains FILL_VALUE, etc that are no longer correct.
-
-        DataSetUtil.putProperties(props, result);
-        result.putProperty( QDataSet.FILL_VALUE, fill );
-        
-        return result;
+    
+    public static MutablePropertyDataSet applyBinaryOp( Object ds1, Object ds2, BinaryOp op ) {
+        return applyBinaryOp( dataset(ds1), dataset(ds2), op );
     }
+
+//    public static MutablePropertyDataSet applyBinaryOp(QDataSet ds1, double d2, BinaryOp op) {
+//        //TODO: handle JOIN from RPWS group, which is not a QUBE...
+//        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
+//
+//        QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
+//        QDataSet w1= DataSetUtil.weightsDataSet(ds1);
+//
+//        double fill= -1e38;
+//        while (it1.hasNext()) {
+//            it1.next();
+//            double w= it1.getValue(w1);
+//            it1.putValue(result, w==0 ? fill : op.op(it1.getValue(ds1), d2));
+//        }
+//        Map<String,Object> props= DataSetUtil.getProperties(ds1);
+//        props.remove( QDataSet.VALID_MIN );
+//        props.remove( QDataSet.VALID_MAX );
+//        props.remove( QDataSet.TITLE );
+//        props.remove( QDataSet.LABEL );
+//        props.remove( QDataSet.MONOTONIC );
+//        props.remove( QDataSet.METADATA_MODEL );
+//        props.remove( QDataSet.METADATA );
+//        props.remove( QDataSet.BUNDLE_1 ); // because this contains FILL_VALUE, etc that are no longer correct.
+//
+//        DataSetUtil.putProperties(props, result);
+//        result.putProperty( QDataSet.FILL_VALUE, fill );
+//        
+//        return result;
+//    }
 
     /**
      * returns the subset of two groups of properties that are equal, so these
@@ -318,6 +328,10 @@ public class Ops {
         return result;
     }
 
+    public static QDataSet add( Object ds1, Object ds2 ) {
+        return add( dataset(ds1), dataset(ds2) );
+    }
+    
     /**
      * subtract one dataset from another.
      * @param ds1
@@ -364,6 +378,10 @@ public class Ops {
         return result;
     }
 
+    public static QDataSet subtract( Object ds1, Object ds2 ) {
+        return subtract( dataset(ds1), dataset(ds2) );
+    }
+    
     /**
      * maybe insert a label indicating the one-argument operation.  The operation
      * is formatted like opStr(ds1).  If a label cannot be created (for example,
@@ -429,8 +447,10 @@ public class Ops {
     }
     /**
      * return a dataset with each element negated.
-     * If available, Units must be ratiometric units, like "5 km" or dimensionless,
-     * and not ordinal or time location units.
+     * If units are specified, Units must be ratiometric units, like "5 km" 
+     * or dimensionless, and not ordinal or time location units.
+     * @see copysign
+     * @see signum
      * @param ds1
      * @return
      */
@@ -446,6 +466,10 @@ public class Ops {
         });
         mpds.putProperty(QDataSet.UNITS,u);
         return mpds;
+    }
+    
+    public static QDataSet negate( Object ds1 ) {
+        return negate( dataset(ds1) );
     }
 
     /**
@@ -484,6 +508,10 @@ public class Ops {
         }
 
     }
+    
+    public static QDataSet magnitude( Object ds1 ) {
+        return magnitude( dataset(ds1) );
+    }
 
     /**
      * return the total of all the elements in the dataset, returning a rank
@@ -509,6 +537,10 @@ public class Ops {
         return s;
     }
 
+    public static double total( Object ds1 ) {
+        return total( dataset(ds1) );
+    }    
+    
     private interface AverageOp {
 
         /**
@@ -806,25 +838,14 @@ public class Ops {
         return result;
     }
 
-    /**
-     * for Jython, we handle this because the double isn't coerced.
-     * Note that abs(3) returns a long, not an int like Python 2.6.5
-     * @param x
-     * @return
-     */
-    public static long abs( long x ) {
-        return Math.abs( x );
+    public static double sqrt( double ds1 ) {
+        return Math.sqrt( ds1 );
     }
 
-    /**
-     * for Jython, we handle this because the double isn't coerced.
-     * @param x
-     * @return
-     */
-    public static double abs( double x ) {
-        return Math.abs( x );
+    public static QDataSet sqrt( Object ds1 ) {
+        return sqrt( dataset(ds1) );
     }
-
+    
     /**
      * element-wise abs.  For vectors, this returns the length of each element.
      * Note Jython conflict needs to be resolved.
@@ -842,45 +863,18 @@ public class Ops {
         return result;
     }
 
-    /**
-     * for Jython, we define this because the doubles aren't coerced.  
-     * Note that pow(2,4) returns a long, not an int like Python 2.6.5
-     * @param x
-     * @param y
-     * @return
-     */
-    public static long pow( long x, long y ) {
-        return (long)Math.pow( x, y );
+    public static long abs( long x ) {
+        return Math.abs( x );
+    }
+    
+    public static double abs( double ds1 ) {
+        return Math.abs( ds1 );
     }
 
-
-    /**
-     * for Jython, we define this because the doubles aren't coerced.
-     * @param x
-     * @param y
-     * @return
-     */
-    public static double pow( double x, double y ) {
-        return Math.pow( x, y );
+    public static QDataSet abs( Object ds1 ) {
+        return abs( dataset(ds1) );
     }
-
-    /**
-     * element-wise pow.  (** in FORTRAN or Jython, ^ in IDL)
-     * Note Jython conflict needs to be resolved.
-     * @param ds1
-     * @param pow
-     * @return
-     */
-    public static QDataSet pow(QDataSet ds1, double pow) {
-        MutablePropertyDataSet result= applyBinaryOp(ds1, pow, new BinaryOp() {
-            public double op(double d1, double d2) {
-                return Math.pow(d1, d2);
-            }
-        });
-        result.putProperty( QDataSet.LABEL, maybeLabelBinaryOp( ds1, DataSetUtil.asDataSet(pow), "pow") );
-        return result;
-
-    }
+    
 
     /**
      * element-wise pow (** in FORTRAN, ^ in IDL) of two datasets with the same
@@ -899,7 +893,26 @@ public class Ops {
         result.putProperty( QDataSet.LABEL, maybeLabelBinaryOp( ds1, pow, "pow") );
         return result;
     }
-
+    
+    /**
+     * for Jython, we define this because the doubles aren't coerced.  
+     * Note that pow(2,4) returns a long, not an int like Python 2.6.5
+     * @param x
+     * @param y
+     * @return
+     */
+    public static long pow( long x, long y ) {
+        return (long)Math.pow( x, y );
+    }
+    
+    public static double pow( double ds1, double ds2 ) {
+        return Math.pow( ds1,ds2 );
+    }
+    
+    public static QDataSet pow( Object ds1, Object ds2 ) {
+        return pow( dataset(ds1), dataset(ds2) );
+    }
+      
     /**
      * element-wise exponentiate e**x.
      * @param ds
@@ -915,6 +928,14 @@ public class Ops {
         return result;
     }
 
+    public static double exp( double ds1 ) {
+        return Math.exp( ds1 );
+    }
+
+    public static QDataSet exp( Object ds1 ) {
+        return exp( dataset(ds1) );
+    }
+    
     /**
      * element-wise exponentiate 10**x.
      * @param ds
@@ -931,6 +952,15 @@ public class Ops {
         return result;
     }
 
+    public static double exp10( double ds1 ) {
+        return Math.pow( 10, ds1 );
+    }
+
+    public static QDataSet exp10( Object ds1 ) {
+        return exp10( dataset(ds1) );
+    }
+    
+
     /**
      * element-wise natural logarithm.
      * @param ds
@@ -946,6 +976,15 @@ public class Ops {
         result.putProperty( QDataSet.LABEL, maybeLabelUnaryOp( ds, "log") );
         return result;
     }
+    
+    public static double log( double ds1 ) {
+        return Math.log( ds1 );
+    }
+
+    public static QDataSet log( Object ds1 ) {
+        return log( dataset(ds1) );
+    }
+    
 
     /**
      * element-wise base 10 logarithm.
@@ -963,6 +1002,14 @@ public class Ops {
         return result;
     }
 
+    public static double log10( double ds1 ) {
+        return Math.log10( ds1 );
+    }
+
+    public static QDataSet log10( Object ds1 ) {
+        return log10( dataset(ds1) );
+    }
+    
     /**
      * element-wise multiply of two datasets with compatible geometry.
      * Presently, either ds1 or ds2 should be dimensionless.
@@ -999,6 +1046,10 @@ public class Ops {
         return result;
     }
 
+    public static QDataSet multiply( Object ds1, Object ds2 ) {
+        return multiply( dataset(ds1), dataset(ds2) );
+    }
+    
     /**
      * element-wise divide of two datasets with compatible geometry.  Either
      * ds1 or ds2 should be dimensionless, or the units be convertible.
@@ -1050,6 +1101,11 @@ public class Ops {
         result.putProperty(QDataSet.LABEL, maybeLabelInfixOp( ds1, ds2, "/" ) );
         return result;
     }
+    
+    public static QDataSet divide( Object ds1, Object ds2 ) {
+        return divide( dataset(ds1), dataset(ds2) );
+    }
+
 
     /**
      * element-wise mod of two datasets with compatible geometry.
@@ -1069,6 +1125,10 @@ public class Ops {
         return result;
     }
 
+    public static QDataSet mod( Object ds1, Object ds2 ) {
+        return mod( dataset(ds1), dataset(ds2) );
+    }
+
     /**
      * element-wise div of two datasets with compatible geometry.
      * @param ds
@@ -1081,6 +1141,12 @@ public class Ops {
             }
         });
     }
+    
+    public static QDataSet div( Object ds1, Object ds2 ) {
+        return div( dataset(ds1), dataset(ds2) );
+    }
+
+    
     // comparators
     /**
      * element-wise equality test.  1.0 is returned where the two datasets are
@@ -1097,6 +1163,10 @@ public class Ops {
         });
     }
 
+    public static QDataSet eq( Object ds1, Object ds2 ) {
+        return eq( dataset(ds1), dataset(ds2) );
+    }
+    
     /**
      * element-wise not equal test.  1.0 is returned where elements are not equal.
      * Fill is returned where either measurement is invalid.
@@ -1113,6 +1183,10 @@ public class Ops {
         });
     }
 
+    public static QDataSet ne( Object ds1, Object ds2 ) {
+        return ne( dataset(ds1), dataset(ds2) );
+    }
+    
     /**
      * element-wise function returns 1 where ds1&gt;ds2.
      * @param ds1
@@ -1128,6 +1202,10 @@ public class Ops {
         });
     }
 
+    public static QDataSet gt( Object ds1, Object ds2 ) {
+        return gt( dataset(ds1), dataset(ds2) );
+    }
+    
     /**
      * element-wise function returns the greater of ds1 and ds2.
      * @param ds1
@@ -1145,6 +1223,9 @@ public class Ops {
         return mpds;
     }
     
+    public static QDataSet greaterOf( Object ds1, Object ds2 ) {
+        return greaterOf( dataset(ds1), dataset(ds2) );
+    }
     
     /**
      * element-wise function returns the smaller of ds1 and ds2.
@@ -1162,6 +1243,11 @@ public class Ops {
         mpds.putProperty( QDataSet.UNITS, ds1.property(QDataSet.UNITS) );
         return mpds;
     }
+    
+    public static QDataSet lesserOf( Object ds1, Object ds2 ) {
+        return lesserOf( dataset(ds1), dataset(ds2) );
+    }
+    
         
     /**
      * element-wise function returns 1 where ds1&gt;=ds2.
@@ -1178,6 +1264,10 @@ public class Ops {
         });
     }
 
+    public static QDataSet ge( Object ds1, Object ds2 ) {
+        return ge( dataset(ds1), dataset(ds2) );
+    }
+    
     /**
      * element-wise function returns 1 where ds1&lt;ds2.
      * @param ds1
@@ -1192,6 +1282,11 @@ public class Ops {
             }
         });
     }
+    
+    public static QDataSet lt( Object ds1, Object ds2 ) {
+        return lt( dataset(ds1), dataset(ds2) );
+    }
+    
 
     /**
      * element-wise function returns 1 where ds1&lt;=ds2.
@@ -1208,6 +1303,10 @@ public class Ops {
         });
     }
 
+    public static QDataSet le( Object ds1, Object ds2 ) {
+        return le( dataset(ds1), dataset(ds2) );
+    }
+    
     // logic operators
     /**
      * element-wise logical or function.  
@@ -1223,6 +1322,11 @@ public class Ops {
             }
         });
     }
+    
+    public static QDataSet or( Object ds1, Object ds2 ) {
+        return or( dataset(ds1), dataset(ds2) );
+    }
+
 
     /**
      * element-wise logical and function.  non-zero is true, zero is false.
@@ -1237,6 +1341,11 @@ public class Ops {
             }
         });
     }
+    
+    public static QDataSet and( Object ds1, Object ds2 ) {
+        return and( dataset(ds1), dataset(ds2) );
+    }
+        
 
     /**
      * element-wise logical not function.  non-zero is true, zero is false.
@@ -1252,6 +1361,10 @@ public class Ops {
         });
     }
 
+    public static QDataSet not( Object ds1 ) {
+        return not( dataset(ds1) );
+    }
+    
     // IDL,Matlab - inspired routines
     /**
      * returns rank 1 dataset with values [0,1,2,...]
@@ -1542,6 +1655,10 @@ public class Ops {
         return result;
     }
 
+    public static QDataSet toTimeDataSet( Object years, Object mons, Object days, Object hour, Object minute, Object second, Object nano ) {
+        return toTimeDataSet( dataset(years), dataset( mons), dataset( days), dataset( hour), dataset( minute), dataset( second), dataset( nano ) );
+    }
+    
     /**
      * creates tags.  First tag will be start and they will increase by cadence.  Units specifies
      * the units of each tag.
@@ -1840,7 +1957,11 @@ public class Ops {
         }
         
     }
-
+    
+    public static QDataSet concatenate( Object ds1, Object ds2 ) {
+        return concatenate( dataset(ds1), dataset(ds2) );
+    }  
+    
     /**
      * return returns a rank 1 dataset of uniform numbers from [0,1].
      * @param len0
@@ -2476,6 +2597,14 @@ public class Ops {
         return result;
     }
 
+    public static double sin( double ds ) {
+        return Math.sin( ds );
+    }
+    
+    public static QDataSet sin( Object ds ) {
+        return sin( dataset(ds) );
+    }   
+    
     /**
      * element-wise arcsin.
      * @param ds
@@ -2491,6 +2620,14 @@ public class Ops {
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "asin" ) );
         return result;
     }
+    
+    public static double asin( double ds ) {
+        return Math.asin( ds );
+    }
+    
+    public static QDataSet asin( Object ds ) {
+        return asin( dataset(ds) );
+    }       
 
     /**
      * element-wise cos.
@@ -2508,6 +2645,14 @@ public class Ops {
         return result;
     }
 
+    public static double cos( double ds ) {
+        return Math.cos( ds );
+    }
+    
+    public static QDataSet cos( Object ds ) {
+        return cos( dataset(ds) );
+    }   
+    
     /**
      * element-wise arccos.
      * @param ds
@@ -2524,7 +2669,15 @@ public class Ops {
         return result;
 
     }
-
+    
+    public static double acos( double ds ) {
+        return Math.acos( ds );
+    }
+    
+    public static QDataSet acos( Object ds ) {
+        return acos( dataset(ds) );
+    }   
+    
     /**
      * element-wise tan.
      * @param ds
@@ -2540,7 +2693,15 @@ public class Ops {
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "tan" ) );
         return result;
     }
-
+    
+    public static double tan( double ds ) {
+        return Math.tan( ds );
+    }
+    
+    public static QDataSet tan( Object ds ) {
+        return tan( dataset(ds) );
+    }   
+    
     /**
      * element-wise atan.
      * @param ds
@@ -2557,6 +2718,14 @@ public class Ops {
         return result;
     }
 
+    public static double atan( double ds ) {
+        return Math.atan( ds );
+    }
+    
+    public static QDataSet atan( Object ds ) {
+        return atan( dataset(ds) );
+    }       
+    
     /**
      * element-wise atan2, 4-quadrant atan.
      * @param dsy
@@ -2573,7 +2742,15 @@ public class Ops {
         result.putProperty(QDataSet.LABEL, maybeLabelBinaryOp(dsy,dsx, "cosh" ) );
         return result;
     }
+    
+    public static double atan2( double y, double x ) {
+        return Math.atan2( y, x );
+    }
 
+    public static QDataSet atan2( Object dsy, Object dsx ) {
+        return atan2( dataset(dsy), dataset(dsx) );
+    }
+    
     /**
      * element-wise cosh.
      * @param ds
@@ -2590,6 +2767,14 @@ public class Ops {
         return result;
     }
 
+    public static double cosh( double ds ) {
+        return Math.cosh( ds );
+    }
+    
+    public static QDataSet cosh( Object ds ) {
+        return cosh( dataset(ds) );
+    }       
+    
     /**
      * element-wise sinh.
      * @param ds
@@ -2605,7 +2790,15 @@ public class Ops {
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "sinh" ) );
         return result;
     }
-
+    
+    public static double sinh( double ds ) {
+        return Math.sinh( ds );
+    }
+    
+    public static QDataSet sinh( Object ds ) {
+        return sinh( dataset(ds) );
+    }        
+    
     /**
      * element-wise tanh.
      * @param ds
@@ -2620,6 +2813,14 @@ public class Ops {
         });
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "tanh" ) );
         return result;
+    }
+
+    public static double tanh( double ds ) {
+        return Math.tanh( ds );
+    }
+    
+    public static QDataSet tanh( Object ds ) {
+        return tanh( dataset(ds) );
     }
 
     /**
@@ -2640,6 +2841,14 @@ public class Ops {
         });
         result.putProperty(QDataSet.LABEL, maybeLabelUnaryOp(result, "expm1" ) );
         return result;
+    }
+    
+    public static double expm1( double ds ) {
+        return Math.expm1( ds );
+    }
+        
+    public static QDataSet expm1( Object ds ) {
+        return expm1( dataset(ds) );
     }
 
     /** scalar math functions http://sourceforge.net/p/autoplot/bugs/1052/ */
@@ -2717,6 +2926,11 @@ public class Ops {
         });
     }
 
+    public static QDataSet toRadians( Object ds ) {
+        return toRadians( dataset(ds) );
+    }
+    
+    
     /**
      * convert the data to degrees by multiplying each element by 180/PI.
      * This does not check the units of the data, but a future version might.
@@ -2729,6 +2943,10 @@ public class Ops {
                 return y * 180 / Math.PI;
             }
         });
+    }
+    
+    public static QDataSet toDegrees( Object ds ) {
+        return toDegrees( dataset(ds) );
     }
     
     /**
@@ -2754,6 +2972,10 @@ public class Ops {
         return result;
     }
     
+    public static int imax( Object ds ) {
+        return imax( dataset(ds) );
+    }
+    
     /**
      * return the index of the minimum value.  This is to avoid inefficient 
      * code like "where(slice.eq( min(slice) ))[0]"
@@ -2776,6 +2998,11 @@ public class Ops {
         }
         return result;
     }
+
+    public static int imin( Object ds ) {
+        return imin( dataset(ds) );
+    }
+    
     
     /**
      * returns a dataset containing the indeces of where the dataset is non-zero.
@@ -2785,7 +3012,7 @@ public class Ops {
      * the result is a zero-length array, as opposed to IDL which would return
      * a -1 scalar.
      * 
-     * Note fill values are not included in the list, so where(A).length + where(not A).length != where( A.or(not(A) )
+     * Note fill values are not included in the list, so where(A).length + where(not A).length != where( A.or(not(A) ).length
      *
      * @param ds of any rank M
      * @return a rank 1 or rank 2 dataset with N by M elements, where N is the number
@@ -2840,6 +3067,10 @@ public class Ops {
         return builder.getDataSet();
     }
 
+    public static QDataSet where( Object ds ) {
+        return where( dataset(ds) );
+    }
+    
     /**
      * returns a rank 1 dataset of indeces that sort the rank 1 dataset ds.
      * This is not the dataset sorted.  For example:
@@ -2855,6 +3086,10 @@ public class Ops {
     public static QDataSet sort(QDataSet ds) {
         return DataSetOps.sort(ds);
     }
+    
+    public static QDataSet sort(Object ds) {
+        return DataSetOps.sort(dataset(ds));
+    }
 
     /**
      * return the unique elements from the dataset.  If sort is null, then
@@ -2864,6 +3099,9 @@ public class Ops {
      *
      * renamed uniqValues from uniq to avoid confusion with the IDL command.
      *
+     * TODO: should this return the values or the indeces?  This needs example
+     * code and should not be used for now.  See VirboAutoplot/src/scripts/test/testUniq.jy
+     * 
      * @param ds
      * @param sort
      * @return
@@ -2925,6 +3163,11 @@ public class Ops {
     public static QDataSet reverse( QDataSet ds ) {
         return new ReverseDataSet(ds);
     }
+    
+    public static QDataSet reverse( Object ds ) {
+        return new ReverseDataSet(dataset(ds));
+    }
+    
 
     /**
      * returns a rank 1 dataset of indeces that shuffle the rank 1 dataset ds
@@ -2954,7 +3197,12 @@ public class Ops {
 
         return wds;
     }
+    
+    public static QDataSet shuffle(Object ds) {
+        return shuffle(dataset(ds));
+    }
 
+    
     /**
      * @see ds.slice
      * @param ds
@@ -4066,6 +4314,7 @@ public class Ops {
      * is less than zero.
      * @param ds1
      * @see copysign
+     * @see negate
      * @return 
      */
     public static QDataSet signum(QDataSet ds1) {
@@ -4082,6 +4331,7 @@ public class Ops {
      * @param magnitude
      * @param sign 
      * @see signum
+     * @see negate
      * @return
      */
     public static QDataSet copysign(QDataSet magnitude, QDataSet sign) {
@@ -4114,7 +4364,7 @@ public class Ops {
      * When the monotonic dataset contains repeat values, the index of the first is returned.
      *
      * Paul Ricchiazzi wrote this routine first for IDL as a fast replacement for the interpol routine, but
-     * it is very useful in other situations as well.
+     * it is useful in other situations as well.
      *
      * @param uu rank 1 monotonically increasing dataset, containing no fill values.
      * @param vv rank N dataset with values in the same physical dimension as uu.
@@ -4170,7 +4420,11 @@ public class Ops {
         }
         return result;
     }
-
+    
+    public static QDataSet findex( Object x, Object y ) {
+        return findex( dataset(x), dataset(y) );
+    }
+    
     /**
      * interpolate values from rank 1 dataset vv using fractional indeces 
      * in rank N findex.  For example, findex=1.5 means interpolate
@@ -4238,6 +4492,10 @@ public class Ops {
         return result;
     }
 
+    public static QDataSet interpolate( Object x, Object y ) {
+        return interpolate( dataset(x), dataset(y) );
+    }    
+    
     /**
      * interpolate values from rank 2 dataset vv using fractional indeces
      * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
@@ -4319,7 +4577,11 @@ public class Ops {
 
         return result;
     }
-    
+        
+    public static QDataSet interpolate( Object x, Object y, Object z ) {
+        return interpolate( dataset(x), dataset(y), dataset(z) );
+    }    
+
     /**
      * interpolate values from rank 2 dataset vv using fractional indeces
      * in rank N findex, using bilinear interpolation.  Here the two rank1
@@ -4425,6 +4687,10 @@ public class Ops {
         return result1;
     }
 
+    public static QDataSet interpolateGrid( Object x, Object y, Object z ) {
+        return interpolateGrid( dataset(x), dataset(y), dataset(z) );
+    }    
+
     /**
      * returns a dataset with zero where the data is invalid, and positive 
      * non-zero where the data is valid.  (This just returns the weights
@@ -4458,7 +4724,11 @@ public class Ops {
         
         return result;
     }
-
+    
+    public static QDataSet smooth(Object ds, int size) {
+        return smooth( dataset(ds), size );
+    }
+    
     /**
      * run boxcar average over the dataset, returning a dataset of same geometry.  
      * Points near the edge are fit to a line and replaced.  The result dataset 
@@ -4495,6 +4765,10 @@ public class Ops {
         return yysmooth;
     }
     
+    public static QDataSet smoothFit( Object xx, Object yy, int size) {
+        return smoothFit( dataset(xx), dataset(yy), size );
+    }
+    
     /**
      * contour the data in rank 2 table tds at rank 0 vv.  The result
      * is a rank 2 bundle of [:,'x,y,z'] where i is the contour number.
@@ -4509,6 +4783,11 @@ public class Ops {
         return vds;
     }
 
+    public static QDataSet contour( Object tds, Object vv ) {
+        QDataSet vds = Contour.contour( dataset(tds), dataset(vv) );
+        return vds;
+    }
+    
     /**
      * return array that is the differences between each successive pair in the dataset.
      * Result[i]= ds[i+1]-ds[i], so that for an array with N elements, an array with
@@ -4561,6 +4840,11 @@ public class Ops {
         }
     }
 
+    public static QDataSet diff( Object ds ) {
+        return diff( dataset(ds) );
+    }
+    
+    
     /**
      * return an array that is the running sum of each element in the array,
      * starting with the value accum.
@@ -4610,7 +4894,10 @@ public class Ops {
         return result;
     }
 
-
+    public static QDataSet accum( Object accumDs, Object ds ) {
+        return accum( dataset(accumDs), dataset(ds) );
+    }
+    
     /**
      * return an array that is the running sum of each element in the array,
      * starting with the value accum.
@@ -4623,6 +4910,10 @@ public class Ops {
         return accum( null, ds );
     }
 
+    public static QDataSet accum( Object ds ) {
+        return accum( null, dataset(ds) );
+    }
+    
     /**
      * convert the dataset to the target units
      * @param ds the original dataset.
@@ -4712,6 +5003,7 @@ public class Ops {
 
     /**
      * TODO: I suspect this is not up to spec.  See DataSetOps.sliceProperties
+     * See reform, the only function that uses this.
      * @param removeDim
      * @param ds
      * @param result
@@ -4833,6 +5125,10 @@ public class Ops {
         }
         DataSetUtil.copyDimensionProperties( ds, result );
         return result;
+    }
+    
+    public static QDataSet reform( Object ds, int[] qube) {
+        return reform( dataset(ds),qube );
     }
 
     /**
@@ -4993,7 +5289,7 @@ public class Ops {
         }
 
     }
-
+    
     /**
      * link is the fundamental operator where we declare that one
      * dataset is dependent on another.  For example link(x,y,z) creates
@@ -5109,30 +5405,45 @@ public class Ops {
 
     }
 
+    public static QDataSet link( Object x, Object y ) {
+        return link( dataset(x), dataset(y) );
+    }
+
+
+    public static QDataSet link( Object x, Object y, Object z ) {
+        return link( dataset(x), dataset(y) );
+    }
+
+
+    public static QDataSet link( Object d0, Object d1, Object d2, Object z ) {
+        return link( dataset(d0), dataset(d1), dataset(d2), dataset(z) );
+    }
+
+
 
     /**
      * declare that the dataset is a dependent parameter of an independent parameter.
-     * This isolates the QDataSet semantics, and verifies correctness.
+     * This isolates the QDataSet semantics, and verifies correctness.  See also link(x,y).
      * @param ds
      * @param dim dimension to declare dependence: 0,1,2.
-     * @param dep0
+     * @param dep the independent dataset.
      * @return
      */
-    public static MutablePropertyDataSet dependsOn( QDataSet ds, int dim, QDataSet dep0 ) {
+    public static MutablePropertyDataSet dependsOn( QDataSet ds, int dim, QDataSet dep ) {
         MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable(ds);
         if ( dim==0 ) {
-            if ( dep0!=null && ds.length()!=dep0.length() ) {
-                throw new IllegalArgumentException(String.format("ds.length()!=dep.length() (%d!=%d)",ds.length(),dep0.length()));
+            if ( dep!=null && ds.length()!=dep.length() ) {
+                throw new IllegalArgumentException(String.format("ds.length()!=dep.length() (%d!=%d)",ds.length(),dep.length()));
             }
-            mds.putProperty( QDataSet.DEPEND_0, dep0 );
+            mds.putProperty( QDataSet.DEPEND_0, dep );
         } else if ( dim==1 ) {
-            if ( dep0!=null && ds.length(0)!=dep0.length() ) 
-                throw new IllegalArgumentException(String.format("ds.length(0)!=dep.length() (%d!=%d)",ds.length(0),dep0.length()));
-            mds.putProperty( QDataSet.DEPEND_1, dep0 );
+            if ( dep!=null && ds.length(0)!=dep.length() ) 
+                throw new IllegalArgumentException(String.format("ds.length(0)!=dep.length() (%d!=%d)",ds.length(0),dep.length()));
+            mds.putProperty( QDataSet.DEPEND_1, dep );
         } else if ( dim==2 ) {
-            if ( dep0!=null && ds.length(0,0)!=dep0.length() ) 
-                throw new IllegalArgumentException(String.format("ds.length(0,0)!=dep.length() (%d!=%d)",ds.length(0,0),dep0.length()));
-            mds.putProperty( QDataSet.DEPEND_2, dep0 );
+            if ( dep!=null && ds.length(0,0)!=dep.length() ) 
+                throw new IllegalArgumentException(String.format("ds.length(0,0)!=dep.length() (%d!=%d)",ds.length(0,0),dep.length()));
+            mds.putProperty( QDataSet.DEPEND_2, dep );
         }
         return mds;
     }
@@ -5300,10 +5611,19 @@ public class Ops {
         return result.toString();
     }
 
+    /**
+     * transpose the rank 2 dataset.
+     * @param ds rank 2 dataset
+     * @return 
+     */
     public static QDataSet transpose(QDataSet ds) {
         return DDataSet.copy(new TransposeRank2DataSet(ds));
     }
 
+    public static QDataSet transpose( Object ds ) {
+        return DDataSet.copy(new TransposeRank2DataSet( dataset(ds) ));
+    }
+    
     /**
      * returns true iff the dataset values are equivalent.  Note this
      * may promote rank, etc.
@@ -5338,6 +5658,10 @@ public class Ops {
             }
             return true;
         }
+    }
+    
+    public static boolean equivalent( Object ds1, Object ds2 ) {
+        return equivalent( dataset(ds1), dataset(ds2) );
     }
 
     /**
@@ -5379,6 +5703,10 @@ public class Ops {
             }
         }
         return dim;
+    }
+    
+    public static int dimensionCount( Object dss ) {
+        return dimensionCount( dataset(dss) );
     }
 
     public static final double PI = Math.PI;
