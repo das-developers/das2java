@@ -870,10 +870,11 @@ public class TimeParser {
      */
     public static boolean isSpec(String spec) {
         spec= makeCanonical( spec );
-        if ( spec.contains("$Y")||spec.contains("$y") ) return true;
+        spec= spec.replaceAll(",",";");
+        if ( spec.contains("$Y")||spec.contains("$y")||spec.contains("$(Y;")||spec.contains("$(y;") ) return true;
         if ( spec.contains(";Y=") ) return true;
-        if ( spec.contains("$o")|| spec.contains("$(o;") ) return true;
-        if ( spec.contains("$(periodic")) return true;
+        if ( spec.contains("$o;")|| spec.contains("$(o;") ) return true;
+        if ( spec.contains("$(periodic;")) return true;
         return false;
     }
 
