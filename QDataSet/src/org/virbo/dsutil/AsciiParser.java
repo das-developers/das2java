@@ -1075,6 +1075,7 @@ public class AsciiParser {
 
         this.units = new Units[fieldCount];
         fieldNames = new String[fieldCount];
+        
         fieldLabels= new String[fieldCount];
         fieldUnits= new String[fieldCount];
 
@@ -1129,6 +1130,19 @@ public class AsciiParser {
                     fieldNames[i] = "field" + i;
                 }
             }
+            //TODO: this will clean up cases where we get extraneous headers.
+//            int fieldNameCount=0;
+//            for (int i = 0; i < fieldCount; i++) {
+//                if (fieldNames[i] != null) {
+//                    fieldNameCount++;
+//                }
+//            }
+//            if ( fieldNameCount<fieldCount) { // all or none
+//                for ( int i=0; i<fieldCount; i++ ) {
+//                    fieldNames[i]= "field" + i;
+//                }
+//            }
+//                                    
         } else {
             skipColumnHeader = true;
         }
