@@ -10,7 +10,8 @@
 package org.virbo.dataset;
 
 /**
- * This is also used a base class.
+ * Dataset that simply returns the index as the value.  This is also used 
+ * a base class for other DataSet implementations.
  * @author jbf
  */
 public class IndexGenDataSet extends AbstractDataSet {
