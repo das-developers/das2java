@@ -28,10 +28,12 @@ public class IndexGenDataSet extends AbstractDataSet {
         return 1;
     }
 
+    @Override
     public double value(int i) {
         return i;
     }
 
+    @Override
     public int length() {
         return length;
     }
