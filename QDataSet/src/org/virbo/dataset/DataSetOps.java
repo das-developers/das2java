@@ -29,6 +29,7 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
+import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dsops.Ops;
 import org.virbo.dsops.Ops.FFTFilterType;
@@ -1487,7 +1488,9 @@ public class DataSetOps {
      * @return
      */
     public static boolean isProcessAsync(String c) {
-        return c.contains("copy") || c.contains("fft") || c.contains("contour") || c.contains("dbAboveBackgroundDim") || c.contains("reducex");
+        return c.contains("copy") || c.contains("fft") || c.contains("contour") 
+                || c.contains("dbAboveBackgroundDim") || c.contains("reducex")
+                || c.contains("total") || c.contains("collapse");
     }
 
     /**
@@ -1574,6 +1577,8 @@ public class DataSetOps {
 
         logger.log(Level.FINE, "sprocess({0},{1})", new Object[] { c, fillDs } );
 
+        if ( mon==null ) mon= new NullProgressMonitor();
+        
         QDataSet ds0= fillDs;
         
         int i=1;
@@ -1582,11 +1587,16 @@ public class DataSetOps {
 
         String cmd="";
         try {
+            mon.started();
             while ( s.hasNext() ) {
                 cmd= s.next();
                 cmd= cmd.replaceAll( "\\|\\s*", "|" ); // https://sourceforge.net/tracker/?func=detail&aid=3586477&group_id=199733&atid=970685
                 i= c.indexOf(cmd,i);
                 logger.log(Level.FINER, "  cmd \"{0}\"", cmd );
+
+                if ( cmd.length()==0 ) continue;
+                mon.setProgressMessage("performing "+cmd.substring(1));
+                
                 if ( logger.isLoggable(Level.FINEST) ) { // this has proved useful for debugging.
                     System.err.println( "---------------------" );
                     System.err.println( fillDs );
@@ -1854,6 +1864,8 @@ public class DataSetOps {
                 ex2= new ParseException( c + " ("+msg+")", i );
             }
             throw ex2;
+        } finally {
+            mon.finished();
         }
         logger.log(Level.FINE, "{0}->sprocess(\"{1}\")->{2}", new Object[] { ds0, c, fillDs } );
         return fillDs;
