@@ -9,9 +9,6 @@
 
 package org.virbo.dataset;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * This is also used a base class.
  * @author jbf
@@ -38,5 +35,5 @@ public class IndexGenDataSet extends AbstractDataSet {
     public int length() {
         return length;
     }
-    
+
 }
