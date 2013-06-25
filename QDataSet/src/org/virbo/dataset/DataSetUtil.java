@@ -74,21 +74,7 @@ public class DataSetUtil {
      * result without updating cadence as well.
      */
     public static MutablePropertyDataSet tagGenDataSet(int n, final double start, final double cadence, Units units ) {
-        IndexGenDataSet result = new IndexGenDataSet(n) {
-            @Override
-            public double value(int i) {
-                return i * cadence + start;
-            }
-        };
-        if ( units!=null ) {
-            result.putProperty( QDataSet.CADENCE, DRank0DataSet.create(cadence,units.getOffsetUnits()) );
-            result.putProperty( QDataSet.UNITS, units );
-        } else {
-            result.putProperty( QDataSet.CADENCE, DRank0DataSet.create(cadence) );
-        }
-        
-        if ( cadence<0 ) result.putProperty( QDataSet.MONOTONIC, Boolean.FALSE );
-        return result;
+        return new TagGenDataSet( n, cadence, start, units );
     }
 
     /**
@@ -127,7 +113,7 @@ public class DataSetUtil {
         }
 
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
-        int i = 0;
+        int i;
 
         for ( i=0; i<ds.length() && wds.value(i)==0; i++ ) {
             // find first valid point.
@@ -628,7 +614,7 @@ public class DataSetUtil {
             try {
                 str.append( dep0.slice(0) ).append("=").append( ds.slice(0) );
             } catch ( RuntimeException ex ) {
-                ex.printStackTrace();
+                logger.log( Level.WARNING, null, ex );
                 str.append("Exception");
             }
             for ( int i=1; i<ds.length(); i++ ) {
@@ -666,9 +652,7 @@ public class DataSetUtil {
                 String dname=null;
                 if ( dep0o instanceof QDataSet ) {
                     QDataSet dep0 = (QDataSet) dep0o;
-                    if (dep0 != null) {
-                        dname = (String) dep0.property(QDataSet.NAME);
-                    }
+                    dname = (String) dep0.property(QDataSet.NAME);
                 } else {
                     dname= String.valueOf(dep0o) + "(Str)";
                 }
@@ -773,10 +757,6 @@ public class DataSetUtil {
      * @return
      */
    public static QDataSet validPoints( QDataSet ds ) {
-        Units u= (Units) ds.property(QDataSet.UNITS);
-        if ( u==null ) {
-            u= Units.dimensionless;
-        }
 
         int lenmax= DataSetUtil.totalLength(ds);
 
@@ -1847,7 +1827,6 @@ public class DataSetUtil {
     public static int totalLength(QDataSet ds) {
         if ( ds.rank()==0 ) return 1;
         int[] qube= DataSetUtil.qubeDims(ds);
-        qube= null;
         if ( qube==null ) {
             LengthsDataSet lds= new LengthsDataSet(ds);
             QubeDataSetIterator it= new QubeDataSetIterator(lds);
@@ -2008,7 +1987,7 @@ public class DataSetUtil {
             }
         }
 
-        Number ofill= null;
+        Number ofill;
         QDataSet result = (QDataSet) o;
         if ( result!=null ) {
             ofill= (Number)result.property(QDataSet.FILL_VALUE);
