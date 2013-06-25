@@ -241,14 +241,14 @@ public interface QDataSet {
     /**
      * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Data may only contain
      * invalid values at the beginning or end, and may contain repeated values.  Generally
-     * this will be used with tags datasets.
+     * this will be used with tags datasets. TODO: can cadence be negative?
      */
     public final static String MONOTONIC="MONOTONIC";
     
     /**
      * RankZeroDataSet, the expected distance between successive measurements where it is valid to make inferences about the data.
      * For example, interpolation is disallowed for points 1.5*CADENCE apart.  
-     * This property only makes sense with a tags dataset.
+     * This property only makes sense with a tags dataset.  TODO: can cadence be negative?
      */
     public final static String CADENCE="CADENCE";
     
