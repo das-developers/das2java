@@ -1826,7 +1826,7 @@ public class DataSetUtil {
      */
     public static int totalLength(QDataSet ds) {
         if ( ds.rank()==0 ) return 1;
-        int[] qube= DataSetUtil.qubeDims(ds);
+        int[] qube= DataSetUtil.qubeDims(ds); 
         if ( qube==null ) {
             LengthsDataSet lds= new LengthsDataSet(ds);
             QubeDataSetIterator it= new QubeDataSetIterator(lds);
