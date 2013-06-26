@@ -4915,6 +4915,25 @@ public class Ops {
     }
     
     /**
+     * append two datasets that are QUBEs.  DEPEND_0 and other metadata is
+     * handled as well.  So for example:
+     *    ds1= findgen(10)
+     *    ds2= findgen(12)
+     *    print append(ds1,ds2)  ; dataSet[22] (dimensionless)
+     * @param ds1 null or rank N dataset
+     * @param ds2 rank N dataset with compatible geometry.
+     * @return 
+     */
+    public static QDataSet append( QDataSet ds1, QDataSet ds2 ) {
+        if ( ds1==null ) {
+            return ds2;
+        } else {
+            // use append to combine the two datasets.  Note append copies the data.
+            return ArrayDataSet.append( ArrayDataSet.maybeCopy(ds1), ArrayDataSet.maybeCopy(ds2) );
+        }
+    }
+            
+    /**
      * convert the dataset to the target units
      * @param ds the original dataset.
      * @param u units of the new dataset
