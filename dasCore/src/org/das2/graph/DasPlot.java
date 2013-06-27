@@ -1480,6 +1480,11 @@ public class DasPlot extends DasCanvasComponent {
         invalidateCacheImage();
     }
 
+    /**
+     * remove the renderer from the stack of renderers.  A warning 
+     * is logged if the renderer is not present.
+     * @param rend the renderer
+     */
     public void removeRenderer(Renderer rend) {
         logger.log( Level.FINE, "removeRenderer({0})", new Object[] { rend } );
         //System.err.println("removeRenderer "+rend);
@@ -1494,6 +1499,15 @@ public class DasPlot extends DasCanvasComponent {
         rend.parent = null;
         invalidateCacheImage();
 
+    }
+    
+    /**
+     * return true if the plot contains the renderer.
+     * @param rend the renderer
+     * @return true if the plot contains the renderer.
+     */
+    public boolean containsRenderer( Renderer rend ) {
+        return renderers.contains(rend);
     }
 
     /**
