@@ -757,7 +757,7 @@ public class AsciiParser {
         String line = null;
         String lastLine = null;
 
-        int iline = 0;
+        int iline = -1;
         int irec = 0;
 
         mon.started();
