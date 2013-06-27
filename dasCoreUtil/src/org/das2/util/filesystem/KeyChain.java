@@ -75,7 +75,7 @@ public class KeyChain {
     private void loadInitial() {
         File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
         if ( keysFile.exists() ) {
-            logger.log( Level.INFO, "loading keys from {0}", keysFile);
+            logger.log( Level.FINE, "loading keys from {0}", keysFile);
             BufferedReader r=null;
             try {
                 r= new BufferedReader( new FileReader(keysFile) );
