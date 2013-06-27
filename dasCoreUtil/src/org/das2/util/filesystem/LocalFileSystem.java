@@ -72,7 +72,7 @@ public class LocalFileSystem extends FileSystem {
             if ( Arrays.asList(roots).contains(localRoot) ) {
                 throw new FileSystemOfflineException();
             } else {
-                throw new IllegalArgumentException( "root does not exist: "+root );
+                throw new IllegalArgumentException( "local root does not exist: "+localRoot );
             }
         }
         boolean b= new File("xxx").equals(new File("XXX"));
