@@ -72,10 +72,10 @@ public class FileStorageModelNew {
                     return ((String)o1).compareTo((String)o2);
                 }
             } ),
-        numericSplit( new Comparator() {  // 4.3.23
+        numericSplit( new Comparator() {  // 4.3.23   // 1.1.3-01 for RBSP (rbspice lev-2 isrhelt)
                public int compare(Object o1, Object o2) {
-                    String[] ss1= o1.toString().split("\\.",-2);
-                    String[] ss2= o2.toString().split("\\.",-2);
+                    String[] ss1= o1.toString().split("[\\.-]",-2);
+                    String[] ss2= o2.toString().split("[\\.-]",-2);
                     int n= Math.min( ss1.length, ss2.length );
                     for ( int i=0; i<n; i++ ) {
                         double d1= Double.parseDouble(ss1[i]);
