@@ -1802,6 +1802,10 @@ public class DataSetOps {
                     String comp= s.next();
                     int icomp= Integer.parseInt(comp);
                     fillDs= Ops.smooth(fillDs, icomp);
+                } else if ( cmd.equals("|detrend") ) {
+                    String comp= s.next();
+                    int icomp= Integer.parseInt(comp);
+                    fillDs= Ops.detrend(fillDs, icomp);
                 } else if ( cmd.equals("|contour") ) {
 
                     List<Double> args= new ArrayList();
