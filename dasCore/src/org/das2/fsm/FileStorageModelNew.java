@@ -58,20 +58,32 @@ public class FileStorageModelNew {
     HashMap fileNameMap=null;
     private boolean allowGz= true;  // if true, the getFile can use a .gz version to retrieve a file.
 
+    /**
+     * Versioning types 
+     */
     static enum VersioningType {
         none(null),
-        numeric( new Comparator() {       // 4.01
+        /**
+         * simple floating point numeric comparisons.
+         */
+        numeric( new Comparator() {       // 4.10 > 4.01
                 public int compare(Object o1, Object o2) {
                     Double d1= Double.parseDouble((String)o1);
                     Double d2= Double.parseDouble((String)o2);
                     return d1.compareTo(d2);
                 }
             } ),
+        /**
+         * comparison by lexical sort v2013a>v2012b.
+         */
         alphanumeric(new Comparator() {   // a001
                 public int compare(Object o1, Object o2) {
                     return ((String)o1).compareTo((String)o2);
                 }
             } ),
+        /**
+         * comparison of numbers split by decimal points and dashes, so 1.20 > 1.3.
+         */
         numericSplit( new Comparator() {  // 4.3.23   // 1.1.3-01 for RBSP (rbspice lev-2 isrhelt)
                public int compare(Object o1, Object o2) {
                     String[] ss1= o1.toString().split("[\\.-]",-2);
@@ -93,6 +105,7 @@ public class FileStorageModelNew {
                 this.comp= comp;
             }
     };
+    
     VersioningType versioningType;
     String versionGe= null; // the version must be greater than or equal to this if non-null. 
     String versionLt= null; // the version must be less than this if non-null. 
