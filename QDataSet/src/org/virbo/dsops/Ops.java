@@ -1128,10 +1128,58 @@ public class Ops {
     public static QDataSet mod( Object ds1, Object ds2 ) {
         return mod( dataset(ds1), dataset(ds2) );
     }
+    
+    /**
+     * element-wise mod of two datasets with compatible geometry.  This returns
+     * a positive number for -18 % 10.  This is Python's behavior.
+     * TODO: I think there's a tacit assumption that the units are the same.  This should support Units.t2000 mod "24 hours" to get result in hours.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
+    public static QDataSet modp(QDataSet ds1, QDataSet ds2) {
+        MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
+            public double op(double d1, double d2) {
+                double t= d1 % d2;
+                return ( t<0 ) ? t+d2 : t;
+            }
+        });
+        Units u= (Units) ds2.property(QDataSet.UNITS);
+        if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
+        return result;
+    }
+
+    public static QDataSet modp( Object ds1, Object ds2 ) {
+        return modp( dataset(ds1), dataset(ds2) );
+    }
+      
+    /**
+     * This div goes with modp, where -18 divp 10 = -2 and -18 modp 10 = 8.
+     * the div operator always goes towards zero, but divp always goes to
+     * the more negative number so the remainder is positive.
+     * @param ds1
+     * @param ds2
+     * @return
+     */
+    public static QDataSet divp(QDataSet ds1, QDataSet ds2) {
+        MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
+            public double op(double d1, double d2) {
+                return Math.floor( d1 / d2);
+            }
+        });
+        Units u= (Units) ds2.property(QDataSet.UNITS);
+        if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
+        return result;
+    }
+
+    public static QDataSet divp( Object ds1, Object ds2 ) {
+        return modp( dataset(ds1), dataset(ds2) );
+    }
 
     /**
      * element-wise div of two datasets with compatible geometry.
-     * @param ds
+     * @param ds1
+     * @param ds2
      * @return
      */
     public static QDataSet div(QDataSet ds1, QDataSet ds2) {
@@ -2420,10 +2468,19 @@ public class Ops {
      * @return /|/|/|
      */
     public static QDataSet sawtooth( QDataSet t ) {
-        QDataSet modt= divide( mod( t, DataSetUtil.asDataSet(2*PI) ), 2*PI );
+        QDataSet modt= divide( modp( t, DataSetUtil.asDataSet(2*PI) ), 2*PI );
         return link( t, modt );
     }
     
+    /**
+     * generates a square from the tags, where a the signal is 1 from 0-PI, 0 from PI-2*PI, etc.
+     * @param t
+     * @return square wave with a period of 2 PI.
+     */
+    public static QDataSet square( QDataSet t ) {
+        QDataSet modt= lt( modp( t, DataSetUtil.asDataSet(2*PI) ), PI );
+        return link( t, modt );
+    }
     /**
      * tool for creating ad-hoc events datasets.
      * @param timeRange a timerange like "2010-01-01" or "2010-01-01/2010-01-10" or "2010-01-01 through 2010-01-09"
