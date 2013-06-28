@@ -109,16 +109,6 @@ public class FileStorageModelNew {
     VersioningType versioningType;
     String versionGe= null; // the version must be greater than or equal to this if non-null. 
     String versionLt= null; // the version must be less than this if non-null. 
-    
-    /* need to map back to TimeUtil's enums, note that we have an extra for the 2 digit year */
-    private int toTimeUtilEnum( int i ) {
-        if ( i<100 || i > 300 ) {
-            throw new IllegalArgumentException( "enumeration is not of the correct type");
-        }
-        i= i % 100;
-        if ( i==0 ) i=1;
-        return i;
-    }
 
 
     public FileSystem getFileSystem() {
@@ -778,11 +768,19 @@ public class FileStorageModelNew {
             public String configure( Map<String,String> args ) {
                 String sep= args.get( "sep" );
                 if ( sep==null && args.containsKey("dotnotation")) {
-                    sep= ".";
+                    sep= "T";
                 }
                 String alpha= args.get( "alpha" );
                 if ( alpha==null && args.containsKey("alphanumeric") ) {
-                    alpha="";
+                    alpha="T";
+                }
+                String type= args.get("type");
+                if ( type!=null ) {
+                    if ( type.equals("sep") || type.equals("dotnotation") ) {
+                        sep= "T";
+                    } else if (type.equals("alpha") || type.equals("alphanumeric") ) {
+                        alpha="T"; 
+                    }
                 }
                 if ( args.get("gt")!=null ) {
                     throw new IllegalArgumentException("gt specified but not supported: must be ge or lt");
@@ -798,7 +796,7 @@ public class FileStorageModelNew {
                 if ( lt!=null ) {
                     versionLt= lt;
                 }
-                if ( alpha!=null ) {
+                if ( alpha!=null ) {  // netbeans suggestion is incorrect. alpha can be null.
                     if ( sep!=null ) {
                         return "alpha with split not supported";
                     } else {
@@ -813,6 +811,9 @@ public class FileStorageModelNew {
                 }
                 return null;
             }
+            /**
+             * this contains a dangerous kludge for $v.$v.$v.
+             */
             public void parse( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) {
                 String v= extra.get("v");
                 if ( v!=null ) {
