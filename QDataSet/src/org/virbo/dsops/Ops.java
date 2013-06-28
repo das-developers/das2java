@@ -3551,6 +3551,9 @@ public class Ops {
             }
             
             assert dep1!=null;
+            if ( dep1==null ) {
+                throw new IllegalArgumentException("fftPower cannot be performed without independent parameter tags");
+            }
 
             UnitsConverter uc= UnitsConverter.IDENTITY;
 
@@ -3722,7 +3725,7 @@ public class Ops {
      * the values.
      * 
      * @param ds rank 1 waveform or rank 2 array of waveforms
-     * @return 
+     * @return rank 1 dataset, or rank 2 for rank 2 input.
      */
     public static QDataSet fftPower( QDataSet ds ) {
         if ( ds.rank()==2 ) {
