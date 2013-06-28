@@ -3072,6 +3072,20 @@ public class Ops {
     }
     
     /**
+     * return 1 where the data in ds are within the bounds.  In jython,
+     *   print within( [0,1,2,3,4], '2 to 4' ) --> [ 0,0,1,1,0 ]
+     *   print within( ttag, 'orbit:rbspa-pp:172' )
+     * 
+     * This is to avoid this common 
+     * @param ds
+     * @param bounds a rank 1 bounding box.  
+     * @return 
+     */
+    public static QDataSet within( QDataSet ds, QDataSet bounds ) {
+        return where( and( ge( ds, bounds.slice(0) ), lt( ds, bounds.slice(1) ) ) );
+    }
+    
+    /**
      * returns a rank 1 dataset of indeces that sort the rank 1 dataset ds.
      * This is not the dataset sorted.  For example:
      * <pre>
@@ -4228,6 +4242,10 @@ public class Ops {
         return result;
     }
 
+    public static QDataSet outerProduct( Object ds1, Object ds2) {
+        return outerProduct( dataset(ds1), dataset(ds2) );
+    }
+    
     /**
      * returns outerSum of two rank 1 datasets, a rank 2 dataset with
      * elements R[i,j]= ds1[i] + ds2[j].
@@ -4249,6 +4267,10 @@ public class Ops {
         return result;
     }
 
+    public static QDataSet outerSum( Object ds1, Object ds2) {
+        return outerSum( dataset(ds1), dataset(ds2) );
+    }
+    
     /**
      * element-wise floor function.
      * @param ds1
@@ -4256,11 +4278,18 @@ public class Ops {
      */
     public static QDataSet floor(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
-
             public double op(double a) {
                 return Math.floor(a);
             }
         });
+    }
+    
+    public static double floor( double x ) {
+        return Math.floor(x);
+    }
+    
+    public static QDataSet floor( Object ds1 ) {
+        return floor( dataset(ds1) );
     }
 
     /**
@@ -4284,17 +4313,6 @@ public class Ops {
         return ceil( dataset(x) );
     }
 
-
-
-    /**
-     * for Jython, we handle this because the double isn't coerced.
-     * @param x
-     * @return
-     */
-    public static double round( double x ) {
-        return Math.round( x );
-    }
-
     /**
      * element-wise round function.  0.5 is round up.
      * @param ds1
@@ -4308,6 +4326,19 @@ public class Ops {
         });
     }
 
+    /**
+     * for Jython, we handle this because the double isn't coerced.
+     * @param x
+     * @return
+     */
+    public static double round( double x ) {
+        return Math.round( x );
+    }
+
+    public static QDataSet round( Object x ) {
+        return round( dataset(x) );
+    }
+    
     /**
      * Returns the signum function of the argument; zero if the argument is 
      * zero, 1.0 if the argument is greater than zero, -1.0 if the argument 
@@ -4325,6 +4356,14 @@ public class Ops {
         });
     }
 
+    public static double signum( double x ) {
+        return Math.signum(x);
+    }
+
+    public static QDataSet signum( Object x ) {
+        return signum( dataset(x) );
+    }
+    
     /**
      * Returns the first floating-point argument with the sign of the
      * second floating-point argument.
