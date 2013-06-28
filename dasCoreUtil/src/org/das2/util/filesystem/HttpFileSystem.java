@@ -729,6 +729,7 @@ public class HttpFileSystem extends WebFileSystem {
 
     @Override
     public String[] listDirectory(String directory, String regex) throws IOException {
+        logger.log(Level.FINE, "listDirectory({0},{1})", new Object[]{directory, regex});
         directory = toCanonicalFilename(directory);
         if (!isDirectory(directory)) {
             throw new IllegalArgumentException("is not a directory: " + directory);
