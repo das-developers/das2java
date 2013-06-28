@@ -2413,6 +2413,17 @@ public class Ops {
     }
 
     /**
+     * generates a sawtooth from the tags, where a peak occurs with a period 2*PI.
+     * All values of T should be ge zero.
+     * @param t
+     * @return /|/|/|
+     */
+    public static QDataSet sawtooth( QDataSet t ) {
+        QDataSet modt= mod( t, DataSetUtil.asDataSet(2*PI) );
+        return link( t, modt );
+    }
+    
+    /**
      * tool for creating ad-hoc events datasets.
      * @param timeRange a timerange like "2010-01-01" or "2010-01-01/2010-01-10" or "2010-01-01 through 2010-01-09"
      * @param rgbcolor and RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue),
