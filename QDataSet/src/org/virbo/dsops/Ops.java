@@ -4812,6 +4812,22 @@ public class Ops {
     }
     
     /**
+     * remove D/C and low-frequency components from the data by subtracting
+     * out the smoothed data with a boxcar of the given size.  Points on the 
+     * end are zero.
+     * @param yy rank 1 dataset
+     * @param size size of the boxcar
+     * @return dataset 
+     */
+    public static QDataSet detrend( QDataSet yy, int size ) {
+        return subtract( yy, smooth( yy, size ) );
+    }
+    
+    public static QDataSet detrend( Object yy, int size ) {
+        return detrend( dataset(yy), size );
+    }
+    
+    /**
      * contour the data in rank 2 table tds at rank 0 vv.  The result
      * is a rank 2 bundle of [:,'x,y,z'] where i is the contour number.
      * The result will have DEPEND_0 be an monotonically increasing sequence with
