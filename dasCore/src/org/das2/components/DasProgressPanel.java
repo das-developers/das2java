@@ -159,8 +159,8 @@ public class DasProgressPanel implements ProgressMonitor {
 
         @Override
         public void print(Graphics g) {
-            System.err.println("this ought not be printed");
-            super.print(g); //To change body of generated methods, choose Tools | Templates.
+            //System.err.println("this ought not be printed");  I think this is printed when Autoplot gets thumbnails.
+            //super.print(g); //To change body of generated methods, choose Tools | Templates.
         }
         
         
