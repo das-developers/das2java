@@ -2414,12 +2414,13 @@ public class Ops {
 
     /**
      * generates a sawtooth from the tags, where a peak occurs with a period 2*PI.
-     * All values of T should be ge zero.
+     * All values of T should be ge zero.  TODO: I think there should be a modp 
+     * function that is always positive. (-93 % 10 ->7 though...)
      * @param t
      * @return /|/|/|
      */
     public static QDataSet sawtooth( QDataSet t ) {
-        QDataSet modt= mod( t, DataSetUtil.asDataSet(2*PI) );
+        QDataSet modt= divide( mod( t, DataSetUtil.asDataSet(2*PI) ), 2*PI );
         return link( t, modt );
     }
     
