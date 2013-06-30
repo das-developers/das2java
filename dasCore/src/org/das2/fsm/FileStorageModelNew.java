@@ -710,7 +710,7 @@ public class FileStorageModelNew {
         String templatebr= hideParams( template );
         int i= templatebr.lastIndexOf("/");
 
-        if ( template.contains("%") && !template.contains("$") ) {
+        if ( template.contains("%") && !template.contains("$") ) { //TODO: makeCanonical should do this.
             template= template.replaceAll("\\%", "\\$");
             templatebr= templatebr.replaceAll("\\%", "\\$");
         }
