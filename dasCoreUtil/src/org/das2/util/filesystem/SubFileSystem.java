@@ -28,17 +28,27 @@ package org.das2.util.filesystem;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
- *
+ * present part of a filesystem as a filesystem.
  * @author Jeremy
  */
 public class SubFileSystem extends FileSystem {
     FileSystem parent;
     String dir;
     
-    protected SubFileSystem( FileSystem parent, String dir ) throws MalformedURLException {
-        super( parent.getRootURI().resolve(dir) ); //TODO: check this
+    private static String trimFront( String dir ) {
+        int i=0;
+        while ( i<dir.length() && dir.charAt(i)=='/' ) {
+            i++;
+        }
+        return i<dir.length() ? dir.substring(i) : "";
+    }
+    
+    protected SubFileSystem( FileSystem parent, String dir ) throws MalformedURLException, URISyntaxException {
+        super( new URI( parent.getRootURI().toASCIIString() + trimFront( dir ) ) ); 
         this.parent= parent;
         this.dir= dir;
         
@@ -64,6 +74,10 @@ public class SubFileSystem extends FileSystem {
     public File getLocalRoot() {
         return new File( parent.getLocalRoot(), dir );
     }
-    
+
+    @Override
+    public String toString() {
+        return "subfs "+parent.toString()+" " +dir;
+    }
     
 }
