@@ -28,7 +28,6 @@ import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.system.DasLogger;
 import java.awt.BorderLayout;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.io.*;
@@ -50,7 +49,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
 import org.das2.dataset.DataSetAdapter;
-import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetUtil;
@@ -298,7 +296,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, ProgressMonitor monitor) throws DasException {
-            synchronized ( DataPointRecorder.this ) {
+            synchronized ( dataPoints ) {
                 if (dataPoints.isEmpty()) {
                     return null;
                 } else {
@@ -370,23 +368,25 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             return null;
         } else {
             VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
-            for (int j = 2; j < planesArray.length; j++) {
-                builder.addPlane(planesArray[j], unitsArray[j]);
-            }
-            for (int i = 0; i < selectedRows.length; i++) {
-                int irow = selectedRows[i];
-                if ( irow<dataPoints.size() ) {
-                    DataPoint dp = (DataPoint) dataPoints.get(irow);
-                    builder.insertY(dp.get(0), dp.get(1));
-                    for (int j = 2; j < planesArray.length; j++) {
-                        builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
-                                ((Datum) dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
-                                planesArray[j]);
+            synchronized (dataPoints) {
+                for (int j = 2; j < planesArray.length; j++) {
+                    builder.addPlane(planesArray[j], unitsArray[j]);
+                }
+                for (int i = 0; i < selectedRows.length; i++) {
+                    int irow = selectedRows[i];
+                    if ( irow<dataPoints.size() ) {
+                        DataPoint dp = (DataPoint) dataPoints.get(irow);
+                        builder.insertY(dp.get(0), dp.get(1));
+                        for (int j = 2; j < planesArray.length; j++) {
+                            builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
+                                    ((Datum) dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
+                                    planesArray[j]);
+                        }
                     }
                 }
-            }
-            if (this.xTagWidth != null) {
-                builder.setProperty("xTagWidth", xTagWidth);
+                if (this.xTagWidth != null) {
+                    builder.setProperty("xTagWidth", xTagWidth);
+                }
             }
             return DataSetAdapter.create( builder.toVectorDataSet() );
         }
