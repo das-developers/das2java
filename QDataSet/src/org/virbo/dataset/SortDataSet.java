@@ -87,14 +87,17 @@ public class SortDataSet extends AbstractDataSet {
         if ( p0!=null ) properties.put( QDataSet.PLANE_0, new SortDataSet( p0, sort ) );
         QDataSet dep1= (QDataSet) source.property( QDataSet.DEPEND_1 );
         if ( dep1!=null && dep1.rank()>1 ) {
-            //TODO: this is a rarely-used schema that should probably not be supported.  No: CDF is using this!!!
             properties.put( QDataSet.DEPEND_1, new SortDataSet( dep1, sort ) );
         }
-        // copy the "use" properties from the source to this so it's easier to see what's going on.
-        properties.put( QDataSet.UNITS, source.property(QDataSet.UNITS ) );
-        properties.put( QDataSet.VALID_MIN, source.property(QDataSet.VALID_MIN) );
-        properties.put( QDataSet.VALID_MAX, source.property(QDataSet.VALID_MAX) );
-        properties.put( QDataSet.FILL_VALUE, source.property(QDataSet.FILL_VALUE) );
+        QDataSet dep2= (QDataSet) source.property( QDataSet.DEPEND_2 );
+        if ( dep2!=null && dep2.rank()>1 ) {
+            properties.put( QDataSet.DEPEND_2, new SortDataSet( dep2, sort ) );
+        }
+        QDataSet dep3= (QDataSet) source.property( QDataSet.DEPEND_3 );
+        if ( dep3!=null && dep3.rank()>1 ) {
+            properties.put( QDataSet.DEPEND_3, new SortDataSet( dep3, sort ) );
+        }
+        DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(p0,null), this );
 
     }
 
@@ -102,18 +105,27 @@ public class SortDataSet extends AbstractDataSet {
         return source.rank();
     }
 
+    @Override
     public double value(int i) {
         return source.value( (int)sort.value(i) );
     }
 
+    @Override
     public double value(int i0, int i1) {
         return source.value( (int)sort.value(i0), i1 );
     }
 
+    @Override
     public double value(int i0, int i1, int i2) {
         return source.value( (int)sort.value(i0), i1, i2 );
     }
 
+    @Override
+    public double value(int i0, int i1, int i2, int i3 ) {
+        return source.value( (int)sort.value(i0), i1, i2, i3 );
+    }
+
+    @Override
     public Object property(String name) {
         if ( properties.containsKey(name) ) {
             return properties.get(name);
@@ -122,6 +134,7 @@ public class SortDataSet extends AbstractDataSet {
         }
     }
 
+    @Override
     public Object property(String name, int i) {
         if ( properties.containsKey(name) ) {
             return properties.get(name);
@@ -130,16 +143,24 @@ public class SortDataSet extends AbstractDataSet {
         }
     }
 
+    @Override
     public int length() {
         return sort.length();
     }
 
+    @Override
     public int length(int i) {
         return source.length( (int)sort.value(i) );
     }
 
+    @Override
     public int length(int i, int j) {
         return source.length( (int)sort.value(i), j );
+    }
+
+    @Override
+    public int length(int i, int j, int k) {
+        return source.length( (int)sort.value(i), j, k );
     }
     
 }
