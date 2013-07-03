@@ -35,6 +35,7 @@ import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
+import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.demos.RipplesDataSet;
 import org.virbo.dataset.BundleDataSet;
@@ -50,6 +51,7 @@ import org.virbo.dataset.LDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
+import org.virbo.dataset.ReplicateDataSet;
 import org.virbo.dataset.ReverseDataSet;
 import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -1011,18 +1013,14 @@ public class Ops {
     }
     
     /**
-     * element-wise multiply of two datasets with compatible geometry.
-     * Presently, either ds1 or ds2 should be dimensionless.
-     * TODO: units improvements.
-     * @param ds1
-     * @param ds2
-     * @return
+     * return the unit that is the product of the two units.  Presently
+     * this only works when one unit is dimensionless.
+     * @param units1 e.g. Units.ergs
+     * @param units2 e.g. Units.dimensionless
+     * @return e.g. Units.ergs
      */
-    public static QDataSet multiply(QDataSet ds1, QDataSet ds2) {
-        Units units1= SemanticOps.getUnits(ds1);
-        Units units2= SemanticOps.getUnits(ds2);
+    private static Units multiplyUnits( Units units1, Units units2 ) {
         Units resultUnits;
-
         if ( units1==Units.dimensionless && units2==Units.dimensionless ) {
             resultUnits= Units.dimensionless;
         } else if ( units2==Units.dimensionless && UnitsUtil.isRatioMeasurement(units1) ) {
@@ -1035,6 +1033,22 @@ public class Ops {
             logger.info("throwing out units until we improve the units library, both arguments have physical units");
             resultUnits= null;
         }
+        return resultUnits;
+    }
+    
+    /**
+     * element-wise multiply of two datasets with compatible geometry.
+     * Presently, either ds1 or ds2 should be dimensionless.
+     * TODO: units improvements.
+     * @param ds1
+     * @param ds2
+     * @see multiplyUnits.
+     * @return
+     */
+    public static QDataSet multiply(QDataSet ds1, QDataSet ds2) {
+        Units units1= SemanticOps.getUnits(ds1);
+        Units units2= SemanticOps.getUnits(ds2);
+        Units resultUnits= multiplyUnits( units1, units2 );
 
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             public double op(double d1, double d2) {
@@ -1892,6 +1906,16 @@ public class Ops {
         return FDataSet.wrap(back, 3, len0, len1, len2);
     }
 
+    /**
+     * returns a rank N+1 dataset
+     * @param val
+     * @param len0
+     * @return 
+     */
+    public static MutablePropertyDataSet replicate( final QDataSet val, final int len0 ) {
+        return new ReplicateDataSet( val, len0 );
+    }
+    
     /**
      * return new dataset filled with zeros.
      * @param len0
@@ -4300,17 +4324,34 @@ public class Ops {
      * returns outerProduct of two rank 1 datasets, a rank 2 dataset with 
      * elements R[i,j]= ds1[i] * ds2[j].
      * 
-     * @param ds1
-     * @param ds2
-     * @return
+     * @param ds1 rank 1 dataset length m.
+     * @param ds2 rank 1 dataset of length n.
+     * @return rank 2 dataset that is m by n.
      */
     public static QDataSet outerProduct(QDataSet ds1, QDataSet ds2) {
+        QDataSet w1= DataSetUtil.weightsDataSet(ds1);
+        QDataSet w2= DataSetUtil.weightsDataSet(ds2);
+        double fill= -1e38;
+        boolean hasFill= false;
+        
         DDataSet result = DDataSet.createRank2(ds1.length(), ds2.length());
         for (int i = 0; i < ds1.length(); i++) {
             for (int j = 0; j < ds2.length(); j++) {
-                result.putValue(i, j, ds1.value(i) * ds2.value(j));
+                if ( w1.value(i)*w2.value(j)>0 ) {
+                    result.putValue(i, j, ds1.value(i) * ds2.value(j));
+                } else {
+                    result.putValue(i, j, fill );
+                    hasFill= true;
+                }
             }
         }
+        result.putProperty( QDataSet.DEPEND_0, ds1.property(QDataSet.DEPEND_0 ) );
+        result.putProperty( QDataSet.DEPEND_1, ds2.property(QDataSet.DEPEND_0 ) );
+        if ( hasFill ) {
+            result.putProperty( QDataSet.FILL_VALUE, fill );
+        }
+        Units units= multiplyUnits( SemanticOps.getUnits(ds1), SemanticOps.getUnits(ds2) );
+        if ( units!=Units.dimensionless ) result.putProperty( QDataSet.UNITS, units );
         return result;
     }
 
@@ -4327,15 +4368,31 @@ public class Ops {
      * @return a rank 2 dataset[m,n]
      */
     public static QDataSet outerSum(QDataSet ds1, QDataSet ds2) {
+        QDataSet w1= DataSetUtil.weightsDataSet(ds1);
+        QDataSet w2= DataSetUtil.weightsDataSet(ds2);
+        double fill= -1e38;
+        boolean hasFill= false;
+        
         DDataSet result = DDataSet.createRank2(ds1.length(), ds2.length());
         Map<String,Object> props= new HashMap();
         BinaryOp b= addGen( ds1, ds2, props );
         for (int i = 0; i < ds1.length(); i++) {
             for (int j = 0; j < ds2.length(); j++) {
-                result.putValue(i, j, b.op( ds1.value(i), ds2.value(j) ) );
+                if ( w1.value(i)*w2.value(j)>0 ) {
+                    result.putValue(i, j, b.op( ds1.value(i), ds2.value(j) ) );
+                } else {
+                    result.putValue(i, j, fill );
+                    hasFill= true;
+                }                
             }
         }
+        result.putProperty( QDataSet.DEPEND_0, ds2.property(QDataSet.DEPEND_0 ) );
+        result.putProperty( QDataSet.DEPEND_1, ds2.property(QDataSet.DEPEND_0 ) );
+        if ( hasFill ) {
+            result.putProperty( QDataSet.FILL_VALUE, fill );
+        }
         result.putProperty( QDataSet.UNITS, props.get(QDataSet.UNITS ) );
+        
         return result;
     }
 
