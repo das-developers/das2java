@@ -802,6 +802,24 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     /**
+     * return the colorbar or null if there is not a single, unique colorbar.
+     * @param plot
+     * @return null or the single colorbar.
+     */
+    private DasColorBar findOneColorBar( DasPlot plot ) {
+        Renderer[] rr= plot.getRenderers();
+        DasColorBar result= null;
+        int count=0;
+        for ( Renderer r: rr ) {
+            if ( r.getColorBar()!=null ) {
+                result= r.getColorBar();
+                count++;
+            }
+        }
+        return count==1 ? result : null;
+    }
+    
+    /**
      * encode the plot in a JSON fragment.
      * @param plot the plot to describe.
      * @param indent indent new lines this amount
@@ -821,9 +839,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         String unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
         json.append( String.format( "%s\"x_axis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"minpixel\":%d, \"maxpixel\":%d, \"type\":\"%s\", \"units\":\"%s\" },\n",
                 indent,
-                plot.getXAxis().getLabel().replaceAll("\"", "\\\"") ,
+                axis.getLabel().replaceAll("\"", "\\\"") ,
                 minstr, maxstr, (int)plot.getColumn().getDMinimum(), (int)plot.getColumn().getDMaximum(),
-                plot.getXAxis().isLog() ? "log" : "lin",
+                axis.isLog() ? "log" : "lin",
                 unitsstr ) );
         axis= plot.getYAxis();
         minstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ?
@@ -835,10 +853,39 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
         json.append( String.format( "%s\"y_axis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"minpixel\":%d, \"maxpixel\":%d, \"type\":\"%s\", \"units\":\"%s\" }%s\n",
                 indent,
-                plot.getYAxis().getLabel().replaceAll("\"", "\\\"") ,
+                axis.getLabel().replaceAll("\"", "\\\"") ,
                 minstr, maxstr, (int)plot.getRow().getDMinimum(), (int)plot.getRow().getDMaximum(),
-                plot.getYAxis().isLog() ? "log" : "lin",
+                axis.isLog() ? "log" : "lin",
                 unitsstr, isInList ? "," : "" ) );
+        // if we can identify a colorbar for the plot, include it as well, with coordinates for the min and max colors.
+        DasColorBar cb= findOneColorBar(plot);
+        if ( cb!=null && cb.isVisible() ) {
+            minstr= UnitsUtil.isTimeLocation( cb.getDataMinimum().getUnits() ) ?
+                String.format( "'%s'", cb.getDataMinimum().toString() ) :
+                String.valueOf( cb.getDataMinimum( cb.getUnits() ) );
+            maxstr= UnitsUtil.isTimeLocation( cb.getDataMaximum().getUnits() ) ?
+                String.format( "'%s'", cb.getDataMaximum().toString() ) :
+                String.valueOf( cb.getDataMaximum( cb.getUnits() ) );
+            unitsstr= UnitsUtil.isTimeLocation( cb.getDataMinimum().getUnits() ) ? "UTC" : cb.getDataMinimum().getUnits().toString();
+            // locate the painted colorbar so that it could be used to lookup colors.
+            int[] pos= new int[4];
+            if ( cb.isHorizontal() ) {
+                pos[1]=pos[3]=cb.getRow().getDMiddle();
+                pos[0]= cb.getColumn().getDMinimum();
+                pos[2]= cb.getColumn().getDMaximum();
+            } else {
+                pos[0]=pos[2]=cb.getColumn().getDMiddle();
+                pos[1]= cb.getRow().getDMinimum();
+                pos[3]= cb.getRow().getDMaximum();            
+            }
+            json.append( String.format( "%s\"z_axis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"lminpixel\":[%d,%d], \"lmaxpixel\":[%d,%d], \"type\":\"%s\", \"units\":\"%s\" }%s\n",
+                indent,
+                cb.getLabel().replaceAll("\"", "\\\"") ,
+                minstr, maxstr, pos[0], pos[1], pos[2], pos[3],
+                cb.isLog() ? "log" : "lin",
+                unitsstr, isInList ? "," : "" ) );
+        }
+            
         return json.toString();
     }
 
@@ -864,7 +911,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         StringBuilder json= new StringBuilder();
 
-        json.append("{\n");
+        json.append( String.format("{ \"number_of_plots_on_canvas\":%d\n",plots.size() ) );
         json.append( String.format("  \"size\":[%d,%d],\n", this.getWidth(),this.getHeight() ) );
         String json1= getJSONForPlot( plot, "  ", plots.size()>1 );
         json.append( json1 );
