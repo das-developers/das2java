@@ -97,7 +97,7 @@ public class SortDataSet extends AbstractDataSet {
         if ( dep3!=null && dep3.rank()>1 ) {
             properties.put( QDataSet.DEPEND_3, new SortDataSet( dep3, sort ) );
         }
-        DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(p0,null), this );
+        DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(source,null), this );
 
     }
 
