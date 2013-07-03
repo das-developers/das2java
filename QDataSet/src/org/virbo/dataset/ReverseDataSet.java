@@ -6,7 +6,7 @@
 package org.virbo.dataset;
 
 /**
- * reverses the order of the elements of the dataset.  If there is a DEPEND_0,
+ * reverses the order of the elements of the rank 1 dataset.  If there is a DEPEND_0,
  * this is reversed as well.
  * @author jbf
  */
