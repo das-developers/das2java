@@ -64,6 +64,12 @@ public abstract class DasPNGConstants {
     public static final String KEYWORD_SOURCE = "Source";
     public static final String KEYWORD_COMMENT = "Comment";
     
+    /**
+     * dasCanvas has a method for generating a JSON string describing the plots,
+     * and this is the tag that data should be inserted with.
+     */
+    public static final String KEYWORD_PLOT_INFO = "plotInfo";
+    
     protected HashMap textMap = new HashMap();
     
     protected int gamma = DEFAULT_GAMMA;
