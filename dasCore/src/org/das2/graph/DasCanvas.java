@@ -875,8 +875,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 pos[2]= cb.getColumn().getDMaximum();
             } else {
                 pos[0]=pos[2]=cb.getColumn().getDMiddle();
-                pos[1]= cb.getRow().getDMinimum();
-                pos[3]= cb.getRow().getDMaximum();            
+                pos[1]= cb.getRow().getDMaximum()-2;  // flip over because 0,0 is upper-left.
+                pos[3]= cb.getRow().getDMinimum()+1;  // tweak to get inside the axis.  This is all just to get ballpark Z values anyway...       
             }
             json.append( String.format( "%s\"z_axis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"lminpixel\":[%d,%d], \"lmaxpixel\":[%d,%d], \"type\":\"%s\", \"units\":\"%s\" }%s\n",
                 indent,
