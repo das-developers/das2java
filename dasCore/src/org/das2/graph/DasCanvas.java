@@ -969,7 +969,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
         javax.swing.JFrame f= DasApplication.getDefaultApplication().getMainFrame();
         if ( f!=null ) {
-            encoder.addText(DasPNGConstants.KEYWORD_SOFTWARE, f.getTitle() );
+            String title= f.getTitle();
+            int i= title.indexOf(" - Autoplot");
+            if ( i>-1 ) {
+                title= title.substring(i+3) + " > " + title.substring(0,i); // Autoplot > foo.vap
+            }
+            encoder.addText(DasPNGConstants.KEYWORD_SOFTWARE, title );
         }
         encoder.addText(DasPNGConstants.KEYWORD_PLOT_INFO, getImageMetadata() );
         try {
