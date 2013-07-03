@@ -967,7 +967,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         DasPNGEncoder encoder = new DasPNGEncoder();
         encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
-        encoder.addText("plotInfo", getImageMetadata() );
+        javax.swing.JFrame f= DasApplication.getDefaultApplication().getMainFrame();
+        if ( f!=null ) {
+            encoder.addText(DasPNGConstants.KEYWORD_SOFTWARE, f.getTitle() );
+        }
+        encoder.addText(DasPNGConstants.KEYWORD_PLOT_INFO, getImageMetadata() );
         try {
             logger.fine("Encoding image into png");
             encoder.write((BufferedImage) image, out);
