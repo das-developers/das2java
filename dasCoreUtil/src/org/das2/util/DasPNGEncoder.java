@@ -56,7 +56,7 @@ public class DasPNGEncoder extends DasPNGConstants {
         list.add(content);
     }
     
-    /** Removes the tEXT chunk with the specifed keyword and content.
+    /** Removes the tEXT chunk with the specified keyword and content.
      * @param keyword the specified keyword
      * @param content the specified content to be removed
      */
