@@ -84,6 +84,31 @@ public final class DasPktBuf {
 		m_buf.write(lBytes, 0, lBytes.length);
 	}
 
+	/** Add an array of floats to the packet as ASCII values with a format specifier.
+	 *
+	 * NOTE: This function adds a space after every float <b>except</b> the last one.
+	 *       this is to allow the caller to add a new line character, if desired, to the
+	 *       output after the last value in a packet.
+	 *
+	 * @param lFloats the floats to add to the packet
+	 * @param sFmt the format string to use for each float, see documentation for the
+	 *        method String.format in the standard platform library.
+	 */
+	public void addFloats(float[] lFloats, String sFmt){
+		if(m_fmt == OutputFormat.DAS1)
+			throw new IllegalStateException("DAS1 Streams only support binary values");
+
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < lFloats.length; i++){
+			sb.append( String.format(sFmt, lFloats[i]) );
+			if(i != lFloats.length - 1)
+				sb.append( " ");
+		}
+
+		byte[] lBytes = sb.toString().getBytes(m_csAscii);
+		m_buf.write(lBytes, 0, lBytes.length);
+	}
+
 	/** Add a single float to the packet with selectable byte order
 	 *
 	 * @param lDoubles the value to add to the packet

@@ -16,15 +16,25 @@ import java.util.List;
  *
  * @author cwp
  */
-public class SelectorGenerator {
+public class QueryParser {
 
-	/** Create a selector generator that expects all elements of the list to conform
-	 * to the das3 style command line interface.
+	/** Empty constructor so that parse keys can be added programically, though the
+	 * recommended method is to use the XML based constructor.
 	 */
-	public SelectorGenerator(){
+	public QueryParser(){
 
 	}
 
+	/** Create a selector generator and initialize it from an XML datasource specification.
+	 * that expects all elements of the list to conform
+	 * to the das3 style command line interface.
+	 */
+	public QueryParser(String sXmlSpec){
+		
+	}
+
+	/** Allow for Das2 Style start and end time specification.
+	 *  */
 	public void setDas2Compatible(String sTimeKey){
 		
 	}
