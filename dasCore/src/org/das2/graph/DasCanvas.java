@@ -874,6 +874,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
         // if we can identify a colorbar for the plot, include it as well, with coordinates for the min and max colors.
         if ( inclColorbar ) {
+            assert cb!=null;
             minstr= UnitsUtil.isTimeLocation( cb.getDataMinimum().getUnits() ) ?
                 String.format( "'%s'", cb.getDataMinimum().toString() ) :
                 String.valueOf( cb.getDataMinimum( cb.getUnits() ) );
