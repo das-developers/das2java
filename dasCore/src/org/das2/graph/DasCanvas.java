@@ -839,10 +839,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             String.format( "\"%s\"", axis.getDataMaximum().toString() ) :
             String.valueOf( axis.getDataMaximum( axis.getUnits() ) );
         String unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
-        json.append( String.format( "%s\"x_axis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"minpixel\":%d, \"maxpixel\":%d, \"type\":\"%s\", \"units\":\"%s\" },\n",
+        String dpos;
+        dpos= String.format( "\"left\":%d, \"right\":%d",   (int)plot.getColumn().getDMinimum(), (int)plot.getColumn().getDMaximum() );
+        json.append( String.format( "%s\"xaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"units\":\"%s\" },\n",
                 indent,
                 axis.getLabel().replaceAll("\"", "\\\"") ,
-                minstr, maxstr, (int)plot.getColumn().getDMinimum(), (int)plot.getColumn().getDMaximum(),
+                minstr, maxstr, dpos,
                 axis.isLog() ? "log" : "lin",
                 unitsstr ) );
         axis= plot.getYAxis();
@@ -853,18 +855,20 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             String.format( "'%s'", axis.getDataMaximum().toString() ) :
             String.valueOf( axis.getDataMaximum( axis.getUnits() ) );
         unitsstr= UnitsUtil.isTimeLocation( axis.getDataMinimum().getUnits() ) ? "UTC" : axis.getDataMinimum().getUnits().toString();
+        dpos= String.format( "\"top\":%d, \"bottom\":%d",   (int)plot.getRow().getDMinimum(), (int)plot.getRow().getDMaximum() );
+        
         if ( inclColorbar ) {
-            json.append( String.format( "%s\"y_axis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"minpixel\":%d, \"maxpixel\":%d, \"type\":\"%s\", \"units\":\"%s\" },\n",
+            json.append( String.format( "%s\"yaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"units\":\"%s\" },\n",
                 indent,
                 axis.getLabel().replaceAll("\"", "\\\"") ,
-                minstr, maxstr, (int)plot.getRow().getDMinimum(), (int)plot.getRow().getDMaximum(),
+                minstr, maxstr, dpos,
                 axis.isLog() ? "log" : "lin",
                 unitsstr ) );
         } else {
-            json.append( String.format( "%s\"y_axis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"minpixel\":%d, \"maxpixel\":%d, \"type\":\"%s\", \"units\":\"%s\" }%s\n",
+            json.append( String.format( "%s\"yaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, %s, \"type\":\"%s\", \"units\":\"%s\" }%s\n",
                 indent,
                 axis.getLabel().replaceAll("\"", "\\\"") ,
-                minstr, maxstr, (int)plot.getRow().getDMinimum(), (int)plot.getRow().getDMaximum(),
+                minstr, maxstr, dpos,
                 axis.isLog() ? "log" : "lin",
                 unitsstr, isInList ? "," : "" ) );
         }
@@ -888,7 +892,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 pos[1]= cb.getRow().getDMaximum()-2;  // flip over because 0,0 is upper-left.
                 pos[3]= cb.getRow().getDMinimum()+1;  // tweak to get inside the axis.  This is all just to get ballpark Z values anyway...       
             }
-            json.append( String.format( "%s\"z_axis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"lminpixel\":[%d,%d], \"lmaxpixel\":[%d,%d], \"type\":\"%s\", \"units\":\"%s\" }%s\n",
+            json.append( String.format( "%s\"zaxis\": { \"label\":\"%s\", \"min\":%s, \"max\":%s, \"minpixel\":[%d,%d], \"maxpixel\":[%d,%d], \"type\":\"%s\", \"units\":\"%s\" }%s\n",
                 indent,
                 cb.getLabel().replaceAll("\"", "\\\"") ,
                 minstr, maxstr, pos[0], pos[1], pos[2], pos[3],
@@ -905,38 +909,28 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      */
     public String getImageMetadata() {
         List<DasPlot> plots= new ArrayList();
-        DasPlot plot= null;
-        int plotHeight= 0;
+
         for ( Component c: this.getCanvasComponents() ) {
             if ( c instanceof DasPlot ) {
                 plots.add( (DasPlot)c );
-                if ( ((DasPlot)c).getRow().getHeight()>plotHeight ) {
-                    plot= ((DasPlot)c);
-                    plotHeight= ((DasPlot)c).getRow().getHeight();
-                }
             }
         }
-
-        if ( plot==null ) return "{ \"number_of_plots\":0 }";
 
         StringBuilder json= new StringBuilder();
 
-        json.append( String.format("{ \"number_of_plots\":%d,\n",plots.size() ) );
-        json.append( String.format("  \"size\":[%d,%d],\n", this.getWidth(),this.getHeight() ) );
-        String json1= getJSONForPlot( plot, "  ", plots.size()>1 );
-        json.append( json1 );
-        if ( plots.size()>1 ) {
-            json.append("  \"plots\": [\n");
-            DasPlot lastPlot= plots.get( plots.size()-1 );
-            for ( DasPlot p: plots ) {
-                json.append( "  {\n");
-                json.append( getJSONForPlot( p, "    ", false ) );
-                json.append( "  }");
-                if ( p!=lastPlot ) json.append(",");
-                json.append( "\n" );
-            }
-            json.append(" ]");
+        json.append( String.format("{ \"size\":[%d,%d],\n", this.getWidth(),this.getHeight() ) );
+        json.append( String.format("  \"numberOfPlots\":%d,\n",plots.size() ) );
+
+        json.append("  \"plots\": [\n");
+        DasPlot lastPlot= plots.get( plots.size()-1 );
+        for ( DasPlot p: plots ) {
+            json.append( "  {\n");
+            json.append( getJSONForPlot( p, "    ", false ) );
+            json.append( "  }");
+            if ( p!=lastPlot ) json.append(",");
+            json.append( "\n" );
         }
+        json.append(" ]");
         json.append("}" );
         return json.toString();
 
@@ -948,9 +942,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      *
      * Note this now puts in a JSON representation of plot locations in the "plotInfo" tag.  The plotInfo
      * tag will contain:
-     *   "number_of_plots_on_canvas:0"   or
-     *   "size" "title" "x_axis" and "y_axis"  or
-     *   "size" "title" "x_axis" "y_axis" and "plots" when there is more than one plot.  The tallest plot is used as the default.
+     *   "numberOfPlots:0"   or
+     *   "size" "title" "xaxis" "yaxis" and "plots" when there are one or more plots.
      *
      *
      * TODO: this should take an output stream, and then a helper class
