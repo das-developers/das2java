@@ -65,7 +65,6 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
-import sun.security.action.GetLongAction;
 
 
 public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
