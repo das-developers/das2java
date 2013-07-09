@@ -943,30 +943,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      *
      * Note this now puts in a JSON representation of plot locations in the "plotInfo" tag.  The plotInfo
      * tag will contain:
-     *   "numberOfPlots:0"   or
-     *   "size" "title" "xaxis" "yaxis" and "plots" when there are one or more plots.
+     *   "size:[640,480]"
+     *   "numberOfPlots:0"   
+     *   "plots: { ... }"  where each plot contains:
+     *   "title" "xaxis" "yaxis"
      *
-     *
-     * TODO: this should take an output stream, and then a helper class
-     * manages the file. (e.g. web servers)
-     *
-     * @param filename the specified filename
+     * @param out the outputStream. This is left open, so the opener code must close it!
      * @throws IOException if there is an error opening the file for writing
      */
-    public void writeToPng(String filename) throws IOException {
-
-        final FileOutputStream out = new FileOutputStream(filename);
+    public void writeToPng( OutputStream out, int w, int h ) throws IOException {
 
         logger.fine("Enter writeToPng");
 
-        int w= getWidth();
-        int h= getHeight();
-
-        if (h==0 || w==0) {
-            Dimension p = getPreferredSize();
-            w=(int) p.getWidth();
-            h=(int) p.getHeight();
-        }
         Image image = getImage(w,h);
 
         DasPNGEncoder encoder = new DasPNGEncoder();
@@ -981,19 +969,46 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             encoder.addText(DasPNGConstants.KEYWORD_SOFTWARE, title );
         }
         encoder.addText(DasPNGConstants.KEYWORD_PLOT_INFO, getImageMetadata() );
-        try {
-            logger.fine("Encoding image into png");
-            encoder.write((BufferedImage) image, out);
-            logger.log(Level.FINE, "write png file {0}", filename);
-        } catch (IOException ioe) {
-        } finally {
-            try {
-                out.close();
-            } catch (IOException ioe) {
-                throw new RuntimeException(ioe);
-            }
+
+        logger.fine("Encoding image into png");
+        encoder.write((BufferedImage) image, out);
+            
+    }
+    
+    /*
+     * uses getImage to get an image of the canvas and encodes it
+     * as a png.
+     *
+     * Note this now puts in a JSON representation of plot locations in the "plotInfo" tag.  The plotInfo
+     * tag will contain:
+     *   "size:[640,480]"
+     *   "numberOfPlots:0"   
+     *   "plots: { ... }"  where each plot contains:
+     *   "title" "xaxis" "yaxis"
+     *
+     * @param filename the specified filename
+     * @throws IOException if there is an error opening the file for writing
+     */
+    public void writeToPng( String filename) throws IOException {
+
+        int w= getWidth();
+        int h= getHeight();
+
+        if (h==0 || w==0) {
+            Dimension p = getPreferredSize();
+            w=(int) p.getWidth();
+            h=(int) p.getHeight();
         }
 
+        final FileOutputStream out = new FileOutputStream(filename);
+        try {
+            writeToPng( out, w, h );
+        } finally {
+            out.close();
+        }
+
+        logger.log(Level.FINE, "write png file {0}", filename);
+        
     }
 
     public void writeToPDF(String filename) throws IOException {
