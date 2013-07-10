@@ -366,7 +366,7 @@ public final class DatumUtil {
         Matcher m= p.matcher(s);
         if ( m.find() ) {
             ss[0]= m.group(1);
-            ss[1]= m.group(3);
+            ss[1]= m.group(3).trim();
         }
         return ss;
     }
