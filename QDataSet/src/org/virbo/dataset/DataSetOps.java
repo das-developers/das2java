@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.TimeUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
@@ -83,7 +84,7 @@ public class DataSetOps {
     public static MutablePropertyDataSet slice0(final QDataSet ds, final int index) {
         return new Slice0DataSet(ds, index,true);
     }
-
+    
     /**
      * slice dataset operator assumes a qube dataset
      * by picking the index-th element of dataset's second dimension, without
@@ -1632,23 +1633,34 @@ public class DataSetOps {
 
                 } else if(cmd.startsWith("|slice") && cmd.length()>6 ) {
                     int dim= cmd.charAt(6)-'0';
-                    int idx= s.nextInt();
-                    if ( dim==0 ) {
-                        if ( idx>=fillDs.length() ) idx=fillDs.length()-1;
-                        if ( idx<0 ) idx=0;
-                        fillDs= slice0(fillDs, idx); //TODO: use fillDs.slice
-                    } else if ( dim==1 ) {
-                        if ( idx>=fillDs.length(0) ) idx=fillDs.length(0)-1;
-                        if ( idx<0 ) idx=0;
-                        fillDs= slice1(fillDs, idx);
-                    } else if ( dim==2 ) {
-                        if ( idx>=fillDs.length(0,0) ) idx=fillDs.length(0,0)-1;
-                        if ( idx<0 ) idx=0;
-                        fillDs= slice2(fillDs, idx);
-                    } else if ( dim==3 ) {
-                        if ( idx>=fillDs.length(0,0,0) ) idx=fillDs.length(0,0,0)-1;
-                        if ( idx<0 ) idx=0;
-                        fillDs= slice3(fillDs, idx);
+                    String arg= s.next();
+                    try {
+                        int idx= Integer.parseInt(arg);
+                        if ( dim==0 ) {
+                            if ( idx>=fillDs.length() ) idx=fillDs.length()-1;
+                            if ( idx<0 ) idx=0;
+                            fillDs= slice0(fillDs, idx); //TODO: use fillDs.slice
+                        } else if ( dim==1 ) {
+                            if ( idx>=fillDs.length(0) ) idx=fillDs.length(0)-1;
+                            if ( idx<0 ) idx=0;
+                            fillDs= slice1(fillDs, idx);
+                        } else if ( dim==2 ) {
+                            if ( idx>=fillDs.length(0,0) ) idx=fillDs.length(0,0)-1;
+                            if ( idx<0 ) idx=0;
+                            fillDs= slice2(fillDs, idx);
+                        } else if ( dim==3 ) {
+                            if ( idx>=fillDs.length(0,0,0) ) idx=fillDs.length(0,0,0)-1;
+                            if ( idx<0 ) idx=0;
+                            fillDs= slice3(fillDs, idx);
+                        }
+                    } catch ( NumberFormatException ex ) {
+                        if ( dim==0 ) {
+                            arg= getStringArg( arg );
+                            QDataSet ds= Ops.dataset( TimeUtil.create(arg) );
+                            fillDs= Ops.slice0( fillDs, ds );
+                        } else {
+                            throw new IllegalArgumentException("only slice0 works with strings");
+                        }
                     }
                 } else if ( cmd.equals("|reducex") ) {
                     String arg= getStringArg( s.next() );
