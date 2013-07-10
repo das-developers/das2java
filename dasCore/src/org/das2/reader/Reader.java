@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  *
  * @author cwp
  */
-public interface DataStreamSrc {
+public interface Reader {
 
 	/** Does this reader support connected operations over a BEEP channel */
 	public boolean canConnect();

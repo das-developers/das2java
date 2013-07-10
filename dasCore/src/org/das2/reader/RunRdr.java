@@ -145,6 +145,7 @@ public class RunRdr{
 		return element.getElementsByTagName(sSubName).item(0).getFirstChild().getNodeValue();
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////////
 	/** Print an informational summary of the reader, but don't document all the command
 	 * line arguments.
 	 * @param logger
@@ -186,7 +187,7 @@ public class RunRdr{
 				String sDimQuant = dim.getAttribute("quantity");
 				String sDimUnit = dim.getAttribute("unit");
 				
-				if(sDimQuant.substring(0, 1).toLowerCase().matches("[aeiou]"))
+				if(sDimQuant.substring(0, 1).toLowerCase().matches("[aeiour]"))
 					System.out.printf("   %s, an %s", sDimName, sDimQuant, sDimUnit);
 				else
 					System.out.printf("   %s, a %s", sDimName, sDimQuant, sDimUnit);
@@ -200,14 +201,33 @@ public class RunRdr{
 				System.out.print("\n");
 			}
 		}
-		//System.out.print("\n");
+
+		// Finally, send the maintainer info
+		Element elMain = (Element) top.getElementsByTagName("maintainer").item(0);
+		System.out.print("Maintainer:\n");
+		System.out.printf("   %s <%s>\n\n", elMain.getAttribute("name"),
+			               elMain.getAttribute("email"));
 		return 0;
 	}
 
-	private static int help(Logger logger, Document dsid){
-		throw new UnsupportedOperationException("Not yet implemented");
+	/////////////////////////////////////////////////////////////////////////////////////
+	/** Print help information for this readers command line */
+	private static int help(Logger logger, Document dsid, String sTitle){
+
+		Element top = dsid.getDocumentElement();
+		if(sTitle == null){
+			String sName = top.getAttribute("name");
+			System.out.printf("%s: command line data selectors\n", sName);
+		}
+
+		Element elSelectors = (Element) top.getElementsByTagName("selectors").item(0);
+		elSelectors.getChildNodes();
+
+		
+		return 0;
 	}
 
+	/** Run the thing. */
 	private static int run(Logger logger, Document dsid){
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
@@ -267,21 +287,9 @@ public class RunRdr{
 		}
 
 		// Okay, args[0] is supposed to be a DSID file, let's validate it.
-		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		URL url = RunRdr.class.getResource("/schema/das3_dsid-0.2.xsd");
-		Schema schema = null;
+		DataSource ds;
 		try{
-			schema = sf.newSchema(url);
-		}
-		catch(SAXException ex){
-			logger.log(Level.SEVERE, "Internal error parsing DSID schema, " + ex.toString());
-			System.exit(BAD_SCHEMA_FILE);
-		}
-
-		Validator valer = schema.newValidator();
-		try{
-			Source src = new StreamSource(lArgs[0]);
-			valer.validate(src);
+			ds = new DataSource(lArgs[0]);
 		}
 		catch(SAXException ex){
 			logger.log(Level.SEVERE, "DSID file "+lArgs[0] +" didn't pass validation, reason:\n\t"+
@@ -293,29 +301,8 @@ public class RunRdr{
 			System.exit(DSID_IOERROR);
 		}
 
-
-		// Document validated, now let's use it to get work done
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
-		dbf.setValidating(false);
-		dbf.setCoalescing(true);
-		
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document dsid = null;
-		try{
-			dsid = db.parse(lArgs[0]);
-		}
-		catch(SAXException ex){
-			logger.log(Level.SEVERE, "Couldn't parse DSID file, "+ex.toString());
-			System.exit(DSID_INVALID);
-		}
-		catch(IOException ex){
-			logger.log(Level.SEVERE, "Couldn't load DSID file, "+ex.toString());
-			System.exit(DSID_IOERROR);
-		}
-
 		// Treat no arguments the same as asking for 'info'
-		if((lArgs.length == 1)||(lArgs[1].toLowerCase().equals("info")))
+	/*	if((lArgs.length == 1)||(lArgs[1].toLowerCase().equals("info")))
 			System.exit(info(logger,dsid));
 
 		// Putting 'help' anywhere will trigger the help function
@@ -333,6 +320,8 @@ public class RunRdr{
 		// Standard run
 		int nRet = run(logger, dsid);
 		System.exit(nRet);
-	}
+	  */
 
+		System.exit(55);
+	}
 }

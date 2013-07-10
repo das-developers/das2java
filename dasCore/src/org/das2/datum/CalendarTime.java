@@ -2,6 +2,7 @@ package org.das2.datum;
 
 import java.text.ParseException;
 import java.util.StringTokenizer;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /** Represents a point in time, over thousands of years to nano-second resolution.
  * The Gegorian calendar is extended in both directions, which makes little sense
@@ -55,6 +56,12 @@ public class CalendarTime implements Comparable<CalendarTime>{
 		m_nMinute = 0;
 		m_nSecond = 0;
 		m_nNanoSecond = 0;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////
+	/** Static method to create a calender time set to now */
+	static public CalendarTime now(){
+		throw new NotImplementedException();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
