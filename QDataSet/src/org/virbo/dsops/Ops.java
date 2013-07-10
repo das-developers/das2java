@@ -44,6 +44,7 @@ import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetIterator;
+import static org.virbo.dataset.DataSetOps.slice0;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -3319,6 +3320,32 @@ public class Ops {
     public static QDataSet slice0( QDataSet ds, int idx ) {
         return ds.slice(idx);
     }
+
+    /**
+     * returns the slice at the given slice location.
+     * @param ds ripples(20,20).  Presently this must be a simple table.
+     * @param slice dataset("10.3")
+     * @return 
+     */
+    public static QDataSet slice0( QDataSet ds, QDataSet sliceds ) {
+        if ( sliceds.rank()!=0 ) {
+            throw new IllegalArgumentException("sliceds must be rank 0");
+        }
+        QDataSet dep0= SemanticOps.xtagsDataSet(ds);
+        if ( dep0.rank()!=1 ) {
+            throw new IllegalArgumentException("dataset must have rank 1 tags");
+        }
+        QDataSet findex= Ops.findex( dep0, sliceds );
+        double f= findex.value();
+        if ( f>=0. && f<dep0.length() ) {
+            return slice0( ds, (int)Math.round(f) );
+        } else if ( f<0 ) {
+            throw new IndexOutOfBoundsException("slice is before the data");
+        } else { 
+            throw new IndexOutOfBoundsException("slice is after the data");
+        }
+    }    
+    
     
     /**
      * @see DataSetOps.slice1
