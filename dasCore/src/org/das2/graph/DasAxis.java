@@ -1064,7 +1064,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * read.
      */
     private void updateTCADataSet() {
-        QFunction ltcaFunction= this.tcaFunction;
+        QFunction ltcaFunction= this.tcaFunction; 
         if ( ltcaFunction==null ) {
             this.tcaData= null;
             return;
