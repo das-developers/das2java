@@ -322,8 +322,14 @@ public class FFTUtil {
         double[] result= new double[x.length()];
         result[0]= 0.;
         int n= x.length();
-        double T= ( x.value(n-1)-x.value(0) ) / (n-1);
-        double Tcheck= x.value(1)-x.value(0);
+        double T,Tcheck;
+        if ( n>120 ) {
+            T= ( x.value(n-1)-x.value(0) ) / (n-1);
+            Tcheck= ( x.value(60)-x.value(0) ) / 60 ;
+        } else {
+            T= ( x.value(n-1)-x.value(0) ) / (n-1);
+            Tcheck= x.value(1)-x.value(0);
+        }
         if ( Math.abs( ( T-Tcheck ) / ( T ) ) > 0.001 ) {
             System.err.println("WARNING: timetags do not appear to be uniform: "+x );
         }
