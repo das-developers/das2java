@@ -118,7 +118,10 @@ public class FileStorageModelNew {
     public String getRepresentativeFile( ProgressMonitor monitor ) throws IOException {
         return getRepresentativeFile( monitor, null );
     }
-
+    
+    public String getRepresentativeFile( ProgressMonitor monitor, String childRegex ) throws IOException {
+        return getRepresentativeFile( monitor, childRegex, null );
+    }
     /**
      * this is introduced to support discovery, where we just need one file to
      * get started.  Before, there was code that would list all files, then use
@@ -128,14 +131,17 @@ public class FileStorageModelNew {
      * @param childRegex the parent must contain a file/folder matching childRegex
      * @return null if no file is found
      */
-    public String getRepresentativeFile( ProgressMonitor monitor, String childRegex ) throws IOException {
+    public String getRepresentativeFile( ProgressMonitor monitor, String childRegex, DatumRange range ) throws IOException {
         String listRegex;
 
         FileSystem[] fileSystems;
         String[] names;
+        String parentRegex=null;
+        DatumRange range1;  // the range from the parent we are looking for.  This is to limit searches...
+        
         if ( parent!=null ) {
-            String parentRegex= getParentRegex(regex);
-            String one= parent.getRepresentativeFile( monitor,regex.substring(parentRegex.length()+1) );
+            parentRegex= getParentRegex(regex);
+            String one= parent.getRepresentativeFile( monitor,regex.substring(parentRegex.length()+1), range );
             if ( one==null ) return null;
             names= new String[] { one }; //parent.getNamesFor(null);
             fileSystems= new FileSystem[names.length];
@@ -156,44 +162,69 @@ public class FileStorageModelNew {
         
         String result= null;
 
-        for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
-            String[] files1= fileSystems[i].listDirectory( "/", listRegex );
-            int j= files1.length-1;
-            while ( j>=0 && result==null ) {
-                String ff= names[i].equals("") ? files1[ j ] : names[i]+"/"+files1[ j ];
-                if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                //try {
-                    HashMap<String,String> extra= new HashMap();
-                    DatumRange tr= getDatumRangeFor( ff, extra );
-                    boolean versionOk= true;
-                    if ( versionGe!=null && versioningType.comp.compare( extra.get("v"), versionGe )<0 ) versionOk=false;
-                    if ( versionLt!=null && versioningType.comp.compare( extra.get("v"), versionLt )>=0 ) versionOk=false;
-                    if ( versionOk && timeParser.getValidRange().contains( tr ) ) {
-                        if ( childRegex!=null ) {
-                            String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex);
-                            if ( kids.length>0 ) {
+        while ( result==null ) {
+            for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
+                String[] files1= fileSystems[i].listDirectory( "/", listRegex );
+                int j= files1.length-1;
+                while ( j>=0 && result==null ) {
+                    String ff= names[i].equals("") ? files1[ j ] : names[i]+"/"+files1[ j ];
+                    if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
+                    //try {
+                        HashMap<String,String> extra= new HashMap();
+                        DatumRange tr= getDatumRangeFor( ff, extra );
+                        boolean versionOk= true;
+                        if ( versionGe!=null && versioningType.comp.compare( extra.get("v"), versionGe )<0 ) versionOk=false;
+                        if ( versionLt!=null && versioningType.comp.compare( extra.get("v"), versionLt )>=0 ) versionOk=false;
+                        if ( versionOk && timeParser.getValidRange().contains( tr ) && ( range==null || range.intersects(tr) ) ) {
+                            if ( childRegex!=null ) {
+                                String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex);
+                                if ( kids.length>0 ) {
+                                    result= ff;
+                                }
+                            } else {
                                 result= ff;
                             }
-                        } else {
-                            result= ff;
+                        }
+                    //} catch ( ParseException ex ) {
+                    // 
+                    //}
+                    if ( result==null ) j--;
+                }
+            }
+
+            if ( allowGz ) {
+                if ( result==null) {
+                    for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
+                        String[] files1= fileSystems[i].listDirectory( "/", listRegex + ".gz" );
+                        if ( files1.length>0 ) {
+                            int last= files1.length-1;
+                            String ff= names[i].equals("") ? files1[ last ] : names[i]+"/"+files1[ last ];
+                            if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
+                            result= ff.substring( 0,ff.length()-3 );
                         }
                     }
-                //} catch ( ParseException ex ) {
-                // 
-                //}
-                if ( result==null ) j--;
+                }
             }
-        }
-
-        if ( allowGz ) {
-            if ( result==null) {
-                for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
-                    String[] files1= fileSystems[i].listDirectory( "/", listRegex + ".gz" );
-                    if ( files1.length>0 ) {
-                        int last= files1.length-1;
-                        String ff= names[i].equals("") ? files1[ last ] : names[i]+"/"+files1[ last ];
-                        if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
-                        result= ff.substring( 0,ff.length()-3 );
+            
+            if ( result==null ) {
+                if ( parent==null  ) {
+                    return null;
+                } else { // fall back to old code that would list everything.
+                    range1= parent.getRangeFor(names[0]);
+                    range1= range1.previous();
+                    if ( range!=null && !range.intersects(range1) ) {
+                        return null;
+                    }
+                    String one= parent.getRepresentativeFile( monitor,regex.substring(parentRegex.length()+1), range1 );
+                    if ( one==null ) return null;
+                    names= new String[] { one }; //parent.getNamesFor(null);
+                    fileSystems= new FileSystem[names.length];
+                    for ( int i=0; i<names.length; i++ ) {
+                        try {
+                            fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor ); // 3523492: allow the FS type to change; eg to zip.
+                        } catch ( Exception e ) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
