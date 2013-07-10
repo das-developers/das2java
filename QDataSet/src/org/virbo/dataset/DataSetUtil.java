@@ -2425,7 +2425,11 @@ public class DataSetUtil {
                     if ( extent.value(1)==extent.value(0) ) {
                         result.append( DataSetUtil.format(cds.slice(0),false) );  // for CLUSTER/PEACE this happens where rank 1 context is all the same value
                     } else {
-                        result.append(DataSetUtil.format(extent, false)).append(" ").append( cds.length() ).append( " different values"); // slice was probably done when we should't have.
+                        String name= (String) ds.property(QDataSet.NAME);
+                        if ( name==null ) name="data";
+                        String label= name + " varies from " + extent.slice(0) + " to "+ extent.slice(1);
+                        result.append(label);
+                        //result.append(DataSetUtil.format(extent, false)).append(" ").append( cds.length() ).append( " different values"); // slice was probably done when we should't have.
                     }
                 }
             } else {
