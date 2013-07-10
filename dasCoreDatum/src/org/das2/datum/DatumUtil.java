@@ -27,6 +27,8 @@ import java.text.ParseException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.DefaultDatumFormatterFactory;
@@ -345,29 +347,26 @@ public final class DatumUtil {
 
     /**
      * Split the string to separate magnitude component from units component.
-     * "5" -> [ "5" ]
+     * "5" -> [ "5", "" ]
      * "5 m" -> [ "5", "m" ]
      * "5m" -> [ "5", "m" ]
      * "4.5m^2" -> [ "4.5", "m^2" ] 
      * "4.5e6m^2" -> [ "4.5e6", "m^2" ]
-     * @param s
-     * @return one or two element array
+     * "-1" -> [ "-1", "" ]
+     * "-1s" -> [ "-1", "s" ]
+     * "-1.0e-6s" -> [ "-1e-6", "s" ]
+     * "5 Deg N" ->  [ "5", "Deg N" ]
+     * @param s the string to break up
+     * @return two element array
      */
     public static String[] splitDatumString( String s ) {
-        String[] ss= s.trim().split("\\s",2); //DONE: "5 Deg N" ->  "5" "Deg N"
-        if ( ss.length==1 ) { // sweep through to check for units.
-            int i=0;
-            int n= ss[0].length();
-            char t= ss[0].charAt(i);
-            boolean noexp= true;
-            while ( i<n && ( Character.isDigit(t) || t=='.' || ( ( t=='E' || t=='e' ) && noexp && ( i<n-1 ) && Character.isDigit(ss[0].charAt(i+1)) ) ) ) {
-                i++;
-                if ( t=='E' || t=='e' ) noexp= false;
-                if ( i<n ) t= ss[0].charAt(i);
-            }
-            if ( i<n ) {
-                ss= new String[] { ss[0].substring(0,i), ss[0].substring(i) };
-            }
+        Pattern p= Pattern.compile("([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)(.*)");
+        
+        String[] ss= new String[2];
+        Matcher m= p.matcher(s);
+        if ( m.find() ) {
+            ss[0]= m.group(1);
+            ss[1]= m.group(3);
         }
         return ss;
     }
