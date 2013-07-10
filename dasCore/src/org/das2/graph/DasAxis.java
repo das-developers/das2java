@@ -1031,8 +1031,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     lcanvas.performingChange( DasAxis.this, tcaLock );
-                    updateTCASoon();
-                    lcanvas.changePerformed( DasAxis.this, tcaLock );
+                    try {
+                        updateTCASoon();
+                    } finally {
+                        lcanvas.changePerformed( DasAxis.this, tcaLock );
+                    }
                 }
             });
             tcaTimer.tickle("startTcaTimer");
@@ -1601,8 +1604,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             RequestProcessor.invokeLater( new Runnable() {
                 public void run() {
                    lcanvas.performingChange( DasAxis.this, tcaLock );
-                   updateTCAImmediately( );
-                   lcanvas.changePerformed( DasAxis.this, tcaLock );
+                   try {
+                       updateTCAImmediately( );
+                   } finally {
+                       lcanvas.changePerformed( DasAxis.this, tcaLock );
+                   }
                 }
             }, DasAxis.this );
         }
