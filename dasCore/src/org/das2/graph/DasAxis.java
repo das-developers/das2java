@@ -1042,7 +1042,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * The QFunction must have one input parameter which will be positions on this axis 
      * (e.g. times from a time axis).
      * @see setDrawTca, which turns on additional ticks.
-     * @param f will be called upon to generate auxiliary data sets.  
+     * @param f will be called upon to generate auxiliary data sets, or null to disable.
      */
     public synchronized void setTcaFunction( QFunction f ) {
         QFunction oldF= this.tcaFunction;
@@ -1065,7 +1065,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     private void updateTCADataSet() {
         QFunction ltcaFunction= this.tcaFunction;
-        if ( ltcaFunction==null ) return;
+        if ( ltcaFunction==null ) {
+            this.tcaData= null;
+            return;
+        }
         
         logger.fine("updateTCADataSet");
 
