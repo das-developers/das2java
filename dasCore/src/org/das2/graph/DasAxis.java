@@ -1022,12 +1022,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
         firePropertyChange("dataPath", oldValue, dataset);
     }
-
+    
     private void maybeStartTcaTimer() {
+        final DasCanvas lcanvas= getCanvas();
+        final Object tcaLock= "tcastart_"+this.getDasName();
+        lcanvas.registerPendingChange( this, tcaLock );
         if ( tcaTimer==null ) {
             tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
+                    lcanvas.performingChange( DasAxis.this, tcaLock );
                     updateTCASoon();
+                    lcanvas.changePerformed( DasAxis.this, tcaLock );
                 }
             });
             tcaTimer.tickle("startTcaTimer");
@@ -1573,35 +1578,31 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
-     * update the TCA (ephemeris) axis on the current thread, using the lock provided.
+     * update the TCA (ephemeris) axis on the current thread.
      * The lock will have pendingChange and changePerformed with it.
-     * @param tcaLock 
      */
-    private void updateTCAImmediately(Object tcaLock) {
-        DasCanvas lcanvas= getCanvas();
-        if ( lcanvas!=null ) {
-            lcanvas.performingChange( DasAxis.this, tcaLock );
+    private void updateTCAImmediately( ) {
             DasProgressWheel tcaProgress= new DasProgressWheel();
             tcaProgress.started();
             tcaProgress.getPanel(this);
             updateTCADataSet();
             tcaProgress.finished();
             repaint();
-            lcanvas.changePerformed( DasAxis.this, tcaLock );
-        }
     }
 
     /**
      * update the TCA dataset.  This will load the TCAs on a RequestProcessor thread sometime soon.
      */
     private void updateTCASoon() {
-        DasCanvas lcanvas= getCanvas();
+        final DasCanvas lcanvas= getCanvas();
         if ( lcanvas!=null ) {
             final Object tcaLock= "tcaload_"+this.getDasName();
             lcanvas.registerPendingChange( this, tcaLock );
             RequestProcessor.invokeLater( new Runnable() {
                 public void run() {
-                   updateTCAImmediately(tcaLock);
+                   lcanvas.performingChange( DasAxis.this, tcaLock );
+                   updateTCAImmediately( );
+                   lcanvas.changePerformed( DasAxis.this, tcaLock );
                 }
             }, DasAxis.this );
         }
