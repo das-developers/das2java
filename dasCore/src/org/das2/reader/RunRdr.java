@@ -95,9 +95,9 @@ public class RunRdr{
 + "  given in the file, parses the command line arguments into data selection\n"
 + "  parameters, and then runs the reader.\n"
 + "\n"
-+ "  Three special arguments are supported '--help', '--info' and '--das2'.  '--help'\n"
++ "  Three special arguments are supported '--help', '--info' and '--das2times'.  '--help'\n"
 + "  provides details on how to run the reader. '--info' describes the data generated \n"
-+ "  by the reader.  Putting '--das2' in the query string will cause the reader to \n"
++ "  by the reader.  Putting '--das2times' in the query string will cause the reader to \n"
 + "  to interperate arguments with out an equals sign to be start and end times.  This\n"
 + "  allows the reader to be compatible with Das2 server reader call semantics.\n"
 + "\n"
@@ -156,7 +156,7 @@ public class RunRdr{
 		int iPop = -1;
 		for(String sArg: lArgs){
 			iPop += 1;
-			if(sArg.toLowerCase().contains("--das2time=")){
+			if(sArg.toLowerCase().contains("--das2times=")){
 				int iTmp = sArg.indexOf('=');
 				if(iTmp == sArg.length() - 1){
 					logger.log(Level.SEVERE, "Missing time argument name in '"+sArg+"'");
@@ -171,10 +171,18 @@ public class RunRdr{
 		
 
 		// Standard run
-		List<Selector> lQuery = ds.parseQuery(lArgs);
-		Reader rdr = ds.newReader();
+		List<Selector> lQuery = null;
+		try{
+			lQuery = ds.parseQuery(lArgs);
+		}
+		catch(BadQueryException ex){
+			logger.log(Level.SEVERE, "Bad query: " + ex.getMessage());
+			System.exit(BAD_QUERY);
+		}
+
 		try{
 			try{
+				Reader rdr = ds.newReader();
 				rdr.retrieve(lQuery, OutputFormat.QSTREAM, System.out, logger);
 			}
 			catch(IOException ex){

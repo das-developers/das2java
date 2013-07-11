@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,9 +26,9 @@ import javax.xml.validation.Validator;
 import org.das2.datum.CalendarTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**  Generates a selector set by parsing a list of parameters which could be from a
  * command line.  This is intended mostly to help with command line readers.  But could
@@ -57,6 +58,8 @@ public class DataSource {
 		if(sText == null){
 			return new String[]{};
 		}
+
+		sText = sText.trim();
 
 		// Strip out all the newlines and tabs that might happen to be in the text
 		sText = sText.replaceAll("\t\r\n", "");
@@ -132,12 +135,51 @@ public class DataSource {
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
+	// Inner class to handle selection choices, or just simple selections
+
+	private static enum NodeType{TEMPLATE,CHOICE};
+	private class SelectorNode{
+		NodeType type;
+		Object item;
+
+		private SelectorNode(SelectorTplt tplt){
+			type = NodeType.TEMPLATE;
+			item = tplt;
+		}
+
+		private SelectorNode(List<SelectorTplt> list){
+			type = NodeType.CHOICE;
+			item = list;
+		}
+
+		private SelectorTplt getTemplate(){
+			if(type == NodeType.CHOICE)
+				throw new IllegalStateException("This is a choice node, not a template node");
+			return (SelectorTplt)item;
+		}
+
+		private void addChoice(SelectorTplt selectorTplt){
+			if(type == NodeType.TEMPLATE)
+				throw new IllegalStateException("This is a template node, not a choice node");
+			List<SelectorTplt> list = (List<SelectorTplt>)item;
+			list.add(selectorTplt);
+		}
+
+		private List<SelectorTplt> getChoices(){
+			if(type == NodeType.TEMPLATE)
+				throw new IllegalStateException("This is a template node, not a choice node");
+			return (List<SelectorTplt>)item;
+		}
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
 	// Per Instance //
 
 	String m_sDsidUrl = null;
 	CalendarTime m_ctLoad = null;
-	List<SelectorTplt> m_lSelTplts = null;
+	List<SelectorNode> m_lSelNodes = null;
 	Document m_dsid = null;
+	String m_sName = null;
 	String m_sDas2TimeKey = null;
 
 	/** Create a selector generator and initialize it from an XML datasource specification.
@@ -149,7 +191,7 @@ public class DataSource {
 		
 		m_sDsidUrl = sDsidUrl;
 
-		m_lSelTplts = new LinkedList<SelectorTplt>();
+		m_lSelNodes = new LinkedList<SelectorNode>();
 
 		// Okay, sDsidUrl is supposed to be a DSID file, let's validate it.
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -184,9 +226,38 @@ public class DataSource {
 
 		m_dsid = db.parse(sDsidUrl);
 
+		Element elTop = m_dsid.getDocumentElement();
 
-		// Parse the XML info into selector templates...
-		throw new NotImplementedException();
+		// Save our name
+		m_sName = elTop.getAttribute("name");
+
+		// Get the Selectors node
+		Element elSelTop = (Element) elTop.getElementsByTagName("selectors").item(0);
+
+		NodeList nl = elSelTop.getChildNodes();
+		for(int i = 0; i < nl.getLength(); i++){
+			Node node = nl.item(i);
+			if(node.getNodeType() != Node.ELEMENT_NODE) continue;
+			Element el = (Element)node;
+			
+			// Handle looping over selectors in a choice
+			String sElTagName = el.getTagName();
+			if(sElTagName.equals("choice")){
+
+				SelectorNode sn = new SelectorNode(new LinkedList<SelectorTplt>());
+				NodeList nlSub = el.getChildNodes();
+				for(int j = 0; j < nlSub.getLength(); j++){
+					Node nodeSub = nlSub.item(j);
+					if(nodeSub.getNodeType() != Node.ELEMENT_NODE) continue;
+					Element elSub = (Element)nodeSub;
+					sn.addChoice(new SelectorTplt(elSub));
+				}
+				m_lSelNodes.add(sn);
+				continue;
+			}
+
+			m_lSelNodes.add(new SelectorNode(new SelectorTplt(el)));
+		}
 	}
 
 	@Override
@@ -194,7 +265,9 @@ public class DataSource {
 		return String.format("%s @ %s", m_sDsidUrl,
 			                  m_ctLoad.toISO8601(CalendarTime.Resolution.SECOND));
 	}
-	
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// User readable information output //
 
 	/** Get basic information on this datasource, formatted as appropriate for generic
 	 * text display.
@@ -202,6 +275,19 @@ public class DataSource {
 	 * @return A multi-line text string suitable for display with a fixed width font.
 	 */
 	public String getInfo(){
+		return getInfo(false);
+	}
+
+	/** Get full information on this datasource, formatted as appropriate for generic
+	 * text display.
+	 *
+	 * @return A multi-line text string suitable for display with a fixed width font.
+	 */
+	public String getHelp(){
+		return getInfo(true);
+	}
+
+	protected String getInfo(boolean bParamHelp){
 
 		StringWriter strWriter = new StringWriter();
 		PrintWriter out = new PrintWriter(strWriter);
@@ -222,32 +308,40 @@ public class DataSource {
 		for(String sLine: lLines) out.print(sLine + "\n");
 		out.print("\n");
 
-		NodeList lDims = top.getElementsByTagName("dimension");
+		if(bParamHelp){
+			out.print("Data Selection Parameters:\n");
+			String sParamHelp = getParamHelp();
+			out.print(sParamHelp);
+		}
 
-		if(lDims.getLength() < 2)
-			out.print("Output:\n");
-		else
-			out.print("Outputs:\n");
+		if(!bParamHelp){
+			NodeList lDims = top.getElementsByTagName("dimension");
 
-		if((lDims != null)&&(lDims.getLength() > 0)){
-			for(int i = 0; i < lDims.getLength(); i++){
-				Element dim = (Element) lDims.item(i);
-				String sDimName = dim.getAttribute("name");
-				String sDimQuant = dim.getAttribute("quantity");
-				String sDimUnit = dim.getAttribute("unit");
+			if(lDims.getLength() < 2)
+				out.print("Output:\n");
+			else
+				out.print("Outputs:\n");
 
-				if(sDimQuant.substring(0, 1).toLowerCase().matches("[aeiour]"))
-					out.printf("   %s, an %s", sDimName, sDimQuant, sDimUnit);
-				else
-					out.printf("   %s, a %s", sDimName, sDimQuant, sDimUnit);
+			if((lDims != null)&&(lDims.getLength() > 0)){
+				for(int i = 0; i < lDims.getLength(); i++){
+					Element dim = (Element) lDims.item(i);
+					String sDimName = dim.getAttribute("name");
+					String sDimQuant = dim.getAttribute("quantity");
+					String sDimUnit = dim.getAttribute("unit");
 
-				if(! sDimUnit.toLowerCase().equals("n/a") )
-					out.printf(" in %s", sDimUnit);
-				out.printf("\n");
+					if(sDimQuant.substring(0, 1).toLowerCase().matches("[aeiour]"))
+						out.printf("   %s, an %s", sDimName, sDimQuant, sDimUnit);
+					else
+						out.printf("   %s, a %s", sDimName, sDimQuant, sDimUnit);
 
-				lLines = wrapText(dim.getTextContent(), 75, "      ");
-				for(String sLine: lLines) out.print(sLine+"\n");
-				out.print("\n");
+					if(! sDimUnit.toLowerCase().equals("n/a") )
+						out.printf(" in %s", sDimUnit);
+					out.printf("\n");
+
+					lLines = wrapText(dim.getTextContent(), 75, "      ");
+					for(String sLine: lLines) out.print(sLine+"\n");
+					out.print("\n");
+				}
 			}
 		}
 
@@ -260,20 +354,85 @@ public class DataSource {
 		return strWriter.toString();
 	}
 
-	/** Get command line argument help for this data source
+	/** Get command line argument help for this data source.
+	 * The help displayed will change based on wether setDas2Compatible has been set
+	 * for the datasource.
 	 *
 	 * @return A multi-line text string suitable for display with a fixed width font.
 	 */
-	public String getHelp(){
+	public String getParamHelp(){
 		
-		return null;
+		StringWriter strWriter = new StringWriter();
+		PrintWriter out = new PrintWriter(strWriter);
+		String[] lLines;
+
+		for(SelectorNode sn: m_lSelNodes){
+
+			if(sn.type == NodeType.TEMPLATE){
+
+				SelectorTplt tplt = sn.getTemplate();
+
+				//If this is a constant value, don't report it to the user
+				if(tplt.isConstant()) continue;
+
+				String sUnitStr = "";
+				if(!tplt.getUnitStr().equals("")) sUnitStr = "("+tplt.getUnitStr()+")";
+
+				if(tplt.getType() == Selector.Type.RANGE)
+					out.printf("   %s:beg=%s, %s:end=%s %s\n", tplt.getKey(), tplt.getValTpltStr(),
+						        tplt.getKey(), tplt.getValTpltStr(), sUnitStr);
+				else
+					out.printf("   %s=%s %s\n", tplt.getKey(), tplt.getValTpltStr(), sUnitStr);
+
+				lLines = wrapText("Select by: " + tplt.getSummary(), 75, "      ");
+				for(String sLine: lLines) out.print(sLine+"\n");
+
+				if(tplt.hasDescription()){
+					lLines = wrapText(tplt.getDescription(), 75, "      ");
+					for(String sLine: lLines) out.print(sLine+"\n");
+				}
+
+				out.print("\n");
+				continue;
+			}
+
+			// This is a choice, so go through the sub list twice, once to display
+			// command strings, the second time to display help text.
+			int nCount = 0;
+			for(SelectorTplt tplt: sn.getChoices()){
+				if(nCount > 0)
+					out.print("      --or--\n");
+
+				String sUnitStr = "";
+				if(!tplt.getUnitStr().equals("")) sUnitStr = "("+tplt.getUnitStr()+")";
+
+				if(tplt.getType() == Selector.Type.RANGE)
+					out.printf("   %s:beg=%s, %s:end=%s %s\n", tplt.getKey(), tplt.getValTpltStr(),
+						        tplt.getKey(), tplt.getValTpltStr(), sUnitStr);
+				else
+					out.printf("   %s=%s %s\n", tplt.getKey(), tplt.getValTpltStr(), sUnitStr);
+				nCount += 1;
+			}
+			out.print("\n");
+
+			for(SelectorTplt tplt: sn.getChoices()){
+				out.printf("      %s\n", tplt.getKey());
+				lLines = wrapText("Select by: " + tplt.getSummary(), 75, "         ");
+				for(String sLine: lLines) out.print(sLine+"\n");
+
+				if(tplt.hasDescription()){
+					lLines = wrapText(tplt.getDescription(), 75, "         ");
+					for(String sLine: lLines) out.print(sLine+"\n");
+				}
+				out.print("\n");
+			}
+		}
+
+		return strWriter.toString();
 	}
 
-	/** Get basic information on this datasource, formatted as appropriate for generic
-	 * text display.
-	 * @return The multi-line information string.
-	 */
-
+	
+	/////////////////////////////////////////////////////////////////////////////////////
 	/** Allow for Das2 Style start and end time specification.
 	 *  */
 	public void setDas2Compatible(String sTimeKey){
@@ -283,28 +442,176 @@ public class DataSource {
 	}
 
 
-	/** Check a query against the datasource definition
-	 *
-	 * @param lArgs
-	 * @return True if the query should run, or False if the query is not a valid request
-	 *         for this data source.
-	 */
-	boolean validateQuery(List<String> lArgs){
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Running Queries //
 
-		return false;
+	/** Convert a das2 style command line into a das3 one.
+	 * @param lArgs
+	 * @return
+	 */
+	private List<String> convertFromDas2(List<String> lArgs) throws BadQueryException{
+		List<String> lOut = new LinkedList<String>();
+
+		// Stage 1, break out the third arg, if needed
+		for(String sArg: lArgs){
+			sArg = sArg.trim();
+			
+			//Take off quotes around the arg if needed
+			sArg = sArg.replaceAll("^\"|\"$","");
+
+			// Whitespace seperated string are broken into list of strings.
+			lOut.addAll(Arrays.asList(sArg.split("\\s+")));
+		}
+
+		// Stage 2, convert the first two args that don't have an equals sign into
+		// the time parameter.
+		int nTimesConverted = 0;
+		for(int i = 0; i < lOut.size(); i++){
+			if(nTimesConverted > 1) break;
+
+			String sArg = lOut.get(i);
+			if(sArg.indexOf('=') == -1){
+				if(nTimesConverted == 0)
+					lOut.set(i, m_sDas2TimeKey + ":beg=" + sArg);
+				else
+					lOut.set(i, m_sDas2TimeKey + ":end=" + sArg);
+				nTimesConverted += 1;
+			}
+		}
+
+		if(nTimesConverted < 2)
+			throw new BadQueryException("Couldn't find das2 BEGIN and END time parameters. "
+				+ " Hint: New style time selection isn't compatible with das2 compatiablity mode");
+
+		return lOut;
 	}
 
-	/** Parse a query into a selector set*/
-	List<Selector> parseQuery(List<String> lArgs){
+	// Check to see if arguments are well formed
+	private void checkArg(String sArg) throws BadQueryException{
+		String[] lParts = sArg.split("[:=]");
+		if((lParts.length == 1)||(lParts.length >3))
+			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
+		if(sArg.indexOf('=') == -1)
+			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
+		for(String sPart: lParts)
+			if(sPart.length() < 1)
+				throw new BadQueryException("Syntax error in argument '"+sArg+"'");
+		if(lParts.length == 2)
+			return;
 
-		return null;
+		if(sArg.indexOf(':') == -1)
+			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
+		if(sArg.indexOf('=') >= sArg.indexOf(':'))
+			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
+		
+		if( (!lParts[1].equals("beg")) && (!lParts[1].equals("end")) )
+			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
+	}
+
+	// Get the key part
+	private String getKey(String sArg) throws BadQueryException{
+		String[] lParts = sArg.split("[:=]");
+		if(lParts.length < 2)
+			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
+		return lParts[0];
+	}
+
+	// Get the value part
+	private String getVal(String sArg){
+		return sArg.split("=")[1];
+	}
+
+	// is this a range argument?
+	private boolean isRange(String sArg){
+		String[] lParts = sArg.split("[:=]");
+		return (lParts.length == 3);
+	}
+
+	// Find the template that goes with this argument
+	private SelectorTplt getTemplate(String sKey) throws BadQueryException{
+
+		for(SelectorNode node: m_lSelNodes){
+			if(node.type == NodeType.CHOICE){
+				for(SelectorTplt tplt: node.getChoices()){
+					if(tplt.getKey().equals(sKey))
+						return tplt;
+				}
+				continue;
+			}
+			
+			SelectorTplt tplt = node.getTemplate();
+			if(tplt.getKey().equals(sKey))
+				return tplt;
+		}
+
+		throw new BadQueryException("Selection Key '"+sKey+"' is not defined for this datasource");
+	}
+	
+	/** Parse a query into a selector set*/
+	public List<Selector> parseQuery(List<String> lArgs) throws BadQueryException{
+
+		List<Selector> lSel = new LinkedList<Selector>();
+
+		//If we are set in das2 compatible mode, preprocess the query.
+		if(m_sDas2TimeKey != null)
+			lArgs = convertFromDas2(lArgs);
+
+		int iCurArg = 0;
+		while(iCurArg < lArgs.size()){
+
+			String sArg = lArgs.get(iCurArg);
+
+			// Check to see if the argument is well-formed
+			checkArg(sArg);
+
+			// See if this key is used for any of our templates
+			String sKey = getKey(lArgs.get(iCurArg));
+			SelectorTplt tplt = getTemplate(sKey);
+			if(tplt == null)
+				throw new BadQueryException("The key '"+sKey+"' isn't defined for Datasource "
+				                            + m_sName);
+
+			// If this is one part of a range arg, find the matching end and pull it out of
+			// the arg list.  This assumes that 
+			if(! isRange(sArg) ){
+				lSel.add( tplt.mkSelector(getVal(sArg)));
+			}
+			else{
+				int iEndArg = -1;
+
+				// If my current item contains "end" then I'm looking for "beg" and vice-versa
+				String sSide = "end";
+				if(sArg.contains(":end=")) sSide = "beg";
+
+				for(int j = iCurArg + 1; j < lArgs.size(); j++){
+					if(lArgs.get(j).startsWith(sKey)){
+						if(!lArgs.get(j).startsWith(sKey+":"+sSide+"="))
+							throw new BadQueryException("Syntax error in parameter '"+lArgs.get(j)+"'");
+
+						iEndArg = j;
+					}
+				}
+
+				if(iEndArg == -1)
+					throw new BadQueryException("Ending '"+sKey+"' range missing");
+
+				String sStopArg = lArgs.get(iEndArg);
+				lSel.add( tplt.mkRangeSelector( getVal(sArg), getVal(sStopArg)));
+				lArgs.remove(iEndArg);
+			}
+
+			// Move on to the next one, if available
+			iCurArg += 1;
+		}
+
+		return lSel;
 	}
 
 	/** Instantiate a reader to produce the query results
 	 *
 	 * @return
 	 */
-	Reader newReader(){
+	public Reader newReader(){
 
 		return null;
 	}

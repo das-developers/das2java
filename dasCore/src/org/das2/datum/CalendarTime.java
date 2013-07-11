@@ -1,8 +1,9 @@
 package org.das2.datum;
 
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.StringTokenizer;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import java.util.TimeZone;
 
 /** Represents a point in time, over thousands of years to nano-second resolution.
  * The Gegorian calendar is extended in both directions, which makes little sense
@@ -61,7 +62,21 @@ public class CalendarTime implements Comparable<CalendarTime>{
 	////////////////////////////////////////////////////////////////////////////////////
 	/** Static method to create a calender time set to now */
 	static public CalendarTime now(){
-		throw new NotImplementedException();
+
+		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+
+
+		CalendarTime ct = new CalendarTime();
+		ct.m_nYear = cal.get(Calendar.YEAR);
+		ct.m_nMonth = cal.get(Calendar.MONTH) + 1;
+		ct.m_nDom = cal.get(Calendar.DAY_OF_MONTH);
+		ct.m_nDoy = cal.get(Calendar.DAY_OF_YEAR);
+		ct.m_nHour = cal.get(Calendar.HOUR_OF_DAY);
+		ct.m_nMinute = cal.get(Calendar.MINUTE);
+		ct.m_nSecond = cal.get(Calendar.SECOND);
+		ct.m_nNanoSecond = cal.get(Calendar.MILLISECOND) * 1000000L;
+
+		return ct;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
