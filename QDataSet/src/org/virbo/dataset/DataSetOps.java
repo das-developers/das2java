@@ -1573,6 +1573,13 @@ public class DataSetOps {
             int idx= Integer.parseInt(arg);
             return idx;
         } catch ( NumberFormatException ex ) {
+            arg= arg.trim();
+            if ( arg.length()>2 && arg.startsWith("'") && arg.endsWith("'") ) {
+                arg= arg.substring(1,arg.length()-1);
+            }
+            if ( arg.length()>2 && arg.startsWith("\"") && arg.endsWith("\"") ) {
+                arg= arg.substring(1,arg.length()-1);
+            }
             QDataSet ds= Ops.dataset( arg );
             return ds;
         }
@@ -1939,8 +1946,8 @@ public class DataSetOps {
                 }
                 if ( s0.hasNext() ) s0.next(); // ?? why TODO: verify this
             } else if (cmd0.startsWith("|slice") && cmd0.length() > 6) {
-                s0.nextInt();
-                s1.nextInt();
+                s0.next();
+                s1.next();
             } else if (cmd0.equals("|smooth") ) {
                 s0.nextInt();
                 s1.nextInt();
