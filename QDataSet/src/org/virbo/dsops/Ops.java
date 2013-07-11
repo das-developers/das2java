@@ -2949,7 +2949,9 @@ public class Ops {
     
     /**
      * coerce Java objects like arrays Lists and scalars into a QDataSet.  
-     * This is introduced to mirror the useful Jython dataset command.
+     * This is introduced to mirror the useful Jython dataset command.  This is a nasty business that
+     * is surely going to cause all sorts of problems, so we should do it all in one place.
+     * See http://jfaden.net:8080/hudson/job/autoplot-test029/
      * This supports:
      *   int, float, double, etc to Rank 0 datasets
      *   List&lt;Number&gt; to Rank 1 datasets.
@@ -2959,6 +2961,7 @@ public class Ops {
      *   DatumRanges to rank 1 bins
      * 
      * @param arg0 null,QDataSet,Number,Datum,DatumRange,String,List,or array.
+     * @throws IllegalArgumentException if the argument cannot be parsed or converted.
      * @return QDataSet
      */
     public static QDataSet dataset( Object arg0 ) {
@@ -2973,10 +2976,20 @@ public class Ops {
         } else if ( arg0 instanceof DatumRange ) {
             return DataSetUtil.asDataSet( (DatumRange)arg0 );
         } else if ( arg0 instanceof String ) {
+            String sarg= (String)arg0;
             try {
-               return DataSetUtil.asDataSet( DatumUtil.parse(arg0.toString()) ); //TODO: someone is going to want lookupUnits that will allocate new units.
+               return DataSetUtil.asDataSet( DatumUtil.parse(sarg) ); //TODO: someone is going to want lookupUnits that will allocate new units.
             } catch (ParseException ex) {
-               throw new IllegalArgumentException( "unable to parse string: "+arg0 );
+               try {
+                   return DataSetUtil.asDataSet(TimeUtil.create(sarg));
+               } catch ( ParseException ex2 ) {
+                   DatumRange dr= DatumRangeUtil.parseISO8601Range(sarg);
+                   if ( dr==null ) {
+                       throw new IllegalArgumentException( "unable to parse string: "+sarg );
+                   } else {
+                       return DataSetUtil.asDataSet(dr);
+                   }
+               }
             }
         } else if ( arg0 instanceof List ) {
             List p= (List)arg0;
