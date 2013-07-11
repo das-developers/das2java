@@ -5,29 +5,13 @@
 
 package org.das2.reader;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /** Provide a command line interface for executing readers that implement the DataStreamSrc
@@ -54,187 +38,20 @@ public class RunRdr{
 	public static final int NO_DSID_SPECIFIED = 3;
 	public static final int DSID_INVALID      = 4;
 	public static final int DSID_IOERROR      = 6;
+	public static final int DATA_FILE_IOERROR = 7;
+	public static final int OUTPUT_IOERROR    = 8;
+	public static final int BAD_QUERY         = 10;
 	public static final int BAD_SCHEMA_FILE   = 42;
 
 
-	/** Line wrap function, taken from
-	 *   http://progcookbook.blogspot.com/2006/02/text-wrapping-function-for-java.html
-	 * and then customized a little
-	 *
-	 * @param sText - The text to wrap
-	 * @param nLineLen - The length of each lines text area
-	 * @param sPrefix - A prefix string, to be added to each line, if not null
-	 * @return
-	 */
-	public static String[] wrapText(String sText, int nLineLen, String sPrefix){
-		// return empty array for null text
-		if(sText == null){
-			return new String[]{};
-		}
-
-		// Strip out all the newlines and tabs that might happen to be in the text
-		sText = sText.replaceAll("\t\r\n", "");
-
-		// Collapse 2+ spaces to a single space
-		sText = sText.replaceAll("\\s+", " ");
-
-		// return text if len is zero or less
-		if(nLineLen <= 0){
-			return new String[]{sText};
-		}
-
-		// return text if less than length
-		if(sText.length() <= nLineLen){
-			if(sPrefix == null)
-				return new String[]{sText};
-			else
-				return new String[]{sPrefix + sText};
-		}
-
-		char[] chars = sText.toCharArray();
-		Vector lines = new Vector();
-		StringBuffer line = new StringBuffer();
-		StringBuffer word = new StringBuffer();
-
-		for(int i = 0; i < chars.length; i++){
-			word.append(chars[i]);
-
-			if(chars[i] == ' '){
-				if((line.length() + word.length()) > nLineLen){
-					lines.add(line.toString());
-					line.delete(0, line.length());
-				}
-
-				line.append(word);
-				word.delete(0, word.length());
-			}
-		}
-
-		// handle any extra chars in current word
-		if(word.length() > 0){
-			if((line.length() + word.length()) > nLineLen){
-				lines.add(line.toString());
-				line.delete(0, line.length());
-			}
-			line.append(word);
-		}
-
-		// handle extra line
-		if(line.length() > 0){
-			lines.add(line.toString());
-		}
-
-		String[] lRet = new String[lines.size()];
-		int c = 0; // counter
-		if(sPrefix == null){
-			for(Enumeration e = lines.elements(); e.hasMoreElements(); c++){
-				lRet[c] = (String) e.nextElement();
-			}
-		}
-		else{
-			for(Enumeration e = lines.elements(); e.hasMoreElements(); c++){
-				lRet[c] = sPrefix + (String) e.nextElement();
-			}
-		}
-
-		return lRet;
-	}
-
-	/** Helper to make digging out the value of sub-elements less wordy */
-	private static String getSubElementValue(Element element, String sSubName){
-		return element.getElementsByTagName(sSubName).item(0).getFirstChild().getNodeValue();
-	}
-
 	/////////////////////////////////////////////////////////////////////////////////////
-	/** Print an informational summary of the reader, but don't document all the command
-	 * line arguments.
-	 * @param logger
-	 * @param dsid
-	 * @return
-	 */
-	private static int info(Logger logger, Document dsid){
-		Element top = dsid.getDocumentElement();
-		String sName = top.getAttribute("name");
-		String sDesc = getSubElementValue(top, "description").trim();
-		String sSummary = getSubElementValue(top, "summary").trim();
-		String[] lLines;
-
-		System.out.print(sName + "\n");
-		lLines = wrapText(sSummary, 75, "   ");
-		for(String sLine: lLines) System.out.print(sLine+"\n");
-		System.out.print("\n");
-
-		System.out.print("Description:\n");
-		lLines = wrapText(sDesc, 75, "   ");
-		for(String sLine: lLines) System.out.print(sLine + "\n");
-		System.out.print("\n");
-
-		NodeList lDims = top.getElementsByTagName("dimension");
-
-		if(lDims.getLength() < 2)
-			System.out.print("Output:\n");
-		else
-			System.out.print("Outputs:\n");
-
-		if((lDims == null)||(lDims.getLength() == 0)){
-			System.out.print("     ERROR: Output quantities not specified!\n");
-			return DSID_INVALID;
-		}
-		else{
-			for(int i = 0; i < lDims.getLength(); i++){
-				Element dim = (Element) lDims.item(i);
-				String sDimName = dim.getAttribute("name");
-				String sDimQuant = dim.getAttribute("quantity");
-				String sDimUnit = dim.getAttribute("unit");
-				
-				if(sDimQuant.substring(0, 1).toLowerCase().matches("[aeiour]"))
-					System.out.printf("   %s, an %s", sDimName, sDimQuant, sDimUnit);
-				else
-					System.out.printf("   %s, a %s", sDimName, sDimQuant, sDimUnit);
-
-				if(! sDimUnit.toLowerCase().equals("n/a") )
-					System.out.printf(" in %s", sDimUnit);
-				System.out.printf("\n");
-
-				lLines = wrapText(dim.getTextContent(), 75, "      ");
-				for(String sLine: lLines) System.out.print(sLine+"\n");
-				System.out.print("\n");
-			}
-		}
-
-		// Finally, send the maintainer info
-		Element elMain = (Element) top.getElementsByTagName("maintainer").item(0);
-		System.out.print("Maintainer:\n");
-		System.out.printf("   %s <%s>\n\n", elMain.getAttribute("name"),
-			               elMain.getAttribute("email"));
-		return 0;
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/** Print help information for this readers command line */
-	private static int help(Logger logger, Document dsid, String sTitle){
-
-		Element top = dsid.getDocumentElement();
-		if(sTitle == null){
-			String sName = top.getAttribute("name");
-			System.out.printf("%s: command line data selectors\n", sName);
-		}
-
-		Element elSelectors = (Element) top.getElementsByTagName("selectors").item(0);
-		elSelectors.getChildNodes();
-
-		
-		return 0;
-	}
-
-	/** Run the thing. */
-	private static int run(Logger logger, Document dsid){
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-
-
+	
 	/** A Main function for running an arbitrary stream source */
-	static public void main( String[] lArgs) throws ParserConfigurationException{
+	@SuppressWarnings("ManualArrayToCollectionCopy")
+	static public void main( String[] vArgs){
+
+		List<String> lArgs = new LinkedList<String>();
+		for(String sArg: vArgs) lArgs.add(sArg);
 
 		Logger logger = Logger.getLogger("ReaderRunner");
 
@@ -248,7 +65,7 @@ public class RunRdr{
 		                            // the main logger
 
 		// If nothing is specified, just provide a hint
-		if(lArgs.length == 0){
+		if(lArgs.isEmpty()){
 
 			System.err.print("Data source ID file wasn't specified, use -h for help.\n");
 
@@ -260,24 +77,30 @@ public class RunRdr{
 
 		// If args[0] is special, provide more help
 		for(String sTest: new String[]{"-h", "--help", "help"}){
-			if(sTest.equals(lArgs[0].toLowerCase())){
+			if(sTest.equals(lArgs.get(0).toLowerCase())){
 				System.err.print(
   "\nRunRdr - Load and run a Das2 StreamSource from the command line.\n"
 + "\n"
 + "Usage:\n"
-+ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [info]\n"
++ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [--info]\n"
 + "\n"
-+ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE help\n"
++ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE --help\n"
 + "\n"
 + "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE key1=val1 key2=val2 ...\n"
++ "\n"
++ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE --das2time=key start stop key1=val1 key2=val2 ...\n"
 + "\n"
 + "Description:\n"
 + "  RunRdr parses a given Data Source ID file, loads the StreamSource Java class\n"
 + "  given in the file, parses the command line arguments into data selection\n"
 + "  parameters, and then runs the reader.\n"
 + "\n"
-+ "  Two special arguments are supported 'help' and 'info'.  'Help' provides details on\n"
-+ "  how to run the reader, and 'info' describes the data generated by the reader.\n"
++ "  Three special arguments are supported '--help', '--info' and '--das2'.  '--help'\n"
++ "  provides details on how to run the reader. '--info' describes the data generated \n"
++ "  by the reader.  Putting '--das2' in the query string will cause the reader to \n"
++ "  to interperate arguments with out an equals sign to be start and end times.  This\n"
++ "  allows the reader to be compatible with Das2 server reader call semantics.\n"
++ "\n"
 + "  If the only the DSID_FILE is supplied on the command line, then the program runs as\n"
 + "  if \"DSID_FILE info\" were the command line arguments.\n"
 + "\n"
@@ -287,13 +110,13 @@ public class RunRdr{
 		}
 
 		// Okay, args[0] is supposed to be a DSID file, let's validate it.
-		DataSource ds;
+		DataSource ds = null;
 		try{
-			ds = new DataSource(lArgs[0]);
+			ds = new DataSource(lArgs.get(0));
 		}
 		catch(SAXException ex){
-			logger.log(Level.SEVERE, "DSID file "+lArgs[0] +" didn't pass validation, reason:\n\t"+
-				        ex.getMessage());
+			logger.log(Level.SEVERE, "DSID file "+lArgs.get(0) +" didn't pass validation, "
+				        + "reason:\n\t"+ ex.getMessage());
 			System.exit(DSID_INVALID);
 		}
 		catch(IOException ex){
@@ -302,26 +125,83 @@ public class RunRdr{
 		}
 
 		// Treat no arguments the same as asking for 'info'
-	/*	if((lArgs.length == 1)||(lArgs[1].toLowerCase().equals("info")))
-			System.exit(info(logger,dsid));
-
+		if(lArgs.size() == 1){
+			String sInfo = ds.getInfo();
+			System.err.print(sInfo);
+			System.exit(0);
+		}
+		
+		
 		// Putting 'help' anywhere will trigger the help function
 		for(String sArg: lArgs){
-			if(sArg.toLowerCase().equals("help"))
-				System.exit(help(logger, dsid));
+			if((sArg.toLowerCase().equals("--help"))||(sArg.toLowerCase().equals("-h"))){
+				String sHelp = ds.getHelp();
+				System.err.print(sHelp);
+				System.exit(0);
+			}
 		}
-
+		
+		
 		// Putting 'info' anywhere will trigger the help function
 		for(String sArg: lArgs){
-			if(sArg.toLowerCase().equals("info"))
-				System.exit(info(logger, dsid));
+			if((sArg.toLowerCase().equals("--info"))||(sArg.toLowerCase().equals("-i"))){
+				String sInfo = ds.getInfo();
+				System.err.print(sInfo);
+				System.exit(0);
+			}
 		}
 
-		// Standard run
-		int nRet = run(logger, dsid);
-		System.exit(nRet);
-	  */
+		// Check to see if --das2 is in the arg list, if so set the query parser to be
+		// das2 compatible
+		int iPop = -1;
+		for(String sArg: lArgs){
+			iPop += 1;
+			if(sArg.toLowerCase().contains("--das2time=")){
+				int iTmp = sArg.indexOf('=');
+				if(iTmp == sArg.length() - 1){
+					logger.log(Level.SEVERE, "Missing time argument name in '"+sArg+"'");
+					System.exit(BAD_QUERY);
+				}
+				String sTimeKey = sArg.substring(iTmp+1);
+				ds.setDas2Compatible(sTimeKey);
+				lArgs.remove(iPop);
+				break;
+			}
+		}
+		
 
-		System.exit(55);
+		// Standard run
+		List<Selector> lQuery = ds.parseQuery(lArgs);
+		Reader rdr = ds.newReader();
+		try{
+			try{
+				rdr.retrieve(lQuery, OutputFormat.QSTREAM, System.out, logger);
+			}
+			catch(IOException ex){
+				logger.log(Level.SEVERE, null, ex);
+				System.exit(DATA_FILE_IOERROR);
+			}
+			catch(NoDataException ex){
+				String sMsg = "No records within the selection interval";
+
+				logger.log(Level.WARNING, sMsg, ex);
+				DasHdrBuf buf = new DasHdrBuf(0);
+				buf.add("<stream dataset_id=\"ds_0\" />\n");
+				buf.send(System.out);
+				buf.add("<exception type=\"NoDataInInterval\" message=\""+sMsg+"\"/>\n");
+				buf.send(System.out);
+			}
+			catch(BadQueryException ex){
+				logger.log(Level.SEVERE, "Internal error: BadQueryException, {0}.  "
+					           + "please notifiy the reader maintainer.", ex.toString());
+				System.exit(BAD_QUERY);
+			}
+		}
+		catch(IOException ex){
+			logger.log(Level.SEVERE, ex.toString());
+			System.exit(OUTPUT_IOERROR);
+		}
+
+		System.exit(0);
 	}
 }
