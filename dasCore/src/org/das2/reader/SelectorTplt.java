@@ -5,6 +5,9 @@
 
 package org.das2.reader;
 
+import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -152,12 +155,41 @@ public class SelectorTplt {
 	boolean isConstant(){            return m_bIsConstant; }
 	public String getValTpltStr(){     return m_sValueTpltStr; }
 
-	Selector mkSelector(String val){
-		throw new UnsupportedOperationException("Not yet implemented");
+	Selector mkSelector(String sValue) throws BadQueryException{
+		if(m_type == Selector.Type.RANGE)
+			throw new IllegalStateException("Use mkRangeSelector() to generate range"
+					                             + " type data selectors");
+		try{
+			if(m_type == Selector.Type.VALUE)
+				return new Selector(m_sKey, m_format, sValue);
+			if(m_type == Selector.Type.ENUM){
+
+				// Make sure the val is one of the enum choices
+				String[] lLegalVals = m_sValueTpltStr.split("\\|");
+				for(String sLegal: lLegalVals){
+					if(sLegal.equals(sValue))
+						return new Selector(m_sKey, sValue);
+				}
+				throw new BadQueryException("Value '"+sValue+"' is not a valid choice for the '"
+					                         + m_sKey + "' enumeration.");
+			}
+		}
+		catch(ParseException ex){
+			throw new BadQueryException(ex.getMessage());
+		}
+		return null;
 	}
 
-	Selector mkRangeSelector(String val, String val0){
-		throw new UnsupportedOperationException("Not yet implemented");
+	Selector mkRangeSelector(String sBeg, String sEnd) throws BadQueryException{
+		if(m_type != Selector.Type.RANGE)
+			throw new IllegalStateException("Use mkSelector() to generate single value data "
+				                             + "selectors");
+		try{
+			return new Selector(m_sKey, m_format, sBeg, sEnd);
+		}
+		catch(ParseException ex){
+			throw new BadQueryException(ex.getMessage());
+		}
 	}
 
 

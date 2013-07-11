@@ -171,9 +171,10 @@ public class RunRdr{
 		
 
 		// Standard run
+		List<String> lQueryArgs = lArgs.subList(1, lArgs.size());
 		List<Selector> lQuery = null;
 		try{
-			lQuery = ds.parseQuery(lArgs);
+			lQuery = ds.parseQuery(lQueryArgs);
 		}
 		catch(BadQueryException ex){
 			logger.log(Level.SEVERE, "Bad query: " + ex.getMessage());

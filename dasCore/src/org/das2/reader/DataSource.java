@@ -501,7 +501,7 @@ public class DataSource {
 
 		if(sArg.indexOf(':') == -1)
 			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
-		if(sArg.indexOf('=') >= sArg.indexOf(':'))
+		if(sArg.indexOf(':') >= sArg.indexOf('='))
 			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
 		
 		if( (!lParts[1].equals("beg")) && (!lParts[1].equals("end")) )
@@ -544,7 +544,7 @@ public class DataSource {
 				return tplt;
 		}
 
-		throw new BadQueryException("Selection Key '"+sKey+"' is not defined for this datasource");
+		throw new BadQueryException("Data selection key '"+sKey+"' is not defined for this datasource");
 	}
 	
 	/** Parse a query into a selector set*/
@@ -612,6 +612,8 @@ public class DataSource {
 	 * @return
 	 */
 	public Reader newReader(){
+
+		
 
 		return null;
 	}
