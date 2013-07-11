@@ -320,6 +320,7 @@ public class DatumRangeUtil {
      * "2012-03-27T12:22:36.786Z"
      * "2012-03-27T12:22:36"
      * (and some others) TODO: enumerate and test.
+     * TODO: this should use parseISO8601Datum.
      * @param stringIn iso8601 string.
      * @return null or int[7]: [ Y, m, d, H, M, S, nano ]
      */
