@@ -1560,6 +1560,23 @@ public class DataSetOps {
         return fillDs;
     }
 
+    /**
+     * container for the logic for slicing at an index vs slicing at a datum.  If the string is
+     * an integer, then we return the index.  If the index is a string, then we need to 
+     * find the corresponding index.
+     * @param dep
+     * @param integer or rank 0 dataset.
+     * @return 
+     */
+    public static Object getArgumentIndex( String arg ) {
+        try {
+            int idx= Integer.parseInt(arg);
+            return idx;
+        } catch ( NumberFormatException ex ) {
+            QDataSet ds= Ops.dataset( arg );
+            return ds;
+        }
+    }
 
     /**
      * see http://www.papco.org/wiki/index.php/DataReductionSpecs.  There's a big problem here:
@@ -1633,9 +1650,9 @@ public class DataSetOps {
 
                 } else if(cmd.startsWith("|slice") && cmd.length()>6 ) {
                     int dim= cmd.charAt(6)-'0';
-                    String arg= s.next();
-                    try {
-                        int idx= Integer.parseInt(arg);
+                    Object arg= getArgumentIndex( s.next() );
+                    if ( arg instanceof Integer ) {
+                        int idx= (Integer)arg;
                         if ( dim==0 ) {
                             if ( idx>=fillDs.length() ) idx=fillDs.length()-1;
                             if ( idx<0 ) idx=0;
@@ -1653,11 +1670,9 @@ public class DataSetOps {
                             if ( idx<0 ) idx=0;
                             fillDs= slice3(fillDs, idx);
                         }
-                    } catch ( NumberFormatException ex ) {
+                    } else {
                         if ( dim==0 ) {
-                            arg= getStringArg( arg );
-                            QDataSet ds= Ops.dataset( TimeUtil.create(arg) );
-                            fillDs= Ops.slice0( fillDs, ds );
+                            fillDs= Ops.slice0( fillDs, (QDataSet)arg );
                         } else {
                             throw new IllegalArgumentException("only slice0 works with strings");
                         }
