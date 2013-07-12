@@ -42,6 +42,8 @@ public class RunRdr{
 	public static final int OUTPUT_IOERROR    = 8;
 	public static final int BAD_QUERY         = 10;
 	public static final int BAD_SCHEMA_FILE   = 42;
+	public static final int BAD_DSID_FILE     = 50;
+	public static final int NOT_YET_IMPLEMENTED = 99;
 
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -180,6 +182,10 @@ public class RunRdr{
 			logger.log(Level.SEVERE, "Bad query: " + ex.getMessage());
 			System.exit(BAD_QUERY);
 		}
+		catch(ReaderDefException ex){
+			logger.log(Level.SEVERE, "Bad Setup: " + ex.getMessage());
+			System.exit(BAD_DSID_FILE);
+		}
 
 		try{
 			try{
@@ -201,9 +207,16 @@ public class RunRdr{
 				buf.send(System.out);
 			}
 			catch(BadQueryException ex){
-				logger.log(Level.SEVERE, "Internal error: BadQueryException, {0}.  "
-					           + "please notifiy the reader maintainer.", ex.toString());
+				logger.log(Level.SEVERE, "Internal error: BadQueryException, "+ ex.toString());
 				System.exit(BAD_QUERY);
+			}
+			catch(UnsupportedOperationException ex){
+				logger.log(Level.SEVERE, "That feature is not yet implemented: " + ex.toString());
+				System.exit(NOT_YET_IMPLEMENTED);
+			}
+			catch(ReaderDefException ex){
+				logger.log(Level.SEVERE, "Data Source XML file error: " + ex.toString());
+				System.exit(BAD_DSID_FILE);
 			}
 		}
 		catch(IOException ex){

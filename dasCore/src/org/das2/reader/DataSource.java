@@ -8,12 +8,16 @@ package org.das2.reader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -547,8 +551,13 @@ public class DataSource {
 		throw new BadQueryException("Data selection key '"+sKey+"' is not defined for this datasource");
 	}
 	
-	/** Parse a query into a selector set*/
-	public List<Selector> parseQuery(List<String> lArgs) throws BadQueryException{
+	/** Parse a query into a selector set and add in the Constant selectors
+	 *
+	 * @param lArgs A list of selection arguments
+	 * @return A list of selectors suitable for passing to Reader.retrieve or Reader.connect
+	 * @throws BadQueryException
+	 */
+	public List<Selector> parseQuery(List<String> lArgs) throws BadQueryException, ReaderDefException{
 
 		List<Selector> lSel = new LinkedList<Selector>();
 
@@ -604,6 +613,20 @@ public class DataSource {
 			iCurArg += 1;
 		}
 
+		// Add in the constant selectors from the XML definition
+		for(SelectorNode node: m_lSelNodes){
+			if(node.type == NodeType.TEMPLATE){
+				SelectorTplt tplt = node.getTemplate();
+				if(tplt.isConstant()) lSel.add(tplt.mkSelector());
+			}
+			else{
+				//Have to iterate over a choice node
+				for(SelectorTplt tplt: node.getChoices()){
+					if(tplt.isConstant()) lSel.add(tplt.mkSelector());
+				}
+			}
+		}
+
 		return lSel;
 	}
 
@@ -611,10 +634,68 @@ public class DataSource {
 	 *
 	 * @return
 	 */
-	public Reader newReader(){
+	public Reader newReader() throws UnsupportedOperationException, ReaderDefException
+	{
 
+		// Get the class and the list off Jars to add to the path.
+		Element elTop = m_dsid.getDocumentElement();
+		Element elRdr = (Element) elTop.getElementsByTagName("reader").item(0);
+
+		// Is this a java reader?
+		NodeList nl = elRdr.getElementsByTagName("javaClass");
+		if(nl.getLength() == 0){
+			throw new UnsupportedOperationException("Only JAVA readers are currently supporetd"
+				+ "but data source "+m_sDsidUrl+" doesn't specify a java based reader.");
+		}
+		Element elJavaClass = (Element) nl.item(0);
+		String sClassName = getSubElementValue(elJavaClass, "class");
+
+		nl = elJavaClass.getElementsByTagName("classpathext");
+		ClassLoader loader;
+		if(nl.getLength() == 0){
+			// Well, they say that this reader type is alread on the class path, let's trust em
+			loader = Thread.currentThread().getContextClassLoader();
+		}
+		else{
+			URL[] aUrls = new URL[nl.getLength()];
+			for(int i = 0; i< nl.getLength(); i++){
+				Element elPathExt = (Element) nl.item(i);
+				String sPathExt = elPathExt.getFirstChild().getNodeValue();
+				try{
+					aUrls[i] = new URL(sPathExt);
+				}
+				catch(MalformedURLException ex){
+					throw new ReaderDefException("Path extension '"+sPathExt+"' is not a valid URL", ex);
+				}
+			}
+
+			loader = new URLClassLoader(aUrls);
+		}
 		
 
-		return null;
+		Class rdrClass;
+		try{
+			rdrClass = loader.loadClass(sClassName);
+		}
+		catch(ClassNotFoundException ex){
+			throw new ReaderDefException("Class "+ sClassName +" was not found in the classpath", ex);
+		}
+		
+		if( ! Reader.class.isAssignableFrom(rdrClass) ){
+			throw new ReaderDefException("Class " + rdrClass.getSimpleName() +
+				               " doesn't support the 'org.das2.reader.Reader' interface.");
+		}
+
+		Reader rdrInst = null;
+		try{
+			rdrInst = (Reader) rdrClass.newInstance();
+		}
+		catch(InstantiationException ex){
+			throw new ReaderDefException("Can't make an instance of '"+rdrClass.getSimpleName()+"'", ex);
+		}
+		catch(IllegalAccessException ex){
+			throw new ReaderDefException("Can't make an instance of '"+rdrClass.getSimpleName()+"'", ex);
+		}
+		return rdrInst;
 	}
 }

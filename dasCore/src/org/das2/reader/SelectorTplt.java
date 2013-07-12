@@ -13,7 +13,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-/**
+/** Selector template.  Just pour in values to make real selectors!
  *
  * @author cwp
  */
@@ -27,6 +27,7 @@ public class SelectorTplt {
 	private Selector.Format m_format;
 	private String m_sValueTpltStr;
 	private boolean m_bIsConstant;
+	private String m_sContValue;
 
 	/** Helper to make digging out the value of sub-elements less wordy */
 	private static String getSubElementValue(Element element, String sSubName){
@@ -54,10 +55,14 @@ public class SelectorTplt {
 		else
 			m_sUnits = "";
 
-		if(el.hasAttribute("constant"))
+		if(el.hasAttribute("constant")){
 			m_bIsConstant = true;
-		else
+			m_sContValue = el.getAttribute("constant");
+		}
+		else{
+			m_sContValue = null;
 			m_bIsConstant = false;
+		}
 
 		//Get the sub-elements for summary and description and load those as well
 
@@ -154,6 +159,25 @@ public class SelectorTplt {
 	public String getName(){         return m_sName; }
 	boolean isConstant(){            return m_bIsConstant; }
 	public String getValTpltStr(){     return m_sValueTpltStr; }
+
+	/** Create a selector from a constant value */
+	Selector mkSelector() throws IllegalStateException, ReaderDefException{
+		if(!m_bIsConstant)
+			throw new IllegalStateException("Selector '"+m_sName+"' is not constant, so "
+				+ "value argument(s) must be supplied.");
+
+
+		try{
+			if(m_type == Selector.Type.VALUE)
+				return new Selector(m_sKey, m_format, m_sContValue);
+			
+			return new Selector(m_sKey, m_sContValue);
+		}
+		catch(ParseException ex){
+			throw new ReaderDefException("Constant value '"+m_sContValue+"' for selector '"+
+				                          m_sKey+"' fails to parse.", ex);
+		}
+	}
 
 	Selector mkSelector(String sValue) throws BadQueryException{
 		if(m_type == Selector.Type.RANGE)
