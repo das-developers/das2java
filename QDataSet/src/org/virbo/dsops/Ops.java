@@ -1271,6 +1271,7 @@ public class Ops {
     
     /**
      * element-wise function returns the greater of ds1 and ds2.
+     * If an element of ds1 or ds2 is fill, then the result is fill.
      * @param ds1
      * @param ds2
      * @return the bigger of the two, in the units of ds1.
@@ -1292,6 +1293,7 @@ public class Ops {
     
     /**
      * element-wise function returns the smaller of ds1 and ds2.
+     * If an element of ds1 or ds2 is fill, then the result is fill.
      * @param ds1
      * @param ds2
      * @return the smaller of the two, in the units of ds1.
