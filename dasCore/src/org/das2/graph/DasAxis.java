@@ -1953,7 +1953,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             boolean bottomLine = ((orientation == BOTTOM || oppositeAxisVisible) && blLineRect != null && blLineRect.intersects(clip));
             boolean bottomTicks = ((orientation == BOTTOM || oppositeAxisVisible) && blTickRect != null && blTickRect.intersects(clip));
             boolean bottomTickLabels = ((orientation == BOTTOM && tickLabelsVisible) && blLabelRect != null && blLabelRect.intersects(clip));
-            boolean bottomLabel = ((orientation == BOTTOM && !axisLabel.equals("")) && blTitleRect != null && blTitleRect.intersects(clip));
+            boolean bottomLabel = ((orientation == BOTTOM && !axisLabel.equals("")) ); // && blTitleRect != null && blTitleRect.intersects(clip));
             boolean topLine = ((orientation == TOP || oppositeAxisVisible) && trLineRect != null && trLineRect.intersects(clip));
             boolean topTicks = ((orientation == TOP || oppositeAxisVisible) && trTickRect != null && trTickRect.intersects(clip));
             boolean topTickLabels = ((orientation == TOP && tickLabelsVisible) && trLabelRect != null && trLabelRect.intersects(clip));
@@ -2032,8 +2032,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( debugBoundsBox ) {
                 Color c0= g.getColor();
                 g.setColor( Color.MAGENTA );
-                g.draw(clip);
-                g.drawLine( clip.x, clip.y+clip.height-1, clip.x+clip.width-1,  clip.y+clip.height-1 );
+                g.drawRoundRect( clip.x, clip.y, clip.width-1, clip.height-1, 14, 14 );
+                //g.drawLine( clip.x, clip.y+clip.height-1, clip.x+clip.width-1,  clip.y+clip.height-1 );
                 g.setColor( c0 );
             }
                     
@@ -2047,10 +2047,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int baseline;
                 int leftEdge;
                 g2.setFont(getLabelFont());
+                if ( debugBoundsBox ) { 
+                    baseline = bottomPosition + titlePositionOffset;
+                    g2.drawString( ">>"+axislabel1+"<<", clip.x, clip.y + g2.getFontMetrics().getHeight() );
+                    gtr.draw(g2, (float) clip.x, (float) clip.y + g2.getFontMetrics().getHeight()*2 );
+                    g2.drawString( ""+baseline+ " "+bottomPosition+ " " +titlePositionOffset + " "+bottomLabel, clip.x, clip.y + 3*g2.getFontMetrics().getHeight() );
+                }
                 if (bottomLabel) {
                     leftEdge = DMin + (DMax - DMin - titleWidth) / 2;
                     baseline = bottomPosition + titlePositionOffset;
                     gtr.draw(g2, (float) leftEdge, (float) baseline);
+                }
+                if ( debugBoundsBox ) {
+                    leftEdge = DMin + (DMax - DMin - titleWidth) / 2;
+                    baseline = bottomPosition + titlePositionOffset;
+                    g2.drawLine( clip.x, clip.y, (int)leftEdge, (int)baseline );
+                    System.err.println("20130712_1424");
                 }
                 if (topLabel) {
                     leftEdge = DMin + (DMax - DMin - titleWidth) / 2;
