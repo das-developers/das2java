@@ -356,11 +356,13 @@ public final class DatumUtil {
      * "-1s" -> [ "-1", "s" ]
      * "-1.0e-6s" -> [ "-1e-6", "s" ]
      * "5 Deg N" ->  [ "5", "Deg N" ]
+     * " 10 days" -> [ "10", "days" ]
      * See http://jfaden.net:8080/hudson/job/autoplot-test037/ws/splitDatumString.jy
      * @param s the string to break up
      * @return two element array
      */
     public static String[] splitDatumString( String s ) {
+        s= s.trim();
         Pattern p= Pattern.compile("([-+]?[0-9]*(\\.[0-9]*)?([eE][-+]?[0-9]+)?)(.*)");
         String[] ss= new String[2];
         Matcher m= p.matcher(s);
