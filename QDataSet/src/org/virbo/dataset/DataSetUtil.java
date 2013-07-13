@@ -1892,12 +1892,16 @@ public class DataSetUtil {
             }
         }
         QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
-        if ( bds!=null ) {
-            for ( int i=0; i< Math.min(1,bds.length()); i++ ) {
-                QDataSet bds1= DataSetOps.unbundle(ds,i,true); // assumes rank1, so we have excessive work for rank>1
-                Object o= bds1.property(QDataSet.DEPEND_1);
-                if ( o!=null && !(o instanceof QDataSet) ) {
-                    validate( bds1,problems,1) ;
+        if ( ds.rank()<2 && bds!=null ) { // this happens with CDF slice1, when we don't completely implement slice1.
+            problems.add( "BUNDLE_1 found but dataset is only rank 1");
+        } else {
+            if ( bds!=null ) {
+                for ( int i=0; i< Math.min(1,bds.length()); i++ ) {
+                    QDataSet bds1= DataSetOps.unbundle(ds,i,true); // assumes rank1, so we have excessive work for rank>1
+                    Object o= bds1.property(QDataSet.DEPEND_1);
+                    if ( o!=null && !(o instanceof QDataSet) ) {
+                        validate( bds1,problems,1) ;
+                    }
                 }
             }
         }
