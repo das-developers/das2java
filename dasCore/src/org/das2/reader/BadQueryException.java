@@ -17,4 +17,8 @@ public class BadQueryException extends Exception {
 		super(str);
 	}
 
+	public BadQueryException(String str, Throwable ex){
+		super(str, ex);
+	}
+
 }

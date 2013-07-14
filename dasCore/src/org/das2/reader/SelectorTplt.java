@@ -139,8 +139,8 @@ public class SelectorTplt {
 				sbValTplt.append( elItem.getAttribute("value") );
 				if(i > 0) sbDesc.append(", ");
 				sbDesc.append(elItem.getAttribute("value"));
-				sbDesc.append(" = ");
-				sbDesc.append(elItem.getAttribute("name"));
+				sbDesc.append(" - ");
+				sbDesc.append(elItem.getAttribute("summary"));
 			}
 			m_sValueTpltStr = sbValTplt.toString();
 			m_sDesciption = sbDesc.toString();
@@ -199,7 +199,7 @@ public class SelectorTplt {
 			}
 		}
 		catch(ParseException ex){
-			throw new BadQueryException(ex.getMessage());
+			throw new BadQueryException(ex.getMessage(), ex);
 		}
 		return null;
 	}

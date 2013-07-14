@@ -388,7 +388,7 @@ public class DataSource {
 				else
 					out.printf("   %s=%s %s\n", tplt.getKey(), tplt.getValTpltStr(), sUnitStr);
 
-				lLines = wrapText("Select by: " + tplt.getSummary(), 75, "      ");
+				lLines = wrapText(tplt.getSummary(), 75, "      ");
 				for(String sLine: lLines) out.print(sLine+"\n");
 
 				if(tplt.hasDescription()){
@@ -421,7 +421,7 @@ public class DataSource {
 
 			for(SelectorTplt tplt: sn.getChoices()){
 				out.printf("      %s\n", tplt.getKey());
-				lLines = wrapText("Select by: " + tplt.getSummary(), 75, "         ");
+				lLines = wrapText(tplt.getSummary(), 75, "         ");
 				for(String sLine: lLines) out.print(sLine+"\n");
 
 				if(tplt.hasDescription()){
@@ -490,26 +490,42 @@ public class DataSource {
 		return lOut;
 	}
 
-	// Check to see if arguments are well formed
+	// Check to see if arguments are well formed.  Be careful anything can appear after
+	// the = sign, even another equals
 	private void checkArg(String sArg) throws BadQueryException{
-		String[] lParts = sArg.split("[:=]");
-		if((lParts.length == 1)||(lParts.length >3))
-			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
-		if(sArg.indexOf('=') == -1)
-			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
-		for(String sPart: lParts)
-			if(sPart.length() < 1)
-				throw new BadQueryException("Syntax error in argument '"+sArg+"'");
-		if(lParts.length == 2)
-			return;
 
-		if(sArg.indexOf(':') == -1)
-			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
-		if(sArg.indexOf(':') >= sArg.indexOf('='))
-			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
-		
-		if( (!lParts[1].equals("beg")) && (!lParts[1].equals("end")) )
-			throw new BadQueryException("Syntax error in argument '"+sArg+"'");
+		sArg = sArg.trim();
+
+		if(sArg.length() < 3)
+			throw new BadQueryException("Argument is to short to be valid '"+sArg+"'");
+
+		int iEquals = sArg.indexOf('=');
+		if(iEquals < 0)
+			throw new BadQueryException("Missing equals '=' seperator in argument '"+sArg+"'");
+
+		if(iEquals == 0)
+			throw new BadQueryException("Key missing in argument '"+sArg+"'");
+
+		if(iEquals == (sArg.length() - 1))
+			throw new BadQueryException("Value missing in argument '"+sArg+"'");
+
+		String sKey = sArg.substring(0, iEquals);
+		String sVal = sArg.substring(iEquals+1, sArg.length());
+
+		// See if the key is split
+		int iColon = sKey.indexOf(':');  // Sounds like the new medical device from Apple
+		if(iColon < 0) return;
+
+		if((iColon == 0)||(iColon == (sKey.length() - 1))||(sKey.length() < 3))
+			throw new BadQueryException("Bad range key in argument '"+sArg+"'");
+
+		String sSide = sKey.substring(iColon + 1, sKey.length());
+		sKey = sKey.substring(0, iColon);
+
+		if((!sSide.equals("beg"))&&(!sSide.equals("end")))
+			throw new BadQueryException("Range side '"+sSide+"' is invalid in argument '"+sArg+"'");
+
+		return;
 	}
 
 	// Get the key part
@@ -528,7 +544,7 @@ public class DataSource {
 	// is this a range argument?
 	private boolean isRange(String sArg){
 		String[] lParts = sArg.split("[:=]");
-		return (lParts.length == 3);
+		return (lParts.length >= 3);
 	}
 
 	// Find the template that goes with this argument

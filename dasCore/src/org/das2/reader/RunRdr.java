@@ -84,27 +84,38 @@ public class RunRdr{
   "\nRunRdr - Load and run a Das2 StreamSource from the command line.\n"
 + "\n"
 + "Usage:\n"
-+ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [--info]\n"
++ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [--log=LEVEL] [--info] [--help]\n"
 + "\n"
-+ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE --help\n"
++ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [--log=LEVEL] key1=val1 key2=val2 ...\n"
 + "\n"
-+ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE key1=val1 key2=val2 ...\n"
-+ "\n"
-+ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE --das2time=key start stop key1=val1 key2=val2 ...\n"
++ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [--log=LEVEL] --das2time=key start stop key1=val1 key2=val2 ...\n"
 + "\n"
 + "Description:\n"
 + "  RunRdr parses a given Data Source ID file, loads the StreamSource Java class\n"
 + "  given in the file, parses the command line arguments into data selection\n"
 + "  parameters, and then runs the reader.\n"
 + "\n"
-+ "  Three special arguments are supported '--help', '--info' and '--das2times'.  '--help'\n"
-+ "  provides details on how to run the reader. '--info' describes the data generated \n"
-+ "  by the reader.  Putting '--das2times' in the query string will cause the reader to \n"
-+ "  to interperate arguments with out an equals sign to be start and end times.  This\n"
-+ "  allows the reader to be compatible with Das2 server reader call semantics.\n"
++ "  Four special arguments are supported '--log' --help', '--info' and '--das2times'.\n"
++ "\n"
++ "  --log=LEVEL\n"
++ "     Set the logging verbosity.  Log output is sent to the Standard Error channel.\n"
++ "     Use one of: 'error', 'warning', 'info', 'debug', 'trace'.  Error displays the\n"
++ "     least amount of information, finest the most.  The default is info.\n"
++ "\n"
++ "  --help\n"
++ "     Provide details on how to run the reader.\n"
++ "\n"
++ "  --info\n"
++ "    Describes the data source, including the type of data provided.\n"
++ "\n"
++ "  --das2times=KEY\n"
++ "    Turn on Das2 reader command line compatibility.  This will cause the first two\n"
++ "    arguments in the query string that don't have an '=' sign, and which are not\n"
++ "    recognized as a special argument to be treated as a range data selector with\n"
++ "    the key name KEY.  Typically KEY is 'scet'.\n"
 + "\n"
 + "  If the only the DSID_FILE is supplied on the command line, then the program runs as\n"
-+ "  if \"DSID_FILE info\" were the command line arguments.\n"
++ "  if \"DSID_FILE --info\" were the command line arguments.\n"
 + "\n"
 				);
 				System.exit(0); //Getting help is a normal thing to do.
@@ -179,7 +190,7 @@ public class RunRdr{
 			lQuery = ds.parseQuery(lQueryArgs);
 		}
 		catch(BadQueryException ex){
-			logger.log(Level.SEVERE, "Bad query: " + ex.getMessage());
+			logger.log(Level.SEVERE, "Bad query: " + ex.getMessage(), ex);
 			System.exit(BAD_QUERY);
 		}
 		catch(ReaderDefException ex){
