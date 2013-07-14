@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import javax.swing.filechooser.FileFilter;
 
@@ -83,9 +84,30 @@ public class Glob {
     
     /**
      * converts a glob into a regex.
+     * @param glob, like 'foo*.dat'
+     * @return the regular expression that implements, like 'foo.*\.dat'
      */
     public static String getRegex( String glob ) {
-        return glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
+        StringTokenizer tk= new StringTokenizer(glob,"*?.+\\", true);
+        StringBuilder result= new StringBuilder();
+        while ( tk.hasMoreElements() ) {
+            String nt= tk.nextToken();
+            if ( nt.equals("*") ) {
+                result.append(".*");
+            } else if ( nt.equals("?") ) {
+                result.append(".");
+            } else if ( nt.equals(".") ) {
+                result.append("\\.");
+            } else if ( nt.equals("+") ) {
+                result.append("\\+");
+            } else if ( nt.equals("\\") ) {
+                result.append("\\\\");
+            } else {
+                result.append(nt);
+            }
+        }
+        return result.toString();
+        //return glob.replaceAll("\\.","\\\\.").replaceAll("\\*","\\.\\*").replaceAll("\\?","\\.");
     }
     
     /**
