@@ -485,6 +485,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                 BufferedImage plotImage2;  // index color model
 
+                logger.log( Level.FINER, "axis units x:{0} y:{1} z:{2}", new Object[]{xAxis.getUnits(), yAxis.getUnits(), colorBar.getUnits()});                
                 Units xunits=null, yunits=null;
 
                 if ( fds!=null && fds.length()>0 ) {
