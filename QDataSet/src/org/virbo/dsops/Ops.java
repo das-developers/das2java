@@ -3889,7 +3889,7 @@ public class Ops {
         DDataSet result = DDataSet.createRank1(ds.length()/2);
         DDataSet resultDep0 = DDataSet.createRank1(ds.length()/2);
         for (int i = 0; i < ds.length()/2; i++) {
-            result.putValue(i, (i==0?1:4)*ComplexArray.magnitude2(ca,i) / binsize );
+            result.putValue(i, (i==0?1:4)*ComplexArray.magnitude2(ca,i) / binsize ); //TODO: why 2 and not 4?  Chris' study suggests 2 is correct.  http://www-pw.physics.uiowa.edu/~jbf/rbsp/script/chris/powerfft/checkPowerFFT.jy
             resultDep0.putValue( i, xtags[i] );
         }
         if ( invUnits!=null ) resultDep0.putProperty( QDataSet.UNITS, invUnits );
