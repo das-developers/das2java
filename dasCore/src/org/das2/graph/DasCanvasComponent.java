@@ -296,6 +296,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     }
     
     protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {
+        logger.fine("enter process DasUpdateEvent");
         if (isDisplayable()) {
             if (isDirty()) {
                 markClean();
