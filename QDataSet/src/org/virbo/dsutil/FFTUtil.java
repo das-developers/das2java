@@ -179,8 +179,9 @@ public class FFTUtil {
         
         DDataSet result= DDataSet.createRank1( powxTags.length() );
         
-        for ( int i=1; i<result.length(); i++ ) {
-            result.putValue(i-1,4*ComplexArray.magnitude2(ca,i) / binsize );
+        int i1;
+        for ( i1=0; i1<result.length(); i1++ ) {
+            result.putValue(i1,2*ComplexArray.magnitude2(ca,i1+1) / binsize );
         }
         
         Units u= (Units) vds.property( QDataSet.UNITS );
