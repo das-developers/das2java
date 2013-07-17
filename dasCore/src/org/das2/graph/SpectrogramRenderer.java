@@ -240,7 +240,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
 
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
-        logger.finer("entering SpectrogramRenderer.render");
+        logger.fine("entering SpectrogramRenderer.render");
         Graphics2D g2 = (Graphics2D) g;
 
         if ( parent==null ) return;
@@ -464,7 +464,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     @Override
     public synchronized void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
-        logger.finer("entering SpectrogramRenderer.updatePlotImage");
+        logger.fine("entering SpectrogramRenderer.updatePlotImage");
         updateImageCount++;
         reportCount();
         DasPlot lparent= getParent();
@@ -515,7 +515,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             && lcolorBar.getMemento().equals(cmemento)
                             && plotImageBounds2.width==rasterWidth  // TODO: figure out how plotImageBounds2 and xmemento get out of sync.
                             && plotImageBounds2.height==rasterHeight ) {
-                        logger.fine("same xaxis, yaxis, reusing raster");
+                        logger.finer("same xaxis, yaxis, reusing raster");
                     } else {
 
                         if ( plotImageBounds2==null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
@@ -524,7 +524,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
 
                         if (fds == null) {
-                            logger.fine("got null dataset, setting image to null");
+                            logger.finer("got null dataset, setting image to null");
                             plotImage = null;
                             plotImageBounds= null;
                             rebinDataSet = null;
@@ -536,7 +536,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
 
                         if (fds.length() == 0) {
-                            logger.fine("got empty dataset, setting image to null");
+                            logger.finer("got empty dataset, setting image to null");
                             plotImage = null;
                             plotImageBounds= null;
                             rebinDataSet = null;
@@ -566,7 +566,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             if ( UnitsUtil.isRatioMeasurement( xunits ) && UnitsUtil.isRatioMeasurement( xAxis.getUnits() ) ) {
                                 unitsWarning= true;
                             } else {
-                                logger.fine("dataset units are incompatable with x axis.");
+                                logger.finer("dataset units are incompatable with x axis.");
                                 plotImage = null;
                                 plotImageBounds= null;
                                 return;
@@ -578,7 +578,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                              if ( UnitsUtil.isRatioMeasurement( yunits ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                                 unitsWarning= true;
                             } else {
-                                logger.fine("dataset units are incompatable with y axis.");
+                                logger.finer("dataset units are incompatable with y axis.");
                                 plotImage = null;
                                 plotImageBounds= null;
                                 return;
@@ -590,7 +590,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             if ( SemanticOps.isBundle( fds ) ) { // this should be true because of code above
                                 zds= SemanticOps.getDependentDataSet(fds);
                             } else {
-                                logger.fine("dataset is not TableDataSet.");
+                                logger.finer("dataset is not TableDataSet.");
                                 plotImage = null;
                                 plotImageBounds= null;
                                 return;
