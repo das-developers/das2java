@@ -1654,6 +1654,7 @@ public class DasPlot extends DasCanvasComponent {
     @Override
     protected void processEvent(AWTEvent e) {
         if (e instanceof DasRendererUpdateEvent) {
+            logger.fine("process DasRendererUpdateEvent");
             DasRendererUpdateEvent drue = (DasRendererUpdateEvent) e;
             drue.getRenderer().updateImmediately();
             cacheImageValid = false;
