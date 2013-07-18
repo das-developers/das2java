@@ -1160,7 +1160,7 @@ public class SeriesRenderer extends Renderer {
         }
 
         boolean haveReportedUnitProblem= false;
-        if ( !xaxisUnitsOkay && !yaxisUnitsOkay && SemanticOps.getUnits(xds)==SemanticOps.getUnits(vds) && xAxis.getUnits()==yAxis.getUnits() ) {
+        if ( !xaxisUnitsOkay && !yaxisUnitsOkay && ( vds!=null && SemanticOps.getUnits(xds)==SemanticOps.getUnits(vds) ) && xAxis.getUnits()==yAxis.getUnits() ) {
              if ( unitsWarning ) {
                 //UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() )
                 lparent.postMessage( this, "axis units changed from \""+SemanticOps.getUnits(vds) + "\" to \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
