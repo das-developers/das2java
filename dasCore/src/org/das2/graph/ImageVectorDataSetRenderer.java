@@ -726,7 +726,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
             if ( SemanticOps.isRank2Waveform(ds1) ) {
                 ghostlyImageRank2(xAxis, yAxis, ds1, plotImageBounds);
             } else {
-                ghostlyImage2(xAxis, yAxis, ds1, plotImageBounds);
+                if ( ds.rank()==1 || ( ds.rank()==2 && SemanticOps.isBundle(ds) ) ) {
+                    ghostlyImage2(xAxis, yAxis, ds1, plotImageBounds);
+                } else {
+                    parent.postMessage(this, "dataset must be rank 1, rank 2 waveform, or rank 2 bundle", DasPlot.INFO, null, null);
+                }
             }
         }
 
