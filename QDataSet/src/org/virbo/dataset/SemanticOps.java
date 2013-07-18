@@ -38,6 +38,9 @@ public class SemanticOps {
      * @return
      */
     public static Units getUnits(QDataSet ds) {
+        if ( ds==null ) {
+            throw new NullPointerException("ds is null"); // breakpoint here
+        }
         Units u = (Units) ds.property(QDataSet.UNITS);
         if ( u==null && isJoin(ds) ) {
             u= (Units) ds.slice(0).property(QDataSet.UNITS);
