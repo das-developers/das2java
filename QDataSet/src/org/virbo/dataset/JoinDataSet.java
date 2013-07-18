@@ -133,21 +133,25 @@ public class JoinDataSet extends AbstractDataSet {
 
     @Override
     public double value(int i0) {
+        if ( rank!=1 ) throw new IllegalArgumentException("rank 1 access on rank "+rank+" join dataset");
         return datasets.get(i0).value();
     }
 
     @Override
     public double value(int i0, int i1) {
+        if ( rank!=2 ) throw new IllegalArgumentException("rank 2 access on rank "+rank+" join dataset");
         return datasets.get(i0).value(i1);
     }
 
     @Override
     public double value(int i0, int i1, int i2) {
+        if ( rank!=3 ) throw new IllegalArgumentException("rank 3 access on rank "+rank+" join dataset");        
         return datasets.get(i0).value(i1,i2);
     }
 
     @Override
     public double value(int i0, int i1, int i2, int i3 ) {
+        if ( rank!=4 ) throw new IllegalArgumentException("rank 4 access on rank "+rank+" join dataset");        
         return datasets.get(i0).value(i1,i2,i3);
     }
 
@@ -182,7 +186,7 @@ public class JoinDataSet extends AbstractDataSet {
 
     @Override
     public int length(int i0) {
-        if ( datasets.size()==0 && i0==0 ) {
+        if ( datasets.isEmpty() && i0==0 ) {
             return NO_DATASET_SIZE;
         }
         return datasets.get(i0).length();
@@ -190,7 +194,7 @@ public class JoinDataSet extends AbstractDataSet {
 
     @Override
     public int length(int i0, int i1) {
-        if ( datasets.size()==0 && i0==0 ) {
+        if ( datasets.isEmpty() && i0==0 ) {
             return NO_DATASET_SIZE;
         }
         return datasets.get(i0).length(i1);
@@ -198,7 +202,7 @@ public class JoinDataSet extends AbstractDataSet {
 
     @Override
     public int length(int i0, int i1, int i2 ) {
-        if ( datasets.size()==0 && i0==0 ) {
+        if ( datasets.isEmpty() && i0==0 ) {
             return NO_DATASET_SIZE;
         }
         return datasets.get(i0).length(i1,i2);
