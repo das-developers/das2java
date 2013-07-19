@@ -785,7 +785,7 @@ public class DasPlot extends DasCanvasComponent {
      * @param printing the bounds should be set for printing, which currently disabled the overSize rendering.
      *
      */
-    private void resetCacheImageBounds(boolean printing) {
+    private synchronized void resetCacheImageBounds(boolean printing) {
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
         if (overSize && !printing ) {
@@ -798,7 +798,7 @@ public class DasPlot extends DasCanvasComponent {
             cacheImageBounds = new Rectangle();
             cacheImageBounds.width = getWidth();
             cacheImageBounds.height = getHeight();
-            if ( printing && ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) ) {
+            if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
                 try {
                     System.err.println("cheesy code to fix getHeight=0 when printing");
                     Thread.sleep(100);
@@ -972,7 +972,11 @@ public class DasPlot extends DasCanvasComponent {
                     if ( getWidth()==0 || getHeight()==0 ) {
                         return;
                     }
-                    resetCacheImageBounds(false);
+                    resetCacheImageBounds(false);                    
+                    if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
+                        logger.info("https://sourceforge.net/p/autoplot/bugs/1076/");
+                        return;
+                    }
                     cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height,
                             BufferedImage.TYPE_4BYTE_ABGR);
                     plotGraphics = (Graphics2D) cacheImage.getGraphics();
