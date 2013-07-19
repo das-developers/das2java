@@ -1663,7 +1663,8 @@ public class DataSetOps {
                         if ( dim==0 ) {
                             if ( idx>=fillDs.length() ) idx=fillDs.length()-1;
                             if ( idx<0 ) idx=0;
-                            fillDs= slice0(fillDs, idx); //TODO: use fillDs.slice
+                            //fillDs= slice0(fillDs, idx); //TODO: use fillDs.slice
+                            fillDs= fillDs.slice(idx);
                         } else if ( dim==1 ) {
                             if ( idx>=fillDs.length(0) ) idx=fillDs.length(0)-1;
                             if ( idx<0 ) idx=0;
