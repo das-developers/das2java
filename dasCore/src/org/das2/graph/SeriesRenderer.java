@@ -2012,12 +2012,6 @@ public class SeriesRenderer extends Renderer {
         return this.dataSetSizeLimit;
     }
 
-    @Override
-    public void setDataSet(QDataSet ds) {
-        super.setDataSet(ds); //To change body of generated methods, choose Tools | Templates.
-        if ( ds!=null ) new Exception("setDataSet("+ds+")").printStackTrace();
-    }
-
     /**
      * Setter for property dataSetSizeLimit.
      * @param dataSetSizeLimit New value of property dataSetSizeLimit.
