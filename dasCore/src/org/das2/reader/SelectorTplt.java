@@ -6,8 +6,6 @@
 package org.das2.reader;
 
 import java.text.ParseException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -81,7 +79,7 @@ public class SelectorTplt {
 			if(sFmt.equals("BOOLEAN")) m_format = Selector.Format.BOOLEAN;
 			if(sFmt.equals("STRING")) m_format = Selector.Format.STRING;
 			if(sFmt.equals("DATETIME")){
-				m_format = Selector.Format.DATETIME;
+				m_format = Selector.Format.TIMEPOINT;
 				if(m_sUnits.equals(""))
 					m_sUnits="UTC";
 			}
@@ -102,7 +100,7 @@ public class SelectorTplt {
 			case INTEGER: m_sValueTpltStr = "INTEGER"; break;
 			case REAL:    m_sValueTpltStr = "REAL"; break;
 			case STRING:  m_sValueTpltStr = "STRING"; break;
-			case DATETIME: m_sValueTpltStr = "TIME"; break;
+			case TIMEPOINT: m_sValueTpltStr = "TIME"; break;
 			}
 			return;
 		}
@@ -114,7 +112,7 @@ public class SelectorTplt {
 			case INTEGER: m_sValueTpltStr = "INTEGER"; break;
 			case REAL:    m_sValueTpltStr = "REAL"; break;
 			case STRING:  m_sValueTpltStr = "STRING"; break;
-			case DATETIME: m_sValueTpltStr = "TIME"; break;
+			case TIMEPOINT: m_sValueTpltStr = "TIME"; break;
 			}
 			return;
 		}

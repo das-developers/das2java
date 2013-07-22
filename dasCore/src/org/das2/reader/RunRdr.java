@@ -6,7 +6,6 @@
 package org.das2.reader;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.ConsoleHandler;

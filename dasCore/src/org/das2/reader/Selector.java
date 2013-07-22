@@ -11,7 +11,7 @@ import org.das2.datum.TimeUtil;
 
 /** A selector encapsulates a request parameter, or parameter set, for a reader.
  * The most commonly used selector is a time range.  A time range selector would
- * most likely have the m_type = RANGE and m_format = DATETIME.
+ * most likely have the m_type = RANGE and m_format = TIMEPOINT.
  *
  * Implementation Note:  We may want to break this into a selector base class
  * with one derived class for each value of m_type.
@@ -23,7 +23,7 @@ public class Selector {
 	public static enum Type {VALUE, ENUM, RANGE };
 
 	/** Defines the value format for the selector */
-	public static enum Format {BOOLEAN, INTEGER, REAL, STRING, DATETIME};
+	public static enum Format {BOOLEAN, INTEGER, REAL, STRING, TIMEPOINT};
 
 	// Instance Data
 	private String m_sKey = null;
@@ -54,7 +54,7 @@ public class Selector {
 		case REAL:
 			m_dValAry[iSlot] = Double.parseDouble(sArg);
 			break;
-		case DATETIME:
+		case TIMEPOINT:
 			m_tValAry[iSlot] = new CalendarTime(sArg);
 			break;
 		}
@@ -79,7 +79,7 @@ public class Selector {
 		case BOOLEAN:  m_bValAry = new boolean [] {false, false}; break;
 		case INTEGER:  m_nValAry = new int [] {0,0}; break;
 		case REAL:     m_dValAry = new double [] {0,0}; break;
-		case DATETIME: m_tValAry = new CalendarTime [] {null, null}; break;
+		case TIMEPOINT: m_tValAry = new CalendarTime [] {null, null}; break;
 		}
 
 		storeArg(fmt, 0, sBeg);
@@ -107,7 +107,7 @@ public class Selector {
 		case BOOLEAN:  m_bValAry = new boolean [] {false}; break;
 		case INTEGER:  m_nValAry = new int [] {0}; break;
 		case REAL:     m_dValAry = new double [] {0}; break;
-		case DATETIME: m_tValAry = new CalendarTime [] {null}; break;
+		case TIMEPOINT: m_tValAry = new CalendarTime [] {null}; break;
 		}
 		storeArg(fmt, 0, sValue);
 	}
@@ -207,7 +207,7 @@ public class Selector {
 	/** Get the selection as time structure(s)
 	 */
 	public CalendarTime [] getTimeStruct(){
-		if(m_format != Format.DATETIME)
+		if(m_format != Format.TIMEPOINT)
 			throw new UnsupportedOperationException("Selector format is not DATETIME");
 
 		if(m_type != Type.RANGE)
