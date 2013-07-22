@@ -1046,7 +1046,7 @@ public class DataSetOps {
 
 
         if ( ib<0 || ib>=bundle.length() ) {
-            throw new IndexOutOfBoundsException("no such data set at index="+ib +" bundle.length()="+bundle.length() );
+            throw new IndexOutOfBoundsException("in "+bundleDs+" no such data set at index="+ib +" bundle.length()="+bundle.length() );
         }
 
         if ( bundle.rank()==1 ) { //simple legacy bundle was once DEPEND_1.
