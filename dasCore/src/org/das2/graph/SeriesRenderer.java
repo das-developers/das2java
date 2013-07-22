@@ -2015,7 +2015,7 @@ public class SeriesRenderer extends Renderer {
     @Override
     public void setDataSet(QDataSet ds) {
         super.setDataSet(ds); //To change body of generated methods, choose Tools | Templates.
-        new Exception("setDataSet("+ds+")").printStackTrace();
+        if ( ds!=null ) new Exception("setDataSet("+ds+")").printStackTrace();
     }
 
     /**
