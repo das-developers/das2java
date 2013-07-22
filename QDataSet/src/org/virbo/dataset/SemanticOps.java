@@ -530,7 +530,11 @@ public class SemanticOps {
                 return dep1;
             }
         } else if ( isBundle(ds) ) {
-            return DataSetOps.unbundle( ds, 1 );
+            if ( ds.length(0)==1 ) { // test003_008 would use rank2 dataSet[IsoDat...=1441,1] to indicate Y(T).  http://www.rbsp-ect.lanl.gov/data_pub/autoplot/scripts/rbsp_ephem.jyds
+                return DataSetOps.unbundle(ds,0);
+            } else {
+                return DataSetOps.unbundle( ds, 1 );
+            }
         } else if ( isLegacyBundle(ds) ) {
             return DataSetOps.unbundle(ds,1);
         } else if ( isJoin(ds)) {
