@@ -217,7 +217,7 @@ public class RunRdr{
 				buf.send(System.out);
 			}
 			catch(BadQueryException ex){
-				logger.log(Level.SEVERE, "Internal error: BadQueryException, "+ ex.toString());
+				logger.log(Level.SEVERE, "Query problem: "+ ex.getMessage());
 				System.exit(BAD_QUERY);
 			}
 			catch(UnsupportedOperationException ex){
