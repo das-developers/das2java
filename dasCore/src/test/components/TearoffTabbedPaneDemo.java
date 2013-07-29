@@ -59,6 +59,9 @@ public class TearoffTabbedPaneDemo {
             }
         });
         panel.add( peek );
+        panel.setMinimumSize( new Dimension(400,300) );
+        panel.setPreferredSize( panel.getMinimumSize() );
+        
 
         return panel;
     }
