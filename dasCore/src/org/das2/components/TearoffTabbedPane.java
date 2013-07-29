@@ -440,8 +440,8 @@ public class TearoffTabbedPane extends JTabbedPane {
         window.toFront();
         window.requestFocus();
         window.setAlwaysOnTop(false); // security exception  //ubuntu 10.04 this returns to the bottom
-        window.setVisible(false);
-        window.setVisible(true);
+        //window.setVisible(false);
+        //window.setVisible(true);
     }
 
     /**
@@ -458,11 +458,12 @@ public class TearoffTabbedPane extends JTabbedPane {
             target.add(desc.title, selectedComponent);
             target.setSelectedIndex(target.getTabCount() - 1);
             target.resetTearOffBabysitterName();
+            Window w = SwingUtilities.getWindowAncestor(target);
             if (!target.isShowing()) {
-                Window w = SwingUtilities.getWindowAncestor(target);
-                w.setVisible(false);
+                //w.setVisible(false);
                 w.setVisible(true);
             }
+            raiseApplicationWindow(w);            
         } else {
             TearoffTabbedPane.this.tearOffIntoFrame(selectedTab);
         }
@@ -988,6 +989,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         if ( parentPane!=null ) {
             resetTearOffBabysitterName();
         }
+        raiseApplicationWindow( SwingUtilities.getWindowAncestor(this) );
         setSelectedIndex(selectedIndex);
     }
 
