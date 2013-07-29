@@ -621,6 +621,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             active= active0;
             modified = false;
 
+            saveFile= file;  // go ahead and set this in case client is going to do something with this.
+            
             updateStatus();
 
             updateClients();
@@ -804,8 +806,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             public void run() {
                                 try {
                                     loadFromFile(loadFile);
-                                    saveFile =
-                                            loadFile;
                                     updateStatus();
                                 } catch (IOException e) {
                                     DasExceptionHandler.handle(e);
