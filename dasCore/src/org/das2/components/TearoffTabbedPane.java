@@ -891,7 +891,9 @@ public class TearoffTabbedPane extends JTabbedPane {
         parent.addWindowStateListener(listener);
 
         final TearoffTabbedPane pane = new TearoffTabbedPane(this);
-
+        
+        final TearoffTabbedPane dockParent= this.parentPane!=null ? this.parentPane : this ;
+        
         p.translate(20, 20);
         newParent.setLocation(p);
         newParent.addWindowListener(new WindowAdapter() {
@@ -901,7 +903,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 Component[] cc= pane.getComponents();
                 parent.removeWindowStateListener(listener);
                 for ( Component c: cc ) {
-                    dock(c);
+                    dockParent.dock(c);
                 }
             }
         });
@@ -959,7 +961,10 @@ public class TearoffTabbedPane extends JTabbedPane {
     public void dock(Component c) {
         logger.log(Level.FINEST, "dock {0}", c);
         int selectedIndex = getSelectedIndex();
-        TabDesc td = (TabDesc) tabs.get(c);
+        TabDesc td = (TabDesc) this.tabs.get(c);
+        if ( td==null ) {
+            System.err.println("I thought this might happen...");
+        }
         int index = td.index;
         if ( index>=super.getTabCount() ) {
             System.err.println("something has gone wrong.  We haven't accounted for a tab which was removed.");
