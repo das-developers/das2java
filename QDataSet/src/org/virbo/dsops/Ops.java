@@ -152,7 +152,7 @@ public class Ops {
         //TODO: handle JOIN from RPWS group, which is not a QUBE...
         if ( ds1.rank()==ds2.rank() && ds1.rank()>0 ) {
             if ( ds1.length()!=ds2.length() ) {
-                throw new IllegalArgumentException("binary option on datasets of different lengths: "+ ds1 + " " + ds2 );
+                throw new IllegalArgumentException("binary operation on datasets of different lengths: "+ ds1 + " " + ds2 );
             }
         }
 
