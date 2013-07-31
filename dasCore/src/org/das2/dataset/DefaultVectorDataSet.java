@@ -212,11 +212,13 @@ public final class DefaultVectorDataSet extends AbstractVectorDataSet implements
         }
         
         public Object getProperty(String name) {
-            Object result= DefaultVectorDataSet.this.getProperty(planeIDs[index] + "." + name);
-            if ( result==null ) {
-                result= DefaultVectorDataSet.this.getProperty(name);
+			String planeProp = planeIDs[index] + "." + name;
+			if (DefaultVectorDataSet.this.hasProperty(name)) {
+            	return DefaultVectorDataSet.this.getProperty(planeProp);
+			}
+			else {
+                return DefaultVectorDataSet.this.getProperty(name);
             }
-            return result;
         }
         
         // TODO: this appears to have different logic than in ViewDataSet.  This needs to be resolved.

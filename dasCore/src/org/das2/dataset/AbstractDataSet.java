@@ -73,6 +73,10 @@ public abstract class AbstractDataSet implements DataSet {
     public Object getProperty(String name) {
         return properties.get(name);
     }
+
+	protected boolean hasProperty(String name) {
+		return properties.containsKey(name);
+	}
     
     public Map getProperties() {
         return new HashMap( properties );
