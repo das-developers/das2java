@@ -647,14 +647,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
         int xSize = getColumn().getDMaximum() - x;
         int ySize = getRow().getDMaximum() - y;
 
-        Shape saveClip;
-        if (getCanvas().isPrintingThread()) {
-            saveClip = graphics1.getClip();
-            graphics1.setClip(null);
-        } else {
-            saveClip = null;
-        }
-
         logger.fine("DasPlot clip=" + graphics1.getClip() + " @ "+getX()+","+getY() );
 
         Rectangle clip = graphics1.getClipBounds();
@@ -801,9 +793,6 @@ public class DasPlot extends DasCanvasComponent implements DataSetConsumer {
 
         getDasMouseInputAdapter().paint(graphics);
 
-        if (saveClip != null) {
-            graphics1.setClip(saveClip);
-        }
     }
 
     private class MessageDescriptor {
