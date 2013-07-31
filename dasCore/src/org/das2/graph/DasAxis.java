@@ -70,11 +70,14 @@ import java.text.*;
 import javax.swing.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.*;
 
 import org.das2.system.DasLogger;
 import java.util.logging.Logger;
 import org.das2.DasException;
+import org.das2.datum.format.DatumFormatterFactory;
+import org.das2.datum.format.TimeDatumFormatterFactory;
 import org.das2.util.Entities;
 
 /** 
@@ -181,8 +184,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /* TCA RELATED INSTANCE MEMBERS */
     private DataSetDescriptor dsd;
     private VectorDataSet[] tcaData = new VectorDataSet[0];
+	private DatumFormatter[] tcaFormatters = new DatumFormatter[0];
     private String dataset = "";
     private boolean drawTca;
+	private static DatumFormatterFactory formatterFactory
+			= DefaultDatumFormatterFactory.getInstance();
+	private static DatumFormatterFactory timeFormatterFactory
+			= TimeDatumFormatterFactory.getInstance();
 
     public static String PROPERTY_DATUMRANGE = "datumRange";
     
@@ -846,23 +854,47 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 		return dsd;
 	}
 
+	public void setTcaData(VectorDataSet ds) {
+		logger.fine("got TCADataSet");
+		List itemList = (List) ds.getProperty("plane-list");
+		VectorDataSet[] newData = new VectorDataSet[itemList.size()];
+		DatumFormatter[] newFormatters = new DatumFormatter[itemList.size()];
+		newData[0] = ds;
+		for (int i = 1; i < itemList.size(); i++) {
+			newData[i] = (VectorDataSet) ds.getPlanarView((String) itemList.get(i));
+		}
+		for (int i = 0; i < newData.length; i++) {
+			String format = (String)newData[i].getProperty("format");
+			newFormatters[i] = getFormatter(format, newData[i].getYUnits());
+		}
+		tcaData = newData;
+		tcaFormatters = newFormatters;
+		update();
+	}
+
+	private DatumFormatter getFormatter(String format, Units u) {
+		if (format == null) return null;
+		try {
+			if (u.isConvertableTo(Units.t2000)) {
+				return timeFormatterFactory.newFormatter(format);
+			}
+			return formatterFactory.newFormatter(format);
+		}
+		catch (ParseException ex) {
+			return null;
+		}
+	}
+
     private final DataSetUpdateListener tcaListener = new DataSetUpdateListener() {
 
+		@Override
         public void dataSetUpdated(DataSetUpdateEvent e) {
-            VectorDataSet ds = (VectorDataSet) e.getDataSet();
-            if (ds == null) {
-                logger.warning("" + e.getException());
-                return;
-            }
-            logger.fine("got TCADataSet");
-            List itemList = (List) ds.getProperty("plane-list");
-            VectorDataSet[] newData = new VectorDataSet[itemList.size()];
-            newData[0] = ds;
-            for (int i = 1; i < itemList.size(); i++) {
-                newData[i] = (VectorDataSet) ds.getPlanarView((String) itemList.get(i));
-            }
-            tcaData = newData;
-            update();
+			VectorDataSet ds = (VectorDataSet) e.getDataSet();
+			if (ds == null) {
+				logger.warning(String.valueOf(e.getException()));
+				return;
+			}
+			setTcaData(ds);
         }
     };
 
@@ -884,6 +916,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         data_maximum = data_maximum.add(iinterval);
         final Datum interval = iinterval;
         tcaData = null;
+		tcaFormatters = null;
 
         this.dsd.requestDataSet(data_minimum, data_maximum.add(Datum.create(1.0, Units.seconds)), interval, new NullProgressMonitor(), getCanvas(), tcaListener);
 
@@ -1455,7 +1488,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 g2.dispose();
             }
         } catch (InconvertibleUnitsException ex) {
-            // do nothing
+			logger.log(Level.WARNING, ex.getMessage(), ex);
         }
     }
 
@@ -1695,7 +1728,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         int lineHeight = tickLabelFont.getSize() + getLineSpacing();
         for (int i = 0; i < tcaData.length; i++) {
             baseLine += lineHeight;
-            String item = format(tcaData[i].getDouble(index, tcaData[i].getYUnits()), "(f8.2)");
+			String item;
+			if (tcaFormatters[i] == null) {
+            	item = format(tcaData[i].getDouble(index, tcaData[i].getYUnits()), "(f8.2)");
+			}
+			else {
+				item = tcaFormatters[i].format(tcaData[i].getDatum(index));
+			}
             width = fm.stringWidth(item);
             leftEdge = rightEdge - width;
             g.drawString(item, leftEdge, baseLine);
