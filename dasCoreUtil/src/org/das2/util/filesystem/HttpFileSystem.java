@@ -462,41 +462,6 @@ public class HttpFileSystem extends WebFileSystem {
     }
 
     /**
-     * Allow the local RO Cache to contain files that are not yet in the remote filesystem, to support the case
-     * where a data provider tests locally available products before mirroring them out to the public website.
-     * @param directory
-     * @param remoteList
-     * @return
-     */
-    private Map<String,DirectoryEntry> addRoCacheEntries( String directory, Map<String,DirectoryEntry> remoteList ) {
-        File f= this.getReadOnlyCache();
-        if ( f!=null ) {
-            String[] ss= new File( f, directory ).list();
-            if ( ss==null ) return remoteList;
-            List<DirectoryEntry> add= new ArrayList<DirectoryEntry>();
-            for ( String s: ss ) {
-                File f1= new File( f, directory+s );
-                if ( f1.isDirectory() ) {
-                    s= s+"/"; //TODO: verify windows.
-                }
-                if ( !remoteList.containsKey(s) ) {
-                    
-                    DirectoryEntry de1= new DirectoryEntry();
-                    de1.modified= f1.lastModified();
-                    de1.name= s;
-                    de1.type= f1.isDirectory() ? 'd': 'f';
-                    de1.size= f1.length();
-                    add.add( de1 );
-                }
-            }
-            for ( DirectoryEntry de1: add ) {
-                remoteList.put( de1.name, de1 );
-            }
-        }
-        return remoteList;
-    }
-
-    /**
      * always hide these file types.
      * @return Arrays.asList( new String[] { ".css", ... } ).
      */

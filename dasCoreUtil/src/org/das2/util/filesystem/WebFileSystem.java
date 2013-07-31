@@ -44,6 +44,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.das2.util.monitor.ProgressMonitor;
@@ -204,6 +205,40 @@ public abstract class WebFileSystem extends FileSystem {
         }
     }
 
+    /**
+     * Allow the local RO Cache to contain files that are not yet in the remote filesystem, to support the case
+     * where a data provider tests locally available products before mirroring them out to the public website.
+     * @param directory
+     * @param remoteList
+     * @return
+     */
+    protected Map<String,DirectoryEntry> addRoCacheEntries( String directory, Map<String,DirectoryEntry> remoteList ) {
+        File f= this.getReadOnlyCache();
+        if ( f!=null ) {
+            String[] ss= new File( f, directory ).list();
+            if ( ss==null ) return remoteList;
+            List<DirectoryEntry> add= new ArrayList<DirectoryEntry>();
+            for ( String s: ss ) {
+                File f1= new File( f, directory+s );
+                if ( f1.isDirectory() ) {
+                    s= s+"/"; //TODO: verify windows.
+                }
+                if ( !remoteList.containsKey(s) ) {
+                    
+                    DirectoryEntry de1= new DirectoryEntry();
+                    de1.modified= f1.lastModified();
+                    de1.name= s;
+                    de1.type= f1.isDirectory() ? 'd': 'f';
+                    de1.size= f1.length();
+                    add.add( de1 );
+                }
+            }
+            for ( DirectoryEntry de1: add ) {
+                remoteList.put( de1.name, de1 );
+            }
+        }
+        return remoteList;
+    }
 
     /** Creates a new instance of WebFileSystem */
     protected WebFileSystem(URI root, File localRoot) {
