@@ -661,6 +661,7 @@ public class EventsRenderer extends Renderer {
         this.setShowLabels( getBooleanControl( "showLabels", false ) );
         this.setOrbitMode( getBooleanControl( "orbitMode", false ));
         this.setFontSize( getControl( "fontSize", "1em" ));
+        this.setGanttMode( getBooleanControl( "ganttMode", false ));
     }
 
     private Color color= new Color(100,100,100); 
