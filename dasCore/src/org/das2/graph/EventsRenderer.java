@@ -532,16 +532,23 @@ public class EventsRenderer extends Renderer {
 
                 int ixmax0= -999;
 
+                int gymax= ( (int) msgs.value( Ops.imax(msgs) ) );
+                int gymin= ( (int) msgs.value( Ops.imin(msgs) ) );
+                        
                 int lastMessageTailX= -10000; // avoid overlaps by keeping track of last right side.
 
+                gtr.setString( g1,"xxx" );
+                int textHeight= (int)gtr.getHeight();
+                
                 for ( int i=ivds0; i<ivds1; i++ ) {
 
                     long dt= System.currentTimeMillis()-t0;
+                    
                     if ( i%10==0 && dt > 300 ) {
                         parent.postMessage( this, "renderer ran out of time, dataset truncated", DasPlot.WARNING, null, null);
                         break;
                     }
-
+                    
                     int ixmin= (int)xAxis.transform( xmins.value(i),xunits);
                     int ixmax= (int)xAxis.transform( xmaxs.value(i),xunits);
 
@@ -567,14 +574,15 @@ public class EventsRenderer extends Renderer {
                         }
                     }
 
-                    gtr.setString( g1,"xxx" );
-                    int textHeight= (int)gtr.getHeight();
-
                     if ( column.getDMinimum() < ixmax || column.getDMaximum() > ixmin ) { // if any part is visible
                         if ( iwidth==0 ) iwidth=1;
                         if ( dt<100 ) sa.append( new Rectangle( ixmin-2, row.getDMinimum(), iwidth+4, row.getHeight() ), false );
                         if ( this.orbitMode ) {
                             g.fill( new Rectangle( ixmin, row.getDMaximum()-textHeight, iwidth-1, textHeight ) );
+                        } else if ( this.ganttMode ) {
+                            int iymin= row.getDMinimum() + row.getHeight() * ((int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) + 1;
+                            int iymax= row.getDMinimum() + row.getHeight() * (1+(int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) - 1;
+                            g.fill( new Rectangle( ixmin, iymin, iwidth, iymax-iymin ) );
                         } else {
                             g.fill( new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() ) );
                         }
@@ -602,6 +610,16 @@ public class EventsRenderer extends Renderer {
                     }
                 }
 
+                if ( ganttMode ) {
+                    int di= Math.max( 1, ( gymax-gymin)  / ( row.getHeight() / textHeight ) );
+                    for ( int i=gymin; i<gymax+1; i=i+di ) {
+                        gtr.setString( g1, eu.createDatum(i).toString() );
+                        int iymin= row.getDMinimum() + row.getHeight() * (i-gymin) / ( gymax - gymin + 1 );
+                        gtr.draw( g1, column.getDMinimum() + textHeight/3, iymin + textHeight );
+                    }
+                }
+
+
                 for ( int k1=1; k1<=2; k1++ ) { /* add fuzziness using Larry's algorithm */
                     for ( int k2=-1; k2<=1; k2+=2 ) {
                         int em0= ( k2==1 ) ? 0 : eventMap.length-1;
@@ -612,7 +630,7 @@ public class EventsRenderer extends Renderer {
                     }
                 }
             }
-
+            
             long dt= System.currentTimeMillis()-t0;
             if ( dt>100 ) {
                 sa= new GeneralPath();
@@ -698,6 +716,25 @@ public class EventsRenderer extends Renderer {
         boolean oldOrbitMode = this.orbitMode;
         this.orbitMode = orbitMode;
         propertyChangeSupport.firePropertyChange(PROP_ORBITMODE, oldOrbitMode, orbitMode);
+    }
+    
+    /**
+     * gantt mode true means the event types are laid out vertically.  The user
+     * has very little control over the position, but at least you can see
+     * common messages.
+     */
+    private boolean ganttMode = false;
+    
+    public static final String PROP_GANTTMODE = "ganttMode";
+
+    public boolean isGanttMode() {
+        return ganttMode;
+    }
+
+    public void setGanttMode(boolean ganttMode) {
+        boolean oldGanttMode = this.ganttMode;
+        this.ganttMode = ganttMode;
+        propertyChangeSupport.firePropertyChange(PROP_GANTTMODE, oldGanttMode, ganttMode);
     }
 
     /**
