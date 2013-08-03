@@ -570,10 +570,14 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             QDataSet w1= (QDataSet) ds.property( prop );
             if ( w1!=null ) {
                 QDataSet dep0= (QDataSet) ths.property( prop );
-                ArrayDataSet djoin=  copy( dep0 );
-                ArrayDataSet dd1=  maybeCopy(w1);
-                djoin= append( djoin, dd1 );
-                result.put( prop, djoin );
+                if ( dep0!=null ) {
+                    ArrayDataSet djoin=  copy( dep0 );
+                    ArrayDataSet dd1=  maybeCopy(w1);
+                    djoin= append( djoin, dd1 );
+                    result.put( prop, djoin );
+                } else {
+                    logger.info( "dataset doesn't have property \""+prop+"\" but other dataset does: "+ths);
+                }
             }
         }
 
