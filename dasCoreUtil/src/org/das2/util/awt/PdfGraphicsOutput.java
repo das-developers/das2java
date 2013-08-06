@@ -38,7 +38,11 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         if (graphics != null) {
             return graphics;
         }
-        graphics = cb.createGraphicsShapes(width, height);
+        if ( graphicsShapes ) {
+            graphics = cb.createGraphicsShapes(width, height);
+        } else {
+            graphics = cb.createGraphics(width, height);
+        }
 
         return graphics;
     }
@@ -57,7 +61,23 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         this.out = out;
     }
 
-    public void setSize(int width, int height) {
+    private boolean graphicsShapes= true;
+    
+    /**
+     * If true, then fonts are written out as lines and will match the screen.
+     * If false, then labels are editable.
+     * @param graphicsShapes 
+     */
+    public void setGraphicsShapes( boolean graphicsShapes ) {
+        this.graphicsShapes= graphicsShapes;
+    }
+    
+    /**
+     * set the size in points.
+     * @param width
+     * @param height 
+     */
+    public void setSize( int width, int height ) {
         this.width = (float)width;
         this.height = (float)height;
     }
