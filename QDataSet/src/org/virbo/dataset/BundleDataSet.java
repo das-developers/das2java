@@ -175,21 +175,33 @@ public final class BundleDataSet extends AbstractDataSet {
 
     @Override
     public double value(int i0) {
+        if ( this.rank!=1 ) {
+            throw new IllegalArgumentException("rank 1 access on rank "+this.rank+" bundle dataset");
+        }
         return datasets.get(i0).value();
     }
 
     @Override
     public double value(int i0, int i1) {
+        if ( this.rank!=2 ) {
+            throw new IllegalArgumentException("rank 2 access on rank "+this.rank+" bundle dataset");
+        }
         return datasets.get(i1).value(i0);
     }
 
     @Override
     public double value(int i0, int i1, int i2) { // experimental
+        if ( this.rank!=3 ) {
+            throw new IllegalArgumentException("rank 3 access on rank "+this.rank+" bundle dataset");
+        }
         return datasets.get(i1).value(i0,i2);
     }
 
     @Override
     public double value(int i0, int i1, int i2, int i3) {
+        if ( this.rank!=4 ) {
+            throw new IllegalArgumentException("rank 4 access on rank "+this.rank+" bundle dataset");
+        }        
         return datasets.get(i1).value(i0,i2,i3);
     }
 
