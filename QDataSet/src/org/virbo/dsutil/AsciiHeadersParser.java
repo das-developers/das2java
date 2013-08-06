@@ -396,7 +396,9 @@ public class AsciiHeadersParser {
                                 snames[icol+j]= name;
                             }
                         }
-                        if ( total!=elementNames.length ) throw new IllegalArgumentException("expected "+total+" items in ELEMENTS" );
+                        if ( total!=elementNames.length ) {
+                            throw new IllegalArgumentException("expected "+total+" items in ELEMENTS" );
+                        }
 
                 } else {
                     String lookFor= name;
@@ -450,6 +452,7 @@ public class AsciiHeadersParser {
                 }
 
             } catch ( JSONException ex ) {
+                ex.printStackTrace();
                 logger.log( Level.WARNING, "When handling {0}: {1}", new Object[]{jsonName, ex.toString()});
             }
         }
