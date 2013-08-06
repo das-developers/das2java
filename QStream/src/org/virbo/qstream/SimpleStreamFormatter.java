@@ -393,9 +393,9 @@ public class SimpleStreamFormatter {
                 if ( ds instanceof Slice0DataSet && sliceName!=null && sliceName.startsWith("slice") ) continue;
               //TODO: 3567174 this first-go at serializing datasets has a bug where it would drop DEPEND_1 property, which had been serialized in-line.
                 //  if ( ((QDataSet)value).rank()>0 && this.names.containsKey((QDataSet)value)==false ) continue; // we're not going to serialize this.
-                prop = document.createElement("property");
-                prop.setAttribute("name", name);
                 if (qds.rank() == 0) {
+                    prop = document.createElement("property");
+                    prop.setAttribute("name", name);
                     SerializeDelegate r0d= (SerializeDelegate) SerializeRegistry.getByName("rank0dataset");
                     prop.setAttribute("type", "rank0dataset");
                     Units u= (Units) qds.property( QDataSet.UNITS );
@@ -407,8 +407,14 @@ public class SimpleStreamFormatter {
                         prop.setAttribute("value", r0d.format(value) );
                     }
                 } else {
-                    prop.setAttribute("type", "qdataset");
-                    prop.setAttribute("value", nameFor((QDataSet) value));
+                    if ( name.equals( "BIN_PLUS" ) || name.equals("BIN_MINUS") ) {
+                        logger.info("dropping BIN_PLUS or BIN_MINUS because it's not supported");
+                    } else {
+                        prop = document.createElement("property");
+                        prop.setAttribute("name", name);            
+                        prop.setAttribute("type", "qdataset");
+                        prop.setAttribute("value", nameFor((QDataSet) value));
+                    }
                 }
 
             } else {
