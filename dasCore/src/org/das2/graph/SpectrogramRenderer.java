@@ -91,7 +91,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private QDataSet rebinDataSet;  // simpleTableDataSet at pixel resolution
 
     private String xrangeWarning= null; // if non-null, print out of bounds warning.
-
+    private String yrangeWarning= null; // if non-null, print out of bounds warning.
     boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
     
     protected class RebinListener implements PropertyChangeListener {
@@ -351,12 +351,18 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     if ( xAxis.getDatumRange().intersects(xdr) && yAxis.getDatumRange().intersects(ydr) ) {
                         parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null );
                     } else {
-                        parent.postMessage(this, "dataset is outside of axis range", DasPlot.INFO, null, null );
+                        if ( xrangeWarning==null && yrangeWarning==null ) {
+                             parent.postMessage(this, "dataset is outside of axis range", DasPlot.INFO, null, null );
+                        }
                     }
                 }
 
                 if ( xrangeWarning!=null ) {
                     parent.postMessage(this, "no data in interval:!c" + xrangeWarning, DasPlot.WARNING, null, null);
+                }
+                
+                if ( yrangeWarning!=null ) {
+                    parent.postMessage(this, "no data in interval:!c" + yrangeWarning, DasPlot.WARNING, null, null);
                 }
 
             }
@@ -402,7 +408,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
 
         QDataSet wds = SemanticOps.weightsDataSet( rebinData );
-
+        
         Arrays.fill(pix, (byte) cb.getFillColorIndex());
 
         int validCount= 0;
@@ -468,8 +474,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         updateImageCount++;
         reportCount();
         DasPlot lparent= getParent();
-
-        xrangeWarning= null;
         
         if (lparent==null ) return;
         
@@ -651,7 +655,21 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             xrangeWarning= "data starts after range";
                         } else if ( compare( end, imageXRange.min() ) < 0 ) {
                             xrangeWarning= "data ends before range";
+                        } else {
+                            xrangeWarning= null;
                         }
+                        
+                        if ( yunits.isFill( bounds.value(1,0) ) ) {
+                            yrangeWarning= "no valid y tags in dataset";
+                            throw new NoDataInIntervalException(yrangeWarning);
+                        } else if ( compare( Datum.create(  bounds.value(1,0), yunits ), imageYRange.max() )> 0 ) {
+                            yrangeWarning= "data starts above yrange";
+                        } else if ( compare( Datum.create(  bounds.value(1,1), yunits ), imageYRange.min() ) < 0 ) {
+                            yrangeWarning= "data ends below yrange";
+                        } else {
+                            yrangeWarning= null;
+                        }
+                        
                         //t0= System.currentTimeMillis();
                         try {
                             rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
