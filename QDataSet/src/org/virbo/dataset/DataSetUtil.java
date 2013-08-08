@@ -2504,14 +2504,12 @@ public class DataSetUtil {
     }
 
     /**
-     * returns the index of the closest index in the data. "column" comes
-     * from the legacy operator.
-     * This assumes there is no invalid data!
+     * returns the index of the closest index in the data. 
      * This supports rank 1 datasets, and rank 2 bins datasets where the bin is min,max.
      * 
-     * @param ds
-     * @param datum
-     * @return
+     * @param ds tags dataset
+     * @param datum the location to find
+     * @return the index of the closest point.
      */
     public static int closestIndex( QDataSet ds, Datum datum ) {
         if ( ds.rank()!=1 ) {
@@ -2525,6 +2523,20 @@ public class DataSetUtil {
             throw new IllegalArgumentException("ds length is zero");
         }
         
+        boolean handleFill= false;
+        QDataSet wds= Ops.valid(ds);
+        QDataSet r;
+        if ( wds instanceof ConstantDataSet && wds.value(0)==1 ) { // optimize
+            r= Ops.findgen(ds.length());
+        } else {
+            r= Ops.where( wds );
+            if ( r.length()<ds.length() ) {
+                if ( r.length()==0 ) throw new IllegalArgumentException("dataset is all fill");
+                handleFill= true;
+                ds= DataSetOps.applyIndex( ds, 0, r, false );
+            }
+        }
+        
         double ddatum= datum.doubleValue( SemanticOps.getUnits(ds) );
 
         if ( !isMonotonic(ds) ) {
@@ -2536,6 +2548,9 @@ public class DataSetUtil {
                     closest= i;
                     v= tv;
                 }
+            }
+            if ( handleFill ) {
+                closest= (int)r.value(closest);
             }
             return closest;
 
@@ -2555,6 +2570,9 @@ public class DataSetUtil {
                     double x1= ds.value(result );
                     result= ( ( x-x0 ) / ( x1 - x0 ) < 0.5 ? result-1 : result );
                 }
+            }
+            if ( handleFill ) {
+                result= (int)r.value(result);
             }
             return result;
 
