@@ -35,7 +35,6 @@ import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
-import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.demos.RipplesDataSet;
 import org.virbo.dataset.BundleDataSet;
@@ -44,7 +43,6 @@ import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetIterator;
-import static org.virbo.dataset.DataSetOps.slice0;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -58,6 +56,7 @@ import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
+import org.virbo.dataset.ConstantDataSet;
 import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
@@ -4914,6 +4913,7 @@ public class Ops {
      *   is invalid and >0 where the data is valid.
      */
     public static QDataSet valid( QDataSet ds ) {
+        // Note because data can always contain NaNs, there is no optimization for this.
         return DataSetUtil.weightsDataSet(ds);
     }
     
