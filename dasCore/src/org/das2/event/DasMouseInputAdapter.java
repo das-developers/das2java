@@ -839,7 +839,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
                     Runnable run= new Runnable() {
                         public void run() {
-                            MouseModule theone= ((MouseModule)active.get(0));
+                            Vector lactive= active;
+                            if ( lactive==null || lactive.size()==0 ) return;
+                            MouseModule theone= ((MouseModule)lactive.get(0));
+                            if ( theone==null ) return;
                             try {
                                 // set the message based on whether the module overrides mouseRangeSelected
                                 Method m= theone.getClass().getMethod("mouseRangeSelected",MouseDragEvent.class);
