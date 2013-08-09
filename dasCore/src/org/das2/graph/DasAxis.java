@@ -2000,13 +2000,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if (DMin <= tickPosition && tickPosition <= DMax) {
                     tickLength = tickLengthMajor;
                     if (bottomTicks) {
-                        g.drawLine(tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
+                        if ( tickLength!=0 ) g.drawLine(tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
                     }
                     if (bottomTickLabels) {
                         drawLabel(g, tick1, labels[i], i, tickPosition, bottomPosition + Math.max(0,tickLength) );
                     }
                     if (topTicks) {
-                        g.drawLine(tickPosition, topPosition, tickPosition, topPosition - tickLength);
+                        if ( tickLength!=0 ) g.drawLine(tickPosition, topPosition, tickPosition, topPosition - tickLength);
                     }
                     if (topTickLabels) {
                         drawLabel(g, tick1, labels[i], i, tickPosition, topPosition - Math.max(0,tickLength) + 1);
@@ -2020,10 +2020,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if (DMin <= tickPosition && tickPosition <= DMax) {
                     tickLength = tickLengthMinor;
                     if (bottomTicks) {
-                        g.drawLine(tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
+                        if ( tickLength!=0 ) g.drawLine(tickPosition, bottomPosition, tickPosition, bottomPosition + tickLength);
                     }
                     if (topTicks) {
-                        g.drawLine(tickPosition, topPosition, tickPosition, topPosition - tickLength);
+                        if ( tickLength!=0 ) g.drawLine(tickPosition, topPosition, tickPosition, topPosition - tickLength);
                     }
                 }
             }
@@ -2119,13 +2119,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
                     tickLength = tickLengthMajor;
                     if (leftTicks) {
-                        g.drawLine(leftPosition, tickPosition, leftPosition - tickLength, tickPosition);
+                        if ( tickLength!=0 ) g.drawLine(leftPosition, tickPosition, leftPosition - tickLength, tickPosition);
                     }
                     if (leftTickLabels) {
                         drawLabel(g, tick1, labels[i], i, leftPosition - Math.max( 0,tickLength ), tickPosition);
                     }
                     if (rightTicks) {
-                        g.drawLine(rightPosition, tickPosition, rightPosition + tickLength, tickPosition);
+                        if ( tickLength!=0 ) g.drawLine(rightPosition, tickPosition, rightPosition + tickLength, tickPosition);
                     }
                     if (rightTickLabels) {
                         drawLabel(g, tick1, labels[i], i, rightPosition + Math.max( 0,tickLength ), tickPosition);
@@ -2140,10 +2140,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if (DMin <= tickPosition && tickPosition <= DMax) {
                     tickLength = tickLengthMinor;
                     if (leftTicks) {
-                        g.drawLine(leftPosition, tickPosition, leftPosition - tickLength, tickPosition);
+                        if ( tickLength!=0 ) g.drawLine(leftPosition, tickPosition, leftPosition - tickLength, tickPosition);
                     }
                     if (rightTicks) {
-                        g.drawLine(rightPosition, tickPosition, rightPosition + tickLength, tickPosition);
+                        if ( tickLength!=0 ) g.drawLine(rightPosition, tickPosition, rightPosition + tickLength, tickPosition);
                     }
                 }
             }
