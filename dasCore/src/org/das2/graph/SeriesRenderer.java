@@ -54,6 +54,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.dataset.VectorUtil;
@@ -745,6 +750,32 @@ public class SeriesRenderer extends Renderer {
         return fx1;
     }
 
+    /**
+     * for debugging, dumps the path iterator out to a file.
+     * @param it 
+     */
+    private void dumpPath(PathIterator it) {
+        PrintWriter write = null;
+        try {
+            write = new PrintWriter( new FileWriter("/tmp/foo.txt") );
+            while ( !it.isDone() ) {
+                it.next();
+                float[] coords= new float[6];
+                
+                int type= it.currentSegment(coords);
+                write.printf( "%9d ", type );
+                for ( int i=0; i<6; i++ ) {
+                    write.printf( "%9.1f ", coords[i] );
+                }
+                write.println();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(SeriesRenderer.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            write.close();
+        }
+    }
+    
     class FillRenderElement implements RenderElement {
 
         private GeneralPath fillToRefPath1;
@@ -753,6 +784,9 @@ public class SeriesRenderer extends Renderer {
             if ( fillToRefPath1==null ) {
                 return 0;
             }
+            //PathIterator it= fillToRefPath1.getPathIterator(null);
+            //dumpPath(it);
+                    
             g.setColor(fillColor);
             g.fill(fillToRefPath1);
             return 0;
