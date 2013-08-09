@@ -257,7 +257,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
     }
 
     public DatumVector boundaries(Datum min, Datum max) {
-        if ( !min.isFinite() || max.isFinite() ) throw new IllegalArgumentException("min and max must be finite" );
+        //if ( !min.isFinite() || max.isFinite() ) throw new IllegalArgumentException("min and max must be finite" );
         
         if ( digit==ARR_SECOND && ysDivider!=null ) {
             Datum t= Units.t2000.createDatum(0);
