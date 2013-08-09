@@ -31,7 +31,8 @@ public class LogDomainDivider implements DomainDivider {
     }
 
     public DatumVector boundaries(Datum min, Datum max) {
-        if ( !min.isFinite() || max.isFinite() ) {
+        if ( !min.isFinite() || !max.isFinite() ) {
+            System.err.println( "min and max must be finite" );
             //throw new IllegalArgumentException("min and max must be finite" );
         }
 
