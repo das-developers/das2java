@@ -281,15 +281,17 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         logger.log(Level.FINE, "Renderer.setDataSet {0}: {1}", new Object[]{id, String.valueOf(ds) });
 
         QDataSet oldDs = this.ds;
+        boolean update= lastException!=null || oldDs!=ds ;
+        
         this.lastException = null;
 
-        if (oldDs != ds) {
+        if ( update ) {
             synchronized(this) {
                 updateFirstLastValid();
                 this.ds = ds;
             }
-            refresh();
-            //update();
+            //refresh();
+            update();
             invalidateParentCacheImage();
             propertyChangeSupport.firePropertyChange(PROPERTY_DATASET, oldDs, ds);
         }
@@ -553,13 +555,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * repaint is posted on the event thread.
      */
     public void update() {
+        logger.log(Level.FINE, "Renderer.update {0}", id);
         DasPlot lparent= parent;
         if ( lparent==null ) {
             logger.fine("update but parent was null");
             return;
         }
         lparent.repaint();
-        logger.log(Level.FINE, "Renderer.update {0}", id);
         java.awt.EventQueue eventQueue =
                 Toolkit.getDefaultToolkit().getSystemEventQueue();
         DasRendererUpdateEvent drue = new DasRendererUpdateEvent(lparent, this);
