@@ -39,6 +39,7 @@ import java.awt.event.*;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Logger;
 import org.das2.components.propertyeditor.Editable;
@@ -136,6 +137,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         }
     }
 
+    private Feedback feedback;
+    
+    public static interface Feedback {
+        public void setMessage( String message );
+    }
+    
     /** Creates a new instance of dasMouseInputAdapter */
     public DasMouseInputAdapter(DasCanvasComponent parent) {
 
@@ -160,10 +167,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
         resizeRenderer = new BoxRenderer(parent,false);
 
-
         dirtyBoundsList = new Rectangle[0];
+        this.feedback= new Feedback() {
+            public void setMessage(String message) {
+                // do nothing by default.
+            }
+        };
     }
 
+    public void setFeedback( Feedback f ) {
+        this.feedback= f;
+    }
+    
     public void replaceMouseModule(MouseModule oldModule, MouseModule newModule) {
         JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(oldModule);
         primaryActionButtonMap.put(newModule, j);
@@ -235,6 +250,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     active = null;
                     getGlassPane().setDragRenderer(null, null, null);
                     parent.getCanvas().paintImmediately(0, 0, parent.getCanvas().getWidth(), parent.getCanvas().getHeight());
+                    feedback.setMessage("");
                     refresh();
                     ev.consume();
                 } else if (ev.getKeyCode() == KeyEvent.VK_SHIFT) {
@@ -243,6 +259,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 } else if (ev.getKeyChar() == 'p') {
                     pinned = true;
                     ev.consume();
+                    feedback.setMessage("pinned, will stay active until escape is pressed");
                 } else {
                     if (active == null) {
                         return;
@@ -820,6 +837,28 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                         }
                     }
 
+                    Runnable run= new Runnable() {
+                        public void run() {
+                            MouseModule theone= ((MouseModule)active.get(0));
+                            try {
+                                // set the message based on whether the module overrides mouseRangeSelected
+                                Method m= theone.getClass().getMethod("mouseRangeSelected",MouseDragEvent.class);
+                                if ( m.equals(MouseModule.class.getMethod("mouseRangeSelected",MouseDragEvent.class)) ) {
+                                    //feedback.setMessage("" + theone.getListLabel() );
+                                } else {
+                                    // it's going to do something when we release.
+                                    feedback.setMessage("" + theone.getListLabel() + ", press escape to cancel" );                    
+                                }
+                            } catch (NoSuchMethodException ex) {
+                                Logger.getLogger(DasMouseInputAdapter.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (SecurityException ex) {
+                                Logger.getLogger(DasMouseInputAdapter.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            
+                        }
+                    };
+                    SwingUtilities.invokeLater(run);
+
                     mouseMode = MouseMode.moduleDrag;
 
                     mousePointSelection.set(e.getX() + xOffset, e.getY() + yOffset);
@@ -946,6 +985,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                             MouseDragEvent de =
                                     j.dragRenderer.getMouseDragEvent(parent, dSelectionStart, dSelectionEnd, e.isShiftDown());
                             j.mouseRangeSelected(de);
+                            feedback.setMessage("" ); 
                         } catch (RuntimeException ex) {
                             DasExceptionHandler.handle(ex);
                         } finally {
