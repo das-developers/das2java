@@ -1094,7 +1094,7 @@ public class SeriesRenderer extends Renderer {
         DasPlot lparent= this.parent;
 
         logger.log(Level.FINE, "enter {0}.render: {1}", new Object[]{id, String.valueOf(getDataSet()) });
-        logger.log( Level.FINE, "ds: {0},  drawing indeces {1} to {2}", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex});
+        logger.log( Level.FINER, "ds: {0},  drawing indeces {1} to {2}", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex});
         
         if ( lparent==null ) return;
         if ( this.ds == null && lastException != null) {
@@ -1195,7 +1195,7 @@ public class SeriesRenderer extends Renderer {
 
         int messageCount= 0;
 
-        logger.log(Level.FINE, "rendering points: {0}  {1}", new Object[]{lastIndex, firstIndex});
+        logger.log(Level.FINER, "rendering points: {0}  {1}", new Object[]{lastIndex, firstIndex});
         if ( lastIndex == -1 ) {
             if ( messageCount++==0) {
                 lparent.postMessage(SeriesRenderer.this, "need to update first/last", DasPlot.INFO, null, null);
@@ -1218,8 +1218,6 @@ public class SeriesRenderer extends Renderer {
                 if ( messageCount++==0) lparent.postMessage(SeriesRenderer.this, "dataset contains no valid data", DasPlot.INFO, null, null);
             }
         }
-
-        logger.log(Level.FINE, "render data set {0}", dataSet);
 
         Graphics2D graphics = (Graphics2D) g.create();
 
