@@ -8,6 +8,7 @@ package org.virbo.dsutil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -488,6 +489,7 @@ public class AsciiHeadersParser {
      */
     private static DDataSet getDataSet( JSONObject jo, JSONArray values, int[] dims ) throws JSONException {
         double[] dd= new double[ values.length() ];
+        Object[] oo= new Object[ values.length() ];
         Units u= Units.dimensionless;
         for ( int i=0; i<values.length(); i++ ) {
             try {
@@ -495,15 +497,35 @@ public class AsciiHeadersParser {
             } catch (JSONException ex) {
                 String s= values.getString(i);
                 try {
-                    dd[i]= Units.us2000.parse(s).doubleValue(Units.us2000);
-                    u= Units.us2000;
+                    if ( s.contains(",") ) {
+                        String[] ss= s.split(",");
+                        double[] dd1= new double[ss.length];
+                        for ( int j=0; j<ss.length; j++ ) {
+                            dd1[j]= Double.parseDouble(ss[j]);
+                        }
+                        oo[i]= dd1;
+                    } else {
+                        dd[i]= Units.us2000.parse(s).doubleValue(Units.us2000);
+                        u= Units.us2000;
+                    }
                 } catch ( ParseException ex2 ) {
                     // "-7.846400, -24.376616, 30485.856600" "UNITS":"Deg., Deg., km","DIMENSION":[2],"NAME":"Apogee Pos Geodetic",
                     throw ex;
                 }
             }
         }
-        DDataSet result= DDataSet.wrap( dd, dims );
+        DDataSet result;
+        if ( oo[0]!=null ) {
+            int n= Array.getLength(oo[0]);
+            result= DDataSet.createRank2(values.length(),n);
+            for ( int i=0; i<oo.length; i++ ) {
+                for ( int j=0; j<n; j++ ) {
+                    result.putValue( i, j, Array.getDouble(oo[i],j) );
+                }
+            }
+        } else {
+            result= DDataSet.wrap( dd, dims );
+        }
         if ( u!=Units.dimensionless ) result.putProperty( QDataSet.UNITS, u );
         fillMetadata1( result, jo );
 
