@@ -287,7 +287,7 @@ public class DasProperties extends Properties {
                         org.das2.util.DasExceptionHandler.handle(e);
                     }
                 } else {
-                    System.err.println("Unable to read or write "+file+".  Using defaults.");
+                    logger.log(Level.FINE, "Unable to read or write {0}.  Using defaults.", file);
                 }
             }
         } catch ( SecurityException ex ) {
