@@ -44,9 +44,7 @@ public class DasProperties extends Properties {
     // persistent between sessions.
     
     private RenderingHints hints;
-    private boolean antiAlias;
-    private boolean visualCues;
-    private Logger logger;
+    private static final Logger logger= Logger.getLogger("das2.system");
     private static ArrayList propertyOrder;
     private static Editor editor;
     private static JFrame jframe;
@@ -62,7 +60,6 @@ public class DasProperties extends Properties {
             throw new RuntimeException("DasApplication.hasAllPermission()!=FileSystemSettings.hasAllPermission()");
         }
         if ( DasApplication.hasAllPermission() ) readPersistentProperties();
-        logger= Logger.getLogger("das2");
         setPropertyOrder();
     }
     
