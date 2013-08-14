@@ -465,6 +465,11 @@ public class DasProgressPanel implements ProgressMonitor {
         }
     }
 
+    public boolean canBeCancelled() {
+        return cancelChecked;
+    }
+
+    
     private void startUpdateThread() {
         Runnable run = new Runnable() {
 
