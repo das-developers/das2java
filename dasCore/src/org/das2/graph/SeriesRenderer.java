@@ -320,11 +320,13 @@ public class SeriesRenderer extends Renderer {
                 haveValidColor= true; // just so we don't show a message.
             }
 
+            DasColorBar fcolorBar= colorBar;
+            
             Units cunits = null;
-            if (colorByDataSet1 != null) {
+            if (colorByDataSet1 != null && fcolorBar!=null ) {
                 cunits = SemanticOps.getUnits( colorByDataSet1 );
-                if ( cunits.isConvertableTo(colorBar.getUnits()) ) {
-                    cunits= colorBar.getUnits();
+                if ( cunits.isConvertableTo(fcolorBar.getUnits()) ) {
+                    cunits= fcolorBar.getUnits();
                 }
             }
 
@@ -383,9 +385,14 @@ public class SeriesRenderer extends Renderer {
                     }
                     dpsymsPath[i * 2] = dx;
                     dpsymsPath[i * 2 + 1] = dy;
-                    if ( wdsz!=null && colorByDataSet1 != null ) {
-                        if ( wdsz.value(index)>0 ) haveValidColor= true;
-                        colors[i] = colorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
+                    if ( wdsz!=null && colorByDataSet1 != null && fcolorBar!=null ) {
+                        try {
+                            if ( wdsz.value(index)>0 ) haveValidColor= true;
+                            colors[i] = fcolorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
+                        } catch ( NullPointerException ex ) {
+                            System.err.println("here391");
+                            ex.printStackTrace();
+                        }
                     }
                     i++;
                 }
@@ -987,8 +994,9 @@ public class SeriesRenderer extends Renderer {
         psym.draw(g, dcmx, dcmy, (float) symSize, fillStyle);
         psymImage = image;
 
-        if (  colorByDataSetId != null && !colorByDataSetId.equals("") ) {
-            initColoredPsyms(sx, sy, image, g, lparent, rendering, dcmx, dcmy);
+        DasColorBar lcolorBar=  this.colorBar;
+        if (  colorByDataSetId != null && !colorByDataSetId.equals("") && lcolorBar!=null ) {
+            initColoredPsyms(sx, sy, image, g, lparent, lcolorBar, rendering, dcmx, dcmy);
         }
 
         cmx = (int) dcmx;
@@ -997,8 +1005,8 @@ public class SeriesRenderer extends Renderer {
         update();
     }
 
-    private void initColoredPsyms(int sx, int sy, BufferedImage image, Graphics2D g, DasPlot lparent, Object rendering, double dcmx, double dcmy) {
-        IndexColorModel model = colorBar.getIndexColorModel();
+    private void initColoredPsyms(int sx, int sy, BufferedImage image, Graphics2D g, DasPlot lparent, DasColorBar lcolorBar, Object rendering, double dcmx, double dcmy) {
+        IndexColorModel model = lcolorBar.getIndexColorModel();
         coloredPsyms = new Image[model.getMapSize()];
         for (int i = 0; i < model.getMapSize(); i++) {
             Color c = new Color(model.getRGB(i));
