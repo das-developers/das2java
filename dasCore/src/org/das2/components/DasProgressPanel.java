@@ -136,7 +136,7 @@ public class DasProgressPanel implements ProgressMonitor {
      */
     public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
         if ( label!=null ) setProgressMessage(label);
-        return SubTaskMonitor.create( this, start, end );
+        return SubTaskMonitor.create( this, start, end, cancelCheckFailures < 2 );
     }
 
     class MyPanel extends JPanel {
@@ -435,7 +435,16 @@ public class DasProgressPanel implements ProgressMonitor {
             // note that the monitored process should check isCancelled before setTaskProgress, but this is no longer required.
             // If this is not done, we throw a IllegalStateException to kill the thread, and the monitored process is killed that way.
             logger.fine("setTaskProgress called when isCancelled true. consider checking isCancelled before calling setTaskProgress.");
-            throw new IllegalStateException("Operation cancelled: developers: consider checking isCancelled before calling setTaskProgress.");
+            boolean cancelEnabled = cancelCheckFailures < 2;
+            if ( !cancelEnabled ) {
+                // this was introduced as a quick-n-dirty way to provide cancel, that messes up applications like
+                // autoplot.  We need to be more careful about how this is used.
+                throw new IllegalStateException("Operation cancelled: developers: consider checking isCancelled before calling setTaskProgress.");
+            } else {
+                logger.fine("setTaskProgress but isCancelled, assuming its okay to ignore.");
+                // just ignore the progress update.  This should be a transitional state.
+                return;
+            }
         }
 
         if (!running) {
@@ -450,6 +459,7 @@ public class DasProgressPanel implements ProgressMonitor {
             // cancelCheckFailures is used to detect when if the monitored process is not checking cancelled.  If it is not, then we
             // disable the cancel button.  Note the cancel() method can still be called from elsewhere, killing the process.
             cancelCheckFailures++;
+            System.err.println("cancelCheckFailures="+cancelCheckFailures);
         }
         cancelChecked = false;  // reset for next time, isCancelled will set true.
 
@@ -561,9 +571,12 @@ public class DasProgressPanel implements ProgressMonitor {
         if (cancelEnabled != cancelButton.isEnabled()) {
             cancelButton.setEnabled(cancelEnabled);
             if ( cancelEnabled ) {
+                System.err.println("enabled");
+                        
                 cancelButton.setIcon( cancel );
                 cancelButton.setToolTipText(MSG_CANCEL_TASK);
             } else {
+                System.err.println("disabled");
                 cancelButton.setIcon( cancelGrey );
                 cancelButton.setToolTipText(MSG_TASK_CANNOT_BE_CANCELED);
             }
@@ -677,6 +690,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
     public boolean isCancelled() {
         cancelCheckFailures = 0;
+        System.err.println("cancelCheckFailures="+cancelCheckFailures);
         cancelChecked = true;
         return isCancelled;
     }
