@@ -39,17 +39,22 @@ public class SubTaskMonitor implements ProgressMonitor {
     long min, max, progress, size;
     String label;
 
-    int cancelCheck=0;
+    boolean cancelCheck;
     
-    private SubTaskMonitor( ProgressMonitor parent, long min, long max ) {
+    private SubTaskMonitor( ProgressMonitor parent, long min, long max, boolean cancelChecked ) {
         this.parent= parent;
         this.min= min;
         this.max= max;
         this.size= -1;
+        this.cancelCheck= cancelChecked;
     }
 
     public static SubTaskMonitor create( ProgressMonitor parent, long min, long max ) {
-        return new SubTaskMonitor( parent, min, max );
+        return new SubTaskMonitor( parent, min, max, false );
+    }
+    
+    public static SubTaskMonitor create( ProgressMonitor parent, long min, long max, boolean cancelChecked ) {
+        return new SubTaskMonitor( parent, min, max, cancelChecked );
     }
 
     public void cancel() {
@@ -73,8 +78,11 @@ public class SubTaskMonitor implements ProgressMonitor {
     }
 
     public boolean isCancelled() {
-        cancelCheck++;
-        return parent.isCancelled();
+        if ( parent.canBeCancelled() ) {
+            return parent.isCancelled();
+        } else {
+            return false;
+        }
     }
 
     @Deprecated
@@ -83,8 +91,10 @@ public class SubTaskMonitor implements ProgressMonitor {
     }
 
     public void setTaskProgress(long position) throws IllegalArgumentException {
-        cancelCheck--;
         this.progress= position;
+        if ( cancelCheck ) {
+            parent.isCancelled(); // so there is one setTaskProgress for each isCancelled
+        }
         if ( size==-1 ) {
             parent.setTaskProgress( min );
         } else {
@@ -144,11 +154,11 @@ public class SubTaskMonitor implements ProgressMonitor {
      */
     public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
         //setProgressMessage(label);
-        return SubTaskMonitor.create( this, start, end );
+        return SubTaskMonitor.create( this, start, end, cancelCheck );
     }
 
     public boolean canBeCancelled() {
-        return parent.canBeCancelled() && cancelCheck>0;
+        return cancelCheck;
     }
     
 }
