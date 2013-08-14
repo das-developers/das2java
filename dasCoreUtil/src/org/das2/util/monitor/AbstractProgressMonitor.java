@@ -41,6 +41,9 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     
     private long taskSize=-1 ;
     
+    private boolean supportsCancel= false;
+    private int cancelCheck= 0;
+    
     public void setTaskSize(long taskSize) {
         this.taskSize= taskSize;
     }
@@ -96,6 +99,7 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     }
     
     public boolean isCancelled() { 
+        cancelCheck++;
         return cancelled; 
     }
 
@@ -126,5 +130,9 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
         if ( label!=null ) setProgressMessage(label);
         return SubTaskMonitor.create( this, start, end );
+    }
+
+    public boolean canBeCancelled() {
+        return cancelCheck>0;
     }
 }

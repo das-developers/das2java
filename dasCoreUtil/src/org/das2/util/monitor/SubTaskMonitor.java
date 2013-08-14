@@ -39,6 +39,8 @@ public class SubTaskMonitor implements ProgressMonitor {
     long min, max, progress, size;
     String label;
 
+    int cancelCheck=0;
+    
     private SubTaskMonitor( ProgressMonitor parent, long min, long max ) {
         this.parent= parent;
         this.min= min;
@@ -51,7 +53,9 @@ public class SubTaskMonitor implements ProgressMonitor {
     }
 
     public void cancel() {
-        parent.cancel();
+        if ( parent.canBeCancelled() ) {
+            parent.cancel();
+        }
     }
 
     private boolean finished= false;
@@ -69,6 +73,7 @@ public class SubTaskMonitor implements ProgressMonitor {
     }
 
     public boolean isCancelled() {
+        cancelCheck++;
         return parent.isCancelled();
     }
 
@@ -78,6 +83,7 @@ public class SubTaskMonitor implements ProgressMonitor {
     }
 
     public void setTaskProgress(long position) throws IllegalArgumentException {
+        cancelCheck--;
         this.progress= position;
         if ( size==-1 ) {
             parent.setTaskProgress( min );
@@ -139,6 +145,10 @@ public class SubTaskMonitor implements ProgressMonitor {
     public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
         //setProgressMessage(label);
         return SubTaskMonitor.create( this, start, end );
+    }
+
+    public boolean canBeCancelled() {
+        return parent.canBeCancelled() && cancelCheck>0;
     }
     
 }

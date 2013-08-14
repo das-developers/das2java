@@ -129,6 +129,12 @@ public interface ProgressMonitor {
      */
     boolean isCancelled();
     
+    /**
+     * return true if the process appears to support cancel.
+     * @return 
+     */
+    boolean canBeCancelled();
+    
     /** additional information to be displayed alongside the progress.  That
      * might be of interest.
      * "85 of 100 (50KB/s)"
@@ -152,6 +158,8 @@ public interface ProgressMonitor {
      * a convenience.  setTaskProgress calls to the subtask monitor are mapped to
      * this monitor.  A label can also be specified for the subtask to improve
      * user experience.
+     * 
+     * If the parent process is not supporting cancel, then subprocesses cannot support cancel.
      *
      * @param start start position on this monitor.
      * @param end end position on this monitor (exclusive).
