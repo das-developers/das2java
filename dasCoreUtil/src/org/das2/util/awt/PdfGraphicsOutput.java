@@ -6,21 +6,31 @@
 
 package org.das2.util.awt;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.awt.FontMapper;
+import com.itextpdf.awt.PdfGraphics2D;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.pdf.BaseFont;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 /**
- *
+ * support writing to PDF.
  * @author eew
  */
 public class PdfGraphicsOutput implements GraphicsOutput {
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.graphics.pdf");
     
     private float width;
     private float height;
@@ -30,7 +40,57 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     private PdfContentByte cb;
     private Graphics2D graphics;
 
+    /**
+     * return the name of the .ttf file for the platform, or null.
+     * @param font
+     * @return 
+     */
+    String ttfFromName( java.awt.Font font ) {
+        String osName= System.getProperty( "os.name" ); 
+        String username= System.getProperty( "user.name" );
+        if ( osName.startsWith("Mac") ) {
+            String s=  "/Users/" + username + "/Library/Fonts/" + font.getName() + ".ttf" ;
+            if ( new File(s).exists() ) {
+                return s;
+            }
+            s= "/Library/Fonts/" + font.getName() + ".ttf";
+            if ( new File(s).exists() ) {
+                return s;
+            }
+            logger.log(Level.WARNING, "unable to find font file {0}", s);
+        } else if ( osName.startsWith("Linux") ) {
+            //File f= new File("/usr/share/fonts/truetype");
+            //FileUtil.find( f, font.getName() + ".ttf" );
+            return null;
+        }
+        return null;
+    }
     
+    FontMapper freesansUnicodeMapper = new FontMapper() {
+        public BaseFont awtToPdf(java.awt.Font font) {
+            try {
+                FontFactory.registerDirectories();
+                System.err.println( font.getName() );
+                String ffile= ttfFromName(font);
+                if ( ffile==null ) {
+                    logger.warning("couldn't find font file");
+                }
+                return BaseFont.createFont(
+                        ffile,
+                        BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            } catch (DocumentException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        public java.awt.Font pdfToAwt(BaseFont font, int size) {
+            return null;
+        }
+    };
+
     /** Creates a new instance of PDFGraphicsOutput */
     public PdfGraphicsOutput() {}
 
@@ -39,9 +99,9 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             return graphics;
         }
         if ( graphicsShapes ) {
-            graphics = cb.createGraphicsShapes(width, height);
+            graphics = new PdfGraphics2D(cb, width, height, true);
         } else {
-            graphics = cb.createGraphics(width, height);
+            graphics = new PdfGraphics2D(cb, width, height, freesansUnicodeMapper);
         }
 
         return graphics;
@@ -91,8 +151,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             doc.open();
             cb = writer.getDirectContent();
             cb.saveState();
-        }
-        catch (DocumentException de) {
+        } catch (DocumentException de) {
             throw new RuntimeException(de); 
         }
     }
