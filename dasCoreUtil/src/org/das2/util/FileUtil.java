@@ -75,7 +75,7 @@ public class FileUtil {
     }
     
     /**
-     * deletes all files with the given name, and root, just as "find , -name name -exec rm {} \;" would.
+     * deletes all files with the given name, and root, just as "find . -name name -exec rm {} \;" would.
      * TODO: check links.  For example deleteWithinFileTree( root, ".listing" )
      * @throws IllegalArgumentException if it is unable to delete a file
      * @return true if the operation was successful.
@@ -100,6 +100,48 @@ public class FileUtil {
         }
         return success;
     }
+    
+    /**
+     * find a files with the given name within the given root, just as "find . -name name -print \;" would.
+     * TODO: check links.  For example, find( "/usr/share/fonts/truetype", "FreeMono.ttf" )
+     * @throws IllegalArgumentException if the root does not exist.
+     * @return the File found, or null if it does not exist.
+     */
+    public static File find(File root,String name) throws IllegalArgumentException {
+        if (!root.exists()) {
+            throw new IllegalArgumentException("File does not exist:"+root);
+        }
+        File[] children = root.listFiles();
+        for (int i = 0; i < children.length; i++) {
+            if (children[i].isDirectory()) {
+                File f= find(children[i],name);
+                if ( f!=null ) return f;
+            } else {
+                if ( children[i].getName().equals(name) ) {
+                    return children[i];
+                }
+            }
+        }
+        return null;
+    }    
+    
+    /**
+     * find a files with the given name within one of the given roots.
+     * TODO: check links.  For example, find( "/usr/share/fonts/truetype", "FreeMono.ttf" )
+     * This allows root folders that do not exist.
+     * @return the File found, or null if it does not exist.
+     */
+    public static File find(File[] roots,String name) {
+        for ( File root: roots ) {
+            if ( root.exists() ) {
+                File r= find( root, name );
+                if ( r!=null ) {
+                    return r;
+                }
+            }
+        }
+        return null;
+    }    
     
     /**
      * copies the file or folder from src to dst.
