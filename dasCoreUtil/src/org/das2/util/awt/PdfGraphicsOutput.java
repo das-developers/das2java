@@ -15,8 +15,6 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfIndirectReference;
-import com.itextpdf.text.pdf.PdfStream;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.io.File;
