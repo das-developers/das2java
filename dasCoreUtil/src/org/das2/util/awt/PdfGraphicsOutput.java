@@ -15,6 +15,8 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfIndirectReference;
+import com.itextpdf.text.pdf.PdfStream;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.io.File;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.util.FileUtil;
 import org.das2.util.LoggerManager;
 
 /**
@@ -59,14 +62,18 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             }
             logger.log(Level.WARNING, "unable to find font file {0}", s);
         } else if ( osName.startsWith("Linux") ) {
-            //File f= new File("/usr/share/fonts/truetype");
-            //FileUtil.find( f, font.getName() + ".ttf" );
-            return null;
+            File f= new File("/usr/share/fonts/truetype");
+            File ff= FileUtil.find( f, font.getName().replaceAll(" ","") + ".ttf" );
+            return ff==null ? null : ff.getPath();
+        } else if ( osName.startsWith("Windows") ) {
+            File f= new File("C:/Windows/Fonts");
+            File ff= FileUtil.find( f, font.getName() + ".ttf" );
+            return ff==null ? null : ff.getPath();
         }
         return null;
     }
-    
-    FontMapper freesansUnicodeMapper = new FontMapper() {
+        
+    FontMapper fontMapper = new FontMapper() {
         public BaseFont awtToPdf(java.awt.Font font) {
             try {
                 FontFactory.registerDirectories();
@@ -74,10 +81,12 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                 String ffile= ttfFromName(font);
                 if ( ffile==null ) {
                     logger.warning("couldn't find font file");
-                }
-                return BaseFont.createFont(
+                    return BaseFont.createFont();
+                } else {
+                    return BaseFont.createFont(
                         ffile,
                         BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                }
             } catch (DocumentException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -101,7 +110,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         if ( graphicsShapes ) {
             graphics = new PdfGraphics2D(cb, width, height, true);
         } else {
-            graphics = new PdfGraphics2D(cb, width, height, freesansUnicodeMapper);
+            graphics = new PdfGraphics2D(cb, width, height, fontMapper);
         }
 
         return graphics;
