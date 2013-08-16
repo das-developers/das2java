@@ -12,10 +12,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,110 +24,25 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import org.das2.datum.CalendarTime;
+import org.das2.util.TextUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-/**  Generates a selector set by parsing a list of parameters which could be from a
- * command line.  This is intended mostly to help with command line readers.  But could
- * be used else where.
+/**  Generates a selector set by parsing a list of parameters.  This is intended mostly
+ * to help with command line readers.  But could be used else where.
  *
  * If the generator is put into Das2 Server compatible mode, the first not keyword=value
  * pair is parsed as a start time, and the second is parsed as an end time.
  *
  * @author cwp
  */
-public class DataSource {
+public class DsidRdrSource {
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Static Utilities //
-
-	/** Line wrap function, taken from
-	 *   http://progcookbook.blogspot.com/2006/02/text-wrapping-function-for-java.html
-	 * and then customized a little
-	 *
-	 * @param sText - The text to wrap
-	 * @param nLineLen - The length of each lines text area
-	 * @param sPrefix - A prefix string, to be added to each line, if not null
-	 * @return
-	 */
-	private static String[] wrapText(String sText, int nLineLen, String sPrefix){
-		// return empty array for null text
-		if(sText == null){
-			return new String[]{};
-		}
-
-		sText = sText.trim();
-
-		// Strip out all the newlines and tabs that might happen to be in the text
-		sText = sText.replaceAll("\t\r\n", "");
-
-		// Collapse 2+ spaces to a single space
-		sText = sText.replaceAll("\\s+", " ");
-
-		// return text if len is zero or less
-		if(nLineLen <= 0){
-			return new String[]{sText};
-		}
-
-		// return text if less than length
-		if(sText.length() <= nLineLen){
-			if(sPrefix == null)
-				return new String[]{sText};
-			else
-				return new String[]{sPrefix + sText};
-		}
-
-		char[] chars = sText.toCharArray();
-		Vector lines = new Vector();
-		StringBuffer line = new StringBuffer();
-		StringBuffer word = new StringBuffer();
-
-		for(int i = 0; i < chars.length; i++){
-			word.append(chars[i]);
-
-			if(chars[i] == ' '){
-				if((line.length() + word.length()) > nLineLen){
-					lines.add(line.toString());
-					line.delete(0, line.length());
-				}
-
-				line.append(word);
-				word.delete(0, word.length());
-			}
-		}
-
-		// handle any extra chars in current word
-		if(word.length() > 0){
-			if((line.length() + word.length()) > nLineLen){
-				lines.add(line.toString());
-				line.delete(0, line.length());
-			}
-			line.append(word);
-		}
-
-		// handle extra line
-		if(line.length() > 0){
-			lines.add(line.toString());
-		}
-
-		String[] lRet = new String[lines.size()];
-		int c = 0; // counter
-		if(sPrefix == null){
-			for(Enumeration e = lines.elements(); e.hasMoreElements(); c++){
-				lRet[c] = (String) e.nextElement();
-			}
-		}
-		else{
-			for(Enumeration e = lines.elements(); e.hasMoreElements(); c++){
-				lRet[c] = sPrefix + (String) e.nextElement();
-			}
-		}
-
-		return lRet;
-	}
 
 	/** Helper to make digging out the value of sub-elements less wordy */
 	private static String getSubElementValue(Element element, String sSubName){
@@ -188,7 +101,7 @@ public class DataSource {
 	 * that expects all elements of the list to conform
 	 * to the das3 style command line interface.
 	 */
-	public DataSource(String sDsidUrl) throws SAXException, IOException{
+	public DsidRdrSource(String sDsidUrl) throws SAXException, IOException{
 
 		
 		m_sDsidUrl = sDsidUrl;
@@ -301,12 +214,12 @@ public class DataSource {
 		String[] lLines;
 
 		out.print(sName + "\n");
-		lLines = wrapText(sSummary, 75, "   ");
+		lLines = TextUtil.wrapText(sSummary, 75, "   ");
 		for(String sLine: lLines) out.print(sLine+"\n");
 		out.print("\n");
 
 		out.print("Description:\n");
-		lLines = wrapText(sDesc, 75, "   ");
+		lLines = TextUtil.wrapText(sDesc, 75, "   ");
 		for(String sLine: lLines) out.print(sLine + "\n");
 		out.print("\n");
 
@@ -340,7 +253,7 @@ public class DataSource {
 						out.printf(" in %s", sDimUnit);
 					out.printf("\n");
 
-					lLines = wrapText(dim.getTextContent(), 75, "      ");
+					lLines = TextUtil.wrapText(dim.getTextContent(), 75, "      ");
 					for(String sLine: lLines) out.print(sLine+"\n");
 					out.print("\n");
 				}
@@ -379,18 +292,18 @@ public class DataSource {
 
 				String sUnitStr = "";
 				if(!tplt.getUnitStr().equals("")) sUnitStr = "("+tplt.getUnitStr()+")";
-
+/*
 				if(tplt.getType() == Selector.Type.RANGE)
 					out.printf("   %s:beg=%s, %s:end=%s %s\n", tplt.getKey(), tplt.getValTpltStr(),
 						        tplt.getKey(), tplt.getValTpltStr(), sUnitStr);
 				else
 					out.printf("   %s=%s %s\n", tplt.getKey(), tplt.getValTpltStr(), sUnitStr);
-
-				lLines = wrapText(tplt.getSummary(), 75, "      ");
+*/
+				lLines = TextUtil.wrapText(tplt.getSummary(), 75, "      ");
 				for(String sLine: lLines) out.print(sLine+"\n");
 
 				if(tplt.hasDescription()){
-					lLines = wrapText(tplt.getDescription(), 75, "      ");
+					lLines = TextUtil.wrapText(tplt.getDescription(), 75, "      ");
 					for(String sLine: lLines) out.print(sLine+"\n");
 				}
 
@@ -408,10 +321,12 @@ public class DataSource {
 				String sUnitStr = "";
 				if(!tplt.getUnitStr().equals("")) sUnitStr = "("+tplt.getUnitStr()+")";
 
-				if(tplt.getType() == Selector.Type.RANGE)
+/*				if(tplt.getType() == Selector.Type.RANGE)
 					out.printf("   %s:beg=%s, %s:end=%s %s\n", tplt.getKey(), tplt.getValTpltStr(),
 						        tplt.getKey(), tplt.getValTpltStr(), sUnitStr);
 				else
+ * 
+ */
 					out.printf("   %s=%s %s\n", tplt.getKey(), tplt.getValTpltStr(), sUnitStr);
 				nCount += 1;
 			}
@@ -419,11 +334,11 @@ public class DataSource {
 
 			for(SelectorTplt tplt: sn.getChoices()){
 				out.printf("      %s\n", tplt.getKey());
-				lLines = wrapText(tplt.getSummary(), 75, "         ");
+				lLines = TextUtil.wrapText(tplt.getSummary(), 75, "         ");
 				for(String sLine: lLines) out.print(sLine+"\n");
 
 				if(tplt.hasDescription()){
-					lLines = wrapText(tplt.getDescription(), 75, "         ");
+					lLines = TextUtil.wrapText(tplt.getDescription(), 75, "         ");
 					for(String sLine: lLines) out.print(sLine+"\n");
 				}
 				out.print("\n");

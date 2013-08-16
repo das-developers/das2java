@@ -85,14 +85,21 @@ public class RunRdr{
 + "Usage:\n"
 + "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [--log=LEVEL] [--info] [--help]\n"
 + "\n"
-+ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [--log=LEVEL] key1=val1 key2=val2 ...\n"
++ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [--log=LEVEL] key1.OP.val1 key2.OP.val2 ...\n"
 + "\n"
-+ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [--log=LEVEL] --das2time=key start stop key1=val1 key2=val2 ...\n"
++ "  java -cp dasCore.jar org.das2.reader.RunRdr DSID_FILE [--log=LEVEL] --das2time.EQ.key start stop key1.OP.val1 key2.OP.val2 ...\n"
 + "\n"
 + "Description:\n"
 + "  RunRdr parses a given Data Source ID file, loads the StreamSource Java class\n"
 + "  given in the file, parses the command line arguments into data selection\n"
-+ "  parameters, and then runs the reader.\n"
++ "  parameters, and then runs the reader.  In general command line options take the\n"
++ "  form:\n"
++ "\n"
++ "     KEYWORD.OP.VALUE\n"
++ "\n"
++ "  Where '.OP.' is one of: .eq. .ne. .lt. .gt. .le. .ge. .beg. .end.\n"
++ "  These are the standard FORTRAN numeric operators plus beg and end, .beg. is just\n"
++ "  a synonym for .ge. and .end. is a synonym for .lt.\n"
 + "\n"
 + "  Four special arguments are supported '--log' --help', '--info' and '--das2times'.\n"
 + "\n"
@@ -107,9 +114,9 @@ public class RunRdr{
 + "  --info\n"
 + "    Describes the data source, including the type of data provided.\n"
 + "\n"
-+ "  --das2times=KEY\n"
++ "  --das2times.eq.KEY\n"
 + "    Turn on Das2 reader command line compatibility.  This will cause the first two\n"
-+ "    arguments in the query string that don't have an '=' sign, and which are not\n"
++ "    arguments in the query string that don't have an operator, and which are not\n"
 + "    recognized as a special argument to be treated as a range data selector with\n"
 + "    the key name KEY.  Typically KEY is 'scet'.\n"
 + "\n"
@@ -122,9 +129,9 @@ public class RunRdr{
 		}
 
 		// Okay, args[0] is supposed to be a DSID file, let's validate it.
-		DataSource ds = null;
+		DsidRdrSource ds = null;
 		try{
-			ds = new DataSource(lArgs.get(0));
+			ds = new DsidRdrSource(lArgs.get(0));
 		}
 		catch(SAXException ex){
 			logger.log(Level.SEVERE, "DSID file "+lArgs.get(0) +" didn't pass validation, "
@@ -168,13 +175,13 @@ public class RunRdr{
 		int iPop = -1;
 		for(String sArg: lArgs){
 			iPop += 1;
-			if(sArg.toLowerCase().contains("--das2times=")){
-				int iTmp = sArg.indexOf('=');
-				if(iTmp == sArg.length() - 1){
+			if(sArg.toLowerCase().contains("--das2times.eq.")){
+				int iTmp = sArg.indexOf(".eq.");
+				if(iTmp == sArg.length() - 4){
 					logger.log(Level.SEVERE, "Missing time argument name in '"+sArg+"'");
 					System.exit(BAD_QUERY);
 				}
-				String sTimeKey = sArg.substring(iTmp+1);
+				String sTimeKey = sArg.substring(iTmp+4);
 				ds.setDas2Compatible(sTimeKey);
 				lArgs.remove(iPop);
 				break;

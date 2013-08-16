@@ -21,10 +21,10 @@ public class SelectorTplt {
 	private String m_sUnits;
 	private String m_sSummary;
 	private String m_sDesciption;
-	private Selector.Type m_type;
-	private Selector.Format m_format;
+	private Constraint.Format m_format;
 	private String m_sValueTpltStr;
 	private boolean m_bIsConstant;
+	private boolean m_bIsRange;
 	private String m_sContValue;
 
 	/** Helper to make digging out the value of sub-elements less wordy */
@@ -74,12 +74,12 @@ public class SelectorTplt {
 
 		if(el.hasAttribute("format")){
 			String sFmt = el.getAttribute("format");
-			if(sFmt.equals("REAL")) m_format = Selector.Format.REAL;
-			if(sFmt.equals("INTEGER")) m_format = Selector.Format.INTEGER;
-			if(sFmt.equals("BOOLEAN")) m_format = Selector.Format.BOOLEAN;
-			if(sFmt.equals("STRING")) m_format = Selector.Format.STRING;
+			if(sFmt.equals("REAL")) m_format = Constraint.Format.REAL;
+			if(sFmt.equals("INTEGER")) m_format = Constraint.Format.INTEGER;
+			if(sFmt.equals("BOOLEAN")) m_format = Constraint.Format.BOOLEAN;
+			if(sFmt.equals("STRING")) m_format = Constraint.Format.STRING;
 			if(sFmt.equals("DATETIME")){
-				m_format = Selector.Format.TIMEPOINT;
+				m_format = Constraint.Format.TIMEPOINT;
 				if(m_sUnits.equals(""))
 					m_sUnits="UTC";
 			}
@@ -87,14 +87,12 @@ public class SelectorTplt {
 
 
 		if(el.getTagName().equals("boolean")){
-			m_type = Selector.Type.VALUE;
-			m_format = Selector.Format.BOOLEAN;
+			m_format = Constraint.Format.BOOLEAN;
 			m_sValueTpltStr = "true|false";
 			return;
 		}
 
-		if(el.getTagName().equals("value")){
-			m_type = Selector.Type.VALUE;
+		if(el.getTagName().equals("param")){
 			switch(m_format){
 			case BOOLEAN: m_sValueTpltStr = "true|false"; break;
 			case INTEGER: m_sValueTpltStr = "INTEGER"; break;
@@ -213,14 +211,4 @@ public class SelectorTplt {
 			throw new BadQueryException(ex.getMessage());
 		}
 	}
-
-
-
-
-	
-
-	
-
-	
-		
 }
