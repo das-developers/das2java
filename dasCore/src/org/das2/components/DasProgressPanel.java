@@ -571,12 +571,11 @@ public class DasProgressPanel implements ProgressMonitor {
         if (cancelEnabled != cancelButton.isEnabled()) {
             cancelButton.setEnabled(cancelEnabled);
             if ( cancelEnabled ) {
-                System.err.println("enabled");
-                        
+                logger.finer("cancel enabled");                        
                 cancelButton.setIcon( cancel );
                 cancelButton.setToolTipText(MSG_CANCEL_TASK);
             } else {
-                System.err.println("disabled");
+                logger.finer("cancel disabled");
                 cancelButton.setIcon( cancelGrey );
                 cancelButton.setToolTipText(MSG_TASK_CANNOT_BE_CANCELED);
             }
