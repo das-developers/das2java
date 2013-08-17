@@ -459,7 +459,7 @@ public class DasProgressPanel implements ProgressMonitor {
             // cancelCheckFailures is used to detect when if the monitored process is not checking cancelled.  If it is not, then we
             // disable the cancel button.  Note the cancel() method can still be called from elsewhere, killing the process.
             cancelCheckFailures++;
-            System.err.println("cancelCheckFailures="+cancelCheckFailures);
+            logger.log(Level.FINER, "cancelCheckFailures={0}", cancelCheckFailures);
         }
         cancelChecked = false;  // reset for next time, isCancelled will set true.
 
@@ -690,7 +690,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
     public boolean isCancelled() {
         cancelCheckFailures = 0;
-        System.err.println("cancelCheckFailures="+cancelCheckFailures);
+        logger.log(Level.FINER, "cancelCheckFailures={0}", cancelCheckFailures);
         cancelChecked = true;
         return isCancelled;
     }
