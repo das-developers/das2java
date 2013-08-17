@@ -208,7 +208,7 @@ public class EventsRenderer extends Renderer {
 
             Datum px= parent.getXAxis().invTransform( p2.getX() );
 
-            if ( ix<0 || ix >= eventMap.length ) {
+            if ( ix<0 || eventMap==null || ix >= eventMap.length ) {
                 setLabel(null);
             } else {
                 Units sxunits= SemanticOps.getUnits(xmins);
