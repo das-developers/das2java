@@ -30,9 +30,9 @@ import org.das2.util.LoggerManager;
  * @author eew
  */
 public class PdfGraphicsOutput implements GraphicsOutput {
-    
+
     private static final Logger logger= LoggerManager.getLogger("das2.graphics.pdf");
-    
+
     private float width;
     private float height;
     private OutputStream out;
@@ -61,11 +61,10 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             logger.log(Level.WARNING, "unable to find font file {0}", s);
         } else if ( osName.startsWith("Linux") ) {
             File f= new File("/usr/share/fonts/truetype");
-            File ff= FileUtil.find( f, font.getName().replaceAll(" ","") + ".ttf" );
+            File ff= FileUtil.find( f, font.getPSName() + ".ttf" );
             return ff==null ? null : ff.getPath();
         } else if ( osName.startsWith("Windows") ) {
-            File f= new File("C:/Windows/Fonts");
-            File ff= FileUtil.find( f, font.getName() + ".ttf" );
+            File ff= FileUtil.find( new File[] { new File("C:/Windows/Fonts"), new File("D:/Windows/Fonts") }, font.getName() + ".ttf" );
             return ff==null ? null : ff.getPath();
         }
         return null;
@@ -74,7 +73,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     FontMapper fontMapper = new FontMapper() {
         public BaseFont awtToPdf(java.awt.Font font) {
             try {
-                FontFactory.registerDirectories();
+                
                 System.err.println( font.getName() );
                 String ffile= ttfFromName(font);
                 if ( ffile==null ) {
