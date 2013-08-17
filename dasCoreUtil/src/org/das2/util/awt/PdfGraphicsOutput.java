@@ -15,11 +15,17 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.pdf.BaseFont;
+import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.FileUtil;
@@ -41,10 +47,64 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     private PdfContentByte cb;
     private Graphics2D graphics;
 
+    private static Map<String,File> fontToTtfMap;
+
+    private synchronized Map<String,File> getFontToTtfMap() {
+        String osName= System.getProperty( "os.name" );
+        String username= System.getProperty( "user.name" );
+        File[] dirs;
+        if ( osName.startsWith("Mac") ) {
+            dirs= new File[] { new File("/Users/" + username + "/Library/Fonts/" ),
+                new File( "/Library/Fonts/" ) };
+        } else if ( osName.startsWith("Linux") ) {
+            dirs= new File[] { new File("/usr/share/fonts/truetype") };
+        } else if ( osName.startsWith("Windows") ) {
+            dirs= new File[] { new File("C:/Windows/Fonts"), new File("D:/Windows/Fonts") };
+        } else {
+            // solaris...
+            logger.warning("no font lookup for solaris");
+            return new HashMap<String, File>();
+        }
+
+        if ( fontToTtfMap==null ) {
+            logger.log( Level.FINE, "indexing fonts..." );
+            long t0= System.currentTimeMillis();
+            fontToTtfMap= new HashMap();
+            for ( File dir: dirs ) {
+                if ( !dir.exists() ) {
+                    continue;
+                }
+                File[] ttfFonts= dir.listFiles();
+                for ( File f: ttfFonts ) {
+                    if ( f.getName().toLowerCase().endsWith(".ttf") ) {
+                        FileInputStream in = null;
+                        try {
+                            in = new FileInputStream(f);
+                            Font font= Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(f));
+                            fontToTtfMap.put( font.getName(), f );
+                        } catch (FontFormatException ex) {
+                            Logger.getLogger(PdfGraphicsOutput.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (IOException ex) {
+                            Logger.getLogger(PdfGraphicsOutput.class.getName()).log(Level.SEVERE, null, ex);
+                        } finally {
+                            try {
+                                in.close();
+                            } catch (IOException ex) {
+                                Logger.getLogger(PdfGraphicsOutput.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    }
+                }
+            }
+            logger.log( Level.FINE, "fonts indexed in {0} millis", (System.currentTimeMillis() - t0));
+        }
+        return fontToTtfMap;
+    }
+    
     /**
      * return the name of the .ttf file for the platform, or null.
      * @param font
-     * @return 
+     * @return the name of the .ttf file, or null.
      */
     String ttfFromName( java.awt.Font font ) {
         String osName= System.getProperty( "os.name" ); 
@@ -60,12 +120,21 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             }
             logger.log(Level.WARNING, "unable to find font file {0}", s);
         } else if ( osName.startsWith("Linux") ) {
-            File f= new File("/usr/share/fonts/truetype");
-            File ff= FileUtil.find( f, font.getPSName() + ".ttf" );
-            return ff==null ? null : ff.getPath();
+            Map<String,File> map= getFontToTtfMap();
+            File f= map.get(font.getName());
+            if ( f==null ) {
+                return null;
+            } else {
+                return f.toString();
+            }
         } else if ( osName.startsWith("Windows") ) {
-            File ff= FileUtil.find( new File[] { new File("C:/Windows/Fonts"), new File("D:/Windows/Fonts") }, font.getName() + ".ttf" );
-            return ff==null ? null : ff.getPath();
+            Map<String,File> map= getFontToTtfMap();
+            File f= map.get(font.getName());
+            if ( f==null ) {
+                return null;
+            } else {
+                return f.toString();
+            }
         }
         return null;
     }
