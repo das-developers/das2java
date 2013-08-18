@@ -152,9 +152,10 @@ public class FileUtil {
     
     /**
      * find all files under the root matching the spec.
-     * @param root
-     * @param ttf
-     * @return 
+     * @param root the root of the search (e.g. /fonts/)
+     * @param name the pattern to match
+     * @param matches list that will accept the matches, or null if one should be created.
+     * @return the list.
      */
     public static List<File> listRecursively( File root, Pattern name, List<File> matches ) {
         if (!root.exists()) {
@@ -176,8 +177,8 @@ public class FileUtil {
     
     /**
      * Return an array of files where the regex is found at the end.  A check is performed to see if the root is case-insensitive.
-     * @param root /fonts/
-     * @param glob (*.ttf)
+     * @param root the root of the search (e.g. /fonts/)
+     * @param glob the glob to match (e.g. *.ttf)
      * @return list of files.
      */
     public static File[] listRecursively( File root, String glob ) {
