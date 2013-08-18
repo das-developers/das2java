@@ -475,14 +475,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
             public void mousePressed(MouseEvent e) {
                 CanvasAction.currentCanvas = DasCanvas.this;
-                if ( e.isPopupTrigger() )
-                    popup.show(DasCanvas.this, e.getX(), e.getY());
+                if ( e.isPopupTrigger() && e.getX()<10 && e.getY()<10 ) popup.show(DasCanvas.this, e.getX(), e.getY());
             }
 
             public void mouseReleased(MouseEvent e) {
                 CanvasAction.currentCanvas = DasCanvas.this;
-                if ( e.isPopupTrigger() )
-                    popup.show(DasCanvas.this, e.getX(), e.getY());
+                if ( e.isPopupTrigger() && e.getX()<10 && e.getY()<10 ) popup.show(DasCanvas.this, e.getX(), e.getY());
             }
 
         };
@@ -492,6 +490,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         JPopupMenu popup = new JPopupMenu();
 
         JMenuItem props = new JMenuItem(PROPERTIES_ACTION);
+        props.setText("DasCanvas Properties");
         popup.add(props);
 
         popup.addSeparator();
@@ -504,12 +503,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 popup.add(item);
             }
         }
-
-        popup.addSeparator();
-
-        JMenuItem close = new JMenuItem("close");
-        close.setToolTipText("close this popup");
-        popup.add(close);
 
         return popup;
     }
