@@ -11,7 +11,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import static org.das2.util.filesystem.FileSystem.PROP_CASE_INSENSITIVE;
+import org.das2.util.filesystem.FileSystemSettings;
+import org.das2.util.filesystem.Glob;
 
 /**
  * static utility methods.
@@ -21,7 +28,7 @@ import java.util.Set;
  * @author jbf
  */
 public class FileUtil {
-    
+
     private FileUtil() {
     }
     
@@ -142,6 +149,45 @@ public class FileUtil {
         }
         return null;
     }    
+    
+    /**
+     * find all files under the root matching the spec.
+     * @param root
+     * @param ttf
+     * @return 
+     */
+    public static List<File> listRecursively( File root, Pattern name, List<File> matches ) {
+        if (!root.exists()) {
+            throw new IllegalArgumentException("File does not exist:"+root);
+        }
+        if ( matches==null ) matches= new ArrayList();
+        File[] children = root.listFiles();
+        for (int i = 0; i < children.length; i++) {
+            if (children[i].isDirectory()) {
+                listRecursively(children[i],name,matches);
+            } else {
+                if ( name.matcher( children[i].getName() ).matches() ) {
+                    matches.add(children[i]);
+                }
+            }
+        }
+        return matches;
+    }
+    
+    /**
+     * Return an array of files where the regex is found at the end.  A check is performed to see if the root is case-insensitive.
+     * @param root /fonts/
+     * @param glob (*.ttf)
+     * @return list of files.
+     */
+    public static File[] listRecursively( File root, String glob ) {
+        String regex= Glob.getRegex( glob );
+        boolean b= new File(root,"xxx").equals(new File(root,"XXX"));
+        if ( b ) regex= "(?i)"+regex;
+        Pattern name= Pattern.compile( ".*" + regex );
+        List<File> result= listRecursively( root, name, null );
+        return result.toArray( new File[result.size()] );
+    }
     
     /**
      * copies the file or folder from src to dst.
