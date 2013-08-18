@@ -383,6 +383,8 @@ public class DasPlot extends DasCanvasComponent {
 
         long tnow= System.currentTimeMillis();
         
+        boolean needRepaintSoon= false;
+        
         for (int i = 0; i < lmessages.size(); i++) {
             MessageDescriptor message = (MessageDescriptor) lmessages.get(i);
 
@@ -400,16 +402,11 @@ public class DasPlot extends DasCanvasComponent {
             if ( logTimeoutSec < Integer.MAX_VALUE/1000 && message.birthMilli < tnow - logTimeoutSec*1000 ) {
                 continue;
             }
+                     
+            if ( logTimeoutSec < 1000 && message.birthMilli<Long.MAX_VALUE ) {
+                needRepaintSoon= true;
+            }
             
-            ActionListener animate = new ActionListener() {
-                public void actionPerformed(ActionEvent ae) {
-                    repaint();
-                }
-            };
-            
-            Timer timer = new Timer(300,animate);
-            timer.start();
-
             Icon icon=null;
             if ( message.renderer!=null && renderers1.size()>1 ) {
                 icon= message.renderer.getListIcon();
@@ -459,6 +456,16 @@ public class DasPlot extends DasCanvasComponent {
             msgy += gtr.getHeight() + msgem / 2;  // findbugs OKAY
         }
 
+        if ( needRepaintSoon ) {
+            ActionListener animate = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                    repaint();
+                }
+            };
+            Timer timer = new Timer(300,animate);
+            timer.start();
+        }
+        
         graphics.dispose();
         
     }
