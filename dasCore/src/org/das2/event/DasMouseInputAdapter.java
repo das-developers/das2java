@@ -592,6 +592,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
             Graphics2D gg = (Graphics2D) g.create();
 
+            gg.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+            
             //gg.translate(-parent.getX(),-parent.getY());
             gg.setColor(new Color(0, 0, 0, 255));
 
