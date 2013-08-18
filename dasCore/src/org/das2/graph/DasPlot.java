@@ -359,6 +359,7 @@ public class DasPlot extends DasCanvasComponent {
      private void drawMessages(Graphics2D g) {
 
         Graphics2D graphics= (Graphics2D) g.create();
+        boolean isPrint= getCanvas().isPrintingThread();
         
         Font font0 = graphics.getFont();
         int msgem = (int) Math.max(8, font0.getSize2D() / 2);
@@ -380,12 +381,34 @@ public class DasPlot extends DasCanvasComponent {
         List<Renderer> renderers1=  Arrays.asList( getRenderers() );
         List<MessageDescriptor> lmessages= new ArrayList( this.messages ); // copy to local variable
 
+        long tnow= System.currentTimeMillis();
+        
         for (int i = 0; i < lmessages.size(); i++) {
             MessageDescriptor message = (MessageDescriptor) lmessages.get(i);
 
             if ( message.messageType<logLevel.intValue() ) {
                 continue; // skip this message
             }
+            
+            // https://sourceforge.net/p/autoplot/bugs/1093/: error bubbles must be hidden when printing.
+            if ( isPrint ) {
+                if ( message.birthMilli<Long.MAX_VALUE ) {
+                    continue;
+                }
+            }
+            
+            if ( logTimeoutSec < Integer.MAX_VALUE/1000 && message.birthMilli < tnow - logTimeoutSec*1000 ) {
+                continue;
+            }
+            
+            ActionListener animate = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                    repaint();
+                }
+            };
+            
+            Timer timer = new Timer(300,animate);
+            timer.start();
 
             Icon icon=null;
             if ( message.renderer!=null && renderers1.size()>1 ) {
@@ -1109,13 +1132,24 @@ public class DasPlot extends DasCanvasComponent {
         Datum x;
         Datum y;
         Rectangle bounds; // stores the drawn boundaries of the message for context menu.
+        
+        /**
+         * birth milli of the message, used for hiding after a timeout has elapsed.  When this
+         * is Long.MAX_VALUE, the message ought never be hidden.
+         */
+        long birthMilli;
 
-        MessageDescriptor(Renderer renderer, String text, int messageType, Datum x, Datum y) {
+        MessageDescriptor( Renderer renderer, String text, int messageType, Datum x, Datum y ) {
             this.renderer = renderer;
             this.text = text;
             this.messageType = messageType;
             this.x = x;
             this.y = y;
+            if ( renderer instanceof DigitalRenderer ) {
+                this.birthMilli= Long.MAX_VALUE; // TODO: kludge because we don't want timeouts to remove these messages.
+            } else {
+                this.birthMilli=System.currentTimeMillis();
+            }
         }
     }
 
@@ -1144,7 +1178,7 @@ public class DasPlot extends DasCanvasComponent {
     public static final int WARNING = Level.WARNING.intValue();
     public static final int SEVERE = Level.SEVERE.intValue(); // this was ERROR before Feb 2011.
 
-    List messages;
+    List<MessageDescriptor> messages;
     List<LegendElement> legendElements;
 
     /**
@@ -1865,6 +1899,25 @@ public class DasPlot extends DasCanvasComponent {
         return logLevel;
     }
 
+    /**
+     * the number of seconds to allow the log messages to show.
+     */
+    private int logTimeoutSec = Integer.MAX_VALUE;
+    
+    public static final String PROP_LOG_TIMEOUT_SEC = "logTimeoutSec";
+
+    public int getLogTimeoutSec() {
+        return logTimeoutSec;
+    }
+
+    public void setLogTimeoutSec( int logTimeoutSec ) {
+        int oldLogTimeoutSec = this.logTimeoutSec;
+        this.logTimeoutSec = logTimeoutSec;
+        repaint();
+        firePropertyChange(PROP_LOG_TIMEOUT_SEC, oldLogTimeoutSec, logTimeoutSec);
+    }
+
+    
     public static String PROP_ISOTROPIC= "isotropic";
 
     private boolean isotropic= false;
