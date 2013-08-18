@@ -393,7 +393,7 @@ public class DasPlot extends DasCanvasComponent {
             }
             
             // https://sourceforge.net/p/autoplot/bugs/1093/: error bubbles must be hidden when printing.
-            if ( isPrint ) {
+            if ( false && isPrint ) { // we need to clean up hudson first...
                 if ( message.birthMilli<Long.MAX_VALUE ) {
                     continue;
                 }
