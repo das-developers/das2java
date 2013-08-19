@@ -923,7 +923,7 @@ public class DatumRangeUtil {
                         ts= ts1;
                     } else {
                         while( idx<7 && ts1[idx]!=-1 ) idx++;
-                        idx--;
+                        if ( idx>0 ) idx--;
                         unload= afterToUnresolved;
                         formatUn= "UNRSV2";
                         ts= ts2;
@@ -942,7 +942,7 @@ public class DatumRangeUtil {
                         ts= ts2;
                     } else {
                         while( idx<7 && ts2[idx]!=-1) idx++;
-                        idx--;
+                        if ( idx>0 ) idx--;
                         unload= beforeToUnresolved;
                         formatUn= "UNRSV1";
                         ts= ts1;
