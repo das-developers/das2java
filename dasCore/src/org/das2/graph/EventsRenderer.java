@@ -237,6 +237,10 @@ public class EventsRenderer extends Renderer {
                             setLabel( "Error, sxmax<sxmin");
                         } else {                            
                             DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
+                            if ( !dr.getUnits().isConvertableTo(px.getUnits()) )  {
+                                logger.fine("inconvertable units");
+                                return new Rectangle[0];
+                            }
                             if ( dr.contains(px) ) {
                                 if ( !ii.contains(i) )  ii.add(i);
                             }
