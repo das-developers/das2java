@@ -83,6 +83,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                     try {
                         in = new FileInputStream(f);
                         Font font= Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(f));
+                        logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getName(), f});
                         fontToTtfMap.put( font.getName(), f );
                     } catch (FontFormatException ex) {
                         Logger.getLogger(PdfGraphicsOutput.class.getName()).log(Level.SEVERE, null, ex);
