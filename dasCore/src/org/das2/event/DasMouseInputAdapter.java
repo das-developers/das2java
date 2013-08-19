@@ -188,6 +188,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         modules.removeElement(oldModule);
         modules.addElement(newModule);
     }
+    
+    public void removeMouseModule(MouseModule module) {
+        JCheckBoxMenuItem j;
+        j= (JCheckBoxMenuItem) primaryActionButtonMap.remove(module);
+        primaryPopup.remove(j);
+        numInserted--;
+        j= (JCheckBoxMenuItem) secondaryActionButtonMap.remove(module);
+        secondaryPopup.remove(j);
+        modules.removeElement(module);
+        numInsertedSecondary--;
+    }
+    
 
     /**
      * add a mouse module to the list of available modules.  If a module with the same
@@ -751,7 +763,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         if ( menu != primaryPopup && menu != secondaryPopup) {
             throw new IllegalArgumentException("menu must be primary or secondary popup menu");
         }
-        for (Iterator i = modules.iterator(); i.hasNext();) {
+        for (Iterator i = modules.iterator(); i.hasNext();) { //TODO: it looks like this strange bit of code just sets the label.
             MouseModule mm = (MouseModule) i.next();
             JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(mm);
             j.setText(mm.getLabel());
@@ -1012,13 +1024,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             }
         }
 
-    }
-
-    public void removeMouseModule(MouseModule module) {
-        //primaryActionButtonMap.remove(module);
-        //secondaryActionButtonMap.remove(module);
-        //modules.removeElement(module);
-        //TODO: implement this.  We need to keep track of the menu items...
     }
 
     /**
