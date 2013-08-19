@@ -183,7 +183,16 @@ public class EventsRenderer extends Renderer {
         MouseModule mm= getMouseModule();
         parent.getDasMouseInputAdapter().addMouseModule( mm );
         parent.getDasMouseInputAdapter().setPrimaryModule( mm );
+        super.installRenderer();
     }
+
+    @Override
+    protected void uninstallRenderer() {
+        MouseModule mm= getMouseModule();
+        parent.getDasMouseInputAdapter().removeMouseModule(mm);
+        super.uninstallRenderer(); 
+    }
+    
     
     private class DragRenderer extends LabelDragRenderer {
         DasPlot parent;
@@ -276,11 +285,11 @@ public class EventsRenderer extends Renderer {
                             } catch ( RuntimeException ex ) {
                                 ss= "" + dr + " fill";
                             }
-                            sb.append( ss + "!c");
+                            sb.append(ss).append( "!c");
                         }
                     }
                     if ( ii.size()>4 ) {
-                        sb.append( "("+(ii.size()-4)+" more items not shown)" );
+                        sb.append("(").append(ii.size()-4).append( " more items not shown)");
                     }
                     setLabel( sb.toString() );
                 } else {
@@ -292,8 +301,12 @@ public class EventsRenderer extends Renderer {
         
     }
     
+    private MouseModule mouseModule=null;
     private MouseModule getMouseModule() {
-        return new MouseModule( parent, new DragRenderer(parent), "event lookup" );
+        if ( mouseModule==null ) {
+            mouseModule= new MouseModule( parent, new DragRenderer(parent), "event lookup" );
+        }
+        return mouseModule;
     }
 
     /**
