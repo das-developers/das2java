@@ -21,11 +21,9 @@ import org.das2.datum.CalendarTime;
 public class Selector {
 
 	// Instance Data
-	protected List<Constraint> m_lConstraints = null;
 	protected String m_sKey = null;
 	protected Constraint.Format m_format = null;
-	protected String[] m_sEnumAry = null;
-
+	protected List<Constraint> m_lConstraints = null;
 	
 	/** Construct an empty selector */
 	public Selector(String sKey, Constraint.Format fmt){

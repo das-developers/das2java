@@ -11,9 +11,21 @@ public final class Constraint{
 	/** Defines a comparison type, should probably be moved out to some other class */
 	public static enum Op {EQ, NE, LT, GT, LE, GE;
 		@Override
-	  public String toString(){
-		  return "."+name()+".";
-	  }
+		public String toString(){
+			return "."+name()+".";
+		}
+		
+		static public Op fromString(String sStr){
+			if(sStr.equalsIgnoreCase(".eq.")) return EQ;
+			if(sStr.equalsIgnoreCase(".ne.")) return NE;
+			if(sStr.equalsIgnoreCase(".lt.")) return LT;
+			if(sStr.equalsIgnoreCase(".end.")) return LT;
+			if(sStr.equalsIgnoreCase(".gt.")) return GT;
+			if(sStr.equalsIgnoreCase(".ge.")) return GE;
+			if(sStr.equalsIgnoreCase(".beg.")) return GE;
+			if(sStr.equalsIgnoreCase(".le.")) return LE;
+			throw new IllegalArgumentException("Unknown comparison string '"+sStr+"'");
+		}
 	};
 
 	/** Defines the value format for the selector */
