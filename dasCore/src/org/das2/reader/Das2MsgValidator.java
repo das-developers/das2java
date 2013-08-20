@@ -51,7 +51,7 @@ public class Das2MsgValidator {
 					throw new UnsupportedOperationException("Schema for message type "+
 							  type.toString()+" is not yet implemented");
 				case DESCRIBE:
-					url = Das2MsgValidator.class.getResource("/schema/das3_dsid-2.2.xsd");
+					url = Das2MsgValidator.class.getResource("/schema/das_dsid-2.2.xsd");
 					break;
 				case LIST_LEVEL:
 					throw new UnsupportedOperationException("Schema for message type "+
