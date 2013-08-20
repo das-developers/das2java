@@ -192,10 +192,11 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     public void removeMouseModule(MouseModule module) {
         JCheckBoxMenuItem j;
         j= (JCheckBoxMenuItem) primaryActionButtonMap.remove(module);
-        primaryPopup.remove(j);
+        this.headless = DasApplication.getDefaultApplication().isHeadless();
+        if ( !headless ) primaryPopup.remove(j);
         numInserted--;
         j= (JCheckBoxMenuItem) secondaryActionButtonMap.remove(module);
-        secondaryPopup.remove(j);
+        if ( !headless ) secondaryPopup.remove(j);
         modules.removeElement(module);
         numInsertedSecondary--;
     }
