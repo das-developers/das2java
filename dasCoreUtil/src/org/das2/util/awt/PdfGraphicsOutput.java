@@ -50,7 +50,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     /**
      * Establish a name to .ttf file mapping.  On my development system with 233 fonts, this takes less than 400ms.
      */
-    private synchronized Map<String,File> getFontToTtfMap() {
+    private synchronized static Map<String,File> getFontToTtfMap() {
         String osName= System.getProperty( "os.name" );
         String userhome= System.getProperty("user.home");
 
@@ -69,7 +69,6 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             dirs= new File[] { };
         }
 
-        fontToTtfMap= null;
         if ( fontToTtfMap==null ) {
             logger.log( Level.FINE, "indexing fonts..." );
             long t0= System.currentTimeMillis();
@@ -109,7 +108,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
      * @param font
      * @return the name of the .ttf file, or null.
      */
-    public String ttfFromName( java.awt.Font font ) {
+    public static String ttfFromName( java.awt.Font font ) {
         String osName= System.getProperty( "os.name" ); 
         if ( osName.startsWith("Mac") ) {
             Map<String,File> map= getFontToTtfMap();
