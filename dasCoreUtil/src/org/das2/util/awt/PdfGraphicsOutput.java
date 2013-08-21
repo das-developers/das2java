@@ -45,6 +45,8 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     private PdfContentByte cb;
     private Graphics2D graphics;
 
+    public static final String READING_FONTS="PleaseWait";
+            
     private static Map<String,File> fontToTtfMap;
 
     /**
@@ -101,6 +103,26 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             logger.log( Level.FINE, "{0} fonts indexed in {1} millis", new Object[] { fontToTtfMap.size(), ( System.currentTimeMillis() - t0) } );
         }
         return fontToTtfMap;
+    }
+    
+    /**
+     * kludge to support call from AWT.  If the font map is not yet
+     * loaded, return null and start the lookup on a new thread.
+     * @param font
+     * @return READING_FONTS or the name (or null).
+     */
+    public static String ttfFromNameInteractive( final java.awt.Font font ) {
+        if ( fontToTtfMap==null ) {
+            Runnable run= new Runnable() {
+                public void run() {
+                    String x= ttfFromName( font );
+                }
+            };
+            new Thread( run ).start();
+            return READING_FONTS;
+        } else {
+            return ttfFromName(font);
+        }
     }
     
     /**
