@@ -5665,6 +5665,27 @@ public class Ops {
     }
 
 
+    /**
+     * clean up jython scripts by forcing the result to be mutable.  This
+     * will also do type conversions.
+     * @param ds mutable or immutable dataset.
+     * @param name the property name
+     * @param v the object to assign.
+     * @return the dataset, now mutable.
+     */
+    public static MutablePropertyDataSet putProperty( QDataSet ds, String name, Object v ) {
+        MutablePropertyDataSet mds;
+        if ( !( ds instanceof MutablePropertyDataSet ) ) {
+            mds= ArrayDataSet.maybeCopy(ds);
+        } else {
+            mds= (MutablePropertyDataSet)ds;            
+        }
+        if ( name.equals( QDataSet.USER_PROPERTIES ) ) {
+            ///
+        }
+        mds.putProperty( name, v );
+        return mds;        
+    }
 
     /**
      * declare that the dataset is a dependent parameter of an independent parameter.
