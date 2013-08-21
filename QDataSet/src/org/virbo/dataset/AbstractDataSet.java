@@ -123,7 +123,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     }
         
     public int length() {
-        throw new IllegalArgumentException("rank error, expected "+rank());
+        throw new IllegalArgumentException("rank error, rank 0 datasets have no length()");
     }
 
     public int length(int i0) {
