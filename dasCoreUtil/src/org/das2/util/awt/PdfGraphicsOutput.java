@@ -69,6 +69,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             dirs= new File[] { };
         }
 
+        fontToTtfMap= null;
         if ( fontToTtfMap==null ) {
             logger.log( Level.FINE, "indexing fonts..." );
             long t0= System.currentTimeMillis();
@@ -82,18 +83,18 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                     FileInputStream in = null;
                     try {
                         in = new FileInputStream(f);
-                        Font font= Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(f));
+                        Font font= Font.createFont(Font.TRUETYPE_FONT, in );
                         logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getName(), f});
                         fontToTtfMap.put( font.getName(), f );
                     } catch (FontFormatException ex) {
-                        Logger.getLogger(PdfGraphicsOutput.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     } catch (IOException ex) {
-                        Logger.getLogger(PdfGraphicsOutput.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     } finally {
                         try {
                             if ( in!=null ) in.close();
                         } catch (IOException ex) {
-                            Logger.getLogger(PdfGraphicsOutput.class.getName()).log(Level.SEVERE, null, ex);
+                            logger.log(Level.SEVERE, null, ex);
                         }
                     }
                 }
