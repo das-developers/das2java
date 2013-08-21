@@ -109,7 +109,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
      * @param font
      * @return the name of the .ttf file, or null.
      */
-    String ttfFromName( java.awt.Font font ) {
+    public String ttfFromName( java.awt.Font font ) {
         String osName= System.getProperty( "os.name" ); 
         if ( osName.startsWith("Mac") ) {
             Map<String,File> map= getFontToTtfMap();
