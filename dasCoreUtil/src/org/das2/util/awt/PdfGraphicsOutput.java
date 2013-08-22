@@ -70,7 +70,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             logger.warning("unknown os.name, no fonts will be embedded");
             dirs= new File[] { };
         }
-
+ 
         if ( fontToTtfMap==null ) {
             logger.log( Level.FINE, "indexing fonts..." );
             long t0= System.currentTimeMillis();
@@ -83,10 +83,13 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                 for ( File f: ttfFonts ) {
                     FileInputStream in = null;
                     try {
+                        com.itextpdf.text.pdf.BaseFont.createFont( f.toString(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED ); // check to see if iText is going to fuss about licensing.
                         in = new FileInputStream(f);
                         Font font= Font.createFont(Font.TRUETYPE_FONT, in );
-                        logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getName(), f});
-                        fontToTtfMap.put( font.getName(), f );
+                        logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFamily(), f});
+                        fontToTtfMap.put( font.getFamily(), f );                    
+                    } catch ( DocumentException ex ) {
+                        logger.log( Level.SEVERE, null, ex );
                     } catch (FontFormatException ex) {
                         logger.log(Level.SEVERE, null, ex);
                     } catch (IOException ex) {
@@ -142,7 +145,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             }
         } else if ( osName.startsWith("Linux") ) {
             Map<String,File> map= getFontToTtfMap();
-            File f= map.get(font.getName());
+            File f= map.get(font.getFamily());
             if ( f==null ) {
                 return null;
             } else {
@@ -250,4 +253,8 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         }
     }
     
+    public static void main( String[] args ) {
+        getFontToTtfMap();
+    }
+     
 }
