@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -90,9 +91,10 @@ public class ChangesSupport {
     public synchronized void performingChange(Object client, Object lockObject) {
         Object c = changesPending.get(lockObject);
         if (c == null || c != client) {
+            logger.log(Level.INFO, "change was not registered, automatically registering change lockObject={0}", lockObject);
             registerPendingChange(client, lockObject);
         }
-        logger.fine("performingChange " + lockObject + " by " + client + "  in " + parent);
+        logger.log(Level.FINE, "performingChange {0} by {1}  in {2}", new Object[]{lockObject, client, parent});
     }
 
     /**
@@ -101,7 +103,7 @@ public class ChangesSupport {
      * @param lockObject
      */
     public synchronized void changePerformed(Object client, Object lockObject) {
-        logger.fine("clearPendingChange " + lockObject + " by " + client + "  in " + parent);
+        logger.log(Level.FINE, "clearPendingChange {0} by {1}  in {2}", new Object[]{lockObject, client, parent});
         if (changesPending.get(lockObject) == null) {
             // throw new IllegalStateException( "no such lock object: "+lockObject );  //TODO: handle multiple registrations by the same client
         }
