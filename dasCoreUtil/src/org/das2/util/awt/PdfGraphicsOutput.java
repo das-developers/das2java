@@ -46,13 +46,18 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     private Graphics2D graphics;
 
     public static final String READING_FONTS="PleaseWait";
-            
+    public static final Object STATE_IDLE="idle";
+    public static final Object STATE_READING="reading";
+    public static final Object STATE_READY="ready";
+    
     private static Map<String,File> fontToTtfMap;
+    private static Object state= STATE_IDLE;
 
     /**
      * Establish a name to .ttf file mapping.  On my development system with 233 fonts, this takes less than 400ms.
      */
     private synchronized static Map<String,File> getFontToTtfMap() {
+        
         String osName= System.getProperty( "os.name" );
         String userhome= System.getProperty("user.home");
 
@@ -72,9 +77,11 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         }
  
         if ( fontToTtfMap==null ) {
+            state= STATE_READING;
+        
             logger.log( Level.FINE, "indexing fonts..." );
             long t0= System.currentTimeMillis();
-            fontToTtfMap= new HashMap();
+            HashMap fontToTtfMap1= new HashMap();
             for ( File dir: dirs ) {
                 if ( !dir.exists() ) {
                     continue;
@@ -87,7 +94,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                         in = new FileInputStream(f);
                         Font font= Font.createFont(Font.TRUETYPE_FONT, in );
                         logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFamily(), f});
-                        fontToTtfMap.put( font.getFamily(), f );                    
+                        fontToTtfMap1.put( font.getFamily(), f );                    
                     } catch ( DocumentException ex ) {
                         logger.log( Level.SEVERE, null, ex );
                     } catch (FontFormatException ex) {
@@ -103,7 +110,9 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                     }
                 }
             }
-            logger.log( Level.FINE, "{0} fonts indexed in {1} millis", new Object[] { fontToTtfMap.size(), ( System.currentTimeMillis() - t0) } );
+            fontToTtfMap= fontToTtfMap1;
+            state= STATE_READY;
+            logger.log( Level.FINE, "{0}fonts indexed in {1} millis", new Object[] { fontToTtfMap.size(), ( System.currentTimeMillis() - t0) } );
         }
         return fontToTtfMap;
     }
@@ -115,16 +124,24 @@ public class PdfGraphicsOutput implements GraphicsOutput {
      * @return READING_FONTS or the name (or null).
      */
     public static String ttfFromNameInteractive( final java.awt.Font font ) {
-        if ( fontToTtfMap==null ) {
-            Runnable run= new Runnable() {
-                public void run() {
-                    String x= ttfFromName( font );
+        synchronized ( state ) {
+            if ( state==STATE_READY ) {
+                return ttfFromName(font);
+            }
+            if ( fontToTtfMap==null ) {
+                if ( state==STATE_IDLE ) {
+                    state= STATE_READING;
+                    Runnable run= new Runnable() {
+                        public void run() {
+                            String x= ttfFromName( font );
+                        }
+                    };
+                    new Thread( run ).start();
                 }
-            };
-            new Thread( run ).start();
-            return READING_FONTS;
-        } else {
-            return ttfFromName(font);
+                return READING_FONTS;
+            } else {
+                return ttfFromName(font);
+            }
         }
     }
     
