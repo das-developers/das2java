@@ -119,7 +119,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     
     /**
      * kludge to support call from AWT.  If the font map is not yet
-     * loaded, return null and start the lookup on a new thread.
+     * loaded, return READING_FONTS and start the lookup on a new thread.
      * @param font
      * @return READING_FONTS or the name (or null).
      */
