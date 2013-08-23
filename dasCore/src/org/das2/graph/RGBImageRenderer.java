@@ -7,6 +7,7 @@ package org.das2.graph;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import org.das2.DasException;
 import org.das2.datum.Units;
 import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
@@ -63,12 +64,24 @@ public class RGBImageRenderer extends Renderer {
     @Override
     public void setDataSet(QDataSet ds) {
         super.setDataSet(ds);
+        image= null;
+    }
+
+    @Override
+    /**
+     * this actually can take a little while, I discovered when playing with the wave-at-cassini image.
+     */
+    public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
+        monitor.started();
+        monitor.setProgressMessage("creating image from RGB data");
         if ( ds==null ) {
             image=null;
         } else {
-            image= getImage(ds);
+            if ( image==null ) {
+                image= getImage(ds);
+            }
         }
-        refresh();
+        monitor.finished();
     }
 
     
