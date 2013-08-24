@@ -91,7 +91,7 @@ public class ChangesSupport {
     public synchronized void performingChange(Object client, Object lockObject) {
         Object c = changesPending.get(lockObject);
         if (c == null || c != client) {
-            logger.log(Level.INFO, "change was not registered, automatically registering change lockObject={0}", lockObject);
+            logger.log(Level.FINE, "change was not registered, automatically registering change lockObject={0}", lockObject); // TODO: this happens (for now) with lockObject=autolayout in Autoplot.
             registerPendingChange(client, lockObject);
         }
         logger.log(Level.FINE, "performingChange {0} by {1}  in {2}", new Object[]{lockObject, client, parent});
