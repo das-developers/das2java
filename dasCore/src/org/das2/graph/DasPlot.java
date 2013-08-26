@@ -1238,7 +1238,7 @@ public class DasPlot extends DasCanvasComponent {
      */
     public void postException(Renderer renderer, Exception exception) {
         String message = exception.getMessage();
-        if (message == null) {
+        if (message == null || message.length()<7 ) {  // ArrayIndexOutOfBounds message was just "16"
             message = String.valueOf(exception);
         }
         int errorLevel = SEVERE;
