@@ -386,6 +386,17 @@ public class DataSetUtil {
 
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( dep0!=null ) result.put( QDataSet.DEPEND_0, dep0.trim(start,stop) );
+        
+        for ( int i=1; i<=QDataSet.MAX_RANK; i++ ) {
+            String prop= "DEPEND_"+i;
+            QDataSet dep= (QDataSet) ds.property(prop);
+            if ( dep!=null ) {
+                if ( dep.rank()>1 ) {
+                    dep= dep.trim(start,stop);
+                }
+                result.put( prop, dep );
+            }
+        }
 
         QDataSet dsp;
         String [] props= DataSetUtil.correlativeProperties();
