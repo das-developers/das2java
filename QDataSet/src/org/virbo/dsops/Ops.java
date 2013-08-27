@@ -1220,7 +1220,7 @@ public class Ops {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
            public double op(double d1, double d2) {
-                return uc.convert(d1) == d2 ? 1.0 : 0.0;
+               return uc.convert(d1) == d2 ? 1.0 : 0.0;
            }
         });
     }
@@ -5875,6 +5875,7 @@ public class Ops {
      * returns true iff the dataset values are equivalent.  Note this
      * may promote rank, etc.
      * If the two datasets have enumerations, then we create datums and check .equals.
+     * This does not check TITLE, etc.  Just units.
      * @param ds1
      * @param ds2
      * @return
