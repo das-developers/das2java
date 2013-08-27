@@ -59,6 +59,7 @@ import org.das2.graph.Renderer;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
@@ -270,9 +271,19 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         }
 
         QDataSet yds= SemanticOps.ytagsDataSet(tds1);
-        int iy= yds.rank()==2 ? org.virbo.dataset.DataSetUtil.closestIndex( yds.slice(0), yValue ) : org.virbo.dataset.DataSetUtil.closestIndex( yds, yValue );
+        int iy;
+        Datum yy;
+        if ( yds.rank()==2 ) {
+            iy= org.virbo.dataset.DataSetUtil.closestIndex( yds.slice(0), yValue );
+            yy= DataSetUtil.asDatum(yds.slice(0).slice(iy));
+        } else {
+            iy= org.virbo.dataset.DataSetUtil.closestIndex( yds, yValue );
+            yy= DataSetUtil.asDatum(yds.slice(iy));
+            
+        }
+        
         QDataSet sliceDataSet= DataSetOps.slice1( tds1, iy );
-
+        
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");
         if (!isPopupVisible()) {
             showPopup();
@@ -284,7 +295,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         } else {
             formatter = xValue.getFormatter();
         }
-        myPlot.setTitle( "x: " + formatter.format(xValue) + " y: " + yValue );
+        myPlot.setTitle( "x: " + formatter.format(xValue) + " y: " + yy );
         //eventBirthMilli= e.birthMilli;
         return true;
     }
