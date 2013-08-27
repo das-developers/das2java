@@ -55,13 +55,18 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.datum.Units;
 import org.das2.graph.Renderer;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
+import org.virbo.dsutil.DataSetBuilder;
 
 
 public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
@@ -273,17 +278,58 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         QDataSet yds= SemanticOps.ytagsDataSet(tds1);
         int iy;
         Datum yy;
+        
+        QDataSet sliceDataSet;
+        
         if ( yds.rank()==2 ) {
-            iy= org.virbo.dataset.DataSetUtil.closestIndex( yds.slice(0), yValue );
-            yy= DataSetUtil.asDatum(yds.slice(0).slice(iy));
+            QDataSet xds= SemanticOps.xtagsDataSet(tds1);
+            int ix= org.virbo.dataset.DataSetUtil.closestIndex( xds, xValue );
+            QDataSet yds1= yds.slice(ix);
+            iy= org.virbo.dataset.DataSetUtil.closestIndex( yds1, yValue );
+            yy= DataSetUtil.asDatum(yds.slice(ix).slice(iy));
+            IDataSet eqdep1= IDataSet.createRank1(yds.length());
+            eqdep1.putValue(ix,1);
+            
+            DataSetBuilder bz= new DataSetBuilder(1,yds.length());
+            bz.putProperty( QDataSet.UNITS, tds1.property(QDataSet.UNITS ) );
+            DataSetBuilder bx= new DataSetBuilder(1,yds.length());
+            
+            int lastIndex= iy;
+            
+            //int st1=0, st2=0, st3=0;
+            
+            for ( int i=0; i<yds.length(); i++ ) {
+                if ( yds.value(i,lastIndex)==yy.value() ) {
+                    bz.putValue(-1,tds1.value(i,lastIndex));
+                    bx.putValue(-1,xds.value(i));
+                    bx.nextRecord(); bz.nextRecord();
+                    //st1++;
+                } else {
+                    //st3++;
+                    int j= DataSetUtil.closestIndex( yds.slice(i), yValue );
+                    if ( yds.slice(i).slice(j).equals(yy) ) {
+                        lastIndex= j;
+                        bz.putValue(-1,tds1.value(i,lastIndex));
+                        bx.putValue(-1,xds.value(i));
+                        bx.nextRecord(); bz.nextRecord();
+                        //st2++;                    
+                    }
+                }
+            }
+            //System.err.println("st1="+st1+" st2="+st2+" st3="+st3 );
+            ArrayDataSet s1= bz.getDataSet();
+            ArrayDataSet sx= bx.getDataSet();
+            sx.putProperty( QDataSet.UNITS, xds.property(QDataSet.UNITS ) );
+            s1.putProperty( QDataSet.DEPEND_0, sx );
+            sliceDataSet= s1;
+            
         } else {
             iy= org.virbo.dataset.DataSetUtil.closestIndex( yds, yValue );
             yy= DataSetUtil.asDatum(yds.slice(iy));
+            sliceDataSet= DataSetOps.slice1( tds1, iy );
             
         }
-        
-        QDataSet sliceDataSet= DataSetOps.slice1( tds1, iy );
-        
+                
         DasLogger.getLogger(DasLogger.GUI_LOG).finest("setDataSet sliceDataSet");
         if (!isPopupVisible()) {
             showPopup();
