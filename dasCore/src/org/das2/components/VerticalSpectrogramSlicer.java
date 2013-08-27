@@ -58,6 +58,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.graph.Renderer;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.util.monitor.ProgressMonitor;
@@ -275,15 +276,27 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
                 tds1 = tds;
             }
         }
+        
+        int ix;
+        Datum xx=null;
+        DatumRange xdr= null;  // if the xx's aren't identical, show the range instead.
+        
         QDataSet sliceDataSet;
         if (tds1 == null) {
             QDataSet jds= null;
+            assert tdss.size()>0;
             for ( int i= 0; i<tdss.size(); i++ ) {
                 tds1= tdss.get(i);
                 QDataSet xds = SemanticOps.xtagsDataSet(tds1);
-                int index;
-                index = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
-                QDataSet s1 = tds1.slice(index);
+                ix = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
+                QDataSet s1 = tds1.slice(ix);
+                if ( xx!=null ) {
+                    Datum xx1= DataSetUtil.asDatum(xds.slice(ix));
+                    if ( !xx1.equals(xx) ) {
+                        xdr= DatumRangeUtil.union( xx, xx1 );
+                    }
+                }
+                xx= DataSetUtil.asDatum(xds.slice(ix));
                 jds= org.virbo.dsops.Ops.concatenate( jds, s1 );
             }
             sliceDataSet= jds;
@@ -291,9 +304,9 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         } else {
         
             QDataSet xds = SemanticOps.xtagsDataSet(tds1);
-            int index;
-            index = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
-            sliceDataSet = tds1.slice(index);
+            ix = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
+            xx= DataSetUtil.asDatum(xds.slice(ix));
+            sliceDataSet = tds1.slice(ix);
         }
         
         if ( sliceDataSet==null ) {
@@ -311,7 +324,11 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         } else {
             formatter = xValue.getFormatter();
         }
-        myPlot.setTitle( "x: " + formatter.format(xValue) + " y: " + yValue );
+        if ( xdr!=null ) {
+            myPlot.setTitle( "x: " + xdr + " y: " + yValue );
+        } else {
+            myPlot.setTitle( "x: " + formatter.format(xx) + " y: " + yValue );
+        }
         //eventBirthMilli= e.birthMilli;
         return true;
     }
