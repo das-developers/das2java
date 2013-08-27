@@ -2445,6 +2445,7 @@ public class Ops {
             result.putProperty( QDataSet.DEPEND_1, y );
 
             t = (MutablePropertyDataSet)Ops.timegen("2011-10-25", String.format("%f sec", 86400. / len3), len3);
+            //t = (MutablePropertyDataSet)Ops.timegen("2011-10-24T23:01", String.format("%f sec", 86400. / len3), len3);
             t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
 
@@ -2460,6 +2461,7 @@ public class Ops {
             result.putProperty( QDataSet.DEPEND_1, y );
 
             t = (MutablePropertyDataSet)Ops.timegen("2011-10-26", String.format("%f sec", 86400. / lenr), lenr);
+            //t = (MutablePropertyDataSet)Ops.timegen("2011-10-25T20:00", String.format("%f sec", 86400. / lenr), lenr);
             t.putProperty( QDataSet.NAME, "Epoch" );
             result.putProperty(QDataSet.DEPEND_0,t);
             jds.join(result);
