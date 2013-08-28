@@ -824,8 +824,32 @@ public class SemanticOps {
         } else if ( rank==1 ) { 
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
             QDataSet yds= SemanticOps.getDependentDataSet(ds);
-            QDataSet xinside= xrange==null ? null :
+            QDataSet xinside= null;
+            if ( DataSetUtil.isMonotonic(xds) && xds.property(QDataSet.FILL_VALUE)==null ) {  // TODO: validmin validmax...
+                if ( xrange!=null ) {
+                    int i= DataSetUtil.xTagBinarySearch( xds, xrange.min(), 0, xds.length() );
+                    if ( i<0 ) {
+                        i= -1 * i + 1 ;
+                    }
+                    int j= DataSetUtil.xTagBinarySearch( xds, xrange.max(), i, xds.length() );
+                    if ( j<0 ) {
+                        j= -1 * j + 1 ;
+                    }
+                    if ( yrange==null ) {
+                        return ds.trim(i,j);  // optimization for waveforms...
+                        
+                    } else {
+                        int[] back= new int[ xds.length() ];
+                        for ( int ii=i; ii<=j; ii++ ) {
+                            back[ii]= 1;
+                        }
+                        xinside= IDataSet.wrap(back);
+                    }
+                }
+            } else {
+                xinside= xrange==null ? null :
                 Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
+            }
             QDataSet yinside= yrange==null ? null :
                 Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
             
