@@ -41,7 +41,6 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     
     private long taskSize=-1 ;
     
-    private boolean supportsCancel= false;
     private int cancelCheck= 0;
     
     public void setTaskSize(long taskSize) {
