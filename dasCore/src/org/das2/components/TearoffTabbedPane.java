@@ -287,7 +287,9 @@ public class TearoffTabbedPane extends JTabbedPane {
                         TearoffTabbedPane.this.parentPane.dock(draggingTearOff.getComponentAt(0));
                         draggingFrame.dispose();
                     } else {
-                        draggingTearOff.resetTearOffBabysitterName();
+                        if ( draggingTearOff!=null ) {
+                            draggingTearOff.resetTearOffBabysitterName();
+                        }
                     }
                     TearoffTabbedPane oldChildParent= getTabbedPane(e.getComponent());
                     if ( oldChildParent.getTabCount()==0 ) {
@@ -963,7 +965,8 @@ public class TearoffTabbedPane extends JTabbedPane {
         int selectedIndex = getSelectedIndex();
         TabDesc td = (TabDesc) this.tabs.get(c);
         if ( td==null ) {
-            System.err.println("I thought this might happen...");
+            logger.log( Level.WARNING, "I thought this might happen.  td==null in dock...");
+            return;
         }
         int index = td.index;
         if ( index>=super.getTabCount() ) {
