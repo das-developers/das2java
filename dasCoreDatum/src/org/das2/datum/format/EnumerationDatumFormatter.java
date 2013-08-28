@@ -32,8 +32,6 @@ import org.das2.datum.EnumerationUnits;
  */
 public class EnumerationDatumFormatter extends DatumFormatter {
 
-    boolean quotes= false;
-
     public EnumerationDatumFormatter() {
     }
     
