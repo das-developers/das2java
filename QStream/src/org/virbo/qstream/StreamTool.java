@@ -72,7 +72,8 @@ import org.xml.sax.SAXParseException;
 public class StreamTool {
 
     ByteOrder byteOrder;
-    private static final int PACKET_LENGTH_LIMIT=100000;
+    
+    private static final int PACKET_LENGTH_LIMIT=1000000;
 
     private static final Logger logger= LoggerManager.getLogger("qstream");
     
@@ -653,7 +654,7 @@ public class StreamTool {
                 throw new StreamException( String.format( "No packet found for key \"%s\"",key ) ); //TODO
             }
             int contentLength = pd.sizeBytes();
-            if ( contentLength>PACKET_LENGTH_LIMIT ) throw new IllegalStateException("packet length bug would cause stream parser to hang (bug 0000348: streams with long packet lengths)");
+            if ( contentLength>PACKET_LENGTH_LIMIT ) throw new IllegalStateException("stream packet length is too long ("+contentLength+">"+PACKET_LENGTH_LIMIT+"bytes). (bug 0000348: streams with long packet lengths).");
             if (struct.bigBuffer.remaining() < contentLength) {
                 struct.bigBuffer.reset();
                 return false;
