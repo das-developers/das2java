@@ -307,7 +307,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
                 } else {
                     //st3++;
                     int j= DataSetUtil.closestIndex( yds.slice(i), yValue );
-                    if ( yds.slice(i).slice(j).equals(yy) ) {
+                    if ( yds.value( i,j )==yy.value() ) {
                         lastIndex= j;
                         bz.putValue(-1,tds1.value(i,lastIndex));
                         bx.putValue(-1,xds.value(i));
