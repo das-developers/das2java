@@ -1154,7 +1154,11 @@ public class DatumRangeUtil {
         return  timeString;
     }
     
-    public static boolean useDoy= false;
+    private static boolean useDoy= false;
+    
+    public static void setUseDoy( boolean v ) {
+        useDoy= v;
+    }
 
     public static String formatTimeRange( DatumRange self ) {
         return formatTimeRange( self, false );
