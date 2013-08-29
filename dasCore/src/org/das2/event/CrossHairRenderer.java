@@ -296,12 +296,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                     }
                     report = "x:" + xAsString + nl + "y:" + yAsString + nl + "z:" + zAsString;
                 } else {
-                    if (ds == null && dataSetConsumer instanceof DasPlot) {
-                        if (((DasPlot) dataSetConsumer).getRenderers().length > 0) {
-                            ds = ((DasPlot) dataSetConsumer).getRenderer(0).getDataSet();
-                        }
-                    }
-                    if (ds != null && snapping) {
+                    if ( snapping) {
                         QDataSet vds = (QDataSet) ds;
                         if (vds.length() == 0) {
                             yAsString = "(empty dataset)";
@@ -312,19 +307,19 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                             xAsString = nfx.format(x);
                             yAsString = nfy.format(y);
                             if (allPlanesReport) {
-                                String result = yAsString;
+                                StringBuilder result = new StringBuilder( yAsString );
 
                                 for (int iplane = 0; iplane < QDataSet.MAX_PLANE_COUNT; iplane++) {
                                     QDataSet plane= (QDataSet) vds.property( "PLANE_"+iplane );
                                     if ( plane==null ) break;
-                                    result = result + "!c";
-                                    result += plane.property(QDataSet.NAME) + ":" + nfz.grannyFormat( SemanticOps.getDatum( plane, plane.value(i) ) );
+                                    result.append( "!c" );
+                                    result.append( plane.property(QDataSet.NAME) ).append( ":" ) .append( nfz.grannyFormat( SemanticOps.getDatum( plane, plane.value(i) ) ) );
                                     if (debugging) {
-                                        result += " " + plane.toString();
+                                        result.append( " " ).append( plane.toString() );
                                     }
                                 }
 
-                                yAsString = result;
+                                yAsString = result.toString();
                             }
                         }
                     }
