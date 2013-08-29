@@ -162,7 +162,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         QDataSet xds= SemanticOps.xtagsDataSet(ds);
         Units xunits= SemanticOps.getUnits(xds);
 
-        Boolean xmono = SemanticOps.isMonotonic(xds);
+        boolean xmono = SemanticOps.isMonotonic(xds);
 
         DasAxis xa, ya;
         xa = (this.XAxis == null) ? parent.getXAxis() : XAxis;
@@ -170,7 +170,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
         int start, end;
         Point2D.Double me = new Point2D.Double(xa.transform(x), ya.transform(y));
-        if (xmono != null && xmono.equals(Boolean.TRUE)) {
+        if ( xmono ) {
             start = DataSetUtil.getPreviousIndex(xds, xa.getDataMinimum());
             end = DataSetUtil.getNextIndex(xds, xa.getDataMaximum());
         } else {
@@ -181,7 +181,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         int bestIndex = -1;
         double bestXDist = Double.POSITIVE_INFINITY;
         double bestDist = Double.POSITIVE_INFINITY;
-        int comparisons = 0;
+        //int comparisons = 0;
 
         // prime the best dist comparison by scanning decimated dataset
         for (int i = start; i < end; i += 100) {
@@ -199,7 +199,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             if (Math.abs(x1 - me.getX()) <= bestXDist) {
                 Point2D them = new Point2D.Double(x1, ya.transform( ds.value(i), units ) );
                 double dist = me.distance(them);
-                comparisons++;
+                //comparisons++;
                 if (dist < bestDist) {
                     bestIndex = i;
                     bestDist = dist;
@@ -380,16 +380,19 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
     }
 
+    @Override
     public void clear(Graphics g) {
         super.clear(g);
         parent.paintImmediately(hDirtyBounds);
         parent.paintImmediately(vDirtyBounds);
     }
 
+    @Override
     public boolean isPointSelection() {
         return true;
     }
 
+    @Override
     public boolean isUpdatingDragSelection() {
         return false;
     }
@@ -426,6 +429,7 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         this.debugging = debugging;
     }
 
+    @Override
     public Rectangle[] getDirtyBounds() {
         return new Rectangle[]{super.dirtyBounds, this.hDirtyBounds, this.vDirtyBounds};
     }
