@@ -1925,7 +1925,7 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     
-    public static String PROP_ISOTROPIC= "isotropic";
+    public static final String  PROP_ISOTROPIC= "isotropic";
 
     private boolean isotropic= false;
 
