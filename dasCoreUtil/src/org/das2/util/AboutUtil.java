@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * method for getting useful build and version information.
@@ -21,6 +23,8 @@ import java.util.Properties;
  */
 public class AboutUtil {
 
+    private static final Logger logger= LoggerManager.getLogger("das2");
+    
     public static String getAboutHtml() {
         String dasVersion = Splash.getVersion();
         String javaVersion = System.getProperty("java.version"); // applet okay
@@ -32,33 +36,33 @@ public class AboutUtil {
                 buildTime = reader.readLine();
                 reader.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                logger.log( Level.WARNING, null, ex );
             }
         }
         String arch = System.getProperty("os.arch"); // applet okay
         DecimalFormat nf = new DecimalFormat("0.0");
         String mem = nf.format(Runtime.getRuntime().maxMemory() / (1024 * 1024));
-        String aboutContent = "<html>" +
+        StringBuilder aboutContent = new StringBuilder("<html>" +
                 //"<img src='images/dasSplash.gif'><br>" +
                 "release version: " + dasVersion +
                 "<br>build time: " + buildTime +
                 "<br>java version: " + javaVersion +
                 "<br>max memory (Mb): " + mem +
                 "<br>arch: " + arch +
-                "<br><br>";
+                "<br><br>");
 
         try {
             List<String> bis = getBuildInfos();
             for (int i = 0; i < bis.size(); i++) {
-                aboutContent += "<br> " + bis.get(i) + "";
+                aboutContent.append( "<br> " ).append( bis.get(i) );
             }
         } catch (IOException ex) {
-
+            logger.log( Level.WARNING, null, ex );
         }
 
-        aboutContent += "</html>";
+        aboutContent.append( "</html>" );
 
-        return aboutContent;
+        return aboutContent.toString();
     }
 
     /**
