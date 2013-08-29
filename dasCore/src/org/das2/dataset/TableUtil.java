@@ -211,9 +211,10 @@ public class TableUtil {
         }
         pout.println(" />");
         
-        String yTagsString= ""+tds.getYTagDatum(0,0);
+        StringBuilder yTagsString= new StringBuilder( );
+        yTagsString.append( tds.getYTagDatum(0,0) );
         for ( int j=1; j<tds.getYLength(0); j++ ) {
-            yTagsString+= ", "+tds.getYTagDatum(0, j);
+            yTagsString.append( ", " ).append( tds.getYTagDatum(0,j) );
         }
         pout.println("<yscan type=\"asciiTab10\" zUnits=\""+tds.getZUnits()+"\" yTags=\""+yTagsString+"\"/>");
         pout.print("</packet>");
