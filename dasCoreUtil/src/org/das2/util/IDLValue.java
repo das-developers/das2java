@@ -171,21 +171,22 @@ public class IDLValue {
         return sValue;
     }
     
+    @Override
     public String toString() {
-        String result;
+        StringBuilder result= new StringBuilder();
         if (type==SCALAR) {
-            result= ""+sValue;
+            result.append("").append( sValue);
         } else {
-            result= "[";
+            result.append( "[" );
             int i;
             for (i=0; i<aValue.length-1; i++) {
-                result= result+aValue[i];
-                result= result+",";
+                result.append(aValue[i]);
+                result.append(",");
             }
-            result= result+aValue[i];
-            result= result+"]";
+            result.append(aValue[i]);
+            result.append("]");
         }
-        return result;
+        return result.toString();
     }
     
     public static IDLValue findgen(int length) {
