@@ -134,7 +134,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
                 xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
                 if ( xp!=null ) {
                     String scadence= xp.getNodeValue();
-                    double oldCadenceSeconds=0;
+                    double oldCadenceSeconds;
                     SerializeDelegate ser= new Rank0DataSetSerializeDelegate();
                     try {
                         QDataSet o = (QDataSet)ser.parse( "rank0dataset", scadence );
@@ -331,11 +331,16 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
     }
 
     public static void main( String[] args ) throws StreamException, MalformedURLException, IOException, ParseException {
-        InputStream in= System.in;
+        //InputStream in= System.in;
+        //OutputStream out= System.out;
+        
+        InputStream in = new java.net.URL("file:///home/jbf/ct/hudson/data.backup/qds/aggregation.qds").openStream();
+        OutputStream out=  new java.io.FileOutputStream("/home/jbf/ct/hudson/data.backup/qds/aggregation.reduce.minmax.qds");
+        
         args= new String[] { "360" };
         if ( args.length!=1 ) {
             if ( args.length==2 && args[1].startsWith("file:") ) {
-                in= new FileInputStream( args[1].substring(5) );
+                //in= new FileInputStream( args[1].substring(5) );
             } else {
                 System.err.println("java -jar autoplot.jar org.qstream.filter.MinMaxFilter <seconds>");
                 System.err.println(  "arg2 can be set to input file: file:...");
@@ -345,7 +350,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
         Datum cadence= Units.seconds.parse(args[0]);
 
         System.err.println( "this does not appear to be implemented, testing with sftp://jbf@papco.org:/home/jbf/ct/hudson/data.backup/qds/aggregation.qds" );
-        doit( new java.net.URL("file:///home/jbf/ct/hudson/data.backup/qds/aggregation.qds").openStream(), new java.io.FileOutputStream("/home/jbf/ct/hudson/data.backup/qds/aggregation.reduce.minmax.qds"), cadence );
+        doit( in, out, cadence );
         //doit( in, System.out, cadence );
         
         //doit( new java.net.URL("file:///home/jbf/project/autoplot/data.nobackup/qds/fm2_jmp_2012_03_13_msim3.qds").openStream(), new java.io.FileOutputStream("/tmp/fm2_jmp_2012_03_13_msim3.qds"), cadence );
