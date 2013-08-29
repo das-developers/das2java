@@ -115,7 +115,7 @@ public class GraphicalLogHandler extends Handler {
     }
     
     private void createCanvas() {
-        if  ( loggerMap.size()==0 ) {
+        if  ( loggerMap.isEmpty() ) {
             loggerMap.put( DasLogger.getLogger(DasLogger.APPLICATION_LOG).getName(), Color.black );
             loggerMap.put( DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG).getName(), Color.blue );
             loggerMap.put( DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).getName(), Color.YELLOW );
@@ -426,7 +426,7 @@ public class GraphicalLogHandler extends Handler {
                     if ( color==null ) {
                         Object key= record.getLoggerName();
                         loggerMap.put( key, Color.ORANGE );
-                        legend.add( legend.getIcon( (Color)loggerMap.get(key) ), String.valueOf( key ) );
+                        legend.add( Legend.getIcon( (Color)loggerMap.get(key) ), String.valueOf( key ) );
                         legend.repaint();
                     }
                     g.setColor( color );
@@ -438,8 +438,10 @@ public class GraphicalLogHandler extends Handler {
             }
         }
         
+        @Override
         protected void installRenderer() { } ;
         
+        @Override
         protected void uninstallRenderer() { } ;
         
         protected Element getDOMElement( Document document ) { return null; }
@@ -466,6 +468,7 @@ public class GraphicalLogHandler extends Handler {
             this.parent= parent;
         }
         
+        @Override
         public Rectangle[] renderDrag( Graphics g, Point p1, Point p2 ) {
             
             LogRecord select= (LogRecord)objectLocator.closestObject( p2 );
@@ -530,13 +533,12 @@ public class GraphicalLogHandler extends Handler {
         result.addBoxSelectionListener( new BoxSelectionListener() {
             BoxSelectionListener l;
             public void BoxSelected( BoxSelectionEvent e ) {
-                StringBuffer buf= new StringBuffer(1000);
+                StringBuilder buf= new StringBuilder(1000);
                 
                 //Handler h= new ConsoleHandler();
                 //Formatter f= h.getFormatter();
                 Formatter f= new DenseConsoleFormatter();
                 
-                ArrayList rec= new ArrayList();
                 DatumRange threadsRange= e.getYRange();
                 DatumRange timeRange= e.getXRange();
 
