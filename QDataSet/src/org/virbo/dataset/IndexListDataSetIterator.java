@@ -88,15 +88,15 @@ public class IndexListDataSetIterator implements DataSetIterator {
     @Override
     public String toString() {
         String its=""+index+" of "+indeces.length();
-        String ats;
+        StringBuilder ats;
         
         if ( index==-1 ) {
-            ats= "-1";
+            ats= new StringBuilder("-1");
             for ( int i=1; i<dsrank; i++ ) {
-                ats= ats + "," + index(i);
+                ats.append(",").append(index(i));
             }
         } else {
-            ats=""+index(0);
+            ats= new StringBuilder( String.valueOf(index(0)) );
         }
         
         return "ListIter [" + its + "] @ ["+  ats + "] ";

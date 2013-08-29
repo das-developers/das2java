@@ -54,10 +54,10 @@ public class PropertiesTreeModel extends DefaultTreeModel {
             MutableTreeNode nextChild;
             if ( key.startsWith("BUNDLE_") && ( value instanceof QDataSet ) ) {
                 QDataSet bdsd= (QDataSet)value;
-                String svalue= "";
-                if ( bdsd.length()>0 ) svalue+= bdsd.property( QDataSet.NAME, 0 );
+                StringBuilder svalue= new StringBuilder();
+                if ( bdsd.length()>0 ) svalue.append( bdsd.property( QDataSet.NAME, 0 ) );
                 for ( int i=1; i<bdsd.length(); i++ ) {
-                    svalue+= "," + bdsd.property( QDataSet.NAME, i );
+                    svalue.append( "," ).append( bdsd.property( QDataSet.NAME, i ) );
                 }
                 nextChild= new DefaultMutableTreeNode(""+key+"="+svalue);
             } else if ( value instanceof QDataSet ) {

@@ -444,11 +444,11 @@ public class QubeDataSetIterator implements DataSetIterator {
         if (rank == 0) {
             return "Iter hasNext=" + hasNext();
         } else {
-            String its = it[0].toString();
-            String ats = "" + it[0].index();
+            StringBuilder its = new StringBuilder( it[0].toString() );
+            StringBuilder ats = new StringBuilder( "" + it[0].index() );
             for (int i = 1; i < rank; i++) {
-                its = its + "," + it[i].toString();
-                ats = ats + "," + it[i].index();
+                its.append(",").append(it[i]);
+                ats.append(",").append(it[i].index());
             }
             return "Iter [" + its + "] @ [" + ats + "] ";
         }

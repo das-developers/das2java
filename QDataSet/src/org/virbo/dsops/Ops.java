@@ -5275,7 +5275,7 @@ public class Ops {
         int cdim=0; // to keep track of if we can use native slice
         int sdim=0; // to keep track of number of slices offset.
         QDataSet result= ds;
-        String docStr= "";
+        StringBuilder docStr= new StringBuilder();
         for ( int i=0; i<args.length; i++ ) {
             if ( args[i] instanceof Integer ) {
                 int sliceIdx= ((Integer)args[i]).intValue();
@@ -5297,7 +5297,7 @@ public class Ops {
                             throw new IllegalArgumentException("slice not implemented, too many slices follow non-slice");
                     }
                 }
-                docStr+= String.valueOf(sliceIdx);
+                docStr.append(sliceIdx);
                 sdim++;
             } else {
                 if ( args[i] instanceof String ) {
@@ -5305,12 +5305,13 @@ public class Ops {
                     if ( s.contains("=") ) {
                         throw new IllegalArgumentException("argument not supported in this version: "+s );
                     }
-                    docStr+=s;
+                    docStr.append(s);
                 }
             }
-            if ( i<args.length-1 ) docStr+=",";
+            if ( i<args.length-1 ) docStr.append(",");
         }
 
+        logger.finer("slices("+docStr.toString()+")");
         //((MutablePropertyDataSet)result).putProperty( QDataSet.CONTEXT_0, "slices("+docStr+")");
         //((MutablePropertyDataSet)result).putProperty( "CONTEXT_1", null ); // not sure who is writing this.
 
