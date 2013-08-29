@@ -56,6 +56,7 @@ public class DumpToFileMouseModule extends MouseModule {
         return result;
     }
     
+    @Override
     public void mouseRangeSelected(MouseDragEvent e0) {
         MouseBoxEvent e= (MouseBoxEvent)e0;
         
@@ -82,7 +83,7 @@ public class DumpToFileMouseModule extends MouseModule {
             DataSetBuilder builder= new DataSetBuilder(2,100,2);
             QDataSet xds= SemanticOps.xtagsDataSet(vds);
             for ( int i=0; i<vds.length(); i++ ) {
-                if ( yrange.contains( SemanticOps.getDatum(vds,vds.value(i)) ) & xrange.contains( SemanticOps.getDatum( xds,xds.value(i) ) ) ) {
+                if ( yrange.contains( SemanticOps.getDatum(vds,vds.value(i)) ) && xrange.contains( SemanticOps.getDatum( xds,xds.value(i) ) ) ) {
                     builder.putValue( -1, 0, xds.value(i) );
                     builder.putValue( -1, 1, vds.value(i) );
                 }
