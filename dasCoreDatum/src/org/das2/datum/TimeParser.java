@@ -134,7 +134,7 @@ public class TimeParser {
      * handy FieldHandler that ignores the contents.  For example,
      * <pre>tp= TimeParser.create(sagg,"v", TimeParser.IGNORE_FIELD_HANDLER );</pre>
      */
-    public static FieldHandler IGNORE_FIELD_HANDLER= new TimeParser.FieldHandler() {
+    public static final FieldHandler IGNORE_FIELD_HANDLER= new TimeParser.FieldHandler() {
         public String configure(Map<String, String> args) {
             return null;
         }
