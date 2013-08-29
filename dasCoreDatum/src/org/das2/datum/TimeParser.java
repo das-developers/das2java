@@ -318,11 +318,11 @@ public class TimeParser {
 
         public String getRegex() {
             Iterator<String> vv= values.keySet().iterator();            
-            String r= vv.next();
+            StringBuilder r= new StringBuilder(vv.next());
             while ( vv.hasNext() ) {
-                r= r+"|"+vv.next();
+                r.append("|").append(vv.next());
             }
-            return r;
+            return r.toString();
         }
 
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
