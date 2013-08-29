@@ -472,12 +472,12 @@ public class Orbits {
             if ( length<0 ) length= 5; // 5 by default.
             int n= length-result.length();
 
-            String ppad= "";
+            StringBuilder ppad= new StringBuilder( "" );
             for ( int i=0; i<n; i++ ) {
-                ppad= ppad+pad;
+                ppad.append(pad);
             }
-            
-            return ppad + result;
+            ppad.append(result);
+            return ppad.toString();
 
         }
 
