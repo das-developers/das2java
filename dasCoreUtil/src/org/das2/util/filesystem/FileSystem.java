@@ -617,7 +617,7 @@ public abstract class FileSystem  {
     /**
      * result from failed listing, etc.
      */
-    public static DirectoryEntry NULL= new DirectoryEntry();
+    public static final DirectoryEntry NULL= new DirectoryEntry();
 
     /**
      * part of the refactoring to cache time stamps as well, this convenience method returns the old string.
