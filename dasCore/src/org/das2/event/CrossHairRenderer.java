@@ -131,30 +131,30 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             axis.getUnits().getDatumFormatterFactory().defaultFormatter();
         }
 
-        String result;
+        StringBuilder result;
         if (zValue.isFill()) {
-            result = "fill";
+            result = new StringBuilder( "fill" );
         } else {
-            result = nfz.grannyFormat(zValue);
+            result = new StringBuilder( nfz.grannyFormat(zValue) );
         }
         if (allPlanesReport) {
             if (debugging) {
-                result += "!c" + tds.toString();
+                result.append( "!c" ).append( tds.toString() );
             }
             for (int iplane = 0; iplane < QDataSet.MAX_PLANE_COUNT; iplane++) {
                 QDataSet plane= (QDataSet) tds.property( "PLANE_"+iplane );
                 if ( plane==null ) break;
-                result = result + "!c";
-                result += plane.property(QDataSet.NAME) + ":" + nfz.grannyFormat( SemanticOps.getDatum( plane, plane.value(i,j) ) );
+                result.append("!c");
+                result.append( plane.property(QDataSet.NAME) ).append( ":" ).append(  nfz.grannyFormat( SemanticOps.getDatum( plane, plane.value(i,j) ) ) );
                 if (debugging) {
-                    result += " " + plane.toString();
+                    result.append(" ").append( plane.toString() );
                 }
             }
             if (debugging) {
-                result += "!ci:" + i + " j:" + j;
+                result.append( "!ci:" ).append( i ).append( " j:" ).append( j );
             }
         }
-        return result;
+        return result.toString();
     }
 
     private int closestPointVector(QDataSet ds, Datum x, Datum y) {
