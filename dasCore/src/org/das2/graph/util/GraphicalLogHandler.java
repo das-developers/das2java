@@ -334,7 +334,7 @@ public class GraphicalLogHandler extends Handler {
         }
         public void setSearchRegex( String regex ) {
             this.searchRegex= regex;
-            update();
+            super.update();
         }
         
         public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
