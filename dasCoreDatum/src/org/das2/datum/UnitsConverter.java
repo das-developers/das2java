@@ -247,12 +247,12 @@ public abstract class UnitsConverter {
 
         @Override
         public String toString() {
-            String result="UnitsConverted$Appended[";
+            StringBuilder result= new StringBuilder("UnitsConverted$Appended[");
             for ( UnitsConverter  uc1: converters ) {
-                result += " "+ uc1 + " ";
+                result.append(" ").append(uc1).append(" ");
             }
-            result += "]";
-            return result;
+            result.append("]");
+            return result.toString();
         }
     }
 
