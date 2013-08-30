@@ -67,6 +67,7 @@ public class VerticalSlicerMouseModule extends MouseModule {
         return new VerticalSlicerMouseModule(parent,renderer,parent.getXAxis(),parent.getYAxis());
     }
     
+    @Override
     public void mousePointSelected(MousePointSelectionEvent e) {
         de.birthMilli= System.currentTimeMillis();
         ds= dataSetConsumer.getConsumedDataSet();
