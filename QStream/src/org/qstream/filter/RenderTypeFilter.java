@@ -5,15 +5,8 @@
 
 package org.qstream.filter;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.Channels;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.xpath.XPath;
@@ -23,13 +16,10 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.virbo.dataset.QDataSet;
 import org.virbo.qstream.PacketDescriptor;
-import org.virbo.qstream.QDataSetStreamHandler;
-import org.virbo.qstream.SimpleStreamFormatter;
 import org.virbo.qstream.StreamComment;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamHandler;
-import org.virbo.qstream.StreamTool;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -44,10 +34,6 @@ public class RenderTypeFilter implements StreamHandler {
     StreamHandler sink;
     ByteOrder byteOrder;
 
-    double lengthSeconds;
-    double length; // in the stream units.
-    double nextTag;
-
     StreamDescriptor sd;
 
     int size;
@@ -58,6 +44,10 @@ public class RenderTypeFilter implements StreamHandler {
         filterType= org.virbo.dsops.Ops.FFTFilterType.Hanning;
     }
 
+    public void setSink( StreamHandler sink ) {
+        this.sink= sink;
+    }
+    
     @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         this.sd= sd;
@@ -110,8 +100,6 @@ public class RenderTypeFilter implements StreamHandler {
         sink.streamComment(se);
     }
     
-    final char CHAR_NEWLINE= '\n';
-
     @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
         sink.packet(pd, data);
