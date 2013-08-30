@@ -156,7 +156,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @return
      */
     public static DasCanvas getFocusCanvas() {
-        return CanvasAction.currentCanvas;
+        return currentCanvas;
     }
 
     private List<Painter> topDecorators= new LinkedList<Painter>();
@@ -167,11 +167,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      */
     boolean lpaintingForPrint= false;
     
-
+    private static DasCanvas currentCanvas;
+    
     /* Canvas actions */
     protected static abstract class CanvasAction extends AbstractAction {
-
-        protected static DasCanvas currentCanvas;
 
         CanvasAction(String label) {
             super(label);
@@ -421,7 +420,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 dndSupport = new CanvasDnDSupport();
             }
         }
-        CanvasAction.currentCanvas = this;
+        makeCurrent();
         stateSupport = new ChangesSupport(null, this);
         stateSupport.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -474,12 +473,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return new MouseInputAdapter() {
 
             public void mousePressed(MouseEvent e) {
-                CanvasAction.currentCanvas = DasCanvas.this;
+                makeCurrent();
                 if ( e.isPopupTrigger() && e.getX()<10 && e.getY()<10 ) popup.show(DasCanvas.this, e.getX(), e.getY());
             }
 
             public void mouseReleased(MouseEvent e) {
-                CanvasAction.currentCanvas = DasCanvas.this;
+                makeCurrent();
                 if ( e.isPopupTrigger() && e.getX()<10 && e.getY()<10 ) popup.show(DasCanvas.this, e.getX(), e.getY());
             }
 
@@ -2483,7 +2482,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * set the current canvas;
      */
     public void makeCurrent() {
-        CanvasAction.currentCanvas= this;
+        currentCanvas= this;
     }
 
     public Dimension getPreferredScrollableViewportSize() {
