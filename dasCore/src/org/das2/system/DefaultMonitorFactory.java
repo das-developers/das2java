@@ -21,8 +21,7 @@ import java.util.LinkedList;
 public class DefaultMonitorFactory implements MonitorFactory {
     LinkedList monitors= new LinkedList();
 
-    protected static int size = 10;
-    public static final String PROP_SIZE = "size";
+    protected int size = 10;
 
     public int getSize() {
         return size;
@@ -42,6 +41,7 @@ public class DefaultMonitorFactory implements MonitorFactory {
             this.monitor= monitor;
             this.description= description;
         }
+        @Override
         public String toString() {
             String desc= description;
             if ( desc.length() > 50 ) 
