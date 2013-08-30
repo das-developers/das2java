@@ -67,7 +67,7 @@ public class ReduceFilter implements StreamHandler {
         double[] S;
         int N;
         double B; // base offset for S.  We remove this before putting data into the accumulation.
-        double nextTag;
+        //double nextTag;
     }
 
     Map<String, Accum> accum;
