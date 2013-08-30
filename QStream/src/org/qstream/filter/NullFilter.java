@@ -5,24 +5,13 @@
 
 package org.qstream.filter;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import org.virbo.dataset.QDataSet;
 import org.virbo.qstream.PacketDescriptor;
 import org.virbo.qstream.PlaneDescriptor;
-import org.virbo.qstream.QDataSetStreamHandler;
-import org.virbo.qstream.SimpleStreamFormatter;
 import org.virbo.qstream.StreamComment;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamHandler;
-import org.virbo.qstream.StreamTool;
 
 
 /**
@@ -35,31 +24,37 @@ public class NullFilter implements StreamHandler {
 
     StreamHandler sink;
 
+    @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         System.err.println(sd);
         sink.streamDescriptor(sd);
     }
 
+    @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         System.err.println(pd);
         sink.packetDescriptor(pd);
     }
 
+    @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         System.err.println(sd);
         sink.streamClosed(sd);
     }
 
+    @Override
     public void streamException(StreamException se) throws StreamException {
         System.err.println(se);
         sink.streamException(se);
     }
 
+    @Override
     public void streamComment(StreamComment se) throws StreamException {
         System.err.println(se);
         sink.streamComment(se);
     }
 
+    @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
 
         data.mark();
@@ -72,25 +67,25 @@ public class NullFilter implements StreamHandler {
         sink.packet(pd, data);
     }
 
-    public static void main( String[] args ) throws StreamException, FileNotFoundException, IOException {
-        File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
-
-        InputStream in = new FileInputStream(f);
-        QDataSetStreamHandler handler = new QDataSetStreamHandler();
-
-        //ReduceMeanFilter filter= new ReduceMeanFilter();
-        NullFilter filter= new NullFilter();
-
-        filter.sink= handler;
-
-        StreamTool.readStream( Channels.newChannel(in), filter );
-        QDataSet qds = handler.getDataSet();
-
-        System.err.println( "result= "+qds );
-
-        SimpleStreamFormatter format= new SimpleStreamFormatter();
-        format.format( qds, new FileOutputStream("/tmp/proton_density.new.qds"), true );
-        format.format( qds, new FileOutputStream("/tmp/proton_density.new.binary.qds"), false );
-        
-    }
+//    public static void main( String[] args ) throws StreamException, FileNotFoundException, IOException {
+//        File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
+//
+//        InputStream in = new FileInputStream(f);
+//        QDataSetStreamHandler handler = new QDataSetStreamHandler();
+//
+//        //ReduceMeanFilter filter= new ReduceMeanFilter();
+//        NullFilter filter= new NullFilter();
+//
+//        filter.sink= handler;
+//
+//        StreamTool.readStream( Channels.newChannel(in), filter );
+//        QDataSet qds = handler.getDataSet();
+//
+//        System.err.println( "result= "+qds );
+//
+//        SimpleStreamFormatter format= new SimpleStreamFormatter();
+//        format.format( qds, new FileOutputStream("/tmp/proton_density.new.qds"), true );
+//        format.format( qds, new FileOutputStream("/tmp/proton_density.new.binary.qds"), false );
+//        
+//    }
 }

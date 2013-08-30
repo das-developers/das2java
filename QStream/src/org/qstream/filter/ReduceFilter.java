@@ -5,15 +5,8 @@
 
 package org.qstream.filter;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.Channels;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,15 +32,12 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.qstream.CacheTagSerializeDelegate;
 import org.virbo.qstream.PacketDescriptor;
 import org.virbo.qstream.PlaneDescriptor;
-import org.virbo.qstream.QDataSetStreamHandler;
 import org.virbo.qstream.Rank0DataSetSerializeDelegate;
 import org.virbo.qstream.SerializeDelegate;
-import org.virbo.qstream.SimpleStreamFormatter;
 import org.virbo.qstream.StreamComment;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamHandler;
-import org.virbo.qstream.StreamTool;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -93,12 +83,14 @@ public class ReduceFilter implements StreamHandler {
         nextTags= new HashMap();
     }
 
+    @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         this.sd= sd;
         sink.streamDescriptor(sd);
         byteOrder= sd.getByteOrder();
     }
 
+    @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
 
         Element ele= pd.getDomElement();
@@ -119,28 +111,28 @@ public class ReduceFilter implements StreamHandler {
             XPathExpression expr;
             Node xp;
 
-            boolean skip= false;
+            boolean lskip= false;
 
             // figure out units.
-            Units xunits= null;
             expr=  xpath.compile("/packet/qdataset[1]/properties/property[@name='UNITS']/@value");
             xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
             String sunits= xp==null ? null : xp.getNodeValue(); 
             if ( sunits!=null ) {
                 try {
+                    Units xunits;
                     xunits= SemanticOps.lookupTimeUnits(sunits);
                     double secmult= Units.seconds.getConverter( xunits.getOffsetUnits() ).convert(1);
                     length= secmult * lengthSeconds;
                 } catch ( InconvertibleUnitsException ex ) {
-                     skip= true;
+                     lskip= true;
                 } catch ( ParseException ex ) {
-                    skip= true;
+                    lskip= true;
                 }
             } else {
-                skip= true;
+                lskip= true;
             }
 
-            if ( !skip ) {
+            if ( !lskip ) {
 
                 initAccumulators(pd);
 
@@ -190,7 +182,7 @@ public class ReduceFilter implements StreamHandler {
                 }
             }
 
-            this.skip.put(pd, skip);
+            this.skip.put(pd, lskip);
             this.nextTags.put( pd, 0. );
 
         } catch (XPathExpressionException ex) {
@@ -200,6 +192,7 @@ public class ReduceFilter implements StreamHandler {
         sink.packetDescriptor(pd);
     }
 
+    @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         Set<String> keys= accum.keySet();
         Set<PacketDescriptor> unloaded= new HashSet<PacketDescriptor>();
@@ -215,10 +208,12 @@ public class ReduceFilter implements StreamHandler {
         sink.streamClosed(sd);
     }
 
+    @Override
     public void streamException(StreamException se) throws StreamException {
         sink.streamException(se);
     }
     
+    @Override
     public void streamComment(StreamComment se) throws StreamException {
         sink.streamComment(se);
     }
@@ -336,6 +331,7 @@ public class ReduceFilter implements StreamHandler {
      * @param data
      * @throws StreamException
      */
+    @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
 
         boolean skip= this.skip.get(pd);
@@ -400,26 +396,26 @@ public class ReduceFilter implements StreamHandler {
         reportCadenceSeconds= lengthSeconds;
     }
 
-    public static void main( String[] args ) throws StreamException, FileNotFoundException, IOException {
-        File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
-
-        InputStream in = new FileInputStream(f);
-        QDataSetStreamHandler handler = new QDataSetStreamHandler();
-
-        ReduceFilter filter= new ReduceFilter();
-        filter.lengthSeconds= 3600; //TODO: client must know the units of the qstream.
-        
-        filter.sink= handler;
-
-        StreamTool.readStream( Channels.newChannel(in), filter );
-        //StreamTool.readStream( Channels.newChannel(in), handler ); // test without filter.
-
-        QDataSet qds = handler.getDataSet();
-
-        System.err.println( "result= "+qds ); // logger okay
-
-        SimpleStreamFormatter format= new SimpleStreamFormatter();
-        format.format( qds, new FileOutputStream("/tmp/proton_density.reduced.qds"), true );
-
-    }
+//    public static void main( String[] args ) throws StreamException, FileNotFoundException, IOException {
+//        File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
+//
+//        InputStream in = new FileInputStream(f);
+//        QDataSetStreamHandler handler = new QDataSetStreamHandler();
+//
+//        ReduceFilter filter= new ReduceFilter();
+//        filter.lengthSeconds= 3600; //TODO: client must know the units of the qstream.
+//        
+//        filter.sink= handler;
+//
+//        StreamTool.readStream( Channels.newChannel(in), filter );
+//        //StreamTool.readStream( Channels.newChannel(in), handler ); // test without filter.
+//
+//        QDataSet qds = handler.getDataSet();
+//
+//        System.err.println( "result= "+qds ); // logger okay
+//
+//        SimpleStreamFormatter format= new SimpleStreamFormatter();
+//        format.format( qds, new FileOutputStream("/tmp/proton_density.reduced.qds"), true );
+//
+//    }
 }

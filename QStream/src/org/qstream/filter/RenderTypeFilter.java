@@ -58,12 +58,14 @@ public class RenderTypeFilter implements StreamHandler {
         filterType= org.virbo.dsops.Ops.FFTFilterType.Hanning;
     }
 
+    @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         this.sd= sd;
         sink.streamDescriptor(sd);
         byteOrder= sd.getByteOrder();
     }
 
+    @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
 
         try {
@@ -93,45 +95,49 @@ public class RenderTypeFilter implements StreamHandler {
 
     }
 
+    @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         sink.streamClosed(sd);
     }
 
+    @Override
     public void streamException(StreamException se) throws StreamException {
         sink.streamException(se);
     }
 
+    @Override
     public void streamComment(StreamComment se) throws StreamException {
         sink.streamComment(se);
     }
     
     final char CHAR_NEWLINE= '\n';
 
+    @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
         sink.packet(pd, data);
     }
 
-    public static void main( String[] args ) throws StreamException, FileNotFoundException, IOException {
-        File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );
-
-
-        InputStream in = new FileInputStream(f);
-        QDataSetStreamHandler handler = new QDataSetStreamHandler();
-
-        RenderTypeFilter filter= new RenderTypeFilter();
-        
-        filter.sink= handler;
-
-        StreamTool.readStream( Channels.newChannel(in), filter );
-        //StreamTool.readStream( Channels.newChannel(in), handler ); // test without filter.
-
-        QDataSet qds = handler.getDataSet();
-
-        System.err.println( "result= "+qds );
-
-        SimpleStreamFormatter format= new SimpleStreamFormatter();
-
-        format.format( qds, new FileOutputStream("/tmp/plotme.fftd.qds"), false );
-
-    }
+//    public static void main( String[] args ) throws StreamException, FileNotFoundException, IOException {
+//        File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );
+//
+//
+//        InputStream in = new FileInputStream(f);
+//        QDataSetStreamHandler handler = new QDataSetStreamHandler();
+//
+//        RenderTypeFilter filter= new RenderTypeFilter();
+//        
+//        filter.sink= handler;
+//
+//        StreamTool.readStream( Channels.newChannel(in), filter );
+//        //StreamTool.readStream( Channels.newChannel(in), handler ); // test without filter.
+//
+//        QDataSet qds = handler.getDataSet();
+//
+//        System.err.println( "result= "+qds );
+//
+//        SimpleStreamFormatter format= new SimpleStreamFormatter();
+//
+//        format.format( qds, new FileOutputStream("/tmp/plotme.fftd.qds"), false );
+//
+//    }
 }

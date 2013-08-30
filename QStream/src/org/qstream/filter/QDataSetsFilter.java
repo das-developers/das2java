@@ -7,7 +7,6 @@ package org.qstream.filter;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -30,7 +29,6 @@ import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.qstream.PacketDescriptor;
 import org.virbo.qstream.PlaneDescriptor;
-import org.virbo.qstream.QDataSetStreamHandler;
 import org.virbo.qstream.SerializeDelegate;
 import org.virbo.qstream.SerializeRegistry;
 import org.virbo.qstream.StreamComment;
@@ -63,21 +61,27 @@ public class QDataSetsFilter implements StreamHandler {
      */
     public static class QDataSetSink implements StreamHandler {
 
+        @Override
         public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         }
 
+        @Override
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         }
 
+        @Override
         public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
         }
 
+        @Override
         public void streamClosed(StreamDescriptor sd) throws StreamException {
         }
 
+        @Override
         public void streamException(StreamException se) throws StreamException {
         }
 
+        @Override
         public void streamComment(StreamComment se) throws StreamException {
         }
         
@@ -171,17 +175,19 @@ public class QDataSetsFilter implements StreamHandler {
                 }
              }
         } catch ( XPathExpressionException ex ) {
-            ex.printStackTrace();
+            logger.log( Level.WARNING, null, ex );
         }
 
         return props;
     }
 
+    @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         sink.streamDescriptor(sd);
         this.sd= sd;
     }
 
+    @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         sink.packetDescriptor(pd);
 
@@ -215,7 +221,7 @@ public class QDataSetsFilter implements StreamHandler {
 
                     if ( values!=null ) {
                         PlaneDescriptor planed= pds.get(j);
-                        exprv=  xpath.compile("values/@length");
+                        //exprv=  xpath.compile("values/@length");
                         String svalues= values.getTextContent();
                         String[] ss= svalues.split(",");
                         double[] dd= new double[ss.length];
@@ -242,16 +248,17 @@ public class QDataSetsFilter implements StreamHandler {
 
     }
 
+    @Override
     public void packet( PacketDescriptor pd, ByteBuffer data ) throws StreamException {
         //TODO: form QDataSet when the values are not in-line and only one packet exists.  Fire off a QDataSet packet.
         sink.packet(pd, data);
 
-        int j=0;
+       //int j=0;
 
         for ( PlaneDescriptor planed : pd.getPlanes() ) {
 
             TransferType tt= planed.getType();
-            int pos= data.position();
+            // int pos= data.position();
             int len= pd.sizeBytes();
 
             double[] dd= new double[len];
@@ -263,19 +270,19 @@ public class QDataSetsFilter implements StreamHandler {
 
             MutablePropertyDataSet ds= DDataSet.wrap( dd, planed.getQube() );
 
-            try {
-                XPathFactory factory = XPathFactory.newInstance();
-                XPath xpath = factory.newXPath();
+           // try {
+            //    XPathFactory factory = XPathFactory.newInstance();
+            //    XPath xpath = factory.newXPath();
 
-                XPathExpression expr= xpath.compile("/packet/qdataset["+j+"]/properties");
+                //XPathExpression expr= xpath.compile("/packet/qdataset["+j+"]/properties");
                 Map<String,Object> props= propsn.get( planed.getName() );
                 DataSetUtil.putProperties( props, ds );
 
-                j++;
+                //j++;
 
-            } catch ( XPathExpressionException ex ) {
-                logger.log( Level.SEVERE, "packet", ex );
-            }
+            //} catch ( XPathExpressionException ex ) {
+            //    logger.log( Level.SEVERE, "packet", ex );
+            //}
 
             sink.packetData( pd, planed, ds );
 
@@ -285,38 +292,41 @@ public class QDataSetsFilter implements StreamHandler {
 
     }
 
+    @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         sink.streamClosed(sd);
     }
 
+    @Override
     public void streamException(StreamException se) throws StreamException {
         sink.streamException(se);
     }
 
+    @Override
     public void streamComment(StreamComment se) throws StreamException {
         sink.streamComment(se);
     }
 
-    public static void main( String[] args ) throws IOException, StreamException, Exception {
-        //File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );
-        File f = new File( "/home/jbf/data.nobackup/qds/waveformTable2.qds" );
-
-        InputStream in = new FileInputStream(f);
-
-        QDataSetsFilter filter= new QDataSetsFilter();
-
-        filter.sink= new QDataSetsFilter.QDataSetSink() {
-
-            @Override
-            public void packetData(PacketDescriptor pd, PlaneDescriptor pld, QDataSet ds) {
-                System.err.println( "From "+pld.getName() + ": " + ds );
-            }
-
-        };
-
-        StreamTool.readStream( Channels.newChannel(in), filter );
-        //StreamTool.readStream( Channels.newChannel(in), handler ); // test without filter.
-
-    }
+//    public static void main( String[] args ) throws IOException, StreamException, Exception {
+//        //File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );
+//        File f = new File( "/home/jbf/data.nobackup/qds/waveformTable2.qds" );
+//
+//        InputStream in = new FileInputStream(f);
+//
+//        QDataSetsFilter filter= new QDataSetsFilter();
+//
+//        filter.sink= new QDataSetsFilter.QDataSetSink() {
+//
+//            @Override
+//            public void packetData(PacketDescriptor pd, PlaneDescriptor pld, QDataSet ds) {
+//                System.err.println( "From "+pld.getName() + ": " + ds );
+//            }
+//
+//        };
+//
+//        StreamTool.readStream( Channels.newChannel(in), filter );
+//        //StreamTool.readStream( Channels.newChannel(in), handler ); // test without filter.
+//
+//    }
 
 }
