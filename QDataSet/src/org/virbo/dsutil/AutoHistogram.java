@@ -70,8 +70,8 @@ public final class AutoHistogram {
     double[] nn; // count in each bin
     int zeroesRight;
     int zeroesLeft;
-    DataSetBuilder timer;
-    long t0;
+    //DataSetBuilder timer;
+    //long t0;
     long total;
     boolean initialOutliers;
     long invalidCount;
@@ -79,7 +79,7 @@ public final class AutoHistogram {
     int rescaleCount;  // number of times we rescaled, useful for debugging.
     double minGtZero= Double.MAX_VALUE; // useful for detecting log spacing, the smallest positive non-zero number observed.
 
-    QDataSet context;  // range over which histogram is taken.
+    //QDataSet context;  // range over which histogram is taken.
 
     /**
      * list of outliers and their count.  When we rescale, we see if any outliers can be added to the distribution.
