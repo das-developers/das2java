@@ -12,17 +12,11 @@ import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.dataset.AverageTableRebinner;
 import org.das2.dataset.ClippedTableDataSet;
-import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.dataset.DataSetRebinner;
 import org.das2.dataset.DataSetUpdateEvent;
-import org.das2.dataset.DefaultVectorDataSet;
 import org.das2.dataset.RebinDescriptor;
-import org.das2.dataset.SingleVectorDataSet;
-import org.das2.dataset.TableDataSet;
 import org.das2.dataset.TableDataSetConsumer;
-import org.das2.dataset.VectorDataSet;
-import org.das2.dataset.VectorDataSetBuilder;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
@@ -36,11 +30,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.util.Collections;
-import java.util.HashMap;
 import javax.swing.JFrame;
-import javax.swing.text.PlainDocument;
-import org.das2.dataset.DataSetAdapter;
-import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -54,8 +44,6 @@ import org.virbo.dsutil.DataSetBuilder;
  */
 public class CutoffMouseModule extends BoxSelectorMouseModule {
     
-    DasAxis xaxis, yaxis;
-    DataSetConsumer dataSetConsumer;
     DatumRange xrange;
     DatumRange yrange;
     String lastComment;
@@ -68,6 +56,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         this.dataSetConsumer= consumer;
     }
     
+    @Override
     protected void fireBoxSelectionListenerBoxSelected(BoxSelectionEvent event) {
         
         DatumRange xrange0= xrange;
@@ -304,6 +293,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             DasRow row3= new DasRow( canvas, null, 2/3., 3/3., 1, -2, 0, 0 );
             
             DasPlot plot= new DasPlot( xaxis, new DasAxis( new DatumRange( -18,-10,Units.dimensionless ), DasAxis.VERTICAL ) ) {
+                @Override
                 protected void drawContent(java.awt.Graphics2D g) {
                     super.drawContent(g);
                     
@@ -376,6 +366,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             canvas.add( plot, row1, col );
             
             plot= new DasPlot( xaxis.createAttachedAxis(), new DasAxis( new DatumRange( -0.3,.3,Units.dimensionless ), DasAxis.VERTICAL )  ) {
+                @Override
                 protected void drawContent(java.awt.Graphics2D g) {
                     super.drawContent(g);
                     
@@ -504,45 +495,42 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
     }
     
     public  DataPointSelectionListener getSlicer( DasPlot plot, TableDataSetConsumer consumer ) {
-        DasAxis sourceYAxis = plot.getYAxis();
-        DasAxis sourceZAxis = consumer.getZAxis();
-        
-        DatumRange range= sourceYAxis.getDatumRange();
+        DasAxis sourceYAxis = plot.getYAxis();        
         DasAxis xAxis = sourceYAxis.createAttachedAxis( DasAxis.HORIZONTAL );
         cutoffSlicer= new CutoffSlicer( plot, xAxis );
         return cutoffSlicer;
         
     }
 
-    private void testCutoff() {
-        // see /home/jbf/voyager/cutoff/input.txt
-        double[] spec= new double[] {
-            -12.7093, -12.8479, -13.0042, -13.1509, -13.3007, -13.4671,
-            -13.5536, -13.6603, -13.8000, -13.8873, -13.9908, -14.1162,
-            -14.2016, -14.2694, -14.2844, -14.3126, -14.3507, -14.3841,
-            -14.4252, -14.4779, -14.4972, -14.5226, -14.6059, -14.6517,
-            -14.6545, -14.2863, -13.9616, -13.6898, -13.7407, -13.8821,
-            -14.1541, -14.4287, -14.6663, -14.8647, -15.0540, -15.0863,
-            -15.1190, -15.1464, -15.1479, -15.1399, -15.1284, -15.2001,
-            -15.2780, -15.3611, -15.3976, -15.4230, -15.4467, -15.4879,
-            -15.5437, -15.6058, -15.6501, -15.6606, -15.6737, -15.6867,
-            -15.6955, -15.7425, -15.8222, -15.9376, -16.0174, -16.0091,
-        };
-        double[] tags= new double[ spec.length ];
-        for ( int i=0; i< tags.length; i++ ) { tags[i]= i+1; }
-        double slope= 0.266692;
-        int nave=3;
-        boolean isLowCutoff= true;
-        int mult= isLowCutoff ? 1 : -1;
-        double level= -14;
-
-        DDataSet test= DDataSet.wrap(spec);
-        test.putProperty( QDataSet.UNITS, Units.v2pm2Hz );
-        test.putProperty( QDataSet.DEPEND_0, DDataSet.wrap(tags) );
-
-        int icut= cutoff( test, Units.v2pm2Hz.createDatum(slope), nave, mult, Units.v2pm2Hz.createDatum(level) );
-        System.out.println("icut="+icut+"  should be 25");
-    }
+//    private void testCutoff() {
+//        // see /home/jbf/voyager/cutoff/input.txt
+//        double[] spec= new double[] {
+//            -12.7093, -12.8479, -13.0042, -13.1509, -13.3007, -13.4671,
+//            -13.5536, -13.6603, -13.8000, -13.8873, -13.9908, -14.1162,
+//            -14.2016, -14.2694, -14.2844, -14.3126, -14.3507, -14.3841,
+//            -14.4252, -14.4779, -14.4972, -14.5226, -14.6059, -14.6517,
+//            -14.6545, -14.2863, -13.9616, -13.6898, -13.7407, -13.8821,
+//            -14.1541, -14.4287, -14.6663, -14.8647, -15.0540, -15.0863,
+//            -15.1190, -15.1464, -15.1479, -15.1399, -15.1284, -15.2001,
+//            -15.2780, -15.3611, -15.3976, -15.4230, -15.4467, -15.4879,
+//            -15.5437, -15.6058, -15.6501, -15.6606, -15.6737, -15.6867,
+//            -15.6955, -15.7425, -15.8222, -15.9376, -16.0174, -16.0091,
+//        };
+//        double[] tags= new double[ spec.length ];
+//        for ( int i=0; i< tags.length; i++ ) { tags[i]= i+1; }
+//        double slope= 0.266692;
+//        int nave=3;
+//        boolean isLowCutoff= true;
+//        int mult= isLowCutoff ? 1 : -1;
+//        double level= -14;
+//
+//        DDataSet test= DDataSet.wrap(spec);
+//        test.putProperty( QDataSet.UNITS, Units.v2pm2Hz );
+//        test.putProperty( QDataSet.DEPEND_0, DDataSet.wrap(tags) );
+//
+//        int icut= cutoff( test, Units.v2pm2Hz.createDatum(slope), nave, mult, Units.v2pm2Hz.createDatum(level) );
+//        System.out.println("icut="+icut+"  should be 25");
+//    }
     
     
     private transient java.util.ArrayList dataSetUpdateListenerList;

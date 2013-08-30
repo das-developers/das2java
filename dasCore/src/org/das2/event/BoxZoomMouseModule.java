@@ -13,7 +13,6 @@ import org.das2.dataset.DataSetConsumer;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.DatumRangeUtil;
-import javax.swing.*;
 
 /**
  *
@@ -22,8 +21,6 @@ import javax.swing.*;
 public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
     
     DatumRange xrange, yrange;
-    JLabel xrangeLabel, yrangeLabel;
-    JCheckBox autoUpdateCB, constrainProportionsCB;
     
     boolean autoUpdate= true;
     boolean constrainProportions= false;

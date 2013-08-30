@@ -35,7 +35,6 @@ import org.virbo.dataset.QDataSet;
 public class VerticalSlicerMouseModule extends MouseModule {
     
     private QDataSet ds;
-    double offset;
     private DasAxis xaxis;
     private DasAxis yaxis;
     

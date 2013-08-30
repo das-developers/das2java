@@ -27,8 +27,6 @@ public class LengthDragRenderer extends LabelDragRenderer {
     private DasAxis xaxis, yaxis;
     private DasPlot plot;
     
-    NumberFormat nf;
-    
     /** Creates a new instance of PointSlopeDragRenderer */
     public LengthDragRenderer(DasCanvasComponent parent, DasAxis xaxis, DasAxis yaxis) {
         super( parent );

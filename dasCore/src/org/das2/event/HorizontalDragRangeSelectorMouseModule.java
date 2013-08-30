@@ -35,8 +35,6 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
     
     DasAxis axis;
     
-    int start;
-    
     /** Utility field used by event firing mechanism. */
     private javax.swing.event.EventListenerList listenerList =  null;
     
