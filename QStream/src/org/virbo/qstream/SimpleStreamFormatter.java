@@ -26,7 +26,6 @@ import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
-import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -47,7 +46,6 @@ import org.w3c.dom.Element;
 public class SimpleStreamFormatter {
     private static final char CHAR_NEWLINE = '\n';
 
-    Map<PlaneDescriptor, QDataSet> planeToDataSet;
     boolean asciiTypes = true;
     boolean isBigEndian = true; //ByteOrder.nativeOrder() .equals( ByteOrder.BIG_ENDIAN );
     private static final Logger logger= Logger.getLogger("qstream");
@@ -582,7 +580,6 @@ public class SimpleStreamFormatter {
     private synchronized void setNameFor( QDataSet slice, String name ) {
         if ( name.equals( names.get(slice) ) ) { 
             // already named it.
-            return;
         } else if ( names.get(slice)!=null ) {
             throw new IllegalArgumentException("already have name for: "+slice + "  want to set to "+name);
         } else {
@@ -774,7 +771,7 @@ public class SimpleStreamFormatter {
         }
 
         for (int i = 0; i < 2; i++) {
-            QDataSet minmax= null;
+            QDataSet minmax;
             if ( i==0 ) {
                 minmax= (QDataSet) ds.property( "DELTA_MINUS" );
             } else {
@@ -848,7 +845,7 @@ public class SimpleStreamFormatter {
 
             sd.send(sd, out);
 
-            int packetDescriptorCount = 1;
+            int packetDescriptorCount;
             int streamRank; //TODO: describe this
             String dep0Name = null;
 
