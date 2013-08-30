@@ -5,7 +5,6 @@
 
 package org.qstream.filter;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -60,7 +58,6 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
         double[] Smin;
         double[] Smax;
         double B; // base offset for S.  We remove this before putting data into the accumulation.
-        double nextTag;
     }
     
     ByteOrder byteOrder;
