@@ -60,7 +60,6 @@ public class Splash extends JWindow {
     
     private Handler createhandler() {
         Handler result= new Handler() {
-            Handler handler;            
             public void publish( LogRecord logRecord ) {                
                 System.out.println( logRecord.getMessage() );
                 messageLabel.setText(logRecord.getMessage() );
@@ -122,7 +121,7 @@ public class Splash extends JWindow {
         try {
             for ( int i=0; i<6; i++ ) {
                 Thread.sleep(500);
-                Logger.getLogger("").info("i="+i);
+                Logger.getLogger("").log(Level.INFO, "i={0}", i);
                 //Splash.getInstance().messageLabel.setText( "ii-="+i );
             }
         } catch ( java.lang.InterruptedException e ) {}        
