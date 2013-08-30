@@ -109,8 +109,8 @@ public class Contour {
         // of the contour plot and the increments in the grid:
         int		xSteps, ySteps;
         boolean		logInterpolation = false;
-        Dimension	d;
-        double		deltaX, deltaY;
+        //Dimension	d;
+        //double		deltaX, deltaY;
         
         // Below, data members, most of which are adapted from
         // Fortran variables in Snyder's code:
@@ -126,7 +126,7 @@ public class Contour {
         int	idir,nxidir,k;
         double	z1,z2;
         double cval; /* current contour value */
-        double zMax,zMin;
+        //double zMax,zMin;
         double	intersect[]	= new double[4];
         double	xy[]		= new double[2];
         double	prevXY[]	= new double[2];
