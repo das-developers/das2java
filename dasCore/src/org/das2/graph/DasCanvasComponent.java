@@ -64,7 +64,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
             }
             CanvasComponentAction.currentCanvasComponent = dcc;
             DasCanvas canvas = dcc.getCanvas();
-            DasCanvas.CanvasAction.currentCanvas = canvas;
+            canvas.makeCurrent();
         }
     };
     
