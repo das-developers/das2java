@@ -7,9 +7,6 @@
  */
 
 package org.das2.graph.util;
-import org.das2.util.GrannyTextRenderer;
-import org.das2.util.ObjectLocator;
-import org.das2.util.DenseConsoleFormatter;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.DasApplication;
 import org.das2.datum.Datum;
@@ -531,7 +528,6 @@ public class GraphicalLogHandler extends Handler {
         result.setDragEvents( false );
         result.setReleaseEvents( true );
         result.addBoxSelectionListener( new BoxSelectionListener() {
-            BoxSelectionListener l;
             public void BoxSelected( BoxSelectionEvent e ) {
                 StringBuilder buf= new StringBuilder(1000);
                 
@@ -575,12 +571,6 @@ public class GraphicalLogHandler extends Handler {
             }
         } );
         return result;
-    }
-    
-    class DialogHandler {
-        Formatter formatter;
-        DialogHandler( Formatter formatter ) {
-        }
     }
     
     public static void main( String[] args ) {
