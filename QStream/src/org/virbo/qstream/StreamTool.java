@@ -71,8 +71,6 @@ import org.xml.sax.SAXParseException;
 
 public class StreamTool {
 
-    ByteOrder byteOrder;
-    
     private static final int PACKET_LENGTH_LIMIT=1000000;
 
     private static final Logger logger= LoggerManager.getLogger("qstream");
@@ -282,6 +280,7 @@ public class StreamTool {
             return (byteOffset - bigBuffer.limit() + bigBuffer.position());
         }
 
+        @Override
         public String toString() {
             return "\ndescriptorCount=" + descriptorCount +
                     "\npacketCount=" + packetCount +
@@ -458,7 +457,6 @@ public class StreamTool {
                 String name = n.getAttribute("id");
                 int rank = Integer.parseInt(n.getAttribute("rank"));
 
-                String sdims=null;
                 int[] dims= null;
                 String ttype=null; // ttype or
                 String joinChildren= null; //  join will be specified.
@@ -487,6 +485,9 @@ public class StreamTool {
                         if ( vn.hasAttribute("values") ) {  // TODO: consider "inline"
                             isInline= true;
                         }
+
+                        String sdims;
+
                         //index stuff--Ed W. thinks index should be implicit.
                         sdims = xpath.evaluate("@length", vn);
                         ttype = xpath.evaluate("@encoding", vn);
@@ -510,12 +511,12 @@ public class StreamTool {
 
                 // this is nasty.
                 String sunits=null;
-                String stype=null;
                 Units units=null;
                 NodeList odims= (NodeList) xpath.evaluate("properties[not(@index)]/property", n, XPathConstants.NODESET );
                 for ( int ii=0; sunits==null && ii<odims.getLength(); ii++ ) {
                     Node nn= odims.item(ii);
                     if ( nn.getAttributes().getNamedItem("name").getNodeValue().equals("UNITS") ) {
+                        String stype;
                         sunits= nn.getAttributes().getNamedItem("value").getNodeValue();
                         stype= nn.getAttributes().getNamedItem("type").getNodeValue();
                         if ( stype.equals("unit") ) stype= "units"; // http://apps-pw.physics.uiowa.edu/hudson/job/autoplot-test501/ test 20 of 114.
