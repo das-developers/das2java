@@ -54,8 +54,8 @@ public class FrequencyDragRenderer extends LabelDragRenderer implements DragRend
         int y1 = p1.y;
         int y2 = p2.y;
         if (horizontal&&x2<x1) { int t=x2; x2= x1; x1= t; }
-        if (!horizontal&&y2<y1) { int t=y2; y2=y2; y1=t; }
-        int width= horizontal ? x2-x1 : y2-y1;
+        if (!horizontal&&y2<y1) { int t=y2; y2=y1; y1=t; }
+        //int width= horizontal ? x2-x1 : y2-y1;
         
         Color color0= g.getColor();
         Stroke stroke0 = g.getStroke();
