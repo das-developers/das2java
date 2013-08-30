@@ -25,7 +25,6 @@ package org.das2.beans;
 
 import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
 import org.das2.beans.AccessLevelBeanInfo.Property;
-import org.das2.graph.ColumnColumnConnector;
 
 /**
  * BeanInfo class for DasColorBar
@@ -33,8 +32,6 @@ import org.das2.graph.ColumnColumnConnector;
  * @author Edward West
  */
 public class ColumnColumnConnectorBeanInfo extends AccessLevelBeanInfo {
-    
-    ColumnColumnConnector c;
     
     protected static final Property[] properties = {
         new Property("bottomCurtain", AccessLevel.DASML, "isBottomCurtain", "setBottomCurtain", null),
