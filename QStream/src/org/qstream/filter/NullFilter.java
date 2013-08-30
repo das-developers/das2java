@@ -80,7 +80,7 @@ public class NullFilter implements StreamHandler {
 //        //ReduceMeanFilter filter= new ReduceMeanFilter();
 //        NullFilter filter= new NullFilter();
 //
-//        filter.sink= handler;
+//        filter.setSink( handler );
 //
 //        StreamTool.readStream( Channels.newChannel(in), filter );
 //        QDataSet qds = handler.getDataSet();
