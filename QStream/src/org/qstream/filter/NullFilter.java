@@ -24,6 +24,10 @@ public class NullFilter implements StreamHandler {
 
     StreamHandler sink;
 
+    public void setSink( StreamHandler sink ) {
+        this.sink= sink;
+    }
+    
     @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         System.err.println(sd);
