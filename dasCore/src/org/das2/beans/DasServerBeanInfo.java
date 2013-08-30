@@ -25,7 +25,6 @@ package org.das2.beans;
 
 import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
 import org.das2.beans.AccessLevelBeanInfo.Property;
-import org.das2.client.DasServer;
 
 /**
  * Bean Info implementation for DasDevicePosition
@@ -33,7 +32,7 @@ import org.das2.client.DasServer;
  * @author Edward West
  */
 public class DasServerBeanInfo extends AccessLevelBeanInfo {
-    DasServer me;
+
     private static Property[] properties = {                
         new Property("name", AccessLevel.DASML, "getName", null, null),
     };
