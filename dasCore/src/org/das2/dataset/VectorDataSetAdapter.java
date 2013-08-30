@@ -39,7 +39,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
     HashMap properties= new HashMap();
 
     public static VectorDataSet create( QDataSet y ) {
-        QDataSet xds= (QDataSet)y.property( QDataSet.DEPEND_0 );
+        QDataSet xds= SemanticOps.xtagsDataSet(y);
         // convert to us2000 for legacy server
         Units xunits= SemanticOps.getUnits( xds );
         if ( UnitsUtil.isTimeLocation(xunits) ) {
