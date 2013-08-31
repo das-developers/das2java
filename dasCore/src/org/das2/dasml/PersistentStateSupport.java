@@ -135,14 +135,14 @@ public class PersistentStateSupport {
     }
     
     private String getRencentFilesString() {
-        if (recentFiles.size()==0 ) {
+        if (recentFiles.isEmpty() ) {
             return "";
         } else {
-            String result= String.valueOf( recentFiles.get(0) );
+            StringBuilder result= new StringBuilder( String.valueOf( recentFiles.get(0) ) );
             for ( int i=1; i<recentFiles.size(); i++ ) {
-                result+= "::"+String.valueOf(recentFiles.get(i));
+                result.append("::").append(recentFiles.get(i));
             }
-            return result;
+            return result.toString();
         }
     }
     
