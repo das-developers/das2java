@@ -127,8 +127,8 @@ public class AverageNoInterpolateTableRebinner { // { implements DataSetRebinner
         boolean done= false;
         while ( !done ) {
             if ( inRanges[inIdx].intersects(outRanges[outIdx]) ) {
-                inBinList.add( new Integer( inIdx ) );
-                outBinList.add( new Integer( outIdx ) );
+                inBinList.add( Integer.valueOf( inIdx ) );
+                outBinList.add( Integer.valueOf( outIdx ) );
                 DatumRange intersection= inRanges[inIdx].intersection(outRanges[outIdx]);
                 weightList.add( intersection.width().divide( outRanges[outIdx].width()) );
             }
