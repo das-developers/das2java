@@ -6,6 +6,7 @@
 package org.virbo.qstream;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
@@ -24,8 +25,9 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
         Map<Integer,Datum> values= eu.getValues();
         StringBuilder buf= new StringBuilder();
         buf.append("").append(eu.getId()).append("[");
-        for ( Integer i: values.keySet() ) {
-            String s= values.get(i).toString();
+        for ( Entry<Integer,Datum> e: values.entrySet() ) {
+            Integer i= e.getKey();
+            String s= e.getValue().toString();
             s= s.replaceAll("::", ":"); // :: is my delimiter
             buf.append("").append(i).append(":").append(s);
             if ( i<values.size() ) buf.append("::");

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -381,9 +382,10 @@ public class SimpleStreamFormatter {
 
         Map<String, Object> props = DataSetUtil.getProperties(ds);
         Element prop;
-        for (String name : props.keySet()) {
+        for ( Entry<String,Object> e: props.entrySet()) {
+            String name= e.getKey();
             prop= null;
-            Object value = props.get(name);
+            Object value = e.getValue();
             if (value instanceof QDataSet) {
                 QDataSet qds = (QDataSet) value;
                 String sliceName= (String) qds.property(QDataSet.NAME);

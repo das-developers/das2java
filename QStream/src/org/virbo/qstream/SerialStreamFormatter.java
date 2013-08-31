@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -268,10 +269,11 @@ public class SerialStreamFormatter {
         Element properties = document.createElement("properties");
 
         Element prop;
-        for (String name : props.keySet()) {
+        for ( Entry<String,Object> e: props.entrySet() ) {
+            String name= e.getKey();
             prop= null;
 
-            Object value = props.get(name);
+            Object value = e.getValue();
             String name1= name;
             boolean allowRank0 = true;
             if ( slice ) {
@@ -303,7 +305,7 @@ public class SerialStreamFormatter {
                         prop.setAttribute("value", r0d.format(value) );
                     }
                 } else {
-                    if (  !names.containsKey(value) ) {
+                    if ( !names.containsKey((QDataSet)value) ) {
                         System.err.println("Unidentified "+name1 +"!!");
                     }
                     prop.setAttribute("type", "qdataset");
