@@ -1035,11 +1035,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     public void writeToGraphicsOutput(String filename, String graphicsOutput)
             throws IOException, ClassNotFoundException,
             InstantiationException, IllegalAccessException {
-        FileOutputStream out = new FileOutputStream(filename);
-        Class goClass = Class.forName(graphicsOutput);
-        GraphicsOutput go = (GraphicsOutput) goClass.newInstance();
-        writeToGraphicsOutput(out, go);
-        out.close();
+        FileOutputStream out=null;
+        try {
+            out= new FileOutputStream(filename);
+            Class goClass = Class.forName(graphicsOutput);
+            GraphicsOutput go = (GraphicsOutput) goClass.newInstance();
+            writeToGraphicsOutput(out, go);
+        } finally {
+            if ( out!=null ) out.close();
+        }
     }
 
     /**
