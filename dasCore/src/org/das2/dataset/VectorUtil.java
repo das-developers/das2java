@@ -18,6 +18,7 @@ import java.io.*;
 import java.nio.channels.*;
 import java.text.*;
 import java.util.*;
+import java.util.Map.Entry;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
@@ -184,11 +185,11 @@ public class VectorUtil {
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
             
-            Map properties= vds.getProperties();
+            Map<String,Object> properties= vds.getProperties();
             if ( properties!=null) {
-                for ( Iterator i= properties.keySet().iterator(); i.hasNext(); ) {
-                    String key= (String)i.next();
-                    sd.setProperty(key, properties.get(key));
+                for ( Entry<String,Object> e: properties.entrySet() ) {
+                    String key= e.getKey();
+                    sd.setProperty(key, e.getValue() );
                 }
             }
             

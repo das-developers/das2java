@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -50,6 +51,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -81,9 +83,9 @@ public class GraphicalLogHandler extends Handler {
     
     HashMap loggerMap= new HashMap();
     //HashMap yaxisMap= new HashMap();
-    HashMap yaxisMapThread=  new HashMap();
-    HashMap yaxisMapClass=  new HashMap();
-    HashMap yaxisMapLogger=  new HashMap();
+    HashMap<String,Integer> yaxisMapThread=  new HashMap();
+    HashMap<String,Integer> yaxisMapClass=  new HashMap();
+    HashMap<String,Integer> yaxisMapLogger=  new HashMap();
     
     private final int YAXIS_THREAD = -199;
     private final int YAXIS_CLASS = -198;
@@ -271,19 +273,19 @@ public class GraphicalLogHandler extends Handler {
         Integer yValue;
         yValue= (Integer)yaxisMapClass.get( rec.getSourceClassName() );
         if ( yValue==null ) {
-            yValue= new Integer( yaxisMapClass.size() );
+            yValue= Integer.valueOf( yaxisMapClass.size() );
             yaxisMapClass.put( yAxisName, yValue );
         }
         
         yValue= (Integer)yaxisMapThread.get( rec.getSourceClassName() );
         if ( yValue==null ) {
-            yValue= new Integer( yaxisMapThread.size() );
+            yValue= Integer.valueOf( yaxisMapThread.size() );
             yaxisMapThread.put( yAxisName, yValue );
         }
         
         yValue= (Integer)yaxisMapLogger.get( rec.getLoggerName() );
         if ( yValue==null ) {
-            yValue= new Integer( yaxisMapLogger.size() );
+            yValue= Integer.valueOf( yaxisMapLogger.size() );
             yaxisMapLogger.put( yAxisName, yValue );
         }
         
@@ -342,7 +344,7 @@ public class GraphicalLogHandler extends Handler {
             int ix0= (int) xAxis.transform( xAxis.getDataMinimum() );
             g.setColor( Color.lightGray );
             
-            HashMap yaxisMap;
+            HashMap<String,Integer> yaxisMap;
             List yAxisValues;
             if ( yaxisDimension==YAXIS_CLASS ) {
                 yaxisMap= yaxisMapClass;
@@ -355,9 +357,9 @@ public class GraphicalLogHandler extends Handler {
                 yAxisValues= yAxisValuesLogger;
             }
             
-            for ( Iterator iterator= yaxisMap.keySet().iterator(); iterator.hasNext(); ) {
-                Object name= iterator.next();
-                Integer ithread= (Integer)yaxisMap.get(name);
+            for ( Entry<String,Integer> e: yaxisMap.entrySet() ) {
+                Object name= e.getKey();
+                Integer ithread= (Integer)e.getValue();
                 int iy= (int)yAxis.transform( Units.dimensionless.createDatum(ithread.intValue()) );
                 g.drawString( ""+name, ix0+2, iy );
             }
@@ -574,9 +576,26 @@ public class GraphicalLogHandler extends Handler {
     }
     
     public static void main( String[] args ) {
+        
+        GraphicalLogHandler p= new GraphicalLogHandler();
+                
+        DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG ).addHandler(p);
         // set up your logging to use this.
         DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG ).warning("warning");
         DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG ).info("info");
+        
+        JButton b= new JButton( new AbstractAction("pushme") {
+            public void actionPerformed( ActionEvent e ) {
+                 DasLogger.getLogger( DasLogger.GRAPHICS_LOG ).warning("*giggle*");
+            }
+        });
+        
+        JFrame f= new JFrame();
+        f.getContentPane().add( b );
+        f.pack();
+        f.setVisible(true);
+        
+        
     }
     
 }

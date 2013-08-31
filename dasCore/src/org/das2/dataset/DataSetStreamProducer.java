@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Configurable class for serializing a DataSet into a das2Stream.  This class
@@ -75,11 +75,11 @@ public class DataSetStreamProducer {
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
             
-            Map properties= tds.getProperties();
+            Map<String,Object> properties= tds.getProperties();
             if ( properties!=null) {
-                for ( Iterator i= properties.keySet().iterator(); i.hasNext(); ) {
-                    String key= (String)i.next();
-                    sd.setProperty(key, properties.get(key));
+                for ( Entry<String,Object> e: properties.entrySet() ) {
+                    String key= e.getKey();
+                    sd.setProperty(key, e.getValue() );
                 }
             }
             
@@ -165,11 +165,11 @@ public class DataSetStreamProducer {
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
             
-            Map properties= vds.getProperties();
+            Map<String,Object> properties= vds.getProperties();
             if ( properties!=null) {
-                for ( Iterator i= properties.keySet().iterator(); i.hasNext(); ) {
-                    String key= (String)i.next();
-                    sd.setProperty(key, properties.get(key));
+                for ( Entry<String,Object> e: properties.entrySet() ) {
+                    String key= e.getKey();
+                    sd.setProperty(key, e.getValue() );
                 }
             }
             

@@ -24,6 +24,7 @@ import java.io.*;
 import java.nio.channels.*;
 import java.text.*;
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  *
@@ -273,10 +274,10 @@ public class TableUtil {
             StreamProducer producer = new StreamProducer(out);
             StreamDescriptor sd = new StreamDescriptor();
             
-            Map properties= tds.getProperties();
-            for ( Iterator i= properties.keySet().iterator(); i.hasNext(); ) {
-                String key= (String)i.next();                
-                sd.setProperty(key, properties.get(key));
+            Map<String,Object> properties= tds.getProperties();
+            for ( Entry<String,Object> e: properties.entrySet() ) {
+                String key= e.getKey();
+                sd.setProperty(key, e.getValue() );
             }
             
             DataTransferType zTransferType;

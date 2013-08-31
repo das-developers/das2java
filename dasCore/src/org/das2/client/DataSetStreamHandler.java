@@ -47,6 +47,7 @@ import org.das2.datum.Units;
 import org.das2.system.DasLogger;
 import java.text.ParseException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -297,17 +298,17 @@ public class DataSetStreamHandler implements StreamHandler {
                 y = (StreamYScanDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(), y.getZUnits());
             }
-            Map p= pd.getProperties();
-            for ( Iterator i=p.keySet().iterator(); i.hasNext(); ) {
-                String key= (String)i.next();
+            Map<String,String> p= pd.getProperties();
+            for ( Entry e: p.entrySet() ) {
+                String key= (String)e.getKey();
                 Object p0= builder.getProperty(key);
                 if ( p0==null ) {
-                    builder.setProperty( key, p.get(key) );
+                    builder.setProperty( key, e.getValue() );
                 } else {
-                    if ( ! p0.equals(p.get(key) ) ) {
+                    if ( ! p0.equals( e.getValue() ) ) {
                         int i2;
                         for ( i2=1; builder.getProperty(""+key+"."+i2)!=null; i2++ ) { /* nothing */ }
-                        builder.setProperty( ""+key+"."+i2, p.get(key) );
+                        builder.setProperty( ""+key+"."+i2, e.getValue() );
                     }
                 }
             }

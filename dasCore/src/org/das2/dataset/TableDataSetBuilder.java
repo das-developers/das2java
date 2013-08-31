@@ -28,6 +28,7 @@ import org.das2.datum.Units;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Datum;
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  *
@@ -132,25 +133,27 @@ public class TableDataSetBuilder {
     }
     
     
-    private void appendProperties( Map properties ) {
-        for ( Iterator i=properties.keySet().iterator(); i.hasNext(); ) {
-            Object key= i.next();
+    private void appendProperties( Map<String,Object> properties ) {
+        //TODO: this needs to be verified after findbugs refactoring
+        Map<String,Object> sproperties= properties;
+        for ( Entry<String,Object> e : sproperties.entrySet() ) {
+            Object key= e.getKey();
             if ( this.properties.containsKey(key) ) {
                 if ( key.equals( DataSet.PROPERTY_SIZE_BYTES ) ) {
                     // this is reset anyway
                 } else if ( key.equals( DataSet.PROPERTY_CACHE_TAG ) ) {
                     CacheTag tag= (CacheTag)this.properties.get(key);
-                    CacheTag appendTag= (CacheTag)properties.get(key);
+                    CacheTag appendTag= (CacheTag)e.getValue();
                     try {
                         this.properties.put( key, CacheTag.append( tag, appendTag ) );
-                    } catch ( IllegalArgumentException e ) {
-                        System.err.println("ignoring unequal property: append: "+key+"="+properties.get(key)+" to "+this.properties.get(key ) ); 
+                    } catch ( IllegalArgumentException ex ) {
+                        System.err.println("ignoring unequal property: append: "+key+"="+e.getValue()+" to "+tag ); 
                     }
-                } else if ( !this.properties.get(key).equals(properties.get(key)) ) {
-                    System.err.println( "ignoring unequal property: append: "+key+"="+properties.get(key)+" to "+this.properties.get(key ) ); 
+                } else if ( !this.properties.get(key).equals(e.getValue()) ) {
+                    System.err.println( "ignoring unequal property: append: "+key+"="+e.getValue()+" to "+this.properties.get(key ) ); 
                 }
             } else {
-                this.properties.put( key, properties.get(key) );
+                this.properties.put( key, e.getValue() );
             }
         }
     }
