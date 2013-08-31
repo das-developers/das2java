@@ -54,7 +54,7 @@ public class BatchMaster {
         }
     }
     
-    public static Timer timer= new Timer();
+    public static final Timer timer= new Timer();
     
     public interface TaskOutputDescriptor {
         public void completeTask( DatumRange range );
