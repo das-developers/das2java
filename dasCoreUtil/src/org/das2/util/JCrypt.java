@@ -558,10 +558,12 @@ public class JCrypt
 
    public static String crypt(String salt, String original)
    {
-      while(salt.length() < 2)
-         salt += "A";
+      StringBuilder sb= new StringBuilder(salt);
+      while(sb.length() < 2)
+         sb.append('A');
+      salt= sb.toString();
 
-      StringBuffer buffer = new StringBuffer("             ");
+      StringBuilder buffer = new StringBuilder("             ");
 
       char charZero = salt.charAt(0);
       char charOne  = salt.charAt(1);
