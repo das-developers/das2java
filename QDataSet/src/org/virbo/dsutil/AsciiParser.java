@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.datum.EnumerationUnits;
@@ -888,8 +889,9 @@ public class AsciiParser {
                 bundleDescriptor.property(QDataSet.LABEL, 1);
                 //move dimensionless properties to the dataset.
                 Map<String,Object> props= DataSetUtil.getProperties( bundleDescriptor, DataSetUtil.globalProperties(), null );
-                for ( String k: props.keySet() ) {
-                    builder.putProperty( k, props.get(k) );
+                for ( Entry<String,Object> e: props.entrySet() ) {
+                    String k= e.getKey();
+                    builder.putProperty( k, e.getValue() );
                 }
 
                 for ( int j=0; j<bundleDescriptor.length(); j++ ) {
