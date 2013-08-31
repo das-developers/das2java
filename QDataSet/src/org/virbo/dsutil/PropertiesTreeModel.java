@@ -46,8 +46,9 @@ public class PropertiesTreeModel extends DefaultTreeModel {
         
         Map<String,Object> properties= DataSetUtil.getProperties(ds);
         
-        for ( String key: properties.keySet() ) {
-            Object value= properties.get(key);
+        for ( Entry<String,Object> e: properties.entrySet() ) {
+            String key= e.getKey();
+            Object value= e.getValue();
             if ( key.equals(QDataSet.QUBE) && ( ds.rank()<2 || ds.property(QDataSet.BUNDLE_1)!=null ) ) {
                 continue;
             }
