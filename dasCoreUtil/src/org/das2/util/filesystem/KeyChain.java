@@ -142,9 +142,13 @@ public class KeyChain {
         w.close();
 
         if ( toFile ) {
-            FileOutputStream fout= new FileOutputStream(keysFile);
-            fout.write( out.toByteArray() );
-            fout.close();
+            FileOutputStream fout=null;
+            try {
+                fout= new FileOutputStream(keysFile);
+                fout.write( out.toByteArray() );
+            } finally {
+                if ( fout!=null ) fout.close();
+            }
             keysFile.setReadable(false);
             keysFile.setReadable(false,false);
             keysFile.setReadable(true,true);
