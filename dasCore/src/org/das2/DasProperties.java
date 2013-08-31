@@ -265,23 +265,34 @@ public class DasProperties extends Properties {
             File f= new File(file);
 
             if (f.canRead()) {
+                InputStream in=null;
                 try {
-                    InputStream in= new FileInputStream(f);
+                    in= new FileInputStream(f);
                     load(in);
-                    in.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.log( Level.WARNING, null, e );
                     org.das2.util.DasExceptionHandler.handle(e);
+                } finally {
+                    try {
+                        if ( in!=null ) in.close();
+                    } catch ( IOException ex ) {
+                        
+                    }
                 }
             } else {
                 if ( !f.exists() && f.canWrite() ) {
+                    OutputStream out=null;
                     try {
-                        OutputStream out= new FileOutputStream(f);
+                        out= new FileOutputStream(f);
                         store(out,"");
-                        out.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        logger.log( Level.WARNING, null, e );
                         org.das2.util.DasExceptionHandler.handle(e);
+                    } finally {
+                        try {
+                            if ( out!=null ) out.close();
+                        } catch ( IOException ex ) {
+                        }
                     }
                 } else {
                     logger.log(Level.FINE, "Unable to read or write {0}.  Using defaults.", file);
@@ -299,12 +310,17 @@ public class DasProperties extends Properties {
         
         if (f.canWrite()) {
             org.das2.util.DasDie.println("Attempt to write .das2rc...");
+            OutputStream out=null;
             try {
-                OutputStream out= new FileOutputStream(f);
+                out= new FileOutputStream(f);
                 store(out,"");
-                out.close();
             } catch (IOException e) {
                 org.das2.util.DasExceptionHandler.handle(e);
+            } finally {
+                try {
+                    if ( out!=null ) out.close();
+                } catch ( IOException ex ) {   
+                }
             }
         } else {
             DasException e= new org.das2.DasIOException("Can't write to file "+f);
