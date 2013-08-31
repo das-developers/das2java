@@ -18,21 +18,23 @@ import org.das2.datum.Units;
  */
 public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
 
+    @Override
     public String format(Object o) {
         EnumerationUnits eu= (EnumerationUnits)o;
         Map<Integer,Datum> values= eu.getValues();
-        StringBuffer buf= new StringBuffer();
-        buf.append(""+eu.getId()+"[");
+        StringBuilder buf= new StringBuilder();
+        buf.append("").append(eu.getId()).append("[");
         for ( Integer i: values.keySet() ) {
             String s= values.get(i).toString();
             s= s.replaceAll("::", ":"); // :: is my delimiter
-            buf.append(""+i+":"+s );
+            buf.append("").append(i).append(":").append(s);
             if ( i<values.size() ) buf.append("::");
         }
         buf.append("]");
         return buf.toString();
     }
 
+    @Override
     public Object parse( String typeId, String s ) {
         Pattern p= Pattern.compile("(.+?)\\[(.*)\\]");
         Matcher m= p.matcher(s);
@@ -58,6 +60,7 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
         }
     }
 
+    @Override
     public String typeId( Class clas ) {
         return "enumerationUnit";
     }
