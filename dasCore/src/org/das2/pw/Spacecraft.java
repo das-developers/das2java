@@ -55,12 +55,12 @@ public class Spacecraft {
         this.id= id;
     }
     
-    public static Spacecraft voyager1= new Spacecraft( "Voyager 1" );
-    public static Spacecraft voyager2= new Spacecraft( "Voyager 2" );
-    public static ClusterSpacecraft clusterRumba= new ClusterSpacecraft( "Rumba", 1 );
-    public static ClusterSpacecraft clusterSalsa= new ClusterSpacecraft( "Salsa", 2 );
-    public static ClusterSpacecraft clusterSamba= new ClusterSpacecraft( "Samba", 3 );
-    public static ClusterSpacecraft clusterTango= new ClusterSpacecraft( "Tango", 4 );
+    public static final Spacecraft voyager1= new Spacecraft( "Voyager 1" );
+    public static final Spacecraft voyager2= new Spacecraft( "Voyager 2" );
+    public static final ClusterSpacecraft clusterRumba= new ClusterSpacecraft( "Rumba", 1 );
+    public static final ClusterSpacecraft clusterSalsa= new ClusterSpacecraft( "Salsa", 2 );
+    public static final ClusterSpacecraft clusterSamba= new ClusterSpacecraft( "Samba", 3 );
+    public static final ClusterSpacecraft clusterTango= new ClusterSpacecraft( "Tango", 4 );
 
     public static void main( String[]args ) {        
         System.out.println( ClusterSpacecraft.getByEsaNumber(2) );
