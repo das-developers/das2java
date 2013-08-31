@@ -585,16 +585,16 @@ public class ParsedExpression {
             result = new Float(a.floatValue() + b.floatValue());
         }
         else if (widest == Long.class) {
-            result = new Long(a.longValue() + b.longValue());
+            result = Long.valueOf(a.longValue() + b.longValue());
         }
         else if (widest == Integer.class) {
-            result = new Integer(a.intValue() + b.intValue());
+            result = Integer.valueOf(a.intValue() + b.intValue());
         }
         else if (widest == Short.class) {
-            result = new Short((short)(a.shortValue() + b.shortValue()));
+            result = Short.valueOf((short)(a.shortValue() + b.shortValue()));
         }
         else {
-            result = new Byte((byte)(a.byteValue() + b.byteValue()));
+            result = Byte.valueOf((byte)(a.byteValue() + b.byteValue()));
         }
         push(stack, result);
     }
@@ -611,16 +611,16 @@ public class ParsedExpression {
             result = new Float(a.floatValue() - b.floatValue());
         }
         else if (widest == Long.class) {
-            result = new Long(a.longValue() - b.longValue());
+            result = Long.valueOf(a.longValue() - b.longValue());
         }
         else if (widest == Integer.class) {
-            result = new Integer(a.intValue() - b.intValue());
+            result = Integer.valueOf(a.intValue() - b.intValue());
         }
         else if (widest == Short.class) {
-            result = new Short((short)(a.shortValue() - b.shortValue()));
+            result = Short.valueOf((short)(a.shortValue() - b.shortValue()));
         }
         else {
-            result = new Byte((byte)(a.byteValue() - b.byteValue()));
+            result = Byte.valueOf((byte)(a.byteValue() - b.byteValue()));
         }
         push(stack, result);
     }
@@ -637,16 +637,16 @@ public class ParsedExpression {
             result = new Float(a.floatValue() * b.floatValue());
         }
         else if (widest == Long.class) {
-            result = new Long(a.longValue() * b.longValue());
+            result = Long.valueOf(a.longValue() * b.longValue());
         }
         else if (widest == Integer.class) {
-            result = new Integer(a.intValue() * b.intValue());
+            result = Integer.valueOf(a.intValue() * b.intValue());
         }
         else if (widest == Short.class) {
-            result = new Short((short)(a.shortValue() * b.shortValue()));
+            result = Short.valueOf((short)(a.shortValue() * b.shortValue()));
         }
         else {
-            result = new Byte((byte)(a.byteValue() * b.byteValue()));
+            result = Byte.valueOf((byte)(a.byteValue() * b.byteValue()));
         }
         push(stack, result);
     }
@@ -663,16 +663,16 @@ public class ParsedExpression {
             result = new Float(a.floatValue() / b.floatValue());
         }
         else if (widest == Long.class) {
-            result = new Long(a.longValue() / b.longValue());
+            result = Long.valueOf(a.longValue() / b.longValue());
         }
         else if (widest == Integer.class) {
-            result = new Integer(a.intValue() / b.intValue());
+            result = Integer.valueOf(a.intValue() / b.intValue());
         }
         else if (widest == Short.class) {
-            result = new Short((short)(a.shortValue() / b.shortValue()));
+            result = Short.valueOf((short)(a.shortValue() / b.shortValue()));
         }
         else {
-            result = new Byte((byte)(a.byteValue() / b.byteValue()));
+            result = Byte.valueOf((byte)(a.byteValue() / b.byteValue()));
         }
         push(stack, result);
     }
