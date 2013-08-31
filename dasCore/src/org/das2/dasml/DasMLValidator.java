@@ -44,11 +44,11 @@ import java.util.regex.Pattern;
  */
 public class DasMLValidator extends DefaultHandler {
     
-    public static Pattern INTEGER_PATTERN = Pattern.compile("(0|[1-9][0-9]*)");
+    public static final Pattern INTEGER_PATTERN = Pattern.compile("(0|[1-9][0-9]*)");
     
-    public static Pattern WINDOW_POSITION_PATTERN = Pattern.compile("\\((0|[1-9][0-9]*),(0|[1-9][0-9]*)\\)");
+    public static final Pattern WINDOW_POSITION_PATTERN = Pattern.compile("\\((0|[1-9][0-9]*),(0|[1-9][0-9]*)\\)");
     
-    public static Pattern FLOAT_PATTERN = Pattern.compile("-?[0-9]*(\\.[0-9]*)?([eE]-?[0-9]+)?");
+    public static final Pattern FLOAT_PATTERN = Pattern.compile("-?[0-9]*(\\.[0-9]*)?([eE]-?[0-9]+)?");
 
     /**
      * Instance of the SAXParserFactory that this class uses to create
