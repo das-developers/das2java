@@ -21,6 +21,7 @@ import java.util.InputMismatchException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 import org.das2.datum.DatumRange;
@@ -1148,9 +1149,10 @@ public class DataSetOps {
             }
             Map<String,Object> props= DataSetUtil.getProperties( DataSetOps.slice0(bundle,first) );
             Map<String,Object> props2= DataSetUtil.getProperties( DataSetOps.slice0(bundle,last) );
-            for ( String ss: props2.keySet() ) { // remove the properties that are not constant within the bundle by checking first against last.
+            for ( Entry<String,Object> e: props2.entrySet() ) { // remove the properties that are not constant within the bundle by checking first against last.
+                String ss= e.getKey();
                 Object vv= props.get(ss);
-                if ( vv!=null && !vv.equals( props2.get(ss) ) ) {
+                if ( vv!=null && !vv.equals( e.getValue() ) ) {
                     props.put(ss,null);
                 }
             }
