@@ -33,8 +33,8 @@ public class AppendTableDataSet implements TableDataSet {
             firstIndexsList.addAll( box( atds1.firstIndexs ) );
             firstTablesList.addAll( box( atds1.firstTables ) );
             tableDataSetsList.add( tds2 );            
-            firstIndexsList.add( new Integer( atds1.firstIndexs[atds1.tableDataSets.length]+tds2.getXLength() ) );            
-            firstTablesList.add( new Integer( atds1.firstTables[atds1.tableDataSets.length]+tds2.getXLength() ) );
+            firstIndexsList.add( Integer.valueOf( atds1.firstIndexs[atds1.tableDataSets.length]+tds2.getXLength() ) );            
+            firstTablesList.add( Integer.valueOf( atds1.firstTables[atds1.tableDataSets.length]+tds2.getXLength() ) );
             
             tableDataSets= (TableDataSet[])tableDataSetsList.toArray( new TableDataSet[ tableDataSetsList.size() ] );
             firstIndexs= unbox( firstIndexsList );
