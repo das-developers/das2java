@@ -5,12 +5,7 @@
 
 package org.qstream.filter;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,7 +30,6 @@ import org.virbo.qstream.StreamComment;
 import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamHandler;
-import org.virbo.qstream.StreamTool;
 import org.virbo.qstream.TransferType;
 import org.virbo.qstream.Util;
 import org.virbo.qstream.XMLSerializeDelegate;
@@ -307,6 +301,10 @@ public class QDataSetsFilter implements StreamHandler {
         sink.streamComment(se);
     }
 
+    public void setSink( QDataSetSink sink ) {
+        this.sink= sink;
+    }
+    
 //    public static void main( String[] args ) throws IOException, StreamException, Exception {
 //        //File f = new File( "/home/jbf/data.nobackup/qds/waveformTable.qds" );
 //        File f = new File( "/home/jbf/data.nobackup/qds/waveformTable2.qds" );
