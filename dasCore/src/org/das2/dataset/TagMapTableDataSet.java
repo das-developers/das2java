@@ -30,7 +30,7 @@ public class TagMapTableDataSet implements TableDataSet {
         
         ArrayList tableStartList= new ArrayList();
         ArrayList tableEndList= new ArrayList();
-        tableStartList.add(new Integer(0));
+        tableStartList.add(Integer.valueOf(0));
         
         for ( int i=1; i<itableMap.length; i++ ) {
             if ( itableMap[i]>itable ) {
