@@ -178,7 +178,7 @@ public class FileSystemSettings {
     /**
      * the longest amount of time we'll wait for an external process to make progress downloading.
      */
-    protected static long allowableExternalIdleMs= 60000;
+    protected static final long allowableExternalIdleMs= 60000;
     
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
