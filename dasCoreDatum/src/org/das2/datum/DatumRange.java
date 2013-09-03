@@ -1,5 +1,7 @@
 package org.das2.datum;
 
+import java.io.Serializable;
+
 /**
  * A DatumRange is provided as a means to carry an ordered pair of Datums
  * representing an interval.  This sort of data structure comes up often in
@@ -9,7 +11,7 @@ package org.das2.datum;
  * a DatumRange!
  */
 
-public class DatumRange implements Comparable {
+public class DatumRange implements Comparable, Serializable {
     
     Datum s1;
     Datum s2;

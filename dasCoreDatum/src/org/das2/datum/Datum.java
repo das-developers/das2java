@@ -23,6 +23,7 @@
 
 package org.das2.datum;
 
+import java.io.Serializable;
 import org.das2.datum.format.DatumFormatter;
 
 
@@ -35,7 +36,7 @@ import org.das2.datum.format.DatumFormatter;
  * <p>
  * @author  jbf
  */
-public class Datum implements Comparable {
+public class Datum implements Comparable, Serializable {
     
     private Units units;
     private Number value;
