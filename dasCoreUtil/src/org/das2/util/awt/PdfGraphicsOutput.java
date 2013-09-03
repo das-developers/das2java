@@ -53,6 +53,12 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     private static Map<String,File> fontToTtfMap;
     private static Object state= STATE_IDLE;
 
+    /* these were introduced to make findbugs happy, but it also clarifies code.  On Macs and Linux, we also look in the user's home */
+    private static final String MAC_FONT_HOME= "/Library/Fonts/";
+    private static final String WINDOWS_FONT_HOME_1= "C:/Windows/Fonts";
+    private static final String WINDOWS_FONT_HOME_2= "D:/Windows/Fonts";
+    private static final String LINUX_FONT_HOME= "/usr/share/fonts/";
+    private static final String SOLARIS_FONT_HOME= "/usr/X/lib/X11/fonts/TrueType/";
     /**
      * Establish a name to .ttf file mapping.  On my development system with 233 fonts, this takes less than 400ms.
      */
@@ -64,13 +70,13 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         // Identify the search path for ttf fonts, which must have the extension .ttf.  See http://www.fontation.com/feature/ which confirms this code.
         File[] dirs;
         if ( osName.startsWith("Mac") ) {
-            dirs= new File[] { new File( userhome + "/Library/Fonts/" ), new File( "/Library/Fonts/" ) };
+            dirs= new File[] { new File( userhome + "/Library/Fonts/" ), new File( MAC_FONT_HOME ) };
         } else if ( osName.startsWith("Linux") ) {
-            dirs= new File[] { new File( userhome, ".fonts" ), new File("/usr/share/fonts/") }; // note Ubuntu is /usr/share/fonts/truetype, but this will work.
+            dirs= new File[] { new File( userhome, ".fonts" ), new File( LINUX_FONT_HOME ) }; // note Ubuntu is /usr/share/fonts/truetype, but this will work.
         } else if ( osName.startsWith("Windows") ) {
-            dirs= new File[] { new File("C:/Windows/Fonts"), new File("D:/Windows/Fonts") }; // 
+            dirs= new File[] { new File( WINDOWS_FONT_HOME_1), new File( WINDOWS_FONT_HOME_2 ) }; // 
         } else if ( osName.startsWith("SunOS") ) {
-            dirs= new File[] { new File( userhome, "fonts" ), new File( "/usr/X/lib/X11/fonts/TrueType/" ) };
+            dirs= new File[] { new File( userhome, "fonts" ), new File( SOLARIS_FONT_HOME ) };
         } else {
             logger.warning("unknown os.name, no fonts will be embedded");
             dirs= new File[] { };
