@@ -1353,6 +1353,7 @@ public class TimeParser {
                     mod = 100;
                     digit = value % mod;
                     time.month= digit;
+                    break;
                 case 'd':
                     mod = 100;
                     digit = value % mod;
