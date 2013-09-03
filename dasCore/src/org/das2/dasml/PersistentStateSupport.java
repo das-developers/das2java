@@ -199,41 +199,43 @@ public class PersistentStateSupport {
      */
     protected void saveImpl( File f ) throws Exception {
         OutputStream out= new FileOutputStream( f );
-        
-
-        Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-        
-        Element element= strategy.serialize( document, DasProgressPanel.createFramed("Serializing") );
-        
-        document.appendChild( element );
-        
-        DOMImplementationLS ls = (DOMImplementationLS)
-                        document.getImplementation().getFeature("LS", "3.0");
-        LSOutput output = ls.createLSOutput();
-        output.setEncoding("UTF-8");
-        output.setByteStream(out);
-        LSSerializer serializer = ls.createLSSerializer();
-
         try {
-            if (serializer.getDomConfig().canSetParameter("format-pretty-print", Boolean.TRUE)) {
-                serializer.getDomConfig().setParameter("format-pretty-print", Boolean.TRUE);
-            }
-        } catch (Error e) {
-            // Ed's nice trick for finding the implementation
-            //String name = serializer.getClass().getSimpleName();
-            //java.net.URL u = serializer.getClass().getResource(name+".class");
-            //System.err.println(u);
-            e.printStackTrace();
-        }
-	serializer.write(document, output);
 
-		/*
-        OutputFormat format = new OutputFormat(org.apache.xml.serialize.Method.XML, "UTF-8", true);
-        XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
-        
-        serializer.serialize(document);
-		 */
-        out.close();
+            Document document= DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+
+            Element element= strategy.serialize( document, DasProgressPanel.createFramed("Serializing") );
+
+            document.appendChild( element );
+
+            DOMImplementationLS ls = (DOMImplementationLS)
+                            document.getImplementation().getFeature("LS", "3.0");
+            LSOutput output = ls.createLSOutput();
+            output.setEncoding("UTF-8");
+            output.setByteStream(out);
+            LSSerializer serializer = ls.createLSSerializer();
+
+            try {
+                if (serializer.getDomConfig().canSetParameter("format-pretty-print", Boolean.TRUE)) {
+                    serializer.getDomConfig().setParameter("format-pretty-print", Boolean.TRUE);
+                }
+            } catch (Error e) {
+                // Ed's nice trick for finding the implementation
+                //String name = serializer.getClass().getSimpleName();
+                //java.net.URL u = serializer.getClass().getResource(name+".class");
+                //System.err.println(u);
+                e.printStackTrace();
+            }
+            serializer.write(document, output);
+
+                    /*
+            OutputFormat format = new OutputFormat(org.apache.xml.serialize.Method.XML, "UTF-8", true);
+            XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
+
+            serializer.serialize(document);
+                     */
+        } finally {
+            out.close();
+        }
         
     }
     
