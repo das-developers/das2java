@@ -59,6 +59,12 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     private static final String WINDOWS_FONT_HOME_2= "D:/Windows/Fonts";
     private static final String LINUX_FONT_HOME= "/usr/share/fonts/";
     private static final String SOLARIS_FONT_HOME= "/usr/X/lib/X11/fonts/TrueType/";
+        
+    public synchronized static Map<String,File>  resetFontToTtfMap() {
+        fontToTtfMap= null;
+        return getFontToTtfMap();
+    }
+    
     /**
      * Establish a name to .ttf file mapping.  On my development system with 233 fonts, this takes less than 400ms.
      */
@@ -277,7 +283,8 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     }
     
     public static void main( String[] args ) {
-        getFontToTtfMap();
+        Map<String,File> map= getFontToTtfMap();
+        System.err.println( map.size() );
     }
      
 }
