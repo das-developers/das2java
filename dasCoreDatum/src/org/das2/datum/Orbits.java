@@ -222,7 +222,7 @@ public class Orbits {
     /**
      * returns the first orbit containing the time, or null if none do.
      * @param d
-     * @return
+     * @return the orbit number or null
      */
     public String getOrbit( Datum d ) {
         for ( String s: orbits.keySet() ) {
@@ -237,6 +237,11 @@ public class Orbits {
         return null;
     }
 
+    /**
+     * return the next orbit number, or null if there are no more orbit numbers.
+     * @param orbit
+     * @return the orbit number or null.
+     */
     public String next( String orbit ) {//TODO: do this efficiently!
         boolean next= false;
         orbit= trimOrbit(orbit);
@@ -249,6 +254,11 @@ public class Orbits {
         return null;
     }
     
+    /**
+     * return the previous orbit number, or null if there are no more orbit numbers.
+     * @param orbit
+     * @return the orbit number or null.
+     */
     public String prev( String orbit ) { //TODO: do this efficiently!
         String prev= null;
         orbit= trimOrbit(orbit);
