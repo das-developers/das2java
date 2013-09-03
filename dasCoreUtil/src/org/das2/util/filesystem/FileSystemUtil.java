@@ -49,8 +49,6 @@ public class FileSystemUtil {
             if ( ic instanceof FileChannel ) {
                 FileChannel fic= (FileChannel)ic;
                 fic.transferTo(0, fic.size(), oc);
-                fic.close();
-                oc.close();
             } else {
                 ByteBuffer buf= ByteBuffer.allocateDirect( 16*1024 );
                 while ( ic.read(buf) >= 0 || buf.position() != 0 ) {
@@ -61,6 +59,7 @@ public class FileSystemUtil {
             }
         } finally {
             if ( oc!=null ) oc.close();
+            if ( ic!=null ) ic.close();
         }
     }
 
