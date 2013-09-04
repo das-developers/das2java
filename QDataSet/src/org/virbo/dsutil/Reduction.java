@@ -231,7 +231,7 @@ public class Reduction {
         result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminbuilder.getDataSet() ) );
         result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), result ) );
 
-        System.err.println( String.format( "time to reducex(%d points) (ms): %d", ds.length(), System.currentTimeMillis()-t0) );
+        System.err.println( String.format( "time to reducex(%d records -> %d records) (ms): %d", ds.length(), result.length(), System.currentTimeMillis()-t0) );
 
         return result;
 
