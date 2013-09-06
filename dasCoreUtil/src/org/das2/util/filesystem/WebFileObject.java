@@ -41,8 +41,8 @@ import org.das2.util.monitor.CancelledOperationException;
  *
  * @author  Jeremy
  *
- * This is a refactoring of the HttpFileObject, generalized for use with FTP and HTTP file objects.  Note that
- * the HttpFileObject has not been refactored to use this.
+ * This is a general-purpose FileObject representing items where latency requires a little
+ * caching of metadata.  This is used for both HTTP and FTP implementations.
  *
  */
 public class WebFileObject extends FileObject {
@@ -52,10 +52,11 @@ public class WebFileObject extends FileObject {
     final WebFileSystem wfs;
     String pathname;
     File localFile;
-    Date modifiedDate;
     boolean isRoot;
     boolean isFolder;
     Map<String,String> metadata;
+    Date modifiedDate;  // more accessible version of the metadata
+    long size=-1;       // more accessible version of the metadata
     
     /**
      * true if we know if it's a folder or not.
@@ -131,22 +132,39 @@ public class WebFileObject extends FileObject {
         return new WebFileObject(wfs, wfs.getLocalName(localFile.getParentFile()), new Date(System.currentTimeMillis()));
     }
 
+    /**
+     * return the fileObject size in bytes.  This may contact the server to get the size, and this
+     * caches the size.
+     * @return 
+     */
     public long getSize() {
         if (isFolder) {
             throw new IllegalArgumentException("is a folder");
         }
-        try {
-            maybeLoadMetadata();
-        } catch ( IOException ex ) {
-            logger.log(Level.INFO, "unable to load metadata: {0}", ex);
-            return localFile.length();
+        if ( this.size==-1 ) {
+            try {
+                maybeLoadMetadata();
+            } catch ( IOException ex ) {
+                logger.log(Level.INFO, "unable to load metadata: {0}", ex);
+                size= localFile.length();
+            }
+            if ( metadata.containsKey("Content-Length") ) {
+                size= Long.parseLong(metadata.get("Content-Length") );
+            } else {
+                logger.fine("remote length is not known");
+                size= localFile.length();
+            }
         }
-        if ( metadata.containsKey("Content-Length") ) {
-            return Long.parseLong(metadata.get("Content-Length") );
-        } else {
-            return localFile.length();
-        }
+        return size;
     }
+    
+    protected void setSize( long size ) {
+        if ( this.size!=-1 ) {
+            this.size= size;
+        } else {
+            throw new IllegalArgumentException("valid size cannot be modified");
+        }
+    }    
 
     public boolean isData() {
         return !this.isFolder;
@@ -316,6 +334,7 @@ public class WebFileObject extends FileObject {
 
         if ( monitor==null ) throw new NullPointerException("monitor may not be null");
         Date remoteDate;
+        long remoteLength=0;
 
         //check readonly cache for file.
         if ( this.wfs.getReadOnlyCache()!=null ) {
@@ -328,6 +347,7 @@ public class WebFileObject extends FileObject {
 
         if ( isLocal() ) { // isLocal does a careful check of timestamps, and minds the limits on access.
             remoteDate = new Date(localFile.lastModified());
+            remoteLength= localFile.length();
             
         } else if (wfs instanceof HttpFileSystem && !wfs.isOffline() ) {
             URL url = wfs.getURL(this.getNameExt());
@@ -351,6 +371,9 @@ public class WebFileObject extends FileObject {
             try {
                 connection.connect();
                 remoteDate = new Date(connection.getLastModified());
+                int contentLength= connection.getContentLength();
+                if ( contentLength>-1 ) remoteLength= contentLength;
+                
             } catch ( IOException ex ) {
                 if ( !((HttpFileSystem)wfs).isOffline() ) {
                     throw ex;
@@ -365,18 +388,21 @@ public class WebFileObject extends FileObject {
                     logger.fine("file does not exist on remote filesystem"); 
                 } else {
                     result= wfs.maybeUpdateDirectoryEntry( this.getNameExt(), true );
-                    this.setLastModified( new Date( result.modified ) );
+                    remoteDate= new Date( result.modified );
+                    remoteLength= result.size;
+                    this.setLastModified( remoteDate );
+                    this.setSize( remoteLength );
                 }
                 if ( !( wfs instanceof HttpFileSystem ) ) download= true; //FTP filesystem timetags are very course.
             }
-
             remoteDate = this.lastModified();
+            remoteLength= this.getSize();
         }
 
         if (localFile.exists()) {
-            Date localFileLastModified = new Date(localFile.lastModified()); // TODO: I think this is a bug...
-            if (remoteDate.after(localFileLastModified)) {
-                logger.log(Level.FINE, "remote file is newer than local copy of {0}, download.", this.getNameExt());
+            Date localFileLastModified = new Date(localFile.lastModified()); 
+            if (remoteDate.after(localFileLastModified) || remoteLength!=localFile.length() ) {
+                logger.log(Level.FINE, "remote file length is different or is newer than local copy of {0}, download.", this.getNameExt());
                 download = true;
             }
         } else {
@@ -439,7 +465,7 @@ public class WebFileObject extends FileObject {
     public boolean isLocal() {
         if ( wfs.isAppletMode() ) return false;
 
-        boolean download = false;
+        boolean download;
 
         if ( this.wfs.getReadOnlyCache()!=null ) {
             File cacheFile= new File( this.wfs.getReadOnlyCache(), this.getNameExt() );
@@ -455,7 +481,8 @@ public class WebFileObject extends FileObject {
                     synchronized ( wfs ) {
                         DirectoryEntry remoteDate= (DirectoryEntry) wfs.accessCache.doOp( this.getNameExt() );
                         long localFileLastModified = localFile.lastModified();
-
+                        setLastModified( new Date(remoteDate.modified) );
+                        setSize( remoteDate.size );
                         if ( remoteDate.modified > localFileLastModified ) {
                             logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
                             download = true;
