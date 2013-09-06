@@ -670,7 +670,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             });
             popup.add(menuItem);
         }
-        MouseAdapter mm;
 
         @Override
         public void mousePressed(MouseEvent e) {
@@ -720,9 +719,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     public boolean saveAs() {
         JFileChooser jj = new JFileChooser();
         String lastFileString = prefs.get("components.DataPointRecorder.lastFileSave", "");
-        File lastFile = null;
         if (lastFileString.length()>0) {
-            lastFile = new File(lastFileString);
+            File lastFile= new File(lastFileString);
             jj.setSelectedFile(lastFile);
         }
 
