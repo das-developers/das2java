@@ -869,11 +869,6 @@ public final class TimeUtil {
         return mons[mon-1];
     }
     
-    public class TimeParser {
-        String regex;
-        int[] digits;
-    }
-    
     /**
      * parse the time into a timestruct.
      * @param s
