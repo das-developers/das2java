@@ -116,8 +116,8 @@ public class PitchAngleDistributionRenderer extends Renderer {
         ArrayDataSet xdesc= DDataSet.wrap( new double[] { 0, Ops.extent(rds).value(1) }, yunits );
         ArrayDataSet ydesc= xdesc;
 
-        xdesc= ArrayDataSet.maybeCopy( Ops.rescaleRange( xdesc, -1.1, 1.1 ) );
-        ydesc= ArrayDataSet.maybeCopy( Ops.rescaleRange( ydesc, -1.1, 1.1 ) );
+        xdesc= ArrayDataSet.maybeCopy( Ops.rescaleRangeLogLin( xdesc, -1.1, 1.1 ) );
+        ydesc= ArrayDataSet.maybeCopy( Ops.rescaleRangeLogLin( ydesc, -1.1, 1.1 ) );
 
         String l= rds.property(QDataSet.LABEL)==null ? "(Parallel)" : String.format( "%s (Parallel)", rds.property(QDataSet.LABEL));
         xdesc.putProperty( QDataSet.LABEL, l ) ;

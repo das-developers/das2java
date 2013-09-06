@@ -107,7 +107,7 @@ public class EventsRenderer extends Renderer {
             }
 
             if ( xrange.value(0)<xrange.value(1) ) {
-                xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
+                xrange= Ops.rescaleRangeLogLin(xrange, -0.1, 1.1 );
             } else {
                 QDataSet dx= DDataSet.wrap( new double[] {-1,1}, u0.getOffsetUnits() );
                 xrange= Ops.add( xrange, dx );

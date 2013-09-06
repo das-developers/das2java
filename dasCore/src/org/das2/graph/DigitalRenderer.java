@@ -82,7 +82,7 @@ public class DigitalRenderer extends Renderer {
                 xrange= DDataSet.wrap( new double[] { xrange.value(0)/10, xrange.value(1)*10 } ).setUnits( SemanticOps.getUnits(xrange) );
             }
         }
-        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
+        xrange= Ops.rescaleRangeLogLin(xrange, -0.1, 1.1 );
         return xrange;
     }
 

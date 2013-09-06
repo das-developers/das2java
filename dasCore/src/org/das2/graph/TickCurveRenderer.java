@@ -134,8 +134,8 @@ public class TickCurveRenderer extends Renderer {
     public static QDataSet doAutorange( QDataSet ds1 ) {
 
         QDataSet ds= makeCanonical(ds1);
-        QDataSet xrange= Ops.rescaleRange( Ops.extent( DataSetOps.unbundle(ds,1) ), -0.1, 1.1 );
-        QDataSet yrange= Ops.rescaleRange( Ops.extent( DataSetOps.unbundle(ds,2) ), -0.1, 1.1 );
+        QDataSet xrange= Ops.rescaleRangeLogLin( Ops.extent( DataSetOps.unbundle(ds,1) ), -0.1, 1.1 );
+        QDataSet yrange= Ops.rescaleRangeLogLin( Ops.extent( DataSetOps.unbundle(ds,2) ), -0.1, 1.1 );
 
         JoinDataSet bds= new JoinDataSet(2);
         bds.join(xrange);

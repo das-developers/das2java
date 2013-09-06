@@ -122,7 +122,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 }
             }
         }
-        xrange= Ops.rescaleRange( xrange, -0.1, 1.1 );
+        xrange= Ops.rescaleRangeLogLin( xrange, -0.1, 1.1 );
         return xrange;
     }
 
@@ -146,7 +146,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         result.putValue( 0, min );
         result.putValue( 1, max );
         result.putProperty( QDataSet.UNITS, u );
-        return Ops.rescaleRange( result, -0.1, 1.1 );
+        return Ops.rescaleRangeLogLin( result, -0.1, 1.1 );
     }
     
     public static QDataSet doAutorange( QDataSet ds ) {

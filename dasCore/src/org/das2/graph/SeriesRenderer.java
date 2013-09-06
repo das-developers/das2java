@@ -764,17 +764,25 @@ public class SeriesRenderer extends Renderer {
     private void dumpPath(PathIterator it) {
         PrintWriter write = null;
         try {
-            write = new PrintWriter( new FileWriter("/tmp/foo.txt") );
+            write = new PrintWriter( new FileWriter("/tmp/foo."+id+".txt") );
+            
             while ( !it.isDone() ) {
-                it.next();
                 float[] coords= new float[6];
                 
                 int type= it.currentSegment(coords);
                 write.printf( "%9d ", type );
+                if ( type==PathIterator.SEG_MOVETO) {
+                    for ( int i=0; i<6; i++ ) {
+                        write.printf( "%9.1f ", -99999.  );
+                    }
+                    write.println();
+                    write.printf( "%9d ", type );
+                }
                 for ( int i=0; i<6; i++ ) {
                     write.printf( "%9.1f ", coords[i] );
                 }
                 write.println();
+                it.next();
             }
         } catch (IOException ex) {
             Logger.getLogger(SeriesRenderer.class.getName()).log(Level.SEVERE, null, ex);
