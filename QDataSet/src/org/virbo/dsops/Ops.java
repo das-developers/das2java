@@ -4310,6 +4310,44 @@ public class Ops {
     }
 
     /**
+     * like rescaleRange, but look at log/lin flag.
+     * @param dr
+     * @param min
+     * @param max
+     * @return 
+     */
+    public static QDataSet rescaleRangeLogLin( QDataSet dr, double min, double max ) {
+        if ( dr.rank()!=1 ) {
+            throw new IllegalArgumentException("Rank must be 1");
+        }
+        DDataSet result= DDataSet.createRank1(2);
+        if ( "log".equals( dr.property(QDataSet.SCALE_TYPE) ) ) {
+            double w= dr.value(1) / dr.value(0);
+            if ( Double.isInfinite(w) || Double.isNaN(w) ) {
+                throw new RuntimeException("width is not finite");
+            }
+            if ( w==0. ) {
+                throw new RuntimeException("width is zero!");
+            }
+            result.putValue( 0, dr.value(0) * w*min );
+            result.putValue( 1, dr.value(0) * w*max );    
+        } else {
+            double w= dr.value(1) - dr.value(0);
+            if ( Double.isInfinite(w) || Double.isNaN(w) ) {
+                throw new RuntimeException("width is not finite");
+            }
+            if ( w==0. ) {
+                throw new RuntimeException("width is zero!");
+            }
+            result.putValue( 0, dr.value(0) + w*min );
+            result.putValue( 1, dr.value(0) + w*max );    
+        }
+
+        DataSetUtil.copyDimensionProperties( dr, result );
+        return result;
+    }
+    
+    /**
      * returns histogram of dataset, the number of points falling in each bin.
      * 
      * @param ds
