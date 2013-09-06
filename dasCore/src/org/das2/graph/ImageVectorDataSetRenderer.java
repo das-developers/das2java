@@ -61,7 +61,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
     BufferedImage plotImage;
     Rectangle plotImageBounds;
     DatumRange imageXRange;
-    DatumRange imageYRange;
     private Color color = Color.BLACK;
     private int ixstepLimitSq=1000000;  /** pixels, limit of x increment before line break */
     private Shape selectionArea;
