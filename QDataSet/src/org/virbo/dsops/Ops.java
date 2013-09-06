@@ -4322,15 +4322,23 @@ public class Ops {
         }
         DDataSet result= DDataSet.createRank1(2);
         if ( "log".equals( dr.property(QDataSet.SCALE_TYPE) ) ) {
-            double w= dr.value(1) / dr.value(0);
+            
+            double s1= Math.log10( dr.value(0) );
+            double s2= Math.log10( dr.value(1) );
+            double w= s2 - s1;
             if ( Double.isInfinite(w) || Double.isNaN(w) ) {
                 throw new RuntimeException("width is not finite");
             }
             if ( w==0. ) {
+                // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
                 throw new RuntimeException("width is zero!");
             }
-            result.putValue( 0, dr.value(0) * w*min );
-            result.putValue( 1, dr.value(0) * w*max );    
+            s2= Math.pow( 10, s1 + max * w ); // danger
+            s1= Math.pow( 10, s1 + min * w );
+        
+            result.putValue( 0, s1 );
+            result.putValue( 1, s2 );
+            
         } else {
             double w= dr.value(1) - dr.value(0);
             if ( Double.isInfinite(w) || Double.isNaN(w) ) {
