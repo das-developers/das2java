@@ -77,11 +77,8 @@ public class AsciiParser {
     AsciiHeadersParser.BundleDescriptor bundleDescriptor;
 
     /**
-     * more abstract parameter type.  E.g. GSM_X, GSM_Y, GSM_Z -> GSM
-     * These group together adjacent columns into a higher rank dataset.
+     * units for each column.
      */
-    String[] groupNames;
-
     Units[] units;
 
     /** either the unit or depend 1 value associated with the column 
