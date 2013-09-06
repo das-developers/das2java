@@ -1,6 +1,6 @@
 /*
  * PDFGraphicsOutput.java
- *
+ * trivial change
  * Created on January 28, 2005, 5:27 PM
  */
 
