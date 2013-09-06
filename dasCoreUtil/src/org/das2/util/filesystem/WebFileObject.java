@@ -376,7 +376,7 @@ public class WebFileObject extends FileObject {
         if (localFile.exists()) {
             Date localFileLastModified = new Date(localFile.lastModified()); // TODO: I think this is a bug...
             if (remoteDate.after(localFileLastModified)) {
-                logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
+                logger.log(Level.FINE, "remote file is newer than local copy of {0}, download.", this.getNameExt());
                 download = true;
             }
         } else {
