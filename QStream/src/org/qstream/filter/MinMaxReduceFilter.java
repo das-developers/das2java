@@ -52,7 +52,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
     class Accum {
         PacketDescriptor pd; // All planes should have the same value.
         int id;       // the packetId.
-        int capacity; // total capacity of the packet.  All planes should have the same number.
+        //int capacity; // total capacity of the packet.  All planes should have the same number.
         String dsid;  // the dataset id, so we can remove this later.
         int N;
         double[] Smin;
