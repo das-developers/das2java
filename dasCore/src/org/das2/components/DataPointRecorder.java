@@ -29,8 +29,19 @@ import org.das2.datum.format.DatumFormatter;
 import org.das2.system.DasLogger;
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,11 +54,27 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import java.util.regex.*;
-import javax.swing.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.table.AbstractTableModel;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.UnitsUtil;
@@ -718,6 +745,15 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      */
     public boolean saveAs() {
         JFileChooser jj = new JFileChooser();
+        jj.setFileFilter( new FileFilter() {
+            public boolean accept(File pathname) {
+                return pathname.toString().endsWith(".dat") || pathname.toString().endsWith(".txt");
+            }
+            @Override
+            public String getDescription() {
+                return "Flat Ascii Tables";
+            }
+        });
         String lastFileString = prefs.get("components.DataPointRecorder.lastFileSave", "");
         if (lastFileString.length()>0) {
             File lastFile= new File(lastFileString);
@@ -727,7 +763,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         int status = jj.showSaveDialog(DataPointRecorder.this);
         if (status == JFileChooser.APPROVE_OPTION) {
             try {
-                DataPointRecorder.this.saveFile = jj.getSelectedFile();
+                File pathname= jj.getSelectedFile();
+                if ( !( pathname.toString().endsWith(".dat") || pathname.toString().endsWith(".txt") ) ) {
+                    pathname= new File( pathname.getAbsolutePath() + ".dat" );
+                }
+                DataPointRecorder.this.saveFile = pathname;
                 saveToFile(saveFile);
             //messageLabel.setText("saved data to "+saveFile);
             } catch (IOException e1) {
