@@ -269,7 +269,8 @@ public class DasServer {
             if (contentType.equalsIgnoreCase("text/plain")) {
                 PushbackReader reader = new PushbackReader(new InputStreamReader(connection.getInputStream()), 4);
                 char[] four = new char[4];
-                reader.read(four);
+                int count= reader.read(four);
+                if ( count!=4 ) throw new IllegalArgumentException("failed to read four characters");
                 if (new String(four).equals("[00]")) {
                     logger.info("response is a das2Stream");
                     reader.skip(6);
