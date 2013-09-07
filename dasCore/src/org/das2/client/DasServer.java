@@ -109,11 +109,11 @@ public class DasServer {
         }
         String key= "http://" + host + url.getPath();
         if ( instanceHashMap.containsKey( key ) ) {
-            logger.log( Level.INFO, "Using existing DasServer for {0}", url);
+            logger.log( Level.FINE, "Using existing DasServer for {0}", url);
             return (DasServer) instanceHashMap.get( key );
         } else {
             String path= url.getPath();
-            logger.log( Level.INFO, "Creating DasServer for {0}", url);
+            logger.log( Level.FINE, "Creating DasServer for {0}", url);
             DasServer result= new DasServer(host,path);
             instanceHashMap.put(key,result);
             return result;
@@ -126,14 +126,14 @@ public class DasServer {
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.log( Level.INFO, "connecting to {0}", server);
+            logger.log( Level.FINE, "connecting to {0}", server);
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
 
             InputStream in= urlConnection.getInputStream();
 
             String result= new String(  read(in) );
-            logger.log( Level.INFO, "response={0}", result);
+            logger.log( Level.FINE, "response={0}", result);
 
             return result;
         } catch (IOException e) {
@@ -150,14 +150,14 @@ public class DasServer {
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.log( Level.INFO, "connecting to {0}", server);
+            logger.log( Level.FINE, "connecting to {0}", server);
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
 
             InputStream in= urlConnection.getInputStream();
 
             byte[] data= read(in);
-            logger.log( Level.INFO, "response={0} bytes", data.length);
+            logger.log( Level.FINE, "response={0} bytes", data.length);
             return new ImageIcon(data);
 
         } catch (IOException e) {
@@ -173,7 +173,7 @@ public class DasServer {
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.log( Level.INFO, "connecting to {0}", server);
+            logger.log( Level.FINE, "connecting to {0}", server);
 
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
@@ -181,7 +181,7 @@ public class DasServer {
             InputStream in= urlConnection.getInputStream();
 
             TreeModel result= createModel(in);
-            logger.log( Level.INFO, "response->{0}", result);
+            logger.log( Level.FINE, "response->{0}", result);
             return result;
 
         } catch (IOException e) {
@@ -197,7 +197,7 @@ public class DasServer {
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.log( Level.INFO, "connecting to {0}", server);
+            logger.log( Level.FINE, "connecting to {0}", server);
 
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
@@ -205,7 +205,7 @@ public class DasServer {
             InputStream in= urlConnection.getInputStream();
 
             TreeModel result= createModel(in);
-            logger.log( Level.INFO, "response->{0}", result);
+            logger.log( Level.FINE, "response->{0}", result);
             return result;
 
         } catch (IOException e) {
@@ -259,7 +259,7 @@ public class DasServer {
             String dsdf = dataSetID.getQuery().split("&")[0];
             URL url = new URL("http", host, port, path+"?server=dsdf&dataset=" + dsdf);
 
-            logger.log( Level.INFO, "connecting to {0}", url);
+            logger.log( Level.FINE, "connecting to {0}", url);
             URLConnection connection = url.openConnection();
             connection.connect();
             String contentType = connection.getContentType();
@@ -272,8 +272,8 @@ public class DasServer {
                 int count= reader.read(four);
                 if ( count!=4 ) throw new IllegalArgumentException("failed to read four characters");
                 if (new String(four).equals("[00]")) {
-                    logger.info("response is a das2Stream");
-                    reader.skip(6);
+                    logger.fine("response is a das2Stream");
+                    if ( reader.skip(6)!=6 ) throw new IllegalArgumentException("expected to skip six characters");
                     Document header = StreamDescriptor.parseHeader(reader);
                     Element root = header.getDocumentElement();
                     if (root.getTagName().equals("stream")) {
@@ -329,7 +329,7 @@ public class DasServer {
 
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.log( Level.INFO, "connecting to {0}", server);
+            logger.log( Level.FINE, "connecting to {0}", server);
 
             InputStream in= server.openStream();
             BufferedInputStream bin= new BufferedInputStream(in);
@@ -364,7 +364,7 @@ public class DasServer {
 
             URL server= new URL("http",host,port,path+"?"+formData);
 
-            logger.log( Level.INFO, "connecting to {0}", server);
+            logger.log( Level.FINE, "connecting to {0}", server);
 
             InputStream in= server.openStream();
             BufferedInputStream bin= new BufferedInputStream(in);
@@ -394,7 +394,7 @@ public class DasServer {
             formData+= "&newPasswd="+URLBuddy.encodeUTF8(cryptNewPass);
 
             URL server= new URL("http",host,port,path+"?"+formData);
-            logger.log( Level.INFO, "connecting to {0}", server);
+            logger.log( Level.FINE, "connecting to {0}", server);
 
             InputStream in= server.openStream();
             BufferedInputStream bin= new BufferedInputStream(in);
@@ -475,7 +475,7 @@ public class DasServer {
             das2Response= "";
         }
 
-        logger.log( Level.INFO, "response={0}", das2Response);
+        logger.log( Level.FINE, "response={0}", das2Response);
 
         return das2Response;
     }
