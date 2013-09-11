@@ -28,6 +28,7 @@ public class DatumRangeSerializeDelegate implements SerializeDelegate, XMLSerial
 
     private static final Logger logger= LoggerManager.getLogger("qstream");
             
+    @Override
     public String format(Object o) {
         DatumRange dr= (DatumRange)o;
         Units u= dr.getUnits();
@@ -39,6 +40,7 @@ public class DatumRangeSerializeDelegate implements SerializeDelegate, XMLSerial
         }
     }
 
+    @Override
     public Object parse(String typeId, String s) throws ParseException {
         if ( s.startsWith("time:") ) {
             return DatumRangeUtil.parseTimeRange(s.substring(5));
@@ -66,10 +68,12 @@ public class DatumRangeSerializeDelegate implements SerializeDelegate, XMLSerial
         }
     }
 
+    @Override
     public String typeId(Class clas) {
         return "datumRange";
     }
 
+    @Override
     public Element xmlFormat(Document doc, Object o) {
         DatumRange dr= (DatumRange)o;
         Element result= doc.createElement( typeId( o.getClass() ) );
@@ -95,6 +99,7 @@ public class DatumRangeSerializeDelegate implements SerializeDelegate, XMLSerial
         return result;
     }
 
+    @Override
     public Object xmlParse(Element e) throws ParseException {
         String sunits= e.getAttribute("units");
         Units u= SemanticOps.lookupUnits(sunits);
