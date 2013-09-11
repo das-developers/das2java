@@ -55,11 +55,11 @@ public final class AutoHistogram {
      */
     public static final String USER_PROP_TOTAL = "total";
 
-    public final int BIN_COUNT = 100;
-    private final int INITIAL_BINW = 1;
-    private final double INITIAL_BINW_DENOM = 1E30;
-    private final double INITIAL_FIRST_BIN = -1 * Double.MAX_VALUE;
-    private final double NEW_INITIAL_FIRST_BIN = Double.MAX_VALUE / INITIAL_BINW_DENOM;
+    private static final int BIN_COUNT = 100;
+    private static final int INITIAL_BINW = 1;
+    private static final double INITIAL_BINW_DENOM = 1E30;
+    private static final double INITIAL_FIRST_BIN = -1 * Double.MAX_VALUE;
+    private static final double NEW_INITIAL_FIRST_BIN = Double.MAX_VALUE / INITIAL_BINW_DENOM;
     int nbin;
     double binw;      // numerator of binWidth
     double binwDenom; // denominator of binWidth.  Either this or binw will be 1.
