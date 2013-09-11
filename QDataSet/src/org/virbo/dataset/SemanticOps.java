@@ -7,6 +7,7 @@ package org.virbo.dataset;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Basis;
@@ -21,6 +22,7 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsConverter.ScaleOffset;
 import org.das2.datum.UnitsUtil;
+import org.das2.util.LoggerManager;
 import org.virbo.dsops.Ops;
 
 /**
@@ -31,6 +33,8 @@ import org.virbo.dsops.Ops;
  */
 public class SemanticOps {
 
+    private static final Logger logger= LoggerManager.getLogger("qdataset");
+    
     /**
      * returns the units found in the UNITS property of the dataset,
      * or Units.dimensionless if it is not found.
@@ -814,6 +818,7 @@ public class SemanticOps {
                     ok= Ops.where( xinside );
                     sds.applyIndex( 0, ok );
                 } else {
+                    logger.fine( "yds is being ignored, not sure why...");
                     //ok= Ops.where( Ops.and( xinside, yinside ) );
                     ok= Ops.where( xinside );
                     sds.applyIndex( 0, ok );
