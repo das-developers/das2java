@@ -95,11 +95,7 @@ public class AsciiParser {
     final static String numberPart = "[\\d\\.eE\\+\\-]+";
     final static String decimalRegex = numberPart;
     int skipLines;
-    boolean skipColumnHeader = false;
-    /**
-     * regular expression identifying the end of the header, or null.
-     */
-    String headerDelimiter1 = null;
+    
     int recordCountLimit = Integer.MAX_VALUE;
     int fieldCount;
     public final static Pattern NAME_COLON_VALUE_PATTERN = Pattern.compile("\\s*([a-zA-Z_].*?)\\s*\\:\\s*(.+)\\s*");
@@ -403,7 +399,6 @@ public class AsciiParser {
                 }
             } catch (ParseException ex) {
                 logger.log(Level.SEVERE, null, ex);
-                ex.printStackTrace();
             }
             result.header= header;
         }
@@ -421,7 +416,7 @@ public class AsciiParser {
      */
     public DelimParser guessDelimParser(String line) throws IOException {
 
-        String fieldSep = null;
+        String fieldSep;
 
         int tabDelimFieldCount= line.split("\t",-2 ).length;
         int commaDelimFieldCount= line.split( ",",-2 ).length;
@@ -453,7 +448,7 @@ public class AsciiParser {
      */
     public DelimParser setDelimParser(String filename, String delim) throws IOException {
         FileReader r= null;
-        DelimParser result=null;;
+        DelimParser result=null;
         try {
             r= new FileReader(filename);
             result= setDelimParser(r, delim);
@@ -753,7 +748,7 @@ public class AsciiParser {
     public WritableDataSet readStream(Reader in, String firstRecord, ProgressMonitor mon) throws IOException {
         BufferedReader reader = new BufferedReader(in);
         String line = null;
-        String lastLine = null;
+        String lastLine;
 
         int iline = -1;
         int irec = 0;
@@ -840,7 +835,7 @@ public class AsciiParser {
                         //System.out.println(line);
                     }
                 } catch (NumberFormatException e) {
-                    e.printStackTrace();
+                    logger.log( Level.WARNING, null, e );
                 }
 
             }
@@ -1017,6 +1012,7 @@ public class AsciiParser {
             Units u = AsciiParser.this.units[columnIndex];
             return u.parse(field).doubleValue(u);
         }
+        @Override
         public String toString() {
             return "unitsParser";
         }
@@ -1030,6 +1026,7 @@ public class AsciiParser {
             EnumerationUnits u = (EnumerationUnits)AsciiParser.this.units[columnIndex];
             return u.createDatum(field).doubleValue(u);            
         }
+        @Override
         public String toString() {
             return "enumerationParser";
         }        
@@ -1142,8 +1139,6 @@ public class AsciiParser {
 //                }
 //            }
 //                                    
-        } else {
-            skipColumnHeader = true;
         }
 
         DelimParser recordParser1 = new DelimParser(fieldParsers.length, fieldSep);
@@ -1191,11 +1186,10 @@ public class AsciiParser {
         }
         
         public boolean tryParseRecord(String line, int irec, DataSetBuilder builder) {
-            int j = 0;
+            int j;
             int okayCount = 0;
             int failCount = 0;
             int tryCount= 0;
-            int ipos = 0;
 
             if ( fieldCount!=fieldParsers.length ) {
                 return false; //TODO: how do we get into this condition?
@@ -1567,7 +1561,7 @@ public class AsciiParser {
     public FixedColumnsParser setFixedColumnsParser(int[] columnOffsets, int[] columnWidths, FieldParser[] parsers) {
         FixedColumnsParser result = new FixedColumnsParser(columnOffsets, columnWidths);
         this.recordParser = result;
-        this.fieldParsers = parsers;
+        this.fieldParsers = Arrays.copyOf( parsers, parsers.length );
         this.fieldNames= new String[ result.fieldCount ];
         this.units= new Units[ result.fieldCount ];
         for ( int i=0; i<result.fieldCount; i++ ) {
@@ -1659,11 +1653,12 @@ public class AsciiParser {
 
     /**
      * return the name of each field.  field0, field1, ... are the default names when
-     * names are not discovered in the table.
+     * names are not discovered in the table.  Changing the array will not affect
+     * internal representation.
      * @return
      */
     public String[] getFieldNames() {
-        return this.fieldNames;
+        return Arrays.copyOf( this.fieldNames, this.fieldNames.length );
     }
 
     /**
@@ -1678,7 +1673,7 @@ public class AsciiParser {
         for ( int i=0; i<fieldLabels.length; i++ ) {
             if ( fieldLabels[i]==null ) fieldLabels[i]= fieldNames[i];
         }
-        return this.fieldLabels;
+        return Arrays.copyOf( this.fieldLabels, this.fieldLabels.length );
     }
 
 
@@ -1690,7 +1685,7 @@ public class AsciiParser {
      * @return
      */
     public String[] getFieldUnits() {
-        return this.fieldUnits;
+        return Arrays.copyOf( this.fieldUnits, this.fieldUnits.length );
     }
 
     /**
