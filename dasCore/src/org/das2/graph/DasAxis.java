@@ -556,6 +556,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void setDatumRange(DatumRange dr) {
         //System.err.println("setDatumRange("+dr+")");
+        if ( dr.width().value()==0 ) {
+            throw new IllegalArgumentException("width is zero: "+dr);
+        }
         DatumRange oldRange= dataRange.getDatumRange();
         Units oldUnits = getUnits();
         if ( !rangeIsAcceptable(dr) ) { 
@@ -1650,6 +1653,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 this.majorTicksDomainDivider= null;
             }
             if (autoTickV) {
+                if ( getDatumRange().width().value()==0 ) {
+                    throw new IllegalArgumentException("datum range width is zero" );
+                }
                 if (majorTicksDomainDivider != null) {
                     TickVDescriptor newTicks= updateTickVDomainDivider();
                     TickMaster.getInstance().offerTickV( this, newTicks );
