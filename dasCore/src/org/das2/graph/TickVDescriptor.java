@@ -55,7 +55,7 @@ public class TickVDescriptor {
      * java 1.5: List<Datum>
      */
     public static TickVDescriptor newTickVDescriptor(List majorTicks, List minorTicks) {
-        if (majorTicks.size() == 0 && minorTicks.size() == 0) {
+        if (majorTicks.isEmpty() && minorTicks.isEmpty()) {
             throw new IllegalArgumentException("need at least one major or minor tick");
         }
         Datum d = (majorTicks.size() > 0) ? (Datum) majorTicks.get(0) : (Datum) minorTicks.get(0);
@@ -429,7 +429,7 @@ public class TickVDescriptor {
         int firstMinorTickCycle = (int) Math.floor(Math.log10(min3));
         int lastMinorTickCycle = (int) Math.floor(Math.log10(max3));
 
-        double[] minorTickV = null;
+        double[] minorTickV;
         int idx = 0;
         minorTickV = new double[(lastMinorTickCycle - firstMinorTickCycle + 1) * minors.length];
         for (int i = firstMinorTickCycle; i <= lastMinorTickCycle; i++) {
@@ -698,6 +698,7 @@ public class TickVDescriptor {
         if (bestTickV == null) {
             bestUnit = secondBestUnit;
             bestTickV = secondBestTickV;
+            if ( bestTickV==null ) throw new NullPointerException("unable to find ticks");
         }
 
         TickVDescriptor ticks = bestTickV;
