@@ -6,10 +6,13 @@
 package org.virbo.qstream;
 
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.SemanticOps;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -23,6 +26,8 @@ import org.w3c.dom.Element;
  */
 public class DatumRangeSerializeDelegate implements SerializeDelegate, XMLSerializeDelegate {
 
+    private static final Logger logger= LoggerManager.getLogger("qstream");
+            
     public String format(Object o) {
         DatumRange dr= (DatumRange)o;
         Units u= dr.getUnits();
@@ -69,7 +74,24 @@ public class DatumRangeSerializeDelegate implements SerializeDelegate, XMLSerial
         DatumRange dr= (DatumRange)o;
         Element result= doc.createElement( typeId( o.getClass() ) );
         result.setAttribute( "units",dr.getUnits().toString() );
-        result.setAttribute( "value",dr.toString() );
+        if ( !UnitsUtil.isRatioMeasurement(dr.getUnits()) ) {
+            result.setAttribute( "value",dr.toString() );
+        } else {
+            DatumRange test;
+            try {
+                test= DatumRangeUtil.parseDatumRange(dr.toString(), dr );
+                if ( test.equals(dr) ) {
+                    result.setAttribute( "value",dr.toString() );
+                } else {
+                    String svalue= String.format( "%s to %s", dr.min().value(), dr.max().value() );
+                    result.setAttribute( "value", svalue );
+                }
+            } catch ( ParseException ex ) {
+                logger.log( Level.WARNING, null, ex );
+                result.setAttribute( "value",dr.toString() );
+            }
+            
+        }
         return result;
     }
 
