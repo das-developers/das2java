@@ -359,7 +359,7 @@ public class DasPlot extends DasCanvasComponent {
      private void drawMessages(Graphics2D g) {
 
         Graphics2D graphics= (Graphics2D) g.create();
-        boolean isPrint= getCanvas().isPrintingThread();
+        //boolean isPrint= getCanvas().isPrintingThread();
         
         Font font0 = graphics.getFont();
         int msgem = (int) Math.max(8, font0.getSize2D() / 2);
@@ -393,11 +393,11 @@ public class DasPlot extends DasCanvasComponent {
             }
             
             // https://sourceforge.net/p/autoplot/bugs/1093/: error bubbles must be hidden when printing.
-            if ( false && isPrint ) { // we need to clean up hudson first...
-                if ( message.birthMilli<Long.MAX_VALUE ) {
-                    continue;
-                }
-            }
+            //if ( false && isPrint ) { // we need to clean up hudson first...
+            //    if ( message.birthMilli<Long.MAX_VALUE ) {
+            //        continue;
+            //    }
+            //}
             
             if ( logTimeoutSec < Integer.MAX_VALUE/1000 && message.birthMilli < tnow - logTimeoutSec*1000 ) {
                 continue;
@@ -1136,8 +1136,8 @@ public class DasPlot extends DasCanvasComponent {
          * The severity of the message.  DasPlot.INFO or Level.INFO.intValue().
          */
         int messageType;
-        Datum x;
-        Datum y;
+        //Datum x;
+        //Datum y;
         Rectangle bounds; // stores the drawn boundaries of the message for context menu.
         
         /**
@@ -1150,8 +1150,8 @@ public class DasPlot extends DasCanvasComponent {
             this.renderer = renderer;
             this.text = text;
             this.messageType = messageType;
-            this.x = x;
-            this.y = y;
+            //this.x = x;
+            //this.y = y;
             if ( renderer instanceof DigitalRenderer ) {
                 this.birthMilli= Long.MAX_VALUE; // TODO: kludge because we don't want timeouts to remove these messages.
             } else {
