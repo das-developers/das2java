@@ -22,7 +22,7 @@ import java.text.*;
  */
 public class FrequencyDragRenderer extends LabelDragRenderer implements DragRenderer, KeyListener {
         
-    DasCanvasComponent parent;
+    DasCanvasComponent lparent;
     
     DasAxis axis;
     int ncycles;
@@ -34,13 +34,14 @@ public class FrequencyDragRenderer extends LabelDragRenderer implements DragRend
     /** Creates a new instance of HorizontalFrequencyDragRenderer */
     public FrequencyDragRenderer( DasCanvasComponent parent, DasAxis axis ) {
         super( parent );
-        this.parent= parent;
+        this.lparent= parent;
         parent.addKeyListener(this);
         this.axis= axis;
         this.dirtyBounds= new Rectangle();
         ncycles=1;
     }
     
+    @Override
     public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
         
         Rectangle myDirtyBounds= new Rectangle();
@@ -138,25 +139,27 @@ public class FrequencyDragRenderer extends LabelDragRenderer implements DragRend
         }
     }
     
+    @Override
     public boolean isPointSelection() {
         return false;
     }
     
+    @Override
     public void clear(java.awt.Graphics g) {
-        parent.paintImmediately(dirtyBounds);
+        lparent.paintImmediately(dirtyBounds);
     }
     
+    @Override
     public boolean isUpdatingDragSelection() {
         return false;
     }
     
+    @Override
     public MouseDragEvent getMouseDragEvent(Object source, java.awt.Point p1, java.awt.Point p2, boolean isModified) {
         return null;
     }
     
     public void keyPressed(KeyEvent e) {
-        int keyCode= e.getKeyCode();
-        System.out.println(e);
         if ( e.getKeyChar()=='1' ) {
             ncycles= 1;
         } else if ( e.getKeyChar()=='2' ) {
