@@ -169,7 +169,11 @@ public class TickVDescriptor {
      * return a set of linear ticks, within the given constraints.
      */
     public static TickVDescriptor bestTickVLinear(Datum min, Datum max, int nTicksMin, int nTicksMax, boolean fin) {
-
+        
+        if ( min.ge(max) ) {
+            throw new IllegalArgumentException("min ge max");
+        }
+        
         TickVDescriptor res = new TickVDescriptor();
 
         res.units = min.getUnits();
