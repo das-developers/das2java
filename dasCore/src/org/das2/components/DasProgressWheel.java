@@ -48,11 +48,9 @@ public class DasProgressWheel extends AbstractProgressMonitor {
             logger.log(Level.FINEST, "painting {0}", txt);
 
             Color c= Color.BLUE;
-            //g2.setColor(new Color(0xdcFFFFFF, true));
             g2.setColor(c);
             g2.getClip();
 
-            int h= SIZE;
             int r= SIZE/2;
 
             if (  System.currentTimeMillis()-t0 < HIDE_MS ) {
@@ -62,20 +60,13 @@ public class DasProgressWheel extends AbstractProgressMonitor {
             double a= ( System.currentTimeMillis()-t0 )/5000. * 2 * Math.PI;
             double da= 30*Math.PI/180;
             
-            Rectangle rect = g2.getClipBounds();
             GeneralPath gp= new GeneralPath();
             gp.moveTo( (float)(r-r*Math.cos(a+da)), (float)(r-r*Math.sin(a+da)) );
             gp.lineTo( (float)(r+r*Math.cos(a+da)), (float)(r+r*(Math.sin(a+da))) );
             gp.lineTo( (float)(r+r*Math.cos(a-da)), (float)(r+r*(Math.sin(a-da))) );
             gp.lineTo( (float)(r-r*Math.cos(a-da)), (float)(r-r*Math.sin(a-da)) );
             gp.lineTo( (float)(r-r*Math.cos(a+da)), (float)(r-r*Math.sin(a+da)) );
-            if (rect == null) {
-                g2.fill( gp );
-            } else {
-                g2.fill( gp );
-            }
-            //g2.setColor( Color.GRAY );
-            //g2.draw( new Rectangle(0,0,size-1,size-1) );
+            g2.fill( gp );
             this.setToolTipText( "<html>" + txt + "<br><b>" + DasProgressWheel.this.getLabel() + "</b><br>" + DasProgressWheel.this.getProgressMessage() );
             super.paintComponent(g1);
 
@@ -91,6 +82,7 @@ public class DasProgressWheel extends AbstractProgressMonitor {
             thePanel.setLocation( x, y );
         }
         timer= new Timer( 100, new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 c++;
                 thePanel.repaint();
@@ -107,6 +99,7 @@ public class DasProgressWheel extends AbstractProgressMonitor {
         super.finished();
         timer.stop();
         Runnable run= new Runnable() {
+            @Override
             public void run() {
                 thePanel.setVisible(false);
                 theParent.remove(thePanel);
