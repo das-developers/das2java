@@ -77,23 +77,13 @@ public class HorizontalFrequencyDragRenderer implements DragRenderer, KeyListene
         int x2 = p2.x;
         int x1= p1.x;
         if (x2<x1) { int t=x2; x2= x1; x1= t; }
-        int width= x2-x1;
         int y = p2.y;
         
         Color color0= g.getColor();
         g.setColor(new Color(255,255,255,128));
-        //g.setColor(Color.WHITE);
-        g.setStroke(new BasicStroke( 3.0f,
-        BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
+        g.setStroke(new BasicStroke( 3.0f,BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ));
         
         internalRender(g, dirtyBounds, x1, x2, y);
-        
-        /*
-        if ( width > 6 )
-            g.drawLine(x1+3, y, x2-3, y);
-        g.drawLine(x1, y+2, x1, y-2 ); //serifs
-        g.drawLine(x2, y+2, x2, y-2 );
-         */
         
         g.setStroke(new BasicStroke());
         g.setColor(color0);
