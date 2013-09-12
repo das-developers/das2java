@@ -23,7 +23,7 @@ public class GridDataSet extends AbstractDataSet {
     int ix;
     int iy;
 
-    final double fill= -1e31;
+    private static final double fill= -1e31;
 
     public GridDataSet() {
         xtags = new TreeMap<Integer, Double>();
