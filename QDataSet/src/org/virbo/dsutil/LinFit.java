@@ -10,13 +10,13 @@ import org.virbo.dataset.QDataSet;
  * Simple linear regression. Fitting line y = a + bx
  * 
  * Modified to use QDataSet, Jeremy Faden
- * Singelton class
+ * Singleton class
  */
 public class LinFit {
 
-    private final int ITMAX = 100;
-    private final double EPS = 3.0e-7;
-    private final double FPMIN = 1.0e-30;
+    private static final int ITMAX = 100;
+    private static final double EPS = 3.0e-7;
+    private static final double FPMIN = 1.0e-30;
     private double a,  b,  siga,  sigb,  chi2,  q;
     private QDataSet x,  y,  sig;
     private int nData;
