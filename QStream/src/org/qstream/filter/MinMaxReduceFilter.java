@@ -203,7 +203,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
         }
     }
 
-    final char CHAR_NEWLINE= '\n';
+    private static final char CHAR_NEWLINE= '\n';
 
     /**
      * remove this id from the packet accumulators, because this ID is about to be recycled.
