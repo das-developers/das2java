@@ -32,7 +32,7 @@ public class CombinedTreeModel implements TreeModel {
     private WeakHashMap<Object,TreeModel> sourceMap;
     List listeners;    // generally, the model should only be modified on the event thread.
     // this is useful for debugging.
-    final private boolean checkEvent = false;
+    private static final boolean checkEvent = false;
 
     public CombinedTreeModel(Object root) {
         this.root = root;
@@ -166,7 +166,7 @@ public class CombinedTreeModel implements TreeModel {
 
     public boolean isLeaf(Object node) {
         if (node == root) {
-            return treeModels.size() == 0;
+            return treeModels.isEmpty();
         } else {
             TreeModel mt = (TreeModel) sourceMap.get(node);
             if ( mt==null ) {
