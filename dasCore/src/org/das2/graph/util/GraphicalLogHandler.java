@@ -87,9 +87,9 @@ public class GraphicalLogHandler extends Handler {
     HashMap<String,Integer> yaxisMapClass=  new HashMap();
     HashMap<String,Integer> yaxisMapLogger=  new HashMap();
     
-    private final int YAXIS_THREAD = -199;
-    private final int YAXIS_CLASS = -198;
-    private final int YAXIS_LOGNAME = -197;
+    private static final int YAXIS_THREAD = -199;
+    private static final int YAXIS_CLASS = -198;
+    private static final int YAXIS_LOGNAME = -197;
     private int yaxisDimension = YAXIS_LOGNAME;
     
     DasAxis xaxis;
