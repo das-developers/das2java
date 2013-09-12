@@ -99,12 +99,12 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
             boolean skipit= false;
 
             // figure out units.
-            Units xunits= null;
             expr=  xpath.compile("/packet/qdataset[1]/properties/property[@name='UNITS']/@value");
             xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
             String sunits= xp==null ? null : xp.getNodeValue();
             if ( sunits!=null ) {
                 try {
+                    Units xunits;
                     xunits= SemanticOps.lookupTimeUnits(sunits);
                     double secmult= Units.seconds.getConverter( xunits.getOffsetUnits() ).convert(1);
                     length= secmult * lengthSeconds;
