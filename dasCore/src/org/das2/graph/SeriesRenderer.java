@@ -59,6 +59,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.dataset.VectorUtil;
@@ -142,6 +144,26 @@ public class SeriesRenderer extends Renderer {
         boolean acceptContext(Point2D.Double dp);
     }
 
+    @Override
+    public void setControl(String s) {
+        super.setControl(s);
+        setColor( getColorControl( CONTROL_KEY_COLOR, color ) );
+        setFillColor( getColorControl( CONTROL_KEY_FILL_COLOR, fillColor ));
+        setLineWidth( getDoubleControl( CONTROL_KEY_LINE_THICK, lineWidth ) );
+        setSymSize( getDoubleControl( CONTROL_KEY_SYMBOL_SIZE, symSize ) );
+    }
+
+    @Override
+    public String getControl() {
+        Map<String,String> controls= new LinkedHashMap();
+        controls.put( CONTROL_KEY_COLOR, setColorControl(color) );
+        controls.put( CONTROL_KEY_FILL_COLOR, setColorControl(fillColor) );
+        controls.put( CONTROL_KEY_LINE_THICK, String.valueOf(lineWidth) );
+        controls.put( CONTROL_KEY_SYMBOL_SIZE, String.valueOf( symSize ) );
+        return formatControl(controls);
+    }
+    
+    
     private QDataSet ytagsDataSet( QDataSet ds ) {
         QDataSet vds;
         if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
