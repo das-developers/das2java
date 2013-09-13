@@ -462,23 +462,46 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     
     public double getDoubleControl( String key, double deft ) {
         String v= controls.get(key);
-        if ( v!=null ) return Double.parseDouble(v); else return deft;
+        if ( v!=null ) {
+            try {
+                return Double.parseDouble(v);
+            } catch ( NumberFormatException ex ) {
+                logger.log( Level.WARNING, "Unable to parse as double: {0}", key);
+                return deft;
+            }
+        } else {
+            return deft;
+        }
     }
 
     public int getIntegerControl( String key, int deft ) {
         String v= controls.get(key);
-        if ( v!=null ) return Integer.parseInt(v); else return deft;
+        if ( v!=null ) {
+            try {
+                return Integer.parseInt(v);
+            } catch ( NumberFormatException ex ) {
+                logger.log( Level.WARNING, "Unable to parse as int: {0}", key);
+                return deft;
+            }
+        } else {
+            return deft;
+        }
     }
 
     public double[] getDoubleArrayControl( String key, double[] deft ) {
         String v= controls.get(key);
         if ( v!=null ) {
-            String[] ss= v.split(",");
-            double[] result= new double[ss.length];
-            for ( int i=0; i<ss.length; i++ ) {
-                result[i]= Double.parseDouble(ss[i]);
+            try {
+                String[] ss= v.split(",");
+                double[] result= new double[ss.length];
+                for ( int i=0; i<ss.length; i++ ) {
+                    result[i]= Double.parseDouble(ss[i]);
+                }
+                return result;
+            } catch ( NumberFormatException ex ) {
+                logger.log( Level.WARNING, "Unable to parse as double array: {0}", key);
+                return deft;
             }
-            return result;
         } else {
             return deft;
         }
@@ -490,7 +513,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             try {
                 return deft.getUnits().parse(key);
             } catch ( ParseException ex ) {
-                throw new IllegalArgumentException("unable to parse: "+key );
+                logger.log( Level.WARNING, "Unable to parse as datum: {0}", key);
+                return deft;
             }
         } else {
             return deft;
@@ -503,7 +527,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             try { 
                 return ColorUtil.decodeColor(v);
             } catch ( NumberFormatException ex ) {
-                throw new IllegalArgumentException(ex);
+                logger.log( Level.WARNING, "Unable to parse as color: {0}", key);
+                return deft;
             }
         } else {
             return deft;
