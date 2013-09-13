@@ -65,14 +65,8 @@ public class DasSelectionEvent extends EventObject
     protected Point mark;
     protected boolean isShiftDown;
     protected boolean clearSelection;
-    protected DasSelectionEvent.Type selectionType;
+    protected transient DasSelectionEvent.Type selectionType;
 
-    private Point selectionEnd;    
-    
-    private DasSelectionEvent.Type selectionMode = DasSelectionEvent.Type.POINT_SELECTION;
-    
-    private Point selectionStart;
-    
     /** Creates a new instance of DasSelectionEvent
      *
      * @param source The source of the event.
