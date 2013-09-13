@@ -40,9 +40,6 @@ import org.das2.dataset.DataSetRebinner;
 import org.das2.dataset.TableDataSetConsumer;
 import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.RebinDescriptor;
-import org.das2.dataset.TableDataSet;
-import org.das2.dataset.DataSetUtil;
-import org.das2.datum.LocationUnits;
 import org.das2.datum.DatumRange;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.DasException;
@@ -50,7 +47,6 @@ import org.das2.components.HorizontalSpectrogramSlicer;
 import org.das2.components.VerticalSpectrogramSlicer;
 import org.das2.event.HorizontalSlicerMouseModule;
 import org.das2.event.VerticalSlicerMouseModule;
-import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.components.propertyeditor.Enumeration;
 import java.awt.image.BufferedImage;
@@ -137,6 +133,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }
     
     
+    @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
         Graphics2D g2= (Graphics2D)g.create();
@@ -197,6 +194,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         throw new IllegalStateException("not supported");
     }
     
+    @Override
     public void propertyChange(java.beans.PropertyChangeEvent e) {
         // this code was intended to make it so the zaxis component would move up and down with the labelAxis.
       /*  DasLabelAxis axis= (DasLabelAxis)getYAxis();
@@ -230,7 +228,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     
     
     @Override
-    synchronized public void updatePlotImage( DasAxis xAxis, DasAxis yAxis_1, ProgressMonitor monitor ) throws DasException {
+    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis_1, ProgressMonitor monitor ) throws DasException {
         super.updatePlotImage( xAxis, yAxis_1, monitor );
         final Color BAR_COLOR= Color.BLACK;
         
@@ -282,11 +280,17 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         DataSetRebinner rebinner = new Rebinner();
         
-        QDataSet data= (QDataSet)rebinner.rebin(xtysData, xbins, null);
+        QDataSet data=  rebinner.rebin(xtysData, xbins, null);
         QDataSet peaks= SemanticOps.getPlanarView(data,"peaks");
         QDataSet weights= SemanticOps.weightsDataSet(data);
         
-        DasLabelAxis yAxis1= (DasLabelAxis)yAxis_1;
+        DasLabelAxis yAxis1;
+        if ( !( yAxis_1 instanceof DasLabelAxis ) ) {
+            logger.warning("yaxis must be a DasLabelAxis");
+            return;
+        } else {
+            yAxis1= (DasLabelAxis)yAxis_1;
+        }
         
         int zmid= zAxis.getRow().getDMiddle();
         boolean haveLittleRow= false;
@@ -313,7 +317,6 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             g.setColor(BAR_COLOR);
             
             int yBase1= yAxis1.getItemMin(yunits.createDatum(yds.value(j)));
-            double canvasHeight= parent1.getHeight();
             
             if ( !haveLittleRow && yBase1 <= zmid  ) {
                 littleRow.setDPosition(yBase1,yBase);
@@ -374,6 +377,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
     }
     
+    @Override
     public DasAxis getZAxis() {
         return zAxis;
     }
@@ -382,7 +386,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         getZAxis().setLabel(title);
     }
     
-    public class Rebinner implements DataSetRebinner {
+    public static class Rebinner implements DataSetRebinner {
         //DataSetRebinner highResRebinner;
         //DataSetRebinner lowResRebinner;
         Rebinner() {
@@ -392,6 +396,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             //Plasma Wave Group will have to update this
         }
         
+        @Override
         public QDataSet rebin(QDataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException {
             //QDataSet xds= SemanticOps.xtagsDataSet(ds);
 
