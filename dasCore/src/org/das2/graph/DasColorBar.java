@@ -292,7 +292,7 @@ public class DasColorBar extends DasAxis {
             
             int ii= 0;
             for (int i = 0; i < ncolor-1; i++) {
-                float comp= ( i - bottom ) * 255 / ( top - bottom );
+                int comp= ( i - bottom ) * 255 / ( top - bottom );
                 if ( comp > index[ii + 1]) {
                     ii++;
                 }
@@ -436,10 +436,7 @@ public class DasColorBar extends DasAxis {
         int STATE_IGNORE=300;
         int STATE_TOP=200;
         int STATE_BOTTOM=100;
-        
-        /** Utility field used by event firing mechanism. */
-        private EventListenerList listenerList =  null;
-        
+                
         public String getLabel() { return "Repalette"; };
         
         public ColorBarRepaletteMouseModule( Renderer parent, DasColorBar colorBar ) {
