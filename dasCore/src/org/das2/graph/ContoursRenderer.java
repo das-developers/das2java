@@ -114,7 +114,7 @@ public class ContoursRenderer extends Renderer {
         }
 
         QDataSet tds = (QDataSet) getDataSet();
-
+        
         if (tds == null) {
             lparent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             return;
@@ -124,6 +124,10 @@ public class ContoursRenderer extends Renderer {
             return;
         }
 
+        if ( vds==null ) {
+            return;
+        }
+        
         if (paths == null) {
             return;
         }
@@ -156,7 +160,8 @@ public class ContoursRenderer extends Renderer {
         this.drawLabels= getBooleanControl( "labels", drawLabels );
         this.lineThick= getDoubleControl( PROP_LINETHICK, lineThick );
         this.labelCadence= getDoubleControl( "labelCadence", labelCadence );
-        this.color= ColorUtil.decodeColor( getControl( "color",  ColorUtil.encodeColor( color ) ) );
+        this.color= getColorControl( "color",  color );
+        updateContours();
     }
     
     @Override
@@ -170,7 +175,35 @@ public class ContoursRenderer extends Renderer {
         return Renderer.formatControl(controls);
     }
 
+    @Override
+    public void setDataSet(QDataSet ds) {
+        super.setDataSet(ds); //To change body of generated methods, choose Tools | Templates.
+        updateContours();
+    }
 
+    QDataSet vds; // the contours
+    
+    private void updateContours() {
+        QDataSet tds= (QDataSet) getDataSet();
+        if ( tds==null ) {
+            vds= null;
+            return;
+        }
+        Units units = SemanticOps.getUnits(tds);
+
+        String[] cons = this.contours.trim().split(",");
+        double[] dcons = new double[cons.length];
+        for (int i = 0; i < cons.length; i++) {
+            if (cons[i].trim().equals("")) {
+                continue;
+            }
+            double c = Double.parseDouble(cons[i]);
+            dcons[i] = c;
+        }
+        DatumVector dv = DatumVector.newDatumVector(dcons, units );        
+        vds= Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
+    }
+    
     /**
      * returns clip, in the canvas reference frame
      */
@@ -275,69 +308,15 @@ public class ContoursRenderer extends Renderer {
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         super.updatePlotImage(xAxis, yAxis, monitor);
 
-        QDataSet tds = (QDataSet) getDataSet();
-
-        if (tds == null) {
-            return;
-        }
-        if (tds.rank()!=2 ) {
-            return;
-        }
-
-        tds = new ClippedTableDataSet(tds, xAxis.getDatumRange(), yAxis.getDatumRange());
-        Units units = SemanticOps.getUnits(tds);
-
-        String[] cons = this.contours.trim().split(",");
-        double[] dcons = new double[cons.length];
-        for (int i = 0; i < cons.length; i++) {
-            if (cons[i].trim().equals("")) {
-                continue;
-            }
-            double c = Double.parseDouble(cons[i]);
-            dcons[i] = c;
-        }
-        DatumVector dv = DatumVector.newDatumVector(dcons, units );
-
-        final boolean rebin= false;
-        if (rebin) {
-            RebinDescriptor xRebinDescriptor;
-            xRebinDescriptor = new RebinDescriptor(
-                    xAxis.getDataMinimum(), xAxis.getDataMaximum(),
-                    xAxis.getWidth() / 2,
-                    xAxis.isLog());
-
-            RebinDescriptor yRebinDescriptor = new RebinDescriptor(
-                    yAxis.getDataMinimum(), yAxis.getDataMaximum(),
-                    yAxis.getHeight() / 2,
-                    yAxis.isLog());
-
-
-            Datum xTagWidth = DataSetUtil.asDatum( org.virbo.dataset.DataSetUtil.guessCadenceNew( SemanticOps.xtagsDataSet(tds), null ) );
-            Datum yTagWidth = DataSetUtil.asDatum( org.virbo.dataset.DataSetUtil.guessCadenceNew( SemanticOps.ytagsDataSet(tds), null ) );
-
-            if ( xTagWidth.gt(xRebinDescriptor.binWidthDatum())) {
-                xRebinDescriptor = null;
-            }
-            if ( yTagWidth.gt(yRebinDescriptor.binWidthDatum())) {
-                yRebinDescriptor = null;
-            }
-            AverageTableRebinner rebinner = new AverageTableRebinner();
-            rebinner.setInterpolate(false);
-
-            if (xRebinDescriptor != null || yRebinDescriptor != null) {
-                tds = rebinner.rebin(tds, xRebinDescriptor, yRebinDescriptor);
-            }
-        }
-
-        QDataSet vds;
-        vds= Contour.contour(tds, DDataSet.wrap(dv.toDoubleArray(units) ) );
-        //TODO: why do we contour each time???
-
-        paths = new GeneralPath[dv.getLength()];
+        Units units = SemanticOps.getUnits(getDataSet());
 
         double d0 = units.getFillDouble();
-        int ii = -1;
-
+        //int ii = -1;
+        
+        if ( vds==null ) {
+            return;
+        }
+        
         QDataSet xds = (QDataSet) DataSetOps.unbundle( vds, 0 );
         QDataSet yds = (QDataSet) DataSetOps.unbundle( vds, 1 );
         QDataSet zds=  (QDataSet) DataSetOps.unbundle( vds, 2 );
@@ -353,9 +332,9 @@ public class ContoursRenderer extends Renderer {
 
         int n0 = 0; // node counter.  Breaks are indicated by increment, so keep track of the last node.
 
-        double slen = 0.; // path length
+        //double slen = 0.; // path length
 
-        float fx0 = 0f, fy0 = 0f; // for calculating path length
+        //float fx0 = 0f, fy0 = 0f; // for calculating path length
 
         NumberFormat nf = new DecimalFormat("0.00");
 
@@ -367,7 +346,7 @@ public class ContoursRenderer extends Renderer {
             float fy = (float) yAxis.transform( yds.value(i), yunits );
 
             if (d != d0) {
-                ii++;
+                //ii++;
                 
                 if ( currentPath!=null && simplifyPaths ) {
                     GeneralPath newPath= new GeneralPath();
@@ -381,14 +360,14 @@ public class ContoursRenderer extends Renderer {
 
                 d0 = d;
                 currentPath.moveTo(fx, fy);
-                slen = 0.;
-                fx0 = fx;
-                fy0 = fy;
+                //slen = 0.;
+                //fx0 = fx;
+                //fy0 = fy;
             } else if (n != (n0 + 1)) {
                 currentPath.moveTo(fx, fy);
-                fx0 = fx;
-                fy0 = fy;
-                slen = 0.;
+                //fx0 = fx;
+                //fy0 = fy;
+                //slen = 0.;
             } else {
                 currentPath.lineTo(fx, fy);
             }
@@ -418,6 +397,7 @@ public class ContoursRenderer extends Renderer {
     public void setContours(String contours) {
         String oldContours = this.contours;
         this.contours = contours;
+        updateContours();
         update();
         propertyChangeSupport.firePropertyChange("contours", oldContours, contours);
     }
