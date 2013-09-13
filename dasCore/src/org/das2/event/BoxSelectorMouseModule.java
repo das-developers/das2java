@@ -220,11 +220,14 @@ public class BoxSelectorMouseModule extends MouseModule {
      *
      * @param event The event to be fired
      */
-    protected synchronized void fireBoxSelectionListenerBoxSelected(BoxSelectionEvent event) {
-        if (listenerList == null) {
-            return;
+    protected void fireBoxSelectionListenerBoxSelected(BoxSelectionEvent event) {
+        Object[] listeners;
+        synchronized (this ) {
+            if (listenerList == null) {
+                return;
+            }
+            listeners = listenerList.getListenerList();
         }
-        Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == org.das2.event.BoxSelectionListener.class) {
                 ((org.das2.event.BoxSelectionListener) listeners[i + 1]).BoxSelected(event);
