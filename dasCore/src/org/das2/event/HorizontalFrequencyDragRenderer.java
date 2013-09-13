@@ -140,8 +140,6 @@ public class HorizontalFrequencyDragRenderer implements DragRenderer, KeyListene
     }
     
     public void keyPressed(KeyEvent e) {
-        int keyCode= e.getKeyCode();
-        System.out.println(e);
         if ( e.getKeyChar()=='1' ) {
             ncycles= 1;
         } else if ( e.getKeyChar()=='2' ) {
