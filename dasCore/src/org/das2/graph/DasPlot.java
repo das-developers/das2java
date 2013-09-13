@@ -92,7 +92,7 @@ public class DasPlot extends DasCanvasComponent {
     protected double[] psym_y;
     protected RebinListener rebinListener = new RebinListener();
     protected transient PropertyChangeListener ticksListener = new PropertyChangeListener() {
-
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (drawGrid || drawMinorGrid) {
                 invalidateCacheImage();
@@ -458,6 +458,7 @@ public class DasPlot extends DasCanvasComponent {
 
         if ( needRepaintSoon ) {
             ActionListener animate = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent ae) {
                     repaint();
                 }
@@ -589,7 +590,7 @@ public class DasPlot extends DasCanvasComponent {
 
     private Action getEditAction() {
         return new AbstractAction("Renderer Properties") {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Point p = getDasMouseInputAdapter().getMousePressPosition();
                 int i = findRendererAt(p.x + getX(), p.y + getY());
@@ -641,7 +642,7 @@ public class DasPlot extends DasCanvasComponent {
     }
     
     public Action DUMP_TO_FILE_ACTION = new AbstractAction("Dump Data Set to File") {
-
+        @Override
         public void actionPerformed(ActionEvent e) {
             List<Renderer> renderers1= Arrays.asList(getRenderers());
             if (renderers1.isEmpty()) {
@@ -1327,6 +1328,7 @@ public class DasPlot extends DasCanvasComponent {
             if ( !bounds.equals(oldBounds) ) {
                 setBounds(bounds);
                 SwingUtilities.invokeLater( new Runnable() {
+                   @Override
                    public void run() {
                         List<Renderer> renderers1= Arrays.asList(getRenderers());
                         for ( int i=0; i<renderers1.size(); i++ ) {
@@ -1451,7 +1453,7 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     protected class RebinListener implements java.beans.PropertyChangeListener {
-
+        @Override
         public void propertyChange(java.beans.PropertyChangeEvent e) {
             logger.log(Level.FINE, "rebin listener got property change: {0}", e.getNewValue());
             //System.err.println("rebin listener " + DasPlot.this + "got property change: "+e.getPropertyName() + "=" + e.getNewValue());
@@ -1609,6 +1611,7 @@ public class DasPlot extends DasCanvasComponent {
         public void drop(DropTargetDropEvent dtde) {
         }
 
+        @Override
         protected int canAccept(DataFlavor[] flavors, int x, int y, int action) {
             for (int i = 0; i < flavors.length; i++) {
                 if (flavors[i].equals(TransferableRenderer.RENDERER_FLAVOR)) {
@@ -1618,9 +1621,11 @@ public class DasPlot extends DasCanvasComponent {
             return -1;
         }
 
+        @Override
         protected void done() {
         }
 
+        @Override
         protected boolean importData(Transferable t, int x, int y, int action) {
             boolean success = false;
             try {
@@ -1634,10 +1639,12 @@ public class DasPlot extends DasCanvasComponent {
             return success;
         }
 
+        @Override
         protected Transferable getTransferable(int x, int y, int action) {
             return null;
         }
 
+        @Override
         protected void exportDone(Transferable t, int action) {
         }
     }
