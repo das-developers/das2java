@@ -194,7 +194,7 @@ public class DigitalRenderer extends Renderer {
      * might be visible while limiting the number of plotted points.
      * //TODO: bug 0000354: warning message bubble about all data before or after visible range
      */
-    private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet) {
+    private void updateFirstLast(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet) {
 
         Units xUnits = xAxis.getUnits();
     
@@ -217,14 +217,13 @@ public class DigitalRenderer extends Renderer {
         }
         QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
 
-        Boolean xMono = SemanticOps.isMonotonic(xds);
-
+        boolean xMono = SemanticOps.isMonotonic(xds);
 
         if ( SemanticOps.isBins(dataSet) ) {
             ixmin = 0;
             ixmax = dataSet.length();
             
-        } else if ( xMono != null && xMono.booleanValue()) {
+        } else if ( xMono ) {
             DatumRange visibleRange = xAxis.getDatumRange();
             if (parent.isOverSize()) {
                 Rectangle plotBounds = parent.getUpdateImageBounds();
@@ -406,8 +405,6 @@ public class DigitalRenderer extends Renderer {
             form= "%.2f";
         }
 
-        int count = 0;
-        
         if ( ! xunits.isConvertableTo(xAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
             return;
@@ -493,8 +490,8 @@ public class DigitalRenderer extends Renderer {
             ds1= ds;
         }
 
-        QDataSet xds= SemanticOps.xtagsDataSet(ds1);
-        QDataSet yds= SemanticOps.ytagsDataSet(ds1);
+        QDataSet xds;
+        QDataSet yds;
         QDataSet fds= DataSetOps.flattenRank2(ds1);
         QDataSet zds;
         Units u = SemanticOps.getUnits(ds1);
