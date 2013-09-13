@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * single place to contain Color-Name mapping.
+ * single place to contain Color-Name mapping.  See https://sourceforge.net/p/autoplot/feature-requests/263/
  * @author jbf
  */
 public class ColorUtil {
@@ -52,6 +52,12 @@ public class ColorUtil {
         revNamedColors.put("orange",Color.ORANGE );
     }
     
+    /**
+     * return either a named color or 
+     * "#" + Integer.toHexString(color.getRGB() & 0xFFFFFF)
+     * @param color
+     * @return named color or hex string like "#FF0000" for Red.
+     */
     public static String encodeColor( Color color ) {
         String s= namedColors.get(color);
         if ( s!=null ) {
@@ -61,7 +67,14 @@ public class ColorUtil {
         }
     }
     
-    public static Color decodeColor( String s ) {
+    /**
+     * decode the color, throwing a RuntimeException when the color 
+     * is not parsable. Valid entries include:
+     *   "red" "RED" "0xFF0000" "0xff0000"
+     * @param s
+     * @return 
+     */
+    public static Color decodeColor( String s ) throws NullPointerException {
         s= s.toLowerCase();
         Color r= revNamedColors.get(s);
         if ( r!=null ) {
