@@ -1124,7 +1124,10 @@ public class DasPlot extends DasCanvasComponent {
         return this.editRendererMenuItem!=null;
     }
 
-    private class MessageDescriptor {
+    /**
+     * messages displayed for user, typically on the upper left of the plot.
+     */
+    private static class MessageDescriptor {
 
         /**
          * the renderer posting the text, or null if the plot owns the text
@@ -1160,7 +1163,10 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
-    private class LegendElement {
+    /**
+     * elements to indicate in the legend, typically on the upper right of the plot.
+     */
+    private static class LegendElement {
 
         ImageIcon icon;
         Renderer renderer;
