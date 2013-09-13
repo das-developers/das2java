@@ -29,7 +29,6 @@ import java.util.HashMap;
  */
 public class DataPointSelectorMouseModule extends MouseModule {
     DasAxis xaxis, yaxis;
-    DataSetConsumer dataSetConsumer;
     javax.swing.event.EventListenerList listenerList =  null;
     MousePointSelectionEvent lastMousePoint;
     
@@ -39,7 +38,6 @@ public class DataPointSelectorMouseModule extends MouseModule {
         super( parent, dragRenderer, label );
         this.xaxis= parent.getXAxis();
         this.yaxis= parent.getYAxis();
-        this.dataSetConsumer= consumer;
     }
     
     private DataPointSelectionEvent getDataPointSelectionEvent(MousePointSelectionEvent e) {
@@ -119,8 +117,11 @@ public class DataPointSelectorMouseModule extends MouseModule {
      * @param event The event to be fired
      */
     protected void fireDataPointSelectionListenerDataPointSelected(DataPointSelectionEvent event) {
-        if (listenerList == null) return;
-        Object[] listeners = listenerList.getListenerList();
+        Object[] listeners;
+        synchronized (this) {
+            if (listenerList == null) return;
+            listeners = listenerList.getListenerList();
+        }
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==org.das2.event.DataPointSelectionListener.class) {
                 ((org.das2.event.DataPointSelectionListener)listeners[i+1]).dataPointSelected(event);
