@@ -43,6 +43,8 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.JoinDataSet;
+import org.virbo.dsops.Ops;
 
 /**
  * Renderer for making contour plots
@@ -56,6 +58,48 @@ public class ContoursRenderer extends Renderer {
     GeneralPath[] paths;
     String[] pathLabels;
 
+    /**
+     * autorange on the data, returning a rank 2 bounds for the dataset.
+     *
+     * @param fillDs
+     * @return
+     */
+    public static QDataSet doAutorange( QDataSet ds ) {
+
+        QDataSet xds;
+        QDataSet yds;
+
+        if ( ds.rank()!=2 ) {
+            throw new IllegalArgumentException("ds rank must be 2");
+        }
+        
+        xds= SemanticOps.xtagsDataSet(ds);
+        yds= SemanticOps.ytagsDataSet(ds);
+
+        QDataSet xrange= doRange( xds );
+        QDataSet yrange= doRange( yds );
+
+        JoinDataSet bds= new JoinDataSet(2);
+        bds.join(xrange);
+        bds.join(yrange);
+
+        return bds;
+
+    }
+
+    private static QDataSet doRange( QDataSet xds ) {
+        QDataSet xrange= Ops.extent(xds);
+        if ( xrange.value(1)==xrange.value(0) ) {
+            if ( !"log".equals( xrange.property(QDataSet.SCALE_TYPE)) ) {
+                xrange= DDataSet.wrap( new double[] { xrange.value(0)-1, xrange.value(1)+1 } ).setUnits( SemanticOps.getUnits(xrange) );
+            } else {
+                xrange= DDataSet.wrap( new double[] { xrange.value(0)/10, xrange.value(1)*10 } ).setUnits( SemanticOps.getUnits(xrange) );
+            }
+        }
+        xrange= Ops.rescaleRangeLogLin(xrange, -0.1, 1.1 );
+        return xrange;
+    }    
+    
     @Override
     public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
