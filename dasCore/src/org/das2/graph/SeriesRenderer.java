@@ -54,8 +54,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -94,8 +92,8 @@ public class SeriesRenderer extends Renderer {
     private boolean histogram = false;
     private PsymConnector psymConnector = PsymConnector.SOLID;
     private FillStyle fillStyle = FillStyle.STYLE_FILL;
-    private int renderCount = 0;
-    private int updateImageCount = 0;
+    //private int renderCount = 0;
+    //private int updateImageCount = 0;
     private Color color = Color.BLACK;
     private long lastUpdateMillis;
     private boolean antiAliased = "on".equals(DasProperties.getInstance().get("antiAlias"));
@@ -1184,8 +1182,8 @@ public class SeriesRenderer extends Renderer {
         //    }
         //}
 
-        renderCount++;
-        reportCount();
+        //renderCount++;
+        //reportCount();
 
         long timer0 = System.currentTimeMillis();
 
@@ -1389,9 +1387,9 @@ public class SeriesRenderer extends Renderer {
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
         logger.log(Level.FINE, "enter {0}.updatePlotImage: {1}", new Object[]{id, String.valueOf(getDataSet()) });
 
-        updateImageCount++;
+        //updateImageCount++;
 
-        reportCount();
+        //reportCount();
 
         try {
             super.updatePlotImage(xAxis, yAxis, monitor);
@@ -1974,8 +1972,8 @@ public class SeriesRenderer extends Renderer {
      */
     public void setResetDebugCounters(boolean resetDebugCounters) {
         if (resetDebugCounters) {
-            renderCount = 0;
-            updateImageCount = 0;
+            //renderCount = 0;
+            //updateImageCount = 0;
             update();
         }
 
