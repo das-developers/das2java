@@ -113,7 +113,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     Rectangle dirtyBounds = null;
     private boolean hasFocus = false;
     private Point pressPosition;  // in the component frame
-    private boolean headless;
+    private final boolean headless;
 
     private static final class MouseMode {
 
@@ -192,7 +192,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     public synchronized void removeMouseModule(MouseModule module) {
         JCheckBoxMenuItem j;
         j= (JCheckBoxMenuItem) primaryActionButtonMap.remove(module);
-        this.headless = DasApplication.getDefaultApplication().isHeadless();
         if ( !headless ) primaryPopup.remove(j);
         numInserted--;
         j= (JCheckBoxMenuItem) secondaryActionButtonMap.remove(module);
