@@ -29,7 +29,7 @@ package org.das2.event;
  */
 public class MouseDragEvent extends DasMouseEvent {
     
-    Gesture gesture;
+    transient Gesture gesture;
     
     public MouseDragEvent(Object source) {
         super(source);
