@@ -26,8 +26,8 @@ import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import org.das2.datum.Units;
 import org.das2.util.GrannyTextRenderer;
@@ -163,6 +163,7 @@ public class EventsRenderer extends Renderer {
     }
     
     public static final TextSpecifier DEFAULT_TEXT_SPECIFIER= new TextSpecifier() {
+        @Override
         public String getText( DatumRange dr, Datum d ) {
             Datum sy= DatumUtil.asOrderOneUnits( dr.width() );
             if ( dr.width().value()== 0 ) {
@@ -259,7 +260,6 @@ public class EventsRenderer extends Renderer {
 
                 if ( ii.size()>=0 ) {
                     StringBuilder sb= new StringBuilder();
-                    int n= Math.min( ii.size(), 4 );
                     for ( int iii=0; iii<ii.size(); iii++ ) {
                         int i= ii.get(iii);
                         double sxmin= xmins.value(i);
@@ -277,7 +277,7 @@ public class EventsRenderer extends Renderer {
                         if ( sxmax<sxmin ) {
                             sb.append( "Error, sxmax<sxmin!c");
                         } else {
-                            String ss= "";
+                            String ss;
                             DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
                             try {
                                 Datum sz= zunits.createDatum( msgs.value(i) );
@@ -478,15 +478,16 @@ public class EventsRenderer extends Renderer {
             xmaxs= Ops.add( xmins, xmaxs );
         }
 
-        QDataSet ds= Ops.bundle( Ops.bundle( Ops.bundle( xmins, xmaxs ), colors ), msgs );
+        QDataSet lds= Ops.bundle( Ops.bundle( Ops.bundle( xmins, xmaxs ), colors ), msgs );
 
-        ds= coalesce(ds);
+        lds= coalesce(lds);
         
-        return ds;
+        return lds;
 
     }
 
 
+    @Override
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         GeneralPath sa= new GeneralPath();
@@ -540,14 +541,12 @@ public class EventsRenderer extends Renderer {
                         double s= f.getSize2D() * size[0]/100 + f.getSize2D() * size[1] + size[2];
                         f= f.deriveFont((float)s);
                     } catch ( ParseException ex ) {
-                        ex.printStackTrace();
+                        logger.log( Level.WARNING, null, ex );
                     }
                 }
                 g1.setFont(f);
 
                 GrannyTextRenderer gtr= new GrannyTextRenderer();
-
-                int ixmax0= -999;
 
                 int gymax= ( (int) msgs.value( Ops.imax(msgs) ) );
                 int gymin= ( (int) msgs.value( Ops.imin(msgs) ) );
