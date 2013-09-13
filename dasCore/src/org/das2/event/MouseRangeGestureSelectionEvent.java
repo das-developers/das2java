@@ -29,7 +29,7 @@ package org.das2.event;
  */
 public class MouseRangeGestureSelectionEvent extends MouseRangeSelectionEvent {
     
-    private Gesture gesture;
+    private transient Gesture gesture;
     
     /** Creates a new instance of MouseRangeGestureSelectionEvent */
     public MouseRangeGestureSelectionEvent(Object source, int min, int max, Gesture g) {
