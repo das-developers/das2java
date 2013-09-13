@@ -33,6 +33,8 @@ import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.datum.Datum;
@@ -54,6 +56,7 @@ public class ContoursRenderer extends Renderer {
     GeneralPath[] paths;
     String[] pathLabels;
 
+    @Override
     public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         DasPlot lparent= getParent();
@@ -107,6 +110,18 @@ public class ContoursRenderer extends Renderer {
         this.drawLabels= getBooleanControl( "labels", drawLabels );
         this.lineThick= getDoubleControl( PROP_LINETHICK, lineThick );
         this.labelCadence= getDoubleControl( "labelCadence", labelCadence );
+        this.color= ColorUtil.decodeColor( getControl( "color",  ColorUtil.encodeColor( color ) ) );
+    }
+    
+    @Override
+    public String getControl() {
+        Map<String,String> controls= new LinkedHashMap();
+        controls.put( "levels", contours );
+        controls.put( "labels", setBooleanControl( drawLabels ) );
+        controls.put( PROP_LINETHICK, String.valueOf(lineThick) );
+        controls.put( "labelCadence", String.valueOf(labelCadence) );
+        controls.put( CONTROL_KEY_COLOR, setColorControl( color ) );
+        return Renderer.formatControl(controls);
     }
 
 
