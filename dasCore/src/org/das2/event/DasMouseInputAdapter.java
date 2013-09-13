@@ -189,7 +189,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         modules.addElement(newModule);
     }
     
-    public void removeMouseModule(MouseModule module) {
+    public synchronized void removeMouseModule(MouseModule module) {
         JCheckBoxMenuItem j;
         j= (JCheckBoxMenuItem) primaryActionButtonMap.remove(module);
         this.headless = DasApplication.getDefaultApplication().isHeadless();
@@ -206,7 +206,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * add a mouse module to the list of available modules.  If a module with the same
      * label exists already, it will be replaced.
      */
-    public void addMouseModule(MouseModule module) {
+    public synchronized void addMouseModule(MouseModule module) {
 
         if (headless) {
             DasLogger.getLogger(DasLogger.GUI_LOG).fine("not adding module since headless is true");
