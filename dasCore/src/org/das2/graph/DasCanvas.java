@@ -384,9 +384,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     private String dasName;
     private JPopupMenu popup;
     private boolean editable;
-    private int printing = 0;
+    
     List devicePositionList = new ArrayList();
-    org.das2.util.DnDSupport dndSupport;
+    transient org.das2.util.DnDSupport dndSupport;
     ChangesSupport stateSupport;
     /** The set of Threads that are currently printing this canvas.
      * This set is used to determine of certain operations that are only
@@ -529,7 +529,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param o the Object requesting the lock.
      * @see #freeDisplay(Object);
      */
-    synchronized void lockDisplay(Object o) {
+    void lockDisplay(Object o) {
         synchronized (displayLockObject) {
             displayLockCount++;
         //if (displayLockCount == 1) {
@@ -545,7 +545,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param o the object releasing its lock on the display
      * @see #lockDisplay(Object)
      */
-    synchronized void freeDisplay(Object o) {
+    void freeDisplay(Object o) {
         synchronized (displayLockObject) {
             displayLockCount--;
             if (displayLockCount == 0) {
@@ -1379,7 +1379,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         Graphics2D graphics;
         try {
             synchronized (displayLockObject) {
-                if (displayLockCount != 0) {
+                while (displayLockCount != 0) {
                     displayLockObject.wait();
                 }
             }
@@ -1403,7 +1403,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         Graphics2D graphics;
         try {
             synchronized (displayLockObject) {
-                if (displayLockCount != 0) {
+                while (displayLockCount != 0) {
                     displayLockObject.wait();
                 }
             }
@@ -1427,7 +1427,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         logger.log(Level.FINE, "time to writeToImageImmediatelyNonPaint: {0}ms", (System.currentTimeMillis() - t0));
     }
 
-    private PropertyChangeListener repaintListener= new PropertyChangeListener() {
+    private transient PropertyChangeListener repaintListener= new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             repaint();
         }
@@ -1646,11 +1646,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         CanvasDnDSupport() {
             super(DasCanvas.this, DnDConstants.ACTION_COPY_OR_MOVE, null);
         }
-        private List acceptList = Arrays.asList(new DataFlavor[]{
-                    org.das2.graph.dnd.TransferableCanvasComponent.PLOT_FLAVOR,
-                    org.das2.graph.dnd.TransferableCanvasComponent.AXIS_FLAVOR,
-                    org.das2.graph.dnd.TransferableCanvasComponent.COLORBAR_FLAVOR
-                });
 
         private Rectangle getAxisRectangle(Rectangle rc, Rectangle t, int x, int y) {
             if (t == null) {
@@ -1696,6 +1691,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             return (nx > ny ? (b ? DasAxis.TOP : DasAxis.RIGHT) : (b ? DasAxis.LEFT : DasAxis.BOTTOM));
         }
 
+        @Override
         protected int canAccept(DataFlavor[] flavors, int x, int y, int action) {
             glassPane.setAccepting(true);
             List flavorList = java.util.Arrays.asList(flavors);
@@ -2485,7 +2481,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     /**
      * set the current canvas;
      */
-    public void makeCurrent() {
+    public final void makeCurrent() {
         currentCanvas= this;
     }
 
