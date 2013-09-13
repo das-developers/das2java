@@ -220,7 +220,7 @@ public class BoxSelectorMouseModule extends MouseModule {
      *
      * @param event The event to be fired
      */
-    protected void fireBoxSelectionListenerBoxSelected(BoxSelectionEvent event) {
+    protected synchronized void fireBoxSelectionListenerBoxSelected(BoxSelectionEvent event) {
         if (listenerList == null) {
             return;
         }
@@ -251,6 +251,7 @@ public class BoxSelectorMouseModule extends MouseModule {
     public void setDragEvents(boolean dragEvents) {
         this.dragEvents = dragEvents;
     }
+    
     /**
      * Holds value of property keyEvents.
      */
@@ -261,7 +262,6 @@ public class BoxSelectorMouseModule extends MouseModule {
      * @return Value of property keyEvents.
      */
     public boolean isKeyEvents() {
-
         return this.keyEvents;
     }
 
@@ -290,7 +290,6 @@ public class BoxSelectorMouseModule extends MouseModule {
      * @return Value of property releaseEvents.
      */
     public boolean isReleaseEvents() {
-
         return this.releaseEvents;
     }
 
@@ -299,7 +298,6 @@ public class BoxSelectorMouseModule extends MouseModule {
      * @param releaseEvents New value of property releaseEvents.
      */
     public void setReleaseEvents(boolean releaseEvents) {
-
         this.releaseEvents = releaseEvents;
     }
 }
