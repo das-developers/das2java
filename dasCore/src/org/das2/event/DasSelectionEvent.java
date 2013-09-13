@@ -32,8 +32,10 @@ import java.util.EventObject;
  */
 public class DasSelectionEvent extends EventObject
 {
-
-    /** Type-safe enumeration class for selection type contants. */
+    
+    private static final long serialVersionUID = 1L;
+    
+    /** Type-safe enumeration class for selection type constants. */
     public static class Type
     {
 	public static final Type AREA_SELECTION =

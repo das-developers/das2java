@@ -29,6 +29,8 @@ package org.das2.event;
  */
 public class DasMouseEvent extends DasEvent {
     
+    private static final long serialVersionUID = 1L;
+    
     /** Creates a new instance of DasMouseEvent */
     public DasMouseEvent(Object o) {
         super(o);

@@ -29,6 +29,8 @@ package org.das2.event;
  */
 public class MouseDragEvent extends DasMouseEvent {
     
+    private static final long serialVersionUID = 1L;
+    
     transient Gesture gesture;
     
     public MouseDragEvent(Object source) {

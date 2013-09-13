@@ -29,6 +29,8 @@ package org.das2.event;
  */
 public class DasEvent extends java.util.EventObject {
     
+    private static final long serialVersionUID = 1L;
+    
     /** Creates a new instance of DasEvent */
     public DasEvent(Object source) {
         super(source);
