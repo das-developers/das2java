@@ -22,6 +22,7 @@
  */
 package org.das2.graph;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -339,6 +340,19 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
 
+    /**
+     * allocate a bunch of canonical properties.  See http://autoplot.org/developer.guessRenderType#Proposed_extensions
+     */
+    public static final String CONTROL_KEY_COLOR= "color";
+    public static final String CONTROL_KEY_FILL_COLOR= "fillColor";
+    public static final String CONTROL_KEY_COLOR_TABLE= "colorTable";
+    public static final String CONTROL_KEY_THICK= "thick";
+    public static final String CONTROL_KEY_LINE_THICK= "lineThick";
+    public static final String CONTROL_KEY_LINE_STYLE= "lineStyle";
+    public static final String CONTROL_KEY_SYMBOL= "symbol";
+    public static final String CONTROL_KEY_SYMBOL_SIZE= "symbolSize";
+    public static final String CONTROL_KEY_REFERENCE= "reference";
+    
     public static final String PROP_CONTROL= "control";
 
     /**
@@ -352,6 +366,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     private Map<String,String> controls= Collections.emptyMap();
 
+    /**
+     * set the control string which contains a number of properties.  These are defined for
+     * each renderer, but they should try to be consistent.  See http://autoplot.org/developer.guessRenderType#Proposed_extensions
+     * When overriding this, be sure to call super.
+     * See CONTROL_KEY
+     * @param s 
+     */
     public void setControl( String s ) {
         String oldValue= this.control;
         this.control= s;
@@ -363,6 +384,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         propertyChangeSupport.firePropertyChange(PROP_CONTROL, oldValue, control );
     }
 
+    /**
+     * get the string which summarizes the state of the renderer.  These allow a compact string to contain the renderer settings.
+     * This should be an ampersand-delimited list of name=value pairs.
+     * @return 
+     */
     public String getControl() {
         return this.control;
     }
@@ -430,6 +456,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         if ( v!=null ) return v.equalsIgnoreCase("T"); else return deft;
     }
 
+    public String setBooleanControl( boolean v ) {
+        return v ? "T" : "F";
+    }
+    
     public double getDoubleControl( String key, double deft ) {
         String v= controls.get(key);
         if ( v!=null ) return Double.parseDouble(v); else return deft;
@@ -467,6 +497,23 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
 
+    public Color getColorControl( String key, Color deft ) {
+        String v= controls.get(key);
+        if ( v!=null ) {
+            try { 
+                return ColorUtil.decodeColor(v);
+            } catch ( NumberFormatException ex ) {
+                throw new IllegalArgumentException(ex);
+            }
+        } else {
+            return deft;
+        }
+    }
+    
+    public String setColorControl( Color color ) {
+        return ColorUtil.encodeColor(color);
+    }
+    
     /*
      * returns the AffineTransform to transform data from the last updatePlotImage call
      * axes (if super.updatePlotImage was called), or null if the transform is not possible.
