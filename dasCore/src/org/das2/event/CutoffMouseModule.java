@@ -64,10 +64,12 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         
         xrange= event.getXRange();
         yrange= event.getYRange();
-        if ( event.getPlane("keyChar")!=null ) {
-            lastComment= (String)event.getPlane("keyChar");
-        } else {
-            lastComment= null;
+        synchronized (this) {
+            if ( event.getPlane("keyChar")!=null ) {
+                lastComment= (String)event.getPlane("keyChar");
+            } else {
+                lastComment= null;
+            }
         }
         
         try {
@@ -638,7 +640,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         int oldVal= this.nave;
         if ( this.nave!=nave ) {
             this.nave = nave;
-            PropertyChangeEvent e= new PropertyChangeEvent( this, "nave", new Integer(oldVal), new Integer(nave) );
+            PropertyChangeEvent e= new PropertyChangeEvent( this, "nave", Integer.valueOf(oldVal), Integer.valueOf(nave) );
             firePropertyChangeListenerPropertyChange( e );
             recalculateSoon();
         }
@@ -720,8 +722,11 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
      * @param event The event to be fired
      */
     private void firePropertyChangeListenerPropertyChange(java.beans.PropertyChangeEvent event) {
-        if (listenerList == null) return;
-        Object[] listeners = listenerList.getListenerList();
+        Object[] listeners;
+        synchronized (this) {
+            if (listenerList == null) return;
+            listeners = listenerList.getListenerList();
+        }
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i]==java.beans.PropertyChangeListener.class) {
                 ((java.beans.PropertyChangeListener)listeners[i+1]).propertyChange(event);
