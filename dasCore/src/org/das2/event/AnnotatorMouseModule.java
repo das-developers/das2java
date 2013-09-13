@@ -13,7 +13,7 @@ import org.das2.graph.DasCanvas;
 import org.das2.graph.DasRow;
         
 /**
- *
+ * Draw a box and add an annotation.
  * @author Jeremy
  */
 public class AnnotatorMouseModule extends MouseModule {
@@ -34,6 +34,10 @@ public class AnnotatorMouseModule extends MouseModule {
         super.mouseRangeSelected(e);
         
         System.out.println(e);
+        if ( !( e instanceof MouseBoxEvent ) ) {
+            logger.warning("Expected MouseBoxEvent");
+            return;
+        }
         MouseBoxEvent me= (MouseBoxEvent) e;
                 
         double n;
