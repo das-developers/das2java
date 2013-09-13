@@ -47,7 +47,9 @@ import org.virbo.dataset.JoinDataSet;
 import org.virbo.dsops.Ops;
 
 /**
- * Renderer for making contour plots
+ * Renderer for making contour plots.  This still shows a bug 
+ * https://sourceforge.net/p/autoplot/bugs/1105/
+ * as of 20130913, and should not be used.
  * @author jbf
  */
 public class ContoursRenderer extends Renderer {
