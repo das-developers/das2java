@@ -513,6 +513,7 @@ public class ContoursRenderer extends Renderer {
     public void setLineThick(double newlineThick) {
         double oldlineThick = lineThick;
         this.lineThick = newlineThick;
+        update();
         propertyChangeSupport.firePropertyChange(PROP_LINETHICK, oldlineThick, newlineThick);
     }
 
