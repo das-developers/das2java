@@ -308,7 +308,11 @@ public class ContoursRenderer extends Renderer {
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         super.updatePlotImage(xAxis, yAxis, monitor);
 
-        Units units = SemanticOps.getUnits(getDataSet());
+        QDataSet tds= getDataSet();
+        if ( tds==null ) {
+            return;
+        }
+        Units units = SemanticOps.getUnits( tds );
 
         double d0 = units.getFillDouble();
         //int ii = -1;
