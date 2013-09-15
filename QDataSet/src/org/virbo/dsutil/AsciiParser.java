@@ -329,11 +329,11 @@ public class AsciiParser {
 
             int parseCount=0;
 
-            while ( iline<HEADER_LENGTH_LIMIT && line != null && parseCount<3 ) {
+            while ( iline<HEADER_LENGTH_LIMIT && line != null && parseCount<5 ) {
                 lines.add(line);
                 line = reader.readLine();
                 iline++;
-                while ( lines.size()>5 ) {
+                while ( lines.size()>10 ) {
                     lines.remove(0);
                 }
                 if ( line!=null ) {
