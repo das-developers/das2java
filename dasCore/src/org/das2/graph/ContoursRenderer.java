@@ -183,7 +183,7 @@ public class ContoursRenderer extends Renderer {
 
     QDataSet vds; // the contours
     
-    private void updateContours() {
+    private synchronized void updateContours() {
         QDataSet tds= (QDataSet) getDataSet();
         if ( tds==null ) {
             vds= null;
@@ -368,12 +368,12 @@ public class ContoursRenderer extends Renderer {
                 //fx0 = fx;
                 //fy0 = fy;
             } else if (n != (n0 + 1)) {
-                currentPath.moveTo(fx, fy);
+                if ( currentPath!=null ) currentPath.moveTo(fx, fy);
                 //fx0 = fx;
                 //fy0 = fy;
                 //slen = 0.;
             } else {
-                currentPath.lineTo(fx, fy);
+                if ( currentPath!=null ) currentPath.lineTo(fx, fy);
             }
             n0 = n;
         }
