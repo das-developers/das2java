@@ -134,6 +134,7 @@ public class DasProgressPanel implements ProgressMonitor {
      * @param label label or null.
      * @return 
      */
+    @Override
     public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
         if ( label!=null ) setProgressMessage(label);
         return SubTaskMonitor.create( this, start, end, cancelCheckFailures < 2 );
@@ -225,6 +226,7 @@ public class DasProgressPanel implements ProgressMonitor {
         final DasProgressPanel result;
         result = new DasProgressPanel(label);
         Runnable run= new Runnable() {
+            @Override
             public void run() {
                 JFrame fr= new JFrame("Progress Monitor");
                 result.jframe = fr;
@@ -253,6 +255,7 @@ public class DasProgressPanel implements ProgressMonitor {
         final DasProgressPanel result;
         result = new DasProgressPanel(label);
         Runnable run= new Runnable() {
+            @Override
             public void run() {
                 if ( parent instanceof JFrame ) {
                     result.jframe = new JDialog((JFrame)parent,"Progress Monitor");
@@ -275,6 +278,7 @@ public class DasProgressPanel implements ProgressMonitor {
         return result;
     }
 
+    @Override
     public void setLabel(String label) {
         label= abbrevateStringEllipsis( label, LABEL_LEN_LIMIT);
         this.label = label;
@@ -283,6 +287,7 @@ public class DasProgressPanel implements ProgressMonitor {
             thePanel.repaint();
     }
 
+    @Override
     public String getLabel() {
         return label;
     }
@@ -352,6 +357,7 @@ public class DasProgressPanel implements ProgressMonitor {
         //cancelButton.setBorder(border);
         cancelButton.setFocusPainted(false);
         cancelButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 cancel();
             }
@@ -402,10 +408,12 @@ public class DasProgressPanel implements ProgressMonitor {
         componentsInitialized = true;
     }
 
+    @Override
     public synchronized void finished() {
         running = false;
         finished = true;
         Runnable run= new Runnable() {
+            @Override
             public void run() {
                 if ( removeFromComponent!=null ) {
                     removeFromComponent.remove(thePanel);
@@ -426,6 +434,7 @@ public class DasProgressPanel implements ProgressMonitor {
     }
 
     /* ProgressMonitor interface */
+    @Override
     public void setTaskProgress(long position) throws IllegalStateException {
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "progressPosition={0}", position);
@@ -475,6 +484,7 @@ public class DasProgressPanel implements ProgressMonitor {
         }
     }
 
+    @Override
     public boolean canBeCancelled() {
         return cancelChecked;
     }
@@ -483,10 +493,12 @@ public class DasProgressPanel implements ProgressMonitor {
     private void startUpdateThread() {
         Runnable run = new Runnable() {
 
+            @Override
             public void run() {
                 while (!DasProgressPanel.this.finished) {
                     try {
                         SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
                             public void run() {
                                 if ( progressBar!=null ) {
                                     updateUIComponents();
@@ -583,24 +595,29 @@ public class DasProgressPanel implements ProgressMonitor {
     }
 
 	@Deprecated
+    @Override
     public void setAdditionalInfo(String s) {
         transferRateString = s;
     }
 
+    @Override
     public long getTaskProgress() {
         return currentTaskPosition;
     }
 
+    @Override
     public long getTaskSize() {
         return maximumTaskPosition;
     }
 
+    @Override
     public void setTaskSize(long taskSize) {
         if (taskSize < -1) {
             throw new IllegalArgumentException("taskSize must be positive, -1, or 0, not " + taskSize);
         } else {
             if (componentsInitialized) {
                 SwingUtilities.invokeLater( new Runnable() {
+                    @Override
                     public void run() {
                         progressBar.setIndeterminate(false);
                     }
@@ -628,6 +645,7 @@ public class DasProgressPanel implements ProgressMonitor {
         if (!componentsInitialized && !visible)
             return;
         Runnable run= new Runnable() {
+            @Override
             public void run() {
                 if (!componentsInitialized && !finished)
                     initComponents();
@@ -652,6 +670,7 @@ public class DasProgressPanel implements ProgressMonitor {
         return (!componentsInitialized || thePanel.isVisible());
     }
 
+    @Override
     public void started() {
         taskStartedTime = System.currentTimeMillis();
         running = true;
@@ -659,7 +678,7 @@ public class DasProgressPanel implements ProgressMonitor {
         if (hideInitiallyMilliSeconds > 0) {
             setVisible(false);
             new Thread(new Runnable() {
-
+                @Override
                 public void run() {
                     try {
                         Thread.sleep(hideInitiallyMilliSeconds);
@@ -682,11 +701,13 @@ public class DasProgressPanel implements ProgressMonitor {
             setTaskProgress(0);
     }
 
+    @Override
     public void cancel() {
         isCancelled = true;
         finished();
     }
 
+    @Override
     public boolean isCancelled() {
         cancelCheckFailures = 0;
         logger.log(Level.FINER, "cancelCheckFailures={0}", cancelCheckFailures);
@@ -723,15 +744,18 @@ public class DasProgressPanel implements ProgressMonitor {
         }
     }
 
+    @Override
     public void setProgressMessage(String message) {
         this.progressMessageString = message;
         this.progressMessageDirty = true;
     }
 
+    @Override
     public boolean isStarted() {
         return running;
     }
 
+    @Override
     public boolean isFinished() {
         return finished;
     }
