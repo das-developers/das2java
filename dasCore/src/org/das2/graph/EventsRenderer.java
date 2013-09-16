@@ -207,6 +207,10 @@ public class EventsRenderer extends Renderer {
             QDataSet vds= (QDataSet)getDataSet();
 
             if ( vds==null ) return new Rectangle[0];
+            if ( vds.rank()==0 ) {
+                return new Rectangle[0];
+            }
+            
             if ( vds.length()==0 ) return new Rectangle[0];
 
             QDataSet ds= cds;
