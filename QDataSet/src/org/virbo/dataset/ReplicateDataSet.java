@@ -14,6 +14,9 @@ public class ReplicateDataSet extends AbstractDataSet {
     public ReplicateDataSet( QDataSet s, int len0 ) {
         this.len0= len0;
         this.source= s;
+        if ( s.rank()>3 ) {
+            throw new IllegalArgumentException("rank must be less than 4");
+        }
     }
     
     @Override
