@@ -160,10 +160,12 @@ public final class BundleDataSet extends AbstractDataSet {
 
         @Override
         public String toString() {
-            StringBuilder names= new StringBuilder( (String)datasets.get(0).property(QDataSet.NAME) );
+            StringBuilder names= new StringBuilder();
+            String s= (String) datasets.get(0).property(QDataSet.NAME);
+            names.append( s==null ? "data" : s );
             for ( int i=1; i<datasets.size(); i++ ) {
-                String n= (String)datasets.get(i).property(QDataSet.NAME);
-                names.append(",").append(n);
+                s= (String)datasets.get(i).property(QDataSet.NAME);
+                names.append(",").append( s==null ? "data" : s );
             }
             return "BundleDescriptor[ "+names.toString()+"]";
         }
