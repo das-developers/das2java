@@ -2,7 +2,9 @@
 package org.virbo.dataset;
 
 /**
- * repeats a dataset n times
+ * repeats a dataset n times.  The result has the first index being the
+ * repeat index.
+ * 
  * @author jbf
  */
 public class ReplicateDataSet extends AbstractDataSet {
@@ -18,6 +20,12 @@ public class ReplicateDataSet extends AbstractDataSet {
     public int rank() {
         return source.rank()+1;
     }
+    
+    @Override
+    public double value(int il) {
+        return source.value();
+    }
+
     @Override
     public double value(int i0, int i1) {
         return source.value(i1);
