@@ -8,6 +8,7 @@
 
 package org.das2.graph;
 
+import com.sun.corba.se.spi.oa.OADefault;
 import java.awt.Shape;
 import javax.swing.Icon;
 import org.das2.datum.Datum;
@@ -33,6 +34,7 @@ import org.das2.datum.Units;
 import org.das2.util.GrannyTextRenderer;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
@@ -461,8 +463,16 @@ public class EventsRenderer extends Renderer {
             
             colors= Ops.replicate( irgb, xmins.length() );
 
-        } else {
-            parent.postMessage( this, "dataset must be rank 1 or rank 2", DasPlot.WARNING, null, null );
+        } else if ( vds.rank()==0 ) {
+            xmins= Ops.replicate(vds,1); // increase rank from 0 to 1.
+            xmaxs= xmins;
+            Color c0= getColor();
+            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
+            int irgb= c1.getRGB();
+            colors= Ops.replicate( irgb, xmins.length() );
+            msgs= Ops.replicate(vds,1);
+        } else {            
+            parent.postMessage( this, "dataset must be rank 0, 1 or 2", DasPlot.WARNING, null, null );
             return null;
         }
 
@@ -482,9 +492,7 @@ public class EventsRenderer extends Renderer {
             xmaxs= Ops.add( xmins, xmaxs );
         }
 
-        QDataSet lds= Ops.bundle( Ops.bundle( Ops.bundle( xmins, xmaxs ), colors ), msgs );
-
-        lds= coalesce(lds);
+        QDataSet lds= Ops.bundle( xmins, xmaxs, colors, msgs );
         
         return lds;
 
@@ -497,8 +505,12 @@ public class EventsRenderer extends Renderer {
         GeneralPath sa= new GeneralPath();
 
         QDataSet vds= (QDataSet)getDataSet();
-        if (vds == null || vds.length() == 0) {
+        if (vds == null ) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
+            return;
+        }
+        if ( ( vds.rank()>0 && vds.length() == 0) ) {
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("empty data set");
             return;
         }
         
