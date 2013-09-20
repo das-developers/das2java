@@ -410,8 +410,8 @@ public class AsciiParser {
 
     /**
      * read in the first record, then guess the delimiter and possibly the column headers.
-     * @param Reader pointed to the beginning of the file.
-     * @return RecordParser object that can be queried.  (Strange interface.)
+     * @param line a single record to attempt parsing.
+     * @return RecordParser object that can be queried. 
      * @throws java.io.IOException
      */
     public DelimParser guessDelimParser(String line) throws IOException {
@@ -1850,12 +1850,27 @@ public class AsciiParser {
     }
 
     /**
-     * Indexed setter for property units.
+     * Indexed setter for property units.  This now sets the field parser for 
+     * the field to be a UNITS_PARSER if it is the default DOUBLE_PARSER.
      * @param index Index of the property.
      * @param units New value of the property at <CODE>index</CODE>.
      */
     public void setUnits(int index, Units units) {
         this.units[index] = units;
+        if ( fieldParsers[index]==DOUBLE_PARSER ) setFieldParser(index,UNITS_PARSER);
+        propertyChangeSupport.firePropertyChange("units", null, null);
+    }
+    
+    /**
+     * Set all the units at once.  This now sets the field parser for 
+     * each field to be a UNITS_PARSER if it is the default DOUBLE_PARSER.
+     * @param u array (or varargs) of units to be applied to the 0,1,2nd,... fields.
+     */
+    public void setUnits( Units ... u ) {
+        System.arraycopy(u, 0, this.units, 0, u.length);
+        for ( int i=0; i<u.length; i++ ) {
+            if ( fieldParsers[i]==DOUBLE_PARSER ) setFieldParser( i,UNITS_PARSER );
+        }
         propertyChangeSupport.firePropertyChange("units", null, null);
     }
 
