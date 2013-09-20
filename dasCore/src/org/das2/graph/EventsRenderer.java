@@ -8,7 +8,6 @@
 
 package org.das2.graph;
 
-import com.sun.corba.se.spi.oa.OADefault;
 import java.awt.Shape;
 import javax.swing.Icon;
 import org.das2.datum.Datum;
@@ -34,7 +33,6 @@ import org.das2.datum.Units;
 import org.das2.util.GrannyTextRenderer;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
-import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
