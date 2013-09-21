@@ -159,7 +159,7 @@ public class WebFileObject extends FileObject {
     }
     
     protected void setSize( long size ) {
-        if ( this.size!=-1 ) {
+        if ( this.size==-1 ) {
             this.size= size;
         } else {
             throw new IllegalArgumentException("valid size cannot be modified");
@@ -493,6 +493,7 @@ public class WebFileObject extends FileObject {
                         }
                     }
                 } catch ( Exception ex ) {
+                    logger.log( Level.WARNING, ex.getMessage(), ex );
                     return false;
                 }
             } else {
