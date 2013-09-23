@@ -334,7 +334,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
         OutputStream out=  new java.io.FileOutputStream("/home/jbf/ct/hudson/data.backup/qds/aggregation.reduce.minmax.qds");
         
         args= new String[] { "360" };
-        if ( args.length!=1 ) {
+        if ( args.length!=1 || args[0].trim().length()==0 ) {
             if ( args.length==2 && args[1].startsWith("file:") ) {
                 //in= new FileInputStream( args[1].substring(5) );
             } else {
