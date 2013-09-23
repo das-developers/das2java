@@ -95,6 +95,14 @@ public abstract class FileSystem  {
         }
     }
 
+    /**
+     * convenient method that converts string like "http://das2.org/" into a URI.
+     * @param s string representation of URI, like "http://das2.org/" or "file:///tmp/"
+     * @return FileSystem object.
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws UnknownHostException
+     * @throws FileNotFoundException 
+     */
     public static FileSystem create( String s ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         try {
             return create( new URI(s), new NullProgressMonitor() );
@@ -103,6 +111,23 @@ public abstract class FileSystem  {
         }
     }
     
+    /**
+     * convenient method that converts string like "http://das2.org/" into a URI.
+     * @param s string representation of URI, like "http://das2.org/" or "file:///tmp/"
+     * @param mon monitor progress.  For most FS types this is instantaneous, but for zip this can take sub-interactive time.
+     * @return FileSystem object.
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws UnknownHostException
+     * @throws FileNotFoundException 
+     */
+    public static FileSystem create( String s, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
+        try {
+            return create( new URI(s), mon );
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
     /**
      *
      * @param root
@@ -197,6 +222,8 @@ public abstract class FileSystem  {
      * ending in .zip and a FileSystemFactory is registered as handling .zip, then
      * The zip file will be transferred and the zip file mounted.
      *
+     * @param root the URI, like URI("http://das2.org/") or URI("file:///tmp/")
+     * @param mon monitor progress.  For most FS types this is instantaneous, but for zip this can take sub-interactive time.
      * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
      * @throws IllegalArgumentException if the local root does not exist.
      */
@@ -217,7 +244,7 @@ public abstract class FileSystem  {
             return result;
         }
 
-        String waitObject= null;
+        String waitObject;
         boolean ishouldwait= false;
         synchronized (blocks) {
             if ( blocks.containsKey(root) ) {
