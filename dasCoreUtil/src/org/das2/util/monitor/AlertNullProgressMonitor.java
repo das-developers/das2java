@@ -20,6 +20,7 @@ public class AlertNullProgressMonitor extends NullProgressMonitor {
         super.setTaskProgress(position); //To change body of generated methods, choose Tools | Templates.
         long t= System.currentTimeMillis();
         if ( ( t-t0 > 1000 ) && ( t-lastAlert > 250 ) ) {
+            //TODO: on 20130923, this was failing to output on either the console or the Netbeans stderr console.
             System.err.print( String.format( "%s: %d of %d...",this.getLabel(),this.getTaskProgress(),this.getTaskSize()) );
             lastAlert= t;
         }
