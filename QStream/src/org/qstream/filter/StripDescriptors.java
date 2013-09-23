@@ -30,6 +30,7 @@ public class StripDescriptors implements StreamHandler {
         sink.streamDescriptor(sd);
     }
 
+    @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         for ( int i=0; i<100; i++ ) {
             if ( count[i]>0 ) {
