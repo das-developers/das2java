@@ -486,17 +486,11 @@ public class DatumRangeUtil {
         static final int SECOND=5;
         static final int NANO=6;
         
-        static final int STATE_OPEN=89;
-        static final int STATE_TS1TIME=90;
-        static final int STATE_TS2TIME=91;
-        
-        int state= STATE_OPEN;
-        
         String delimRegEx= "\\s|-|/|\\.|:|to|through|span|T|Z|\u2013|,";
         Pattern delimPattern= Pattern.compile( delimRegEx );
         int[] ts1= new int[] { -1, -1, -1, -1, -1, -1, -1 };
         int[] ts2= new int[] { -1, -1, -1, -1, -1, -1, -1 };
-        int[] ts= null;
+        int[] ts= null; // this is pointing to the one we are working on.
         
         boolean beforeTo;
         
@@ -529,7 +523,6 @@ public class DatumRangeUtil {
             String yearRegex= "(\\d{2}(\\d{2})?)"; // t lower case because tryPattern folds case
             
             if ( tryPattern( yyyymmddPattern, string, new int[] { 2,3,4,5 }, dateDescriptor ) ) {
-                dateDescriptor.dateformat= DATEFORMAT_USA;
                 return true;
             }
             
@@ -539,7 +532,6 @@ public class DatumRangeUtil {
             Matcher matcher= Pattern.compile(delims).matcher(string);
             
             if ( matcher.find() ) {
-                int posDelim= matcher.start();
                 delim1= string.substring(matcher.start(),matcher.end());
             } else {
                 return false;
@@ -563,20 +555,17 @@ public class DatumRangeUtil {
                 groups= new int [] { 4, 3, 2, 6 };
             }
             if ( tryPattern( Pattern.compile( euroDateRegex ), string, groups, dateDescriptor ) ) {
-                dateDescriptor.dateformat= DATEFORMAT_EUROPE;
                 return true;
             }
             
             String usaDateRegex= monthRegex + delim1 + dayRegex + delim1 + yearRegex + dateDelimRegex ;
             if ( tryPattern( Pattern.compile( usaDateRegex ), string, new int[] { 5,1,4,7 }, dateDescriptor ) ) {
-                dateDescriptor.dateformat= DATEFORMAT_USA;
                 return true;
             }
             
             // only works for four-digit years
             String lastDateRegex= "(\\d{4})" + delim1 + monthRegex + delim1 + dayRegex + dateDelimRegex;
             if ( tryPattern( Pattern.compile( lastDateRegex ), string, new int[] { 1,2,5,6 }, dateDescriptor ) ) {
-                dateDescriptor.dateformat= DATEFORMAT_USA;
                 return true;
             }
             
@@ -588,7 +577,6 @@ public class DatumRangeUtil {
                 if ( doy>366 ) return false;
                 int year= parseInt(dateDescriptor.year);
                 caldat( julday( 12, 31, year-1 ) + doy, dateDescriptor );
-                dateDescriptor.dateformat= DATEFORMAT_YYYY_DDD;
                 
                 return true;
             }
@@ -599,7 +587,6 @@ public class DatumRangeUtil {
                 if ( doy>366 ) return false;
                 int year= parseInt(dateDescriptor.year);
                 caldat( julday( 12, 31, year-1 ) + doy, dateDescriptor );
-                dateDescriptor.dateformat= DATEFORMAT_YYYY_DDD;
                 
                 return true;
             }
