@@ -44,7 +44,7 @@ public class PipeFilter {
     }
     
     public static void main( String[] args ) throws StreamException, MalformedURLException, IOException, ParseException {
-        if ( args.length<1 ) {
+        if ( args.length<1 || args[0].trim().length()==0 ) {
             System.err.println("java -jar autoplot.jar org.qstream.filter.PipeFilter <seconds> [urlin] [fileout]");
             System.exit(-1);
         }
