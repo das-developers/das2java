@@ -214,7 +214,9 @@ public class WebFileObject extends FileObject {
         if ( this.modifiedDate.getTime()==0 || this.modifiedDate.getTime()==Long.MAX_VALUE ) {
             this.modifiedDate= d;
         } else {
-            throw new IllegalArgumentException("valid date cannot be modified");
+            if ( !d.equals(modifiedDate) ) {
+                throw new IllegalArgumentException("valid date cannot be modified");
+            }
         }
     }
 
