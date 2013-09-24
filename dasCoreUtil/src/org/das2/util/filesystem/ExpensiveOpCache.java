@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 /**
  * This simply reduces invocations of an expensive operation by
@@ -19,7 +20,7 @@ import java.util.logging.Logger;
  */
 public class ExpensiveOpCache {
 
-    private static final Logger logger= Logger.getLogger("das2.filesystem.wfs");
+    private static final Logger logger= LoggerManager.getLogger("das2.filesystem.opcache");
 
     public static interface Op {
         Object doOp( String key ) throws Exception;
@@ -55,7 +56,16 @@ public class ExpensiveOpCache {
             result= results.get(key);
         }
         long t0= System.currentTimeMillis();
-        if ( t==null || ( (t0 - t.longValue()) > limitMs ) ) {
+        long dt= t!=null ? t0 - t.longValue() : 99999;
+        if ( t==null ) {
+            logger.log(Level.FINE, "no cache entry for: {0}", new Object[]{ key });
+            result= op.doOp(key);
+            synchronized ( this ) {
+                times.put( key, t0 );
+                results.put( key, result );
+            }
+        } else if ( dt > limitMs ) {
+            logger.log(Level.FINE, "stale ({0}s) cache entry {1}: {2}", new Object[]{ dt/1000, key, result.toString()});
             result= op.doOp(key);
             synchronized ( this ) {
                 times.put( key, t0 );
