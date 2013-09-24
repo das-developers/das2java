@@ -65,19 +65,19 @@ public abstract class WebFileSystem extends FileSystem {
     protected static final Logger logger= org.das2.util.LoggerManager.getLogger( "das2.filesystem.wfs" );
 
     /**
-     * we keep a cached listing in on disk.  This is backed by the the website.
+     * we keep a cached listing in on disk.  This is backed by the website.
      */
-    public static final int LISTING_TIMEOUT_MS =      200000;
+    public static final int LISTING_TIMEOUT_MS = 60000;
 
     /**
      * we keep a cached listing in memory for performance.  This is backed by the .listing file.
      */
-    public static final int MEMORY_LISTING_TIMEOUT_MS= 60000;
+    public static final int MEMORY_LISTING_TIMEOUT_MS= 4000;
 
     /**
      * timestamp checks will occur no more often than this.
      */
-    public static final int HTTP_CHECK_TIMESTAMP_LIMIT_MS = 60000;
+    public static final int HTTP_CHECK_TIMESTAMP_LIMIT_MS = 4000;
 
     public static File getDownloadDirectory() {
         File local = FileSystem.settings().getLocalCacheDir();
