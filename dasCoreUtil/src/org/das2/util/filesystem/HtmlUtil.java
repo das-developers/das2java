@@ -58,7 +58,25 @@ public class HtmlUtil {
      * @throws IOException
      * @throws CancelledOperationException
      */
-    public static URL[] getDirectoryListing( URL url, InputStream urlStream ) throws IOException, CancelledOperationException {
+    public static URL[] getDirectoryListing( URL url, InputStream urlStream ) throws IOException, CancelledOperationException {    
+        return getDirectoryListing( url, urlStream, true );
+    }
+    
+    /**
+     * Get the listing of the web directory, returning links that are "under" the given URL.
+     * Note this does not handle off-line modes where we need to log into
+     * a website first, as is often the case for a hotel.
+     *
+     * This was refactored to support caching of listings by simply writing the content to disk.
+     *
+     * @param url the address.
+     * @param urlStream stream containing the URL content.
+     * @param childCheck only return links to URLs "under" the url.
+     * @return list of URIs referred to in the page.
+     * @throws IOException
+     * @throws CancelledOperationException
+     */
+    public static URL[] getDirectoryListing( URL url, InputStream urlStream, boolean childCheck ) throws IOException, CancelledOperationException {
         // search the input stream for links
         // first, read in the entire URL
 
@@ -93,7 +111,7 @@ public class HtmlUtil {
         while ( matcher.find() ) {
             FileSystem.logger.finest("parse listing");
             String strLink= matcher.group(2);
-            URL urlLink= null;
+            URL urlLink;
 
             try {
                 urlLink = new URL(url, strLink);
@@ -103,11 +121,15 @@ public class HtmlUtil {
                 continue;
             }
 
-            if ( strLink.startsWith(surl) && strLink.length() > surl.length() && null==urlLink.getQuery() ) {
-                String file= strLink.substring( surl.length() );
-                if ( !file.startsWith("../") ) {
-                    urlList.add( urlLink );
+            if ( childCheck ) {
+                if ( strLink.startsWith(surl) && strLink.length() > surl.length() && null==urlLink.getQuery() ) {
+                    String file= strLink.substring( surl.length() );
+                    if ( !file.startsWith("../") ) {
+                        urlList.add( urlLink );
+                    }
                 }
+            } else {
+                urlList.add( urlLink );
             }
         }
 
