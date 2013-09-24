@@ -76,6 +76,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
 import org.das2.dataset.DataSetAdapter;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetUtil;
@@ -577,7 +578,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             //System.err.printf("%d %s\n", i, m.group(1) );
                             planesArray1[i] = m.group(1);
                             try {
-                                unitsArray1[i] = SemanticOps.lookupUnits(m.group(2));
+                                if ( m.group(2).equals("UTC") ) {
+                                    unitsArray1[i] = Units.cdfTT2000;
+                                } else {
+                                    unitsArray1[i] = SemanticOps.lookupUnits(m.group(2));
+                                }
                             } catch (IndexOutOfBoundsException e) {
                                 throw e;
                             }
@@ -638,6 +643,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
 
             }
+
+            if ( r!=null ) r.close();
+
+            saveFile= file;  // go ahead and set this in case client is going to do something with this.
+            updateStatus();
+            updateClients();
+            
+            prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
+            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+            
         } finally {
 
             mon.finished();
@@ -647,15 +662,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             //active = true;
             active= active0;
             modified = false;
-
-            saveFile= file;  // go ahead and set this in case client is going to do something with this.
-            
-            updateStatus();
-
-            updateClients();
-
-            prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
-            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
 
             table.getColumnModel();
             myTableModel.fireTableStructureChanged();
