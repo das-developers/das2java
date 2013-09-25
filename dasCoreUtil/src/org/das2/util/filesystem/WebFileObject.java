@@ -162,7 +162,9 @@ public class WebFileObject extends FileObject {
         if ( this.size==-1 ) {
             this.size= size;
         } else {
-            throw new IllegalArgumentException("valid size cannot be modified");
+            if ( size!=this.size ) {
+                throw new IllegalArgumentException("valid size cannot be modified");     
+            } 
         }
     }    
 
