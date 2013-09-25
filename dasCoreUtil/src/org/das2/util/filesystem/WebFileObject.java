@@ -131,43 +131,7 @@ public class WebFileObject extends FileObject {
     public FileObject getParent() {
         return new WebFileObject(wfs, wfs.getLocalName(localFile.getParentFile()), new Date(System.currentTimeMillis()));
     }
-
-    /**
-     * return the fileObject size in bytes.  This may contact the server to get the size, and this
-     * caches the size.
-     * @return 
-     */
-    public long getSize() {
-        if (isFolder) {
-            throw new IllegalArgumentException("is a folder");
-        }
-        if ( this.size==-1 ) {
-            try {
-                maybeLoadMetadata();
-            } catch ( IOException ex ) {
-                logger.log(Level.INFO, "unable to load metadata: {0}", ex);
-                size= localFile.length();
-            }
-            if ( metadata.containsKey("Content-Length") ) {
-                size= Long.parseLong(metadata.get("Content-Length") );
-            } else {
-                logger.fine("remote length is not known");
-                size= localFile.length();
-            }
-        }
-        return size;
-    }
     
-    protected void setSize( long size ) {
-        if ( this.size==-1 ) {
-            this.size= size;
-        } else {
-            if ( size!=this.size ) {
-                throw new IllegalArgumentException("valid size cannot be modified");     
-            } 
-        }
-    }    
-
     public boolean isData() {
         return !this.isFolder;
     }
@@ -209,6 +173,32 @@ public class WebFileObject extends FileObject {
     }
 
     /**
+     * return the fileObject size in bytes.  This may contact the server to get the size, and this
+     * caches the size.
+     * @return 
+     */
+    public long getSize() {
+        if (isFolder) {
+            throw new IllegalArgumentException("is a folder");
+        }
+        if ( this.size==-1 ) {
+            try {
+                maybeLoadMetadata();
+            } catch ( IOException ex ) {
+                logger.log(Level.INFO, "unable to load metadata: {0}", ex);
+                size= localFile.length();
+            }
+            if ( metadata.containsKey("Content-Length") ) {
+                size= Long.parseLong(metadata.get("Content-Length") );
+            } else {
+                logger.fine("remote length is not known");
+                size= localFile.length();
+            }
+        }
+        return size;
+    }
+    
+    /**
      * allow subclasses, such as FtpBeanFileSystem, to delay loading of the date.
      * @param d
      */
@@ -219,6 +209,21 @@ public class WebFileObject extends FileObject {
             if ( !d.equals(modifiedDate) ) {
                 throw new IllegalArgumentException("valid date cannot be modified");
             }
+        }
+    }
+
+    /**
+     * allow classes to delay loading of the size.
+     * @param size the size in bytes of the file.
+     * @throws IllegalArgumentException if the size is reset to a different value from a valid value.
+     */
+    protected void setSize( long size ) {
+        if ( this.size==-1 ) {
+            this.size= size;
+        } else {
+            if ( size!=this.size ) {
+                throw new IllegalArgumentException("valid size cannot be modified");     
+            } 
         }
     }
 
