@@ -214,7 +214,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         public String getColumnName(int j) {
             String result = planesArray[j];
             if (unitsArray[j] != null) {
-                result += "(" + unitsArray[j] + ")";
+                if ( unitsArray[j] instanceof EnumerationUnits ) {
+                    result += "(ordinal)";
+                } else {
+                    result += "(" + unitsArray[j] + ")";
+                }
             }
             return result;
         }
@@ -407,8 +411,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         builder.insertY(dp.get(0), dp.get(1));
                         for (int j = 2; j < planesArray.length; j++) {
                             builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
-                                    ((Datum) dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
-                                    planesArray[j]);
+                                ((Datum) dp.getPlane(planesArray[j])).doubleValue(unitsArray[j]),
+                                planesArray[j]);
                         }
                     }
                 }
@@ -580,6 +584,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             try {
                                 if ( m.group(2).equals("UTC") ) {
                                     unitsArray1[i] = Units.cdfTT2000;
+                                } else if ( m.group(2).equals("ordinal") ) {
+                                    unitsArray1[i] = EnumerationUnits.create("ordinal");
                                 } else {
                                     unitsArray1[i] = SemanticOps.lookupUnits(m.group(2));
                                 }
@@ -618,13 +624,20 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             Pattern p = Pattern.compile("\"(.*)\".*");
                             Matcher m = p.matcher(s[i]);
                             if (m.matches()) {
-                                planes.put(planesArray1[i], m.group(1));
+                                EnumerationUnits eu= EnumerationUnits.create("ordinal");
+                                unitsArray1[i]= eu;
+                                planes.put(planesArray1[i], eu.createDatum( m.group(1) ) );
                             } else {
                                 throw new ParseException("parse error, expected \"\"", 0);
                             }
                         } else {
                             try {
-                                planes.put(planesArray1[i], unitsArray1[i].parse(s[i]));
+                                if ( unitsArray1[i] instanceof EnumerationUnits ) {
+                                    EnumerationUnits eu= (EnumerationUnits)unitsArray1[i];
+                                    planes.put(planesArray1[i], eu.createDatum( s[i] ));
+                                } else {
+                                    planes.put(planesArray1[i], unitsArray1[i].parse(s[i]));
+                                }
                             } catch (ParseException e) {
                                 throw new RuntimeException(e);
                             }
