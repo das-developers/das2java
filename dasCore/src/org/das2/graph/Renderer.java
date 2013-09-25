@@ -527,7 +527,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             try { 
                 return ColorUtil.decodeColor(v);
             } catch ( NumberFormatException ex ) {
-                logger.log( Level.WARNING, "Unable to parse as color: {0}", key);
+                logger.log( Level.WARNING, "Unable to parse as color: {0}", v);
                 return deft;
             }
         } else {
