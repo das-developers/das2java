@@ -772,6 +772,7 @@ public class SemanticOps {
 
     /**
      * return the parts of the dataset within the bounds.
+     * TODO: This clearly has an idea of how the data is going to be visualized, so this needs to be stated so the spec doesn't move.
      * @param ds
      * @param xrange
      * @param yrange
@@ -805,15 +806,16 @@ public class SemanticOps {
                 QDataSet yds= SemanticOps.getDependentDataSet(ds);
                 QDataSet xinside= xrange==null ? null :
                     Ops.and( Ops.ge( xds, DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
-                QDataSet yinside= null; //yrange==null ? null :
+                //QDataSet yinside= null; //yrange==null ? null :
                     //Ops.and( Ops.ge( yds, DataSetUtil.asDataSet(yrange.min()) ), Ops.le(  yds, DataSetUtil.asDataSet(yrange.max()) ) );
                 QDataSet ok;
                 SubsetDataSet sds= new SubsetDataSet(ds);
                 if ( xrange==null && yrange==null ) {
                     return ds;
                 } else if ( xrange==null ) {
-                    ok= Ops.where( yinside );
-                    sds.applyIndex( 1, ok );
+                    //ok= Ops.where( yinside );
+                    //sds.applyIndex( 1, ok );
+                    return ds; // this is because we can't easily search the ytags.
                 } else if ( yrange==null ) {
                     ok= Ops.where( xinside );
                     sds.applyIndex( 0, ok );
