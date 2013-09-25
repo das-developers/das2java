@@ -3129,6 +3129,14 @@ public class Ops {
      * of non-zero elements found.
      */
     public static QDataSet where(QDataSet ds) {
+        
+        if ( ds==null ) {
+            throw new NullPointerException("dataset is null");
+        }
+        if ( ds.rank()<1 ) {
+            throw new IllegalArgumentException("dataset is rank 0");
+        }
+        
         DataSetBuilder builder;
 
         QubeDataSetIterator iter = new QubeDataSetIterator(ds);
