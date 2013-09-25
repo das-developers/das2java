@@ -1301,6 +1301,12 @@ public class AsciiParser {
                     if ( index==len ) {
                         fields[ifield]= input.substring(index0,qend);
                         ifield++;
+                    } else {
+                        fields[ifield]= input.substring(index0,qend);
+                        ifield++;
+                        if ( ifield == fields.length ) {
+                            while ( index<len && Character.isWhitespace( input.charAt(index) ) ) index++;
+                        }
                     }
                 } else {
                     if ( m.find(index) ) {
