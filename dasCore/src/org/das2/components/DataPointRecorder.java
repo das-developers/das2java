@@ -52,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
@@ -155,6 +156,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
          * @param o
          * @return 
          */
+        @Override
         public int compareTo(Object o) {
             DataPoint that = (DataPoint) o;
             Datum myt= this.data[0];
@@ -484,6 +486,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 }
                 for (int j = 2; j < planesArray.length; j++) {
                     Object o = x.getPlane(planesArray[j]);
+                    if ( o==null ) {
+                        x.getPlane(planesArray[j]);
+                    }
                     if (unitsArray[j] == null) {
                         if (o == null) {
                             o = "";
@@ -567,12 +572,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 if (mon.isCancelled()) {
                     break;
                 }
+                line= line.trim();
+                if ( line.length()==0 ) {
+                    continue;
+                }
                 mon.setTaskProgress(linenum);
                 if (line.startsWith("## ") || line.length()>0 && Character.isJavaIdentifierStart( line.charAt(0) ) ) {
                     if ( unitsArray1!=null ) continue;
                     while ( line.startsWith("#") ) line = line.substring(1);
                     if ( line.indexOf("\t")==-1 ) delim= "\\s+";
-                    String[] s = line.trim().split(delim);
+                    String[] s = line.split(delim);
                     Pattern p = Pattern.compile("(.+)\\((.*)\\)");
                     planesArray1 = new String[s.length];
                     unitsArray1 = new Units[s.length];
@@ -580,7 +589,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         Matcher m = p.matcher(s[i]);
                         if (m.matches()) {
                             //System.err.printf("%d %s\n", i, m.group(1) );
-                            planesArray1[i] = m.group(1);
+                            planesArray1[i] = m.group(1).trim();
                             try {
                                 if ( m.group(2).equals("UTC") ) {
                                     unitsArray1[i] = Units.cdfTT2000;
@@ -593,13 +602,13 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                                 throw e;
                             }
                         } else {
-                            planesArray1[i] = s[i];
+                            planesArray1[i] = s[i].trim();
                             unitsArray1[i] = null;
                         }
                     }
                     continue;
                 }
-                String[] s = line.trim().split(delim);
+                String[] s = line.split(delim);
                 if (unitsArray1 == null) {
                     // support for legacy files
                     unitsArray1 = new Units[s.length];
@@ -644,6 +653,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         }
                     }
 
+                    if ( s[0].trim().length()==0 ) {
+                        System.err.println("here");
+                    }
                     x = unitsArray1[0].parse(s[0]);
                     y = unitsArray1[1].parse(s[1]);
 
@@ -1066,17 +1078,41 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     private void insertInternal(DataPoint newPoint) {
         int newSelect;
         synchronized ( dataPoints ) {
+            Set<String> keys= newPoint.planes.keySet();
+            for ( String key: keys ) {
+                Object o= newPoint.planes.get(key);
+                if ( o instanceof QDataSet ) {
+                    QDataSet qds= (QDataSet)o;
+                    if ( qds.rank()>0 ) {
+                        throw new IllegalArgumentException("QDataSet rank must be zero: "+key+"="+o );
+                    } else {
+                        newPoint.planes.put( key, DataSetUtil.asDatum((QDataSet)o) );
+                    }
+                } else if ( o instanceof Datum ) {
+                    // do nothing
+                } else if ( o instanceof String ) {
+                    // TODO: it would be nice to convert this so clients don't have to deal with enumeration data.
+                    throw new IllegalArgumentException("String value not supported in planes: "+key+"="+o);
+                }
+            }
             if (sorted) {
                 int index = Collections.binarySearch(dataPoints, newPoint);
                 if (index < 0) {
                     DataPoint dp0= null;
                     if ( ~index<dataPoints.size() ) {
                         dp0= (DataPoint)dataPoints.get(~index);
+                        keys= newPoint.planes.keySet();
+                        for ( String key : keys ) {
+                            if ( !dp0.planes.containsKey(key) ) {
+                                logger.fine("no place to put key: "+key );
+                            }
+                        }
                     }
                     DataPoint dp1= null;
                     if  ( ~index<dataPoints.size() ) {
                         dp1= (DataPoint)dataPoints.get(~index+1);
                     }
+                    
                     if ( dp0!=null && dp0.data[0].subtract(newPoint.data[0]).abs().lt(Units.microseconds.createDatum(10000)) ) {
                         dataPoints.set( ~index, newPoint );
                     } else if ( dp1!=null && dp1.data[0].subtract(newPoint.data[0]).abs().lt(Units.microseconds.createDatum(10000)) ) {
@@ -1104,7 +1140,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     public void addDataPoint(Datum x, Datum y, Map planes) {
         synchronized (dataPoints) {
-            if ( planes==null ) planes= new HashMap();
+            if ( planes==null ) planes= new LinkedHashMap();
             if (dataPoints.isEmpty()) {
                 unitsArray    = new Units[2 + planes.size()];
                 unitsArray[0] = x.getUnits();
@@ -1116,12 +1152,18 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 for ( Iterator i = planes.entrySet().iterator(); i.hasNext();) {
                     Entry entry= (Entry)i.next();
                     Object key = entry.getKey();
-                    planesArray[index] = String.valueOf(key);
+                    planesArray[index] = String.valueOf(key).trim();
                     Object value = entry.getValue();
                     if (value instanceof String) {
                         unitsArray[index] = null;
                     } else {
-                        unitsArray[index] = ((Datum) value).getUnits();
+                        if ( value instanceof Datum ) {
+                            unitsArray[index] = ((Datum) value).getUnits();
+                        } else if ( value instanceof QDataSet ) {
+                            unitsArray[index] = SemanticOps.getUnits((QDataSet)value);
+                        } else {
+                            throw new IllegalArgumentException("values must be Datum or QDataSet");
+                        }
                     }
 
                     index++;
