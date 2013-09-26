@@ -76,6 +76,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableColumn;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
@@ -202,27 +204,33 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
     }
 
+    private final Object planesArrayLock;
+    
     private class MyTableModel extends AbstractTableModel {
         @Override
         public int getColumnCount() {
-            if (unitsArray == null) {
-                return 2;
-            } else {
-                return planesArray.length;
+            synchronized (planesArrayLock) {
+                if (unitsArray == null) {
+                    return 2;
+                } else {
+                    return planesArray.length;
+                }
             }
         }
 
         @Override
         public String getColumnName(int j) {
-            String result = planesArray[j];
-            if (unitsArray[j] != null) {
-                if ( unitsArray[j] instanceof EnumerationUnits ) {
-                    result += "(ordinal)";
-                } else {
-                    result += "(" + unitsArray[j] + ")";
+            synchronized (planesArrayLock) {
+                String result = planesArray[j];
+                if (unitsArray[j] != null) {
+                    if ( unitsArray[j] instanceof EnumerationUnits ) {
+                        result += "(ordinal)";
+                    } else {
+                        result += "(" + unitsArray[j] + ")";
+                    }
                 }
+                return result;
             }
-            return result;
         }
 
         @Override
@@ -233,6 +241,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
 
+        
         @Override
         public Object getValueAt(int i, int j) {
             synchronized (dataPoints) {
@@ -972,6 +981,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /** Creates a new instance of DataPointRecorder */
     public DataPointRecorder() {
         super();
+        this.planesArrayLock = new Object();
         dataPoints = new ArrayList();
         myTableModel = new MyTableModel();
         this.setLayout(new BorderLayout());
@@ -990,15 +1000,29 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         this.add(menuBar, BorderLayout.NORTH);
 
-        planesArray =
-                new String[]{"X", "Y"};
-        unitsArray =
-                new Units[]{null, null};
+        planesArray = new String[]{"X", "Y"};
+        unitsArray = new Units[]{null, null};
 
         table = new JTable(myTableModel);
 
         table.getTableHeader().setReorderingAllowed(true);
+        table.setColumnModel( new DefaultTableColumnModel() {
 
+            @Override
+            public int getColumnCount() {
+                synchronized ( planesArrayLock ) {
+                    return super.getColumnCount(); //To change body of generated methods, choose Tools | Templates.
+                }
+            }
+
+            @Override
+            public TableColumn getColumn(int columnIndex) {
+                synchronized ( planesArrayLock ) {
+                    return super.getColumn(columnIndex); //To change body of generated methods, choose Tools | Templates.
+                }
+            }
+            
+        });
         table.setRowSelectionAllowed(true);
         table.addMouseListener(new DataPointRecorder.MyMouseAdapter(table));
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -1148,6 +1172,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         updateStatus();
         updateClients();
     }
+    
+    
 
     public void addDataPoint(Datum x, Datum y, Map planes) {
         synchronized (dataPoints) {
