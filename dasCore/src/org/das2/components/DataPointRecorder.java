@@ -46,13 +46,13 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
@@ -203,7 +203,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
 
     private class MyTableModel extends AbstractTableModel {
-
+        @Override
         public int getColumnCount() {
             if (unitsArray == null) {
                 return 2;
@@ -225,6 +225,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             return result;
         }
 
+        @Override
         public int getRowCount() {
             synchronized (dataPoints) {
                 int nrow = dataPoints.size();
@@ -232,6 +233,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
 
+        @Override
         public Object getValueAt(int i, int j) {
             synchronized (dataPoints) {
                 DataPoint x = (DataPoint) dataPoints.get(i);
@@ -265,6 +267,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         } else {
             synchronized ( dataPoints ) {
                 Comparator comp= new Comparator() {
+                    @Override
                     public int compare(Object o1, Object o2) {
                         return ((DataPoint)o1).get(0).compareTo((Datum)o2);
                     }
@@ -329,6 +332,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             fireDataSetUpdateEvent(new DataSetUpdateEvent((Object) this));
         }
 
+        @Override
         protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, ProgressMonitor monitor) throws DasException {
             synchronized ( dataPoints ) {
                 if (dataPoints.isEmpty()) {
@@ -344,6 +348,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             }
         }
 
+        @Override
         public Units getXUnits() {
             return unitsArray[0];
         }
@@ -487,7 +492,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 for (int j = 2; j < planesArray.length; j++) {
                     Object o = x.getPlane(planesArray[j]);
                     if ( o==null ) {
-                        x.getPlane(planesArray[j]);
+                        x.getPlane(planesArray[j]); // for debugging
+                        throw new IllegalArgumentException("unable to find plane: "+planesArray[j]);
                     }
                     if (unitsArray[j] == null) {
                         if (o == null) {
@@ -506,7 +512,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
             }
         } finally {
-            if ( r!=null ) r.close();
+            r.close();
         }
         modified = false;
         updateStatus();
@@ -669,7 +675,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
             }
 
-            if ( r!=null ) r.close();
+            r.close();
 
             saveFile= file;  // go ahead and set this in case client is going to do something with this.
             updateStatus();
@@ -714,7 +720,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             popup = new JPopupMenu("Options");
             menuItem = new JMenuItem("Delete Row(s)");
             menuItem.addActionListener(new ActionListener() {
-
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     int[] selectedRows = parent.getSelectedRows();
                     deleteRows(selectedRows);
@@ -746,6 +752,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     private Action getSaveAsAction() {
         return new AbstractAction("Save As...") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 saveAs();
             }
@@ -754,6 +761,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     private Action getSaveAction() {
         return new AbstractAction("Save") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 save();
             }
@@ -762,6 +770,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     private Action getClearSelectionAction() {
         return new AbstractAction("Clear Selection") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 table.getSelectionModel().clearSelection();
                 fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));  
@@ -777,6 +786,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     public boolean saveAs() {
         JFileChooser jj = new JFileChooser();
         jj.setFileFilter( new FileFilter() {
+            @Override
             public boolean accept(File pathname) {
                 return pathname.toString().endsWith(".dat") || pathname.toString().endsWith(".txt");
             }
@@ -855,7 +865,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     private Action getLoadAction() {
         return new AbstractAction("Open...") {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (checkModified(e)) {
                     JFileChooser jj = new JFileChooser();
@@ -871,7 +881,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         final File loadFile = jj.getSelectedFile();
                         prefs.put("components.DataPointRecorder.lastFileLoad", loadFile.toString());
                         Runnable run = new Runnable() {
-
+                            @Override
                             public void run() {
                                 try {
                                     loadFromFile(loadFile);
@@ -914,7 +924,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     private Action getNewAction() {
         return new AbstractAction("New") {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (checkModified(e)) {
                     dataPoints.clear();
@@ -930,7 +940,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     private Action getPropertiesAction() {
         return new AbstractAction("Properties") {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 new PropertyEditor(DataPointRecorder.this).showDialog(DataPointRecorder.this);
             }
@@ -939,6 +949,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     private Action getUpdateAction() {
         return new AbstractAction("Update") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 update();
             }
@@ -991,7 +1002,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         table.setRowSelectionAllowed(true);
         table.addMouseListener(new DataPointRecorder.MyMouseAdapter(table));
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(DataPointRecorder.this));
                 int selected = table.getSelectedRow(); // we could do a better job here
@@ -1104,7 +1115,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         keys= newPoint.planes.keySet();
                         for ( String key : keys ) {
                             if ( !dp0.planes.containsKey(key) ) {
-                                logger.fine("no place to put key: "+key );
+                                logger.log(Level.FINE, "no place to put key: {0}", key);
                             }
                         }
                     }
@@ -1160,9 +1171,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         if ( value instanceof Datum ) {
                             unitsArray[index] = ((Datum) value).getUnits();
                         } else if ( value instanceof QDataSet ) {
-                            unitsArray[index] = SemanticOps.getUnits((QDataSet)value);
+                            QDataSet qds= (QDataSet)value;
+                            if ( qds.rank()>0 ) {
+                                throw new IllegalArgumentException("qdatasets in planes must be rank 0");
+                            } else {
+                                unitsArray[index] = SemanticOps.getUnits((QDataSet)value);
+                            }
                         } else {
-                            throw new IllegalArgumentException("values must be Datum or QDataSet");
+                            throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet");
                         }
                     }
 
@@ -1243,22 +1259,20 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         };
     }
 
-	@SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation")
+    @Override
     public void dataPointSelected(org.das2.event.DataPointSelectionEvent e) {
-        String comment = "";
         Map planesMap;
 
         if (e instanceof CommentDataPointSelectionEvent) {
+            String comment;
             comment = ((CommentDataPointSelectionEvent) e).getComment();
-            planesMap =
-                    new LinkedHashMap();
+            planesMap = new LinkedHashMap();
             planesMap.put("comment", comment);
         } else {
             String[] x = e.getPlaneIds();
-            planesMap =
-                    new LinkedHashMap();
-            for (int i = 0; i <
-                    x.length; i++) {
+            planesMap = new LinkedHashMap();
+            for (int i = 0; i <x.length; i++) {
                 planesMap.put(x[i], e.getPlane(x[i]));
             }
 
