@@ -2115,6 +2115,11 @@ public class DataSetUtil {
         return asDatum((QDataSet)ds);
     }
 
+    /**
+     * convert the rank 0 QDataSet to a Datum.
+     * @param ds rank 0 dataset.
+     * @return Datum 
+     */
     public static Datum asDatum( QDataSet ds ) {
         if ( ds.rank()>0 ) {
             throw new IllegalArgumentException("dataset is not rank 0");
@@ -2143,12 +2148,28 @@ public class DataSetUtil {
      */
     public static DatumRange asDatumRange( QDataSet ds, boolean sloppy ) {
         Units u= SemanticOps.getUnits(ds);
+        double dmin= ds.value(0);
+        double dmax= ds.value(1);
+        QDataSet bds= (QDataSet) ds.property( QDataSet.BUNDLE_0 );
+        if ( bds!=null ) {
+            Units u0= (Units) bds.property(QDataSet.UNITS,0);
+            Units u1= (Units) bds.property(QDataSet.UNITS,1);
+            if ( u0!=null && u1!=null ) {
+                if ( u0==u1 ) {
+                    u= u0;
+                } else {
+                    logger.finest("accommodating bundle of min,delta.");
+                    u= u0;
+                    dmax= u1.convertDoubleTo( u0.getOffsetUnits(), dmax ) + dmin;
+                }
+            }
+        }
         if ( sloppy==false ) {
             if ( !ds.property( QDataSet.BINS_0 ).equals(QDataSet.VALUE_BINS_MIN_MAX) ) {
                 throw new IllegalArgumentException("expected min,max for BINS_0 because we are not allowing sloppy.");
             }
         }
-        return new DatumRange( ds.value(0), ds.value(1), u );
+        return new DatumRange( dmin, dmax, u );
     }
 
     /**
