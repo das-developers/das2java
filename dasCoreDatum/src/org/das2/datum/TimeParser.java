@@ -640,6 +640,9 @@ public class TimeParser {
                 delim[i] = ss[i].substring(pp + 1);
             } else if ( ss[i].charAt(pp) == '(') {
                 int endIndex = ss[i].indexOf(')', pp);
+                if ( endIndex==-1 ) {
+                    throw new IllegalArgumentException("opening paren but no closing paren in \"" + ss[i]+ "\"");
+                }
                 int semi= ss[i].indexOf(";", pp );
                 if ( semi != -1) {
                     fc[i] = ss[i].substring(pp + 1, semi );
