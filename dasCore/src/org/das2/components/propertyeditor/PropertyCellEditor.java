@@ -102,7 +102,7 @@ class PropertyCellEditor extends AbstractCellEditor implements TableCellEditor, 
     private JTree propertyTree;
     
     public PropertyCellEditor(JTree propertyTree) {
-        integerField = new JFormattedTextField(new Integer(0));
+        integerField = new JFormattedTextField(Integer.valueOf(0));
         integerField.addActionListener(this);
         
         FloatingPointFormatter floatFormatter = new FloatingPointFormatter();
@@ -209,7 +209,7 @@ class PropertyCellEditor extends AbstractCellEditor implements TableCellEditor, 
             Object value = integerField.getValue();
             if (value instanceof Integer) return value;
             if (value instanceof Number) {
-                return new Integer(((Number)value).intValue());
+                return Integer.valueOf(((Number)value).intValue());
             }
             throw new IllegalStateException("Value from textfield is not of type java.lang.Number");
         }
@@ -217,7 +217,7 @@ class PropertyCellEditor extends AbstractCellEditor implements TableCellEditor, 
             Object value = integerField.getValue();
             if (value instanceof Long) return value;
             if (value instanceof Number) {
-                return new Long(((Number)value).longValue());
+                return Long.valueOf(((Number)value).longValue());
             }
             throw new IllegalStateException("Value from textfield is not of type java.lang.Number");
         }
