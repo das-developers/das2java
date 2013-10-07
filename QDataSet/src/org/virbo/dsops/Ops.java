@@ -3157,6 +3157,9 @@ public class Ops {
                 }
             }
             builder.putProperty(QDataSet.MONOTONIC, Boolean.TRUE);
+            if ( builder.getLength()==ds.length() ) {
+                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT,0);
+            }
         } else {
             builder = new DataSetBuilder(2, 100, ds.rank(), 1);
             while (iter.hasNext()) {
