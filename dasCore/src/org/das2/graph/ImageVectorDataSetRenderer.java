@@ -41,6 +41,7 @@ import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import static org.das2.graph.Renderer.logger;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -181,7 +182,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
-        //long t0= System.currentTimeMillis();
+        long t0= System.currentTimeMillis();
 
         logger.fine("entering ImageVectorDataSetRenderer.render");
         
@@ -249,6 +250,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
         }
 
+        logger.log(Level.FINE, "done ImageVectorDataSetRenderer.render {0} ms", ( System.currentTimeMillis()-t0 ));
          //System.err.println("done render "+ ( System.currentTimeMillis()-t0 )+ " ms" );
 
     }
@@ -641,7 +643,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
 
         //System.err.println("enter updatePlotImage");
-        //long t0= System.currentTimeMillis();
+        long t0= System.currentTimeMillis();
 
         //if ( java.swing.SwingUtilities.isEventDispatchThread() ) {
         //    System.err.println("called on event thread");
@@ -733,8 +735,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
         }
 
-        logger.fine("done updatePlotImage");
-        //System.err.println("done updatePlotImage "+ ( System.currentTimeMillis()-t0 )+ " ms" );
+        logger.log(Level.FINE, "done updatePlotImage {0} ms", ( System.currentTimeMillis()-t0 ));
 
     }
 
