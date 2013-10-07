@@ -57,6 +57,7 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.ConstantDataSet;
+import org.virbo.dataset.DataSetAnnotations;
 import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
@@ -3135,6 +3136,10 @@ public class Ops {
         }
         if ( ds.rank()<1 ) {
             throw new IllegalArgumentException("dataset is rank 0");
+        }
+        
+        if ( ds.rank()==1 && 0==DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT) ) {
+            return Ops.indgen(ds.length());
         }
         
         DataSetBuilder builder;
