@@ -149,7 +149,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
          * get the Datum from the planes.  
          */
         Object getPlane(String name) {
-            return planes.get(name);
+            return planes.get(name.trim());
         }
 
         /**
@@ -597,6 +597,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     while ( line.startsWith("#") ) line = line.substring(1);
                     if ( line.indexOf("\t")==-1 ) delim= "\\s+";
                     String[] s = line.split(delim);
+                    for ( int i=0; i<s.length; i++ ) {
+                        s[i]= s[i].trim();
+                    }                    
                     Pattern p = Pattern.compile("(.+)\\((.*)\\)");
                     planesArray1 = new String[s.length];
                     unitsArray1 = new Units[s.length];
@@ -606,12 +609,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             //System.err.printf("%d %s\n", i, m.group(1) );
                             planesArray1[i] = m.group(1).trim();
                             try {
-                                if ( m.group(2).equals("UTC") ) {
+                                if ( m.group(2).trim().equals("UTC") ) {
                                     unitsArray1[i] = Units.cdfTT2000;
-                                } else if ( m.group(2).equals("ordinal") ) {
+                                } else if ( m.group(2).trim().equals("ordinal") ) {
                                     unitsArray1[i] = EnumerationUnits.create("ordinal");
                                 } else {
-                                    unitsArray1[i] = SemanticOps.lookupUnits(m.group(2));
+                                    unitsArray1[i] = SemanticOps.lookupUnits(m.group(2).trim());
                                 }
                             } catch (IndexOutOfBoundsException e) {
                                 throw e;
@@ -624,6 +627,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     continue;
                 }
                 String[] s = line.split(delim);
+                for ( int i=0; i<s.length; i++ ) {
+                    s[i]= s[i].trim();
+                }
                 if (unitsArray1 == null) {
                     // support for legacy files
                     unitsArray1 = new Units[s.length];
@@ -1071,8 +1077,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     public static DataPointRecorder createFramed() {
         DataPointRecorder result;
         JFrame frame = new JFrame("Data Point Recorder");
-        result =
-                new DataPointRecorder();
+        result = new DataPointRecorder();
         frame.getContentPane().add(result);
         frame.pack();
         frame.setVisible(true);
@@ -1131,8 +1136,20 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 }
             }
             if (sorted) {
-                int index = Collections.binarySearch(dataPoints, newPoint);
+                if ( dataPoints.size()>2 ) { // this checks out, it is sorted...
+                    Units off= ((DataPoint)(dataPoints.get(0))).data[0].getUnits().getOffsetUnits();
+                    Datum doff= off.createDatum(0);
+                    for ( int i=1; i<dataPoints.size(); i++ ) {
+                        DataPoint p1= (DataPoint)(dataPoints.get(i));
+                        DataPoint p0= (DataPoint)(dataPoints.get(i-1));
+                        if ( p1.data[0].subtract(p0.data[0]).lt(doff) ) {
+                            System.err.println("here not sorted");
+                        }
+                    }
+                }
+                int index = Collections.binarySearch( dataPoints, newPoint );
                 if (index < 0) {
+                    
                     DataPoint dp0= null;
                     if ( ~index<dataPoints.size() ) {
                         dp0= (DataPoint)dataPoints.get(~index);
