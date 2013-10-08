@@ -286,7 +286,7 @@ public class SerialStreamFormatter {
             prop= null;
 
             Object value = e.getValue();
-            String name1= name;
+            String name1= name; // name of the unsliced dataset
             boolean allowRank0 = true;
             if ( slice ) {
                 if ( name.startsWith("DEPEND_") ) {
@@ -294,6 +294,10 @@ public class SerialStreamFormatter {
                 } else if ( name.equals("CONTEXT_0") ) {
                     name1= "DEPEND_0";
                     allowRank0= false;
+                } else if ( name.startsWith("BINS_") ) {
+                    name1= "BINS_" + ( 1 + Integer.parseInt( name.substring(5) ) );
+                } else if ( name.startsWith("BUNDLE_") ) {
+                    name1= "BUNDLE_" + ( 1 + Integer.parseInt( name.substring(7) ) );
                 }
             }
             
@@ -327,10 +331,10 @@ public class SerialStreamFormatter {
             } else {
                 SerializeDelegate sd = SerializeRegistry.getDelegate(value.getClass());
                 if (sd == null) {
-                    System.err.println("dropping "+name+" because unsupported type: "+value.getClass());
+                    System.err.println("dropping "+name1+" because unsupported type: "+value.getClass());
                 } else {
                     prop = document.createElement("property");
-                    prop.setAttribute("name", name);
+                    prop.setAttribute("name", name1);
                     if ( sd instanceof XMLSerializeDelegate ) {
                         prop.appendChild( ((XMLSerializeDelegate)sd).xmlFormat(document,value) );
                     } else {
