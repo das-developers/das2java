@@ -444,6 +444,10 @@ public final class DDataSet extends ArrayDataSet {
      */
     @Override
     public QDataSet trim(int start, int end) {
+        if ( RANGE_CHECK ) {
+            if ( start>len0 ) throw new IndexOutOfBoundsException("start="+start+" > "+len0 );
+            if ( end>len0 ) throw new IndexOutOfBoundsException("end="+end+" > "+len0 );
+        }
         int nrank = this.rank;
         int noff1= start * len1 * len2 * len3;
         int noff2= end * len1 * len2 * len3;
