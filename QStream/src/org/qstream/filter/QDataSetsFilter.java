@@ -270,7 +270,7 @@ public class QDataSetsFilter implements StreamHandler {
 
                 //XPathExpression expr= xpath.compile("/packet/qdataset["+j+"]/properties");
                 Map<String,Object> props= propsn.get( planed.getName() );
-                DataSetUtil.putProperties( props, ds );
+                if ( props!=null ) DataSetUtil.putProperties( props, ds );
 
                 //j++;
 
@@ -285,7 +285,7 @@ public class QDataSetsFilter implements StreamHandler {
         }
 
     }
-
+    
     @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         sink.streamClosed(sd);
