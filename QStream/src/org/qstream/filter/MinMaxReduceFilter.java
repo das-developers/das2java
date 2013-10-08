@@ -13,6 +13,8 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.text.ParseException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.virbo.dataset.DataSetOps;
@@ -45,7 +47,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
     private static final String NAME= "MinMax";
     
     void init( OutputStream out ) throws IOException, StreamException {
-        form.setAsciiTypes(true);
+        form.setAsciiTypes(false);
         form.setUnitTransferType( Units.us2000, new AsciiTimeTransferType(17,Units.us2000 ) );
         
         String name= NAME;
@@ -61,17 +63,29 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
                 if ( pld==planes.get(0) ) {
                     ttag= ds;
                 } else if ( pld==planes.get(planes.size()-1) ) {
-                    int i=0;
-                    while ( (i+icadence)<offsets.length() ) {                        
-                        MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable( Ops.extent(ds.trim(i,i+icadence) ) );
+                    if ( icadence<64 ) {
+                        MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable( ds );
                         mds.putProperty( QDataSet.NAME, NAME );
-                        mds.putProperty( QDataSet.CONTEXT_0, Ops.add( ttag, offsets.slice(i+icadence/2) ) );
+                        mds.putProperty( QDataSet.CONTEXT_0, ttag );
+                        mds.putProperty( QDataSet.DEPEND_0, offsets );
                         try {
-                            form.format( "", mds, false );
+                            form.format( "waveform", mds, SerialStreamFormatter.INOUTFORM_STREAMING );
                         } catch ( IOException ex ) {
                         } catch ( StreamException ex ) {
                         }
-                        i+= icadence;
+                    } else {
+                        int i=0;
+                        while ( (i+icadence)<offsets.length() ) {                        
+                            MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable( Ops.extent(ds.trim(i,i+icadence) ) );
+                            mds.putProperty( QDataSet.NAME, NAME );
+                            mds.putProperty( QDataSet.CONTEXT_0, Ops.add( ttag, offsets.slice(i+icadence/2) ) );
+                            try {
+                                form.format( "reduce", mds, SerialStreamFormatter.INOUTFORM_STREAMING );
+                            } catch ( IOException ex ) {
+                            } catch ( StreamException ex ) {
+                            }
+                            i+= icadence;
+                        }
                     }
                 }
             } else if ( planes.size()==1 ) {
@@ -82,6 +96,15 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
                 }
                 icadence= icadence/2;                
                 if ( icadence<2 ) throw new IllegalArgumentException("should not happen");
+                if ( icadence<64 ) {
+                    try {
+                        form.format( "offsets", ds, SerialStreamFormatter.INOUTFORM_ONE_RECORD );
+                    } catch (IOException ex) {
+                        Logger.getLogger(MinMaxReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (StreamException ex) {
+                        Logger.getLogger(MinMaxReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         }
         
