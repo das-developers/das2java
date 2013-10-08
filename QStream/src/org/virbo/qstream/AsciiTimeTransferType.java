@@ -9,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.TimeUtil;
@@ -19,10 +18,10 @@ import org.das2.datum.format.TimeDatumFormatter;
 import org.virbo.dataset.QDataSet;
 
 /**
- *
+ * ISO-8601 encoded times.
  * @author jbf
  */
-class AsciiTimeTransferType extends AsciiTransferType {
+public class AsciiTimeTransferType extends AsciiTransferType {
 
     Units units;
     DatumFormatter formatter;
