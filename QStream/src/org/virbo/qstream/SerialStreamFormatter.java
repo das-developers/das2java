@@ -167,12 +167,14 @@ public class SerialStreamFormatter {
             name = "ds_" + names.size();
         }
 
-        String name0= name;
-        int i=1;
-        name= name0 + String.valueOf(i);
-        while (  namesRev.containsKey(name) ) {
-            i=i+1;
-            name = name0 + String.valueOf(i);
+        if ( namesRev.containsKey(name) ) {
+            String name0= name;
+            int i=1;
+            name= name0 + String.valueOf(i);
+            while (  namesRev.containsKey(name) ) {
+                i=i+1;
+                name = name0 + String.valueOf(i);
+            }
         }
 
         names.put( ds1, name );
