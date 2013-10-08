@@ -47,8 +47,13 @@ import org.w3c.dom.Element;
  * @author jbf
  */
 public class SerialStreamFormatter {
+    
     public static final int DEFAULT_TIME_DIGITS = 27;
-
+    
+    public static final String INOUTFORM_INLINE = "inline";         // put the values in the descriptor
+    public static final String INOUTFORM_ONE_RECORD = "oneRecord";  // put the values in one record
+    public static final String INOUTFORM_STREAMING = "streaming";   // put the values in records, one slice at a time.
+    
     StreamDescriptor sd;
 
     StreamHandler sh;
@@ -235,7 +240,12 @@ public class SerialStreamFormatter {
                     tt= new AsciiTransferType( 10, true );
                 }
             } else {
-                tt= new DoubleTransferType();
+                if ( ds1.length()>125000 ) {
+                    logger.fine("using floats because we'll certainly run out of room otherwise");
+                    tt= new FloatTransferType();
+                } else {
+                    tt= new DoubleTransferType();
+                }
             }
         }
         return tt;
@@ -559,9 +569,9 @@ public class SerialStreamFormatter {
      * @throws IOException
      * @throws StreamException
      */
-    public void maybeFormat( String name, QDataSet ds1, boolean inline ) throws IOException, StreamException  {
+    public void maybeFormat( String name, QDataSet ds1, String inoutForm ) throws IOException, StreamException  {
         if ( ds1!=null ) {
-            format( name, ds1, inline );
+            format( name, ds1, inoutForm );
         }
     }
 
@@ -570,14 +580,14 @@ public class SerialStreamFormatter {
      * @param joinName the name to which we join the dataset.
      * @param name the name for the dataset of which ds1 is all or a slice of, or null.
      * @param ds1
-     * @param inline if true, then the entire dataset will be present.
+     * @param inoutForm one of "inline", "oneRecord", or "streaming"
      * @throws IOException
      * @throws StreamException
      */
-    public void format( String joinName, String name, QDataSet ds1, boolean inline ) throws IOException, StreamException  {
+    public void format( String joinName, String name, QDataSet ds1, String inoutForm ) throws IOException, StreamException  {
 
-        if ( name==null ) {
-            if ( inline ) {
+        if ( name==null && name.trim().length()==0 ) {
+            if ( inoutForm.equals(INOUTFORM_INLINE) ) {
                 name= nameFor(ds1);
             } else {
                 throw new IllegalArgumentException("anonymous dataset must be inline");
@@ -587,9 +597,11 @@ public class SerialStreamFormatter {
         //get the packetDescriptor being used to describe these slices.
         PacketDescriptor pd= pds.get(name);
 
-        if ( pd==null || inline ) {
-            if ( inline ) {
+        if ( pd==null || inoutForm.equals(INOUTFORM_INLINE) ) {
+            if ( inoutForm.equals(INOUTFORM_INLINE) ) {
                 pd= doPacketDescriptor(sd, ds1, false, true, ds1.rank(), joinName );
+            } else if ( inoutForm.equals("oneRecord") ) {
+                pd= doPacketDescriptor(sd, ds1, false, false, ds1.rank(), joinName );
             } else {
                 pd= doPacketDescriptor(sd, ds1, true, false, ds1.rank()+1, joinName );
             }
@@ -598,7 +610,7 @@ public class SerialStreamFormatter {
             
             sh.packetDescriptor(pd);
 
-            if ( inline ) return;
+            if ( inoutForm.equals(INOUTFORM_INLINE) ) return;
         }
 
         int bufferSize = 4 + pd.sizeBytes(); // :01:
@@ -698,8 +710,8 @@ public class SerialStreamFormatter {
      * @throws IOException
      * @throws StreamException
      */
-    public void format( String name, QDataSet ds1, boolean inline ) throws IOException, StreamException  {
-        format( null, name, ds1, inline );
+    public void format( String name, QDataSet ds1, String inoutForm ) throws IOException, StreamException  {
+        format( null, name, ds1, inoutForm );
     }
 
 
@@ -786,18 +798,18 @@ public class SerialStreamFormatter {
             form.join( name, 3, new HashMap<String, Object>() );
             for ( int j=0; j<ds.length(); j++ ) {
                 QDataSet jds1= ds.slice(j);
-                form.maybeFormat( null, (QDataSet) jds1.property(QDataSet.DEPEND_1), true );
+                form.maybeFormat( null, (QDataSet) jds1.property(QDataSet.DEPEND_1), INOUTFORM_INLINE);
                 String channelName= name + String.valueOf(j);
                 for ( int i=0; i<jds1.length(); i++ ) {
-                    form.format( name, channelName, jds1.slice(i), false ); //TODO: remove DDataSet.copy used for debugging.
+                    form.format( name, channelName, jds1.slice(i), INOUTFORM_STREAMING); //TODO: remove DDataSet.copy used for debugging.
                 }            
             }
         } else {
-            form.maybeFormat( null, (QDataSet) ds.property(QDataSet.DEPEND_1), true );
+            form.maybeFormat( null, (QDataSet) ds.property(QDataSet.DEPEND_1), INOUTFORM_INLINE );
             for ( int i=0; i<ds.length(); i++ ) {
                 //TODO: we should just send all the data explicitly rather than requiring that a 
                 // dataset be formed for each packet: form.format( name, tt, ds.slice(i) ), false );
-                form.format( name, ds.slice(i), false ); //TODO: remove DDataSet.copy used for debugging.
+                form.format( name, ds.slice(i), INOUTFORM_STREAMING ); //TODO: remove DDataSet.copy used for debugging.
             }
         }
 
