@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
- *
+ * Four byte float type.
  * @author jbf
  */
 public class FloatTransferType extends TransferType {
