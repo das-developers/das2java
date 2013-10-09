@@ -309,6 +309,7 @@ public class SeriesRenderer extends Renderer {
          * @param mon
          * @return the number of points drawn, though possibly off screen.
          */
+        @Override
         public synchronized int render(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             int i;
             if ( vds.rank()!=1 && !SemanticOps.isBundle(vds) ) {
@@ -329,6 +330,7 @@ public class SeriesRenderer extends Renderer {
             return i;
         }
 
+        @Override
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
             QDataSet colorByDataSet1 = colorByDataSet(dataSet);
@@ -410,8 +412,8 @@ public class SeriesRenderer extends Renderer {
                             if ( wdsz.value(index)>0 ) haveValidColor= true;
                             colors[i] = fcolorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
                         } catch ( NullPointerException ex ) {
-                            System.err.println("here391");
-                            ex.printStackTrace();
+                            //System.err.println("here391");
+                            logger.log( Level.WARNING, null, ex );
                         }
                     }
                     i++;
@@ -426,6 +428,7 @@ public class SeriesRenderer extends Renderer {
 
         }
 
+        @Override
         public boolean acceptContext(Point2D.Double dp) {
             if (dpsymsPath == null) {
                 return false;
@@ -446,6 +449,7 @@ public class SeriesRenderer extends Renderer {
 
         GeneralPath p;
 
+        @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             if (p == null) {
                 return 0;
@@ -454,6 +458,7 @@ public class SeriesRenderer extends Renderer {
             return lastIndex - firstIndex;
         }
 
+        @Override
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
             QDataSet vds= ytagsDataSet(dataSet);
@@ -495,6 +500,7 @@ public class SeriesRenderer extends Renderer {
 
         }
 
+        @Override
         public boolean acceptContext(Point2D.Double dp) {
             return p != null && p.contains(dp.x - 2, dp.y - 2, 5, 5);
 
@@ -524,6 +530,7 @@ public class SeriesRenderer extends Renderer {
         private GeneralPath path1;
         private Color color;  // override default color
 
+        @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             if ( vds.rank()!=1 && !SemanticOps.isBundle(vds) ) {
                 renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
@@ -538,6 +545,7 @@ public class SeriesRenderer extends Renderer {
             return 0;
         }
 
+        @Override
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
             QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
@@ -603,7 +611,7 @@ public class SeriesRenderer extends Renderer {
             double y;
 
             double x0; /* the last plottable point */
-            double y0; /* the last plottable point */
+            //double y0; /* the last plottable point */
 
             float fx;
             float fy;
@@ -644,7 +652,7 @@ public class SeriesRenderer extends Renderer {
             }
 
             x0 = x;
-            y0 = y;
+            //y0 = y;
             fx0 = fx;
             fy0 = fy;
 
@@ -704,7 +712,7 @@ public class SeriesRenderer extends Renderer {
                     } // else introduce break in line
 
                     x0 = x;
-                    y0 = y;
+                    //y0 = y;
                     fx0 = fx;
                     fy0 = fy;
                     visible0 = visible;
@@ -742,6 +750,7 @@ public class SeriesRenderer extends Renderer {
 
         }
 
+        @Override
         public boolean acceptContext(Point2D.Double dp) {
             if ( path1==null ) return false;
             Rectangle2D hitbox = new Rectangle2D.Double(dp.x-5, dp.y-5, 10f, 10f);
@@ -777,44 +786,45 @@ public class SeriesRenderer extends Renderer {
         return fx1;
     }
 
-    /**
-     * for debugging, dumps the path iterator out to a file.
-     * @param it 
-     */
-    private void dumpPath(PathIterator it) {
-        PrintWriter write = null;
-        try {
-            write = new PrintWriter( new FileWriter("/tmp/foo."+id+".txt") );
-            
-            while ( !it.isDone() ) {
-                float[] coords= new float[6];
-                
-                int type= it.currentSegment(coords);
-                write.printf( "%9d ", type );
-                if ( type==PathIterator.SEG_MOVETO) {
-                    for ( int i=0; i<6; i++ ) {
-                        write.printf( "%9.1f ", -99999.  );
-                    }
-                    write.println();
-                    write.printf( "%9d ", type );
-                }
-                for ( int i=0; i<6; i++ ) {
-                    write.printf( "%9.1f ", coords[i] );
-                }
-                write.println();
-                it.next();
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(SeriesRenderer.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            write.close();
-        }
-    }
+//    /**
+//     * for debugging, dumps the path iterator out to a file.
+//     * @param it 
+//     */
+//    private void dumpPath(PathIterator it) {
+//        PrintWriter write = null;
+//        try {
+//            write = new PrintWriter( new FileWriter("/tmp/foo."+id+".txt") );
+//            
+//            while ( !it.isDone() ) {
+//                float[] coords= new float[6];
+//                
+//                int type= it.currentSegment(coords);
+//                write.printf( "%9d ", type );
+//                if ( type==PathIterator.SEG_MOVETO) {
+//                    for ( int i=0; i<6; i++ ) {
+//                        write.printf( "%9.1f ", -99999.  );
+//                    }
+//                    write.println();
+//                    write.printf( "%9d ", type );
+//                }
+//                for ( int i=0; i<6; i++ ) {
+//                    write.printf( "%9.1f ", coords[i] );
+//                }
+//                write.println();
+//                it.next();
+//            }
+//        } catch (IOException ex) {
+//            Logger.getLogger(SeriesRenderer.class.getName()).log(Level.SEVERE, null, ex);
+//        } finally {
+//            write.close();
+//        }
+//    }
     
     class FillRenderElement implements RenderElement {
 
         private GeneralPath fillToRefPath1;
 
+        @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             if ( fillToRefPath1==null ) {
                 return 0;
@@ -827,6 +837,7 @@ public class SeriesRenderer extends Renderer {
             return 0;
         }
 
+        @Override
         public void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
             if ( lastIndex-firstIndex==0 ) {
@@ -879,7 +890,7 @@ public class SeriesRenderer extends Renderer {
             double y;
 
             double x0; /* the last plottable point */
-            double y0; /* the last plottable point */
+            //double y0; /* the last plottable point */
 
             float fyref = (float) yAxis.transform(yref, yUnits);
             float fx;
@@ -910,7 +921,7 @@ public class SeriesRenderer extends Renderer {
             }
 
             x0 = x;
-            y0 = y;
+            //y0 = y;
             fx0 = fx;
             fy0 = fy;
 
@@ -960,7 +971,7 @@ public class SeriesRenderer extends Renderer {
                         } // else introduce break in line
 
                         x0 = x;
-                        y0 = y;
+                        //y0 = y;
                         fx0 = fx;
                         fy0 = fy;
 
@@ -989,6 +1000,7 @@ public class SeriesRenderer extends Renderer {
 
         }
 
+        @Override
         public boolean acceptContext(Point2D.Double dp) {
             return fillToRefPath1 != null && fillToRefPath1.contains(dp);
         }
@@ -1049,12 +1061,12 @@ public class SeriesRenderer extends Renderer {
         }
     }
 
-    private void reportCount() {
+   // private void reportCount() {
         //if ( renderCount % 100 ==0 ) {
         //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );
         //new Throwable("").printStackTrace();
         //}
-    }
+  //  }
 
     /**
      * updates firstIndex and lastIndex that point to the part of
@@ -1159,6 +1171,7 @@ public class SeriesRenderer extends Renderer {
         if ( active ) updatePsym();
     }
 
+    @Override
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         DasPlot lparent= this.parent;
@@ -1275,6 +1288,7 @@ public class SeriesRenderer extends Renderer {
                       // bunch of panels.
             //System.err.println("need to update first/last bit");
             javax.swing.Timer t= new javax.swing.Timer( 200, new ActionListener() {
+                @Override
                 public void actionPerformed( ActionEvent e ) {
                     update();
                 }
@@ -1385,6 +1399,7 @@ public class SeriesRenderer extends Renderer {
      */
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
+        long t0= System.currentTimeMillis();
         logger.log(Level.FINE, "enter {0}.updatePlotImage: {1}", new Object[]{id, String.valueOf(getDataSet()) });
 
         //updateImageCount++;
@@ -1460,10 +1475,6 @@ public class SeriesRenderer extends Renderer {
         if (!plottable) {
             return;
         }
-
-
-        logger.fine("entering updatePlotImage");
-        long t0 = System.currentTimeMillis();
 
         dataSetClipped = false;
 
@@ -1868,6 +1879,7 @@ public class SeriesRenderer extends Renderer {
     }
 
     PropertyChangeListener colorBarListener= new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
            if (colorByDataSetId != null && !colorByDataSetId.equals("")) {
                if ( evt.getPropertyName().equals(DasColorBar.PROPERTY_TYPE) ) {
