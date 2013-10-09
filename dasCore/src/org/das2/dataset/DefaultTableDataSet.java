@@ -322,22 +322,24 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             } else {
                 ArrayList indeces= new ArrayList();
                 int itable1= itable;
+                int ntable1= yTags.length;
                 for ( int i1= i; i1<getXLength(); i1++ ) {
                     boolean sameTable= yTags[itable1]==m;
                     if ( sameTable ) {
-                        for ( i1=tableOffsets[itable]; i1<getXLength() || i1<tableOffsets[itable+1]; i1++ ) {
+                        for ( i1=tableOffsets[itable1]; i1<getXLength() && ( itable1==ntable1-1 || i1<tableOffsets[itable1+1] ); i1++ ) {
                             indeces.add( i1 );
                         }
-                        if ( itable1==itable ) i=i1;
+                        itable1++;
                     } else {
-                        if ( itable<tableCount ) {
-                            i1= tableOffsets[itable+1];
-                            itable++;
+                        itable1++;
+                        if ( itable1<tableCount ) {
+                            i1= tableOffsets[itable1]-1; //-1 is because we increment in for loop.
                         } else {
-                            i1= getXLength();
+                            i1= getXLength()-1;
                         }
                     }
                 }
+                System.err.println("indeces="+indeces.size());
                 double[] xTags= new double[ indeces.size() ];
                 int j=0;
                 double[] back= new double[ indeces.size()*m.length ];
