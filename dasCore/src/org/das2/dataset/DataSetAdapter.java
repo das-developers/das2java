@@ -43,7 +43,11 @@ public class DataSetAdapter {
             if ( tds.tableCount()<=1 ) {
                 return new SimpleTable(tds);
             } else {
-                return new MultipleTable(tds);
+                if ( tds instanceof DefaultTableDataSet ) {
+                    return ((DefaultTableDataSet)tds).toQDataSet();
+                } else {                
+                    return new MultipleTable(tds);
+                }
             }
         } else if ( ds==null ) {
             throw new NullPointerException("dataset is null");
