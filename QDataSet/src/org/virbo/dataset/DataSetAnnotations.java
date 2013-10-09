@@ -33,6 +33,8 @@ public class DataSetAnnotations {
      */
     public static final String ANNOTATION_INVALID_COUNT= "invalidCount";
     
+    public static final String ANNOTATION_BOUNDS= "bounds";
+    
     public synchronized Object getAnnotation( QDataSet ds, String annotation ) {
         Map<String,Object> anno= annotations.get(ds);
         if ( anno==null ) {
