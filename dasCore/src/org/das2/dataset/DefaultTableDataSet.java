@@ -33,6 +33,9 @@ import java.io.PrintStream;
 import java.util.*;
 import java.text.MessageFormat;
 import java.util.logging.Logger;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.QDataSet;
 
 /**
  *
@@ -301,6 +304,54 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         return result;
     }
     
+    /**
+     * this is a highly-interleaved table, and if we sort it out and create a 
+     * optimal QDataSet, it's better.
+     */
+    public org.virbo.dataset.AbstractDataSet toQDataSet( ) {
+        JoinDataSet result= new JoinDataSet(3);
+        Set<double[]> doneModes= new HashSet<double[]>();
+        for ( int i=0; i<getXLength(); i++ ) {
+            double[] m= yTags[i];
+            if ( doneModes.contains(m) ) {
+                continue;
+            } else {
+                ArrayList indeces= new ArrayList();
+                for ( int i1= i; i1<getXLength(); i1++ ) {
+                    if ( yTags[i1]==m ) {
+                        indeces.add(i1);
+                    }
+                }
+                double[] xTags= new double[ indeces.size() ];
+                int j=0;
+                double[] back= new double[ indeces.size()*m.length ];
+                for ( int i1= i; i1<getXLength(); i1++ ) {
+                    if ( yTags[i1]==m ) {
+                        xTags[j]= getXTagDouble( i1,getXUnits() );
+                        System.arraycopy( tableData[0][i1], 0, back, j*m.length, m.length );
+                        j++;
+                    }
+                }
+                DDataSet table1= DDataSet.wrap(back,new int[] {indeces.size(),m.length} );
+                DDataSet xTagsDs= DDataSet.wrap(xTags);
+                xTagsDs.putProperty( QDataSet.UNITS, getXUnits() );
+                xTagsDs.putProperty( QDataSet.LABEL, getProperty( PROPERTY_X_LABEL ) );
+                xTagsDs.putProperty( QDataSet.MONOTONIC, getProperty( PROPERTY_X_MONOTONIC ) );
+                table1.putProperty( QDataSet.DEPEND_0, xTagsDs );
+                DDataSet yTagsDs=  DDataSet.wrap(yTags[i]);
+                yTagsDs.putProperty( QDataSet.UNITS, getYUnits() );
+                yTagsDs.putProperty( QDataSet.LABEL, getProperty( PROPERTY_Y_LABEL ) );
+                table1.putProperty( QDataSet.DEPEND_1,yTagsDs);
+                result.join(table1);
+                doneModes.add(m);
+            }
+        }
+        result.putProperty( QDataSet.UNITS, getZUnits() );
+        result.putProperty( QDataSet.LABEL, getProperty( PROPERTY_Z_LABEL ) );
+        result.putProperty( QDataSet.TITLE, getProperty( PROPERTY_TITLE ) );
+        return result;
+    }
+
     public int getYLength(int table) {
         return yTags[table].length;
     }
