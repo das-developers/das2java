@@ -883,6 +883,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 		catch (ParseException ex) {
 			return null;
 		}
+		catch (IllegalArgumentException ex) {
+			return null;
+		}
 	}
 
     private final DataSetUpdateListener tcaListener = new DataSetUpdateListener() {
