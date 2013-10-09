@@ -311,22 +311,42 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     public org.virbo.dataset.AbstractDataSet toQDataSet( ) {
         JoinDataSet result= new JoinDataSet(3);
         Set<double[]> doneModes= new HashSet<double[]>();
+        int itable=-1;
         for ( int i=0; i<getXLength(); i++ ) {
-            double[] m= yTags[i];
+            if ( itable<(tableOffsets.length-1) && i==tableOffsets[itable+1] ) {
+                itable++;
+            }
+            double[] m= yTags[itable];
             if ( doneModes.contains(m) ) {
                 continue;
             } else {
                 ArrayList indeces= new ArrayList();
+                int itable1= itable;
                 for ( int i1= i; i1<getXLength(); i1++ ) {
-                    if ( yTags[i1]==m ) {
-                        indeces.add(i1);
+                    boolean sameTable= yTags[itable1]==m;
+                    if ( sameTable ) {
+                        for ( i1=tableOffsets[itable]; i1<getXLength() || i1<tableOffsets[itable+1]; i1++ ) {
+                            indeces.add( i1 );
+                        }
+                        if ( itable1==itable ) i=i1;
+                    } else {
+                        if ( itable<tableCount ) {
+                            i1= tableOffsets[itable+1];
+                            itable++;
+                        } else {
+                            i1= getXLength();
+                        }
                     }
                 }
                 double[] xTags= new double[ indeces.size() ];
                 int j=0;
                 double[] back= new double[ indeces.size()*m.length ];
+                itable1= itable;
                 for ( int i1= i; i1<getXLength(); i1++ ) {
-                    if ( yTags[i1]==m ) {
+                    if ( itable1<(tableOffsets.length-1) && i1==tableOffsets[itable1+1] ) {
+                        itable1++;
+                    }
+                    if ( yTags[itable1]==m ) {
                         xTags[j]= getXTagDouble( i1,getXUnits() );
                         System.arraycopy( tableData[0][i1], 0, back, j*m.length, m.length );
                         j++;
@@ -338,7 +358,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
                 xTagsDs.putProperty( QDataSet.LABEL, getProperty( PROPERTY_X_LABEL ) );
                 xTagsDs.putProperty( QDataSet.MONOTONIC, getProperty( PROPERTY_X_MONOTONIC ) );
                 table1.putProperty( QDataSet.DEPEND_0, xTagsDs );
-                DDataSet yTagsDs=  DDataSet.wrap(yTags[i]);
+                DDataSet yTagsDs=  DDataSet.wrap(yTags[itable]);
                 yTagsDs.putProperty( QDataSet.UNITS, getYUnits() );
                 yTagsDs.putProperty( QDataSet.LABEL, getProperty( PROPERTY_Y_LABEL ) );
                 table1.putProperty( QDataSet.DEPEND_1,yTagsDs);
