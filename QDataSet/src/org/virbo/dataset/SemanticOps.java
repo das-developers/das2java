@@ -640,6 +640,12 @@ public class SemanticOps {
      * @return
      */
     public static QDataSet bounds( QDataSet ds ) {
+
+        QDataSet result= (QDataSet) DataSetAnnotations.getInstance().getAnnotation( ds, DataSetAnnotations.ANNOTATION_BOUNDS );
+        if ( result!=null ) {
+            return result;
+        }
+        
         QDataSet xrange;
         QDataSet yrange;
 
@@ -672,6 +678,9 @@ public class SemanticOps {
 
         JoinDataSet jds= (JoinDataSet) Ops.join( xrange, yrange );
         jds.putProperty( QDataSet.BINS_1,"min,maxInclusive");
+        
+        DataSetAnnotations.getInstance().putAnnotation( ds, DataSetAnnotations.ANNOTATION_BOUNDS, jds );
+        
         return jds;
 
 //        DDataSet result= DDataSet.createRank2(2,2);
