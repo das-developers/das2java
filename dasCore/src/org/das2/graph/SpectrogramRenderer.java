@@ -62,6 +62,7 @@ import javax.swing.ImageIcon;
 import org.das2.dataset.LanlNNRebinner;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
+import static org.das2.graph.Renderer.logger;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -95,7 +96,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
     
     protected class RebinListener implements PropertyChangeListener {
-
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             update();
 //            refreshImage();
@@ -162,6 +163,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         rebinner.setEnlargePixels(false);
         binAverageNoInterpolateNoEnlarge = new RebinnerEnum(rebinner, "noInterpolateNoEnlarge");
         }*/
+        @Override
         public Icon getListIcon() {
             URL url = SpectrogramRenderer.class.getResource("/images/icons/rebin." + label + ".png");
             if ( url==null ) {
@@ -203,6 +205,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         this.parent = parent;
     }
 
+    @Override
     public DasAxis getZAxis() {
         return colorBar; //.getAxis();
     }
@@ -239,7 +242,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         return DataSetOps.dependBounds(ds);
     }
 
+    @Override
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        long t0= System.currentTimeMillis();
         logger.fine("entering SpectrogramRenderer.render");
         Graphics2D g2 = (Graphics2D) g;
 
@@ -367,6 +372,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
             }
         }
+        logger.log( Level.FINE, "done SpectrogramRenderer.render in {0} millis", ( System.currentTimeMillis()-t0) );
     }
     
     int count = 0;
@@ -470,6 +476,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     @Override
     public synchronized void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
+        long t0= System.currentTimeMillis();
         logger.fine("entering SpectrogramRenderer.updatePlotImage");
         updateImageCount++;
         reportCount();
@@ -602,7 +609,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             }
                         }
 
-                        boolean plottable = false;
+                        boolean plottable;
                         plottable = SemanticOps.getUnits(zds).isConvertableTo(lcolorBar.getUnits());
                         if ( !plottable ) {
                             if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(zds) ) && UnitsUtil.isRatioMeasurement( lcolorBar.getUnits() ) ) {
@@ -674,7 +681,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         try {
                             rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
                         } catch ( RuntimeException ex ) {
-                            ex.printStackTrace(); //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
+                            logger.log( Level.WARNING, null, ex );  //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
                             lparent.postException( this,ex );
                             return;
                         }
@@ -711,7 +718,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             try {
                                 r.setDataElements(0, 0, rasterWidth, rasterHeight, lraster);
                             } catch (Exception e) {
-                                e.printStackTrace();
+                               logger.log( Level.WARNING, null, e );
                             }
                         } else {
                             System.err.println("avoided raster ArrayIndex... track this down sometime...");
@@ -743,7 +750,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 } //synchronized (lockObject)
             } catch (InconvertibleUnitsException ex) {
                 logger.fine("inconvertible units, setting image to null");
-                ex.printStackTrace();
+                logger.log( Level.WARNING, null, ex );
                 plotImage = null;
                 plotImageBounds= null;
                 rebinDataSet = null;
@@ -751,15 +758,15 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 imageYRange = null;
                 if (this.getLastException() == null) setException(ex);
                 lparent.repaint();
-                return;
             }
 
         } catch (NullPointerException ex) {
-            ex.printStackTrace();
+            logger.log( Level.WARNING, null, ex );
         } catch (NoDataInIntervalException e) {
             lastException = e;
             plotImage = null;
         } finally {
+            logger.log(Level.FINE, "done SpectrogramRenderer.updatePlotImage in {0} millis", (System.currentTimeMillis()-t0));
             lparent.repaint();
         }
     }
@@ -846,7 +853,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      * @param rebinnerEnum New value of property rebinner.
      *
      */
-    public void setRebinner(RebinnerEnum rebinnerEnum) {
+    public final void setRebinner(RebinnerEnum rebinnerEnum) {
         RebinnerEnum old = this.rebinnerEnum;
         if (old != rebinnerEnum) {
             this.rebinnerEnum = rebinnerEnum;
@@ -873,14 +880,17 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         this.sliceRebinnedData = sliceRebinnedData;
     }
 
+    @Override
     public String getListLabel() {
         return "spectrogram";
     }
 
+    @Override
     public Icon getListIcon() {
         return rebinnerEnum.getListIcon();
     }
 
+    @Override
     public QDataSet getConsumedDataSet() {
         if (sliceRebinnedData) {
             return rebinDataSet;
@@ -889,6 +899,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
+    @Override
     public void setDataSet(QDataSet ds) {
         QDataSet oldDs = this.ds;
         if (parent != null && oldDs != ds) {
