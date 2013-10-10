@@ -219,8 +219,8 @@ public class DasProgressPanel implements ProgressMonitor {
     /**
      * this may be called from off the event thread, but it does assume that the
      * event thread is free.
-     * @param label
-     * @return
+     * @param label label describing the task.
+     * @return a DasProgressPanel.
      */
     public static DasProgressPanel createFramed( final String label) {
         final DasProgressPanel result;
@@ -247,9 +247,9 @@ public class DasProgressPanel implements ProgressMonitor {
 
     /**
      * creates a dialog object that follows a parent
-     * @param parent
-     * @param label
-     * @return
+     * @param parent the Window that owns this popup gui.
+     * @param label label describing the task.
+     * @return a DasProgressPanel.
      */
     public static DasProgressPanel createFramed( final Window parent, String label) {
         final DasProgressPanel result;
