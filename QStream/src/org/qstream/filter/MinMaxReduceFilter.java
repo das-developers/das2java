@@ -79,6 +79,7 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
                             MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable( Ops.extent(ds.trim(i,i+icadence) ) );
                             mds.putProperty( QDataSet.NAME, NAME );
                             mds.putProperty( QDataSet.CONTEXT_0, Ops.add( ttag, offsets.slice(i+icadence/2) ) );
+                            mds.putProperty( QDataSet.RENDER_TYPE, "waveform" );
                             try {
                                 form.format( "reduce", mds, SerialStreamFormatter.INOUTFORM_STREAMING );
                             } catch ( IOException ex ) {
