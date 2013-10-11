@@ -2505,10 +2505,16 @@ public class DataSetUtil {
     }
     /**
      * returns the index of a tag, or the  <tt>(-(<i>insertion point</i>) - 1)</tt>.  (See Arrays.binarySearch)
+     * @param ds monotonically increasing data.
+     * @param datum value we are looking for
+     * @param low inclusive lower bound of the search
+     * @param high inclusive upper bound of the search
      */
     public static int xTagBinarySearch( QDataSet ds, Datum datum, int low, int high ) {
         Units toUnits= SemanticOps.getUnits( ds );
         double key= datum.doubleValue(toUnits);
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("data must be rank 1");
+        if ( high>=ds.length() ) throw new IndexOutOfBoundsException("high index must be within the data");
         while (low <= high) {
             int mid = (low + high) >> 1;
             double midVal = ds.value(mid);
