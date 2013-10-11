@@ -1935,7 +1935,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     private String resolveAxisLabel() {
-        String result= resolveString( axisLabel, "UNITS", getUnits().toString() );
+        String result= resolveString( axisLabel, "UNITS", getDatumRange().getUnits().toString() );
         DatumRange dr= getDatumRange();
         String sdr;
         if ( UnitsUtil.isTimeLocation( dr.getUnits() ) ) {
