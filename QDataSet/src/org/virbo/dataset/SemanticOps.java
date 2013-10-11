@@ -843,13 +843,13 @@ public class SemanticOps {
             QDataSet xinside= null;
             if ( DataSetUtil.isMonotonic(xds) && xds.property(QDataSet.FILL_VALUE)==null ) {  // TODO: validmin validmax...
                 if ( xrange!=null ) {
-                    int i= DataSetUtil.xTagBinarySearch( xds, xrange.min(), 0, xds.length() );
+                    int i= DataSetUtil.xTagBinarySearch( xds, xrange.min(), 0, xds.length()-1 );
                     if ( i<0 ) {
-                        i= -1 * i + 1 ;
+                        i= -1 * ( i + 1 );
                     }
-                    int j= DataSetUtil.xTagBinarySearch( xds, xrange.max(), i, xds.length() );
+                    int j= DataSetUtil.xTagBinarySearch( xds, xrange.max(), i, xds.length()-1 );
                     if ( j<0 ) {
-                        j= -1 * j + 1 ;
+                        j= -1 * ( j + 1 );
                     }
                     if ( yrange==null ) {
                         return ds.trim(i,j);  // optimization for waveforms...
