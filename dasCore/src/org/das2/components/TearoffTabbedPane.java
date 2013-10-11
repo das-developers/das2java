@@ -162,8 +162,9 @@ public class TearoffTabbedPane extends JTabbedPane {
             MouseListener ml= mls[mls.length-1];
             removeMouseListener( ml );
         }
+        MouseMotionListener[] mmls= getMouseMotionListeners();
         if ( getMouseMotionListeners().length>0 ) {
-            MouseMotionListener ml= getMouseMotionListeners()[0];
+            MouseMotionListener ml= mmls[mmls.length-1];
             removeMouseMotionListener( ml );
         }
 
