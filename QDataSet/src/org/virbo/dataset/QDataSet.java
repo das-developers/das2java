@@ -239,6 +239,11 @@ public interface QDataSet {
     public final static String WEIGHTS="WEIGHTS";
 
     /**
+     * @deprecated use WEIGHTS instead.
+     */
+    public final static String WEIGHTS_PLANE="WEIGHTS";
+
+    /**
      * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Data may only contain
      * invalid values at the beginning or end, and may contain repeated values.  Generally
      * this will be used with tags datasets. TODO: can cadence be negative?
