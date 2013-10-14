@@ -434,7 +434,7 @@ public class VectorUtil {
         ydsr.putProperty( QDataSet.CADENCE, null );
 
         ydsr.putProperty( QDataSet.DEPEND_0, xdsr );
-        ydsr.putProperty( QDataSet.WEIGHTS_PLANE, wbuilder.getDataSet() );
+        ydsr.putProperty( QDataSet.WEIGHTS, wbuilder.getDataSet() );
         
         return ydsr;
 
