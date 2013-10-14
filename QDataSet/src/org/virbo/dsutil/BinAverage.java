@@ -199,7 +199,7 @@ public class BinAverage {
 
         result.putProperty(QDataSet.DEPEND_0, newTags0);
         result.putProperty(QDataSet.DEPEND_1, newTags1);
-        result.putProperty(QDataSet.WEIGHTS_PLANE, weights);
+        result.putProperty(QDataSet.WEIGHTS, weights);
 
         return result;
     }
@@ -316,7 +316,7 @@ public class BinAverage {
             }
         }
 
-        result.putProperty(QDataSet.WEIGHTS_PLANE, weights);
+        result.putProperty(QDataSet.WEIGHTS, weights);
         //result.putProperty( QDataSet.DELTA_PLUS, resultVar );
         //result.putProperty( QDataSet.DELTA_MINUS, resultVar );
         result.putProperty(QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0));
@@ -355,7 +355,7 @@ public class BinAverage {
             result.putValue(i0, w == 0 ? fill : s / w);
         }
 
-        result.putProperty(QDataSet.WEIGHTS_PLANE, weights);
+        result.putProperty(QDataSet.WEIGHTS, weights);
         result.putProperty(QDataSet.FILL_VALUE, fill);
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep0 != null) {
@@ -407,7 +407,7 @@ public class BinAverage {
             }
         }
 
-        result.putProperty(QDataSet.WEIGHTS_PLANE, weights);
+        result.putProperty(QDataSet.WEIGHTS, weights);
         result.putProperty(QDataSet.FILL_VALUE, fill);
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);

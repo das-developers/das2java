@@ -664,7 +664,7 @@ public class Ops {
         Map<String,Object> props= DataSetUtil.getProperties(ds);
         props= DataSetOps.sliceProperties( props, dim );
         DataSetUtil.putProperties( props, result );
-        result.putProperty(QDataSet.WEIGHTS_PLANE,weights);
+        result.putProperty(QDataSet.WEIGHTS,weights);
         result.putProperty(QDataSet.FILL_VALUE,fill);
         return result;
     }

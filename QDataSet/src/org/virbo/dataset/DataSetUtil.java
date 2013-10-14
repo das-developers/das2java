@@ -239,7 +239,7 @@ public class DataSetUtil {
                     QDataSet.COORDINATE_FRAME,
                     QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS,
                     QDataSet.BIN_MINUS, QDataSet.BIN_PLUS,
-                    QDataSet.WEIGHTS_PLANE,
+                    QDataSet.WEIGHTS,
                     QDataSet.USER_PROPERTIES,
                     QDataSet.NOTES,
                     QDataSet.METADATA, QDataSet.METADATA_MODEL,
@@ -320,7 +320,7 @@ public class DataSetUtil {
      */
     public static String[] correlativeProperties() {
         return new String[] {
-            QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS, QDataSet.WEIGHTS_PLANE,
+            QDataSet.DELTA_MINUS, QDataSet.DELTA_PLUS, QDataSet.BIN_MINUS, QDataSet.BIN_PLUS, QDataSet.WEIGHTS,
         };
     }
 
@@ -1991,7 +1991,7 @@ public class DataSetUtil {
      * @return a dataset with the same geometry with zero or positive weights.
      */
     public static QDataSet weightsDataSet(final QDataSet ds) {
-        Object o= ds.property(QDataSet.WEIGHTS_PLANE);
+        Object o= ds.property(QDataSet.WEIGHTS);
         if ( o!=null ) {
             if ( !(o instanceof QDataSet) ) {
                 logger.log(Level.WARNING, "WEIGHTS_PLANE contained something that was not a qdataset: {0}", o);

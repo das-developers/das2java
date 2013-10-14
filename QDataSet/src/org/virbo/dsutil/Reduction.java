@@ -226,7 +226,7 @@ public class Reduction {
         ymaxbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(result) );
 
         result.putProperty( QDataSet.DEPEND_0, xds );
-        result.putProperty( QDataSet.WEIGHTS_PLANE, wbuilder.getDataSet() );
+        result.putProperty( QDataSet.WEIGHTS, wbuilder.getDataSet() );
 
         result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminbuilder.getDataSet() ) );
         result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), result ) );
@@ -280,8 +280,8 @@ public class Reduction {
         double nn0 = 0;
         double miny0 = Double.POSITIVE_INFINITY;
         double maxy0 = Double.NEGATIVE_INFINITY;
-        double ax0 = Float.NaN;
-        double ay0 = Float.NaN;  // last averaged location
+        double ax0;
+        double ay0;  // last averaged location
 
         boolean xlog= xLimit!=null && "log".equals( xLimit.property( QDataSet.SCALE_TYPE ) );
         boolean ylog= yLimit!=null && "log".equals( yLimit.property( QDataSet.SCALE_TYPE ) );
@@ -302,14 +302,14 @@ public class Reduction {
         }
 
         int points = 0;
-        int inCount = 0;
+        //int inCount = 0;
 
         QDataSet wds= DataSetUtil.weightsDataSet(y);
 
         int i=0;
 
         while ( i<x.length() ) {
-            inCount++;
+            //inCount++;
 
             double xx= x.value(i);
             double yy= y.value(i);
@@ -393,7 +393,7 @@ public class Reduction {
         ymaxbuilder.putProperty( QDataSet.UNITS, SemanticOps.getUnits(y) );
         
         yds.putProperty( QDataSet.DEPEND_0, xds );
-        yds.putProperty( QDataSet.WEIGHTS_PLANE, wbuilder.getDataSet() );
+        yds.putProperty( QDataSet.WEIGHTS, wbuilder.getDataSet() );
 
         //TODO: this should probably be BIN_PLUS, BIN_MINUS
         yds.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( yds, yminbuilder.getDataSet() ) );
