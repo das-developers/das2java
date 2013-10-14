@@ -236,7 +236,7 @@ public interface QDataSet {
      * present, routines can safely ignore the FILL_VALUE, VALID_MIN, and VALID_MAX properties, and use non-zero weight to 
      * indicate valid data.  Further, averages of averages will compute accurately.
      */
-    public final static String WEIGHTS_PLANE="WEIGHTS";
+    public final static String WEIGHTS="WEIGHTS";
 
     /**
      * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Data may only contain
