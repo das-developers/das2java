@@ -221,7 +221,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
 
         RebinDescriptor.putDepDataSet( ds, result, ddX, ddY );
-        result.putProperty( QDataSet.WEIGHTS_PLANE, weightResult );
+        result.putProperty( QDataSet.WEIGHTS, weightResult );
 
         logger.finest("done, AverageTableRebinner.rebin");
         return result;
