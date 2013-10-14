@@ -1065,6 +1065,11 @@ public class DatumRangeUtil {
             if ( result==null ) throw new ParseException(string,0);
             return result;
         } else {
+            if ( string.contains("now") ) {
+                Datum now= TimeUtil.now();
+                String nowString= TimeParser.create(TimeParser.TIMEFORMAT_Z).format(now, null);
+                string= string.replace("now",nowString);
+            }
             return new TimeRangeParser().parse(string);
         }
     }
