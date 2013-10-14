@@ -4,6 +4,9 @@
  */
 package org.virbo.dataset;
 
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
+
 /**
  * Wraps a rank N dataset, slicing on an index of the first dimension to make a rank N-1 dataset.
  * This is currently used to implement DataSetOps.slice0().
@@ -18,6 +21,8 @@ package org.virbo.dataset;
  */
 public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
 
+    private static final Logger logger= LoggerManager.getLogger("qdataset");
+    
     QDataSet ds;
     int index;
 
@@ -120,7 +125,12 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
 
         String[] p= DataSetUtil.correlativeProperties();
         for ( int i=0; i<p.length; i++ ) {
-            QDataSet delta= (QDataSet) ds.property( p[i] );
+            Object o=  ds.property( p[i] );
+            if ( o!=null && !(o instanceof QDataSet ) ) {
+                logger.warning("dropping property "+p[i]+" because it is not a QDataSet");
+                continue;
+            }
+            QDataSet delta= (QDataSet) o;
             if ( delta!=null && delta.rank()>0 ) {
                 putProperty( p[i], new Slice0DataSet(delta,index,addContext) );
             }
