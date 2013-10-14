@@ -1065,10 +1065,6 @@ public class DatumRangeUtil {
             if ( result==null ) throw new ParseException(string,0);
             return result;
         } else {
-            if ( string.contains("to") ) {
-                String[] ss= string.split("to");
-                
-            }
             return new TimeRangeParser().parse(string);
         }
     }
