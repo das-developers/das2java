@@ -704,8 +704,6 @@ public class DatumRangeUtil {
             
             DateDescriptor dateDescriptor= new DateDescriptor();
             
-            int dateFormat= DATEFORMAT_USA;
-            
             String newString= normalizeTo(string);
             string= newString;
             
@@ -774,14 +772,12 @@ public class DatumRangeUtil {
                             if ( ts1[YEAR]==-1 ) ts1[YEAR]=ts2[YEAR];
                         }
                     } else if ( isDayOfYear(token) ) {
-                        dateFormat=DATEFORMAT_YYYY_DDD;
                         format= format+"%j";
                         if ( ts1[YEAR] == -1 ) {
                             throw new ParseException( "day of year before year: "+stringIn+" ("+format+")", ipos );
                         }
                         int doy= parseInt(token);
                         caldat( julday( 12, 31, ts1[YEAR]-1 ) + doy, dateDescriptor );
-                        dateFormat= DATEFORMAT_YYYY_DDD;
                         int day= parseInt(dateDescriptor.day);
                         int month= parseInt(dateDescriptor.month);
                         if ( ts1[DAY] == -1 && beforeTo) {
@@ -1068,8 +1064,11 @@ public class DatumRangeUtil {
             DatumRange result= parseISO8601Range( string + "/" + TimeParser.create(TimeParser.TIMEFORMAT_Z).format(now, null) );
             if ( result==null ) throw new ParseException(string,0);
             return result;
-
         } else {
+            if ( string.contains("to") ) {
+                String[] ss= string.split("to");
+                
+            }
             return new TimeRangeParser().parse(string);
         }
     }
