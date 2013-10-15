@@ -43,7 +43,7 @@ public class DataSetAdapter {
             if ( tds.tableCount()<=1 ) {
                 return new SimpleTable(tds);
             } else {
-                if ( tds instanceof DefaultTableDataSet && tds.tableCount()==tds.getXLength() ) { //TODO: check for tables with one record per table, only use those...
+                if ( tds instanceof DefaultTableDataSet && tds.tableCount()>tds.getXLength()/2 ) {
                     return ((DefaultTableDataSet)tds).toQDataSet();
                 } else {                
                     return new MultipleTable(tds);
