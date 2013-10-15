@@ -1529,9 +1529,9 @@ public class SeriesRenderer extends Renderer {
             System.err.println("both tds and vds are null");
         }
         
-        if (getParent() != null) {
-            getParent().repaint();
-        }
+        //if (getParent() != null) {
+        //    getParent().repaint();
+        //}
 
         logger.log(Level.FINE, "done updatePlotImage in {0} ms", (System.currentTimeMillis() - t0));
         
