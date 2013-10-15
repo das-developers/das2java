@@ -816,19 +816,19 @@ public class DasPlot extends DasCanvasComponent {
      * @param printing the bounds should be set for printing, which currently disabled the overSize rendering.
      *
      */
-    private synchronized void resetCacheImageBounds(boolean printing) {
+    private synchronized void resetCacheImageBounds( boolean printing, int width, int height ) {
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
         if (overSize && !printing ) {
             cacheImageBounds = new Rectangle();
-            cacheImageBounds.width = 16 * getWidth() / 10;
-            cacheImageBounds.height = getHeight();
-            cacheImageBounds.x = x - 3 * getWidth() / 10;
+            cacheImageBounds.width = 16 * width / 10;
+            cacheImageBounds.height = height;
+            cacheImageBounds.x = x - 3 * width / 10;
             cacheImageBounds.y = y - 1;
         } else {
             cacheImageBounds = new Rectangle();
-            cacheImageBounds.width = getWidth();
-            cacheImageBounds.height = getHeight();
+            cacheImageBounds.width = width;
+            cacheImageBounds.height = height;
             if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
                 try {
                     System.err.println("cheesy code to fix getHeight=0 when printing");
@@ -836,14 +836,15 @@ public class DasPlot extends DasCanvasComponent {
                 } catch (InterruptedException ex) {
                     Logger.getLogger(DasPlot.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                cacheImageBounds.width = getWidth();
-                cacheImageBounds.height = getHeight();
+                cacheImageBounds.width = width;
+                cacheImageBounds.height = height;
             }            
             if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
                 getWidth();
                 getHeight();
                 throw new IllegalArgumentException("width or height is 0.");
             }
+            logger.log( Level.FINE, "create cacheImage {0}x{1}", new Object[]{cacheImageBounds.width, cacheImageBounds.height});
             cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
             cacheImageBounds.x = x - 1;
             cacheImageBounds.y = y - 1;
@@ -862,7 +863,7 @@ public class DasPlot extends DasCanvasComponent {
     protected void printComponent(Graphics g) {
         boolean doInvalidate= getCanvas().isPrintingThread();
         if ( doInvalidate ) { // only if we really are printing from the canvas print method.  getImageNonPrint
-            resetCacheImageBounds(true);
+            resetCacheImageBounds(true,getWidth(),getHeight());
             List<Renderer> renderers1= Arrays.asList(getRenderers());
             for (int i = 0; i < renderers1.size(); i++) {
                 Renderer rend = (Renderer) renderers1.get(i);
@@ -885,7 +886,7 @@ public class DasPlot extends DasCanvasComponent {
 
     @Override
     protected synchronized void paintComponent(Graphics graphics0) {
-        logger.log(Level.FINE, "dasPlot.paintComponent {0}", getDasName());
+        logger.log(Level.FINER, "dasPlot.paintComponent {0}", getDasName());
         if ( getCanvas().isValueAdjusting() ) {
             repaint();
             return;
@@ -997,13 +998,15 @@ public class DasPlot extends DasCanvasComponent {
                 Graphics2D plotGraphics;
                 if (getCanvas().isPrintingThread() || disableImageCache) {
                     plotGraphics = (Graphics2D) graphics.create(x - 1, y - 1, xSize + 2, ySize + 2);
-                    resetCacheImageBounds(true);
+                    resetCacheImageBounds(true,getWidth(),getHeight());
                     logger.finest(" printing thread, drawing");
                 } else {
-                    if ( getWidth()==0 || getHeight()==0 ) {
+                    int w= getWidth();
+                    int h= getHeight();
+                    if ( w==0 || h==0 ) {
                         return;
                     }
-                    resetCacheImageBounds(false);                    
+                    resetCacheImageBounds(false,w,h);                    
                     if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
                         logger.info("https://sourceforge.net/p/autoplot/bugs/1076/");
                         return;
