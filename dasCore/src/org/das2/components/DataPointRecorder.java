@@ -1161,7 +1161,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         }
                     }
                     DataPoint dp1= null;
-                    if  ( ~index<dataPoints.size() ) {
+                    if  ( (~index+1)<dataPoints.size() ) { // check for very close point.
                         dp1= (DataPoint)dataPoints.get(~index+1);
                     }
                     
