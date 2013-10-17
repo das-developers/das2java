@@ -201,7 +201,6 @@ public class DataSetOps {
      */
     public static QDataSet flattenWaveform( final QDataSet ds ) {
         final int n= ds.length(0);
-        System.err.println("flattenWaveform v2.0");
         MutablePropertyDataSet result= new AbstractDataSet() {
             @Override
             public int rank() {
