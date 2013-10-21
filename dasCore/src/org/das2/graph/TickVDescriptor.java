@@ -527,7 +527,7 @@ public class TickVDescriptor {
         Datum next;
 
         if (units == TimeUtil.TD_YEAR) {
-            int iyear = TimeUtil.toTimeArray(minD)[0];
+            int iyear = TimeUtil.fromDatum(minD)[0];
             iyear = (iyear / biggerUnitsCount) * biggerUnitsCount;  // round to mantissa
             first = TimeUtil.createTimeDatum(iyear, 1, 1, 0, 0, 0, 0);
         } else {
