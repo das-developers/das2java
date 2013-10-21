@@ -444,7 +444,9 @@ public class DatumRangeUtil {
 
     }
 
-    public static void main(String[]ss ) {
+    public static void main(String[]ss ) throws ParseException {
+        System.err.println( parseTimeRange( "1972/now-P1D" ) );
+        System.err.println( parseTimeRange( "now-P10D/now-P1D" ) );
         System.err.println( parseISO8601Range( "20000101T1300Z/PT1H" ) );
         //System.err.println( parseISO8601Range( "2012-100T02:00/03:45" ) );
     }
@@ -1032,6 +1034,14 @@ public class DatumRangeUtil {
     
     /**
      * parse the string into a DatumRange with time location units.
+     * This parse allows several different forms of time ranges, such as:
+     * <li> orbit:rbspa-pp:3  S/C orbits
+     * <li> orbit:rbspa-pp:3-6  S/C orbits, three orbits.
+     * <li> P10D  the last 10 days, immediately resolved into static time range.
+     * <li> 1972/now-P10D, immediately resolved into static time range.
+     * <li> 1972/2002  ISO8601 time ranges
+     * <li> 1972 to 2002  legacy das2 colloquial time ranges.
+     * 
      * @throws ParseException when the string cannot be parsed.
      * @throws IllegalArgumentException when an orbits file cannot be read
      * @param s
@@ -1066,9 +1076,33 @@ public class DatumRangeUtil {
             return result;
         } else {
             if ( string.contains("now") ) {
+                String[] ss= string.split("/");
+                String delim="/";
+                if ( ss.length!=2 ) {
+                    logger.fine("expected to find '/' along with now");
+                }
+                StringBuilder snew= new StringBuilder();
+                Datum time;
                 Datum now= TimeUtil.now();
-                String nowString= TimeParser.create(TimeParser.TIMEFORMAT_Z).format(now, null);
-                string= string.replace("now",nowString);
+                for ( int iss=0; iss<ss.length; iss++ ) {
+                    String s= ss[iss];
+                    if ( iss>0 ) snew.append( delim );
+                    if ( s.startsWith("now-") ) {  // now-PT10D
+                        int[] dt= parseISO8601Duration(s.substring(4));
+                        int[] tt= TimeUtil.fromDatum( now );
+                        for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] - dt[i];
+                        time= TimeUtil.toDatum(tt);
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
+                    } else if ( s.equals("now")) {
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(now,null) );
+                    } else if ( s.contains("now") ){
+                        String nowString= TimeParser.create(TimeParser.TIMEFORMAT_Z).format(now, null);
+                        snew.append( s.replace("now",nowString) );
+                    } else {
+                        snew.append(s);
+                    }
+                }
+                string= snew.toString();
             }
             return new TimeRangeParser().parse(string);
         }
