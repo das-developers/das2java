@@ -492,6 +492,7 @@ public final class TimeUtil {
     
     /**
      * returns int[] { year, month, day, hour, minute, second, millis, micros }
+     * @deprecated use fromDatum instead, which is consistent with toDatum.
      */
     public static int[] toTimeArray( Datum time ) {
         TimeStruct ts= toTimeStruct( time );
@@ -502,9 +503,23 @@ public final class TimeUtil {
         return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, seconds, millis, micros };
     }
     
+    
+    /**
+     * returns the 7-element array of components from the time location datum:
+     * 0:year, 1:month, 2:day, 3:hour, 4:minute, 5:second, 6:nanos
+     * @param time
+     * @return seven-element int array.
+     */
+    public static int[] fromDatum( Datum time ) {
+        TimeStruct ts= toTimeStruct( time );
+        int seconds= (int)( ts.seconds+0.0000000005 );
+        int nanos= (int)( ( ts.seconds+0.0000000005 - seconds ) * 100000000 );
+        return new int[] { ts.year, ts.month, ts.day, ts.hour, ts.minute, seconds, nanos };
+    }
+    
     /**
      * get the datum from the 7 element timeArray.  The elements are:
-     * 0:year, 1:month, 2:day, 3:hour, 4:minute, 5:second, 6:nanos, 
+     * 0:year, 1:month, 2:day, 3:hour, 4:minute, 5:second, [ 6:nanos ] 
      * 
      * @param timeArray, an int[6] or int[7].
      * @return
