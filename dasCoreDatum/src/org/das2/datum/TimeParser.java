@@ -152,6 +152,7 @@ public class TimeParser {
      * must contain T or space to delimit date and time.
      * @param exampleTime "1992-353T02:00"
      * @return "$Y-$jT$H$M" etc.
+     * @throws IllegalArgumentException if the time does not appear to be ISO8601.
      */
     public static String iso8601String(String exampleTime) {
         int i = exampleTime.indexOf("T");
