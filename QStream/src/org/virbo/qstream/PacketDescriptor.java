@@ -13,11 +13,22 @@ import org.w3c.dom.Element;
  *
  * @author jbf
  */
-public class PacketDescriptor implements Descriptor {
+public class PacketDescriptor implements Descriptor,Cloneable {
 
     PacketDescriptor() {
         planes = new ArrayList<PlaneDescriptor>();
     }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        PacketDescriptor result= new PacketDescriptor();
+        for ( int i=0; i<planes.size(); i++ ) {
+            result.planes.add( (PlaneDescriptor)planes.get(i).clone() );
+        }
+        return result;
+    }
+    
+    
     /**
      * this is used when reading streams.
      * @param element

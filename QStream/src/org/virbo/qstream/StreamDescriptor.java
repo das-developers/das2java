@@ -31,7 +31,7 @@ public class StreamDescriptor implements Descriptor {
     DocumentBuilderFactory factory;
     private Element element;
 
-    StreamDescriptor(DocumentBuilderFactory factory) {
+    public StreamDescriptor(DocumentBuilderFactory factory) {
         this();
         this.factory = factory;
     }

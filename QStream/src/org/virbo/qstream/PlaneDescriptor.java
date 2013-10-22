@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
  *
  * @author jbf
  */
-public class PlaneDescriptor {
+public class PlaneDescriptor implements Cloneable {
 
     private TransferType type;
     private Element domElement;
@@ -114,4 +114,12 @@ public class PlaneDescriptor {
     public String[] getBundles() {
         return this.bundles;
     }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone(); 
+        //TODO: verify this is a deep enough copy.
+    }
+    
+    
 }
