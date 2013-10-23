@@ -20,6 +20,10 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.qstream.AsciiTimeTransferType;
 import org.virbo.qstream.AsciiTransferType;
 import org.virbo.qstream.FormatStreamHandler;
 import org.virbo.qstream.PacketDescriptor;
@@ -74,12 +78,56 @@ public class ToAsciiStreamHandler implements StreamHandler {
         newPacketSize= 0;
         try {
             PacketDescriptor pdout= (PacketDescriptor) pd.clone();
+
+            Element ele= pd.getDomElement();
+            Element eleOut= (Element) ele; // .cloneNode(true);
+
             for ( PlaneDescriptor p: pdout.getPlanes() ) {
-                TransferType newTT= newEncodings.get( p.getType().name() );
-                p.setType( newTT );
-                newPacketSize+= 10 * p.getElements();
+                try { // Just recycle the document and hack away.
+                    boolean isTime;
+                    Units u;
+                    XPath xpath= XPathFactory.newInstance().newXPath();
+                    XPathExpression expr;
+                    expr= xpath.compile("string(/packet/qdataset[@id='"+p.getName()+"']/properties/property[@name='UNITS']/@value)");
+                    Object o1= expr.evaluate(eleOut,XPathConstants.STRING);
+                    if ( o1==null ) {
+                        isTime= false;
+                        u= Units.dimensionless;  // we're not going to use this.
+                    } else {
+                        String sunit= String.valueOf(o1);
+                        u= SemanticOps.lookupUnits(sunit);
+                        isTime= UnitsUtil.isTimeLocation(u);
+                    }
+                    
+                    TransferType newTT;
+                    if ( p.getType().name().startsWith("ascii") ) {
+                        newTT= p.getType(); // just leave it alone.
+                    } else {
+                        if ( isTime ) {
+                            newTT= new AsciiTimeTransferType(27,u);
+                        } else {
+                            newTT= newEncodings.get( p.getType().name() );
+                        }
+                    }
+                    
+                    p.setType( newTT );
+                    newPacketSize+= newTT.sizeBytes() * p.getElements();
+                    
+                    expr = xpath.compile("/packet/qdataset[@id='"+p.getName()+"']/values");
+                    Object o = expr.evaluate(eleOut, XPathConstants.NODE);
+                    if (o==null) throw new IllegalArgumentException("unable to find node named "+p.getName());
+                    Element node = (Element) o;
+                    if ( node.hasAttribute("encoding") ) {
+                        node.setAttribute("encoding",newTT.name());
+                    }
+                } catch ( XPathExpressionException ex ) {
+                    ex.printStackTrace();
+                }
             }
             sdout.addDescriptor(pdout);
+            
+            pdout.setDomElement( eleOut );
+            
             format.packetDescriptor(pdout);
             this.pdouts.put( pd.getPacketId(), pdout);
         } catch (CloneNotSupportedException ex) {
@@ -101,13 +149,10 @@ public class ToAsciiStreamHandler implements StreamHandler {
                 double d= pin.getType().read(data);
                 if ( ip==np-1 && i==pin.getElements()-1 ) {
                     pout.getType().write( d, dataOut );
-                    //dataOut.put( s.substring(0,9).getBytes() );
-                    //dataOut.put( (byte)'\n' );
+                    if ( Character.isWhitespace( dataOut.get(dataOut.position()-1) ) ) dataOut.put( dataOut.position()-1, (byte)'\n' );
                 } else {
                     pout.getType().write( d, dataOut );
-                    //String s= String.format( "%9.3f", d );
-                    //dataOut.put( s.substring(0,9).getBytes() );
-                    //dataOut.put( (byte)' ' );
+                    dataOut.put( dataOut.position()-1, (byte)' ' );
                 }
             }            
         }
@@ -131,7 +176,8 @@ public class ToAsciiStreamHandler implements StreamHandler {
     }
     
     public static void main( String[] args ) throws FileNotFoundException, StreamException {
-        InputStream in= new FileInputStream("/home/jbf/temp/autoplot/QStream/src/test/binary.qds");
+        //InputStream in= new FileInputStream("/home/jbf/temp/autoplot/QStream/src/test/binary.qds");
+        InputStream in= new FileInputStream("/home/jbf/temp/autoplot/QStream/src/test/test0_rank2_0.qds");
         StreamTool st= new StreamTool();
         StreamHandler sink= new ToAsciiStreamHandler();
         st.readStream( Channels.newChannel(in), sink );
