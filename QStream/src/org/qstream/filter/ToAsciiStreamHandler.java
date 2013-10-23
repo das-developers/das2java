@@ -7,7 +7,10 @@ package org.qstream.filter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.LinkedHashMap;
@@ -35,7 +38,6 @@ import org.virbo.qstream.StreamHandler;
 import org.virbo.qstream.StreamTool;
 import org.virbo.qstream.TransferType;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * This is not complete.  It needs to be finished off.
@@ -43,21 +45,16 @@ import org.w3c.dom.NodeList;
  */
 public class ToAsciiStreamHandler implements StreamHandler {
 
-    public ToAsciiStreamHandler() {
-        try {
-            format= new FormatStreamHandler();
-            format.setOutputStream( new FileOutputStream("/tmp/foo.qds") );
-            //format.setOutputStream( System.out );
-            pdouts= new LinkedHashMap<Integer, PacketDescriptor>();
-            newEncodings= new LinkedHashMap<String,TransferType>();
-            newEncodings.put( "double",new AsciiTransferType(20,false) );
-            newEncodings.put( "float",new AsciiTransferType(10,false) );
-            newEncodings.put( "int8",new AsciiTransferType(20,false) );
-            newEncodings.put( "int4",new AsciiTransferType(10,false) );
-            newEncodings.put( "int2",new AsciiTransferType(7,false) ); // 7 is the shortest supported.
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(ToAsciiStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public ToAsciiStreamHandler( OutputStream out ) {
+        format= new FormatStreamHandler();
+        format.setOutputStream( out );
+        pdouts= new LinkedHashMap<Integer, PacketDescriptor>();
+        newEncodings= new LinkedHashMap<String,TransferType>();
+        newEncodings.put( "double",new AsciiTransferType(20,false) );
+        newEncodings.put( "float",new AsciiTransferType(10,false) );
+        newEncodings.put( "int8",new AsciiTransferType(20,false) );
+        newEncodings.put( "int4",new AsciiTransferType(10,false) );
+        newEncodings.put( "int2",new AsciiTransferType(7,false) ); // 7 is the shortest supported.
     }
     
     FormatStreamHandler format;
@@ -152,7 +149,6 @@ public class ToAsciiStreamHandler implements StreamHandler {
                     if ( Character.isWhitespace( dataOut.get(dataOut.position()-1) ) ) dataOut.put( dataOut.position()-1, (byte)'\n' );
                 } else {
                     pout.getType().write( d, dataOut );
-                    dataOut.put( dataOut.position()-1, (byte)' ' );
                 }
             }            
         }
@@ -176,10 +172,54 @@ public class ToAsciiStreamHandler implements StreamHandler {
     }
     
     public static void main( String[] args ) throws FileNotFoundException, StreamException {
-        //InputStream in= new FileInputStream("/home/jbf/temp/autoplot/QStream/src/test/binary.qds");
-        InputStream in= new FileInputStream("/home/jbf/temp/autoplot/QStream/src/test/test0_rank2_0.qds");
-        StreamTool st= new StreamTool();
-        StreamHandler sink= new ToAsciiStreamHandler();
-        st.readStream( Channels.newChannel(in), sink );
+        
+        if ( args.length==1 || args[0].trim().equals("--help" ) ) {
+            System.err.println("java -jar autoplot.jar org.qstream.filter.ToAsciiStreamHandler [urlin] [fileout]");
+            System.exit(-1);
+        }
+        
+        InputStream in= System.in;
+        OutputStream out= System.out;
+
+        if ( args.length>0 ) {
+            if ( args[0].startsWith("/") ) {
+                in= new FileInputStream(args[0]);
+                System.err.println("reading "+args[0] );
+            } else {
+                try {
+                    URL urlin= new java.net.URL(args[0]);
+                    in= urlin.openStream();
+                    System.err.println("reading "+urlin );
+                } catch ( IOException ex) {
+                    Logger.getLogger(ToAsciiStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    System.exit(-1);
+                }
+            }
+        }
+        if ( args.length>1 ) {
+            out= new FileOutputStream(args[1]);
+            System.err.println("writing "+args[1] );
+        }
+
+        StreamHandler sink= new ToAsciiStreamHandler(out);
+        StreamTool.readStream( Channels.newChannel(in), sink );
+                        
+        if ( in!=System.in ) {
+            try {
+                in.close();
+            } catch ( IOException ex ) {
+                ex.printStackTrace();
+                System.exit(-2);
+            }
+        }
+        if ( out!=System.out )  {
+            try {
+                out.close();
+            } catch ( IOException ex ) {
+                ex.printStackTrace();
+                System.exit(-3);                
+            }
+        }
+
     }    
 }
