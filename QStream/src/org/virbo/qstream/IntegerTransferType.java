@@ -35,7 +35,7 @@ public class IntegerTransferType extends TransferType {
     }
 
     @Override
-    String name() {
+    public String name() {
         return "int4";
     }
 

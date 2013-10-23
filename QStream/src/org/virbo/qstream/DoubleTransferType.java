@@ -35,7 +35,7 @@ public class DoubleTransferType extends TransferType {
     }
 
     @Override
-    String name() {
+    public String name() {
         return "double";
     }
 

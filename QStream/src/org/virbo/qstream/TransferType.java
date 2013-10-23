@@ -91,7 +91,7 @@ public abstract class TransferType {
      * return a string identifying the TransferType.
      * @return
      */
-    abstract String name();
+    public abstract String name();
     
     public String toString() {
         return name();

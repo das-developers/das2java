@@ -35,7 +35,7 @@ public class FloatTransferType extends TransferType {
     }
 
     @Override
-    String name() {
+    public String name() {
         return "float";
     }
 

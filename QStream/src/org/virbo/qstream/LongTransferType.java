@@ -37,7 +37,7 @@ public class LongTransferType extends TransferType {
     }
 
     @Override
-    String name() {
+    public String name() {
         return "int8";
     }
 

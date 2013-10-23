@@ -10,6 +10,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,6 +29,7 @@ import org.virbo.qstream.StreamDescriptor;
 import org.virbo.qstream.StreamException;
 import org.virbo.qstream.StreamHandler;
 import org.virbo.qstream.StreamTool;
+import org.virbo.qstream.TransferType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -41,6 +44,13 @@ public class ToAsciiStreamHandler implements StreamHandler {
             format= new FormatStreamHandler();
             format.setOutputStream( new FileOutputStream("/tmp/foo.qds") );
             //format.setOutputStream( System.out );
+            pdouts= new LinkedHashMap<Integer, PacketDescriptor>();
+            newEncodings= new LinkedHashMap<String,TransferType>();
+            newEncodings.put( "double",new AsciiTransferType(20,false) );
+            newEncodings.put( "float",new AsciiTransferType(10,false) );
+            newEncodings.put( "int8",new AsciiTransferType(20,false) );
+            newEncodings.put( "int4",new AsciiTransferType(10,false) );
+            newEncodings.put( "int2",new AsciiTransferType(7,false) ); // 7 is the shortest supported.
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ToAsciiStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -49,8 +59,9 @@ public class ToAsciiStreamHandler implements StreamHandler {
     FormatStreamHandler format;
     
     int newPacketSize;
-    PacketDescriptor pdout;
     StreamDescriptor sdout;
+    Map<Integer,PacketDescriptor> pdouts;
+    Map<String,TransferType> newEncodings;
     
     @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
@@ -64,29 +75,13 @@ public class ToAsciiStreamHandler implements StreamHandler {
         try {
             PacketDescriptor pdout= (PacketDescriptor) pd.clone();
             for ( PlaneDescriptor p: pdout.getPlanes() ) {
-                p.setType( new AsciiTransferType(10,true) );
+                TransferType newTT= newEncodings.get( p.getType().name() );
+                p.setType( newTT );
                 newPacketSize+= 10 * p.getElements();
             }
             sdout.addDescriptor(pdout);
-            try {
-                XPath xpath= XPathFactory.newInstance().newXPath();
-                Element e = (Element)pd.getDomElement();
-                XPathExpression expr = xpath.compile("/packet/qdataset/values");
-                Object o = expr.evaluate(e, XPathConstants.NODESET);
-                NodeList nodes = (NodeList) o;
-
-                for ( int i=0; i<nodes.getLength(); i++ ) {
-                        Element n= (Element)nodes.item(i);
-                        if ( n.hasAttribute("encoding") ) {
-                            n.setAttribute("encoding","ascii10");
-                        }
-                }
-                pdout.setDomElement( e );
-            } catch ( XPathExpressionException ex ) {
-                
-            }
             format.packetDescriptor(pdout);
-            this.pdout= pdout;
+            this.pdouts.put( pd.getPacketId(), pdout);
         } catch (CloneNotSupportedException ex) {
             Logger.getLogger(ToAsciiStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -96,6 +91,7 @@ public class ToAsciiStreamHandler implements StreamHandler {
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
         ByteBuffer dataOut= ByteBuffer.allocate(newPacketSize);
         data.flip();
+        PacketDescriptor pdout= pdouts.get(pd.getPacketId());
         int np= pd.getPlanes().size();
         for ( int ip=0; ip<np; ip++ ) {
             PlaneDescriptor pout= pdout.getPlanes().get(ip);
@@ -104,13 +100,14 @@ public class ToAsciiStreamHandler implements StreamHandler {
             for ( int i=0; i<pin.getElements(); i++ ) {
                 double d= pin.getType().read(data);
                 if ( ip==np-1 && i==pin.getElements()-1 ) {
-                    String s= String.format( "%9.3f", d );
-                    dataOut.put( s.substring(0,9).getBytes() );
-                    dataOut.put( (byte)'\n' );
+                    pout.getType().write( d, dataOut );
+                    //dataOut.put( s.substring(0,9).getBytes() );
+                    //dataOut.put( (byte)'\n' );
                 } else {
-                    String s= String.format( "%9.3f", d );
-                    dataOut.put( s.substring(0,9).getBytes() );
-                    dataOut.put( (byte)' ' );
+                    pout.getType().write( d, dataOut );
+                    //String s= String.format( "%9.3f", d );
+                    //dataOut.put( s.substring(0,9).getBytes() );
+                    //dataOut.put( (byte)' ' );
                 }
             }            
         }
@@ -134,7 +131,7 @@ public class ToAsciiStreamHandler implements StreamHandler {
     }
     
     public static void main( String[] args ) throws FileNotFoundException, StreamException {
-        InputStream in= new FileInputStream("/Users/jbf/NetBeansProjects/autoplot/QStream/src/test/binary.qds");
+        InputStream in= new FileInputStream("/home/jbf/temp/autoplot/QStream/src/test/binary.qds");
         StreamTool st= new StreamTool();
         StreamHandler sink= new ToAsciiStreamHandler();
         st.readStream( Channels.newChannel(in), sink );
