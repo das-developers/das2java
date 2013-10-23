@@ -63,7 +63,9 @@ public class StreamDescriptor implements Descriptor {
 
             }
         }
-        if ( found==-1 ) throw new IllegalArgumentException("ran out of numbers, use retire to free");
+        if ( found==-1 ) {
+            throw new IllegalArgumentException("ran out of numbers, use retire to free");
+        }
         addDescriptor( pd, found );
     }
 
@@ -172,6 +174,7 @@ public class StreamDescriptor implements Descriptor {
         this.element= element;
     }
     
+    @Override
     public Element getDomElement() {
         return element;
     }
