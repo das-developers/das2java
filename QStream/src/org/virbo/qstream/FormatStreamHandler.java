@@ -86,8 +86,11 @@ public class FormatStreamHandler implements StreamHandler {
             Document d= sd.newDocument(pd);
             if ( pd.getDomElement()==null ) {
                 Element ele= d.createElement("packet");
-                for ( PlaneDescriptor pld: pd.getPlanes() ) {
-                    Element pele= d.createElement("plane");
+                for ( PlaneDescriptor pld: pd.getPlanes() ) { // all this begs the question, where is the information stored?  Is it in the PlaneDescriptor, or is it in the Document???  Executive decision 2013-10-23: it is in the document, and xpath should be used to process.
+                    Element qdatasetElement= d.createElement("qdataset");
+                    qdatasetElement.setAttribute( "id", pld.getName() );
+                    qdatasetElement.setAttribute( "rank", String.valueOf(pld.getRank()) );
+                    ele.appendChild(qdatasetElement);
                 }
                 pd.setDomElement( ele );
                 throw new IllegalStateException("this implementation is not complete.  See SimpleStreamFormatter");
