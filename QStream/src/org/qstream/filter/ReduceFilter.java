@@ -396,6 +396,14 @@ public class ReduceFilter implements StreamHandler {
         reportCadenceSeconds= lengthSeconds;
     }
 
+    /**
+     * set the sink for the stream components as they are processed.
+     * @param sink 
+     */
+    public void setSink( StreamHandler sink ) {
+        this.sink= sink;
+    }
+    
 //    public static void main( String[] args ) throws StreamException, FileNotFoundException, IOException {
 //        File f = new File( "/home/jbf/ct/hudson/data/qds/proton_density.qds" );
 //
