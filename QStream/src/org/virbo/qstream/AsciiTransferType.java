@@ -35,18 +35,24 @@ public class AsciiTransferType extends TransferType {
 
     /**
      * return a transfer type with the given number of decimal places.
-     * TODO: this is not in use and has little testing.
      * @param sizeBytes
      * @param scientificNotation
-     * @param decimals
+     * @param decimals 0 for integers, number of decimal places otherwise.
      */
     AsciiTransferType( int sizeBytes, boolean scientificNotation, int decimals ) {
         this.sizeBytes = sizeBytes;
+        if ( sizeBytes<6 ) {
+            throw new IllegalArgumentException("sizeBytes cannot be less than 6");
+        } else if ( sizeBytes>18 ) {
+            throw new IllegalArgumentException("sizeBytes cannot be greater than 18");
+        }
         if ( decimals==0 ) {
             this.formatStr= "0";
-        } else {
+        } else if ( decimals<16 ) {
             String pounds="################";
             this.formatStr= "0."+pounds.substring(0,decimals);
+        } else {
+            throw new IllegalArgumentException("decimals cannot be greater than 16");
         }
         formatter = NumberFormatUtil.getDecimalFormat( formatStr );
     }
@@ -89,12 +95,13 @@ public class AsciiTransferType extends TransferType {
         byte[] bytes=null;
         try {
             bytes = s.getBytes("US-ASCII");
+            if ( bytes.length!=sizeBytes ) {
+                bytes = "***********************".substring(0,sizeBytes).getBytes("US-ASCII");
+            }
         } catch (UnsupportedEncodingException ex) {
             logger.log(Level.SEVERE, "write", ex);
         }
-        if ( bytes.length!=sizeBytes ) {
-            throw new IllegalAccessError();
-        }
+        
         buffer.put(bytes);
         
     }
