@@ -173,7 +173,7 @@ public class ToAsciiStreamHandler implements StreamHandler {
     
     public static void main( String[] args ) throws FileNotFoundException, StreamException {
         
-        if ( args.length==1 || args[0].trim().equals("--help" ) ) {
+        if ( args.length==1 && args[0].trim().equals("--help" ) ) {
             System.err.println("java -jar autoplot.jar org.qstream.filter.ToAsciiStreamHandler [urlin] [fileout]");
             System.exit(-1);
         }
