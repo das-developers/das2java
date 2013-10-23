@@ -92,8 +92,7 @@ public class PacketDescriptor implements Descriptor,Cloneable {
         return valuesInDescriptor;
     }
 
-
-    void setDomElement(Element packetElement) {
+    public void setDomElement(Element packetElement) {
         domElement = packetElement;
     }
 
