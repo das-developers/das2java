@@ -83,7 +83,15 @@ public class FormatStreamHandler implements StreamHandler {
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         this.sd.addDescriptor(pd);
         try {
-            sd.newDocument(pd);
+            Document d= sd.newDocument(pd);
+            if ( pd.getDomElement()==null ) {
+                Element ele= d.createElement("packet");
+                for ( PlaneDescriptor pld: pd.getPlanes() ) {
+                    Element pele= d.createElement("plane");
+                }
+                pd.setDomElement( ele );
+                throw new IllegalStateException("this implementation is not complete.  See SimpleStreamFormatter");
+            }
             this.sd.send(pd,out);
         } catch ( IOException ex ) {
             throw new StreamException(ex);
