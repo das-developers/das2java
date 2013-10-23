@@ -391,7 +391,7 @@ public class ReduceFilter implements StreamHandler {
      * Note we assume all packets have the same offset units (e.g. microseconds).
      * @param cadence
      */
-    void setCadence(Datum cadence) {
+    public void setCadence(Datum cadence) {
         lengthSeconds= cadence.doubleValue( Units.seconds );
         reportCadenceSeconds= lengthSeconds;
     }
