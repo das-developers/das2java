@@ -58,7 +58,7 @@ public class SerialStreamFormatter {
 
     StreamHandler sh;
 
-    Map<String,PlaneDescriptor> planes;
+    //Map<String,PlaneDescriptor> planes;
     Map<String,PacketDescriptor> pds;
     Map<String,TransferType> transferTypes;
     Map<Units,TransferType> unitsTransferTypes;
@@ -590,7 +590,7 @@ public class SerialStreamFormatter {
      */
     public void format( String joinName, String name, QDataSet ds1, String inoutForm ) throws IOException, StreamException  {
 
-        if ( name==null && name.trim().length()==0 ) {
+        if ( name==null || name.trim().length()==0 ) {
             if ( inoutForm.equals(INOUTFORM_INLINE) ) {
                 name= nameFor(ds1);
             } else {
@@ -763,7 +763,7 @@ public class SerialStreamFormatter {
      * @param name
      */
     public void retire( String name ) {
-        planes.remove(name);
+        //planes.remove(name);
         PacketDescriptor pd= pds.get(name);
         sd.retireDescriptor(pd);
     }
