@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
-import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
@@ -56,7 +55,6 @@ import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
-import org.virbo.dataset.ConstantDataSet;
 import org.virbo.dataset.DataSetAnnotations;
 import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
@@ -398,12 +396,9 @@ public class Ops {
         if ( label1==null ) label1= (String)ds1.property(QDataSet.NAME);
         if ( label1==null ) return null;
         String l1Str= label1;
-        if ( l1Str!=null ) {
-            return opStr + "("+l1Str + ")";
-        } else {
-            return null;
-        }
+        return opStr + "("+l1Str + ")";
     }
+    
     /**
      * maybe insert a label indicating the two-argument operation.  The operation
      * is formatted like opStr(ds1,ds2)
@@ -486,7 +481,7 @@ public class Ops {
     public static QDataSet magnitude(QDataSet ds) {
         int r = ds.rank();
         QDataSet depn = (QDataSet) ds.property("DEPEND_" + (r - 1));
-        boolean isCart = false;
+        boolean isCart;
         if (depn != null) {
             if (depn.property(QDataSet.COORDINATE_FRAME) != null) {
                 isCart = true;
@@ -1992,15 +1987,15 @@ public class Ops {
      * is null and the second is non-null, then return the second dataset.
      *
      * This was briefly known as "join."
-     * @param ds1
-     * @param ds2
-     * @return 
+     * @param ds1 null or a dataset of length m.
+     * @param ds2 dataset of length n to be concatenated.
+     * @return a dataset length m+n.
      * @throws IllegalArgumentException if the two datasets don't have the same rank.
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
         if ( ds1==null && ds2!=null ) return ds2;
         if ( ds1==null && ds2==null ) throw new NullPointerException("both ds1 and ds2 are null");
-        if ( ds1==null && ds2==null ) throw new IllegalArgumentException( "both ds1 and ds2 are null");
+        if ( ds1!=null && ds2==null ) throw new NullPointerException("ds2 is null while ds1 is not null");
         if ( ds1 instanceof FDataSet && ds2 instanceof FDataSet ) {
             FDataSet result = (FDataSet) ArrayDataSet.copy(ds1);
             if ( ds2.rank()==0 && ds1.rank()==1 ) {
@@ -5149,7 +5144,7 @@ public class Ops {
             throw new IllegalArgumentException("only rank 1");
         }
         double accum=0;
-        QDataSet accumDep0Ds=null;
+        QDataSet accumDep0Ds;
         double accumDep0=0;
         QDataSet dep0ds= (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( accumDs==null ) {
@@ -5374,7 +5369,7 @@ public class Ops {
             if ( i<args.length-1 ) docStr.append(",");
         }
 
-        logger.finer("slices("+docStr.toString()+")");
+        logger.log(Level.FINER, "slices({0})", docStr.toString());
         //((MutablePropertyDataSet)result).putProperty( QDataSet.CONTEXT_0, "slices("+docStr+")");
         //((MutablePropertyDataSet)result).putProperty( "CONTEXT_1", null ); // not sure who is writing this.
 
@@ -5390,13 +5385,13 @@ public class Ops {
     public static QDataSet reform(QDataSet ds) {
         int[] dsqube = DataSetUtil.qubeDims(ds);
         List<Integer> newQube = new ArrayList<Integer>();
-        int[] dimMap = new int[dsqube.length]; // maps from new dataset to old index
+        //int[] dimMap = new int[dsqube.length]; // maps from new dataset to old index
         boolean foundDim = false;
         int removeDim = -1;
         for (int i = 0; i < dsqube.length; i++) {
             if (dsqube[i] != 1 || foundDim) {
                 newQube.add(dsqube[i]);
-                dimMap[i] = foundDim ? i + 1 : i;
+                //dimMap[i] = foundDim ? i + 1 : i;
             } else {
                 foundDim = true;
                 removeDim = i;
@@ -5463,6 +5458,8 @@ public class Ops {
             QDataSet dep0= (QDataSet) ds2.property(QDataSet.DEPEND_0);
             if ( dep0!=null ) ds.putProperty( QDataSet.DEPEND_0, dep0 );
             return ds;
+        } else if ( ds1!=null && ds2==null ) {
+            throw new NullPointerException("ds2 is null while ds1("+ds1+") is not null.");
         } else if (ds1.rank() == ds2.rank()) {
             BundleDataSet ds= new BundleDataSet( );
             ds.bundle(ds1);
