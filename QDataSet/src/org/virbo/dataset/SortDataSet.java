@@ -136,6 +136,12 @@ public class SortDataSet extends AbstractDataSet {
         return source.value( (int)sort.value(i0), i1, i2, i3 );
     }
 
+    /**
+     * TODO: this is dangerous code, because as new properties are added to QDataSet, 
+     * they may not be handled properly here. (e.g. BIN_PLUS).
+     * @param name
+     * @return 
+     */
     @Override
     public Object property(String name) {
         if ( properties.containsKey(name) ) {
