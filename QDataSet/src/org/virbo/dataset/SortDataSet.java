@@ -97,6 +97,17 @@ public class SortDataSet extends AbstractDataSet {
         if ( dep3!=null && dep3.rank()>1 ) {
             properties.put( QDataSet.DEPEND_3, new SortDataSet( dep3, sort ) );
         }
+        
+        QDataSet ds;
+        ds= (QDataSet) source.property(QDataSet.BIN_PLUS);
+        if ( ds!=null ) properties.put( QDataSet.BIN_PLUS, new SortDataSet( ds, sort ) );
+        ds= (QDataSet) source.property(QDataSet.BIN_MINUS);
+        if ( ds!=null ) properties.put( QDataSet.BIN_MINUS, new SortDataSet( ds, sort ) );
+        ds= (QDataSet) source.property(QDataSet.DELTA_PLUS);
+        if ( ds!=null ) properties.put( QDataSet.DELTA_PLUS, new SortDataSet( ds, sort ) );
+        ds= (QDataSet) source.property(QDataSet.DELTA_MINUS);
+        if ( ds!=null ) properties.put( QDataSet.DELTA_MINUS, new SortDataSet( ds, sort ) );
+        
         DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(source,null), this );
 
     }
