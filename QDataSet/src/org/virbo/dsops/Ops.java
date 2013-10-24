@@ -5212,6 +5212,7 @@ public class Ops {
      *    print append(ds1,ds2)  ; dataSet[22] (dimensionless)
      * @param ds1 null or rank N dataset
      * @param ds2 rank N dataset with compatible geometry.
+     * @see concatenate, which may do the same thing.
      * @return 
      */
     public static QDataSet append( QDataSet ds1, QDataSet ds2 ) {
