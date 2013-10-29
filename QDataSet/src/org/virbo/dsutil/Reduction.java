@@ -6,8 +6,11 @@
 package org.virbo.dsutil;
 
 import java.util.Map;
+import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
@@ -44,6 +47,70 @@ public class Reduction {
     }
 
     /**
+     * See org.qstream.filter.MinMaxReduceFilter.  
+     * This is basically a copy of that code.
+     * @param ds a rank1 or rank2 waveform dataset.
+     * @param xLimit the target resolution, result will be finer than this, if possible.
+     * @return 
+     */
+    private static QDataSet reducexWaveform( QDataSet ds, QDataSet xLimit ) {
+        DataSetBuilder xbuilder;
+        DataSetBuilder ybuilder;
+        DataSetBuilder yminbuilder;
+        DataSetBuilder ymaxbuilder;
+        
+        xbuilder= new DataSetBuilder( 1, 1000 );
+        ybuilder= new DataSetBuilder( 1, 1000 );
+        yminbuilder= new DataSetBuilder( 1, 1000 );
+        ymaxbuilder= new DataSetBuilder( 1, 1000 );
+        //wbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
+        
+        Datum cadence= DataSetUtil.asDatum(xLimit);
+        QDataSet _offsets= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        MutablePropertyDataSet offsets= DataSetOps.makePropertiesMutable(_offsets);
+        offsets.putProperty( QDataSet.VALID_MIN, null ); //TODO:  EMFISIS HFR has incorrect VALID_MAX.
+        offsets.putProperty( QDataSet.VALID_MAX, null );
+        
+        int icadence= 4;
+        while ( icadence<offsets.length()/2 && cadence.gt( DataSetUtil.asDatum(offsets.slice(icadence)).subtract( DataSetUtil.asDatum( offsets.slice(0)) ) ) ) {
+            icadence= icadence*2;
+        }
+        icadence= icadence/2;                
+        
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        
+        xbuilder.putProperty( QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
+        
+        int iout= 0;
+        
+        for ( int j=0; j<ds.length(); j++ ) {
+            int i=0;
+            QDataSet ttag= dep0.slice(j);    
+            QDataSet ds1= ds.slice(j);
+            while ( (i+icadence)<offsets.length() ) {                     
+                QDataSet ext= Ops.extent(ds1.trim(i,i+icadence) );
+                QDataSet avg= Ops.reduceMean(ds1.trim(i,i+icadence),0);
+                xbuilder.putValue(iout, Ops.add( ttag, offsets.slice(i+icadence/2) ).value() );
+                yminbuilder.putValue(iout,ext.value(0));
+                ymaxbuilder.putValue(iout,ext.value(1));
+                ybuilder.putValue(iout,avg.value());                
+                iout++;
+                i+= icadence;
+            }
+        }
+        
+        DDataSet result= ybuilder.getDataSet();
+        result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminbuilder.getDataSet() ) );
+        result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), result ) );
+        result.putProperty( QDataSet.DEPEND_0, xbuilder.getDataSet() );
+        
+        DataSetUtil.copyDimensionProperties( ds, result );
+        if ( result.property(QDataSet.CACHE_TAG)!=null ) result.putProperty(QDataSet.CACHE_TAG,null);
+        return result;
+                
+    }
+    
+    /**
      * produce a simpler version of the dataset by averaging data adjacent in X.
      * code taken from org.das2.graph.GraphUtil.reducePath.  Adjacent points are
      * averaged together until a point is found that is not in the bin, and then
@@ -78,10 +145,14 @@ public class Reduction {
             return reduce2D( ds, xLimit, null );
 
         } else if ( ds.rank()==2 ) {
-            ybuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
-            yminbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
-            ymaxbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
-            wbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
+            if ( SemanticOps.isRank2Waveform(ds) ) {
+                return reducexWaveform( ds, xLimit );            
+            } else {
+                ybuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
+                yminbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
+                ymaxbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
+                wbuilder= new DataSetBuilder( 2, 1000, ds.length(0) );
+            }
         } else {
             throw new IllegalArgumentException("only rank 1 and rank 2 datasets");
         }
