@@ -100,11 +100,14 @@ public class Reduction {
         }
         
         DDataSet result= ybuilder.getDataSet();
+        DataSetUtil.copyDimensionProperties( ds, result );
+        yminbuilder.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
+        ymaxbuilder.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
+        
         result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminbuilder.getDataSet() ) );
         result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), result ) );
         result.putProperty( QDataSet.DEPEND_0, xbuilder.getDataSet() );
         
-        DataSetUtil.copyDimensionProperties( ds, result );
         if ( result.property(QDataSet.CACHE_TAG)!=null ) result.putProperty(QDataSet.CACHE_TAG,null);
         return result;
                 
