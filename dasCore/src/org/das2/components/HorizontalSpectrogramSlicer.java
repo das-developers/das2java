@@ -56,6 +56,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.Units;
+import org.das2.event.MouseModule;
+import org.das2.event.PointSlopeDragRenderer;
 import org.das2.graph.Renderer;
 import org.das2.graph.SpectrogramRenderer;
 import org.das2.util.monitor.ProgressMonitor;
@@ -113,6 +115,8 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
                 g.drawLine( ix, iy0+4, ix, iy1-4 );
             }
         } );
+        myPlot.getDasMouseInputAdapter().addMouseModule(new MouseModule(myPlot, new PointSlopeDragRenderer(myPlot, myPlot.getXAxis(), myPlot.getYAxis()), "Slope"));
+
     }
 
     protected void setDataSet( QDataSet ds ) {
