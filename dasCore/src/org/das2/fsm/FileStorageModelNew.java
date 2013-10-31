@@ -241,9 +241,12 @@ public class FileStorageModelNew {
      * is considered be the end time.
      *
      * .../FULL1/T8709_12/T871118.DAT
-     *'.../FULL1/T'YYMM_MM/TYYMMDD'.DAT'
+     *'.../FULL1/T'YYMM_MM/TYYMMDD'.DAT'  TODO: verify this.
+     * .../FULL1/T$y$m_$m/T$y$m$d.dat
      *
-     * @param args an empty map where extra fields (such as version) are put.
+     * @param filename the filename, within the filesystem.
+     * @param extra an empty map where extra fields (such as version) are put.
+     * @throws IllegalArgumentException when a filename does not match the model specification.
      */
     private synchronized DatumRange getDatumRangeFor( String filename, Map<String,String> extra ) {
         try {
@@ -478,6 +481,12 @@ public class FileStorageModelNew {
         return getBestFilesFor( targetRange, new NullProgressMonitor() );
     }
 
+    /**
+     * return the time range represented by this name.
+     * @param name like 2013-10-31
+     * @return the timerange representing the day 2013-10-31
+     * @throws IllegalArgumentException if the name is not part of the FileStorageModel.
+     */
     public DatumRange getRangeFor( String name ) {
         return getDatumRangeFor( name, new HashMap() );
     }
