@@ -101,9 +101,9 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
                     try {
                         form.format( "offsets", ds, SerialStreamFormatter.INOUTFORM_ONE_RECORD );
                     } catch (IOException ex) {
-                        Logger.getLogger(MinMaxReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     } catch (StreamException ex) {
-                        Logger.getLogger(MinMaxReduceFilter.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                     }
                 }
             }

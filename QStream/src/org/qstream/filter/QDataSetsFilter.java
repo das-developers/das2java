@@ -164,12 +164,12 @@ public class QDataSetsFilter implements StreamHandler {
                         }
                         props.put(pname, oval);
                     } catch (ParseException ex) {
-                        logger.log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
                     }
                 }
              }
         } catch ( XPathExpressionException ex ) {
-            logger.log( Level.WARNING, null, ex );
+            logger.log( Level.SEVERE, ex.getMessage(), ex );
         }
 
         return props;

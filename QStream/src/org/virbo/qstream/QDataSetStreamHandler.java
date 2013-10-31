@@ -135,7 +135,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             }
             logger.log( Level.FINE, "got streamDescriptor with default dataset {0}", dsname );
         } catch (XPathExpressionException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
     }
 
@@ -317,7 +317,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 // TODO: a lot of work is done twice here, but this takes a trivial amount of time.
             }
         } catch (XPathExpressionException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
             throw new RuntimeException(ex);
         }
     }
@@ -561,7 +561,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                             }
                             builder.putProperty(pname, oval);
                         } catch (ParseException ex) {
-                            logger.log(Level.SEVERE, null, ex);
+                            logger.log(Level.SEVERE, ex.getMessage(), ex);
                         }
                     }
          }
@@ -606,7 +606,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     }
                     join.putProperty(pname, index, oval);
                 } catch (ParseException ex) {
-                    logger.log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                 }
             }
          }

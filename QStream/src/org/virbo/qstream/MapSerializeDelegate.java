@@ -46,7 +46,7 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
                 out.close();
                 return Base64.encodeBytes(out.toByteArray());
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
                 return "";
             }
         }

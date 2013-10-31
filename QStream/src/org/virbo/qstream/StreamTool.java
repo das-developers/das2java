@@ -527,7 +527,7 @@ public class StreamTool {
                         try {
                             units = (Units) delegate.parse(stype,sunits);
                         } catch (ParseException ex) {
-                            logger.log(Level.SEVERE, null, ex);
+                            logger.log(Level.SEVERE, ex.getMessage(), ex);
                         }
                     }
                 }

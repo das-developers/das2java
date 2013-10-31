@@ -79,7 +79,7 @@ public class RenderTypeFilter implements StreamHandler {
             sink.packetDescriptor(pd);
 
         } catch (XPathExpressionException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
             throw new StreamException(ex);
         }
 

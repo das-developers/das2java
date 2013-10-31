@@ -25,6 +25,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.system.DasLogger;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.qstream.AsciiTimeTransferType;
 import org.virbo.qstream.AsciiTransferType;
@@ -40,10 +41,12 @@ import org.virbo.qstream.TransferType;
 import org.w3c.dom.Element;
 
 /**
- * This is not complete.  It needs to be finished off.
+ * Converts all the transfer types to Ascii TransferTypes.
  * @author jbf
  */
 public class ToAsciiStreamHandler implements StreamHandler {
+
+    private static final Logger logger= Logger.getLogger("qstream");
 
     public ToAsciiStreamHandler( OutputStream out ) {
         format= new FormatStreamHandler();
@@ -118,7 +121,7 @@ public class ToAsciiStreamHandler implements StreamHandler {
                         node.setAttribute("encoding",newTT.name());
                     }
                 } catch ( XPathExpressionException ex ) {
-                    ex.printStackTrace();
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                 }
             }
             sdout.addDescriptor(pdout);
@@ -128,7 +131,7 @@ public class ToAsciiStreamHandler implements StreamHandler {
             format.packetDescriptor(pdout);
             this.pdouts.put( pd.getPacketId(), pdout);
         } catch (CloneNotSupportedException ex) {
-            Logger.getLogger(ToAsciiStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
     }
 
@@ -191,7 +194,7 @@ public class ToAsciiStreamHandler implements StreamHandler {
                     in= urlin.openStream();
                     System.err.println("reading "+urlin );
                 } catch ( IOException ex) {
-                    Logger.getLogger(ToAsciiStreamHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                     System.exit(-1);
                 }
             }
@@ -208,7 +211,7 @@ public class ToAsciiStreamHandler implements StreamHandler {
             try {
                 in.close();
             } catch ( IOException ex ) {
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
                 System.exit(-2);
             }
         }
@@ -216,7 +219,7 @@ public class ToAsciiStreamHandler implements StreamHandler {
             try {
                 out.close();
             } catch ( IOException ex ) {
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
                 System.exit(-3);                
             }
         }

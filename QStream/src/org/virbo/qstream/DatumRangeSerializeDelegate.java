@@ -91,7 +91,7 @@ public class DatumRangeSerializeDelegate implements SerializeDelegate, XMLSerial
                     result.setAttribute( "value", svalue );
                 }
             } catch ( ParseException ex ) {
-                logger.log( Level.WARNING, null, ex );
+                logger.log( Level.WARNING, ex.getMessage(), ex );
                 result.setAttribute( "value",dr.toString() );
             }
             

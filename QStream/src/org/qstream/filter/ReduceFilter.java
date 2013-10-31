@@ -186,7 +186,7 @@ public class ReduceFilter implements StreamHandler {
             this.nextTags.put( pd, 0. );
 
         } catch (XPathExpressionException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
 
         sink.packetDescriptor(pd);
