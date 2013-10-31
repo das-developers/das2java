@@ -625,7 +625,7 @@ public class DataSetUtil {
             try {
                 str.append( dep0.slice(0) ).append("=").append( ds.slice(0) );
             } catch ( RuntimeException ex ) {
-                logger.log( Level.WARNING, null, ex );
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
                 str.append("Exception");
             }
             for ( int i=1; i<ds.length(); i++ ) {

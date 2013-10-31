@@ -60,7 +60,7 @@ public class SortDataSet extends AbstractDataSet {
                         try {
                             fw.println( "# "+e.getKey()+": " + String.valueOf(e.getValue()) );
                         } catch ( RuntimeException ex ) {
-                            Logger.getLogger(SortDataSet.class.getName()).log(Level.SEVERE, null, ex);
+                            logger.log(Level.SEVERE, ex.getMessage(), ex);
                         }
                     }
                     for ( int i=0; i<sort.length(); i++ ) {
@@ -68,10 +68,9 @@ public class SortDataSet extends AbstractDataSet {
                     }
                     fw.close();
                 } catch (RuntimeException ex ) {
-                    ex.printStackTrace();
-                    Logger.getLogger(SortDataSet.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                 } catch (IOException ex) {
-                    Logger.getLogger(SortDataSet.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                 } finally {
                     if ( fw!=null ) fw.close();
                 }

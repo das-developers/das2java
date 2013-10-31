@@ -1,0 +1,131 @@
+PARSER_BEGIN(SimpleExp) 
+    package org.virbo.dsutil.dd;
+    import java.io.*;
+    import java.util.*;
+    import java.nio.ByteBuffer;
+    import org.das2.util.ByteBufferInputStream;
+
+    class SimpleExp {
+    	public static void main(String[] arg) 
+	throws ParseException, TokenMgrError, NumberFormatException, IOException {
+	    if (arg.length != 1) { 
+	        System.out.println("Usage: Java SimpleExp file");
+            }
+
+InputStream is;
+if ( arg.length==0 ) {
+            is = new ByteBufferInputStream( ByteBuffer.wrap( "3+4".getBytes() ) );
+} else {
+            is = new FileInputStream(arg[0]);
+}
+
+	    SimpleExp parser = new SimpleExp(is);
+            List<Node> program = parser.Start();
+            boolean flag = Semantic.checkProgram(program);
+	    if (flag) System.out.println("Check succeeded");
+	    if (!flag) System.out.println("Check failed");
+        }
+    }
+
+PARSER_END(SimpleExp)
+
+
+SKIP : { " " | "\n" | "\r" }
+
+TOKEN : {<PLUS  : "+">}
+TOKEN : {<EQUAL : "=">}
+TOKEN : {<SEMI  : ";">}
+
+TOKEN : {<OPEN_PAR  : "(">}
+TOKEN : {<CLOSE_PAR : ")">}
+
+TOKEN : {<NUMBER : ((["0" - "9"])+)("." (["0"-"9"])+)? >}
+TOKEN : {<IDENTIFIER : (["a" - "z"](["a" - "z"] | ["0" - "9"])*)>}
+
+List<Node> Start () :
+{
+    List<Node> l = new ArrayList<Node>();
+    Node n;
+}
+{   
+  ( 
+    n = Statement()
+    { l.add(n); }
+  )*
+  { return l; }
+}
+
+
+Node Statement() :
+{ 
+    Node ident, expr;
+}
+{
+    ident = Identifier()
+    <EQUAL>
+    expr = Expression()
+    <SEMI>
+    {
+ 	Node n = new Node(Id.ASSIGN);
+	n.add(ident);
+	n.add(expr);
+	return n;
+    }
+}		
+
+Node Identifier () :
+{
+    Token t;
+}
+{
+    t = <IDENTIFIER>
+    {
+	return new IdentifierNode(t.image);
+    }
+}
+
+Node Expression()  :
+{
+    Node expr, term, temp;
+}
+{
+    expr = Term()
+    (
+ 	<PLUS>
+	term = Term()
+  	{ 
+	   temp = new Node(Id.PLUS);
+	   temp.add(expr);
+	   temp.add(term);
+	   expr = temp;
+	}		
+    )*
+    { return expr; }
+}
+
+Node Term () throws NumberFormatException :
+{ 
+    Node expr;
+    Token t;
+}
+{
+    t = <NUMBER>
+    { 
+        return new DoubleNode(Double.parseDouble(t.image));
+    }  
+|
+    <OPEN_PAR>
+    expr = Expression()
+    <CLOSE_PAR>
+    {
+        return expr;
+    }
+
+|    
+    expr = Identifier() 
+    {	
+	return expr;
+    }
+
+}
+  

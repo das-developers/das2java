@@ -2345,7 +2345,7 @@ public class Ops {
             QDataSet ttag = timegen("2012-10-02T12:03", "0.1 s", len);
             rip.putProperty( QDataSet.DEPEND_0, ttag );
         } catch (ParseException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
         return rip;
     }

@@ -398,7 +398,7 @@ public class AsciiParser {
                     System.err.println( String.format( "rich header buffer not the same length as the dataset (%d!=%d)", Integer.valueOf(bundleDescriptor.length()), Integer.valueOf(fieldNames.length) ) );
                 }
             } catch (ParseException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
             result.header= header;
         }
@@ -835,7 +835,7 @@ public class AsciiParser {
                         //System.out.println(line);
                     }
                 } catch (NumberFormatException e) {
-                    logger.log( Level.WARNING, null, e );
+                    logger.log(Level.SEVERE, e.getMessage(), e);
                 }
 
             }
@@ -898,7 +898,7 @@ public class AsciiParser {
                 }
 
             } catch (ParseException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
                 if ( propertyPattern!=null ) {
                 Map<String,String> userProps= new LinkedHashMap();
                 for ( String line2: header.split("\n") ) {

@@ -1692,7 +1692,7 @@ public class DataSetOps {
                         Datum r = DatumUtil.parse(arg);
                         fillDs= Reduction.reducex( fillDs, DataSetUtil.asDataSet(r) );
                     } catch (ParseException ex) {
-                        logger.log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
                     }
 
                 } else if ( cmd.equals("|diff") ) {
