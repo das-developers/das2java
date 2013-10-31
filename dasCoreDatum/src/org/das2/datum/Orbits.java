@@ -117,7 +117,7 @@ public class Orbits {
                 sourceUrl= url;
                 break;
             } catch ( IOException ex ) {
-                logger.log( Level.FINE, "", ex );
+                logger.log( Level.FINE, ex.getMessage(), ex );
                 if ( exfirst==null ) exfirst= ex;
             }
         }
@@ -231,7 +231,7 @@ public class Orbits {
                     return s;
                 }
             } catch (ParseException ex) {
-                Logger.getLogger(Orbits.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
         }
         return null;

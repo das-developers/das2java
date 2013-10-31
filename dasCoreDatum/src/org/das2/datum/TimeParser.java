@@ -1508,7 +1508,7 @@ public class TimeParser {
                 DatumRange d2= new OrbitDatumRange( ofh.o.getSpacecraft(), ofh.o.last() );
                 return DatumRangeUtil.union( d1,d2 );
             } catch (ParseException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
 
             return DatumRangeUtil.parseTimeRangeValid( "1000-9000" );
