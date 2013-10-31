@@ -21,6 +21,7 @@ import org.das2.datum.Units;
  */
 public class DataSetUtilTest extends TestCase {
     
+    private static final Logger logger= Logger.getLogger("test");
     public DataSetUtilTest(String testName) {
         super(testName);
     }
@@ -438,7 +439,7 @@ public class DataSetUtilTest extends TestCase {
             double result = DataSetUtil.value(ds, tu);
             assertEquals(expResult, result, 0.0);
         } catch (ParseException ex) {
-            Logger.getLogger(DataSetUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
     }
 
