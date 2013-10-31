@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -65,5 +66,13 @@ public final class LoggerManager {
             log.get(l).addHandler(handler);
         }
         extraHandlers.add(handler);
+    }
+    
+    public static void main( String[] args ) {
+        Logger l= LoggerManager.getLogger("test");
+        Exception e= new java.lang.Exception("this is the problem") ;
+        l.log( Level.WARNING, null, e );
+        l.log( Level.WARNING, e.getMessage(), e );
+        l.log( Level.INFO, "hello there..." );
     }
 }
