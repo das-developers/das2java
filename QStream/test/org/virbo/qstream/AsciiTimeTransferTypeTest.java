@@ -65,7 +65,7 @@ public class AsciiTimeTransferTypeTest {
         try {
             buffer = ByteBuffer.wrap("2000-01-01T00:00:00.000 ".getBytes("US-ASCII"));
         } catch (UnsupportedEncodingException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
         AsciiTimeTransferType instance = new AsciiTimeTransferType(24,Units.us2000);
         double expResult = 0.0;
