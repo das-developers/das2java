@@ -180,12 +180,12 @@ public abstract class WebFileSystem extends FileSystem {
                         s = read.readLine();
                     }
                 } catch (IOException ex) {
-                    logger.log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                 } finally {
                     try {
                         if ( read!=null ) read.close();
                     } catch (IOException ex) {
-                        logger.log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
                     }
                 }
                 break;
@@ -689,7 +689,7 @@ public abstract class WebFileSystem extends FileSystem {
         try {
             listDirectory(dir); // load the listing into memory to get file object
         } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
 
         // we should be able to get the listing that we just did from memory.

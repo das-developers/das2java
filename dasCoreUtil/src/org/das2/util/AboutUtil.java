@@ -36,7 +36,7 @@ public class AboutUtil {
                 buildTime = reader.readLine();
                 reader.close();
             } catch (IOException ex) {
-                logger.log( Level.WARNING, null, ex );
+                logger.log( Level.WARNING, ex.getMessage(), ex );
             }
         }
         String arch = System.getProperty("os.arch"); // applet okay
@@ -57,7 +57,7 @@ public class AboutUtil {
                 aboutContent.append( "<br> " ).append( bis.get(i) );
             }
         } catch (IOException ex) {
-            logger.log( Level.WARNING, null, ex );
+            logger.log( Level.WARNING, ex.getMessage(), ex );
         }
 
         aboutContent.append( "</html>" );

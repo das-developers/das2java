@@ -59,7 +59,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
             localName= relativeName(fs.getVFSFileObject(), f);
             localFile = new File( vfsfs.getLocalRoot(), localName );
         } catch (FileSystemException ex) {
-            Logger.getLogger(VFSFileObject.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
     }
 

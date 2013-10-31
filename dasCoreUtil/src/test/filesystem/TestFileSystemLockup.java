@@ -44,13 +44,13 @@ public class TestFileSystemLockup {
                         long ts1= System.currentTimeMillis() - t1;
                         System.err.printf( "%6.3f %6.3f %s %d\n", ts0/1000., ts1/1000., ff, fs.hashCode() );
                     } catch (FileNotFoundException ex) {
-                        Logger.getLogger(TestFileSystemLockup.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(TestFileSystemLockup.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
                     } catch (FileSystemOfflineException ex) {
-                        Logger.getLogger(TestFileSystemLockup.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(TestFileSystemLockup.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
                     } catch (UnknownHostException ex) {
-                        Logger.getLogger(TestFileSystemLockup.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(TestFileSystemLockup.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
                     } catch (IOException ex) {
-                        Logger.getLogger(TestFileSystemLockup.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(TestFileSystemLockup.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
                     }
                 }
             };

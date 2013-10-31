@@ -108,16 +108,16 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                         logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFamily(), f});
                         fontToTtfMap1.put( font.getFamily(), f );                    
                     } catch ( DocumentException ex ) {
-                        logger.log( Level.SEVERE, null, ex );
+                        logger.log( Level.SEVERE, ex.getMessage(), ex );
                     } catch (FontFormatException ex) {
-                        logger.log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
                     } catch (IOException ex) {
-                        logger.log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
                     } finally {
                         try {
                             if ( in!=null ) in.close();
                         } catch (IOException ex) {
-                            logger.log(Level.SEVERE, null, ex);
+                            logger.log(Level.SEVERE, ex.getMessage(), ex);
                         }
                     }
                 }

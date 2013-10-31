@@ -265,7 +265,7 @@ public abstract class FileSystem  {
                     logger.log(Level.FINE, "done waiting for {0}", root);
                 }
             } catch (InterruptedException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
 
             result= instances.get(root);
@@ -380,7 +380,7 @@ public abstract class FileSystem  {
             try {
                 root = new URI(s + "/");
             } catch (URISyntaxException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
                 throw new RuntimeException(ex); // shouldn't happen
             }
         }
