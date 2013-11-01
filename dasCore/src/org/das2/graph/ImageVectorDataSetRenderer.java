@@ -545,14 +545,13 @@ public class ImageVectorDataSetRenderer extends Renderer {
     }
 
     private void ghostlyImage(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
-        RebinDescriptor ddx;
 
         DatumRange xrange = new DatumRange(xAxis.invTransform(plotImageBounds2.x),
                 xAxis.invTransform(plotImageBounds2.x + plotImageBounds2.width));
         DatumRange yrange = new DatumRange(yAxis.invTransform(plotImageBounds2.y + plotImageBounds2.height),
                 yAxis.invTransform(plotImageBounds2.y));
 
-        ddx = new RebinDescriptor(
+        RebinDescriptor ddx = new RebinDescriptor(
                 xrange.min(),
                 xrange.max(),
                 plotImageBounds2.width,
