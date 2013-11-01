@@ -152,7 +152,7 @@ public class HttpFileSystem extends WebFileSystem {
                         code= urlc.getResponseCode();
                     } catch ( IOException ex2 ) {
                         // do nothing in this case, just try to get a response code.
-                        logger.log(Level.SEVERE,null,ex2);
+                        logger.log(Level.SEVERE,ex2.getMessage(),ex2);
                     }
                     if ( code==401 ) {
                         connectFail= false;
@@ -232,7 +232,7 @@ public class HttpFileSystem extends WebFileSystem {
                 Thread.sleep(300);
                 logger.log(Level.FINEST, "waiting for external process to download {0}", partFile);
             } catch (InterruptedException ex) {
-                Logger.getLogger(HttpFileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
         }
         if ( partFile.exists() ) {
