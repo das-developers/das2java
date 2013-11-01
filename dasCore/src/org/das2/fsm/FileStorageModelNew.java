@@ -422,7 +422,7 @@ public class FileStorageModelNew {
                             bestFiles.put( key,ff );
                         }
                     } catch ( Exception ex ) {
-                        logger.log( Level.WARNING, "", ex );
+                        logger.log( Level.WARNING, ex.getMessage(), ex );
                         // doesn't match if comparator (e.g. version isn't a decimal number)
                     }
                 } else {
@@ -434,7 +434,7 @@ public class FileStorageModelNew {
                             bestFiles.put( key,ff );
                         }
                     } catch ( Exception ex ) {
-                        logger.log( Level.WARNING, "", ex );
+                        logger.log( Level.WARNING, ex.getMessage(), ex );
                         // doesn't match
                     }
                 }

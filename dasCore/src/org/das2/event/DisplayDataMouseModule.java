@@ -225,7 +225,7 @@ public class DisplayDataMouseModule extends MouseModule {
                 myEdit.getTableHeader().setToolTipText("Column labels reported are from the first record");
             }
         } catch ( RuntimeException ex ) {
-            logger.log( Level.SEVERE, null, ex );
+            logger.log( Level.SEVERE, ex.getMessage(), ex );
             tm= new QDataSetTableModel(ds);
             tcm= ((QDataSetTableModel)tm).getTableColumnModel();
         }

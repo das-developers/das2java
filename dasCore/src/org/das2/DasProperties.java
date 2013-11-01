@@ -269,9 +269,9 @@ public class DasProperties extends Properties {
                 try {
                     in= new FileInputStream(f);
                     load(in);
-                } catch (IOException e) {
-                    logger.log( Level.WARNING, null, e );
-                    org.das2.util.DasExceptionHandler.handle(e);
+                } catch (IOException ex) {
+                    logger.log( Level.WARNING, ex.getMessage(), ex );
+                    org.das2.util.DasExceptionHandler.handle(ex);
                 } finally {
                     try {
                         if ( in!=null ) in.close();
@@ -286,7 +286,7 @@ public class DasProperties extends Properties {
                         out= new FileOutputStream(f);
                         store(out,"");
                     } catch (IOException e) {
-                        logger.log( Level.WARNING, null, e );
+                        logger.log( Level.WARNING, e.getMessage(), e );
                         org.das2.util.DasExceptionHandler.handle(e);
                     } finally {
                         try {

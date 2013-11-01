@@ -304,7 +304,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         try {
             this.updateTickLength();
         } catch (ParseException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
         // this doesn't fire
         this.addPropertyChangeListener( "font", new PropertyChangeListener() {
@@ -312,7 +312,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 try {
                     updateTickLength();
                 } catch (ParseException ex) {
-                    logger.log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                 }
             }
         });
@@ -977,15 +977,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                     
                 } catch (InstantiationException ex) {
-                    logger.log(Level.SEVERE, null, ex);
-                    ex.printStackTrace();
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                 } catch (IllegalAccessException ex) {
-                    logger.log(Level.SEVERE, null, ex);
-                    ex.printStackTrace();
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                 }
             } catch (ClassNotFoundException ex) {
-                logger.log(Level.SEVERE, null, ex);
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
         }
         return result;
@@ -1750,7 +1747,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         try {
             updateTickLength();
         } catch (ParseException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
         
         /* This was code was keeping axes from being printed on PC's
@@ -2695,7 +2692,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         try {
             updateTickLength();
         } catch (ParseException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
 
         if (isHorizontal()) {
@@ -3843,8 +3840,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             resize();
             repaint();
         } catch (ParseException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
     }
 

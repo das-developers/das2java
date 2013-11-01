@@ -527,7 +527,7 @@ public class DasPlot extends DasCanvasComponent {
                 try {
                     rend.render(plotGraphics, xAxis, yAxis, new NullProgressMonitor());
                 } catch ( RuntimeException ex ) {
-                    logger.log( Level.WARNING, null, ex );
+                    logger.log( Level.WARNING, ex.getMessage(), ex );
                     postException(rend,ex);
                 }
                 noneActive = false;
@@ -834,7 +834,7 @@ public class DasPlot extends DasCanvasComponent {
                     System.err.println("cheesy code to fix getHeight=0 when printing");
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(DasPlot.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                 }
                 cacheImageBounds.width = width;
                 cacheImageBounds.height = height;
@@ -872,7 +872,7 @@ public class DasPlot extends DasCanvasComponent {
                     try {
                         rend.updatePlotImage(xAxis, yAxis, new NullProgressMonitor());
                     } catch (DasException ex) {
-                        Logger.getLogger(DasPlot.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
                     }
                 }
             }
@@ -1045,7 +1045,7 @@ public class DasPlot extends DasCanvasComponent {
                             try {
                                 r.updatePlotImage(getXAxis(), getYAxis(), new NullProgressMonitor());
                             } catch (DasException ex) {
-                                logger.log(Level.SEVERE, null, ex);
+                                logger.log(Level.SEVERE, ex.getMessage(), ex);
                             }
                         }
                     }

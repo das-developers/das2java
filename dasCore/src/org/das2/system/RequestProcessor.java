@@ -251,7 +251,7 @@ public final class RequestProcessor {
                         throw td;
                     }
                     catch (Throwable t) {
-                        logger.log(Level.INFO, "uncaught exception {0}", t);
+                        logger.log(Level.INFO, "uncaught exception "+t.getMessage(), t);
                         //Clear interrupted status (if set)
                         ExceptionHandler eh= DasApplication.getDefaultApplication().getExceptionHandler();
                         if ( eh==null ) {

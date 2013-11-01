@@ -108,9 +108,9 @@ public class BeansUtil {
                     try {
                         result = (java.beans.PropertyEditor) resultClass.newInstance(); // TODO: this branch will cause excessive lookups for applets.
                     } catch (InstantiationException ex) {
-                        logger.log( Level.WARNING, null, ex );
+                        logger.log( Level.WARNING, ex.getMessage(), ex );
                     } catch (IllegalAccessException ex) {
-                        logger.log( Level.WARNING, null, ex );
+                        logger.log( Level.WARNING, ex.getMessage(), ex );
                     }
                 }
             }

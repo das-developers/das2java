@@ -508,9 +508,9 @@ public class DasProgressPanel implements ProgressMonitor {
                         });
                         Thread.sleep(refreshPeriodMilliSeconds);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(DasProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
                     } catch (InvocationTargetException ex) {
-                        Logger.getLogger(DasProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, ex.getMessage(), ex);
                     } 
                 }
             }

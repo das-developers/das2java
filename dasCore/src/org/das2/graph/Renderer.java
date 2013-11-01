@@ -695,12 +695,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                     renderException = null;
                 } catch (DasException de) {
                     // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
-                    logger.log(Level.WARNING, "exception: {0}", de);
+                    logger.log(Level.WARNING, de.getMessage(), de);
                     ds = null;
                     renderException = de;
                 } catch (RuntimeException re) {
-                    logger.log(Level.WARNING, "exception: {0}", re);
-                    re.printStackTrace();
+                    logger.log(Level.WARNING, re.getMessage(), re);
                     renderException = re;
                     lparent.invalidateCacheImage();
                     throw re;

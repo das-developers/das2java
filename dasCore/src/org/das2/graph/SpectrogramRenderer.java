@@ -681,7 +681,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         try {
                             rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
                         } catch ( RuntimeException ex ) {
-                            logger.log( Level.WARNING, null, ex );  //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
+                            logger.log( Level.WARNING, ex.getMessage(), ex );  //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
                             lparent.postException( this,ex );
                             return;
                         }
@@ -718,7 +718,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             try {
                                 r.setDataElements(0, 0, rasterWidth, rasterHeight, lraster);
                             } catch (Exception e) {
-                               logger.log( Level.WARNING, null, e );
+                               logger.log( Level.WARNING, e.getMessage(), e );
                             }
                         } else {
                             System.err.println("avoided raster ArrayIndex... track this down sometime...");
@@ -750,7 +750,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 } //synchronized (lockObject)
             } catch (InconvertibleUnitsException ex) {
                 logger.fine("inconvertible units, setting image to null");
-                logger.log( Level.WARNING, null, ex );
+                logger.log( Level.WARNING, ex.getMessage(), ex );
                 plotImage = null;
                 plotImageBounds= null;
                 rebinDataSet = null;
@@ -761,7 +761,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             }
 
         } catch (NullPointerException ex) {
-            logger.log( Level.WARNING, null, ex );
+            logger.log( Level.WARNING, ex.getMessage(), ex );
         } catch (NoDataInIntervalException e) {
             lastException = e;
             plotImage = null;

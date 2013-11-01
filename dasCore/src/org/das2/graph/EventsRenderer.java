@@ -555,7 +555,7 @@ public class EventsRenderer extends Renderer {
                         double s= f.getSize2D() * size[0]/100 + f.getSize2D() * size[1] + size[2];
                         f= f.deriveFont((float)s);
                     } catch ( ParseException ex ) {
-                        logger.log( Level.WARNING, null, ex );
+                        logger.log( Level.WARNING, ex.getMessage(), ex );
                     }
                 }
                 g1.setFont(f);

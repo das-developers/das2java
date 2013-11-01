@@ -236,7 +236,7 @@ public class SeriesRenderer extends Renderer {
                         g.drawImage(psymImage, (int)dpsymsPath[i * 2] - cmx, (int)dpsymsPath[i * 2 + 1] - cmy, lparent);
                     }
                 } catch ( ArrayIndexOutOfBoundsException ex ) {
-                    logger.log( Level.WARNING, null, ex );
+                    logger.log( Level.WARNING, ex.getMessage(), ex );
                 }
             }
 
@@ -291,7 +291,7 @@ public class SeriesRenderer extends Renderer {
                     try {
                         psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
                     } catch ( ArrayIndexOutOfBoundsException ex ) {
-                        logger.log( Level.WARNING, null, ex );
+                        logger.log( Level.WARNING, ex.getMessage(), ex );
                     }
                 }
             }
@@ -413,7 +413,7 @@ public class SeriesRenderer extends Renderer {
                             colors[i] = fcolorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
                         } catch ( NullPointerException ex ) {
                             //System.err.println("here391");
-                            logger.log( Level.WARNING, null, ex );
+                            logger.log( Level.WARNING, ex.getMessage(), ex );
                         }
                     }
                     i++;

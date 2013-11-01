@@ -91,7 +91,7 @@ public class Auralizor {
                     out.write(buffer);
                     buffer.flip();
                 } catch (IOException ex) {
-                    Logger.getLogger(Auralizor.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Auralizor.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
                 }
                 ibuf=0;
             }
@@ -102,7 +102,7 @@ public class Auralizor {
             out.write(buffer);
             buffer.flip();
         } catch (IOException ex) {
-            Logger.getLogger(Auralizor.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Auralizor.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
         ibuf=0;
         

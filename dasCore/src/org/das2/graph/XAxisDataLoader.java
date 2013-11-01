@@ -180,7 +180,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
             if ( e.getException()!=null && e.getDataSet()!=null ) {
                 throw new IllegalStateException("both exception and data set");
             } else if (e.getException() != null) {
-                logger.log(Level.FINE, "got dataset update exception: {0}", e.getException());
+                logger.log(Level.FINE, "got dataset update exception: "+e.getException().getMessage(), e.getException());
                 Exception exception = e.getException();
                 if ( !rendererHandlesException(exception) ) {
                     DasExceptionHandler.handle(exception);
@@ -191,7 +191,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                     if ( mon==null || mon==currentRequest.monitor ) {
                         renderer.setException( exception );
                         renderer.setDataSet(null);
-                        logger.log(Level.FINE, "current request completed w/exception: {0}", currentRequest);
+                        logger.log(Level.FINE, "current request completed w/exception: "+e.getException().getMessage(), currentRequest);
                         currentRequest=null;
                     } else {
                         logger.fine("got exception but not for currentRequest " );

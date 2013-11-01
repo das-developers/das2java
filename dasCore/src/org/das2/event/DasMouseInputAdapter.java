@@ -238,7 +238,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     primaryPopup.add(primaryNewItem, numInserted + 1 + primaryActionButtonMap.size() - 1);
                     secondaryPopup.add(secondaryNewItem, numInsertedSecondary + 1 + secondaryActionButtonMap.size() - 1);
                 } catch ( IllegalArgumentException ex ) {
-                    logger.log( Level.SEVERE, null, ex );
+                    logger.log( Level.SEVERE, ex.getMessage(), ex );
                 }
 
             }
@@ -345,9 +345,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             try {
                 Object ii = ((Map.Entry) i.next()).getValue();
                 ((JCheckBoxMenuItem) ii).setSelected(false);
-            } catch (RuntimeException e) {
-                logger.log( Level.SEVERE, null, e );
-                throw e;
+            } catch (RuntimeException ex) {
+                logger.log( Level.SEVERE, ex.getMessage(), ex );
+                throw ex;
             }
         }
 
@@ -377,9 +377,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             try {
                 Object ii = ((Map.Entry) i.next()).getValue();
                 ((JCheckBoxMenuItem) ii).setSelected(false);
-            } catch (RuntimeException e) {
-                logger.log( Level.SEVERE, null, e );
-                throw e;
+            } catch (RuntimeException ex) {
+                logger.log( Level.SEVERE, ex.getMessage(), ex );
+                throw ex;
             }
         }
 
@@ -867,9 +867,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                                     feedback.setMessage("" + theone.getListLabel() + ", press escape to cancel" );                    
                                 }
                             } catch (NoSuchMethodException ex) {
-                                Logger.getLogger(DasMouseInputAdapter.class.getName()).log(Level.SEVERE, null, ex);
+                                logger.log(Level.SEVERE, ex.getMessage(), ex);
                             } catch (SecurityException ex) {
-                                Logger.getLogger(DasMouseInputAdapter.class.getName()).log(Level.SEVERE, null, ex);
+                                logger.log(Level.SEVERE, ex.getMessage(), ex);
                             }
                             
                         }
