@@ -1010,6 +1010,12 @@ public class AsciiParser {
     public final FieldParser UNITS_PARSER = new FieldParser() {
         public final double parseField(String field, int columnIndex) throws ParseException {
             Units u = AsciiParser.this.units[columnIndex];
+            if ( u instanceof EnumerationUnits ) {
+                field= field.trim();
+                if ( field.startsWith("\"") && field.endsWith("\"") ) {
+                    return u.parse(field.substring(1,field.length()-1)).doubleValue(u);
+                }
+            }
             return u.parse(field).doubleValue(u);
         }
         @Override
@@ -1024,7 +1030,12 @@ public class AsciiParser {
     public final FieldParser ENUMERATION_PARSER = new FieldParser() {
         public final double parseField(String field, int columnIndex) throws ParseException {
             EnumerationUnits u = (EnumerationUnits)AsciiParser.this.units[columnIndex];
-            return u.createDatum(field).doubleValue(u);            
+            field= field.trim();
+            if ( field.startsWith("\"") && field.endsWith("\"") ) {
+                return u.parse(field.substring(1,field.length()-1)).doubleValue(u); // TODO: untested..
+            } else {
+                return u.createDatum(field).doubleValue(u);            
+            }
         }
         @Override
         public String toString() {
