@@ -418,6 +418,16 @@ public interface QDataSet {
     public static String VALUE_BINS_MIN_MAX="min,max";
 
     /**
+     * scale type to suggest log axes and bins.
+     */
+    public static String VALUE_SCALE_TYPE_LOG="log";
+
+    /**
+     * scale type to suggest linear axes and bins.
+     */
+    public static String VALUE_SCALE_TYPE_LINEAR="linear";
+    
+    /**
      * the minimum length of each of the waveform packets in a rank 2 waveform dataset.
      */
     public static int MIN_WAVEFORM_LENGTH=128;
