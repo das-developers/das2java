@@ -160,6 +160,25 @@ public final class IDataSet extends ArrayDataSet {
     }
 
     /**
+     * add this value to the current value. 
+     * @param i0
+     * @param value 
+     */
+    public void addValue( int i0, double value ) {
+        back[  i0 ]+= (int)value;
+    }
+
+    /**
+     * add this value to the current value. 
+     * @param i0
+     * @param i1
+     * @param value 
+     */
+    public void addValue( int i0, int i1, double value ) {
+        back[  i0 * len1 + i1 ]+= (int)value;
+    }
+    
+    /**
      * creates a rank1 IDataSet by wrapping an existing array.
      */
     public static IDataSet wrap( int[] back ) {
