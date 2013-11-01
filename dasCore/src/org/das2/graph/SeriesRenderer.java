@@ -68,9 +68,12 @@ import org.das2.event.CrossHairMouseModule;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
+import org.virbo.dsutil.DataSetBuilder;
+import org.virbo.dsutil.Reduction;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -1484,17 +1487,53 @@ public class SeriesRenderer extends Renderer {
         
         if (vds != null) {
 
+            if ( vds.length()>dataSetSizeLimit ) {
+                logger.fine("reducing data that is bigger than dataSetSizeLimit");
+                DatumRange xdr= xAxis.getDatumRange();
+                QDataSet xxx= xAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), xAxis.getDLength() ) ) :
+                        Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), xAxis.getDLength()/5 );
+                if ( xAxis.isLog() ) {
+                    ((MutablePropertyDataSet)xxx).putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
+                }
+                DatumRange ydr= yAxis.getDatumRange();
+                QDataSet yyy= yAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), yAxis.getDLength() ) ) :
+                        Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), yAxis.getDLength()/5 );
+                if ( yAxis.isLog() ) {
+                    ((MutablePropertyDataSet)yyy).putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
+                }
+                QDataSet hds= Reduction.histogram2D( vds, xxx, yyy );
+                
+                DataSetBuilder buildx= new DataSetBuilder(1,100);
+                DataSetBuilder buildy= new DataSetBuilder(1,100);
+                for ( int ii=0; ii<hds.length(); ii++ ) {                
+                    for ( int jj=0; jj<hds.length(0); jj++ ) {
+                        if ( hds.value(ii,jj)>0 ) {
+                            buildx.putValue(-1,xxx.value(ii));
+                            buildy.putValue(-1,yyy.value(jj));
+                            buildx.nextRecord(); 
+                            buildy.nextRecord();
+                            System.err.println(xxx.value(ii));
+                        }
+                    }
+                }
+                MutablePropertyDataSet mvds= DataSetOps.makePropertiesMutable( Ops.link( buildx.getDataSet(), buildy.getDataSet() ) );
+                DataSetUtil.copyDimensionProperties( vds, mvds );
+                vds= mvds;
+                xds= SemanticOps.xtagsDataSet(vds);
+                logger.log( Level.FINE, "data reduced to {0} {1}", new Object[] { vds, Ops.extent(xds) } );
+            }
+            
             updateFirstLast(xAxis, yAxis, xds, vds );
 
             if (fillToReference) {
-                fillElement.update(xAxis, yAxis, dataSet, monitor);
+                fillElement.update(xAxis, yAxis, vds, monitor);
             }
             if (psymConnector != PsymConnector.NONE) {
-                psymConnectorElement.update(xAxis, yAxis, dataSet, monitor);
+                psymConnectorElement.update(xAxis, yAxis, vds, monitor);
             }
 
-            errorElement.update(xAxis, yAxis, dataSet, monitor);
-            psymsElement.update(xAxis, yAxis, dataSet, monitor);
+            errorElement.update(xAxis, yAxis, vds, monitor);
+            psymsElement.update(xAxis, yAxis, vds, monitor);
             selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );
 
         } else if (tds != null) {
