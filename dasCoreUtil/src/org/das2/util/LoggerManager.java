@@ -71,7 +71,7 @@ public final class LoggerManager {
     public static void main( String[] args ) {
         Logger l= LoggerManager.getLogger("test");
         Exception e= new java.lang.Exception("this is the problem") ;
-        l.log( Level.WARNING, null, e );
+        l.log( Level.WARNING, null, e ); // BUG 1119 DEMONSTRATION PURPOSES
         l.log( Level.WARNING, e.getMessage(), e );
         l.log( Level.WARNING, "Exception: {0}", e );
         l.log( Level.INFO, "hello there..." );
