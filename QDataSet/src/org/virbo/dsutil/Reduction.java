@@ -10,10 +10,13 @@ import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetIterator;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
@@ -477,5 +480,46 @@ public class Reduction {
 
         return yds;
 
+    }
+    
+    /**
+     * reduce the buckshot scatter data by laying it out on a 2-D grid and
+     * accumulating the hits to each cell.  Written originally to support 
+     * SeriesRenderer, to replace the "200000 point limit" warning.
+     * @param ds rank1 Y(X)
+     * @param xlim rank1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.  Uses SCALE_TYPE property.
+     * @param ylim rank1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.
+     * @return rank 2 ds containing frequency of occurrence for each bin, with DEPEND_0=xlim and DEPEND_1=ylim.
+     */
+    public static QDataSet histogram2D( QDataSet ds, QDataSet xlim, QDataSet ylim ) {
+        if ( ds.rank()!=1 ) {
+            throw new IllegalArgumentException("ds.rank() must be 1");
+        }
+        boolean xlog= QDataSet.VALUE_SCALE_TYPE_LOG.equals( xlim.property(QDataSet.SCALE_TYPE) );
+        boolean ylog= QDataSet.VALUE_SCALE_TYPE_LOG.equals( ylim.property(QDataSet.SCALE_TYPE) );
+        double xspace= xlog ? Math.log10(xlim.value(1))-Math.log10(xlim.value(0)) : xlim.value(1)-xlim.value(0);
+        double yspace= ylog ? Math.log10(ylim.value(1))-Math.log10(ylim.value(0)) : ylim.value(1)-ylim.value(0);
+        double xmin= xlog ? Math.log10(xlim.value(0)) - xspace/2 : xlim.value(0) - xspace/2;
+        double ymin= ylog ? Math.log10(ylim.value(0)) - yspace/2 : ylim.value(0) - yspace/2;
+        int nx= xlim.length();
+        int ny= ylim.length();
+        
+        IDataSet result= IDataSet.createRank2(nx,ny);
+        QDataSet xx= SemanticOps.xtagsDataSet(ds);
+        QDataSet yy= SemanticOps.ytagsDataSet(ds);
+        
+        for ( int i=0; i<ds.length(); i++ ) {
+            double x= xx.value(i);
+            double y= yy.value(i);
+            int ix= (int)( xlog ? (Math.log10(x)-xmin)/xspace : (x-xmin)/xspace );
+            int iy= (int)( ylog ? (Math.log10(y)-ymin)/yspace : (y-ymin)/yspace );
+            if ( ix>=0 && ix<nx && iy>=0 && iy<ny ) {
+                result.addValue( ix, iy, 1 );
+            }
+        }
+        result.putProperty( QDataSet.DEPEND_0, xlim );
+        result.putProperty( QDataSet.DEPEND_1, ylim );
+        
+        return result;
     }
 }
