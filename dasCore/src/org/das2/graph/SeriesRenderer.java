@@ -116,6 +116,11 @@ public class SeriesRenderer extends Renderer {
      */
     private boolean dataSetClipped;
 
+    /**
+     * the dataset was reduced 
+     */
+    private boolean dataSetReduced;
+    
     public SeriesRenderer() {
         super();
         updatePsym();
@@ -1159,9 +1164,14 @@ public class SeriesRenderer extends Renderer {
             }
         }
 
+        //if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
+        //    dataSetClipped = true;
+        //}
+        
         if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
-            dataSetClipped = true;
+            dataSetReduced = true;
         }
+        
 
         lastIndex = index;
 
@@ -1381,6 +1391,10 @@ public class SeriesRenderer extends Renderer {
             lparent.postMessage(this, "dataset clipped at " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
         }
 
+        if (dataSetReduced) {
+            lparent.postMessage(this, "dataset reduced because of size > " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
+        }
+
         if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
             if ( messageCount++==0) {
                 if ( lastIndex_v<2 ) {
@@ -1479,7 +1493,8 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
-        dataSetClipped = false;
+        dataSetClipped = false;  // disabled while experimenting with dataSetReduced.
+        dataSetReduced = false;
 
 
         firstIndex= -1;
@@ -1487,17 +1502,19 @@ public class SeriesRenderer extends Renderer {
         
         if (vds != null) {
 
-            if ( vds.length()>dataSetSizeLimit ) {
+            updateFirstLast(xAxis, yAxis, xds, vds );
+
+            if ( dataSetReduced ) {
                 logger.fine("reducing data that is bigger than dataSetSizeLimit");
                 DatumRange xdr= xAxis.getDatumRange();
                 QDataSet xxx= xAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), xAxis.getDLength() ) ) :
-                        Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), xAxis.getDLength()/5 );
+                        Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), xAxis.getDLength()/1 );
                 if ( xAxis.isLog() ) {
                     ((MutablePropertyDataSet)xxx).putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
                 }
                 DatumRange ydr= yAxis.getDatumRange();
                 QDataSet yyy= yAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), yAxis.getDLength() ) ) :
-                        Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), yAxis.getDLength()/5 );
+                        Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), yAxis.getDLength()/1 );
                 if ( yAxis.isLog() ) {
                     ((MutablePropertyDataSet)yyy).putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
                 }
@@ -1512,7 +1529,6 @@ public class SeriesRenderer extends Renderer {
                             buildy.putValue(-1,yyy.value(jj));
                             buildx.nextRecord(); 
                             buildy.nextRecord();
-                            System.err.println(xxx.value(ii));
                         }
                     }
                 }
@@ -1520,11 +1536,12 @@ public class SeriesRenderer extends Renderer {
                 DataSetUtil.copyDimensionProperties( vds, mvds );
                 vds= mvds;
                 xds= SemanticOps.xtagsDataSet(vds);
+
+                updateFirstLast(xAxis, yAxis, xds, vds );
+
                 logger.log( Level.FINE, "data reduced to {0} {1}", new Object[] { vds, Ops.extent(xds) } );
             }
             
-            updateFirstLast(xAxis, yAxis, xds, vds );
-
             if (fillToReference) {
                 fillElement.update(xAxis, yAxis, vds, monitor);
             }
