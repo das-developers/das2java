@@ -606,15 +606,17 @@ public class EventsRenderer extends Renderer {
 
                     if ( column.getDMinimum() < ixmax || column.getDMaximum() > ixmin ) { // if any part is visible
                         if ( iwidth==0 ) iwidth=1;
-                        if ( dt<100 ) sa.append( new Rectangle( ixmin-2, row.getDMinimum(), iwidth+4, row.getHeight() ), false );
                         if ( this.orbitMode ) {
                             g.fill( new Rectangle( ixmin, row.getDMaximum()-textHeight, iwidth-1, textHeight ) );
+                            if ( dt<100 ) sa.append( new Rectangle( ixmin, row.getDMaximum()-textHeight, iwidth-1, textHeight ), false );
                         } else if ( this.ganttMode ) {
                             int iymin= row.getDMinimum() + row.getHeight() * ((int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) + 1;
                             int iymax= row.getDMinimum() + row.getHeight() * (1+(int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) - 1;
                             g.fill( new Rectangle( ixmin, iymin, iwidth, iymax-iymin ) );
+                            if ( dt<100 ) sa.append( new Rectangle( ixmin, iymin, iwidth, iymax-iymin ), false );
                         } else {
                             g.fill( new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() ) );
+                            if ( dt<100 ) sa.append( new Rectangle( ixmin-2, row.getDMinimum(), iwidth+4, row.getHeight() ), false );
                         }
                         int im= ixmin-column.getDMinimum();
                         int em0= im-1;
@@ -661,11 +663,6 @@ public class EventsRenderer extends Renderer {
                 }
             }
             
-            long dt= System.currentTimeMillis()-t0;
-            if ( dt>100 ) {
-                sa= new GeneralPath();
-                sa.append( org.das2.graph.DasDevicePosition.toRectangle( row, column ), false );
-            }
         }
         g.dispose();
 
