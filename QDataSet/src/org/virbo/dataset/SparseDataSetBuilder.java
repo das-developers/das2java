@@ -52,10 +52,20 @@ public class SparseDataSetBuilder {
         ds.putProperty( name, index, value );
     }
 
+    /**
+     * set the length of the zeroth dimension.  Other dimensions have length set implicitly by the highest value set.
+     * If this is not set explicitly, then it will be implicit as well.
+     * @param length 
+     */
     public void setLength( int i0 ) {
         ds.setLength(i0);
     }
   
+    /**
+     * make this a qube dataset, where all the lengths are the same.
+     * implicitly this calls setLength(qube[0]).
+     * @param qube 
+     */    
     public void setQube( int[] qube ) {
         ds.setQube(qube);
     }    
