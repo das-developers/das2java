@@ -26,6 +26,11 @@ public class AsciiTimeTransferType extends AsciiTransferType {
     Units units;
     DatumFormatter formatter;
 
+    /**
+     * create the ISO8601 transfer type.
+     * @param sizeBytes
+     * @param units 
+     */
     public AsciiTimeTransferType(int sizeBytes, Units units) {
         super(sizeBytes,false);
         this.units = units;
