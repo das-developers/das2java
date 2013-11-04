@@ -54,7 +54,7 @@ public class Reduction {
      * This is basically a copy of that code.
      * @param ds a rank1 or rank2 waveform dataset.
      * @param xLimit the target resolution, result will be finer than this, if possible.
-     * @return 
+     * @return either the original dataset when there is no reduction to be done, or a series data set with bins (deltas for now).
      */
     private static QDataSet reducexWaveform( QDataSet ds, QDataSet xLimit ) {
         DataSetBuilder xbuilder;
@@ -79,6 +79,10 @@ public class Reduction {
             icadence= icadence*2;
         }
         icadence= icadence/2;                
+        
+        if ( icadence<4 ) {
+            return ds;
+        }
         
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         
