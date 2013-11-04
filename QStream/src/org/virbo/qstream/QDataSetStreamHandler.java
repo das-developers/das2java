@@ -295,7 +295,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                                     join = new JoinDataSet(rank+1);
                                     joinDataSets.put(name, join);
                                 }
-                                MutablePropertyDataSet mds= resolveProps( builder.getDataSet() );
+                                MutablePropertyDataSet mds= resolveProps( name, builder.getDataSet() );
                                 join.join(mds);
 
                                 builder = createBuilder(rank, dims);
@@ -322,11 +322,21 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
     }
 
-    private MutablePropertyDataSet resolveProps( MutablePropertyDataSet result ) {
+    /**
+     * resolve properties that can be resolved, namely DEPENDNAME_0 which is 
+     * a string linking two datasets.
+     * @param name the name of this dataset in the file.
+     * @param result the dataset we are resolving.
+     */
+    private MutablePropertyDataSet resolveProps( String name, MutablePropertyDataSet result) {
        // read datasets that need to be resolved.
        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
            String s = (String) result.property("DEPENDNAME_" + i);
            if (s != null) {
+               if ( s.equals(name) ) {
+                   //result.putProperty( QDataSet.DEPEND_0, result );  // sometimes it's nice to look at Epoch[Epoch]
+                   continue;
+               }
                QDataSet dep0ds= getDataSet(s);
                if ( dep0ds.rank()==1 ) {
                    result.putProperty("DEPEND_" + i, dep0ds );
@@ -447,7 +457,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                         DataSetBuilder childBuilder= builders.get(children[i]);
                         if ( childBuilder!=null ) {
                             MutablePropertyDataSet sliceDs1= childBuilder.getDataSet();
-                            resolveProps(sliceDs1);
+                            resolveProps( null, sliceDs1);
                             childDataSets.add( sliceDs1 );
                             logger.log(Level.FINER, "child: {0}", sliceDs1.toString());
                         } else {
@@ -484,9 +494,9 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
 
         if (join != null) {
-            if ( sliceDs!=null ) resolveProps(sliceDs); //TODO: this technically breaks things, because we cannot call getDataSet again
+            if ( sliceDs!=null ) resolveProps( name, sliceDs); //TODO: this technically breaks things, because we cannot call getDataSet again
         } else {
-            resolveProps(result);
+            resolveProps( name, result);
         }
 
         return result;
