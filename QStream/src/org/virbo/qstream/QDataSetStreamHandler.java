@@ -8,8 +8,10 @@ import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.xpath.XPath;
@@ -64,7 +66,28 @@ public class QDataSetStreamHandler implements StreamHandler {
      * @return
      */
     public List<String> getDataSetNames() {
+        builders.get("col5");
         return new ArrayList<String>(builders.keySet());
+    }
+    
+    /**
+     * return a list of available datasets and their label (or name if not available).
+     * @return
+     */    
+    public Map<String,String> getDataSetNamesAndDescriptions() {
+        List<String> names= getDataSetNames();
+        Map<String,String> result= new LinkedHashMap();
+        for ( Entry<String, DataSetBuilder> e: builders.entrySet() ) {
+            DataSetBuilder b= e.getValue();
+            String name= null;
+            String n;
+            n= (String) b.getProperties().get( QDataSet.NAME );
+            if ( n!=null ) name= n;
+            n= (String) b.getProperties().get( QDataSet.LABEL );
+            if ( n!=null ) name= n;
+            result.put( e.getKey(), name );
+        }
+        return result;
     }
 
     /**
