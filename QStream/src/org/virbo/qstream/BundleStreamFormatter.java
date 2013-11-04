@@ -39,6 +39,10 @@ public class BundleStreamFormatter {
         if ( u!=null ) {
             build.append( String.format( "        <property name=\"UNITS\" type=\"units\" value=\"%s\"/>\n", u.getId() ) );
         }
+        s= (String) bds.property(QDataSet.DEPENDNAME_0,i);
+        if ( s!=null ) {
+            build.append( String.format( "        <property name=\"DEPENDNAME_0\" type=\"String\" value=\"%s\"/>\n", s ) );
+        }
     }
     
     /**
