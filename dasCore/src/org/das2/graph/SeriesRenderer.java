@@ -439,14 +439,26 @@ public class SeriesRenderer extends Renderer {
 
         @Override
         public boolean acceptContext(Point2D.Double dp) {
-            if (dpsymsPath == null) {
+            
+            double[] p;
+            int fi;
+            int li;
+            
+            //local copy for thread safety
+            synchronized (this) {
+                p= dpsymsPath;
+                fi= firstIndex;
+                li= lastIndex;
+            }
+            
+            if ( p == null ) {
                 return false;
             }
             double rad = Math.max(symSize, 5);
 
-            for (int index = firstIndex; index < lastIndex; index++) {
-                int i = index - firstIndex;
-                if (dp.distance(dpsymsPath[i * 2], dpsymsPath[i * 2 + 1]) < rad) {
+            for (int index = fi; index < li; index++) {
+                int i = index - fi;
+                if (dp.distance(p[i * 2], p[i * 2 + 1]) < rad) {
                     return true;
                 }
             }
