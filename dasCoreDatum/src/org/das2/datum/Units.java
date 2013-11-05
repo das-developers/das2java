@@ -355,6 +355,14 @@ public abstract class Units {
         UnitsConverter result= getConverterInternal(this, toUnits);
         return result!=null;
     }
+
+    /**
+     * @return true if the unit can be converted to toUnits.
+     */
+    public boolean isConvertibleTo( Units toUnits ) {
+        UnitsConverter result= getConverterInternal(this, toUnits);
+        return result!=null;
+    }
     
     /**
      * lookup the UnitsConverter object that takes numbers from fromUnits to toUnits.  
