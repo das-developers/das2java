@@ -844,6 +844,129 @@ public class Ops {
         return sqrt( dataset(ds1) );
     }
     
+    
+    /**
+     * Solves each of a set of cubic equations of the form:
+     * a*x^3 + b*x^2 + c*x + d = 0.
+     * Takes a rank 2 dataset with each equation across the first dimension and
+     * coefficients of each equation across the second.
+     * @param coefficients Set of all coefficients.
+     * @return Roots of each equation. Double.NaN is returned for complex roots.
+     * @author Henry Livingston Wroblewski
+     */
+    public static QDataSet cubicRoot( QDataSet coefficients )
+    {
+        //check for correct dimension of input
+        if( coefficients.rank() != 2 )
+        {
+            throw new IllegalArgumentException(
+                    "Must pass rank 2 QDataSet to cubicRoot");
+        }
+        
+        // check for correct size input
+        if( coefficients.length(0) != 4 || !DataSetUtil.isQube(coefficients) )
+        {
+            throw new IllegalArgumentException(
+                    "Each row must be length 4 for cubicRoot");
+        }
+
+        DDataSet result = DDataSet.createRank2(coefficients.length(), 3);
+        
+        for( int i = 0; i < coefficients.length(); ++i )
+        {
+            /* alternate method to check for correct size, is slightly faster
+            if( coefficients.length(1) != 4 )
+            {
+                throw new IllegalArgumentException(
+                        "Each row must be length 4 for cubicRoot");
+            }*/
+            
+            double[] answers = cubicRoot( coefficients.value(i,0),
+                                          coefficients.value(i,1),
+                                          coefficients.value(i,2),
+                                          coefficients.value(i,3) );
+            
+            result.putValue(i, 0, answers[0]);
+            result.putValue(i, 1, answers[1]);
+            result.putValue(i, 2, answers[2]);
+        }
+        
+        return result;
+    } //end method cubicRoot()
+    
+    /**
+     * Enter the coefficients for a cubic of the form:
+     * a*x^3 + b*x^2 + c*x + d = 0.
+     * Based on the method described at http://www.1728.org/cubic2.htm.
+     * @param a Coefficient of x^3.
+     * @param b Coefficient of x^2.
+     * @param c Coefficient of x.
+     * @param d Constant.
+     * @return Array containing 3 roots. NaN will be returned for imaginary
+     * roots.
+     * @author Henry Livingston Wroblewski
+     */
+    public static double[] cubicRoot(double a, double b, double c, double d)
+            throws ArithmeticException
+    {
+        double[] result;
+        
+        //check for proper degree of polynomial
+        if( a == 0.0 )
+        {
+            throw new IllegalArgumentException("Coefficient of x^3 cannot be " +
+                    "0 for cubicRoot.");
+        }
+        
+        double f = (3*c/a - b*b/(a*a))/3;
+        double g = (2*b*b*b/(a*a*a) - 9*b*c/(a*a) + 27*d/a)/27;
+        double h = g*g/4 + f*f*f/27;
+        
+        if( h > 0 ) //one real root
+        {
+            double r = -g/2 + Math.sqrt(h);
+            double s = r > 0 ? Math.pow(r, 1.0/3.0) : - Math.pow(-r, 1.0/3.0);
+            double t = -g/2 - Math.sqrt(h);
+            double u = t > 0 ? Math.pow(t, 1.0/3.0) : -Math.pow(-t, 1.0/3.0);
+            
+            result = new double[3];
+            result[0] = s + u - b/(3*a);
+            result[1] = Double.NaN;
+            result[2] = Double.NaN;
+            //imaginary results
+            //result[1] = -(s + u)/2 - b/(3*a) + i*(s-u)*Math.sqrt(3)/2;
+            //result[2] = -(s + u)/2 - b/(3*a) - i*(s-u)*Math.sqrt(3)/2;
+        }
+        else if( f == 0 && g == 0 && h == 0 ) //3 repeated roots
+        {
+            result = new double[3];
+            result[0] = result[1] = result[2] = - Math.pow(d/a, 1.0/3.0);
+        }
+        else if( h <= 0 ) //all real
+        {
+            double i = Math.sqrt(g*g/4 - h);
+            double j = Math.pow(i, 1.0/3.0);
+            double k = Math.acos(-g/(2*i));
+            double l = -j;
+            double m = Math.cos(k/3);
+            double n = Math.sqrt(3)*Math.sin(k/3);
+            double P = -b/(3*a);
+            
+            result = new double[3];
+            result[0] = 2*j*Math.cos(k/3) - b/(3*a);
+            result[1] = l*(m + n) + P;
+            result[2] = l*(m - n) + P;
+        }
+        else
+        {
+            // we shiould never get here...
+            throw new ArithmeticException("Undefined case in cubicRoot.");
+        }
+
+        return result;
+    } //end method cubicRoot()
+    
+
     /**
      * element-wise abs.  For vectors, this returns the length of each element.
      * Note Jython conflict needs to be resolved.
