@@ -493,7 +493,7 @@ public class Reduction {
      * @param ds rank1 Y(X)
      * @param xxx rank1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.  Uses SCALE_TYPE property.
      * @param yyy rank1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.
-     * @return rank 2 ds containing frequency of occurrence for each bin, with DEPEND_0=xlim and DEPEND_1=ylim.
+     * @return rank 2 ds containing frequency of occurrence for each bin, with DEPEND_0=xxx and DEPEND_1=yyy.
      */
     public static QDataSet histogram2D( QDataSet ds, QDataSet xxx, QDataSet yyy ) {
         if ( ds.rank()!=1 ) {
