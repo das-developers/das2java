@@ -491,30 +491,30 @@ public class Reduction {
      * accumulating the hits to each cell.  Written originally to support 
      * SeriesRenderer, to replace the "200000 point limit" warning.
      * @param ds rank1 Y(X)
-     * @param xlim rank1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.  Uses SCALE_TYPE property.
-     * @param ylim rank1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.
+     * @param xxx rank1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.  Uses SCALE_TYPE property.
+     * @param yyy rank1 dataset describes the bins, which must be uniformly linearly spaced, or log spaced.
      * @return rank 2 ds containing frequency of occurrence for each bin, with DEPEND_0=xlim and DEPEND_1=ylim.
      */
-    public static QDataSet histogram2D( QDataSet ds, QDataSet xlim, QDataSet ylim ) {
+    public static QDataSet histogram2D( QDataSet ds, QDataSet xxx, QDataSet yyy ) {
         if ( ds.rank()!=1 ) {
             throw new IllegalArgumentException("ds.rank() must be 1");
         }
-        boolean xlog= QDataSet.VALUE_SCALE_TYPE_LOG.equals( xlim.property(QDataSet.SCALE_TYPE) );
-        boolean ylog= QDataSet.VALUE_SCALE_TYPE_LOG.equals( ylim.property(QDataSet.SCALE_TYPE) );
-        double xspace= xlog ? Math.log10(xlim.value(1))-Math.log10(xlim.value(0)) : xlim.value(1)-xlim.value(0);
-        double yspace= ylog ? Math.log10(ylim.value(1))-Math.log10(ylim.value(0)) : ylim.value(1)-ylim.value(0);
-        double xmin= xlog ? Math.log10(xlim.value(0)) - xspace/2 : xlim.value(0) - xspace/2;
-        double ymin= ylog ? Math.log10(ylim.value(0)) - yspace/2 : ylim.value(0) - yspace/2;
-        int nx= xlim.length();
-        int ny= ylim.length();
+        boolean xlog= QDataSet.VALUE_SCALE_TYPE_LOG.equals( xxx.property(QDataSet.SCALE_TYPE) );
+        boolean ylog= QDataSet.VALUE_SCALE_TYPE_LOG.equals( yyy.property(QDataSet.SCALE_TYPE) );
+        double xspace= xlog ? Math.log10(xxx.value(1))-Math.log10(xxx.value(0)) : xxx.value(1)-xxx.value(0);
+        double yspace= ylog ? Math.log10(yyy.value(1))-Math.log10(yyy.value(0)) : yyy.value(1)-yyy.value(0);
+        double xmin= xlog ? Math.log10(xxx.value(0)) - xspace/2 : xxx.value(0) - xspace/2;
+        double ymin= ylog ? Math.log10(yyy.value(0)) - yspace/2 : yyy.value(0) - yspace/2;
+        int nx= xxx.length();
+        int ny= yyy.length();
         
         IDataSet result= IDataSet.createRank2(nx,ny);
         QDataSet xx= SemanticOps.xtagsDataSet(ds);
         QDataSet yy= SemanticOps.ytagsDataSet(ds);
         QDataSet ww= SemanticOps.weightsDataSet(ds);
         
-        UnitsConverter ucx= SemanticOps.getUnitsConverter( xx,xlim );
-        UnitsConverter ucy= SemanticOps.getUnitsConverter( yy,ylim );
+        UnitsConverter ucx= SemanticOps.getUnitsConverter( xx,xxx );
+        UnitsConverter ucy= SemanticOps.getUnitsConverter( yy,yyy );
         
         for ( int i=0; i<ds.length(); i++ ) {
             if ( ww.value(i)>0 ) {
@@ -527,8 +527,8 @@ public class Reduction {
                 }
             }
         }
-        result.putProperty( QDataSet.DEPEND_0, xlim );
-        result.putProperty( QDataSet.DEPEND_1, ylim );
+        result.putProperty( QDataSet.DEPEND_0, xxx );
+        result.putProperty( QDataSet.DEPEND_1, yyy );
         
         return result;
     }
