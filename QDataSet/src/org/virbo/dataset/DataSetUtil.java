@@ -2765,8 +2765,9 @@ public class DataSetUtil {
         IDataSet result=  IDataSet.createRank2( labels.length(), 0 );
         Units u= SemanticOps.getUnits(labels);
         for ( int i=0; i<labels.length(); i++ ) {
-            result.putProperty( QDataSet.NAME, i, Ops.safeName( u.createDatum( labels.value(i) ).toString() ) );
-            result.putProperty( QDataSet.LABEL, i, u.createDatum( labels.value(i) ).toString() );
+            String label= u.createDatum( labels.value(i) ).toString();
+            result.putProperty( QDataSet.NAME, i, Ops.safeName( label ) );
+            result.putProperty( QDataSet.LABEL, i, label );
         }
         String name= (String) labels.property(QDataSet.NAME);
         if ( name!=null ) result.putProperty( QDataSet.NAME, name );
