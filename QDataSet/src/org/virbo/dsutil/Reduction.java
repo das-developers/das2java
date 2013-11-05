@@ -511,14 +511,20 @@ public class Reduction {
         IDataSet result= IDataSet.createRank2(nx,ny);
         QDataSet xx= SemanticOps.xtagsDataSet(ds);
         QDataSet yy= SemanticOps.ytagsDataSet(ds);
+        QDataSet ww= SemanticOps.weightsDataSet(ds);
+        
+        UnitsConverter ucx= SemanticOps.getUnitsConverter( xx,xlim );
+        UnitsConverter ucy= SemanticOps.getUnitsConverter( yy,ylim );
         
         for ( int i=0; i<ds.length(); i++ ) {
-            double x= xx.value(i);
-            double y= yy.value(i);
-            int ix= (int)( xlog ? (Math.log10(x)-xmin)/xspace : (x-xmin)/xspace );
-            int iy= (int)( ylog ? (Math.log10(y)-ymin)/yspace : (y-ymin)/yspace );
-            if ( ix>=0 && ix<nx && iy>=0 && iy<ny ) {
-                result.addValue( ix, iy, 1 );
+            if ( ww.value(i)>0 ) {
+                double x= ucx.convert( xx.value(i) );
+                double y= ucy.convert( yy.value(i) );
+                int ix= (int)( xlog ? (Math.log10(x)-xmin)/xspace : (x-xmin)/xspace );
+                int iy= (int)( ylog ? (Math.log10(y)-ymin)/yspace : (y-ymin)/yspace );
+                if ( ix>=0 && ix<nx && iy>=0 && iy<ny ) {
+                    result.addValue( ix, iy, 1 );
+                }
             }
         }
         result.putProperty( QDataSet.DEPEND_0, xlim );
