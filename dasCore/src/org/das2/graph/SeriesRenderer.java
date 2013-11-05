@@ -1170,11 +1170,11 @@ public class SeriesRenderer extends Renderer {
         
         if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
             dataSetReduced = true;
+            lastIndex= ixmax;
+        } else {
+            lastIndex = index;
         }
         
-
-        lastIndex = index;
-
         logger.log( Level.FINE, "ds: {0},  firstIndex={1} to lastIndex={2}", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex});
     }
 
