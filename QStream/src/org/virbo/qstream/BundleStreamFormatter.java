@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dsops.Ops;
 import test.BundleBinsDemo;
 
 /**
@@ -43,6 +44,30 @@ public class BundleStreamFormatter {
         if ( s!=null ) {
             build.append( String.format( "        <property name=\"DEPENDNAME_0\" type=\"String\" value=\"%s\"/>\n", s ) );
         }
+    }
+    
+    /** allocate a name
+     * 
+     * @param bds
+     * @param j
+     * @return 
+     */
+    private String nameFor( QDataSet bds, int j ) {
+        String name= (String) bds.property( QDataSet.NAME, j );
+        if ( name==null ) {
+            name= (String) bds.property( QDataSet.LABEL, j );
+            if ( name!=null ) {
+                name= Ops.safeName(name);
+            } else {
+                String base= "data_";
+                Units u= (Units) bds.property(QDataSet.UNITS,j);
+                if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
+                    base= "time_";
+                }
+                name= base + j;
+            }
+        }
+        return name;
     }
     
     /**
@@ -81,7 +106,7 @@ public class BundleStreamFormatter {
         for ( int j=0; j<bds.length(); j++ ) {
             if ( asciiTypes ) {
                 Units u= (Units) bds.property( QDataSet.UNITS, j );
-                if ( u==null || UnitsUtil.isTimeLocation(u) ) {
+                if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
                     tt[j]= new AsciiTimeTransferType( 24, u );
                 } else {
                     tt[j]= new AsciiTransferType(10,true);
@@ -101,7 +126,7 @@ public class BundleStreamFormatter {
         int defaultColumn= bds.length()<3 ? bds.length()-1 : 1;
         Units u= (Units) bds.property( QDataSet.UNITS, defaultColumn );
         if ( u!=null && UnitsUtil.isTimeLocation(u) && bds.length()>2 ) defaultColumn++;  // startTime, stopTime bins.
-        String defaultName= (String) bds.property( QDataSet.NAME, defaultColumn );
+        String defaultName= nameFor( bds, defaultColumn );
         
         String rec;
         byte[] bytes;
@@ -116,7 +141,7 @@ public class BundleStreamFormatter {
         StringBuilder build= new StringBuilder();
         build.append("<packet>\n");
         for ( int j=0; j<bds.length(); j++ ) {
-            String name= (String) bds.property( QDataSet.NAME, j );
+            String name= nameFor( bds, j ); 
             build.append( String.format( "  <qdataset id=\"%s\" rank=\"1\">\n", name ) );  // TODO: support rank 2 bundled datasets.
             build.append( String.format( "     <properties>\n") );
             formatProperties( build, bds, j );
