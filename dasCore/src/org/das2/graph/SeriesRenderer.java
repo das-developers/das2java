@@ -65,6 +65,7 @@ import org.das2.dataset.VectorUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
 import org.das2.event.CrossHairMouseModule;
+import static org.das2.graph.Renderer.logger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -1506,6 +1507,8 @@ public class SeriesRenderer extends Renderer {
 
             if ( dataSetReduced ) {
                 logger.fine("reducing data that is bigger than dataSetSizeLimit");
+                long tt0= System.currentTimeMillis();
+                
                 DatumRange xdr= xAxis.getDatumRange();
                 QDataSet xxx= xAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), Math.log10( xdr.max().doubleValue(xdr.getUnits()) ), xAxis.getDLength() ) ) :
                         Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), xAxis.getDLength()/1 );
@@ -1523,7 +1526,7 @@ public class SeriesRenderer extends Renderer {
                     myyy.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
                 }
                 QDataSet hds= Reduction.histogram2D( vds, mxxx, myyy );
-                
+                logger.log( Level.FINEST, "histogram2D: {0}", ( System.currentTimeMillis()-tt0 ));
                 DataSetBuilder buildx= new DataSetBuilder(1,100);
                 DataSetBuilder buildy= new DataSetBuilder(1,100);
                 for ( int ii=0; ii<hds.length(); ii++ ) {                
@@ -1536,6 +1539,7 @@ public class SeriesRenderer extends Renderer {
                         }
                     }
                 }
+                // logger.log( Level.FINEST, "build new 1-D dataset: {0}", ( System.currentTimeMillis()-tt0 )); // this takes a trivial (<3ms) amount of time.
                 buildx.putProperty( QDataSet.UNITS, xdr.getUnits() );
                 buildy.putProperty( QDataSet.UNITS, ydr.getUnits() );
                 MutablePropertyDataSet mvds= DataSetOps.makePropertiesMutable( Ops.link( buildx.getDataSet(), buildy.getDataSet() ) );
