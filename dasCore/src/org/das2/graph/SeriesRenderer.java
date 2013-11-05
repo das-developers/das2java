@@ -1108,7 +1108,7 @@ public class SeriesRenderer extends Renderer {
             DatumRange visibleRange = xAxis.getDatumRange();
             Units xdsu= SemanticOps.getUnits(xds);
             if ( !visibleRange.getUnits().isConvertableTo( xdsu ) ) {
-                visibleRange= new DatumRange( visibleRange.min().value(), visibleRange.max().value(), xdsu );
+                visibleRange= new DatumRange( visibleRange.min().doubleValue(visibleRange.getUnits()), visibleRange.max().doubleValue(visibleRange.getUnits()), xdsu );
             }
             firstIndex_v = DataSetUtil.getPreviousIndex( xds, visibleRange.min());
             lastIndex_v = DataSetUtil.getNextIndex( xds, visibleRange.max()) + 1; // +1 is for exclusive.
@@ -1509,16 +1509,20 @@ public class SeriesRenderer extends Renderer {
                 DatumRange xdr= xAxis.getDatumRange();
                 QDataSet xxx= xAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), xAxis.getDLength() ) ) :
                         Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), xAxis.getDLength()/1 );
+                MutablePropertyDataSet mxxx= DataSetOps.makePropertiesMutable(xxx);  // it is already
+                mxxx.putProperty( QDataSet.UNITS, xdr.getUnits() );
                 if ( xAxis.isLog() ) {
-                    ((MutablePropertyDataSet)xxx).putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
+                    mxxx.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
                 }
                 DatumRange ydr= yAxis.getDatumRange();
                 QDataSet yyy= yAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), yAxis.getDLength() ) ) :
                         Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), yAxis.getDLength()/1 );
+                MutablePropertyDataSet myyy= DataSetOps.makePropertiesMutable(yyy);  // it is already
+                myyy.putProperty( QDataSet.UNITS, ydr.getUnits() );
                 if ( yAxis.isLog() ) {
-                    ((MutablePropertyDataSet)yyy).putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
+                    myyy.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
                 }
-                QDataSet hds= Reduction.histogram2D( vds, xxx, yyy );
+                QDataSet hds= Reduction.histogram2D( vds, mxxx, myyy );
                 
                 DataSetBuilder buildx= new DataSetBuilder(1,100);
                 DataSetBuilder buildy= new DataSetBuilder(1,100);
@@ -1532,6 +1536,8 @@ public class SeriesRenderer extends Renderer {
                         }
                     }
                 }
+                buildx.putProperty( QDataSet.UNITS, xdr.getUnits() );
+                buildy.putProperty( QDataSet.UNITS, ydr.getUnits() );
                 MutablePropertyDataSet mvds= DataSetOps.makePropertiesMutable( Ops.link( buildx.getDataSet(), buildy.getDataSet() ) );
                 DataSetUtil.copyDimensionProperties( vds, mvds );
                 vds= mvds;
