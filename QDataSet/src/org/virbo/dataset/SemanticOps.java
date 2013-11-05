@@ -362,7 +362,11 @@ public class SemanticOps {
                 Units dep0units= SemanticOps.getUnits( dep0 );
                 Units dep1units= SemanticOps.getUnits( dep1 );
                 if ( dep0units!=Units.dimensionless && dep1units.isConvertableTo( dep0units.getOffsetUnits() ) ) {
-                    return( true );
+                    if ( dep0units!=dep1units ) {
+                        return true;
+                    } else {  
+                        return  Units.seconds.isConvertableTo(dep0units); // Only with time offsets is this allowed.  (http://cdaweb.gsfc.nasa.gov/data/polar/uvi/uvi_k0/2001/po_k0_uvi_20010106_v01.cdf?IMAGE_DATA, slice0.)
+                    }
                 }
             }
         }
