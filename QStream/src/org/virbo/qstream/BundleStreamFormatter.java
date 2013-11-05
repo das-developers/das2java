@@ -113,7 +113,7 @@ public class BundleStreamFormatter {
                 }
             } else {
                 Units u= (Units) bds.property( QDataSet.UNITS, j );
-                if ( u==null || UnitsUtil.isTimeLocation(u) ) {
+                if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
                     tt[j]= new DoubleTransferType();
                 } else {
                     tt[j]= new FloatTransferType();
