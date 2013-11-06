@@ -145,6 +145,8 @@ public class BundleStreamFormatter {
                 Units u= (Units) bds.property( QDataSet.UNITS, j );
                 if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
                     tt[j]= new AsciiTimeTransferType( 24, u );
+                } else if ( u!=null && UnitsUtil.isNominalMeasurement(u) ) {
+                    tt[j]= new AsciiIntegerTransferType( 10 );
                 } else {
                     tt[j]= new AsciiTransferType(10,true);
                 }
@@ -152,6 +154,8 @@ public class BundleStreamFormatter {
                 Units u= (Units) bds.property( QDataSet.UNITS, j );
                 if ( u!=null && UnitsUtil.isTimeLocation(u) ) {
                     tt[j]= new DoubleTransferType();
+                } else if ( u!=null && UnitsUtil.isNominalMeasurement(u) ) {
+                    tt[j]= new IntegerTransferType( );
                 } else {
                     tt[j]= new FloatTransferType();
                 }
