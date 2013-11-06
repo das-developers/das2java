@@ -1309,8 +1309,11 @@ public class AsciiParser {
                     index= i1+1;
                     qend= i1;
 
-                    if ( index==len ) {
+                    if ( index==len || ( ifield==fields.length-1 && input.substring(index).trim().length()==0 ) ) { // allow for trailing whitespace 
                         fields[ifield]= input.substring(index0,qend);
+                        if ( ifield==fields.length-1 && input.substring(index).trim().length()==0 ) {
+                            index=len;
+                        }
                         ifield++;
                     }
                 } else {
