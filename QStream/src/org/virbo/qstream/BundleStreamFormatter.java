@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.logging.Logger;
+import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.QDataSet;
@@ -20,6 +22,8 @@ import test.BundleBinsDemo;
  * @author jbf
  */
 public class BundleStreamFormatter {
+    
+    private static final Logger logger= LoggerManager.getLogger("qstream");
     
     /**
      * format the properties.
@@ -34,6 +38,12 @@ public class BundleStreamFormatter {
         s= (String) bds.property(QDataSet.DEPENDNAME_0,i);
         if ( s!=null ) {
             build.append( String.format( "        <property name=\"DEPENDNAME_0\" type=\"String\" value=\"%s\"/>\n", s ) );
+        } else {
+            Object o= bds.property(QDataSet.DEPEND_0,i); // TODO: this is really sloppy, because DEPEND_0 is always supposed to be a dataset...
+            logger.fine("DEPEND_0 found that is carrying a name of a dataset instead of the reference to the dataset.");
+            if ( o!=null && o instanceof String ) {
+                build.append( String.format( "        <property name=\"DEPENDNAME_0\" type=\"String\" value=\"%s\"/>\n", s ) );
+            }
         }
         u= (Units) bds.property(QDataSet.UNITS,i);
         if ( u!=null ) {
