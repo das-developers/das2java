@@ -42,7 +42,7 @@ public class BundleStreamFormatter {
             Object o= bds.property(QDataSet.DEPEND_0,i); // TODO: this is really sloppy, because DEPEND_0 is always supposed to be a dataset...
             logger.fine("DEPEND_0 found that is carrying a name of a dataset instead of the reference to the dataset.");
             if ( o!=null && o instanceof String ) {
-                build.append( String.format( "        <property name=\"DEPENDNAME_0\" type=\"String\" value=\"%s\"/>\n", s ) );
+                build.append( String.format( "        <property name=\"DEPENDNAME_0\" type=\"String\" value=\"%s\"/>\n", (String)o ) );
             }
         }
         u= (Units) bds.property(QDataSet.UNITS,i);
