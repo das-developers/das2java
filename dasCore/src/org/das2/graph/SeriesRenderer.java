@@ -441,14 +441,10 @@ public class SeriesRenderer extends Renderer {
         public boolean acceptContext(Point2D.Double dp) {
             
             double[] p;
-            int fi;
-            int li;
             
             //local copy for thread safety
             synchronized (this) {
                 p= dpsymsPath;
-                fi= firstIndex;
-                li= lastIndex;
             }
             
             if ( p == null ) {
@@ -456,8 +452,9 @@ public class SeriesRenderer extends Renderer {
             }
             double rad = Math.max(symSize, 5);
 
-            for (int index = fi; index < li; index++) {
-                int i = index - fi;
+            int np= p.length/2;
+            for (int index = 0; index < np; index++) {
+                int i = index;
                 if (dp.distance(p[i * 2], p[i * 2 + 1]) < rad) {
                     return true;
                 }
@@ -1658,7 +1655,7 @@ public class SeriesRenderer extends Renderer {
             QDataSet reduce = VectorUtil.reduce2D(
                 xds, ds2,
                 firstIndex,
-                Math.min( firstIndex+20000, lastIndex),
+                lastIndex,
                 widthx.divide(xaxis.getColumn().getWidth()/5),
                 widthy.divide(yaxis.getRow().getHeight()/5)
                 );
