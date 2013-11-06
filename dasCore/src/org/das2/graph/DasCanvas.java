@@ -633,9 +633,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 if ( printingTag.contains("$Y") || printingTag.contains("$y") ) {
                     TimeParser tp= TimeParser.create(printingTag);
                     s= tp.format( TimeUtil.now(), TimeUtil.now() );
-                } else {
+                } else if ( printingTag.contains("'yy") ) {
                     dateFormat = new SimpleDateFormat(printingTag);
                     s = dateFormat.format(now);
+                } else {
+                    s = printingTag;
                 }
 
                 oldFont = g.getFont();
@@ -2401,7 +2403,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
     /**
-     * printingTag is the DateFormat string to use to tag printed images.
+     * printingTag is the string to use to tag printed images.
      */
     private String printingTag = "'UIOWA 'yyyyMMdd";
 
@@ -2414,7 +2416,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     /**
-     * printingTag is the DateFormat string to use to tag printed images.
+     * printingTag is the string to use to tag printed images.
+     * This can be 'yyyymmdd (SimpleDateFormat) or $Y$m$d, or just a string.
      * @param printingTag New value of property printingTag.
      */
     public void setPrintingTag(String printingTag) {
@@ -2424,9 +2427,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             if ( printingTag.contains("$Y") || printingTag.contains("$y") ) {
                 TimeParser tp= TimeParser.create(printingTag);
                 tp.format( TimeUtil.now(), TimeUtil.now() );
-            } else {
+            } else if ( printingTag.contains("'yy") ) {                
                 SimpleDateFormat dateFormat = new SimpleDateFormat(printingTag);
                 dateFormat.format(new Date());
+            } else {
+                // no timetag is allowed as well.
             }
         }
         this.printingTag = printingTag;
