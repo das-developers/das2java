@@ -109,6 +109,8 @@ import javax.swing.event.MouseInputListener;
 import javax.swing.filechooser.FileFilter;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.datum.TimeParser;
+import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.event.DasUpdateEvent;
@@ -628,8 +630,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
             if (!printingTag.equals("")) {
                 now = new Date();
-                dateFormat = new SimpleDateFormat(printingTag);
-                s = dateFormat.format(now);
+                if ( printingTag.contains("$Y") || printingTag.contains("$y") ) {
+                    TimeParser tp= TimeParser.create(printingTag);
+                    s= tp.format( TimeUtil.now(), TimeUtil.now() );
+                } else {
+                    dateFormat = new SimpleDateFormat(printingTag);
+                    s = dateFormat.format(now);
+                }
 
                 oldFont = g.getFont();
                 font = oldFont.deriveFont((float) oldFont.getSize() / 2);
@@ -2412,6 +2419,16 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      */
     public void setPrintingTag(String printingTag) {
         String old = this.printingTag;
+
+        if ( printingTag.trim().length()>0 ) {
+            if ( printingTag.contains("$Y") || printingTag.contains("$y") ) {
+                TimeParser tp= TimeParser.create(printingTag);
+                tp.format( TimeUtil.now(), TimeUtil.now() );
+            } else {
+                SimpleDateFormat dateFormat = new SimpleDateFormat(printingTag);
+                dateFormat.format(new Date());
+            }
+        }
         this.printingTag = printingTag;
         firePropertyChange("printingTag", old, printingTag);
     }
