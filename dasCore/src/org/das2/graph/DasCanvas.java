@@ -88,6 +88,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -109,6 +110,7 @@ import javax.swing.event.MouseInputListener;
 import javax.swing.filechooser.FileFilter;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.datum.Datum;
 import org.das2.datum.TimeParser;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
@@ -632,7 +634,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 now = new Date();
                 if ( printingTag.contains("$Y") || printingTag.contains("$y") ) {
                     TimeParser tp= TimeParser.create(printingTag);
-                    s= tp.format( TimeUtil.now(), TimeUtil.now() );
+                    Datum nowTZ= TimeUtil.now().add( Units.hours.createDatum( TimeZone.getDefault().getRawOffset()/3600000 ) );
+                    s= tp.format( nowTZ, nowTZ );
                 } else if ( printingTag.contains("'yy") ) {
                     dateFormat = new SimpleDateFormat(printingTag);
                     s = dateFormat.format(now);
@@ -647,7 +650,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 height = metrics.getHeight();
 
                 g.setFont(font);
-                g.drawString(s, getWidth() - width - 2 * height, getHeight() - 2 * height);
+                g.drawString(s, getWidth() - width - 2 * height, getHeight() - metrics.getAscent() );
                 g.setFont(oldFont);
             }
         }
