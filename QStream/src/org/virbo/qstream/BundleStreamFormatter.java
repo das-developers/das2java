@@ -21,10 +21,45 @@ import test.BundleBinsDemo;
  */
 public class BundleStreamFormatter {
     
+    /**
+     * format the properties.
+     * @param build the StringBuilder, having just added "      <properties>" tag
+     * @param bds the bundle dataset
+     * @param i the index of the dataset within.
+     */
     private void formatProperties( StringBuilder build, QDataSet bds, int i ) {
         String s;
         Units u;
-        s= (String) bds.property(QDataSet.LABEL,i);
+        Number n;
+        s= (String) bds.property(QDataSet.DEPENDNAME_0,i);
+        if ( s!=null ) {
+            build.append( String.format( "        <property name=\"DEPENDNAME_0\" type=\"String\" value=\"%s\"/>\n", s ) );
+        }
+        u= (Units) bds.property(QDataSet.UNITS,i);
+        if ( u!=null ) {
+            build.append( String.format( "        <property name=\"UNITS\" type=\"units\" value=\"%s\"/>\n", u.getId() ) );
+        }
+        n= (Number) bds.property(QDataSet.FILL_VALUE,i);
+        if ( n!=null ) {
+            build.append( String.format( "        <property name=\"FILL_VALUE\" type=\"Number\" value=\"%s\"/>\n", n ) );
+        }
+        n= (Number) bds.property(QDataSet.VALID_MIN,i);
+        if ( n!=null ) {
+            build.append( String.format( "        <property name=\"VALID_MIN\" type=\"Number\" value=\"%s\"/>\n", n ) );
+        }
+        n= (Number) bds.property(QDataSet.VALID_MAX,i);
+        if ( n!=null ) {
+            build.append( String.format( "        <property name=\"VALID_MAX\" type=\"Number\" value=\"%s\"/>\n", n ) );
+        }
+        n= (Number) bds.property(QDataSet.TYPICAL_MIN,i);
+        if ( n!=null ) {
+            build.append( String.format( "        <property name=\"TYPICAL_MIN\" type=\"Number\" value=\"%s\"/>\n", n ) );
+        }
+        n= (Number) bds.property(QDataSet.TYPICAL_MAX,i);
+        if ( n!=null ) {
+            build.append( String.format( "        <property name=\"TYPICAL_MAX\" type=\"Number\" value=\"%s\"/>\n", n ) );
+        }
+        s= (String) bds.property(QDataSet.NAME,i);
         if ( s!=null ) {
             build.append( String.format( "        <property name=\"NAME\" type=\"String\" value=\"%s\"/>\n", s ) );
         }
@@ -35,15 +70,7 @@ public class BundleStreamFormatter {
         s= (String) bds.property(QDataSet.TITLE,i);
         if ( s!=null ) {
             build.append( String.format( "        <property name=\"TITLE\" type=\"String\" value=\"%s\"/>\n", s ) );
-        }
-        u= (Units) bds.property(QDataSet.UNITS,i);
-        if ( u!=null ) {
-            build.append( String.format( "        <property name=\"UNITS\" type=\"units\" value=\"%s\"/>\n", u.getId() ) );
-        }
-        s= (String) bds.property(QDataSet.DEPENDNAME_0,i);
-        if ( s!=null ) {
-            build.append( String.format( "        <property name=\"DEPENDNAME_0\" type=\"String\" value=\"%s\"/>\n", s ) );
-        }
+        }        
     }
     
     /** allocate a name
