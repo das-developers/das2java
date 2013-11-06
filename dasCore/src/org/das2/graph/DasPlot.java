@@ -399,8 +399,8 @@ public class DasPlot extends DasCanvasComponent {
             }
             
             // https://sourceforge.net/p/autoplot/bugs/1093/: error bubbles must be hidden when printing.
-            if ( isPrint ) { // we need to clean up hudson first...
-                if ( message.birthMilli<Long.MAX_VALUE ) {
+            if ( isPrint ) { 
+                if ( message.messageType<printingLogLevel.intValue() && message.birthMilli<Long.MAX_VALUE ) {
                     continue;
                 }
             }
@@ -1914,7 +1914,6 @@ public class DasPlot extends DasCanvasComponent {
 
     public static final String PROP_LOG_LEVEL = "logLevel";
     private Level logLevel= Level.INFO;
-
     public void setLogLevel( Level level ) {
         Level oldLevel= this.logLevel;
         logLevel= level;
@@ -1926,6 +1925,19 @@ public class DasPlot extends DasCanvasComponent {
 
     public Level getLogLevel( ) {
         return logLevel;
+    }
+
+    private Level printingLogLevel = Level.ALL;
+    public static final String PROP_PRINTINGLOGLEVEL = "printingLogLevel";
+
+    public Level getPrintingLogLevel() {
+        return printingLogLevel;
+    }
+
+    public void setPrintingLogLevel(Level printingLogLevel) {
+        Level oldPrintingLogLevel = this.printingLogLevel;
+        this.printingLogLevel = printingLogLevel;
+        firePropertyChange(PROP_PRINTINGLOGLEVEL, oldPrintingLogLevel, printingLogLevel);
     }
 
     /**
