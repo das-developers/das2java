@@ -3256,7 +3256,9 @@ public class Ops {
             throw new IllegalArgumentException("dataset is rank 0");
         }
         
-        if ( ds.rank()==1 && 0==DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT) ) {
+        if ( ds.rank()==1 
+                && Integer.valueOf(0)==DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT)
+                && Integer.valueOf(0)==DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT) ) {
             return Ops.indgen(ds.length());
         }
         
@@ -3276,7 +3278,8 @@ public class Ops {
             }
             builder.putProperty(QDataSet.MONOTONIC, Boolean.TRUE);
             if ( builder.getLength()==ds.length() ) {
-                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT,0);
+                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT,Integer.valueOf(0));
+                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT,Integer.valueOf(0));
             }
         } else {
             builder = new DataSetBuilder(2, 100, ds.rank(), 1);
