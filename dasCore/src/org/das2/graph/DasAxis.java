@@ -1031,9 +1031,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         if ( tcaTimer==null ) {
             tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if ( lcanvas!=null ) {
-                        lcanvas.performingChange( DasAxis.this, tcaLock );
+                    DasCanvas mycanvas= getCanvas();
+                    if ( lcanvas!=null  ) {
+                        mycanvas= lcanvas;  // I don't understand this.  When we entered maybeStartTcaTimer, lcanvas was not null.  
+                        // Be careful that this canvas is the same one that set the lock!
+                    }
+                    if ( mycanvas!=null ) {
+                        mycanvas.performingChange( DasAxis.this, tcaLock );
                     } else {
                         maybeStartTcaTimer();
                         return;
@@ -1041,9 +1047,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     try {
                         updateTCASoon();
                     } finally {
-                        if ( lcanvas!=null ) {
-                            lcanvas.changePerformed( DasAxis.this, tcaLock );
-                        }
+                        mycanvas.changePerformed( DasAxis.this, tcaLock );
                     }
                 }
             });
