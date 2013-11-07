@@ -60,9 +60,7 @@ public class SimpleDemo2 {
             ((SeriesRenderer)r).setAntiAliased(true);
         }
 
-
         xaxis.setTcaFunction( new QFunctionLarry() );
-
         xaxis.setDrawTca(true);
 
         canvas.add( plot, DasRow.create( canvas, null, "0%+2em", "100%-5em" ),
