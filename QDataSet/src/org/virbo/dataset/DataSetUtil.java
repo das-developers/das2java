@@ -2548,6 +2548,9 @@ public class DataSetUtil {
      * @param ds tags dataset
      * @param datum the location to find
      * @return the index of the closest point.
+     * @throws IllegalArgumentException if the dataset is not rank 1.
+     * @throws IllegalArgumentException if the dataset is length 0.
+     * @throws IllegalArgumentException if the dataset is all fill.
      */
     public static int closestIndex( QDataSet ds, Datum datum ) {
         if ( ds.rank()!=1 ) {
