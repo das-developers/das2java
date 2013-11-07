@@ -6,6 +6,7 @@ package org.virbo.dataset;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
 /**
@@ -17,7 +18,13 @@ public class DataSetAnnotations {
     
     private static final DataSetAnnotations instance= new DataSetAnnotations();
     
-    private WeakHashMap<QDataSet,Map> annotations= new WeakHashMap<QDataSet,Map>();
+    private WeakHashMap<QDataSet,Map<String,Object>> annotations= new WeakHashMap<QDataSet,Map<String,Object>>();
+    
+    /**
+     * set this to true to keep track of hits.
+     */
+    private boolean hitTracking= true;
+    private WeakHashMap<QDataSet,Map<String,Integer>> hits= new WeakHashMap<QDataSet,Map<String,Integer>>();
      
     /**
      * access the single instance
@@ -64,6 +71,19 @@ public class DataSetAnnotations {
         if ( anno==null ) {
             return null;
         } else {
+            if ( hitTracking ) {
+                Map<String,Integer> hit= hits.get(ds);
+                if ( hit==null ) {
+                    hit= new HashMap();
+                    hits.put(ds,hit);
+                }
+                Integer h= hit.get(annotation);
+                if ( h==null ) {
+                    hit.put(annotation,1);
+                } else {
+                    hit.put(annotation,1+h);
+                }
+            }
             return anno.get(annotation);
         }
     }
@@ -83,5 +103,26 @@ public class DataSetAnnotations {
         annotations.put( ds, anno );
     }
     
+    public synchronized void peek() {
+        for ( Entry<QDataSet,Map<String,Object>> ent: annotations.entrySet() ) {
+            System.err.println( "\n---" + ent.getKey() + "---" );
+            Map<String,Integer> hits1=null;
+            if ( hitTracking ) {
+                hits1= hits.get(ent.getKey());
+            }
+            for ( Entry<String,Object> ent1: ent.getValue().entrySet() ) {
+                String ss= "";
+                if ( hitTracking ) {
+                    if ( hits1!=null ) {
+                        Integer h= hits1.get(ent1.getKey());
+                        if ( h!=null ) ss= h.toString(); else ss="0";
+                    } else {
+                        ss= "??"; // weak ref was cleaned in one map but not another?
+                    }
+                }
+                System.err.println( ""+ ent1.getKey()+ "->" + ent1.getValue() + "  " + ss );
+            }
+        }
+    }
     
 }
