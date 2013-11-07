@@ -2570,7 +2570,7 @@ public class DataSetUtil {
         if ( wds instanceof ConstantDataSet && wds.value(0)==1 ) { // optimize
             r= Ops.findgen(ds.length());
         } else {
-            if ( 0==DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT) ) {
+            if ( Integer.valueOf(0)==DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT) ) {
                 r= Ops.findgen(ds.length());
             } else {
                 r= Ops.where( wds );
@@ -2579,7 +2579,7 @@ public class DataSetUtil {
                     handleFill= true;
                     ds= DataSetOps.applyIndex( ds, 0, r, false );
                 } else {
-                    DataSetAnnotations.getInstance().putAnnotation( ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT, 0 );
+                    DataSetAnnotations.getInstance().putAnnotation( ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT, Integer.valueOf(0) );
                 }
             }
         }
