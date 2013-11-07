@@ -15,7 +15,7 @@ import java.util.WeakHashMap;
  */
 public class DataSetAnnotations {
     
-    private static DataSetAnnotations instance= new DataSetAnnotations();
+    private static final DataSetAnnotations instance= new DataSetAnnotations();
     
     private WeakHashMap<QDataSet,Map> annotations= new WeakHashMap<QDataSet,Map>();
      
@@ -32,9 +32,33 @@ public class DataSetAnnotations {
      * valid min to valid max and not fill.
      */
     public static final String ANNOTATION_INVALID_COUNT= "invalidCount";
+
+    /**
+     * number of entries containing the value zero.  If zero, then the
+     * data is all non-zero or fill.  This is used with ANNOTATION_INVALID_COUNT
+     * in the where function.
+     */
+    public static final String ANNOTATION_ZERO_COUNT= "zeroCount";
     
+    /**
+     * the bounding cube of the dataset, see SemanticOps.getBounds.
+     */
     public static final String ANNOTATION_BOUNDS= "bounds";
     
+    /**
+     * return either null or the value for the annotation.  Note some
+     * Java compilers (Java6?) will not allow code such as:<tt>
+     * 0==DataSetAnnotations.getInstance().getAnnotation(...)
+     * </tt>
+     * so instead use
+     * <tt>
+     * Integer.valueOf(0)==DataSetAnnotations.getInstance().getAnnotation(...)
+     * </tt>
+     * 
+     * @param ds the dataset.
+     * @param annotation the annotation name, such as ANNOTATION_INVALID_COUNT.
+     * @return null or the annotation value.
+     */
     public synchronized Object getAnnotation( QDataSet ds, String annotation ) {
         Map<String,Object> anno= annotations.get(ds);
         if ( anno==null ) {
@@ -44,6 +68,12 @@ public class DataSetAnnotations {
         }
     }
     
+    /**
+     * add the annotation.
+     * @param ds the dataset to annotate
+     * @param annotation the annotation name, such as ANNOTATION_INVALID_COUNT.
+     * @param value the value.
+     */
     public synchronized void putAnnotation( QDataSet ds, String annotation, Object value ) {
         Map<String,Object> anno= annotations.get(ds);
         if ( anno==null ) {
