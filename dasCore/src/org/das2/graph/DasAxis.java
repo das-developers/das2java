@@ -1029,6 +1029,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         final Object tcaLock= "tcastart_"+this.getDasName();
         if ( lcanvas!=null ) {
             lcanvas.registerPendingChange( this, tcaLock );
+        } else {
+            return;
         }
         System.err.println( "mstca, lcanvas="+lcanvas );
         if ( tcaTimer==null ) {
@@ -3315,6 +3317,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** TODO */
     protected void installComponent() {
         super.installComponent();
+        maybeStartTcaTimer();
     }
 
     /** TODO */
