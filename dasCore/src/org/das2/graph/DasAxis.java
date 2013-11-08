@@ -1024,21 +1024,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     private void maybeStartTcaTimer() {
-        new Exception().printStackTrace();
         final DasCanvas lcanvas= getCanvas();
         final Object tcaLock= "tcastart_"+this.getDasName();
         if ( lcanvas!=null ) {
             lcanvas.registerPendingChange( this, tcaLock );
         } else {
+            logger.log( Level.FINER, "canvas is not yet set, returning");
             return;
         }
-        System.err.println( "mstca, lcanvas="+lcanvas );
         if ( tcaTimer==null ) {
             tcaTimer= new TickleTimer( 200, new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     DasCanvas mycanvas= getCanvas();
-		    System.err.println( "mstca, mycanvas="+mycanvas );
+		    logger.log( Level.FINER, "mstca, mycanvas={0}", mycanvas);
                     if ( lcanvas!=null  ) {
                         mycanvas= lcanvas;  // I don't understand this.  When we entered maybeStartTcaTimer, lcanvas was not null.  
                         // Be careful that this canvas is the same one that set the lock!
@@ -1616,7 +1615,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     private void updateTCASoon() {
         final DasCanvas lcanvas= getCanvas();
-        System.err.println("updateTCASoon "+lcanvas);
+        logger.log(Level.FINE, "updateTCASoon {0}", lcanvas);
         if ( lcanvas!=null ) {
             final Object tcaLock= "tcaload_"+this.getDasName();
             lcanvas.registerPendingChange( this, tcaLock );
