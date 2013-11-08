@@ -1623,6 +1623,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                    lcanvas.performingChange( DasAxis.this, tcaLock );
                    try {
                        updateTCAImmediately( );
+                       repaint();
+                       System.err.println("updateTCASoon wow "+lcanvas);
                    } finally {
                        lcanvas.changePerformed( DasAxis.this, tcaLock );
                    }
