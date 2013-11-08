@@ -1620,12 +1620,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             final Object tcaLock= "tcaload_"+this.getDasName();
             lcanvas.registerPendingChange( this, tcaLock );
             RequestProcessor.invokeLater( new Runnable() {
+                @Override
                 public void run() {
                    lcanvas.performingChange( DasAxis.this, tcaLock );
                    try {
                        updateTCAImmediately( );
-                       repaint();
-                       System.err.println("updateTCASoon wow "+lcanvas);
                    } finally {
                        lcanvas.changePerformed( DasAxis.this, tcaLock );
                    }
