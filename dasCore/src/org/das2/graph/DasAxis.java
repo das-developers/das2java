@@ -1614,6 +1614,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     private void updateTCASoon() {
         final DasCanvas lcanvas= getCanvas();
+        System.err.println("updateTCASoon "+lcanvas);
         if ( lcanvas!=null ) {
             final Object tcaLock= "tcaload_"+this.getDasName();
             lcanvas.registerPendingChange( this, tcaLock );
