@@ -33,6 +33,7 @@ import org.das2.datum.Units;
 import org.das2.util.GrannyTextRenderer;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
@@ -447,9 +448,17 @@ public class EventsRenderer extends Renderer {
                     return null;
                 }
             } else if ( dep0.rank() == 1 ) {
-                Datum width= SemanticOps.guessXTagWidth( dep0, null ).divide(2);
+                Datum width= SemanticOps.guessXTagWidth( dep0, null );
+                if ( width!=null ) {
+                    width= width.divide(2);
+                } else {
+                    QDataSet sort= Ops.sort(dep0);
+                    QDataSet diffs= Ops.diff( DataSetOps.applyIndex(dep0,0,sort,false) );
+                    QDataSet w= Ops.reduceMin( diffs,0 );
+                    width= DataSetUtil.asDatum(w);                    
+                }
                 xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
-                xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );                
                 msgs= vds;
             } else {
                 parent.postMessage( this, "dataset is not correct form", DasPlot.WARNING, null, null );
