@@ -1001,7 +1001,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                         try {
                             MouseDragEvent de =
                                     j.dragRenderer.getMouseDragEvent(parent, dSelectionStart, dSelectionEnd, e.isShiftDown());
-                            j.mouseRangeSelected(de);
+                            if ( de!=null ) {
+                                j.mouseRangeSelected(de);
+                            }
                             feedback.setMessage("" ); 
                         } catch (RuntimeException ex) {
                             DasExceptionHandler.handle(ex);
