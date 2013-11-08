@@ -26,14 +26,25 @@ package org.das2.event;
 import java.awt.*;
 
 /**
- *
+ * Do-nothing drag renderer and extension point for other DragRenderers.
  * @author  eew
  */
 public class EmptyDragRenderer implements DragRenderer
 {
     public static final EmptyDragRenderer renderer = new EmptyDragRenderer();
-    private EmptyDragRenderer(){}
+    
+    public EmptyDragRenderer(){}
+    
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) { return new Rectangle[0]; }
+    
+    /**
+     * to have something happen at the end of the gesture, this should be overriden.
+     * @param source
+     * @param p1
+     * @param p2
+     * @param isModified
+     * @return 
+     */
     public MouseDragEvent getMouseDragEvent(Object source, Point p1, Point p2, boolean isModified) {
         return null;
     }
