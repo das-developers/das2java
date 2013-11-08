@@ -280,7 +280,11 @@ public class BoxSelectorMouseModule extends MouseModule {
     public void mouseReleased(java.awt.event.MouseEvent e) {
         super.mouseReleased(e);
         if (releaseEvents) {
-            fireBoxSelectionListenerBoxSelected(getBoxSelectionEvent(lastMouseEvent));
+            if ( lastMouseEvent!=null ) {
+                fireBoxSelectionListenerBoxSelected(getBoxSelectionEvent(lastMouseEvent));
+            } else {
+                logger.fine("no mouse event to fire");
+            }
         }
     }
     /**
