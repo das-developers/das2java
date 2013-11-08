@@ -35,7 +35,25 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 /**
- * Renders Grandle and Nystrom strings, like "E=mc!e2"
+ * Renders Grandle and Nystrom strings, like "E=mc!e2"  This supports sequences
+ * including:<pre>
+ * !A  shift up one half line
+ * !B  shift down one half line  (e.g.  !A3!n-!B4!n is 3/4).
+ * !C  newline 
+ * !D  subscript 0.62 of old font size.
+ * !U  superscript of 0.62 of old font size.
+ * !E  superscript 0.44 of old font size.
+ * !I  subscript 0.44 of old font size.
+ * !N  return to the original font size.
+ * !R  restore position to last saved position
+ * !S  save the current position.
+ * !K  reduce the font size. (Not in IDL's set.)
+ * !!  the exclamation point (!)
+ *   </pre>
+ * For greek and math symbols, unicode characters should be
+ * used like so: &amp;#9742; (&#9742 phone symbol), or symbols like <tt>&amp;Omega;</tt> and <tt>&amp;omega;</tt>
+ * 
+ * 
  * @author  Edward West
  */
 public class GrannyTextRenderer {
@@ -49,7 +67,6 @@ public class GrannyTextRenderer {
     private String str;
     private String[] tokens;
     private int alignment = LEFT_ALIGNMENT;
-    private Component parent;
     
     public GrannyTextRenderer( ) {
     
@@ -147,13 +164,13 @@ public class GrannyTextRenderer {
     /**
      * reset the current string for the GTR to draw, calculating the boundaries
      * of the string.  For greek and math symbols, unicode characters should be
-     * used.  (See www.unicode.org).
+     * used.  (See www.unicode.org).  See the documentation for this class
+     * for a description of symbols.
      * @deprecated use setString( Graphics g, String str ) instead.
      * @param c the component which will provide the graphics.
      * @param str the granny string, such as "E=mc!e2"
      */
     public void setString( Component c, String str ) {
-        this.parent= c;
         bounds = null;
         lineBounds = new ArrayList();
         this.str = Entities.decodeEntities(str);
