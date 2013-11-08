@@ -1024,6 +1024,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     private void maybeStartTcaTimer() {
+        new Exception().printStackTrace();
         final DasCanvas lcanvas= getCanvas();
         final Object tcaLock= "tcastart_"+this.getDasName();
         if ( lcanvas!=null ) {
