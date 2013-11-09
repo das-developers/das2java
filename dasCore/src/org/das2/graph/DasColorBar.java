@@ -109,7 +109,7 @@ public class DasColorBar extends DasAxis {
     }
     
     
-    public void setType(DasColorBar.Type type) {
+    public final void setType(DasColorBar.Type type) {
         if (this.type == type) {
             return;
         }
@@ -124,6 +124,7 @@ public class DasColorBar extends DasAxis {
         firePropertyChange( PROPERTY_TYPE, oldValue,type);
     }
     
+    @Override
     protected void paintComponent(Graphics g) {
 
         if (getCanvas().isValueAdjusting()) {
@@ -150,6 +151,7 @@ public class DasColorBar extends DasAxis {
         super.paintComponent(g);
     }
     
+    @Override
     protected Rectangle getAxisBounds() {
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
@@ -166,6 +168,7 @@ public class DasColorBar extends DasAxis {
     }
     
     
+    @Override
     public Shape getActiveRegion() {
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
@@ -185,6 +188,7 @@ public class DasColorBar extends DasAxis {
     
     protected class ColorBarLayoutManager extends AxisLayoutManager {
         
+        @Override
         public void layoutContainer(Container parent) {
             super.layoutContainer(parent);
             int x = getColumn().getDMinimum();
@@ -202,8 +206,8 @@ public class DasColorBar extends DasAxis {
     public static final class Type implements Enumeration, Displayable {
         
       public static final Type COLOR_WEDGE = new Type("color_wedge");
-      public static final Type COLOR_WEDGE_BLACK0 = new Type("color_wedge_black0");
-      public static final Type COLOR_WEDGE_WHITE0 = new Type("color_wedge_white0");
+      public static final Type COLOR_WEDGE_BLACK0 = new Type("apl_rainbow_black0");
+      public static final Type COLOR_WEDGE_WHITE0 = new Type("apl_rainbow_white0");
         //public static final Type BLUE_TO_ORANGE = new Type("blue_to_orange");
         public static final Type GRAYSCALE = new Type("grayscale");
         public static final Type INVERSE_GRAYSCALE = new Type("inverse_grayscale");
@@ -221,11 +225,13 @@ public class DasColorBar extends DasAxis {
             this.desc = desc;
         }
 
+      @Override
         public void drawListIcon( Graphics2D g, int x, int y ) {
-            ImageIcon icon= (ImageIcon) getListIcon();
-            g.drawImage(icon.getImage(), x, y, null);
+            ImageIcon licon= (ImageIcon) getListIcon();
+            g.drawImage(licon.getImage(), x, y, null);
         }
 
+      @Override
         public javax.swing.Icon getListIcon() {
             maybeInitializeIcon();
             return icon;
@@ -237,10 +243,12 @@ public class DasColorBar extends DasAxis {
             }
         }
         
+      @Override
         public String toString() {
             return desc;
         }
         
+      @Override
         public String getListLabel() {
             return desc;
         }
@@ -470,6 +478,7 @@ public class DasColorBar extends DasAxis {
         int STATE_TOP=200;
         int STATE_BOTTOM=100;
                 
+        @Override
         public String getLabel() { return "Repalette"; };
         
         public ColorBarRepaletteMouseModule( Renderer parent, DasColorBar colorBar ) {
@@ -518,6 +527,7 @@ public class DasColorBar extends DasAxis {
             parent.refreshImage();
         }
         
+        @Override
         public void mouseReleased( @SuppressWarnings("unused") MouseEvent e ) {
             if ( state!=STATE_IGNORE ) {
                 colorBar.setAnimated(animated0);
@@ -545,10 +555,12 @@ public class DasColorBar extends DasAxis {
             }
         }
         
+        @Override
         public void mousePointSelected(MousePointSelectionEvent e) {
             setColorBar( e.getY() );
         }
         
+        @Override
         public void mousePressed(java.awt.event.MouseEvent e) {
             super.mousePressed(e);
             if ( DasColorBar.this.getColumn().contains(e.getX()+DasColorBar.this.getX()) ) {
