@@ -133,6 +133,25 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     /**
+     * parse the format string into a pixel count.  Convenience method.
+     * parseFormatStr(s) will throw a parse exception and should be used to 
+     * verify strings.
+     * @param s The string, like "5em+3pt"
+     * @param em the em height of the font,
+     * @param widthHeight the width or height of the dimension.
+     * @param fail the value to return if the parsing fails.
+     * @return the length in pixels (or points).
+     */
+    public static double parseFormatStr( String s, double em, int widthHeight, double fail ) {
+        try {
+            double [] r= parseFormatStr(s);
+            return widthHeight * r[0] + em * r[1] + r[2];
+        } catch ( ParseException ex ) {
+            return fail;
+        }
+    }
+    
+    /**
      * parse position strings like "100%-5em+4pt" into [ npos, emoffset, pt_offset ].
      * Note px is acceptable, but pt is proper. 
      * Ems are rounded to the nearest hundredth.
