@@ -220,7 +220,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     public static final String PROPERTY_DATUMRANGE = "datumRange";
     /* DEBUGGING INSTANCE MEMBERS */
-    private static final boolean DEBUG_GRAPHICS = false;
+    private static final boolean DEBUG_GRAPHICS = true;
     private static final Color[] DEBUG_COLORS;
 
     int tickLen= 0; // this is reset after sizing.
@@ -2253,7 +2253,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( drawTca && tcaData != null ) {
                 offset += Math.min( MAX_TCA_LINES, tcaData.length(0) ) * (tickLabelFont.getSize() + getLineSpacing());
             }
-            if ( labelOffset.length()>0 ) {
+            if ( labelOffset.length()>0 && axisLabel.length()>0 ) {
                 offset= tickLabelFont.getSize() + (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), getRow().getHeight(), 0 );
             }
         } else if (orientation == TOP) {
@@ -2846,13 +2846,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         if (bottomTickLabels) {
             blLabelRect = getLabelBounds(new Rectangle(DMin, blTickRect.y, DWidth, 10));
-            if ( labelOffset.length()>0 ) {
+            if ( labelOffset.length()>0 && axisLabel.length()>0 ) {
                 blLabelRect.y= (bottomPosition) + (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), 0, 0 );
             }
         }
         if (topTickLabels) {
             trLineRect = getLabelBounds(new Rectangle(DMin, topPosition - 10, DWidth, 10));
-            if ( labelOffset.length()>0 ) {
+            if ( labelOffset.length()>0 && axisLabel.length()>0 ) {
                 trLineRect.y= (bottomPosition) - (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), 0, 0 );
             }
         }
@@ -2978,7 +2978,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             //int height = DMax - DMin + tickLabelFont.getSize() * 2;
             //blLabelRect = setRectangleBounds(blLabelRect, x, y, width, height);
             blLabelRect = getLabelBounds(new Rectangle(blTickRect.x - 10, DMin, 10, DWidth));
-            if ( labelOffset.length()>0 ) {
+            if ( labelOffset.length()>0 && axisLabel.length()>0 ) {
                 blLabelRect.x = (leftPosition+1) - (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), DWidth, 0 );
             }
             if ( leftXOverride != null ) blLabelRect.x = leftXOverride; // deprecated.
@@ -2989,7 +2989,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         if (rightTickLabels) {
             trLabelRect = getLabelBounds(new Rectangle(trTickRect.x + trTickRect.width, DMin, 10, DWidth));
-            if ( labelOffset.length()>0 ) {
+            if ( labelOffset.length()>0 && axisLabel.length()>0 ) {
                 trLabelRect.width = (rightPosition) + (int)DasDevicePosition.parseLayoutStr( labelOffset, getEmSize(), DWidth, 0 ) - rightPosition;
             }
         //int x = trTickRect.x + trTickRect.width;
