@@ -142,13 +142,24 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * @param fail the value to return if the parsing fails.
      * @return the length in pixels (or points).
      */
-    public static double parseFormatStr( String s, double em, int widthHeight, double fail ) {
+    public static double parseLayoutStr( String s, double em, int widthHeight, double fail ) {
         try {
-            double [] r= parseFormatStr(s);
+            double [] r= parseLayoutStr(s);
             return widthHeight * r[0] + em * r[1] + r[2];
         } catch ( ParseException ex ) {
             return fail;
         }
+    }
+    
+    /**
+     * Calls parseLayoutStr
+     * @param s
+     * @return
+     * @deprecated use parseLayoutStr.
+     * @throws ParseException 
+     */
+    public static double[] parseFormatStr( String s ) throws ParseException {
+        return parseLayoutStr(s);
     }
     
     /**
@@ -158,7 +169,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * Percents are returned as normal (0-1) and rounded to the nearest thousandth.
      * @see formatFormatStr
      */
-    public static double[] parseFormatStr( String s ) throws ParseException {
+    public static double[] parseLayoutStr( String s ) throws ParseException {
         double[] result= new double[] { 0, 0, 0 };
         StringTokenizer tok= new StringTokenizer( s, "%emptx", true );
         int pos=0;
@@ -213,8 +224,8 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
 
     public static void parseLayoutStr( DasDevicePosition pos, String spec ) throws ParseException {
         String[] ss= spec.split(",");
-        double[] pmin= parseFormatStr( ss[0] );
-        double[] pmax= parseFormatStr( ss[1] );
+        double[] pmin= parseLayoutStr( ss[0] );
+        double[] pmax= parseLayoutStr( ss[1] );
         
         MutatorLock lock= pos.mutatorLock();
         lock.lock();
