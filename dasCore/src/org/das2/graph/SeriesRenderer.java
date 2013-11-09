@@ -1752,8 +1752,9 @@ public class SeriesRenderer extends Renderer {
     }
 
     private float listIconSymSize = 3.f;
-    void setListIconSymSize(float newSize) {
+    public void setListIconSymSize(float newSize) {
        listIconSymSize = newSize;
+       refreshRender();
     }
 
     @Override
