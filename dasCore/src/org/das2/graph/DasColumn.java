@@ -56,12 +56,12 @@ public class DasColumn extends DasDevicePosition {
     public static DasColumn create( DasCanvas canvas, DasColumn parent, String minStr, String maxStr ) {
         double[] min, max;
         try {
-            min= parseFormatStr( minStr );
+            min= parseLayoutStr( minStr );
         } catch ( ParseException e ) {
             throw new IllegalArgumentException("unable to parse min: \""+minStr+"\"");
         }
         try {
-            max= parseFormatStr( maxStr );
+            max= parseLayoutStr( maxStr );
         } catch ( ParseException e ) {
             throw new IllegalArgumentException("unable to parse max: \""+maxStr+"\"");
         }
