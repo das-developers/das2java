@@ -85,7 +85,7 @@ public class DasPlot extends DasCanvasComponent {
     private DasAxis yAxis;
     DasAxis.Memento xmemento;
     DasAxis.Memento ymemento;
-	 private boolean reduceOutsideLegendTopMargin = false;
+    private boolean reduceOutsideLegendTopMargin = false;
     protected String offsetTime = "";
     protected String plotTitle = "";
     protected boolean displayTitle= true;
@@ -307,7 +307,7 @@ public class DasPlot extends DasCanvasComponent {
 
         mrect= getLegendBounds(graphics,msgx,msgy);
         if ( mrect==null ) return; // nothing is active
-
+        
         msgx= mrect.x;
         msgy= mrect.y;
         if ( legendPosition!=LegendPosition.OutsideNE ) {
@@ -1283,6 +1283,7 @@ public class DasPlot extends DasCanvasComponent {
     public void setReduceOutsideLegendTopMargin(boolean reduceOutsideLegendTopMargin)
     {
     	this.reduceOutsideLegendTopMargin = reduceOutsideLegendTopMargin;
+        update();
     }
 
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
