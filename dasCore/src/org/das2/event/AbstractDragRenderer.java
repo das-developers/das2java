@@ -31,7 +31,7 @@ import java.awt.Rectangle;
  * Do-nothing drag renderer and extension point for other DragRenderers.
  * @author  jbf
  */
-public class AbstractDragRenderer implements DragRenderer
+public abstract class AbstractDragRenderer implements DragRenderer
 {
  
     public AbstractDragRenderer(){}
