@@ -560,7 +560,7 @@ public class EventsRenderer extends Renderer {
                 Font f= getParent().getFont();
                 if ( getFontSize()!=null && getFontSize().length()>0 && !getFontSize().equals("1em") ) {
                     try {
-                        double[] size= DasDevicePosition.parseFormatStr(getFontSize());
+                        double[] size= DasDevicePosition.parseLayoutStr(getFontSize());
                         double s= f.getSize2D() * size[0]/100 + f.getSize2D() * size[1] + size[2];
                         f= f.deriveFont((float)s);
                     } catch ( ParseException ex ) {
