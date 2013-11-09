@@ -85,6 +85,7 @@ public class DasPlot extends DasCanvasComponent {
     private DasAxis yAxis;
     DasAxis.Memento xmemento;
     DasAxis.Memento ymemento;
+	 private boolean reduceOutsideLegendTopMargin = false;
     protected String offsetTime = "";
     protected String plotTitle = "";
     protected boolean displayTitle= true;
@@ -331,6 +332,7 @@ public class DasPlot extends DasCanvasComponent {
                 int theheight= Math.max(mrect.height, le.icon.getIconHeight());
                 int icony= theheight/2 - le.icon.getIconHeight() / 2;  // from top of rectangle
                 int texty= theheight/2 - (int)gtr.getHeight() / 2 + (int) gtr.getAscent();
+                if ( reduceOutsideLegendTopMargin ) texty = theheight/2;
                 gtr.draw( graphics, msgx, msgy + texty );
                 mrect.height = theheight;
                 Rectangle imgBounds = new Rectangle(
@@ -1276,6 +1278,11 @@ public class DasPlot extends DasCanvasComponent {
      */
     public void addToLegend(Renderer renderer, ImageIcon icon, int pos, String message) {
         legendElements.add(new LegendElement(icon, renderer, message));
+    }
+    
+    public void setReduceOutsideLegendTopMargin(boolean reduceOutsideLegendTopMargin)
+    {
+    	this.reduceOutsideLegendTopMargin = reduceOutsideLegendTopMargin;
     }
 
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {

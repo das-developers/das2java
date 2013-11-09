@@ -203,6 +203,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private Rectangle trLabelRect;
     private Rectangle blTitleRect;
     private Rectangle trTitleRect;
+    private Integer leftXOverride = null;
     /** TODO: Currently under implemented! */
     private boolean flipped;
     /* TIME LOCATION UNITS RELATED INSTANCE MEMBERS */
@@ -2206,6 +2207,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             // do nothing
         }
     }
+    /**
+     * allows multiple stacked axes to be manually lined up
+     * (if you somehow magically know the offset)
+     */
+    public void setLeftXLabelOverride(int leftXOverride)
+    {
+    	this.leftXOverride = leftXOverride;
+    }
 
     /** TODO
      * @return
@@ -2958,8 +2967,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             //int height = DMax - DMin + tickLabelFont.getSize() * 2;
             //blLabelRect = setRectangleBounds(blLabelRect, x, y, width, height);
             blLabelRect = getLabelBounds(new Rectangle(blTickRect.x - 10, DMin, 10, DWidth));
+            if ( leftXOverride != null ) blLabelRect.x = leftXOverride;
+//          blLabelRect.x = 70; //Hack
+        } else if ( leftLabel ) {
+            blLabelRect = getLabelBounds(new Rectangle(-10, DMin, 10, DWidth));
         } else {
-            blLabelRect = blTickRect;
+           blLabelRect = blTickRect;
         }
         if (rightTickLabels) {
             trLabelRect = getLabelBounds(new Rectangle(trTickRect.x + trTickRect.width, DMin, 10, DWidth));

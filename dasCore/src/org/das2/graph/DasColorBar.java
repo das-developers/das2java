@@ -29,20 +29,19 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.components.propertyeditor.Enumeration;
-import org.das2.event.DataRangeSelectionEvent;
 import org.das2.event.HorizontalSliceSelectionRenderer;
 import org.das2.event.MouseModule;
 import org.das2.event.MousePointSelectionEvent;
-import java.awt.image.IndexColorModel;
 
+import java.awt.image.IndexColorModel;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+
 import javax.swing.ImageIcon;
-import javax.swing.event.EventListenerList;
 
 /**
  *
@@ -50,6 +49,8 @@ import javax.swing.event.EventListenerList;
  */
 public class DasColorBar extends DasAxis {
     
+    private static final long serialVersionUID = 1L;
+
     public static final String PROPERTY_TYPE = "type";
     public static final String PROPERTY_FILL_COLOR= "fillColor";
     
@@ -200,7 +201,9 @@ public class DasColorBar extends DasAxis {
     
     public static final class Type implements Enumeration, Displayable {
         
-        public static final Type COLOR_WEDGE = new Type("color_wedge");
+      public static final Type COLOR_WEDGE = new Type("color_wedge");
+      public static final Type COLOR_WEDGE_BLACK0 = new Type("color_wedge_black0");
+      public static final Type COLOR_WEDGE_WHITE0 = new Type("color_wedge_white0");
         //public static final Type BLUE_TO_ORANGE = new Type("blue_to_orange");
         public static final Type GRAYSCALE = new Type("grayscale");
         public static final Type INVERSE_GRAYSCALE = new Type("inverse_grayscale");
@@ -325,6 +328,10 @@ public class DasColorBar extends DasAxis {
         private void initializeColorTable( int size, int bottom, int top ) {
             if (this == COLOR_WEDGE) {
                 initializeColorWedge(size, bottom, top);
+            } else if (this == COLOR_WEDGE_WHITE0) {
+                initializeColorWedgeWhite(size, bottom, top);
+            } else if (this == COLOR_WEDGE_BLACK0) {
+                initializeColorWedgeBlack(size, bottom, top);
             } else if (this == GRAYSCALE) {
                 initializeGrayScale(size, bottom, top);
             } else if (this == INVERSE_GRAYSCALE) {
@@ -348,6 +355,28 @@ public class DasColorBar extends DasAxis {
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
             colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
         }
+
+        
+        private void initializeColorWedgeWhite( int size, int bottom, int top ) {
+         ColorWedgeColorSource ct = new ColorWedgeColorSource(true);
+            int[] index = ct.getIndex();
+            int[] red =  ct.getRed();
+            int[] green = ct.getGreen();
+            int[] blue =  ct.getBlue();
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+            //colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
+        }
+        
+        private void initializeColorWedgeBlack( int size, int bottom, int top ) {
+         ColorWedgeColorSource ct = new ColorWedgeColorSource(false);
+            int[] index = ct.getIndex();
+            int[] red =  ct.getRed();
+            int[] green = ct.getGreen();
+            int[] blue =  ct.getBlue();
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+            colorTable[0] = ( colorTable[0] & 0xFFFFFF00 ) | 1;
+        }
+
         
         private void initializeBlueBlackRedWedge( int size, int bottom, int top ) {
             int[] index = {   0,   64,   128, 192, 255 };
@@ -402,6 +431,10 @@ public class DasColorBar extends DasAxis {
         public static Type parse(String s) {
             if (s.equals("color_wedge")) {
                 return COLOR_WEDGE;
+            } else if (s.equals("color_wedge_white0")) {
+               return COLOR_WEDGE_WHITE0;
+            } else if (s.equals("color_wedge_black0")) {
+               return COLOR_WEDGE_BLACK0;
             } else if (s.equals("grayscale")) {
                 return GRAYSCALE;
             } else if (s.equals("inverse_grayscale")) {
@@ -456,7 +489,7 @@ public class DasColorBar extends DasAxis {
             
             int bottomColor, topColor;
             
-            DatumRange dr;
+            // DatumRange dr;
             DasRow row= colorBar.getRow();
             
             double alpha=  ( row.getDMaximum() - y ) / (1.*row.getHeight());
@@ -485,7 +518,7 @@ public class DasColorBar extends DasAxis {
             parent.refreshImage();
         }
         
-        public void mouseReleased( MouseEvent e ) {
+        public void mouseReleased( @SuppressWarnings("unused") MouseEvent e ) {
             if ( state!=STATE_IGNORE ) {
                 colorBar.setAnimated(animated0);
                 int lastTopColor= this.lastTopColor;

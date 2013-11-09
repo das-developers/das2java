@@ -1746,9 +1746,15 @@ public class SeriesRenderer extends Renderer {
         Stroke stroke0 = g.getStroke();
         getPsymConnector().drawLine(g, 2, 3, 13, 7, 1.5f);
         g.setStroke(stroke0);
-        psym.draw(g, 7, 5, 3.f, fillStyle);
+        // psym.draw(g, 7, 5, 3.f, fillStyle);
+        // psym.draw(g, 7, 5, 8.f, fillStyle);  // Bigger dot for summary plot (HACK)
+        psym.draw(g, 7, 5, listIconSymSize, fillStyle);  // the size of this is now settable
     }
 
+    private float listIconSymSize = 3.f;
+    void setListIconSymSize(float newSize) {
+       listIconSymSize = newSize;
+    }
 
     @Override
     public String getListLabel() {
