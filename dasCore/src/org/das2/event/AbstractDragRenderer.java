@@ -25,7 +25,6 @@ package org.das2.event;
 
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Rectangle;
 
 /**
  * Do-nothing drag renderer and extension point for other DragRenderers.
@@ -35,19 +34,7 @@ public abstract class AbstractDragRenderer implements DragRenderer
 {
  
     public AbstractDragRenderer(){}
-    
-    /**
-     * paint the drag.  The rectangle returned is ignored and null may be 
-     * returned.
-     * @param g a graphics context, in the canvas reference frame.
-     * @param p1
-     * @param p2
-     * @return 
-     */
-    public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) { 
-        return new Rectangle[0]; 
-    }
-    
+        
     /**
      * return the event for the gesture.  A mouse box event is returned.
      * @param source
