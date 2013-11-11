@@ -1165,10 +1165,15 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         dp1= (DataPoint)dataPoints.get(~index+1);
                     }
                     
-                    if ( dp0!=null && dp0.data[0].subtract(newPoint.data[0]).abs().lt(Units.microseconds.createDatum(10000)) ) {
-                        dataPoints.set( ~index, newPoint );
-                    } else if ( dp1!=null && dp1.data[0].subtract(newPoint.data[0]).abs().lt(Units.microseconds.createDatum(10000)) ) {
-                        dataPoints.set( ~index+1, newPoint );
+                    Datum epsilon= Units.microseconds.createDatum(10000);
+                    if ( newPoint.data[0].getUnits().getOffsetUnits().isConvertableTo(Units.milliseconds) ) {
+                        if ( dp0!=null && dp0.data[0].subtract(newPoint.data[0]).abs().lt(epsilon) ) {
+                            dataPoints.set( ~index, newPoint );
+                        } else if ( dp1!=null && dp1.data[0].subtract(newPoint.data[0]).abs().lt(epsilon) ) {
+                            dataPoints.set( ~index+1, newPoint );
+                        } else {
+                            dataPoints.add(~index, newPoint);
+                        }
                     } else {
                         dataPoints.add(~index, newPoint);
                     }
