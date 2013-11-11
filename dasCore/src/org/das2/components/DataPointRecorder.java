@@ -1119,6 +1119,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         int newSelect;
         synchronized ( dataPoints ) {
             Set<String> keys= newPoint.planes.keySet();
+            int ikey=2;
             for ( String key: keys ) {
                 Object o= newPoint.planes.get(key);
                 if ( o instanceof QDataSet ) {
@@ -1131,8 +1132,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 } else if ( o instanceof Datum ) {
                     // do nothing
                 } else if ( o instanceof String ) {
-                    // TODO: it would be nice to convert this so clients don't have to deal with enumeration data.
-                    throw new IllegalArgumentException("String value not supported in planes: "+key+"="+o);
+                    newPoint.planes.put( key, ((EnumerationUnits)unitsArray[ikey]).createDatum(o) );
+                } else if ( o instanceof Number ) {
+                    newPoint.planes.put( key, (unitsArray[ikey]).createDatum(((Number)o) ) );
                 }
             }
             if (sorted) {
@@ -1196,8 +1198,32 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     
-
-    public void addDataPoint(Datum x, Datum y, Map planes) {
+    /**
+     * add just the x and y values.
+     * @param x
+     * @param y 
+     */
+    public void addDataPoint( Datum x, Datum y ) {
+        addDataPoint( x, y, null );
+    }
+    
+    /**
+     * add the x and y values with unnamed metadata.
+     * @param x
+     * @param y 
+     * @param meta any metadata to be recorded along with the data point.
+     */    
+    public void addDataPoint( Datum x, Datum y, Object meta ) {
+        addDataPoint( x, y, Collections.singletonMap("meta",meta) );
+    }
+    
+    /**
+     * add the data point, along with metadata such as the key press.
+     * @param x
+     * @param y
+     * @param planes 
+     */
+    public void addDataPoint( Datum x, Datum y, Map planes ) {
         synchronized (dataPoints) {
             if ( planes==null ) planes= new LinkedHashMap();
             if (dataPoints.isEmpty()) {
@@ -1214,7 +1240,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     planesArray[index] = String.valueOf(key).trim();
                     Object value = entry.getValue();
                     if (value instanceof String) {
-                        unitsArray[index] = null;
+                        unitsArray[index] = EnumerationUnits.create("default");
                     } else {
                         if ( value instanceof Datum ) {
                             unitsArray[index] = ((Datum) value).getUnits();
@@ -1225,6 +1251,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             } else {
                                 unitsArray[index] = SemanticOps.getUnits((QDataSet)value);
                             }
+                        } else if ( value instanceof Number ) {
+                            unitsArray[index]= Units.dimensionless;
+                        } else if ( value instanceof String ) {
+                            unitsArray[index]= EnumerationUnits.create("default");
                         } else {
                             throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet");
                         }
