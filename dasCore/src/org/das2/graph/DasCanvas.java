@@ -1181,19 +1181,20 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
             waitUntilIdle();
         }
-        
-        EventQueue eventQueue= Toolkit.getDefaultToolkit().getSystemEventQueue();
-        while ( eventQueue.peekEvent( DasUpdateEvent.DAS_UPDATE_EVENT_ID )!=null ) {
-            try {
-                Thread.sleep(100);
-                System.err.println("==Dump Future Events...==");
-                EventQueueBlocker_1.dumpEventQueue( System.err );
-                System.err.println("=========================");
-                
-            }catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
+
+//        //  The following is for debugging.
+//        EventQueue eventQueue= Toolkit.getDefaultToolkit().getSystemEventQueue();
+//        while ( eventQueue.peekEvent( DasUpdateEvent.DAS_UPDATE_EVENT_ID )!=null ) {
+//            try {
+//                Thread.sleep(100);
+//                System.err.println("==Dump Future Events...==");
+//                EventQueueBlocker_1.dumpEventQueue( System.err );
+//                System.err.println("=========================");
+//                
+//            }catch (InterruptedException ex) {
+//                throw new RuntimeException(ex);
+//            }
+//        }
                 
         logger.fine("canvas is idle");
         /* should be in static state */
