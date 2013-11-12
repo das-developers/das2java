@@ -419,10 +419,12 @@ public class DataSetUtil {
     }
 
     /**
-     * return just the properties attached to the dataset, not DEPEND_x, etc.
-     * @param ds
-     * @param def default values
-     * @return
+     * return just the properties attached to the dataset, like 
+     * UNITS and SCALE_TYPE, and not like DEPEND_x, etc.
+     * @see dimensionProperties()
+     * @param ds the dataset
+     * @param def default values or null.
+     * @return a map of all the properties.
      */
     public static Map<String,Object> getDimensionProperties( QDataSet ds, Map<String,Object> def ) {
         return getProperties( ds, dimensionProperties(), def );
