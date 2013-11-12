@@ -378,7 +378,8 @@ public class DataSetOps {
         qube[idim] = sort.length();
 
         DDataSet cds = DDataSet.create(qube);
-        org.virbo.dataset.DataSetUtil.putProperties(org.virbo.dataset.DataSetUtil.getProperties(ds), cds);
+        Map<String,Object> props= org.virbo.dataset.DataSetUtil.getDimensionProperties(ds,null);
+        org.virbo.dataset.DataSetUtil.putProperties(props, cds);
         
         if (deps) {
             String depprop = "DEPEND_" + idim;
@@ -388,6 +389,7 @@ public class DataSetOps {
                 depds = applyIndex(depds, 0, sort, false);
                 cds.putProperty(depprop, depds);
             }
+            //TODO: try to do a nice job with BUNDLE.  This would be tricky.
         }
 
         if (idim == 0) {
