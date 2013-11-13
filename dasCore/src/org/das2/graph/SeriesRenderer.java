@@ -176,7 +176,7 @@ public class SeriesRenderer extends Renderer {
         if ( ds.rank()==2 && SemanticOps.isBundle(ds) ) {
             vds= SemanticOps.ytagsDataSet(ds);
         } else if ( ds.rank()==2 ) {
-            parent.postMessage(this, "dataset is rank 2 and not a bundle", DasPlot.INFO, null, null);
+            getParent().postMessage(this, "dataset is rank 2 and not a bundle", DasPlot.INFO, null, null);
             return null;
         } else {
             vds = (QDataSet) ds;
@@ -226,7 +226,7 @@ public class SeriesRenderer extends Renderer {
          */
         private int renderStamp(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
 
-            DasPlot lparent= parent;
+            DasPlot lparent= getParent();
             if ( lparent==null ) return 0;
 
             QDataSet colorByDataSet=null;
@@ -324,7 +324,7 @@ public class SeriesRenderer extends Renderer {
             if ( vds.rank()!=1 && !SemanticOps.isBundle(vds) ) {
                 renderException( graphics, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
             }
-            DasPlot lparent= parent;
+            DasPlot lparent= getParent();
             if ( lparent==null ) return 0;
             if (stampPsyms && !lparent.getCanvas().isPrintingThread()) {
                 i = renderStamp(graphics, xAxis, yAxis, vds, mon);
@@ -391,7 +391,7 @@ public class SeriesRenderer extends Renderer {
             int buffer= (int)Math.ceil( Math.max( 20, getSymSize() ) );
             Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             window= new Rectangle( window.x-buffer, window.y-buffer, window.width+2*buffer, window.height+2*buffer );
-            DasPlot lparent= parent;
+            DasPlot lparent= getParent();
             if ( lparent==null ) return;
             if ( lparent.isOverSize() ) {
                 window= new Rectangle( window.x- window.width/3, window.y-buffer, 5 * window.width / 3, window.height + 2 * buffer );
@@ -587,7 +587,7 @@ public class SeriesRenderer extends Renderer {
             Rectangle window= DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() );
             int buffer= (int)Math.ceil( Math.max( getLineWidth(),10 ) );
 
-            DasPlot lparent= parent;
+            DasPlot lparent= getParent();
             if ( lparent==null ) return;
             if ( lparent.isOverSize() ) {
                 window= new Rectangle( window.x- window.width/3, window.y-buffer, 5 * window.width / 3, window.height + 2 * buffer );
@@ -1042,7 +1042,7 @@ public class SeriesRenderer extends Renderer {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
         g.setColor(color);
 
-        DasPlot lparent= parent;
+        DasPlot lparent= getParent();
         if ( lparent==null ) return;
 
         g.setBackground(lparent.getBackground());
@@ -1110,7 +1110,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet wds;
         wds= SemanticOps.weightsDataSet( yds );
 
-        DasPlot lparent= parent;
+        DasPlot lparent= getParent();
         if ( lparent==null ) return;
 
         dslen= xds.length();
@@ -1197,7 +1197,7 @@ public class SeriesRenderer extends Renderer {
     @Override
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
-        DasPlot lparent= this.parent;
+        DasPlot lparent= getParent();
 
         logger.log(Level.FINE, "enter {0}.render: {1}", new Object[]{id, String.valueOf(getDataSet()) });
         logger.log( Level.FINER, "ds: {0},  drawing indeces {1} to {2}", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex});
@@ -1681,13 +1681,13 @@ public class SeriesRenderer extends Renderer {
     @Override
     protected void installRenderer() {
         if (!DasApplication.getDefaultApplication().isHeadless()) {
-            DasPlot lparent= parent;
+            DasPlot lparent= getParent();
             if ( lparent==null ) throw new IllegalArgumentException("parent not set");
             DasMouseInputAdapter mouseAdapter = lparent.mouseAdapter;
             DasPlot p = lparent;
             mouseAdapter.addMouseModule(new MouseModule(p, new LengthDragRenderer(p, p.getXAxis(), p.getYAxis()), "Length"));
 
-            MouseModule ch = new CrossHairMouseModule(parent, this, parent.getXAxis(), parent.getYAxis());
+            MouseModule ch = new CrossHairMouseModule(lparent, this, lparent.getXAxis(), lparent.getYAxis());
             mouseAdapter.addMouseModule(ch);
         }
 
@@ -1724,7 +1724,7 @@ public class SeriesRenderer extends Renderer {
 
         g.setRenderingHints(DasProperties.getRenderingHints());
 
-        DasPlot lparent= parent;
+        DasPlot lparent= getParent();
         if ( lparent!=null ) g.setBackground(lparent.getBackground());
 
         // leave transparent if not white
@@ -1766,7 +1766,7 @@ public class SeriesRenderer extends Renderer {
      * trigger render, but not updatePlotImage.
      */
     private void refreshRender() {
-        DasPlot lparent= parent;
+        DasPlot lparent= getParent();
         if ( lparent!=null ) {
             lparent.invalidateCacheImage();
             lparent.repaint();
@@ -1986,6 +1986,7 @@ public class SeriesRenderer extends Renderer {
         }
         super.setColorBar(cb);
         if (colorBar != null) {
+            DasPlot parent= getParent();
             if (parent != null && parent.getCanvas() != null) {
                 parent.getCanvas().add(colorBar);
             }

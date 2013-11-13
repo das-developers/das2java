@@ -55,7 +55,7 @@ public class PlotSymbolRenderer extends Renderer {
                     double xx = xAxis.transform(vds.getXTagDouble(i, xunits), xunits);
                     yy = yAxis.transform(yy, yunits);
                     int icolor = colorBar.indexColorTransform(colorByDataSet.getDouble(i, cunits), cunits);
-                    g.drawImage(coloredPsyms[icolor], (int) xx-cmx, (int) yy-cmy, parent);
+                    g.drawImage(coloredPsyms[icolor], (int) xx-cmx, (int) yy-cmy, getParent());
                 }
             }
         } else {
@@ -64,7 +64,7 @@ public class PlotSymbolRenderer extends Renderer {
                 if (yunits.isValid(yy)) {
                     double xx = xAxis.transform(vds.getXTagDouble(i, xunits), xunits);
                     yy = yAxis.transform(yy, yunits);
-                    g.drawImage(psymImage, (int) xx-cmx, (int) yy-cmy, parent);
+                    g.drawImage(psymImage, (int) xx-cmx, (int) yy-cmy, getParent());
                 }
             }
         }

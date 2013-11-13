@@ -1524,11 +1524,13 @@ public class DasPlot extends DasCanvasComponent {
 
     public void addRenderer(Renderer rend) {
         logger.log(Level.FINE, "addRenderer({0})", rend);
-        if (rend.parent != null) {
-            rend.parent.removeRenderer(rend);
+
+        DasPlot parent= rend.getParent();
+        if ( parent != null) {
+            parent.removeRenderer(rend);
         }
         renderers.add(rend);
-        rend.parent = this;
+        rend.setParent( this );
         if (getCanvas() != null) {
             rend.installRenderer();
         }
@@ -1538,11 +1540,12 @@ public class DasPlot extends DasCanvasComponent {
 
     public void addRenderer(int index, Renderer rend) {
         logger.log(Level.FINE, "addRenderer({0},{1})", new Object[]{index, rend});
-        if (rend.parent != null) {
-            rend.parent.removeRenderer(rend);
+        DasPlot parent= rend.getParent();
+        if ( parent != null) {
+            parent.removeRenderer(rend);
         }
         renderers.add(index,rend);
-        rend.parent = this;
+        rend.setParent(this);
         if (getCanvas() != null) {
             rend.installRenderer();
         }
@@ -1566,7 +1569,7 @@ public class DasPlot extends DasCanvasComponent {
         }
         if ( focusRenderer==rend ) setFocusRenderer(null);
         renderers.remove(rend);
-        rend.parent = null;
+        rend.setParent( null );
         invalidateCacheImage();
 
     }
@@ -1587,7 +1590,7 @@ public class DasPlot extends DasCanvasComponent {
         if (getCanvas() != null) {
             for ( Renderer rend: renderers ) {
                 rend.uninstallRenderer();
-                rend.parent = null; // should get GC'd.
+                rend.setParent( null ); // should get GC'd.
             }
             setFocusRenderer(null);
             renderers.clear();

@@ -356,6 +356,7 @@ public class TickCurveRenderer extends Renderer {
 
     }
 
+    @Override
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
         if ( ds==null ) {
@@ -371,7 +372,7 @@ public class TickCurveRenderer extends Renderer {
         Graphics2D g= (Graphics2D)g1;
         g.setStroke( stroke );
 
-        g.setFont( parent.getFont() );
+        g.setFont( getParent().getFont() );
         
         //g.setColor( parent.getForeground() );
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );

@@ -75,6 +75,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         BufferedImage i = new BufferedImage(15, 10, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) i.getGraphics();
 
+        DasPlot parent= getParent();
+        
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         if ( parent!=null ) g.setBackground(parent.getBackground());
 
@@ -185,6 +187,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         long t0= System.currentTimeMillis();
 
         logger.fine("entering ImageVectorDataSetRenderer.render");
+        
+        DasPlot parent= getParent();
         
         if ( ds==null ) {
             parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
@@ -658,6 +662,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
 
         QDataSet xds= SemanticOps.xtagsDataSet( ds );
+        
+        DasPlot parent= getParent();
 
         if (!xAxis.getUnits().isConvertableTo( SemanticOps.getUnits(xds) )) {
             parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
@@ -825,6 +831,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         if ( lplotImage==null ) return;
         int w= lplotImage.getWidth();
         int h= lplotImage.getHeight();
+        DasPlot parent= getParent();
         int imagex = (int)parent.getCacheImageBounds().getX();
         int parentx= parent.getX();
         int dx= parent.getColumn().getDMinimum() - imagex;

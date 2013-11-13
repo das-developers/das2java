@@ -202,7 +202,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      */
     public SpectrogramRenderer(DasPlot parent, DataSetDescriptor dsd, DasColorBar colorBar) {
         this(dsd, colorBar);
-        this.parent = parent;
+        setParent(parent);
     }
 
     @Override
@@ -215,6 +215,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         if (colorBar == cb) {
             return;
         }
+        DasPlot parent= getParent();
         if (colorBar != null) {
             colorBar.removePropertyChangeListener("dataMinimum", rebinListener);
             colorBar.removePropertyChangeListener("dataMaximum", rebinListener);
@@ -248,6 +249,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         logger.fine("entering SpectrogramRenderer.render");
         Graphics2D g2 = (Graphics2D) g;
 
+        DasPlot parent= getParent();
         if ( parent==null ) return;
 
         renderCount++;
@@ -773,6 +775,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     @Override
     protected void installRenderer() {
+        DasPlot parent= getParent();
         if (parent != null && parent.getCanvas() != null) {
             if (colorBar != null) {
                 if (colorBar.getColumn() == DasColumn.NULL) {
@@ -902,6 +905,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     @Override
     public void setDataSet(QDataSet ds) {
         QDataSet oldDs = this.ds;
+        DasPlot parent= getParent();
         if (parent != null && oldDs != ds) {
             this.raster = null;
             // TODO: preserve plotImage until updatePlotImage is done

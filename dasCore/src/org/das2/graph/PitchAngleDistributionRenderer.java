@@ -22,7 +22,6 @@ import java.beans.PropertyChangeListener;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import static java.lang.Math.*;
-import static org.das2.graph.ContoursRenderer.PROP_LINETHICK;
 import org.virbo.dataset.ArrayDataSet;
 
 /**
@@ -138,7 +137,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
     public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         QDataSet tds= (QDataSet)ds;
-
+        DasPlot parent= getParent();
         if (tds == null) {
             logger.fine("null data set");
             parent.postMessage(this, "no data set", DasPlot.INFO, null, null);

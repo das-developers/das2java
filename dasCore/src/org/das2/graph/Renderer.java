@@ -88,7 +88,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     /**
      * plot containing this renderer
      */
-    DasPlot parent;
+    private DasPlot parent;
     //DasPlot2 parent2;
     /**
      * the responsibility of keeping a relevant dataset loaded.  Can be null
@@ -133,6 +133,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return this.parent;
     }
 
+    public void setParent( DasPlot parent ) {
+        this.parent= parent;
+    }
+    
     public Memento getXmemento() {
         return xmemento;
     }

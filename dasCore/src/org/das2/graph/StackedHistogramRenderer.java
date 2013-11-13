@@ -153,6 +153,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     
     @Override
     protected void installRenderer() {
+        DasPlot parent= getParent();
         DasCanvas canvas= parent.getCanvas();
         littleRow= new DasRow( canvas, 0.5,0.6 );
         zAxisConnector= new RowRowConnector( canvas, littleRow, zAxis.getRow(), parent.getColumn(), zAxis.getColumn() );

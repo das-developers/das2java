@@ -21,7 +21,8 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
 /**
- *
+ * Draw vectors as arrows, from a dataset[:,4] where
+ * dataset[0,:] is x,y,dx,dy.
  * @author jbf
  */
 public class VectorPlotRenderer extends Renderer {
@@ -95,7 +96,8 @@ public class VectorPlotRenderer extends Renderer {
         Graphics2D g= (Graphics2D)g1;
 
         QDataSet ds= getDataSet();
-
+        DasPlot parent= getParent();
+        
         if ( ds==null ) {
             if ( getLastException()!=null ) {
                 renderException(g, xAxis, yAxis, lastException);

@@ -183,6 +183,7 @@ public class EventsRenderer extends Renderer {
     @Override
     protected void installRenderer() {
         MouseModule mm= getMouseModule();
+        DasPlot parent= getParent();
         parent.getDasMouseInputAdapter().addMouseModule( mm );
         parent.getDasMouseInputAdapter().setPrimaryModule( mm );
         super.installRenderer();
@@ -191,6 +192,7 @@ public class EventsRenderer extends Renderer {
     @Override
     protected void uninstallRenderer() {
         MouseModule mm= getMouseModule();
+        DasPlot parent= getParent();
         parent.getDasMouseInputAdapter().removeMouseModule(mm);
         super.uninstallRenderer(); 
     }
@@ -309,6 +311,7 @@ public class EventsRenderer extends Renderer {
     private MouseModule mouseModule=null;
     private MouseModule getMouseModule() {
         if ( mouseModule==null ) {
+            DasPlot parent= getParent();
             mouseModule= new MouseModule( parent, new DragRenderer(parent), "event lookup" );
         }
         return mouseModule;
@@ -386,7 +389,7 @@ public class EventsRenderer extends Renderer {
         if ( vds==null ) {
             return null;
         }
-        
+        DasPlot parent= getParent();
         if ( vds.rank()==2 ) {
             QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
             if ( dep0==null ) {
@@ -538,6 +541,8 @@ public class EventsRenderer extends Renderer {
 
         long t0= System.currentTimeMillis();
 
+        DasPlot parent= getParent();
+        
         if ( lastException!=null ) {
             renderException( g, xAxis, yAxis, lastException );
             
@@ -732,6 +737,7 @@ public class EventsRenderer extends Renderer {
     public void setShowLabels(boolean showLabels) {
         boolean oldShowLabels = this.showLabels;
         this.showLabels = showLabels;
+        DasPlot parent= getParent();
         if ( parent!=null ) {
             parent.invalidateCacheImage();
             parent.repaint();

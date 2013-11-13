@@ -225,6 +225,7 @@ public class DigitalRenderer extends Renderer {
             
         } else if ( xMono ) {
             DatumRange visibleRange = xAxis.getDatumRange();
+            DasPlot parent= getParent();
             if (parent.isOverSize()) {
                 Rectangle plotBounds = parent.getUpdateImageBounds();
                 if ( plotBounds!=null ) {
@@ -286,6 +287,8 @@ public class DigitalRenderer extends Renderer {
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         g.setColor(color);
+        DasPlot parent= getParent();
+                
         if ( ds==null ) {
             if ( getLastException()!=null ) {
                 renderException(g, xAxis, yAxis, lastException);
@@ -312,6 +315,7 @@ public class DigitalRenderer extends Renderer {
     }
 
     private void renderRank0( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        DasPlot parent= getParent();
         StringBuilder sb= new StringBuilder();
         if ( ds.rank()==0 ) {
             String label= (String)ds.property( QDataSet.LABEL );
@@ -404,6 +408,8 @@ public class DigitalRenderer extends Renderer {
         if ( form.length()==0 ) {
             form= "%.2f";
         }
+
+        DasPlot parent= getParent();
 
         if ( ! xunits.isConvertableTo(xAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
@@ -517,6 +523,8 @@ public class DigitalRenderer extends Renderer {
 
         Units xunits= SemanticOps.getUnits(xds);
         Units yunits= SemanticOps.getUnits(yds);
+
+        DasPlot parent= getParent();
 
         if ( !SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
