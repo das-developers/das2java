@@ -75,6 +75,7 @@ import java.util.logging.Logger;
 import org.das2.DasException;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.DatumRangeUtil;
+import org.das2.event.DasMouseInputAdapter;
 import org.das2.graph.DasAxis.Memento;
 
 public class DasPlot extends DasCanvasComponent {
@@ -483,8 +484,12 @@ public class DasPlot extends DasCanvasComponent {
         Color gridColor = new Color(128, 128, 128, 70);
         Color minorGridColor = new Color(128, 128, 128, 40);
 
-        TickVDescriptor xtickv= getXAxis().getTickV();
-        TickVDescriptor ytickv= getYAxis().getTickV();
+        DasAxis lxaxis= getXAxis();
+        DasAxis lyaxis= getYAxis();
+        if ( lxaxis==null || lyaxis==null ) return;
+        
+        TickVDescriptor xtickv= lxaxis.getTickV();
+        TickVDescriptor ytickv= lyaxis.getTickV();
 
         if (drawMinorGrid) {
             DatumVector xticks = null;
@@ -1134,6 +1139,20 @@ public class DasPlot extends DasCanvasComponent {
      */
     private boolean isEnableRenderPropertiesAction() {
         return this.editRendererMenuItem!=null;
+    }
+
+    /**
+     * In Autoplot, we need a way to get help releasing all resources.  This
+     * clears out all the mouse modules, axis references, etc.  Basically anything
+     * that could have a reference to other parts of the system that we know we
+     * don't need here, explicitly remove the reference.
+     */
+    public void releaseAll() {
+        uninstallComponent();
+        DasMouseInputAdapter dmia= getDasMouseInputAdapter();
+        dmia.releaseAll();
+        this.xAxis.getDasMouseInputAdapter().releaseAll();
+        this.yAxis.getDasMouseInputAdapter().releaseAll();
     }
 
     /**
