@@ -1812,6 +1812,14 @@ public class Ops {
         if ( second==null ) second= zeros;
         if ( nano==null ) nano= zeros;
 
+        if ( years.rank()!=1 ) throw new IllegalArgumentException("years must be rank 1");
+        if ( mons.rank()!=1 ) throw new IllegalArgumentException("months must be rank 1 or null");
+        if ( days.rank()!=1 ) throw new IllegalArgumentException("days must be rank 1 or null");
+        if ( hour.rank()!=1 ) throw new IllegalArgumentException("hours must be rank 1 or null");
+        if ( minute.rank()!=1 ) throw new IllegalArgumentException("minutes must be rank 1 or null");
+        if ( second.rank()!=1 ) throw new IllegalArgumentException("seconds must be rank 1 or null");
+        if ( nano.rank()!=1 ) throw new IllegalArgumentException("nanos must be rank 1 or null");
+        
         for ( int i=0; i<result.length(); i++ ) {
             int year= (int)years.value(i);
             double fyear= years.value(i) - year;
