@@ -664,6 +664,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         QDataSet xds= SemanticOps.xtagsDataSet( ds );
         
         DasPlot parent= getParent();
+        if ( parent==null ) return;
 
         if (!xAxis.getUnits().isConvertableTo( SemanticOps.getUnits(xds) )) {
             parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
