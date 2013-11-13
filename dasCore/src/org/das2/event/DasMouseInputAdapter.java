@@ -575,6 +575,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     public void paint(Graphics g1) {
         Graphics2D g = (Graphics2D) g1.create();
 
+        DasCanvasComponent parent= this.parent;
+        if ( parent==null ) return;
         g.translate(-parent.getX(), -parent.getY());
 
         if (active != null) {
@@ -588,12 +590,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             return;
         }
         if (hasFocus && drawControlPoints) {
-            drawControlPoints(g);
+            drawControlPoints(g,parent);
         }
         g.dispose();
     }
 
-    private void drawControlPoints(Graphics2D g) {
+    private void drawControlPoints(Graphics2D g, DasCanvasComponent parent ) {
         if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL) {
             int xLeft = parent.getColumn().getDMinimum();
             int xRight = parent.getColumn().getDMaximum();
@@ -1229,4 +1231,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             secondary.mouseWheelMoved(e);
         }
     }
+    
+    /**
+     * remove all references to mouse modules
+     */
+    public void releaseAll() {
+        active= null;
+        modules.clear();
+        primary= null;
+        secondary= null;
+        primaryActionButtonMap.clear();
+        secondaryActionButtonMap.clear();
+        parent=null;
+    }
+
 }
