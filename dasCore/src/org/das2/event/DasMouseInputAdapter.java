@@ -1242,7 +1242,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         secondary= null;
         primaryActionButtonMap.clear();
         secondaryActionButtonMap.clear();
-        parent=null;
+        //parent=null;
     }
 
 }
