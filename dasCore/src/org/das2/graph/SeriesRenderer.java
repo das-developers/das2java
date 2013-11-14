@@ -1565,11 +1565,19 @@ public class SeriesRenderer extends Renderer {
                 fillElement.update(xAxis, yAxis, vds, monitor);
             }
             if (psymConnector != PsymConnector.NONE) {
-                psymConnectorElement.update(xAxis, yAxis, vds, monitor);
+                try {
+                    psymConnectorElement.update(xAxis, yAxis, vds, monitor);
+                } catch ( InconvertibleUnitsException ex ) {
+                    return;
+                }
             }
 
-            errorElement.update(xAxis, yAxis, vds, monitor);
-            psymsElement.update(xAxis, yAxis, vds, monitor);
+            try {
+                errorElement.update(xAxis, yAxis, vds, monitor);
+                psymsElement.update(xAxis, yAxis, vds, monitor);
+            } catch ( InconvertibleUnitsException ex ) {
+                return;
+            }
             selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );
 
         } else if (tds != null) {
