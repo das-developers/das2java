@@ -33,6 +33,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
     
@@ -65,12 +66,24 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
             Node n= attrs.item(i);
             properties.put( n.getNodeName(), n.getNodeValue() );
         }
+
+		  NodeList nl = element.getElementsByTagName("properties");
+		  for(int i = 0; i<nl.getLength(); i++){
+			  Element el = (Element)nl.item(i);
+			  attrs= element.getAttributes();
+			  for ( int iAttr=0; iAttr<attrs.getLength(); iAttr++ ) {
+            Node n= attrs.item(iAttr);
+            properties.put( n.getNodeName(), n.getNodeValue() );
+          }
+		  }
+
     if (type != null) {
             transferType = type;
         }
         else {
             throw new RuntimeException("Illegal transfer type: " + typeStr);
         }
+
     }
     
     private void processLegacyElement(Element element) {

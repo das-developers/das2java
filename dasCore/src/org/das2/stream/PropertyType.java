@@ -39,6 +39,7 @@ public final class PropertyType {
     public static final PropertyType DOUBLE_ARRAY = new PropertyType("doubleArray");
     public static final PropertyType DATUM = new PropertyType("Datum");
     public static final PropertyType INTEGER = new PropertyType("int");
+	 public static final PropertyType STRING = new PropertyType("String");
     
     public static PropertyType getByName(String name) {
         PropertyType result= (PropertyType)map.get(name);
@@ -57,7 +58,10 @@ public final class PropertyType {
     }
     
     public Object parse(String s) throws java.text.ParseException {
-        if (name.equals("double")) {
+		 if (name.equals("String")){
+			 return s;
+		 }
+		 else if(name.equals("double")) {
             try {
                 return new Double(s);
             }

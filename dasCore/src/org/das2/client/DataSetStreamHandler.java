@@ -65,6 +65,7 @@ public class DataSetStreamHandler implements StreamHandler {
     int taskSize= -1;
     int packetCount= 0;
     Datum xTagMax= null;
+	 boolean bReadPkts = true;
     
     private static final Logger logger= DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
     private boolean monotonic= true; // generally streams are monotonic, so check for monotonicity.
@@ -124,8 +125,18 @@ public class DataSetStreamHandler implements StreamHandler {
             delegate.packetDescriptor(pd);
         }
     }
+
+	 public void setReadPackets(boolean b){
+		 bReadPkts = b;
+	 }
+
+	 public boolean getReadPackets(){
+		 return bReadPkts;
+	 }
     
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
+		 if(!bReadPkts) return;
+		 
         logger.finest("got packet");
         ensureNotNullDelegate();
         if ( xTagMax==null || xTag.ge( this.xTagMax ) ) {
