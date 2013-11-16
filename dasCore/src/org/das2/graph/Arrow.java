@@ -59,6 +59,9 @@ public class Arrow extends DasCanvasComponent {
      * @param style HeadStyle.DRAFTING, etc.
      */
     public static void paintArrow( Graphics2D g, Point2D head, Point2D tail, double em, HeadStyle style ) {
+        
+        g= (Graphics2D) g.create();
+        
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         
         float s0= 1.0f;  // the initial stroke width.
