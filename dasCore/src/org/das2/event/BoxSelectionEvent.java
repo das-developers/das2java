@@ -30,8 +30,8 @@ import java.util.HashMap;
 import org.virbo.dataset.QDataSet;
 
 /**
- * This is the range analog to the DataPointSelectionEvent.  The DPSE is a point,
- * and this is a box.
+ * This is the range analog to the DataPointSelectionEvent.  The 
+ * DataPointSelectionEvent is a point, and this is a box.
  *
  * Note that it's acceptable to have null xrange and yrange, so that the same
  * code can support a variety of applications.  It's left to the programmer to
@@ -48,10 +48,23 @@ public class BoxSelectionEvent extends DasEvent {
     private QDataSet ds;
     private HashMap planes;
     
+    /**
+     * create the BoxSelectionEvent with additional planes of data.
+     * @param source the object creating this event, for example the BoxSelectorMouseModule.
+     * @param xrange the horizontal range
+     * @param yrange the vertical range
+     */
     public BoxSelectionEvent( Object source, DatumRange xrange, DatumRange yrange ) {
         this( source, xrange, yrange, null );
     }
     
+    /**
+     * create the BoxSelectionEvent with additional planes of data.
+     * @param source the object creating this event, for example the BoxSelectorMouseModule.
+     * @param xrange the horizontal range
+     * @param yrange the vertical range
+     * @param planes a map from String to Object containing arbitrary metadata.
+     */
     public BoxSelectionEvent( Object source, DatumRange xrange, DatumRange yrange, HashMap planes ) {
         super( source );
         this.xrange= xrange;
@@ -126,10 +139,22 @@ public class BoxSelectionEvent extends DasEvent {
         return yrange;
     }
     
+    /**
+     * get the data attached to the plane name.  This allows applications
+     * to attach additional data to the event.  For example, the BoxSelectorMouseModule
+     * attaches the key pressed.
+     * 
+     * @param plane, e.g. 'keyChar'
+     * @return the value associated with the plane, or null.
+     */
     public Object getPlane( String plane ) {
         return planes==null ? null : planes.get(plane);
     }
     
+    /**
+     * return the list of additional data planes attached to this event.
+     * @return 
+     */
     public String[] getPlaneIds() {
         if ( planes==null ) {
             return new String[0];
@@ -138,10 +163,18 @@ public class BoxSelectionEvent extends DasEvent {
         }
     }
     
+    /**
+     * attach a dataset to this event.
+     * @param ds 
+     */
     public void setDataSet(QDataSet ds) {
         this.ds = ds;
     }
     
+    /**
+     * get the dataset attached to this event.
+     * @return 
+     */
     public QDataSet getDataSet() {
         return ds;
     }
