@@ -29,7 +29,6 @@ import org.das2.graph.DasCanvasComponent;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Vector;
 import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
 import org.das2.system.DasLogger;
@@ -40,8 +39,8 @@ import org.das2.system.DasLogger;
  * that manages a set of mouseModules, one is active at any
  * given time.
  *
- * The DasMouseInputAdapter will delegate mouse events, key events, and mouse wheel 
- * events to the active
+ * The DasMouseInputAdapter will delegate mouse events, key events, and 
+ * mouse wheel events to the active mouse module.
  * @author jbf
  */
 public class MouseModule implements Editable, Displayable, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener  {
@@ -88,11 +87,15 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
         return dragRenderer;
     }
     
-    /** Action to take when a mouse range (click, drag, release) has been selected. */
+    /** 
+     * Action to take when a mouse range (click, drag, release) has been selected. 
+     */
     public void mouseRangeSelected(MouseDragEvent e) {
     }
     
-    /** Action to take when a point (click or drag) is selected. */
+    /**
+     * Action to take when a point (click or drag) is selected. 
+     */
     public void mousePointSelected(MousePointSelectionEvent e) {
     }
     
