@@ -884,7 +884,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                                 } else {
                                     // it's going to do something when we release.
                                     String s= theone.getDirections();
-                                    if ( !( s.startsWith(theone.getLabel()) || s.startsWith(theone.getListLabel())) ) {
+                                    if ( s==null ) {
+                                        s= theone.getLabel();
+                                    }
+                                    if ( !( s.startsWith(theone.getLabel()) ) ) {
                                         s= theone.getLabel()+": "+s;
                                     }
                                     feedback.setMessage( s + ", press escape to cancel" );                    
