@@ -253,6 +253,23 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         return this.primaryPopup;
     }
 
+    /**
+     * allow clients to cancel, to take the same action as if cancel 
+     * were pressed.
+     */
+    public void cancel() {
+        Runnable run= new Runnable() {
+            public void run() {
+                active = null;
+                getGlassPane().setDragRenderer(null, null, null);
+                parent.getCanvas().paintImmediately(0, 0, parent.getCanvas().getWidth(), parent.getCanvas().getHeight());
+                feedback.setMessage("");
+                refresh();        
+            }
+        };
+        SwingUtilities.invokeLater(run);
+    }
+    
     public KeyAdapter getKeyAdapter() {
         return new KeyAdapter() {
 
@@ -867,7 +884,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                                 } else {
                                     // it's going to do something when we release.
                                     String s= theone.getDirections();
-                                    if ( !s.startsWith(theone.getLabel() ) ) {
+                                    if ( !( s.startsWith(theone.getLabel()) || s.startsWith(theone.getListLabel())) ) {
                                         s= theone.getLabel()+": "+s;
                                     }
                                     feedback.setMessage( s + ", press escape to cancel" );                    
