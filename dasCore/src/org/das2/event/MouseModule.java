@@ -55,7 +55,6 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     
     protected MouseModule() {
         label= "unlabelled MM";
-        this.directions= label;
         dragRenderer= EmptyDragRenderer.renderer;
     }
     
@@ -68,7 +67,6 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
         this.parent= parent;
         this.dragRenderer= dragRenderer;
         this.label= label;
-        this.directions= label;
     }
     
     /**
@@ -105,8 +103,8 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     
     /**
      * allow one-line directions to be added to the mouse module.
-     * This is used in Autoplot for the status bar.
-     * @return 
+     * This is used in Autoplot for the status bar.  
+     * @return the directions, or null.
      */
     public String getDirections() {
         return this.directions;
