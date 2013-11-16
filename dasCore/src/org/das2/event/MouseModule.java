@@ -50,6 +50,8 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     //protected DasCanvasComponent parent;
     protected DragRenderer dragRenderer;
     private String label;
+    private String directions;
+    
     protected DasCanvasComponent parent;
     
     protected MouseModule() {
@@ -66,6 +68,7 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
         this.parent= parent;
         this.dragRenderer= dragRenderer;
         this.label= label;
+        this.directions= label;
     }
     
     /**
@@ -73,14 +76,6 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
      */
     public String getLabel() {
         return label;
-    }
-    
-    /**
-     * No longer used
-     * @deprecated  No longer supported
-     */
-    public Vector getHotSpots() {
-        return null;
     }
     
     /** return a cursor that indicates the selected module. */
@@ -107,21 +102,39 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
         this.label= label;
     }
     
+    /**
+     * allow one-line directions to be added to the mouse module.
+     * This is used in Autoplot for the status bar.
+     * @return 
+     */
+    public String getDirections() {
+        return this.directions;
+    }
+    
+    public void setDirections( String directions ) {
+        this.directions= directions;
+    }
+    
+    @Override
     public javax.swing.Icon getListIcon() {
         return null;
     }
 
+    @Override
     public void drawListIcon(Graphics2D g, int x, int y) {
        // do nothing
     }
 
+    @Override
     public String getListLabel() {
         return getLabel();
     }
     
+    @Override
     public void keyPressed(KeyEvent keyEvent) {
     }
     
+    @Override
     public void keyReleased(KeyEvent keyEvent) {
     }
     
