@@ -56,6 +56,7 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     
     protected MouseModule() {
         label= "unlabelled MM";
+        this.directions= label;
         dragRenderer= EmptyDragRenderer.renderer;
     }
     
@@ -82,10 +83,7 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     public Cursor getCursor() {
         return new Cursor(Cursor.DEFAULT_CURSOR);
     }
-    
-    public void hotSpotPressed(Shape s) {
-    }
-    
+
     public DragRenderer getDragRenderer() {
         return dragRenderer;
     }
@@ -98,7 +96,7 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     public void mousePointSelected(MousePointSelectionEvent e) {
     }
     
-    public void setLabel(java.lang.String label) {
+    public final void setLabel(java.lang.String label) {
         this.label= label;
     }
     
@@ -138,30 +136,39 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     public void keyReleased(KeyEvent keyEvent) {
     }
     
+    @Override
     public void keyTyped(KeyEvent keyEvent) {
     }
     
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
     
+    @Override
     public void mousePressed(MouseEvent e) {
     }
     
+    @Override
     public void mouseDragged(MouseEvent e) {
     }
     
+    @Override
     public void mouseClicked(MouseEvent e) {
     }
     
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
     
+    @Override
     public void mouseExited(MouseEvent e) {
     }
     
+    @Override
     public void mouseMoved(MouseEvent e) {
     }
     
+    @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
     }
 
