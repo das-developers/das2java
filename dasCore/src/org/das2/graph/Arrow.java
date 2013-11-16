@@ -10,7 +10,8 @@ import java.awt.*;
 import java.awt.geom.*;
 
 /**
- *
+ * An arrow component that lives on the canvas, and utility methods
+ * for drawing arrows.
  * @author  Jeremy
  */
 public class Arrow extends DasCanvasComponent {
@@ -37,24 +38,50 @@ public class Arrow extends DasCanvasComponent {
         setBounds(bounds);
     }
 
+    /**
+     * paint the arrow with the given thickness and head style.
+     * @param g the graphics context.
+     * @param head the point locating the head of the arrow
+     * @param tail the point locating the tail of the arrow
+     * @param em the thickness of the line.
+     * @param style HeadStyle.DRAFTING, etc.
+     */    
     public static void paintArrow( Graphics2D g, Point head, Point tail, double em, HeadStyle style ) {
         paintArrow( g, new Point2D.Double( head.getX(), head.getY() ), new Point2D.Double( tail.getX(), tail.getY() ), em, style );
     }
 
+    /**
+     * paint the arrow with the given thickness and head style.
+     * @param g the graphics context.
+     * @param head the point locating the head of the arrow
+     * @param tail the point locating the tail of the arrow
+     * @param em the thickness of the line.
+     * @param style HeadStyle.DRAFTING, etc.
+     */
     public static void paintArrow( Graphics2D g, Point2D head, Point2D tail, double em, HeadStyle style ) {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        
+        float s0= 1.0f;  // the initial stroke width.
+        Stroke s= g.getStroke();
+        if ( s instanceof BasicStroke ) {
+            BasicStroke bs= (BasicStroke)s;
+            s0= bs.getLineWidth();
+        }
         
         Line2D line= new Line2D.Double( head, tail );
         double dx= - ( head.getX() - tail.getX() );
         double dy= - ( head.getY() - tail.getY() );
         double dd= Math.sqrt( dx*dx + dy*dy );
+        
+        if ( dd==0 ) return;
+        
         dx= dx * em / 4 / dd;
         dy= dy * em / 4 / dd;
         
         double hx= head.getX();
         double hy= head.getY();
         
-        g.setStroke( new BasicStroke( (float)(em/8), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+        g.setStroke( new BasicStroke( (float)(em/8)*s0, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
         
         g.draw( line );
         
