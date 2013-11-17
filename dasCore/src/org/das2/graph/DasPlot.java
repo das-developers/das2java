@@ -519,7 +519,7 @@ public class DasPlot extends DasCanvasComponent {
 
     }
 
-    private void drawCacheImage(Graphics2D plotGraphics) {
+    private void drawCacheImage(Graphics2D plotGraphics,DasAxis lxaxis, DasAxis lyaxis ) {
 
         /* clear all the messages */
         messages = new ArrayList();
@@ -538,7 +538,7 @@ public class DasPlot extends DasCanvasComponent {
             if (rend.isActive()) {
                 logger.log(Level.FINEST, "rendering #{0}: {1}", new Object[]{i, rend});
                 try {
-                    rend.render(plotGraphics, xAxis, yAxis, new NullProgressMonitor());
+                    rend.render(plotGraphics, lxaxis, lyaxis, new NullProgressMonitor());
                 } catch ( RuntimeException ex ) {
                     logger.log( Level.WARNING, ex.getMessage(), ex );
                     postException(rend,ex);
@@ -993,7 +993,11 @@ public class DasPlot extends DasCanvasComponent {
                 if ( cacheImageBounds.width!=cacheImage.getWidth() ) {
                     logger.log( Level.WARNING, " cbw: {0}  ciw:{1}", new Object[]{cacheImageBounds.width, cacheImage.getWidth()});
                 }
+                
+                // Draw the cache image onto the plot.
                 atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
+                
+                
                     //atGraphics.setClip(null);
                     //return;
                     //graphics.drawString( "cacheImage "+atDesc, getWidth()/2, getHeight()/2 );
@@ -1047,24 +1051,37 @@ public class DasPlot extends DasCanvasComponent {
                 //    System.err.println( "renderer #"+i+": " +rends[i] + " ds="+rends[i].getDataSet() );
                 //}
 
+                DasAxis lxaxis= (DasAxis)getXAxis().clone();
+                DasAxis lyaxis= (DasAxis)getYAxis().clone();
+                
+                Memento xmem= lxaxis.getMemento();
+                Memento ymem= lyaxis.getMemento();                
+                
                 if ( rends.length>0 ) {
-                    Memento xmem= getXAxis().getMemento();
-                    Memento ymem= getYAxis().getMemento();
                     for ( Renderer r: rends ) {
                         boolean dirt= false;
                         if ( r.getXmemento()==null || !r.getXmemento().equals(xmem) ) dirt= true;
                         if ( r.getYmemento()==null || !r.getYmemento().equals(ymem) ) dirt= true;
                         if ( dirt ) {
                             try {
-                                r.updatePlotImage(getXAxis(), getYAxis(), new NullProgressMonitor());
+                                logger.log(Level.FINE,"calling updatePlotImage again because of memento");
+                                r.updatePlotImage( lxaxis, lyaxis, new NullProgressMonitor());
                             } catch (DasException ex) {
                                 logger.log(Level.SEVERE, ex.getMessage(), ex);
                             }
+                        } else {
+                            logger.log(Level.FINE,"skipping updatePlotImage because memento indicates things are okay");
                         }
                     }
+                    //Memento xmem2= getXAxis().getMemento();  // I showed that the mementos don't change.  THIS IS ONLY BECAUSE UPDATES ARE DONE ON THE EVENT THREAD
+                    //System.err.println("mementocheck: "+xmem2.equals(xmem));
                 }
 
-                drawCacheImage(plotGraphics);
+                drawCacheImage(plotGraphics,lxaxis,lyaxis);
+                //Memento xmem2= getXAxis().getMemento();  // I showed that the mementos don't change.  THIS IS ONLY BECAUSE UPDATES ARE DONE ON THE EVENT THREAD.  I'm not sure of this, making a local copy of the axes appears to fix the problem.
+                //if ( !xmem2.equals(xmem) ) {
+                //    System.err.println("mementocheck: "+xmem2.equals(xmem));
+                //}
             }
 
 
