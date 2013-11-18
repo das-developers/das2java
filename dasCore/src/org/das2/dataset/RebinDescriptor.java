@@ -32,6 +32,7 @@ import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  *
@@ -252,7 +253,7 @@ public class RebinDescriptor {
      * @param ddY the descriptor, or null.
      */
     public static void putDepDataSet( QDataSet ds, MutablePropertyDataSet result, RebinDescriptor ddX, RebinDescriptor ddY ) {
-        QDataSet xds= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
         MutablePropertyDataSet xx;
         if ( ddX!=null ) {
             DDataSet xxx= DDataSet.createRank1( ddX.numberOfBins() );
@@ -263,7 +264,7 @@ public class RebinDescriptor {
             xx= DataSetOps.makePropertiesMutable(xds); //TODO: untested branch
         }
 
-        QDataSet yds= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+        QDataSet yds= SemanticOps.ytagsDataSet(ds);
         MutablePropertyDataSet yy;
         if ( ddY!=null ) {
             DDataSet yyy= DDataSet.createRank1( ddY.numberOfBins() );
