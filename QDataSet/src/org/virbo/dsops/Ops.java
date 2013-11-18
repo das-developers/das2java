@@ -1149,7 +1149,7 @@ public class Ops {
         } else {
             if ( !UnitsUtil.isRatioMeasurement(units1) ) throw new IllegalArgumentException("ds1 units are not ratio units: "+units1);
             if ( !UnitsUtil.isRatioMeasurement(units2) ) throw new IllegalArgumentException("ds2 units are not ratio units: "+units2);
-            logger.info("throwing out units until we improve the units library, both arguments have physical units");
+            logger.fine("throwing out units until we improve the units library, both arguments have physical units");
             resultUnits= null;
         }
         return resultUnits;
