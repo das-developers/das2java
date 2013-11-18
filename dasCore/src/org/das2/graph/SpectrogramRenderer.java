@@ -919,14 +919,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             // TODO: preserve plotImage until updatePlotImage is done
             this.plotImage = null;
         }
-        if ( sliceRebinnedData && ds!=null ) {
-            vSlicer.clear(null);
-            hSlicer.clear(null);
-        } else {
+        if ( vSlicer!=null ) {  // !DasApplication.getDefaultApplication().isHeadless()
             vSlicer.clear(ds);
             hSlicer.clear(ds);            
+            vAverager.clear();
         }
-        vAverager.clear();
         super.setDataSet(ds);
     }
     /**
