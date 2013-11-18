@@ -55,7 +55,7 @@ public class DasColorBar extends DasAxis {
     public static final String PROPERTY_FILL_COLOR= "fillColor";
     
     private BufferedImage image;
-    private DasColorBar.Type type;
+    private transient DasColorBar.Type type;
     private static int fillColor= Color.LIGHT_GRAY.getRGB();
     private int fillColorIndex;
     private int ncolor;
