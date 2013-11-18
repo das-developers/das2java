@@ -94,6 +94,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private String xrangeWarning= null; // if non-null, print out of bounds warning.
     private String yrangeWarning= null; // if non-null, print out of bounds warning.
     boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
+    private VerticalSpectrogramSlicer vSlicer;
+    private HorizontalSpectrogramSlicer hSlicer;
+    private VerticalSpectrogramAverager vAverager;
     
     protected class RebinListener implements PropertyChangeListener {
         @Override
@@ -785,20 +788,19 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
                 if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
                     DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
-                    VerticalSpectrogramSlicer vSlicer =
-                            VerticalSpectrogramSlicer.createSlicer(parent, this);
+                    vSlicer = VerticalSpectrogramSlicer.createSlicer(parent, this);
                     VerticalSlicerMouseModule vsl = VerticalSlicerMouseModule.create(this);
                     vsl.addDataPointSelectionListener(vSlicer);
                     mouseAdapter.addMouseModule(vsl);
 
-                    HorizontalSpectrogramSlicer hSlicer = HorizontalSpectrogramSlicer.createSlicer(parent, this);
+                    hSlicer = HorizontalSpectrogramSlicer.createSlicer(parent, this);
                     HorizontalSlicerMouseModule hsl = HorizontalSlicerMouseModule.create(this);
                     hsl.addDataPointSelectionListener(hSlicer);
                     mouseAdapter.addMouseModule(hsl);
 
-                    VerticalSpectrogramAverager vAverager = VerticalSpectrogramAverager.createAverager(parent, this);
+                    vAverager = VerticalSpectrogramAverager.createAverager(parent, this);
                     HorizontalDragRangeSelectorMouseModule vrl = new HorizontalDragRangeSelectorMouseModule(parent, this, parent.getXAxis());
-                    //vrl.setLabel("Vertical Averager");
+                    vrl.setLabel("Interval Average");
                     vrl.addDataRangeSelectionListener(vAverager);
                     mouseAdapter.addMouseModule(vrl);
 
@@ -834,12 +836,18 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 //        }
 
         if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
-            //TODO: remove slicers.  Note if two spectrograms, then we'll have problems.
-            //DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
-            //mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Vertical Slice") );
-            //mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Horizontal Slice") );
-            //mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Horizontal Drag Range") );
-
+            DasPlot parent= getParent();
+            if ( parent!=null ) {
+                DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
+                if ( vSlicer!=null ) vSlicer.dispose();
+                if ( vAverager!=null ) vAverager.dispose();
+                if ( hSlicer!=null ) hSlicer.dispose();
+                mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Vertical Slice") );
+                mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Horizontal Slice") );
+                mouseAdapter.removeMouseModule( mouseAdapter.getModuleByLabel("Interval Average") );
+                MouseModule ch = new CrossHairMouseModule(parent, parent.getXAxis(), parent.getYAxis());
+                mouseAdapter.addMouseModule(ch);
+            }
         }
     }
 
