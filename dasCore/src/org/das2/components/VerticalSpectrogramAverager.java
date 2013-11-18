@@ -59,7 +59,10 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
-
+/**
+ * show the average of the data over an interval
+ * @author jbf
+ */
 public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
     
     private JDialog popupWindow;
@@ -135,6 +138,24 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         }
         popupWindow.setVisible(true);
     }
+    
+    /**
+     * dispose of the popup slicer.
+     */
+    public void dispose() {
+        if ( popupWindow!=null ) {
+            popupWindow.setVisible(false);
+            popupWindow.dispose();
+        }
+    }
+    
+    /**
+     * clear the current dataset to avoid units errors.
+     */
+    public void clear( ) {
+        if ( renderer!=null ) this.renderer.setDataSet(null);
+    }
+            
     
     /** This method should ONLY be called by the AWT event thread */
     private void createPopup() {

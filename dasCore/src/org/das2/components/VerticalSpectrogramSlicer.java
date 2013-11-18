@@ -59,6 +59,7 @@ import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.event.MouseModule;
 import org.das2.event.PointSlopeDragRenderer;
 import org.das2.graph.Renderer;
@@ -154,6 +155,35 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         popupWindow.setVisible(true);
     }
     
+    /**
+     * dispose of the popup slicer.
+     */
+    public void dispose() {
+        if ( popupWindow!=null ) {
+            popupWindow.setVisible(false);
+            popupWindow.dispose();
+        }
+    }
+    
+    /**
+     * clear the current dataset to avoid units errors.  If the
+     * new dataset can be used, use it.
+     */
+    public void clear( QDataSet tds ) {
+        if ( renderer!=null ) {
+            if ( tds==null ) {
+                this.renderer.setDataSet(null);
+            } else {
+                try {
+                    showSlice( tds, xValue, yValue );
+                } catch ( InconvertibleUnitsException ex ) {
+                    this.renderer.setDataSet(null);
+                }
+            }
+        }
+    }
+        
+    
     /** This method should ONLY be called by the AWT event thread */
     private void createPopup() {
         if ( myPlot==null ) {
@@ -244,9 +274,12 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         return ( popupWindow != null && popupWindow.isVisible()) && myPlot.getCanvas() != null;
     }
     
+    /**
+     * show the slice at the data point selected.
+     * @param e 
+     */
+    @Override
     public void dataPointSelected(DataPointSelectionEvent e) {    
-        long xxx[]= { 0,0,0,0 };
-        xxx[0] = System.currentTimeMillis()-e.birthMilli;    
 
         yValue = e.getY();
         xValue = e.getX();

@@ -55,6 +55,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.event.MouseModule;
 import org.das2.event.PointSlopeDragRenderer;
@@ -151,6 +152,34 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         popupWindow.setVisible(true);
     }
     
+    /**
+     * dispose of the popup slicer.
+     */
+    public void dispose() {
+        if ( popupWindow!=null ) {
+            popupWindow.setVisible(false);
+            popupWindow.dispose();
+        }
+    }
+    
+    /**
+     * clear the current dataset to avoid units errors.  If the
+     * new dataset can be used, use it.
+     */
+    public void clear( QDataSet tds ) {
+        if ( renderer!=null ) {
+            if ( tds==null ) {
+                this.renderer.setDataSet(null);
+            } else {
+                try {
+                    showSlice( tds, xValue, yValue );
+                } catch ( InconvertibleUnitsException ex ) {
+                    this.renderer.setDataSet(null);
+                }
+            }
+        }
+    }
+        
     /** This method should ONLY be called by the AWT event thread */
     private void createPopup() {
         if ( myPlot==null ) {
