@@ -1127,15 +1127,24 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     if ( qds.rank()>0 ) {
                         throw new IllegalArgumentException("QDataSet rank must be zero: "+key+"="+o );
                     } else {
-                        newPoint.planes.put( key, DataSetUtil.asDatum((QDataSet)o) );
+                        Datum d= DataSetUtil.asDatum((QDataSet)o);
+                        if ( !d.getUnits().isConvertableTo( unitsArray[ikey]) ) {
+                            throw new IllegalArgumentException("Units are not convertible: "+key+"="+d + ", expected "+unitsArray[ikey]);
+                        }
+                        newPoint.planes.put( key, d );
                     }
                 } else if ( o instanceof Datum ) {
+                    Datum d= (Datum)o;
+                    if ( !d.getUnits().isConvertableTo( unitsArray[ikey]) ) {
+                        throw new IllegalArgumentException("Units are not convertible: "+key+"="+d+ ", expected "+unitsArray[ikey]);
+                    }
                     // do nothing
                 } else if ( o instanceof String ) {
                     newPoint.planes.put( key, ((EnumerationUnits)unitsArray[ikey]).createDatum(o) );
                 } else if ( o instanceof Number ) {
                     newPoint.planes.put( key, (unitsArray[ikey]).createDatum(((Number)o) ) );
                 }
+                ikey++;
             }
             if (sorted) {
                 if ( dataPoints.size()>2 ) { // this checks out, it is sorted...
