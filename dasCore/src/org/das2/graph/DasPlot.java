@@ -413,7 +413,7 @@ public class DasPlot extends DasCanvasComponent {
                 continue;
             }
                      
-            if ( logTimeoutSec < 1000 && message.birthMilli<Long.MAX_VALUE ) {
+            if ( !isPrint && logTimeoutSec < 1000 && message.birthMilli<Long.MAX_VALUE ) {
                 needRepaintSoon= true;
                 repaintDelay= Math.max( repaintDelay, logTimeoutSec - ( tnow - message.birthMilli ) );
             }
