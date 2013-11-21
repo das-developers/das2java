@@ -58,7 +58,6 @@ import javax.swing.JFileChooser;
 import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.Datum;
-import org.das2.system.DasLogger;
 import org.das2.util.LoggerManager;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -642,7 +641,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                 Toolkit.getDefaultToolkit().getSystemEventQueue();
         DasRendererUpdateEvent drue = new DasRendererUpdateEvent(lparent, this);
         eventQueue.postEvent(drue);
-        lparent.invalidateCacheImage();
+        //lparent.invalidateCacheImage();
+        lparent.invalidateCacheImageNoUpdate();
         //System.err.println("in Renderer.update");
     }
 
