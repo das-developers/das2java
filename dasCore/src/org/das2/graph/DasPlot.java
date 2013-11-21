@@ -87,7 +87,7 @@ public class DasPlot extends DasCanvasComponent {
     DasAxis.Memento xmemento;
     DasAxis.Memento ymemento;
     private boolean reduceOutsideLegendTopMargin = false;
-    protected String offsetTime = "";
+    //public String debugString = "";
     protected String plotTitle = "";
     protected boolean displayTitle= true;
     protected double[] psym_x;
