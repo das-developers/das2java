@@ -674,7 +674,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * to do the expensive parts of rendering.
      */
     protected void refresh() {
-        System.err.println("in refresh...");
+        //System.err.println("in refresh...");
         if (!isActive()) return;
         DasPlot lparent= parent;
         logger.fine("entering Renderer.refresh");
