@@ -1800,8 +1800,8 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     public void invalidateCacheImageNoUpdate() {
-        //cacheImageValid = false;
-        //super.markDirty();
+        cacheImageValid = false;
+        super.markDirty();
     }
     /**
      * introduced to debug Autoplot test018.  This should not be used otherwise.
