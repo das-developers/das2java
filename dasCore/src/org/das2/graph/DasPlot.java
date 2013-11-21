@@ -393,6 +393,7 @@ public class DasPlot extends DasCanvasComponent {
         long tnow= System.currentTimeMillis();
         
         boolean needRepaintSoon= false;
+        long repaintDelay= 0;
         
         for (int i = 0; i < lmessages.size(); i++) {
             MessageDescriptor message = (MessageDescriptor) lmessages.get(i);
@@ -414,6 +415,7 @@ public class DasPlot extends DasCanvasComponent {
                      
             if ( logTimeoutSec < 1000 && message.birthMilli<Long.MAX_VALUE ) {
                 needRepaintSoon= true;
+                repaintDelay= Math.max( repaintDelay, logTimeoutSec - ( tnow - message.birthMilli ) );
             }
             
             Icon icon=null;
@@ -466,13 +468,15 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         if ( needRepaintSoon ) {
+            logger.log( Level.FINE, "need to repaint in {0} ms", repaintDelay);
             ActionListener animate = new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     repaint();
                 }
             };
-            Timer timer = new Timer(300,animate);
+            Timer timer = new Timer((int)repaintDelay,animate);
+            timer.setRepeats(false);
             timer.start();
         }
         
@@ -1795,6 +1799,10 @@ public class DasPlot extends DasCanvasComponent {
         update();
     }
 
+    public void invalidateCacheImageNoUpdate() {
+        //cacheImageValid = false;
+        //super.markDirty();
+    }
     /**
      * introduced to debug Autoplot test018.  This should not be used otherwise.
      * @return true if the cache image is marked as valid.
