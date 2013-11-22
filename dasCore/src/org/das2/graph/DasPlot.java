@@ -475,7 +475,7 @@ public class DasPlot extends DasCanvasComponent {
                     repaint();
                 }
             };
-            Timer timer = new Timer((int)repaintDelay,animate);
+            Timer timer = new Timer( (int)repaintDelay, animate );
             timer.setRepeats(false);
             timer.start();
         }
