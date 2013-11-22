@@ -1204,6 +1204,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         modified = true;
         updateStatus();
         updateClients();
+        table.repaint();
     }
     
     
