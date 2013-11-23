@@ -30,7 +30,10 @@ public class DasPlotBeanInfo extends AccessLevelBeanInfo {
     private static final Property[] properties = {
         new Property("title", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getTitle", "setTitle", null),
         new Property("drawGrid", AccessLevel.DASML, "isDrawGrid", "setDrawGrid", null),
+        new Property("drawGridOver", AccessLevel.DASML, "isDrawGridOver", "setDrawGridOver", null),
+        new Property("drawGridColor", AccessLevel.DASML, "getDrawGridColor", "setDrawGridColor", null),
         new Property("drawMinorGrid", AccessLevel.DASML, "isDrawMinorGrid", "setDrawMinorGrid", null),
+        new Property("drawBackground", AccessLevel.DASML, "getDrawBackground", "setDrawBackground", null),
         new Property("preview", AccessLevel.DASML, "isPreviewEnabled", "setPreviewEnabled", null ),
         new Property("oversize", AccessLevel.DASML, "isOverSize", "setOverSize", null ),
         new Property("legendPosition", AccessLevel.DASML, "getLegendPosition", "setLegendPosition", null ),
