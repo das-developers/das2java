@@ -641,11 +641,22 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                 Toolkit.getDefaultToolkit().getSystemEventQueue();
         DasRendererUpdateEvent drue = new DasRendererUpdateEvent(lparent, this);
         eventQueue.postEvent(drue);
-        //lparent.invalidateCacheImage();
-        lparent.invalidateCacheImageNoUpdate();
-        //System.err.println("in Renderer.update");
     }
 
+    /**
+     * The cacheImage is invalidated and updateEvent posted on the event thread
+     * by calling update.
+     */
+    public void updateCacheImage() {
+        DasPlot lparent= parent;
+        if ( lparent==null ) {
+            logger.fine("update but parent was null");
+            return;
+        }
+        lparent.invalidateCacheImageNoUpdate();
+        update();
+    }
+    
     /**
      * updateImmediately is called from DasPlot when it gets an update event from the
      * AWT Event thread.  This should trigger a data load and eventually a refresh to
@@ -825,7 +836,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         String oldLegendLabel = this.legendLabel;
         this.legendLabel = legendLabel;
         propertyChangeSupport.firePropertyChange(PROP_LEGENDLABEL, oldLegendLabel, legendLabel);
-        refreshImage();
+        updateCacheImage();
     }
 
     protected boolean drawLegendLabel = false;
@@ -839,7 +850,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         boolean oldDrawLegendLabel = this.drawLegendLabel;
         this.drawLegendLabel = drawLegendLabel;
         propertyChangeSupport.firePropertyChange(PROP_DRAWLEGENDLABEL, oldDrawLegendLabel, drawLegendLabel);
-        refreshImage();
+        updateCacheImage();
     }
 
     protected String id = "rend";

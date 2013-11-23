@@ -538,7 +538,7 @@ public class DasColorBar extends DasAxis {
             colorBar.image= null;
             colorBar.type.image= null;
             colorBar.repaint();
-            parent.refreshImage();
+            parent.updateCacheImage();
         }
         
         @Override
@@ -564,7 +564,7 @@ public class DasColorBar extends DasAxis {
                 colorBar.image= null;
                 colorBar.type.image= null;
                 colorBar.repaint();
-                parent.refreshImage();
+                parent.updateCacheImage();
                 
             }
         }

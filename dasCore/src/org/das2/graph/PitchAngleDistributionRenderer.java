@@ -66,7 +66,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
     PropertyChangeListener rebinListener= new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent e) {
             update();
-            refreshImage();
+            updateCacheImage();
         }
     };
 

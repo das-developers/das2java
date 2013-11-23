@@ -102,7 +102,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         @Override
         public void propertyChange(PropertyChangeEvent e) {
             update();
-//            refreshImage();
+            DasPlot p= getParent();
+            if ( p!=null ) {
+                p.invalidateCacheImageNoUpdate();
+            }
+//            updateCacheImage();
         }
     }
     RebinListener rebinListener = new RebinListener();
@@ -870,7 +874,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             this.rebinnerEnum = rebinnerEnum;
             this.raster = null;
             this.plotImage = null;
-            refreshImage();
+            updateCacheImage();
             propertyChangeSupport.firePropertyChange("rebinner", old, rebinnerEnum);
         }
     }

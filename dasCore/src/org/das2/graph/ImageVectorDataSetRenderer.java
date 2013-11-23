@@ -762,7 +762,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     public void setColor(Color color) {
         this.color = color;
-        refreshImage();
+        updateCacheImage();
     }
 
     public Color getColor() {
@@ -783,7 +783,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     public void setEnvelope(int envelope) {
         int oldEnvelope = this.envelope;
         this.envelope = envelope;
-        refreshImage();
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_ENVELOPE, oldEnvelope, envelope);
         //meanCount=0;
     }

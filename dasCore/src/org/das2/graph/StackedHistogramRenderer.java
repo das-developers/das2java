@@ -441,7 +441,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
      */
     public void setPeaksIndicator(PeaksIndicator peaksIndicator) {
         this.peaksIndicator= peaksIndicator;
-        refreshImage();
+        updateCacheImage();
     }    
     
     /** Getter for property sliceRebinnedData.

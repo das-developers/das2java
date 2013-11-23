@@ -93,7 +93,7 @@ public class PlotSymbolRenderer extends Renderer {
                 coloredPsyms[i] = image;
             }
         }
-        refresh();
+        updateCacheImage();
     }
     
     private PlotSymbol psym = DefaultPlotSymbol.CIRCLES;
@@ -203,7 +203,7 @@ public class PlotSymbolRenderer extends Renderer {
         colorBar.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (colorByDataSetId != null) {
-                    refresh();
+                    updateCacheImage();
                 }
             }
         });

@@ -59,6 +59,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.dataset.VectorUtil;
@@ -66,6 +67,7 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
 import org.das2.event.CrossHairMouseModule;
 import static org.das2.graph.Renderer.logger;
+import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -550,7 +552,7 @@ public class SeriesRenderer extends Renderer {
 
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
-            if ( vds.rank()!=1 && !SemanticOps.isBundle(vds) ) {
+            if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) ) {
                 renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
             }
             if (path1 == null) {
@@ -572,11 +574,7 @@ public class SeriesRenderer extends Renderer {
             }
 
             QDataSet vds= ytagsDataSet( dataSet );
-
-            if ( vds.rank()>1 ) {
-                return;
-            }
-
+            
             QDataSet wds= SemanticOps.weightsDataSet( vds );
 
             Units xUnits = SemanticOps.getUnits(xds);
@@ -1208,7 +1206,7 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
-        //study 20130214.  Why does http://sarahandjeremy.net/~jbf/geothermal20130106.vap sometimes fail to repaint?
+        //study 20130214.  Why does http://sarahandjeremy.net/~jbf/geothermal20130116.vap sometimes fail to repaint?
         //if ( ds!=null ) {
         //    QDataSet xds1= SemanticOps.xtagsDataSet(ds);
         //    if ( xds1!=null ) {
@@ -1335,59 +1333,36 @@ public class SeriesRenderer extends Renderer {
         }
 
         if (tds != null) {
-            if (extraConnectorElements == null) {
-                return;
+            graphics.setColor(color);
+            log.log(Level.FINEST, "drawing psymConnector in {0}", color);
+
+            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, tds, mon); // tds is only to check units
+
+            log.log(Level.FINEST, "connectCount: {0}", connectCount);
+            errorElement.render(graphics, xAxis, yAxis, tds, mon);
+
+        } else {
+
+            if (this.fillToReference) {
+                fillElement.render(graphics, xAxis, yAxis, vds, mon);
             }
-            if ( tds.length(0) != extraConnectorElements.length) {
-                return;
-            } else {
-                QDataSet yds= ytagsDataSet(tds);
-                Units yunits= SemanticOps.getUnits(yds);
-                int maxWidth = 0;
-                for (int j = 0; j < tds.length(0); j++) {
-                    String label = String.valueOf( yunits.createDatum(yds.value(j)) ).trim();
-                    maxWidth = Math.max(maxWidth, g.getFontMetrics().stringWidth(label));
-                }
-                for (int j = 0; j < tds.length(0); j++) {
-                    vds = DataSetOps.slice1( tds, j );
 
-                    graphics.setColor(color);
-                    if (extraConnectorElements[j] != null) {  // thread race
+            graphics.setColor(color);
+            log.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
-                        extraConnectorElements[j].render(graphics, xAxis, yAxis, vds, mon);
+            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon); // vds is only to check units
+            log.log(Level.FINEST, "connectCount: {0}", connectCount);
+            errorElement.render(graphics, xAxis, yAxis, vds, mon);
 
-                        String label = String.valueOf( yunits.createDatum(yds.value(j)) ).trim();
+            int symCount;
+            if (psym != DefaultPlotSymbol.NONE) {
 
-                        lparent.addToLegend( this, (ImageIcon)GraphUtil.colorIcon( extraConnectorElements[j].color, 5, 5 ), j, label );
-                    }
-                }
+                symCount= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
+                log.log(Level.FINEST, "symCount: {0}", symCount);
+                
+                mon.finished();
             }
-            graphics.dispose();
-            return;
         }
-
-        if (this.fillToReference) {
-            fillElement.render(graphics, xAxis, yAxis, vds, mon);
-        }
-
-
-        graphics.setColor(color);
-        log.log(Level.FINEST, "drawing psymConnector in {0}", color);
-
-        int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon);
-        log.log(Level.FINEST, "connectCount: {0}", connectCount);
-        errorElement.render(graphics, xAxis, yAxis, vds, mon);
-
-        int symCount;
-        if (psym != DefaultPlotSymbol.NONE) {
-
-            symCount= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
-            log.log(Level.FINEST, "symCount: {0}", symCount);
-//double simplifyFactor = (double) (  i - firstIndex ) / (lastIndex - firstIndex);
-            mon.finished();
-        }
-
-//g.drawString( "renderCount="+renderCount+" updateCount="+updateImageCount,xAxis.getColumn().getDMinimum()+5, yAxis.getRow().getDMinimum()+20 );
         long milli = System.currentTimeMillis();
         long renderTime = (milli - timer0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
@@ -1469,7 +1444,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet vds = null;
 
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
-        if ( !SemanticOps.isTableDataSet(dataSet) ) {
+        if ( !SemanticOps.isRank2Waveform(dataSet) ) {  // xtags are rank 2 bins can happen too
             vds= ytagsDataSet(ds);
 
             unitsWarning= false;
@@ -1556,7 +1531,7 @@ public class SeriesRenderer extends Renderer {
                 vds= mvds;
                 xds= SemanticOps.xtagsDataSet(vds);
 
-                updateFirstLast(xAxis, yAxis, xds, vds );
+                updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
 
                 logger.log( Level.FINE, "data reduced to {0} {1}", new Object[] { vds, Ops.extent(xds) } );
             }
@@ -1564,54 +1539,51 @@ public class SeriesRenderer extends Renderer {
             if (fillToReference) {
                 fillElement.update(xAxis, yAxis, vds, monitor);
             }
-            if (psymConnector != PsymConnector.NONE) {
-                try {
-                    psymConnectorElement.update(xAxis, yAxis, vds, monitor);
-                } catch ( InconvertibleUnitsException ex ) {
-                    return;
-                }
-            }
-
-            try {
-                errorElement.update(xAxis, yAxis, vds, monitor);
-                psymsElement.update(xAxis, yAxis, vds, monitor);
-            } catch ( InconvertibleUnitsException ex ) {
-                return;
-            }
-            selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );
 
         } else if (tds != null) {
-            extraConnectorElements = new PsymConnectorRenderElement[tds.length(0)];
-            for (int i = 0; i < tds.length(0); i++) {
-                extraConnectorElements[i] = new PsymConnectorRenderElement();
-
-                float[] colorHSV = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-                if (colorHSV[2] < 0.7f) {
-                    colorHSV[2] = 0.7f;
+            
+            LoggerManager.resetTimer("render waveform");
+            
+            updateFirstLast(xAxis, yAxis, xds, tds ); // minimal support assumes vert slice data is all valid or all invalid.
+            LoggerManager.markTime("updateFirstLast");
+            
+            if ( SemanticOps.isRank2Waveform(dataSet) ) {
+                QDataSet res= DataSetUtil.asDataSet( xAxis.getDatumRange().width().divide(xAxis.getWidth()) );
+                vds= dataSet.trim( this.firstIndex, this.lastIndex );
+                LoggerManager.markTime("trim");
+            
+                vds= Reduction.reducex( vds,res );  // waveform
+                LoggerManager.markTime("reducex");
+                if ( vds.rank()==2 ) {
+                    vds= DataSetOps.flattenWaveform(vds);
+                    LoggerManager.markTime("flatten");
                 }
-                if (colorHSV[1] < 0.7f) {
-                    colorHSV[1] = 0.7f;
-                }
-                extraConnectorElements[i].color = Color.getHSBColor(i / 6.f, colorHSV[1], colorHSV[2]);
-                try {
-                    vds = DataSetOps.unbundle(tds,i);
-                } catch ( IllegalArgumentException ex ) { // rank 2 depend_1 is one way to get here.
-                    vds = DataSetOps.slice1( tds, i);
-                    //super.setException(ex);
-                    //return;
-                }
-
-                if (i == 0) {
-                    updateFirstLast(xAxis, yAxis, xds, vds ); // minimal support assumes vert slice data is all valid or all invalid.
-
-                }
-                extraConnectorElements[i].update(xAxis, yAxis, vds, monitor);
-                if ( i==0 ) selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );
+                xds= SemanticOps.xtagsDataSet(vds); 
+                updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
+                LoggerManager.markTime("updateFirstLast again");
             }
+           
+            
         } else {
             System.err.println("both tds and vds are null");
         }
         
+        if (psymConnector != PsymConnector.NONE) {
+            try {
+                psymConnectorElement.update(xAxis, yAxis, vds, monitor);
+            } catch ( InconvertibleUnitsException ex ) {
+                return;
+            }
+        }
+
+        try {
+            errorElement.update(xAxis, yAxis, vds, monitor);
+            psymsElement.update(xAxis, yAxis, vds, monitor);
+        } catch ( InconvertibleUnitsException ex ) {
+            return;
+        }
+
+        selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );        
         //if (getParent() != null) {
         //    getParent().repaint();
         //}
@@ -1790,7 +1762,7 @@ public class SeriesRenderer extends Renderer {
         PsymConnector old = this.psymConnector;
         if (!p.equals(psymConnector)) {
             psymConnector = p;
-            refreshImage();
+            updateCacheImage();
             propertyChangeSupport.firePropertyChange("psymConnector", old, p);
         }
 
@@ -1898,7 +1870,7 @@ public class SeriesRenderer extends Renderer {
         boolean old = this.antiAliased;
         this.antiAliased = antiAliased;
         updatePsym();
-        refreshImage();
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange("antiAliased", old, antiAliased);
     }
 
@@ -1910,7 +1882,7 @@ public class SeriesRenderer extends Renderer {
         boolean old = b;
         if (b != histogram) {
             histogram = b;
-            refreshImage();
+            updateCacheImage();
             propertyChangeSupport.firePropertyChange("histogram", old, antiAliased);
         }
 
@@ -2000,7 +1972,7 @@ public class SeriesRenderer extends Renderer {
             }
             colorBar.addPropertyChangeListener( colorBarListener );        
         }
-        refreshImage();
+        updateCacheImage();
         updatePsym();
     }
     /**
@@ -2050,7 +2022,7 @@ public class SeriesRenderer extends Renderer {
         Datum old = this.reference;
         if (!this.reference.equals(reference)) {
             this.reference = reference;
-            refreshImage();
+            updateCacheImage();
             propertyChangeSupport.firePropertyChange("reference", old, reference);
         }
 
@@ -2100,7 +2072,7 @@ public class SeriesRenderer extends Renderer {
      */
     public void setSimplifyPaths(boolean simplifyPaths) {
         this.simplifyPaths = simplifyPaths;
-        refreshImage();
+        updateCacheImage();
     }
     private boolean stampPsyms = true;
     public static final String PROP_STAMPPSYMS = "stampPsyms";
@@ -2113,7 +2085,7 @@ public class SeriesRenderer extends Renderer {
         boolean oldstampPsyms = stampPsyms;
         this.stampPsyms = newstampPsyms;
         propertyChangeSupport.firePropertyChange(PROP_STAMPPSYMS, oldstampPsyms, newstampPsyms);
-        refreshImage();
+        updateCacheImage();
     }
 
     public FillStyle getFillStyle() {
@@ -2123,7 +2095,7 @@ public class SeriesRenderer extends Renderer {
     public void setFillStyle(FillStyle fillStyle) {
         this.fillStyle = fillStyle;
         updatePsym();
-        refreshImage();
+        updateCacheImage();
     }
 
     /**
@@ -2190,7 +2162,7 @@ public class SeriesRenderer extends Renderer {
     public void setDataSetSizeLimit(int dataSetSizeLimit) {
         int oldDataSetSizeLimit = this.dataSetSizeLimit;
         this.dataSetSizeLimit = dataSetSizeLimit;
-        refreshImage();
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange("dataSetSizeLimit", oldDataSetSizeLimit, dataSetSizeLimit );
     }
     private double updatesPointsPerMillisecond;
@@ -2240,7 +2212,7 @@ public class SeriesRenderer extends Renderer {
     public void setCadenceCheck(boolean cadenceCheck) {
         boolean oldCadenceCheck = this.cadenceCheck;
         this.cadenceCheck = cadenceCheck;
-        refreshImage();
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_CADENCECHECK, oldCadenceCheck, cadenceCheck);
     }
 

@@ -156,7 +156,7 @@ public class CurveRenderer extends Renderer {
      */
     public void setLineWidth(double lineWidth) {
         this.lineWidth = (float)lineWidth;
-        refreshImage();
+        updateCacheImage();
     }
     
     protected org.w3c.dom.Element getDOMElement(org.w3c.dom.Document document) {
@@ -169,7 +169,7 @@ public class CurveRenderer extends Renderer {
     
     public void setPsymConnector(PsymConnector p) {
         psymConnector = p;
-        refreshImage();
+        updateCacheImage();
     }
 
     /** Getter for property psym.
@@ -187,7 +187,7 @@ public class CurveRenderer extends Renderer {
         if (psym == null) throw new NullPointerException("psym cannot be null");
         Object oldValue = this.psym;
         this.psym = psym;
-        refreshImage();
+        updateCacheImage();
     }
     
 }

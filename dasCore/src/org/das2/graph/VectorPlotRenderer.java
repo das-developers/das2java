@@ -86,7 +86,7 @@ public class VectorPlotRenderer extends Renderer {
     public void setScale(double scale) {
         double oldScale = this.scale;
         this.scale = scale;
-        refresh();
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_SCALE, oldScale, scale);
     }
 

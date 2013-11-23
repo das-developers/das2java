@@ -96,7 +96,7 @@ public class DigitalRenderer extends Renderer {
     public void setColor(Color color) {
         Color oldColor = this.color;
         this.color = color;
-        refresh();
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_COLOR, oldColor, color);
     }
 
@@ -114,7 +114,7 @@ public class DigitalRenderer extends Renderer {
     public void setAlign(Align align) {
         Align oldAlign = this.align;
         this.align = align;
-        refresh();
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_ALIGN, oldAlign, align);
     }
 
@@ -137,7 +137,7 @@ public class DigitalRenderer extends Renderer {
     public void setFormat(String value) {
         String oldValue= this.format;
         this.format = value;
-        refresh();
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_FORMAT, oldValue, value );
     }
 
@@ -156,7 +156,7 @@ public class DigitalRenderer extends Renderer {
     public void setSize(double size) {
         double oldValue= this.size;
         this.size = size;
-        refresh();
+        updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_FORMAT, oldValue, size );
     }
 
