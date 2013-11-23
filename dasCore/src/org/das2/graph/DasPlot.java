@@ -979,7 +979,9 @@ public class DasPlot extends DasCanvasComponent {
         if ( drawBackground.getAlpha()>0 ) {
             Color c0= graphics0.getColor();
             graphics.setColor(drawBackground);
-            graphics.fillRect( plotClip.x, plotClip.y, plotClip.width, plotClip.height );
+            Rectangle bckg= DasDevicePosition.toRectangle( getRow(), getColumn() );
+            bckg.translate(-x, -getRow().top()+titleHeight );
+            graphics.fillRect( bckg.x, bckg.y, plotClip.width, bckg.height+2 );
             graphics.setColor(c0);
         }
 
