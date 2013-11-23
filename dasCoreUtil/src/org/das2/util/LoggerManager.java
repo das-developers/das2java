@@ -5,10 +5,12 @@
 
 package org.das2.util;
 
+import java.awt.EventQueue;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +68,72 @@ public final class LoggerManager {
             log.get(l).addHandler(handler);
         }
         extraHandlers.add(handler);
+    }
+    
+    private static boolean disableTimers = true;
+
+    public static boolean isEnableTimers() {
+        return !disableTimers;
+    }
+
+    /**
+     * if enableTimers is true, then resetTimer and markTime have 
+     * an effect.  Each thread can have a timer to measure the execution 
+     * time for a process.
+     */
+    public static void setEnableTimers(boolean enableTimers) {
+        disableTimers = !enableTimers;
+    }
+
+    // clean up code that times things by keeping track of timer...
+    private static Map<Thread,Long> timers= new WeakHashMap<Thread, Long>();
+    
+    public static void resetTimer() {
+        if ( disableTimers ) return;
+        resetTimer(null);
+    }
+    
+    /**
+     * reset the timer for this thread.
+     * @param task 
+     */
+    public static void resetTimer( String task ) {
+        if ( disableTimers ) return;
+        if ( task==null ) {
+            task= Thread.currentThread().getName();
+        } else {
+            if ( EventQueue.isDispatchThread() ) {
+                task= task + " (GUI)";
+            }
+        }
+        System.err.println( String.format( "== %s ==", task ) );
+        timers.put( Thread.currentThread(), System.currentTimeMillis() );
+    }
+    
+    public static void markTime() {
+        if ( disableTimers ) return;
+        markTime(null);
+    }
+    
+    /**
+     * mark the time that this occurred.
+     * @param message 
+     */
+    public static void markTime( String message ) {
+        if ( disableTimers ) return;
+        Long t0= timers.get( Thread.currentThread() );
+        if ( t0!=null ) {
+            if ( message==null ) message= Thread.currentThread().getName();
+            System.err.println( String.format( "%05d: %s", System.currentTimeMillis()-t0, message ) );
+        }
+    }
+    
+    /**
+     * explicitly remove this timer.
+     */
+    public static void clearTimer() {
+        if ( disableTimers ) return;
+        timers.remove( Thread.currentThread() );
     }
     
     public static void main( String[] args ) {
