@@ -485,8 +485,15 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     private void maybeDrawGrid(Graphics2D plotGraphics) {
-        Color gridColor = new Color(128, 128, 128, 70);
-        Color minorGridColor = new Color(128, 128, 128, 40);
+        Color gridColor;
+        Color minorGridColor;
+        if ( drawGridColor.getAlpha()>0 ) {
+            gridColor= this.drawGridColor;
+            minorGridColor = this.drawGridColor;
+        } else {
+            gridColor= new Color(128, 128, 128, 70);
+            minorGridColor = new Color(128, 128, 128, 40);
+        }
 
         DasAxis lxaxis= getXAxis();
         DasAxis lyaxis= getYAxis();
@@ -523,13 +530,20 @@ public class DasPlot extends DasCanvasComponent {
 
     }
 
+    /**
+     * this is the heart of DasPlot, where each of the renderers is
+     * painted on to the cacheImage.
+     * @param plotGraphics
+     * @param lxaxis
+     * @param lyaxis 
+     */
     private void drawCacheImage(Graphics2D plotGraphics,DasAxis lxaxis, DasAxis lyaxis ) {
 
         /* clear all the messages */
         messages = new ArrayList();
         legendElements = new ArrayList<LegendElement>();
 
-        if (!gridOver) {
+        if (!drawGridOver) {
             maybeDrawGrid(plotGraphics);
         }
         drawContent(plotGraphics);
@@ -558,7 +572,7 @@ public class DasPlot extends DasCanvasComponent {
             }
         }
 
-        if (gridOver) {
+        if (drawGridOver) {
             maybeDrawGrid(plotGraphics);
         }
         if (renderers1.isEmpty()) {
@@ -962,6 +976,12 @@ public class DasPlot extends DasCanvasComponent {
         if ( clip!=null ) plotClip= plotClip.intersection(clip);
         graphics.setClip( plotClip );
 
+        if ( drawBackground.getAlpha()>0 ) {
+            Color c0= graphics0.getColor();
+            graphics.setColor(drawBackground);
+            graphics.fillRect( plotClip.x, plotClip.y, plotClip.width, plotClip.height );
+            graphics.setColor(c0);
+        }
 
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.translate(-getX(), -getY());
@@ -1853,6 +1873,41 @@ public class DasPlot extends DasCanvasComponent {
         repaint();
     }
 
+    private Color drawBackground = new Color(0, 0, 0, 0);
+    public static final String PROP_DRAWBACKGROUND = "drawBackground";
+
+    public Color getDrawBackground() {
+        return drawBackground;
+    }
+
+    /**
+     * if not transparent, draw this background first.
+     * @param drawBackground 
+     */
+    public void setDrawBackground(Color drawBackground) {
+        Color oldDrawBackground = this.drawBackground;
+        this.drawBackground = drawBackground;
+        firePropertyChange(PROP_DRAWBACKGROUND, oldDrawBackground, drawBackground);
+    }
+
+        
+    private Color drawGridColor = new Color(0, 0, 0, 0);
+    public static final String PROP_DRAWGRIDCOLOR = "drawGridColor";
+
+    public Color getDrawGridColor() {
+        return drawGridColor;
+    }
+
+    /**
+     * if not transparent, draw the grid in this color.  Otherwise
+     * the grid is drawn with the tick color.
+     * @param drawGridColor 
+     */
+    public void setDrawGridColor(Color drawGridColor) {
+        Color oldDrawGridColor = this.drawGridColor;
+        this.drawGridColor = drawGridColor;
+        firePropertyChange(PROP_DRAWGRIDCOLOR, oldDrawGridColor, drawGridColor);
+    }
 
 
     /**
@@ -1910,19 +1965,20 @@ public class DasPlot extends DasCanvasComponent {
         this.repaint();
         firePropertyChange(PROP_DRAWMINORGRID, olddrawMinorGrid, newdrawMinorGrid);
     }
-    protected boolean gridOver = true;
-    public static final String PROP_GRIDOVER = "gridOver";
+    
+    protected boolean drawGridOver = true;
+    public static final String PROP_DRAWGRIDOVER = "drawGridOver";
 
-    public boolean isGridOver() {
-        return gridOver;
+    public boolean isDrawGridOver() {
+        return drawGridOver;
     }
 
-    public void setGridOver(boolean gridOver) {
-        boolean oldGridOver = this.gridOver;
-        this.gridOver = gridOver;
+    public void setDrawGridOver(boolean gridOver) {
+        boolean oldGridOver = this.drawGridOver;
+        this.drawGridOver = gridOver;
         this.invalidateCacheImage();
         this.repaint();
-        firePropertyChange(PROP_GRIDOVER, oldGridOver, gridOver);
+        firePropertyChange(PROP_DRAWGRIDOVER, oldGridOver, gridOver);
     }
 
     public void setPreviewEnabled(boolean preview) {
