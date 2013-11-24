@@ -1241,7 +1241,7 @@ public class SeriesRenderer extends Renderer {
             return;
         }
         
-        if ( dataSet.rank()!=1 && SemanticOps.isRank2Waveform(ds) ) {
+        if ( dataSet.rank()!=1 && !SemanticOps.isRank2Waveform(ds) ) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("dataset is not rank 1 or a rank 2 waveform");
             lparent.postMessage(this, "dataset is not rank 1 or a rank 2 waveform", DasPlot.INFO, null, null);
             return;
