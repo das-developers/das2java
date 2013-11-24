@@ -1240,6 +1240,12 @@ public class SeriesRenderer extends Renderer {
             lparent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
             return;
         }
+        
+        if ( dataSet.rank()!=1 && SemanticOps.isRank2Waveform(ds) ) {
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("dataset is not rank 1 or a rank 2 waveform");
+            lparent.postMessage(this, "dataset is not rank 1 or a rank 2 waveform", DasPlot.INFO, null, null);
+            return;
+        }
 
         if ( psym== DefaultPlotSymbol.NONE && psymConnector==PsymConnector.NONE ) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("plot symbol and symbol connector are set to none");
@@ -1446,7 +1452,10 @@ public class SeriesRenderer extends Renderer {
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
         if ( !SemanticOps.isRank2Waveform(dataSet) ) {  // xtags are rank 2 bins can happen too
             vds= ytagsDataSet(ds);
-
+            if ( vds==null ) {
+                logger.fine("dataset is not rank 1 or a rank 2 waveform");
+                return;
+            }
             unitsWarning= false;
             plottable = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits());
             if ( !plottable ) {
