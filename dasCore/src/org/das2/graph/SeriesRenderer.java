@@ -1241,7 +1241,7 @@ public class SeriesRenderer extends Renderer {
             return;
         }
         
-        if ( dataSet.rank()!=1 && !SemanticOps.isRank2Waveform(ds) ) {
+        if ( dataSet.rank()!=1 && ! ( SemanticOps.isBundle(ds) || SemanticOps.isRank2Waveform(ds) ) ) {
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("dataset is not rank 1 or a rank 2 waveform");
             lparent.postMessage(this, "dataset is not rank 1 or a rank 2 waveform", DasPlot.INFO, null, null);
             return;
@@ -1587,7 +1587,11 @@ public class SeriesRenderer extends Renderer {
 
         try {
             errorElement.update(xAxis, yAxis, vds, monitor);
-            psymsElement.update(xAxis, yAxis, vds, monitor);
+            if ( vds!=null && vds.rank()==1 && dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
+                psymsElement.update(xAxis, yAxis, dataSet, monitor);     // color scatter
+            } else {
+                psymsElement.update(xAxis, yAxis, vds, monitor);
+            }
         } catch ( InconvertibleUnitsException ex ) {
             return;
         }
