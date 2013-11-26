@@ -981,8 +981,9 @@ public class DasPlot extends DasCanvasComponent {
             graphics.setColor(drawBackground);
             Rectangle bckg= DasDevicePosition.toRectangle( getRow(), getColumn() );
             bckg.translate(-x, -getRow().top()+titleHeight );
-            graphics.fillRect( bckg.x, bckg.y, plotClip.width, bckg.height+2 );
+            graphics.fillRect( bckg.x, bckg.y, bckg.width+1, bckg.height+1 );
             graphics.setColor(c0);
+            //graphics.drawRoundRect( bckg.x, bckg.y, bckg.width, bckg.height+2,20,20 );
         }
 
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -1889,6 +1890,8 @@ public class DasPlot extends DasCanvasComponent {
     public void setDrawBackground(Color drawBackground) {
         Color oldDrawBackground = this.drawBackground;
         this.drawBackground = drawBackground;
+        invalidateCacheImage();
+        repaint();
         firePropertyChange(PROP_DRAWBACKGROUND, oldDrawBackground, drawBackground);
     }
 
@@ -1908,6 +1911,8 @@ public class DasPlot extends DasCanvasComponent {
     public void setDrawGridColor(Color drawGridColor) {
         Color oldDrawGridColor = this.drawGridColor;
         this.drawGridColor = drawGridColor;
+        invalidateCacheImage();
+        repaint();
         firePropertyChange(PROP_DRAWGRIDCOLOR, oldDrawGridColor, drawGridColor);
     }
 
