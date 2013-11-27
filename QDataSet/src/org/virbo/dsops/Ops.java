@@ -5198,9 +5198,9 @@ public class Ops {
      * @return 
      */
     public static QDataSet medianFilter( QDataSet ds, int size ) {
-        if (true) {
-            throw new IllegalArgumentException("Do not use, this is not finished");
-        }
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
+        if ( Ops.reduceMin( Ops.valid(ds), 0 ).value()==0 ) throw new IllegalArgumentException("fill data is not supported");
+        if ( size>ds.length()/2 ) throw new IllegalArgumentException("size cannot be greater than ds.length()/2");
         
         ArrayDataSet res= ArrayDataSet.copy(ds);
         for ( int i=0; i<res.length(); i++ ) res.putValue(i,0);
@@ -5208,42 +5208,15 @@ public class Ops {
         TreeSet<Double> more= new TreeSet();
         LinkedList<Double> vv= new LinkedList();
         int hsize= size/2;
-        for ( int i=0; i<hsize; i++ ) {
-            vv.add(ds.value(i));
-        }
-        for ( int i=0; i<ds.length(); i++ ) {
+        for ( int i=0; i<size-1; i++ ) {
             double d=ds.value(i);
-            if ( i<ds.length()-hsize ) {
-                vv.add(ds.value(i+hsize));
-            }
+            vv.add(d);
             if ( less.isEmpty() ) {
                 less.add(d);
             } else if ( less.last()<d ) {
                 more.add(d);
             } else {
                 less.add(d);
-            }
-            int n=vv.size();
-            if ( n==size ) {
-                if ( less.size()>more.size() ) {
-                    res.putValue(i-hsize,less.last());
-                } else {
-                    res.putValue(i-hsize,more.first());
-                }
-                double rm= vv.get(0);
-                if ( rm==1338. ) {
-                    System.err.println("here 1338");
-                }
-                if ( less.last()>=rm ) {
-                    less.remove(rm);
-                } else {
-                    more.remove(rm);
-                }
-            } else if ( n<size ) {
-                res.putValue(i,d);
-            }
-            if ( i>=hsize ) {
-                vv.remove(0);
             }
             // balance the two sets, so that they are within one in size.
             if ( less.size()<more.size()-1 ) {
@@ -5255,6 +5228,42 @@ public class Ops {
                 less.remove( mv );
                 more.add( mv );
             }
+            res.putValue(i,d);
+        }
+        for ( int i=hsize; i<ds.length()-hsize; i++ ) {
+            double d=ds.value(i+hsize);
+            vv.add(d);
+            if ( less.last()<d ) {
+                more.add(d);
+            } else {
+                less.add(d);
+            }
+            if ( less.size()>more.size() ) {
+                res.putValue(i,less.last());
+            } else {
+                res.putValue(i,more.first());
+            }
+            double rm= vv.remove(0);
+            if ( less.last()>=rm ) {
+                less.remove(rm);
+            } else {
+                more.remove(rm);
+            }
+            
+            // balance the two sets, so that they are within one in size.
+            if ( less.size()<more.size()-1 ) {
+                double mv= more.first();
+                less.add( mv );
+                more.remove( mv );
+            } else if ( less.size()-1>more.size() ) {
+                double mv= less.last();
+                less.remove( mv );
+                more.add( mv );
+            }
+        }
+        for ( int i=ds.length()-hsize; i<ds.length(); i++ ) {
+            double d=ds.value(i);
+            res.putValue(i,d);
         }
         return res;
     }
