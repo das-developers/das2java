@@ -1844,6 +1844,10 @@ public class DataSetOps {
                     String comp= s.next();
                     int icomp= Integer.parseInt(comp);
                     fillDs= Ops.detrend(fillDs, icomp);
+                } else if ( cmd.equals("|medianFilter") ) {
+                    String comp= s.next();
+                    int icomp= Integer.parseInt(comp);
+                    fillDs= Ops.medianFilter(fillDs, icomp);
                 } else if ( cmd.equals("|contour") ) {
 
                     List<Double> args= new ArrayList();
