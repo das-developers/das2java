@@ -20,10 +20,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
@@ -5186,6 +5188,75 @@ public class Ops {
     
     public static QDataSet detrend( Object yy, int size ) {
         return detrend( dataset(yy), size );
+    }
+    
+    /**
+     * 1-D median filter with a boxcar of the given size.  This is 
+     * not particularly efficient and would make a nice project for a student.
+     * @param ds rank 1 dataset.  Future implementations may support higher rank data.
+     * @param size the boxcar size
+     * @return 
+     */
+    public static QDataSet medianFilter( QDataSet ds, int size ) {
+        if (true) {
+            throw new IllegalArgumentException("Do not use, this is not finished");
+        }
+        
+        ArrayDataSet res= ArrayDataSet.copy(ds);
+        for ( int i=0; i<res.length(); i++ ) res.putValue(i,0);
+        TreeSet<Double> less= new TreeSet();
+        TreeSet<Double> more= new TreeSet();
+        LinkedList<Double> vv= new LinkedList();
+        int hsize= size/2;
+        for ( int i=0; i<hsize; i++ ) {
+            vv.add(ds.value(i));
+        }
+        for ( int i=0; i<ds.length(); i++ ) {
+            double d=ds.value(i);
+            if ( i<ds.length()-hsize ) {
+                vv.add(ds.value(i+hsize));
+            }
+            if ( less.isEmpty() ) {
+                less.add(d);
+            } else if ( less.last()<d ) {
+                more.add(d);
+            } else {
+                less.add(d);
+            }
+            int n=vv.size();
+            if ( n==size ) {
+                if ( less.size()>more.size() ) {
+                    res.putValue(i-hsize,less.last());
+                } else {
+                    res.putValue(i-hsize,more.first());
+                }
+                double rm= vv.get(0);
+                if ( rm==1338. ) {
+                    System.err.println("here 1338");
+                }
+                if ( less.last()>=rm ) {
+                    less.remove(rm);
+                } else {
+                    more.remove(rm);
+                }
+            } else if ( n<size ) {
+                res.putValue(i,d);
+            }
+            if ( i>=hsize ) {
+                vv.remove(0);
+            }
+            // balance the two sets, so that they are within one in size.
+            if ( less.size()<more.size()-1 ) {
+                double mv= more.first();
+                less.add( mv );
+                more.remove( mv );
+            } else if ( less.size()-1>more.size() ) {
+                double mv= less.last();
+                less.remove( mv );
+                more.add( mv );
+            }
+        }
+        return res;
     }
     
     /**
