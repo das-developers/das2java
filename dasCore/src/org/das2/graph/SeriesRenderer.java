@@ -54,6 +54,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -550,6 +551,23 @@ public class SeriesRenderer extends Renderer {
         private GeneralPath path1;
         private Color color;  // override default color
 
+//        private void dumpPath( ) {
+//            if ( path1!=null ) {
+//                try {
+//                    BufferedWriter w= new BufferedWriter( new FileWriter("/tmp/foo.dat") );
+//                    PathIterator it= path1.getPathIterator(null);
+//                    float [] seg= new float[6];
+//                    while ( !it.isDone() ) {
+//                        int r= it.currentSegment(seg);
+//                        w.write( String.format( "%d\t%s\t%s\t%s\t%s\t%s\t%s\n", r, seg[0], seg[1], seg[2], seg[3], seg[4], seg[5] ) );
+//                        it.next();
+//                    }
+//                    w.close();
+//                } catch ( IOException ex ) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//        }        
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) ) {
@@ -561,6 +579,7 @@ public class SeriesRenderer extends Renderer {
             if (color != null) {
                 g.setColor(color);
             }
+            //dumpPath();
             psymConnector.draw(g, path1, (float) lineWidth);
             return 0;
         }
