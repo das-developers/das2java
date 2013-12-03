@@ -54,13 +54,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.dataset.VectorUtil;
@@ -1214,6 +1209,8 @@ public class SeriesRenderer extends Renderer {
     @Override
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
+        super.incrementRenderCount();
+        
         DasPlot lparent= getParent();
 
         logger.log(Level.FINE, "enter {0}.render: {1}", new Object[]{id, String.valueOf(getDataSet()) });
@@ -1426,20 +1423,11 @@ public class SeriesRenderer extends Renderer {
      */
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
+        
         long t0= System.currentTimeMillis();
         logger.log(Level.FINE, "enter {0}.updatePlotImage: {1}", new Object[]{id, String.valueOf(getDataSet()) });
 
-        //updateImageCount++;
-
-        //reportCount();
-
-        try {
-            super.updatePlotImage(xAxis, yAxis, monitor);
-        } catch (DasException e) {
-            // it doesn't throw DasException, but interface requires exception, jbf 5/26/2005
-            throw new RuntimeException(e);
-        }
-
+        super.incrementUpdateCount();
 
         QDataSet dataSet = getDataSet();
         selectionArea= null;

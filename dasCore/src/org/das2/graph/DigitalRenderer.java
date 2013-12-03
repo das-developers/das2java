@@ -286,6 +286,9 @@ public class DigitalRenderer extends Renderer {
 
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        
+        super.incrementRenderCount();
+        
         g.setColor(color);
         DasPlot parent= getParent();
                 
@@ -583,6 +586,9 @@ public class DigitalRenderer extends Renderer {
 
     @Override
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
+        
+        super.incrementUpdateCount();
+        
         QDataSet ds= getDataSet();
         if ( ds==null ) return;
         if ( ds.rank()==0 || ( getDataSet().rank()==1 && SemanticOps.isRank1Bundle(ds) ) ) {

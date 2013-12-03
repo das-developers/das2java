@@ -920,6 +920,41 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return colorBar;
     }
 
+    private int renderCount=0;
+    private int updateCount=0;
+    
+    protected synchronized void incrementRenderCount() {
+        renderCount++;
+    }
+    
+    /**
+     * return the number of times render has been called since the last reset.
+     * @return 
+     */
+    public int getRenderCount() {
+        return renderCount;
+    }
+    
+    protected synchronized void incrementUpdateCount() {
+        updateCount++;
+    }
+    
+    /**
+     * return the number of times updatePlotImage has been called since the last reset.
+     * @return 
+     */
+    public int getUpdateCount() {
+        return updateCount;
+    }
+    
+    /**
+     * reset the counters.
+     */
+    public synchronized void resetCounters() {
+        renderCount=0;
+        updateCount=0;
+    }
+    
     /**
      * Utility field used by bound properties.
      */
