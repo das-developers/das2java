@@ -88,13 +88,28 @@ public final class LoggerManager {
     // clean up code that times things by keeping track of timer...
     private static Map<Thread,Long> timers= new WeakHashMap<Thread, Long>();
     
+    /**
+     * reset the timer.  The lifecycle is like so:
+     *  LoggerManager.resetTimer("big task");
+     *  LoggerManager.markTime("done loading");
+     *  LoggerManager.markTime("calculated data");
+     *  LoggerManager.clearTimer();  
+     * Note the timers are stored with weak references to the threads, so 
+     * clearTimer needn't be called.
+     */
     public static void resetTimer() {
         if ( disableTimers ) return;
         resetTimer(null);
     }
     
     /**
-     * reset the timer for this thread.
+     * reset the timer for this thread.  The lifecycle is like so:
+     *  LoggerManager.resetTimer("big task");
+     *  LoggerManager.markTime("done loading");
+     *  LoggerManager.markTime("calculated data");
+     *  LoggerManager.clearTimer();  
+     * Note the timers are stored with weak references to the threads, so 
+     * clearTimer needn't be called.
      * @param task 
      */
     public static void resetTimer( String task ) {
@@ -110,6 +125,10 @@ public final class LoggerManager {
         timers.put( Thread.currentThread(), System.currentTimeMillis() );
     }
     
+    /**
+     * mark the time using the thread name.
+     * @param message 
+     */
     public static void markTime() {
         if ( disableTimers ) return;
         markTime(null);
@@ -117,7 +136,7 @@ public final class LoggerManager {
     
     /**
      * mark the time that this occurred.
-     * @param message 
+     * @param message message to accompany
      */
     public static void markTime( String message ) {
         if ( disableTimers ) return;
@@ -129,7 +148,7 @@ public final class LoggerManager {
     }
     
     /**
-     * explicitly remove this timer.
+     * explicitly remove this timer.  @see resetTimer.
      */
     public static void clearTimer() {
         if ( disableTimers ) return;
