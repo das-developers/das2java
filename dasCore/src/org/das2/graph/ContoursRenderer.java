@@ -102,9 +102,39 @@ public class ContoursRenderer extends Renderer {
         return xrange;
     }    
     
+    /**
+     * return false if the inputs are okay, true if there's no data, etc.
+     * @param lparent
+     * @return 
+     */
+    private boolean checkInputs( DasPlot lparent ) {
+        QDataSet tds = (QDataSet) getDataSet();
+        
+        if (tds == null) {
+            lparent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+            return true;
+        }
+        if (tds.rank()!=2 ) {
+            lparent.postMessage(this, "dataset must be rank 2", DasPlot.INFO, null, null);
+            return true;
+        }
+
+        if ( vds==null ) {
+            return true;
+        }
+        
+        if (paths == null) {
+            return true;
+        }
+        
+        return false;
+    }
+    
     @Override
     public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
-
+        
+        super.incrementRenderCount();
+        
         DasPlot lparent= getParent();
         
         Graphics2D g = (Graphics2D) g1.create();
@@ -113,24 +143,8 @@ public class ContoursRenderer extends Renderer {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
 
-        QDataSet tds = (QDataSet) getDataSet();
+        if ( checkInputs(lparent) ) return;
         
-        if (tds == null) {
-            lparent.postMessage(this, "no data set", DasPlot.INFO, null, null);
-            return;
-        }
-        if (tds.rank()!=2 ) {
-            lparent.postMessage(this, "dataset must be rank 2", DasPlot.INFO, null, null);
-            return;
-        }
-
-        if ( vds==null ) {
-            return;
-        }
-        
-        if (paths == null) {
-            return;
-        }
         g.setColor(color);
         g.setStroke( new BasicStroke((float)lineThick) );
                 
@@ -141,7 +155,6 @@ public class ContoursRenderer extends Renderer {
             Area clip = new Area(rclip);
             clip.subtract(labelClip);
             g.setClip(clip);
-            //g.draw( labelClip );
 
         }
 
@@ -306,7 +319,8 @@ public class ContoursRenderer extends Renderer {
 
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
-        super.updatePlotImage(xAxis, yAxis, monitor);
+        
+        super.incrementUpdateCount();
 
         QDataSet tds= getDataSet();
         if ( tds==null ) {
@@ -315,12 +329,11 @@ public class ContoursRenderer extends Renderer {
         Units units = SemanticOps.getUnits( tds );
 
         double d0 = units.getFillDouble();
-        //int ii = -1;
         
         if ( vds==null ) {
             return;
         }
-        
+
         QDataSet xds = (QDataSet) DataSetOps.unbundle( vds, 0 );
         QDataSet yds = (QDataSet) DataSetOps.unbundle( vds, 1 );
         QDataSet zds=  (QDataSet) DataSetOps.unbundle( vds, 2 );
@@ -336,10 +349,6 @@ public class ContoursRenderer extends Renderer {
 
         int n0 = 0; // node counter.  Breaks are indicated by increment, so keep track of the last node.
 
-        //double slen = 0.; // path length
-
-        //float fx0 = 0f, fy0 = 0f; // for calculating path length
-
         NumberFormat nf = new DecimalFormat("0.00");
 
         for (int i = 0; i < zds.length(); i++) {
@@ -350,11 +359,9 @@ public class ContoursRenderer extends Renderer {
             float fy = (float) yAxis.transform( yds.value(i), yunits );
 
             if (d != d0) {
-                //ii++;
-                
                 if ( currentPath!=null && simplifyPaths ) {
                     GeneralPath newPath= new GeneralPath();
-                    int points=GraphUtil.reducePath( currentPath.getPathIterator(null), newPath );
+                    GraphUtil.reducePath( currentPath.getPathIterator(null), newPath );
                     list.set( list.indexOf(currentPath), newPath );
                 }
                 
@@ -364,14 +371,10 @@ public class ContoursRenderer extends Renderer {
 
                 d0 = d;
                 currentPath.moveTo(fx, fy);
-                //slen = 0.;
-                //fx0 = fx;
-                //fy0 = fy;
+
             } else if (n != (n0 + 1)) {
                 if ( currentPath!=null ) currentPath.moveTo(fx, fy);
-                //fx0 = fx;
-                //fy0 = fy;
-                //slen = 0.;
+
             } else {
                 if ( currentPath!=null ) currentPath.lineTo(fx, fy);
             }
@@ -381,6 +384,7 @@ public class ContoursRenderer extends Renderer {
         paths = (GeneralPath[]) list.toArray(new GeneralPath[list.size()]);
         pathLabels = (String[]) labels.toArray(new String[labels.size()]);
     }
+    
     /**
      * Holds value of property contours.
      */
