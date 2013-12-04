@@ -6,6 +6,9 @@ package org.virbo.dataset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.datum.LoggerManager;
 
 /**
  *
@@ -13,6 +16,8 @@ import java.util.List;
  */
 public class QubeDataSetIterator implements DataSetIterator {
 
+    private static final Logger logger= LoggerManager.getLogger("qdataset");
+    
     public interface DimensionIterator {
 
         boolean hasNext();
@@ -508,6 +513,15 @@ public class QubeDataSetIterator implements DataSetIterator {
                     } else {
                         QDataSet depSlice= DataSetOps.trim( dep, sssi.start, sssi.stop, sssi.step );
                         result.putProperty( "DEPEND_"+i, depSlice );
+                    }
+                } else if ( dep!=null && dep.rank()==2 ) {
+                    StartStopStepIterator sssi= (StartStopStepIterator)it[idim];
+                    if ( sssi.step==1 && sssi.start==0 && sssi.stop==dep.length(0) ) {
+                        result.putProperty( "DEPEND_"+i, dep );
+                    } else if ( sssi.step==1 ) {
+                        logger.log(Level.FINE, "dropping rank 2 depend {0}", result);
+                    } else {
+                        logger.log(Level.FINE, "dropping rank 2 depend {0}", result);
                     }
                 }
                 if ( bund!=null && it[idim].length()==bund.length() ) { 
