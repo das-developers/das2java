@@ -6182,6 +6182,7 @@ public class Ops {
      * @return
      */
     public static boolean equivalent( QDataSet ds1, QDataSet ds2 ) {
+        if ( ds1!=null && ds1==ds2 ) return true;
         Units u1= SemanticOps.getUnits(ds1);
         Units u2= SemanticOps.getUnits(ds2);
         if ( u1!=u2 && u1 instanceof EnumerationUnits && u2 instanceof EnumerationUnits ) {
@@ -6257,7 +6258,7 @@ public class Ops {
     public static int dimensionCount( Object dss ) {
         return dimensionCount( dataset(dss) );
     }
-
+        
     public static final double PI = Math.PI;
     public static final double E = Math.E;
 }
