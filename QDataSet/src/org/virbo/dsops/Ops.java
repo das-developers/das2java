@@ -3519,6 +3519,31 @@ public class Ops {
     public static QDataSet slice1( QDataSet ds, int idx ) {
         return DataSetOps.slice1(ds, idx);
     }
+    
+    /**
+     * returns the slice at the given slice location.
+     * @param ds ripples(20,20).  Presently this must be a simple table.
+     * @param slice dataset("10.3")
+     * @return 
+     */
+    public static QDataSet slice1( QDataSet ds, QDataSet sliceds ) {
+        if ( sliceds.rank()!=0 ) {
+            throw new IllegalArgumentException("sliceds must be rank 0");
+        }
+        QDataSet dep= SemanticOps.ytagsDataSet(ds);
+        if ( dep.rank()!=1 ) {
+            throw new IllegalArgumentException("dataset must have rank 1 tags");
+        }
+        QDataSet findex= Ops.findex( dep, sliceds );
+        double f= findex.value();
+        if ( f>=0. && f<dep.length() ) {
+            return slice1( ds, (int)Math.round(f) );
+        } else if ( f<0 ) {
+            throw new IndexOutOfBoundsException("slice is before the data");
+        } else { 
+            throw new IndexOutOfBoundsException("slice is after the data");
+        }
+    }        
 
     /**
      * @see DataSetOps.slice2
