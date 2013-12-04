@@ -705,8 +705,17 @@ public class SemanticOps {
     public static boolean isTableDataSet(QDataSet ds) {
          if ( ds.rank()==3 || isSimpleTableDataSet(ds) ) return true;
          QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
-         if ( ds.rank()==2 && dep1!=null ) {
-             return true; // Y tags can be rank2, making it a table dataset but not a simple one.
+         if ( ds.rank()==2 ) {
+             if ( dep1!=null ) { // TODO: we should check for EnumerationUnits here...
+                 return true; // Y tags can be rank2, making it a table dataset but not a simple one.
+             } else {
+                 QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+                 if ( bds!=null ) {
+                     return false;
+                 } else {
+                     return true;
+                 }
+             }
          }
          return false;
     }
