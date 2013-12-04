@@ -848,6 +848,9 @@ public class DasPlot extends DasCanvasComponent {
      *
      */
     private synchronized void resetCacheImageBounds( boolean printing, int width, int height ) {
+        if ( width<=0 || height<=0 ) {
+            throw new IllegalArgumentException( "Width ("+width+") and height ("+height+") must be > 0" );
+        }
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
         if (overSize && !printing ) {
@@ -1042,7 +1045,12 @@ public class DasPlot extends DasCanvasComponent {
                 Graphics2D plotGraphics;
                 if (getCanvas().isPrintingThread() || disableImageCache) {
                     plotGraphics = (Graphics2D) graphics.create(x - 1, y - 1, xSize + 2, ySize + 2);
-                    resetCacheImageBounds(true,getWidth(),getHeight());
+                    int w= getWidth();
+                    int h= getHeight();
+                    if ( w==0 || h==0 ) {
+                        return;
+                    }
+                    resetCacheImageBounds(true,w,h);
                     logger.finest(" printing thread, drawing");
                 } else {
                     int w= getWidth();
