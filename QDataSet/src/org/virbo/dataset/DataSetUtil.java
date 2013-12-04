@@ -1438,7 +1438,7 @@ public class DataSetUtil {
         } else {
             QDataSet s1= ds.slice(0);
             for ( int i=1; i<ds.length(); i++ ) {
-                if ( !s1.equals(ds.slice(i)) ) return false;
+                if ( !Ops.equivalent(s1,ds.slice(i)) ) return false;
             }
             return true;
         }
