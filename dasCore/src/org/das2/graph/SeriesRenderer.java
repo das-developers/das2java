@@ -478,6 +478,10 @@ public class SeriesRenderer extends Renderer {
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
             QDataSet vds= ytagsDataSet(dataSet);
+            if ( vds==null ) {
+                p= null;
+                return;
+            }
 
             QDataSet deltaPlusY = (QDataSet) vds.property( QDataSet.DELTA_PLUS );
             QDataSet deltaMinusY = (QDataSet) vds.property( QDataSet.DELTA_MINUS );
@@ -1461,6 +1465,10 @@ public class SeriesRenderer extends Renderer {
             vds= ytagsDataSet(ds);
             if ( vds==null ) {
                 logger.fine("dataset is not rank 1 or a rank 2 waveform");
+                return;
+            }
+            if ( vds.rank()!=1 ) {
+                logger.fine("dataset is rank 2 and not a bundle.");
                 return;
             }
             unitsWarning= false;
