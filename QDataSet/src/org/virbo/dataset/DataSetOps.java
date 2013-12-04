@@ -1684,8 +1684,10 @@ public class DataSetOps {
                     } else {
                         if ( dim==0 ) {
                             fillDs= Ops.slice0( fillDs, (QDataSet)arg );
+                        } else if ( dim==1 ) {
+                            fillDs= Ops.slice1( fillDs, (QDataSet)arg );
                         } else {
-                            throw new IllegalArgumentException("only slice0 works with strings");
+                            throw new IllegalArgumentException("only slice0 and slice1 works with strings");
                         }
                     }
                 } else if ( cmd.equals("|reducex") ) {
