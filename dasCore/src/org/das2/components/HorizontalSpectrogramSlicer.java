@@ -84,6 +84,8 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     protected Datum xValue;
     protected Datum yValue;
 
+    protected Datum ySlice;
+    
     JPanel buttonPanel;
     Action additionalAction= null;
     
@@ -146,6 +148,15 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
      */
     public QDataSet getDataSet() {
         return renderer.getDataSet();
+    }
+    
+    /**
+     * provide the Y position of the data.  Note this may be different 
+     * than where the user requested because the nearest channel is provided.
+     * @return 
+     */
+    public Datum getSliceY() {
+        return ySlice;
     }
     
     public static HorizontalSpectrogramSlicer createSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer) {
@@ -407,6 +418,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
             formatter = xValue.getFormatter();
         }
         myPlot.setTitle( "x: " + formatter.format(xValue) + " y: " + yy );
+        ySlice= yy;
         //eventBirthMilli= e.birthMilli;
         return true;
     }
