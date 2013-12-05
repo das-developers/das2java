@@ -47,6 +47,7 @@ import org.das2.event.DataPointSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -83,6 +84,9 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     protected Datum xValue;
     protected Datum yValue;
 
+    JPanel buttonPanel;
+    Action additionalAction= null;
+    
     //private long eventBirthMilli;
     private SymbolLineRenderer renderer;
     private Color markColor = new Color(230,230,230);
@@ -119,11 +123,31 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         myPlot.getDasMouseInputAdapter().addMouseModule(new MouseModule(myPlot, new PointSlopeDragRenderer(myPlot, myPlot.getXAxis(), myPlot.getYAxis()), "Slope"));
 
     }
+    
+    /**
+     * add a button
+     * @param a 
+     */
+    public void addAction( Action a ) {
+        additionalAction= a;
+        if ( buttonPanel!=null ) {
+            JButton b= new JButton(a);
+            buttonPanel.add(b,0);
+        }
+    }
 
     protected void setDataSet( QDataSet ds ) {
        renderer.setDataSet(ds);
     }
 
+    /**
+     * provide access to the dataset
+     * @return 
+     */
+    public QDataSet getDataSet() {
+        return renderer.getDataSet();
+    }
+    
     public static HorizontalSpectrogramSlicer createSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceXAxis = plot.getXAxis();
         DasAxis sourceZAxis = dataSetConsumer.getZAxis();
@@ -194,10 +218,14 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         
         JPanel content = new JPanel(new BorderLayout());
         
-        JPanel buttonPanel = new JPanel();
+        buttonPanel = new JPanel();
         BoxLayout buttonLayout = new BoxLayout(buttonPanel, BoxLayout.X_AXIS);
         buttonPanel.setLayout(buttonLayout);
 
+        if ( additionalAction!=null ) {
+            buttonPanel.add( new JButton(additionalAction) );
+        }
+        
         buttonPanel.add(Box.createHorizontalGlue());
 
         JButton printButton= new JButton( new AbstractAction("Print...") {
