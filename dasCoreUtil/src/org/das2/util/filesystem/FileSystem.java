@@ -119,6 +119,9 @@ public abstract class FileSystem  {
      */
     public static FileSystem create( String s, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         String[] parts = s.split(":",2);
+        if ( parts.length==1 ) {
+            throw new IllegalArgumentException( "name must start with scheme like 'file:', no colon found");
+        }
         try {
             return create( new URI( parts[0], parts[1], null ), mon );  
         } catch (URISyntaxException ex) {
