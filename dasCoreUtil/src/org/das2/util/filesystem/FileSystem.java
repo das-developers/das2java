@@ -104,11 +104,7 @@ public abstract class FileSystem  {
      * @throws FileNotFoundException 
      */
     public static FileSystem create( String s ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
-        try {
-            return create( new URI(s), new NullProgressMonitor() );
-        } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException(ex);
-        }
+        return create( new File(s).toURI(), new NullProgressMonitor() );
     }
     
     /**
@@ -121,11 +117,7 @@ public abstract class FileSystem  {
      * @throws FileNotFoundException 
      */
     public static FileSystem create( String s, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
-        try {
-            return create( new URI(s), mon );
-        } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException(ex);
-        }
+        return create( new File(s).toURI(), mon );
     }
 
     /**
