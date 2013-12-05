@@ -6,6 +6,8 @@
 
 package org.das2.datum;
 
+import java.text.DecimalFormat;
+
 /**
  * Useful operations for units, and tests for Steven's Levels of Measurement.
  * @author  Jeremy
@@ -176,7 +178,8 @@ public class UnitsUtil {
             Units bUnits= bDatum.getUnits();
             double a= aDatum.doubleValue(aUnits);
             double b= bDatum.doubleValue(bUnits);
-            return ""+(a/b)+" "+aUnits+" / " +bUnits;
+            DecimalFormat df= new DecimalFormat("0.000E0");
+            return ""+df.format(a/b)+" "+aUnits+" / " +bUnits;
         }
     }
     
@@ -201,7 +204,11 @@ public class UnitsUtil {
         if ( bUnits==Units.dimensionless ) {
             return aUnits.createDatum( a/b );
         } else if ( aUnits==Units.dimensionless ) {
-            return bInvUnits.createDatum(a/b);
+            if ( bInvUnits==null ) {
+                throw new IllegalArgumentException("unable to calculate, b units not convertable to a");
+            } else {
+                return bInvUnits.createDatum(a/b);
+            }
         } else {
             if ( !bUnits.isConvertableTo(aUnits) ) {
                 throw new IllegalArgumentException("unable to calculate, b units not convertable to a");
