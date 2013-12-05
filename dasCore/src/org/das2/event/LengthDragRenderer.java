@@ -19,7 +19,7 @@ import java.awt.geom.Line2D;
 import java.text.*;
 
 /**
- *
+ * Indicate the length and the slope of the line.
  * @author  Owner
  */
 public class LengthDragRenderer extends LabelDragRenderer {
@@ -174,7 +174,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
         this.showSlope = showSlope;
     }
     
-    protected boolean showFit = false;
+    protected boolean showFit = true;
 
     /**
      * Get the value of showFit
@@ -186,7 +186,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
     }
 
     /**
-     * Set the value of showFit
+     * show the fit for all but xlog,ylin.
      *
      * @param showFit new value of showFit
      */
