@@ -117,6 +117,12 @@ public class HorizontalSlicerMouseModule extends MouseModule {
         }
     }
     
+    /**
+     * return the slicer listening to the slices.  This returns the 
+     * first one found.  
+     * @return the slicer
+     * @throws IllegalArgumentException if no slicer is found.
+     */
     public HorizontalSpectrogramSlicer getSlicer() {
         Object[] listeners = listenerList.getListenerList();
         for ( int i=0; i<listeners.length; i++ ) {
@@ -124,6 +130,6 @@ public class HorizontalSlicerMouseModule extends MouseModule {
                 return (HorizontalSpectrogramSlicer)listeners[i];
             }
         }
-        return null;
+        throw new IllegalArgumentException("slicer not found.");
     }
 }
