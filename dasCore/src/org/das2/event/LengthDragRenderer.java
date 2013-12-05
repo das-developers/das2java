@@ -105,12 +105,19 @@ public class LengthDragRenderer extends LabelDragRenderer {
             String label1= "\u0394x: " + runString + " \u0394y: " + riseString + radString ;
             
             if ( showSlope ) {
-                label1 += "!c m: "+ UnitsUtil.divideToString( rise, run );
+                label1 += "!cm: "+ UnitsUtil.divideToString( rise, run );
             }
             
             if ( showFit ) {
                 // show y= m * ( x - x0 ) + y0
-                Datum slope= rise.divide(run);
+                
+                Datum slope;
+                Units runUnits= run.getUnits();
+                if ( rise.getUnits().isConvertableTo(runUnits ) ) {
+                    slope= rise.divide(run);
+                } else {
+                    slope= rise.divide(run.doubleValue(runUnits));
+                }
                 
                 String fit;
                 if ( yaxis.isLog() && xaxis.isLog() ) {
@@ -139,7 +146,11 @@ public class LengthDragRenderer extends LabelDragRenderer {
                 } else if ( !yaxis.isLog() && xaxis.isLog() ) {
                     fit = "n/a";
                 } else {
-                    fit= "y="+ slope + " * ( x - ("+x1+") ) + "+ y1;
+                    if ( runUnits!=Units.dimensionless ) {
+                        fit= "y="+ slope + "/"+runUnits +" * ( x - ("+x1+") ) + "+ y1;
+                    } else {
+                        fit= "y="+ slope + " * ( x - ("+x1+") ) + "+ y1;
+                    }
                 }
                 label1+= "!c" + fit;
             }
