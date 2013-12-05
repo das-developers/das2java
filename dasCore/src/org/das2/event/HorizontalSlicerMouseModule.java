@@ -23,6 +23,7 @@
 
 package org.das2.event;
 
+import org.das2.components.HorizontalSpectrogramSlicer;
 import org.das2.dataset.TableDataSetConsumer;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.graph.DasAxis;
@@ -116,4 +117,13 @@ public class HorizontalSlicerMouseModule extends MouseModule {
         }
     }
     
+    public HorizontalSpectrogramSlicer getSlicer() {
+        Object[] listeners = listenerList.getListenerList();
+        for ( int i=0; i<listeners.length; i++ ) {
+            if ( listeners[i] instanceof HorizontalSpectrogramSlicer ) {
+                return (HorizontalSpectrogramSlicer)listeners[i];
+            }
+        }
+        return null;
+    }
 }
