@@ -104,11 +104,12 @@ public abstract class FileSystem  {
      * @throws FileNotFoundException 
      */
     public static FileSystem create( String s ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
-        return create( new File(s).toURI(), new NullProgressMonitor() );
+        return create( s, new NullProgressMonitor() );
     }
     
     /**
      * convenient method that converts string like "http://das2.org/" into a URI.
+     * See http://stackoverflow.com/questions/573184/java-convert-string-to-valid-uri-object , about halfway down for Feb 21 '09 answer.
      * @param s string representation of URI, like "http://das2.org/" or "file:///tmp/"
      * @param mon monitor progress.  For most FS types this is instantaneous, but for zip this can take sub-interactive time.
      * @return FileSystem object.
@@ -117,7 +118,12 @@ public abstract class FileSystem  {
      * @throws FileNotFoundException 
      */
     public static FileSystem create( String s, ProgressMonitor mon ) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
-        return create( new File(s).toURI(), mon );
+        String[] parts = s.split(":",2);
+        try {
+            return create( new URI( parts[0], parts[1], null ), mon );  
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException( ex );
+        }
     }
 
     /**
