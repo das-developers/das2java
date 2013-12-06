@@ -122,15 +122,28 @@ public class LSpec {
         return index;
     }
     
+    /**
+     * this is probably old and shouldn't be used.
+     * @param lds
+     * @param zds
+     * @param start
+     * @param end
+     * @param col
+     * @param lgrid
+     * @param ds 
+     */
     private static void interpolate( QDataSet lds, QDataSet zds, int start, int end, int col, QDataSet lgrid, DDataSet ds ) {
         
         Units u= SemanticOps.getUnits( ds );
 
         double fill= u.getFillDouble();
+        ds.putProperty( QDataSet.FILL_VALUE, fill );
         
         if ( ! u.equals(  SemanticOps.getUnits( zds ) ) ) {
             throw new IllegalArgumentException("zds units must be the same as ds units!");
         }
+        
+        QDataSet wds= Ops.valid(zds);
         
         int index= start;
         
@@ -148,7 +161,7 @@ public class LSpec {
             } else if ( alpha == 0 ) {
                 ds.putValue( col, i, zds.value(index) );
             } else {
-                if ( u.isFill( zds.value(index) ) || u.isFill( zds.value( index+1 ) ) ) {
+                if ( ( wds.value(index)==0  ) || wds.value( index+1 )==0 ) {
                     ds.putValue( col, i, fill );
                 } else {
                     ds.putValue( col, i, zds.value(index) * ( 1.0 - alpha ) + zds.value(index+1) * alpha );
