@@ -6,15 +6,16 @@
 package org.virbo.dataset;
 
 /**
- *
+ * Iterator that uses a rank 2 list of indeces.  For example,
+ * to iterate over 10 points of a rank 2 dataset, this would be constructed
+ * with a dataset[10,2].
  * @author jbf
  */
 public class IndexListDataSetIterator implements DataSetIterator {
 
     /* rank 2 dataset of indeces */
     QDataSet indeces;
-    int rank;
-    int dsrank;
+    int dsrank; // source dataset rank
     int index;
     
     public IndexListDataSetIterator( QDataSet indeces ) {
@@ -23,7 +24,6 @@ public class IndexListDataSetIterator implements DataSetIterator {
         if ( indeces.length()>0 ) {
             this.dsrank= indeces.length(0);
         }
-        this.rank= 1;
     }
 
     public boolean hasNext() {
@@ -48,7 +48,7 @@ public class IndexListDataSetIterator implements DataSetIterator {
 
     /**
      * get the value from ds at the current iterator position.
-     * @param ds a dataset with capatible geometry as the iterator's geometry.
+     * @param ds a dataset with compatible geometry as the iterator's geometry.
      * @return the value of ds at the current iterator position.
      */
     public final double getValue( QDataSet ds ) {
@@ -66,7 +66,7 @@ public class IndexListDataSetIterator implements DataSetIterator {
     
     /**
      * replace the value in ds at the current iterator position.
-     * @param ds a writable dataset with capatible geometry as the iterator's geometry.
+     * @param ds a writable dataset with compatible geometry as the iterator's geometry.
      * @param v the value to insert.
      */
     public final void putValue( WritableDataSet ds, double v ) {
