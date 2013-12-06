@@ -1176,10 +1176,11 @@ public class DataSetOps {
 
             // allow unindexed properties to define property for all bundled datasets, for example USER_PROPERTIES or FILL
             Map<String,Object> props3= DataSetUtil.getProperties(bundle, DataSetUtil.globalProperties(), null );
-            for ( String ss: props3.keySet() ) {
+            for ( Entry<String,Object> e: props3.entrySet() ) {
+                String ss= e.getKey();
                 Object vv= props.get( ss );
                 if ( vv==null ) {
-                    props.put( ss, props3.get(ss) );
+                    props.put( ss, e.getValue() );
                 }
             }
 
