@@ -5,7 +5,11 @@
 
 package org.das2.util;
 
+import java.awt.Container;
+import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,6 +18,11 @@ import java.util.WeakHashMap;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JPopupMenu;
+import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
 
 /**
  * Central place that keeps track of loggers.  Note that both org.das.datum 
@@ -155,6 +164,41 @@ public final class LoggerManager {
         timers.remove( Thread.currentThread() );
     }
     
+    /**
+     * provide easy way to log all GUI events.
+     * @param e 
+     */
+    public static void logGuiEvent( ActionEvent e ) {
+        if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
+            return;
+        }
+        String ssrc= e.getSource().toString();
+        if ( ssrc.length()>10 ) {
+            int i=ssrc.indexOf("[");
+            if ( i>-1 ) ssrc= ssrc.substring(0,i);
+            if ( e.getSource() instanceof JComponent ) {
+                Container cc= ((JComponent)e.getSource()).getParent();
+                Window w= SwingUtilities.windowForComponent(((JComponent)e.getSource()));
+                if ( w!=null ) {
+                    if ( w instanceof Dialog ) {
+                        ssrc= ssrc + " of \"" + ((Dialog)w).getTitle() + "\"";
+                    } else if ( w instanceof JFrame ) {
+                        ssrc= ssrc + " of \"" + ((JFrame)w).getTitle()+ "\"";;
+                    } else {
+                        ssrc= ssrc + " of " + w.getName();
+                    }
+                } else if ( cc!=null ) {
+                    String ofsrc= cc.toString();
+                    int i2=ofsrc.indexOf("[");
+                    if ( i2>-1 ) ofsrc= ofsrc.substring(0,i2);
+                    ssrc= ssrc + " of " + ofsrc;
+                }
+                
+            }
+        }
+        getLogger("gui").log( Level.FINE, "\"{0}\" from {1}", new Object[]{e.getActionCommand(), ssrc });
+    }
+            
     public static void main( String[] args ) {
         Logger l= LoggerManager.getLogger("test");
         Exception e= new java.lang.Exception("this is the problem") ;
