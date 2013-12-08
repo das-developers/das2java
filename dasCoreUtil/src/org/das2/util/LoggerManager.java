@@ -176,6 +176,8 @@ public final class LoggerManager {
                 return child;
             } else if ( c instanceof JDialog ) {
                 return c;
+            } else if ( c!=null && c.getClass().getName().startsWith("org") ) {
+                return c;
             }
         }
         if ( c==null ) {
