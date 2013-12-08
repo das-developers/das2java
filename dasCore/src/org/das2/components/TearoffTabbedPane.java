@@ -45,6 +45,9 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.das2.util.LoggerManager;
 import test.components.TearoffTabbedPaneDemo;
 
 /**
@@ -150,6 +153,15 @@ public class TearoffTabbedPane extends JTabbedPane {
             addMouseListener(getChildMouseAdapter());
             addMouseMotionListener(getChildMouseMotionListener());
         }
+        super.addChangeListener( new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                try {
+                    LoggerManager.getLogger("gui").log(Level.FINE, "select tab \"{0}\"", getTabDesc(getSelectedIndex()).title );
+                } catch ( Exception ex ) {
+                    
+                }
+            }
+        });
     }
 
     /**
