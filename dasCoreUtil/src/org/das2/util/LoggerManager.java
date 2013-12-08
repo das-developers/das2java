@@ -5,6 +5,7 @@
 
 package org.das2.util;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.EventQueue;
@@ -19,8 +20,10 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 
@@ -164,6 +167,24 @@ public final class LoggerManager {
         timers.remove( Thread.currentThread() );
     }
     
+    private static Container findReferenceComponent( Container c ) {
+        Container child=null;
+        while ( c!=null ) {
+            child= c;
+            c= c.getParent();
+            if ( c instanceof JTabbedPane ) {
+                return child;
+            } else if ( c instanceof JDialog ) {
+                return c;
+            }
+        }
+        if ( c==null ) {
+            return (child);
+        } else {
+            return c;
+        }
+    }
+    
     /**
      * provide easy way to log all GUI events.
      * @param e 
@@ -177,17 +198,17 @@ public final class LoggerManager {
             int i=ssrc.indexOf("[");
             if ( i>-1 ) ssrc= ssrc.substring(0,i);
             if ( e.getSource() instanceof JComponent ) {
-                Container cc= ((JComponent)e.getSource()).getParent();
-                Window w= SwingUtilities.windowForComponent(((JComponent)e.getSource()));
-                if ( w!=null ) {
-                    if ( w instanceof Dialog ) {
-                        ssrc= ssrc + " of \"" + ((Dialog)w).getTitle() + "\"";
-                    } else if ( w instanceof JFrame ) {
-                        ssrc= ssrc + " of \"" + ((JFrame)w).getTitle()+ "\"";;
-                    } else {
-                        ssrc= ssrc + " of " + w.getName();
-                    }
-                } else if ( cc!=null ) {
+                Container cc= findReferenceComponent((JComponent)e.getSource());
+                Container w= cc.getParent();
+                if ( cc instanceof Dialog ) {
+                    ssrc= ssrc + " of \"" + ((Dialog)cc).getTitle() + "\"";
+                } else if ( cc instanceof JFrame ) {
+                    ssrc= ssrc + " of \"" + ((JFrame)cc).getTitle()+ "\"";;
+                } else if ( w instanceof JTabbedPane ) {
+                    JTabbedPane p= (JTabbedPane)cc.getParent();
+                    String title= p.getTitleAt( p.indexOfComponent(cc) );
+                    ssrc= ssrc + " of tab \"" + title+ "\"";
+                } else {
                     String ofsrc= cc.toString();
                     int i2=ofsrc.indexOf("[");
                     if ( i2>-1 ) ofsrc= ofsrc.substring(0,i2);
