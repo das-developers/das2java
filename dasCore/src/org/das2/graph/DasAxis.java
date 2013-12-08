@@ -354,6 +354,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             Action action = new AbstractAction(r.toString()) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    LoggerManager.logGuiEvent(e);
                     DasAxis.this.setDatumRange(r);
                 }
             };
@@ -365,6 +366,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Action action = new AbstractAction("bookmark this range") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                LoggerManager.logGuiEvent(e);                
                 DasAxis.this.addToFavorites(DasAxis.this.getDatumRange());
             }
         };
@@ -375,6 +377,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         Action action2 = new AbstractAction("remove bookmark for range") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                LoggerManager.logGuiEvent(e);
                 DasAxis.this.removeFromFavorites(DasAxis.this.getDatumRange());
             }
         };
@@ -398,6 +401,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             Action action = new AbstractAction(r.toString()) {
 
                 public void actionPerformed(ActionEvent e) {
+                    LoggerManager.logGuiEvent(e);
                     dataRange.popHistory(ipop);
                     DasAxis.this.setDataRangePrev();
                 }
@@ -456,6 +460,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                LoggerManager.logGuiEvent(e);                
                 String command = e.getActionCommand();
                 DasLogger.getLogger(DasLogger.GUI_LOG).log(Level.FINE, "event {0}", command);
                 if (command.equals(SCAN_PREVIOUS_LABEL)) {
