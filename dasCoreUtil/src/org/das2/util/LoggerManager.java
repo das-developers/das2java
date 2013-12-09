@@ -26,7 +26,9 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JViewport;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
@@ -205,21 +207,42 @@ public final class LoggerManager {
             if ( source instanceof JComponent ) {
                 Container c= (JComponent)source;
                 Container cc= findReferenceComponent(c);
+                StringBuilder src;
+                if ( cc instanceof JPanel && ( ((JPanel)cc).getBorder() instanceof TitledBorder ) ) {
+                    TitledBorder tb= (TitledBorder)((JPanel)cc).getBorder();
+                    String title= tb.getTitle();
+                    if ( title.endsWith(" [?]") ) {
+                        title= title.substring(0,title.length()-4);
+                    }
+                    src= new StringBuilder( " of \""+title + "\"");
+                } else {
+                    src= new StringBuilder( );
+                }
+                
                 Container w= cc.getParent();  //because findReferenceComponent might be a tab
+                if ( !( w instanceof JTabbedPane ) ) {
+                    w= findReferenceComponent(c.getParent());
+                    if ( w.getParent() instanceof JViewport ) {
+                        w= w.getParent();
+                    }
+                    if ( w.getParent() instanceof JScrollPane ) {
+                        w= w.getParent();
+                    }
+                    if ( w.getParent() instanceof JTabbedPane ) {
+                        JTabbedPane tp= (JTabbedPane)w.getParent();
+                        int itab= tp.indexOfComponent(w);
+                        String n= tp.getTitleAt(itab);
+                        src.append(" of \"").append(n).append("\"");
+                    }
+                }
                 Window h= SwingUtilities.getWindowAncestor(c);
                 String htitle=null;
                 if ( h instanceof Dialog ) {
-                    htitle= ((Dialog)h).getTitle();
+                    src.append(" of \"").append( ((Dialog)h).getTitle()).append("\"");
                 } else if ( h instanceof JFrame ) {
-                    htitle= ((JFrame)h).getTitle();
+                    src.append(" of \"").append( ((JFrame)h).getTitle()).append("\"");
                 }
-                if ( w instanceof JTabbedPane ) {
-                    JTabbedPane p= (JTabbedPane)cc.getParent();
-                    String title= p.getTitleAt( p.indexOfComponent(cc) );
-                    ssrc= ssrc + " of tab \"" + title+ "\" of window \""+ htitle+"\"";
-                } else {
-                    ssrc= ssrc + " of \"" + htitle+ "\"";
-                }
+                ssrc= src.toString();
                 
             }
         }
