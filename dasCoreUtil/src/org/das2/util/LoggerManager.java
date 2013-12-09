@@ -24,10 +24,12 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 
 /**
@@ -177,6 +179,8 @@ public final class LoggerManager {
             c= c.getParent();
             if ( c instanceof JTabbedPane ) {
                 return child;
+            } else if ( c instanceof JPanel && ( ((JPanel)c).getBorder() instanceof TitledBorder ) ) {
+                return c;
             } else if ( c instanceof JDialog ) {
                 return c;
             } else if ( c!=null && c.getClass().getName().startsWith("org") ) {
