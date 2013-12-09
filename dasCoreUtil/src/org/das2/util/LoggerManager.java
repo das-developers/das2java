@@ -5,6 +5,7 @@
 
 package org.das2.util;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -19,6 +20,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -26,6 +28,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 
 /**
  * Central place that keeps track of loggers.  Note that both org.das.datum 
@@ -187,6 +190,38 @@ public final class LoggerManager {
         }
     }
     
+    private static void logGuiEvent( Object source, String thisRef ) {
+        if ( !EventQueue.isDispatchThread() ) {
+            return;
+        }
+        String ssrc= source.toString();
+        if ( ssrc.length()>10 ) {
+            int i=ssrc.indexOf("[");
+            if ( i>-1 ) ssrc= ssrc.substring(0,i);
+            if ( source instanceof JComponent ) {
+                Container c= (JComponent)source;
+                Container cc= findReferenceComponent(c);
+                Container w= cc.getParent();  //because findReferenceComponent might be a tab
+                Window h= SwingUtilities.getWindowAncestor(c);
+                String htitle=null;
+                if ( h instanceof Dialog ) {
+                    htitle= ((Dialog)h).getTitle();
+                } else if ( h instanceof JFrame ) {
+                    htitle= ((JFrame)h).getTitle();
+                }
+                if ( w instanceof JTabbedPane ) {
+                    JTabbedPane p= (JTabbedPane)cc.getParent();
+                    String title= p.getTitleAt( p.indexOfComponent(cc) );
+                    ssrc= ssrc + " of tab \"" + title+ "\" of window \""+ htitle+"\"";
+                } else {
+                    ssrc= ssrc + " of \"" + htitle+ "\"";
+                }
+                
+            }
+        }
+        getLogger("gui").log( Level.FINE, "\"{0}\" from {1}", new Object[]{ thisRef, ssrc });
+        
+    }
     /**
      * provide easy way to log all GUI events.
      * @param e 
@@ -195,34 +230,19 @@ public final class LoggerManager {
         if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
             return;
         }
-        if ( !EventQueue.isDispatchThread() ) {
+        if ( e.getSource() instanceof JCheckBox ) {
+            JCheckBox cb= (JCheckBox)e.getSource();
+            logGuiEvent( e.getSource(), ( cb.isSelected() ? "select " : "deselect " ) + e.getActionCommand() );
+        } else {
+            logGuiEvent( e.getSource(), e.getActionCommand() );
+        }
+    }
+    
+    public static void logGuiEvent( ChangeEvent e ) {
+        if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
             return;
         }
-        String ssrc= e.getSource().toString();
-        if ( ssrc.length()>10 ) {
-            int i=ssrc.indexOf("[");
-            if ( i>-1 ) ssrc= ssrc.substring(0,i);
-            if ( e.getSource() instanceof JComponent ) {
-                Container cc= findReferenceComponent((JComponent)e.getSource());
-                Container w= cc.getParent();
-                if ( cc instanceof Dialog ) {
-                    ssrc= ssrc + " of \"" + ((Dialog)cc).getTitle() + "\"";
-                } else if ( cc instanceof JFrame ) {
-                    ssrc= ssrc + " of \"" + ((JFrame)cc).getTitle()+ "\"";;
-                } else if ( w instanceof JTabbedPane ) {
-                    JTabbedPane p= (JTabbedPane)cc.getParent();
-                    String title= p.getTitleAt( p.indexOfComponent(cc) );
-                    ssrc= ssrc + " of tab \"" + title+ "\"";
-                } else {
-                    String ofsrc= cc.toString();
-                    int i2=ofsrc.indexOf("[");
-                    if ( i2>-1 ) ofsrc= ofsrc.substring(0,i2);
-                    ssrc= ssrc + " of " + ofsrc;
-                }
-                
-            }
-        }
-        getLogger("gui").log( Level.FINE, "\"{0}\" from {1}", new Object[]{e.getActionCommand(), ssrc });
+        logGuiEvent( e.getSource(), "changeEvent" );
     }
             
     public static void main( String[] args ) {
