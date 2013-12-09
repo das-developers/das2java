@@ -195,6 +195,9 @@ public final class LoggerManager {
         if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
             return;
         }
+        if ( !EventQueue.isDispatchThread() ) {
+            return;
+        }
         String ssrc= e.getSource().toString();
         if ( ssrc.length()>10 ) {
             int i=ssrc.indexOf("[");
