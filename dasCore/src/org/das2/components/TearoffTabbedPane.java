@@ -156,7 +156,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         super.addChangeListener( new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 try {
-                    LoggerManager.getLogger("gui").log(Level.FINE, "select tab \"{0}\"", getTabDesc(getSelectedIndex()).title );
+                    LoggerManager.logGuiEvent(e);
                 } catch ( Exception ex ) {
                     
                 }
