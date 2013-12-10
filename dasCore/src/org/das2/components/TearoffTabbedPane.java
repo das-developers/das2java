@@ -30,8 +30,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,12 +48,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.das2.graph.ColorUtil;
-import org.das2.util.GrannyTextRenderer;
 import org.das2.util.LoggerManager;
 import test.components.TearoffTabbedPaneDemo;
 
 /**
- *
+ * Like the Swing TabbedPane, but this allows the tabs to be 
+ * removed to other windows or other TearoffTabbedPanes.
  * @author Jeremy
  */
 public class TearoffTabbedPane extends JTabbedPane {
@@ -156,6 +154,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             this.babysitter = null;
         }
 
+        @Override
         public String toString() {
             if ( this.babysitter==null ) {
                 return this.title + "@"+ this.index + ": (docked)";
@@ -323,7 +322,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                TearoffTabbedPane draggingTearOff=null;
+                TearoffTabbedPane draggingTearOff;
                 if ( draggingFrame!=null ) {
                     draggingTearOff= getTabbedPane(draggingFrame);
                     if ( draggingTearOff!=null && TearoffTabbedPane.this.parentPane.contains( SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), TearoffTabbedPane.this.parentPane ) ) ) {
@@ -440,8 +439,7 @@ public class TearoffTabbedPane extends JTabbedPane {
      */
     public void peek() {
         System.err.println("--");
-        for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
-            Component key = (Component) i.next();
+        for ( Component key: tabs.keySet() ) {
             TabDesc d = (TabDesc) tabs.get(key);
             System.err.println(d);
         }
@@ -451,8 +449,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
         TabDesc desc = null;
         Component babyComponent = null;
-        for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
-            Component key = (Component) i.next();
+        for ( Component key: tabs.keySet() ) {
             TabDesc d = (TabDesc) tabs.get(key);
             if (d.index == selectedTab) {
                 desc = d;
@@ -530,8 +527,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         TearoffTabbedPane last=null;
         TearoffTabbedPane me= getTabbedPane( draggingFrame );
 
-        for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
-            Component key = (Component) i.next();
+        for ( Component key: tabs.keySet() ) {
             TabDesc d = (TabDesc) tabs.get(key);
             if ( d.babysitter!=null ) {
                 Component maybe= getTabbedPane(d.babysitter);
@@ -573,8 +569,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                     public void actionPerformed(ActionEvent event) {
                         TabDesc desc = null;
                         Component babyComponent = null;
-                        for (Iterator i = tabs.keySet().iterator(); i.hasNext();) {
-                            Component key = (Component) i.next();
+                        for ( Component key: tabs.keySet() ) {
                             TabDesc d = (TabDesc) tabs.get(key);
                             if (d.index == selectedTab) {
                                 desc = d;
@@ -805,11 +800,6 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }
                 frame2.setLocation( frame1.getX() + frame1.getWidth() - p2.x + rightOffset, frame1.getY() + p.y - p2.y );
             } else {
-                if ( false && updateSize ) {
-                    int frame1NotTabs= frameSize1.height-s1.height;
-                    System.err.println(frame1NotTabs);
-                    frame1.setSize( new Dimension( frameSize1.width, ( frameSize1.height-s1.height ) + s2.height ) );
-                }
                 int x= Math.max( frame1.getX(), frame2.getX()-frameSize1.width + p2.x );
                 rightOffset= frame2.getX()-s1.width - frame1.getX();
                 if ( rightOffset>0 ) rightOffset=0;
@@ -1078,7 +1068,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     @Override
     public void remove( Component c ) {
-        logger.fine("remove("+c+")");
+        logger.log(Level.FINE, "remove({0})", c);
         TabDesc desc= tabs.get(c);
         if ( desc==null ) {
             //System.err.println("here c has no desc");
