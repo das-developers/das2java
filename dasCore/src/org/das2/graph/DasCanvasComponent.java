@@ -55,6 +55,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     }
     
     private static final MouseListener currentComponentListener = new MouseAdapter() {
+        @Override
         public void mousePressed(MouseEvent e) {
             DasCanvasComponent dcc;
             if (e.getSource() instanceof DasCanvasComponent) {
@@ -143,8 +144,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      */
     public void resize() {
         if (column == DasColumn.NULL || row == DasRow.NULL ) {
-            logger.warning("Null row and/or column in resize: row=" + row
-                    + " column=" + column);
+            logger.log(Level.WARNING, "Null row and/or column in resize: row={0} column={1}", new Object[]{row, column});
         } else {
             setBounds(column.getDMinimum(),row.getDMinimum(),
                     (column.getDMaximum()-column.getDMinimum()),
@@ -175,7 +175,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      */
     private class ResizeListener implements DasUpdateListener {
         public void update(org.das2.graph.event.DasUpdateEvent e) {
-            logger.fine("component row or column moved: "+e.getSource());
+            logger.log(Level.FINE, "component row or column moved: {0}", e.getSource());
             markDirty();
             DasCanvasComponent.this.update();
         }
@@ -240,6 +240,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     /**
      * @return a concise String representation of the object.
      */
+    @Override
     public String toString() {
         return getClass().getName()+"'"+getDasName()+"'";
     }
@@ -252,7 +253,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * the AWT Event Queue can coalesce update events.
      */
     protected void updateImmediately() {
-        logger.finer("updateImmediately for "+this.getClass().getName() );
+        logger.log(Level.FINER, "updateImmediately for {0}", this.getClass().getName());
     }
     
     private org.das2.event.DasUpdateEvent devt;
@@ -262,7 +263,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * done to get the get the component back into a valid state.
      */
     public void update() {
-        logger.finer("update for "+this.getClass().getName() );
+        logger.log(Level.FINER, "update for {0}", this.getClass().getName());
         java.awt.EventQueue eventQueue =
                 Toolkit.getDefaultToolkit().getSystemEventQueue();
         if (devt == null) devt = new org.das2.event.DasUpdateEvent(this);
@@ -288,6 +289,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * @see       java.awt.Component#processMouseWheelEvent
      * @see       #processDasUpdateEvent
      */
+    @Override
     protected void processEvent(AWTEvent e) {
         super.processEvent(e);
         if (e instanceof org.das2.event.DasUpdateEvent) {
@@ -327,6 +329,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * @return a coalesced event, or <code>null</code> indicating that no
      * 		coalescing was done
      */
+    @Override
     protected AWTEvent coalesceEvents(AWTEvent existingEvent, AWTEvent newEvent) {
         if (existingEvent instanceof org.das2.event.DasUpdateEvent && newEvent instanceof org.das2.event.DasUpdateEvent) {
             return existingEvent;
@@ -338,6 +341,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     protected void uninstallComponent() {}
     
+    @Override
     public Font getFont() {
         return (getParent() == null ? super.getFont() : getParent().getFont());
     }
@@ -485,7 +489,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * Setter for property dasMouseInputAdapter.
      * @param dasMouseInputAdapter New value of property dasMouseInputAdapter.
      */
-    public synchronized void setDasMouseInputAdapter(DasMouseInputAdapter dasMouseInputAdapter) {
+    public final synchronized void setDasMouseInputAdapter(DasMouseInputAdapter dasMouseInputAdapter) {
         if ( mouseAdapter!=null ) {
             removeMouseListener(mouseAdapter);
             removeMouseMotionListener(mouseAdapter);
