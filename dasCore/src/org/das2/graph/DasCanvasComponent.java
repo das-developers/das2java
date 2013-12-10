@@ -410,10 +410,11 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * the application.
      * @throws org.das2.DasNameException
      */
-    public void setDasName(String name) throws org.das2.DasNameException {
+    public final void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
         }
+        setName(name); // might as well set the component name.
         String oldName = dasName;
         dasName = name;
         DasApplication app = DasApplication.getDefaultApplication();
