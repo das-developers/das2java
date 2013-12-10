@@ -83,4 +83,12 @@ public class ColorUtil {
             return Color.decode(s);
         }
     }
+    
+    /**
+     * return standard color for slightly masking background.
+     * @return 
+     */
+    public static Color getRicePaperColor() {
+        return GraphUtil.getRicePaperColor();
+    }
 }
