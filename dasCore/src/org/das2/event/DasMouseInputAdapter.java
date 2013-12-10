@@ -125,8 +125,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * @param name 
      */
     public void resetName(String name) {
-        primaryPopup.setName("dmia_pop1_"+name);
-        secondaryPopup.setName("dmia_pop2_"+name);
+        if ( !this.headless ) {
+            primaryPopup.setName("dmia_pop1_"+name);
+            secondaryPopup.setName("dmia_pop2_"+name);
+        }
     }
 
     private static final class MouseMode {
