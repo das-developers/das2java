@@ -9,6 +9,7 @@
 package org.das2.components;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -130,7 +131,9 @@ public class TearoffTabbedPane extends JTabbedPane {
             Graphics2D g2= (Graphics2D)g;
             int h= g.getFontMetrics().getHeight();
             g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-            g2.setColor( ColorUtil.getRicePaperColor() );
+            Color c= this.getBackground();
+            c= new Color( c.getRed(), c.getGreen(), c.getBlue(), 220 );
+            g2.setColor( c );
             g2.fill( g.getClip() );
             g2.setColor( this.getForeground() );
             g2.drawString( "(dock)", h*3, h );
