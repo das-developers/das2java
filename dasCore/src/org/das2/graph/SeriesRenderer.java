@@ -1471,6 +1471,10 @@ public class SeriesRenderer extends Renderer {
                 logger.fine("dataset is rank 2 and not a bundle.");
                 return;
             }
+            if ( ds.rank()!=1 && !SemanticOps.isBundle(vds) ) {
+                logger.fine("dataset is rank 2 and not a bundle");
+                return;
+            }
             unitsWarning= false;
             plottable = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits());
             if ( !plottable ) {
