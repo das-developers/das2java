@@ -147,7 +147,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         MouseMode(String s) {
             this.s = s;
         }
-
+        @Override
         public String toString() {
             return s;
         }
@@ -232,7 +232,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         } else {
             MouseModule preExisting = getModuleByLabel(module.getLabel());
             if (preExisting != null) {
-                DasLogger.getLogger(DasLogger.GUI_LOG).fine("Replacing mouse module " + module.getLabel() + ".");
+                DasLogger.getLogger(DasLogger.GUI_LOG).log(Level.FINE, "Replacing mouse module {0}.", module.getLabel());
                 replaceMouseModule(preExisting, module);
 
             } else {
@@ -291,7 +291,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     
     public KeyAdapter getKeyAdapter() {
         return new KeyAdapter() {
-
+            @Override
             public void keyPressed(KeyEvent ev) {
                 logger.finest("keyPressed ");
                 if (ev.getKeyCode() == KeyEvent.VK_ESCAPE && active != null) {
@@ -317,7 +317,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     }
                 }
             }
-
+            @Override
             public void keyReleased(KeyEvent ev) {
                 if (ev.getKeyCode() == KeyEvent.VK_SHIFT) {
                     drawControlPoints = false;
@@ -330,7 +330,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     ((MouseModule) active.get(i)).keyReleased(ev);
                 }
             }
-
+            @Override
             public void keyTyped(KeyEvent ev) {
                 if (active == null) {
                     return;
@@ -819,7 +819,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     @Override
     public void mousePressed(MouseEvent e) {
-        logger.finer("mousePressed " + mouseMode);
+        logger.log(Level.FINER, "mousePressed {0}", mouseMode);
         if (pinned) {
             active = null;
             refresh();
@@ -938,7 +938,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        logger.finest("mouseDragged in " + mouseMode);
+        logger.log(Level.FINEST, "mouseDragged in {0}", mouseMode);
         if (mouseMode == MouseMode.resize) {
             Point p = e.getPoint();
             p.translate(parent.getX(), parent.getY());
@@ -1087,18 +1087,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         return result;
     }
 
-    /**
-     * @deprecated use getPrimaryModuleByLabel
-     * @return
-     */
-    public String getPrimaryModuleLabel() {
-        MouseModule primary = getPrimaryModule();
-        return primary == null ? "" : primary.getLabel();
-    }
-
     public String getPrimaryModuleByLabel() {
-        MouseModule primary = getPrimaryModule();
-        return primary == null ? "" : primary.getLabel();
+        MouseModule primary1 = getPrimaryModule();
+        return primary1 == null ? "" : primary1.getLabel();
     }
     
     public void setPrimaryModuleByLabel(String label) {
@@ -1110,8 +1101,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
 
     public String getSecondaryModuleByLabel() {
-        MouseModule secondary = getPrimaryModule();
-        return secondary == null ? "" : secondary.getLabel();
+        MouseModule secondary1 = getPrimaryModule();
+        return secondary1 == null ? "" : secondary1.getLabel();
     }
     
     public void setSecondaryModuleByLabel(String label) {
@@ -1130,6 +1121,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         this.modules.set(i, mouseModule);
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         hasFocus = true;
         if (e.isShiftDown()) {
@@ -1140,6 +1132,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         }
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         hasFocus = false;
         if (e.isShiftDown()) {
@@ -1269,6 +1262,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         parent.getRow().setDPosition(min + dy, max + dy);
     }
 
+    @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         if (secondary != null) {
             secondary.mouseWheelMoved(e);
