@@ -224,10 +224,17 @@ public final class LoggerManager {
         }
     }
     
+    private static int lastEvent= 0;
+    
     private static void logGuiEvent( Object source, String thisRef ) {
         if ( !EventQueue.isDispatchThread() ) {
             return;
         }
+        int thisEvent= EventQueue.getCurrentEvent().hashCode();
+        if ( thisEvent==lastEvent ) {  // avoid secondary messages.
+            return;
+        }
+        lastEvent= thisEvent;
         String ssrc= source.toString();
         if ( ssrc.length()>10 ) {
             int i=ssrc.indexOf("[");
