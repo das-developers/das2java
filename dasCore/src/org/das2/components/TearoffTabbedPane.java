@@ -9,13 +9,15 @@
 package org.das2.components;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
@@ -47,6 +49,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.das2.graph.ColorUtil;
+import org.das2.util.GrannyTextRenderer;
 import org.das2.util.LoggerManager;
 import test.components.TearoffTabbedPaneDemo;
 
@@ -109,6 +113,30 @@ public class TearoffTabbedPane extends JTabbedPane {
             return;
         }
         babySitterC.setActionMap(am);
+    }
+    
+    private boolean dropDecorate;
+
+    /**
+     * paint decorations to indicate this will accept a drop.
+     * @param b 
+     */
+    private void setDropDecorate(boolean b) {
+        this.dropDecorate= b;
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g); //To change body of generated methods, choose Tools | Templates.
+        if ( dropDecorate ) {
+            Graphics2D g2= (Graphics2D)g;
+            int h= g.getFontMetrics().getHeight();
+            g2.setRenderingHint( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+            g2.setColor( ColorUtil.getRicePaperColor() );
+            g2.fill( g.getClip() );
+            g2.setColor( this.getForeground() );
+            g2.drawString( "(dock)", h*3, h );
+        }
     }
 
     private static class TabDesc {
@@ -220,11 +248,13 @@ public class TearoffTabbedPane extends JTabbedPane {
 
                         if ( dropDirty!=null ) { // give some hint that this is a drop target.
                             dropDirty.setLocation( 0,0 );
+                            dropDirty.setDropDecorate(false);
                             dropDirty.repaint();
                         }
 
                         if ( drop!=null ) {
                             drop.setLocation( 4,4 );
+                            drop.setDropDecorate(true);
                             drop.repaint();
                             dropDirty= drop;
                         } else {
@@ -298,6 +328,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                     draggingTearOff= getTabbedPane(draggingFrame);
                     if ( draggingTearOff!=null && TearoffTabbedPane.this.parentPane.contains( SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), TearoffTabbedPane.this.parentPane ) ) ) {
                         TearoffTabbedPane.this.parentPane.dock(draggingTearOff.getComponentAt(0));
+                        TearoffTabbedPane.this.parentPane.setDropDecorate(false);
                         draggingFrame.dispose();
                     } else {
                         if ( draggingTearOff!=null ) {
@@ -379,11 +410,13 @@ public class TearoffTabbedPane extends JTabbedPane {
 
                         if ( dropDirty!=null ) { // give some hint that this is a drop target.
                             dropDirty.setLocation( 0,0 );
+                            dropDirty.setDropDecorate(false);
                             dropDirty.repaint();
                         }
 
                         if ( drop!=null ) {
                             drop.setLocation( 4,4 );
+                            drop.setDropDecorate(true);
                             drop.repaint();
                             dropDirty= drop;
                         } else {
@@ -621,6 +654,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
                     if ( dropDirty!=null ) {
                         dropDirty.setLocation( 0,0 );
+                        dropDirty.setDropDecorate(false);
                         dropDirty.repaint();
                     }
 
