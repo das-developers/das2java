@@ -249,13 +249,11 @@ public class TearoffTabbedPane extends JTabbedPane {
                         TearoffTabbedPane drop= getHoverTP( e.getComponent(), e.getPoint() );
 
                         if ( dropDirty!=null ) { // give some hint that this is a drop target.
-                            dropDirty.setLocation( 0,0 );
                             dropDirty.setDropDecorate(false);
                             dropDirty.repaint();
                         }
 
                         if ( drop!=null ) {
-                            drop.setLocation( 4,4 );
                             drop.setDropDecorate(true);
                             drop.repaint();
                             dropDirty= drop;
@@ -411,13 +409,11 @@ public class TearoffTabbedPane extends JTabbedPane {
                         }
 
                         if ( dropDirty!=null ) { // give some hint that this is a drop target.
-                            dropDirty.setLocation( 0,0 );
                             dropDirty.setDropDecorate(false);
                             dropDirty.repaint();
                         }
 
                         if ( drop!=null ) {
-                            drop.setLocation( 4,4 );
                             drop.setDropDecorate(true);
                             drop.repaint();
                             dropDirty= drop;
@@ -651,7 +647,6 @@ public class TearoffTabbedPane extends JTabbedPane {
 
 
                     if ( dropDirty!=null ) {
-                        dropDirty.setLocation( 0,0 );
                         dropDirty.setDropDecorate(false);
                         dropDirty.repaint();
                     }
