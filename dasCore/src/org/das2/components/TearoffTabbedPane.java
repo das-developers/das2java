@@ -48,7 +48,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.das2.graph.ColorUtil;
 import org.das2.util.LoggerManager;
 import test.components.TearoffTabbedPaneDemo;
 
@@ -291,7 +290,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             Component selectedComponent;
 
             {
-                dockMenu.add(new JMenuItem(new AbstractAction("return") {
+                dockMenu.add(new JMenuItem(new AbstractAction("return undocked tab") {
 
                     public void actionPerformed(ActionEvent event) {
 
