@@ -423,6 +423,10 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
                 app.getNameContext().remove(oldName);
             }
         }
+        if ( getDasMouseInputAdapter()!=null ) {
+            getDasMouseInputAdapter().resetName(name);
+        }
+
         this.firePropertyChange("name", oldName, name);
     }
     
