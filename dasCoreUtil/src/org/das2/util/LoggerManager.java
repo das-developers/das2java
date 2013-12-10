@@ -24,6 +24,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -196,6 +197,33 @@ public final class LoggerManager {
         }
     }
     
+    /**
+     * return a human-consumable label for the component.
+     * @param c
+     * @return 
+     */
+    private static String labelFor( Component c ) {
+        if ( c instanceof JPopupMenu ) {
+            return ((JPopupMenu)c).getLabel();
+        } else {
+            if ( c.getParent() instanceof JTabbedPane ) {
+                JTabbedPane tp= (JTabbedPane)c.getParent();
+                int itab= tp.indexOfComponent(c);
+                return tp.getTitleAt(itab);
+            } else if ( c instanceof JPanel && ( ((JPanel)c).getBorder() instanceof TitledBorder )) {
+                TitledBorder tb= (TitledBorder)((JPanel)c).getBorder();
+                String title= tb.getTitle();
+                if ( title.endsWith(" [?]") ) {
+                    title= title.substring(0,title.length()-4);
+                }
+                return title;
+            } else {
+                return c.getName();
+            }
+            
+        }
+    }
+    
     private static void logGuiEvent( Object source, String thisRef ) {
         if ( !EventQueue.isDispatchThread() ) {
             return;
@@ -209,11 +237,7 @@ public final class LoggerManager {
                 Container cc= findReferenceComponent(c);
                 StringBuilder src;
                 if ( cc instanceof JPanel && ( ((JPanel)cc).getBorder() instanceof TitledBorder ) ) {
-                    TitledBorder tb= (TitledBorder)((JPanel)cc).getBorder();
-                    String title= tb.getTitle();
-                    if ( title.endsWith(" [?]") ) {
-                        title= title.substring(0,title.length()-4);
-                    }
+                    String title= labelFor(c);
                     src= new StringBuilder( " of \""+title + "\"");
                 } else {
                     src= new StringBuilder( );
@@ -235,6 +259,27 @@ public final class LoggerManager {
                         src.append(" of \"").append(n).append("\"");
                     }
                 }
+                if ( src.length()==0 && cc instanceof JPopupMenu ) {
+                    String t= ((JPopupMenu)cc).getLabel();
+                    if ( t!=null && t.length()==0 ) t= cc.getName();
+                    if ( t==null ) {
+                         Component inv= ((JPopupMenu)cc).getInvoker();
+                         while ( inv instanceof JMenu ) {
+                             t= ((JMenu)inv).getText();
+                             src.append(" of menu \"").append(t).append( "\"");
+                             Component inv1= inv.getParent();
+                             if ( inv1 instanceof JPopupMenu ) {
+                                 inv= ((JPopupMenu)inv1).getInvoker();
+                             }
+                         }
+                         if ( inv!=null ) {
+                             src.append(" of \"").append(labelFor(inv)).append( "\"");
+                         }
+                    } else {
+                        src.append(" of menu \"").append(t).append( "\"");
+                    }
+                }
+                
                 Window h= SwingUtilities.getWindowAncestor(c);
                 String htitle=null;
                 if ( h instanceof Dialog ) {
