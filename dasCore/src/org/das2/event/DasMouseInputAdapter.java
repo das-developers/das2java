@@ -115,6 +115,20 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     private Point pressPosition;  // in the component frame
     private final boolean headless;
 
+    public void setMenuLabel(String id) {
+        primaryPopup.setLabel(id);
+        secondaryPopup.setLabel(id);
+    }
+
+    /**
+     * set the name of the menus to help with debugging
+     * @param name 
+     */
+    public void resetName(String name) {
+        primaryPopup.setName("dmia_pop1_"+name);
+        secondaryPopup.setName("dmia_pop2_"+name);
+    }
+
     private static final class MouseMode {
 
         String s;
@@ -156,9 +170,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         this.headless = DasApplication.getDefaultApplication().isHeadless();
         if (!headless) {
             primaryPopup= new JPopupMenu();
+            primaryPopup.setName("dmia_pop1_"+parent.getDasName());
             numInserted = createPopup(primaryPopup);
             secondaryPopup= new JPopupMenu();
+            secondaryPopup.setName("dmia_pop2_"+parent.getDasName()); 
             numInsertedSecondary = createPopup(secondaryPopup);
+            
         }
 
         active = null;
