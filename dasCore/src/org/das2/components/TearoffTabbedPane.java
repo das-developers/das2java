@@ -290,9 +290,8 @@ public class TearoffTabbedPane extends JTabbedPane {
 
             Component selectedComponent;
 
-
             {
-                dockMenu.add(new JMenuItem(new AbstractAction("dock") {
+                dockMenu.add(new JMenuItem(new AbstractAction("return") {
 
                     public void actionPerformed(ActionEvent event) {
 
