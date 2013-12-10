@@ -277,6 +277,8 @@ public final class LoggerManager {
                              Component inv1= inv.getParent();
                              if ( inv1 instanceof JPopupMenu ) {
                                  inv= ((JPopupMenu)inv1).getInvoker();
+                             } else {
+                                 inv= null;
                              }
                          }
                          if ( inv!=null ) {
