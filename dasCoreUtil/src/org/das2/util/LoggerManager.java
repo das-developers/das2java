@@ -20,7 +20,10 @@ import java.util.WeakHashMap;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -29,11 +32,13 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.text.JTextComponent;
 
 /**
  * Central place that keeps track of loggers.  Note that both org.das.datum 
@@ -230,11 +235,17 @@ public final class LoggerManager {
         if ( !EventQueue.isDispatchThread() ) {
             return;
         }
-        int thisEvent= EventQueue.getCurrentEvent().hashCode();
-        if ( thisEvent==lastEvent ) {  // avoid secondary messages.
-            return;
+        AWTEvent evt= EventQueue.getCurrentEvent();
+        if ( evt!=null ) {
+            int thisEvent= evt.hashCode();
+            if ( thisEvent==lastEvent ) {  // avoid secondary messages.
+                return;
+            }
+            lastEvent= thisEvent;
+        } else {
+            //System.err.println("wasn't expecting this..."); // this happens when plotting "http://jfaden.net/~jbf/autoplot/bugs/sf/1140/pngwalk/product.vap?timeRange=1996-04-04"
         }
-        lastEvent= thisEvent;
+        
         String ssrc= source.toString();
         if ( ssrc.length()>10 ) {
             int i=ssrc.indexOf("[");
@@ -287,6 +298,26 @@ public final class LoggerManager {
                     } else {
                         src.append(" of menu \"").append(t).append( "\"");
                     }
+                } else if ( c instanceof JComboBox ) {
+                    src.append(c.getName());
+                } else if ( c instanceof AbstractButton ) {
+                    String text= ((AbstractButton)c).getText();
+                    if ( text==null || text.length()==0 ) {
+                        text= c.getName();
+                    }
+                    src.append("\"").append(text).append("\"");
+                } else if ( c instanceof JTextField ) {
+                    String text= ((JTextField)c).getText();
+                    if ( text==null || text.length()==0 ) {
+                        text= c.getName();
+                    }
+                    src.append("\"").append(text).append("\"");
+                } else if ( c instanceof JTextField ) {
+                    String text= ((JTextField)c).getText();
+                    if ( text==null || text.length()==0 ) {
+                        text= c.getName();
+                    }
+                    src.append("\"").append(text).append("\"");
                 }
                 
                 Window h= SwingUtilities.getWindowAncestor(c);
@@ -300,7 +331,11 @@ public final class LoggerManager {
                 
             }
         }
-        getLogger("gui").log( Level.FINE, "\"{0}\" from {1}", new Object[]{ thisRef, ssrc });
+        if ( thisRef.length()>30 ) { // pngwalk tool uses action commands to handle argument passing.
+            getLogger("gui").log( Level.FINE, "{1}", new Object[]{ ssrc });
+        } else {
+            getLogger("gui").log( Level.FINE, "\"{0}\" from {1}", new Object[]{ thisRef, ssrc });
+        }
         
     }
     /**
@@ -314,6 +349,9 @@ public final class LoggerManager {
         if ( e.getSource() instanceof JCheckBox ) {
             JCheckBox cb= (JCheckBox)e.getSource();
             logGuiEvent( e.getSource(), ( cb.isSelected() ? "select " : "deselect " ) + e.getActionCommand() );
+        } else if ( e.getSource() instanceof JComboBox ) {
+            JComboBox cb= (JComboBox)e.getSource();
+            logGuiEvent( e.getSource(), cb.getEditor().getItem().toString() );
         } else {
             logGuiEvent( e.getSource(), e.getActionCommand() );
         }
