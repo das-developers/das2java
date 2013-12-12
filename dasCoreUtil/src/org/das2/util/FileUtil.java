@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -225,4 +226,35 @@ public class FileUtil {
         ic.close();
         oc.close();
     }
+    
+    /**
+     * return the first four bytes of the file as a string.
+     * @param file
+     * @return a four byte string
+     * @throws IllegalArgumentException if the file is less than four bytes.
+     */
+    public static String getMagic(File src) throws FileNotFoundException, IOException {
+        byte[] four= new byte[4];
+        FileChannel ic = new FileInputStream(src).getChannel();
+        ByteBuffer buf= ByteBuffer.wrap(four);
+        int bytesRead=0;
+        try {
+            while ( bytesRead<4 ) {
+                int bytes= ic.read( buf );
+                if ( bytes==-1 ) {
+                    if ( bytesRead==0 ) {
+                        throw new IllegalArgumentException("File is empty: "+src);
+                    } else {
+                        throw new IllegalArgumentException("File has less than four bytes: "+src);
+                    }
+                }
+                bytesRead+= bytes;
+            }
+        } finally {
+            ic.close();
+        }
+        return new String( four );
+    }
+
+    
 }
