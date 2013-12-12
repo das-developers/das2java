@@ -228,7 +228,9 @@ public class FileUtil {
     }
     
     /**
-     * return the first four bytes of the file as a string.
+     * return the first four bytes of the file as a string.  Some magic
+     * numbers we care about:
+     *  <li> '\x89HDF'  HDF (and new NetCDF) files
      * @param file
      * @return a four byte string
      * @throws IllegalArgumentException if the file is less than four bytes.
