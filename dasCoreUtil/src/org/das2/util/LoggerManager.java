@@ -12,6 +12,7 @@ import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -363,6 +364,14 @@ public final class LoggerManager {
         }
         logGuiEvent( e.getSource(), "changeEvent" );
     }
+    
+    public static void logGuiEvent( ItemEvent e ) {
+        if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
+            return;
+        }
+        logGuiEvent( e.getSource(), "itemEvent" );
+    }
+                
             
     public static void main( String[] args ) {
         Logger l= LoggerManager.getLogger("test");
