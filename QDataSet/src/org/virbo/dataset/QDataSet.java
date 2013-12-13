@@ -408,7 +408,8 @@ public interface QDataSet {
     /**
      * Map&lt;String,Object&gt; representing additional properties used by client codes.  No
      * interpretation is done of these properties, but they are passed around as much
-     * as possible.
+     * as possible.  The object values should be but don't have to be limited to: double, double array,
+     * datum, QDataSet, String, String array.
      */
     public final static String USER_PROPERTIES="USER_PROPERTIES";
 
