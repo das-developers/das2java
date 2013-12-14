@@ -770,7 +770,7 @@ public class AsciiHeadersParser {
             
             int column=0;
             int i=0;
-            while ( i< this.length() && column<maxColumn ) {
+            while ( i< this.length() && column<=maxColumn ) {
                 if ( positionToDs.containsKey(column) ) {
                     String name= positionToDs.get(column);
                     Integer ioldIndex= datasets.get(name);
