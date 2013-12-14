@@ -344,6 +344,10 @@ public final class LoggerManager {
      * @param e 
      */
     public static void logGuiEvent( ActionEvent e ) {
+        if ( e==null ) {
+            getLogger("gui").log( Level.FINEST, "null ActionEvent");
+            return;
+        }
         if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
             return;
         }
