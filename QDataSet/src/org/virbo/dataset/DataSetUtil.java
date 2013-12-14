@@ -1872,11 +1872,11 @@ public class DataSetUtil {
             if (dep.length() != ds.length()) {
                 problems.add(String.format("DEPEND_%d length is %d while data length is %d.", dimOffset, dep.length(), ds.length()));
             }
-            if ( dep.rank() > ds.rank() ) {
-                problems.add(String.format("DEPEND_%d rank is %d but ds.rank() is less (%d)", dimOffset, dep.rank(), ds.rank()) );
-            } else {
-                if ( dep.rank()==2 && dep.length(0)!=ds.length(0) ) problems.add(String.format("DEPEND_%d length(0) is %d while data.length(0) is %d.", dimOffset, dep.length(0), ds.length(0)) );
-            }
+            //if ( dep.rank() > ds.rank() ) {  // This happens when we have BINS_1 for DEPEND_0.
+            //    problems.add(String.format("DEPEND_%d rank is %d but ds.rank() is less (%d)", dimOffset, dep.rank(), ds.rank()) );
+            //} else {
+            //    if ( dep.rank()==2 && dep.length(0)!=ds.length(0) ) problems.add(String.format("DEPEND_%d length(0) is %d while data.length(0) is %d.", dimOffset, dep.length(0), ds.length(0)) );
+            //}
             if (ds.rank() > 1 && ds.length() > 0) {
                 QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
                 if ( dep1!=null && dep1.rank()>1 ) {
