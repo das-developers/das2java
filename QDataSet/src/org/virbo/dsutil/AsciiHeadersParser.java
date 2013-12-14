@@ -756,15 +756,21 @@ public class AsciiHeadersParser {
         BundleDescriptor resortDataSets( Map<String,Integer> dsToPosition ) {
             Map<Integer,String> positionToDs= new LinkedHashMap();
 
+            int maxColumn=-1;
             for ( Entry<String,Integer> entry: dsToPosition.entrySet() ) {
+                if ( positionToDs.get(entry.getValue())!=null ) {
+                    throw new IllegalArgumentException("two datasets occupy the same position: "+entry.getKey()+","+positionToDs.get(entry.getValue()) );
+                }
                 positionToDs.put( entry.getValue(), entry.getKey() );
+                if ( maxColumn<entry.getValue() ) maxColumn= entry.getValue();
             }
 
             BundleDescriptor newb= new BundleDescriptor();
 
+            
             int column=0;
             int i=0;
-            while ( i< this.length() ) {
+            while ( i< this.length() && column<maxColumn ) {
                 if ( positionToDs.containsKey(column) ) {
                     String name= positionToDs.get(column);
                     Integer ioldIndex= datasets.get(name);
