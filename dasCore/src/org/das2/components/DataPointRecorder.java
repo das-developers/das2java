@@ -87,8 +87,7 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
 /**
- * DataPointRecorder is a GUI for storing data points selected by the user.  This has not been
- * tested on the Autoplot community branch and probably needs work.
+ * DataPointRecorder is a GUI for storing data points selected by the user.  
  * @author  jbf
  */
 public class DataPointRecorder extends JPanel implements DataPointSelectionListener {
