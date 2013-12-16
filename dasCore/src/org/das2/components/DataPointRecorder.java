@@ -396,7 +396,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         }
                     }
                 }
-                if (this.xTagWidth != null) {
+                if ( xTagWidth != null && xTagWidth.value()>0 && !xTagWidth.isFill() ) {
                     builder.setProperty("xTagWidth", xTagWidth);
                 }
             }
@@ -431,7 +431,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         }
                     }
                 }
-                if (this.xTagWidth != null) {
+                if ( xTagWidth != null && xTagWidth.value()>0 && !xTagWidth.isFill() ) {
                     builder.setProperty("xTagWidth", xTagWidth);
                 }
             }
@@ -998,6 +998,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         JMenu editMenu = new JMenu("Edit");
         editMenu.add(new JMenuItem(getPropertiesAction()));
+        editMenu.add( new JMenuItem( new AbstractAction("Clear Table Sorting") {
+            public void actionPerformed(ActionEvent e) {
+                table.setAutoCreateRowSorter(false);
+                table.setAutoCreateRowSorter(true);
+            }
+        } ) );
         menuBar.add(editMenu);
 
         this.add(menuBar, BorderLayout.NORTH);
@@ -1006,6 +1012,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         unitsArray = new Units[]{null, null};
 
         table = new JTable(myTableModel);
+        table.setAutoCreateRowSorter(true); // Java 1.6
 
         table.getTableHeader().setReorderingAllowed(true);
         table.setColumnModel( new DefaultTableColumnModel() {
@@ -1304,6 +1311,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         if (ds.getProperty("xTagWidth") != null) {
             DataPointRecorder.this.xTagWidth = (Datum) ds.getProperty("xTagWidth");
+        } else {
+            DataPointRecorder.this.xTagWidth = Datum.create(0);
         }
 
         String[] planes = ds.getPlaneIds();
@@ -1365,7 +1374,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         synchronized (dataPoints) {
             // if a point exists within xTagWidth of the point, then have this point replace
             Datum x = e.getX();
-            if (snapToGrid && xTagWidth != null && dataPoints.size() > 0) {
+            if (snapToGrid && xTagWidth != null && xTagWidth.value()>0 && !xTagWidth.isFill() && dataPoints.size() > 0) {
                 QDataSet ds = getDataSet();
                 QDataSet xds= (QDataSet)ds.property(QDataSet.DEPEND_0);
                 Units xunits= SemanticOps.getUnits(xds);
@@ -1432,7 +1441,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     
     
     /**
-     * the selection are the highlited points in the table.  Listeners can grab this data and do something with the
+     * the selection are the highlighted points in the table.  Listeners can grab this data and do something with the
      * dataset.
      */
     private javax.swing.event.EventListenerList selectedListenerList = null;
@@ -1536,10 +1545,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * Holds value of property xTagWidth.
      */
-    private Datum xTagWidth = null;
+    private Datum xTagWidth = Datum.create(0);
 
     /**
-     * Getter for property xTagWidth.
+     * Getter for property xTagWidth.  When xTagWidth is zero,
+     * this implies there is no binning.
      * @return Value of property xTagWidth.
      */
     public Datum getXTagWidth() {
@@ -1547,7 +1557,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
 
     /**
-     * Setter for property xTagWidth.
+     * bins for the data, when xTagWidth is non-zero.
      * @param xTagWidth New value of property xTagWidth.
      */
     public void setXTagWidth(Datum xTagWidth) {
