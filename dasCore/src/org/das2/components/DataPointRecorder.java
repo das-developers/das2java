@@ -233,6 +233,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
         @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return Datum.class;
+        }
+
+        
+        @Override
         public int getRowCount() {
             synchronized (dataPoints) {
                 int nrow = dataPoints.size();
@@ -1272,7 +1278,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet");
                         }
                     }
-
                     index++;
                 }
 
