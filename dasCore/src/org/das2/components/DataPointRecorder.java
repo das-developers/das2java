@@ -504,9 +504,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         throw new IllegalArgumentException("unable to find plane: "+planesArray[j]);
                     }
                     if (unitsArray[j] == null) {
-                        if (o == null) {
-                            o = "";
-                        }
                         s.append("\"").append(o).append("\"\t");
                     } else {
                         Datum d = (Datum) o;
@@ -884,8 +881,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 if (checkModified(e)) {
                     JFileChooser jj = new JFileChooser();
                     String lastFileString = prefs.get("components.DataPointRecorder.lastFileLoad", "");
-                    File lastFile = null;
                     if ( lastFileString.length()>0 ) {
+                        File lastFile;
                         lastFile = new File(lastFileString);
                         jj.setSelectedFile(lastFile);
                     }
