@@ -19,6 +19,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathFactoryConfigurationException;
 import org.das2.datum.CacheTag;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.BundleDataSet;
@@ -50,7 +51,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     Map<String, JoinDataSet> joinDataSets;
     Map<String, String[]> bundleDataSets;
     
-    XPathFactory factory = XPathFactory.newInstance();
+    XPathFactory factory = getXPathFactory();
     XPath xpath = factory.newXPath();
     String dsname;
     boolean readPackets = true;
@@ -61,6 +62,23 @@ public class QDataSetStreamHandler implements StreamHandler {
         bundleDataSets = new HashMap<String, String[]>();
     }
 
+    /**
+     * Matlab uses net.sf.saxon.xpath.XPathEvaluator by default, so we explicitly look for the Java 6 one.
+     * @return com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl, probably.
+     * 
+     * This is a copy of DataSourceUtil.getXPathFactory.
+     */
+    private static XPathFactory getXPathFactory() {
+        XPathFactory xpf;
+        try {
+            xpf= XPathFactory.newInstance( XPathFactory.DEFAULT_OBJECT_MODEL_URI, "com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl", null );
+        } catch (XPathFactoryConfigurationException ex) {
+            xpf= XPathFactory.newInstance();
+            logger.log( Level.INFO, "using default xpath implementation: {0}", xpf.getClass());
+        }
+        return xpf;
+    }
+    
     /**
      * return a list of available datasets
      * @return
