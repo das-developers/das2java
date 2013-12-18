@@ -141,13 +141,28 @@ public class LengthDragRenderer extends LabelDragRenderer {
                         su= sslope + "/("+u+")";
                     }
                     
-                    fit= "!Cy="+ "10!A( x-("+x1+") )*"+su+"!n * " + y1;
+                    String sx0= x1.toString();
+                    if ( UnitsUtil.isTimeLocation( x1.getUnits() ) ) {
+                        fit= "!Cx0="+sx0+"!C";
+                        fit+= "!Cy="+ "10!A( x-x0 )*"+su+"!n * " + y1;
+                    } else {
+                        fit= "!Cy="+ "10!A( x-("+x1+") )*"+su+"!n * " + y1;
+                    }
 
                 } else if ( !yaxis.isLog() && xaxis.isLog() ) {
                     fit = "n/a";
                 } else {
+                    NumberFormat nf= new DecimalFormat("0.00");
+                    String dx= "( x - ("+x1+") )";
                     if ( runUnits!=Units.dimensionless ) {
-                        fit= "y="+ slope + "/"+runUnits +" * ( x - ("+x1+") ) + "+ y1;
+                        if ( UnitsUtil.isTimeLocation( x1.getUnits() ) ) {
+                            fit= "!Cx0="+x1+"!C";
+                            dx= "( x-x0 )";
+                            fit+= "!Cy="+ nf.format(slope.value()) + "/"+runUnits +" * " + dx + " + " + y1;
+                        } else {
+                            fit= "y="+ nf.format(slope.value()) + "/"+runUnits +" * " + dx + " + " + y1;
+                        }
+                        
                     } else {
                         fit= "y="+ slope + " * ( x - ("+x1+") ) + "+ y1;
                     }
