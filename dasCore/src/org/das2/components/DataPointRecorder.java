@@ -415,7 +415,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * @see select which selects part of the dataset.
      */
     public synchronized QDataSet getSelectedDataSet() {
-        int[] selectedRows = table.getSelectedRows();
+        int[] selectedRows = getSelectedRowsInModel();
         
         if (selectedRows.length == 0) {
             return null;
@@ -726,6 +726,18 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         this.active= active;
     }
 
+    /**
+     * return the index into the model for the selection
+     * @return 
+     */
+    private int[] getSelectedRowsInModel() {
+        int[] selectedRows = table.getSelectedRows();
+        for ( int i=0; i<selectedRows.length; i++ ) {
+            selectedRows[i]= table.convertRowIndexToModel(selectedRows[i]);
+        }
+        return selectedRows;
+    }
+    
     private class MyMouseAdapter extends MouseAdapter {
 
         JPopupMenu popup;
@@ -739,7 +751,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             menuItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    int[] selectedRows = parent.getSelectedRows();
+                    int[] selectedRows = getSelectedRowsInModel();
                     deleteRows(selectedRows);
                     //for (int i = 0; i < selectedRows.length; i++) {
                     //    deleteRow(selectedRows[i]);
