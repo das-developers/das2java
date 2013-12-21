@@ -921,6 +921,104 @@ public class DataSetUtil {
     }
     
     /**
+     * true if the two datasets appear to be from the same population.
+     * @param ds1
+     * @param ds2
+     * @return 
+     */
+    public static boolean samePopulation( QDataSet ds1, QDataSet ds2 ) {
+        RankZeroDataSet stats1 = DataSetOps.moment(ds1);
+        RankZeroDataSet stats2 = DataSetOps.moment(ds2);
+        QDataSet stddev1= (QDataSet) stats1.property("stddev");
+        QDataSet stddev2= (QDataSet) stats2.property("stddev");
+        Units u1= SemanticOps.getUnits( stats1 );
+        Units u2= SemanticOps.getUnits( stats2 );
+        DatumRange dr1= DatumRangeUtil.rescale( DatumRange.newDatumRange( Ops.subtract( stats1,stddev1 ).value(), Ops.add( stats1,stddev1 ).value(), u1 ), 0.2, 0.8 );
+        DatumRange dr2= DatumRangeUtil.rescale( DatumRange.newDatumRange( Ops.subtract( stats2,stddev2 ).value(), Ops.add( stats2,stddev2 ).value(), u2 ), 0.2, 0.8 );
+        return dr1.intersects(dr2);
+    }
+    
+    /**
+     * return true if the data appears to have log spacing.  The 
+     * data is assumed to be monotonically increasing or decreasing.
+     * @param ds rank 1 dataset.
+     * @return true if the data is roughly log spaced.
+     */
+    public static boolean isLogSpacing( QDataSet ds ) {
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("rank 1 only");
+        QDataSet c= (QDataSet) ds.property(QDataSet.CADENCE);
+        if ( c!=null ) {
+            return UnitsUtil.isRatiometric( SemanticOps.getUnits(ds) );
+        }
+        
+        QDataSet lindiff= Ops.diff(ds);
+        QDataSet logdiff= Ops.diff(Ops.log(ds));
+        
+        int l= lindiff.length();
+        int h= l/2;
+        
+        if ( samePopulation( lindiff.trim(0,h), lindiff.trim(h,l) ) ) {
+            return false;
+        } else if ( samePopulation( logdiff.trim(0,h),logdiff.trim(h,l) ) ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * This is the one code to infer bin boundaries when only the 
+     * centers are available.  This uses centers of adjacent data, and
+     * extrapolates to get the edge boundaries to create an acceptable limit.
+     * When the data is log-spaced, the centers are done in the ratiometric
+     * space.
+     * @param yds rank 1 dataset.
+     * @return rank 2 bins dataset.
+     */
+    public static QDataSet inferBins( QDataSet yds ) {
+        if ( yds.rank()!=1 ) throw new IllegalArgumentException("yds must be rank 1");
+        QDataSet yds0,yds1;
+        QDataSet dy= DataSetUtil.guessCadenceNew( yds, null );
+ 
+        if ( dy==null ) {
+            if ( isLogSpacing( yds ) ) {
+                    QDataSet diff1= yds.trim(0,yds.length()-1);    
+                    QDataSet diff2= yds.trim(1,yds.length());
+                    QDataSet delta= Ops.log( Ops.divide(diff2,diff1) );
+                    delta= Ops.putProperty( delta, QDataSet.UNITS, Units.logERatio );
+                    delta= Ops.convertUnitsTo( delta, Units.percentIncrease );
+                    delta= Ops.interpolate( delta, Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
+                    QDataSet v= Ops.divide( delta,100. );
+                    v= Ops.putProperty( v, QDataSet.UNITS, null );
+                    QDataSet ddy= Ops.sqrt( Ops.add( 1., v ) );
+                    yds0= Ops.divide( yds, ddy );
+                    yds1= Ops.multiply( yds, ddy );
+            } else {
+                    QDataSet diff1= yds.trim(0,yds.length()-1);
+                    QDataSet diff2= yds.trim(1,yds.length());
+                    QDataSet delta= Ops.interpolate( Ops.subtract(diff2,diff1), Ops.linspace( -0.5,diff1.length()-0.5, diff1.length()+1 ) );
+                    yds0= Ops.subtract( yds, delta );
+                    yds1= Ops.add( yds, delta );
+            }
+        } else {
+            if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(yds) ) ) {
+                dy= Ops.convertUnitsTo(dy, Units.percentIncrease );
+                double ddy= Math.sqrt( 1. + dy.value()/100. );
+                yds0= Ops.divide( yds, DataSetUtil.asDataSet(ddy) );
+                yds1= Ops.multiply( yds, DataSetUtil.asDataSet(ddy) );
+            } else {
+                dy= Ops.divide( dy, DataSetUtil.asDataSet(2) );
+                yds0= Ops.subtract( yds, dy );
+                yds1= Ops.add( yds, dy );
+            }
+        }
+        MutablePropertyDataSet mpds= (MutablePropertyDataSet)Ops.bundle( yds0, yds1 );
+        mpds.putProperty( QDataSet.BINS_1, "min,max" );
+        return mpds;
+    }
+    
+    
+    /**
      * returns a rank 0 dataset indicating the cadence of the dataset.  Using a
      * dataset as the result allows the result to indicate SCALE_TYPE and UNITS.
      * History:
