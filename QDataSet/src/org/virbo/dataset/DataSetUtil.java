@@ -1001,7 +1001,7 @@ public class DataSetUtil {
                     yds1= Ops.add( yds, delta );
             }
         } else {
-            if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(yds) ) ) {
+            if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dy) ) ) {
                 dy= Ops.convertUnitsTo(dy, Units.percentIncrease );
                 double ddy= Math.sqrt( 1. + dy.value()/100. );
                 yds0= Ops.divide( yds, DataSetUtil.asDataSet(ddy) );
