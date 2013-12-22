@@ -159,17 +159,9 @@ public class LanlNNRebinner implements DataSetRebinner {
                     yds0= Ops.subtract( yds, binMinus );
                     yds1= Ops.add( yds, binPlus );
                 } else {
-                    QDataSet dy= getCadence( yds.rank()==2 ? yds.slice(0): yds, ddY.binWidthDatum() );
-                    if ( UnitsUtil.isRatiometric( SemanticOps.getUnits(dy) ) ) {
-                        dy= Ops.convertUnitsTo(dy, Units.percentIncrease );
-                        double ddy= Math.sqrt( 1. + dy.value()/100. );
-                        yds0= Ops.divide( yds, DataSetUtil.asDataSet(ddy) );
-                        yds1= Ops.multiply( yds, DataSetUtil.asDataSet(ddy) );
-                    } else {
-                        dy= Ops.divide( dy, DataSetUtil.asDataSet(2) );
-                        yds0= Ops.subtract( yds, dy );
-                        yds1= Ops.add( yds, dy );
-                    }
+                    QDataSet bins= DataSetUtil.inferBins( yds.rank()==2 ? yds.slice(0): yds );
+                    yds0= Ops.slice1( bins, 0 );
+                    yds1= Ops.slice1( bins, 1 );
                 }
                 yds0c.put( yds, yds0 );
                 yds1c.put( yds, yds1 );
