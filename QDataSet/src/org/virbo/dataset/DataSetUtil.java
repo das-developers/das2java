@@ -534,8 +534,7 @@ public class DataSetUtil {
      * property not found.
      */
     public static void putProperties(Map<String, Object> properties, MutablePropertyDataSet ds) {
-        for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
-            Map.Entry<String,Object> e = (Map.Entry<String,Object>) i.next();
+        for ( Map.Entry<String,Object> e : properties.entrySet() ) {
             if ( e.getKey().startsWith("DEPEND_") && e.getValue() instanceof Map ) {
                 QDataSet dep= (QDataSet) ds.property(e.getKey());
                 if ( dep instanceof MutablePropertyDataSet ) {
@@ -662,7 +661,7 @@ public class DataSetUtil {
             depNames[i] = "";
             Object dep0o= ds.property("DEPEND_" + i);
             if ( dep0o!=null ) {
-                String dname=null;
+                String dname;
                 if ( dep0o instanceof QDataSet ) {
                     QDataSet dep0 = (QDataSet) dep0o;
                     dname = (String) dep0.property(QDataSet.NAME);
@@ -1441,7 +1440,7 @@ public class DataSetUtil {
         int cadenceNMin = 1;
 
         int i = 0;
-        double x0 = 0;
+        double x0;
         while (i < xds.length() && !u.isValid(yds.value(i))) {
             i++;
         }
@@ -2075,9 +2074,13 @@ public class DataSetUtil {
         }
         QDataSet result=null;
         int nb= ds.length(0);
+        if ( nb==0 ) {
+            throw new IllegalArgumentException("bundle is empty");
+        }
         for ( int i=0; i<nb; i++ ) {
             result= Ops.bundle( result, weightsDataSet( DataSetOps.unbundle(ds,i,false) ) );
         }
+        assert result!=null;
         ((MutablePropertyDataSet)result).putProperty( QDataSet.FILL_VALUE, -1e38 ); // codes like total assume this property exists.
         
         return result;
