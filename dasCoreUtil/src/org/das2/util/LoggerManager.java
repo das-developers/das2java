@@ -265,17 +265,19 @@ public final class LoggerManager {
                 Container w= cc.getParent();  //because findReferenceComponent might be a tab
                 if ( !( w instanceof JTabbedPane ) ) {
                     w= findReferenceComponent(c.getParent());
-                    if ( w.getParent() instanceof JViewport ) {
-                        w= w.getParent();
-                    }
-                    if ( w.getParent() instanceof JScrollPane ) {
-                        w= w.getParent();
-                    }
-                    if ( w.getParent() instanceof JTabbedPane ) {
-                        JTabbedPane tp= (JTabbedPane)w.getParent();
-                        int itab= tp.indexOfComponent(w);
-                        String n= tp.getTitleAt(itab);
-                        src.append(" of \"").append(n).append("\"");
+                    if ( w!=null ) {
+                        if ( w.getParent() instanceof JViewport ) {
+                            w= w.getParent();
+                        }
+                        if ( w.getParent() instanceof JScrollPane ) {
+                            w= w.getParent();
+                        }
+                        if ( w.getParent() instanceof JTabbedPane ) {
+                            JTabbedPane tp= (JTabbedPane)w.getParent();
+                            int itab= tp.indexOfComponent(w);
+                            String n= tp.getTitleAt(itab);
+                            src.append(" of \"").append(n).append("\"");
+                        }
                     }
                 }
                 if ( src.length()==0 && cc instanceof JPopupMenu ) {
