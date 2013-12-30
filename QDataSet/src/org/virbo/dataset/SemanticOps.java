@@ -317,19 +317,19 @@ public class SemanticOps {
      * @param timeUnits
      * @return
      */
-    public static synchronized Units lookupTimeUnits( Datum datum, Units offsetUnits ) {
+    public static synchronized Units lookupTimeUnits( Datum base, Units offsetUnits ) {
         Units result;
-        String canonicalName = "" + offsetUnits + " since "+ datum;
+        String canonicalName = "" + offsetUnits + " since "+ base;
         try {
             result= Units.getByName(canonicalName);
             return result;
         } catch ( IllegalArgumentException ex ) {
-            Basis basis= new Basis( "since "+ datum, "since "+ datum, Basis.since2000, datum.doubleValue(Units.us2000), Units.us2000.getOffsetUnits() );
+            Basis basis= new Basis( "since "+ base, "since "+ base, Basis.since2000, base.doubleValue(Units.us2000), Units.us2000.getOffsetUnits() );
             result= new TimeLocationUnits( canonicalName, canonicalName, offsetUnits, basis );
             result.registerConverter( Units.us2000,
                     new ScaleOffset(
                     offsetUnits.convertDoubleTo(Units.microseconds, 1.0),
-                    datum.doubleValue(Units.us2000) ) );
+                    base.doubleValue(Units.us2000) ) );
             return result;
         }        
     }
