@@ -307,6 +307,18 @@ public class SemanticOps {
             ss[1]= ss[1].substring(0,ss[1].length()-4);
         }
         datum= TimeUtil.create(ss[1]);
+        return lookupTimeUnits( datum, offsetUnits );
+    }
+    
+    /**
+     * lookupUnits canonical units object, or allocate one.  If one is
+     * allocated, then parse for "<unit> since <datum>" and add conversion to
+     * "microseconds since 2000-001T00:00."  Note leap seconds are ignored!
+     * @param timeUnits
+     * @return
+     */
+    public static synchronized Units lookupTimeUnits( Datum datum, Units offsetUnits ) {
+        Units result;
         String canonicalName = "" + offsetUnits + " since "+ datum;
         try {
             result= Units.getByName(canonicalName);
@@ -319,7 +331,7 @@ public class SemanticOps {
                     offsetUnits.convertDoubleTo(Units.microseconds, 1.0),
                     datum.doubleValue(Units.us2000) ) );
             return result;
-        }
+        }        
     }
 
     public static boolean isRank1Bundle(QDataSet ds) {
