@@ -195,79 +195,12 @@ public class DataSetOps {
     /**
      * flatten a rank 2 dataset where the y depend variable is just an offset from the xtag.  This is
      * a nice example of the advantage of using a class to represent the data: this requires no additional
-     * storage to handle the huge waveform.
+     * storage to handle the huge waveform.  Note the new DEPEND_0 may have different units from ds.property(DEPEND_0).
      * @param ds
      * @return
      */
     public static QDataSet flattenWaveform( final QDataSet ds ) {
-        final int n= ds.length(0);
-        MutablePropertyDataSet result= new AbstractDataSet() {
-            @Override
-            public int rank() {
-                return 1;
-            }
-
-            @Override
-            public int length() {
-                return n*ds.length();
-            }
-
-
-            @Override
-            public double value(int i0) {
-                return ds.value(i0/n,i0%n);
-            }
-
-            @Override
-            public Object property(String name) {
-                Object v= super.property(name);
-                if ( v==null ) v= ds.property(name);
-                if ( v==null ) {
-                    if ( DataSetUtil.isInheritedProperty(name)) {
-                        return ds.property(name);
-                    } else {
-                        return null;
-                    }
-                } else {
-                    return v;
-                }
-            }
-
-        };
-        final QDataSet dsdep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
-        final QDataSet dsdep1 = (QDataSet) ds.property(QDataSet.DEPEND_1);
-        final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(dsdep1), SemanticOps.getUnits(dsdep0).getOffsetUnits() );
-        MutablePropertyDataSet dep0= new AbstractDataSet() {
-            @Override
-            public int rank() {
-                return 1;
-            }
-            @Override
-            public int length() {
-                return n*ds.length();
-            }
-            @Override
-            public double value(int i0) {
-                return dsdep0.value(i0/n)+uc.convert(dsdep1.value(i0%n));
-            }
-
-            @Override
-            public Object property(String name) {
-                if ( name.equals(QDataSet.CADENCE) ) {
-                    return dsdep1.property(QDataSet.CADENCE);
-                } else {
-                    if ( DataSetUtil.isInheritedProperty(name) ) {
-                        return dsdep0.property(name);
-                    } else {
-                        return null;
-                    }
-                }
-            }
-
-
-        };
-        result.putProperty( QDataSet.DEPEND_0, dep0 );
-        return result;
+        return new FlattenWaveformDataSet(ds);
     }
 
     /**
