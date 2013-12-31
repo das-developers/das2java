@@ -10,13 +10,11 @@ import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DataSetIterator;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.QubeDataSetIterator;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
@@ -87,7 +85,11 @@ public class Reduction {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         
         xbuilder.putProperty( QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
-        
+        if ( icadence<offsets.length() ) {
+            xbuilder.putProperty( QDataSet.CADENCE, Ops.subtract(offsets.slice(icadence),offsets.slice(0)) );
+        } else {
+            xbuilder.putProperty( QDataSet.CADENCE, Ops.multiply( Ops.subtract(offsets.slice(icadence/2),offsets.slice(0)), 2 ) );
+        }
         int iout= 0;
         
         for ( int j=0; j<ds.length(); j++ ) {
@@ -111,7 +113,7 @@ public class Reduction {
         yminbuilder.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
         ymaxbuilder.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
         
-        result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminbuilder.getDataSet() ) );
+        result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminbuilder.getDataSet() ) ); // TODO: this should be BIN_PLUS and BIN_MINUS.
         result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), result ) );
         result.putProperty( QDataSet.DEPEND_0, xbuilder.getDataSet() );
         
