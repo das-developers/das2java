@@ -133,10 +133,6 @@ public class SeriesRenderer extends Renderer {
     PsymConnectorRenderElement[] extraConnectorElements;
     PsymRenderElement psymsElement = new PsymRenderElement();
     Shape selectionArea;
-    public static final String PROPERTY_X_DELTA_PLUS = "X_DELTA_PLUS";
-    public static final String PROPERTY_X_DELTA_MINUS = "X_DELTA_MINUS";
-    public static final String PROPERTY_Y_DELTA_PLUS = "Y_DELTA_PLUS";
-    public static final String PROPERTY_Y_DELTA_MINUS = "Y_DELTA_MINUS";
 
     boolean haveValidColor= true;
 
@@ -706,7 +702,7 @@ public class SeriesRenderer extends Renderer {
                 fx = (float) xAxis.transform(x, xUnits);
                 fy = (float) yAxis.transform(y, yUnits);
                 visible= isValid && window.intersectsLine( fx0,fy0, fx,fy );
-
+                
                 if (isValid) {
                     double step= logStep ? Math.log(x/x0) : x-x0;
                     if ( ignoreCadence || step < xSampleWidth) {
