@@ -1661,7 +1661,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         repaint();
     }
 
-    public void updateTickV() {
+    /**
+     * recalculate the tick positions.
+     */
+    protected void updateTickV() {
         if (!valueIsAdjusting()) {
             if ( getFont()==null ) return;
             
@@ -2774,7 +2777,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     int width = (int) Math.floor(idlt.getWidth() + 0.5);
                     tcaLabelWidth = Math.max(tcaLabelWidth, width);
                 }
-                tcaLabelWidth += 50;
                 if (tcaLabelWidth > 0) {
                     int tcaLabelSpace = DMin - tcaLabelWidth - tick_label_gap;
                     int minX = Math.min(tcaLabelSpace - maxLabelWidth / 2, bounds.x);
