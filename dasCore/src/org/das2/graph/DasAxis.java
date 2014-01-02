@@ -220,7 +220,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     public static final String PROPERTY_DATUMRANGE = "datumRange";
     /* DEBUGGING INSTANCE MEMBERS */
-    private static final boolean DEBUG_GRAPHICS = false;
+    private static final boolean DEBUG_GRAPHICS = true;
     private static final Color[] DEBUG_COLORS;
 
     int tickLen= 0; // this is reset after sizing.
@@ -2777,7 +2777,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     int width = (int) Math.floor(idlt.getWidth() + 0.5);
                     tcaLabelWidth = Math.max(tcaLabelWidth, width);
                 }
+                FontMetrics tickLabelFontMetrics = getFontMetrics(tickLabelFont);                
+                int rightEdgeGap;// = tickLabelFontMetrics.stringWidth("0000") + tick_label_gap;
+                rightEdgeGap = tickLabelFontMetrics.stringWidth("00");// + tick_label_gap;  
+            
                 if (tcaLabelWidth > 0) {
+                    tcaLabelWidth += rightEdgeGap;
                     int tcaLabelSpace = DMin - tcaLabelWidth - tick_label_gap;
                     int minX = Math.min(tcaLabelSpace - maxLabelWidth / 2, bounds.x);
                     int maxX = bounds.x + bounds.width;
