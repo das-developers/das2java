@@ -1600,7 +1600,6 @@ public class DataSetOps {
                         if ( dim==0 ) {
                             if ( idx>=fillDs.length() ) idx=fillDs.length()-1;
                             if ( idx<0 ) idx=0;
-                            //fillDs= slice0(fillDs, idx); //TODO: use fillDs.slice
                             fillDs= fillDs.slice(idx);
                         } else if ( dim==1 ) {
                             if ( idx>=fillDs.length(0) ) idx=fillDs.length(0)-1;
@@ -1644,6 +1643,8 @@ public class DataSetOps {
                 } else if ( cmd.equals("|trim") ) {
                     int d0= s.nextInt();
                     int d1= s.nextInt();
+                    if ( d0<0 ) d0+= fillDs.length();
+                    if ( d1<0 ) d1+= fillDs.length();
                     fillDs= fillDs.trim(d0,d1);
                 } else if ( cmd.startsWith("|collapse") && cmd.length()>9 ) {
                     int dim= cmd.charAt(9)-'0';
@@ -1651,6 +1652,8 @@ public class DataSetOps {
                         if ( dim==0 ) {
                             int st= s.nextInt();
                             int en= s.nextInt();
+                            if ( st<0 ) st+= fillDs.length();
+                            if ( en<0 ) en+= fillDs.length();
                             fillDs= fillDs.trim(st,en);
                         } else {
                             throw new IllegalArgumentException("trim is only allowed with collapse0");
@@ -1663,6 +1666,8 @@ public class DataSetOps {
                         if ( dim==0 ) {
                             int st= s.nextInt();
                             int en= s.nextInt();
+                            if ( st<0 ) st+= fillDs.length();
+                            if ( en<0 ) en+= fillDs.length();
                             fillDs= fillDs.trim(st,en);
                         } else {
                             throw new IllegalArgumentException("trim is only allowed with total0");
