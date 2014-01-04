@@ -1599,7 +1599,7 @@ public class DataSetOps {
                         int idx= (Integer)arg;
                         if ( dim==0 ) {
                             if ( idx>=fillDs.length() ) idx=fillDs.length()-1;
-                            if ( idx<0 ) idx=0;
+                            if ( idx<0 ) idx+= fillDs.length();
                             fillDs= fillDs.slice(idx);
                         } else if ( dim==1 ) {
                             if ( idx>=fillDs.length(0) ) idx=fillDs.length(0)-1;
