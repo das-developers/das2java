@@ -77,8 +77,7 @@ public class CoerceUtil {
      * @param ds2 the second operand
      * @param createResult if true, then a dataset is created where the result can be installed.
      * @param operands the array in which the promoted operands are inserted.
-     * @param result an empty dataset where the results can be inserted, or null if createResult is false.
-     * @return
+     * @return an empty dataset where the results can be inserted, or null if createResult is false.
      */
     public static WritableDataSet coerce(QDataSet ds1, QDataSet ds2, boolean createResult, QDataSet[] operands) {
         if (ds1.rank() == ds2.rank() && equalGeom(ds1, ds2)) {
