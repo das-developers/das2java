@@ -120,10 +120,10 @@ public class CoerceUtil {
     /**
      * increase the rank of a rank zero dataset by adding join dimensions that repeat the lower rank elements.
      * @param ds a rank 0 dataset
-     * @param ds2
+     * @param ds2 dataset to provide rank and lengths.
      * @return a dataset with the same geometry as ds2.
      */
-    static QDataSet increaseRank0(final QDataSet ds, final QDataSet ds2) {
+    public static QDataSet increaseRank0(final QDataSet ds, final QDataSet ds2) {
         return new QDataSet() {
 
             public int rank() {
@@ -195,12 +195,11 @@ public class CoerceUtil {
 
     /**
      * increase the rank of a rank one dataset by adding join dimensions that repeat the lower rank elements.
-     * @param ds a rank 1 dataset
-     * @param ds2
+     * @param ds a rank 1 dataset to provide values and properties
+     * @param ds2 dataset to provide rank and lengths.
      * @return a dataset with the same geometry as ds2.
      */
-    static QDataSet increaseRank1(final QDataSet ds, final QDataSet ds2) {
-
+    public static QDataSet increaseRank1(final QDataSet ds, final QDataSet ds2) {
 
         return new QDataSet() {
 
@@ -273,11 +272,11 @@ public class CoerceUtil {
 
     /**
      * increase the rank of a rank two dataset by adding join dimensions that repeat the lower rank elements.
-     * @param ds a rank 2 dataset
-     * @param ds2
+     * @param ds a rank 2 dataset to provide values and properties
+     * @param ds2 dataset to provide rank and lengths.
      * @return a dataset with the same geometry as ds2.
      */
-    static QDataSet increaseRank2(final QDataSet ds, final QDataSet ds2) {
+    public static QDataSet increaseRank2(final QDataSet ds, final QDataSet ds2) {
 
         return new QDataSet() {
 
