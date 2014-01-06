@@ -36,9 +36,9 @@ public class CoerceUtil {
      * returns true if two datasets have the same number of elements in each dimension.
      * @param ds1
      * @param ds2
-     * @return
+     * @return returns true if two datasets have the same number of elements in each dimension.
      */
-    static boolean equalGeom(QDataSet ds1, QDataSet ds2) {
+    public static boolean equalGeom(QDataSet ds1, QDataSet ds2) {
         if ( ds1.rank()!=ds2.rank() ) return false;
         int[] qube1 = DataSetUtil.qubeDims(ds1);
         int[] qube2 = DataSetUtil.qubeDims(ds2);
