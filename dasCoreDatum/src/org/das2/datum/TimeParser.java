@@ -31,55 +31,56 @@ import org.das2.datum.Orbits.OrbitFieldHandler;
 public class TimeParser {
 
     final static Logger logger = LoggerManager.getLogger("datum.timeparser");
+
     /**
      * $Y-$m-$dT$H:$M:$S.$(subsec;places=3)Z
      */
     public static final String TIMEFORMAT_Z = "$Y-$m-$dT$H:$M:$S.$(subsec;places=3)Z";
-    public static final int AFTERSTOP_INIT = 999;
+    private static final int AFTERSTOP_INIT = 999;
 
-    TimeStruct time;
-    TimeStruct startTime;
-    TimeStruct stopTime;
-    TimeStruct timeWidth;
-    TimeStruct context;
+    private TimeStruct time;
+    private TimeStruct startTime;
+    private TimeStruct stopTime;
+    private TimeStruct timeWidth;
+    private TimeStruct context;
 
     /**
      * keep track of the orbit DatumRange parsed.
      */
-    OrbitDatumRange orbitDatumRange;
+    private OrbitDatumRange orbitDatumRange;
 
-    int ndigits;
-    String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b", "X", "x" };
-    String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
+    private int ndigits;
+    private String[] valid_formatCodes = new String[]{"Y", "y", "j", "m", "d", "H", "M", "S", "milli", "micro", "p", "z", "ignore", "b", "X", "x" };
+    private String[] formatName = new String[]{"Year", "2-digit-year", "day-of-year", "month", "day", "Hour", "Minute", "Second", "millisecond", "microsecond",
         "am/pm", "RFC-822 numeric time zone", "ignore", "3-char-month-name", "ignore", "ignore" };
-    int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3, -1, -1 };
-    int[] precision =          new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7,-1,-1, -1, 1, -1, -1 };
-    int[] handlers;
+    private int[] formatCode_lengths = new int[]{4, 2, 3, 2, 2, 2, 2, 2, 3, 3, 2, 5, -1, 3, -1, -1 };
+    private int[] precision =          new int[]{0, 0, 2, 1, 2, 3, 4, 5, 6, 7,-1,-1, -1, 1, -1, -1 };
+    private int[] handlers;
     
     /**
      * set of custom handlers to allow for extension
      */
-    Map<String,FieldHandler> fieldHandlers;
+    private Map<String,FieldHandler> fieldHandlers;
     
     /**
      * positions of each digit, within the string to be parsed.  If position is -1, then we need to
      * compute it along the way.
      */
-    int[] offsets;
-    int[] lengths;
-    int[] shift;  // any shifts to apply to each digit (used typically to make end time inclusive).
-    String[] delims;
-    String[] fc;
-    String[] qualifiers;
-    String regex;
-    String formatString;
-    int stopTimeDigit=AFTERSTOP_INIT;  // if after stop, then timeWidth is being set.
+    private int[] offsets;
+    private int[] lengths;
+    private int[] shift;  // any shifts to apply to each digit (used typically to make end time inclusive).
+    private String[] delims;
+    private String[] fc;
+    private String[] qualifiers;
+    private String regex;
+    private String formatString;
+    private int stopTimeDigit=AFTERSTOP_INIT;  // if after stop, then timeWidth is being set.
     
     /**
      * Least significant digit in format.
      *0=year, 1=month, 2=day, 3=hour, 4=min, 5=sec, 6=milli, 7=micro
      */
-    int lsd;
+    private int lsd;
 
     /**
      * Interface to add custom handlers for strings with unique formats.  For example, the RPWS group had files with
@@ -246,7 +247,7 @@ public class TimeParser {
         return true;
     }
 
-    char startTimeOnly= 0;
+    private char startTimeOnly= 0;
 
     /**
      * true if the flag (startTimeOnly) was set in the spec. This is a hint to clients (FileStorageModel) using the time that
@@ -345,6 +346,10 @@ public class TimeParser {
         
     }
     
+    /**
+     * regular intervals are numbered.
+     * $(periodic;offset=0;start=2000-001;period=P1D)", "0",  "2000-001"
+     */
     public static class PeriodicFieldHandler implements TimeParser.FieldHandler {
 
         int offset;
@@ -412,6 +417,9 @@ public class TimeParser {
         
     }
 
+    /**
+     * "$Y$m$d-$(enum,values=a|b|c|d)", "20130202-a", "2013-02-02/2013-02-03" 
+     */
     public static class EnumFieldHandler implements TimeParser.FieldHandler {
 
         LinkedHashSet<String> values;
@@ -462,7 +470,7 @@ public class TimeParser {
     }
     
     /**
-     * default for $v.
+     * Just skip the field.  This is the default for $v.
      */
     public static class IgnoreFieldHandler implements FieldHandler {
 
@@ -940,6 +948,17 @@ public class TimeParser {
         return new TimeParser(formatString,map);
     }
 
+    /**
+     * create the time parser, and add specialized handlers.  Note the
+     * typical route create(formatString) adds handlers for orbits ($o) and version 
+     * numbers ($v).
+     * 
+     * @param formatString like $Y$m$dT$H
+     * @param fieldName name for the special field, like "o"
+     * @param handler handler for the special field, like OrbitFieldHandler
+     * @param moreHandler additional name/handler pairs.
+     * @return the configured TimeParser, ready to use.
+     */
     public static TimeParser create(String formatString, String fieldName, FieldHandler handler, Object ... moreHandler  ) {
         HashMap map = new HashMap();
         map.put(fieldName, handler);
@@ -1002,6 +1021,19 @@ public class TimeParser {
         }
     }
 
+    /**
+     * parse the string, which presumably contains a time matching the
+     * spec.  A reference to the TimeParser is returned so operations can be
+     * chained together:<code>
+     *   tp.parse("2014-01-06T02").getTime( Units.us2000 )
+     * </code>
+     * Since this the TimeParser has a state, it is not safe to use simultaneously
+     * by multiple threads.   Each thread should create its own parser.
+     * 
+     * @param timeString string containing a time
+     * @return a reference to this TimeParser object, which now contains the time.
+     * @throws ParseException if the string cannot be parsed.
+     */
     public TimeParser parse(String timeString) throws ParseException {
         return parse( timeString, null );
     }
@@ -1216,8 +1248,8 @@ public class TimeParser {
      * set the digit with the integer part, and move the fractional part to the
      * less significant digits.  Format should contain just one field,
      * see setDigit( String format, int value ) to break up fields.
-     * @param format
-     * @param value
+     * @param format like "Y"
+     * @param value like 2014
      */
     public void setDigit(String format, double value) {
         
@@ -1426,16 +1458,18 @@ public class TimeParser {
     }
 
     /**
-     * This allows for string split into elements to be interpretted here.  This
+     * This allows for string split into elements to be interpreted here.  This
      * is to add flexibility to external parsers that have partially parsed the
      * number already.
-     * examples:
+     * examples:<code>
      *   TimeParser p= TimeParser.create("%Y %m %d");
      *   p.setDigit(0,2007).setDigit(1,12).setDigit(2,5).getTime( Units.us2000 );
      *   p.format();  // maybe in the future
+     * </code>
+     * @param digitNumber, the digit to set (starting with 0).
+     * @param digit, value to set the digit.
      * @throws IllegalArgumentException if the digit has a custom field handler
      * @throws IllegalArgumentException if the digit does not exist.
-     * @param digitNumber, the digit to set (starting with 0).
      */
     public TimeParser setDigit(int digitNumber, int digit) {
         time= startTime;
@@ -1482,10 +1516,27 @@ public class TimeParser {
         return this;
     }
 
+    /**
+     * return the parsed time in the given units. Here Autoplot
+     * Jython code shows how this is used:
+     * <code>
+     *  from org.virbo.dataset import SemanticOps
+     *  tp= TimeParser.create("$Y-$m-$dT$H")
+     *  u= SemanticOps.lookupTimeUnits("seconds since 2014-01-01T00:00")
+     *  print tp.parse("2014-01-06T02").getTime( u )
+     * </code>
+     * @param units as in Units.us2000
+     * @return the value in the given units.
+     */
     public double getTime(Units units) {
         return Units.us2000.convertDoubleTo(units, toUs2000(startTime));
     }
 
+    /**
+     * return the parsed time as a Datum.  For years less than 1990, 
+     * Units.us1980 is used, otherwise Units.us2000 is used.
+     * @return a datum representing the parsed time.
+     */
     public Datum getTimeDatum() {
         if (time.year < 1990) {
             return Units.us1980.createDatum(toUs1980(startTime));
@@ -1575,8 +1626,10 @@ public class TimeParser {
     public String format( DatumRange range ) {
         return format( range.min(), range.max() );
     }
+    
     /**
-     * format the range into a string.
+     * The TimeParser can be used to format times as well.  Note the 
+     * end is ignored.  
      * @param start
      * @param end currently ignored, and may be used in the future.  This may be null.
      * @return formatted string.
