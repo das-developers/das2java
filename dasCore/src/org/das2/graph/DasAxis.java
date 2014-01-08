@@ -3910,14 +3910,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    public static final String PROP_FLIPPED = "flipped";
+    
     public boolean isFlipped() {
         return flipped;
     }
 
     public void setFlipped(boolean b) {
+        boolean oldFlipped= this.flipped;
         update();
         this.flipped = b;
+        firePropertyChange(PROP_FLIPPED,oldFlipped,flipped);
     }
+    
     protected String formatString = "";
     public static final String PROP_FORMATSTRING = "formatString";
 

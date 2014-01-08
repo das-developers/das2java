@@ -175,6 +175,7 @@ public class DasPlot extends DasCanvasComponent {
             xAxis.addPropertyChangeListener("dataMaximum", rebinListener);
             xAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             xAxis.addPropertyChangeListener("log", rebinListener);
+            xAxis.addPropertyChangeListener(DasAxis.PROP_FLIPPED,rebinListener);
             xAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
         }
         this.yAxis = yAxis;
@@ -186,6 +187,7 @@ public class DasPlot extends DasCanvasComponent {
             yAxis.addPropertyChangeListener("dataMaximum", rebinListener);
             yAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             yAxis.addPropertyChangeListener("log", rebinListener);
+            yAxis.addPropertyChangeListener(DasAxis.PROP_FLIPPED,rebinListener);
             yAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
         }
 
@@ -711,6 +713,7 @@ public class DasPlot extends DasCanvasComponent {
             xAxis.removePropertyChangeListener("dataMaximum", rebinListener);
             xAxis.removePropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             xAxis.removePropertyChangeListener("log", rebinListener);
+            xAxis.removePropertyChangeListener(DasAxis.PROP_FLIPPED,rebinListener);
             xAxis.removePropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
         }
         this.xAxis = xAxis;
@@ -726,6 +729,7 @@ public class DasPlot extends DasCanvasComponent {
             xAxis.addPropertyChangeListener("dataMaximum", rebinListener);
             xAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             xAxis.addPropertyChangeListener("log", rebinListener);
+            xAxis.addPropertyChangeListener(DasAxis.PROP_FLIPPED,rebinListener);
             xAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
         }
         if (xAxis != oldValue) {
@@ -755,6 +759,7 @@ public class DasPlot extends DasCanvasComponent {
             this.yAxis.removePropertyChangeListener("dataMaximum", rebinListener);
             this.yAxis.removePropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             this.yAxis.removePropertyChangeListener("log", rebinListener);
+            this.yAxis.removePropertyChangeListener(DasAxis.PROP_FLIPPED,rebinListener);
             this.yAxis.removePropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
         }
         this.yAxis = yAxis;
@@ -772,6 +777,7 @@ public class DasPlot extends DasCanvasComponent {
             yAxis.addPropertyChangeListener("dataMaximum", rebinListener);
             yAxis.addPropertyChangeListener(DasAxis.PROPERTY_DATUMRANGE, rebinListener);
             yAxis.addPropertyChangeListener("log", rebinListener);
+            yAxis.addPropertyChangeListener(DasAxis.PROP_FLIPPED,rebinListener);
             yAxis.addPropertyChangeListener(DasAxis.PROPERTY_TICKS, ticksListener);
         }
         if (yAxis != oldValue) {
