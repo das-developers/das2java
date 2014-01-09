@@ -64,9 +64,7 @@ public class HorizontalRangeSelectorMouseModule extends MouseModule {
                 throw new IllegalArgumentException("Event should be MouseRangeSelectionEvent"); // findbugs
             }
             MouseRangeSelectionEvent e= (MouseRangeSelectionEvent)e0;
-            min= axis.invTransform(e.getMinimum());
-            max= axis.invTransform(e.getMaximum());
-            DatumRange dr= new DatumRange( min, max );
+            DatumRange dr= axis.invTransform(e.getMinimum(),e.getMaximum());
             DatumRange nndr= axis.getTickV().enclosingRange(dr, true);
             DataRangeSelectionEvent te=
             new DataRangeSelectionEvent(e0.getSource(),nndr.min(),nndr.max());
