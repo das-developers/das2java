@@ -559,7 +559,7 @@ public abstract class WebFileSystem extends FileSystem {
             des= listDirectoryFromMemory(path.substring(0,i+1));
         }
         if ( force && des==null ) {
-            throw new IOException("unable to get listing");
+            throw new IOException("unable to get listing: " + this.getRootURL() + path.substring(1,i+1) );
         }
         DirectoryEntry result= null;
         if ( des!=null ) {
