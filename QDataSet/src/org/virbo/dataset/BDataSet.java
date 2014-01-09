@@ -79,10 +79,12 @@ public final class BDataSet extends ArrayDataSet {
     }
     
     protected Object getBack() {
+        checkImmutable();
         return this.back;
     }
 
     protected void setBack(Object back) {
+        checkImmutable();
         this.back= (byte[])back;
     }
 
@@ -112,22 +114,27 @@ public final class BDataSet extends ArrayDataSet {
     }
     
     public void putValue( double value ) {
+        checkImmutable();
         back[0]= (byte)value;
     }
 
     public void putValue( int i0, double value ) {
+        checkImmutable();
         back[ i0 ]= (byte)value;
     }
 
     public void putValue( int i0, int i1, double value ) {
+        checkImmutable();
         back[  i0 * len1 + i1 ]= (byte)value;
     }
 
     public void putValue( int i0, int i1, int i2, double value ) {
+        checkImmutable();
         back[ i0 * len1 * len2 + i1 *len2 + i2  ]= (byte)value;
     }
 
     public void putValue( int i0, int i1, int i2, int i3, double value) {
+        checkImmutable();
         back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3] = (byte)value;
     }
     
@@ -218,7 +225,11 @@ public final class BDataSet extends ArrayDataSet {
     @Override
     public <T> T capability(Class<T> clazz) {
         if ( clazz==WritableDataSet.class ) {
-            return (T) this;
+            if ( isImmutable() ) {
+                return null;
+            } else {
+                return (T) this;
+            }
         } else {
             return super.capability(clazz);
         }

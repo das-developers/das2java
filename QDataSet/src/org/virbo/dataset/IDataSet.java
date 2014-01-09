@@ -20,8 +20,8 @@ import java.util.Map;
  * @author jbf
  */
 public final class IDataSet extends ArrayDataSet {
+
     int[] back;
-    
     
     public static final String version="20120103";
     
@@ -107,10 +107,12 @@ public final class IDataSet extends ArrayDataSet {
     }
 
     protected Object getBack() {
+        checkImmutable();
         return this.back;
     }
 
     protected void setBack(Object back) {
+        checkImmutable();
         this.back= (int[])back;
     }
 
@@ -140,22 +142,27 @@ public final class IDataSet extends ArrayDataSet {
     }
 
     public void putValue( double value ) {
+        checkImmutable();
         back[0]= (int) value;
     }
 
     public void putValue( int i0, double value ) {
+        checkImmutable();
         back[ i0 ]= (int)value;
     }
 
     public void putValue( int i0, int i1, double value ) {
+        checkImmutable();
         back[  i0 * len1 + i1 ]= (int)value;
     }
 
     public void putValue( int i0, int i1, int i2, double value ) {
+        checkImmutable();
         back[ i0 * len1 * len2 + i1 *len2 + i2  ]= (int)value;
     }
 
     public void putValue( int i0, int i1, int i2, int i3, double value ) {
+        checkImmutable();
         back[ i0*len1*len2*len3 + i1*len2*len3 +i2*len3 +i3] = (int)value;
     }
 
@@ -165,6 +172,7 @@ public final class IDataSet extends ArrayDataSet {
      * @param value 
      */
     public void addValue( int i0, double value ) {
+        checkImmutable();
         back[  i0 ]+= (int)value;
     }
 
@@ -175,6 +183,7 @@ public final class IDataSet extends ArrayDataSet {
      * @param value 
      */
     public void addValue( int i0, int i1, double value ) {
+        checkImmutable();
         back[  i0 * len1 + i1 ]+= (int)value;
     }
     
@@ -255,7 +264,11 @@ public final class IDataSet extends ArrayDataSet {
     @Override
     public <T> T capability(Class<T> clazz) {
         if ( clazz==WritableDataSet.class ) {
-            return (T) this;
+            if ( isImmutable() ) {
+                return null;
+            } else {
+                return (T) this;
+            }
         } else {
             return super.capability(clazz);
         }

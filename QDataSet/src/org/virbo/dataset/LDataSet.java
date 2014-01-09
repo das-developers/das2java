@@ -20,6 +20,7 @@ import java.util.Map;
  * @author jbf
  */
 public final class LDataSet extends ArrayDataSet {
+
     long[] back;
     
     public static final String version="20070529";
@@ -85,10 +86,12 @@ public final class LDataSet extends ArrayDataSet {
     }
 
     protected Object getBack() {
+        checkImmutable();
         return this.back;
     }
 
     protected void setBack(Object back) {
+        checkImmutable();
         this.back= (long[])back;
     }
 
@@ -118,22 +121,27 @@ public final class LDataSet extends ArrayDataSet {
     }
 
     public void putValue( double value ) {
+        checkImmutable();        
         back[0]= (long) value;
     }
 
     public void putValue( int i0, double value ) {
+        checkImmutable();        
         back[ i0 ]= (long)value;
     }
 
     public void putValue( int i0, int i1, double value ) {
+        checkImmutable();        
         back[  i0 * len1 + i1 ]= (long)value;
     }
 
     public void putValue( int i0, int i1, int i2, double value ) {
+        checkImmutable();        
         back[ i0 * len1 * len2 + i1 *len2 + i2  ]= (long)value;
     }
 
     public void putValue( int i0, int i1, int i2, int i3, double value ) {
+        checkImmutable();        
         back[ i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3 ] = (long)value;
     }
 
@@ -144,6 +152,7 @@ public final class LDataSet extends ArrayDataSet {
      * can only shorten!
      */
     public void putLength( int len ) {
+        checkImmutable();        
         if ( len>len0 ) throw new IllegalArgumentException("dataset cannot be lengthened");
         len0= len;
     }
@@ -225,7 +234,11 @@ public final class LDataSet extends ArrayDataSet {
     @Override
     public <T> T capability(Class<T> clazz) {
         if ( clazz==WritableDataSet.class ) {
-            return (T) this;
+            if ( isImmutable() ) {
+                return null;
+            } else {
+                return (T) this;
+            }
         } else {
             return super.capability(clazz);
         }

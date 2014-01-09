@@ -129,10 +129,12 @@ public final class DDataSet extends ArrayDataSet {
     }
 
     protected Object getBack() {
+        checkImmutable();
         return this.back;
     }
 
     protected void setBack(Object back) {
+        checkImmutable();
         this.back= (double[])back;
     }
 
@@ -226,10 +228,12 @@ public final class DDataSet extends ArrayDataSet {
 
 
     public void putValue(double value) {
+        checkImmutable();
         back[0]= value;
     }
 
     public void putValue(int i0, double value) {
+        checkImmutable();
         if (RANGE_CHECK) {
             if (i0 < 0 || i0 >= len0) {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
@@ -239,6 +243,7 @@ public final class DDataSet extends ArrayDataSet {
     }
 
     public void putValue(int i0, int i1, double value) {
+        checkImmutable();
         if (RANGE_CHECK) {
             if (i0 < 0 || i0 >= len0) {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
@@ -251,6 +256,7 @@ public final class DDataSet extends ArrayDataSet {
     }
 
     public void putValue(int i0, int i1, int i2, double value) {
+        checkImmutable();
         if (RANGE_CHECK) {
             if (i0 < 0 || i0 >= len0) {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
@@ -266,6 +272,7 @@ public final class DDataSet extends ArrayDataSet {
     }
 
     public void putValue(int i0, int i1, int i2, int i3, double value) {
+        checkImmutable();
         if (RANGE_CHECK) {
             if (i0 < 0 || i0 >= len0) {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
@@ -292,6 +299,7 @@ public final class DDataSet extends ArrayDataSet {
      * @param value
      */
     public void accumValue( int i0, int i1, double value ) {
+        checkImmutable();        
         back[i0 * len1 + i1] += value;
     }
 
@@ -301,6 +309,7 @@ public final class DDataSet extends ArrayDataSet {
      * This can only shorten!
      */
     public void putLength(int len) {
+        checkImmutable();        
         if (len > len0) {
             throw new IllegalArgumentException("dataset cannot be lengthened");
         }
@@ -372,6 +381,7 @@ public final class DDataSet extends ArrayDataSet {
      * convenient method for setting the units.
      */
     public DDataSet setUnits( Units units ) {
+        checkImmutable();
         properties.put(QDataSet.UNITS, units);
         return this;
     }
@@ -473,7 +483,11 @@ public final class DDataSet extends ArrayDataSet {
     @Override
     public <T> T capability(Class<T> clazz) {
         if ( clazz==WritableDataSet.class ) {
-            return (T) this;
+            if ( isImmutable() ) {
+                return null;
+            } else {
+                return (T) this;
+            }
         } else {
             return super.capability(clazz);
         }

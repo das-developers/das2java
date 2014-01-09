@@ -24,6 +24,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
 
     private static final Logger logger= LoggerManager.getLogger("qdataset");
     protected HashMap<String,Object> properties;
+    private boolean immutable= false;
     
     public AbstractDataSet() {
         properties= new HashMap<String,Object>();
@@ -91,6 +92,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     }
 
     public void putProperty( String name, Object value ) {
+        checkImmutable();
         checkPropertyType( name, value );
         properties.put( name, value );
         if ( name.equals( QDataSet.DEPEND_0 ) && value!=null ) {
@@ -119,8 +121,27 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
     }
     
     public void putProperty( String name, int index, Object value ) {
+        checkImmutable();
         properties.put( name + "__" + index, value );
     }
+
+    public void makeImmutable() {
+        immutable= true;
+    }
+    
+    protected boolean isImmutable() {
+        return this.immutable;
+    }
+    
+    /**
+     * here is the one place where we check immutable, and we can make this throw an exception
+     * once things look stable.
+     */
+    protected final void checkImmutable() {
+        if ( immutable ) {
+            logger.warning("dataset has been marked as immutable, this will soon throw an exception");
+        }
+    } 
         
     public int length() {
         throw new IllegalArgumentException("rank error, rank 0 datasets have no length()");

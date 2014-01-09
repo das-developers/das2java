@@ -15,6 +15,7 @@ package org.virbo.dataset;
  * rest of the system.  This would require clients make defensive copies which would 
  * seriously degrade performance.  
  *
+ * putValue method implementations should check isMutable() method and should call 
  * @author jbf
  */
 public interface WritableDataSet extends MutablePropertyDataSet {
