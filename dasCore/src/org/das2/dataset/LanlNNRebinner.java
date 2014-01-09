@@ -201,8 +201,15 @@ public class LanlNNRebinner implements DataSetRebinner {
                 double x0= xds0.value(i);
                 double x1= xds1.value(i);
                 double wx= (x1-x0)/dxpixel;
-                int px0= ddX.whichBin( x0, xunits );
-                int px1= ddX.whichBin( x1, xunits );
+                int px0,px1;
+                if ( ddX.start>ddX.end ) { // flipped
+                    px0= ddX.whichBin( x1, xunits );
+                    px1= ddX.whichBin( x0, xunits );
+                } else {
+                    px0= ddX.whichBin( x0, xunits );
+                    px1= ddX.whichBin( x1, xunits );
+                }
+                
                 int sx0= Math.max( 0, px0 );
                 int sx1= Math.min( nx-1, px1 );
                 for ( int j=0; j<nYData; j++ ) {
@@ -214,8 +221,14 @@ public class LanlNNRebinner implements DataSetRebinner {
                         y0= yds0.value(j);
                         y1= yds1.value(j);
                     }
-                    int py0= ddY.whichBin( y0, yunits );
-                    int py1= ddY.whichBin( y1, yunits );
+                    int py0,py1;
+                    if ( ddY.start>ddY.end ) { // flipped
+                        py0= ddY.whichBin( y1, yunits );
+                        py1= ddY.whichBin( y0, yunits );
+                    } else {
+                        py0= ddY.whichBin( y0, yunits );
+                        py1= ddY.whichBin( y1, yunits );
+                    }
                     double wy= 1./((py1-py0+1)); // favor short bins
                     double w= wx*wy*weights.value(i,j);
                     int sy0= Math.max( 0, py0 );
