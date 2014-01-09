@@ -124,9 +124,10 @@ public class AverageTableRebinner implements DataSetRebinner {
             QDataSet bounds= SemanticOps.bounds(tds);
             double start = xc.convert( bounds.value(0,0) );
             double end = xc.convert( bounds.value(0,1) );
-            if (start > ddX.binStop(ddX.numberOfBins()-1).doubleValue(ddX.getUnits()) ) {
+            DatumRange dr= DatumRangeUtil.union( ddX.binStop(ddX.numberOfBins()-1),ddX.binStart(0));
+            if (start > dr.max().doubleValue(ddX.getUnits()) ) {
                 throw new NoDataInIntervalException("data starts after range");
-            } else if (end < ddX.binStart(0).doubleValue(ddX.getUnits())) {
+            } else if (end < dr.min().doubleValue(ddX.getUnits())) {
                 throw new NoDataInIntervalException("data ends before range");
             }
         }
