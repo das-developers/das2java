@@ -129,7 +129,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         immutable= true;
     }
     
-    protected boolean isImmutable() {
+    public boolean isImmutable() {
         return this.immutable;
     }
     
