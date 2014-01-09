@@ -706,7 +706,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         //t0= System.currentTimeMillis();
                         try {
-                            validCount= transformSimpleTableDataSet(rebinDataSet, lcolorBar, yAxis.isFlipped(), lraster );
+                            validCount= transformSimpleTableDataSet(rebinDataSet, lcolorBar, false, lraster );
                         } catch ( InconvertibleUnitsException ex ) {
                             System.err.println("zunits="+ SemanticOps.getUnits(fds)+"  colorbar="+lcolorBar.getUnits() );
                             return;
