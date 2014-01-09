@@ -22,5 +22,11 @@ public interface MutablePropertyDataSet extends QDataSet {
      * mutating properties will print warning messages for now, but will soon
      * be an error.
      */
-    void makeImmutable();    
+    void makeImmutable(); 
+    
+    /**
+     * return true if the dataset has been made immutable.
+     * @return 
+     */
+    boolean isImmutable();
 }
