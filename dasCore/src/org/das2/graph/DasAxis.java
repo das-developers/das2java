@@ -3177,6 +3177,30 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
 
+    /**
+     * get the range covered by the two points.  This allows clients to
+     * get a range without having to worry about the flipped property.
+     * 
+     * @param idata1 pixel position on the axis, in the canvas frame.
+     * @param idata2 pixel position on the axis, in the canvas frame.
+     * @return DatumRange implied by the two pixel positions.
+     */
+    public DatumRange invTransform( double idata1, double idata2 ) {
+        Datum d1= invTransform(idata1);
+        Datum d2= invTransform(idata2);
+        if ( d1.lt(d2) ) {
+            return new DatumRange(d1,d2);
+        } else {
+            return new DatumRange(d2,d1);
+        }
+    }
+    
+    /**
+     * return the data location for the given pixel position.  Plot
+     * coordinates have 0,0 at the upper-left hand corner of the screen.
+     * @param idata the pixel location on the axis, in the canvas frame.
+     * @return the data location.
+     */
     public Datum invTransform(double idata) {
         double data;
         DasDevicePosition range = (isHorizontal()
