@@ -29,6 +29,8 @@ import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.logging.*;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
@@ -172,27 +174,25 @@ public class LanlNNRebinner implements DataSetRebinner {
             Units xunits= SemanticOps.getUnits( xds );
             Units yunits= SemanticOps.getUnits( yds );
 
-            if ( ddX != null && tds.length() > 0 ) {
+            if ( tds.length() > 0 ) {
                 UnitsConverter xc= xunits.getConverter(ddX.getUnits());
                 QDataSet bounds= SemanticOps.bounds(xds);
                 double start = xc.convert( bounds.value(1,0) );
                 double end = xc.convert( bounds.value(1,1) );
-                if (start <= ddX.binStop(ddX.numberOfBins()-1).doubleValue(ddX.getUnits()) ) {
+                DatumRange dr= DatumRangeUtil.union( ddX.binStop(ddX.numberOfBins()-1),ddX.binStart(0));
+                if (start <= dr.max().doubleValue(ddX.getUnits()) ) {
                     rs= true;
                 }
-                if (end >= ddX.binStart(0).doubleValue(ddX.getUnits())) {
+                if (end >= dr.min().doubleValue(ddX.getUnits())) {
                     re= true;
                 }
             }
 
-            if ( ddY==null && rank!=2 ) {
+            if ( rank!=2 ) {
                 throw new IllegalArgumentException("ddY was null but there was rank 3 dataset");
             }
 
             logger.log(Level.FINEST, "Allocating rebinData and rebinWeights: {0} x {1}", new Object[]{nx, ny});
-
-            double dxpixel= ddX.getUnits().getOffsetUnits().convertDoubleTo( xunits.getOffsetUnits(), ddX.binWidth() );
-            double dypixel= ddY.getUnits().getOffsetUnits().convertDoubleTo( yunits.getOffsetUnits(), ddY.binWidth() );
 
             double y0,y1;
             int nYData= rank2y ? yds0.length(0) : yds0.length();
@@ -200,7 +200,6 @@ public class LanlNNRebinner implements DataSetRebinner {
             for ( int i=0; i<xds0.length(); i++) {
                 double x0= xds0.value(i);
                 double x1= xds1.value(i);
-                double wx= (x1-x0)/dxpixel;
                 int px0,px1;
                 if ( ddX.start>ddX.end ) { // flipped
                     px0= ddX.whichBin( x1, xunits );
@@ -209,6 +208,7 @@ public class LanlNNRebinner implements DataSetRebinner {
                     px0= ddX.whichBin( x0, xunits );
                     px1= ddX.whichBin( x1, xunits );
                 }
+                double wx= 1./((px1-px0+1));
                 
                 int sx0= Math.max( 0, px0 );
                 int sx1= Math.min( nx-1, px1 );
