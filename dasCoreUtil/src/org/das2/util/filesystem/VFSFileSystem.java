@@ -215,10 +215,12 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
     public String[] listDirectory(String directory, String regex) throws IOException {
         String[] listing = listDirectory(directory);
 
-        Pattern pattern = Pattern.compile(regex + "/?");
+        Pattern pattern = Pattern.compile(regex);
         ArrayList result = new ArrayList();
         for (int i = 0; i < listing.length; i++) {
-            if (pattern.matcher(listing[i]).matches()) {
+            String s= listing[i];
+            if ( s.charAt(s.length()-1)=='/' ) s= s.substring(0,s.length()-1);
+            if (pattern.matcher(s).matches()) {
                 result.add(listing[i]);
             }
         }
