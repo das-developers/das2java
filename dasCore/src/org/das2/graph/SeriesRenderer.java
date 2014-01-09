@@ -1137,7 +1137,7 @@ public class SeriesRenderer extends Renderer {
             if (lparent.isOverSize()) {
                 Rectangle plotBounds = lparent.getUpdateImageBounds();
                 if ( plotBounds!=null ) {
-                    visibleRange = new DatumRange(xAxis.invTransform(plotBounds.x), xAxis.invTransform(plotBounds.x + plotBounds.width));
+                    visibleRange = xAxis.invTransform( plotBounds.x, plotBounds.x + plotBounds.width );
                 }
                 try {
                     ixmin = DataSetUtil.getPreviousIndex( xds, visibleRange.min());
