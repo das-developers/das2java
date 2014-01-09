@@ -3832,7 +3832,7 @@ public class Ops {
      * be a rank 0 or rank 1 QDataSet.  If it is rank 1, then it should correspond
      * to the DEPEND_0 dimension.
      *
-     * No normalization is done with non-unity windows.
+     * No normalization is done with non-unity windows.  TODO: check this, I think it is done now.
      *
      * @param ds rank 2 dataset ds(N,M) with M>len
      * @param window window to apply to the data before performing FFT (Hann,Unity,etc.)
