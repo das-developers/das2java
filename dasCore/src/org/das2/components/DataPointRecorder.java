@@ -273,7 +273,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * case where we are going to reprocess an interval, as with the experimental 
      * RBSP digitizer.
      * 
-     * @param range 
+     * @param range range to delete, end time is exclusive.
      */
     public void deleteInterval( DatumRange range ) {
         if ( !sorted ) {
@@ -291,7 +291,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 int index2= Collections.binarySearch( dataPoints, range.max(), comp );
                 if ( index2<0 ) index2= ~index2;
                 if ( index1==index2 ) return;
-                if ( index2<dataPoints.size() ) index2= index2+1;
                 int[] arr= new int[ index2-index1 ];
                 for ( int i=0; i<arr.length ; i++ ) arr[i]= index1+i;
                 deleteRows( arr );
