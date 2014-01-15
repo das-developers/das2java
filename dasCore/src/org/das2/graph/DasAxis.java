@@ -3382,7 +3382,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     @Override
     protected void installComponent() {
         super.installComponent();
-        maybeStartTcaTimer();
+        QFunction ltcaFunction= this.tcaFunction; 
+        if ( ltcaFunction!=null ) {
+            maybeStartTcaTimer();
+        }
     }
 
     /** TODO */
