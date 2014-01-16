@@ -4414,6 +4414,10 @@ public class Ops {
         QDataSet deltaplus;
         QDataSet deltaminus;
 
+        if ( ds.length()==0 ) {
+            throw new IllegalArgumentException("extent called on zero-length dataset");
+        }
+        
         deltaplus = (QDataSet) ds.property(QDataSet.DELTA_PLUS);
         deltaminus = (QDataSet) ds.property(QDataSet.DELTA_MINUS);
         if ( ds.property(QDataSet.BIN_PLUS )!=null ) deltaplus= (QDataSet)ds.property(QDataSet.BIN_PLUS );
