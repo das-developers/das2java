@@ -42,41 +42,48 @@ public class SortDataSet extends AbstractDataSet {
         this.source= source;
         this.sort= sort;
 
-        QDataSet range= Ops.extent(sort);
+        if ( sort.length()==0 ) {
+            logger.log(Level.FINE, "sort is zero-length for {0}", source);
 
-        if ( range.value(0)< 0 ) throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(0) );
-        if ( range.value(1)>= source.length() ) {
-            logger.log(Level.WARNING, "sort index contains out-of-bounds element: {0}", range.value(1));
-            logger.log(Level.WARNING, "  range: {0}", range);
-            logger.log(Level.WARNING, "  source: {0}", source);
-            logger.log(Level.WARNING, "  sort: {0}", sort);
-            File f= new File("/tmp/jbfaden.org.virbo.dataset.sortDataSet.line47.txt" );
-            if ( f.getParentFile().canWrite() && sort.rank()==1 ) {
-                PrintWriter fw = null;
-                try {
-                    logger.warning("  dumping data to /tmp/jbfaden.org.virbo.dataset.sortDataSet.line47.txt");
-                    fw = new PrintWriter( new FileWriter(f) );
-                    for ( Entry<String,Object> e: DataSetUtil.getProperties(sort).entrySet() ) {
-                        try {
-                            fw.println( "# "+e.getKey()+": " + String.valueOf(e.getValue()) );
-                        } catch ( RuntimeException ex ) {
-                            logger.log(Level.SEVERE, ex.getMessage(), ex);
-                        }
-                    }
-                    for ( int i=0; i<sort.length(); i++ ) {
-                        fw.printf( "%d %f\n", i, sort.value(i) );
-                    }
-                    fw.close();
-                } catch (RuntimeException ex ) {
-                    logger.log(Level.SEVERE, ex.getMessage(), ex);
-                } catch (IOException ex) {
-                    logger.log(Level.SEVERE, ex.getMessage(), ex);
-                } finally {
-                    if ( fw!=null ) fw.close();
-                }
+        } else {
+        
+            QDataSet range= Ops.extent(sort);
+
+            if ( range.value(0)< 0 ) throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(0) );
+            if ( range.value(1)>= source.length() ) {
+//                if ( false ) {
+//                    logger.log(Level.WARNING, "sort index contains out-of-bounds element: {0}", range.value(1));
+//                    logger.log(Level.WARNING, "  range: {0}", range);
+//                    logger.log(Level.WARNING, "  source: {0}", source);
+//                    logger.log(Level.WARNING, "  sort: {0}", sort);
+//                    File f= new File("/tmp/jbfaden.org.virbo.dataset.sortDataSet.line47.txt" );
+//                    if ( f.getParentFile().canWrite() && sort.rank()==1 ) {
+//                        PrintWriter fw = null;
+//                        try {
+//                            logger.warning("  dumping data to /tmp/jbfaden.org.virbo.dataset.sortDataSet.line47.txt");
+//                            fw = new PrintWriter( new FileWriter(f) );
+//                            for ( Entry<String,Object> e: DataSetUtil.getProperties(sort).entrySet() ) {
+//                                try {
+//                                    fw.println( "# "+e.getKey()+": " + String.valueOf(e.getValue()) );
+//                                } catch ( RuntimeException ex ) {
+//                                    logger.log(Level.SEVERE, ex.getMessage(), ex);
+//                                }
+//                            }
+//                            for ( int i=0; i<sort.length(); i++ ) {
+//                                fw.printf( "%d %f\n", i, sort.value(i) );
+//                            }
+//                            fw.close();
+//                        } catch (RuntimeException ex ) {
+//                            logger.log(Level.SEVERE, ex.getMessage(), ex);
+//                        } catch (IOException ex) {
+//                            logger.log(Level.SEVERE, ex.getMessage(), ex);
+//                        } finally {
+//                            if ( fw!=null ) fw.close();
+//                        }
+//                    }
+//                }
+                throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(1) );
             }
-            
-            throw new IndexOutOfBoundsException("sort index contains out-of-bounds element: "+range.value(1) );
         }
         
         properties= new HashMap();
