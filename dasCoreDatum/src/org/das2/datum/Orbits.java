@@ -401,9 +401,12 @@ public class Orbits {
         public String configure(Map<String, String> args) {
             String id= args.get("id");
             if ( id==null ) {
-                throw new IllegalArgumentException("orbit id not specified");
+                if ( args.get("sc")!=null ) {
+                    throw new IllegalArgumentException("orbit should be specified with id, not sc");
+                } else {
+                    throw new IllegalArgumentException("orbit id not specified");
+                }
             }
-
             o= getOrbitsFor( id );
             if ( args.containsKey("pad") ) {
                 pad= TimeParser.getPad( args );
