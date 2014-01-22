@@ -77,6 +77,7 @@ import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.graph.DasAxis.Memento;
+import org.das2.util.TickleTimer;
 
 public class DasPlot extends DasCanvasComponent {
 
@@ -923,10 +924,15 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
-
+    private TickleTimer repaintSoonTimer= new TickleTimer( 200, new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            repaint();
+        }
+    });
+        
     @Override
     protected synchronized void paintComponent(Graphics graphics0) {
-        logger.log(Level.FINER, "dasPlot.paintComponent {0}", getDasName());
+        logger.log(Level.FINE, "dasPlot.paintComponent {0}", getDasName());
         if ( getCanvas().isValueAdjusting() ) {
             repaint();
             return;
@@ -998,7 +1004,35 @@ public class DasPlot extends DasCanvasComponent {
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.translate(-getX(), -getY());
 
+        
+        DasAxis lxaxis= (DasAxis)getXAxis().clone();
+        DasAxis lyaxis= (DasAxis)getYAxis().clone();
+
+        Memento xmem= lxaxis.getMemento();
+        Memento ymem= lyaxis.getMemento();                
+
+        // check mementos before drawing.  They should all be the same.  See https://sourceforge.net/tracker/index.php?func=detail&aid=3075655&group_id=199733&atid=970682
+        Renderer[] rends= getRenderers();        
+        
+        boolean dirt= false;
+        if ( rends.length>0 ) {
+            for ( Renderer r: rends ) {
+                if ( r.getXmemento()==null || !r.getXmemento().equals(xmem) ) dirt= true;
+                if ( r.getYmemento()==null || !r.getYmemento().equals(ymem) ) dirt= true;
+                if ( dirt ) {
+                    logger.log(Level.FINE, "need to repaint because of memento: {0}", r);
+                }
+            }
+        }        
+                
         boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache;
+        
+        if ( dirt && !useCacheImage ) {
+            logger.finer("here dirt and not useCacheImage");
+            useCacheImage= true;
+            repaintSoonTimer.tickle("dirt but not useCacheImage");
+        }
+
         if ( useCacheImage ) {
 
             Graphics2D atGraphics = (Graphics2D) graphics.create();
@@ -1085,60 +1119,17 @@ public class DasPlot extends DasCanvasComponent {
 
                 plotGraphics.translate(-x + 1, -y + 1);
 
-                // check mementos before drawing.  They should all be the same.  See https://sourceforge.net/tracker/index.php?func=detail&aid=3075655&group_id=199733&atid=970682
-                Renderer[] rends= getRenderers();
-
-                //for ( int i=0; i<rends.length; i++ ) {
-                //    System.err.println( "renderer #"+i+": " +rends[i] + " ds="+rends[i].getDataSet() );
-                //}
-
-                DasAxis lxaxis= (DasAxis)getXAxis().clone();
-                DasAxis lyaxis= (DasAxis)getYAxis().clone();
-                
-                Memento xmem= lxaxis.getMemento();
-                Memento ymem= lyaxis.getMemento();                
-                
-                if ( rends.length>0 ) {
-                    for ( Renderer r: rends ) {
-                        boolean dirt= false;
-                        if ( r.getXmemento()==null || !r.getXmemento().equals(xmem) ) dirt= true;
-                        if ( r.getYmemento()==null || !r.getYmemento().equals(ymem) ) dirt= true;
-                        if ( dirt ) {
-                            try {
-                                logger.log(Level.FINE,"calling updatePlotImage again because of memento");
-                                r.updatePlotImage( lxaxis, lyaxis, new NullProgressMonitor());
-                            } catch (DasException ex) {
-                                logger.log(Level.SEVERE, ex.getMessage(), ex);
-                            }
-                        } else {
-                            logger.log(Level.FINE,"skipping updatePlotImage because memento indicates things are okay");
-                        }
-                    }
-                    //Memento xmem2= getXAxis().getMemento();  // I showed that the mementos don't change.  THIS IS ONLY BECAUSE UPDATES ARE DONE ON THE EVENT THREAD
-                    //System.err.println("mementocheck: "+xmem2.equals(xmem));
-                }
-
                 drawCacheImage(plotGraphics,lxaxis,lyaxis);
-                //Memento xmem2= getXAxis().getMemento();  // I showed that the mementos don't change.  THIS IS ONLY BECAUSE UPDATES ARE DONE ON THE EVENT THREAD.  I'm not sure of this, making a local copy of the axes appears to fix the problem.
-                //if ( !xmem2.equals(xmem) ) {
-                //    System.err.println("mementocheck: "+xmem2.equals(xmem));
-                //}
-            }
-
-
-            if ( !disableImageCache && !getCanvas().isPrintingThread() ) {
-                cacheImageValid = true;
-                //clip.y= Math.max( clip.y, getRow().getDMinimum() );
-                //clip.translate( getX(), getY() );
-                //graphics.setClip(clip);
-                graphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
-                //graphics.drawString( "new image", getWidth()/2, getHeight()/2 );
-                //graphics.setClip(null);
-
                 xmemento = xAxis.getMemento();
                 ymemento = yAxis.getMemento();
+                cacheImageValid = true;
+                   
+                logger.log(Level.FINEST, "recalc cacheImage, xmemento={0} ymemento={1}", new Object[]{xmemento, ymemento});                    
 
-                logger.log(Level.FINEST, "recalc cacheImage, xmemento={0} ymemento={1}", new Object[]{xmemento, ymemento});
+            }
+
+            if ( !disableImageCache && !getCanvas().isPrintingThread() ) {
+                graphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
             }
         }
 
