@@ -2416,13 +2416,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return f;
     }
 
+    /**
+     * class for storing an axis transform.  This is used to keep track
+     * of the cache image in DasPlot.
+     */
     public static class Memento {
 
         private DatumRange range;
         private int dmin,  dmax;
         private boolean log;
         private boolean flipped;
-        private DasAxis axis;
+        private boolean horizontal;
 
         @Override
         public int hashCode() {
@@ -2432,7 +2436,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             hash = 29 * hash + this.dmax;
             hash = 29 * hash + ( this.log ? 1 : 0 );
             hash = 29 * hash + ( this.flipped ? 1 : 0 );
-            hash = 29 * hash + (this.axis != null ? this.axis.hashCode() : 0);
+            hash = 29 * hash + ( this.horizontal ? 1 : 0 );
             return hash;
         }
 
@@ -2447,7 +2451,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     this.dmax == m.dmax &&
                     this.log == m.log &&
                     this.flipped == m.flipped &&
-                    this.axis == m.axis);
+                    this.horizontal == m.horizontal );
             }
         }
 
@@ -2479,7 +2483,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         result.log = this.isLog();
         result.flipped = flipped;
-        result.axis = this;
+        result.horizontal = this.isHorizontal();
         return result;
     }
 
