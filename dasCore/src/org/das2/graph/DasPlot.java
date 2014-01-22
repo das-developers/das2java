@@ -1033,7 +1033,7 @@ public class DasPlot extends DasCanvasComponent {
                 
         boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache;
         
-        if ( dirt && !useCacheImage && !getCanvas().isPrintingThread() && !disableImageCache ) {
+        if ( dirt && !useCacheImage && !getCanvas().isPrintingThread() && !disableImageCache && cacheImage!=null ) {
             logger.finer("here dirt and not useCacheImage");
             useCacheImage= true;
             final DasCanvas lcanvas= getCanvas();
