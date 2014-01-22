@@ -23,6 +23,7 @@ import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsConverter.ScaleOffset;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
+import static org.virbo.dataset.DataSetUtil.isConstant;
 import org.virbo.dsops.Ops;
 
 /**
@@ -116,9 +117,12 @@ public class SemanticOps {
         } else {
             Units u = getUnits(labels);
             String[] slabels = new String[n];
+            //if ( labels.rank()>1 && isConstant(labels) ) {
+            //    labels= labels.slice(0);
+            //}
             for (int i = 0; i < n; i++) {
-                if (labels == null) {
-                    slabels[i] = String.valueOf(i);
+                if ( labels.rank()>1 ) {
+                    slabels[i] = "ch_" + i;
                 } else {
                     slabels[i] = String.valueOf(u.createDatum(labels.value(i)));
                 }
@@ -164,8 +168,8 @@ public class SemanticOps {
             Units u = getUnits(labels);
             String[] slabels = new String[n];
             for (int i = 0; i < n; i++) {
-                if (labels == null) {
-                    slabels[i] = String.valueOf(i);
+                if ( labels.rank()>1 ) {
+                    slabels[i] = "ch_"+i;
                 } else {
                     slabels[i] = String.valueOf(u.createDatum(labels.value(i)));
                 }
