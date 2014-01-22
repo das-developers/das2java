@@ -927,9 +927,15 @@ public class DasPlot extends DasCanvasComponent {
     private TickleTimer repaintSoonTimer= new TickleTimer( 200, new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             repaint();
+            final DasCanvas lcanvas= getCanvas();
+            if ( lcanvas!=null ) {
+                lcanvas.changePerformed( this, canvasLock );
+            }
         }
     });
         
+    final Object canvasLock= "canvasUpdate_"+this.getDasName();
+    
     @Override
     protected synchronized void paintComponent(Graphics graphics0) {
         logger.log(Level.FINE, "dasPlot.paintComponent {0}", getDasName());
@@ -1027,9 +1033,13 @@ public class DasPlot extends DasCanvasComponent {
                 
         boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache;
         
-        if ( dirt && !useCacheImage ) {
+        if ( dirt && !useCacheImage && !getCanvas().isPrintingThread() && !disableImageCache ) {
             logger.finer("here dirt and not useCacheImage");
             useCacheImage= true;
+            final DasCanvas lcanvas= getCanvas();
+            if ( lcanvas!=null ) {
+                lcanvas.registerPendingChange( this, canvasLock );
+            }
             repaintSoonTimer.tickle("dirt but not useCacheImage");
         }
 
