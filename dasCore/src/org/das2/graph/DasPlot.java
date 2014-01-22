@@ -70,6 +70,7 @@ import java.io.IOException;
 import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.das2.DasException;
@@ -368,7 +369,7 @@ public class DasPlot extends DasCanvasComponent {
      * birthmilli.
      * @param g the graphics context.
      */
-    private void drawMessages(Graphics2D g) {
+    private void drawMessages(Graphics2D g, List<MessageDescriptor> lmessages ) {
 
         Graphics2D graphics= (Graphics2D) g.create();
         boolean isPrint= getCanvas().isPrintingThread();
@@ -391,7 +392,6 @@ public class DasPlot extends DasCanvasComponent {
         Color severeColor = new Color(255, 140, 140, 200);
 
         List<Renderer> renderers1=  Arrays.asList( getRenderers() );
-        List<MessageDescriptor> lmessages= new ArrayList( this.messages ); // copy to local variable
 
         long tnow= System.currentTimeMillis();
         
@@ -1150,8 +1150,9 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         // --- draw messages ---
-        if (messages.size() > 0) {
-            drawMessages(graphics);
+        List<MessageDescriptor> lmessages= this.messages==null ? null : new ArrayList(this.messages);
+        if ( lmessages!=null && lmessages.size() > 0) {
+            drawMessages(graphics,lmessages);
         }
 
         if ( legendElements.size() > 0 && displayLegend ) {
