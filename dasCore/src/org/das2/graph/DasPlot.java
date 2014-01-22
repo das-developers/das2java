@@ -1156,7 +1156,7 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         List<LegendElement> llegendElements= this.legendElements==null ? null : new ArrayList(this.legendElements);
-        if ( llegendElements.size() > 0 && displayLegend ) {
+        if ( llegendElements!=null && llegendElements.size() > 0 && displayLegend ) {
             drawLegend(graphics,llegendElements);
         }
 
