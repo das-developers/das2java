@@ -289,7 +289,7 @@ public class DasPlot extends DasCanvasComponent {
     }
 
 
-    private void drawLegend(Graphics2D g ) {
+    private void drawLegend(Graphics2D g, List<LegendElement> llegendElements ) {
 
         Graphics2D graphics= (Graphics2D) g.create();
 
@@ -305,8 +305,8 @@ public class DasPlot extends DasCanvasComponent {
         msgy = yAxis.getRow().getDMinimum() + em/2;
 
         int maxIconWidth= 0;
-        for (int i = 0; i < legendElements.size(); i++) {
-            LegendElement le = legendElements.get(i);
+        for (int i = 0; i < llegendElements.size(); i++) {
+            LegendElement le = llegendElements.get(i);
             maxIconWidth = Math.max(maxIconWidth, le.icon.getIconWidth());
         }
 
@@ -326,8 +326,8 @@ public class DasPlot extends DasCanvasComponent {
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
         }
 
-        for (int i = 0; i < legendElements.size(); i++) {
-            LegendElement le = legendElements.get(i);
+        for (int i = 0; i < llegendElements.size(); i++) {
+            LegendElement le = llegendElements.get(i);
 
             if ( ( le.renderer!=null && le.renderer.isActive() ) || drawInactiveInLegend ) {
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
@@ -1155,8 +1155,9 @@ public class DasPlot extends DasCanvasComponent {
             drawMessages(graphics,lmessages);
         }
 
-        if ( legendElements.size() > 0 && displayLegend ) {
-            drawLegend(graphics);
+        List<LegendElement> llegendElements= this.legendElements==null ? null : new ArrayList(this.legendElements);
+        if ( llegendElements.size() > 0 && displayLegend ) {
+            drawLegend(graphics,llegendElements);
         }
 
         graphics.setClip(null);
