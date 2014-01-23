@@ -214,6 +214,35 @@ public class DasServer {
         }
 
     }
+    
+    /**
+     * sort the DefaultMutableTreeNodes so the directories are listed before
+     * the files.
+     * @param tn 
+     */
+    private void sortDirectories( DefaultMutableTreeNode tn ) {
+        DefaultMutableTreeNode[] children= new DefaultMutableTreeNode[tn.getChildCount()];
+        int ichild=0;
+        for ( int i=0; i<tn.getChildCount(); i++ ) {
+            if ( tn.getChildAt(i).getAllowsChildren() ) {
+                DefaultMutableTreeNode childWithKids= (DefaultMutableTreeNode)tn.getChildAt(i);
+                sortDirectories(childWithKids);
+                children[ichild]= childWithKids;
+                ichild++;
+            }
+        }
+        for ( int i=0; i<tn.getChildCount(); i++ ) {
+            if ( ! tn.getChildAt(i).getAllowsChildren() ) {
+                children[ichild]= (DefaultMutableTreeNode)tn.getChildAt(i);
+                ichild++;
+            }
+        }
+        for ( int i=0; i<tn.getChildCount(); i++ ) {
+            tn.remove(i);
+            tn.insert( children[i], i);
+        }
+        
+    }
 
     /**
      * TODO: Chris has asked that we sort these to put the folders first or last
@@ -256,6 +285,7 @@ public class DasServer {
             }
             line = in.readLine();
         }
+        sortDirectories( root );
         return model;
     }
 
@@ -597,4 +627,23 @@ public class DasServer {
     public String toString() {
         return this.getURL();
     }
+    
+    
+    public static void main( String[] args ) {
+        try {
+            DasServer ss= DasServer.create( new URL( "http://sarahandjeremy.net/cgi-bin/das2Server.pl") );
+            TreeModel tm= ss.getDataSetList();
+            JTree t= new JTree(tm);
+            java.awt.Dimension d= new java.awt.Dimension( 500,500 );
+            t.setMinimumSize( d);
+            t.setPreferredSize( d );
+            JOptionPane.showConfirmDialog( null, t );
+        } catch (DasException ex) {
+            Logger.getLogger(DasServer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(DasServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    
 }
