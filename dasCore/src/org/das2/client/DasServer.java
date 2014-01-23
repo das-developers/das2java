@@ -215,6 +215,15 @@ public class DasServer {
 
     }
 
+    /**
+     * TODO: Chris has asked that we sort these to put the folders first or last
+     * in the list.  Right now they are just in whatever order they happen to come
+     * on the stream, and our servers sort both the folders and the files 
+     * alphabetically.
+     * @param uin
+     * @return
+     * @throws IOException 
+     */
     private TreeModel createModel(InputStream uin) throws IOException {
 
         BufferedReader in = new BufferedReader( new InputStreamReader(uin) );
