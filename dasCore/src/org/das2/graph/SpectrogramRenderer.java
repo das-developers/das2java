@@ -256,8 +256,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         logger.fine("entering SpectrogramRenderer.render");
         Graphics2D g2 = (Graphics2D) g;
 
-        super.incrementRenderCount();
-        
         DasPlot parent= getParent();
         if ( parent==null ) return;
 
@@ -487,8 +485,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     public synchronized void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
         long t0= System.currentTimeMillis();
         logger.fine("entering SpectrogramRenderer.updatePlotImage");
-        
-        super.incrementUpdateCount();
         
         DasPlot lparent= getParent();
         

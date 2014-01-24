@@ -689,6 +689,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             if ( lparent==null ) return;
             try {
                 final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
+                incrementUpdateCount();
                 updatePlotImage(lparent.getXAxis(), lparent.getYAxis(), progressPanel);
                 xmemento = lparent.getXAxis().getMemento();
                 ymemento = lparent.getYAxis().getMemento();

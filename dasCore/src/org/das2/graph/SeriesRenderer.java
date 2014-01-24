@@ -1209,8 +1209,6 @@ public class SeriesRenderer extends Renderer {
     @Override
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
-        super.incrementRenderCount();
-        
         DasPlot lparent= getParent();
 
         logger.log(Level.FINE, "enter {0}.render: {1}", new Object[]{id, String.valueOf(getDataSet()) });
@@ -1426,8 +1424,6 @@ public class SeriesRenderer extends Renderer {
         
         long t0= System.currentTimeMillis();
         logger.log(Level.FINE, "enter {0}.updatePlotImage: {1}", new Object[]{id, String.valueOf(getDataSet()) });
-
-        super.incrementUpdateCount();
 
         QDataSet dataSet = getDataSet();
         selectionArea= null;

@@ -512,8 +512,6 @@ public class EventsRenderer extends Renderer {
     @Override
     public void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
-        super.incrementRenderCount();
-        
         GeneralPath sa= new GeneralPath();
 
         QDataSet vds= (QDataSet)getDataSet();
