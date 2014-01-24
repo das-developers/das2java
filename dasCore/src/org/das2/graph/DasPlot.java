@@ -120,7 +120,7 @@ public class DasPlot extends DasCanvasComponent {
      */
     boolean preview = false;
     //private int repaintCount = 0;
-    //private int paintComponentCount = 0;
+    private int paintComponentCount = 0;
     private int titleHeight= 0;
 
     private boolean drawInactiveInLegend= false;
@@ -957,7 +957,8 @@ public class DasPlot extends DasCanvasComponent {
         if (!getCanvas().isPrintingThread() && !EventQueue.isDispatchThread()) {
             throw new RuntimeException("not event thread: " + Thread.currentThread().getName());
         }
-        //paintComponentCount++;
+        
+        paintComponentCount++;
 
         if (getCanvas().isPrintingThread()) {
             logger.fine("* printing thread *");
@@ -2177,5 +2178,21 @@ public class DasPlot extends DasCanvasComponent {
                 otherAxis.setDatumRange(newOtherRange);
             }
         }
+    }
+    
+    /**
+     * get the diagnostic for the number of times the component was asked to paint
+     * itself since the last reset.
+     * @return the number of times the component has painted itself.
+     */
+    public int getPaintCount() {
+        return paintComponentCount;
+    }
+    
+    /**
+     * reset the paint counter.
+     */
+    public void resetPaintCount() {
+        this.paintComponentCount= 0;
     }
 }
