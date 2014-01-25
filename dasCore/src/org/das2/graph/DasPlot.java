@@ -64,6 +64,7 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.io.IOException;
@@ -1171,6 +1172,25 @@ public class DasPlot extends DasCanvasComponent {
         if ( llegendElements!=null && llegendElements.size() > 0 && displayLegend ) {
             drawLegend(graphics,llegendElements);
         }
+        
+        if ( drawDebugMessages ) {
+            int nr= this.getRenderers().length;
+            int ir= 0;
+            int xx= x+xSize-100-10;
+            int yy= y+ySize-nr*30-10-graphics.getFontMetrics().getHeight();
+            Color c0= graphics.getColor();
+            graphics.setColor( new Color( 255, 200, 255, 200 ) );
+            graphics.fillRoundRect( xx, yy, 100, nr*30+graphics.getFontMetrics().getHeight(), 10, 10 );
+            graphics.setColor(c0);
+            graphics.drawRoundRect( xx, yy, 100, nr*30+graphics.getFontMetrics().getHeight(), 10, 10 );
+            for ( Renderer r: this.getRenderers() ) {
+                GrannyTextRenderer gtr= new GrannyTextRenderer();
+                gtr.setString( graphics, String.format( "update: %d!crender: %d!c", r.getUpdateCount(), r.getRenderCount() ) );
+                gtr.draw( graphics, xx+10, yy+10+ir*30 );
+                ir++;
+            }
+            graphics.drawString( "paint: "+this.paintComponentCount, xx+10, yy+10+ir*30-graphics.getFontMetrics().getHeight() );
+        }
 
         graphics.setClip(null);
 
@@ -2195,4 +2215,19 @@ public class DasPlot extends DasCanvasComponent {
     public void resetPaintCount() {
         this.paintComponentCount= 0;
     }
+    
+    private boolean drawDebugMessages= false;
+    
+    /**
+     * draw a purple box in the lower right corner indicating the number
+     * of times each renderer has updated, rendered, and the plot itself
+     * has painted.
+     * @param v 
+     */
+    public void setDrawDebugMessages( boolean v ) {
+        this.drawDebugMessages= v;
+        resetPaintCount();
+        repaint();
+    }
+
 }
