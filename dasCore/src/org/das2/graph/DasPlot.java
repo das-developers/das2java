@@ -2229,5 +2229,9 @@ public class DasPlot extends DasCanvasComponent {
         resetPaintCount();
         repaint();
     }
+    
+    public boolean isDrawDebugMessages() {
+        return this.drawDebugMessages;
+    }
 
 }
