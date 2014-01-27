@@ -690,9 +690,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             try {
                 final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
                 incrementUpdateCount();
+                System.err.println("   <-- " + Renderer.this.updateCount + " " + lparent.getXAxis().getDatumRange() );
                 updatePlotImage(lparent.getXAxis(), lparent.getYAxis(), progressPanel);
                 xmemento = lparent.getXAxis().getMemento();
                 ymemento = lparent.getYAxis().getMemento();
+                System.err.println("   --> " + Renderer.this.updateCount  + " " + xmemento);
                 renderException = null;
             } catch (DasException de) {
                 // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
@@ -710,9 +712,26 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
             logger.fine("invalidate parent cacheImage and repaint");
 
-            lparent.invalidateCacheImage();            
+            lparent.invalidateCacheImage();          
+            updating= false;
+            if ( needToUpdate ) {
+                needToUpdate= false;
+                refresh();
+            }
+            
         }
     };
+    
+    /**
+     * mark that we are currently updating.
+     */
+    boolean updating= false;
+    
+    /**
+     * if we are currently updating, we can set this and an additional update
+     * will be performed.
+     */
+    boolean needToUpdate= false;
     
     /**
      * recalculate the plot image and repaint.  The dataset or exception have
@@ -733,15 +752,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             return;
         }
 
-        boolean async = true;  // updating is done on the event thread...
-        if (EventQueue.isDispatchThread()) {
-            if (async) {
-                new Thread( updateRunnable, "updatePlotImage").start();
-            } else {
-                updateRunnable.run();
-            }
+        if ( updating ) {
+            needToUpdate= true;
         } else {
-            updateRunnable.run();
+            updating= true;
+            new Thread( updateRunnable, "updatePlotImage").start();
         }
         
         //updateTickleTimer.tickle("refresh");
