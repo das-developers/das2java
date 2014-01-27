@@ -687,14 +687,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             logger.log(Level.FINE, "update plot image for {0}", id);
             DasPlot lparent= parent;
             if ( lparent==null ) return;
+            DasAxis lxaxis= (DasAxis)lparent.getXAxis().clone();
+            DasAxis lyaxis= (DasAxis)lparent.getYAxis().clone();
             try {
                 final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
                 incrementUpdateCount();
-                System.err.println("   <-- " + Renderer.this.updateCount + " " + lparent.getXAxis().getDatumRange() );
-                updatePlotImage(lparent.getXAxis(), lparent.getYAxis(), progressPanel);
-                xmemento = lparent.getXAxis().getMemento();
-                ymemento = lparent.getYAxis().getMemento();
-                System.err.println("   --> " + Renderer.this.updateCount  + " " + xmemento);
+                updatePlotImage(lxaxis, lyaxis, progressPanel);
+                xmemento = lxaxis.getMemento();
+                ymemento = lyaxis.getMemento();
                 renderException = null;
             } catch (DasException de) {
                 // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
