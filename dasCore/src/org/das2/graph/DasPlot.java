@@ -2214,6 +2214,9 @@ public class DasPlot extends DasCanvasComponent {
      */
     public void resetPaintCount() {
         this.paintComponentCount= 0;
+        for ( Renderer r: renderers ) {
+            r.resetCounters();
+        }
     }
     
     private boolean drawDebugMessages= false;
