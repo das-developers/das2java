@@ -5208,20 +5208,30 @@ public class Ops {
     
     /**
      * run boxcar average over the dataset, returning a dataset of same geometry.  Points near the edge are simply copied from the
-     * source dataset.  The result dataset contains a property "weights" that is the weights for each point.
+     * source dataset.  The result dataset contains a property "weights" that is the weights for each point.  For rank 2 
+     * datasets, the smooth is done on the zeroth dimension, typically time.
      *
-     * @param ds a rank 1 dataset of size N
+     * @param ds a rank 1 or rank 2 dataset of length N
      * @param size the number of adjacent bins to average
-     * @return rank 1 dataset of size N
+     * @return rank 1 or rank 2 dataset of length N
      */
     public static QDataSet smooth(QDataSet ds, int size) {
-        if (ds.rank() > 1) {
-            throw new IllegalArgumentException("only rank 1");
-        }
-        DDataSet result = BinAverage.boxcar(ds, size);
-        DataSetUtil.copyDimensionProperties( ds, result );
-        
-        return result;
+        if ( ds.rank()==1 ) {
+            DDataSet result = BinAverage.boxcar(ds, size);
+            DataSetUtil.copyDimensionProperties( ds, result );
+            return result;
+        } else if ( ds.rank()==2 ) {
+            ArrayDataSet result= ArrayDataSet.copy(ds);
+            for ( int j=0; j<ds.length(0); j++ ) {
+                QDataSet result1= BinAverage.boxcar( slice1(ds,j), size );
+                for ( int i=0; i<ds.length(); i++ ) {
+                    result.putValue( i,j, result1.value(i) );
+                }
+            }
+            return result;
+        } else {
+            throw new IllegalArgumentException("only rank 1 and rank 2");
+        } 
     }
     
     public static QDataSet smooth(Object ds, int size) {
