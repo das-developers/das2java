@@ -70,7 +70,6 @@ public class SimpleStreamFormatter {
         return packet;
     }
     Map<QDataSet, String> names = new HashMap<QDataSet, String>();
-    Map<QDataSet, String> joinDataSets= new HashMap<QDataSet, String>();
 
     private void doValuesElement(QDataSet ds, PacketDescriptor pd, PlaneDescriptor planeDescriptor, Document document, Element qdatasetElement) throws DOMException {
         Object sunits= ds.property(QDataSet.UNITS);
