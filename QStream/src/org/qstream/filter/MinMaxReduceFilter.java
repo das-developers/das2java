@@ -40,8 +40,6 @@ public class MinMaxReduceFilter extends QDataSetsFilter {
     SerialStreamFormatter form= new SerialStreamFormatter();
     Datum cadence;
     int icadence;
-    QDataSet start= null;
-    QDataSet end= null;
     QDataSet offsets;
     
     private static final String NAME= "MinMax";
