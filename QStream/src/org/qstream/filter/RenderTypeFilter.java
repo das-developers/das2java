@@ -32,16 +32,8 @@ public class RenderTypeFilter implements StreamHandler {
     private static final Logger logger= Logger.getLogger("qstream");
     
     StreamHandler sink;
-    ByteOrder byteOrder;
-
-    StreamDescriptor sd;
-
-    int size;
-    org.virbo.dsops.Ops.FFTFilterType filterType;
 
     public RenderTypeFilter() {
-        size= 2048;
-        filterType= org.virbo.dsops.Ops.FFTFilterType.Hanning;
     }
 
     public void setSink( StreamHandler sink ) {
@@ -50,9 +42,7 @@ public class RenderTypeFilter implements StreamHandler {
     
     @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
-        this.sd= sd;
         sink.streamDescriptor(sd);
-        byteOrder= sd.getByteOrder();
     }
 
     @Override
