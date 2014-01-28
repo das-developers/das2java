@@ -230,7 +230,7 @@ public class BoxSelectorMouseModule extends MouseModule {
         }
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == org.das2.event.BoxSelectionListener.class) {
-                ((org.das2.event.BoxSelectionListener) listeners[i + 1]).boxSelected(event);
+                ((org.das2.event.BoxSelectionListener) listeners[i + 1]).BoxSelected(event);
             }
         }
     }

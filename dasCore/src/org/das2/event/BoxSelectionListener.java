@@ -28,5 +28,7 @@ package org.das2.event;
  * @author  jbf
  */
 public abstract interface BoxSelectionListener extends java.util.EventListener {
-    public void boxSelected(BoxSelectionEvent e);    
+//This cannot be trivially changed, because it will break existing Jython scripts.    
+//public void boxSelected(BoxSelectionEvent e);   
+    public void BoxSelected(BoxSelectionEvent e); // This is legacy and will do away
 }
