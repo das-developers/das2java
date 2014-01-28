@@ -34,7 +34,6 @@ public class Contour {
         QDataSet xx;
         QDataSet ww;
         
-        Units zunits;
         long idx; /* monotonically increasing X Value */
         
         public ContourPlot( QDataSet tds, QDataSet contourValues ) {
@@ -48,8 +47,6 @@ public class Contour {
 
             this.ww= DataSetUtil.weightsDataSet(zz);
             
-            zunits= (Units) tds.property( QDataSet.UNITS );
-
             if ( contourValues.rank()==0 ) {
                 ncv= 1;
                 cv= new float[ncv];
@@ -108,7 +105,7 @@ public class Contour {
         // the z values, the interpolation flag, the dimensions
         // of the contour plot and the increments in the grid:
         int		xSteps, ySteps;
-        boolean		logInterpolation = false;
+        //boolean		logInterpolation = false;
         //Dimension	d;
         //double		deltaX, deltaY;
         
@@ -122,7 +119,7 @@ public class Contour {
         int	i2[] = new int[2];
         int	i3[] = new int[6];
         int	ibkey,icur,jcur,ii,jj,elle,ix,iedge,iflag,ni,ks;
-        int	cntrIndex,prevIndex;  /* contour index */
+        int	cntrIndex;  /* contour index */
         int	idir,nxidir,k;
         double	z1,z2;
         double cval; /* current contour value */
@@ -455,7 +452,6 @@ public class Contour {
             prevXY[0] = 0.0; prevXY[1] = 0.0;
             xy[0] = 1.0; xy[1] = 1.0;
             cntrIndex = 0;
-            prevIndex = -1;
             iflag = 6;
             DrawKernel(dsbuilder);
             icur = Math.max(1, Math.min((int)Math.floor(xy[0]), xSteps));
