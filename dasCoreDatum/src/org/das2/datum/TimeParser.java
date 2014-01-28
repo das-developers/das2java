@@ -73,7 +73,7 @@ public class TimeParser {
     private String[] fc;
     private String[] qualifiers;
     private String regex;
-    private String formatString;
+    //private String formatString;
     private int stopTimeDigit=AFTERSTOP_INIT;  // if after stop, then timeWidth is being set.
     
     /**
@@ -609,7 +609,7 @@ public class TimeParser {
         this.fieldHandlers = fieldHandlers;
 
         formatString= makeCanonical(formatString);
-        this.formatString = formatString;
+        //this.formatString = formatString;
         
         String[] ss = formatString.split("\\$");
         fc = new String[ss.length];
@@ -1209,6 +1209,10 @@ public class TimeParser {
         String fieldType= null;
         int length= -1;
         String params= null;
+        @Override
+        public String toString() {
+            return String.valueOf(spec)+String.valueOf(params);
+        }
     }
 
     /**
