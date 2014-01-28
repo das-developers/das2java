@@ -96,8 +96,6 @@ public class QDataSetsFilter implements StreamHandler {
 
     Map<String,Map<String,Object>> propsn= new HashMap();
 
-    StreamDescriptor sd;
-
     /**
      *
      * @param n node containing properties
@@ -178,7 +176,6 @@ public class QDataSetsFilter implements StreamHandler {
     @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         sink.streamDescriptor(sd);
-        this.sd= sd;
     }
 
     @Override
