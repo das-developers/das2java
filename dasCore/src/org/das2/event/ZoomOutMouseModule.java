@@ -23,7 +23,7 @@ public class ZoomOutMouseModule extends BoxSelectorMouseModule {
     
     BoxSelectionListener createBoxSelectionListener() {
         return new BoxSelectionListener() {
-            public void BoxSelected( BoxSelectionEvent event ) {
+            public void boxSelected( BoxSelectionEvent event ) {
                 DatumRange outerRange= parent.getDatumRange();
                 DatumRange range= parent.isHorizontal() ? event.getXRange() : event.getYRange();
                 range= parent.getTickV().enclosingRange( range, true );
