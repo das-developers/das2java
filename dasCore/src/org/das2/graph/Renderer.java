@@ -712,9 +712,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
             logger.fine("invalidate parent cacheImage and repaint");
 
-            lparent.invalidateCacheImage();          
+            lparent.requestRenderCacheImage();
+            lparent.invalidateCacheImage();   
+            
             updating= false;
             if ( needToUpdate ) {
+                logger.fine( "need to update again.");
                 needToUpdate= false;
                 refresh();
             }
