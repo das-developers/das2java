@@ -318,8 +318,6 @@ public class ContoursRenderer extends Renderer {
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         
-        super.incrementUpdateCount();
-
         QDataSet tds= getDataSet();
         if ( tds==null ) {
             return;
