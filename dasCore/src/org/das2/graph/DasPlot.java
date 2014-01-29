@@ -926,9 +926,67 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
+    private void rebuildCacheImageOffEventThread() {
+        synchronized ( this ) {
+            DasAxis lxaxis= (DasAxis) getXAxis().clone();
+            DasAxis lyaxis= (DasAxis) getYAxis().clone();
+
+            int x = getColumn().getDMinimum();
+            int y = getRow().getDMinimum();
+
+            int w= getWidth();
+            int h= getHeight();
+            if ( w==0 || h==0 ) {
+                return;
+            }
+            resetCacheImageBounds(false,w,h);                    
+            if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
+                logger.info("https://sourceforge.net/p/autoplot/bugs/1076/");
+                return;
+            }
+            BufferedImage newCacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height,
+                    BufferedImage.TYPE_4BYTE_ABGR);
+            Graphics2D plotGraphics = (Graphics2D) newCacheImage.getGraphics();
+            plotGraphics.setBackground(getBackground());
+            plotGraphics.setColor(getForeground());
+            plotGraphics.setRenderingHints(org.das2.DasProperties.getRenderingHints());
+            if (overSize) {
+                plotGraphics.translate(x - cacheImageBounds.x - 1, y - cacheImageBounds.y - 1);
+            }
+
+            logger.finest(" rebuilding cacheImage");
+
+            plotGraphics.translate(-x + 1, -y + 1);
+            
+            if ( drawDebugMessages ) {
+                plotGraphics.setStroke( new BasicStroke( 0.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 0.5f, new float[] { 0,1,0.2f,0,1 }, 0.0f ) );
+                plotGraphics.drawLine( cacheImageBounds.x+cacheImageBounds.width/2, 0, cacheImageBounds.x+cacheImageBounds.width/2, 1000 );
+                plotGraphics.drawLine( 0, cacheImageBounds.y+cacheImageBounds.height/2, 1000, cacheImageBounds.y+cacheImageBounds.height/2 );
+            }
+            
+            drawCacheImage(plotGraphics,lxaxis,lyaxis);
+
+            cacheImage= newCacheImage;
+            xmemento = lxaxis.getMemento();
+            ymemento = lyaxis.getMemento();
+            cacheImageValid = true;
+        }
+        
+    }
+    
+    public void requestRenderCacheImage() {
+        final DasCanvas lcanvas= getCanvas();
+        if ( lcanvas!=null ) {
+            lcanvas.registerPendingChange( this, canvasLock );
+        }
+        repaintSoonTimer.tickle();
+    }
+    
     private TickleTimer repaintSoonTimer= new TickleTimer( 200, new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
+            rebuildCacheImageOffEventThread();
             repaint();
+            
             final DasCanvas lcanvas= getCanvas();
             if ( lcanvas!=null ) {
                 lcanvas.changePerformed( this, canvasLock );
@@ -1034,17 +1092,9 @@ public class DasPlot extends DasCanvasComponent {
             }
         }        
                 
-        boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache;
+        //boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache;
+        boolean useCacheImage= !getCanvas().isPrintingThread() && !disableImageCache;
         
-        if ( dirt && !useCacheImage && !getCanvas().isPrintingThread() && !disableImageCache && cacheImage!=null ) {
-            logger.finer("here dirt and not useCacheImage");
-            useCacheImage= true;
-            final DasCanvas lcanvas= getCanvas();
-            if ( lcanvas!=null ) {
-                lcanvas.registerPendingChange( this, canvasLock );
-            }
-            repaintSoonTimer.tickle("dirt but not useCacheImage");
-        }
 
         if ( useCacheImage ) {
 
@@ -1052,7 +1102,9 @@ public class DasPlot extends DasCanvasComponent {
 
             AffineTransform at = getAffineTransform(xAxis, yAxis);
             if (at == null || (preview == false && !isIdentity(at))) {
-                atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
+                if ( cacheImage!=null ) {
+                    atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
+                }
                 paintInvalidScreen(atGraphics, at);
 
             } else {
@@ -1175,21 +1227,26 @@ public class DasPlot extends DasCanvasComponent {
         
         if ( drawDebugMessages ) {
             int nr= this.getRenderers().length;
+            int size=30;
+            if ( nr>5 ) {
+                size=20;
+                graphics.setFont( graphics.getFont().deriveFont(7.f) );
+            }
             int ir= 0;
-            int xx= x+xSize-100-10;
-            int yy= y+ySize-nr*30-10-graphics.getFontMetrics().getHeight();
+            int xx= x+xSize-100-size/3;
+            int yy= y+ySize-nr*size-size/3-graphics.getFontMetrics().getHeight();
             Color c0= graphics.getColor();
             graphics.setColor( new Color( 255, 200, 255, 200 ) );
-            graphics.fillRoundRect( xx, yy, 100, nr*30+graphics.getFontMetrics().getHeight(), 10, 10 );
+            graphics.fillRoundRect( xx, yy, 100, nr*size+graphics.getFontMetrics().getHeight(), 10, 10 );
             graphics.setColor(c0);
-            graphics.drawRoundRect( xx, yy, 100, nr*30+graphics.getFontMetrics().getHeight(), 10, 10 );
+            graphics.drawRoundRect( xx, yy, 100, nr*size+graphics.getFontMetrics().getHeight(), 10, 10 );
             for ( Renderer r: this.getRenderers() ) {
                 GrannyTextRenderer gtr= new GrannyTextRenderer();
                 gtr.setString( graphics, String.format( "update: %d!crender: %d!c", r.getUpdateCount(), r.getRenderCount() ) );
-                gtr.draw( graphics, xx+10, yy+10+ir*30 );
+                gtr.draw( graphics, xx+10, yy+10+ir*size );
                 ir++;
             }
-            graphics.drawString( "paint: "+this.paintComponentCount, xx+10, yy+10+ir*30-graphics.getFontMetrics().getHeight() );
+            graphics.drawString( "paint: "+this.paintComponentCount, xx+10, yy+20+ir*30-graphics.getFontMetrics().getHeight() );
         }
 
         graphics.setClip(null);
