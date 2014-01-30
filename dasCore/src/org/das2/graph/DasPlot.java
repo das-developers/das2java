@@ -118,7 +118,7 @@ public class DasPlot extends DasCanvasComponent {
      */
     boolean preview = false;
     //private int repaintCount = 0;
-    //private int paintComponentCount = 0;
+    private int paintComponentCount = 0;
     private int titleHeight= 0;
 
     private boolean drawInactiveInLegend= false;
@@ -286,8 +286,7 @@ public class DasPlot extends DasCanvasComponent {
         return new Rectangle( (int)rr.getX(),(int)rr.getY(),(int)rr.getWidth(),(int)rr.getHeight() );
     }
 
-
-    private void drawLegend(Graphics2D g ) {
+    private void drawLegend(Graphics2D g, List<LegendElement> llegendElements ) {
 
         Graphics2D graphics= (Graphics2D) g.create();
 
@@ -303,8 +302,8 @@ public class DasPlot extends DasCanvasComponent {
         msgy = yAxis.getRow().getDMinimum() + em/2;
 
         int maxIconWidth= 0;
-        for (int i = 0; i < legendElements.size(); i++) {
-            LegendElement le = legendElements.get(i);
+        for (int i = 0; i < llegendElements.size(); i++) {
+            LegendElement le = llegendElements.get(i);
             maxIconWidth = Math.max(maxIconWidth, le.icon.getIconWidth());
         }
 
@@ -324,8 +323,8 @@ public class DasPlot extends DasCanvasComponent {
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
         }
 
-        for (int i = 0; i < legendElements.size(); i++) {
-            LegendElement le = legendElements.get(i);
+        for (int i = 0; i < llegendElements.size(); i++) {
+            LegendElement le = llegendElements.get(i);
 
             if ( ( le.renderer!=null && le.renderer.isActive() ) || drawInactiveInLegend ) {
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
@@ -358,16 +357,15 @@ public class DasPlot extends DasCanvasComponent {
 
         graphics.dispose();
         
-
     }
-
+    
     /**
      * draw the message bubbles.  For the printing thread, we no
      * longer display the bubbles, unless the have Long.MAX_VALUE for the
      * birthmilli.
      * @param g the graphics context.
      */
-    private void drawMessages(Graphics2D g) {
+    private void drawMessages(Graphics2D g, List<MessageDescriptor> lmessages ) {
 
         Graphics2D graphics= (Graphics2D) g.create();
         boolean isPrint= getCanvas().isPrintingThread();
@@ -390,7 +388,6 @@ public class DasPlot extends DasCanvasComponent {
         Color severeColor = new Color(255, 140, 140, 200);
 
         List<Renderer> renderers1=  Arrays.asList( getRenderers() );
-        List<MessageDescriptor> lmessages= new ArrayList( this.messages ); // copy to local variable
 
         long tnow= System.currentTimeMillis();
         
@@ -945,7 +942,7 @@ public class DasPlot extends DasCanvasComponent {
         if (!getCanvas().isPrintingThread() && !EventQueue.isDispatchThread()) {
             throw new RuntimeException("not event thread: " + Thread.currentThread().getName());
         }
-        //paintComponentCount++;
+        paintComponentCount++;
 
         if (getCanvas().isPrintingThread()) {
             logger.fine("* printing thread *");
@@ -1160,14 +1157,40 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         // --- draw messages ---
-        if (messages.size() > 0) {
-            drawMessages(graphics);
+        List<MessageDescriptor> lmessages= this.messages==null ? null : new ArrayList(this.messages);
+        if ( lmessages!=null && lmessages.size() > 0) {
+            drawMessages(graphics,lmessages);
         }
 
-        if ( legendElements.size() > 0 && displayLegend ) {
-            drawLegend(graphics);
+        List<LegendElement> llegendElements= this.legendElements==null ? null : new ArrayList(this.legendElements);
+        if ( llegendElements!=null && llegendElements.size() > 0 && displayLegend ) {
+            drawLegend(graphics,llegendElements);
         }
-
+        
+        if ( drawDebugMessages ) {
+            int nr= this.getRenderers().length;
+            int size=30;
+            if ( nr>5 ) {
+                size=20;
+                graphics.setFont( graphics.getFont().deriveFont(7.f) );
+            }
+            int ir= 0;
+            int xx= x+xSize-100-size/3;
+            int yy= y+ySize-nr*size-size/3-graphics.getFontMetrics().getHeight();
+            Color c0= graphics.getColor();
+            graphics.setColor( new Color( 255, 200, 255, 200 ) );
+            graphics.fillRoundRect( xx, yy, 100, nr*size+graphics.getFontMetrics().getHeight(), 10, 10 );
+            graphics.setColor(c0);
+            graphics.drawRoundRect( xx, yy, 100, nr*size+graphics.getFontMetrics().getHeight(), 10, 10 );
+            for ( Renderer r: this.getRenderers() ) {
+                GrannyTextRenderer gtr= new GrannyTextRenderer();
+                gtr.setString( graphics, String.format( "update: %d!crender: %d!c", r.getUpdateCount(), r.getRenderCount() ) );
+                gtr.draw( graphics, xx+10, yy+10+ir*size );
+                ir++;
+            }
+            graphics.drawString( "paint: "+this.paintComponentCount, xx+10, yy+20+ir*30-graphics.getFontMetrics().getHeight() );
+        }
+        
         graphics.setClip(null);
 
         graphics.dispose();
@@ -2175,4 +2198,42 @@ public class DasPlot extends DasCanvasComponent {
             }
         }
     }
+    
+    /**
+     * get the diagnostic for the number of times the component was asked to paint
+     * itself since the last reset.
+     * @return the number of times the component has painted itself.
+     */
+    public int getPaintCount() {
+        return paintComponentCount;
+    }
+    
+    /**
+     * reset the paint counter.
+     */
+    public void resetPaintCount() {
+        this.paintComponentCount= 0;
+        for ( Renderer r: renderers ) {
+            r.resetCounters();
+        }
+    }
+    
+    private boolean drawDebugMessages= false;
+    
+    /**
+     * draw a purple box in the lower right corner indicating the number
+     * of times each renderer has updated, rendered, and the plot itself
+     * has painted.
+     * @param v 
+     */
+    public void setDrawDebugMessages( boolean v ) {
+        this.drawDebugMessages= v;
+        resetPaintCount();
+        repaint();
+    }
+    
+    public boolean isDrawDebugMessages() {
+        return this.drawDebugMessages;
+    }
+    
 }
