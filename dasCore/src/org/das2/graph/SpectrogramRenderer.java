@@ -256,8 +256,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         logger.fine("entering SpectrogramRenderer.render");
         Graphics2D g2 = (Graphics2D) g;
 
-        super.incrementRenderCount();
-        
         DasPlot parent= getParent();
         if ( parent==null ) return;
 

@@ -186,8 +186,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         long t0= System.currentTimeMillis();
 
-        super.incrementRenderCount();
-        
         logger.fine("entering ImageVectorDataSetRenderer.render");
         
         DasPlot parent= getParent();

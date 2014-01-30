@@ -287,8 +287,6 @@ public class DigitalRenderer extends Renderer {
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
-        super.incrementRenderCount();
-        
         g.setColor(color);
         DasPlot parent= getParent();
                 
