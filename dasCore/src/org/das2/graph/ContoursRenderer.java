@@ -133,8 +133,6 @@ public class ContoursRenderer extends Renderer {
     @Override
     public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
-        super.incrementRenderCount();
-        
         DasPlot lparent= getParent();
         
         Graphics2D g = (Graphics2D) g1.create();
