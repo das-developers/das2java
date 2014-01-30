@@ -64,14 +64,12 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.io.IOException;
 import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.das2.DasException;
@@ -79,7 +77,6 @@ import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.graph.DasAxis.Memento;
-import org.das2.util.TickleTimer;
 
 public class DasPlot extends DasCanvasComponent {
 
@@ -121,7 +118,7 @@ public class DasPlot extends DasCanvasComponent {
      */
     boolean preview = false;
     //private int repaintCount = 0;
-    private int paintComponentCount = 0;
+    //private int paintComponentCount = 0;
     private int titleHeight= 0;
 
     private boolean drawInactiveInLegend= false;
@@ -290,7 +287,7 @@ public class DasPlot extends DasCanvasComponent {
     }
 
 
-    private void drawLegend(Graphics2D g, List<LegendElement> llegendElements ) {
+    private void drawLegend(Graphics2D g ) {
 
         Graphics2D graphics= (Graphics2D) g.create();
 
@@ -306,8 +303,8 @@ public class DasPlot extends DasCanvasComponent {
         msgy = yAxis.getRow().getDMinimum() + em/2;
 
         int maxIconWidth= 0;
-        for (int i = 0; i < llegendElements.size(); i++) {
-            LegendElement le = llegendElements.get(i);
+        for (int i = 0; i < legendElements.size(); i++) {
+            LegendElement le = legendElements.get(i);
             maxIconWidth = Math.max(maxIconWidth, le.icon.getIconWidth());
         }
 
@@ -327,8 +324,8 @@ public class DasPlot extends DasCanvasComponent {
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
         }
 
-        for (int i = 0; i < llegendElements.size(); i++) {
-            LegendElement le = llegendElements.get(i);
+        for (int i = 0; i < legendElements.size(); i++) {
+            LegendElement le = legendElements.get(i);
 
             if ( ( le.renderer!=null && le.renderer.isActive() ) || drawInactiveInLegend ) {
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
@@ -370,7 +367,7 @@ public class DasPlot extends DasCanvasComponent {
      * birthmilli.
      * @param g the graphics context.
      */
-    private void drawMessages(Graphics2D g, List<MessageDescriptor> lmessages ) {
+    private void drawMessages(Graphics2D g) {
 
         Graphics2D graphics= (Graphics2D) g.create();
         boolean isPrint= getCanvas().isPrintingThread();
@@ -393,6 +390,7 @@ public class DasPlot extends DasCanvasComponent {
         Color severeColor = new Color(255, 140, 140, 200);
 
         List<Renderer> renderers1=  Arrays.asList( getRenderers() );
+        List<MessageDescriptor> lmessages= new ArrayList( this.messages ); // copy to local variable
 
         long tnow= System.currentTimeMillis();
         
@@ -560,7 +558,6 @@ public class DasPlot extends DasCanvasComponent {
             if (rend.isActive()) {
                 logger.log(Level.FINEST, "rendering #{0}: {1}", new Object[]{i, rend});
                 try {
-                    rend.incrementRenderCount();
                     rend.render(plotGraphics, lxaxis, lyaxis, new NullProgressMonitor());
                 } catch ( RuntimeException ex ) {
                     logger.log( Level.WARNING, ex.getMessage(), ex );
@@ -926,79 +923,10 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
-    private void rebuildCacheImageOffEventThread() {
-        synchronized ( this ) {
-            DasAxis lxaxis= (DasAxis) getXAxis().clone();
-            DasAxis lyaxis= (DasAxis) getYAxis().clone();
 
-            int x = getColumn().getDMinimum();
-            int y = getRow().getDMinimum();
-
-            int w= getWidth();
-            int h= getHeight();
-            if ( w==0 || h==0 ) {
-                return;
-            }
-            resetCacheImageBounds(false,w,h);                    
-            if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
-                logger.info("https://sourceforge.net/p/autoplot/bugs/1076/");
-                return;
-            }
-            BufferedImage newCacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height,
-                    BufferedImage.TYPE_4BYTE_ABGR);
-            Graphics2D plotGraphics = (Graphics2D) newCacheImage.getGraphics();
-            plotGraphics.setBackground(getBackground());
-            plotGraphics.setColor(getForeground());
-            plotGraphics.setRenderingHints(org.das2.DasProperties.getRenderingHints());
-            if (overSize) {
-                plotGraphics.translate(x - cacheImageBounds.x - 1, y - cacheImageBounds.y - 1);
-            }
-
-            logger.finest(" rebuilding cacheImage");
-
-            plotGraphics.translate(-x + 1, -y + 1);
-            
-            if ( drawDebugMessages ) {
-                plotGraphics.setStroke( new BasicStroke( 0.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 0.5f, new float[] { 0,1,0.2f,0,1 }, 0.0f ) );
-                plotGraphics.drawLine( cacheImageBounds.x+cacheImageBounds.width/2, 0, cacheImageBounds.x+cacheImageBounds.width/2, 1000 );
-                plotGraphics.drawLine( 0, cacheImageBounds.y+cacheImageBounds.height/2, 1000, cacheImageBounds.y+cacheImageBounds.height/2 );
-            }
-            
-            drawCacheImage(plotGraphics,lxaxis,lyaxis);
-
-            cacheImage= newCacheImage;
-            xmemento = lxaxis.getMemento();
-            ymemento = lyaxis.getMemento();
-            cacheImageValid = true;
-        }
-        
-    }
-    
-    public void requestRenderCacheImage() {
-        final DasCanvas lcanvas= getCanvas();
-        if ( lcanvas!=null ) {
-            lcanvas.registerPendingChange( this, canvasLock );
-        }
-        repaintSoonTimer.tickle();
-    }
-    
-    private TickleTimer repaintSoonTimer= new TickleTimer( 200, new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-            rebuildCacheImageOffEventThread();
-            repaint();
-            
-            final DasCanvas lcanvas= getCanvas();
-            if ( lcanvas!=null ) {
-                lcanvas.changePerformed( this, canvasLock );
-            }
-        }
-    });
-        
-    final Object canvasLock= "canvasUpdate_"+this.getDasName();
-    
     @Override
     protected synchronized void paintComponent(Graphics graphics0) {
-        logger.log(Level.FINE, "dasPlot.paintComponent {0}", getDasName());
+        logger.log(Level.FINER, "dasPlot.paintComponent {0}", getDasName());
         if ( getCanvas().isValueAdjusting() ) {
             repaint();
             return;
@@ -1016,8 +944,7 @@ public class DasPlot extends DasCanvasComponent {
         if (!getCanvas().isPrintingThread() && !EventQueue.isDispatchThread()) {
             throw new RuntimeException("not event thread: " + Thread.currentThread().getName());
         }
-        
-        paintComponentCount++;
+        //paintComponentCount++;
 
         if (getCanvas().isPrintingThread()) {
             logger.fine("* printing thread *");
@@ -1071,40 +998,14 @@ public class DasPlot extends DasCanvasComponent {
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.translate(-getX(), -getY());
 
-        
-        DasAxis lxaxis= (DasAxis)getXAxis().clone();
-        DasAxis lyaxis= (DasAxis)getYAxis().clone();
-
-        Memento xmem= lxaxis.getMemento();
-        Memento ymem= lyaxis.getMemento();                
-
-        // check mementos before drawing.  They should all be the same.  See https://sourceforge.net/tracker/index.php?func=detail&aid=3075655&group_id=199733&atid=970682
-        Renderer[] rends= getRenderers();        
-        
-        boolean dirt= false;
-        if ( rends.length>0 ) {
-            for ( Renderer r: rends ) {
-                if ( r.getXmemento()==null || !r.getXmemento().equals(xmem) ) dirt= true;
-                if ( r.getYmemento()==null || !r.getYmemento().equals(ymem) ) dirt= true;
-                if ( dirt ) {
-                    logger.log(Level.FINE, "need to repaint because of memento: {0}", r);
-                }
-            }
-        }        
-                
-        //boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache;
-        boolean useCacheImage= !getCanvas().isPrintingThread() && !disableImageCache;
-        
-
+        boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache;
         if ( useCacheImage ) {
 
             Graphics2D atGraphics = (Graphics2D) graphics.create();
 
             AffineTransform at = getAffineTransform(xAxis, yAxis);
             if (at == null || (preview == false && !isIdentity(at))) {
-                if ( cacheImage!=null ) {
-                    atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
-                }
+                atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
                 paintInvalidScreen(atGraphics, at);
 
             } else {
@@ -1184,17 +1085,60 @@ public class DasPlot extends DasCanvasComponent {
 
                 plotGraphics.translate(-x + 1, -y + 1);
 
-                drawCacheImage(plotGraphics,lxaxis,lyaxis);
-                xmemento = xAxis.getMemento();
-                ymemento = yAxis.getMemento();
-                cacheImageValid = true;
-                   
-                logger.log(Level.FINEST, "recalc cacheImage, xmemento={0} ymemento={1}", new Object[]{xmemento, ymemento});                    
+                // check mementos before drawing.  They should all be the same.  See https://sourceforge.net/tracker/index.php?func=detail&aid=3075655&group_id=199733&atid=970682
+                Renderer[] rends= getRenderers();
 
+                //for ( int i=0; i<rends.length; i++ ) {
+                //    System.err.println( "renderer #"+i+": " +rends[i] + " ds="+rends[i].getDataSet() );
+                //}
+
+                DasAxis lxaxis= (DasAxis)getXAxis().clone();
+                DasAxis lyaxis= (DasAxis)getYAxis().clone();
+                
+                Memento xmem= lxaxis.getMemento();
+                Memento ymem= lyaxis.getMemento();                
+                
+                if ( rends.length>0 ) {
+                    for ( Renderer r: rends ) {
+                        boolean dirt= false;
+                        if ( r.getXmemento()==null || !r.getXmemento().equals(xmem) ) dirt= true;
+                        if ( r.getYmemento()==null || !r.getYmemento().equals(ymem) ) dirt= true;
+                        if ( dirt ) {
+                            try {
+                                logger.log(Level.FINE,"calling updatePlotImage again because of memento");
+                                r.updatePlotImage( lxaxis, lyaxis, new NullProgressMonitor());
+                            } catch (DasException ex) {
+                                logger.log(Level.SEVERE, ex.getMessage(), ex);
+                            }
+                        } else {
+                            logger.log(Level.FINE,"skipping updatePlotImage because memento indicates things are okay");
+                        }
+                    }
+                    //Memento xmem2= getXAxis().getMemento();  // I showed that the mementos don't change.  THIS IS ONLY BECAUSE UPDATES ARE DONE ON THE EVENT THREAD
+                    //System.err.println("mementocheck: "+xmem2.equals(xmem));
+                }
+
+                drawCacheImage(plotGraphics,lxaxis,lyaxis);
+                //Memento xmem2= getXAxis().getMemento();  // I showed that the mementos don't change.  THIS IS ONLY BECAUSE UPDATES ARE DONE ON THE EVENT THREAD.  I'm not sure of this, making a local copy of the axes appears to fix the problem.
+                //if ( !xmem2.equals(xmem) ) {
+                //    System.err.println("mementocheck: "+xmem2.equals(xmem));
+                //}
             }
 
+
             if ( !disableImageCache && !getCanvas().isPrintingThread() ) {
+                cacheImageValid = true;
+                //clip.y= Math.max( clip.y, getRow().getDMinimum() );
+                //clip.translate( getX(), getY() );
+                //graphics.setClip(clip);
                 graphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
+                //graphics.drawString( "new image", getWidth()/2, getHeight()/2 );
+                //graphics.setClip(null);
+
+                xmemento = xAxis.getMemento();
+                ymemento = yAxis.getMemento();
+
+                logger.log(Level.FINEST, "recalc cacheImage, xmemento={0} ymemento={1}", new Object[]{xmemento, ymemento});
             }
         }
 
@@ -1215,38 +1159,12 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         // --- draw messages ---
-        List<MessageDescriptor> lmessages= this.messages==null ? null : new ArrayList(this.messages);
-        if ( lmessages!=null && lmessages.size() > 0) {
-            drawMessages(graphics,lmessages);
+        if (messages.size() > 0) {
+            drawMessages(graphics);
         }
 
-        List<LegendElement> llegendElements= this.legendElements==null ? null : new ArrayList(this.legendElements);
-        if ( llegendElements!=null && llegendElements.size() > 0 && displayLegend ) {
-            drawLegend(graphics,llegendElements);
-        }
-        
-        if ( drawDebugMessages ) {
-            int nr= this.getRenderers().length;
-            int size=30;
-            if ( nr>5 ) {
-                size=20;
-                graphics.setFont( graphics.getFont().deriveFont(7.f) );
-            }
-            int ir= 0;
-            int xx= x+xSize-100-size/3;
-            int yy= y+ySize-nr*size-size/3-graphics.getFontMetrics().getHeight();
-            Color c0= graphics.getColor();
-            graphics.setColor( new Color( 255, 200, 255, 200 ) );
-            graphics.fillRoundRect( xx, yy, 100, nr*size+graphics.getFontMetrics().getHeight(), 10, 10 );
-            graphics.setColor(c0);
-            graphics.drawRoundRect( xx, yy, 100, nr*size+graphics.getFontMetrics().getHeight(), 10, 10 );
-            for ( Renderer r: this.getRenderers() ) {
-                GrannyTextRenderer gtr= new GrannyTextRenderer();
-                gtr.setString( graphics, String.format( "update: %d!crender: %d!c", r.getUpdateCount(), r.getRenderCount() ) );
-                gtr.draw( graphics, xx+10, yy+10+ir*size );
-                ir++;
-            }
-            graphics.drawString( "paint: "+this.paintComponentCount, xx+10, yy+20+ir*30-graphics.getFontMetrics().getHeight() );
+        if ( legendElements.size() > 0 && displayLegend ) {
+            drawLegend(graphics);
         }
 
         graphics.setClip(null);
@@ -2256,42 +2174,4 @@ public class DasPlot extends DasCanvasComponent {
             }
         }
     }
-    
-    /**
-     * get the diagnostic for the number of times the component was asked to paint
-     * itself since the last reset.
-     * @return the number of times the component has painted itself.
-     */
-    public int getPaintCount() {
-        return paintComponentCount;
-    }
-    
-    /**
-     * reset the paint counter.
-     */
-    public void resetPaintCount() {
-        this.paintComponentCount= 0;
-        for ( Renderer r: renderers ) {
-            r.resetCounters();
-        }
-    }
-    
-    private boolean drawDebugMessages= false;
-    
-    /**
-     * draw a purple box in the lower right corner indicating the number
-     * of times each renderer has updated, rendered, and the plot itself
-     * has painted.
-     * @param v 
-     */
-    public void setDrawDebugMessages( boolean v ) {
-        this.drawDebugMessages= v;
-        resetPaintCount();
-        repaint();
-    }
-    
-    public boolean isDrawDebugMessages() {
-        return this.drawDebugMessages;
-    }
-
 }

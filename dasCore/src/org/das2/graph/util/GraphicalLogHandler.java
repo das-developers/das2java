@@ -530,7 +530,7 @@ public class GraphicalLogHandler extends Handler {
         result.setDragEvents( false );
         result.setReleaseEvents( true );
         result.addBoxSelectionListener( new BoxSelectionListener() {
-            public void BoxSelected( BoxSelectionEvent e ) { // this will change
+            public void BoxSelected( BoxSelectionEvent e ) {
                 StringBuilder buf= new StringBuilder(1000);
                 
                 //Handler h= new ConsoleHandler();

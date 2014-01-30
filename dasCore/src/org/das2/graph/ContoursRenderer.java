@@ -133,6 +133,8 @@ public class ContoursRenderer extends Renderer {
     @Override
     public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
+        super.incrementRenderCount();
+        
         DasPlot lparent= getParent();
         
         Graphics2D g = (Graphics2D) g1.create();
@@ -318,6 +320,8 @@ public class ContoursRenderer extends Renderer {
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         
+        super.incrementUpdateCount();
+
         QDataSet tds= getDataSet();
         if ( tds==null ) {
             return;

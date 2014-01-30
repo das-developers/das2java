@@ -59,7 +59,6 @@ import org.das2.components.propertyeditor.Displayable;
 import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.Datum;
 import org.das2.util.LoggerManager;
-//import org.das2.util.TickleTimer;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -616,6 +615,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
     }
 
+    /**
+     * refresh, but only if the parent has been set.
+     */
+    protected void refreshImage() {
+        if (getParent() != null) {
+            refresh();
+        }
+    }
 
     /**
      * Something has changed with the Render, and the plot should come back
@@ -672,70 +679,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         refresh();
     }
 
-//    /**
-//     * wait 100 ms before calling the update method.
-//     */
-//    TickleTimer updateTickleTimer= new TickleTimer( 25, new PropertyChangeListener() {
-//        public void propertyChange(PropertyChangeEvent evt) {
-//            updateRunnable.run();
-//        }
-//    });
-    
-    Runnable updateRunnable= new Runnable() {
-
-        public void run() {
-            logger.log(Level.FINE, "update plot image for {0}", id);
-            DasPlot lparent= parent;
-            if ( lparent==null ) return;
-            DasAxis lxaxis= (DasAxis)lparent.getXAxis().clone();
-            DasAxis lyaxis= (DasAxis)lparent.getYAxis().clone();
-            try {
-                final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
-                incrementUpdateCount();
-                updatePlotImage(lxaxis, lyaxis, progressPanel);
-                xmemento = lxaxis.getMemento();
-                ymemento = lyaxis.getMemento();
-                renderException = null;
-            } catch (DasException de) {
-                // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
-                logger.log(Level.WARNING, de.getMessage(), de);
-                ds = null;
-                renderException = de;
-            } catch (RuntimeException re) {
-                logger.log(Level.WARNING, re.getMessage(), re);
-                renderException = re;
-                lparent.invalidateCacheImage();
-                throw re;
-            } finally {
-                // this code used to call finished() on the progressPanel
-            }
-
-            logger.fine("invalidate parent cacheImage and repaint");
-
-            lparent.requestRenderCacheImage();
-            lparent.invalidateCacheImage();   
-            
-            updating= false;
-            if ( needToUpdate ) {
-                logger.fine( "need to update again.");
-                needToUpdate= false;
-                refresh();
-            }
-            
-        }
-    };
-    
-    /**
-     * mark that we are currently updating.
-     */
-    boolean updating= false;
-    
-    /**
-     * if we are currently updating, we can set this and an additional update
-     * will be performed.
-     */
-    boolean needToUpdate= false;
-    
     /**
      * recalculate the plot image and repaint.  The dataset or exception have
      * been updated, or the axes have changed, so we need to perform updatePlotImage
@@ -755,15 +698,48 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             return;
         }
 
-        if ( updating ) {
-            needToUpdate= true;
-        } else {
-            updating= true;
-            new Thread( updateRunnable, "updatePlotImage").start();
-        }
-        
-        //updateTickleTimer.tickle("refresh");
+        Runnable run = new Runnable() {
 
+            public void run() {
+                logger.log(Level.FINE, "update plot image for {0}", id);
+                DasPlot lparent= parent;
+                if ( lparent==null ) return;
+                try {
+                    final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
+                    updatePlotImage(lparent.getXAxis(), lparent.getYAxis(), progressPanel);
+                    xmemento = lparent.getXAxis().getMemento();
+                    ymemento = lparent.getYAxis().getMemento();
+                    renderException = null;
+                } catch (DasException de) {
+                    // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
+                    logger.log(Level.WARNING, de.getMessage(), de);
+                    ds = null;
+                    renderException = de;
+                } catch (RuntimeException re) {
+                    logger.log(Level.WARNING, re.getMessage(), re);
+                    renderException = re;
+                    lparent.invalidateCacheImage();
+                    throw re;
+                } finally {
+                    // this code used to call finished() on the progressPanel
+                }
+
+                logger.fine("invalidate parent cacheImage and repaint");
+
+                lparent.invalidateCacheImage();
+            }
+        };
+
+        boolean async = true;  // updating is done on the event thread...
+        if (EventQueue.isDispatchThread()) {
+            if (async) {
+                new Thread(run, "updatePlotImage").start();
+            } else {
+                run.run();
+            }
+        } else {
+            run.run();
+        }
     }
 
     public void setDataSetDescriptor(DataSetDescriptor dsd) {
