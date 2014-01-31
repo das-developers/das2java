@@ -1189,6 +1189,12 @@ public class DataSetUtil {
         if ( monoDecreasing>(9*count/10) ) {
             diffs= Ops.multiply( diffs, asDataSet(-1) );
         }
+        
+        if ( repeatValues>0 ) {
+            QDataSet r= Ops.where( Ops.ne( diffs,DataSetUtil.asDataSet(0) ) );
+            diffs= DataSetOps.applyIndex( diffs, 0, r, false );
+        }
+
         QDataSet hist= ah.doit( diffs ); 
 
         long total= (Long)( ((Map<String,Object>)hist.property( QDataSet.USER_PROPERTIES )).get(AutoHistogram.USER_PROP_TOTAL) );
@@ -1271,7 +1277,14 @@ public class DataSetUtil {
                 || everIncreasing>everIncreasingLimit
                 || bunch0 ) ) {
             ah= new AutoHistogram();
-            QDataSet loghist= ah.doit( Ops.diff(Ops.log(xds)),DataSetUtil.weightsDataSet(yds)); //TODO: sloppy!
+            QDataSet diffs2= Ops.diff(Ops.log(xds));
+            QDataSet yy= DataSetUtil.weightsDataSet(yds);
+            if ( repeatValues>0 ) {
+                QDataSet r= Ops.where( Ops.ne( diffs2,DataSetUtil.asDataSet(0) ) );
+                diffs2= DataSetOps.applyIndex( diffs2, 0, r, false );
+                yy= DataSetOps.applyIndex( yy, 0, r, false );
+            }
+            QDataSet loghist= ah.doit( diffs2,yy ); //TODO: sloppy!
             // ltotal can be different than total.  TODO: WHY?  maybe because of outliers?
             long ltotal= (Long)( ((Map<String,Object>)loghist.property( QDataSet.USER_PROPERTIES )).get(AutoHistogram.USER_PROP_TOTAL) );
             int logPeak=0;
