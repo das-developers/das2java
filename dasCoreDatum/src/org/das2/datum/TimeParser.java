@@ -520,7 +520,6 @@ public class TimeParser {
         }
         if ( wildcard ) {
             formatString= formatString.replaceAll("\\*", "\\$x");
-            System.err.println(formatString);
         }
         return formatString;
     }
