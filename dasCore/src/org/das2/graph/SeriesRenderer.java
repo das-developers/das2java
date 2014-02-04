@@ -1465,7 +1465,7 @@ public class SeriesRenderer extends Renderer {
                 logger.fine("dataset is rank 2 and not a bundle.");
                 return;
             }
-            if ( ds.rank()!=1 && !SemanticOps.isBundle(vds) ) {
+            if ( ds.rank()!=1 && !SemanticOps.isBundle(ds) ) {
                 logger.fine("dataset is rank 2 and not a bundle");
                 return;
             }
