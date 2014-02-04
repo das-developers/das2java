@@ -2999,7 +2999,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             if ( leftXOverride != null ) blLabelRect.x = leftXOverride; // deprecated.
         } else if ( leftLabel ) {
-            blLabelRect = getLabelBounds(new Rectangle(-10, DMin, 10, DWidth));
+            blLabelRect = getLabelBounds(new Rectangle( getColumn().getDMinimum(), DMin, 1, DWidth));
         } else {
            blLabelRect = blTickRect;
         }
