@@ -617,6 +617,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     /**
      * refresh, but only if the parent has been set.
+     * @deprecated call refresh which also checks the parent.
      */
     protected void refreshImage() {
         if (getParent() != null) {
