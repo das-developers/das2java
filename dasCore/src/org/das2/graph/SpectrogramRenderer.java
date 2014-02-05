@@ -196,6 +196,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             colorBar.addPropertyChangeListener("dataMinimum", rebinListener);
             colorBar.addPropertyChangeListener("dataMaximum", rebinListener);
             colorBar.addPropertyChangeListener("log", rebinListener);
+            colorBar.addPropertyChangeListener("flipped", rebinListener);
             colorBar.addPropertyChangeListener(DasColorBar.PROPERTY_TYPE, rebinListener);
             colorBar.addPropertyChangeListener(DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
         }
@@ -227,6 +228,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             colorBar.removePropertyChangeListener("dataMinimum", rebinListener);
             colorBar.removePropertyChangeListener("dataMaximum", rebinListener);
             colorBar.removePropertyChangeListener("log", rebinListener);
+            colorBar.removePropertyChangeListener("flipped", rebinListener);
             colorBar.removePropertyChangeListener(DasColorBar.PROPERTY_TYPE, rebinListener);
             colorBar.removePropertyChangeListener(DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
             if (parent != null && parent.getCanvas() != null) {
@@ -238,6 +240,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             colorBar.addPropertyChangeListener("dataMinimum", rebinListener);
             colorBar.addPropertyChangeListener("dataMaximum", rebinListener);
             colorBar.addPropertyChangeListener("log", rebinListener);
+            colorBar.addPropertyChangeListener("flipped", rebinListener);
             colorBar.addPropertyChangeListener(DasColorBar.PROPERTY_TYPE, rebinListener);
             colorBar.addPropertyChangeListener(DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
             if (parent != null && parent.getCanvas() != null) {
