@@ -203,15 +203,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         setRebinner(SpectrogramRenderer.RebinnerEnum.binAverage);
     }
 
-    /** Creates a new instance of SpectrogramRenderer
-     * @deprecated use {link
-     * #SpectrogramRenderer(org.das2.dataset.DataSetDescriptor,
-     * org.das2.graph.DasColorBar)}
-     */
-    public SpectrogramRenderer(DasPlot parent, DataSetDescriptor dsd, DasColorBar colorBar) {
-        this(dsd, colorBar);
-        setParent(parent);
-    }
 
     @Override
     public DasAxis getZAxis() {
