@@ -1151,7 +1151,9 @@ public class Ops {
             resultUnits= units2;
         } else {
             if ( !UnitsUtil.isRatioMeasurement(units1) ) throw new IllegalArgumentException("ds1 units are not ratio units: "+units1);
-            if ( !UnitsUtil.isRatioMeasurement(units2) ) throw new IllegalArgumentException("ds2 units are not ratio units: "+units2);
+            if ( !UnitsUtil.isRatioMeasurement(units2) ) {
+                throw new IllegalArgumentException("ds2 units are not ratio units: "+units2);
+            }
             logger.fine("throwing out units until we improve the units library, both arguments have physical units");
             resultUnits= null;
         }
@@ -4659,6 +4661,9 @@ public class Ops {
      * @return rank 2 dataset that is m by n.
      */
     public static QDataSet outerProduct(QDataSet ds1, QDataSet ds2) {
+        if ( ds1.rank()!=1 )  throw new IllegalArgumentException("rank must be 1: ds1");
+        if ( ds2.rank()!=1 )  throw new IllegalArgumentException("rank must be 1: ds2");
+        
         QDataSet w1= DataSetUtil.weightsDataSet(ds1);
         QDataSet w2= DataSetUtil.weightsDataSet(ds2);
         double fill= -1e38;
@@ -4676,11 +4681,22 @@ public class Ops {
             }
         }
         result.putProperty( QDataSet.DEPEND_0, ds1.property(QDataSet.DEPEND_0 ) );
-        result.putProperty( QDataSet.DEPEND_1, ds2.property(QDataSet.DEPEND_0 ) );
+        result.putProperty( QDataSet.DEPEND_1, ds2.property(QDataSet.DEPEND_0 ) );        
         if ( hasFill ) {
             result.putProperty( QDataSet.FILL_VALUE, fill );
         }
-        Units units= multiplyUnits( SemanticOps.getUnits(ds1), SemanticOps.getUnits(ds2) );
+        
+        Units units1= SemanticOps.getUnits(ds1);
+        Units units2= SemanticOps.getUnits(ds2);        
+        Units units;
+        if ( units1==Units.dimensionless ) { // allow outerProduct( replicate(1,freq.length()), epoch )
+            units= units2;
+        } else if ( units2==Units.dimensionless ) {
+            units= units1;
+        } else {
+            units= multiplyUnits( units1, units2 );
+        }
+        
         if ( units!=Units.dimensionless ) result.putProperty( QDataSet.UNITS, units );
         return result;
     }
