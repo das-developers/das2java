@@ -27,8 +27,6 @@ import java.util.regex.Pattern;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
-import org.das2.datum.TimeUtil;
-import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -81,6 +79,9 @@ public class DataSetOps {
 
     /**
      *slice on the first dimension
+     * @param ds rank 1 or more dataset
+     * @param index the index to slice at
+     * @return rank 0 or more dataset.
      */
     public static MutablePropertyDataSet slice0(final QDataSet ds, final int index) {
         return new Slice0DataSet(ds, index,true);
@@ -90,6 +91,9 @@ public class DataSetOps {
      * slice dataset operator assumes a qube dataset
      * by picking the index-th element of dataset's second dimension, without
      * regard to tags.
+     * @param ds rank 2 or more dataset
+     * @param index the index to slice at
+     * @return rank 1 or more dataset.
      */
     public static MutablePropertyDataSet slice1(final QDataSet ds, final int index) {
         return new Slice1DataSet(ds, index, true, false);
@@ -99,6 +103,9 @@ public class DataSetOps {
      * slice dataset operator assumes a qube dataset
      * by picking the index-th element of dataset's second dimension, without
      * regard to tags.
+     * @param ds rank 3 or more dataset
+     * @param index the index to slice at.
+     * @return rank 2 or more dataset.
      */
     public static MutablePropertyDataSet slice2(final QDataSet ds, final int index) {
         return new Slice2DataSet(ds, index, true);
@@ -108,6 +115,9 @@ public class DataSetOps {
      * slice dataset operator assumes a qube dataset
      * by picking the index-th element of dataset's second dimension, without
      * regard to tags.
+     * @param ds rank 4 or more dataset.
+     * @param index index to slice at
+     * @return rank 3 or more dataset.
      */
     public static MutablePropertyDataSet slice3(final QDataSet ds, final int index) {
         return new Slice3DataSet(ds, index, true );
@@ -140,9 +150,9 @@ public class DataSetOps {
             itOut.putValue( depSlice, itIn.getValue(dep) );
         }
         String[] names = DataSetUtil.dimensionProperties();
-        for (int i = 0; i < names.length; i++) {
-            if ( dep.property(names[i]) != null) {
-                depSlice.putProperty(names[i], dep.property(names[i]));
+        for (String name : names) {
+            if (dep.property(name) != null) {
+                depSlice.putProperty(name, dep.property(name));
             }
         }
         return depSlice;
@@ -236,8 +246,10 @@ public class DataSetOps {
      * This is extended to support rank 4 datasets.
      * TODO: This probably doesn't handle bundles property.
      * TODO: slice and trim should probably be implemented here for efficiently.
+     * @param ds rank 1 or more dataset
      * @param start first index to include.
      * @param end last index, exclusive
+     * @return dataset of the same rank.
      */
     public static MutablePropertyDataSet leafTrim(final QDataSet ds, final int start, final int end) {
         return new LeafTrimDataSet( ds, start, end );
@@ -247,6 +259,8 @@ public class DataSetOps {
      * returns a list of indeces that sort the dataset.  I don't like this implementation, because
      * it requires that an array of Integers (not int[]) be created.  Invalid measurements are not indexed in
      * the returned dataset.
+     * @param ds rank 1 dataset, possibly containing fill.
+     * @return indeces that sort the data.
      */
     public static QDataSet sort(final QDataSet ds) {
         if (ds.rank() > 1) {
@@ -264,15 +278,15 @@ public class DataSetOps {
         }
         Comparator<Integer> c = new Comparator<Integer>() {
             public int compare(Integer o1, Integer o2) {
-                int i1 = o1.intValue();
-                int i2 = o2.intValue();
+                int i1 = o1;
+                int i2 = o2;
                 return Double.compare(ds.value(i1), ds.value(i2));
             }
         };
         Arrays.sort(indeces, 0, i0, c);
         final int[] data = new int[i0];
         for (int i = 0; i < i0; i++) {
-            data[i] = indeces[i].intValue();
+            data[i] = indeces[i];
         }
         MutablePropertyDataSet result = IDataSet.wrap(data);
         result.putProperty(QDataSet.NAME, "sort" + ds.length());
@@ -531,8 +545,9 @@ public class DataSetOps {
      * 2010-09-23: add BINS_1 and BUNDLE_1, Slice0DataSet calls this.
      * 2010-02-24: BUNDLE_0 handled.
      * 2011-03-25: add WEIGHTS_PLANE
-     * @param sliceIndex
-     * @param props
+     * @param index the index to slice at in the zeroth index.
+     * @param props the properties to slice.
+     * @return the properties after the slice.
      */
     public static Map<String,Object> sliceProperties0( int index, Map<String,Object> props ) {
         Map<String,Object> result= new LinkedHashMap();
@@ -644,18 +659,18 @@ public class DataSetOps {
         }
 
         String[] p= DataSetUtil.correlativeProperties();
-        for ( int i=0; i<p.length; i++ ) {
-            QDataSet delta= (QDataSet) props.get( p[i] );
-            if ( delta!=null && delta.rank()>0 ) {
-                result.put( p[i], delta.slice(index) );
+        for (String p1 : p) {
+            QDataSet delta = (QDataSet) props.get(p1);
+            if (delta!=null && delta.rank()>0) {
+                result.put(p1, delta.slice(index));
             }
         }
 
         String[] ss= DataSetUtil.dimensionProperties();
-        for ( int i=0; i<ss.length; i++ ) {
-            Object o= props.get( ss[i] );
-            if ( o!=null ) {
-                result.put( ss[i], o );
+        for (String s : ss) {
+            Object o = props.get(s);
+            if (o!=null) {
+                result.put(s, o);
             }
         }
         return result;
@@ -663,10 +678,13 @@ public class DataSetOps {
 
     /**
      * we've sliced a dataset, removing an index.  move the properties.  This was Ops.sliceProperties
+     * For example, after slicing the zeroth dimension (time), what was DEPEND_1 is
+     * becomes DEPEND_0.
+     * 
      * @see MetadataUtil.sliceProperties
-     * @param result
-     * @param removeDim
-     * @return
+     * @param properties the properties to slice.
+     * @param sliceDimension the dimension to slice at (0,1,2...QDataSet.MAX_RANK)
+     * @return the properties after the slice.
      */
     public static Map<String,Object> sliceProperties( Map<String,Object> properties, int sliceDimension ) {
         Map<String,Object> result = new LinkedHashMap();
@@ -785,7 +803,7 @@ public class DataSetOps {
     /**
      * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
      * @param bundleDs
-     * @param name the name of the bundled dataset, or "ch_<i>" where i is the dataset number
+     * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
      * @see unbundle( QDataSet bundleDs, int ib )
      * @throws IllegalArgumentException if no named dataset is found.
      * @return
@@ -861,11 +879,7 @@ public class DataSetOps {
         if ( ib==-1 ) {
             if ( name.matches("ch_\\d+") ) {
                 int ich= Integer.parseInt(name.substring(3) );
-                if ( bundle1!=null ) {
-                    return DataSetOps.unbundle(bundleDs, ich, false);
-                } else {
-                    return DataSetOps.slice1( bundleDs, ich );
-                }
+                return DataSetOps.unbundle(bundleDs, ich, false);
             } else {
                 throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
             }
@@ -910,12 +924,12 @@ public class DataSetOps {
      * where DEPEND_1 has EnumerationUnits, and this is the same as slice1.
      *
      *
-     * @param aThis
+     * @param bundleDs the bundle dataset.
      * @param ib index of the dataset to extract. If the index is within a dataset,
      *   then the entire dataset is returned.
      * @throws IndexOutOfBoundsException if the index is invalid.
      * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
-     * @return
+     * @return the ib-th dataset from the bundle.
      */
     public static QDataSet unbundle(QDataSet bundleDs, int ib) {
         return unbundle( bundleDs, ib, false );
@@ -928,7 +942,7 @@ public class DataSetOps {
      * where DEPEND_1 has EnumerationUnits, and this is the same as slice1.
      *
      *
-     * @param aThis
+     * @param bundleDs the bundle dataset.
      * @param ib index of the dataset to extract. If the index is within a dataset,
      *   then the entire dataset is returned.
      * @param highRank if true, then if the dataset at ib is rank 2 or greater, then
@@ -936,7 +950,7 @@ public class DataSetOps {
      *   returned.
      * @throws IndexOutOfBoundsException if the index is invalid.
      * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
-     * @return
+     * @return the ib-th dataset from the bundle.
      */
     public static QDataSet unbundle(QDataSet bundleDs, int ib, boolean highRank ) {
         
@@ -1006,7 +1020,7 @@ public class DataSetOps {
         if ( highRank ) {
             Integer s= (Integer)bundle.property(QDataSet.START_INDEX,ib);
             if ( s==null ) s= ib;
-            is= s.intValue();
+            is= s;
             int n=1;
             for (int k = 0; k < bundle.length(is); k++) {
                  n *= bundle.value(is, k);
@@ -1042,10 +1056,10 @@ public class DataSetOps {
                 }
 
                 String[] names1= DataSetUtil.dimensionProperties();
-                for ( int i=0; i<names1.length; i++ ) {
-                    Object v= bundle.property( names1[i], j );
-                    if ( v!=null ) {
-                        result.putProperty( names1[i], v );
+                for (String names11 : names1) {
+                    Object v = bundle.property(names11, j);
+                    if (v!=null) {
+                        result.putProperty(names11, v);
                     }
                 }
                 // allow unindexed properties to define property for all bundled datasets, for example USER_PROPERTIES or FILL
@@ -1076,7 +1090,7 @@ public class DataSetOps {
             Integer ifirst= (Integer) bundle.property( QDataSet.START_INDEX, j  );
             int first,last;
             if ( ifirst!=null ) {
-                first= ifirst.intValue();
+                first= ifirst;
                 last= first+len-1;
             } else {
                 first= j; // I don't think this should happen, but...
@@ -1452,11 +1466,12 @@ public class DataSetOps {
      * In general these can be done on the same thread (like
      * slice1), but some are slow (like fftPower).  This is a copy of PlotElementController.processDataSet.
      *
-     * @param c
-     * @param fillDs
+     * @param c the process string, like "bgsmx|slice0(9)|histogram()"
+     * @param fillDs the input dataset.
+     * @param mon a monitor for the processing
      * @return
-     * @throws RuntimeException
      * @throws Exception when the processStr cannot be processed.
+     * @throws RuntimeException, Exception
      */
     public static QDataSet processDataSet( String c, QDataSet fillDs, ProgressMonitor mon ) throws RuntimeException, Exception {
         c= c.trim();
@@ -1502,9 +1517,8 @@ public class DataSetOps {
      * container for the logic for slicing at an index vs slicing at a datum.  If the string is
      * an integer, then we return the index.  If the index is a string, then we need to 
      * find the corresponding index.
-     * @param dep
-     * @param integer or rank 0 dataset.
-     * @return 
+     * @param arg String that encodes a datum position or index.
+     * @return an integer index or a dataset indicating the index.
      */
     public static Object getArgumentIndex( String arg ) {
         try {
@@ -1527,8 +1541,9 @@ public class DataSetOps {
      * see http://www.papco.org/wiki/index.php/DataReductionSpecs.  There's a big problem here:
      * if the command is not recognized, then it is ignored.  We should probably change this,
      * but the change should be at a major version change in case it breaks things.
-     * @param c
+     * @param c process string like "bgsmx|slice0(9)|histogram()"
      * @param fillDs The dataset loaded from the data source controller, with initial filters (like fill) applied.
+     * @param mon monitor for the processing.
      * @throws ParseException when the string cannot be parsed
      * @throws Exception when a function cannot be processed (e.g. index out of bounds)
      * @return the dataset after the process string is applied.
@@ -1799,7 +1814,7 @@ public class DataSetOps {
                         args.add( s.nextDouble() );
                     }
                     double[] aa= new double[args.size()];
-                    for ( int j=0; j<aa.length; j++ ) aa[j]= args.get(j).doubleValue();
+                    for ( int j=0; j<aa.length; j++ ) aa[j]= args.get(j);
                     fillDs= Ops.contour( fillDs, DataSetUtil.asDataSet( aa ) );
 
                 } else if ( cmd.equals("|dbAboveBackgroundDim1") ) { // remove the background across slices
