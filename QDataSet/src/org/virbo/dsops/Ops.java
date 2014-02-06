@@ -59,6 +59,7 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.DataSetAnnotations;
+import static org.virbo.dataset.DataSetOps.histogram;
 import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
@@ -4609,6 +4610,27 @@ public class Ops {
      */
     public static QDataSet histogram(QDataSet ds, double min, double max, double binSize) {
         return DataSetOps.histogram(ds, min, max, binSize);
+    }
+
+    /**
+     * returns a rank 1 dataset that is a histogram of the data.  Note there
+     * will also be in the properties:
+     *   count, the total number of valid values.
+     *   nonZeroMin, the smallest non-zero, positive number
+     * @param ds rank N dataset
+     * @param min the min of the first bin.  If min=-1 and max=-1, then automatically set the min and max.
+     * @param max the max of the last bin.
+     * @param binsize the size of each bin.
+     * @return a rank 1 dataset with each bin's count.  DEPEND_0 indicates the bin locations.
+     */
+    public static QDataSet histogram( QDataSet ds, Datum min, Datum max, Datum binsize ) {
+        Units u= SemanticOps.getUnits(ds);
+        return histogram( ds, min.doubleValue(u), max.doubleValue(u), binsize.doubleValue(u.getOffsetUnits()) );
+    }
+    
+    public static QDataSet histogram( QDataSet ds, String min, String max, String binsize ) throws ParseException {
+        Units u= SemanticOps.getUnits(ds);
+        return histogram( ds, u.parse(min), u.parse(max), u.getOffsetUnits().parse(binsize) );
     }
     
     /**
