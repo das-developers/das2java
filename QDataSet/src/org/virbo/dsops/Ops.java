@@ -4618,8 +4618,8 @@ public class Ops {
      *   count, the total number of valid values.
      *   nonZeroMin, the smallest non-zero, positive number
      * @param ds rank N dataset
-     * @param min the min of the first bin.  If min=-1 and max=-1, then automatically set the min and max.
-     * @param max the max of the last bin.
+     * @param min the center of the first bin.  If min=-1 and max=-1, then automatically set the min and max.
+     * @param max the center of the last bin.
      * @param binsize the size of each bin.
      * @return a rank 1 dataset with each bin's count.  DEPEND_0 indicates the bin locations.
      */
@@ -4628,6 +4628,16 @@ public class Ops {
         return histogram( ds, min.doubleValue(u), max.doubleValue(u), binsize.doubleValue(u.getOffsetUnits()) );
     }
     
+    /**
+     * returns rank 1 dataset that is a histogram of the data.  This will use
+     * the units of ds to interpret min, max, and binsize.
+     * @param ds rank N dataset
+     * @param min the center of the first bin.  If min=-1 and max=-1, then automatically set the min and max.
+     * @param max the center of the last bin.
+     * @param binsize the size of each bin.
+     * @return
+     * @throws ParseException 
+     */
     public static QDataSet histogram( QDataSet ds, String min, String max, String binsize ) throws ParseException {
         Units u= SemanticOps.getUnits(ds);
         return histogram( ds, u.parse(min), u.parse(max), u.getOffsetUnits().parse(binsize) );
