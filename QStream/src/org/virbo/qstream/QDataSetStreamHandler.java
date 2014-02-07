@@ -161,6 +161,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         return result;
     }
 
+    @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         try {
             Element e = sd.getDomElement();
@@ -220,6 +221,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         return result;
     }
 
+    @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         try {
             Element e = pd.getDomElement();
@@ -237,10 +239,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                 logger.log( Level.FINER, "got packetDescriptor for {0}", name);
                 int rank = Integer.parseInt(n.getAttribute("rank"));
                 DataSetBuilder builder=null;
-                String sdims=null;
-                int[] dims= null;
-                String joinChildren= null; //  join will be specified.
-                String joinParent= null;
+                String sdims;
+                int[] dims;
+                String joinChildren; //  join will be specified.
+                String joinParent;
                 boolean isInline= false;
                 joinParent= n.getAttribute("joinId");
 
@@ -281,7 +283,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                             dims = Util.decodeArray(sdims);
                         }
 
-                        if ( isInline && inlineDs.rank()<rank ) {
+                        if ( isInline && inlineDs!=null && inlineDs.rank()<rank ) { // I believe assert inlineDs!=null
                            JoinDataSet join = joinDataSets.get(name);
                            if (join == null) {
                                join = new JoinDataSet(rank);
@@ -290,7 +292,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                            join.join(inlineDs);
                            builder= new DataSetBuilder(0,0);
                            builders.put(name,builder ); // rank 0 means the values were in line.
-                        } else if ( isInline && inlineDs.rank()==rank ) {
+                        } else if ( isInline && inlineDs!=null && inlineDs.rank()==rank ) {
                            builder= new DataSetBuilder(rank,inlineDs.length());
                            for ( int j=0; j<inlineDs.length(); j++ ) {
                                DDataSet slice= (DDataSet)inlineDs.slice(j);
@@ -401,9 +403,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             Object o= result.property("BUNDLE_" + i);
             if ( o instanceof String ) { //TODO: still need to clean up messages here, maybe...
 		String s = (String) o;
-		if (s != null) {
-		    result.putProperty("BUNDLE_" + i, getDataSet(s));
-		}
+                result.putProperty("BUNDLE_" + i, getDataSet(s));
 	    }
         }
         for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
@@ -426,6 +426,7 @@ public class QDataSetStreamHandler implements StreamHandler {
        return result;
     }
 
+    @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
         if (readPackets) {
             for (PlaneDescriptor planeDescriptor : pd.planes) {
@@ -458,12 +459,15 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
     }
 
+    @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
     }
 
+    @Override
     public void streamComment(StreamComment se) throws StreamException {
     }
 
+    @Override
     public void streamException(StreamException se) throws StreamException {
     }
 
@@ -486,7 +490,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         if (join != null) {
             String joinChild= (String)join.property(BUILDER_JOIN_CHILDREN);
             join= JoinDataSet.copy(join);
-            if ( builder.rank()>0 ) {
+            if ( builder!=null && builder.rank()>0 ) {
                 sliceDs= builder.getDataSet();
                 List<QDataSet> childDataSets=null;
                 if ( sliceDs!=null && sliceDs.property(BUILDER_JOIN_CHILDREN)!=null ) {
@@ -517,6 +521,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     join.join(sliceDs);
                 }
             } else {
+                assert builder!=null;
                 DataSetUtil.putProperties( builder.getProperties(), join );
                 sliceDs= (MutablePropertyDataSet) join.slice(join.length()-1); //wha??  when do we use this?
             }
@@ -530,6 +535,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             result= bds;
             
         } else {
+            assert builder!=null;
             result = builder.getDataSet();
         }
 
