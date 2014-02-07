@@ -31,16 +31,11 @@ import java.io.Writer;
 import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.das2.util.InflaterChannel;
 import org.das2.util.ByteBufferInputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-/**
- *
- * @author  jbf
- */
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -69,6 +64,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+/**
+ * Code for reading streams.  This sends packets to a StreamHandler.
+ * @author  jbf
+ */
 public class StreamTool {
 
     private static final int PACKET_LENGTH_LIMIT=1000000;
