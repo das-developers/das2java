@@ -215,11 +215,12 @@ public class SimpleStreamFormatter {
         int timeDigits= timeDigits( DataSetOps.slice0(ds,0) );
 
         //TODO: same thing but with gcd added, use max of the two.
-        QDataSet gcd= null;
+        QDataSet gcd;
         try {
             QDataSet diffs= Ops.subtract( ds, DataSetOps.slice0(ds,0) );
             gcd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet( 1, Units.picoseconds ) );
         } catch ( IllegalArgumentException ex ) {
+            logger.log( Level.WARNING, ex.getMessage(), ex );
             gcd= null;
         }
 
@@ -248,13 +249,7 @@ public class SimpleStreamFormatter {
 
         logger.log( Level.FINE, "writing qdataset {0}", nameFor(ds));
 
-        QDataSet bds;
         if ( isBundle(ds) ) {
-            if ( ds.rank()==1 ) {
-                bds= (QDataSet) ds.property("BUNDLE_0");
-            } else {
-                bds= (QDataSet) ds.property("BUNDLE_1");
-            }
             for ( int i=0; i<ds.length(0); i++ ) {
                 QDataSet ds1= DataSetOps.unbundle( ds, i );
                 Element bundle= document.createElement("bundle");
@@ -1034,12 +1029,12 @@ public class SimpleStreamFormatter {
 
     public static void main( String[] args ) throws FileNotFoundException, IOException, StreamException {
 
-        boolean join;
+        //boolean join;
         //QDataSet ds= Ops.ripplesTimeSeries(24);
         //QDataSet ds= Ops.ripplesVectorTimeSeries(24);
         //QDataSet ds= Ops.ripplesSpectrogramTimeSeries(24);
         QDataSet ds= Ops.ripplesJoinSpectrogramTimeSeries(24);
-        join= SemanticOps.isJoin(ds);
+        //join= SemanticOps.isJoin(ds);
 
         SimpleStreamFormatter form= new SimpleStreamFormatter();
         OutputStream fo= new  FileOutputStream("/tmp/foo.simpleformatter.qds");
