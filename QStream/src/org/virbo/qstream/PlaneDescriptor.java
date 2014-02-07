@@ -4,13 +4,14 @@
  */
 package org.virbo.qstream;
 
-import org.virbo.dataset.DDataSet;
+import java.util.Arrays;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsutil.DataSetBuilder;
 import org.w3c.dom.Element;
 
 /**
- *
+ * Describes one of the bundled elements, for example one QDataSet,
+ * within a packet.
  * @author jbf
  */
 public class PlaneDescriptor implements Cloneable {
@@ -36,6 +37,7 @@ public class PlaneDescriptor implements Cloneable {
         return elements * type.sizeBytes();
     }
 
+    @Override
     public String toString() {
         return "plane " + getName();
     }
@@ -49,11 +51,11 @@ public class PlaneDescriptor implements Cloneable {
     }
 
     public int[] getQube() {
-        return qube;
+        return Arrays.copyOf(qube,qube.length);
     }
 
     public void setQube(int[] qube) {
-        this.qube = qube;
+        this.qube = Arrays.copyOf(qube,qube.length);
         int ele1 = 1;
 
         for (int i = 0; i < getQube().length; i++) {
@@ -108,7 +110,7 @@ public class PlaneDescriptor implements Cloneable {
      */
     String[] bundles= null;
     void setBundles(String[] sbundles) {
-        this.bundles= sbundles;
+        this.bundles= Arrays.copyOf(sbundles,sbundles.length);
     }
 
     public String[] getBundles() {
