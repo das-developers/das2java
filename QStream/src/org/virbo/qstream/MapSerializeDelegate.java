@@ -5,10 +5,7 @@
 package org.virbo.qstream;
 
 import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.ParseException;
@@ -27,31 +24,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- *
+ * Store map property to QStream.
  * @author jbf
  */
 public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDelegate {
 
     private static final Logger logger= Logger.getLogger("qstream");
 
-    public String format(Object o) {
-        if (true) {
-            return format2(o);
-        } else {
-            try {
-                ByteArrayOutputStream out = new ByteArrayOutputStream(1000);
-                XMLEncoder enc = new XMLEncoder(out);
-                enc.writeObject(o);
-                enc.close();
-                out.close();
-                return Base64.encodeBytes(out.toByteArray());
-            } catch (IOException ex) {
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
-                return "";
-            }
-        }
-    }
-
+    @Override
     public Element xmlFormat( Document doc, Object o ) {
         Map m= (Map)o;
         Element result= doc.createElement( typeId( o.getClass() ) );
@@ -77,6 +57,7 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
         return result;
     }
 
+    @Override
     public Object xmlParse( Element e ) throws ParseException {
         LinkedHashMap result= new LinkedHashMap();
         NodeList nl= e.getChildNodes();
@@ -110,7 +91,8 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
     }
 
 
-    private String format2(Object o) {
+    @Override
+    public String format(Object o) {
         Map m= (Map)o;
         StringBuilder buf= new StringBuilder();
         buf.append("map[");
@@ -132,6 +114,7 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
         return buf.toString();
     }
 
+    @Override
     public Object parse(String typeId, String s) throws ParseException {
         if (s.equals("")) {
             return Collections.EMPTY_MAP;
@@ -164,6 +147,7 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
         }
     }
 
+    @Override
     public String typeId(Class clas) {
         return "map";
     }
@@ -183,8 +167,8 @@ public class MapSerializeDelegate implements SerializeDelegate, XMLSerializeDele
 
         System.err.println(sval);
         Map m3= (Map) sd.parse("map",sval);
-        sval= "map[total=Long:8928 invalidCount=Long:0 outliers=map:map%5B%5D outlierCount=Integer:0 binWidth=Double:500.0 binStart=Double:0.0 ]";
-        Map m4= (Map) sd.parse("map",sval);
+        //sval= "map[total=Long:8928 invalidCount=Long:0 outliers=map:map%5B%5D outlierCount=Integer:0 binWidth=Double:500.0 binStart=Double:0.0 ]";
+        //Map m4= (Map) sd.parse("map",sval);
         System.err.println(m3);
     }
 }
