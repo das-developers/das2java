@@ -89,7 +89,7 @@ public class StreamTool {
 
         byte[] data = new byte[4096];
 
-        ArrayList list = new ArrayList();
+        ArrayList<byte[]> list = new ArrayList<byte[]>();
 
         int bytesMatched = 0;
 
@@ -770,8 +770,8 @@ public class StreamTool {
             }
         } catch (Error e) {
             // Ed's nice trick for finding the implementation
-            String name = serializer.getClass().getSimpleName();
-            java.net.URL u = serializer.getClass().getResource(name+".class");
+            //String name = serializer.getClass().getSimpleName();
+            //java.net.URL u = serializer.getClass().getResource(name+".class");
             //logger.fine(u);
             logger.log( Level.SEVERE, "formatHeader", e );
         }
@@ -779,8 +779,4 @@ public class StreamTool {
 
     }
 
-    private static ReadableByteChannel getInflaterChannel(ReadableByteChannel channel) throws IOException {
-        return new InflaterChannel(channel);
-    //return Channels.newChannel(new InflaterInputStream(Channels.newInputStream(channel)));
-    }
 }
