@@ -93,7 +93,6 @@ public class QDataSetStreamHandler implements StreamHandler {
      * @return
      */    
     public Map<String,String> getDataSetNamesAndDescriptions() {
-        List<String> names= getDataSetNames();
         Map<String,String> result= new LinkedHashMap();
         for ( Entry<String, DataSetBuilder> e: builders.entrySet() ) {
             DataSetBuilder b= e.getValue();
