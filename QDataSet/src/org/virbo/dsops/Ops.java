@@ -3825,9 +3825,10 @@ public class Ops {
     public static QDataSet fftPower( QDataSet ds, QDataSet window, ProgressMonitor mon ) {
         return fftPower( ds, window, 1, mon );
     }
+    
     /**
      * create a power spectrum on the dataset by breaking it up and
-     * doing ffts on each segment.
+     * doing FFTs on each segment.
      *
      * data may be rank 1, rank 2, or rank 3.
      *
@@ -3839,7 +3840,7 @@ public class Ops {
      *
      * @param ds rank 2 dataset ds(N,M) with M>len
      * @param window window to apply to the data before performing FFT (Hann,Unity,etc.)
-     * @param step step size, expressed as a fraction of the length (1 for no slide, 2 for half steps, 4 for quarters);
+     * @param stepFraction size, expressed as a fraction of the length (1 for no slide, 2 for half steps, 4 for quarters);
      * @param mon a ProgressMonitor for the process
      * @return rank 2 fft spectrum
      */
@@ -3904,7 +3905,7 @@ public class Ops {
                 if ( window.value(i)!=1.0 ) windowNonUnity=true;
             }
 
-            double normalization; // the normalization needed because of the window.
+            double normalization; // the normalization needed because of the window. "Coherent Gain" in Harris paper.
 
             if ( windowNonUnity ) {
                 normalization= total( Ops.pow( window, 2 ) ) / window.length();
@@ -3912,6 +3913,8 @@ public class Ops {
                 normalization= 1.0;
             }            
             
+            // double equivalentNoiseBW= 1.0;  // 1.5 for Hanning   Harris 1978 paper in IEEE.
+                    
             int nsam= ds.length()*(ds.length(0)/step); // approx
             DataSetBuilder dep0b= new DataSetBuilder( 1,nsam );
 
