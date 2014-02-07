@@ -137,15 +137,8 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
         content.add(buttonPanel, BorderLayout.SOUTH);
         
         Window parentWindow = SwingUtilities.getWindowAncestor(parentPlot);
-        if (parentWindow instanceof Frame) {
-            popupWindow = new JDialog((Frame)parentWindow);
-        }
-        else if (parentWindow instanceof Dialog) {
-            popupWindow = new JDialog((Dialog)parentWindow);
-        }
-        else {
-            popupWindow = new JDialog();
-        }
+        popupWindow = new JDialog(parentWindow);
+
         popupWindow.setTitle("Angle Slicer");
         popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         popupWindow.setContentPane(content);
