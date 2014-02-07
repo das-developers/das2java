@@ -21,7 +21,8 @@ public class PacketDescriptor implements Descriptor,Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        PacketDescriptor result= new PacketDescriptor();
+        PacketDescriptor result= (PacketDescriptor) super.clone();
+        result.planes= new ArrayList<PlaneDescriptor>();
         for ( int i=0; i<planes.size(); i++ ) {
             result.planes.add( (PlaneDescriptor)planes.get(i).clone() );
         }
@@ -138,6 +139,7 @@ public class PacketDescriptor implements Descriptor,Cloneable {
         this.packetId= packetId;
     }
 
+    @Override
     public String toString() {
         return planes.toString();
     }
