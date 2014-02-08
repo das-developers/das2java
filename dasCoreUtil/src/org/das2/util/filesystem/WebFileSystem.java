@@ -297,7 +297,8 @@ public abstract class WebFileSystem extends FileSystem {
             String name= localFile.getName(); // remove the path information
             String parent= WebFileSystem.this.getLocalName( localFile.getParentFile() );
             parent= parent + '/';
-            String[] ss= listDirectory( parent); // fill the cache
+            String[] ss= listDirectory( parent ); // fill the cache
+            logger.log( Level.FINE, "ss.length={0}", ss.length );
             DirectoryEntry[] des= listDirectoryFromMemory(parent);
             if ( des==null ) return new Date(0);
             for ( int i=0; i<des.length; i++ ) {
