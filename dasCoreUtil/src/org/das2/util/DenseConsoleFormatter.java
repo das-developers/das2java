@@ -16,7 +16,7 @@ import java.util.logging.LogRecord;
 public class DenseConsoleFormatter extends Formatter {
     
     public String format( LogRecord rec ) {
-        StackTraceElement[] st= new Throwable().getStackTrace();
+        //StackTraceElement[] st= new Throwable().getStackTrace();
         return rec.getLoggerName()+": "+rec.getLevel().getLocalizedName()+": "+rec.getMessage()+"\n";
     }
         
