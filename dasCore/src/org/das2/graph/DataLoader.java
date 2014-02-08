@@ -71,7 +71,7 @@ public abstract class DataLoader {
         return this.renderer;
     }
     
-    public class Request {
+    public static class Request {
         public ProgressMonitor monitor;
         public DasAxis.Memento xmem;
         public DasAxis.Memento ymem;
@@ -80,6 +80,7 @@ public abstract class DataLoader {
             this.xmem= xmem;
             this.ymem= ymem;
         }
+        @Override
         public String toString() {
             return xmem.toString();
         }
