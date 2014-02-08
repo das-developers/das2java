@@ -59,7 +59,7 @@ public class ReduceFilter implements StreamHandler {
     double length; // in the stream units.
     //double nextTag;
 
-    class Accum {
+    private static class Accum {
         PacketDescriptor pd; // All planes should have the same value.
         int id;       // the packetId.
         int capacity; // total capacity of the packet.  All planes should have the same number.
@@ -141,7 +141,7 @@ public class ReduceFilter implements StreamHandler {
                 xp= (Node)expr.evaluate( ele,XPathConstants.NODE);
                 if ( xp!=null ) {
                     String scadence= xp.getNodeValue();
-                    double oldCadenceSeconds=0;
+                    double oldCadenceSeconds;
                     SerializeDelegate ser= new Rank0DataSetSerializeDelegate();
                     try {
                         QDataSet o = (QDataSet) ser.parse( "rank0dataset", scadence );
