@@ -37,7 +37,7 @@ import java.nio.FloatBuffer;
  */
 public class FakeStandardDataStreamSource implements StandardDataStreamSource {
     
-    class FakeInputStream extends InputStream {
+    static class FakeInputStream extends InputStream {
         int nitems;
         long nRecs;
         double recsPerSecond;

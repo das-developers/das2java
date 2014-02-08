@@ -15,6 +15,7 @@ import org.das2.datum.Units;
 import org.das2.system.DasLogger;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
 
 /**
  *
@@ -42,7 +43,7 @@ public class InputStreamMeter {
      *
      * @author jbf
      */
-    private class MeteredInputStream extends InputStream {
+    private static class MeteredInputStream extends InputStream {
         
         InputStream in;
         InputStreamMeter meter;        
@@ -54,6 +55,7 @@ public class InputStreamMeter {
             this.in= in;
         }
         
+        @Override
         public int read( byte[] b, int off, int len ) throws IOException {
             try {
                 int bytesRead= in.read(b,off,len);                
@@ -78,6 +80,7 @@ public class InputStreamMeter {
             }
         }
         
+        @Override
         public void close() throws IOException {
             meter.closing(this);
             in.close();
@@ -102,7 +105,7 @@ public class InputStreamMeter {
             if ( calcTransmitSpeed() > speedLimit ) {
                 long targetMillis= (long) ( ( totalBytesRead ) / ( speedLimit / 1000. ) );                
                 long waitMs= Math.min( 1000, targetMillis - calcMillisElapsed() );
-                DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).fine("limiting speed by waiting "+waitMs+" ms");
+                DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).log(Level.FINE, "limiting speed by waiting {0} ms", waitMs);
                 try { Thread.sleep(waitMs); } catch ( InterruptedException ex ) { }
             }
         }
