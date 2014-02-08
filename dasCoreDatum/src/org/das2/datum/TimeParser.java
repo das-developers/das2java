@@ -1792,7 +1792,6 @@ public class TimeParser {
         if ( !dr.equals(drnorm) ) {
             tp= TimeParser.create(spec);
             dr= tp.parse(test).getTimeRange();
-            drnorm= org.das2.datum.DatumRangeUtil.parseTimeRangeValid(norm);
             throw new IllegalStateException("ranges do not match: "+spec + " " +test + "--> " + dr + ", should be "+norm );
         }
         return true;
