@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -58,12 +59,28 @@ public class FileSystemUtil {
                 }
             }
         } finally {
-            if ( oc!=null ) oc.close();
-            if ( ic!=null ) ic.close();
+            closeResources( oc, ic );
         }
     }
 
-
+    /**
+     * encapsulate the logic that cleanly closes both channels.  
+     * This is an experiment to see if this satisfies findbugs OBL_UNSATISFIED_OBLIGATION, and it does!
+     * @param ch1 channel that needs closing
+     * @param ch2 channel that needs closing.
+     */
+    public static void closeResources( Channel chout, Channel chin ) throws IOException {
+        if ( chout!=null && chout.isOpen() ) {
+            try { 
+                chout.close(); 
+            } finally {
+                if ( chin!=null && chin.isOpen() ) chin.close();
+            }
+        } else {
+            if ( chin!=null && chin.isOpen() ) chin.close();
+        }        
+    }
+    
     /**
      * un-gzip the file.  This is similar to the unix gunzip command.
      * @param fz zipped input file
