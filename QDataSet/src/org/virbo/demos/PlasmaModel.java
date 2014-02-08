@@ -26,10 +26,9 @@ public class PlasmaModel {
     * A java.util.Random object is passed in so that the data may be reproducible
     * (by using a given starting seed).
     *
-     * (written
     * @author Jeremy
     */
-    private class PlasmaModelSpec {
+    private static class PlasmaModelSpec {
 
         double nc = 1.2; // core density 1/cm^3
         double wcperp = 8000. * 1e5; // core thermal velocity cm/s

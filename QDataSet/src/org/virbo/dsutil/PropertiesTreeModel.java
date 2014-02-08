@@ -123,7 +123,7 @@ public class PropertiesTreeModel extends DefaultTreeModel {
         }
     }
 
-    class MapTreeModel extends DefaultTreeModel {
+    private static class MapTreeModel extends DefaultTreeModel {
         MapTreeModel( Object root, Map values ) {
             super( new DefaultMutableTreeNode(root) );
             MutableTreeNode mrt= ((MutableTreeNode)getRoot());
