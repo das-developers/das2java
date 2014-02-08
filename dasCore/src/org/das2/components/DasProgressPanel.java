@@ -140,7 +140,7 @@ public class DasProgressPanel implements ProgressMonitor {
         return SubTaskMonitor.create( this, start, end, cancelCheckFailures < 2 );
     }
 
-    class MyPanel extends JPanel {
+    private static class MyPanel extends JPanel {
 
         @Override
         protected void paintComponent(Graphics g1) {
