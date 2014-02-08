@@ -52,6 +52,8 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     
     private static Map<String,File> fontToTtfMap;
     private static Object state= STATE_IDLE;
+    
+    private static final Object lockObject= new Object();
 
     /* these were introduced to make findbugs happy, but it also clarifies code.  On Macs and Linux, we also look in the user's home */
     private static final String MAC_FONT_HOME= "/Library/Fonts/";
@@ -136,7 +138,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
      * @return READING_FONTS or the name (or null).
      */
     public static String ttfFromNameInteractive( final java.awt.Font font ) {
-        synchronized ( state ) {
+        synchronized ( lockObject ) {
             if ( state==STATE_READY ) {
                 return ttfFromName(font);
             }
@@ -146,6 +148,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                     Runnable run= new Runnable() {
                         public void run() {
                             String x= ttfFromName( font );
+                            logger.log(Level.FINEST, "ttfFromName()->{0}", x);
                         }
                     };
                     new Thread( run ).start();
@@ -205,9 +208,9 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                         BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
                 }
             } catch (DocumentException e) {
-                e.printStackTrace();
+                logger.log( Level.WARNING, e.getMessage(), e );
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log( Level.WARNING, e.getMessage(), e );
             }
             return null;
         }
