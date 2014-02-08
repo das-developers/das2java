@@ -59,7 +59,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
     private DatumRange yrange;
     
     private int sliceDir;
-    private final int SLICEDIR_HORIZ=0;
+    private static final int SLICEDIR_HORIZ=0;  // we are showing the Xs along the X axis.
     
     private AngleSpectrogramSlicer(DasPlot plot, DasAxis xAxis, DasAxis yAxis, TableDataSetConsumer consumer ) {
         super(xAxis, yAxis);
