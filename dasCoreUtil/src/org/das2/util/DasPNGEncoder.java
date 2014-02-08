@@ -208,8 +208,8 @@ public class DasPNGEncoder extends DasPNGConstants {
         if (image.getType() != BufferedImage.TYPE_BYTE_INDEXED) {
             return new byte[0];
         }
-        IndexColorModel cm = (IndexColorModel)image.getColorModel();
-        int colorCount = cm.getMapSize();
+        //IndexColorModel cm = (IndexColorModel)image.getColorModel();
+        //int colorCount = cm.getMapSize();
         throw new UnsupportedOperationException();
     }
     
