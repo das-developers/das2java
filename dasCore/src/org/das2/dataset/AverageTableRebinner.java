@@ -116,8 +116,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         QDataSet xds= getRank1Tags( SemanticOps.xtagsDataSet(tds1) );
         QDataSet yds= getRank1Tags( SemanticOps.ytagsDataSet(tds1) );
         Units xunits= SemanticOps.getUnits( xds );
-        Units yunits= SemanticOps.getUnits( yds );
-        QDataSet zds= tds1;
+        QDataSet zds;
         
         if ( ddX != null && tds.length() > 0 ) {
             UnitsConverter xc= xunits.getConverter(ddX.getUnits());
@@ -774,7 +773,7 @@ public class AverageTableRebinner implements DataSetRebinner {
 
         for (int j = 0; j < ny; j++) {
             int ii1 = -1;
-            int ii2 = -1;
+            int ii2;
             for (int i = 0; i < nx; i++) {
                 if (weights[i][j] > 0. && ii1 == (i - 1)) { // ho hum another valid point
                     i1[i] = -1;
@@ -815,7 +814,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 for (int i = 0; i < nx; i++) {
                     if ( i1[i] > -1 && i2[i] > -1 && (xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5 ) {
 
-                        int idx = -1;
+                        int idx;
                         if (i1[i] == -1) {
                             if (i2[i] == -1) {
                                 continue;
@@ -905,7 +904,7 @@ public class AverageTableRebinner implements DataSetRebinner {
 
         for (int j = 0; j < ny; j++) {
             int ii1 = -1;
-            int ii2 = -1;
+            int ii2;
             for (int i = 0; i < nx; i++) {
                 if (weights[i][j] > 0. && ii1 == (i - 1)) { // ho hum another valid point
                     i1[i] = -1;
@@ -1074,7 +1073,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         
         for (int i = 0; i < nx; i++) {
             int ii1 = -1;
-            int ii2 = -1;
+            int ii2;
             for (int j = 0; j < ny; j++) {
                 if (weights[i][j] > 0. && ii1 == (j - 1)) { // ho hum another valid point
 
