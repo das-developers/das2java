@@ -256,7 +256,7 @@ public class VectorDataSetBuilder {
         return units;
     }
     
-    private class MultiY {
+    private static class MultiY {
         private HashMap yValues = new HashMap();
         private void put(String name, double y) {
             yValues.put(name, new Double(y));

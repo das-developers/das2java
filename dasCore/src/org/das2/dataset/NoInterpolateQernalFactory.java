@@ -19,7 +19,7 @@ import org.das2.util.DasMath;
  */
 public class NoInterpolateQernalFactory implements QernalTableRebinner.QernalFactory {
     
-    class EnlargeQernal implements QernalTableRebinner.Qernal {
+    static class EnlargeQernal implements QernalTableRebinner.Qernal {
         int dx0,dx1;
         int dy0,dy1;
         int nx,ny;     // number of elements in each dimension
@@ -52,7 +52,7 @@ public class NoInterpolateQernalFactory implements QernalTableRebinner.QernalFac
     }
     
     // special case for 1-pixel Quernal
-    class NoEnlargeQernal implements QernalTableRebinner.Qernal {
+    static class NoEnlargeQernal implements QernalTableRebinner.Qernal {
         int nx, ny;
         private NoEnlargeQernal( int nx, int ny ) {
             this.nx= nx;

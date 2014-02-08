@@ -16,7 +16,7 @@ import org.das2.datum.Datum;
  * @author Jeremy
  */
 public class GenericQernalFactory implements QernalTableRebinner.QernalFactory {
-    class GenericQernal implements QernalTableRebinner.Qernal {
+    static class GenericQernal implements QernalTableRebinner.Qernal {
         double[][] qernal;
         int dx0,dx1;
         int dy0,dy1;

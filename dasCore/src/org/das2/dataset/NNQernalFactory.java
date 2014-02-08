@@ -19,7 +19,7 @@ import org.das2.datum.UnitsUtil;
  */
 public class NNQernalFactory implements QernalTableRebinner.QernalFactory {
     
-    class NNQernal implements QernalTableRebinner.Qernal {
+    static class NNQernal implements QernalTableRebinner.Qernal {
         int dx0,dx1;
         int dy0,dy1;
         int nx,ny;     // number of elements in each dimension 
@@ -54,7 +54,7 @@ public class NNQernalFactory implements QernalTableRebinner.QernalFactory {
     }
     
     // special case for 1-pixel Quernal
-    class NNQernalOne implements QernalTableRebinner.Qernal {
+    static class NNQernalOne implements QernalTableRebinner.Qernal {
         int nx, ny;
         private NNQernalOne( int nx, int ny ) {
             this.nx= nx;

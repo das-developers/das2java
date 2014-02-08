@@ -334,8 +334,13 @@ public class TableDataSetBuilder {
         return units;
     }
     
-    private class DoubleArrayComparator implements Comparator {
-        
+    private static class DoubleArrayComparator implements Comparator {
+        /**
+         * returns the negative when o1 is shorter of the two, or the o1 has the first element with a smaller value.
+         * @param o1
+         * @param o2
+         * @return 
+         */
         public int compare(Object o1, Object o2) {
             double[] d1 = (double[])o1;
             double[] d2 = (double[])o2;
@@ -356,7 +361,7 @@ public class TableDataSetBuilder {
         
     }
     
-    private class MultiYScan {
+    private static class MultiYScan {
         private HashMap map = new HashMap();
         double[] yTags;
         public void put(String name, double[] scan) {
