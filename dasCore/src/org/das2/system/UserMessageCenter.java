@@ -34,7 +34,7 @@ public class UserMessageCenter {
 
     private static UserMessageCenter instance;
 
-    class MessageRecord {
+    static class MessageRecord {
         JButton nextButton;
         Component component;
     }

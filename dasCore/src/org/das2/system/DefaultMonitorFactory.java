@@ -34,7 +34,7 @@ public class DefaultMonitorFactory implements MonitorFactory {
         }
     }
     
-    public class MonitorEntry {
+    public static class MonitorEntry {
         ProgressMonitor monitor;
         String description;
         MonitorEntry( ProgressMonitor monitor, String description ) {
