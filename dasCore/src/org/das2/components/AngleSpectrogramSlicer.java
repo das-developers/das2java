@@ -60,7 +60,6 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
     
     private int sliceDir;
     private final int SLICEDIR_HORIZ=0;
-    private final int SLICEDIR_VERTICAL=1;
     
     private AngleSpectrogramSlicer(DasPlot plot, DasAxis xAxis, DasAxis yAxis, TableDataSetConsumer consumer ) {
         super(xAxis, yAxis);
@@ -162,7 +161,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
         int i1= DataSetUtil.closestIndex( xds, xlimit.max() );
         
         int irow0=0;
-        int irow1=0;
+        int irow1;
         
         Units zunits= SemanticOps.getUnits(tds);
         Units yunits= SemanticOps.getUnits(yds);
@@ -224,6 +223,7 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
         
     }
     
+    @Override
     protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {
         if (isDisplayable()) {
             updateImmediately();
