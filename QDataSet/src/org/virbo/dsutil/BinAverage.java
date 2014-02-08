@@ -374,8 +374,6 @@ public class BinAverage {
      * @return rank 2 dataset with M/binSize0 by N/binSize1 points, with a weights plane.
      */
     public static QDataSet rebin(QDataSet ds, int n0, int n1) {
-        int l0 = ds.length();
-        int l1 = ds.length(0);
         DDataSet result = DDataSet.createRank2( n0, n1);
         DDataSet weights = DDataSet.createRank2( n0, n1);
 
