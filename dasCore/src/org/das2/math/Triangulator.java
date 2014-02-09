@@ -817,8 +817,6 @@ abstract class TriangulationAlgorithm {
     TriangulationCanvas triCanvas;
     AnimateControl aniControl;
     AlgorithmUI algorithmUI;
-    RealWindow w;
-    RealWindowGraphics rWG;
 
     // Variables and constants for animation state. 
     final int nStates = 5;
