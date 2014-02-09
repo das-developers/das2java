@@ -35,7 +35,6 @@ import java.util.regex.*;
 public class FileStorageModel {
     
     private Pattern pattern;
-    private Pattern absPattern;
     private String regex;
     
     private FieldHandler[] fieldHandlers;
@@ -45,7 +44,6 @@ public class FileStorageModel {
     private Datum timePhase= null; /* a file boundary */
     
     private boolean[] copyToEndTime; /* indexed by TimeUtil enum */
-    private boolean useEndTime;
     FileStorageModel parent;
     FileSystem root;
     
