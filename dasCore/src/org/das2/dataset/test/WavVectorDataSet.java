@@ -24,7 +24,6 @@ import org.das2.dataset.VectorDataSet;
 public abstract class WavVectorDataSet implements VectorDataSet {
     
     AudioFormat audioFormat;
-    int samples;
     ByteBuffer byteBuffer;
     ShortBuffer shortBuffer;
     

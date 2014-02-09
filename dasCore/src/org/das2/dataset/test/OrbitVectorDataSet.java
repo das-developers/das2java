@@ -35,7 +35,6 @@ import org.das2.datum.Datum;
 public class OrbitVectorDataSet implements VectorDataSet {
     
     static double[][] data;
-    private double[][] idata; // pixel space    
     
     private static OrbitVectorDataSet xview= new OrbitVectorDataSet(0);
     private static OrbitVectorDataSet yview= new OrbitVectorDataSet(1);
