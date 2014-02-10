@@ -108,13 +108,17 @@ public class PlaneDescriptor implements Cloneable {
     /**
      * support for bundle datasets.
      */
-    String[] bundles= null;
+    private String[] bundles= null;
     void setBundles(String[] sbundles) {
         this.bundles= Arrays.copyOf(sbundles,sbundles.length);
     }
 
+    /**
+     * get a copy of a list of all the names of the bundled datasets.
+     * @return 
+     */
     public String[] getBundles() {
-        return this.bundles;
+        return Arrays.copyOf(this.bundles,this.bundles.length);
     }
 
     @Override
