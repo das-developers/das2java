@@ -62,7 +62,7 @@ public class ReduceFilter implements StreamHandler {
     private static class Accum {
         PacketDescriptor pd; // All planes should have the same value.
         int id;       // the packetId.
-        int capacity; // total capacity of the packet.  All planes should have the same number.
+        //int capacity; // total capacity of the packet.  All planes should have the same number.
         String dsid;  // the dataset id, so we can remove this later.
         double[] S;
         int N;
@@ -293,7 +293,7 @@ public class ReduceFilter implements StreamHandler {
                 return;
             }
 
-            double[] ss = ac1.S;
+            double[] ss = ac1.S;  // Netbeans claims that this is never modified, see line 363!
             int nn= ac1.N;
             double bb= ac1.B;
 
@@ -334,8 +334,8 @@ public class ReduceFilter implements StreamHandler {
     @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
 
-        boolean skip= this.skip.get(pd);
-        if ( skip ) {
+        boolean lskip= this.skip.get(pd);
+        if ( lskip ) {
             sink.packet( pd, data );
 
         } else {
@@ -360,9 +360,9 @@ public class ReduceFilter implements StreamHandler {
 
                 Accum ac1= accum.get(planed.getName());
 
-                double[] ss = ac1.S;
+                double[] ss = ac1.S; // copy reference to array.
                 double bb= ac1.B;
-                ac1.capacity= data.limit();
+                //ac1.capacity= data.limit();
 
                 if ( bb==-1e38 ) {
                     int pos= data.position();
