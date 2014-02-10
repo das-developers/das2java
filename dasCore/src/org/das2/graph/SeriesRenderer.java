@@ -107,7 +107,6 @@ public class SeriesRenderer extends Renderer {
 
     boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
     boolean xunitsWarning= false;
-    boolean cunitsWarning= false;
 
     private static final Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     /**
@@ -130,7 +129,6 @@ public class SeriesRenderer extends Renderer {
     FillRenderElement fillElement = new FillRenderElement();
     ErrorBarRenderElement errorElement = new ErrorBarRenderElement();
     PsymConnectorRenderElement psymConnectorElement = new PsymConnectorRenderElement();
-    PsymConnectorRenderElement[] extraConnectorElements;
     PsymRenderElement psymsElement = new PsymRenderElement();
     Shape selectionArea;
 
@@ -544,7 +542,6 @@ public class SeriesRenderer extends Renderer {
     class PsymConnectorRenderElement implements RenderElement {
 
         private GeneralPath path1;
-        private Color color;  // override default color
 
 //        private void dumpPath( ) {
 //            if ( path1!=null ) {
@@ -570,9 +567,6 @@ public class SeriesRenderer extends Renderer {
             }
             if (path1 == null) {
                 return 0;
-            }
-            if (color != null) {
-                g.setColor(color);
             }
             //dumpPath();
             psymConnector.draw(g, path1, (float) lineWidth);
@@ -2146,14 +2140,6 @@ public class SeriesRenderer extends Renderer {
 
         if ((!accept) && psymConnectorElement.acceptContext(dp)) {
             accept = true;
-        }
-
-        if ((!accept) && extraConnectorElements != null) {
-            for (int j = 0; j < extraConnectorElements.length; j++) {
-                if (!accept && extraConnectorElements[j] != null && extraConnectorElements[j].acceptContext(dp)) {
-                    accept = true;
-                }
-            }
         }
 
         if ((!accept) && psymsElement.acceptContext(dp)) {
