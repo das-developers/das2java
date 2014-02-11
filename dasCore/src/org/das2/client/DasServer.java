@@ -242,10 +242,6 @@ public class DasServer {
      * @param tn 
      */
     private void sortDirectories( DefaultMutableTreeNode tn ) {
-        if ( tn.toString().equals("flight") ) {
-            System.err.println("here ...");
-        }
-        System.err.println("here ..."+tn.toString());
         DefaultMutableTreeNode[] children= new DefaultMutableTreeNode[tn.getChildCount()];
         int ichild=0;
         for ( int i=0; i<tn.getChildCount(); i++ ) {
