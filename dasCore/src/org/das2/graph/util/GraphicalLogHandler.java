@@ -51,7 +51,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -240,7 +239,7 @@ public class GraphicalLogHandler extends Handler {
             if ( st[i].getClassName().equals(myName) ) {
                 result= true;
             }
-            if ( st[i].getClassName().indexOf("DasLogger")>-1 ) result=true;
+            if ( st[i].getClassName().contains("DasLogger") ) result=true;
         }
         return result;
     }
@@ -271,27 +270,27 @@ public class GraphicalLogHandler extends Handler {
         }
         
         Integer yValue;
-        yValue= (Integer)yaxisMapClass.get( rec.getSourceClassName() );
+        yValue= yaxisMapClass.get( rec.getSourceClassName() );
         if ( yValue==null ) {
-            yValue= Integer.valueOf( yaxisMapClass.size() );
+            yValue= yaxisMapClass.size();
             yaxisMapClass.put( yAxisName, yValue );
         }
         
-        yValue= (Integer)yaxisMapThread.get( rec.getSourceClassName() );
+        yValue= yaxisMapThread.get( rec.getSourceClassName() );
         if ( yValue==null ) {
-            yValue= Integer.valueOf( yaxisMapThread.size() );
+            yValue= yaxisMapThread.size();
             yaxisMapThread.put( yAxisName, yValue );
         }
         
-        yValue= (Integer)yaxisMapLogger.get( rec.getLoggerName() );
+        yValue= yaxisMapLogger.get( rec.getLoggerName() );
         if ( yValue==null ) {
-            yValue= Integer.valueOf( yaxisMapLogger.size() );
+            yValue= yaxisMapLogger.size();
             yaxisMapLogger.put( yAxisName, yValue );
         }
         
         
         synchronized (this) {
-            Long time= new Long( rec.getMillis() - time0 ) ;
+            Long time= rec.getMillis() - time0;
             int index= Collections.binarySearch(times, time );
             if ( index<0 ) {
                 index= -1-index;
@@ -299,15 +298,15 @@ public class GraphicalLogHandler extends Handler {
                 int fudge=0;
                 while ( index>=0 ) {
                     fudge++;
-                    time= new Long( rec.getMillis() - time0 + fudge ) ;
+                    time= rec.getMillis() - time0 + fudge;
                     index= Collections.binarySearch(times, time );
                 }
                 index= -1-index;
             }
             records.add( index, rec );
-            yAxisValuesClass.add( index, (Integer)yaxisMapClass.get( rec.getSourceClassName() ) );
-            yAxisValuesThread.add( index, (Integer)yaxisMapThread.get( rec.getSourceClassName() ) );
-            yAxisValuesLogger.add( index, (Integer)yaxisMapLogger.get( rec.getLoggerName() ) );
+            yAxisValuesClass.add( index, yaxisMapClass.get( rec.getSourceClassName() ) );
+            yAxisValuesThread.add( index, yaxisMapThread.get( rec.getSourceClassName() ) );
+            yAxisValuesLogger.add( index, yaxisMapLogger.get( rec.getLoggerName() ) );
             
             times.add( index, time );
             
@@ -345,7 +344,7 @@ public class GraphicalLogHandler extends Handler {
             g.setColor( Color.lightGray );
             
             HashMap<String,Integer> yaxisMap;
-            List yAxisValues;
+            List<Integer> yAxisValues;
             if ( yaxisDimension==YAXIS_CLASS ) {
                 yaxisMap= yaxisMapClass;
                 yAxisValues= yAxisValuesClass;
@@ -359,9 +358,9 @@ public class GraphicalLogHandler extends Handler {
             
             for ( Entry<String,Integer> e: yaxisMap.entrySet() ) {
                 Object name= e.getKey();
-                Integer ithread= (Integer)e.getValue();
+                Integer ithread= e.getValue();
                 int iy= (int)yAxis.transform( Units.dimensionless.createDatum(ithread.intValue()) );
-                g.drawString( ""+name, ix0+2, iy );
+                g.drawString( String.valueOf(name), ix0+2, iy );
             }
             
             synchronized(GraphicalLogHandler.this) {
@@ -401,7 +400,7 @@ public class GraphicalLogHandler extends Handler {
                     
                     LogRecord record= (LogRecord) records.get(i);
                     
-                    int ithread= ((Integer)yAxisValues.get(i)).intValue();
+                    int ithread= yAxisValues.get(i);
                     
                     int iy= (int)yAxis.transform( Units.dimensionless.createDatum(ithread) );
                     int ix= (int)xAxis.transform( Units.milliseconds.createDatum( ((Long)times.get(i)).longValue() ) );
@@ -414,7 +413,7 @@ public class GraphicalLogHandler extends Handler {
                         collisionCount=0;
                     }
                     
-                    if ( !searchRegex.equals("") ) {
+                    if ( !searchRegex.isEmpty() ) {
                         if ( record.getMessage().matches( searchRegex ) ) {
                             g.setColor( Color.lightGray );
                             g.fillRect( ix-2, 0, 5, 100 );
