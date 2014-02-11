@@ -247,12 +247,10 @@ public class DasServer {
     }
 
     /**
-     * TODO: Chris has asked that we sort these to put the folders first or last
-     * in the list.  Right now they are just in whatever order they happen to come
-     * on the stream, and our servers sort both the folders and the files 
-     * alphabetically.
-     * @param uin
-     * @return
+     * Return a tree of the datasets and folders, listing the sub-folders 
+     * first in a folder.
+     * @param uin input stream 
+     * @return treeModel of the data on the server.
      * @throws IOException 
      */
     private TreeModel createModel(InputStream uin) throws IOException {
