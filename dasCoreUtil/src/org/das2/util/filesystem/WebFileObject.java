@@ -169,7 +169,7 @@ public class WebFileObject extends FileObject {
                 modifiedDate= new Date( localFile.lastModified() );
             }
         }
-        return modifiedDate;
+        return new Date(modifiedDate.getTime());
     }
 
     /**
