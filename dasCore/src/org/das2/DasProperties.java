@@ -43,7 +43,7 @@ public final class DasProperties extends Properties {
     // Contains the global user-configurable parameters that are
     // persistent between sessions.
     
-    private RenderingHints hints;
+    private transient RenderingHints hints;
     private static final Logger logger= Logger.getLogger("das2.system");
     private static ArrayList propertyOrder;
     private static Editor editor;
