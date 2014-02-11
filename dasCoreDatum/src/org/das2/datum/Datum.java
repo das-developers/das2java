@@ -23,20 +23,18 @@
 
 package org.das2.datum;
 
-import java.io.Serializable;
 import org.das2.datum.format.DatumFormatter;
 
-
 /**
- * <p>A Datum is a number in the context of a Unit, for example "15 microseconds.".  
+ * <p>A Datum is a number in the context of a Unit, for example "15 microseconds."
  *   A Datum object has methods for formatting itself as a String, representing 
- *  itsself as a double in the context of another Unit, and mathematical
+ *  itself as a double in the context of another Unit, and mathematical
  * operators that allow simple calculations to be made at the physical quantities.
  * Also a Datum's precision can be limited to improve formatting.</p>
  * <p>
  * @author  jbf
  */
-public class Datum implements Comparable, Serializable {
+public class Datum implements Comparable {
     
     private Units units;
     private Number value;
@@ -55,9 +53,11 @@ public class Datum implements Comparable, Serializable {
         Double( double value, Units units ) {
             super( new java.lang.Double(value), units, 0. );
         }
+        
         Double( double value ) {
             super( new java.lang.Double(value), Units.dimensionless, 0. );
         }        
+        
         Double( double value, Units units, double resolution ) {
             super( new java.lang.Double(value), units, units.getDatumFormatterFactory().defaultFormatter(), resolution );
         }
@@ -138,10 +138,10 @@ public class Datum implements Comparable, Serializable {
     /**
      * returns the resolution (or precision) of the datum.  This is metadata for the datum, used
      * primarily to limit the number of decimal places displayed in a string representation,
-     * but operators like add and multiply will propogate errors through the calculation.
+     * but operators like add and multiply will propagate errors through the calculation.
      *
      * @param units the Units in which the double resolution should be returned.  Note
-     *   the units must be convertable to this.getUnits().getOffsetUnits().
+     *   the units must be convertible to this.getUnits().getOffsetUnits().
      * @return the double resolution of the datum in the context of units.
      */
     public double getResolution( Units units ) {
@@ -190,7 +190,7 @@ public class Datum implements Comparable, Serializable {
     }
     
     /**
-     * returns the Number representing the datum's location in the space indentified by its units. 
+     * returns the Number representing the datum's location in the space identified by its units. 
      * This protected method allows subclasses and classes 
      * within the package to peek at the value.  (The intent was that a
      * Datum might be backed by an integer, float, or double, depending on the application.)
@@ -211,7 +211,7 @@ public class Datum implements Comparable, Serializable {
     /**
      * returns a Datum whose value is the sum of <tt>this</tt> and <tt>datum</tt>, in <tt>this.getUnits()</tt>.
      * @return a Datum that is the sum of the two values in this Datum's units.
-     * @param datum Datum to add, that is convertable to this.getUnits().
+     * @param datum Datum to add, that is convertible to this.getUnits().
      */
     public Datum add( Datum datum ) { 
         Datum result= add( datum.getValue(), datum.getUnits() ); 
@@ -248,7 +248,7 @@ public class Datum implements Comparable, Serializable {
      * Note also the resolution of the result is calculated.
      *
      * @return a Datum that is the sum of the two values in this Datum's units.
-     * @param datum Datum to add, that is convertable to this.getUnits() or offset units.
+     * @param datum Datum to add, that is convertible to this.getUnits() or offset units.
      */
     public Datum subtract( Datum datum ) { 
         Datum result= subtract( datum.getValue(), datum.getUnits() );
@@ -421,7 +421,7 @@ public class Datum implements Comparable, Serializable {
     /**
      * returns true if this is less than <tt>a</tt>.
      * @param a a datum convertible to this Datum's units.
-     * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
+     * @throws java.lang.IllegalArgumentException if the two don't have convertible units.
      * @return true if this is less than <tt>a</tt>.
      */
     public boolean lt( Datum a ) throws IllegalArgumentException {
@@ -431,7 +431,7 @@ public class Datum implements Comparable, Serializable {
     /**
      * returns true if this is greater than <tt>a</tt>.
      * @param a a datum convertible to this Datum's units.
-     * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
+     * @throws java.lang.IllegalArgumentException if the two don't have convertible units.
      * @return true if this is greater than <tt>a</tt>.
      */
     public boolean gt( Datum a ) throws IllegalArgumentException {
@@ -441,7 +441,7 @@ public class Datum implements Comparable, Serializable {
     /**
      * returns true if this is less than or equal to <tt>a</tt>.
      * @param a a datum convertible to this Datum's units.
-     * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
+     * @throws java.lang.IllegalArgumentException if the two don't have convertible units.
      * @return true if this is less than or equal to <tt>a</tt>.
      */
     public boolean le( Datum a ) throws IllegalArgumentException {
@@ -451,7 +451,7 @@ public class Datum implements Comparable, Serializable {
     /**
      * returns true if this is greater than or equal to <tt>a</tt>.
      * @param a a datum convertible to this Datum's units.
-     * @throws java.lang.IllegalArgumentException if the two don't have convertable units.
+     * @throws java.lang.IllegalArgumentException if the two don't have convertible units.
      * @return true if this is greater than or equal to <tt>a</tt>.
      */
     public boolean ge( Datum a ) throws IllegalArgumentException {
@@ -462,7 +462,7 @@ public class Datum implements Comparable, Serializable {
      * compare the datum to the object.
      * @return an int <0 if this comes before Datum a in this Datum's units space, 0 if they are equal, and >0 otherwise.
      * @param a the Object to compare this datum to.
-     * @throws IllegalArgumentException if a is not a Datum or is not convertable to this Datum's units.
+     * @throws IllegalArgumentException if a is not a Datum or is not convertible to this Datum's units.
      */
     public int compareTo( Object a ) throws IllegalArgumentException {
         if ( ! (a instanceof Datum) ) throw new IllegalArgumentException("comparable type mismatch");
@@ -474,7 +474,7 @@ public class Datum implements Comparable, Serializable {
      * @return an int <0 if this comes before Datum a in this Datum's units space,
      * 0 if they are equal, and >0 otherwise.
      * @param a the Datum to compare this datum to.
-     * @throws IllegalArgumentException if a is not convertable to this Datum's
+     * @throws IllegalArgumentException if a is not convertible to this Datum's
      * units.
      */
     public int compareTo( Datum a ) throws IllegalArgumentException {
