@@ -38,7 +38,7 @@ import java.util.Properties;
 import java.util.logging.*;
 import org.das2.util.filesystem.FileSystemSettings;
 
-public class DasProperties extends Properties {
+public final class DasProperties extends Properties {
     
     // Contains the global user-configurable parameters that are
     // persistent between sessions.
@@ -326,6 +326,21 @@ public class DasProperties extends Properties {
             DasException e= new org.das2.DasIOException("Can't write to file "+f);
             org.das2.util.DasExceptionHandler.handle(e);
         }
+    }
+
+    /** define for Findbugs.  Since this is a singleton class, this is fine.
+     * 
+     * @param o
+     * @return 
+     */
+    @Override
+    public synchronized boolean equals(Object o) {
+        return this==o;
+    }
+    
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
     
 }
