@@ -1144,12 +1144,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         EventQueueBlocker_1.clearEventQueue();
         logger.finer("pending events processed");
 
+        final String[] ss= new String[1];
+        ss[0]= null;
+        
         /* wait for all the RequestProcessor to complete */
         Runnable request = new Runnable() {
-
             public void run() {
                 synchronized (lockObject) {
                     lockObject.notifyAll();
+                    ss[0]= "okayStopWaiting";
                 }
             }
         };
@@ -1158,7 +1161,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             synchronized (lockObject) {
                 logger.finer("submitting invokeAfter to RequestProcessor to block until all tasks are complete");
                 RequestProcessor.invokeAfter(request, this);
-                lockObject.wait();
+                while ( ss[0]==null ) {
+                    lockObject.wait();
+                }
                 logger.finer("requestProcessor.invokeAfter task complete");
             }
         } catch (InterruptedException ex) {
