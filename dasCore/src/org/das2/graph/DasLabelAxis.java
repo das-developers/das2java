@@ -120,17 +120,20 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         }
     }
 
+    @Override
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
         // somehow tickv.minor is set to non-zero, and Axis.findTick gets messed up.
         // This is a work-around...
         return xDatum;
     }
 
+    @Override
     public void updateTickV() {
         //super.updateTickV();
         updateTickPositions();
     }
 
+    @Override
     public TickVDescriptor getTickV() {
         TickVDescriptor result = new TickVDescriptor();
         result.units = getUnits();
@@ -139,6 +142,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return result;
     }
 
+    @Override
     public double transform(double value, Units units) {
         if (units != this.labelUnits) {
             throw new IllegalArgumentException("units don't match");
@@ -173,6 +177,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return iclose;
     }
 
+    @Override
     public Datum invTransform(double d) {
         int iclose = findClosestIndex(labelPositions, (int) d);
         return labels.get(iclose);
@@ -217,6 +222,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return result;
     }
 
+    @Override
     public DasAxis createAttachedAxis(int orientation) {
         return new DasLabelAxis(labels, getDataRange(), orientation);
     }
@@ -240,6 +246,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
 
     }
 
+    @Override
     protected void paintHorizontalAxis(java.awt.Graphics2D g) {
         boolean bottomTicks = (getOrientation() == BOTTOM || isOppositeAxisVisible());
         boolean bottomTickLabels = (getOrientation() == BOTTOM && isTickLabelsVisible());
@@ -318,6 +325,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         }
     }
 
+    @Override
     protected void paintVerticalAxis(java.awt.Graphics2D g) {
         boolean leftTicks = (getOrientation() == LEFT || isOppositeAxisVisible());
         boolean leftTickLabels = (getOrientation() == LEFT && isTickLabelsVisible());
@@ -440,6 +448,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         update();
     }
 
+    @Override
     public java.awt.geom.AffineTransform getAffineTransform(Memento memento, java.awt.geom.AffineTransform at) {
         return at;
     //equals doesn't seem to work
