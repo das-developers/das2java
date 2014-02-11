@@ -4020,8 +4020,6 @@ public class Ops {
                     double d0=0;
                     if ( dep0!=null ) {
                         d0= dep0.value(i) + uc.convert( dep1.value( j*step + len/2 )  );
-                    } else if ( dep0!=null ) {
-                        d0= dep0.value(i);
                     } else if ( dep0i!=null ) {
                         d0= dep0i.value(j*step+len/2);
                     } else {
@@ -5810,14 +5808,16 @@ public class Ops {
     /**
      * bundle the two datasets, adding if necessary a bundle dimension.  This
      * will try to bundle on the second dimension, unlike join.  This will also
-     * isolate the semantics of bundle dimensions as it's introduced.
-     * @param ds1
-     * @param ds2
-     * @return
+     * isolate the semantics of bundle dimensions as it's introduced.  Note the
+     * first argument can be null in order to simplify loops in client code.
+     * @param ds1 null, rank N-1 dataset or a rank N bundle dataset.
+     * @param ds2 rank N-1 dataset.
+     * @return rank N+1 bundle dataset
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2 ) {
-        if ( ds1==null && ds2==null ) throw new NullPointerException("both ds1 and ds2 are null");
-        if ( ds1==null && ds2!=null ) {
+        if ( ds1==null && ds2==null ) {
+            throw new NullPointerException("both ds1 and ds2 are null");
+        } else if ( ds1==null ) {
             BundleDataSet ds;
             if ( ds2.rank()==0 ) {
                 ds= BundleDataSet.createRank0Bundle();
@@ -5828,9 +5828,9 @@ public class Ops {
             QDataSet dep0= (QDataSet) ds2.property(QDataSet.DEPEND_0);
             if ( dep0!=null ) ds.putProperty( QDataSet.DEPEND_0, dep0 );
             return ds;
-        } else if ( ds1!=null && ds2==null ) {
-            throw new NullPointerException("ds2 is null while ds1("+ds1+") is not null.");
-        } else if (ds1.rank() == ds2.rank()) {
+        } else if ( ds2==null ) {
+            throw new NullPointerException("ds2 is null while ds1 ("+ds1+") is not null.");
+        } else if ( ds1.rank() == ds2.rank() ) { // findbugs fails to realize that this must be okay.
             BundleDataSet ds= new BundleDataSet( );
             ds.bundle(ds1);
             ds.bundle(ds2);
