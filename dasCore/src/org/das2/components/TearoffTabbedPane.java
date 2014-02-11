@@ -959,12 +959,12 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
 
     private void resetTearOffBabysitterName(  ) {
-        Window wparent= (JFrame)SwingUtilities.getWindowAncestor(this);
+        Window wparent= SwingUtilities.getWindowAncestor(this);
         if ( wparent==null ) {
             return;
         }
         if ( !( wparent instanceof JFrame ) ) {
-            return;
+            throw new RuntimeException( "internal error, parent was not instance of JFrame" );
         }
         JFrame parent= (JFrame)wparent;
         
