@@ -196,11 +196,7 @@ public final class LoggerManager {
                 return c;
             }
         }
-        if ( c==null ) {
-            return (child);
-        } else {
-            return c;
-        }
+        return child;
     }
     
     /**
