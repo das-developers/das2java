@@ -21,10 +21,6 @@ public class DatumRangeUtil {
 
     private static final Logger logger= LoggerManager.getLogger("datum");
 
-    private static final int DATEFORMAT_USA= 1;
-    private static final int DATEFORMAT_EUROPE= 0;
-    private static final int DATEFORMAT_YYYY_DDD= 2;
-    
     private static final boolean DEBUG=false;
 
 
@@ -102,7 +98,6 @@ public class DatumRangeUtil {
         String month;
         String day;
         String delim;
-        int dateformat;
     }
     
     
