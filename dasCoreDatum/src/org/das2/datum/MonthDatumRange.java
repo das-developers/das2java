@@ -6,6 +6,7 @@
 
 package org.das2.datum;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -16,7 +17,7 @@ import java.util.Arrays;
  *   dr.toString() -> "Feb 1999"  ; a normal datumRange would simply advance 31 days.
  * @author  Jeremy
  */
-public class MonthDatumRange extends DatumRange {
+public class MonthDatumRange extends DatumRange implements Serializable {
     
     int width;
     int widthDigit;
