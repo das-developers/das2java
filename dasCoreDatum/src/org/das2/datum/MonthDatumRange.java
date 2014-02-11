@@ -54,11 +54,10 @@ public class MonthDatumRange extends DatumRange {
         }
     }
     
+    @Override
     public DatumRange next() {
         int[] end1= new int[7];
-        for ( int i=0; i<7; i++ ) {
-            end1[i]= this.end[i];
-        }
+        System.arraycopy(this.end, 0, end1, 0, 7);
         end1[widthDigit]= end1[widthDigit]+this.width;
         switch ( widthDigit ) {
             case 1: while( end1[1]>12 ) {
@@ -71,11 +70,10 @@ public class MonthDatumRange extends DatumRange {
         return new MonthDatumRange( this.end, end1 );
     }
     
+    @Override
     public DatumRange previous() {
         int[] start1= new int[7];
-        for ( int i=0; i<7; i++ ) {
-            start1[i]= this.start[i];
-        }
+        System.arraycopy(this.start, 0, start1, 0, 7);
         start1[widthDigit]= start1[widthDigit]-this.width;
         switch ( widthDigit ) {
             case 1: while( start1[1]<1 ) {
@@ -88,9 +86,5 @@ public class MonthDatumRange extends DatumRange {
         
         return new MonthDatumRange( start1, this.start );
     }
-
-    @Override
-    public boolean equals(Object o) {
-        return super.equals(o); // fingbugs EQ_DOESNT_OVERRIDE_EQUALS okay
-    }
+    
 }
