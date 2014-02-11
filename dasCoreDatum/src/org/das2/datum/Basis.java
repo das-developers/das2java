@@ -15,7 +15,7 @@ import java.util.IdentityHashMap;
  */
 public class Basis {
     
-    public static final Basis fahrenheit= new Basis( "fahrenheit", "fahrenheit", Basis.physicalZero, 255.370, Units.celciusDegrees );
+    public static final Basis fahrenheit= new Basis( "fahrenheit", "fahrenheit", Basis.physicalZero, 255.370, Units.celciusDegrees ); // findbugs IC_INIT_CIRCULARITY needs to be dealt with.
     public static final Basis kelvin= new Basis( "kelvin", "kelvin", Basis.physicalZero, 0, Units.celciusDegrees );
     public static final Basis centigrade= new Basis( "centigrade", "centigrade", Basis.physicalZero, 273.15, Units.celciusDegrees );
 
