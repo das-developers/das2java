@@ -179,7 +179,7 @@ class GapListDouble {
 	int low = start;
 	int high = end-1;
 	while (low <= high) {
-	    int mid = (low + high) >> 1;
+	    int mid = (low + high) >>> 1;  // findbugs IM_AVERAGE_COMPUTATION_COULD_OVERFLOW shows an unsigned shift should be used.
 	    if (array[mid] < d) {
 		low = mid + 1;
             }
