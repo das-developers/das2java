@@ -23,6 +23,7 @@
 
 package org.das2.datum;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,11 +36,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.format.DatumFormatterFactory;
+
 /**
- *
+ * Class for indicating physical units.
  * @author  jbf
  */
-public abstract class Units {
+public abstract class Units implements Serializable {
 
     private static final Logger logger= Logger.getLogger("datum.units");
 
@@ -51,7 +53,6 @@ public abstract class Units {
     public static final Units degrees= new NumberUnits("degrees");
     static {
         degrees.registerConverter(radians, new UnitsConverter.ScaleOffset(Math.PI/180.0,0.0) );
-
     }
 
     /**
