@@ -1,6 +1,7 @@
 
 package org.das2.datum;
 
+import java.io.Serializable;
 import java.text.ParseException;
 
 /**
@@ -14,7 +15,7 @@ import java.text.ParseException;
  * Also, orbit:http://das2.org/wiki/index.php/Orbits/crres:6 is supported for development work and personal lists.
  * @author  Jeremy
  */
-public class OrbitDatumRange extends DatumRange {
+public class OrbitDatumRange extends DatumRange implements Serializable {
     
     String sc;
     String orbit;
