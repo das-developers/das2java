@@ -22,6 +22,8 @@
  */
 package org.das2.graph;
 
+import java.awt.Font;
+import java.awt.Graphics2D;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.DatumVector;
@@ -31,9 +33,8 @@ import org.das2.util.GrannyTextRenderer;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.graph.event.DasUpdateEvent;
 import org.das2.graph.event.DasUpdateListener;
-import java.awt.*;
 import java.text.DecimalFormat;
-import javax.swing.JFrame;
+import java.util.Arrays;
 
 public class DasLabelAxis extends DasAxis implements DasUpdateListener {
 
@@ -83,7 +84,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
     }
 
     public int[] getLabelPositions() {
-        return this.labelPositions;
+        return Arrays.copyOf( this.labelPositions, this.labelPositions.length );
     }
 
     private void updateTickPositions() {
