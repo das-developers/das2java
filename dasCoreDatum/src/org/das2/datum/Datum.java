@@ -40,7 +40,7 @@ public class Datum implements Comparable, Serializable {
     private Units units;
     private Number value;
     private double resolution;
-    private DatumFormatter formatter;
+    private transient DatumFormatter formatter;
 
     /**
      * class backing Datums with a double.
