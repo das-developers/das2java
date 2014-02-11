@@ -54,15 +54,14 @@ import org.w3c.dom.Element;
 
 public class DasServer {
 
-    private String host;
-    private String path;
-    private int port;
-    private HashMap keys; // <key>
-    private Key key;
-
+    private final String host;
+    private final String path;
+    private final int port;
+    private final HashMap keys; // <key>
+    
     private static final Logger logger= DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG );
 
-    private static HashMap instanceHashMap= new HashMap();
+    private static final HashMap instanceHashMap= new HashMap();
 
     public static final DasServer plasmaWaveGroup;
     public static final DasServer sarahandjeremy;
@@ -122,7 +121,7 @@ public class DasServer {
 
     public String getName() {
         String formData= "server=id";
-
+        InputStream in=null;
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
@@ -130,7 +129,7 @@ public class DasServer {
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
 
-            InputStream in= urlConnection.getInputStream();
+            in= urlConnection.getInputStream();
 
             String result= new String(  read(in) );
             logger.log( Level.FINE, "response={0}", result);
@@ -139,6 +138,12 @@ public class DasServer {
         } catch (IOException e) {
 
             return "";
+        } finally {
+            if ( in!=null ) try {
+                in.close();
+            } catch ( IOException ex ) {   
+                logger.log( Level.WARNING, ex.toString(), ex );
+            }
         }
 
     }
@@ -146,7 +151,7 @@ public class DasServer {
     public ImageIcon getLogo() {
 
         String formData= "server=logo";
-
+        InputStream in=null;
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
@@ -154,7 +159,7 @@ public class DasServer {
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
 
-            InputStream in= urlConnection.getInputStream();
+            in= urlConnection.getInputStream();
 
             byte[] data= read(in);
             logger.log( Level.FINE, "response={0} bytes", data.length);
@@ -163,6 +168,12 @@ public class DasServer {
         } catch (IOException e) {
 
             return new ImageIcon();
+        } finally {
+            if ( in!=null ) try {
+                in.close();
+            } catch ( IOException ex ) {   
+                logger.log( Level.WARNING, ex.toString(), ex );
+            }
         }
 
     }
@@ -170,6 +181,7 @@ public class DasServer {
     public TreeModel getDataSetListWithDiscovery() throws org.das2.DasException {
         String formData= "server=discovery";
 
+        InputStream in=null;
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
@@ -178,22 +190,26 @@ public class DasServer {
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
 
-            InputStream in= urlConnection.getInputStream();
+            in= urlConnection.getInputStream();
 
             TreeModel result= createModel(in);
             logger.log( Level.FINE, "response->{0}", result);
             return result;
 
         } catch (IOException e) {
-
             throw new DasIOException( e.getMessage() );
+        } finally {
+            if ( in!=null ) try {
+                in.close();
+            } catch ( IOException ex ) {   
+                logger.log( Level.WARNING, ex.toString(), ex );
+            }
         }
-
     }
 
     public TreeModel getDataSetList() throws org.das2.DasException {
         String formData= "server=list";
-
+        InputStream in=null;
         try {
             URL server= new URL("http",host,port,path+"?"+formData);
 
@@ -202,15 +218,20 @@ public class DasServer {
             URLConnection urlConnection = server.openConnection();
             urlConnection.connect();
 
-            InputStream in= urlConnection.getInputStream();
+            in= urlConnection.getInputStream();
 
             TreeModel result= createModel(in);
             logger.log( Level.FINE, "response->{0}", result);
             return result;
 
         } catch (IOException e) {
-
             throw new DasIOException( e.getMessage() );
+        } finally {
+            if ( in!=null ) try {
+                in.close();
+            } catch ( IOException ex ) {   
+                logger.log( Level.WARNING, ex.toString(), ex );
+            }
         }
 
     }
@@ -221,6 +242,10 @@ public class DasServer {
      * @param tn 
      */
     private void sortDirectories( DefaultMutableTreeNode tn ) {
+        if ( tn.toString().equals("flight") ) {
+            System.err.println("here ...");
+        }
+        System.err.println("here ..."+tn.toString());
         DefaultMutableTreeNode[] children= new DefaultMutableTreeNode[tn.getChildCount()];
         int ichild=0;
         for ( int i=0; i<tn.getChildCount(); i++ ) {
@@ -237,10 +262,11 @@ public class DasServer {
                 ichild++;
             }
         }
-        for ( int i=0; i<tn.getChildCount(); i++ ) {
+        int kidCount= tn.getChildCount();
+        for ( int i=0; i<kidCount; i++ ) {
             tn.remove(0);
         }
-        for ( int i=0; i<tn.getChildCount(); i++ ) {
+        for ( int i=0; i<kidCount; i++ ) {
             tn.insert( children[i], i);
         }
         
@@ -620,7 +646,7 @@ public class DasServer {
     }
 
     public void setKey( Key key ) {
-        this.key= key;
+        logger.info("this key is ignored");
     }
 
     @Override
