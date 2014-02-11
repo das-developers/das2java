@@ -238,7 +238,9 @@ public class DasServer {
             }
         }
         for ( int i=0; i<tn.getChildCount(); i++ ) {
-            tn.remove(i);
+            tn.remove(0);
+        }
+        for ( int i=0; i<tn.getChildCount(); i++ ) {
             tn.insert( children[i], i);
         }
         
