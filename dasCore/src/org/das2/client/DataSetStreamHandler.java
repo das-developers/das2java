@@ -106,7 +106,7 @@ public class DataSetStreamHandler implements StreamHandler {
             
         }
         if ( ( o=sd.getProperty("pid") )!=null ) {
-            logger.fine("stream pid="+o);
+            logger.log(Level.FINE, "stream pid={0}", o);
         }
     }
     
@@ -163,7 +163,7 @@ public class DataSetStreamHandler implements StreamHandler {
     }
     
     public void streamComment(StreamComment sc) throws StreamException {
-        logger.finest("got stream comment: "+sc);
+        logger.log(Level.FINEST, "got stream comment: {0}", sc);
         if ( sc.getType().equals(sc.TYPE_TASK_PROGRESS) && taskSize!=-1 ) {
             if ( !monitor.isCancelled() ) monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );
         } else if ( sc.getType().matches(sc.TYPE_LOG) ) {
@@ -206,9 +206,7 @@ public class DataSetStreamHandler implements StreamHandler {
         private VectorDataSetBuilder builder;
         
         private DatumRange validRange=null;
-        
-        private double[] doubles = new double[1];
-        
+
         private VectorDataSetStreamHandler(PacketDescriptor pd) throws StreamException {
             StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(0);
             Datum base = pd.getXDescriptor().getBase();
@@ -251,7 +249,7 @@ public class DataSetStreamHandler implements StreamHandler {
         }
         
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
-            logger.fine("got packet descriptor: "+pd);
+            logger.log(Level.FINE, "got packet descriptor: {0}", pd);
             for (int i = 1; i < pd.getYCount(); i++) {
                 StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(),y.getUnits());
