@@ -301,9 +301,9 @@ public abstract class WebFileSystem extends FileSystem {
             logger.log( Level.FINE, "ss.length={0}", ss.length );
             DirectoryEntry[] des= listDirectoryFromMemory(parent);
             if ( des==null ) return new Date(0);
-            for ( int i=0; i<des.length; i++ ) {
-                if ( des[i].name.equals(name) ) {
-                    return des[i];
+            for (DirectoryEntry de : des) {
+                if (de.name.equals(name)) {
+                    return de;
                 }
             }
             return FileSystem.NULL;
@@ -385,7 +385,7 @@ public abstract class WebFileSystem extends FileSystem {
      * 
      * @param filename the filename with in the filesystem.
      * @param f the File which will be the local copy.
-     * @param mon a monitor for the download.  If a MutatorLock is returned, then
+     * @param monitor a monitor for the download.  If a MutatorLock is returned, then
      *    the monitor is not touched, but other threads may use it to keep track
      *    of the download progress.
      * @throws FileNotFoundException if the file wasn't found after another thread loaded the file.
@@ -496,8 +496,8 @@ public abstract class WebFileSystem extends FileSystem {
         return listing;
     }
 
-    private Map<String,DirectoryEntry[]> listings= new HashMap();
-    private Map<String,Long> listingFreshness= new HashMap();
+    private final Map<String,DirectoryEntry[]> listings= new HashMap();
+    private final Map<String,Long> listingFreshness= new HashMap();
 
     /**
      * return true if the listing file (.listing) is available in the cache, and is still fresh.
@@ -518,7 +518,7 @@ public abstract class WebFileSystem extends FileSystem {
 
     public synchronized void cacheListing( String directory, DirectoryEntry[] listing ) {
          listings.put( directory, listing );
-         listingFreshness.put( directory, new Long( System.currentTimeMillis() ) );
+         listingFreshness.put( directory, Long.valueOf(System.currentTimeMillis()) );
     }
 
     /**
@@ -663,6 +663,8 @@ public abstract class WebFileSystem extends FileSystem {
     /**
      * return the name of the File within the FileSystem, where File is a local
      * file within the local copy of the filesystem.
+     * @param file
+     * @return the name within the filesystem
      */
     public String getLocalName(File file) {
         if (!file.toString().startsWith(localRoot.toString())) {
@@ -720,6 +722,7 @@ public abstract class WebFileSystem extends FileSystem {
      *
      * For example, we will not do a head request to check for an update more than once per minute.
      *
+     * @param filename the filename within the filesystem.
      * @return the last time the file was accessed via a HEAD request.
      */
     protected synchronized long getLastAccessed( String filename ) {
