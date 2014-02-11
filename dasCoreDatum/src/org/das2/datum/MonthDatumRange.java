@@ -6,6 +6,8 @@
 
 package org.das2.datum;
 
+import java.util.Arrays;
+
 /**
  * DatumRange implementation that preserves month and year boundaries in the next() and previous() implementations.  For example,
  *   dr= MonthDatumRange( [ 1999, 01, 01, 00, 00, 00, 0 ], [ 1999, 02, 01, 00, 00, 00, 0 ] )
@@ -85,6 +87,21 @@ public class MonthDatumRange extends DatumRange {
         }
         
         return new MonthDatumRange( start1, this.start );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if ( o instanceof MonthDatumRange ) {
+            MonthDatumRange m= (MonthDatumRange)o;
+            return Arrays.equals( this.start, m.start ) && Arrays.equals(this.end,m.end);
+        } else {
+            return super.equals(o);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
     
 }
