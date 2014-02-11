@@ -1,7 +1,5 @@
 package org.das2.datum;
 
-import java.io.Serializable;
-
 /**
  * A DatumRange is provided as a means to carry an ordered pair of Datums
  * representing an interval.  This sort of data structure comes up often in
@@ -11,7 +9,7 @@ import java.io.Serializable;
  * a DatumRange!
  */
 
-public class DatumRange implements Comparable, Serializable {
+public class DatumRange implements Comparable {
     
     Datum s1;
     Datum s2;
@@ -70,20 +68,20 @@ public class DatumRange implements Comparable, Serializable {
             Units units= this.getUnits();
             double s11= this.s1.doubleValue(units);
             double s12= dr.s1.doubleValue(units);
-            double s1=  Math.max( s11, s12 );
+            double ls1=  Math.max( s11, s12 );
             double s21= this.s2.doubleValue(units);
             double s22= dr.s2.doubleValue(units);
-            double s2= Math.min( s21, s22 );
-            return new DatumRange( s1, s2, units );
+            double ls2= Math.min( s21, s22 );
+            return new DatumRange( ls1, ls2, units );
         } else {
             throw new IllegalArgumentException("does not intersect: "+dr);
         }
     }
     
     /**
-     * returns true of @param dr is contained by this, so that this.union(dr).equals(this).
-     * @param dr
-     * @ return true iff this.union(dr).equals(this);
+     * returns true of param dr is contained by this, so that this.union(dr).equals(this).
+     * @param dr the datum range to test.
+     * @return true iff this.union(dr).equals(this);
      */
     public boolean contains(DatumRange dr) {
         return this.s1.le( dr.s1 ) && dr.s2.le( this.s2 );
@@ -91,9 +89,9 @@ public class DatumRange implements Comparable, Serializable {
     
     /**
      * returns the union of the two intersecting or adjacent ranges.
+     * @param dr the other range of consistent units.
+     * @return DatumRange union of the two DatumRanges
      * @throws IllegalArgumentException if the two are disjoint.
-     * @param dr
-     * @ return DatumRange union of the two DatumRanges
      */
     public DatumRange union( DatumRange dr ) {
         if ( this.intersects(dr) ||
@@ -113,7 +111,7 @@ public class DatumRange implements Comparable, Serializable {
     /**
      * returns true if the Datum is in the range, inclusive of the
      * lesser point but exclusive of the greater point.
-     * @param d
+     * @param d the datum
      * @return true if d is in the range, exclusive of max.
      */
     public boolean contains( Datum d ) {
@@ -135,6 +133,7 @@ public class DatumRange implements Comparable, Serializable {
      * DatumRangeUtil.parseDatumRange, but this has not been verified to complete certainty.
      * @return the DatumRange as a String.
      */
+    @Override
     public String toString() {
         if ( this.s1.getUnits() instanceof TimeLocationUnits ) {
             try {
@@ -161,6 +160,7 @@ public class DatumRange implements Comparable, Serializable {
      * @param o
      * @return
      */
+    @Override
     public boolean equals( Object o ) {
         if (!(o instanceof DatumRange)) {
             return false;
@@ -174,9 +174,9 @@ public class DatumRange implements Comparable, Serializable {
     
     /**
      * Ordered by the lesser point, then the greater point.  This is mostly provided for .equals, but also so there is a
-     * consistent ordering convention thoughout the system.
+     * consistent ordering convention though out the system.
      * @param o
-     * @return
+     * @return 
      */
     public int compareTo(Object o) {
         if ( o == null) {
@@ -284,6 +284,8 @@ public class DatumRange implements Comparable, Serializable {
      * [0,1).include(0.5)->[0,1]  (and returns the same DatumRange object)
      * </pre>
      * Also, including a fill Datum returns the same DatumRange as well.
+     * @param d the Datum to include
+     * @return the new range.
      */
     public DatumRange include(Datum d) {
         if ( d.isFill() ) return this;
@@ -295,6 +297,7 @@ public class DatumRange implements Comparable, Serializable {
     
     /**
      * return the units of the DatumRange.
+     * @return the units of the DatumRange.
      */
     public Units getUnits() {
         return this.s1.getUnits();
@@ -302,7 +305,11 @@ public class DatumRange implements Comparable, Serializable {
     
     /**
      * creates a new DatumRange object with the range specified in the space
-     * identified by units.  Note that min must be <= max.
+     * identified by units.  Note that min must be &lt;&eq; max.
+     * @param min the minimum value
+     * @param max the maximum value which is greater than or equal to the min.
+     * @param units the units of the two doubles.
+     * @return the DatumRange
      */
     public static DatumRange newDatumRange(double min, double max, Units units) {
         return new DatumRange( Datum.create(min,units), Datum.create(max,units) );
