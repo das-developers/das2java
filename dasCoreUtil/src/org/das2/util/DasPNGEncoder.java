@@ -227,21 +227,15 @@ public class DasPNGEncoder extends DasPNGConstants {
                 
             //32 bit alpha
             case BufferedImage.TYPE_4BYTE_ABGR:
-                imageData = getABGRBytes(image);
-                break;
-                
+                throw new UnsupportedOperationException("ABGR mode not supported");
             case BufferedImage.TYPE_INT_ARGB:
-                imageData = getARGBBytes(image);
-                break;
-                
+                throw new UnsupportedOperationException("ARGB mode not supported");
             case BufferedImage.TYPE_BYTE_INDEXED:
             case BufferedImage.TYPE_BYTE_GRAY:
-                imageData = get8BitSampleBytes(image);
-                break;
+                throw new UnsupportedOperationException("8 bit mode not supported");
                 
             case BufferedImage.TYPE_USHORT_GRAY:
-                imageData = get16BitSampleBytes(image);
-                break;
+                throw new UnsupportedOperationException("16bit mode not supported");
                 
             //Currently unsupported types
             case BufferedImage.TYPE_BYTE_BINARY:
@@ -290,22 +284,22 @@ public class DasPNGEncoder extends DasPNGConstants {
         return bytePixels;
     }
     
-    private byte[] getARGBBytes(BufferedImage image) {
-        throw new UnsupportedOperationException("ARGB mode not supported");
-    }
-    
-    private byte[] getABGRBytes(BufferedImage image) {
-        throw new UnsupportedOperationException("ABGR mode not supported");
-    }
-    
-    private byte[] get8BitSampleBytes(BufferedImage image) {
-        throw new UnsupportedOperationException("8 bit mode not supported");
-    }
-    
-    private byte[] get16BitSampleBytes(BufferedImage image) {
-        throw new UnsupportedOperationException("16bit mode not supported");
-    }
-    
+//    private byte[] getARGBBytes(BufferedImage image) {
+//        throw new UnsupportedOperationException("ARGB mode not supported");
+//    }
+//    
+//    private byte[] getABGRBytes(BufferedImage image) {
+//        throw new UnsupportedOperationException("ABGR mode not supported");
+//    }
+//    
+//    private byte[] get8BitSampleBytes(BufferedImage image) {
+//        throw new UnsupportedOperationException("8 bit mode not supported");
+//    }
+//    
+//    private byte[] get16BitSampleBytes(BufferedImage image) {
+//        throw new UnsupportedOperationException("16bit mode not supported");
+//    }
+//    
     private byte[] getIENDBytes() {
         byte[] array = new byte[12];
         byte[] typeBytes = getISO8859_1Bytes(CHUNK_TYPE_IEND);
