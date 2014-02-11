@@ -174,14 +174,6 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         this.tableProperties= tableProperties;
     }
     
-    private static double[][][] copy(double[][][] d) {
-        double[][][] copy = new double[d.length][][];
-        for (int index = 0; index < d.length; index++) {
-            copy[index] = copy(d[index]);
-        }
-        return copy;
-    }
-    
     private static double[][] copy(double[][] d) {
         double[][] copy = new double[d.length][];
         for (int index = 0; index < d.length; index++) {
