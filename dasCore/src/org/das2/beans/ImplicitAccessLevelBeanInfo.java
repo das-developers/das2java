@@ -24,12 +24,12 @@ import java.beans.PropertyDescriptor;
  */
 public class ImplicitAccessLevelBeanInfo extends AccessLevelBeanInfo {
     
-    BeanInfo beanInfo;
+    //BeanInfo beanInfo;
     
     /** Creates a new instance of ImplicitAccessLevelBeanInfo */
     private ImplicitAccessLevelBeanInfo( BeanInfo beanInfo, Class beanClass, Property[] properties ) {
         super( properties, beanClass );
-        this.beanInfo= beanInfo;
+        //this.beanInfo= beanInfo;
     }
     
     public static ImplicitAccessLevelBeanInfo create( BeanInfo beanInfo, Class beanClass ) {
