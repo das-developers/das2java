@@ -34,6 +34,7 @@ import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
@@ -89,7 +90,7 @@ public class LanlNNRebinner implements DataSetRebinner {
         if (ds == null) {
             throw new NullPointerException("null data set");
         }
-        if (! SemanticOps.isTableDataSet(ds) ) {
+        if (!( SemanticOps.isTableDataSet(ds) || SemanticOps.isBundle(ds) ) ) {
             throw new IllegalArgumentException("Data set must be an instanceof TableDataSet: " + ds.getClass().getName());
         }
 
@@ -197,30 +198,27 @@ public class LanlNNRebinner implements DataSetRebinner {
             double y0,y1;
             int nYData= rank2y ? yds0.length(0) : yds0.length();
 
-            for ( int i=0; i<xds0.length(); i++) {
-                double x0= xds0.value(i);
-                double x1= xds1.value(i);
-                int px0,px1;
-                if ( ddX.start>ddX.end ) { // flipped
-                    px0= ddX.whichBin( x1, xunits );
-                    px1= ddX.whichBin( x0, xunits );
-                } else {
-                    px0= ddX.whichBin( x0, xunits );
-                    px1= ddX.whichBin( x1, xunits );
-                }
-                double wx= 1./((px1-px0+1));
-                
-                int sx0= Math.max( 0, px0 );
-                int sx1= Math.min( nx-1, px1 );
-                for ( int j=0; j<nYData; j++ ) {
-                    double z= tds1.value( i,j );
-                    if ( rank2y ) {
-                        y0= yds0.value(i,j);
-                        y1= yds1.value(i,j);
+            if ( SemanticOps.isBundle(tds1) ) {
+                tds1= DataSetOps.unbundle(tds1,tds1.length(0)-1);
+                weights= DataSetOps.unbundle(weights,weights.length(0)-1);
+                for ( int i=0; i<xds0.length(); i++) {
+                    double x0= xds0.value(i);
+                    double x1= xds1.value(i);
+                    int px0,px1;
+                    if ( ddX.start>ddX.end ) { // flipped
+                        px0= ddX.whichBin( x1, xunits );
+                        px1= ddX.whichBin( x0, xunits );
                     } else {
-                        y0= yds0.value(j);
-                        y1= yds1.value(j);
+                        px0= ddX.whichBin( x0, xunits );
+                        px1= ddX.whichBin( x1, xunits );
                     }
+                    double wx= 1./((px1-px0+1));
+
+                    int sx0= Math.max( 0, px0 );
+                    int sx1= Math.min( nx-1, px1 );
+                    double z= tds1.value( i );
+                    y0= yds0.value(i);
+                    y1= yds1.value(i);
                     int py0,py1;
                     if ( ddY.start>ddY.end ) { // flipped
                         py0= ddY.whichBin( y1, yunits );
@@ -230,7 +228,7 @@ public class LanlNNRebinner implements DataSetRebinner {
                         py1= ddY.whichBin( y1, yunits );
                     }
                     double wy= 1./((py1-py0+1)); // favor short bins
-                    double w= wx*wy*weights.value(i,j);
+                    double w= wx*wy*weights.value(i);
                     int sy0= Math.max( 0, py0 );
                     int sy1= Math.min( ny-1, py1 );
                     for ( int k=sx0; k<=sx1; k++ ) {
@@ -238,6 +236,53 @@ public class LanlNNRebinner implements DataSetRebinner {
                             if ( w>N.value(k,l) ) {
                                 S.putValue(k,l,z*w);
                                 N.putValue(k,l,w);
+                            }
+                        }
+                    }
+                }
+            } else {
+                for ( int i=0; i<xds0.length(); i++) {
+                    double x0= xds0.value(i);
+                    double x1= xds1.value(i);
+                    int px0,px1;
+                    if ( ddX.start>ddX.end ) { // flipped
+                        px0= ddX.whichBin( x1, xunits );
+                        px1= ddX.whichBin( x0, xunits );
+                    } else {
+                        px0= ddX.whichBin( x0, xunits );
+                        px1= ddX.whichBin( x1, xunits );
+                    }
+                    double wx= 1./((px1-px0+1));
+
+                    int sx0= Math.max( 0, px0 );
+                    int sx1= Math.min( nx-1, px1 );
+                    for ( int j=0; j<nYData; j++ ) {
+                        double z= tds1.value( i,j );
+                        if ( rank2y ) {
+                            y0= yds0.value(i,j);
+                            y1= yds1.value(i,j);
+                        } else {
+                            y0= yds0.value(j);
+                            y1= yds1.value(j);
+                        }
+                        int py0,py1;
+                        if ( ddY.start>ddY.end ) { // flipped
+                            py0= ddY.whichBin( y1, yunits );
+                            py1= ddY.whichBin( y0, yunits );
+                        } else {
+                            py0= ddY.whichBin( y0, yunits );
+                            py1= ddY.whichBin( y1, yunits );
+                        }
+                        double wy= 1./((py1-py0+1)); // favor short bins
+                        double w= wx*wy*weights.value(i,j);
+                        int sy0= Math.max( 0, py0 );
+                        int sy1= Math.min( ny-1, py1 );
+                        for ( int k=sx0; k<=sx1; k++ ) {
+                            for ( int l=sy0; l<=sy1; l++ ) {
+                                if ( w>N.value(k,l) ) {
+                                    S.putValue(k,l,z*w);
+                                    N.putValue(k,l,w);
+                                }
                             }
                         }
                     }
