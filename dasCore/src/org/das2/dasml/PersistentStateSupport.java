@@ -447,7 +447,7 @@ public class PersistentStateSupport {
     public void setDirty(boolean dirty) {
         boolean oldDirty = this.dirty;
         this.dirty = dirty;
-        propertyChangeSupport.firePropertyChange ( PROPERTY_DIRTY, new Boolean (oldDirty), new Boolean (dirty));
+        propertyChangeSupport.firePropertyChange ( PROPERTY_DIRTY, Boolean.valueOf(oldDirty), Boolean.valueOf(dirty) );
     }
 
     public File getCurrentFile() {
