@@ -414,7 +414,7 @@ public class PersistentStateSupport {
     /**
      * Utility field used by bound properties.
      */
-    private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+    private final java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
 
     /**
      * Adds a PropertyChangeListener to the listener list.
@@ -523,7 +523,7 @@ public class PersistentStateSupport {
     public void setCurrentFileOpened(boolean currentFileOpened) {
         boolean oldCurrentFileOpened = this.currentFileOpened;
         this.currentFileOpened = currentFileOpened;
-        propertyChangeSupport.firePropertyChange ("currentFileOpened", new Boolean (oldCurrentFileOpened), new Boolean (currentFileOpened));
+        propertyChangeSupport.firePropertyChange ("currentFileOpened", Boolean.valueOf(oldCurrentFileOpened), Boolean.valueOf(currentFileOpened));
     }
 
 }
