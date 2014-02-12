@@ -28,7 +28,8 @@ import org.das2.graph.DasAxis;
 import org.das2.graph.DasPlot;
 
 /**
- *
+ * With the HorizontalDragRangeRenderer and VerticalSpectrogramAverager,
+ * this shows the average over an interval.
  * @author  jbf
  */
 public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
@@ -52,7 +53,7 @@ public class HorizontalDragRangeSelectorMouseModule extends MouseModule {
     
     public static HorizontalDragRangeSelectorMouseModule create(DasPlot parent) {
         HorizontalDragRangeSelectorMouseModule result=
-        new HorizontalDragRangeSelectorMouseModule(parent,null,parent.getXAxis());
+           new HorizontalDragRangeSelectorMouseModule(parent,null,parent.getXAxis());
         return result;
     }
     
