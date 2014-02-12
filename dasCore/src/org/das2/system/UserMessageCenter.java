@@ -36,7 +36,6 @@ public class UserMessageCenter {
 
     static class MessageRecord {
         JButton nextButton;
-        Component component;
     }
 
     List messageRecords;
@@ -100,7 +99,6 @@ public class UserMessageCenter {
         }
 
         MessageRecord record= new MessageRecord();
-        record.component= panel;
         record.nextButton= nextButton;
 
         messageRecords.add( record );
