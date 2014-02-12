@@ -31,7 +31,7 @@ import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
 import org.virbo.dataset.QDataSet;
 /**
- *
+ * Slices spectrogram horizontally, e.g. showing one channel vs time.
  * @author  jbf
  */
 public class HorizontalSlicerMouseModule extends MouseModule {
@@ -78,6 +78,7 @@ public class HorizontalSlicerMouseModule extends MouseModule {
         return new HorizontalSlicerMouseModule(parent,renderer,xaxis,yaxis);
     }
     
+    @Override
     public void mousePointSelected(MousePointSelectionEvent e) {
         QDataSet ds= dataSetConsumer.getConsumedDataSet();
         de.setDataSet(ds);
