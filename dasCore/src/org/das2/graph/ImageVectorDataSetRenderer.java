@@ -792,7 +792,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     @Override
     public boolean acceptContext(int x, int y) {
-        if ( plotImage==null ) return false;
+        BufferedImage im= getPlotImage();
+        if ( im==null ) return false;
         Shape s= selectionArea();
         if ( s.contains(x, y) ) {
             return true;
@@ -821,6 +822,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
         this.print300dpi = print300dpi;
     }
 
+    private synchronized BufferedImage getPlotImage() {
+        return this.plotImage;
+    }
+    
     /**
      * calculate the area that describes roughly where the data lie.  The
      * variable "selectionArea" is set.
@@ -828,7 +833,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
      * This is fast, less than 50ms with 5 million points.  When the image gets big, this gets slow...
      */
     private void calcSelectionArea() {
-        BufferedImage lplotImage= this.plotImage; // make local copy
+        BufferedImage lplotImage= getPlotImage(); // make local copy
         logger.finer("in calc selection area");
         long t0= System.currentTimeMillis();
         if ( lplotImage==null ) return;
