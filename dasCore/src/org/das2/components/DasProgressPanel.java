@@ -257,14 +257,10 @@ public class DasProgressPanel implements ProgressMonitor {
         Runnable run= new Runnable() {
             @Override
             public void run() {
-                if ( parent instanceof JFrame ) {
-                    result.jframe = new JDialog((JFrame)parent,"Progress Monitor");
-                } else if ( parent instanceof Dialog ) {
-                    result.jframe = new JDialog((Dialog)parent,"Progress Monitor");
-                }
-
+                result.jframe = new JDialog(parent,"Progress Monitor");
                 result.initComponents();
-                result.jframe.add(result.thePanel);
+                JPanel lthePanel= result.thePanel;
+                result.jframe.add(lthePanel);
                 result.jframe.pack();
                 result.jframe.setLocationRelativeTo(parent);
                 result.jframe.setVisible(false);
@@ -380,6 +376,8 @@ public class DasProgressPanel implements ProgressMonitor {
 //            buttonPanel.add(detailsButton);
 //        buttonPanel.add(cancelButton);
 
+        System.err.println("Making the panel");
+        
         thePanel = new MyPanel();
         thePanel.setOpaque(false);
         thePanel.setLayout(new BorderLayout());
