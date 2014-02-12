@@ -123,7 +123,7 @@ public class ContoursRenderer extends Renderer {
             return true;
         }
         
-        if (paths == null) {
+        if (paths == null) { // findbugs experiment: does a single read, which should be thread-safe, trigger findbugs IS2_INCONSISTENT_SYNC?
             return true;
         }
         
@@ -231,13 +231,15 @@ public class ContoursRenderer extends Renderer {
 
         g.setFont(font);
 
+        GeneralPath[] lpaths= getPaths();
+        
         double minLength= 20;
-        for (int i = 0; i < paths.length; i++) {
-            if (paths[i] == null) {
+        for (int i = 0; i < lpaths.length; i++) {
+            if (lpaths[i] == null) {
                 continue;
             }
             String label = pathLabels[i];
-            GeneralPath p = paths[i];
+            GeneralPath p = lpaths[i];
 
             if (p != null) {
 
@@ -431,14 +433,19 @@ public class ContoursRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange("labelCadence", new Double(oldLabelCadence), new Double(labelCadence));
     }
 
+    private synchronized GeneralPath[] getPaths() {
+        return paths;
+    }
+            
     @Override
     public boolean acceptContext(int x, int y) {
-        if (paths == null) {
+        GeneralPath[] lpaths= getPaths();
+        if (lpaths == null) {
             return false;
         }
-        for (int i = 0; i < paths.length; i++) {
-            if (paths[i] != null) {
-                if (paths[i].intersects(x - 2, y - 2, 5, 5)) {
+        for (int i = 0; i < lpaths.length; i++) {
+            if (lpaths[i] != null) {
+                if (lpaths[i].intersects(x - 2, y - 2, 5, 5)) {
                     return true;
                 }
             }
