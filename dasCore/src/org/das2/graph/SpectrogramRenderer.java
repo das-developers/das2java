@@ -866,7 +866,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         if (old != rebinnerEnum) {
             this.rebinnerEnum = rebinnerEnum;
             this.raster = null;
-            this.plotImage = null;
+            clearPlotImage();
             updateCacheImage();
             propertyChangeSupport.firePropertyChange("rebinner", old, rebinnerEnum);
         }
@@ -907,6 +907,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         }
     }
 
+    private synchronized void clearPlotImage() {
+        this.plotImage = null;
+    }
+    
     @Override
     public void setDataSet(QDataSet ds) {
         QDataSet oldDs = this.ds;
@@ -914,7 +918,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         if (parent != null && oldDs != ds) {
             this.raster = null;
             // TODO: preserve plotImage until updatePlotImage is done
-            this.plotImage = null;
+            clearPlotImage();
         }
         if ( vSlicer!=null ) {  // !DasApplication.getDefaultApplication().isHeadless()
             vSlicer.clear(ds);
