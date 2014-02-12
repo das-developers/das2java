@@ -58,8 +58,6 @@ import org.das2.util.DenseConsoleFormatter;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.ObjectLocator;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 
 /**
@@ -324,6 +322,11 @@ public class GraphicalLogHandler extends Handler {
     }
     
     ObjectLocator objectLocator;
+    private synchronized void setObjectLocator( ObjectLocator o ) {
+        GraphicalLogHandler.this.objectLocator= o;
+    }
+
+    
     public class LogRenderer extends Renderer {
         String searchRegex="";
         
@@ -335,7 +338,7 @@ public class GraphicalLogHandler extends Handler {
             super.update();
         }
         
-        public synchronized void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+        public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
             
             Graphics2D g= (Graphics2D)g1;
             g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -363,86 +366,77 @@ public class GraphicalLogHandler extends Handler {
                 g.drawString( String.valueOf(name), ix0+2, iy );
             }
             
-            synchronized(GraphicalLogHandler.this) {
-                
-                objectLocator= new ObjectLocator();
-                
-                long minMilli= (long)xAxis.getDataMinimum().doubleValue( Units.milliseconds );
-                long maxMilli= (long)xAxis.getDataMaximum().doubleValue( Units.milliseconds );
-                
-                int firstIndex= Collections.binarySearch( times, new Long( minMilli ) );
-                if ( firstIndex<0 ) firstIndex= -1 - firstIndex;
-                int lastIndex= Collections.binarySearch( times, new Long( maxMilli ) );
-                if ( lastIndex<0 ) {
-                    lastIndex= -1 - lastIndex;
-                } else {
-                    lastIndex++;
-                }
-                
-                int lastX=-999;
-                int lastY=-999;
-                int collisionCount=0;
-                
-                if ( !searchRegex.equals("") ) {
-                    for ( int i=firstIndex; i<lastIndex; i++ ) {
-                        LogRecord record= (LogRecord) records.get(i);
-                        if ( record.getMessage().matches( searchRegex ) ) {
-                            int ix= (int)xAxis.transform( Units.milliseconds.createDatum( ((Long)times.get(i)).longValue() ) );
-                            g.setColor( Color.lightGray );
-                            g.fillRect( ix-2, getParent().getY(), 5, getParent().getHeight() );
-                            objectLocator.addObject( new Rectangle( ix-2, getParent().getY(), 5, getParent().getHeight() ),
-                                    record );
-                        }
-                    }
-                }
-                
+            ObjectLocator objectLocator= new ObjectLocator();
+
+            long minMilli= (long)xAxis.getDataMinimum().doubleValue( Units.milliseconds );
+            long maxMilli= (long)xAxis.getDataMaximum().doubleValue( Units.milliseconds );
+
+            int firstIndex= Collections.binarySearch( times, new Long( minMilli ) );
+            if ( firstIndex<0 ) firstIndex= -1 - firstIndex;
+            int lastIndex= Collections.binarySearch( times, new Long( maxMilli ) );
+            if ( lastIndex<0 ) {
+                lastIndex= -1 - lastIndex;
+            } else {
+                lastIndex++;
+            }
+
+            int lastX=-999;
+            int lastY=-999;
+            int collisionCount=0;
+
+            if ( !searchRegex.equals("") ) {
                 for ( int i=firstIndex; i<lastIndex; i++ ) {
-                    
                     LogRecord record= (LogRecord) records.get(i);
-                    
-                    int ithread= yAxisValues.get(i);
-                    
-                    int iy= (int)yAxis.transform( Units.dimensionless.createDatum(ithread) );
-                    int ix= (int)xAxis.transform( Units.milliseconds.createDatum( ((Long)times.get(i)).longValue() ) );
-                    
-                    if ( ix==lastX && iy==lastY ) {
-                        collisionCount++;
-                    } else {
-                        lastX= ix;
-                        lastY= iy;
-                        collisionCount=0;
+                    if ( record.getMessage().matches( searchRegex ) ) {
+                        int ix= (int)xAxis.transform( Units.milliseconds.createDatum( ((Long)times.get(i)).longValue() ) );
+                        g.setColor( Color.lightGray );
+                        g.fillRect( ix-2, getParent().getY(), 5, getParent().getHeight() );
+                        objectLocator.addObject( new Rectangle( ix-2, getParent().getY(), 5, getParent().getHeight() ),
+                                record );
                     }
-                    
-                    if ( !searchRegex.isEmpty() ) {
-                        if ( record.getMessage().matches( searchRegex ) ) {
-                            g.setColor( Color.lightGray );
-                            g.fillRect( ix-2, 0, 5, 100 );
-                        }
-                    }
-                    
-                    Color color= (Color)loggerMap.get( record.getLoggerName() );
-                    if ( color==null ) {
-                        Object key= record.getLoggerName();
-                        loggerMap.put( key, Color.ORANGE );
-                        legend.add( Legend.getIcon( (Color)loggerMap.get(key) ), String.valueOf( key ) );
-                        legend.repaint();
-                    }
-                    g.setColor( color );
-                    
-                    int height= record.getLevel().intValue() / 100;
-                    g.fillRect( ix-2, iy-height-2*collisionCount, 5, height );
-                    objectLocator.addObject( new Rectangle( ix-2, iy-height-2*collisionCount, 5, height ), record );
                 }
             }
+
+            for ( int i=firstIndex; i<lastIndex; i++ ) {
+
+                LogRecord record= (LogRecord) records.get(i);
+
+                int ithread= yAxisValues.get(i);
+
+                int iy= (int)yAxis.transform( Units.dimensionless.createDatum(ithread) );
+                int ix= (int)xAxis.transform( Units.milliseconds.createDatum( ((Long)times.get(i)).longValue() ) );
+
+                if ( ix==lastX && iy==lastY ) {
+                    collisionCount++;
+                } else {
+                    lastX= ix;
+                    lastY= iy;
+                    collisionCount=0;
+                }
+
+                if ( !searchRegex.isEmpty() ) {
+                    if ( record.getMessage().matches( searchRegex ) ) {
+                        g.setColor( Color.lightGray );
+                        g.fillRect( ix-2, 0, 5, 100 );
+                    }
+                }
+
+                Color color= (Color)loggerMap.get( record.getLoggerName() );
+                if ( color==null ) {
+                    Object key= record.getLoggerName();
+                    loggerMap.put( key, Color.ORANGE );
+                    legend.add( Legend.getIcon( (Color)loggerMap.get(key) ), String.valueOf( key ) );
+                    legend.repaint();
+                }
+                g.setColor( color );
+
+                int height= record.getLevel().intValue() / 100;
+                g.fillRect( ix-2, iy-height-2*collisionCount, 5, height );
+                objectLocator.addObject( new Rectangle( ix-2, iy-height-2*collisionCount, 5, height ), record );
+            }
+            
+            setObjectLocator( objectLocator );
         }
-        
-        @Override
-        protected void installRenderer() { } ;
-        
-        @Override
-        protected void uninstallRenderer() { } ;
-        
-        protected Element getDOMElement( Document document ) { return null; }
         
     }
     
