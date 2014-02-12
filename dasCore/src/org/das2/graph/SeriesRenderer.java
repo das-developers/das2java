@@ -523,7 +523,8 @@ public class SeriesRenderer extends Renderer {
 
         @Override
         public boolean acceptContext(Point2D.Double dp) {
-            return p != null && p.contains(dp.x - 2, dp.y - 2, 5, 5);
+            GeneralPath gp= getPath();
+            return gp != null && gp.contains(dp.x - 2, dp.y - 2, 5, 5);
 
         }
     }
@@ -788,10 +789,11 @@ public class SeriesRenderer extends Renderer {
 
         @Override
         public boolean acceptContext(Point2D.Double dp) {
-            if ( path1==null ) return false;
+            GeneralPath gp= getPath();
+            if ( gp==null ) return false;
             Rectangle2D hitbox = new Rectangle2D.Double(dp.x-5, dp.y-5, 10f, 10f);
             double[] coords = new double[6];
-            PathIterator it = path1.getPathIterator(null);
+            PathIterator it = gp.getPathIterator(null);
             it.currentSegment(coords);
 
             double x1 = coords[0];
