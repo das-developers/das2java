@@ -323,9 +323,12 @@ public class GraphicalLogHandler extends Handler {
     
     ObjectLocator objectLocator;
     private synchronized void setObjectLocator( ObjectLocator o ) {
-        GraphicalLogHandler.this.objectLocator= o;
+        this.objectLocator= o;
     }
 
+    private synchronized ObjectLocator getObjectLocator() {
+        return this.objectLocator;
+    }
     
     public class LogRenderer extends Renderer {
         String searchRegex="";
@@ -463,7 +466,7 @@ public class GraphicalLogHandler extends Handler {
         @Override
         public Rectangle[] renderDrag( Graphics g, Point p1, Point p2 ) {
             
-            LogRecord select= (LogRecord)objectLocator.closestObject( p2 );
+            LogRecord select= (LogRecord)getObjectLocator().closestObject( p2 );
             int iclosest= records.indexOf( select );
             
             String label;
