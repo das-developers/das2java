@@ -44,7 +44,7 @@ public class VerticalSlicerMouseModule extends MouseModule {
     private DataPointSelectionEvent de;
     
     /** Utility field used by event firing mechanism. */
-    private javax.swing.event.EventListenerList listenerList =  null;
+    private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();;
     
     public VerticalSlicerMouseModule( DasCanvasComponent parent,
     DataSetConsumer dataSetConsumer, DasAxis xaxis, DasAxis yaxis ) {
@@ -81,17 +81,14 @@ public class VerticalSlicerMouseModule extends MouseModule {
     /** Registers DataPointSelectionListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
-        if (listenerList == null ) {
-            listenerList = new javax.swing.event.EventListenerList();
-        }
+    public void addDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
         listenerList.add(org.das2.event.DataPointSelectionListener.class, listener);
     }
     
     /** Removes DataPointSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
+    public void removeDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
         listenerList.remove(org.das2.event.DataPointSelectionListener.class, listener);
     }
     
@@ -102,10 +99,7 @@ public class VerticalSlicerMouseModule extends MouseModule {
     private void fireDataPointSelectionListenerDataPointSelected(DataPointSelectionEvent event) {
         
         Object[] listeners;
-        synchronized ( this ) {
-            if (listenerList == null) return;
-            listeners = listenerList.getListenerList();
-        }
+        listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==org.das2.event.DataPointSelectionListener.class) {
                 ((org.das2.event.DataPointSelectionListener)listeners[i+1]).dataPointSelected(event);

@@ -17,11 +17,11 @@ import org.das2.graph.DasAxis;
  *
  * @author jbf
  */
-public class ZoomOutMouseModule extends BoxSelectorMouseModule {
+public final class ZoomOutMouseModule extends BoxSelectorMouseModule {
     
     DasAxis parent;
     
-    BoxSelectionListener createBoxSelectionListener() {
+    private BoxSelectionListener createBoxSelectionListener() {
         return new BoxSelectionListener() {
             public void BoxSelected( BoxSelectionEvent event ) {
                 DatumRange outerRange= parent.getDatumRange();
@@ -47,7 +47,9 @@ public class ZoomOutMouseModule extends BoxSelectorMouseModule {
         };
     }
     
-    /** Creates a new instance of ZoomOutMouseModule */
+    /** Creates a new instance of ZoomOutMouseModule
+     * @param axis 
+     */
     public ZoomOutMouseModule( DasAxis axis ) {
         super( axis,
                 axis.isHorizontal() ? axis : null,

@@ -20,7 +20,9 @@ public class AnnotatorMouseModule extends MouseModule {
 
     DasCanvas canvas;
     
-    /** Creates a new instance of AnnotatorMouseModule */
+    /** Creates a new instance of AnnotatorMouseModule
+     * @param parent typically a plot.
+     */
     public AnnotatorMouseModule( DasCanvasComponent parent ) {
         super( parent, new BoxRenderer(parent), "Annotate" );
         this.canvas= (DasCanvas)parent.getParent();
@@ -30,6 +32,7 @@ public class AnnotatorMouseModule extends MouseModule {
         return canvas;
     }
     
+    @Override
     public void mouseRangeSelected(MouseDragEvent e) {    
         super.mouseRangeSelected(e);
         

@@ -47,7 +47,7 @@ import org.virbo.dsutil.QDataSetTableModel;
 public class DisplayDataMouseModule extends MouseModule {
 
     private final static String LABEL = "Display Data";
-    private DasPlot plot;
+    private final DasPlot plot;
     private JFrame myFrame;
     private JPanel myPanel;
     private JTable myEdit;
@@ -90,7 +90,6 @@ public class DisplayDataMouseModule extends MouseModule {
             myFrame.getContentPane().add(myPanel);
             myFrame.pack();
         }
-        return;
     }
 
     private String unitsStr(Units u) {
@@ -150,7 +149,7 @@ public class DisplayDataMouseModule extends MouseModule {
                 label= label + ": "+ ds.toString();
             }
             rlabels[i]= label;
-        };
+        }
         if ( firstActive==-1 ) firstActive=0;
 
         this.rends= rends1;
@@ -163,7 +162,7 @@ public class DisplayDataMouseModule extends MouseModule {
 
     }
 
-    private ItemListener itemListener= new ItemListener() {
+    private final ItemListener itemListener= new ItemListener() {
         public void itemStateChanged(ItemEvent e) {
             if ( rends==null ) return;
             int i= comboBox.getSelectedIndex();
@@ -208,7 +207,7 @@ public class DisplayDataMouseModule extends MouseModule {
             }
         }
         
-        TableColumnModel tcm= new DefaultTableColumnModel();
+        TableColumnModel tcm;
         try {
             QDataSet tds;
             boolean isQube= DataSetUtil.isQube(ds);
@@ -261,7 +260,7 @@ public class DisplayDataMouseModule extends MouseModule {
     /**
      * Utility field used by bound properties.
      */
-    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    private final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     /**
      * Adds a PropertyChangeListener to the listener list.

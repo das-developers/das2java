@@ -535,7 +535,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
 //    }
     
     
-    private transient java.util.ArrayList dataSetUpdateListenerList;
+    private transient java.util.ArrayList dataSetUpdateListenerList; //TODO: can we not use javax.swing.event.EventListenerList?
     
     public synchronized void addDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
         if (dataSetUpdateListenerList == null ) {
@@ -682,7 +682,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
      * @param lowCutoff New value of property lowCutoff.
      */
     public void setLowCutoff(boolean lowCutoff) {
-        Boolean oldVal= Boolean.valueOf( this.lowCutoff );
+        Boolean oldVal= this.lowCutoff;
         if ( this.lowCutoff!=lowCutoff ) {
             this.lowCutoff = lowCutoff;
             PropertyChangeEvent e= new PropertyChangeEvent( this, "lowCutoff", oldVal, Boolean.valueOf(lowCutoff) );
@@ -695,16 +695,13 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
     /**
      * Utility field used by event firing mechanism.
      */
-    private javax.swing.event.EventListenerList listenerList =  null;
+    private javax.swing.event.EventListenerList listenerList =  new javax.swing.event.EventListenerList();
     
     /**
      * Registers PropertyChangeListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-        if (listenerList == null ) {
-            listenerList = new javax.swing.event.EventListenerList();
-        }
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
         listenerList.add(java.beans.PropertyChangeListener.class, listener);
     }
     
@@ -712,7 +709,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
      * Removes PropertyChangeListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
         listenerList.remove(java.beans.PropertyChangeListener.class, listener);
     }
     
@@ -723,10 +720,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
      */
     private void firePropertyChangeListenerPropertyChange(java.beans.PropertyChangeEvent event) {
         Object[] listeners;
-        synchronized (this) {
-            if (listenerList == null) return;
-            listeners = listenerList.getListenerList();
-        }
+        listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i]==java.beans.PropertyChangeListener.class) {
                 ((java.beans.PropertyChangeListener)listeners[i+1]).propertyChange(event);

@@ -38,7 +38,7 @@ public class BoxSelectorMouseModule extends MouseModule {
 
     DasAxis xaxis, yaxis;
     DataSetConsumer dataSetConsumer;
-    javax.swing.event.EventListenerList listenerList = null;
+    javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
     MouseDragEvent lastMouseEvent;
     /** when true, box selections are remembered, and tweaks to corners are allowed. */
     boolean tweakable = false;
@@ -202,17 +202,14 @@ public class BoxSelectorMouseModule extends MouseModule {
     /** Registers BoxSelectionListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addBoxSelectionListener(org.das2.event.BoxSelectionListener listener) {
-        if (listenerList == null) {
-            listenerList = new javax.swing.event.EventListenerList();
-        }
+    public void addBoxSelectionListener(org.das2.event.BoxSelectionListener listener) {
         listenerList.add(org.das2.event.BoxSelectionListener.class, listener);
     }
 
     /** Removes BoxSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeBoxSelectionListener(org.das2.event.BoxSelectionListener listener) {
+    public void removeBoxSelectionListener(org.das2.event.BoxSelectionListener listener) {
         listenerList.remove(org.das2.event.BoxSelectionListener.class, listener);
     }
 
@@ -222,18 +219,14 @@ public class BoxSelectorMouseModule extends MouseModule {
      */
     protected void fireBoxSelectionListenerBoxSelected(BoxSelectionEvent event) {
         Object[] listeners;
-        synchronized (this ) {
-            if (listenerList == null) {
-                return;
-            }
-            listeners = listenerList.getListenerList();
-        }
+        listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == org.das2.event.BoxSelectionListener.class) {
                 ((org.das2.event.BoxSelectionListener) listeners[i + 1]).BoxSelected(event);
             }
         }
     }
+    
     /**
      * Holds value of property dragEvents.
      */

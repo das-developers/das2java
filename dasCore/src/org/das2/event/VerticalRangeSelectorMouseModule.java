@@ -39,8 +39,8 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
     DasAxis axis;
     
     /** Utility field used by event firing mechanism. */
-    private EventListenerList listenerList =  null;
-    
+    private EventListenerList listenerList = new EventListenerList();
+
     @Override
     public String getLabel() { return "Zoom Y"; };
     
@@ -93,17 +93,14 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
     /** Registers DataRangeSelectionListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addDataRangeSelectionListener(org.das2.event.DataRangeSelectionListener listener) {
-        if (listenerList == null ) {
-            listenerList = new EventListenerList();
-        }
+    public void addDataRangeSelectionListener(org.das2.event.DataRangeSelectionListener listener) {
         listenerList.add(org.das2.event.DataRangeSelectionListener.class, listener);
     }
     
     /** Removes DataRangeSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removeDataRangeSelectionListener(org.das2.event.DataRangeSelectionListener listener) {
+    public void removeDataRangeSelectionListener(org.das2.event.DataRangeSelectionListener listener) {
         listenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
     }
     
@@ -113,10 +110,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
      */
     private void fireDataRangeSelectionListenerDataRangeSelected(DataRangeSelectionEvent event) {
         Object[] listeners;
-        synchronized (this) {
-            if (listenerList == null) return;
-            listeners = listenerList.getListenerList();
-        }
+        listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
             if (listeners[i]==org.das2.event.DataRangeSelectionListener.class) {
                 ((org.das2.event.DataRangeSelectionListener)listeners[i+1]).dataRangeSelected(event);
