@@ -438,7 +438,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      */
     private int createPopup(JPopupMenu popup) {
         
-        popupListener = createPopupMenuListener();
+        synchronized (this) {
+            popupListener = createPopupMenuListener();
+        }
 
         Action[] componentActions = parent.getActions();
         for (int iaction = 0; iaction < componentActions.length; iaction++) {
@@ -466,7 +468,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         return new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                DasMouseInputAdapter outer = DasMouseInputAdapter.this; // useful for debugging
+                //DasMouseInputAdapter outer = DasMouseInputAdapter.this; // useful for debugging
                 String command = e.getActionCommand();
                 if (command.equals("properties")) {
                     parent.showProperties();
@@ -537,7 +539,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     if (secondarySelectedItem != null) {
                         secondarySelectedItem.setSelected(false);
                     }
-                    Point l = secondaryPopupLocation;
                     for (int i = 0; i < modules.size(); i++) {
                         JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(modules.get(i));
                         if (j.isSelected()) {
@@ -557,7 +558,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * returns an array of Rectangles, or null, indicating the affected regions.
      * It's also permissable for a array element to be null.
      */
-    private void renderSelection(Graphics2D g2d) {
+    private void renderSelection() {
         try {
 
             for (int i = 0; i < active.size(); i++) {
@@ -611,22 +612,22 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     public void paint(Graphics g1) {
         Graphics2D g = (Graphics2D) g1.create();
 
-        DasCanvasComponent parent= this.parent;
-        if ( parent==null ) return;
-        g.translate(-parent.getX(), -parent.getY());
+        DasCanvasComponent lparent= this.parent;
+        if ( lparent==null ) return;
+        g.translate(-lparent.getX(), -lparent.getY());
 
         if (active != null) {
-            renderSelection(g);
+            renderSelection();
         }
         if (hasFocus && hoverHighlite) {
             g.setColor(new Color(255, 0, 0, 10));
             g.setStroke(new BasicStroke(10));
-            g.draw(parent.getBounds());
+            g.draw(lparent.getBounds());
             g.dispose();
             return;
         }
         if (hasFocus && drawControlPoints) {
-            drawControlPoints(g,parent);
+            drawControlPoints(g,lparent);
         }
         g.dispose();
     }
