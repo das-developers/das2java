@@ -128,7 +128,10 @@ public class HorizontalSlicerMouseModule extends MouseModule {
      * @throws IllegalArgumentException if no slicer is found.
      */
     public HorizontalSpectrogramSlicer getSlicer() {
-        Object[] listeners = listenerList.getListenerList();
+        Object[] listeners;
+        synchronized (this) {
+            listeners = listenerList.getListenerList();
+        }
         for ( int i=0; i<listeners.length; i++ ) {
             if ( listeners[i] instanceof HorizontalSpectrogramSlicer ) {
                 return (HorizontalSpectrogramSlicer)listeners[i];
