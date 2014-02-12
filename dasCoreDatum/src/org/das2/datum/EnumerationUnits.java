@@ -107,10 +107,11 @@ public class EnumerationUnits extends Units {
         if (objects.containsKey(object)) {
             return objects.get(object);
         } else {
+            Integer ordinal;
             synchronized (this) {
                 highestOrdinal++;
+                ordinal = highestOrdinal;  
             }
-            Integer ordinal = highestOrdinal;
             Datum result = new Datum.Double(ordinal, this);
             ordinals.put(ordinal, result);
             invObjects.put(result, object);
@@ -212,7 +213,7 @@ public class EnumerationUnits extends Units {
         return result;
     }
 
-    public int getHighestOrdinal() {
+    public synchronized int getHighestOrdinal() {
         return this.highestOrdinal;
     }
 
