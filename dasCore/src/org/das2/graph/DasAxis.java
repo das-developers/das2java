@@ -1661,11 +1661,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         repaint();
     }
 
+    private synchronized boolean getAutoTickV() {
+        return autoTickV;
+    }
+    
     /**
      * recalculate the tick positions.
      */
     protected void updateTickV() {
-        boolean lautoTickV= autoTickV; // findbugs experiment
+        boolean lautoTickV= getAutoTickV();
         if (!valueIsAdjusting()) {
             if ( getFont()==null ) return;
             
