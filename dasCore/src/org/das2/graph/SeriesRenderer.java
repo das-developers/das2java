@@ -461,13 +461,18 @@ public class SeriesRenderer extends Renderer {
 
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
-            if (p == null) {
+            GeneralPath lp= getPath();
+            if (lp == null) {
                 return 0;
             }
-            g.draw(p);
+            g.draw(lp);
             return lastIndex - firstIndex;
         }
 
+        private synchronized GeneralPath getPath() {
+            return p;
+        }
+        
         @Override
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
@@ -480,7 +485,7 @@ public class SeriesRenderer extends Renderer {
             QDataSet deltaPlusY = (QDataSet) vds.property( QDataSet.DELTA_PLUS );
             QDataSet deltaMinusY = (QDataSet) vds.property( QDataSet.DELTA_MINUS );
 
-            p = null;
+            GeneralPath lp;
 
             if (deltaPlusY == null) {
                 return;
@@ -499,7 +504,7 @@ public class SeriesRenderer extends Renderer {
 
             Units yoffsetUnits = yunits.getOffsetUnits();
 
-            p = new GeneralPath();
+            lp = new GeneralPath();
             for (int i = firstIndex; i < lastIndex; i++) {
                 float ix = (float) xAxis.transform( xds.value(i), xunits );
                 double dp= deltaPlusY.value(i);
@@ -507,10 +512,12 @@ public class SeriesRenderer extends Renderer {
                 if ( yoffsetUnits.isValid(dp) && yoffsetUnits.isValid(dm) ) {
                     float iym = (float) yAxis.transform( vds.value(i) - dm, yunits );
                     float iyp = (float) yAxis.transform( vds.value(i) + dp, yunits );
-                    p.moveTo(ix, iym);
-                    p.lineTo(ix, iyp);
+                    lp.moveTo(ix, iym);
+                    lp.lineTo(ix, iyp);
                 }
             }
+            
+            p= lp;
 
         }
 
@@ -565,14 +572,19 @@ public class SeriesRenderer extends Renderer {
             if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) ) {
                 renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
             }
-            if (path1 == null) {
+            GeneralPath lpath1= getPath();
+            if (lpath1 == null) {
                 return 0;
             }
             //dumpPath();
-            psymConnector.draw(g, path1, (float) lineWidth);
+            psymConnector.draw(g, lpath1, (float) lineWidth);
             return 0;
         }
 
+        private synchronized GeneralPath getPath() {
+            return path1;
+        }
+        
         @Override
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
@@ -1386,12 +1398,14 @@ public class SeriesRenderer extends Renderer {
         logger.log(Level.FINER, "render: {0} total:{1} fps:{2} pts/ms:{3}", new Object[]{renderTime, milli - lastUpdateMillis, 1000. / (milli - lastUpdateMillis), dppms});
         lastUpdateMillis = milli;
 
+        int ldataSetSizeLimit= getDataSetSizeLimit();
+        
         if (dataSetClipped) {
-            lparent.postMessage(this, "dataset clipped at " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
+            lparent.postMessage(this, "dataset clipped at " + ldataSetSizeLimit + " points", DasPlot.WARNING, null, null);
         }
 
         if (dataSetReduced) {
-            lparent.postMessage(this, "dataset reduced because of size > " + dataSetSizeLimit + " points", DasPlot.WARNING, null, null);
+            lparent.postMessage(this, "dataset reduced because of size > " + ldataSetSizeLimit + " points", DasPlot.WARNING, null, null);
         }
 
         if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
@@ -2124,7 +2138,7 @@ public class SeriesRenderer extends Renderer {
      * true.
      * @return
      */
-    public Shape selectionArea() {
+    public synchronized Shape selectionArea() {
         return selectionArea==null ? SelectionUtil.NULL : selectionArea;
     }
 
@@ -2163,7 +2177,7 @@ public class SeriesRenderer extends Renderer {
      * Getter for property dataSetSizeLimit.
      * @return Value of property dataSetSizeLimit.
      */
-    public int getDataSetSizeLimit() {
+    public synchronized int getDataSetSizeLimit() {
         return this.dataSetSizeLimit;
     }
 
@@ -2171,7 +2185,7 @@ public class SeriesRenderer extends Renderer {
      * Setter for property dataSetSizeLimit.
      * @param dataSetSizeLimit New value of property dataSetSizeLimit.
      */
-    public void setDataSetSizeLimit(int dataSetSizeLimit) {
+    public synchronized void setDataSetSizeLimit(int dataSetSizeLimit) {
         int oldDataSetSizeLimit = this.dataSetSizeLimit;
         this.dataSetSizeLimit = dataSetSizeLimit;
         updateCacheImage();
