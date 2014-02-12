@@ -48,7 +48,7 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
         return leader.getAllowsChildren();
     }
 
-    private synchronized void maybeCreateChildren() {
+    private synchronized PeerPropertyTreeNode[] maybeCreateChildren() {
         if (children == null) {
             children = new PeerPropertyTreeNode[leader.getChildCount()];
             for (int childIndex = 0; childIndex < children.length; childIndex++) {
@@ -63,11 +63,12 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
                 children[childIndex] = child;
             }
         }
+        return children;
     }
 
     public TreeNode getChildAt(int childIndex) {
-        maybeCreateChildren();
-        return children[childIndex];
+        PeerPropertyTreeNode[] kids= maybeCreateChildren();
+        return kids[childIndex];
     }
 
     public int getChildCount() {
@@ -91,9 +92,9 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
     }
 
     public int getIndex(TreeNode node) {
-        maybeCreateChildren();
-        for (int i = 0; i < getChildCount(); i++) {
-            if (node == children[i]) {
+        PeerPropertyTreeNode[] kids= maybeCreateChildren();
+        for (int i = 0; i < kids.length; i++) {
+            if (node == kids[i]) {
                 return i;
             }
         }
