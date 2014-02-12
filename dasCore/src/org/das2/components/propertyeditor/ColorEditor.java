@@ -32,7 +32,7 @@ import javax.swing.table.TableCellEditor;
  */
 public class ColorEditor extends AbstractCellEditor implements java.beans.PropertyEditor, TableCellEditor {
 
-    private static List colors = new ArrayList();
+    private static final List colors = new ArrayList();
     static {
         colors.add(Color.BLACK);
         colors.add(Color.BLUE);                      // dark BRG
@@ -53,7 +53,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
     }
 
     private JColorChooser custom;
-    private PropertyEditorSupport editorSupport;
+    private final PropertyEditorSupport editorSupport;
     private JComboBox choice;
     
     /** Creates a new instance of ColorEditor */
@@ -63,6 +63,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         editorSupport = new PropertyEditorSupport(this){};
         custom = null;
         choice = new JComboBox(new ColorChoiceModel()) {
+            @Override
             public void setBounds(int x, int y, int width, int height) {
                 Dimension preferred = getPreferredSize();
                 super.setBounds(x, y, width, preferred.height);
@@ -174,7 +175,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
     
     private class ColorChoiceModel extends AbstractListModel implements ComboBoxModel {
         
-        private final String CUSTOM_LABEL = "custom...";
+        private final static String CUSTOM_LABEL = "custom...";
         
         public Object getElementAt(int index) {
             if (index < colors.size()) {
@@ -204,7 +205,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
                 if ( custom==null ) {
                     initCustom();
                 }
-                Color c = custom.showDialog(choice, "Color Editor", (Color)getValue());
+                Color c = JColorChooser.showDialog(choice, "Color Editor", (Color)getValue());
                 if (c != null) {
                     setValue(c);
                 }
