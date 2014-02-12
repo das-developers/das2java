@@ -518,9 +518,7 @@ public class QubeDataSetIterator implements DataSetIterator {
                     StartStopStepIterator sssi= (StartStopStepIterator)it[idim];
                     if ( sssi.step==1 && sssi.start==0 && sssi.stop==dep.length(0) ) {
                         result.putProperty( "DEPEND_"+i, dep );
-                    } else if ( sssi.step==1 ) {
-                        logger.log(Level.FINE, "dropping rank 2 depend {0}", result);
-                    } else {
+                    } else  {
                         logger.log(Level.FINE, "dropping rank 2 depend {0}", result);
                     }
                 }
