@@ -1665,6 +1665,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * recalculate the tick positions.
      */
     protected void updateTickV() {
+        boolean lautoTickV= autoTickV; // findbugs experiment
         if (!valueIsAdjusting()) {
             if ( getFont()==null ) return;
             
@@ -1675,7 +1676,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             } else {
                 this.majorTicksDomainDivider= null;
             }
-            if (autoTickV) {
+            if (lautoTickV) {
                 if ( getDatumRange().width().value()==0 ) {
                     throw new IllegalArgumentException("datum range width is zero" );
                 }
@@ -1699,7 +1700,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             }
         } else {
-            if (autoTickV) {
+            if (lautoTickV) {
                 try {
                     if (majorTicksDomainDivider != null) {
                         TickVDescriptor newTicks= updateTickVDomainDivider();
@@ -1718,7 +1719,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         TickMaster.getInstance().offerTickV( this, newTicks );
                     }
                 } catch ( NullPointerException ex ) {
-                    ex.printStackTrace(); // why do we get this now?
+                    logger.log( Level.WARNING, ex.toString(), ex );
                 }
             }
         }
