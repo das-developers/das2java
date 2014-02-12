@@ -32,7 +32,7 @@ import org.virbo.dataset.SemanticOps;
  */
 public class VectorDataSetAdapter implements VectorDataSet {
     
-    Units xunits, yunits, zunits;
+    Units xunits, yunits;
     QDataSet x, y;
     HashMap<String,QDataSet> planes;
     
