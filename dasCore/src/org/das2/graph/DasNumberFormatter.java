@@ -49,25 +49,25 @@ public class DasNumberFormatter {
         dFormatter = createDF(b);
         for(int i=0; i<b.length; i++){
             result = dFormatter.format(b[i]);
-            org.das2.util.DasDie.println(result);
+            System.err.println(result);
         }//for(int i=0; i<b.length; i++)
         
         double [] c = {0.0, 1.0, 20.0, 100.0, 1000.0, .0};
         dFormatter = createDF(c);
         for(int i=0; i<c.length; i++){
             result = dFormatter.format(c[i]);
-            org.das2.util.DasDie.println(result);
+            System.err.println(result);
         }//for(int i=0; i<c.length; i++)
         
         //To show all digits, set the significant digit count to zero. This does not 
         //affect parsing. 
         double [] d = {16578.786750, 20568.56580, 567581.67896, 69698.45875};
         dFormatter = createDF(d);
-        int maxIntegerDigit = dFormatter.getMaximumIntegerDigits();
+        //int maxIntegerDigit = dFormatter.getMaximumIntegerDigits();
         
         for(int i=0; i<d.length; i++){
             result = dFormatter.format(d[i]);
-            org.das2.util.DasDie.println(result);
+            System.err.println(result);
         }//for(int i=0; i<d.length; i++)
        /*
         myPattern = "##0.##E0";
@@ -169,9 +169,8 @@ public class DasNumberFormatter {
     
     static DecimalFormat makeNewDF(double [] a){
         DecimalFormat df = new DecimalFormat();
-        String pattern;
         int len_a = a.length;
-        int intDigit, fracDigit, first;
+        int first;
         double intBase, fracBase, digit, second;
         
         for(int k=0; k<len_a; k++){
@@ -183,8 +182,7 @@ public class DasNumberFormatter {
     
     //gives the power of number to base 10
     static double baseTen(double a){
-        double base;
-        return base = Math.log(a)/LOG_10;
+        return Math.log(a)/LOG_10;
     }//static baseLogTen
     
     
