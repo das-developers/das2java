@@ -166,7 +166,7 @@ public class IDLValue {
     
     
     public double[] toArray() {
-        return aValue;
+        return Arrays.copyOf(aValue,aValue.length);
     }
     
     public double toScalar() {
