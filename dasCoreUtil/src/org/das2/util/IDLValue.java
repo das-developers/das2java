@@ -23,6 +23,8 @@
 
 package org.das2.util;
 
+import java.util.Arrays;
+
 public class IDLValue {
     
     static int SCALAR = 1;
@@ -43,7 +45,7 @@ public class IDLValue {
     }
     
     public IDLValue(double[] a) {
-        aValue= a;
+        aValue= Arrays.copyOf(a,a.length);
         type= ARRAY;
     }
     
