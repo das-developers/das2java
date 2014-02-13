@@ -4,6 +4,7 @@
  */
 package org.virbo.dataset;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -85,7 +86,7 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
      * @param qube 
      */
     public void setQube( int[] qube ) {
-        this.qube= qube;
+        this.qube= Arrays.copyOf( qube,qube.length );
         this.length0= qube[0];
     }
     
