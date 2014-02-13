@@ -44,6 +44,11 @@ public class IDLValue {
         type= SCALAR;
     }
     
+    /**
+     * create an IDLValue representing this array.  The data is copied
+     * as the object is constructed.
+     * @param a 
+     */
     public IDLValue(double[] a) {
         aValue= Arrays.copyOf(a,a.length);
         type= ARRAY;
@@ -164,7 +169,10 @@ public class IDLValue {
         return result;
     }
     
-    
+    /**
+     * return a copy of the data.
+     * @return 
+     */
     public double[] toArray() {
         return Arrays.copyOf(aValue,aValue.length);
     }
