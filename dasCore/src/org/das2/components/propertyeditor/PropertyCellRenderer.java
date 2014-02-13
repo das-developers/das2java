@@ -30,7 +30,7 @@ class PropertyCellRenderer extends JLabel implements TableCellRenderer, TreeCell
         booleanRenderer.setBorder(new EmptyBorder(5,5,5,5));
     }
     
-    private TableCellRenderer colorRenderer = new ColorCellRenderer();
+    private transient TableCellRenderer colorRenderer = new ColorCellRenderer();
     
     private boolean isWritable(JTable table, int row) {
         TreeTableModel model = (TreeTableModel)table.getModel();
