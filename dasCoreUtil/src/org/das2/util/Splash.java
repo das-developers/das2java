@@ -34,7 +34,7 @@ import java.net.URL;
  */
 public class Splash extends JWindow {
     
-    public static Splash instance=null;
+    private static Splash instance=null;
     
     private Handler handler;
     private JLabel messageLabel;
