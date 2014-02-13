@@ -24,6 +24,7 @@
 package org.das2.beans;
 
 import java.beans.MethodDescriptor;
+import java.util.Arrays;
 
 /**
  *
@@ -65,7 +66,7 @@ public class DasCanvasBeanInfo extends AccessLevelBeanInfo {
     }
     
     public MethodDescriptor[] getMethodDescriptors() {
-        return methods;
+        return Arrays.copyOf( methods,methods.length );
     }
     
 }
