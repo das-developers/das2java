@@ -23,8 +23,8 @@
 
 package org.das2.util;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -53,8 +53,8 @@ public class Crypt {
             arg= args[0];
         } else {
             arg= "ask1st";
-            org.das2.util.DasDie.println("java crypt <clear_password>");
-            org.das2.util.DasDie.println("  using "+arg );
+            Logger.getLogger("das2.anon").finest("java crypt <clear_password>");
+            Logger.getLogger("das2.anon").log(Level.FINEST, "  using {0}", arg);
         }
         System.out.println(
         "[" + arg + "] => [" +

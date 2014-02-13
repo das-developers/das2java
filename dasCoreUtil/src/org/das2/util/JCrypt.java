@@ -621,13 +621,9 @@ public class JCrypt
    {
       if(args.length >= 2)
       {
-            org.das2.util.DasDie.println
-         (
-            "[" + args[0] + "] [" + args[1] + "] => [" +
-            JCrypt.crypt(args[0], args[1]) + "]"
-         );
+            System.err.println( String.format( "[%s] [%s] => [%s]", args[0], args[1], JCrypt.crypt(args[0], args[1]) ) );
       } else {
-            org.das2.util.DasDie.println("java crypt <salt> <clear_password>");
+            System.err.println("java crypt <salt> <clear_password>");
       }
    }
 }

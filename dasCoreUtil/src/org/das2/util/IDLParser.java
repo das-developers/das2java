@@ -25,6 +25,7 @@ package org.das2.util;
 
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Logger;
 /**
  * This was created originally to evaluate expressions found in das2server dsdf files that would
  * describe column locations, which would be expressions like "10^(findgen(3)/3.3)"
@@ -200,7 +201,7 @@ public class IDLParser {
                 for (int i=0; i<expr.length; i++) expr[i]=tokens[i+2];
                 expr1= parseIDLArrayTokens(expr,EXPR);
                 if (expr1.type!=IDLValue.SCALAR) {
-                    org.das2.util.DasDie.println("Syntax error in findgen argument");
+                    Logger.getLogger("das2.anon").info("Syntax error in findgen argument");
                     System.exit(-1);
                 } else {
                     expr1= IDLValue.findgen((int)expr1.sValue);

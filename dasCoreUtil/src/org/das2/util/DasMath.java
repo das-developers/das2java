@@ -23,6 +23,9 @@
 
 package org.das2.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author  jbf
@@ -124,8 +127,8 @@ public class DasMath {
     
     public static void main(String[] args) {
         double x= 1e-18;
-        org.das2.util.DasDie.println("x:"+x);
-        org.das2.util.DasDie.println("roundNDigits:"+roundNSignificantDigits(x,3));
+        Logger.getLogger("das2.anon").log(Level.FINEST, "x:{0}", x);
+        Logger.getLogger("das2.anon").log(Level.FINEST, "roundNDigits:{0}", roundNSignificantDigits(x,3));
         
         double[] x1= new double[] { 1,2,3,4,5 };
         double[] y1= new double[] { 4,6,7,3,1 };
