@@ -262,7 +262,7 @@ public class FFTUtil {
              throw new IllegalArgumentException("dep0 must be two or more elements");
         }
 
-        synchronized (FFTUtil.class) {
+        synchronized (FFTUtil.class) {  // findbugs okay
             if ( freqDomainTagsForPowerBuf!=null ) {
                 if ( Math.abs(  freqDomainTagsForPowerBuf.dt - ( dep0.value(1) - dep0.value(0) ) ) < freqDomainTagsForPowerBuf.ddt
                     && freqDomainTagsForPowerBuf.n == dep0.length()
