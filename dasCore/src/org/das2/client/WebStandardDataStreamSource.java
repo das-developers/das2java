@@ -21,6 +21,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/**
+ *
+ * @author  jbf
+ */
+
 package org.das2.client;
 
 import org.das2.dataset.NoDataInIntervalException;
@@ -30,24 +35,24 @@ import org.das2.datum.Datum;
 import org.das2.stream.StreamYScanDescriptor;
 import org.das2.DasApplication;
 import org.das2.util.URLBuddy;
-/**
- *
- * @author  jbf
- */
 
 import org.das2.DasException;
 import org.das2.DasIOException;
 import org.das2.datum.format.DatumFormatter;
-import org.das2.system.DasLogger;
 import java.io.*;
 import java.net.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.datum.LoggerManager;
 
 /*
  * Web standard data stream source */
 
-/** */
+/** 
+ */
 public class WebStandardDataStreamSource implements StandardDataStreamSource {
 
+    private static final Logger logger= LoggerManager.getLogger("das2.dataTransfer");
     private DasServer server;
     private boolean legacyStream = true;
     private String extraParameters;
@@ -126,7 +131,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         }
 
         if ( !devel.equals("") ) {
-            formData.append("&devel="+devel);
+            formData.append("&devel=").append(devel);
         }
         
         InputStream in= openURLConnection( dsd, start, end, formData );
@@ -141,7 +146,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         DatumFormatter formatter = start.getUnits().getDatumFormatterFactory().defaultFormatter();
         String startStr = formatter.format(start);
         String endStr= formatter.format(end);
-        StringBuffer formData= new StringBuffer("dataset=");
+        StringBuilder formData= new StringBuilder("dataset=");
         formData.append(URLBuddy.encodeUTF8(dataSetID));
         formData.append("&start_time=").append(URLBuddy.encodeUTF8(startStr));
         formData.append("&end_time=").append(URLBuddy.encodeUTF8(endStr));
@@ -171,7 +176,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
 
             this.lastRequestURL= String.valueOf( serverURL );
 
-            DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).info("opening "+serverURL.toString());
+            logger.log(Level.FINE, "opening {0}", serverURL.toString());
 
             URLConnection urlConnection = serverURL.openConnection();
             urlConnection.connect();
@@ -223,11 +228,11 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 String error= serverResponse.substring( errorTag.length()+2,
                         serverResponse.length()-(errorTag.length()+3));
 
-                org.das2.util.DasDie.println("error="+error);
+                logger.log(Level.FINER, "error={0}", error);
 
                 /* presume that the endUser has opted out */
-                if (error.equals("<needKey/>")) {;
-                throw new NoKeyProvidedException("");
+                if (error.equals("<needKey/>")) {
+                    throw new NoKeyProvidedException("");
                 }
 
                 if (error.equals("<accessDenied/>")) {
@@ -262,10 +267,6 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
 
         byte[] data = new byte[4096];
 
-        int lastBytesRead = -1;
-
-        String s;
-
         int offset=0;
 
         try {
@@ -290,7 +291,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
 
                 das2Response= new String(data,14,index-14);
 
-                org.das2.util.DasDie.println("das2Response="+das2Response);
+                logger.log(Level.FINER, "das2Response={0}", das2Response);
 
                 in.reset();
                 in.skip( das2Response.length() + 2 * das2ResponseTag.length() + 5 );

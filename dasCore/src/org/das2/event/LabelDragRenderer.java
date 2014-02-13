@@ -18,6 +18,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
+import static org.das2.event.MouseModule.logger;
 
 /**
  *
@@ -210,7 +211,7 @@ public class LabelDragRenderer implements DragRenderer {
                             break;
                     }
                 } catch ( java.awt.AWTException e1 ) {
-                    org.das2.util.DasDie.println(e1.getMessage());
+                    logger.log(Level.SEVERE,null,e1);
                 }
   
             } else {

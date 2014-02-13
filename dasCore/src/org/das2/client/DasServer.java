@@ -518,7 +518,7 @@ public class DasServer {
 
                 das2Response= new String(data,14,index-14);
 
-                org.das2.util.DasDie.println("das2Response="+das2Response);
+                logger.log(Level.FINER, "das2Response={0}", das2Response);
 
                 in.reset();
                 long n= das2Response.length() + 2 * das2ResponseTag.length() + 5;

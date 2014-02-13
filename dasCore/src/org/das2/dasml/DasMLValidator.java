@@ -30,7 +30,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.das2.datum.LoggerManager;
 
 /**
  * A validator for the dasML language developed for the University of
@@ -43,6 +46,8 @@ import java.util.regex.Pattern;
  * @author  Edward West
  */
 public class DasMLValidator extends DefaultHandler {
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.dasml");
     
     public static final Pattern INTEGER_PATTERN = Pattern.compile("(0|[1-9][0-9]*)");
     
@@ -641,14 +646,14 @@ public class DasMLValidator extends DefaultHandler {
         }
         
         ErrorHandler errorHandler = new ErrorHandler() {
-            public void warning(SAXParseException spe) throws SAXException {
-                org.das2.util.DasDie.println("Line " + spe.getLineNumber() + ", " + spe.getMessage());
+            public void warning(SAXParseException e) throws SAXException {
+                logger.log(Level.WARNING,"Line " + e.getLineNumber() + ", " + e.getMessage(),e);
             }
-            public void error(SAXParseException spe) throws SAXException {
-                org.das2.util.DasDie.println("Line " + spe.getLineNumber() + ", " + spe.getMessage());
+            public void error(SAXParseException e) throws SAXException {
+                logger.log(Level.WARNING,"Line " + e.getLineNumber() + ", " + e.getMessage(),e);
             }
-            public void fatalError(SAXParseException spe) throws SAXException {
-                org.das2.util.DasDie.println("Line " + spe.getLineNumber() + ", " + spe.getMessage());
+            public void fatalError(SAXParseException e) throws SAXException {
+                logger.log(Level.WARNING,"Line " + e.getLineNumber() + ", " + e.getMessage(),e);
             }
         };
         
@@ -656,17 +661,17 @@ public class DasMLValidator extends DefaultHandler {
             String path = new java.io.File(args[0]).getCanonicalPath();
             DasMLValidator validator = new DasMLValidator();
             if (validator.validate(new InputSource("file://" + path), errorHandler)) {
-                org.das2.util.DasDie.println("No errors");
+                logger.fine("No errors");
             }
         }
-        catch (ParserConfigurationException pce) {
-            org.das2.util.DasDie.println(pce.getMessage());
+        catch (ParserConfigurationException e) {
+            logger.log(Level.WARNING, e.getMessage(),e);
         }
-        catch (SAXException se) {
-            org.das2.util.DasDie.println(se.getMessage());
+        catch (SAXException e) {
+            logger.log(Level.WARNING, e.getMessage(),e);
         }
-        catch (java.io.IOException ioe) {
-            org.das2.util.DasDie.println(ioe.getMessage());
+        catch (java.io.IOException e) {
+            logger.log(Level.WARNING, e.getMessage(),e);
         }
         
     }

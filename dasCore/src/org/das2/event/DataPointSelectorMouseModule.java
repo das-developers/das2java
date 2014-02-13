@@ -13,6 +13,7 @@ import org.das2.graph.DasAxis;
 import org.das2.graph.DasPlot;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 /**
  * General purpose mouse module for getting data point selections.  The client
@@ -83,7 +84,7 @@ public class DataPointSelectorMouseModule extends MouseModule {
                             break;
                     }
                 } catch ( java.awt.AWTException e1 ) {
-                    org.das2.util.DasDie.println(e1.getMessage());
+                    logger.log(Level.SEVERE,null,e1);
                 }
                 
             } else {

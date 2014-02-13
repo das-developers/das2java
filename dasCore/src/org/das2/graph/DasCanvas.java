@@ -1479,7 +1479,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     @Override
     protected void addImpl(Component comp, Object constraints, int index) {
         if (comp == null) {
-            org.das2.util.DasDie.println("NULL COMPONENT");
+            logger.log(Level.SEVERE,"NULL COMPONENT");
             Thread.dumpStack();
             return;
         }

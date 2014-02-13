@@ -54,7 +54,9 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
 import org.das2.DasException;
+import org.das2.datum.LoggerManager;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 
@@ -63,6 +65,8 @@ import org.w3c.dom.ls.LSOutput;
  * @author Edward West
  */
 public class FormBase extends JTabbedPane implements FormComponent {
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.dasml");
     
     /** The factory object used for creating DOM parsers. */
     private static DocumentBuilderFactory domFactory;
@@ -334,8 +338,8 @@ public class FormBase extends JTabbedPane implements FormComponent {
         if (lastDot == -1) throw new DataFormatException("No object associated with method name" + name);
         String objectName = name.substring(0, lastDot);
         String methodName = name.substring(lastDot+1);
-        org.das2.util.DasDie.println("object name: " + objectName);
-        org.das2.util.DasDie.println("method name: " + methodName);
+        logger.fine("object name: " + objectName);
+        logger.fine("method name: " + methodName);
         Object o = application.getNameContext().get(objectName);
         Method method = null;
         try {

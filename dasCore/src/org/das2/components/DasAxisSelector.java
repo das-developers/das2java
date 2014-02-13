@@ -34,8 +34,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 public class DasAxisSelector extends javax.swing.JPanel implements ActionListener {
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.gui");
     
     private DasAxis axis= null;
     
@@ -98,14 +103,14 @@ public class DasAxisSelector extends javax.swing.JPanel implements ActionListene
                 axis.setDataRange(Datum.create(Double.valueOf(idStart.getText()).doubleValue(),axis.getUnits()),
                 axis.getDataMaximum());
             } catch (NumberFormatException e) {
-                org.das2.util.DasDie.println(e);
+                logger.log(Level.WARNING,e.getMessage(),e);
             }
         } else if (command.equals("setMaximum")) {
             try {
                 axis.setDataRange(axis.getDataMinimum(),
                  Datum.create(Double.valueOf(idStop.getText()).doubleValue(), axis.getUnits() ));
             } catch (NumberFormatException e) {
-                org.das2.util.DasDie.println(e);
+                logger.log(Level.WARNING,e.getMessage(),e);
             }
         }
     }

@@ -25,12 +25,16 @@ package org.das2.graph;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 /**
  *
  * @author  jbf
  */
 public class DasLabel extends DasCanvasComponent {
 
+    private static final Logger logger= LoggerManager.getLogger( "das2.graphics" );
+    
     String text="";
     int x=0;
     int y=0;
@@ -81,7 +85,7 @@ public class DasLabel extends DasCanvasComponent {
         
         bounds= fm.getStringBounds(text,g).getBounds();
         bounds.translate(x,y);
-        org.das2.util.DasDie.println(bounds);
+        logger.fine( String.valueOf(bounds) );
         
         if (font!=null) g.setFont(oldfont);
         if (at!=null) g.setTransform(oldat);

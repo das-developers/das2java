@@ -132,7 +132,6 @@ public final class DasProperties extends Properties {
                     Logger.getLogger("das2").setLevel(Level.FINE);
                 }
                 else instance.logger.setLevel(Level.parse(debugLevel));
-                org.das2.util.DasDie.setDebugVerbosityLevel(value.toString());
             }
             instance.setProperty(propertyName,value.toString());
             editor.setDirty(true);
@@ -309,7 +308,7 @@ public final class DasProperties extends Properties {
         File f= new File(file);
         
         if (f.canWrite()) {
-            org.das2.util.DasDie.println("Attempt to write .das2rc...");
+            logger.finer("Attempt to write .das2rc...");
             OutputStream out=null;
             try {
                 out= new FileOutputStream(f);
