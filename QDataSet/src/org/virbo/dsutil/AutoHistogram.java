@@ -443,7 +443,7 @@ public final class AutoHistogram {
             lastD = d;
         }
 
-        binw = Math.abs(closestB - closestA) / (nbin / 100);
+        binw = Math.abs(closestB - closestA) / (nbin / 100);  //  findbugs ICAST_IDIV_CAST_TO_DOUBLE okay 
         if (binw < 1.0) {
             binwDenom = Math.pow(10,Math.ceil(Math.log10(1 / binw)));
             binw = 1.0;
