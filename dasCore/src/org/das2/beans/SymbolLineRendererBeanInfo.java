@@ -42,6 +42,7 @@ public class SymbolLineRendererBeanInfo extends AccessLevelBeanInfo {
         super(properties, org.das2.graph.SymbolLineRenderer.class);
     }
     
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         BeanInfo[] additional = {
             new RendererBeanInfo()

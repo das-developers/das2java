@@ -23,9 +23,6 @@
 
 package org.das2.beans;
 
-import org.das2.components.propertyeditor.EnumerationEditor;
-import java.beans.BeanInfo;
-
 /**
  * BeanInfo class for DasColorBar
  *

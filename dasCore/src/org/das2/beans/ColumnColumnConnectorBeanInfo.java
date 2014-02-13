@@ -33,7 +33,7 @@ import org.das2.beans.AccessLevelBeanInfo.Property;
  */
 public class ColumnColumnConnectorBeanInfo extends AccessLevelBeanInfo {
     
-    protected static final Property[] properties = {
+    private static final Property[] properties = {
         new Property("bottomCurtain", AccessLevel.DASML, "isBottomCurtain", "setBottomCurtain", null),
         new Property("curtainOpacityPercent", AccessLevel.DASML, "getCurtainOpacityPercent", "setCurtainOpacityPercent", null),
         new Property("fill", AccessLevel.DASML, "isFill", "setFill", null),

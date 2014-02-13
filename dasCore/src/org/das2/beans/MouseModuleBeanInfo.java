@@ -23,8 +23,6 @@
 
 package org.das2.beans;
 
-import java.beans.BeanInfo;
-
 public class MouseModuleBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {        

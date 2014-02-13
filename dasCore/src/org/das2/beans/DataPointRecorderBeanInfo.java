@@ -23,8 +23,6 @@
 
 package org.das2.beans;
 
-
-
 public class DataPointRecorderBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {   

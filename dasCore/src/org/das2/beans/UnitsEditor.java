@@ -19,6 +19,7 @@ import java.beans.PropertyEditorSupport;
  */
 public class UnitsEditor extends PropertyEditorSupport {
     
+    @Override    
     public void setAsText(String str) throws IllegalArgumentException {
         setValue( Units.getByName(str) );
     }

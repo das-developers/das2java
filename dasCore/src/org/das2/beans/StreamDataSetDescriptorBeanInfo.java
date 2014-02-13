@@ -38,6 +38,7 @@ public class StreamDataSetDescriptorBeanInfo extends AccessLevelBeanInfo {
                 new Property("serverSideReduction", AccessLevel.DASML, "isServerSideReduction", null, null),
     };
     
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         BeanInfo[] additional = {
             new DataSetDescriptorBeanInfo()

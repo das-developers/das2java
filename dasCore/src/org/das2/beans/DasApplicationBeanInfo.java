@@ -23,7 +23,6 @@
 
 package org.das2.beans;
 
-import org.das2.DasApplication;
 import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
 import org.das2.beans.AccessLevelBeanInfo.Property;
 

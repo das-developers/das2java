@@ -55,7 +55,7 @@ public class DasCanvasBeanInfo extends AccessLevelBeanInfo {
             methods[0] = new MethodDescriptor(org.das2.graph.DasCanvas.class.getMethod("writeToPng", writeToPngParams));
         }
         catch (NoSuchMethodException nsme) {
-            IllegalStateException ise = new IllegalStateException(nsme.getMessage());
+            IllegalStateException ise = new IllegalStateException(nsme);
             ise.initCause(nsme);
             throw ise;
         }
@@ -65,6 +65,7 @@ public class DasCanvasBeanInfo extends AccessLevelBeanInfo {
         super(properties, org.das2.graph.DasCanvas.class);
     }
     
+    @Override    
     public MethodDescriptor[] getMethodDescriptors() {
         return Arrays.copyOf( methods,methods.length );
     }

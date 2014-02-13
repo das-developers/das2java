@@ -25,10 +25,7 @@ package org.das2.beans;
 
 import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
 import org.das2.beans.AccessLevelBeanInfo.Property;
-import org.das2.graph.DasAxis;
 import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import org.das2.components.propertyeditor.EnumerationEditor;
 
 /**
@@ -38,7 +35,7 @@ import org.das2.components.propertyeditor.EnumerationEditor;
  */
 public class DasColorBarBeanInfo extends AccessLevelBeanInfo {
     
-    protected static final Property[] properties = {
+    private static final Property[] properties = {
         new Property("type", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getType", "setType", EnumerationEditor.class),
         new Property("fillColor", AccessLevel.DASML, PersistenceLevel.PERSISTENT, "getFillColor", "setFillColor", null )
     };
@@ -47,6 +44,7 @@ public class DasColorBarBeanInfo extends AccessLevelBeanInfo {
         super(properties, org.das2.graph.DasColorBar.class);
     }
     
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         BeanInfo[] additional = {
             new DasAxisBeanInfo(),

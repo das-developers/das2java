@@ -38,6 +38,7 @@ public class CrossHairRendererBeanInfo extends AccessLevelBeanInfo {
         super(properties, org.das2.event.CrossHairRenderer.class);
     }
      
+    @Override
     public java.beans.BeanInfo[] getAdditionalBeanInfo() {
         BeanInfo[] additional = {
             new LabelDragRendererBeanInfo(),

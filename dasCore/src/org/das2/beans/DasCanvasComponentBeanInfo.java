@@ -44,7 +44,7 @@ public class DasCanvasComponentBeanInfo extends AccessLevelBeanInfo {
             methods[0] = new MethodDescriptor(DasCanvasComponent.class.getMethod("update"));
         }
         catch (NoSuchMethodException nsme) {
-            IllegalStateException ise = new IllegalStateException(nsme.getMessage());
+            IllegalStateException ise = new IllegalStateException(nsme);
             ise.initCause(nsme);
             throw ise;
         }
@@ -54,6 +54,7 @@ public class DasCanvasComponentBeanInfo extends AccessLevelBeanInfo {
         super(properties, org.das2.graph.DasCanvasComponent.class);
     }
     
+    @Override
     public MethodDescriptor[] getMethodDescriptors() {
         return Arrays.copyOf( methods,methods.length );
     }

@@ -11,9 +11,7 @@
 package org.das2.beans;
 
 import org.das2.datum.Units;
-import java.awt.Rectangle;
 import java.beans.PropertyEditorSupport;
-import java.beans.XMLEncoder;
 
 /**
  *
@@ -21,10 +19,12 @@ import java.beans.XMLEncoder;
  */
 public class RectangleEditor extends PropertyEditorSupport {
     
+    @Override
     public void setAsText(String str) throws IllegalArgumentException {        
         setValue( Units.getByName(str) );
     }
 
+    @Override
     public String getAsText() {
         return String.valueOf( getValue() );
     }

@@ -23,8 +23,6 @@
 
 package org.das2.beans;
 
-import java.beans.BeanInfo;
-
 public class DasMouseInputAdapterBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {

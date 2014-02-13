@@ -39,6 +39,7 @@ public class SpectrogramRendererBeanInfo extends AccessLevelBeanInfo {
         super(properties, org.das2.graph.SpectrogramRenderer.class);
     }
     
+    @Override    
     public java.beans.BeanInfo[] getAdditionalBeanInfo() {
         BeanInfo[] additional = {
             new RendererBeanInfo()

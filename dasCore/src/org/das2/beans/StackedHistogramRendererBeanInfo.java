@@ -43,6 +43,7 @@ public class StackedHistogramRendererBeanInfo extends AccessLevelBeanInfo {
         super(properties, org.das2.graph.StackedHistogramRenderer.class);
     }
     
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         BeanInfo[] additional = {
             new RendererBeanInfo()

@@ -57,6 +57,7 @@ public class DasAxisBeanInfo extends AccessLevelBeanInfo {
         super(properties, org.das2.graph.DasAxis.class);
     }
     
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         java.beans.BeanInfo[] additional = {
             new DasCanvasComponentBeanInfo()
