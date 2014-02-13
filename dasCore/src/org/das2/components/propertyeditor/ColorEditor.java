@@ -53,7 +53,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
     }
 
     private JColorChooser custom;
-    private final PropertyEditorSupport editorSupport;
+    private transient final PropertyEditorSupport editorSupport;
     private JComboBox choice;
     
     /** Creates a new instance of ColorEditor */
