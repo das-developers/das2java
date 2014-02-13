@@ -8,6 +8,7 @@
 package org.das2.components.propertyeditor;
 
 import java.beans.PropertyDescriptor;
+import java.util.Arrays;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
@@ -26,7 +27,7 @@ public class PeerPropertyTreeNode implements PropertyTreeNodeInterface {
     public PeerPropertyTreeNode(PeerPropertyTreeNode parent, PropertyTreeNode leader, PropertyTreeNode[] peers) {
         this.parent = parent;
         this.leader = leader;
-        this.peers = peers;
+        this.peers = Arrays.copyOf( peers, peers.length );
     }
 
     public java.util.Enumeration children() {
