@@ -106,13 +106,25 @@ public class SortDataSet extends AbstractDataSet {
         
         QDataSet ds;
         ds= (QDataSet) source.property(QDataSet.BIN_PLUS);
-        if ( ds!=null ) properties.put( QDataSet.BIN_PLUS, new SortDataSet( ds, sort ) );
+        if ( ds!=null ) {
+            if ( ds.rank()==0 ) ds= Ops.replicate(ds,source.length());
+            properties.put( QDataSet.BIN_PLUS, new SortDataSet( ds, sort ) );
+        }
         ds= (QDataSet) source.property(QDataSet.BIN_MINUS);
-        if ( ds!=null ) properties.put( QDataSet.BIN_MINUS, new SortDataSet( ds, sort ) );
+        if ( ds!=null ) {
+            if ( ds.rank()==0 ) ds= Ops.replicate(ds,source.length());
+            properties.put( QDataSet.BIN_MINUS, new SortDataSet( ds, sort ) );
+        }
         ds= (QDataSet) source.property(QDataSet.DELTA_PLUS);
-        if ( ds!=null ) properties.put( QDataSet.DELTA_PLUS, new SortDataSet( ds, sort ) );
+        if ( ds!=null ) {
+            if ( ds.rank()==0 ) ds= Ops.replicate(ds,source.length());
+            properties.put( QDataSet.DELTA_PLUS, new SortDataSet( ds, sort ) );
+        }
         ds= (QDataSet) source.property(QDataSet.DELTA_MINUS);
-        if ( ds!=null ) properties.put( QDataSet.DELTA_MINUS, new SortDataSet( ds, sort ) );
+        if ( ds!=null ) {
+            if ( ds.rank()==0 ) ds= Ops.replicate(ds,source.length());
+            properties.put( QDataSet.DELTA_MINUS, new SortDataSet( ds, sort ) );
+        }
         
         DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(source,null), this );
 
