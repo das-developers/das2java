@@ -469,7 +469,7 @@ public abstract class FileSystem  {
     public String[] listDirectoryDeep( String directory, String regex ) throws IOException {
         List<String> result= new ArrayList();
         int i= regex.indexOf( "/" );
-        System.err.printf("listDirectoryDeep(%s,%s)\n",directory,regex);
+        logger.fine( String.format( "listDirectoryDeep(%s,%s)\n",directory,regex) );
         if ( i==-1 ) {
             return listDirectory( directory, regex );
         } else if ( i==0 ) {
