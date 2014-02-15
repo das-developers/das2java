@@ -198,7 +198,7 @@ public class LanlNNRebinner implements DataSetRebinner {
             double y0,y1;
             int nYData= rank2y ? yds0.length(0) : yds0.length();
 
-            if ( SemanticOps.isBundle(tds1) ) {
+            if ( SemanticOps.isBundle(tds1) && tds1.length(0)==3 && !rank2y && yds0.length()==tds1.length() && xds0.length()==tds1.length() ) { // bug 1160: I think some data could still be mistaken here.
                 tds1= DataSetOps.unbundle(tds1,tds1.length(0)-1);
                 weights= DataSetOps.unbundle(weights,weights.length(0)-1);
                 for ( int i=0; i<xds0.length(); i++) {
