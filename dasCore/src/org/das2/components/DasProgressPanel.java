@@ -26,7 +26,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -293,7 +292,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
         createComponentCount++;
         logger.log(Level.FINER, "createComponentCount={0}", createComponentCount);
-        JPanel mainPanel, buttonPanel;
+        JPanel mainPanel;
 
         taskLabel = new JLabel();
         taskLabel.setOpaque(false);
@@ -338,7 +337,6 @@ public class DasProgressPanel implements ProgressMonitor {
 
         JPanel progressBarPanel= new JPanel( new BorderLayout() );
 
-        //cancelButton = new JButton("cancel");
         cancelButton = new JButton( cancelGrey );
         Dimension cs= new Dimension(20,20);
         cancelButton.setMaximumSize( cs );
@@ -369,15 +367,6 @@ public class DasProgressPanel implements ProgressMonitor {
         mainPanel.add(progressBarPanel);
         mainPanel.add(kbLabel);
 
-//        buttonPanel = new JPanel( new FlowLayout(FlowLayout.LEFT) );
-//        buttonPanel.setOpaque(false);
-//
-//        if (useDetails)
-//            buttonPanel.add(detailsButton);
-//        buttonPanel.add(cancelButton);
-
-        System.err.println("Making the panel");
-        
         thePanel = new MyPanel();
         thePanel.setOpaque(false);
         thePanel.setLayout(new BorderLayout());
