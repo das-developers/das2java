@@ -302,6 +302,21 @@ public interface QDataSet {
     public final static String RENDER_TYPE="RENDER_TYPE";
     
     /**
+     * full-fidelity rendering of buckshot and connect-a-dot plots
+     */
+    public final static String VALUE_RENDER_TYPE_SERIES="series";
+    
+    /**
+     * draw events bars
+     */
+    public final static String VALUE_RENDER_TYPE_EVENTS_BAR="eventsBar";
+    
+    /**
+     * values are drawn.
+     */
+    public final static String VALUE_RENDER_TYPE_DIGITAL="digital";
+    
+    /**
      * String, a java identifier that should can be used when an identifier is needed. This is
      * originally introduced for debugging purposes, so datasets can have a concise, meaningful name 
      * that is decoupled from the label. When NAMEs are used, properties with the same 
