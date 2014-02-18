@@ -48,13 +48,7 @@ public class ComponentsUtil {
         
         final JDialog popupWindow;
         Window parentWindow = SwingUtilities.getWindowAncestor(parent);
-        if (parentWindow instanceof Frame) {
-            popupWindow = new JDialog((Frame)parentWindow);
-        } else if (parentWindow instanceof Dialog) {
-            popupWindow = new JDialog((Dialog)parentWindow);
-        } else {
-            popupWindow = new JDialog();
-        }
+        popupWindow = new JDialog(parentWindow);
         
         popupWindow.setTitle(title);
         popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
