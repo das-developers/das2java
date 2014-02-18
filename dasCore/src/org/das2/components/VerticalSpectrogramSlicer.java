@@ -28,22 +28,10 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Window;
-import org.das2.graph.SymbolLineRenderer;
-import org.das2.graph.DasColumn;
-import org.das2.graph.DasCanvas;
-import org.das2.graph.DasRow;
-import org.das2.graph.DasPlot;
-import org.das2.graph.DasAxis;
-import org.das2.dataset.TableDataSetConsumer;
-import org.das2.datum.format.DatumFormatter;
-import org.das2.datum.format.TimeDatumFormatter;
-import org.das2.datum.TimeLocationUnits;
-import org.das2.system.DasLogger;
-import org.das2.datum.Datum;
-import org.das2.event.DataPointSelectionEvent;
-import org.das2.event.DataPointSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -57,13 +45,27 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.dataset.TableDataSetConsumer;
+import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
+import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.format.DatumFormatter;
+import org.das2.datum.format.TimeDatumFormatter;
+import org.das2.event.DataPointSelectionEvent;
+import org.das2.event.DataPointSelectionListener;
 import org.das2.event.MouseModule;
 import org.das2.event.PointSlopeDragRenderer;
+import org.das2.graph.DasAxis;
+import org.das2.graph.DasCanvas;
+import org.das2.graph.DasColumn;
+import org.das2.graph.DasPlot;
+import org.das2.graph.DasRow;
 import org.das2.graph.Renderer;
 import org.das2.graph.SpectrogramRenderer;
+import org.das2.graph.SymbolLineRenderer;
+import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
@@ -149,6 +151,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     
     /** This method should ONLY be called by the AWT event thread */
     private void showPopupImpl() {
+        popupWindow= null;
         if (popupWindow == null) {
             createPopup();
         }
@@ -250,15 +253,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         content.add(buttonPanel, BorderLayout.SOUTH);
         
         Window parentWindow = SwingUtilities.getWindowAncestor(parentPlot);
-        if (parentWindow instanceof Frame) {
-            popupWindow = new JDialog((Frame)parentWindow);
-        }
-        else if (parentWindow instanceof Dialog) {
-            popupWindow = new JDialog((Dialog)parentWindow);
-        }
-        else {
-            popupWindow = new JDialog();
-        }
+        popupWindow = new JDialog(parentWindow);
         popupWindow.setTitle("Vertical Slicer");
         popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         popupWindow.setContentPane(content);
@@ -267,7 +262,19 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         Point parentLocation = new Point( 0, parentPlot.getY() );
         parentLocation.translate( parentPlot.getX()/20, -1 * myPlot.getRow().getDMinimum() );
         SwingUtilities.convertPointToScreen(parentLocation, parentPlot.getCanvas());
-        popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
+        int xx= parentLocation.x + parentPlot.getCanvas().getWidth();
+        int yy= parentLocation.y;
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int totalwidth = gd.getDisplayMode().getWidth();
+        int totalheight = gd.getDisplayMode().getHeight();
+        
+        if ( xx>totalwidth-50 ) {
+            xx= totalwidth-50;
+        }
+        if ( yy>totalheight-50 ) {
+            yy= totalheight-50;
+        }
+        popupWindow.setLocation(xx,yy);
     }
     
     protected boolean isPopupVisible() {
