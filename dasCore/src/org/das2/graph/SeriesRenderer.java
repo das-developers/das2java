@@ -494,6 +494,12 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
 
+            QDataSet up= Ops.add( vds, deltaPlusY );
+            QDataSet dn= Ops.subtract( vds, deltaMinusY );
+            
+            QDataSet wup= Ops.valid(up);
+            QDataSet wdn= Ops.valid(dn);
+            
             QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
 
             Units xunits = SemanticOps.getUnits(xds);
@@ -502,16 +508,12 @@ public class SeriesRenderer extends Renderer {
             if ( unitsWarning ) yunits= yAxis.getUnits();
             if ( xunitsWarning ) xunits= xAxis.getUnits();
 
-            Units yoffsetUnits = yunits.getOffsetUnits();
-
             lp = new GeneralPath();
             for (int i = firstIndex; i < lastIndex; i++) {
                 float ix = (float) xAxis.transform( xds.value(i), xunits );
-                double dp= deltaPlusY.value(i);
-                double dm= deltaMinusY.value(i);
-                if ( yoffsetUnits.isValid(dp) && yoffsetUnits.isValid(dm) ) {
-                    float iym = (float) yAxis.transform( vds.value(i) - dm, yunits );
-                    float iyp = (float) yAxis.transform( vds.value(i) + dp, yunits );
+                if ( wup.value(i)>0 && wdn.value(i)>0 ) {
+                    float iym = (float) yAxis.transform( dn.value(i), yunits );
+                    float iyp = (float) yAxis.transform( up.value(i), yunits );
                     lp.moveTo(ix, iym);
                     lp.lineTo(ix, iyp);
                 }
