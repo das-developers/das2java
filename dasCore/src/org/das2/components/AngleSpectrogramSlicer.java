@@ -50,9 +50,9 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
     
     private JDialog popupWindow;
     
-    private SeriesRenderer renderer;
-    private DasPlot parentPlot;
-    private TableDataSetConsumer consumer;
+    private final SeriesRenderer renderer;
+    private final DasPlot parentPlot;
+    private final TableDataSetConsumer consumer;
     private Datum xstart;    
     private Datum ystart;
     private DatumRange xrange;
@@ -145,7 +145,22 @@ public class AngleSpectrogramSlicer extends DasPlot implements BoxSelectionListe
                 
         Point parentLocation = new Point();
         SwingUtilities.convertPointToScreen(parentLocation, parentPlot.getCanvas());
-        popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y + height);
+        
+         //make sure some portion of the slice window is visible on the screen.
+        int xx= parentLocation.x + parentPlot.getCanvas().getWidth();
+        int yy= parentLocation.y;
+        
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int totalwidth = gd.getDisplayMode().getWidth();
+        int totalheight = gd.getDisplayMode().getHeight();
+        
+        if ( xx>totalwidth-100 ) {
+            xx= totalwidth-100;
+        }
+        if ( yy>totalheight-100 ) {
+            yy= totalheight-100;
+        }
+        popupWindow.setLocation(xx,yy);
     }
 
     

@@ -28,6 +28,8 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Window;
 import org.das2.graph.SymbolLineRenderer;
@@ -208,7 +210,22 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
         Point parentLocation = new Point( 0, parentPlot.getY() );
         parentLocation.translate( parentPlot.getX()/20, -1 * myPlot.getRow().getDMinimum() );
         SwingUtilities.convertPointToScreen(parentLocation, parentPlot.getCanvas());
-        popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
+        
+        //make sure some portion of the slice window is visible on the screen.
+        int xx= parentLocation.x + parentPlot.getCanvas().getWidth();
+        int yy= parentLocation.y;
+        
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int totalwidth = gd.getDisplayMode().getWidth();
+        int totalheight = gd.getDisplayMode().getHeight();
+        
+        if ( xx>totalwidth-100 ) {
+            xx= totalwidth-100;
+        }
+        if ( yy>totalheight-100 ) {
+            yy= totalheight-100;
+        }
+        popupWindow.setLocation(xx,yy);
     }
     
     protected boolean isPopupVisible() {

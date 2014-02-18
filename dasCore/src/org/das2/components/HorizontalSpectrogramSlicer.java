@@ -28,6 +28,8 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Window;
 import org.das2.graph.SymbolLineRenderer;
@@ -69,17 +71,16 @@ import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
 
 
 public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     
     private JDialog popupWindow;
-    private DasPlot parentPlot;
+    private final DasPlot parentPlot;
     private DasPlot myPlot;
-    private DasAxis sourceZAxis;
-    private DasAxis sourceXAxis;
+    private final DasAxis sourceZAxis;
+    private final DasAxis sourceXAxis;
 
     protected Datum xValue;
     protected Datum yValue;
@@ -285,15 +286,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         content.add(buttonPanel, BorderLayout.SOUTH);
         
         Window parentWindow = SwingUtilities.getWindowAncestor(parentPlot);
-        if (parentWindow instanceof Frame) {
-            popupWindow = new JDialog((Frame)parentWindow);
-        }
-        else if (parentWindow instanceof Dialog) {
-            popupWindow = new JDialog((Dialog)parentWindow);
-        }
-        else {
-            popupWindow = new JDialog();
-        }
+        popupWindow = new JDialog(parentWindow);
         popupWindow.setTitle("Horizontal Slicer");
         popupWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         popupWindow.setContentPane(content);
@@ -302,7 +295,23 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         Point parentLocation = new Point( 0, parentPlot.getY() );
         parentLocation.translate( parentPlot.getX()/20, -1 * myPlot.getRow().getDMinimum() );
         SwingUtilities.convertPointToScreen(parentLocation, parentPlot.getCanvas());
-        popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y + height);
+        
+        //make sure some portion of the slice window is visible on the screen.
+        int xx= parentLocation.x + parentPlot.getCanvas().getWidth();
+        int yy= parentLocation.y;
+        
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int totalwidth = gd.getDisplayMode().getWidth();
+        int totalheight = gd.getDisplayMode().getHeight();
+        
+        if ( xx>totalwidth-100 ) {
+            xx= totalwidth-100;
+        }
+        if ( yy>totalheight-100 ) {
+            yy= totalheight-100;
+        }
+        popupWindow.setLocation(xx,yy);
+
     }
     
     protected boolean isPopupVisible() {

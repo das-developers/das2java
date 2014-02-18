@@ -76,10 +76,10 @@ import org.virbo.dataset.SemanticOps;
 public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     
     private JDialog popupWindow;
-    private DasPlot parentPlot;
+    private final DasPlot parentPlot;
     private DasPlot myPlot;
-    private DasAxis sourceZAxis;
-    private DasAxis sourceXAxis;
+    private final DasAxis sourceZAxis;
+    private final DasAxis sourceXAxis;
 
     protected Datum xValue;
     protected Datum yValue;
@@ -151,7 +151,6 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     
     /** This method should ONLY be called by the AWT event thread */
     private void showPopupImpl() {
-        popupWindow= null;
         if (popupWindow == null) {
             createPopup();
         }
@@ -262,17 +261,20 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         Point parentLocation = new Point( 0, parentPlot.getY() );
         parentLocation.translate( parentPlot.getX()/20, -1 * myPlot.getRow().getDMinimum() );
         SwingUtilities.convertPointToScreen(parentLocation, parentPlot.getCanvas());
+        
+        //make sure some portion of the slice window is visible on the screen.
         int xx= parentLocation.x + parentPlot.getCanvas().getWidth();
         int yy= parentLocation.y;
+        
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         int totalwidth = gd.getDisplayMode().getWidth();
         int totalheight = gd.getDisplayMode().getHeight();
         
-        if ( xx>totalwidth-50 ) {
-            xx= totalwidth-50;
+        if ( xx>totalwidth-100 ) {
+            xx= totalwidth-100;
         }
-        if ( yy>totalheight-50 ) {
-            yy= totalheight-50;
+        if ( yy>totalheight-100 ) {
+            yy= totalheight-100;
         }
         popupWindow.setLocation(xx,yy);
     }
