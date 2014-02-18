@@ -303,6 +303,49 @@ public class DataSetUtil {
     public static String[] dimensionProperties() {
         return Arrays.copyOf( _dimensionProperties,_dimensionProperties.length );
     }
+    
+    public static final String PROPERTY_TYPE_STRING="String";
+    public static final String PROPERTY_TYPE_NUMBER="Number";
+    public static final String PROPERTY_TYPE_BOOLEAN="Boolean";
+    public static final String PROPERTY_TYPE_MAP="Map";
+    public static final String PROPERTY_TYPE_QDATASET="QDataSet";
+    public static final String PROPERTY_TYPE_CACHETAG="CacheTag";
+    public static final String PROPERTY_TYPE_UNITS="Units";
+    
+    /**
+     * return the type of the property, as a string to support use in Jython:
+     * String,Number,Boolean,Map,QDataSet,CacheTag,Units
+     * //TODO: review this for completeness!
+     * @param name the property name
+     * @return the property type or null if the name is not recognized
+     */
+    public static String getPropertyType( String name ) {
+        if ( name.equals(QDataSet.TITLE) || name.equals(QDataSet.LABEL) ) {
+            return PROPERTY_TYPE_STRING;
+        } else if (  name.equals(QDataSet.UNITS) ) {
+            return PROPERTY_TYPE_UNITS;
+        } else if (  name.equals(QDataSet.NAME) || name.equals(QDataSet.FORMAT) || name.equals(QDataSet.RENDER_TYPE) ) {
+            return PROPERTY_TYPE_STRING;
+        } else if ( name.equals(QDataSet.TYPICAL_MIN) || name.equals(QDataSet.TYPICAL_MAX) 
+                || name.startsWith(QDataSet.VALID_MIN) || name.startsWith(QDataSet.VALID_MAX) 
+                || name.equals(QDataSet.FILL_VALUE) || name.equals(QDataSet.SCALE_TYPE) ) {
+            return PROPERTY_TYPE_NUMBER;
+        } else if ( name.equals(QDataSet.MONOTONIC) || name.equals(QDataSet.QUBE) ) {
+            return PROPERTY_TYPE_BOOLEAN;
+        } else if ( name.equals(QDataSet.CACHE_TAG) ) {
+            return PROPERTY_TYPE_CACHETAG;
+        } else if ( name.equals(QDataSet.USER_PROPERTIES) || name.equals(QDataSet.METADATA) ) {
+            return PROPERTY_TYPE_MAP;
+        } else if ( name.startsWith("JOIN_") || name.startsWith("BINS_") || name.equals(QDataSet.METADATA_MODEL) ) {
+            return PROPERTY_TYPE_STRING;
+        } else if ( name.startsWith(QDataSet.SOURCE) || name.startsWith(QDataSet.VERSION) || name.equals(QDataSet.METADATA_MODEL) ) {
+            return PROPERTY_TYPE_STRING;
+        } else if ( name.startsWith("DEPEND_") || name.startsWith("BUNDLE_") || name.startsWith("DELTA_") || name.startsWith("BIN_")) {
+            return PROPERTY_TYPE_QDATASET;
+        } else {
+            return null;
+        }
+    }
 
     /**
      * return true if the property name is a valid dimension property

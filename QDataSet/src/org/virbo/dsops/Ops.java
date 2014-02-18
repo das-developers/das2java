@@ -3448,50 +3448,78 @@ public class Ops {
             mds= (MutablePropertyDataSet)ds;            
         }
         
-        if ( name.equals( QDataSet.BINS_0 ) || 
-                name.equals( QDataSet.BINS_1 ) || 
-                name.equals( QDataSet.BIN_MINUS ) || 
-                name.equals( QDataSet.BIN_PLUS ) || 
-                name.equals( QDataSet.DELTA_MINUS ) || 
-                name.equals( QDataSet.DELTA_PLUS ) || 
-                name.equals( QDataSet.DEPEND_0 ) || 
-                name.equals( QDataSet.DEPEND_1 ) || 
-                name.equals( QDataSet.DEPEND_2 ) || 
-                name.equals( QDataSet.DEPEND_3 ) || 
-                name.equals( QDataSet.CADENCE ) 
-                ) {
-            mds.putProperty(name, Ops.dataset(value));
-        } else if ( name.equals( QDataSet.CACHE_TAG ) ) {
-            if ( value instanceof String ) {
-                String svalue= (String)value;
-                int i= svalue.indexOf("@");
-                try {
-                    DatumRange tr= DatumRangeUtil.parseTimeRange( svalue.substring(0,i) );
-                    CacheTag r;
-                    if ( i==-1 ) {
-                        value= new CacheTag( tr, null );
-                    } else if ( svalue.substring(i+1).trim().equals("intrinsic") ) {
-                        value= new CacheTag( tr, null );
-                    } else {
-                        Datum res= Units.seconds.parse(svalue.substring(i+1));
-                        value= new CacheTag( tr, res );
-                    }
-                } catch ( ParseException ex ) {
-                    throw new IllegalArgumentException(ex);
+        if ( value!=null && ( value.equals("Null") || value.equals("None") ) ) {
+            if ( !"String".equals(DataSetUtil.getPropertyType(name)) ) {
+                if ( !( name.equals(QDataSet.TITLE) || name.equals(QDataSet.LABEL) ) ) {
+                    value= null;
                 }
             }
-            mds.putProperty( name, value);
-        } else if ( name.equals( QDataSet.UNITS ) ) {
-            if ( value instanceof String ) {
-                String svalue= (String)value;
-                value= SemanticOps.lookupUnits(svalue);
-            }
-            mds.putProperty( name, value);
-
-        } else {
-            mds.putProperty( name, value);
         }
-        return mds;
+        if ( value==null ) {
+            mds.putProperty( name, value );
+            return mds;
+        }
+        
+        String type= DataSetUtil.getPropertyType(name);
+        if ( type==null ) {
+            logger.log(Level.FINE, "unrecognized property {0}...", name);
+            mds.putProperty( name, value ); 
+            
+        } else {
+            if ( type.equals(DataSetUtil.PROPERTY_TYPE_QDATASET) ) {
+                mds.putProperty(name, Ops.dataset(value));
+            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_UNITS) ) {
+                if ( value instanceof String ) {
+                    String svalue= (String)value;
+                    value= SemanticOps.lookupUnits(svalue);
+                }
+                mds.putProperty( name, value);
+            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_BOOLEAN) ) {
+                if ( value instanceof String ) {
+                    String svalue= (String)value;
+                    value= Boolean.valueOf(svalue);
+                } else if ( value instanceof Number ) {
+                    value= !((Number)value).equals(0);
+                }
+                mds.putProperty( name, value);
+            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_NUMBER) ) {
+                if ( value instanceof String ) {
+                    String svalue= (String)value;
+                    if ( svalue.contains(".") || svalue.contains("e") || svalue.contains("E") ) {
+                        value= Double.valueOf(svalue);
+                    } else {
+                        value= Integer.valueOf(svalue);
+                    }
+                }
+                mds.putProperty( name, value);
+            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_CACHETAG) ) {
+                if ( value instanceof String ) {
+                    String svalue= (String)value;
+                    int i= svalue.indexOf("@");
+                    try {
+                        DatumRange tr= DatumRangeUtil.parseTimeRange( svalue.substring(0,i) );
+                        CacheTag r;
+                        if ( i==-1 ) {
+                            value= new CacheTag( tr, null );
+                        } else if ( svalue.substring(i+1).trim().equals("intrinsic") ) {
+                            value= new CacheTag( tr, null );
+                        } else {
+                            Datum res= Units.seconds.parse(svalue.substring(i+1));
+                            value= new CacheTag( tr, res );
+                        }
+                    } catch ( ParseException ex ) {
+                        throw new IllegalArgumentException(ex);
+                    }
+                }
+                mds.putProperty( name, value);
+            } else {
+                mds.putProperty( name, value);
+            }
+            
+        }
+        
+        return mds;        
+        
     }
         
     /**
