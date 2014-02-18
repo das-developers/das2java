@@ -11,6 +11,7 @@ package org.virbo.dataset;
 import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.IllegalFormatConversionException;
 import java.util.logging.Level;
@@ -260,7 +261,7 @@ public class DataSetUtil {
      * @param dest
      */
     public static void copyDimensionProperties( QDataSet source, MutablePropertyDataSet dest ) {
-        String[] names= dimensionProperties();
+        String[] names= _dimensionProperties;
         for ( String n: names ) {
             Object p= source.property(n);
             if ( p!=null ) dest.putProperty( n, p );
@@ -282,6 +283,13 @@ public class DataSetUtil {
         }
     }
 
+    private static final String[] _dimensionProperties = new String[] {
+        QDataSet.UNITS, QDataSet.FORMAT, QDataSet.SCALE_TYPE,
+        QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
+        QDataSet.VALID_MIN, QDataSet.VALID_MAX, QDataSet.FILL_VALUE,
+        QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
+        QDataSet.USER_PROPERTIES, QDataSet.NOTES,
+    };
 
     /**
      * return the list of properties that pertain to the dimension that dataset
@@ -293,15 +301,22 @@ public class DataSetUtil {
      * @return
      */
     public static String[] dimensionProperties() {
-        return new String[]{
-            QDataSet.UNITS, QDataSet.FORMAT, QDataSet.SCALE_TYPE,
-            QDataSet.TYPICAL_MIN, QDataSet.TYPICAL_MAX,
-            QDataSet.VALID_MIN, QDataSet.VALID_MAX, QDataSet.FILL_VALUE,
-            QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
-            QDataSet.USER_PROPERTIES, QDataSet.NOTES,
-        };
+        return Arrays.copyOf( _dimensionProperties,_dimensionProperties.length );
     }
 
+    /**
+     * return true if the property name is a valid dimension property
+     * like "UNITS" or "FORMAT".  See dimensionProperties().
+     * @param name property name to test
+     * @return true if the property is a dimension property.
+     */
+    public static boolean isDimensionProperty( String name ) {
+        for ( String n: _dimensionProperties ) {
+            if ( n.equals(name) ) return true;
+        }
+        return false;
+    }
+    
     /**
      * properties that describe the dataset itself, rather than those of a dimension
      * or structural properties.
@@ -358,7 +373,7 @@ public class DataSetUtil {
     public static Map<String, Object> sliceProperties( QDataSet ds, int index, Map<String,Object> result ) {
         if ( result==null ) result= new LinkedHashMap();
 
-        String[] names = dimensionProperties();
+        String[] names = _dimensionProperties;
 
         for (int i = 0; i < names.length; i++) {
             Object val= ds.property(names[i],index);
@@ -427,7 +442,7 @@ public class DataSetUtil {
      * @return a map of all the properties.
      */
     public static Map<String,Object> getDimensionProperties( QDataSet ds, Map<String,Object> def ) {
-        return getProperties( ds, dimensionProperties(), def );
+        return getProperties( ds, _dimensionProperties, def );
     }
 
     /**
