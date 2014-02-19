@@ -15,6 +15,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import java.io.*;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.*;
+import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -828,8 +830,25 @@ public class AsciiParser {
 
                     // *** here's where we parse each record ***
                     if (recordParser.tryParseRecord(line, irec, builder)) {
-                        irec++;
-                        builder.nextRecord();
+                        boolean acceptRecord= true;
+                        if ( whereParm!=null ) {
+                            String[] fields= new String[recordParser.fieldCount()];
+                            if ( recordParser.splitRecord(line,fields) ) {
+                                int icomp= whereComp.compare( fields[iwhereParm].trim(), whereValue );
+                                if ( whereEq && icomp!=0 ) {
+                                    acceptRecord= false;
+                                } else if ( whereNe && icomp==0 ) {
+                                    acceptRecord= false;
+                                } else if ( !whereNe && whereSign!=icomp ) {
+                                    acceptRecord= false;
+                                }
+                            }
+                            
+                        }
+                        if ( acceptRecord ) {
+                            irec++;
+                            builder.nextRecord();
+                        }
 
                     } else {
                         //System.out.println(line);
@@ -955,6 +974,83 @@ public class AsciiParser {
             }
         }
         return result;
+    }
+
+    String whereParm= null;
+    int iwhereParm= -1;
+    boolean whereEq= false;
+    boolean whereNe= false;
+    int whereSign= 0; // zero means don't allow gt or lt
+    String whereValue= null;
+    Datum dwhereValue= null;
+    
+    private Comparator whereComp= new Comparator() {
+        public int compare(Object o1, Object o2) {
+            if ( o1.equals(o2) ) {
+                return 0;
+            } else {
+                if ( dwhereValue!=null ) {
+                    try {
+                        return units[iwhereParm].parse((String)o1).compareTo(dwhereValue);
+                    } catch (ParseException ex) {
+                        return 1-whereSign; // don't accept this value
+                    }
+                } else {
+                    return 1-whereSign; // don't accept this value
+                }
+            }
+        }
+    };
+    
+    /**
+     * allow constraint for where condition is true.  This doesn't 
+     * need the data to be interpreted for "eq", string equality is checked
+     * for nominal data.  Note sval is compared after trimming outside spaces.
+     * @param sparm column name, such as "field4"
+     * @param op constraint, one of eq gt ge lt le ne
+     * @param sval String value.  For nominal columns, String equality is used.
+     */
+    public void setWhereConstraint(String sparm, String op, String sval) {
+        this.whereParm= sparm;
+        this.iwhereParm= getFieldIndex(whereParm);
+        if ( op.equals("eq") ) {
+            this.whereSign= 0;
+            this.whereEq= true;
+            this.whereNe= false;
+        } else if ( op.equals("ne") ) {
+            this.whereSign= 0;
+            this.whereEq= false;
+            this.whereNe= true;            
+        } else if ( op.equals("gt") ) {
+            this.whereSign= 1;
+            this.whereEq= false;
+            this.whereNe= false;            
+        } else if ( op.equals("ge") ) {
+            this.whereSign= 1;
+            this.whereEq= true;
+            this.whereNe= false;            
+        } else if ( op.equals("lt") ) {
+            this.whereSign= -1;
+            this.whereEq= false;
+            this.whereNe= false;            
+        } else if ( op.equals("le") ) {
+            this.whereSign= -1;
+            this.whereEq= true;
+            this.whereNe= false;            
+        } else {
+            throw new IllegalArgumentException("where constraint not supported: "+op);
+        }
+        this.whereValue= sval.trim();
+        this.dwhereValue= null;
+        if ( UnitsUtil.isOrdinalMeasurement(units[iwhereParm]) ) {
+            logger.log( Level.FINE, "column {0} is ordinal data", sparm);
+        } else {
+            try {
+                this.dwhereValue= units[iwhereParm].parse(this.whereValue);
+            } catch (ParseException ex) {
+                logger.log( Level.FINE, "sval is not parseable, assuming it is ordinal data");
+            }
+        }
     }
 
     public static interface RecordParser {
@@ -1890,6 +1986,9 @@ public class AsciiParser {
 
     /**
      * returns the index of the field.  Supports the name, or field0, or 0, etc.
+     * returns -1 when the column is not identified.
+     * @param string the label for the field, such as "field2" or "time"
+     * @return -1 or the index of the field.
      */
     public int getFieldIndex(String string) {
         for (int i = 0; i < fieldNames.length; i++) {
