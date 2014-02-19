@@ -126,9 +126,11 @@ public abstract class Units implements Serializable {
     }
     
     public static final Units eV= new NumberUnits("eV");
+    public static final Units ev= new NumberUnits("ev"); // Mike at LANL had run into these...
     public static final Units keV= new NumberUnits("keV");
     public static final Units MeV= new NumberUnits("MeV");
     static {
+        eV.registerConverter(Units.ev, UnitsConverter.IDENTITY);
         eV.registerConverter(Units.keV, UnitsConverter.KILO);
         eV.registerConverter(Units.MeV, UnitsConverter.MEGA);
     }
