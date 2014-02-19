@@ -118,8 +118,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final int DOWN = 996;
 
     /* Constants defining the action commands and labels for the scan buttons. */
-    private static final String SCAN_PREVIOUS_LABEL = "<< scan";
-    private static final String SCAN_NEXT_LABEL = "scan >>";
+    private static final String SCAN_PREVIOUS_LABEL = "<< step";
+    private static final String SCAN_NEXT_LABEL = "step >>";
 
     /* GENERAL AXIS INSTANCE MEMBERS */
     protected DataRange dataRange;
