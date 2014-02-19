@@ -835,12 +835,13 @@ public class AsciiParser {
                             String[] fields= new String[recordParser.fieldCount()];
                             if ( recordParser.splitRecord(line,fields) ) {
                                 int icomp= whereComp.compare( fields[iwhereParm].trim(), whereValue );
-                                if ( whereEq && icomp!=0 ) {
-                                    acceptRecord= false;
-                                } else if ( whereNe && icomp==0 ) {
-                                    acceptRecord= false;
-                                } else if ( !whereNe && whereSign!=icomp ) {
-                                    acceptRecord= false;
+                                acceptRecord= false;
+                                if ( whereEq && icomp==0 ) {
+                                    acceptRecord= true;
+                                } else if ( whereNe && icomp!=0 ) {
+                                    acceptRecord= true;
+                                } else if ( whereSign==icomp ) {
+                                    acceptRecord= true;
                                 }
                             }
                             
@@ -1013,6 +1014,9 @@ public class AsciiParser {
     public void setWhereConstraint(String sparm, String op, String sval) {
         this.whereParm= sparm;
         this.iwhereParm= getFieldIndex(whereParm);
+        if ( iwhereParm==-1 ) {
+            throw new IllegalArgumentException("no such column: "+sparm);
+        }
         if ( op.equals("eq") ) {
             this.whereSign= 0;
             this.whereEq= true;
