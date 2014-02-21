@@ -149,6 +149,8 @@ public class EventsRenderer extends Renderer {
         /**
          * returns a color for the given datum.  null may be returned, indicating the
          * default color should be used.
+         * @param d the Datum to represent.
+         * @return color for the Datum.
          */
         Color getColor( Datum d );
     }
@@ -159,6 +161,7 @@ public class EventsRenderer extends Renderer {
          * default String.valueOf(d) should be used.
          * @param range the range of the event
          * @param d the Datum associated with the range
+         * @return the string for the datum and range shown in a popup.
          */
         String getText( DatumRange range, Datum d );
     }
@@ -267,8 +270,8 @@ public class EventsRenderer extends Renderer {
 
                 if ( ii.size()>=0 ) {
                     StringBuilder sb= new StringBuilder();
-                    for ( int iii=0; iii<ii.size(); iii++ ) {
-                        int i= ii.get(iii);
+                    for ( Integer ii1 : ii ) {
+                        int i = ii1;
                         double sxmin= xmins.value(i);
                         double sxmax= xmaxs.value(i);
                         if ( !sxmaxunits.isConvertableTo(sxunits) ) {
@@ -280,7 +283,6 @@ public class EventsRenderer extends Renderer {
                         } else {
                             sxmax= sxmaxunits.convertDoubleTo( sxunits, sxmax );
                         }
-
                         if ( sxmax<sxmin ) {
                             sb.append( "Error, sxmax<sxmin!c");
                         } else {
@@ -588,7 +590,7 @@ public class EventsRenderer extends Renderer {
 
                     long dt= System.currentTimeMillis()-t0;
                     
-                    if ( i%10==0 && dt > 300 ) {
+                    if ( i%10==0 && dt > renderTimeLimitMs ) {
                         parent.postMessage( this, "renderer ran out of time, dataset truncated", DasPlot.WARNING, null, null);
                         break;
                     }
@@ -683,6 +685,8 @@ public class EventsRenderer extends Renderer {
         selectionArea= sa;
         
     }
+    
+    private int renderTimeLimitMs = 300;
 
     @Override
     public void setDataSet(QDataSet ds) {
@@ -722,6 +726,14 @@ public class EventsRenderer extends Renderer {
         cds= makeCanonical(getDataSet());
         propertyChangeSupport.firePropertyChange(  PROP_COLOR, old , color);
         super.invalidateParentCacheImage();
+    }
+
+    public int getRenderTimeLimitMs() {
+        return renderTimeLimitMs;
+    }
+
+    public void setRenderTimeLimitMs(int renderTimeLimitMs) {
+        this.renderTimeLimitMs = renderTimeLimitMs;
     }
     
     /**
@@ -804,6 +816,7 @@ public class EventsRenderer extends Renderer {
      * set this to be an object implementing ColorSpecifier interface, if more than
      * one color is to be used when drawing the bars.  Setting this to null will
      * restore the initial behavior of drawing all bars in one color (or with rank 2 bundle containing color).
+     * @param spec the color specifier.
      */
     public void setColorSpecifier( ColorSpecifier spec ) {
         Object old= this.colorSpecifier;
