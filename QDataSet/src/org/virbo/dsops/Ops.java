@@ -2656,7 +2656,7 @@ public class Ops {
     
     /**
      * tool for creating ad-hoc events datasets.
-     * @param append null or a dataset to append the result.
+     * @param append null or a dataset to append the result.  This events dataset must have [starttime, endtime, RBG color, string] for each record.
      * @param timeRange a timerange like "2010-01-01" or "2010-01-01/2010-01-10" or "2010-01-01 through 2010-01-09"
      * @param rgbcolor and RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue),
      * @param annotation label for event, possibly including granny codes.
@@ -2664,7 +2664,7 @@ public class Ops {
      */
     public static QDataSet createEvent( QDataSet append, String timeRange, int rgbcolor, String annotation ) {
         
-        Units tu= Units.us2000;
+        Units tu;
         
         EnumerationUnits evu;
         
@@ -2673,8 +2673,13 @@ public class Ops {
             bds= (MutablePropertyDataSet) append.property( QDataSet.BUNDLE_1 );
             if ( bds==null ) throw new IllegalArgumentException("append argument must be the output of createEvent");
             evu= (EnumerationUnits) bds.property(QDataSet.UNITS,3);
+            tu= (Units)bds.property(QDataSet.UNITS,0);
+            if ( bds.property(QDataSet.UNITS,1)!=tu ) {
+                throw new IllegalArgumentException("first two columns must be time locations");
+            }
         } else {
             evu= EnumerationUnits.create("createEvent");
+            tu= Units.us2000;
         }
         
         DatumRange dr= DatumRangeUtil.parseTimeRangeValid(timeRange);        
