@@ -2664,23 +2664,25 @@ public class Ops {
      */
     public static QDataSet createEvent( QDataSet append, String timeRange, int rgbcolor, String annotation ) {
         
-        Units tu= Units.t2000;
- 	Units dtu= Units.seconds;
+        Units tu= Units.us2000;
+        
+        EnumerationUnits evu;
         
         MutablePropertyDataSet bds=null;
         if ( append!=null ) {
             bds= (MutablePropertyDataSet) append.property( QDataSet.BUNDLE_1 );
             if ( bds==null ) throw new IllegalArgumentException("append argument must be the output of createEvent");
+            evu= (EnumerationUnits) bds.property(QDataSet.UNITS,3);
+        } else {
+            evu= EnumerationUnits.create("createEvent");
         }
         
-        DatumRange dr= DatumRangeUtil.parseTimeRangeValid(timeRange);
-        
-        EnumerationUnits evu= EnumerationUnits.create("createEvent");
+        DatumRange dr= DatumRangeUtil.parseTimeRangeValid(timeRange);        
         
         DataSetBuilder dsb= new DataSetBuilder(2,100,4);
         
         dsb.putValue( -1, 0, dr.min().doubleValue(tu) );
-        dsb.putValue( -1, 1, dr.width().doubleValue(dtu) );
+        dsb.putValue( -1, 1, dr.max().doubleValue(tu) );
         dsb.putValue( -1, 2, rgbcolor );
         dsb.putValue( -1, 3, evu.createDatum(annotation).doubleValue(evu) );
         dsb.nextRecord();
@@ -2691,10 +2693,10 @@ public class Ops {
             bds= DDataSet.createRank2( 4, 0 );
             bds.putProperty( "NAME__0", "Time" );
             bds.putProperty( "UNITS__0", tu );
-            bds.putProperty( "NAME__1", "Duration" );
-            bds.putProperty( "UNITS__1", dtu );
+            bds.putProperty( "NAME__1", "StopTime" );
+            bds.putProperty( "UNITS__1", tu );
             bds.putProperty( "NAME__2", "Color" );
-            bds.putProperty( "FORMAT__2", "0x%08x" ); // format as hex
+            bds.putProperty( "FORMAT__2", "0x%06x" ); // format as hex
             bds.putProperty( "NAME__3", "Event" );
             bds.putProperty( "UNITS__3", evu );
         } 
@@ -2702,6 +2704,8 @@ public class Ops {
         ds.putProperty( QDataSet.BUNDLE_1, bds );
         
         append= concatenate( append, ds );
+        
+        ((MutablePropertyDataSet)append).putProperty(QDataSet.RENDER_TYPE,QDataSet.VALUE_RENDER_TYPE_EVENTS_BAR);
         return append;
         
     }
