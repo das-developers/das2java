@@ -837,8 +837,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 public void run() {
                     DatumRange range= getScanRange();
                     if ( range==null ) {
-                        scanNext.setToolTipText("");
-                        scanPrevious.setToolTipText("");
+                        scanNext.setToolTipText(null);
+                        scanPrevious.setToolTipText(null);
                     } else {
                         scanNext.setToolTipText("<html><em><sub>scan limited to<br>"+range.toString());
                         scanPrevious.setToolTipText("<html><em><sub>scan limited to<br>"+range.toString());
@@ -869,6 +869,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 logger.log(Level.FINEST, "replaceRange({0})", range);
                 dataRange.resetRange(range);
             }
+            setScanRange(null);
         } else {
             dataRange.setRange(range);
         }
