@@ -270,6 +270,7 @@ public class EventsRenderer extends Renderer {
 
                 if ( ii.size()>=0 ) {
                     StringBuilder sb= new StringBuilder();
+                    int count= 0;
                     for ( Integer ii1 : ii ) {
                         int i = ii1;
                         double sxmin= xmins.value(i);
@@ -296,9 +297,13 @@ public class EventsRenderer extends Renderer {
                             }
                             sb.append(ss).append( "!c");
                         }
+                        count++;
+                        if ( count>10 ) {
+                            break;
+                        }
                     }
-                    if ( ii.size()>4 ) {
-                        sb.append("(").append(ii.size()-4).append( " more items not shown)");
+                    if ( ii.size()>count ) {
+                        sb.append("(").append(ii.size()-count).append( " more items not shown)");
                     }
                     setLabel( sb.toString() );
                 } else {
