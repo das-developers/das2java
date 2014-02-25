@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.format.DatumFormatterFactory;
@@ -310,7 +311,7 @@ public abstract class Units implements Serializable {
     
     private String id;
     private String description;
-    private final Map<Units,UnitsConverter> conversionMap = Collections.synchronizedMap( new IdentityHashMap() );
+    private final Map<Units,UnitsConverter> conversionMap = new ConcurrentHashMap<Units, UnitsConverter>();
     
     protected Units( String id ) {
         this( id, "" );
@@ -340,8 +341,7 @@ public abstract class Units implements Serializable {
         queue.add(this);
         while (!queue.isEmpty()) {
             Units current = (Units)queue.removeFirst();
-            for (Iterator i = current.conversionMap.entrySet().iterator(); i.hasNext();) {
-                Map.Entry entry = (Map.Entry)i.next();
+            for (Map.Entry entry : current.conversionMap.entrySet()) {
                 Units next = (Units)entry.getKey();
                 if (!result.contains(next)) {
                     queue.add(next);
@@ -409,8 +409,7 @@ public abstract class Units implements Serializable {
         queue.add(fromUnits);
         while (!queue.isEmpty()) {
             Units current = (Units)queue.removeFirst();
-            for (Iterator i = current.conversionMap.entrySet().iterator(); i.hasNext();) {
-                Map.Entry entry = (Map.Entry)i.next();
+            for ( Map.Entry entry : current.conversionMap.entrySet() ) {
                 Units next = (Units)entry.getKey();
                 if (!visited.containsKey(next)) {
                     visited.put(next, current);
