@@ -456,6 +456,9 @@ public abstract class Units implements Serializable {
     /**
      * convert the double in this units' space to toUnits' space.  This
      * method is final so that a converter must be registered.
+     * @param toUnits the units.
+     * @param value the value in toUnits.
+     * @return the double in the new units system.
      */
     public final double convertDoubleTo( Units toUnits, double value ) {
         if ( this==toUnits ) {
@@ -465,6 +468,7 @@ public abstract class Units implements Serializable {
         }
     }
     
+    @Override
     public String toString() {
         return id;
     }
@@ -472,7 +476,7 @@ public abstract class Units implements Serializable {
     /**
      * return the units from the Basis for the unit, such as "seconds" in
      * "seconds since midnight, Jan 1, 1970"
-     * @return
+     * @return this units offsets.
      */
     public Units getOffsetUnits() {
         return this;
@@ -481,7 +485,7 @@ public abstract class Units implements Serializable {
     /**
      * return the Basis which defines the meaning of zero and the direction of positive values, such as 
      * "since midnight, Jan 1, 1970"
-     * @return
+     * @return the Basis object, which simply identifies a basis.
      */
     public Basis getBasis() {
         return Basis.physicalZero;
@@ -529,6 +533,7 @@ public abstract class Units implements Serializable {
      * to produce inconsistent results.  For example, this code checks for NaNs
      * whereas isFill does not.
      *
+     * @param value the value to check.
      * @return true if the data is not fill and not NaN.  
      */
     public boolean isValid( double value ) {
@@ -553,6 +558,8 @@ public abstract class Units implements Serializable {
     /**
      * returns a Units object with the given string representation that is stored in the unitsMap.
      *
+     * @param s units identifier
+     * @return units object 
      * @throws IllegalArgumentException if the unit is not recognized.
      */
     public static Units getByName(String s) {
