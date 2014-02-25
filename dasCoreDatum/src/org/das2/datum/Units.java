@@ -26,6 +26,7 @@ package org.das2.datum;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -309,7 +310,7 @@ public abstract class Units implements Serializable {
     
     private String id;
     private String description;
-    private Map conversionMap = new IdentityHashMap();
+    private final Map<Units,UnitsConverter> conversionMap = Collections.synchronizedMap( new IdentityHashMap() );
     
     protected Units( String id ) {
         this( id, "" );
@@ -392,13 +393,16 @@ public abstract class Units implements Serializable {
      * @return UnitsConverter object
      * @throws InconvertibleUnitsException when the conversion is not possible.
      */
-    private static synchronized UnitsConverter getConverterInternal( final Units fromUnits, final Units toUnits ) {
+    private static UnitsConverter getConverterInternal( final Units fromUnits, final Units toUnits ) {
         if (fromUnits == toUnits) {
             return UnitsConverter.IDENTITY;
         }
-        if (fromUnits.conversionMap.get(toUnits) != null) {
-            return (UnitsConverter)fromUnits.conversionMap.get(toUnits);
+        
+        UnitsConverter o = fromUnits.conversionMap.get(toUnits);
+        if ( o != null) {
+            return o;
         }
+        
         Map visited = new HashMap();
         visited.put(fromUnits, null);
         LinkedList queue = new LinkedList();
