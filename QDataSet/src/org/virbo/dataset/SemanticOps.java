@@ -811,9 +811,10 @@ public class SemanticOps {
     /**
      * return the parts of the dataset within the bounds.
      * TODO: This clearly has an idea of how the data is going to be visualized, so this needs to be stated so the spec doesn't move.
-     * @param ds
-     * @param xrange
-     * @param yrange
+     * @param ds the rank 1 or more dataset, including joins.
+     * @param xrange the range or null if no trimming should be done
+     * @param yrange the range or null if no trimming should be done
+     * @return the trimmed dataset.
      */
     public static QDataSet trim( QDataSet ds, DatumRange xrange, DatumRange yrange ) {
         int rank=ds.rank();
