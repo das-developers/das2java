@@ -105,6 +105,8 @@ public class EventsRenderer extends Renderer {
             if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
                 xmaxs= Ops.add( xmins, xmaxs );
                 xrange= Ops.extent(xmaxs,xrange);
+            } else {
+                xrange= Ops.extent(xmaxs,xrange);
             }
 
             if ( xrange.value(0)<xrange.value(1) ) {
