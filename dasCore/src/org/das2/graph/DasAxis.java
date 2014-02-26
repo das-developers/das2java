@@ -3306,9 +3306,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         if (animated && EventQueue.isDispatchThread()) {
 
-
-
-
             logger.fine("animate axis");
 
             boolean drawTca0 = getDrawTca();
@@ -3851,6 +3848,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /**
+     * set the label for the popup button
+     * @param label 
+     */
+    public void setNextActionLabel( String label ) {
+        scanNext.setText(label);
+    }
+    
+    /**
+     * set the label for the popup button
+     * @param label 
+     */
+    public void setPreviousActionLabel( String label ) {
+        scanPrevious.setText(label);
+    }
+    
+    
     private class ScanButton extends JButton {
 
         private boolean hover;
