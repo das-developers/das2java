@@ -697,7 +697,7 @@ public class HttpFileSystem extends WebFileSystem {
     public String[] listDirectory(String directory, String regex) throws IOException {
         
         if ( SwingUtilities.isEventDispatchThread() ) {
-            logger.warning("listDirectory called on event thread!");
+            //logger.warning("listDirectory called on event thread!");
         }
         
         logger.log(Level.FINE, "listDirectory({0},{1})", new Object[]{directory, regex});
