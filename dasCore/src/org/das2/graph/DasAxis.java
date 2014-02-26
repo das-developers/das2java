@@ -148,6 +148,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     private DatumFormatter userDatumFormatter = null;
 
+    public void setNextAction( String label, AbstractAction abstractAction) {
+        this.scanNext.setAction(abstractAction);
+        this.scanNext.setText(""+ label +" >>" );
+    }
+
+    public void setPrevAction( String label,AbstractAction abstractAction) {
+        this.scanPrevious.setAction(abstractAction);
+        this.scanPrevious.setText("<< "+label );
+    }
+
     /**
      * until we switch to java 1.5, use this lock object instead of
      * java.util.concurrent.lock
