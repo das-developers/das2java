@@ -54,6 +54,7 @@ import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
 import org.das2.util.monitor.NullProgressMonitor;
 
@@ -694,6 +695,11 @@ public class HttpFileSystem extends WebFileSystem {
 
     @Override
     public String[] listDirectory(String directory, String regex) throws IOException {
+        
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            logger.warning("listDirectory called on event thread!");
+        }
+        
         logger.log(Level.FINE, "listDirectory({0},{1})", new Object[]{directory, regex});
         directory = toCanonicalFilename(directory);
         if (!isDirectory(directory)) {
