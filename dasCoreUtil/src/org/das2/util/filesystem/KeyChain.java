@@ -149,11 +149,11 @@ public class KeyChain {
             } finally {
                 if ( fout!=null ) fout.close();
             }
-            keysFile.setReadable(false);
-            keysFile.setReadable(false,false);
-            keysFile.setReadable(true,true);
-            keysFile.setWritable(false);
-            keysFile.setWritable(true,true);
+            if ( !keysFile.setReadable(false) ) logger.warning("setReadable failure");
+            if ( !keysFile.setReadable(false,false) ) logger.warning("setReadable failure");
+            if ( !keysFile.setReadable(true,true) ) logger.warning("setReadable failure");
+            if ( !keysFile.setWritable(false) ) logger.warning("setWritable failure");
+            if ( !keysFile.setWritable(true,true) ) logger.warning("setWritable failure");
         }
         
         JButton button= new JButton( new AbstractAction( "Show Passwords") {
