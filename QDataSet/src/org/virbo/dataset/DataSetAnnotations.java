@@ -125,4 +125,12 @@ public class DataSetAnnotations {
         }
     }
     
+    /**
+     * reset the internal state.
+     */
+    public synchronized void reset() {
+        annotations.clear();
+        hits.clear();
+    }
+    
 }
