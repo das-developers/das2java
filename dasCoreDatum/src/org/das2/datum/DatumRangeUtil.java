@@ -1584,6 +1584,7 @@ public class DatumRangeUtil {
      * @param d1
      * @param d2
      * @return
+     * @throws InconvertibleUnitsException 
      */
     public static DatumRange union( Datum d1, Datum d2 ) {
         Units units= d1.getUnits();
@@ -1598,7 +1599,8 @@ public class DatumRangeUtil {
      * @param range
      * @param include a datum to add this this range.  If its the max, then
      * it will be the end of the datum range, not included.
-     * @return
+     * @return DatumRange containing all three boundaries of the range and datum
+     * @throws InconvertibleUnitsException 
      */
     public static DatumRange union( DatumRange range, Datum include ) {
         Units units= range.getUnits();
@@ -1616,7 +1618,8 @@ public class DatumRangeUtil {
      * range between the two is included as well.
      * @param range
      * @param include
-     * @return
+     * @return DatumRange containing all four boundaries of the two datum ranges.
+     * @throws InconvertibleUnitsException 
      */
     public static DatumRange union( DatumRange range, DatumRange include ) {
         Units units= range.getUnits();
