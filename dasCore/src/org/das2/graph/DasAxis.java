@@ -159,7 +159,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    public void setPrevAction( String label,AbstractAction abstractAction) {
+    public void setPreviousAction( String label,AbstractAction abstractAction) {
         if ( !DasApplication.getDefaultApplication().isHeadless() ) {
             ActionListener[] als= this.scanPrevious.getActionListeners();
             for ( ActionListener al : als ) {
