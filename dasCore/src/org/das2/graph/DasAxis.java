@@ -149,13 +149,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private DatumFormatter userDatumFormatter = null;
 
     public void setNextAction( String label, AbstractAction abstractAction) {
-        this.scanNext.setAction(abstractAction);
-        this.scanNext.setText(""+ label +" >>" );
+        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            this.scanNext.setAction(abstractAction);
+            this.scanNext.setText(""+ label +" >>" );
+        }
     }
 
     public void setPrevAction( String label,AbstractAction abstractAction) {
-        this.scanPrevious.setAction(abstractAction);
-        this.scanPrevious.setText("<< "+label );
+        if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            this.scanPrevious.setAction(abstractAction);
+            this.scanPrevious.setText("<< "+label );
+        }
     }
 
     /**
@@ -3853,7 +3857,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param label 
      */
     public void setNextActionLabel( String label ) {
-        scanNext.setText(label);
+        if ( scanNext!=null ) {
+            scanNext.setText(label);
+        }
     }
     
     /**
@@ -3861,7 +3867,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param label 
      */
     public void setPreviousActionLabel( String label ) {
-        scanPrevious.setText(label);
+        if ( scanPrevious!=null ) {
+            scanPrevious.setText(label);
+        }
     }
     
     
