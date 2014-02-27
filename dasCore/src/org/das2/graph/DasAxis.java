@@ -150,6 +150,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void setNextAction( String label, AbstractAction abstractAction) {
         if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            ActionListener[] als= this.scanNext.getActionListeners();
+            for ( ActionListener al : als ) {
+                this.scanNext.removeActionListener(al);
+            }
             this.scanNext.setAction(abstractAction);
             this.scanNext.setText(""+ label +" >>" );
         }
@@ -157,6 +161,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void setPrevAction( String label,AbstractAction abstractAction) {
         if ( !DasApplication.getDefaultApplication().isHeadless() ) {
+            ActionListener[] als= this.scanPrevious.getActionListeners();
+            for ( ActionListener al : als ) {
+                this.scanPrevious.removeActionListener(al);
+            }
             this.scanPrevious.setAction(abstractAction);
             this.scanPrevious.setText("<< "+label );
         }
@@ -3854,21 +3862,25 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /**
      * set the label for the popup button
-     * @param label 
+     * @param label concise label
+     * @param tooltip text for popup tooltip
      */
-    public void setNextActionLabel( String label ) {
+    public void setNextActionLabel( String label, String tooltip ) {
         if ( scanNext!=null ) {
             scanNext.setText(label);
+            scanNext.setToolTipText(tooltip);
         }
     }
     
     /**
      * set the label for the popup button
-     * @param label 
+     * @param label concise label
+     * @param tooltip text for popup tooltip
      */
-    public void setPreviousActionLabel( String label ) {
+    public void setPreviousActionLabel( String label, String tooltip ) {
         if ( scanPrevious!=null ) {
             scanPrevious.setText(label);
+            scanPrevious.setToolTipText(tooltip);
         }
     }
     
