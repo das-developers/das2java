@@ -26,11 +26,8 @@ package org.das2.datum;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -216,6 +213,12 @@ public abstract class Units implements Serializable {
             Units.seconds, Basis.since1970 );
     
     /**
+     * milliseconds since midnight Jan 1, 1970, excluding leap seconds.
+     */
+    public static final TimeLocationUnits ms1970= new TimeLocationUnits("ms1970","Milliseconds since midnight Jan 1, 1970",
+            Units.milliseconds, Basis.since1970 );
+
+    /**
      * roughly days since noon on some day in 1958, Julian - 2436204.5 to be more precise.
      */
     public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", 
@@ -236,7 +239,7 @@ public abstract class Units implements Serializable {
             Units.milliseconds, Basis.since0000 );
 
     /**
-     * the number of nanoseconds since 01-Jan-2000T12:00, roughly.  This includes leap seconds, so conversion is more than a scale-offset.
+     * the number of nanoseconds since 01-Jan-2000T12:00, roughly.  This includes leap seconds, so conversion is more than a scale,offset.
      */
     public static final TimeLocationUnits cdfTT2000= new TimeLocationUnits("cdfTT2000","nanoseconds since 01-Jan-2000, including leap seconds",
             Units.nanoseconds, Basis.since2000 );
@@ -247,6 +250,7 @@ public abstract class Units implements Serializable {
         ((Units)us2000).registerConverter(cdfEpoch, new UnitsConverter.ScaleOffset( 1/1000.,63113904000000L ));
         ((Units)us2000).registerConverter(cdfTT2000, new LeapSecondsConverter( true ) ); 
         ((Units)t2000).registerConverter(t1970, new UnitsConverter.ScaleOffset(1.0, 9.466848e8));
+        ((Units)t1970).registerConverter(ms1970, UnitsConverter.MILLI );
         ((Units)t2000).registerConverter(t2010, new UnitsConverter.ScaleOffset(1.0, -3.1561920e+8 ));
         ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 15340 ));
         ((Units)t2000).registerConverter(mjd, new UnitsConverter.ScaleOffset(1.0/8.64e4, 51544 ));
@@ -265,6 +269,7 @@ public abstract class Units implements Serializable {
 
     /* percentIncrease is defined as <code>( b-a )*100. / a</code>.  So { 1,2,4,8 } has a spacing of 100 % diff.  */
     public static final Units dB = new NumberUnits("dB","decibels");
+    public static final Units ampRatio= new NumberUnits("ampratio","amplitude ratio");
     public static final Units percentIncrease= new NumberUnits("% diff","Special dimensionless number, useful for expressing on logarithmic scale.  100% indicates a doubling");    
     public static final Units log10Ratio= new NumberUnits("log10Ratio", "Special dimensionless number, useful for expressing distances on a log10 scale" );
     public static final Units logERatio= new NumberUnits("logERatio", "Special dimensionless number, useful for expressing distances on a logE scale" );
@@ -286,10 +291,34 @@ public abstract class Units implements Serializable {
             return inverse;
         }
     }
+    
+    /**
+     * see http://en.wikipedia.org/wiki/Decibel
+     */
+    private static class AmpRatioConverter extends UnitsConverter {
+        public double convert(double value) {
+            return ( Math.pow(10,value/20.) );
+        }
+        public UnitsConverter getInverse() {
+            if (inverse == null) {
+                inverse = new UnitsConverter() {
+                    public double convert(double value) {
+                        return 20 * Math.log10( value );
+                    }
+                    public UnitsConverter getInverse() {
+                        return AmpRatioConverter.this;
+                    }
+                };
+            }
+            return inverse;
+        }
+    }
+    
     static {
         log10Ratio.registerConverter( logERatio, new UnitsConverter.ScaleOffset( Math.log(10), 0. ) );
         logERatio.registerConverter( percentIncrease, new PercentRatioConverter() );
         dB.registerConverter( log10Ratio, new UnitsConverter.ScaleOffset( 10, 0 ) );
+        dB.registerConverter( ampRatio, new AmpRatioConverter() );
     }
     
    /* static {
@@ -570,7 +599,8 @@ public abstract class Units implements Serializable {
     }
     
     public static void main( String[] args ) throws java.text.ParseException {
-        Datum ratio = Datum.create(100);
+        //Datum ratio = Datum.create(100);
+        Datum ratio = Units.ampRatio.createDatum(100);
         Datum db = ratio.convertTo(dB);
         System.out.println("ratio: " + ratio);
         System.out.println("dB: " + db);
@@ -581,5 +611,7 @@ public abstract class Units implements Serializable {
         System.out.println("Hz: " + Hz);
         System.out.println("kHz: " + kHz);
         System.out.println("MHz: " + MHz);
+        
+        System.err.println( Units.ms1970.createDatum(1000) );
     }
 }
