@@ -24,7 +24,7 @@ import java.awt.Color;
 import java.beans.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+//import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
@@ -49,6 +49,8 @@ public class BeansUtil {
 
     /** 
      * see BeanBindingDemo2.java 
+     * @param beanClass the bean class, e.g. Datum.class
+     * @param editorClass the editor class, e.g. DatumEditor.class
      */
     public static void registerEditor(Class beanClass, Class editorClass) {
         if ( DasApplication.hasAllPermission() ) {
@@ -94,7 +96,7 @@ public class BeansUtil {
      * sub-interactive at best.  Here we keep track of the results, either in a
      * list of nullPropertyEditors or by registering the editor we just found.
      */
-    private static HashSet nullPropertyEditors = new HashSet();
+    private static final HashSet nullPropertyEditors = new HashSet();
 
     public static java.beans.PropertyEditor findEditor(Class propertyClass) {
         java.beans.PropertyEditor result;
@@ -130,6 +132,8 @@ public class BeansUtil {
 
     /**
      * One-stop place to get the editor for the given propertyDescriptor.
+     * @param pd the property descriptor
+     * @return the editor 
      */
     public static java.beans.PropertyEditor getEditor(PropertyDescriptor pd) {
         java.beans.PropertyEditor editor = null;
@@ -178,11 +182,10 @@ public class BeansUtil {
                 throw new RuntimeException(e);
             }
 
-            for (int i = 0; i < pdthis.length; i++) {
-                boolean isWriteable = pdthis[i].getWriteMethod() != null;
-                boolean isUseable = pdthis[i].getReadMethod() != null && !excludePropertyNames.contains(pdthis[i].getName());
-                if (isUseable || (pdthis[i] instanceof IndexedPropertyDescriptor)) {
-                    propertyList.add(pdthis[i]);
+            for (PropertyDescriptor pdthi : pdthis) {
+                boolean isUseable = pdthi.getReadMethod() != null && !excludePropertyNames.contains(pdthi.getName());
+                if (isUseable || (pdthi instanceof IndexedPropertyDescriptor)) {
+                    propertyList.add(pdthi);
                 }
             }
 
@@ -191,19 +194,18 @@ public class BeansUtil {
                 while (additionalBeanInfo.size() > 0) {
                     BeanInfo aBeanInfo = (BeanInfo) additionalBeanInfo.remove(0);
                     pdthis = aBeanInfo.getPropertyDescriptors();
-                    for (int i = 0; i < pdthis.length; i++) {
-                        String name = pdthis[i].getName();
-                        boolean isWriteable = pdthis[i].getWriteMethod() != null;
-                        boolean isUseable = pdthis[i].getReadMethod() != null && !excludePropertyNames.contains(name);
-                        if (isUseable || (pdthis[i] instanceof IndexedPropertyDescriptor)) {
-                            propertyList.add(pdthis[i]);
+                    for (PropertyDescriptor pdthi : pdthis) {
+                        String name = pdthi.getName();
+                        boolean isUseable = pdthi.getReadMethod() != null && !excludePropertyNames.contains(name);
+                        if (isUseable || (pdthi instanceof IndexedPropertyDescriptor)) {
+                            propertyList.add(pdthi);
                         }
                     }
-                /* This is commented to mimic the behavior of the Introspector, which doesn't climb up the bean inheritance
-                tree unless the additional are specified via the Introspector. */
-                // if ( aBeanInfo.getAdditionalBeanInfo()!=null ) {
-                //     additionalBeanInfo.addAll( Arrays.asList( aBeanInfo.getAdditionalBeanInfo() ) );
-                // }
+                    /* This is commented to mimic the behavior of the Introspector, which doesn't climb up the bean inheritance
+                    tree unless the additional are specified via the Introspector. */
+                    // if ( aBeanInfo.getAdditionalBeanInfo()!=null ) {
+                    //     additionalBeanInfo.addAll( Arrays.asList( aBeanInfo.getAdditionalBeanInfo() ) );
+                    // }
                 }
             }
 
