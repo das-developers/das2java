@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.beans.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
@@ -213,11 +214,20 @@ public class BeansUtil {
         }
     }
 
+    //private static final Map<Class,BeanInfo> beanInfoCache= new ConcurrentHashMap<Class, BeanInfo>();
+    
     public static BeanInfo getBeanInfo(final Class c) throws IntrospectionException {
 
+        long t0= System.currentTimeMillis();
+        
         // goal: get BeanInfo for the class, or the AccessLevelBeanInfo if it exists.
-        BeanInfo beanInfo = null;
-
+        
+        BeanInfo beanInfo = null; // beanInfoCache.get(c);
+        //if ( beanInfo!=null ) {
+        //    logger.log(Level.FINER, "class {0} found in cache in {1} millis", new Object[] { c.getName(), System.currentTimeMillis()-t0 } );
+        //    return beanInfo;
+        //}
+        
         if (c.getPackage() == null) { // e.g. String array
             beanInfo = Introspector.getBeanInfo(c);
 
@@ -237,16 +247,26 @@ public class BeansUtil {
             try {
                 beanInfoClassName = c.getPackage() + "." + s + "BeanInfo";
                 maybeClass = Class.forName(beanInfoClassName);
+                logger.log(Level.FINER, "class found in {0} millis", ( System.currentTimeMillis()-t0 ) );
             } catch (ClassNotFoundException e) {
                 try {
                     beanInfoClassName = "org.das2.beans." + s + "BeanInfo";
                     maybeClass = Class.forName(beanInfoClassName);
+                    logger.log(Level.FINER, "org.das2.beans class found in {0} millis", ( System.currentTimeMillis()-t0 ) );
                 } catch (ClassNotFoundException e2) {
                     beanInfo = Introspector.getBeanInfo(c);
                     beanInfoClassName = beanInfo.getClass().getName();
+                    logger.log(Level.FINER, "introspector found class {0} found in {1} millis", new Object[] { c.getName(), System.currentTimeMillis()-t0 } );
                 }
             }
 
+            long dt= System.currentTimeMillis()-t0;
+            
+            if ( dt>100 ) {
+                logger.log(Level.INFO, "class found in {0} millis", ( dt ) );
+                // weird case where suddenly it's taking forever to resolve these.
+            }
+            
             logger.log(Level.FINER, "using BeanInfo {0} for {1}", new Object[]{beanInfoClassName, c.getName()});
 
             if (beanInfo == null) {
@@ -259,6 +279,9 @@ public class BeansUtil {
                 }
             }
         }
+        
+        //beanInfoCache.put(c,beanInfo);
+        
         return beanInfo;
     }
 
