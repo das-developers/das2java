@@ -180,10 +180,12 @@ public class Contour {
             
             if ((iflag == 1) || (iflag == 4) || (iflag == 5)) {
                 
+            } else if ( iflag==6 ) {
+                return;
             } else {
                 idx++ ;
             }
-
+            
             dsbuilder.putValue(-1,3,idx);
             dsbuilder.putValue(-1,2,cval);
             dsbuilder.putValue(-1,0,getXValue(xy[0]));
