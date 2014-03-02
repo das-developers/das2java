@@ -26,6 +26,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.*;
+import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.TimeUtil;
+import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
 import org.das2.util.filesystem.FileSystemUtil;
 
@@ -283,6 +286,32 @@ public class FileStorageModelNew {
         return timeParser.format( start, end );
     }
 
+    /**
+     * return the timerange that contains the given timerange and
+     * exactly contains a set of granules.
+     * @param timeRange
+     * @return 
+     */
+    public DatumRange quantize(DatumRange timeRange) {
+                
+        try {
+            String tf1= timeParser.format( timeRange.min(), timeRange.min() );
+            String tf2= timeParser.format( timeRange.max(), timeRange.max() );
+            
+            DatumRange dr1= timeParser.parse(tf1).getTimeRange();
+            DatumRange dr2= timeParser.parse(tf2).getTimeRange();
+            
+            if ( dr2.min().equals(timeRange.max() ) ) {
+                return DatumRangeUtil.union( dr1, dr2.min() );
+            } else {
+                return DatumRangeUtil.union( dr1, dr2 );
+            }
+        } catch (ParseException ex) {
+            throw new RuntimeException("this shouldn't happen");
+        }
+    }
+
+    
     /**
      * return the names in the range, or all names if the range is null.
      * @param targetRange range limit, or null.
