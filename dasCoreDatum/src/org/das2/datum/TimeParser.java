@@ -359,16 +359,17 @@ public class TimeParser {
         
         public String configure( Map<String, String> args ) {
             String s= args.get("start");
-            if ( s==null ) return "need start";
+            if ( s==null ) return "periodic field needs start";
             start= DatumRangeUtil.parseISO8601(s);
             julday= TimeUtil.julianDay( start[0], start[1], start[2] );
             start[0]= 0;
             start[1]= 0;
             start[2]= 0;
             s= args.get("offset");
-            if ( s==null ) return "need offset";
+            if ( s==null ) return "periodic field needs offset";
             offset= Integer.parseInt( s );
             s= args.get("period");
+            if ( s==null ) return "periodic field needs period";
             if ( !s.startsWith("P") ) {
                 if ( s.endsWith("d")  ) {
                     s= "P"+s.toUpperCase(); // TODO: this only supports d,H,M,S
