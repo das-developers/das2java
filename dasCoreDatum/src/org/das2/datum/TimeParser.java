@@ -370,7 +370,11 @@ public class TimeParser {
             offset= Integer.parseInt( s );
             s= args.get("period");
             if ( !s.startsWith("P") ) {
-                s= "PT" + s.toUpperCase(); //TODO: verify this.
+                if ( s.endsWith("d")  ) {
+                    s= "P"+s.toUpperCase(); // TODO: this only supports d,H,M,S
+                } else {
+                    s= "PT" + s.toUpperCase(); 
+                }
             }
             period= DatumRangeUtil.parseISO8601Duration( s );
             if ( period[0]==-9999 ) return "unable to parse period: "+s ;
