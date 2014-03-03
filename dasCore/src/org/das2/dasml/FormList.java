@@ -142,13 +142,13 @@ public class FormList extends JList implements Editable, FormComponent {
     }
     
     public String getSelected() {
-        Object[] o = getSelectedValues();
-        if (o.length == 0) return "";
-        String result = ((ListOption)o[0]).getValue();
-        for (int i = 1; i < o.length; i++) {
-            result = result + delimiter + ((ListOption)o[i]).getValue();
+        List l = getSelectedValuesList();
+        if (l.isEmpty()) return "";
+        StringBuilder result= new StringBuilder( ((ListOption)l.get(0)).getValue() );
+        for (int i = 1; i < l.size(); i++) {
+            result.append( delimiter ). append( ((ListOption)l.get(i)).getValue() );
         }
-        return result;
+        return result.toString();
     }
     
     private static class CtrlDownMouseEvent extends MouseEvent {
