@@ -416,7 +416,12 @@ public class TimeParser {
         }
 
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
-            throw new IllegalArgumentException("unable to format");
+            int jd= TimeUtil.julianDay( startTime.year, startTime.month, startTime.day );
+            if ( period[1]!=0 || period[3]!=0 || period[4]!=0 || period[5]!=0 || period[6]!=0) {
+                throw new IllegalArgumentException("under implemented, only integer number of days supported for formatting.");
+            }
+            int deltad= ( jd - this.julday + offset ) / period[2];
+            return String.format("%d",deltad);
         }
         
         
