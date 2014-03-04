@@ -43,7 +43,7 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
      * for bean properties.
      *
      * **NOTE TO DEVELOPERS**
-     * The order parameter for the constructor should not be specifed as a negative number
+     * The order parameter for the constructor should not be specified as a negative number
      */
     public static class AccessLevel implements Comparable {
         public static final AccessLevel ALL = new AccessLevel("ALL", 0);
@@ -57,6 +57,16 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         public int compareTo(Object o) {
             return order - ((AccessLevel)o).order;
         }
+        @Override
+        public boolean equals(Object o) {
+            if ( !( o instanceof PersistenceLevel ) ) return false;
+            return order==((PersistenceLevel)o).order;
+        }
+        @Override
+        public int hashCode() {
+            return this.order;
+        }        
+        @Override
         public String toString() {
             return str;
         }
@@ -78,6 +88,16 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         public int compareTo(Object o) {
             return order - ((PersistenceLevel)o).order;
         }
+        @Override
+        public boolean equals(Object o) {
+            if ( !( o instanceof PersistenceLevel ) ) return false;
+            return order==((PersistenceLevel)o).order;
+        }
+        @Override
+        public int hashCode() {
+            return this.order;
+        }
+        @Override
         public String toString() {
             return str;
         }
@@ -199,7 +219,7 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
     public Property getProperty( PropertyDescriptor pd ) {
         String name= pd.getName();
         for ( int i=0; i<properties.length; i++ ) {
-            if ( properties[i].name==name ) {
+            if ( properties[i].name.equals(name) ) {
                 return properties[i];
             }
         }
