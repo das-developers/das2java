@@ -387,14 +387,15 @@ public class GraphicalLogHandler extends Handler {
             int lastY=-999;
             int collisionCount=0;
 
+            DasPlot parent= getParent();
             if ( !searchRegex.equals("") ) {
                 for ( int i=firstIndex; i<lastIndex; i++ ) {
                     LogRecord record= (LogRecord) records.get(i);
                     if ( record.getMessage().matches( searchRegex ) ) {
                         int ix= (int)xAxis.transform( Units.milliseconds.createDatum( ((Long)times.get(i)).longValue() ) );
                         g.setColor( Color.lightGray );
-                        g.fillRect( ix-2, getParent().getY(), 5, getParent().getHeight() );
-                        objectLocator.addObject( new Rectangle( ix-2, getParent().getY(), 5, getParent().getHeight() ),
+                        g.fillRect( ix-2, parent.getY(), 5, parent.getHeight() );
+                        objectLocator.addObject( new Rectangle( ix-2, parent.getY(), 5, parent.getHeight() ),
                                 record );
                     }
                 }
@@ -454,13 +455,11 @@ public class GraphicalLogHandler extends Handler {
     private class LookupDragRenderer extends LabelDragRenderer {
         private static final String LABEL_NOT_AVAILABLE = "n/a";
         DasAxis xaxis, yaxis;
-        DasPlot parent;
         
         LookupDragRenderer( DasPlot parent ) {
             super( parent );
             this.xaxis= parent.getXAxis();
             this.yaxis= parent.getYAxis();
-            this.parent= parent;
         }
         
         @Override
