@@ -17,7 +17,6 @@ public class WeightsVectorDataSet implements VectorDataSet {
 
     VectorDataSet source;
     Units sourceUnits;
-    double fill;
 
     public static VectorDataSet create( VectorDataSet source ) {
         if ( source.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS)!=null ) {
@@ -30,7 +29,6 @@ public class WeightsVectorDataSet implements VectorDataSet {
     private WeightsVectorDataSet( VectorDataSet source ) {
         this.source= source;
         this.sourceUnits= source.getYUnits();
-        this.fill= source.getYUnits().getFillDouble();
     }
 
     public DataSet getPlanarView(String planeID) {
