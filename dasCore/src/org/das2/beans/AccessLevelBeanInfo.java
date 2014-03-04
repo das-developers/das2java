@@ -59,8 +59,8 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         }
         @Override
         public boolean equals(Object o) {
-            if ( !( o instanceof PersistenceLevel ) ) return false;
-            return order==((PersistenceLevel)o).order;
+            if ( !( o instanceof AccessLevel ) ) return false;
+            return order==((AccessLevel)o).order;
         }
         @Override
         public int hashCode() {
