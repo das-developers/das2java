@@ -142,11 +142,13 @@ public class FormList extends JList implements Editable, FormComponent {
     }
     
     public String getSelected() {
-        List l = getSelectedValuesList();
-        if (l.isEmpty()) return "";
-        StringBuilder result= new StringBuilder( ((ListOption)l.get(0)).getValue() );
-        for (int i = 1; i < l.size(); i++) {
-            result.append( delimiter ). append( ((ListOption)l.get(i)).getValue() );
+        int[] ii= getSelectedIndices();
+        if ( ii.length==0 ) {
+            return "";
+        }
+        StringBuilder result= new StringBuilder( ((ListOption)getItem(ii[0])).getValue() );
+        for (int i = 1; i < ii.length; i++) {
+            result.append( delimiter ). append( ((ListOption)getItem(ii[i])).getValue() );
         }
         return result.toString();
     }
