@@ -43,7 +43,7 @@ import java.util.List;
 import org.das2.DasPropertyException;
 import org.das2.components.propertyeditor.Editable;
 
-public class FormList extends JList implements Editable, FormComponent {
+public final class FormList extends JList implements Editable, FormComponent {
     
     private String delimiter = " ";
     
@@ -107,6 +107,7 @@ public class FormList extends JList implements Editable, FormComponent {
     }
 
     
+    @Override
     public void addMouseListener(MouseListener l) {
         if (l instanceof BasicListUI.MouseInputHandler) {
             l = new CtrlDownMouseInputListener((MouseInputListener)l);
@@ -114,6 +115,7 @@ public class FormList extends JList implements Editable, FormComponent {
         super.addMouseListener(l);
     }
     
+    @Override
     public void addMouseMotionListener(MouseMotionListener l) {
         if (l instanceof BasicListUI.MouseInputHandler) {
             l = new CtrlDownMouseInputListener((MouseInputListener)l);
@@ -169,12 +171,15 @@ public class FormList extends JList implements Editable, FormComponent {
         public CtrlDownMouseInputListener(MouseInputListener listener) {
             this.listener = listener;
         }
+        @Override
         public void mousePressed(MouseEvent e) {
             listener.mousePressed(new CtrlDownMouseEvent(e));
         }
+        @Override
         public void mouseReleased(MouseEvent e) {
             listener.mouseReleased(new CtrlDownMouseEvent(e));
         }
+        @Override
         public void mouseDragged(MouseEvent e) {
             listener.mouseDragged(new CtrlDownMouseEvent(e));
         }
@@ -286,18 +291,10 @@ public class FormList extends JList implements Editable, FormComponent {
                 }
             }
             catch (DasPropertyException dpe) {
-                //This exception would only occur due to some invalid state.
-                //So, wrap it and toss it.
-                IllegalStateException se = new IllegalStateException(dpe.toString());
-                se.initCause(dpe);
-                throw se;
+                throw new IllegalStateException(dpe);
             }
             catch (java.lang.reflect.InvocationTargetException ite) {
-                //This exception would only occur due to some invalid state.
-                //So, wrap it and toss it.
-                IllegalStateException se = new IllegalStateException(ite.toString());
-                se.initCause(ite);
-                throw se;
+                throw new IllegalStateException(ite);
             }
         }
     }
