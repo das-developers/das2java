@@ -27,12 +27,11 @@ public class LoggingEventQueue extends EventQueue {
     
     final static Logger logger= Logger.getLogger( "das2.gui" );
     
-    Object lockObject= new String("lockObjectLEQ");
-    
     private LoggingEventQueue() {
         
     }
     
+    @Override
     public void postEvent(java.awt.AWTEvent theEvent) {
         if (theEvent instanceof InvocationEvent) {
          //   logger.info("XXX: "+theEvent);
