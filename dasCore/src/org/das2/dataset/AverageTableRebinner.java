@@ -153,7 +153,7 @@ public class AverageTableRebinner implements DataSetRebinner {
         if ( bundle ) {
             averageBundle( tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType );
             zds= SemanticOps.getDependentDataSet(tds1);
-            interpolate= false;
+
         } else {
             average( tds, weights, rebinData, rebinWeights, ddX, ddY, interpolateType );
 //            try {
