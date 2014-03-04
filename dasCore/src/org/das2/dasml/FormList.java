@@ -43,7 +43,7 @@ import java.util.List;
 import org.das2.DasPropertyException;
 import org.das2.components.propertyeditor.Editable;
 
-public final class FormList extends JList implements Editable, FormComponent {
+public class FormList extends JList implements Editable, FormComponent {
     
     private String delimiter = " ";
     
@@ -135,7 +135,7 @@ public final class FormList extends JList implements Editable, FormComponent {
         return ((OptionListModel)getModel()).list.size();
     }
     
-    public void setDelimiter(String delimiter) {
+    public final void setDelimiter(String delimiter) {
         this.delimiter = delimiter;
     }
     
@@ -265,7 +265,7 @@ public final class FormList extends JList implements Editable, FormComponent {
         return dasName;
     }
     
-    public void setDasName(String name) throws org.das2.DasNameException {
+    public final void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
         }
