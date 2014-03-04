@@ -55,6 +55,11 @@ public abstract class Units implements Serializable {
     }
 
     /**
+     * 
+     */
+    public static final Units rgbColor= new NumberUnits("rgbColor","256*256*red+256*green+blue");
+    
+    /**
      * this is left in in case legacy code needs to see the conversion from dB to dimensionless offset.
      */
     private static final class dBConverter extends UnitsConverter {
