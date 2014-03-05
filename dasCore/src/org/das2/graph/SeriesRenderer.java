@@ -488,9 +488,11 @@ public class SeriesRenderer extends Renderer {
             GeneralPath lp;
 
             if (deltaPlusY == null) {
+                p= null;
                 return;
             }
             if (deltaMinusY == null) {
+                p= null;
                 return;
             }
 
