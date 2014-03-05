@@ -23,7 +23,7 @@ import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsConverter.ScaleOffset;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
-import static org.virbo.dataset.DataSetUtil.isConstant;
+//import static org.virbo.dataset.DataSetUtil.isConstant;
 import org.virbo.dsops.Ops;
 
 /**
