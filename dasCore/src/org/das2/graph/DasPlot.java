@@ -857,35 +857,44 @@ public class DasPlot extends DasCanvasComponent {
         }
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
+        
+        Rectangle lcacheImageBounds;
+        
         if (overSize && !printing ) {
-            cacheImageBounds = new Rectangle();
-            cacheImageBounds.width = 16 * width / 10;
-            cacheImageBounds.height = height;
-            cacheImageBounds.x = x - 3 * width / 10;
-            cacheImageBounds.y = y - 1;
+            lcacheImageBounds = new Rectangle();
+            lcacheImageBounds.width = 16 * width / 10;
+            lcacheImageBounds.height = height;
+            lcacheImageBounds.x = x - 3 * width / 10;
+            lcacheImageBounds.y = y - 1;
+            this.cacheImageBounds= lcacheImageBounds;
+            
         } else {
-            cacheImageBounds = new Rectangle();
-            cacheImageBounds.width = width;
-            cacheImageBounds.height = height;
-            if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
+            lcacheImageBounds = new Rectangle();
+            lcacheImageBounds.width = width;
+            lcacheImageBounds.height = height;
+            if ( lcacheImageBounds.width==0 || lcacheImageBounds.height==0 ) {
                 try {
                     System.err.println("cheesy code to fix getHeight=0 when printing");
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
                     logger.log(Level.SEVERE, ex.getMessage(), ex);
                 }
-                cacheImageBounds.width = width;
-                cacheImageBounds.height = height;
+                lcacheImageBounds.width = width;
+                lcacheImageBounds.height = height;
             }            
-            if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
+            if ( lcacheImageBounds.width==0 || lcacheImageBounds.height==0 ) {
                 getWidth();
                 getHeight();
                 throw new IllegalArgumentException("width or height is 0.");
             }
-            logger.log( Level.FINE, "create cacheImage {0}x{1}", new Object[]{cacheImageBounds.width, cacheImageBounds.height});
-            cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
-            cacheImageBounds.x = x - 1;
-            cacheImageBounds.y = y - 1;
+            logger.log( Level.FINE, "create cacheImage {0}x{1}", new Object[]{lcacheImageBounds.width, lcacheImageBounds.height});
+            BufferedImage lcacheImage = new BufferedImage(lcacheImageBounds.width, lcacheImageBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
+            lcacheImageBounds.x = x - 1;
+            lcacheImageBounds.y = y - 1;
+
+            this.cacheImageBounds= lcacheImageBounds;
+            this.cacheImage= lcacheImage;
+
         }
     }
 
@@ -926,7 +935,7 @@ public class DasPlot extends DasCanvasComponent {
     protected synchronized void paintComponent(Graphics graphics0) {
         logger.log(Level.FINER, "dasPlot.paintComponent {0}", getDasName());
         if ( getCanvas().isValueAdjusting() ) {
-            repaint();
+            repaint(); // come back soon
             return;
         }
 
@@ -999,11 +1008,14 @@ public class DasPlot extends DasCanvasComponent {
         boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache;
         if ( useCacheImage ) {
 
+            Rectangle lcacheImageBounds= this.cacheImageBounds;
+            BufferedImage lcacheImage= this.cacheImage;
+            
             Graphics2D atGraphics = (Graphics2D) graphics.create();
 
             AffineTransform at = getAffineTransform(xAxis, yAxis);
             if (at == null || (preview == false && !isIdentity(at))) {
-                atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
+                atGraphics.drawImage(lcacheImage, lcacheImageBounds.x, lcacheImageBounds.y, lcacheImageBounds.width, lcacheImageBounds.height, this);
                 paintInvalidScreen(atGraphics, at);
 
             } else {
@@ -1013,7 +1025,7 @@ public class DasPlot extends DasCanvasComponent {
                     atGraphics.transform(at);
                 } else {
                     //atDesc= "identity";
-                    logger.log(Level.FINEST, " using cacheImage {0} {1} {2}", new Object[]{cacheImageBounds, xmemento, ymemento});
+                    logger.log(Level.FINEST, " using cacheImage {0} {1} {2}", new Object[]{lcacheImageBounds, xmemento, ymemento});
                 }
 
                 //int reduceHeight=  getRow().getDMinimum() - clip.y;
@@ -1024,12 +1036,12 @@ public class DasPlot extends DasCanvasComponent {
                 //clip.translate( getX(), getY() );
                 //atGraphics.setClip(clip);
 
-                if ( cacheImageBounds.width!=cacheImage.getWidth() ) {
-                    logger.log( Level.WARNING, " cbw: {0}  ciw:{1}", new Object[]{cacheImageBounds.width, cacheImage.getWidth()});
+                if ( lcacheImageBounds.width!=lcacheImage.getWidth() ) {
+                    logger.log( Level.WARNING, " cbw: {0}  ciw:{1}", new Object[]{lcacheImageBounds.width, lcacheImage.getWidth()});
                 }
                 
                 // Draw the cache image onto the plot.
-                atGraphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
+                atGraphics.drawImage(lcacheImage, lcacheImageBounds.x, lcacheImageBounds.y, lcacheImageBounds.width, lcacheImageBounds.height, this);
                 
                 
                     //atGraphics.setClip(null);
@@ -1045,6 +1057,9 @@ public class DasPlot extends DasCanvasComponent {
 
         } else {  // don't useCacheImage
 
+            BufferedImage lcacheImage;
+            Rectangle lcacheImageBounds;
+                
             synchronized (this) {
                 Graphics2D plotGraphics;
                 if (getCanvas().isPrintingThread() || disableImageCache) {
@@ -1056,27 +1071,32 @@ public class DasPlot extends DasCanvasComponent {
                     }
                     resetCacheImageBounds(true,w,h);
                     logger.finest(" printing thread, drawing");
+                    lcacheImage= null;
+                    lcacheImageBounds= null;
+                    
                 } else {
                     int w= getWidth();
                     int h= getHeight();
                     if ( w==0 || h==0 ) {
                         return;
                     }
-                    resetCacheImageBounds(false,w,h);                    
-                    if ( cacheImageBounds.width==0 || cacheImageBounds.height==0 ) {
+                    resetCacheImageBounds(false,w,h);   
+                    lcacheImageBounds= this.cacheImageBounds;
+                    if ( lcacheImageBounds.width==0 || lcacheImageBounds.height==0 ) {
                         logger.info("https://sourceforge.net/p/autoplot/bugs/1076/");
                         return;
                     }
-                    cacheImage = new BufferedImage(cacheImageBounds.width, cacheImageBounds.height,
+                    lcacheImage = new BufferedImage(lcacheImageBounds.width, lcacheImageBounds.height,
                             BufferedImage.TYPE_4BYTE_ABGR);
-                    plotGraphics = (Graphics2D) cacheImage.getGraphics();
+                    plotGraphics = (Graphics2D) lcacheImage.getGraphics();
                     plotGraphics.setBackground(getBackground());
                     plotGraphics.setColor(getForeground());
                     plotGraphics.setRenderingHints(org.das2.DasProperties.getRenderingHints());
                     if (overSize) {
-                        plotGraphics.translate(x - cacheImageBounds.x - 1, y - cacheImageBounds.y - 1);
+                        plotGraphics.translate(x - lcacheImageBounds.x - 1, y - lcacheImageBounds.y - 1);
                     }
 
+                    
                     logger.finest(" rebuilding cacheImage");
 
                 }
@@ -1129,7 +1149,7 @@ public class DasPlot extends DasCanvasComponent {
                 //clip.y= Math.max( clip.y, getRow().getDMinimum() );
                 //clip.translate( getX(), getY() );
                 //graphics.setClip(clip);
-                graphics.drawImage(cacheImage, cacheImageBounds.x, cacheImageBounds.y, cacheImageBounds.width, cacheImageBounds.height, this);
+                graphics.drawImage(lcacheImage, lcacheImageBounds.x, lcacheImageBounds.y, lcacheImageBounds.width, lcacheImageBounds.height, this);
                 //graphics.drawString( "new image", getWidth()/2, getHeight()/2 );
                 //graphics.setClip(null);
 
@@ -1137,6 +1157,9 @@ public class DasPlot extends DasCanvasComponent {
                 ymemento = yAxis.getMemento();
 
                 logger.log(Level.FINEST, "recalc cacheImage, xmemento={0} ymemento={1}", new Object[]{xmemento, ymemento});
+                
+                cacheImage= lcacheImage;
+                cacheImageBounds= lcacheImageBounds;
             }
         }
 
@@ -1388,10 +1411,12 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
-        int xmin = this.cacheImageBounds.x;
-        int xmax = this.cacheImageBounds.x + this.cacheImageBounds.width;
-        int ymin = this.cacheImageBounds.y;
-        int ymax = this.cacheImageBounds.y + this.cacheImageBounds.height;
+        Rectangle lcacheImageBounds= new Rectangle(cacheImageBounds); // make a local copy for thread safety.
+        
+        int xmin = lcacheImageBounds.x;
+        int xmax = lcacheImageBounds.x + lcacheImageBounds.width;
+        int ymin = lcacheImageBounds.y;
+        int ymax = lcacheImageBounds.y + lcacheImageBounds.height;
 
         if (yticks != null && yticks.getUnits().isConvertableTo(yAxis.getUnits())) {
             for (int i = 0; i < yticks.getLength(); i++) {
@@ -2135,33 +2160,42 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * returns the rectangle that renderers should paint so that when they
      * are asked to render, they have everything pre-rendered.  This is
-     * the same as the axis bounds them oversize is turned off.
+     * the same as the axis bounds them oversize is turned off.  
      * 
-     * @return
+     * This returns a copy of the current bounds and may be modified by the 
+     * client.  However, this does have the side-effect of recalculating the
+     * internal bounds.
+     * @return the cache image bounds.
+     * @see getCacheImageBounds which does not recalculate.
      */
     protected Rectangle getUpdateImageBounds() {
         int x = getColumn().getDMinimum();
         int y = getRow().getDMinimum();
-        cacheImageBounds = new Rectangle();
+        Rectangle lcacheImageBounds = new Rectangle();
         if ( overSize ) {
-            cacheImageBounds.width = 16 * getWidth() / 10;
-            cacheImageBounds.height = getHeight();
-            cacheImageBounds.x = x - 3 * getWidth() / 10;
+            lcacheImageBounds.width = 16 * getWidth() / 10;
+            lcacheImageBounds.height = getHeight();
+            lcacheImageBounds.x = x - 3 * getWidth() / 10;
         } else {
-            cacheImageBounds.width = getWidth();
-            cacheImageBounds.height = getHeight();
-            cacheImageBounds.x = x - 1;
+            lcacheImageBounds.width = getWidth();
+            lcacheImageBounds.height = getHeight();
+            lcacheImageBounds.x = x - 1;
         }
-        cacheImageBounds.y = y - 1;
-        return cacheImageBounds;
+        lcacheImageBounds.y = y - 1;
+        cacheImageBounds= lcacheImageBounds;
+        
+        return lcacheImageBounds;
     }
 
     /**
-     * returns the position of the cacheImage in the canvas frame of reference.
+     * returns a copy of the position of the cacheImage in the 
+     * canvas frame of reference.
+     * 
      * @return Rectangle
      */
     protected Rectangle getCacheImageBounds() {
-        return cacheImageBounds;
+        Rectangle lcacheImageBounds= new Rectangle(cacheImageBounds);
+        return lcacheImageBounds;
     }
 
     /**
