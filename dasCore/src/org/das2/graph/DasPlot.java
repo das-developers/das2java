@@ -849,6 +849,8 @@ public class DasPlot extends DasCanvasComponent {
      * or calls invalidateCacheImage, so that the bounds and the image are consistent.
      *
      * @param printing the bounds should be set for printing, which currently disabled the overSize rendering.
+     * @param width width in pixels.
+     * @param height height in pixels.
      *
      */
     private synchronized void resetCacheImageBounds( boolean printing, int width, int height ) {
