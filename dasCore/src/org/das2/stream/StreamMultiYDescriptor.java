@@ -70,7 +70,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
 		  NodeList nl = element.getElementsByTagName("properties");
 		  for(int i = 0; i<nl.getLength(); i++){
 			  Element el = (Element)nl.item(i);
-			  attrs= element.getAttributes();
+			  attrs= el.getAttributes();
 			  for ( int iAttr=0; iAttr<attrs.getLength(); iAttr++ ) {
             Node n= attrs.item(iAttr);
             properties.put( n.getNodeName(), n.getNodeValue() );
