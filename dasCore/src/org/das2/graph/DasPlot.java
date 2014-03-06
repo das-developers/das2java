@@ -910,7 +910,13 @@ public class DasPlot extends DasCanvasComponent {
     protected void printComponent(Graphics g) {
         boolean doInvalidate= getCanvas().isPrintingThread();
         if ( doInvalidate ) { // only if we really are printing from the canvas print method.  getImageNonPrint
-            resetCacheImageBounds(true,getWidth(),getHeight());
+            int w= getWidth();
+            int h= getHeight();
+            if ( w==0 || h==0 ) {
+                logger.warning("width or height is zero.  Try printing again.");
+                return;
+            }
+            resetCacheImageBounds(true,w,h);
             List<Renderer> renderers1= Arrays.asList(getRenderers());
             for (int i = 0; i < renderers1.size(); i++) {
                 Renderer rend = (Renderer) renderers1.get(i);
