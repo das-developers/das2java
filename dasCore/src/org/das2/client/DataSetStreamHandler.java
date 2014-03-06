@@ -233,6 +233,7 @@ public class DataSetStreamHandler implements StreamHandler {
         public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
             Datum base = pd.getXDescriptor().getBase();
             double x = getXWithBase(base, xTag);
+            
             for (int i = 0; i < pd.getYCount(); i++) {
                 if (pd.getYDescriptor(i) instanceof StreamMultiYDescriptor) {
                     StreamMultiYDescriptor my = (StreamMultiYDescriptor)pd.getYDescriptor(i);
@@ -247,11 +248,20 @@ public class DataSetStreamHandler implements StreamHandler {
                     } else {
                         builder.insertY(x, y);
                     }
-                    
+                    Map<String,Object> props= my.getProperties();
+                    for ( Entry<String,Object> p: props.entrySet() ) {
+                        if ( i==0 ) {
+                            builder.setProperty( p.getKey(), p.getValue() );                            
+                        } else {
+                            builder.setProperty( my.getName()+"."+p.getKey(), p.getValue() );
+                        }
+                    }
                 } else {
                     throw new StreamException("Mixed data sets are not currently supported");
                 }
             }
+            //TODO: see TableDataSet below, where PacketDescriptor can have properties.
+            
         }
         
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
@@ -327,6 +337,7 @@ public class DataSetStreamHandler implements StreamHandler {
                     }
                 }
             }
+            //TODO: see VectorDataSet above, where each plane can have properties.
         }
         
         public void streamClosed(StreamDescriptor sd) throws StreamException {}
