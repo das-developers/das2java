@@ -14,9 +14,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.das2.datum.Datum;
+import org.das2.datum.Units;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  * allows dataset of unknown length to be built. Presently, this only builds QUBES, but should allow for geometry changes.
@@ -38,6 +41,9 @@ public class DataSetBuilder {
     int offset;
     int length;  // number of records or partial records written
     HashMap<String,Object> properties;
+    
+    Units u= null;
+    Units[] us= null; // for Rank 1 bundles
     
     /**
      * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
@@ -157,8 +163,107 @@ public class DataSetBuilder {
         checkStreamIndex(index0);
         current.putValue( this.index, index1, index2, d );
     }
+
+    /**
+     * insert a value into the builder.
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param d the value to insert.
+     */
+    public void putValue( int index0, Datum d ) {
+        checkStreamIndex(index0);
+        if ( u==null ) u= d.getUnits();
+        current.putValue( this.index, d.doubleValue(u) );
+    }
     
     /**
+     * insert a value into the builder.
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param index1 the second index
+     * @param d the value to insert.
+     */
+    public void putValue( int index0, int index1, Datum d ) {
+        checkStreamIndex(index0);
+        if ( us==null ) { 
+            us= new Units[this.dim1];
+        }
+        if ( us[index1]==null ) {
+            us[index1]= d.getUnits();
+        }
+        current.putValue( this.index, index1, d.doubleValue(us[index1]) );
+    }
+    
+    /**
+     * insert a value into the builder.
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param index1 the second index
+     * @param index2 the third index
+     * @param d the value to insert.
+     */
+    public void putValue( int index0, int index1, int index2, Datum d ) {
+        checkStreamIndex(index0);
+        if ( u==null ) u= d.getUnits();
+        current.putValue( this.index, index1, index2, d.doubleValue(u) );
+    }    
+    
+    /**
+     * insert a value into the builder.  Note these do Units checking and are therefore less efficient
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param d the value to insert.
+     */
+    public void putValue( int index0, QDataSet d ) {
+        checkStreamIndex(index0);
+        if ( u==null ) u= SemanticOps.getUnits(d);
+        double v= d.value();        
+        Units lu= SemanticOps.getUnits(d);
+        if ( lu!=u ) {
+            v= lu.convertDoubleTo( us[index], v );
+        }
+        current.putValue( this.index, v );
+    }
+    
+    /**
+     * insert a value into the builder.  Note these do Units checking and are therefore less efficient
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param index1 the second index
+     * @param d the value to insert.
+     */
+    public void putValue( int index0, int index1, QDataSet d ) {
+        checkStreamIndex(index0);
+        if ( us==null ) { 
+            us= new Units[this.dim1];
+        }
+        if ( us[index1]==null ) {
+            us[index1]= SemanticOps.getUnits(d);
+        }
+        double v= d.value();        
+        Units lu= SemanticOps.getUnits(d);
+        if ( lu!=us[index1] ) {
+            v= lu.convertDoubleTo( us[index], v );
+        }
+        current.putValue( this.index, index1, v );
+    }
+    
+    /**
+     * insert a value into the builder.  Note these do Units checking and are therefore less efficient
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param index1 the second index
+     * @param index2 the third index
+     * @param d the value to insert.
+     */
+    public void putValue( int index0, int index1, int index2, QDataSet d ) {
+        checkStreamIndex(index0);
+        if ( u==null ) {
+            u= SemanticOps.getUnits(d);
+        } 
+        double v= d.value();
+        Units lu= SemanticOps.getUnits(d);
+        if ( lu!=u ) {
+            v= lu.convertDoubleTo( u, v );
+        }
+        current.putValue( this.index, index1, index2, v );
+    }
+    
+/**
      * copy the elements from one DDataSet into the builder (which can be done with
      * a system call), ignoring dataset geometry.  TODO: since the element count
      * allows for putting multiple records in at once, an index out of bounds may 
@@ -237,6 +342,27 @@ public class DataSetBuilder {
         }
         result.putLength( length );
         
+        if ( u!=null ) {
+            result.putProperty( QDataSet.UNITS,u );
+        } else if ( us!=null ) {
+            Units u1= us[0];
+            boolean isBundle= false;
+            for ( int i=1; i<dim1; i++ ) {
+                if ( us[i]!=u1 ) { // it's a bundle
+                    isBundle= true;
+                }
+            }
+            if ( isBundle ) {
+                BundleBuilder bb= new BundleBuilder(dim1);
+                for ( int i=0; i<dim1; i++ ) {
+                    bb.putProperty( QDataSet.UNITS, i, us[i] );
+                }
+                result.putProperty( QDataSet.BUNDLE_1, bb.getDataSet() );
+            } else {
+                result.putProperty( QDataSet.UNITS, us[0] );
+            }
+        }
+        
         for ( Iterator<String> i= properties.keySet().iterator(); i.hasNext();  ) {
             String key= i.next();
             result.putProperty( key, properties.get(key) );
@@ -247,6 +373,28 @@ public class DataSetBuilder {
     
     public void putProperty( String string, Object o ) {
         properties.put( string, o );
+    }
+    
+    /**
+     * set the units for the dataset. 
+     * @param u 
+     */    
+    public void setUnits( Units u ) {
+        this.u= u;
+    }
+    
+    /**
+     * set the units for column i.  This is only used with rank 2 (2-index) datasets.
+     * @param i
+     * @param u 
+     */
+    public void setUnits( int i, Units u ) {
+        if ( this.us==null ) {
+            this.us= new Units[dim1];
+            for ( int j=0; j<dim1; j++ ) {
+                this.us[i]= u;
+            }
+        }
     }
     
     /**
