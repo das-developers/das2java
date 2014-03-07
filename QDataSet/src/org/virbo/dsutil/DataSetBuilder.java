@@ -12,7 +12,6 @@ package org.virbo.dsutil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
@@ -47,25 +46,30 @@ public class DataSetBuilder {
     
     /**
      * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
+     * @param rank the number of indeces of the result dataset.
      * @param guessRecCount initial allocation for the first dimension.
      */
     public DataSetBuilder( int rank, int guessRecCount ) {
         this( rank, guessRecCount, 1, 1 );
         if ( rank>1 ) throw new IllegalArgumentException( String.format( "rank %d dataset when dim1 not specified.", rank ) );
+        if ( rank!=1 ) throw new IllegalArgumentException( "rank must be 1 for two-arg DataSetBuilder call");
     }
     
     /**
      * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
+     * @param rank the number of indeces of the result dataset.
      * @param guessRecCount initial allocation for the first dimension.
      * @param dim1 when rank 2 or greater is used.
      */
     public DataSetBuilder( int rank, int guessRecCount, int dim1 ) {
         this( rank, guessRecCount, dim1, 1 );
         if ( rank>2 ) throw new IllegalArgumentException(String.format( "rank %d dataset when dim2 not specified.", rank ) );
+        if ( rank!=2 ) throw new IllegalArgumentException( "rank must be 2 for three-arg DataSetBuilder call");        
     }
     
     /**
      * recCount is the guess of dim0 size.  Bad guesses may result in an extra copy.
+     * @param rank the number of indeces of the result dataset.
      * @param guessRecCount initial allocation for the first dimension.
      * @param dim1 when rank 2 or greater is used.
      * @param dim2 when rank 3 or greater is used.
@@ -285,6 +289,8 @@ public class DataSetBuilder {
     
     /**
      * This must be called each time a record is complete.  
+     * When -1 is used for the indexes of the streaming dimension, then this
+     * will increment the internal counter.
      * TODO:  I always forget to call this, find another way to do this.  Check
      * for unspecified entries.
      */
@@ -301,6 +307,7 @@ public class DataSetBuilder {
 
    /**
     * return the number of records added to the builder.
+     * @return the number of records added to the builder.
     */
     public int getLength() {
         return length;
@@ -308,15 +315,16 @@ public class DataSetBuilder {
     
     /**
      * return the number of elements in each record.
-     * @return
+     * @return the number of elements in each record.
      */
     public int getRecordElements() {
         return this.recElements;
     }
     
     /**
-     * returns the result dataset, concatenating all the datasets it's built
+     * returns the result dataset, concatenating all the datasets it has built
      * thus far.
+     * @return the result dataset
      */
     public DDataSet getDataSet() {
         DDataSet result;
@@ -331,8 +339,7 @@ public class DataSetBuilder {
         
         int dsindex=0; // dim0 index to copy dataset
         if ( finished!=null ) {
-            for ( int i=0; i<finished.size(); i++ ) {
-                DDataSet f1= finished.get(i);
+            for (DDataSet f1 : finished) {
                 DDataSet.copyElements( f1, 0, result, dsindex, f1.length() );
                 dsindex+= f1.length();
             }
@@ -363,8 +370,7 @@ public class DataSetBuilder {
             }
         }
         
-        for ( Iterator<String> i= properties.keySet().iterator(); i.hasNext();  ) {
-            String key= i.next();
+        for (String key : properties.keySet()) {
             result.putProperty( key, properties.get(key) );
         }
         
@@ -413,7 +419,7 @@ public class DataSetBuilder {
     /**
      * Utility field used by bound properties.
      */
-    private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+    private final java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
     
     /**
      * Adds a PropertyChangeListener to the listener list.
@@ -447,7 +453,7 @@ public class DataSetBuilder {
         double oldFillValue = this.fillValue;
         this.fillValue = fillValue;
         if ( !Double.isNaN(fillValue) ) properties.put( QDataSet.FILL_VALUE, fillValue );
-        propertyChangeSupport.firePropertyChange("fillValue", new Double(oldFillValue), new Double(fillValue));
+        propertyChangeSupport.firePropertyChange("fillValue", oldFillValue, fillValue);
     }
 
     protected double validMin = Double.NEGATIVE_INFINITY;
@@ -471,6 +477,10 @@ public class DataSetBuilder {
         return validMax;
     }
 
+    /**
+     * set the valid max property.
+     * @param validMax 
+     */
     public void setValidMax(double validMax) {
         double oldValidMax = this.validMax;
         this.validMax = validMax;
@@ -492,6 +502,7 @@ public class DataSetBuilder {
 
     /**
      * return the rank of the dataset we are building.
+     * @return the rank of the dataset we are building
      */
     public int rank() {
         return rank;
