@@ -230,7 +230,7 @@ public class AsciiParser {
             iline++;
         }
 
-        DataSetBuilder builder = new DataSetBuilder(2, 100, recordParser.fieldCount(), 1);
+        DataSetBuilder builder = new DataSetBuilder(2, 100, recordParser.fieldCount() );
 
         while (line != null && iline<HEADER_LENGTH_LIMIT && this.recordParser.tryParseRecord(line, 0, builder) == false) {
             line = reader.readLine();
