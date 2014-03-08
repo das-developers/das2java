@@ -3291,7 +3291,7 @@ public class Ops {
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
         if (ds.rank() == 1) {
-            builder = new DataSetBuilder(1, 100, 1, 1);
+            builder = new DataSetBuilder( 1, 100 );
             while (iter.hasNext()) {
                 iter.next();
                 if ( iter.getValue(wds)> 0 && iter.getValue(ds) != 0.) {
@@ -3305,7 +3305,7 @@ public class Ops {
                 DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT,Integer.valueOf(0));
             }
         } else {
-            builder = new DataSetBuilder(2, 100, ds.rank(), 1);
+            builder = new DataSetBuilder( 2, 100, ds.rank() );
             while (iter.hasNext()) {
                 iter.next();
                 if ( iter.getValue(wds)> 0 && iter.getValue(ds) != 0.) {
