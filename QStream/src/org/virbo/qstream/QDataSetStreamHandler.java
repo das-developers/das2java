@@ -290,7 +290,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                                joinDataSets.put(name, join);
                            }
                            join.join(inlineDs);
-                           builder= new DataSetBuilder(0,0);
+                           builder= new DataSetBuilder(0);
                            builders.put(name,builder ); // rank 0 means the values were in line.
                         } else if ( isInline && inlineDs!=null && inlineDs.rank()==rank ) {
                            builder= new DataSetBuilder(rank,inlineDs.length());
