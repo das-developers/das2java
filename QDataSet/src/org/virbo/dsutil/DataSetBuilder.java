@@ -49,6 +49,16 @@ public class DataSetBuilder {
      * @param rank the number of indeces of the result dataset.
      * @param guessRecCount initial allocation for the first dimension.
      */
+    public DataSetBuilder( int rank ) {
+        this( rank, 0, 1, 1 );
+        if ( rank!=0 ) throw new IllegalArgumentException( "rank must be 0 for one-arg DataSetBuilder call");
+    }
+    
+    /**
+     * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
+     * @param rank the number of indeces of the result dataset.
+     * @param guessRecCount initial allocation for the first dimension.
+     */
     public DataSetBuilder( int rank, int guessRecCount ) {
         this( rank, guessRecCount, 1, 1 );
         if ( rank>1 ) throw new IllegalArgumentException( String.format( "rank %d dataset when dim1 not specified.", rank ) );
