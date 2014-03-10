@@ -47,7 +47,6 @@ public class DataSetBuilder {
     /**
      * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
      * @param rank the number of indeces of the result dataset.
-     * @param guessRecCount initial allocation for the first dimension.
      */
     public DataSetBuilder( int rank ) {
         this( rank, 0, 1, 1 );
