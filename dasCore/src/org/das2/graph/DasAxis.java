@@ -2047,6 +2047,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             }
             
+            if ( DMax-DMin < 2 ) {
+                return;
+            }
+            
             if (bottomLine) {
                 g.drawLine(DMin, bottomPosition, DMax, bottomPosition);
             }
@@ -2166,6 +2170,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             TickVDescriptor ticks = getTickV();
 
+            if ( DMax-DMin<2 ) {
+                return;
+            }
+            
             if (leftLine) {
                 g.drawLine(leftPosition, DMin, leftPosition, DMax);
             }
