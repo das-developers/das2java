@@ -32,10 +32,10 @@ import org.das2.datum.TimeParser;
  */
 public class FileStorageModelAvailabilityDataSetDescriptor extends DataSetDescriptor {
     
-    FileStorageModelNew fsm;
+    FileStorageModel fsm;
     
     /** Creates a new instance of FileStorageModelAvailabilityDataSetDescriptor */
-    public FileStorageModelAvailabilityDataSetDescriptor( FileStorageModelNew fsm ) {
+    public FileStorageModelAvailabilityDataSetDescriptor( FileStorageModel fsm ) {
         this.fsm= fsm;
     }
     
@@ -99,7 +99,7 @@ public class FileStorageModelAvailabilityDataSetDescriptor extends DataSetDescri
         };
         
         int cl= 4;
-        FileStorageModelNew fsm= FileStorageModelNew.create( fs, "%y%2m/%y%2m%2d%2{hex}\\..C"+cl, "hex", hexHandler );
+        FileStorageModel fsm= FileStorageModel.create( fs, "%y%2m/%y%2m%2d%2{hex}\\..C"+cl, "hex", hexHandler );
 
     }
 }

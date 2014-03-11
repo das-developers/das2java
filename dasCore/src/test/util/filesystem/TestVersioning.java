@@ -6,7 +6,7 @@
 package test.util.filesystem;
 
 import java.io.File;
-import org.das2.fsm.FileStorageModelNew;
+import org.das2.fsm.FileStorageModel;
 import org.das2.util.filesystem.FileSystem;
 
 /**
@@ -17,13 +17,13 @@ public class TestVersioning {
     public static void main( String[] args ) throws Exception {
         System.err.println("---");
         FileSystem fs= FileSystem.create( new File("/tmp/").toURI() );
-        FileStorageModelNew fsm= FileStorageModelNew.create( fs, "data_$Y_$m_$d_v$(v,sep).qds" );
+        FileStorageModel fsm= FileStorageModel.create( fs, "data_$Y_$m_$d_v$(v,sep).qds" );
         File[] ff= fsm.getBestFilesFor(null);
         for ( File f: ff ) {
             System.err.println(f);
         }
         System.err.println("---");
-        fsm= FileStorageModelNew.create( fs, "data_$Y_$m_$d_v$v.qds" );
+        fsm= FileStorageModel.create( fs, "data_$Y_$m_$d_v$v.qds" );
         ff= fsm.getBestFilesFor(null);
         for ( File f: ff ) {
             System.err.println(f);
