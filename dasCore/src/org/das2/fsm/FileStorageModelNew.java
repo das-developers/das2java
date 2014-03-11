@@ -574,7 +574,8 @@ public class FileStorageModelNew {
     }
 
     /**
-     * @return a list of files that can be used
+     * @return a list of files that can be used.  This might catch a bad link 
+     * where getNamesFor does not.
      */
     public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
 
@@ -583,6 +584,8 @@ public class FileStorageModelNew {
 
         if ( fileNameMap==null ) fileNameMap= new HashMap();
 
+        int numwarn= 0;
+        
         if ( names.length>0 ) monitor.setTaskSize( names.length * 10 );
         monitor.started();
         for ( int i=0; i<names.length; i++ ) {
@@ -597,13 +600,26 @@ public class FileStorageModelNew {
                     File f0 = maybeGetGzFile( names[i], SubTaskMonitor.create(monitor, i * 10, (i + 1) * 10) );
                     files[i]= f0;
                 }
+                if ( files[i]==null && numwarn<3 ) {
+                    logger.log(Level.WARNING, "listing returns result that cannot be resolved file file (e.g. bad link): {0}", names[i]);
+                    numwarn++;
+                }
                 fileNameMap.put( files[i], names[i] );
             } catch ( Exception e ) {
                 throw new RuntimeException(e);
             }
         }
         monitor.finished();
-        return files;
+
+        // remove nulls that come from bad references.
+        ArrayList<File> result= new ArrayList(files.length);
+        int i=0;
+        for ( int j=0; j<files.length; j++ ) {
+            if ( files[i]!=null ) {
+                result.add( files[i] );
+            }
+        }
+        return result.toArray( new File[result.size()] );
     }
 
     /**
