@@ -78,11 +78,7 @@ public class SubTaskMonitor implements ProgressMonitor {
     }
 
     public boolean isCancelled() {
-        if ( parent.canBeCancelled() ) {
-            return parent.isCancelled();
-        } else {
-            return false;
-        }
+        return parent.isCancelled();
     }
 
     @Deprecated
