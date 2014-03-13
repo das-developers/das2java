@@ -3441,11 +3441,12 @@ public class Ops {
     
     /**
      * converts types often seen in Jython and Java codes to the correct type.  For
-     * example, ds= putProperty( ds, 'UNITS', 'seconds since 2012-01-01').
+     * example, ds= putProperty( ds, 'UNITS', 'seconds since 2012-01-01').  The dataset
+     * may be copied to make it mutable.
      * 
-     * @param ds
-     * @param name
-     * @param value
+     * @param ds the dataset to which the property is to be set.
+     * @param name the property name
+     * @param value the property value, which can converted to the proper type. 
      * @return the dataset, possibly converted to a mutable dataset.
      */
     public static MutablePropertyDataSet putProperty( QDataSet ds, String name, Object value ) {
@@ -3465,7 +3466,7 @@ public class Ops {
             }
         }
         if ( value==null ) {
-            mds.putProperty( name, value );
+            mds.putProperty( name, null );
             return mds;
         }
         
