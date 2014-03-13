@@ -284,7 +284,11 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             }
         }
         finally {
-            try { pin.close(); } catch (IOException ioe) {}
+            try { 
+                pin.close();
+            } catch (IOException ioe) {
+                logger.log( Level.WARNING, null, ioe );
+            }
         }
     }
     
