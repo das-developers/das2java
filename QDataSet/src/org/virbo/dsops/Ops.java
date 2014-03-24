@@ -3978,8 +3978,8 @@ public class Ops {
             Map<String,Object> user= (Map<String, Object>) dep1.property(QDataSet.USER_PROPERTIES );
             if ( user!=null ) {
                 translation= (QDataSet) user.get( "FFT_Translation" ); // kludge for Plasma Wave Group
-                if ( translation.rank()==1 ) {
-                    if ( translation.length()!=dep0.length() ) {
+                if ( translation!=null && translation.rank()==1 ) {
+                    if ( dep0!=null && translation.length()!=dep0.length() ) {
                         throw new IllegalArgumentException("rank 1 FFT_Translation should be the same length as depend_0");
                     }
                 }
