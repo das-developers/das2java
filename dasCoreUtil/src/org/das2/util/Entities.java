@@ -14,6 +14,7 @@ public class Entities {
 
     /**
      * utility method for decoding entities like &amp;rho; into unicode.
+     * Malformed entities (like &#03B1; instead of &#x03B1;) are formatted as "???"
      * @param str
      * @return string with unicode characters for entities.
      */
@@ -35,7 +36,7 @@ public class Entities {
                     try {
                         result.append( decode( str.substring(i,i1+1) ) );
                     } catch ( NumberFormatException ex ) {
-                        result.append( str.substring(i,i1+1) );
+                        result.append( "???" );
                     }
                     i0= i1+1;
                     if ( i0==str.length() ) return result.toString();
