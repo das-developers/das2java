@@ -374,9 +374,9 @@ public class GraphicalLogHandler extends Handler {
             long minMilli= (long)xAxis.getDataMinimum().doubleValue( Units.milliseconds );
             long maxMilli= (long)xAxis.getDataMaximum().doubleValue( Units.milliseconds );
 
-            int firstIndex= Collections.binarySearch( times, new Long( minMilli ) );
+            int firstIndex= Collections.binarySearch( times, Long.valueOf( minMilli ) );
             if ( firstIndex<0 ) firstIndex= -1 - firstIndex;
-            int lastIndex= Collections.binarySearch( times, new Long( maxMilli ) );
+            int lastIndex= Collections.binarySearch( times, Long.valueOf( maxMilli ) );
             if ( lastIndex<0 ) {
                 lastIndex= -1 - lastIndex;
             } else {
