@@ -294,7 +294,12 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 logger.log(Level.FINER, "das2Response={0}", das2Response);
 
                 in.reset();
-                in.skip( das2Response.length() + 2 * das2ResponseTag.length() + 5 );
+                
+                long toSkip= das2Response.length() + 2 * das2ResponseTag.length() + 5;
+                long nskip= in.skip( toSkip );
+                if ( nskip<toSkip ) {
+                    logger.warning("possible bug with skip");
+                }
 
             } else {
                 in.reset();
