@@ -3282,8 +3282,8 @@ public class Ops {
         }
         
         if ( ds.rank()==1 
-                && Integer.valueOf(0)==DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT)
-                && Integer.valueOf(0)==DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT) ) {
+                && Integer.valueOf(0).equals(DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT))
+                && Integer.valueOf(0).equals(DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT)) ) {
             return Ops.indgen(ds.length());
         }
         
