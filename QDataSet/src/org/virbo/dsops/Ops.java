@@ -3266,6 +3266,8 @@ public class Ops {
      * 
      * Note fill values are not included in the list, so where(A).length + where(not A).length != where( A.or(not(A) ).length
      *
+     * Note this is different from the SciPy where and similar to Matlab find.
+     * 
      * @param ds of any rank M, M&gt;0.
      * @return a rank 1 or rank 2 dataset with N by M elements, where N is the number
      * of non-zero elements found.
