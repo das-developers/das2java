@@ -5,24 +5,24 @@
  */
 package org.das2.util;
 
-import java.util.*;
+import java.util.HashMap;
 
 public class Entities {
 
-    static final Hashtable decoder = new Hashtable(300);
+    static final HashMap decoder = new HashMap(300);
     static final String[] encoder = new String[0x100];
 
     /**
      * utility method for decoding entities like &amp;rho; into unicode.
      * Malformed entities (like &#03B1; instead of &#x03B1;) are formatted as "???"
-     * @param str
+     * @param str string e.g. "&rho; degrees"
      * @return string with unicode characters for entities.
      */
     public static String decodeEntities(String str) {
-        int i0=0, i=0;
+        int i0=0, i;
         
         int MAX_ENTITY_LEN=10;
-        StringBuffer result= new StringBuffer();
+        StringBuilder result= new StringBuilder();
         while ( true ) {
             i= str.indexOf("&",i0);
             
@@ -36,7 +36,7 @@ public class Entities {
                     try {
                         result.append( decode( str.substring(i,i1+1) ) );
                     } catch ( NumberFormatException ex ) {
-                        result.append( "???" );
+                        result.append( "???" );  // indicate there's some sort of problem.
                     }
                     i0= i1+1;
                     if ( i0==str.length() ) return result.toString();
@@ -48,7 +48,12 @@ public class Entities {
         }
     }
 
-    static final String decode(String entity) {
+    /**
+     * decode one entity.
+     * @param entity like &amp;rho;
+     * @return string with unicode like "&rho;"
+     */
+    public static String decode(String entity) {
         if (entity.charAt(entity.length() - 1) == ';') // remove trailing semicolon
         {
             entity = entity.substring(0, entity.length() - 1);
@@ -72,9 +77,14 @@ public class Entities {
         }
     }
 
-    static final public String encode(String s) {
+    /**
+     * encode one entity.
+     * @param s string with unicode like "&rho;"
+     * @return like &amp;rho;
+     */
+    public static String encode(String s) {
         int length = s.length();
-        StringBuffer buffer = new StringBuffer(length * 2);
+        StringBuilder buffer = new StringBuilder(length * 2);
         for (int i = 0; i < length; i++) {
             char c = s.charAt(i);
             int j = (int) c;
@@ -82,7 +92,7 @@ public class Entities {
                 buffer.append(encoder[j]);		  // have a named encoding
                 buffer.append(';');
             } else if (j < 0x80) {
-                buffer.append(c);			  // use ASCII value
+                buffer.append(c);			      // use ASCII value
             } else {
                 buffer.append("&#");			  // use numeric encoding
                 buffer.append((int) c);
@@ -92,7 +102,7 @@ public class Entities {
         return buffer.toString();
     }
 
-    static final void add(String entity, int value) {
+    static void add(String entity, int value) {
         decoder.put(entity, String.valueOf((char) value) );
         if (value < 0x100) {
             encoder[value] = entity;
