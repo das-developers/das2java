@@ -161,7 +161,6 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         if ( ds==null || ds.rank()==0 ) {
             firstValidIndex=0;
             lastValidIndex=0;
-            return;
         } else {
             if ( SemanticOps.isTableDataSet(ds) ) {
                 firstValidIndex= 0;
