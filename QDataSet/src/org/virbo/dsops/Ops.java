@@ -4435,7 +4435,7 @@ public class Ops {
      * The property count is set to the number of valid measurements.
      * 2010-10-14: add branch for monotonic datasets.
      * @param ds the dataset to measure the extent
-     * @param range, if non-null, return the union of this range and the extent.  This must not contain fill!
+     * @param range if non-null, return the union of this range and the extent.  This must not contain fill!
      * @return two element, rank 1 "bins" dataset.
      */
     public static QDataSet extent( QDataSet ds, QDataSet range  ) {
