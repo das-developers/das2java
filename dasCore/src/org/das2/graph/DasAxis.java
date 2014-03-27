@@ -1637,7 +1637,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * update the TCA (ephemeris) axis on the current thread.
      * The lock will have pendingChange and changePerformed with it.
      */
-    private void updateTCAImmediately( ) {
+    private synchronized void updateTCAImmediately( ) {
             DasProgressWheel tcaProgress= new DasProgressWheel();
             tcaProgress.started();
             tcaProgress.getPanel(this);
