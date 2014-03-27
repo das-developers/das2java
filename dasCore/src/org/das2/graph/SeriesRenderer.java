@@ -24,7 +24,6 @@ package org.das2.graph;
 
 import java.util.logging.Level;
 import org.das2.DasApplication;
-import org.das2.DasException;
 import org.das2.DasProperties;
 import org.virbo.dataset.DataSetUtil;
 import org.das2.datum.Datum;
@@ -1119,8 +1118,15 @@ public class SeriesRenderer extends Renderer {
         
         int ixmax;
         int ixmin;
-
+                
         QDataSet yds= dataSet;
+        
+        if ( xds.length()!=yds.length() ) {
+            logger.fine("xds and yds have different lengths.  Assuming transitional case.");
+            return;
+            //throw new IllegalArgumentException("xds and yds are different lengths.");
+        }
+        
         if ( yds.rank()==2 ) {
             yds= DataSetOps.slice1( yds, 0 );
         }
@@ -2253,7 +2259,7 @@ public class SeriesRenderer extends Renderer {
         QDataSet ds1= dataSet;
         //QDataSet vds, tds;
         boolean plottable;
-        if ( !SemanticOps.isTableDataSet(dataSet) ) {
+        if ( !SemanticOps.isTableDataSet(dataSet) ) { 
             if ( ds1.rank()==2 && SemanticOps.isBundle(ds1) ) {
             //    vds = DataSetOps.unbundleDefaultDataSet( ds );
             } else if ( ds1.rank()!=1 ) {
