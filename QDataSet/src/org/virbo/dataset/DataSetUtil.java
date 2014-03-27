@@ -324,11 +324,11 @@ public class DataSetUtil {
             return PROPERTY_TYPE_STRING;
         } else if (  name.equals(QDataSet.UNITS) ) {
             return PROPERTY_TYPE_UNITS;
-        } else if (  name.equals(QDataSet.NAME) || name.equals(QDataSet.FORMAT) || name.equals(QDataSet.RENDER_TYPE) ) {
+        } else if (  name.equals(QDataSet.NAME) || name.equals(QDataSet.FORMAT) || name.equals(QDataSet.RENDER_TYPE) || name.equals(QDataSet.SCALE_TYPE) ) {
             return PROPERTY_TYPE_STRING;
         } else if ( name.equals(QDataSet.TYPICAL_MIN) || name.equals(QDataSet.TYPICAL_MAX) 
                 || name.startsWith(QDataSet.VALID_MIN) || name.startsWith(QDataSet.VALID_MAX) 
-                || name.equals(QDataSet.FILL_VALUE) || name.equals(QDataSet.SCALE_TYPE) ) {
+                || name.equals(QDataSet.FILL_VALUE) ) {
             return PROPERTY_TYPE_NUMBER;
         } else if ( name.equals(QDataSet.MONOTONIC) || name.equals(QDataSet.QUBE) ) {
             return PROPERTY_TYPE_BOOLEAN;
