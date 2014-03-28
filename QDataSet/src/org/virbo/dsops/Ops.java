@@ -447,6 +447,25 @@ public class Ops {
             return null;
         }
     }
+    
+    /**
+     * only copy the property if it is defined in src.  If it is not in src, then
+     * we will insert null into dest if it is found there.
+     * @param name the property name
+     * @param src the source dataset
+     * @param dest the destination dataset
+     */
+    private static void maybeCopyProperty( String name, QDataSet src, MutablePropertyDataSet dest ) {
+        Object o= src.property(name);
+        if ( o!=null ) {
+            dest.putProperty(name, o);
+        } else {
+            if ( dest.property(name)!=null ) {
+                dest.putProperty(name, o);
+            }
+        }
+    }
+    
     /**
      * return a dataset with each element negated.
      * If units are specified, Units must be ratiometric units, like "5 km" 
@@ -478,12 +497,16 @@ public class Ops {
      * return the magnitudes of vectors in a rank 2 or greater dataset.  The last
      * index must be a cartesian dimension, so it must have a depend dataset
      * either named "cartesian" or having the property CARTESIAN_FRAME
+     * For rank 0, this just returns the absolute value.
      * 
      * @param ds of Rank N.
      * @return ds of Rank N-1.
      */
     public static QDataSet magnitude(QDataSet ds) {
         int r = ds.rank();
+        if ( ds.rank()==0 ) {
+            return DataSetUtil.asDataSet( Math.abs(ds.value()), (Units) ds.property(QDataSet.UNITS) );
+        }
         QDataSet depn = (QDataSet) ds.property("DEPEND_" + (r - 1));
         boolean isCart;
         if (depn != null) {
@@ -963,7 +986,7 @@ public class Ops {
         }
         else
         {
-            // we shiould never get here...
+            // we should never get here...
             throw new ArithmeticException("Undefined case in cubicRoot.");
         }
 
@@ -973,13 +996,14 @@ public class Ops {
 
     /**
      * element-wise abs.  For vectors, this returns the length of each element.
-     * Note Jython conflict needs to be resolved.
+     * Note Jython conflict needs to be resolved.  Note the result of this
+     * will have dimensionless units, and see magnitude for the more abstract
+     * operator.
      * @param ds1
      * @return
      */
     public static QDataSet abs(QDataSet ds1) {
         MutablePropertyDataSet result= applyUnaryOp(ds1, new UnaryOp() {
-
             public double op(double d1) {
                 return Math.abs(d1);
             }
