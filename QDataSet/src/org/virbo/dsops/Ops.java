@@ -505,7 +505,7 @@ public class Ops {
     public static QDataSet magnitude(QDataSet ds) {
         int r = ds.rank();
         if ( ds.rank()==0 ) {
-            return DataSetUtil.asDataSet( Math.abs(ds.value()), (Units) ds.property(QDataSet.UNITS) );
+            return DataSetUtil.asDataSet( Math.abs(ds.value()), (Units) ds.property(QDataSet.UNITS) ); //TODO: invalid.
         }
         QDataSet depn = (QDataSet) ds.property("DEPEND_" + (r - 1));
         boolean isCart;
