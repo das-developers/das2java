@@ -460,8 +460,8 @@ public class Ops {
         if ( o!=null ) {
             dest.putProperty(name, o);
         } else {
-            if ( dest.property(name)!=null ) {
-                dest.putProperty(name, o);
+            if ( dest.property(name)!=null ) { // clear the non-null property.
+                dest.putProperty(name,null);
             }
         }
     }
