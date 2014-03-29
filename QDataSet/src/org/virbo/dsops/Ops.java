@@ -438,9 +438,9 @@ public class Ops {
         }
         Pattern idpat= Pattern.compile("[a-zA-Z_][a-zA-Z_0-9]*");
         String l1Str= label1;
-        if ( l1Str!=null && ! idpat.matcher(l1Str).matches() ) l1Str= "("+l1Str+")";
+        if ( ! idpat.matcher(l1Str).matches() ) l1Str= "("+l1Str+")";
         String l2Str= label2;
-        if ( l2Str!=null && ! idpat.matcher(l2Str).matches() ) l2Str= "("+l2Str+")";
+        if ( ! idpat.matcher(l2Str).matches() ) l2Str= "("+l2Str+")";
         if ( l1Str!=null && l2Str!=null ) {
             return l1Str + opStr + l2Str;
         } else {
