@@ -2155,8 +2155,8 @@ public class Ops {
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
         if ( ds1==null && ds2!=null ) return ds2;
-        if ( ds1==null && ds2==null ) throw new NullPointerException("both ds1 and ds2 are null");
         if ( ds1!=null && ds2==null ) throw new NullPointerException("ds2 is null while ds1 is not null");
+        if ( ds1==null && ds2==null ) throw new NullPointerException("both ds1 and ds2 are null");
         if ( ds1 instanceof FDataSet && ds2 instanceof FDataSet ) {
             FDataSet result = (FDataSet) ArrayDataSet.copy(ds1);
             if ( ds2.rank()==0 && ds1.rank()==1 ) {
@@ -2173,6 +2173,7 @@ public class Ops {
             return ArrayDataSet.append(result,FDataSet.maybeCopy(ds2));
         } else {
             DDataSet result = (DDataSet)DDataSet.copy(ds1);
+            assert ds2!=null && ds1!=null;
             if ( ds2.rank()==0 && ds1.rank()==1 ) {
                 DDataSet t= DDataSet.createRank1(1); //TODO: better promote rank is found on add, etc.
                 t.putValue(ds2.value());
