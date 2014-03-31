@@ -4665,14 +4665,97 @@ public class Ops {
         return result;
     }
     
+
     /**
-     * returns histogram of dataset, the number of points falling in each bin.
-     * 
-     * @param ds
-     * @param min
-     * @param max
-     * @param binSize
-     * @return
+     * make a 2-D histogram of the data in x and y.  For example<tt>
+     * x= randn(10000)+1
+     * y= randn(10000)+4
+     * zz= histogram2d( x,y, [30,30], dataset([0,8]), dataset([-2,6]) )
+     * plot( zz )
+     * </tt>
+     * The result will be a rank 2 dataset with DEPEND_0 and DEPEND_1 indicating
+     * the bin locations.
+     * @param x the x values
+     * @param y the y values
+     * @param bins number of bins in x and y
+     * @param xrange a rank 1 2-element bounds dataset, so that Units can be specified.
+     * @param yrange a rank 1 2-element bounds dataset, so that Units can be specified.
+     * @return a rank 2 dataset
+     */
+    public static QDataSet histogram2d( QDataSet x, QDataSet y, int[] bins, QDataSet xrange, QDataSet yrange ) {
+
+        int nx, ny;
+        if ( bins==null ) {
+            nx=20;
+            ny=20;
+        } else {
+            nx=bins[0];
+            ny=bins[1];            
+        }
+        
+        double minx= xrange.value(0);
+        double miny= yrange.value(0);
+        
+        double binsizex= ( xrange.value(1)-xrange.value(0) ) / nx;
+        double binsizey= ( yrange.value(1)-yrange.value(0) ) / ny;
+        MutablePropertyDataSet xtags = DataSetUtil.tagGenDataSet( nx, minx, binsizex, SemanticOps.getUnits(xrange) );        
+        xtags.putProperty( QDataSet.NAME, x.property(QDataSet.NAME) );
+        xtags.putProperty( QDataSet.LABEL, x.property(QDataSet.LABEL) );
+        xtags.putProperty( QDataSet.TITLE, x.property(QDataSet.TITLE) );
+        xtags.putProperty( QDataSet.TYPICAL_MAX, x.property(QDataSet.TYPICAL_MAX) );
+        xtags.putProperty( QDataSet.TYPICAL_MIN, x.property(QDataSet.TYPICAL_MIN) );
+        
+        MutablePropertyDataSet ytags = DataSetUtil.tagGenDataSet( ny, miny, binsizey, SemanticOps.getUnits(yrange) );
+        ytags.putProperty( QDataSet.NAME, y.property(QDataSet.NAME) );
+        ytags.putProperty( QDataSet.LABEL, y.property(QDataSet.LABEL) );
+        ytags.putProperty( QDataSet.TITLE, y.property(QDataSet.TITLE) );
+        ytags.putProperty( QDataSet.TYPICAL_MAX, y.property(QDataSet.TYPICAL_MAX) );
+        ytags.putProperty( QDataSet.TYPICAL_MIN, y.property(QDataSet.TYPICAL_MIN) );
+
+        final int[] hits = new int[nx*ny];
+        
+        QubeDataSetIterator iter = new QubeDataSetIterator(x);
+        QDataSet wdsx= DataSetUtil.weightsDataSet(x);
+        QDataSet wdsy= DataSetUtil.weightsDataSet(y);
+        
+        int count=0;
+        while ( iter.hasNext() ) { 
+            iter.next();
+            double x1 = iter.getValue(x);
+            double y1 = iter.getValue(y);
+            
+            double w = iter.getValue(wdsx) * iter.getValue(wdsy);
+            
+            if ( w>0. ) {
+                int ibinx = (int) Math.floor(( x1 - minx ) / binsizex );
+                int ibiny = (int) Math.floor(( y1 - miny ) / binsizey );
+                if (ibinx >= 0 && ibinx < nx && ibiny>=0 && ibiny<ny ) {
+                    hits[ ibinx*ny + ibiny ]++;
+                }
+                count++;
+            }
+        }
+
+        IDataSet result = IDataSet.wrap( hits, new int[] { nx,ny } );
+        result.putProperty( QDataSet.DEPEND_0, xtags );
+        result.putProperty( QDataSet.DEPEND_1, ytags );
+        result.putProperty( "count", count );
+        result.putProperty( QDataSet.RENDER_TYPE, "nnSpectrogram" );
+        
+        return result;        
+
+    }
+    
+    /**
+     * returns a rank 1 dataset that is a histogram of the data.  Note there
+     * will also be in the properties:
+     *   count, the total number of valid values.
+     *   nonZeroMin, the smallest non-zero, positive number
+     * @param ds rank N dataset
+     * @param min the min of the first bin.  If min=-1 and max=-1, then automatically set the min and max.
+     * @param max the max of the last bin.
+     * @param binsize the size of each bin.
+     * @return a rank 1 dataset with each bin's count.  DEPEND_0 indicates the bin locations.
      */
     public static QDataSet histogram(QDataSet ds, double min, double max, double binSize) {
         return DataSetOps.histogram(ds, min, max, binSize);
