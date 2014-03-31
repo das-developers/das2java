@@ -396,8 +396,8 @@ public class DataSetOps {
      * @param x the x values
      * @param y the y values
      * @param bins number of bins in x and y
-     * @param xrange a rank 1 2-element bounds dataset.
-     * @param yrange a rank 1 2-element bounds dataset.
+     * @param xrange a rank 1 2-element bounds dataset, so that Units can be specified.
+     * @param yrange a rank 1 2-element bounds dataset, so that Units can be specified.
      * @return a rank 2 dataset
      */
     public static QDataSet histogram2d( QDataSet x, QDataSet y, int[] bins, QDataSet xrange, QDataSet yrange ) {
@@ -444,9 +444,6 @@ public class DataSetOps {
             
             double w = iter.getValue(wdsx) * iter.getValue(wdsy);
             
-            if ( x1<0 ) {
-                System.err.println("here446");
-            }
             if ( w>0. ) {
                 int ibinx = (int) Math.floor(( x1 - minx ) / binsizex );
                 int ibiny = (int) Math.floor(( y1 - miny ) / binsizey );
