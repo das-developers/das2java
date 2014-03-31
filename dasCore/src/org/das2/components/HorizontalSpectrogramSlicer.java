@@ -208,7 +208,9 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
                 this.renderer.setDataSet(null);
             } else {
                 try {
-                    showSlice( tds, xValue, yValue );
+                    if ( this.isPopupVisible() ) {
+                        showSlice( tds, xValue, yValue );
+                    }
                 } catch ( InconvertibleUnitsException ex ) {
                     this.renderer.setDataSet(null);
                 }

@@ -177,7 +177,9 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
                 this.renderer.setDataSet(null);
             } else {
                 try {
-                    showSlice( tds, xValue, yValue );
+                    if ( isPopupVisible() ) {
+                        showSlice( tds, xValue, yValue );
+                    }
                 } catch ( InconvertibleUnitsException ex ) {
                     this.renderer.setDataSet(null);
                 }
