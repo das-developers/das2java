@@ -209,6 +209,7 @@ public class DasColorBar extends DasAxis {
       public static final Type APL_RAINBOW_BLACK0 = new Type("apl_rainbow_black0");
       public static final Type APL_RAINBOW_WHITE0 = new Type("apl_rainbow_white0");
       public static final Type GSFC_RP_SPECIAL = new Type("gsfc_rp_special");
+      public static final Type MATLAB_JET = new Type("matlab_jet");
       
         //public static final Type BLUE_TO_ORANGE = new Type("blue_to_orange");
         public static final Type GRAYSCALE = new Type("grayscale");
@@ -344,6 +345,8 @@ public class DasColorBar extends DasAxis {
                 initializeColorWedgeBlack(size, bottom, top);
             } else if (this == GSFC_RP_SPECIAL ) {
                 initializeRPSpecial(size, bottom, top);
+            } else if (this == MATLAB_JET ) {
+                initializeMatlabJet(size, bottom, top);
             } else if (this == GRAYSCALE) {
                 initializeGrayScale(size, bottom, top);
             } else if (this == INVERSE_GRAYSCALE) {
@@ -447,6 +450,14 @@ public class DasColorBar extends DasAxis {
             int [] blue= { 141,141,141,138,136,136,136,135,135,135,135,135,135,135,135,135,134,134,134,135,135,136,137,138,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,169,170,170,171,171,171,171,172,172,173,173,173,174,174,175,176,177,178,178,179,180,181,182,182,183,184,184,185,185,186,187,187,188,188,189,189,190,190,191,191,192,192,192,193,194,193,193,193,192,192,192,192,191,189,188,187,186,185,184,183,182,182,180,177,174,171,168,165,161,159,157,155,153,151,147,143,139,135,131,127,124,123,121,119,117,115,112,110,107,104,101,99,98,97,96,95,94,92,90,89,87,85,83,82,81,81,80,79,78,76,75,73,72,71,70,69,68,68,67,67,66,64,63,62,61,60,59,58,58,57,56,55,53,52,50,49,47,46,45,44,43,42,40,39,38,37,36,34,33,32,31,30,29,28,27,26,25,25,24,23,22,21,20,20,19,18,17,16,16,15,15,15,14,14,13,13,12,12,11,10,9,9,8,8,8,7,7,7,6,6,6,6,6,6,6,6,6,6,6,6 };
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }
+        
+        private void initializeMatlabJet( int size, int bottom, int top ) {
+            int [] index= { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 129, 133, 137, 141, 145, 149, 153, 157, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 214, 218, 222, 226, 230, 234, 238, 243, 247, 251, 255 };
+            int [] red= { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 31, 47, 63, 79, 95, 111, 127, 143, 159, 175, 191, 207, 223, 239, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 239, 223, 207, 191, 175, 159, 143, 127 };
+            int [] green= { 0, 0, 0, 0, 0, 0, 0, 0, 15, 31, 47, 63, 79, 95, 111, 127, 143, 159, 175, 191, 207, 223, 239, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 239, 223, 207, 191, 175, 159, 143, 127, 111, 95, 79, 63, 47, 31, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            int [] blue= { 143, 159, 175, 191, 207, 223, 239, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 239, 223, 207, 191, 175, 159, 143, 127, 111, 95, 79, 63, 47, 31, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+        }   
    
         public static Type parse(String s) {
             if (s.equals("color_wedge")) {
@@ -465,6 +476,8 @@ public class DasColorBar extends DasAxis {
                 return APL_RAINBOW_WHITE0;
             } else if (s.equals("gsfc_rp_special")) {
                 return GSFC_RP_SPECIAL;
+            } else if (s.equals("matlab_jet")) {
+                return MATLAB_JET;
             //} else if (s.equals("blue_to_orange")) {
             //    return BLUE_TO_ORANGE;                
             } else {
