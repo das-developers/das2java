@@ -20,6 +20,11 @@ import org.das2.datum.Units;
  * to show a zoom in above of a context below.
  */
 public class ColumnColumnConnector extends DasCanvasComponent {
+    
+    public static final String PROP_FILL_COLOR = "fillColor";
+    public static final String PROP_FILL = "fill";
+    public static final String PROP_BOTTOM_CURTAIN = "bottomCurtain";
+    public static final String PROP_CURTAIN_OPACITY_PERCENT = "curtainOpacityPercent";
         
     private DasRow topRow;
     
@@ -346,7 +351,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         Color oldFillColor = this.fillColor;
         this.fillColor = fillColor;
         repaint();
-        propertyChangeSupport.firePropertyChange("fillColor", oldFillColor, fillColor);
+        propertyChangeSupport.firePropertyChange(PROP_FILL_COLOR, oldFillColor, fillColor);
     }
     
     /**
@@ -370,7 +375,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         boolean oldFill = this.fill;
         this.fill = fill;
         repaint();
-        propertyChangeSupport.firePropertyChange("fill", Boolean.valueOf(oldFill), Boolean.valueOf(fill));
+        propertyChangeSupport.firePropertyChange(PROP_FILL, Boolean.valueOf(oldFill), Boolean.valueOf(fill));
     }
     
     /**
@@ -394,7 +399,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         boolean oldBottomCurtain = this.bottomCurtain;
         this.bottomCurtain = bottomCurtain;
         repaint();
-        propertyChangeSupport.firePropertyChange("bottomCurtain", Boolean.valueOf(oldBottomCurtain), Boolean.valueOf(bottomCurtain));
+        propertyChangeSupport.firePropertyChange(PROP_BOTTOM_CURTAIN, Boolean.valueOf(oldBottomCurtain), Boolean.valueOf(bottomCurtain));
     }
     
     /**
@@ -418,7 +423,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         int oldCurtainOpacityPercent = this.curtainOpacityPercent;
         this.curtainOpacityPercent = Math.max( 0, Math.min( 100, curtainOpacityPercent ) );
         repaint();
-        propertyChangeSupport.firePropertyChange("curtainOpacityPercent", oldCurtainOpacityPercent, curtainOpacityPercent );
+        propertyChangeSupport.firePropertyChange(PROP_CURTAIN_OPACITY_PERCENT, oldCurtainOpacityPercent, curtainOpacityPercent );
     }
     
 }
