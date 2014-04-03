@@ -816,6 +816,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         jj.setFileFilter( new FileFilter() {
             @Override
             public boolean accept(File pathname) {
+                if ( pathname==null ) return false; // rte_1178734273_20140402_133610_wsk, I think this happens on Windows.
                 return pathname.toString().endsWith(".dat") || pathname.toString().endsWith(".txt");
             }
             @Override
