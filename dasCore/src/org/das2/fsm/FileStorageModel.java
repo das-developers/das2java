@@ -534,7 +534,7 @@ public class FileStorageModel {
         HashMap<String,String> hh= new HashMap();
         getDatumRangeFor( name, hh );
         if ( hh.containsKey(field) ) {
-            return hh.get(name);
+            return hh.get(field);
         } else {
             throw new IllegalArgumentException("field is not in template: "+field);
         }
