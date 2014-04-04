@@ -521,6 +521,26 @@ public class FileStorageModel {
     }
 
     /**
+     * return the field value for the given name.  For example, if the spec
+     * is $Y/$m/$d/$Y$m$d_v$(v,sep).dat and the name matched is 2014/04/04/20140404_v2.3.dat
+     * then calling this for the field "v" would result in "2.3"  This should not
+     * be used to retrieve fields that are components of the time range, such as 
+     * $Y or $m.
+     * @param field field, for example "v"
+     * @param name name, for example 2014/04/04/20140404_v2.3.dat
+     * @return the field value, for example, "2.3" when the spec is $Y/$m/$d/$Y$m$d_v$v.dat
+     */
+    public String getField( String field, String name ) {
+        HashMap<String,String> hh= new HashMap();
+        getDatumRangeFor( name, hh );
+        if ( hh.containsKey(field) ) {
+            return hh.get(name);
+        } else {
+            throw new IllegalArgumentException("field is not in template: "+field);
+        }
+    }
+    
+    /**
      * @return true if the file came (or could come) from this FileStorageModel.
      */
     public boolean containsFile( File file ) {
