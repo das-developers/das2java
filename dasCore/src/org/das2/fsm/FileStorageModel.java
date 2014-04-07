@@ -594,12 +594,12 @@ public class FileStorageModel {
     }
 
     /**
-     * @return a list of files that can be used.  This might catch a bad link 
-     * where getNamesFor does not.
+     * download the files for each of the given names within the filesystem.
+     * @param names array of names within the filesystem
+     * @param monitor monitor for the downloads.
+     * @return local files that can be opened.
      */
-    public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
-
-        String[] names= getNamesFor( targetRange );
+    public File[] getFilesFor( String [] names, ProgressMonitor monitor ) throws IOException {
         File[] files= new File[names.length];
 
         if ( fileNameMap==null ) fileNameMap= new HashMap();
@@ -635,11 +635,36 @@ public class FileStorageModel {
         ArrayList<File> result= new ArrayList(files.length);
         int i=0;
         for ( int j=0; j<files.length; j++ ) {
-            if ( files[i]!=null ) {
-                result.add( files[i] );
+            if ( files[j]!=null ) {
+                result.add( files[j] );
+                i++;
             }
         }
-        return result.toArray( new File[result.size()] );
+        return result.toArray( new File[i] );
+        
+    }
+    
+    /**
+     * Download the files within the range.
+     * @return a list of files that can be opened.  
+     * This might catch a bad link where getNamesFor does not.
+     */
+    public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
+        String[] names= getNamesFor( targetRange );
+        File[] ff= getFilesFor( names, monitor );
+        return ff;
+    }
+
+    public static int[] getIntArray() {
+        return new int[] { 1,2,3,4 };
+    }
+    
+    public static String[] getStringArray() {
+        return new String[] { "s1","s2","s3","s4" };
+    }
+
+    public static File[] getFileArray() {
+        return new File[] { new File("f1"),new File("f2"),new File("f3"),new File("f4") };
     }
 
     /**
