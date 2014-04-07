@@ -655,18 +655,6 @@ public class FileStorageModel {
         return ff;
     }
 
-    public static int[] getIntArray() {
-        return new int[] { 1,2,3,4 };
-    }
-    
-    public static String[] getStringArray() {
-        return new String[] { "s1","s2","s3","s4" };
-    }
-
-    public static File[] getFileArray() {
-        return new File[] { new File("f1"),new File("f2"),new File("f3"),new File("f4") };
-    }
-
     /**
      * Get the files for the range, using versioning info ($v,etc).
      * @param targetRange
