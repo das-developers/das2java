@@ -1024,6 +1024,40 @@ public class DataSetUtil {
     }
     
     /**
+     * infer the bins for the rank 2 ytags.
+     * @param ds rank 2 dataset[n,m]
+     * @return two-element array of rank 2 datasets[n,m], where 0 is the min and 1 is the max.
+     */
+    public static QDataSet[] inferBinsRank2( QDataSet ydss ) {
+        QDataSet lastYds= null;
+        QDataSet lastYds0= null;
+        QDataSet lastYds1= null;
+        
+        JoinDataSet yds0= new JoinDataSet(2);
+        JoinDataSet yds1= new JoinDataSet(2);
+        
+        for ( int i=0; i<ydss.length(); i++ ) {
+            QDataSet yds= ydss.slice(i);
+            if ( lastYds!=null && Ops.equivalent(lastYds, yds) ) {
+                yds0.join(lastYds0);
+                yds1.join(lastYds1);
+            } else {
+                QDataSet rr= inferBins( yds );
+                lastYds0= Ops.slice1( rr,0 );
+                lastYds1= Ops.slice1( rr,1 );
+                yds0.join(lastYds0);
+                yds1.join(lastYds1);
+                lastYds= yds;
+            }
+        }
+        QDataSet[] result= new QDataSet[2];
+        result[0]= yds0;
+        result[1]= yds1;
+        return result;
+        
+    }
+    
+    /**
      * This is the one code to infer bin boundaries when only the 
      * centers are available.  This uses centers of adjacent data, and
      * extrapolates to get the edge boundaries to create an acceptable limit.
