@@ -1305,7 +1305,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      *
      * @param tickV the new ticks for this axis, or null
      */
-    public synchronized void setTickV(TickVDescriptor tickV) {
+    public void setTickV(TickVDescriptor tickV) {
         checkTickV(tickV);
         this.tickV = tickV;
         if (tickV == null) {
@@ -1684,7 +1684,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         repaint();
     }
 
-    private synchronized boolean getAutoTickV() {
+    private boolean getAutoTickV() {
         return autoTickV;
     }
     
