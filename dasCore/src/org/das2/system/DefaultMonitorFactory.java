@@ -23,7 +23,7 @@ public class DefaultMonitorFactory implements MonitorFactory {
 
     protected int size = 10;
 
-    public int getSize() {
+    public synchronized int getSize() {
         return size;
     }
 
