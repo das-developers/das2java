@@ -489,7 +489,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * Setter for property dasMouseInputAdapter.
      * @param dasMouseInputAdapter New value of property dasMouseInputAdapter.
      */
-    public final synchronized void setDasMouseInputAdapter(DasMouseInputAdapter dasMouseInputAdapter) {
+    private void setDasMouseInputAdapter(DasMouseInputAdapter dasMouseInputAdapter) {
         if ( mouseAdapter!=null ) {
             removeMouseListener(mouseAdapter);
             removeMouseMotionListener(mouseAdapter);
