@@ -145,7 +145,9 @@ public class HttpFileSystem extends WebFileSystem {
                         logger.log( Level.FINE, "userInfo.length={0}", ( userInfo==null ? -1 : userInfo.length() ));
                     }
                     urlc.connect();
+                    logger.log( Level.FINER, "made connection, now consume rest of stream: {0}", urlc );
                     consumeStream( urlc.getInputStream() );
+                    logger.log( Level.FINER, "done consuming and initial connection is complete: {0}" );
                     connectFail= false;
                 } catch ( IOException ex ) {
                     int code= 0;
