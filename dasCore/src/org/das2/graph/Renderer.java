@@ -48,9 +48,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.ParseException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -148,6 +151,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return SemanticOps.isTableDataSet(ds);
     }
 
+    protected Set needWorkMarkers= Collections.synchronizedSet( new HashSet<String>() );
+    
+    protected final String MARKER_DATASET= "dataset";
+    protected final String MARKER_X_AXIS_RANGE= "xaxisRange";
+    protected final String MARKER_Y_AXIS_RANGE= "yaxisRange";
+    
     /**
      * find the first and last valid data points.  This is an inexpensive
      * calculation which is only done when the dataset changes.  It improves
@@ -293,6 +302,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                 updateFirstLastValid();
                 this.ds = ds;
             }
+            needWorkMarkers.add( MARKER_DATASET );
             //refresh();
             update();
             invalidateParentCacheImage();
@@ -680,6 +690,41 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     /**
+     * if we were asked to refresh, but couldn't because we were on the event 
+     * thread, this is called from a different thread.
+     * 
+     */
+    private void refreshImmediately() {
+        logger.log(Level.FINE, "update plot image for {0}", id);
+        DasPlot lparent= parent;
+        if ( lparent==null ) return;
+        try {
+            final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
+            updatePlotImage(lparent.getXAxis(), lparent.getYAxis(), progressPanel);
+            xmemento = lparent.getXAxis().getMemento();
+            ymemento = lparent.getYAxis().getMemento();
+            renderException = null;
+        } catch (DasException de) {
+            // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
+            logger.log(Level.WARNING, de.getMessage(), de);
+            ds = null;
+            renderException = de;
+        } catch (RuntimeException re) {
+            logger.log(Level.WARNING, re.getMessage(), re);
+            renderException = re;
+            lparent.invalidateCacheImage();
+            throw re;
+        } finally {
+            // this code used to call finished() on the progressPanel
+        }
+
+        logger.fine("invalidate parent cacheImage and repaint");
+
+        lparent.invalidateCacheImage();
+        
+    }
+    
+    /**
      * recalculate the plot image and repaint.  The dataset or exception have
      * been updated, or the axes have changed, so we need to perform updatePlotImage
      * to do the expensive parts of rendering.
@@ -701,32 +746,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         Runnable run = new Runnable() {
 
             public void run() {
-                logger.log(Level.FINE, "update plot image for {0}", id);
-                DasPlot lparent= parent;
-                if ( lparent==null ) return;
-                try {
-                    final ProgressMonitor progressPanel = DasApplication.getDefaultApplication().getMonitorFactory().getMonitor(parent, "Rebinning data set", "updatePlotImage");
-                    updatePlotImage(lparent.getXAxis(), lparent.getYAxis(), progressPanel);
-                    xmemento = lparent.getXAxis().getMemento();
-                    ymemento = lparent.getYAxis().getMemento();
-                    renderException = null;
-                } catch (DasException de) {
-                    // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
-                    logger.log(Level.WARNING, de.getMessage(), de);
-                    ds = null;
-                    renderException = de;
-                } catch (RuntimeException re) {
-                    logger.log(Level.WARNING, re.getMessage(), re);
-                    renderException = re;
-                    lparent.invalidateCacheImage();
-                    throw re;
-                } finally {
-                    // this code used to call finished() on the progressPanel
-                }
-
-                logger.fine("invalidate parent cacheImage and repaint");
-
-                lparent.invalidateCacheImage();
+                refreshImmediately();
             }
         };
 
