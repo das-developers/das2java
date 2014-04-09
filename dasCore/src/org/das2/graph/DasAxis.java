@@ -1306,20 +1306,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param tickV the new ticks for this axis, or null
      */
     public void setTickV(TickVDescriptor tickV) {
-        checkTickV(tickV);
-        this.tickV = tickV;
-        if (tickV == null) {
-            autoTickV = true;
-            updateTickV();
-        } else {
-            autoTickV = false;
+        logger.fine("about to lock for setTickV");
+        synchronized ( this ) {
+            this.tickV = tickV;
+            if (tickV == null) {
+                autoTickV = true;
+                updateTickV();
+            } else {
+                autoTickV = false;
+            }
         }
         update();
-    }
-
-    /** TODO: implement this
-     */
-    private void checkTickV(TickVDescriptor tickV) throws IllegalArgumentException {
     }
 
     private TickVDescriptor updateTickVLog() {
