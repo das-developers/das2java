@@ -34,7 +34,7 @@ public class DasCanvasComponentBeanInfo extends AccessLevelBeanInfo {
         new Property("name", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getDasName", "setDasName", null),
         new Property("row", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getRow", "setRow", null),
         new Property("column", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getColumn", "setColumn", null),
-        new Property("mouseAdapter", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getDasMouseInputAdapter", "setDasMouseInputAdapter", null)
+        new Property("mouseAdapter", AccessLevel.ALL, PersistenceLevel.PERSISTENT, "getDasMouseInputAdapter", null, null)
     };
     
     private static MethodDescriptor[] methods;
