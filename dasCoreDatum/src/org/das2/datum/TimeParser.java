@@ -1639,6 +1639,15 @@ public class TimeParser {
     public String format( DatumRange range ) {
         return format( range.min(), range.max() );
     }
+
+    /**
+     * The TimeParser can be used to format times as well.  
+     * @param start
+     * @return formatted string.
+     */
+    public String format(Datum start) {    
+        return format( start, null );
+    }
     
     /**
      * The TimeParser can be used to format times as well.  Note the 
