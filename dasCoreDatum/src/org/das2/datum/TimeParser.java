@@ -1641,7 +1641,8 @@ public class TimeParser {
     }
 
     /**
-     * The TimeParser can be used to format times as well.  
+     * The TimeParser can be used to format times as well.  The resolution
+     * or span implicitly defines the end time.
      * @param start
      * @return formatted string.
      */
