@@ -21,6 +21,7 @@ import org.das2.graph.DasPlot;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.SeriesRenderer;
 import org.das2.graph.SpectrogramRenderer;
+import org.das2.util.FileUtil;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsops.Ops;
@@ -87,6 +88,7 @@ public class DemoAPBug1129 {
         try {
             canvas.waitUntilIdle(true);
             canvas.writeToPng( String.format("/tmp/ap/%05d%s.png",j,a) );
+            // canvas.waitUntilIdle(true); When the fault occurs, there are no pending events.
         } catch (IOException ex) {
             Logger.getLogger(DemoAPBug1129.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
@@ -117,7 +119,13 @@ public class DemoAPBug1129 {
         plot.getColumn().setMaximum(0.9);
         DatumRange xr2= DatumRangeUtil.rescale(plot.getXAxis().getDatumRange(), 0.02, 1.02 );
         
-        if ( !new File("/tmp/ap/").exists() && !new File("/tmp/ap/").mkdirs() ) {
+        if ( new File("/tmp/ap/").exists() ) {
+            if ( !FileUtil.deleteFileTree(new File("/tmp/ap/")) ) {
+                throw new RuntimeException("unable to delete old tree");
+            }   
+        }
+        
+        if ( !new File("/tmp/ap/").mkdirs() ) {
             throw new RuntimeException("mkdirs");
         }
         
@@ -127,13 +135,19 @@ public class DemoAPBug1129 {
             plot.getColumn().setMaximum(0.9);
             plot.getXAxis().setDatumRange( xr1 );
             writeImage(j,'a');
+            if ( canvas.broken!=null ) {
+                //break;
+            }
             plot.getXAxis().setDatumRange( xr2 );
             //ds.putValue( j % 30, ( j % 900) /30, 0.6+Math.random()/10 );
             plot.getColumn().setMinimum(0.12);
             plot.getColumn().setMaximum(0.92);    
             writeImage(j,'b');
-            plot.getRenderer(0).setDataSet(ds);
-            writeImage(j,'c');
+            if ( canvas.broken!=null ) {
+                //break;
+            }
+            //plot.getRenderer(0).setDataSet(ds);
+            //writeImage(j,'c');
             j=j+1;
             if ( ( j % 900) ==0  ) {
                 ds= getDataSet();
