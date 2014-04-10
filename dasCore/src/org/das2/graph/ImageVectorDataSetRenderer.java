@@ -124,7 +124,13 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 }
             }
         }
-        xrange= Ops.rescaleRangeLogLin( xrange, -0.1, 1.1 );
+        boolean isLog= "log".equals( xrange.property(QDataSet.SCALE_TYPE));
+        if ( isLog && xrange.value(0)==0 ) {
+            //xrange= Ops.rescaleRangeLogLin( xrange, -0.1, 1.1 );
+            //xrange= Ops.rescaleRange( xrange, 0, 1.1 );
+        } else {
+            xrange= Ops.rescaleRangeLogLin( xrange, -0.1, 1.1 );
+        }
         return xrange;
     }
 
