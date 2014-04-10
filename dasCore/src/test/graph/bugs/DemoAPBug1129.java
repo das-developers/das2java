@@ -5,6 +5,7 @@
 package test.graph.bugs;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -52,8 +53,8 @@ public class DemoAPBug1129 {
     }
 
     public DemoAPBug1129() {
-        int width = 500;
-        int height = 500;
+        int width = 400;
+        int height = 200;
 
         getContentPane().setLayout(new BorderLayout());
 
@@ -74,6 +75,7 @@ public class DemoAPBug1129 {
         plot.addRenderer( new SpectrogramRenderer(null,cb) );
         SeriesRenderer r= new SeriesRenderer();
         r.setAntiAliased(true);
+        r.setColor( Color.WHITE );
         
         plot.addRenderer( r );
         
@@ -110,10 +112,10 @@ public class DemoAPBug1129 {
     private void stressIt() {
         ArrayDataSet ds= getDataSet();
         
-        DatumRange xr1= DatumRangeUtil.rescale(plot.getXAxis().getDatumRange(), -0.01, 0.99 );
+        DatumRange xr1= DatumRangeUtil.rescale(plot.getXAxis().getDatumRange(), -0.02, 0.98 );
         plot.getColumn().setMinimum(0.1);
         plot.getColumn().setMaximum(0.9);
-        DatumRange xr2= DatumRangeUtil.rescale(plot.getXAxis().getDatumRange(), 0.01, 1.01 );
+        DatumRange xr2= DatumRangeUtil.rescale(plot.getXAxis().getDatumRange(), 0.02, 1.02 );
         
         if ( !new File("/tmp/ap/").exists() && !new File("/tmp/ap/").mkdirs() ) {
             throw new RuntimeException("mkdirs");
@@ -126,9 +128,9 @@ public class DemoAPBug1129 {
             plot.getXAxis().setDatumRange( xr1 );
             writeImage(j,'a');
             plot.getXAxis().setDatumRange( xr2 );
-            ds.putValue( j % 30, ( j % 900) /30, 0.6+Math.random()/10 );
-            plot.getColumn().setMinimum(0.11);
-            plot.getColumn().setMaximum(0.91);    
+            //ds.putValue( j % 30, ( j % 900) /30, 0.6+Math.random()/10 );
+            plot.getColumn().setMinimum(0.12);
+            plot.getColumn().setMaximum(0.92);    
             writeImage(j,'b');
             plot.getRenderer(0).setDataSet(ds);
             writeImage(j,'c');
