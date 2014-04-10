@@ -27,6 +27,9 @@ import org.das2.DasApplication;
 import java.beans.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
 
 /**
  * This class is designed to implement access levels for bean properties.
@@ -37,6 +40,8 @@ import java.util.Arrays;
  * @author Edward West
  */
 public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.system");
     
     /**
      * Type-safe enumeration class used to specify access levels
@@ -106,7 +111,7 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
     private Property[] properties;
     private Class beanClass;
     private static AccessLevel accessLevel;
-    private static Object lockObject = new Object();
+    private static final Object lockObject = new Object();
     
     static {
         String level = DasApplication.getProperty("edu.uiowa.physics.das.beans.AccessLevelBeanInfo.AccessLevel",null);
@@ -172,7 +177,6 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         synchronized (lockObject) {
             try {
                 ArrayList result= new ArrayList();
-                int propertyIndex = 0;
                 for (int index = 0; index < properties.length; index++) {
                     if (persistenceLevel.compareTo(properties[index].getPersistenceLevel()) <= 0) {
                         result.add( properties[index].getPropertyDescriptor(beanClass) );
@@ -192,6 +196,11 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    /**
+     * get the property descriptors for the object.
+     * @return 
+     */
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         synchronized (lockObject) {
             try {
@@ -205,6 +214,7 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
                 int propertyIndex = 0;
                 for (int index = 0; index < properties.length; index++) {
                     if (accessLevel.compareTo(properties[index].getLevel()) <= 0) {
+                        logger.log(Level.FINE, "property: {0}", properties[index].getPropertyDescriptor(beanClass).getDisplayName());
                         descriptors[propertyIndex] = properties[index].getPropertyDescriptor(beanClass);
                         propertyIndex++;
                     }
@@ -216,6 +226,11 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         }
     }
     
+    /**
+     * get the Property for the PropertyDescriptor.
+     * @param pd
+     * @return
+     */
     public Property getProperty( PropertyDescriptor pd ) {
         String name= pd.getName();
         for ( int i=0; i<properties.length; i++ ) {
@@ -236,6 +251,11 @@ public abstract class AccessLevelBeanInfo extends SimpleBeanInfo {
         return null;
     }
     
+    /**
+     * get the descriptor for the class.
+     * @return 
+     */
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(beanClass);
     }
