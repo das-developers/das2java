@@ -1024,7 +1024,9 @@ public class DataSetUtil {
     }
     
     /**
-     * infer the bins for the rank 2 ytags.
+     * infer the bins for the rank 2 ytags.  This was first used with Juno
+     * high-rate data, where the ytags follow the FCE implied by the magnetic 
+     * field detector.
      * @param ds rank 2 dataset[n,m]
      * @return two-element array of rank 2 datasets[n,m], where 0 is the min and 1 is the max.
      */
