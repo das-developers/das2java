@@ -941,6 +941,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
     }
 
+    public String broken= null;
+    
     /**
      * uses getImage to get an image of the canvas and encodes it
      * as a png.
@@ -959,7 +961,33 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         logger.fine("Enter writeToPng");
 
-        Image image = getImage(w,h);
+        BufferedImage image = getImage(w,h);
+
+        boolean doCheckAPBug1199= false;
+        if ( doCheckAPBug1199 ) { // see DemoAPBug1129.java.
+            List<Integer> peaks= new ArrayList();
+            int z0= ( image.getRGB( 150,150 ) & 0xFF );
+            double dz= 0;
+            for ( int i=0; i<50; i++ ) {
+                int c=  ( image.getRGB( 150,150-i ) );
+                //System.err.println( String.format( "%d %d %d %d", i, ( c & 0xFF0000 ) >> 16, ( c & 0x00FF00 ) >> 8, c & 0x0000FF ) );
+                int z1= ( image.getRGB( 150,150-i ) & 0xFF );
+
+                double dz1= z1-z0;
+                if ( dz>0 && dz1< 0 ) {
+                    peaks.add(i);
+                }
+                dz= dz1;
+                z0= z1;
+            }
+            System.err.println("peaks: "+peaks);
+            if ( peaks.size()>1 ) {
+                System.err.println("double peak detected");
+                broken= "doublePeakDetected";
+            } else {
+                broken= null;
+            }
+        }
 
         DasPNGEncoder encoder = new DasPNGEncoder();
         encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
@@ -975,7 +1003,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         encoder.addText(DasPNGConstants.KEYWORD_PLOT_INFO, getImageMetadata() );
 
         logger.fine("Encoding image into png");
-        encoder.write((BufferedImage) image, out);
+        encoder.write(image, out);
             
     }
     
@@ -1309,7 +1337,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param height
      * @return
      */
-    public Image getImage(int width, int height) {
+    public BufferedImage getImage(int width, int height) {
 
         long t0= System.currentTimeMillis();
 
@@ -1318,7 +1346,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         prepareForOutput(width, height);
 
-        final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         if (SwingUtilities.isEventDispatchThread()) {
             writeToImageImmediately(image);
