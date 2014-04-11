@@ -46,17 +46,19 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
             String id= m.group(1);
             EnumerationUnits u;
             try {
-                u= (EnumerationUnits) Units.getByName(s);
+                u= (EnumerationUnits) Units.getByName(id);
             } catch ( IllegalArgumentException ex ) {
                 u= new EnumerationUnits(id);
             }
             String values= m.group(2);
-            String[] ss= values.split("::");
+            String[] ss= values.split("::",-2);
             for ( String nv: ss ) {
-                int idx= nv.indexOf(":");
-                int ival= Integer.parseInt(nv.substring(0,idx));
-                String sval= nv.substring(idx+1);
-                u.createDatum(ival,sval);
+                if ( nv.trim().length()>0 ) {
+                    int idx= nv.indexOf(":");
+                    int ival= Integer.parseInt(nv.substring(0,idx));
+                    String sval= nv.substring(idx+1);
+                    u.createDatum(ival,sval);
+                }
             }
             return u;
         }
