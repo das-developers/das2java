@@ -51,6 +51,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathExpressionException;
 import org.das2.dataset.NoDataInIntervalException;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
 import org.w3c.dom.Document;
@@ -632,6 +633,10 @@ public class StreamTool {
                         struct.descriptors.put( getIdString(struct.four), pd );
                         struct.sd.addDescriptor((PacketDescriptor) pd,id);
                         struct.handler.packetDescriptor( (PacketDescriptor) pd );
+                    } else if ( pd instanceof EnumerationUnitDescriptor ) {
+                        EnumerationUnitDescriptor eud= (EnumerationUnitDescriptor)pd;
+                        EnumerationUnits eu= EnumerationUnits.create(eud.getName());
+                        eu.createDatum( (int)eud.getValue(), eud.getLabel() );
                     } else if (root.getTagName().equals("exception")) {
                         throw exception(root);
                     } else if (pd instanceof StreamComment) {
