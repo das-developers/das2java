@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.format.DatumFormatterFactory;
 import org.das2.datum.format.EnumerationDatumFormatterFactory;
 
@@ -42,11 +44,13 @@ import org.das2.datum.format.EnumerationDatumFormatterFactory;
  */
 public class EnumerationUnits extends Units {
 
+    private static final Logger logger= LoggerManager.getLogger("das2.units.enum");
+    
     private HashMap<Integer, Datum> ordinals;  // maps from ordinal to Datum.Integer
     private int highestOrdinal; // highest ordinal for each Units type
     private HashMap<Object, Datum> objects;    // maps from object to Datum.Integer
     private HashMap<Datum, Object> invObjects; // maps from Datum.Integer to object
-    private static HashMap<Class, EnumerationUnits> unitsInstances;
+    private static HashMap<String, EnumerationUnits> unitsInstances;
 
     public EnumerationUnits(String id) {
         this(id, "");
@@ -54,10 +58,19 @@ public class EnumerationUnits extends Units {
 
     public EnumerationUnits(String id, String description) {
         super(id, description);
+        synchronized (this) {
+            if (unitsInstances == null) {
+                unitsInstances = new HashMap<String, EnumerationUnits>();
+            }
+        }
+        if ( unitsInstances.containsKey(id) ) {
+            logger.log(Level.WARNING, "enumeration init for {0} already defined.", id);
+        }
         highestOrdinal = 0;
         ordinals = new HashMap<Integer, Datum>();
         objects = new HashMap<Object, Datum>();
         invObjects = new HashMap<Datum, Object>();
+        unitsInstances.put(id,this);
     }
 
     public static Datum createDatumAndUnits(Object object) {
@@ -153,15 +166,21 @@ public class EnumerationUnits extends Units {
         }
     }
 
+    /**
+     * create the enumeration unit with the given context.
+     * @param o
+     * @return 
+     */
     public static synchronized EnumerationUnits create(Object o) {
-        if (unitsInstances == null)
-            unitsInstances = new HashMap<Class, EnumerationUnits>();
-        Class c = o.getClass();
-        if (unitsInstances.containsKey(c)) {
-            return unitsInstances.get(c);
+        String ss= o.toString();
+        if (unitsInstances == null) {
+            unitsInstances = new HashMap<String, EnumerationUnits>();
+        }
+        if (unitsInstances.containsKey(ss)) {
+            return unitsInstances.get(ss);
         } else {
-            EnumerationUnits result = new EnumerationUnits(c.toString() + "Unit");
-            unitsInstances.put(c, result);
+            EnumerationUnits result = new EnumerationUnits(ss);
+            unitsInstances.put(ss, result);
             return result;
         }
     }
