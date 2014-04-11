@@ -1893,6 +1893,10 @@ public class DasPlot extends DasCanvasComponent {
         update();
     }
 
+    /**
+     * mark the dasPlot's cache image as invalid, but from the update method, so
+     * we don't need to update. (Updating results in a loop.)
+     */
     public void invalidateCacheImageNoUpdate() {
         cacheImageValid = false;
         super.markDirty();
