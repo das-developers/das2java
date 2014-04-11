@@ -501,6 +501,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 String propertyName = e.getPropertyName();
                 Object oldValue = e.getOldValue();
                 Object newValue = e.getNewValue();
+                markDirty("transform:"+propertyName);                
                 if (propertyName.equals(PROP_LOG)) {
                     update();
                     firePropertyChange(PROP_LOG, oldValue, newValue);
@@ -511,16 +512,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     update();
                     firePropertyChange("dataMaximum", oldValue, newValue);
                 } else if (propertyName.equals("favorites")) {
+                    update();
                     copyFavorites();
                 } else if (propertyName.equals(DataRange.PROPERTY_DATUMRANGE)) {
                     update();
                     firePropertyChange(PROPERTY_DATUMRANGE, oldValue, newValue);
                 } else if (propertyName.equals("history")) {
+                    update();
                     if (!dataRange.valueIsAdjusting()) {
                         copyHistory();
                     }
+                } else {
+                    update();
                 }
-                markDirty();
             }
         };
     }
@@ -896,7 +900,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             dataRange.setRange(range);
         }
         updateTickV();
-        markDirty();
+        markDirty("range");
         firePropertyChange(PROPERTY_DATUMRANGE, oldRange, range);
         update();
     }
@@ -979,7 +983,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return;
         }
         drawTca = b;
-        markDirty();
+        markDirty("drawTca");
         update();
         firePropertyChange("showTca", oldValue, b);
     }
@@ -1054,7 +1058,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 DasExceptionHandler.handle(de);
             }
         }
-        markDirty();
+        markDirty("tcaDataPath");
         update();
         firePropertyChange("dataPath", oldValue, dataset);
     }
@@ -1109,7 +1113,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         QFunction oldF= this.tcaFunction;
         this.tcaFunction= f;
         maybeStartTcaTimer();
-        markDirty();
+        markDirty("tcaFunction");
         update();
 
         firePropertyChange("dataSetDescriptor", null, null );
