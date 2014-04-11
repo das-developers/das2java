@@ -1600,7 +1600,7 @@ public class DasPlot extends DasCanvasComponent {
      */
     public void setDataSetDescriptor(DataSetDescriptor dataSetDescriptor) {
         this.dataSetDescriptor = dataSetDescriptor;
-        markDirty();
+        markDirty("dataDescriptor");
     }
 
     protected class RebinListener implements java.beans.PropertyChangeListener {
@@ -1618,7 +1618,7 @@ public class DasPlot extends DasCanvasComponent {
             //    ci.getGraphics().drawLine(0,0,ci.getWidth(),ci.getHeight());
             //}
             
-            markDirty();
+            markDirty("rebinListener");
             DasPlot.this.update();
         }
     }
@@ -1889,7 +1889,7 @@ public class DasPlot extends DasCanvasComponent {
     public void invalidateCacheImage() {
         if ( cacheImageValid==false ) return;
         cacheImageValid = false;
-        super.markDirty();
+        super.markDirty("invalidateCacheImage");
         update();
     }
 
@@ -1899,7 +1899,7 @@ public class DasPlot extends DasCanvasComponent {
      */
     public void invalidateCacheImageNoUpdate() {
         cacheImageValid = false;
-        super.markDirty();
+        //super.markDirty("invalidateCacheImageNoUpdate");
     }
     /**
      * introduced to debug Autoplot test018.  This should not be used otherwise.
