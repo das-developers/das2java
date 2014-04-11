@@ -963,8 +963,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         BufferedImage image = getImage(w,h);
 
-        boolean doCheckAPBug1199= false;
-        if ( doCheckAPBug1199 ) { // see DemoAPBug1129.java.
+        boolean doCheckAPBug1129= false;
+        if ( doCheckAPBug1129 ) { // see DemoAPBug1129.java.
             List<Integer> peaks= new ArrayList();
             int z0= ( image.getRGB( 150,150 ) & 0xFF );
             double dz= 0;
@@ -982,7 +982,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
             System.err.println("peaks: "+peaks);
             if ( peaks.size()>1 ) {
-                System.err.println("double peak detected");
+                logger.warning("double peak detected");
                 broken= "doublePeakDetected";
             } else {
                 broken= null;
@@ -1032,6 +1032,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             h=(int) p.getHeight();
         }
 
+        logger.log( Level.FINE, "Write to png {0} **************************************", filename);
         final FileOutputStream out = new FileOutputStream(filename);
         try {
             writeToPng( out, w, h );
@@ -1039,7 +1040,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             out.close();
         }
 
-        logger.log(Level.FINE, "write png file {0}", filename);
+        logger.log(Level.FINE, "Wrote png file {0} **************************************", filename);
         
     }
 
