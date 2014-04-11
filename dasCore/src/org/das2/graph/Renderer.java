@@ -647,6 +647,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             return;
         }
         lparent.repaint();
+        this.xmemento= null;
+        this.ymemento= null;
         java.awt.EventQueue eventQueue =
                 Toolkit.getDefaultToolkit().getSystemEventQueue();
         DasRendererUpdateEvent drue = new DasRendererUpdateEvent(lparent, this);
@@ -687,12 +689,14 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         // The parent has already used an AffineTransform to preview the image, but
         // we might as well re-render using the dataset we have.
      //   refresh();
+       // lparent.invalidateCacheImageNoUpdate();
     }
 
     /**
      * if we were asked to refresh, but couldn't because we were on the event 
      * thread, this is called from a different thread.
      * 
+     * THIS IS NOT USED PRESENTLY.
      */
     private void refreshImmediately() {
         logger.log(Level.FINE, "update plot image for {0}", id);
