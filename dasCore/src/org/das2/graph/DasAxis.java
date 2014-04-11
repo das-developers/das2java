@@ -501,7 +501,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 String propertyName = e.getPropertyName();
                 Object oldValue = e.getOldValue();
                 Object newValue = e.getNewValue();
-                markDirty("transform:"+propertyName);                
                 if (propertyName.equals(PROP_LOG)) {
                     update();
                     firePropertyChange(PROP_LOG, oldValue, newValue);
@@ -512,19 +511,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     update();
                     firePropertyChange("dataMaximum", oldValue, newValue);
                 } else if (propertyName.equals("favorites")) {
-                    update();
                     copyFavorites();
                 } else if (propertyName.equals(DataRange.PROPERTY_DATUMRANGE)) {
                     update();
                     firePropertyChange(PROPERTY_DATUMRANGE, oldValue, newValue);
                 } else if (propertyName.equals("history")) {
-                    update();
                     if (!dataRange.valueIsAdjusting()) {
                         copyHistory();
                     }
-                } else {
-                    update();
                 }
+                markDirty("transform:"+propertyName);                                
             }
         };
     }
