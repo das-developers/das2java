@@ -34,7 +34,7 @@ import org.das2.util.AboutUtil;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.DasPNGConstants;
 import org.das2.util.DasPNGEncoder;
-import org.das2.system.EventQueueBlocker_1;
+import org.das2.system.EventQueueBlocker;
 import org.das2.util.awt.GraphicsOutput;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -118,6 +118,7 @@ import org.das2.event.DasUpdateEvent;
 import org.das2.system.ChangesSupport;
 import org.das2.system.DefaultMonitorFactory;
 import org.das2.system.DefaultMonitorFactory.MonitorEntry;
+import org.das2.system.EventQueueBlocker;
 import org.das2.system.MonitorFactory;
 import org.das2.util.monitor.ProgressMonitor;
 
@@ -1175,7 +1176,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         final Object lockObject = new Object();
 
         /* wait for all the events on the awt event thread to process */
-        EventQueueBlocker_1.clearEventQueue();
+        EventQueueBlocker.clearEventQueue();
         logger.finer("pending events processed");
 
         final String[] ss= new String[1];
@@ -1205,7 +1206,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
 
         /* wait for all the post data-load stuff to clear */
-        EventQueueBlocker_1.clearEventQueue();
+        EventQueueBlocker.clearEventQueue();
         logger.finer("post data-load pending events processed");
 
         /** wait for registered pending changes.  TODO: this is cheesy */
