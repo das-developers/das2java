@@ -253,7 +253,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         DasPlot parent= getParent();
         if ( parent==null ) return;
 
-        synchronized (lockObject) {
+        //synchronized (lockObject) {
+        {
             if (plotImage == null) {
                 if (lastException != null) {
                     if (lastException instanceof NoDataInIntervalException) {
@@ -518,8 +519,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     }
                 }
 
-                synchronized (lockObject) {
-
+               // synchronized (lockObject) { // TODO nested synchronized blocks unnecessary.
+                {
                     Rectangle plotImageBounds2= lparent.getUpdateImageBounds();
 
                     if ( lraster != null
