@@ -20,17 +20,18 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
- *
+ * Tool for emptying the event queue.  This will post an event and wait until
+ * the event clears the event queue.
  * @author Jeremy
  */
-public final class EventQueueBlocker_1 {
+public final class EventQueueBlocker {
     
     private static final Logger logger= Logger.getLogger( "das2.system" );
     
     private static final Object lockObject= new Object();
     
     /** Creates a new instance of EventQueueBlocker */
-    private EventQueueBlocker_1() {
+    private EventQueueBlocker() {
     }
     
     private static Runnable clearEventQueueImmediatelyRunnable= new Runnable() {
