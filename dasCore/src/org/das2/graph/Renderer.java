@@ -777,7 +777,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             ((XAxisDataLoader) loader).setDataSetDescriptor(dsd);
             DasPlot lparent= parent;
             if (lparent != null) {
-                lparent.markDirty();
+                lparent.markDirty("dataSetDescriptor");
                 lparent.update();
             }
             this.ds = null;
