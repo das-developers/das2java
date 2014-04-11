@@ -119,7 +119,7 @@ public class DasColorBar extends DasAxis {
         image = null;
         fillColorIndex= getType().getColorCount();
         fillColor= getType().getRGB(fillColorIndex);
-        markDirty();
+        markDirty("type");
         update();
         firePropertyChange( PROPERTY_TYPE, oldValue,type);
     }
@@ -622,7 +622,7 @@ public class DasColorBar extends DasAxis {
         Color oldColor= new Color( this.fillColor );
         this.fillColor = fillColor.getRGB();
         this.type.initializeColorTable( COLORTABLE_SIZE, 0, this.type.getColorCount() );
-        markDirty();
+        markDirty("fillColor");
         update();
         firePropertyChange( PROPERTY_FILL_COLOR, oldColor,fillColor );
     }
