@@ -32,6 +32,8 @@ import org.das2.system.DasLogger;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.*;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
@@ -176,7 +178,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     private class ResizeListener implements DasUpdateListener {
         public void update(org.das2.graph.event.DasUpdateEvent e) {
             logger.log(Level.FINE, "component row or column moved: {0}", e.getSource());
-            markDirty();
+            markDirty("resize");
             DasCanvasComponent.this.update();
         }
         
@@ -299,11 +301,13 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {
         logger.fine("enter process DasUpdateEvent");
-        if (isDisplayable()) {
-            if (isDirty()) {
-                markClean();
+        if (isDirty()) {
+            markClean();
+            if ( isDisplayable() ) {
                 updateImmediately();
             }
+        }
+        if (isDisplayable()) {
             resize();
             repaint();
         }
@@ -356,24 +360,34 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         return f==null ? 8 : f.getSize2D();
     }
     
-    boolean dirty = true;
+    private final Set dirty = new HashSet<String>();
     
     /**
      * set the dirty flag indicating the state has changed and work is to be
      * done to restore a valid state.  For example, a DasAxis' minimum is
      * changed, so we will need to recalculate the ticks.  (But we don't want
      * to recalculate the ticks immediately, since the maximum may change
-     * as well.
+     * as well.)
      */
     void markDirty() {
-        dirty = true;
+        dirty.add("??");
     }
+    
+    /**
+     * mark the component as dirty, providing a reason that is useful 
+     * when debugging.
+     * @param note 
+     */
+    void markDirty( String note ) {
+        dirty.add(note);
+    }
+    
     /**
      * @return true if the component has been marked as dirty, meaning
      * work needs to be done to restore it to a valid state.
      */
     boolean isDirty() {
-        return dirty;
+        return !dirty.isEmpty();
     }
     
     /**
@@ -381,7 +395,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * state.
      */
     void markClean() {
-        dirty = false;
+        dirty.clear();
     }
     
     /**
