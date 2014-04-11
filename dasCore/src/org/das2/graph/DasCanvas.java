@@ -1114,7 +1114,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         DasCanvasComponent[] cc = this.getCanvasComponents();
         boolean result = false;
         for (int i = 0; i < cc.length; i++) {
-            result = result | cc[i].isDirty();
+            boolean dirty1=cc[i].isDirty();
+            if ( dirty1 ) {
+                logger.log(Level.FINE, "component is marked as dirty: {0}", cc[1]);
+                cc[i].isDirty();
+            }
+            result = result | dirty1 ;
         }
         return result;
     }
@@ -1141,6 +1146,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     
     /**
      * blocks until everything is idle, including no active monitors.
+     * PRESENTLY THIS DOES NOT CHECK MONITORS!
      * @param monitors
      * @throws InterruptedException 
      */
@@ -1229,6 +1235,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 //                throw new RuntimeException(ex);
 //            }
 //        }
+        
+        if ( isDirty() ) {
+            logger.fine("something is still dirty, not waiting.");
+            Thread.sleep(1000);
+        }
                 
         logger.fine("canvas is idle");
         /* should be in static state */
@@ -1340,6 +1351,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      */
     public BufferedImage getImage(int width, int height) {
 
+        System.err.println("isDirty="+isDirty());
+        
         long t0= System.currentTimeMillis();
 
         String msg = "dasCanvas.getImage(" + width + "," + height + ")";
