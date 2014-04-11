@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package test.graph;
 
 import java.awt.BorderLayout;
@@ -9,8 +6,6 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Vector;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -35,6 +30,11 @@ import org.das2.util.FileUtil;
 /**
  * This was a bug that showed on the community branch used with 
  * Autoplot, and I wanted to see if the same bug would show here.
+ * 
+ * The bug also shows on the production branch.  Run this and see /tmp/ap/*.png.
+ * About one of every 20 images shows where the spectrogram location is painted
+ * incorrectly.
+ * 
  * @author jbf
  */
 public class DemoAPBug1129 {
