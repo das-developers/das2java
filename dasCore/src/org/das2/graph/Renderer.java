@@ -630,7 +630,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      */
     protected void refreshImage() {
         if (getParent() != null) {
-            refresh();
+   //         refresh();
         }
     }
 
@@ -686,7 +686,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
         // The parent has already used an AffineTransform to preview the image, but
         // we might as well re-render using the dataset we have.
-        refresh();
+     //   refresh();
     }
 
     /**
@@ -728,6 +728,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * recalculate the plot image and repaint.  The dataset or exception have
      * been updated, or the axes have changed, so we need to perform updatePlotImage
      * to do the expensive parts of rendering.
+     * 
+     * THIS IS NO LONGER USED...
      */
     protected void refresh() {
         //System.err.println("in refresh...");
@@ -744,7 +746,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
 
         Runnable run = new Runnable() {
-
+         
             public void run() {
                 refreshImmediately();
             }
