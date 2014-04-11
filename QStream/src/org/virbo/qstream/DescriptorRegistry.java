@@ -19,6 +19,7 @@ public class DescriptorRegistry {
         register( "packet", new PacketDescriptorFactory() );
         register( "exception", new ExceptionDescriptorFactory() );
         register( "comment", new StreamCommentDescriptorFactory() );
+        register( "enumerationUnit", new EnumerationUnitDescriptorFactory() );
     }
     
     public synchronized static void register( String s, DescriptorFactory factory ) {
