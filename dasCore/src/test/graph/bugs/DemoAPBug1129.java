@@ -8,7 +8,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -21,7 +25,9 @@ import org.das2.graph.DasPlot;
 import org.das2.graph.GraphUtil;
 import org.das2.graph.SeriesRenderer;
 import org.das2.graph.SpectrogramRenderer;
+import org.das2.graph.util.GraphicalLogHandler;
 import org.das2.util.FileUtil;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsops.Ops;
@@ -53,10 +59,43 @@ public class DemoAPBug1129 {
         return frame;
     }
 
+    private class MyHandler extends Handler {
+
+        @Override
+        public void publish(LogRecord rec) {
+            Object[] parms= rec.getParameters();
+
+            String recMsg;
+            if ( parms==null || parms.length==0 ) {
+                recMsg = rec.getMessage();
+            } else {
+                recMsg = MessageFormat.format( rec.getMessage(), parms );
+            }
+            System.err.println( recMsg );
+        }
+
+        @Override
+        public void flush() {
+            
+        }
+
+        @Override
+        public void close() throws SecurityException {
+            
+        }
+        
+    }
+    
+    
     public DemoAPBug1129() {
         int width = 400;
         int height = 200;
 
+        LoggerManager.getLogger("das2.graphics").setLevel(Level.FINER);
+        Handler h= new MyHandler();
+        h.setLevel( Level.ALL );
+        LoggerManager.getLogger("das2.graphics").addHandler( h );
+        
         getContentPane().setLayout(new BorderLayout());
 
         canvas = new DasCanvas(width, height);
