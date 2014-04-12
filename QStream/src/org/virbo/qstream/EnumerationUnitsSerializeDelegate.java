@@ -46,9 +46,9 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
             String id= m.group(1);
             EnumerationUnits u;
             try {
-                u= (EnumerationUnits) Units.getByName(id);
+                u= (EnumerationUnits) Units.getByName(s); //TODO: why???
             } catch ( IllegalArgumentException ex ) {
-                u= new EnumerationUnits(id);
+                u= new EnumerationUnits(id);   // getByName always fails, and then this is invoked, creating multiple units with the same name.  This happens to work, but it's not clean...
             }
             String values= m.group(2);
             String[] ss= values.split("::",-2);
