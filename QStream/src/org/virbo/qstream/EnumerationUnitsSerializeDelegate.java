@@ -49,6 +49,7 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
                 u= (EnumerationUnits) Units.getByName(s); //TODO: why???
             } catch ( IllegalArgumentException ex ) {
                 u= new EnumerationUnits(id);   // getByName always fails, and then this is invoked, creating multiple units with the same name.  This happens to work, but it's not clean...
+                // http://www-pw.physics.uiowa.edu/~jbf/autoplot/data/qds/agg/demoEventsInlineEnumeration.vap  shows why this needs to be cleaned up.
             }
             String values= m.group(2);
             String[] ss= values.split("::",-2);
