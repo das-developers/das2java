@@ -2150,9 +2150,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** Paint the axis if it is vertical  */
     protected void paintVerticalAxis(Graphics2D g) {
         try {
-            if ( this.isLog() ) {
-                System.err.println("here log");
-            }
             Rectangle clip = g.getClipBounds();
             if (clip == null) {
                 clip = new Rectangle(getX(), getY(), getWidth(), getHeight());
