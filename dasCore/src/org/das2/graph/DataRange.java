@@ -317,6 +317,7 @@ public class DataRange implements Cloneable {
             firePropertyChange( "history", new ArrayList(), new ArrayList(history) );
         }
         
+        DatumRange oldRange= this.range;
         this.range= range;
         
         double oldMin = minimum;
@@ -330,6 +331,9 @@ public class DataRange implements Cloneable {
         }
         
         fireUpdate();
+        if ( !range.equals(oldRange) )  {
+            firePropertyChange( "datumRange", oldRange, range );
+        }
         if (minimum != oldMin) firePropertyChange("minimum", oldMin, minimum);
         if (maximum != oldMax) firePropertyChange("maximum", oldMax, maximum);
     }
