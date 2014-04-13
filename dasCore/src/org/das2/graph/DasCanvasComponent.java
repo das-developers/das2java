@@ -377,6 +377,12 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * @param note 
      */
     void markDirty( String note ) {
+        boolean loudDebug= false; // ( this instanceof DasAxis ) && ( ((DasAxis)this).isHorizontal() );
+        if ( loudDebug ) {
+            logger.log(Level.WARNING, "{0}.markDirty({1})", new Object[]{this.dasName, note});
+        } else {
+            logger.log(Level.FINE, "{0}.markDirty({1})", new Object[]{this.dasName, note});
+        }
         dirty.add(note);
     }
     
@@ -393,6 +399,12 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * state.
      */
     void markClean() {
+        boolean loudDebug= false; // ( this instanceof DasAxis ) && ( ((DasAxis)this).isHorizontal() );
+        if ( loudDebug ) {
+            logger.log(Level.WARNING, "{0}.markClean()", this.dasName);
+        } else {
+            logger.log(Level.FINE, "{0}.markClean()", this.dasName);
+        }
         dirty.clear();
     }
     
