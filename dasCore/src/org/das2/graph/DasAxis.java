@@ -68,6 +68,7 @@ import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.OrbitDatumRange;
+import org.das2.datum.TimeUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.system.RequestProcessor;
@@ -504,23 +505,26 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 if (propertyName.equals(PROP_LOG)) {
                     update();
                     firePropertyChange(PROP_LOG, oldValue, newValue);
+                    markDirty("transform:"+propertyName+"="+newValue);
                 } else if (propertyName.equals("minimum")) {
                     update();
                     firePropertyChange("dataMinimum", oldValue, newValue);
+                    markDirty("transform:"+propertyName+"=" + (DasAxis.this.getUnits().createDatum((Number)newValue)));
                 } else if (propertyName.equals("maximum")) {
                     update();
                     firePropertyChange("dataMaximum", oldValue, newValue);
+                    markDirty("transform:"+propertyName+"=" + (DasAxis.this.getUnits().createDatum((Number)newValue)) );
                 } else if (propertyName.equals("favorites")) {
                     copyFavorites();
                 } else if (propertyName.equals(DataRange.PROPERTY_DATUMRANGE)) {
                     update();
                     firePropertyChange(PROPERTY_DATUMRANGE, oldValue, newValue);
+                    markDirty("transform:"+propertyName+"="+newValue);
                 } else if (propertyName.equals("history")) {
                     if (!dataRange.valueIsAdjusting()) {
                         copyHistory();
                     }
                 }
-                markDirty("transform:"+propertyName);                                
             }
         };
     }
@@ -590,6 +594,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void setDatumRange(DatumRange dr) {
         //System.err.println("setDatumRange("+dr+")");
+        logger.log(Level.WARNING, "{0}.setDatumRange({1})", new Object[]{this.getDasName(), dr});
         if ( dr.width().value()==0 ) {
             throw new IllegalArgumentException("width is zero: "+dr);
         }
