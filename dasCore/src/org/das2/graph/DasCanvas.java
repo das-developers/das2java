@@ -1177,6 +1177,17 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         final Object lockObject = new Object();
 
+        if ( ! this.isShowing() || "true".equals(DasApplication.getProperty("java.awt.headless", "false")) ) {
+            this.addNotify();
+            logger.log(Level.FINER, "setSize({0})", getPreferredSize());
+            this.setSize(getPreferredSize());
+            logger.finer("validate()");
+            this.validate();
+            resizeAllComponents();
+        } else {
+            resizeAllComponents();
+        }
+
         /* wait for all the events on the awt event thread to process */
         EventQueueBlocker.clearEventQueue();
         logger.finer("pending events processed");
@@ -1184,8 +1195,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         
         for ( DasCanvasComponent cc: getCanvasComponents() ) {
             if ( cc.isDirty() ) {
-                System.err.println("Still Dirty: "+cc );
+                logger.log(Level.WARNING, "Still Dirty: {0}", cc);
             }
+        }
+        
+        if ( this.isDirty() ) {
+            logger.warning("Canvas is still dirty");
         }
         
         final String[] ss= new String[1];
@@ -1337,7 +1352,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             this.setSize(getPreferredSize());
             logger.finer("validate()");
             this.validate();
-
             resizeAllComponents();
         }
         try {
