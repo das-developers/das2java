@@ -925,13 +925,17 @@ public class DasPlot extends DasCanvasComponent {
                 return;
             }
             resetCacheImageBounds(true,w,h);
+            
+            DasAxis lxaxis= (DasAxis)xAxis.clone(); //TODO: Ed suggests that it might be a clone of the listeners that's causing problems.
+            DasAxis lyaxis= (DasAxis)yAxis.clone();
+                                
             List<Renderer> renderers1= Arrays.asList(getRenderers());
             for (int i = 0; i < renderers1.size(); i++) {
                 Renderer rend = (Renderer) renderers1.get(i);
                 if (rend.isActive()) {
                     logger.log(Level.FINEST, "updating renderer #{0}: {1}", new Object[]{i, rend});
                     try {
-                        rend.updatePlotImage(xAxis, yAxis, new NullProgressMonitor());
+                        rend.updatePlotImage(lxaxis, lyaxis, new NullProgressMonitor());
                     } catch (DasException ex) {
                         logger.log(Level.SEVERE, ex.getMessage(), ex);
                     }
