@@ -926,16 +926,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         json.append( String.format("{ \"size\":[%d,%d],\n", this.getWidth(),this.getHeight() ) );
         json.append( String.format("  \"numberOfPlots\":%d,\n",plots.size() ) );
 
-        json.append("  \"plots\": [\n");
-        DasPlot lastPlot= plots.get( plots.size()-1 );
-        for ( DasPlot p: plots ) {
-            json.append( "  {\n");
-            json.append( getJSONForPlot( p, "    ", false ) );
-            json.append( "  }");
-            if ( p!=lastPlot ) json.append(",");
-            json.append( "\n" );
+        if ( plots.size()>0 ) {
+            json.append("  \"plots\": [\n");
+            DasPlot lastPlot= plots.get( plots.size()-1 );
+            for ( DasPlot p: plots ) {
+                json.append( "  {\n");
+                json.append( getJSONForPlot( p, "    ", false ) );
+                json.append( "  }");
+                if ( p!=lastPlot ) json.append(",");
+                json.append( "\n" );
+            }
+            json.append(" ]");
         }
-        json.append(" ]");
         json.append("}" );
         return json.toString();
 
@@ -1179,6 +1181,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         EventQueueBlocker.clearEventQueue();
         logger.finer("pending events processed");
 
+        
+        for ( DasCanvasComponent cc: getCanvasComponents() ) {
+            if ( cc.isDirty() ) {
+                System.err.println("Still Dirty: "+cc );
+            }
+        }
+        
         final String[] ss= new String[1];
         ss[0]= null;
         
