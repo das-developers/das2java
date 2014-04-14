@@ -123,6 +123,12 @@ public class DasPlot extends DasCanvasComponent {
 
     private boolean drawInactiveInLegend= false;
 
+    /**
+     * use this for conditional breakpoints.  Set this to non-null to
+     * trigger breakpoint.
+     */
+    public static String testSentinal= null;
+    
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         super();
 
@@ -963,6 +969,9 @@ public class DasPlot extends DasCanvasComponent {
 
         if (getCanvas().isPrintingThread()) {
             logger.fine("* printing thread *");
+            if ( testSentinal!=null && this.getName().equals("plot_0" ) ) {
+                System.err.println("here we are...");
+            }
         }
 
         int x = getColumn().getDMinimum();
@@ -1601,6 +1610,7 @@ public class DasPlot extends DasCanvasComponent {
     public void setDataSetDescriptor(DataSetDescriptor dataSetDescriptor) {
         this.dataSetDescriptor = dataSetDescriptor;
         markDirty("dataDescriptor");
+        DasPlot.this.update();
     }
 
     protected class RebinListener implements java.beans.PropertyChangeListener {
@@ -1887,8 +1897,11 @@ public class DasPlot extends DasCanvasComponent {
      * TODO: when should a user use invalidateCacheImage vs markDirty?
      */
     public void invalidateCacheImage() {
-        if ( cacheImageValid==false ) return;
-        cacheImageValid = false;
+        if ( cacheImageValid==false ) {
+            logger.fine("cacheImage was already invalid, reposting update.");
+        } else {
+            cacheImageValid = false;
+        }
         super.markDirty("invalidateCacheImage");
         update();
     }
@@ -1912,7 +1925,7 @@ public class DasPlot extends DasCanvasComponent {
     @Override
     void markDirty() {
         logger.finer("DasPlot.markDirty");
-        super.markDirty();
+        super.markDirty("withRepaint");
         //if ( isotropic ) {
         //    checkIsotropic( DasPlot.this, null );
         //}
