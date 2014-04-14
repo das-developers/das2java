@@ -74,7 +74,7 @@ import org.virbo.dataset.SemanticOps;
  */
 public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer, org.das2.components.propertyeditor.Displayable {
 
-    final private Object lockObject = new Object();
+    //final private Object lockObject = new Object();
     private Image plotImage;
     /**
      * bounds of the image, in the canvas frame.  Note that this can be bigger than the canvas itsself, for example if overrendering is on.
@@ -523,11 +523,18 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 {
                     Rectangle plotImageBounds2= lparent.getUpdateImageBounds();
 
+                    // TODO: I don't believe this should be necessary, but testing shows it is.  
+                    // Why: a local copy is made of the xAxis and yAxis, and the DataRange objects, so this does not make sense.
+                    // (bug AP 1127)
+                    DasAxis.Memento lxmemento= xAxis.getMemento();
+                    DasAxis.Memento lymemento= yAxis.getMemento();
+                    DasAxis.Memento lcmemento= colorBar.getMemento();
+                    
                     if ( lraster != null
                             && xmemento != null && ymemento != null 
-                            && xAxis.getMemento().equals(xmemento)                             
-                            && yAxis.getMemento().equals(ymemento) 
-                            && lcolorBar.getMemento().equals(cmemento)
+                            && lxmemento.equals(xmemento)                             
+                            && lymemento.equals(ymemento) 
+                            && lcmemento.equals(cmemento)
                             && plotImageBounds2.width==rasterWidth  // TODO: figure out how plotImageBounds2 and xmemento get out of sync.
                             && plotImageBounds2.height==rasterHeight ) {
                         logger.finer("same xaxis, yaxis, reusing raster");
@@ -689,9 +696,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             return;
                         }
                         //System.err.println( "rebin (ms): " + ( System.currentTimeMillis()-t0) );
-                        xmemento = xAxis.getMemento();
-                        ymemento = yAxis.getMemento();
-                        cmemento = lcolorBar.getMemento();
+                        xmemento = lxmemento;
+                        ymemento = lymemento;
+                        cmemento = lcmemento;
 
                         logger.log(Level.FINE, "rebinning to pixel resolution: {0}  {1}", new Object[]{xmemento, ymemento});
 
