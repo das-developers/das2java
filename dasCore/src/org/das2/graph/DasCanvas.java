@@ -1188,11 +1188,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         } else {
             resizeAllComponents();
         }
-
+        
         /* wait for all the events on the awt event thread to process */
         EventQueueBlocker.clearEventQueue();
         logger.finer("pending events processed");
-
+        
         
         for ( DasCanvasComponent cc: getCanvasComponents() ) {
             if ( cc.isDirty() ) {
@@ -1246,7 +1246,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
             waitUntilIdle();
         }
-
+        
 //        //  The following is for debugging.
 //        EventQueue eventQueue= Toolkit.getDefaultToolkit().getSystemEventQueue();
 //        while ( eventQueue.peekEvent( DasUpdateEvent.DAS_UPDATE_EVENT_ID )!=null ) {
@@ -1263,6 +1263,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         
         if ( isDirty() ) {
             logger.fine("something is still dirty, not waiting.");
+            isDirty();
             Thread.sleep(1000);
         }
                 
@@ -1375,8 +1376,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      */
     public BufferedImage getImage(int width, int height) {
 
-        System.err.println("isDirty="+isDirty());
-        
         long t0= System.currentTimeMillis();
 
         String msg = "dasCanvas.getImage(" + width + "," + height + ")";
