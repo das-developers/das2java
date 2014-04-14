@@ -1177,6 +1177,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         final Object lockObject = new Object();
 
+        // see https://sourceforge.net/p/autoplot/bugs/1129/
         if ( ! this.isShowing() || "true".equals(DasApplication.getProperty("java.awt.headless", "false")) ) {
             this.addNotify();
             logger.log(Level.FINER, "setSize({0})", getPreferredSize());
