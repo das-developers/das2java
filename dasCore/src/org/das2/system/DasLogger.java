@@ -10,6 +10,7 @@ import org.das2.DasApplication;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.logging.*;
 
 /**
@@ -151,12 +152,45 @@ public class DasLogger {
         String id= loggerId.toString()+"."+identifier;
         return Logger.getLogger(id);
     }
+
+    /**
+     * add the one handler to all...
+     * @param name 
+     */
+    public static void setUpHandler(String name) {
+        removeAllHandlers();
+        Handler h= null;
+        if ( name.equals("mini") ) {
+            h= new Handler() {
+                @Override
+                public void publish(LogRecord record) {
+                    System.err.println( MessageFormat.format( record.getMessage(), record.getParameters() ) + " "+record.getLevel() );
+                }
+                public void flush() { }
+                public void close() throws SecurityException {  }
+            };
+        } else {
+            throw new IllegalArgumentException("name must be mini, but feel free to add more");
+        }
+        addHandlerToAll(h);
+    }
     
     /**
      * logger for messages to developers
      */
     public synchronized Logger getDebugLogger() {
         return Logger.getLogger("debug");
+    }
+    
+    public static void removeAllHandlers() {
+        LoggerId[] loggers= new LoggerId[] { APPLICATION_LOG, SYSTEM_LOG, GUI_LOG, GRAPHICS_LOG, RENDERER_LOG, FILESYSTEM_LOG, DATA_TRANSFER_LOG, DATA_OPERATIONS_LOG, DASML_LOG };
+        for ( int i=0; i<loggers.length; i++ ) {
+            Logger logger= loggers[i].getLogger();
+            Handler[] hh= logger.getHandlers();
+            for ( Handler h1: hh ) {
+                logger.removeHandler(h1);
+            }
+        }        
     }
     
     public static void addHandlerToAll( Handler h ) {
