@@ -517,6 +517,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 } else if (propertyName.equals("favorites")) {
                     copyFavorites();
                 } else if (propertyName.equals(DataRange.PROPERTY_DATUMRANGE)) {
+                    //if ( UnitsUtil.isTimeLocation( DasAxis.this.getUnits() ) ) {  // Autoplot test018_003.                      
+                    //    DatumRange dr= (DatumRange)newValue;
+                    //    System.err.println("new range="+dr);                        
+                    //    if ( dr.equals( DatumRangeUtil.parseTimeRangeValid("2000-01-03 09:36 to 2000-01-07 00:00")) ) {
+                    //       System.err.println("here min");
+                    //    }
+                    //}
                     update();
                     firePropertyChange(PROPERTY_DATUMRANGE, oldValue, newValue);
                     markDirty("transform:"+propertyName+"="+newValue);
@@ -594,7 +601,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public void setDatumRange(DatumRange dr) {
         //System.err.println("setDatumRange("+dr+")");
-        logger.log(Level.WARNING, "{0}.setDatumRange({1})", new Object[]{this.getDasName(), dr});
         if ( dr.width().value()==0 ) {
             throw new IllegalArgumentException("width is zero: "+dr);
         }
