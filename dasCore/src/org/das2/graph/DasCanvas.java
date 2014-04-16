@@ -1253,7 +1253,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 //            try {
 //                Thread.sleep(100);
 //                System.err.println("==Dump Future Events...==");
-//                EventQueueBlocker_1.dumpEventQueue( System.err );
+//                EventQueueBlocker.dumpEventQueue( System.err );
 //                System.err.println("=========================");
 //                
 //            }catch (InterruptedException ex) {
