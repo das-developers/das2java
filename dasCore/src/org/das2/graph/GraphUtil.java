@@ -723,8 +723,8 @@ public class GraphUtil {
      * @return 
      */
     public static Rectangle shrinkRectangle(Rectangle bounds, int percent ) {
-        Point center= new Point( bounds.x + bounds.width/2, bounds.y + bounds.height/2 );
-        Rectangle result= new Rectangle( bounds.x + bounds.width*(100-percent)/2/100, 
+        Rectangle result= new Rectangle( 
+                bounds.x + bounds.width*(100-percent)/2/100, 
                 bounds.y + bounds.height*(100-percent)/2/100, 
                 bounds.width * percent / 100, 
                 bounds.height * percent / 100 );
