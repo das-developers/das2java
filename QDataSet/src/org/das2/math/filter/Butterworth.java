@@ -82,13 +82,13 @@ public class Butterworth extends AbstractFilter {
          * @param freq2 in Hz
          * @param pass true for bandpass, false for bandreject
          */
-        public Butterworth( QDataSet source, int order, double freq1, double freq2, boolean pass) {
+        public Butterworth( QDataSet source, int order, Datum freq1, Datum freq2, boolean pass) {
                 super(source);
                
                 this.n = order;
                
-                double ff1 = 2. * freq1 / getSampleRate(source,getTimeOffsetUnits());
-                double ff2 = 2. * freq2 / getSampleRate(source,getTimeOffsetUnits());
+                double ff1 = 2. * freq1.doubleValue( Units.hertz ) / getSampleRate(source,Units.hertz);
+                double ff2 = 2. * freq2.doubleValue( Units.hertz ) / getSampleRate(source,Units.hertz);
                
                 double scale = computeScale(n, ff1, ff2, pass);
                
