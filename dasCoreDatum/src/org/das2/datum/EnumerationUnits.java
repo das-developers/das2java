@@ -50,6 +50,7 @@ public class EnumerationUnits extends Units {
     private int highestOrdinal; // highest ordinal for each Units type
     private HashMap<Object, Datum> objects;    // maps from object to Datum.Integer
     private HashMap<Datum, Object> invObjects; // maps from Datum.Integer to object
+    private HashMap<Integer,Integer> colors;   // maps from ordinal to the color for the ordinal.
     private static HashMap<String, EnumerationUnits> unitsInstances;
 
     public EnumerationUnits(String id) {
@@ -70,6 +71,7 @@ public class EnumerationUnits extends Units {
         ordinals = new HashMap<Integer, Datum>();
         objects = new HashMap<Object, Datum>();
         invObjects = new HashMap<Datum, Object>();
+        colors= new HashMap<Integer,Integer>();
         unitsInstances.put(id,this);
     }
 
@@ -79,13 +81,14 @@ public class EnumerationUnits extends Units {
 
     /**
      * creates the datum, explicitly setting the ordinal.  Use with caution.
-     * @param ival
-     * @param sval
+     * @param ival the integer value of the datum
+     * @param sval the object to associate.  This can be an object for legacy reasons.
+     * @param color RGB color to associate with this value.  
      * @throws IllegalArgumentException if this ordinal is already taken by a different value.
      */
-    public Datum createDatum(int ival, Object object) {
-        if (objects.containsKey(object)) {
-            return objects.get(object);
+    public Datum createDatum(int ival, Object sval, int color ) {
+        if (objects.containsKey(sval)) {
+            return objects.get(sval);
         } else {
             synchronized (this) {
                 if (highestOrdinal < ival) {
@@ -96,16 +99,30 @@ public class EnumerationUnits extends Units {
             Datum result = new Datum.Double(ordinal, this);
             if ( ordinals.containsKey(ordinal) ) {
                 Datum d=  ordinals.get(ordinal);
-                if ( ! invObjects.get( d ).equals(object) ) {
+                if ( ! invObjects.get( d ).equals(sval) ) {
                     throw new IllegalArgumentException("value already exists for this ordinal!");
                 }
             }
             ordinals.put(ordinal, result);
-            invObjects.put(result, object);
-            objects.put(object, result);
+            invObjects.put(result, sval);
+            objects.put(sval, result);
+            colors.put(ordinal,color);
             return result;
         }
-
+    }
+    
+    public int getColor( Datum d ) {
+        return colors.get( (int)d.doubleValue(this) );
+    }
+    
+    /**
+     * creates the datum, explicitly setting the ordinal.  Use with caution.
+     * @param ival the integer value of the datum
+     * @param sval the object to associate.  This can be an object for legacy reasons.
+     * @throws IllegalArgumentException if this ordinal is already taken by a different value.
+     */    
+    public Datum createDatum( int ival, Object sval ) {
+        return createDatum( ival, sval, 0xA0A0A0 );
     }
 
     public DatumVector createDatumVector(Object[] objects) {
