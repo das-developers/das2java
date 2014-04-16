@@ -714,4 +714,20 @@ public class GraphUtil {
         g.fillRect( 0, 0, w, h );
         return new ImageIcon(image);
     }
+
+    /** 
+     * return rectangle with same center that is percent/100 of the
+     * original width and height.
+     * @param bounds
+     * @param percent
+     * @return 
+     */
+    public static Rectangle shrinkRectangle(Rectangle bounds, int percent ) {
+        Point center= new Point( bounds.x + bounds.width/2, bounds.y + bounds.height/2 );
+        Rectangle result= new Rectangle( bounds.x + bounds.width*(100-percent)/2/100, 
+                bounds.y + bounds.height*(100-percent)/2/100, 
+                bounds.width * percent / 100, 
+                bounds.height * percent / 100 );
+        return result;
+    }
 }
