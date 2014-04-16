@@ -1192,16 +1192,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         /* wait for all the events on the awt event thread to process */
         EventQueueBlocker.clearEventQueue();
         logger.finer("pending events processed");
-        
-        
+                
         for ( DasCanvasComponent cc: getCanvasComponents() ) {
             if ( cc.isDirty() ) {
-                logger.log(Level.WARNING, "Still Dirty: {0}", cc);
+                logger.log(Level.FINE, "Still Dirty: {0}", cc);
             }
         }
         
         if ( this.isDirty() ) {
-            logger.warning("Canvas is still dirty");
+            logger.log(Level.FINE,"Canvas is still dirty");
         }
         
         final String[] ss= new String[1];
