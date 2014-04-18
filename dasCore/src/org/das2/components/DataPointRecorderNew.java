@@ -1,0 +1,1600 @@
+/*
+ * DataPointRecorderNew.java
+ *
+ * Created on Apr 18, 2014 5:57am 
+ */
+package org.das2.components;
+
+import java.util.Arrays;
+import org.das2.event.DataPointSelectionListener;
+import org.das2.event.DataPointSelectionEvent;
+import org.das2.dataset.DataSetUpdateEvent;
+import org.das2.dataset.VectorDataSetBuilder;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.VectorDataSet;
+import org.das2.dataset.DataSetUpdateListener;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumUtil;
+import org.das2.datum.TimeUtil;
+import org.das2.DasException;
+import org.das2.util.DasExceptionHandler;
+import org.das2.util.monitor.NullProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
+import org.das2.components.propertyeditor.PropertyEditor;
+import org.das2.datum.format.DatumFormatter;
+import org.das2.system.DasLogger;
+import java.awt.BorderLayout;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableColumn;
+import org.das2.dataset.DataSetAdapter;
+import org.das2.datum.EnumerationUnits;
+import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.SparseDataSetBuilder;
+import org.virbo.dsops.Ops;
+
+/**
+ * DataPointRecorder is a GUI for storing data points selected by the user.  
+ * This is the old recorder but uses QDataSet to handle the data.
+ * @author  jbf
+ */
+public class DataPointRecorderNew extends JPanel {
+
+    /**
+     * width of time column
+     */
+    private static final int TIME_WIDTH = 180;
+
+    protected JTable table;
+    protected JScrollPane scrollPane;
+    protected JButton updateButton;
+    final protected List<QDataSet> dataPoints;
+    private int selectRow; // this row needs to be selected after the update.
+    
+    /**
+     * units[index]==null if HashMap contains non-datum object.
+     */
+    protected Units[] unitsArray;
+    
+    /**
+     * array of names that are also the column headers. 
+     */
+    protected String[] namesArray;
+    protected AbstractTableModel myTableModel;
+    private File saveFile;
+    private boolean modified;
+    private JLabel messageLabel;
+    private boolean active = true; // false means don't fire updates
+    Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+    private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
+    private final JButton clearSelectionButton;
+
+    /**
+     * Note this is all pre-QDataSet.  QDataSet would be a much better way of implementing this.
+     */
+    private static class DataPoint implements Comparable {
+
+        Datum[] data;
+        Map planes;
+
+        public DataPoint(Datum x1, Datum x2, Map planes) {
+            this(new Datum[]{x1, x2}, planes);
+        }
+
+        public DataPoint(Datum[] data, Map planes) {
+            this.data = data;
+            this.planes = planes;
+        }
+
+        /**
+         * get the x or y Datum. 0 gets X, 1 gets Y.
+         * TODO: redo this!
+         */
+        Datum get(int i) {
+            return data[i];
+        }
+
+        /** 
+         * get the Datum from the planes.  
+         */
+        Object getPlane(String name) {
+            return planes.get(name.trim());
+        }
+
+        /**
+         * When times are the independent parameter, we have to add a 
+         * little fuzz because of rounding errors.
+         * @param o
+         * @return 
+         */
+        @Override
+        public int compareTo(Object o) {
+            DataPoint that = (DataPoint) o;
+            Datum myt= this.data[0];
+            Datum xt= that.data[0].convertTo( myt.getUnits() );
+            Datum diff= myt.subtract(xt);
+            if ( myt.getUnits() instanceof TimeLocationUnits ) {
+                double micros= diff.doubleValue(Units.microseconds);
+                if ( micros<-100 ) {
+                    return -1;
+                } else if ( micros>100 ) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+            return diff.lt(xt) ? -1 : myt.gt(xt) ? 1 : 0;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 97 * hash + Arrays.deepHashCode(this.data);
+            hash = 97 * hash + (this.planes != null ? this.planes.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals( Object o ) {
+            if ( !( o instanceof DataPoint ) ) return false;
+            return compareTo(o)==0;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder("" + data[0] + " " + data[1]);
+            if (planes != null) {
+                for (Iterator i = planes.keySet().iterator(); i.hasNext();) {
+                    Object key = i.next();
+                    result.append(" ").append(planes.get(key));
+                }
+            }
+            return result.toString();
+        }
+    }
+
+    private final Object namesArrayLock;
+    
+    private class MyTableModel extends AbstractTableModel {
+        @Override
+        public int getColumnCount() {
+            synchronized (namesArrayLock) {
+                return namesArray.length;
+            }
+        }
+
+        @Override
+        public String getColumnName(int j) {
+            synchronized (namesArrayLock) {
+                String result = namesArray[j];
+                if (unitsArray[j] != null) {
+                    if ( unitsArray[j] instanceof EnumerationUnits ) {
+                        result += "(ordinal)";
+                    } else {
+                        result += "(" + unitsArray[j] + ")";
+                    }
+                }
+                return result;
+            }
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return Datum.class;
+        }
+
+        
+        @Override
+        public int getRowCount() {
+            synchronized (dataPoints) {
+                int nrow = dataPoints.size();
+                return nrow;
+            }
+        }
+
+        
+        @Override
+        public Object getValueAt(int i, int j) {
+            synchronized (dataPoints) {
+                QDataSet x = (QDataSet) dataPoints.get(i);
+                if (j < x.length()) {
+                    Datum d = unitsArray[j].createDatum(x.value(j));
+                    DatumFormatter format = d.getFormatter();
+                    return format.format(d, unitsArray[j]);
+                } else {
+                    throw new IndexOutOfBoundsException("no such column");
+                }
+            }
+        }
+    }
+
+    /** 
+     * delete all the points within the interval.  This was introduced to support the
+     * case where we are going to reprocess an interval, as with the experimental 
+     * RBSP digitizer.
+     * 
+     * @param range range to delete, end time is exclusive.
+     */
+    public void deleteInterval( DatumRange range ) {
+        if ( !sorted ) {
+            throw new IllegalArgumentException("data must be sorted");
+        } else {
+            synchronized ( dataPoints ) {
+                Comparator comp= new Comparator() {
+                    @Override
+                    public int compare(Object o1, Object o2) {
+                        return ((DataPoint)o1).get(0).compareTo((Datum)o2);
+                    }
+                };
+                int index1= Collections.binarySearch( dataPoints, range.min(), comp );
+                if ( index1<0 ) index1= ~index1;
+                int index2= Collections.binarySearch( dataPoints, range.max(), comp );
+                if ( index2<0 ) index2= ~index2;
+                if ( index1==index2 ) return;
+                int[] arr= new int[ index2-index1 ];
+                for ( int i=0; i<arr.length ; i++ ) arr[i]= index1+i;
+                deleteRows( arr );
+            }
+        }
+    }
+    
+    /**
+     * delete the specified row.
+     * @param row 
+     */
+    public void deleteRow(int row) {
+        synchronized (dataPoints) {
+            dataPoints.remove(row);
+            modified = true;
+            updateClients();
+            updateStatus();
+        }
+        if ( active ) {
+            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+        }
+        myTableModel.fireTableDataChanged();
+    }
+    
+    /**
+     * delete the specified rows.
+     * @param selectedRows 
+     */
+    public void deleteRows(int[] selectedRows) {
+        synchronized ( dataPoints ) {
+            for ( int i = selectedRows.length-1; i>=0; i-- ) {
+               dataPoints.remove(selectedRows[i]);
+            }
+            modified = true;
+        }
+        updateClients();
+        updateStatus();
+        if ( active ) {
+            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+        }
+        myTableModel.fireTableDataChanged();
+    }
+    
+
+    private class MyDataSetDescriptor extends DataSetDescriptor {
+
+        MyDataSetDescriptor() {
+            super(null);
+        }
+
+        public void fireUpdate() {
+            fireDataSetUpdateEvent(new DataSetUpdateEvent((Object) this));
+        }
+
+        @Override
+        protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, ProgressMonitor monitor) throws DasException {
+            synchronized ( dataPoints ) {
+                if (dataPoints.isEmpty()) {
+                    return null;
+                } else {
+                    VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
+                    for (int irow = 0; irow < dataPoints.size(); irow++) {
+                        DataPoint dp = (DataPoint) dataPoints.get(irow);
+                        builder.insertY(dp.get(0), dp.get(1));
+                    }
+                    return builder.toVectorDataSet();
+                }
+            }
+        }
+
+        @Override
+        public Units getXUnits() {
+            return unitsArray[0];
+        }
+    }
+    private MyDataSetDescriptor dataSetDescriptor;
+
+    /**
+     * @deprecated  use getDataSet() and getSelectedDataSet() instead
+     */
+    public DataSetDescriptor getDataSetDescriptor() {
+        if (dataSetDescriptor == null) {
+            dataSetDescriptor = new MyDataSetDescriptor();
+        }
+        return dataSetDescriptor;
+    }
+
+    /**
+     * returns a data set of the table data.
+     */
+    public QDataSet getDataSet() {
+        VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
+        synchronized ( dataPoints ) {
+            if (dataPoints.isEmpty()) {
+                return null;
+            } else {
+                for (int i = 2; i < namesArray.length; i++) {
+                    if (unitsArray[i] != null) {
+                        builder.addPlane(namesArray[i], unitsArray[i]);
+                    }
+                }
+                for (int irow = 0; irow < dataPoints.size(); irow++) {
+                    DataPoint dp = (DataPoint) dataPoints.get(irow);
+                    builder.insertY(dp.get(0), dp.get(1));
+                    for (int i = 2; i < namesArray.length; i++) {
+                        if (unitsArray[i] != null) {
+                            builder.insertY(dp.get(0), (Datum) dp.getPlane(namesArray[i]), namesArray[i]);
+                        }
+                    }
+                }
+                if ( xTagWidth != null && xTagWidth.value()>0 && !xTagWidth.isFill() ) {
+                    builder.setProperty("xTagWidth", xTagWidth);
+                }
+            }
+        }
+        return DataSetAdapter.create( builder.toVectorDataSet() );
+    }
+    
+    /**
+     * returns a data set of the selected table data.  
+     * @see select which selects part of the dataset.
+     */
+    public synchronized QDataSet getSelectedDataSet() {
+        int[] selectedRows = getSelectedRowsInModel();
+        
+        if (selectedRows.length == 0) {
+            return null;
+        } else {
+            VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
+            synchronized (dataPoints) {
+                for (int j = 2; j < namesArray.length; j++) {
+                    builder.addPlane(namesArray[j], unitsArray[j]);
+                }
+                for (int i = 0; i < selectedRows.length; i++) {
+                    int irow = selectedRows[i];
+                    if ( irow<dataPoints.size() ) {
+                        DataPoint dp = (DataPoint) dataPoints.get(irow);
+                        builder.insertY(dp.get(0), dp.get(1));
+                        for (int j = 2; j < namesArray.length; j++) {
+                            builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
+                                ((Datum) dp.getPlane(namesArray[j])).doubleValue(unitsArray[j]),
+                                namesArray[j]);
+                        }
+                    }
+                }
+                if ( xTagWidth != null && xTagWidth.value()>0 && !xTagWidth.isFill() ) {
+                    builder.setProperty("xTagWidth", xTagWidth);
+                }
+            }
+            return DataSetAdapter.create( builder.toVectorDataSet() );
+        }
+    }
+
+    /**
+     * Selects all the points within the DatumRange
+     */
+    public void select(DatumRange xrange, DatumRange yrange) {
+        Datum mid= xrange.rescale( 0.5,0.5 ).min();
+        synchronized (dataPoints) {
+            List selectMe = new ArrayList();
+            int iclosest= -1;
+            Datum closestDist=null;
+            for (int i = 0; i < dataPoints.size(); i++) {
+                DataPoint p = (DataPoint) dataPoints.get(i);
+                if (xrange.contains(p.data[0]) && yrange.contains(p.data[1])) {
+                    selectMe.add( i );
+                }
+                if ( closestDist==null || p.data[0].subtract(mid).abs().lt( closestDist ) ) {
+                    iclosest= i;
+                    closestDist= p.data[0].subtract(mid).abs();
+                }
+            }
+            if ( iclosest!=-1 && selectMe.isEmpty() ) {
+                selectMe= Collections.singletonList(iclosest);
+            }
+            table.getSelectionModel().clearSelection();
+            for (int i = 0; i < selectMe.size(); i++) {
+                int iselect = ((Integer) selectMe.get(i)).intValue();
+                table.getSelectionModel().addSelectionInterval(iselect, iselect);
+            }
+
+            if ( selectMe.size()>0 ) {
+                int iselect= (Integer)selectMe.get(0);
+                table.scrollRectToVisible(new Rectangle(table.getCellRect( iselect, 0, true)) );
+            }
+        }
+    }
+
+    public void saveToFile(File file) throws IOException {
+        List<DataPoint> dataPoints1;
+        synchronized (this.dataPoints) {
+            dataPoints1= new ArrayList(this.dataPoints);
+        }
+        FileOutputStream out = new FileOutputStream(file);
+        BufferedWriter r = new BufferedWriter(new OutputStreamWriter(out));
+
+        try {
+            StringBuilder header = new StringBuilder();
+            //header.append("## "); // don't use comment characters so that labels and units are used in Autoplot's ascii parser.
+            for (int j = 0; j < namesArray.length; j++) {
+                header.append(myTableModel.getColumnName(j)).append("\t");
+            }
+            r.write(header.toString());
+            r.newLine();
+            for (int i = 0; i < dataPoints1.size(); i++) {
+                DataPoint x = (DataPoint) dataPoints1.get(i);
+                StringBuilder s = new StringBuilder();
+                for (int j = 0; j < 2; j++) {
+                    DatumFormatter formatter = x.get(j).getFormatter();
+                    s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
+                }
+                for (int j = 2; j < namesArray.length; j++) {
+                    Object o = x.getPlane(namesArray[j]);
+                    if ( o==null ) {
+                        x.getPlane(namesArray[j]); // for debugging
+                        throw new IllegalArgumentException("unable to find plane: "+namesArray[j]);
+                    }
+                    if (unitsArray[j] == null) {
+                        s.append("\"").append(o).append("\"\t");
+                    } else {
+                        Datum d = (Datum) o;
+                        DatumFormatter f = d.getFormatter();
+                        s.append(f.format(d, unitsArray[j])).append("\t");
+                    }
+                }
+                r.write(s.toString());
+                r.newLine();
+                prefs.put("components.DataPointRecorder.lastFileSave", file.toString());
+                prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
+            }
+        } finally {
+            r.close();
+        }
+        modified = false;
+        updateStatus();
+
+    }
+
+    private int lineCount( File file ) throws IOException {
+         BufferedReader r=null;
+         int lineCount = 0;
+         try {
+            FileInputStream in = new FileInputStream(file);
+            r = new BufferedReader(new InputStreamReader(in));
+
+
+            for (String line = r.readLine(); line != null; line = r.readLine()) {
+                lineCount++;
+            }
+        } catch ( IOException ex ) {
+            throw ex;
+
+        } finally {
+            if ( r!=null ) r.close();
+        }
+        return lineCount;
+        
+    }
+
+    /**
+     * load the dataset from the file.  
+     * TODO: this should be redone.
+     * 
+     * @param file
+     * @throws IOException 
+     */
+    public void loadFromFile(File file) throws IOException {
+
+        ProgressMonitor mon= new NullProgressMonitor();
+
+        BufferedReader r=null;
+
+        boolean active0= active;
+        
+        try {
+            active = false;
+
+            int lineCount= lineCount( file );
+
+            r = new BufferedReader( new FileReader( file ) );
+
+            dataPoints.clear();
+            String[] planesArray1 = null;
+            Units[] unitsArray1 = null;
+
+            Datum x;
+            Datum y;
+            Map planes;// = new LinkedHashMap();
+
+            if (lineCount > 500) {
+                mon = DasProgressPanel.createFramed("reading file");
+            }
+
+            // tabs detected in file.
+            String delim= "\t";
+            
+            mon.setTaskSize(lineCount);
+            mon.started();
+            int linenum = 0;
+            for (String line = r.readLine(); line != null; line = r.readLine()) {
+                linenum++;
+                if (mon.isCancelled()) {
+                    break;
+                }
+                line= line.trim();
+                if ( line.length()==0 ) {
+                    continue;
+                }
+                mon.setTaskProgress(linenum);
+                if (line.startsWith("## ") || line.length()>0 && Character.isJavaIdentifierStart( line.charAt(0) ) ) {
+                    if ( unitsArray1!=null ) continue;
+                    while ( line.startsWith("#") ) line = line.substring(1);
+                    if ( line.indexOf("\t")==-1 ) delim= "\\s+";
+                    String[] s = line.split(delim);
+                    for ( int i=0; i<s.length; i++ ) {
+                        s[i]= s[i].trim();
+                    }                    
+                    Pattern p = Pattern.compile("(.+)\\((.*)\\)");
+                    planesArray1 = new String[s.length];
+                    unitsArray1 = new Units[s.length];
+                    for (int i = 0; i < s.length; i++) {
+                        Matcher m = p.matcher(s[i]);
+                        if (m.matches()) {
+                            //System.err.printf("%d %s\n", i, m.group(1) );
+                            planesArray1[i] = m.group(1).trim();
+                            try {
+                                if ( m.group(2).trim().equals("UTC") ) {
+                                    unitsArray1[i] = Units.cdfTT2000;
+                                } else if ( m.group(2).trim().equals("ordinal") ) {
+                                    unitsArray1[i] = EnumerationUnits.create("ordinal");
+                                } else {
+                                    unitsArray1[i] = SemanticOps.lookupUnits(m.group(2).trim());
+                                }
+                            } catch (IndexOutOfBoundsException e) {
+                                throw e;
+                            }
+                        } else {
+                            planesArray1[i] = s[i].trim();
+                            unitsArray1[i] = null;
+                        }
+                    }
+                    continue;
+                }
+                String[] s = line.split(delim);
+                for ( int i=0; i<s.length; i++ ) {
+                    s[i]= s[i].trim();
+                }
+                if (unitsArray1 == null) {
+                    // support for legacy files
+                    unitsArray1 = new Units[s.length];
+                    for (int i = 0; i < s.length; i++) {
+                        if (s[i].charAt(0) == '"') {
+                            unitsArray1[i] = null;
+                        } else if (TimeUtil.isValidTime(s[i])) {
+                            unitsArray1[i] = Units.us2000;
+                        } else {
+                            unitsArray1[i] = DatumUtil.parseValid(s[i]).getUnits();
+                        }
+                    }
+                    planesArray1 = new String[]{"X", "Y", "comment"};
+                }
+
+                try {
+
+                    planes = new LinkedHashMap();
+
+                    for (int i = 2; i < s.length; i++) {
+                        if (unitsArray1[i] == null) {
+                            Pattern p = Pattern.compile("\"(.*)\".*");
+                            Matcher m = p.matcher(s[i]);
+                            if (m.matches()) {
+                                EnumerationUnits eu= EnumerationUnits.create("ordinal");
+                                unitsArray1[i]= eu;
+                                planes.put(planesArray1[i], eu.createDatum( m.group(1) ) );
+                            } else {
+                                throw new ParseException("parse error, expected \"\"", 0);
+                            }
+                        } else {
+                            try {
+                                if ( unitsArray1[i] instanceof EnumerationUnits ) {
+                                    EnumerationUnits eu= (EnumerationUnits)unitsArray1[i];
+                                    planes.put(planesArray1[i], eu.createDatum( s[i] ));
+                                } else {
+                                    planes.put(planesArray1[i], unitsArray1[i].parse(s[i]));
+                                }
+                            } catch (ParseException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+
+                    if ( s[0].trim().length()==0 ) {
+                        System.err.println("here");
+                    }
+                    x = unitsArray1[0].parse(s[0]);
+                    y = unitsArray1[1].parse(s[1]);
+
+                    DataPointSelectionEvent e;
+                   
+                    addDataPoint( x, y, planes );
+
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+            }
+
+            r.close();
+
+            saveFile= file;  // go ahead and set this in case client is going to do something with this.
+            updateStatus();
+            updateClients();
+            
+            prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
+            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+            
+        } finally {
+
+            mon.finished();
+
+            if ( r!=null ) r.close();
+
+            //active = true;
+            active= active0;
+            modified = false;
+
+            table.getColumnModel();
+            myTableModel.fireTableStructureChanged();
+            table.repaint();
+        }
+
+    }
+
+    /**
+     * active=true means fire off events on any change.  false= wait for update button.
+     * @param active
+     */
+    public void setActive( boolean active ) {
+        this.active= active;
+    }
+
+    /**
+     * return the index into the model for the selection
+     * @return 
+     */
+    private int[] getSelectedRowsInModel() {
+        int[] selectedRows = table.getSelectedRows();
+        for ( int i=0; i<selectedRows.length; i++ ) {
+            selectedRows[i]= table.convertRowIndexToModel(selectedRows[i]);
+        }
+        return selectedRows;
+    }
+    
+    private class MyMouseAdapter extends MouseAdapter {
+
+        JPopupMenu popup;
+        JMenuItem menuItem;
+        final JTable parent;
+
+        MyMouseAdapter(final JTable parent) {
+            this.parent = parent;
+            popup = new JPopupMenu("Options");
+            menuItem = new JMenuItem("Delete Row(s)");
+            menuItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int[] selectedRows = getSelectedRowsInModel();
+                    deleteRows(selectedRows);
+                    //for (int i = 0; i < selectedRows.length; i++) {
+                    //    deleteRow(selectedRows[i]);
+                    //    for (int j = i + 1; j < selectedRows.length; j++) {
+                    //        selectedRows[j]--; // indeces change because of deletion
+                    //    }
+                    //}
+                }
+            });
+            popup.add(menuItem);
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (e.getButton() == MouseEvent.BUTTON3) {
+                int rowCount = parent.getSelectedRows().length;
+                menuItem.setText("Delete " + rowCount + " Row" + (rowCount != 1 ? "s" : ""));
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+        // hide popup
+        }
+    }
+
+    private Action getSaveAsAction() {
+        return new AbstractAction("Save As...") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveAs();
+            }
+        };
+    }
+
+    private Action getSaveAction() {
+        return new AbstractAction("Save") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                save();
+            }
+        };
+    }
+
+    private Action getClearSelectionAction() {
+        return new AbstractAction("Clear Selection") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                table.getSelectionModel().clearSelection();
+                fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));  
+            }
+        };
+    }
+
+    
+    /**
+     * return true if the file was saved, false if cancel
+     * @return
+     */
+    public boolean saveAs() {
+        JFileChooser jj = new JFileChooser();
+        jj.setFileFilter( new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                if ( pathname==null ) return false; // rte_1178734273_20140402_133610_wsk, I think this happens on Windows.
+                return pathname.toString().endsWith(".dat") || pathname.toString().endsWith(".txt");
+            }
+            @Override
+            public String getDescription() {
+                return "Flat Ascii Tables";
+            }
+        });
+        String lastFileString = prefs.get("components.DataPointRecorder.lastFileSave", "");
+        if (lastFileString.length()>0) {
+            File lastFile= new File(lastFileString);
+            jj.setSelectedFile(lastFile);
+        }
+
+        int status = jj.showSaveDialog(DataPointRecorderNew.this);
+        if (status == JFileChooser.APPROVE_OPTION) {
+            try {
+                File pathname= jj.getSelectedFile();
+                if ( !( pathname.toString().endsWith(".dat") || pathname.toString().endsWith(".txt") ) ) {
+                    pathname= new File( pathname.getAbsolutePath() + ".dat" );
+                }
+                DataPointRecorderNew.this.saveFile = pathname;
+                saveToFile(saveFile);
+            //messageLabel.setText("saved data to "+saveFile);
+            } catch (IOException e1) {
+                DasExceptionHandler.handle(e1);
+                return false;
+            }
+        } else if ( status == JFileChooser.CANCEL_OPTION ) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean save() {
+        if (saveFile == null) {
+            return saveAs();
+        } else {
+            try {
+                saveToFile(saveFile);
+                return true;
+            } catch (IOException ex) {
+                DasExceptionHandler.handle(ex);
+                return false;
+            }
+        }
+    }
+
+    /**
+     * shows the current name for the file.
+     * @return
+     */
+    public File getCurrentFile() {
+        return this.saveFile;
+    }
+
+
+    /**
+     * return true if the file was saved or don't save was pressed by the user.
+     * @return
+     */
+    public boolean saveBeforeExit( ) {
+        if ( this.modified ) {
+            int i= JOptionPane.showConfirmDialog( this, "Save changes before exiting?");
+            if ( i==JOptionPane.OK_OPTION ) {
+                return save();
+            } else if ( i==JOptionPane.CANCEL_OPTION ) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    private Action getLoadAction() {
+        return new AbstractAction("Open...") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (checkModified(e)) {
+                    JFileChooser jj = new JFileChooser();
+                    String lastFileString = prefs.get("components.DataPointRecorder.lastFileLoad", "");
+                    if ( lastFileString.length()>0 ) {
+                        File lastFile;
+                        lastFile = new File(lastFileString);
+                        jj.setSelectedFile(lastFile);
+                    }
+
+                    int status = jj.showOpenDialog(DataPointRecorderNew.this);
+                    if (status == JFileChooser.APPROVE_OPTION) {
+                        final File loadFile = jj.getSelectedFile();
+                        prefs.put("components.DataPointRecorder.lastFileLoad", loadFile.toString());
+                        Runnable run = new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    loadFromFile(loadFile);
+                                    updateStatus();
+                                } catch (IOException e) {
+                                    DasExceptionHandler.handle(e);
+                                }
+
+                            }
+                        };
+                        new Thread(run).start();
+                    }
+
+                }
+            }
+        };
+    }
+
+    /**
+     * returns true if the operation should continue, false
+     * if not, meaning the user pressed cancel.
+     */
+    private boolean checkModified(ActionEvent e) {
+        if (modified) {
+            int n = JOptionPane.showConfirmDialog(
+                    DataPointRecorderNew.this,
+                    "Current work has not been saved.\n  Save first?",
+                    "Save work first",
+                    JOptionPane.YES_NO_CANCEL_OPTION);
+            if (n == JOptionPane.YES_OPTION) {
+                getSaveAction().actionPerformed(e);
+            }
+
+            return (n != JOptionPane.CANCEL_OPTION);
+        } else {
+            return true;
+        }
+
+    }
+
+    private Action getNewAction() {
+        return new AbstractAction("New") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (checkModified(e)) {
+                    dataPoints.clear();
+                    saveFile =  null;
+                    updateStatus();
+                    updateClients();
+                    table.repaint();
+                }
+
+            }
+        };
+    }
+
+    private Action getPropertiesAction() {
+        return new AbstractAction("Properties") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new PropertyEditor(DataPointRecorderNew.this).showDialog(DataPointRecorderNew.this);
+            }
+        };
+    }
+
+    private Action getUpdateAction() {
+        return new AbstractAction("Update") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                update();
+            }
+        };
+    }
+
+    /**
+     * Notify listeners that the dataset has updated.  Pressing the "Update" 
+     * button calls this.
+     */
+    public void update() {
+        if (dataSetDescriptor != null) {
+            dataSetDescriptor.fireUpdate();
+        }
+
+        fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+        fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));        
+    }
+    
+    /** Creates a new instance of DataPointRecorder */
+    public DataPointRecorderNew() {
+        super();
+        this.namesArrayLock = new Object();
+        dataPoints = new ArrayList();
+        myTableModel = new MyTableModel();
+        this.setLayout(new BorderLayout());
+
+        JMenuBar menuBar = new JMenuBar();
+        JMenu fileMenu = new JMenu("File");
+        fileMenu.add(new JMenuItem(getNewAction()));
+        fileMenu.add(new JMenuItem(getLoadAction()));
+        fileMenu.add(new JMenuItem(getSaveAction()));
+        fileMenu.add(new JMenuItem(getSaveAsAction()));
+        menuBar.add(fileMenu);
+
+        JMenu editMenu = new JMenu("Edit");
+        editMenu.add(new JMenuItem(getPropertiesAction()));
+        editMenu.add( new JMenuItem( new AbstractAction("Clear Table Sorting") {
+            public void actionPerformed(ActionEvent e) {
+                table.setAutoCreateRowSorter(false);
+                table.setAutoCreateRowSorter(true);
+            }
+        } ) );
+        menuBar.add(editMenu);
+
+        this.add(menuBar, BorderLayout.NORTH);
+
+        namesArray= new String[] { "X", "Y" };
+        unitsArray= new Units[] { Units.dimensionless, Units.dimensionless };
+                
+        table = new JTable(myTableModel);
+        table.setAutoCreateRowSorter(true); // Java 1.6
+
+        table.getTableHeader().setReorderingAllowed(true);
+        table.setColumnModel( new DefaultTableColumnModel() {
+
+            @Override
+            public int getColumnCount() {
+                synchronized ( namesArrayLock ) {
+                    return super.getColumnCount(); //To change body of generated methods, choose Tools | Templates.
+                }
+            }
+
+            @Override
+            public TableColumn getColumn(int columnIndex) {
+                synchronized ( namesArrayLock ) {
+                    return super.getColumn(columnIndex); //To change body of generated methods, choose Tools | Templates.
+                }
+            }
+            
+        });
+        table.setRowSelectionAllowed(true);
+        table.addMouseListener(new DataPointRecorderNew.MyMouseAdapter(table));
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(DataPointRecorderNew.this));
+                int selected = table.getSelectedRow(); // we could do a better job here
+                if (selected > -1) {
+                    QDataSet dp = dataPoints.get(selected);
+                    System.err.println(dp);
+                    //DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorderNew.this, dp.get(0), dp.get(1));
+                    //fireDataPointSelectionListenerDataPointSelected(e2);
+                }
+
+            }
+        });
+
+        scrollPane = new JScrollPane(table);
+        this.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel controlStatusPanel = new JPanel();
+        controlStatusPanel.setLayout(new BoxLayout(controlStatusPanel, BoxLayout.Y_AXIS));
+
+        final JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
+
+        updateButton = new JButton(getUpdateAction());
+        updateButton.setVisible(false);
+        updateButton.setEnabled(false);
+
+        controlPanel.add(updateButton);
+
+        clearSelectionButton = new JButton( getClearSelectionAction() );
+        controlPanel.add( clearSelectionButton );
+        
+        messageLabel = new JLabel("ready");
+        messageLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+
+        controlStatusPanel.add(messageLabel);
+
+        controlPanel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+        controlStatusPanel.add(controlPanel);
+
+        this.add(controlStatusPanel, BorderLayout.SOUTH);
+    }
+
+    public static DataPointRecorderNew createFramed() {
+        DataPointRecorderNew result;
+        JFrame frame = new JFrame("Data Point Recorder");
+        result = new DataPointRecorderNew();
+        frame.getContentPane().add(result);
+        frame.pack();
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        return result;
+    }
+
+    /**
+     * update fires off the TableDataChanged, and sets the current selected
+     * row if necessary.
+     */
+    private void updateClients() {
+        if (active) {
+            myTableModel.fireTableDataChanged();
+            if (selectRow != -1 && table.getRowCount()>selectRow ) {
+                table.setRowSelectionInterval(selectRow, selectRow);
+                table.scrollRectToVisible(table.getCellRect(selectRow, 0, true));
+                selectRow = -1;
+            }
+            table.repaint();
+        }
+    }
+
+    private void updateStatus() {
+        String statusString = (saveFile == null ? "" : (String.valueOf(saveFile) + " ")) +
+                (modified ? "(modified)" : "");
+        String t= messageLabel.getText();
+        if ( !statusString.equals(t) ) {
+            messageLabel.setText(statusString);
+        }
+    }
+
+    private Comparator comparator= new Comparator() {
+        public int compare(Object o1, Object o2) {
+            if ( o1 instanceof QDataSet && o2 instanceof QDataSet ) {
+                QDataSet qds1= (QDataSet)o1;
+                QDataSet qds2= (QDataSet)o2;
+                return qds1.value(0) > qds2.value(0) ? 1 : -1;
+            } else {
+                throw new IllegalArgumentException("expected qdatasets");
+            }
+        }
+    };
+            
+    /**
+     * insert the point into the data points.  If the dataset is sorted, then we
+     * replace any point that is within X_LIMIT of the point.
+     * @param newPoint 
+     */
+    private void insertInternal( QDataSet newPoint ) {
+        int newSelect;
+        if ( newPoint.rank()==2 && newPoint.length()==1 ) {
+            newPoint= newPoint.slice(0);
+        }
+        synchronized ( dataPoints ) {
+            String[] keys;
+            if (sorted) {
+                int index = Collections.binarySearch( dataPoints, newPoint, comparator );
+                if (index < 0) {
+                    QDataSet qds1= null;
+                    if ( ~index<dataPoints.size() ) {
+                        qds1= (QDataSet)dataPoints.get(~index);
+                        keys= DataSetUtil.bundleNames(newPoint);
+                        for ( String key : keys ) {
+                            if ( DataSetOps.indexOfBundledDataSet( qds1, key )!=-1 ) {
+                                logger.log(Level.FINE, "no place to put key: {0}", key);
+                            }
+                        }
+                    }
+                    QDataSet dp1= null;
+                    if  ( (~index+1)<dataPoints.size() ) { // check for very close point.
+                        dp1= (QDataSet)dataPoints.get(~index+1);
+                    }
+                    
+                    Datum epsilon= Units.microseconds.createDatum(10000);
+                    if ( SemanticOps.getUnits(newPoint.slice(0)).getOffsetUnits().isConvertableTo(Units.milliseconds) ) {
+                        if ( qds1!=null && Ops.lt( Ops.abs( Ops.subtract( qds1.slice(0), newPoint.slice(0) ) ), epsilon ).value()==1 ) {
+                            dataPoints.set( ~index, newPoint );
+                        } else if ( dp1!=null && Ops.lt( Ops.abs( Ops.subtract( dp1.slice(0), newPoint.slice(0) ) ), epsilon ).value()==1 ) {
+                            dataPoints.set( ~index, newPoint );
+                        } else {
+                            dataPoints.add(~index, newPoint);
+                        }
+                    } else {
+                        dataPoints.add(~index, newPoint);
+                    }
+                    newSelect = ~index;
+                } else {
+                    dataPoints.set(index, newPoint);
+                    newSelect = index;
+                }
+
+            } else {
+                dataPoints.add(newPoint);
+                newSelect = dataPoints.size() - 1;
+            }
+
+            selectRow = newSelect;
+        }
+        modified = true;
+        updateStatus();
+        updateClients();
+        table.repaint();
+    }
+    
+    
+    /**
+     * add just the x and y values.
+     * @param x
+     * @param y 
+     */
+    public void addDataPoint( Datum x, Datum y ) {
+        addDataPoint( x, y, null );
+    }
+    
+    /**
+     * add the x and y values with unnamed metadata.
+     * @param x
+     * @param y 
+     * @param meta any metadata (String, Double, etc ) to be recorded along with the data point.
+     */    
+    public void addDataPoint( Datum x, Datum y, Object meta ) {
+        addDataPoint( x, y, Collections.singletonMap("meta",meta) );
+    }
+    
+    /**
+     * add the data point, along with metadata such as the key press.
+     * @param x
+     * @param y
+     * @param planes 
+     */
+    public void addDataPoint( Datum x, Datum y, Map<String,Object> planes ) {
+
+        DDataSet rec= DDataSet.createRank1( 2 + planes.size() );        
+        SparseDataSetBuilder bdsb= new SparseDataSetBuilder(2);
+        
+        int ii= 0;
+        
+        bdsb.putProperty( QDataSet.NAME, ii, "x" );
+        bdsb.putProperty( QDataSet.UNITS, ii, x.getUnits() );
+        rec.putValue( ii, x.doubleValue( x.getUnits() ));
+        ii++;
+        
+        bdsb.putProperty( QDataSet.NAME, ii, "y" );
+        bdsb.putProperty( QDataSet.UNITS, ii, y.getUnits() );
+        rec.putValue( ii, y.doubleValue( y.getUnits() ));
+        ii++;
+        
+        for ( Entry<String,Object> e : planes.entrySet() ) {
+            bdsb.putProperty( QDataSet.NAME, ii, e.getKey() );
+            Object o= e.getValue();
+            Units theu;
+            if ( o instanceof String ) {
+                Units eu= EnumerationUnits.create("default"); 
+                theu= eu;
+                try {
+                    rec.putValue( ii, theu.parse((String)o).doubleValue(theu) );
+                } catch (ParseException ex) {
+                    rec.putValue( ii, -1 ); // fill
+                }
+            } else if ( o instanceof Datum ) {
+                theu= ((Datum)o).getUnits();
+                rec.putValue( ii, ((Datum)o).doubleValue(theu) );
+            } else if ( o instanceof Number ) {           
+                theu= Units.dimensionless;
+                rec.putValue( ii, ((Number)o).doubleValue() );
+            } else if ( o instanceof QDataSet ) {
+                theu= SemanticOps.getUnits((QDataSet)o);
+                rec.putValue( ii, ((QDataSet)o).value() );
+            } else {
+                throw new IllegalArgumentException("value must be String, Datum, DataSet or Number");
+            }
+            bdsb.putProperty( QDataSet.UNITS, ii, theu );
+        }
+        
+        QDataSet bds= bdsb.getDataSet();
+        rec.putProperty(QDataSet.BUNDLE_0,bds);
+        
+        addDataPoint( rec );
+    }
+    
+    /**
+     * add the record to the collection of records.
+     * @param rec rank 1 qdataset.
+     */   
+    public void addDataPoint( QDataSet rec ) {
+        
+        if ( rec.rank()==2 && rec.length()==1 ) {
+            rec= rec.slice(0); // Jython createEvent produces rank 2 dataset.
+        }
+        
+        synchronized (dataPoints) {
+            if (dataPoints.isEmpty()) {
+                QDataSet bds= (QDataSet) rec.property( QDataSet.BUNDLE_0 );
+                
+                if ( bds==null ) {
+                    SparseDataSetBuilder bdsb= new SparseDataSetBuilder(2);
+                    Units u= SemanticOps.getUnits(rec);
+                    for ( int i=0;i<rec.length();i++ ) {
+                        bdsb.putProperty( QDataSet.NAME,i,"ch_"+i );
+                        bdsb.putProperty( QDataSet.UNITS,i,u );
+                    }
+                    bdsb.setLength(rec.length());
+                    bds= bdsb.getDataSet();
+                }
+                
+                unitsArray    = new Units[ rec.length() ];
+                namesArray    = new String[ rec.length() ];
+                
+                for ( int index=0; index<bds.length(); index++ ) {
+                    namesArray[index] = (String) bds.property(QDataSet.NAME,index);
+                    Units u= (Units) bds.property(QDataSet.UNITS,index);
+                    unitsArray[index] = u!=null ? u : Units.dimensionless;
+                }
+
+                myTableModel.fireTableStructureChanged();
+                for ( int i=0; i<1; i++ ) { //i<unitsArray.length
+                    if ( UnitsUtil.isTimeLocation( unitsArray[i] ) ) {
+                        table.getTableHeader().getColumnModel().getColumn(i).setMinWidth( TIME_WIDTH );   
+                    }
+                }
+
+            }
+
+            insertInternal( rec );
+        }
+        if (active) {
+            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+        }
+ 
+    }
+
+    public void appendDataSet(VectorDataSet ds) {
+
+        Map planesMap = new LinkedHashMap();
+
+        if (ds.getProperty("comment") != null) {
+            planesMap.put("comment", ds.getProperty("comment"));
+        }
+
+        if (ds.getProperty("xTagWidth") != null) {
+            DataPointRecorderNew.this.xTagWidth = (Datum) ds.getProperty("xTagWidth");
+        } else {
+            DataPointRecorderNew.this.xTagWidth = Datum.create(0);
+        }
+
+        String[] planes = ds.getPlaneIds();
+
+        for (int i = 0; i <
+                ds.getXLength(); i++) {
+            for (int j = 0; j <
+                    planes.length; j++) {
+                if (!planes[j].equals("")) {
+                    planesMap.put(planes[j], ((VectorDataSet) ds.getPlanarView(planes[j])).getDatum(i));
+                }
+
+            }
+            addDataPoint(ds.getXTagDatum(i), ds.getDatum(i), planesMap);
+        }
+
+        updateClients();
+        
+    }
+
+    /**
+     * this adds all the points in the DataSet to the list.  This will also check the dataset for the special
+     * property "comment" and add it as a comment.
+     */
+    public DataSetUpdateListener getAppendDataSetUpListener() {
+        return new DataSetUpdateListener() {
+
+            public void dataSetUpdated(DataSetUpdateEvent e) {
+                VectorDataSet ds = (VectorDataSet) e.getDataSet();
+                if (ds == null) {
+                    throw new RuntimeException("not supported, I need the DataSet in the update event");
+                } else {
+                    appendDataSet((VectorDataSet) e.getDataSet());
+                }
+
+            }
+        };
+    }
+
+
+    /**
+     * hide the update button if no one is listening.
+     * @return true if it is now visible
+     */
+    boolean checkUpdateEnable() {
+        int listenerList1Count;
+        int selectedListenerListCount;
+        synchronized (this) {
+            listenerList1Count= listenerList1==null ? 0 : listenerList1.getListenerCount();
+            selectedListenerListCount= selectedListenerList==null ? 0 : selectedListenerList.getListenerCount();
+        }
+        if ( listenerList1Count>0 || selectedListenerListCount>0 ) {
+            updateButton.setEnabled(true);
+            updateButton.setVisible(true);
+            updateButton.setToolTipText(null);
+            return true;
+        } else {
+            updateButton.setEnabled(false);
+            updateButton.setToolTipText("no listeners. See File->Save to save table.");
+            updateButton.setVisible(false);
+            return false;
+        }
+    }
+    private javax.swing.event.EventListenerList listenerList1 = null;
+
+    public synchronized void addDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+        if (listenerList1 == null) {
+            listenerList1 = new javax.swing.event.EventListenerList();
+        }
+        listenerList1.add(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
+    }
+
+    public synchronized void removeDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+        listenerList1.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
+    }
+
+    private void fireDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
+        Object[] listeners;
+        synchronized (this) {
+            if (listenerList1 == null) {
+                return;
+            }
+
+            listeners= listenerList1.getListenerList();
+        }
+        for (int i = listeners.length - 2; i >=0; i-= 2) {
+            if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
+                ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
+            }
+        }
+
+    }
+    
+    
+    /**
+     * the selection are the highlighted points in the table.  Listeners can grab this data and do something with the
+     * dataset.
+     */
+    private javax.swing.event.EventListenerList selectedListenerList = null;
+
+    public synchronized void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+        if (selectedListenerList == null) {
+            selectedListenerList = new javax.swing.event.EventListenerList();
+        }
+        selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
+    }
+
+    public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+        selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
+    }
+
+    
+    private void fireSelectedDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
+        
+        Object[] listeners;
+        synchronized (this ) {
+            if (selectedListenerList == null) {
+                return;
+            }
+            listeners = selectedListenerList.getListenerList();
+        }
+
+        for ( int i = listeners.length - 2; i >=0; i-=2 ) {
+            if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
+                ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
+            }
+        }
+
+    }
+    /**
+     * Holds value of property sorted.
+     */
+    private boolean sorted = true;
+
+    /**
+     * Getter for property sorted.
+     * @return Value of property sorted.
+     */
+    public boolean isSorted() {
+
+        return this.sorted;
+    }
+
+    /**
+     * Setter for property sorted.
+     * @param sorted New value of property sorted.
+     */
+    public void setSorted(boolean sorted) {
+
+        this.sorted = sorted;
+    }
+
+    /**
+     * Registers DataPointSelectionListener to receive events.
+     * @param listener The listener to register.
+     */
+    public synchronized void addDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
+        if (listenerList1 == null) {
+            listenerList1 = new javax.swing.event.EventListenerList();
+        }
+        listenerList1.add(org.das2.event.DataPointSelectionListener.class, listener);
+    }
+
+    /**
+     * Removes DataPointSelectionListener from the list of listeners.
+     * @param listener The listener to remove.
+     */
+    public synchronized void removeDataPointSelectionListener(org.das2.event.DataPointSelectionListener listener) {
+        listenerList1.remove(org.das2.event.DataPointSelectionListener.class, listener);
+    }
+
+    /**
+     * Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireDataPointSelectionListenerDataPointSelected(org.das2.event.DataPointSelectionEvent event) {
+        Object[] listeners;
+        synchronized (this) {
+            if (listenerList1 == null) {
+                return;
+            }
+            listeners = listenerList1.getListenerList();
+        }
+
+        logger.fine("firing data point selection event");
+        for (int i = listeners.length - 2; i >= 0; i -= 2 ) {
+            if (listeners[i] == org.das2.event.DataPointSelectionListener.class) {
+                ((org.das2.event.DataPointSelectionListener) listeners[i + 1]).dataPointSelected(event);
+            }
+        }
+
+    }
+    /**
+     * Holds value of property xTagWidth.
+     */
+    private Datum xTagWidth = Datum.create(0);
+
+    /**
+     * Getter for property xTagWidth.  When xTagWidth is zero,
+     * this implies there is no binning.
+     * @return Value of property xTagWidth.
+     */
+    public Datum getXTagWidth() {
+        return this.xTagWidth;
+    }
+
+    /**
+     * bins for the data, when xTagWidth is non-zero.
+     * @param xTagWidth New value of property xTagWidth.
+     */
+    public void setXTagWidth(Datum xTagWidth) {
+        this.xTagWidth = xTagWidth;
+    }
+    /**
+     * Holds value of property snapToGrid.
+     */
+    private boolean snapToGrid = false;
+
+    /**
+     * Getter for property snapToGrid.
+     * @return Value of property snapToGrid.
+     */
+    public boolean isSnapToGrid() {
+
+        return this.snapToGrid;
+    }
+
+    /**
+     * Setter for property snapToGrid.  true indicates the xtag will be reset
+     * so that the tags are equally spaced, each xTagWidth apart.
+     * @param snapToGrid New value of property snapToGrid.
+     */
+    public void setSnapToGrid(boolean snapToGrid) {
+
+        this.snapToGrid = snapToGrid;
+    }
+
+    /**
+     * return true when the data point recorder has been modified.
+     */
+    public boolean isModified() {
+        return modified;
+    }
+    
+}
