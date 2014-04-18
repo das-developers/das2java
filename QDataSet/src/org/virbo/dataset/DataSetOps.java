@@ -827,7 +827,7 @@ public class DataSetOps {
      * 
      * @param bundleDs a bundle dataset with the property BUNDLE_1 or DEPEND_1 having EnumerationUnits.
      * @param name the named dataset.
-     * @return the index
+     * @return the index or -1 if the name is not found.
      */
     public static int indexOfBundledDataSet( QDataSet bundleDs, String name ) {
         QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
