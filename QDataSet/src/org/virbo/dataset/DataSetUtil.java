@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -2997,6 +2998,15 @@ public class DataSetUtil {
         return result;
     }
 
-}
+    /**
+     * return the name for each column of the bundle.  This simply
+     * calls SemanticOps.getComponentNames.
+     * @param ds dataset, presumably with BUNDLE_1 property.
+     * @return array of names.
+     */
+    public static String[] bundleNames(QDataSet ds) {
+        return SemanticOps.getComponentNames(ds);
+    }
 
+}
 
