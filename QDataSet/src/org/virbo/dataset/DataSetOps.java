@@ -819,12 +819,10 @@ public class DataSetOps {
      * the name so that is contains just a Java-style identifier.  Also, ch_1 is
      * always implicitly index 1.  
      * Last, if safe names created from labels match that this is used. For example,
-     * <blockquote><pre>
-     * {@code
-     * bds=ripplesVectorTimeSeries(100)
-     * 2==indexOfBundledDataSet( bds, "Z" )
-     * }
-     * </pre></blockquote>
+     *<blockquote><pre><small>{@code
+     *bds=ripplesVectorTimeSeries(100)
+     *2==indexOfBundledDataSet( bds, "Z" ) 
+     *}</small></pre></blockquote>
      * demonstrates its use.
      * 
      * @param bundleDs a bundle dataset with the property BUNDLE_1 or DEPEND_1 having EnumerationUnits.
