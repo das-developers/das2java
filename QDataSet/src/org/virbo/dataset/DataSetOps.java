@@ -51,13 +51,22 @@ public class DataSetOps {
     
     /**
      * return a dataset that has mutable properties.  If the dataset parameter already has, then the 
-     * dataset is returned.
+     * dataset is returned.  If the dataset is a MutablePropertyDataSet but the immutable flag is
+     * set, then the dataset is wrapped to make the properties mutable.  
+     * TODO: Is there a bug here?  If this wraps a dataset, then is the result now mutable, and the
+     * data points could be overwritten?  I don't believe so, because DataSetWrapper does not provide the putValue
+     * method.
      * @param dataset
      * @return a WritableDataSet that is either a copy of the read-only dataset provided, or the parameter writable dataset provided.
      */
     public static MutablePropertyDataSet makePropertiesMutable( final QDataSet dataset) {
         if ( dataset instanceof MutablePropertyDataSet ) {
-            return (MutablePropertyDataSet) dataset;
+            MutablePropertyDataSet mpds= (MutablePropertyDataSet) dataset;
+            if ( mpds.isImmutable() ) {
+                return new DataSetWrapper(dataset);
+            } else {
+                return (MutablePropertyDataSet) dataset;
+            }
         } else {
             return new DataSetWrapper(dataset);
         }
@@ -65,15 +74,21 @@ public class DataSetOps {
 
     /**
      * return a dataset that is writable.  If the dataset parameter is already writable, then the 
-     * dataset is returned.
+     * dataset is returned.  If the dataset is a WritableDataSet but the immutable flag is
+     * set, then the a copy is returned.
      * @param dataset
      * @return a WritableDataSet that is either a copy of the read-only dataset provided, or the parameter writable dataset provided.
      */
     public static WritableDataSet makeWritable(QDataSet dataset) {
         if ( dataset instanceof WritableDataSet ) {
-            return (WritableDataSet) dataset;
+            WritableDataSet wds= (WritableDataSet) dataset;
+            if ( wds.isImmutable() ) {
+                return ArrayDataSet.copy(dataset);
+            } else {
+                return (WritableDataSet) dataset;
+            }
         } else {
-            return DDataSet.copy(dataset);
+            return ArrayDataSet.copy(dataset);
         }
     }
 
@@ -800,16 +815,24 @@ public class DataSetOps {
     }
 
     /**
-     * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
-     * @param bundleDs
-     * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
-     * @see unbundle( QDataSet bundleDs, int ib )
-     * @throws IllegalArgumentException if no named dataset is found.
-     * @return
+     * return the index of the named bundled dataset.  This cleans up
+     * the name so that is contains just a Java-style identifier.  Also, ch_1 is
+     * always implicitly index 1.  
+     * Last, if safe names created from labels match that this is used. For example,
+     * <blockquote><pre>
+     * {@code
+     * bds=ripplesVectorTimeSeries(100)
+     * 2==indexOfBundledDataSet( bds, "Z" )
+     * }
+     * </pre></blockquote>
+     * demonstrates its use.
+     * 
+     * @param bundleDs a bundle dataset with the property BUNDLE_1 or DEPEND_1 having EnumerationUnits.
+     * @param name the named dataset.
+     * @return the index
      */
-    public static QDataSet unbundle( QDataSet bundleDs, String name ) {
+    public static int indexOfBundledDataSet( QDataSet bundleDs, String name ) {
         QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
-
         int ib= -1;
         int i= name.indexOf("["); // allow name to be "Flux[Time=1440,en=10]"
         if ( i>0 ) {
@@ -819,8 +842,7 @@ public class DataSetOps {
 
         if ( name.matches("ch_\\d+") ) {
             int ich= Integer.parseInt(name.substring(3) );
-            return new Slice1DataSet( bundleDs, ich, true, true );
-            //return DataSetOps.slice1( bundleDs, ich );
+            return ich;
         }
 
         if ( bundle1==null ) {
@@ -831,7 +853,7 @@ public class DataSetOps {
                 Units u= SemanticOps.getUnits( bundle1 );
                 for ( int i2=0; i2<bundle1.length(); i2++ ) {
                     if ( name.equals( Ops.saferName( u.createDatum( bundle1.value(i2) ).toString() ) ) ) {
-                        return unbundle( bundleDs, i2 );
+                        return i2;
                     }
                 }
                 throw new IllegalArgumentException("unable to find dataset with name \""+name+"\" in bundle "+bundleDs );
@@ -840,7 +862,6 @@ public class DataSetOps {
             }
         }
 
-        boolean highRank= false;
         for ( int j=0; j<bundle1.length(); j++ ) {
             String n1= (String) bundle1.property( QDataSet.NAME, j );
             if ( n1!=null ) n1= Ops.saferName(n1);
@@ -852,7 +873,6 @@ public class DataSetOps {
                 if ( n1!=null ) n1= Ops.saferName(n1);
                 if ( n1!=null && n1.equals(name) ) {
                     ib= j;
-                    highRank= true;
                     break;
                 }
             }
@@ -869,12 +889,27 @@ public class DataSetOps {
                 if ( n1!=null ) n1= Ops.saferName(n1);
                 if ( n1!=null && n1.equals(name) ) {
                     ib= j;
-                    highRank= true;
                     break;
                 }
             }
         }
+        return ib;
+    }
+    
+    /**
+     * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
+     * @param bundleDs
+     * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
+     * @see unbundle( QDataSet bundleDs, int ib )
+     * @throws IllegalArgumentException if no named dataset is found.
+     * @return
+     */
+    public static QDataSet unbundle( QDataSet bundleDs, String name ) {
+        QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
 
+        int ib= indexOfBundledDataSet( bundleDs, name );
+        boolean highRank= ( bundle1.length(ib)>0 );
+                
         if ( ib==-1 ) {
             if ( name.matches("ch_\\d+") ) {
                 int ich= Integer.parseInt(name.substring(3) );
