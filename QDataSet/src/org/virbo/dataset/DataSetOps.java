@@ -860,6 +860,7 @@ public class DataSetOps {
             }
         }
 
+        boolean highRank= false;
         for ( int j=0; j<bundle1.length(); j++ ) {
             String n1= (String) bundle1.property( QDataSet.NAME, j );
             if ( n1!=null ) n1= Ops.saferName(n1);
@@ -871,11 +872,13 @@ public class DataSetOps {
                 if ( n1!=null ) n1= Ops.saferName(n1);
                 if ( n1!=null && n1.equals(name) ) {
                     ib= j;
+                    highRank= true;
                     break;
                 }
             }
         }
 
+        //if ( ib==-1 ) {
         for ( int j=0; j<bundle1.length(); j++ ) { // allow label to be used to access data, since old vap files may contain these.
             String n1= (String) bundle1.property( QDataSet.LABEL, j );
             if ( n1!=null ) n1= Ops.saferName(n1);
@@ -887,10 +890,12 @@ public class DataSetOps {
                 if ( n1!=null ) n1= Ops.saferName(n1);
                 if ( n1!=null && n1.equals(name) ) {
                     ib= j;
+                    highRank= true;
                     break;
                 }
             }
         }
+        //}
         return ib;
     }
     
@@ -906,7 +911,22 @@ public class DataSetOps {
         QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
 
         int ib= indexOfBundledDataSet( bundleDs, name );
-        boolean highRank= ( bundle1.length(ib)>0 );
+
+        boolean highRank= false; // we have to see if they referred to the high-rank dataset, or the rank 1 dataset.  Chris, wouldn't it be nice if Java could return two things?
+        if (  bundle1.length(ib)>0 ) {
+            String n1= (String) bundle1.property( QDataSet.ELEMENT_NAME, ib );
+            if ( n1!=null ) n1= Ops.saferName(n1);
+            if ( n1!=null && n1.equals(name) ) {
+                highRank= true;
+            }
+            if ( highRank==false ) {
+                n1= (String) bundle1.property( QDataSet.ELEMENT_LABEL, ib );
+                if ( n1!=null ) n1= Ops.saferName(n1);
+                if ( n1!=null && n1.equals(name) ) {
+                    highRank= true;
+                }
+            }
+        }
                 
         if ( ib==-1 ) {
             if ( name.matches("ch_\\d+") ) {
