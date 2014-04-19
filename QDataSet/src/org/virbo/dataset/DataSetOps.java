@@ -896,6 +896,9 @@ public class DataSetOps {
             }
         }
         //}
+        if ( highRank ) {
+            logger.log(Level.FINER, "index of bundled dataset \"{0}\" is {1} (highrank={2})", new Object[]{name, ib, highRank});
+        } 
         return ib;
     }
     
