@@ -170,7 +170,11 @@ public class DataSetStreamHandler implements StreamHandler {
         } else if ( sc.getType().matches(sc.TYPE_LOG) ) {
             String level= sc.getType().substring(4);
             Level l= Level.parse(level.toUpperCase());
-            logger.log(l,sc.getValue());
+            if ( l.intValue()>Level.FINE.intValue() ) {
+                logger.log(Level.FINE,sc.getValue());                
+            } else {
+                logger.log(l,sc.getValue());
+            }
             monitor.setProgressMessage(sc.getValue());
         }
     }
