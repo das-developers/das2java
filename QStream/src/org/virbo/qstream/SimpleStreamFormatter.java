@@ -220,7 +220,7 @@ public class SimpleStreamFormatter {
             QDataSet diffs= Ops.subtract( ds, DataSetOps.slice0(ds,0) );
             gcd= DataSetUtil.gcd( diffs, DataSetUtil.asDataSet( 1, Units.picoseconds ) );
         } catch ( IllegalArgumentException ex ) {
-            logger.log( Level.WARNING, ex.getMessage(), ex );
+            logger.log( Level.FINE, ex.getMessage(), ex );
             gcd= null;
         }
 
