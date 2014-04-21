@@ -916,7 +916,7 @@ public class DataSetOps {
         int ib= indexOfBundledDataSet( bundleDs, name );
 
         boolean highRank= false; // we have to see if they referred to the high-rank dataset, or the rank 1 dataset.  Chris, wouldn't it be nice if Java could return two things?
-        if (  bundle1.length(ib)>0 ) {
+        if ( bundle1!=null && bundle1.length(ib)>0 ) {
             String n1= (String) bundle1.property( QDataSet.ELEMENT_NAME, ib );
             if ( n1!=null ) n1= Ops.saferName(n1);
             if ( n1!=null && n1.equals(name) ) {
