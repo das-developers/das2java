@@ -259,6 +259,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
 
+    /**
+     * TODO: what is the difference between lastException and exception?
+     * @param e 
+     */
     public void setLastException(Exception e) {
         this.lastException = e;
         this.renderException = lastException;
