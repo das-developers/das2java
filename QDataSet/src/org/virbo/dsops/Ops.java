@@ -3153,11 +3153,15 @@ public class Ops {
                try {
                    return DataSetUtil.asDataSet(TimeUtil.create(sarg));
                } catch ( ParseException ex2 ) {
-                   DatumRange dr= DatumRangeUtil.parseISO8601Range(sarg);
-                   if ( dr==null ) {
-                       throw new IllegalArgumentException( "unable to parse string: "+sarg );
-                   } else {
-                       return DataSetUtil.asDataSet(dr);
+                   try {
+                      DatumRange dr= DatumRangeUtil.parseISO8601Range(sarg);
+                      if ( dr==null ) {
+                         throw new IllegalArgumentException( "unable to parse string: "+sarg ); // legacy.  It should throw ParseException now.
+                      } else {
+                         return DataSetUtil.asDataSet(dr);
+                      }
+                   } catch ( ParseException ex1 ) {
+                       throw new IllegalArgumentException( "unable to parse string: "+sarg, ex1 );
                    }
                }
             }
