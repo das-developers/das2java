@@ -860,7 +860,8 @@ public class AsciiHeadersParser {
                      if ( ids==-1 ) {
                          JSONObject inlineObject= (JSONObject)o;
                          if ( !inlineObject.has("VALUES") ) {
-                             logger.log(Level.WARNING, "metadata found for key {0}, but this is not found in the ascii file parser", key);
+                             // this is when ancillary metadata is in header, and is fine to ignore.
+                             logger.log(Level.FINE, "metadata found for key {0}, but values are not found in the ascii file columns", key);
                              continue;
                          } else {
                              // inline dataset already has metadata.
