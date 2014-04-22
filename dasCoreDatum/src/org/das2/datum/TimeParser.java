@@ -377,8 +377,12 @@ public class TimeParser {
                     s= "PT" + s.toUpperCase(); 
                 }
             }
-            period= DatumRangeUtil.parseISO8601Duration( s );
-            if ( period[0]==-9999 ) return "unable to parse period: "+s ;
+            try {
+                period= DatumRangeUtil.parseISO8601Duration( s );
+            } catch ( ParseException ex ) {
+                return "unable to parse period: "+s+"\n"+ex.getMessage();
+            }
+            
             return null;
         }
 
@@ -1838,6 +1842,7 @@ public class TimeParser {
         testTimeParser1( "$(periodic;offset=0;start=2000-001;period=P1D)", "20", "2000-021");        
         testTimeParser1( "$(periodic,offset=2285,start=2000-346,period=P27D)", "1", "1832-02-08/P27D");
         testTimeParser1( "$(periodic;offset=2285;start=2000-346;period=P27D)", "2286", "2001-007/P27D");
+        testTimeParser1( "$Y-$m-$dT$H:$M:$S.$(subsec,places=6)", "2000-01-01T00:00:00.000000", "2000-001/PT.000001S");
         TimeParser tp= TimeParser.create("$Y$m$d_v$v.dat");
         System.err.println( tp.parse("20130618_v4.05.dat").getTimeRange() );
         System.err.println( makeCanonical( "%Y-%m-%dT%H:%M:%S.%{milli}Z" ) );
