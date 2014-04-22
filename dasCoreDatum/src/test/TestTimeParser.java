@@ -5,6 +5,7 @@
 
 package test;
 
+import java.text.ParseException;
 import org.das2.datum.DatumRangeUtil;
 
 /**
@@ -13,12 +14,12 @@ import org.das2.datum.DatumRangeUtil;
  */
 public class TestTimeParser {
 
-    private static void test1( String test, String norm ) {
+    private static void test1( String test, String norm ) throws ParseException {
          if ( ! DatumRangeUtil.parseISO8601Range(norm).equals( DatumRangeUtil.parseISO8601Range(test) ) ) {
              throw new RuntimeException("fails to match: "+test);
          }
     }
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws ParseException  {
         DatumRangeUtil.parseTimeRangeValid("P5D");
         test1( "2007-03-01T13:00:00Z/2008-05-11T15:30:00Z", "2007-03-01T13:00:00Z/2008-05-11T15:30:00Z" );
         test1( "2007-03-01T13:00:00Z/P1Y2M10DT2H30M", "2007-03-01T13:00:00Z/2008-05-11T15:30:00Z" );
