@@ -358,11 +358,12 @@ public class DatumRangeUtil {
     public static final Pattern iso8601DurationPattern= Pattern.compile(iso8601duration);
 
     /**
-     * returns a 7 element array with [year,mon,day,hour,min,sec,nanos] or [-9999].
+     * returns a 7 element array with [year,mon,day,hour,min,sec,nanos].
      * @param stringIn
-     * @return 
+     * @return 7-element array with [year,mon,day,hour,min,sec,nanos]
+     * @throws ParseException if the string does not appear to be valid.
      */
-    public static int[] parseISO8601Duration( String stringIn ) {
+    public static int[] parseISO8601Duration( String stringIn ) throws ParseException {
         Matcher m= iso8601DurationPattern.matcher(stringIn);
         if ( m.matches() ) {
             double dsec=getDouble( m.group(7),0 );
@@ -370,7 +371,11 @@ public class DatumRangeUtil {
             int nanosec= (int)( ( dsec - sec ) * 1e9 );
             return new int[] { getInt( m.group(1), 0 ), getInt( m.group(2), 0 ), getInt( m.group(3), 0 ), getInt( m.group(5), 0 ), getInt( m.group(6), 0 ), sec, nanosec };
         } else {
-            return new int[] { -9999 };
+            if ( stringIn.contains("P") && stringIn.contains("S") && !stringIn.contains("T") ) {
+                throw new ParseException("ISO8601 duration expected but not found.  Was the T missing before S?",0);
+            } else {
+                throw new ParseException("ISO8601 duration expected but not found.",0);
+            }
         }
     }
     
@@ -387,15 +392,13 @@ public class DatumRangeUtil {
      * @param stringIn
      * @return null or a DatumRange
      */
-    public static DatumRange parseISO8601Range( String stringIn ) {
+    public static DatumRange parseISO8601Range( String stringIn ) throws ParseException {
 
         String[] parts= stringIn.split("/",-2);
         if ( parts.length!=2 ) return null;
 
         boolean d1= parts[0].charAt(0)=='P'; // true if it is a duration
         boolean d2= parts[1].charAt(0)=='P';
-
-        Matcher m;
 
         int[] digits0;
         int[] digits1;
@@ -438,7 +441,21 @@ public class DatumRangeUtil {
 
 
     }
-
+    
+    /**
+     * returns the time found in an iso8601 string, or throws a 
+     * runtime exception.
+     * @param stringIn
+     * @return 
+     */
+    public static DatumRange parseValidISO8601Range( String stringIn )  {
+        try {
+            return parseISO8601Range(stringIn);
+        } catch (ParseException ex) {
+            throw new IllegalArgumentException("string was not ISO8601 range", ex );
+        }
+    }
+    
     public static void main(String[]ss ) throws ParseException {
         System.err.println( parseTimeRange( "1972/now-P1D" ) );
         System.err.println( parseTimeRange( "now-P10D/now-P1D" ) );
