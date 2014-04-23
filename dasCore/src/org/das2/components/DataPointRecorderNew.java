@@ -88,6 +88,7 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.SparseDataSetBuilder;
 import org.virbo.dsops.Ops;
+import org.virbo.dsutil.DataSetBuilder;
 
 /**
  * DataPointRecorder is a GUI for storing data points selected by the user.  
@@ -116,6 +117,12 @@ public class DataPointRecorderNew extends JPanel {
      * array of names that are also the column headers. 
      */
     protected String[] namesArray;
+    
+    /**
+     * bundleDescriptor for the dataset.
+     */
+    private QDataSet bundleDescriptor;
+    
     protected AbstractTableModel myTableModel;
     private File saveFile;
     private boolean modified;
@@ -125,89 +132,6 @@ public class DataPointRecorderNew extends JPanel {
     private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
     private final JButton clearSelectionButton;
 
-    /**
-     * Note this is all pre-QDataSet.  QDataSet would be a much better way of implementing this.
-     */
-    private static class DataPoint implements Comparable {
-
-        Datum[] data;
-        Map planes;
-
-        public DataPoint(Datum x1, Datum x2, Map planes) {
-            this(new Datum[]{x1, x2}, planes);
-        }
-
-        public DataPoint(Datum[] data, Map planes) {
-            this.data = data;
-            this.planes = planes;
-        }
-
-        /**
-         * get the x or y Datum. 0 gets X, 1 gets Y.
-         * TODO: redo this!
-         */
-        Datum get(int i) {
-            return data[i];
-        }
-
-        /** 
-         * get the Datum from the planes.  
-         */
-        Object getPlane(String name) {
-            return planes.get(name.trim());
-        }
-
-        /**
-         * When times are the independent parameter, we have to add a 
-         * little fuzz because of rounding errors.
-         * @param o
-         * @return 
-         */
-        @Override
-        public int compareTo(Object o) {
-            DataPoint that = (DataPoint) o;
-            Datum myt= this.data[0];
-            Datum xt= that.data[0].convertTo( myt.getUnits() );
-            Datum diff= myt.subtract(xt);
-            if ( myt.getUnits() instanceof TimeLocationUnits ) {
-                double micros= diff.doubleValue(Units.microseconds);
-                if ( micros<-100 ) {
-                    return -1;
-                } else if ( micros>100 ) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }
-            return diff.lt(xt) ? -1 : myt.gt(xt) ? 1 : 0;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 97 * hash + Arrays.deepHashCode(this.data);
-            hash = 97 * hash + (this.planes != null ? this.planes.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public boolean equals( Object o ) {
-            if ( !( o instanceof DataPoint ) ) return false;
-            return compareTo(o)==0;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder result = new StringBuilder("" + data[0] + " " + data[1]);
-            if (planes != null) {
-                for (Iterator i = planes.keySet().iterator(); i.hasNext();) {
-                    Object key = i.next();
-                    result.append(" ").append(planes.get(key));
-                }
-            }
-            return result.toString();
-        }
-    }
 
     private final Object namesArrayLock;
     
@@ -266,7 +190,7 @@ public class DataPointRecorderNew extends JPanel {
 
     /** 
      * delete all the points within the interval.  This was introduced to support the
-     * case where we are going to reprocess an interval, as with the experimental 
+     * case where we are going to reprocess an interval, as with the  
      * RBSP digitizer.
      * 
      * @param range range to delete, end time is exclusive.
@@ -279,7 +203,9 @@ public class DataPointRecorderNew extends JPanel {
                 Comparator comp= new Comparator() {
                     @Override
                     public int compare(Object o1, Object o2) {
-                        return ((DataPoint)o1).get(0).compareTo((Datum)o2);
+                        Datum d1= DataSetUtil.asDatum(((QDataSet)o1).slice(0));
+                        Datum d2= DataSetUtil.asDatum(((QDataSet)o2).slice(0));
+                        return d1.compareTo(d2);
                     }
                 };
                 int index1= Collections.binarySearch( dataPoints, range.min(), comp );
@@ -331,78 +257,69 @@ public class DataPointRecorderNew extends JPanel {
     }
     
 
-    private class MyDataSetDescriptor extends DataSetDescriptor {
-
-        MyDataSetDescriptor() {
-            super(null);
-        }
-
-        public void fireUpdate() {
-            fireDataSetUpdateEvent(new DataSetUpdateEvent((Object) this));
-        }
-
-        @Override
-        protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, ProgressMonitor monitor) throws DasException {
-            synchronized ( dataPoints ) {
-                if (dataPoints.isEmpty()) {
-                    return null;
-                } else {
-                    VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
-                    for (int irow = 0; irow < dataPoints.size(); irow++) {
-                        DataPoint dp = (DataPoint) dataPoints.get(irow);
-                        builder.insertY(dp.get(0), dp.get(1));
-                    }
-                    return builder.toVectorDataSet();
-                }
-            }
-        }
-
-        @Override
-        public Units getXUnits() {
-            return unitsArray[0];
-        }
-    }
-    private MyDataSetDescriptor dataSetDescriptor;
-
-    /**
-     * @deprecated  use getDataSet() and getSelectedDataSet() instead
-     */
-    public DataSetDescriptor getDataSetDescriptor() {
-        if (dataSetDescriptor == null) {
-            dataSetDescriptor = new MyDataSetDescriptor();
-        }
-        return dataSetDescriptor;
-    }
+//    private class MyDataSetDescriptor extends DataSetDescriptor {
+//
+//        MyDataSetDescriptor() {
+//            super(null);
+//        }
+//
+//        public void fireUpdate() {
+//            fireDataSetUpdateEvent(new DataSetUpdateEvent((Object) this));
+//        }
+//
+//        @Override
+//        protected DataSet getDataSetImpl(Datum s1, Datum s2, Datum s3, ProgressMonitor monitor) throws DasException {
+//            synchronized ( dataPoints ) {
+//                if (dataPoints.isEmpty()) {
+//                    return null;
+//                } else {
+//                    VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
+//                    for (int irow = 0; irow < dataPoints.size(); irow++) {
+//                        DataPoint dp = (DataPoint) dataPoints.get(irow);
+//                        builder.insertY(dp.get(0), dp.get(1));
+//                    }
+//                    return builder.toVectorDataSet();
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public Units getXUnits() {
+//            return unitsArray[0];
+//        }
+//    }
+//    
+//    private MyDataSetDescriptor dataSetDescriptor;
+//
+//    /**
+//     * @deprecated  use getDataSet() and getSelectedDataSet() instead
+//     */
+//    public DataSetDescriptor getDataSetDescriptor() {
+//        if (dataSetDescriptor == null) {
+//            dataSetDescriptor = new MyDataSetDescriptor();
+//        }
+//        return dataSetDescriptor;
+//    }
 
     /**
      * returns a data set of the table data.
      */
     public QDataSet getDataSet() {
-        VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
+        DataSetBuilder b;
         synchronized ( dataPoints ) {
             if (dataPoints.isEmpty()) {
                 return null;
             } else {
-                for (int i = 2; i < namesArray.length; i++) {
-                    if (unitsArray[i] != null) {
-                        builder.addPlane(namesArray[i], unitsArray[i]);
-                    }
-                }
+                b= new DataSetBuilder(2,dataPoints.size(),bundleDescriptor.length());
+                b.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
                 for (int irow = 0; irow < dataPoints.size(); irow++) {
-                    DataPoint dp = (DataPoint) dataPoints.get(irow);
-                    builder.insertY(dp.get(0), dp.get(1));
-                    for (int i = 2; i < namesArray.length; i++) {
-                        if (unitsArray[i] != null) {
-                            builder.insertY(dp.get(0), (Datum) dp.getPlane(namesArray[i]), namesArray[i]);
-                        }
-                    }
-                }
-                if ( xTagWidth != null && xTagWidth.value()>0 && !xTagWidth.isFill() ) {
-                    builder.setProperty("xTagWidth", xTagWidth);
+                    QDataSet dp = dataPoints.get(irow);
+                    b.putValues( -1, dp, dp.length() );
+                    b.nextRecord();
                 }
             }
         }
-        return DataSetAdapter.create( builder.toVectorDataSet() );
+        return b.getDataSet();
     }
     
     /**
@@ -411,32 +328,23 @@ public class DataPointRecorderNew extends JPanel {
      */
     public synchronized QDataSet getSelectedDataSet() {
         int[] selectedRows = getSelectedRowsInModel();
-        
+        DataSetBuilder b;
         if (selectedRows.length == 0) {
             return null;
         } else {
-            VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
+            b= new DataSetBuilder(2,selectedRows.length,bundleDescriptor.length());
+            b.putProperty( QDataSet.BUNDLE_1, bundleDescriptor );
             synchronized (dataPoints) {
-                for (int j = 2; j < namesArray.length; j++) {
-                    builder.addPlane(namesArray[j], unitsArray[j]);
-                }
                 for (int i = 0; i < selectedRows.length; i++) {
                     int irow = selectedRows[i];
                     if ( irow<dataPoints.size() ) {
-                        DataPoint dp = (DataPoint) dataPoints.get(irow);
-                        builder.insertY(dp.get(0), dp.get(1));
-                        for (int j = 2; j < namesArray.length; j++) {
-                            builder.insertY(dp.get(0).doubleValue(unitsArray[0]),
-                                ((Datum) dp.getPlane(namesArray[j])).doubleValue(unitsArray[j]),
-                                namesArray[j]);
-                        }
+                        QDataSet dp = (QDataSet) dataPoints.get(irow);
+                        b.putValues( -1, dp, dp.length() );
+                        b.nextRecord();
                     }
                 }
-                if ( xTagWidth != null && xTagWidth.value()>0 && !xTagWidth.isFill() ) {
-                    builder.setProperty("xTagWidth", xTagWidth);
-                }
             }
-            return DataSetAdapter.create( builder.toVectorDataSet() );
+            return b.getDataSet();
         }
     }
 
@@ -450,13 +358,13 @@ public class DataPointRecorderNew extends JPanel {
             int iclosest= -1;
             Datum closestDist=null;
             for (int i = 0; i < dataPoints.size(); i++) {
-                DataPoint p = (DataPoint) dataPoints.get(i);
-                if (xrange.contains(p.data[0]) && yrange.contains(p.data[1])) {
+                QDataSet p = (QDataSet) dataPoints.get(i);
+                if ( xrange.contains( DataSetUtil.asDatum(p.slice(0)) ) && yrange.contains(DataSetUtil.asDatum(p.slice(1))) ) {
                     selectMe.add( i );
                 }
-                if ( closestDist==null || p.data[0].subtract(mid).abs().lt( closestDist ) ) {
+                if ( closestDist==null || DataSetUtil.asDatum((QDataSet)p.slice(0)).subtract(mid).abs().lt( closestDist ) ) {
                     iclosest= i;
-                    closestDist= p.data[0].subtract(mid).abs();
+                    closestDist= DataSetUtil.asDatum((QDataSet)p.slice(0)).subtract(mid).abs();
                 }
             }
             if ( iclosest!=-1 && selectMe.isEmpty() ) {
@@ -476,7 +384,7 @@ public class DataPointRecorderNew extends JPanel {
     }
 
     public void saveToFile(File file) throws IOException {
-        List<DataPoint> dataPoints1;
+        List<QDataSet> dataPoints1;
         synchronized (this.dataPoints) {
             dataPoints1= new ArrayList(this.dataPoints);
         }
@@ -487,30 +395,17 @@ public class DataPointRecorderNew extends JPanel {
             StringBuilder header = new StringBuilder();
             //header.append("## "); // don't use comment characters so that labels and units are used in Autoplot's ascii parser.
             for (int j = 0; j < namesArray.length; j++) {
-                header.append(myTableModel.getColumnName(j)).append("\t");
+                header.append(namesArray[j]).append("\t");
             }
             r.write(header.toString());
             r.newLine();
             for (int i = 0; i < dataPoints1.size(); i++) {
-                DataPoint x = (DataPoint) dataPoints1.get(i);
+                QDataSet x = (QDataSet) dataPoints1.get(i);
                 StringBuilder s = new StringBuilder();
-                for (int j = 0; j < 2; j++) {
-                    DatumFormatter formatter = x.get(j).getFormatter();
-                    s.append(formatter.format(x.get(j), unitsArray[j])).append("\t");
-                }
-                for (int j = 2; j < namesArray.length; j++) {
-                    Object o = x.getPlane(namesArray[j]);
-                    if ( o==null ) {
-                        x.getPlane(namesArray[j]); // for debugging
-                        throw new IllegalArgumentException("unable to find plane: "+namesArray[j]);
-                    }
-                    if (unitsArray[j] == null) {
-                        s.append("\"").append(o).append("\"\t");
-                    } else {
-                        Datum d = (Datum) o;
-                        DatumFormatter f = d.getFormatter();
-                        s.append(f.format(d, unitsArray[j])).append("\t");
-                    }
+                for (int j = 0; j < x.length(); j++) {
+                    Datum d= DataSetUtil.asDatum( x.slice(j) );
+                    DatumFormatter formatter = d.getFormatter();
+                    s.append(formatter.format( d, unitsArray[j]) ).append("\t");
                 }
                 r.write(s.toString());
                 r.newLine();
@@ -805,7 +700,7 @@ public class DataPointRecorderNew extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 table.getSelectionModel().clearSelection();
-                fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));  
+                //fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));  
             }
         };
     }
@@ -990,16 +885,12 @@ public class DataPointRecorderNew extends JPanel {
     }
 
     /**
-     * Notify listeners that the dataset has updated.  Pressing the "Update" 
-     * button calls this.
+     * Notify listeners that the dataset has updated.  
+     * Pressing the "Update" button calls this.
      */
     public void update() {
-        if (dataSetDescriptor != null) {
-            dataSetDescriptor.fireUpdate();
-        }
-
         fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
-        fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));        
+        //fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));        
     }
     
     /** Creates a new instance of DataPointRecorder */
@@ -1059,7 +950,7 @@ public class DataPointRecorderNew extends JPanel {
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(DataPointRecorderNew.this));
+                //fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(DataPointRecorderNew.this));
                 int selected = table.getSelectedRow(); // we could do a better job here
                 if (selected > -1) {
                     QDataSet dp = dataPoints.get(selected);
@@ -1286,8 +1177,14 @@ public class DataPointRecorderNew extends JPanel {
     }
     
     /**
-     * add the record to the collection of records.
-     * @param rec rank 1 qdataset.
+     * add the record to the collection of records.  This should be a
+     * rank 1 bundle or 1-record rank 2 bundle.
+     *<blockquote><pre><small>{@code
+     *dpr=DataPointRecorder()
+     *dpr.addDataPoint( createEvent( '2014-04-23/P1D', 0xFF0000, 'alert' ) )
+     *}</small></pre></blockquote>
+     * 
+     * @param rec rank 1 qdataset, or 1-record rank 2 dataset (ds[1,n])
      */   
     public void addDataPoint( QDataSet rec ) {
         
@@ -1318,6 +1215,8 @@ public class DataPointRecorderNew extends JPanel {
                     Units u= (Units) bds.property(QDataSet.UNITS,index);
                     unitsArray[index] = u!=null ? u : Units.dimensionless;
                 }
+                
+                bundleDescriptor= bds;
 
                 myTableModel.fireTableStructureChanged();
                 for ( int i=0; i<1; i++ ) { //i<unitsArray.length
@@ -1331,7 +1230,8 @@ public class DataPointRecorderNew extends JPanel {
             insertInternal( rec );
         }
         if (active) {
-            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+            DataSetUpdateEvent ev= new DataSetUpdateEvent(this,getDataSet());
+            fireDataSetUpdateListenerDataSetUpdated( ev );
         }
  
     }
@@ -1397,9 +1297,9 @@ public class DataPointRecorderNew extends JPanel {
         int selectedListenerListCount;
         synchronized (this) {
             listenerList1Count= listenerList1==null ? 0 : listenerList1.getListenerCount();
-            selectedListenerListCount= selectedListenerList==null ? 0 : selectedListenerList.getListenerCount();
+            //selectedListenerListCount= selectedListenerList==null ? 0 : selectedListenerList.getListenerCount();
         }
-        if ( listenerList1Count>0 || selectedListenerListCount>0 ) {
+        if ( listenerList1Count>0 ) { // || selectedListenerListCount>0 ) {
             updateButton.setEnabled(true);
             updateButton.setVisible(true);
             updateButton.setToolTipText(null);
@@ -1444,43 +1344,43 @@ public class DataPointRecorderNew extends JPanel {
     }
     
     
-    /**
-     * the selection are the highlighted points in the table.  Listeners can grab this data and do something with the
-     * dataset.
-     */
-    private javax.swing.event.EventListenerList selectedListenerList = null;
-
-    public synchronized void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-        if (selectedListenerList == null) {
-            selectedListenerList = new javax.swing.event.EventListenerList();
-        }
-        selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
-        checkUpdateEnable();
-    }
-
-    public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-        selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
-        checkUpdateEnable();
-    }
-
-    
-    private void fireSelectedDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
-        
-        Object[] listeners;
-        synchronized (this ) {
-            if (selectedListenerList == null) {
-                return;
-            }
-            listeners = selectedListenerList.getListenerList();
-        }
-
-        for ( int i = listeners.length - 2; i >=0; i-=2 ) {
-            if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
-                ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
-            }
-        }
-
-    }
+//    /**
+//     * the selection are the highlighted points in the table.  Listeners can grab this data and do something with the
+//     * dataset.
+//     */
+//    private javax.swing.event.EventListenerList selectedListenerList = null;
+//
+//    public synchronized void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+//        if (selectedListenerList == null) {
+//            selectedListenerList = new javax.swing.event.EventListenerList();
+//        }
+//        selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
+//        checkUpdateEnable();
+//    }
+//
+//    public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+//        selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
+//        checkUpdateEnable();
+//    }
+//
+//    
+//    private void fireSelectedDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
+//        
+//        Object[] listeners;
+//        synchronized (this ) {
+//            if (selectedListenerList == null) {
+//                return;
+//            }
+//            listeners = selectedListenerList.getListenerList();
+//        }
+//
+//        for ( int i = listeners.length - 2; i >=0; i-=2 ) {
+//            if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
+//                ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
+//            }
+//        }
+//
+//    }
     /**
      * Holds value of property sorted.
      */
