@@ -20,15 +20,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.datum.DatumRangeUtil;
-import org.das2.datum.TimeUtil;
-import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
 import org.das2.util.filesystem.FileSystemUtil;
 
@@ -213,6 +210,7 @@ public class FileStorageModel {
                 if ( parent==null  ) {
                     return null;
                 } else { // fall back to old code that would list everything.
+                    logger.fine("fall back to old code that would list everything");
                     range1= parent.getRangeFor(names[0]);
                     range1= range1.previous();
                     if ( range!=null && !range.intersects(range1) ) {
