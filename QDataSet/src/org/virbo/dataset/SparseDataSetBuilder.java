@@ -19,6 +19,9 @@ public class SparseDataSetBuilder {
     }
     
     public SparseDataSet getDataSet() {
+        if ( ds.length0==-1 ) {
+            throw new IllegalArgumentException("setLength was never called");
+        }
         return ds;
     }
 
