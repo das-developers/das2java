@@ -229,6 +229,9 @@ public final class DDataSet extends ArrayDataSet {
 
     public void putValue(double value) {
         checkImmutable();
+        if ( this.rank!=0 ) {
+            throw new IllegalArgumentException("rank 0 putValue called on dataset that is rank "+this.rank+".");
+        }
         back[0]= value;
     }
 
