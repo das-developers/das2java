@@ -22,7 +22,7 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
 
     int rank;
     Map<String,Double> data;
-    int length0;
+    int length0=-1;
     int[] qube;
     Map<String,Integer> length;
     
@@ -97,6 +97,9 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
 
     @Override
     public int length() {
+        if ( length0<0 ) {
+            throw new IllegalArgumentException("length of SparseDataSet was never set");
+        }
         return this.length0; 
     }
 
