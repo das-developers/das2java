@@ -70,11 +70,19 @@ public class NumberUnits extends Units {
     }
     
     /*
+     * parse the decimal providing an estimate of resolution as well.
      * @returns double[2], [0] is number, [1] is the resolution
      */
-    private double[] parseDecimal( String s ) {
+    private static double[] parseDecimal( String s ) {
         s= s.trim();
-        BigDecimal bd= new BigDecimal(s);
+        BigDecimal bd;
+        if ( s.startsWith("x") ) {
+            return new double[] { Integer.parseInt(s.substring(1),16), 0 };
+        } else if ( s.startsWith("0x") ) {
+            return new double[] { Integer.parseInt(s.substring(2),16), 0 };
+        } else {
+            bd= new BigDecimal(s);
+        }
         
         if ( bd.scale()>0 ) {
             double resolution= Math.pow( 10, -1*bd.scale() );
@@ -98,8 +106,8 @@ public class NumberUnits extends Units {
                 mant= s.substring(0,ie);
                 double[] dd= parseDecimal( mant );
                 double exp= Math.pow( 10, Double.parseDouble( s.substring(ie+1) ) );
-                dd[0]= dd[0] * exp;
-                dd[1]= dd[1] * exp;
+                dd[0] *= exp;
+                dd[1] *= exp;
                 return dd;
             }
         }
@@ -154,7 +162,7 @@ public class NumberUnits extends Units {
         } else {
             try {
                 s= s.trim();
-                if ( s.endsWith(this.getId())  ) { //TODO: bug Units.seconds.parse("1 days"), Units.seconds.parse("1 microseconds"),
+                if ( this!=Units.dimensionless && s.endsWith(this.getId())  ) { //TODO: bug Units.seconds.parse("1 days"), Units.seconds.parse("1 microseconds"),
                     char cbefore= 0;
                     if ( s.length()>(this.getId().length()+1) ) {
                         cbefore= s.charAt(s.length()-2);
