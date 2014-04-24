@@ -70,7 +70,9 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
@@ -140,6 +142,10 @@ public class DataPointRecorderNew extends JPanel {
                 if (unitsArray[j] != null) {
                     if ( unitsArray[j] instanceof EnumerationUnits ) {
                         result += "(ordinal)";
+                    } else if ( UnitsUtil.isTimeLocation( unitsArray[j] ) ) {
+                        result += "(UTC)";
+                    } else if ( unitsArray[j]==Units.dimensionless ) {
+                        // add nothing.
                     } else {
                         result += "(" + unitsArray[j] + ")";
                     }
@@ -546,7 +552,7 @@ public class DataPointRecorderNew extends JPanel {
                     if ( bundleDescriptor1==null ) {
                         bundleDescriptor1= bdsb.getDataSet();
                     }
-                    rec.putProperty( QDataSet.BUNDLE_1, bundleDescriptor1 );
+                    rec.putProperty( QDataSet.BUNDLE_0, bundleDescriptor1 );
 
                     addDataPoint( rec );
 
@@ -579,6 +585,11 @@ public class DataPointRecorderNew extends JPanel {
             table.getColumnModel();
             myTableModel.fireTableStructureChanged();
             table.repaint();
+        }
+        
+        if (active) {
+            DataSetUpdateEvent ev= new DataSetUpdateEvent(this,getDataSet());
+            fireDataSetUpdateListenerDataSetUpdated( ev );
         }
 
     }
@@ -1002,7 +1013,7 @@ public class DataPointRecorderNew extends JPanel {
             if ( o1 instanceof QDataSet && o2 instanceof QDataSet ) {
                 QDataSet qds1= (QDataSet)o1;
                 QDataSet qds2= (QDataSet)o2;
-                return qds1.value(0) > qds2.value(0) ? 1 : -1;
+                return DataSetUtil.asDatum(qds1.slice(0)).gt( DataSetUtil.asDatum( qds2.slice(0) ) ) ? 1 : -1;
             } else {
                 throw new IllegalArgumentException("expected qdatasets");
             }
@@ -1019,6 +1030,28 @@ public class DataPointRecorderNew extends JPanel {
         if ( newPoint.rank()==2 && newPoint.length()==1 ) {
             newPoint= newPoint.slice(0);
         }
+        // make sure all the units are correct.
+        ArrayDataSet mnp= ArrayDataSet.copy(newPoint);
+        
+        for ( int i=0; i<newPoint.length(); i++ ) {
+            Datum d= DataSetUtil.asDatum( newPoint.slice(i) );
+            if ( unitsArray[i].isConvertableTo(d.getUnits() ) ) {
+                mnp.putValue( i,d.doubleValue( unitsArray[i] ) );
+            } else {
+                if ( UnitsUtil.isOrdinalMeasurement(unitsArray[i]) ) {
+                    try {
+                        mnp.putValue( i, ((EnumerationUnits)unitsArray[i]).parse(d.toString()).doubleValue((EnumerationUnits)unitsArray[i]));
+                    } catch (ParseException ex) {
+                        throw new IllegalArgumentException(ex); // shouldn't happen...
+                    }
+                } else {
+                    throw new InconvertibleUnitsException(d.getUnits(),unitsArray[i]);
+                }
+            }
+            mnp.putProperty( QDataSet.BUNDLE_0, bundleDescriptor );
+        }
+        newPoint= mnp;
+        
         synchronized ( dataPoints ) {
             String[] keys;
             if (sorted) {
@@ -1068,6 +1101,7 @@ public class DataPointRecorderNew extends JPanel {
         updateStatus();
         updateClients();
         table.repaint();
+        myTableModel.fireTableDataChanged();
     }
     
     
