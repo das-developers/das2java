@@ -1172,7 +1172,10 @@ public class DataPointRecorderNew extends JPanel {
                 throw new IllegalArgumentException("value must be String, Datum, DataSet or Number");
             }
             bdsb.putProperty( QDataSet.UNITS, ii, theu );
+            ii++;
         }
+        
+        bdsb.setLength(ii);
         
         QDataSet bds= bdsb.getDataSet();
         rec.putProperty(QDataSet.BUNDLE_0,bds);
