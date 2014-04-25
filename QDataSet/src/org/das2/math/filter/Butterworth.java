@@ -32,7 +32,6 @@ package org.das2.math.filter;
 
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
-import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.QDataSet;
 
 
@@ -281,7 +280,7 @@ public class Butterworth extends AbstractFilter {
 
             fomega = Math.sin(omega / 2.0);
 
-            if (n % 2 == 1)
+            if ( n % 2 != 0 )
                 sf *= fomega + (lowp ? Math.cos(omega / 2.0) : Math.sin(omega / 2.));
             sf = Math.pow( fomega, n ) / sf;
 
