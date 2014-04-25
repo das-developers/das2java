@@ -127,7 +127,7 @@ public class DasPlot extends DasCanvasComponent {
      * use this for conditional breakpoints.  Set this to non-null to
      * trigger breakpoint.
      */
-    public static String testSentinal= null;
+    private static String testSentinal= null;
     
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         super();
