@@ -25,13 +25,10 @@
 
 package org.das2.math.filter;
 
-import java.io.IOException;
 import java.util.Arrays;
-import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.ArrayDataSet;
-import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
@@ -69,9 +66,6 @@ public class AbstractFilter {
         return u.convertDoubleTo( units,  1 / ( timeDomainTags.value(1) - timeDomainTags.value(0) ) );
     }
     
-        /** local signal buffer to read from source */
-        private double [] buf = new double [0];
-       
         /** i/o pointer for input signal ringbuffer */
         private int px;
        
@@ -99,17 +93,17 @@ public class AbstractFilter {
          * @param a
          */
         public void setCoefficients(double [] b, double [] a) {
-                this.b = b;
-                this.a = a;
+                this.b = Arrays.copyOf(b,b.length);
+                this.a = Arrays.copyOf(a,a.length);
                
-                xv = new double [b.length + 1];
-                yv = new double [a.length + 1];
+                xv = new double [ this.b.length + 1 ];
+                yv = new double [ this.a.length + 1 ];
                
-                if (a[0] == 1.) {
-                        for (int i = 1; i < a.length; ++i)
-                                a[i] /= a[0];
-                        for (int i = 0; i < b.length; ++i)
-                                b[i] /= a[0];
+                if (this.a[0] == 1.) {
+                        for (int i = 1; i < this.a.length; ++i)
+                                this.a[i] /= this.a[0];
+                        for (int i = 0; i < this.b.length; ++i)
+                                this.b[i] /= this.a[0];
                 }
         }
        
