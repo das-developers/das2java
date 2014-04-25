@@ -133,9 +133,9 @@ public class Reduction {
      *
      * Because of high-resolution magnetometer data, this is extended to support this data type.
      * 
-     * @param ds rank 1 or rank 2 dataset.  Must have DEPEND_0 (presently) and be a qube.
+     * @param ds rank 1 or rank 2 dataset.  Must have DEPEND_0 (presently) and be a qube.  If this is null, then the result is null.
      * @param xLimit the size of the bins or null to indicate no limit.
-     * @return
+     * @return the reduced dataset, or null if the input dataset was null.
      */
     public static QDataSet reducex( QDataSet ds, QDataSet xLimit ) {
         long t0= System.currentTimeMillis();
