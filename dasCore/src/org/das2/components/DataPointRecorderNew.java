@@ -200,8 +200,22 @@ public class DataPointRecorderNew extends JPanel {
                 Comparator comp= new Comparator() {
                     @Override
                     public int compare(Object o1, Object o2) {
-                        Datum d1= DataSetUtil.asDatum(((QDataSet)o1).slice(0));
-                        Datum d2= DataSetUtil.asDatum(((QDataSet)o2).slice(0));
+                        Datum d1;
+                        if ( o1 instanceof QDataSet ) {
+                            d1= DataSetUtil.asDatum(((QDataSet)o1).slice(0));
+                        } else if ( o1 instanceof Datum ) {
+                            d1= (Datum)o1;
+                        } else {
+                            throw new IllegalArgumentException("expected Datum or QDataSet");
+                        }
+                        Datum d2;
+                        if ( o2 instanceof QDataSet ) {
+                            d2= DataSetUtil.asDatum(((QDataSet)o2).slice(0));
+                        } else if ( o2 instanceof Datum ) {
+                            d2= (Datum)o2;
+                        } else {
+                            throw new IllegalArgumentException("expected Datum or QDataSet");
+                        }
                         return d1.compareTo(d2);
                     }
                 };
