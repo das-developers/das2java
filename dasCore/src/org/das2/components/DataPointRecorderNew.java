@@ -72,6 +72,7 @@ import javax.swing.table.TableColumn;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
+import org.das2.event.DataPointSelectionEvent;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -678,7 +679,7 @@ public class DataPointRecorderNew extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 table.getSelectionModel().clearSelection();
-                //fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));  
+                fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));  
             }
         };
     }
@@ -868,7 +869,7 @@ public class DataPointRecorderNew extends JPanel {
      */
     public void update() {
         fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
-        //fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));        
+        fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
     }
     
     /** Creates a new instance of DataPointRecorder */
@@ -928,13 +929,16 @@ public class DataPointRecorderNew extends JPanel {
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                //fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(DataPointRecorderNew.this));
+                fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(DataPointRecorderNew.this));
                 int selected = table.getSelectedRow(); // we could do a better job here
                 if (selected > -1) {
                     QDataSet dp = dataPoints.get(selected);
                     System.err.println(dp);
-                    //DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorderNew.this, dp.get(0), dp.get(1));
-                    //fireDataPointSelectionListenerDataPointSelected(e2);
+                    Datum x= DataSetUtil.asDatum( dp.slice(0) );
+                    Datum y= DataSetUtil.asDatum( dp.slice(1) );
+                    DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorderNew.this, x, y );
+                    e2.setDataSet(dp);
+                    fireDataPointSelectionListenerDataPointSelected(e2);
                 }
 
             }
@@ -1351,43 +1355,44 @@ public class DataPointRecorderNew extends JPanel {
     }
     
     
-//    /**
-//     * the selection are the highlighted points in the table.  Listeners can grab this data and do something with the
-//     * dataset.
-//     */
-//    private javax.swing.event.EventListenerList selectedListenerList = null;
-//
-//    public synchronized void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-//        if (selectedListenerList == null) {
-//            selectedListenerList = new javax.swing.event.EventListenerList();
-//        }
-//        selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
-//        checkUpdateEnable();
-//    }
-//
-//    public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-//        selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
-//        checkUpdateEnable();
-//    }
-//
-//    
-//    private void fireSelectedDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
-//        
-//        Object[] listeners;
-//        synchronized (this ) {
-//            if (selectedListenerList == null) {
-//                return;
-//            }
-//            listeners = selectedListenerList.getListenerList();
-//        }
-//
-//        for ( int i = listeners.length - 2; i >=0; i-=2 ) {
-//            if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
-//                ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
-//            }
-//        }
-//
-//    }
+    /**
+     * the selection are the highlighted points in the table.  Listeners can grab this data and do something with the
+     * dataset.
+     */
+    private javax.swing.event.EventListenerList selectedListenerList = null;
+
+    public synchronized void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+        if (selectedListenerList == null) {
+            selectedListenerList = new javax.swing.event.EventListenerList();
+        }
+        selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
+    }
+
+    public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+        selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
+        checkUpdateEnable();
+    }
+
+    
+    private void fireSelectedDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
+        
+        Object[] listeners;
+        synchronized (this ) {
+            if (selectedListenerList == null) {
+                return;
+            }
+            listeners = selectedListenerList.getListenerList();
+        }
+
+        for ( int i = listeners.length - 2; i >=0; i-=2 ) {
+            if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
+                ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
+            }
+        }
+
+    }
+    
     /**
      * Holds value of property sorted.
      */
@@ -1430,28 +1435,29 @@ public class DataPointRecorderNew extends JPanel {
         listenerList1.remove(org.das2.event.DataPointSelectionListener.class, listener);
     }
 
-//    /**
-//     * Notifies all registered listeners about the event.
-//     *
-//     * @param event The event to be fired
-//     */
-//    private void fireDataPointSelectionListenerDataPointSelected(org.das2.event.DataPointSelectionEvent event) {
-//        Object[] listeners;
-//        synchronized (this) {
-//            if (listenerList1 == null) {
-//                return;
-//            }
-//            listeners = listenerList1.getListenerList();
-//        }
-//
-//        logger.fine("firing data point selection event");
-//        for (int i = listeners.length - 2; i >= 0; i -= 2 ) {
-//            if (listeners[i] == org.das2.event.DataPointSelectionListener.class) {
-//                ((org.das2.event.DataPointSelectionListener) listeners[i + 1]).dataPointSelected(event);
-//            }
-//        }
-//
-//    }
+    /**
+     * Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
+    private void fireDataPointSelectionListenerDataPointSelected(org.das2.event.DataPointSelectionEvent event) {
+        Object[] listeners;
+        synchronized (this) {
+            if (listenerList1 == null) {
+                return;
+            }
+            listeners = listenerList1.getListenerList();
+        }
+
+        logger.fine("firing data point selection event");
+        for (int i = listeners.length - 2; i >= 0; i -= 2 ) {
+            if (listeners[i] == org.das2.event.DataPointSelectionListener.class) {
+                ((org.das2.event.DataPointSelectionListener) listeners[i + 1]).dataPointSelected(event);
+            }
+        }
+
+    }
+    
     /**
      * Holds value of property xTagWidth.
      */
