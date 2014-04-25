@@ -276,7 +276,11 @@ public class DataPointRecorderNew extends JPanel {
     }
     
     /**
-     * returns a data set of the selected table data.  
+     * returns a data set of the selected table data.  Warning: this used to
+     * return a bundle dataset with Y,plane1,plane2,etc that had DEPEND_0 for X.
+     * This now returns a bundle ds[n,m] where m is the number of columns and
+     * n is the number of records.
+     * 
      * @see select which selects part of the dataset.
      */
     public QDataSet getSelectedDataSet() {
@@ -307,7 +311,8 @@ public class DataPointRecorderNew extends JPanel {
     }
 
     /**
-     * Selects all the points within the DatumRange
+     * Selects all the points where the first column is within xrange and
+     * the second column is within yrange.
      */
     public void select(DatumRange xrange, DatumRange yrange) {
         Datum mid= xrange.rescale( 0.5,0.5 ).min();
@@ -358,13 +363,15 @@ public class DataPointRecorderNew extends JPanel {
             //header.append("## "); // don't use comment characters so that labels and units are used in Autoplot's ascii parser.
             for (int j = 0; j < lnamesArray.length; j++) {
                 Units units= lunitsArray[j];
-                String sunits=null;
+                String sunits;
                 if ( UnitsUtil.isTimeLocation(units) ) {
                     sunits= "(UTC)";
                 } else if ( UnitsUtil.isOrdinalMeasurement(units) ) {
                     sunits= "(ordinal)";
                 } else if ( units==Units.dimensionless ) {
                     sunits= "";
+                } else {
+                    sunits= "("+units+")";
                 }
                 header.append( lnamesArray[j] ).append(sunits);
                 if ( j<lnamesArray.length-1 ) header.append(",\t");
