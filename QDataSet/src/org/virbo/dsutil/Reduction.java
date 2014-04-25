@@ -140,6 +140,8 @@ public class Reduction {
     public static QDataSet reducex( QDataSet ds, QDataSet xLimit ) {
         long t0= System.currentTimeMillis();
 
+        if ( ds==null ) return ds; // Craig 2038937185
+        
         if ( !DataSetUtil.isQube(ds) ) {
             throw new IllegalArgumentException("rank 2 dataset must be a qube");
         }
