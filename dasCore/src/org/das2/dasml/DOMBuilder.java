@@ -10,8 +10,6 @@
 package org.das2.dasml;
 
 import org.das2.graph.DasCanvasComponent;
-import org.das2.DasApplication;
-import org.das2.NameContext;
 import org.das2.beans.AccessLevelBeanInfo;
 import org.das2.beans.BeansUtil;
 import org.das2.system.DasLogger;
@@ -33,9 +31,7 @@ public class DOMBuilder {
     
     Object bean;
     HashMap serializedObjects;
-    NameContext nameContext;
     
-    /** Creates a new instance of Serializer */
     public DOMBuilder( Object bean ) {
         this.bean= bean;
     }
@@ -97,7 +93,7 @@ public class DOMBuilder {
                 
                 String propertyName= propertyNameList[i];
                 
-                log.fine( "serializing property "+propertyName + " of "+elementName );
+                log.log( Level.FINE, "serializing property {0} of {1}", new Object[]{propertyName, elementName});
                 System.err.println("@@@: "+"serializing property "+propertyName + " of "+elementName );
                 
                 if ( propertyName.equals("parent" ) ) {
@@ -108,7 +104,7 @@ public class DOMBuilder {
                 PropertyDescriptor pd= (PropertyDescriptor)nameMap.get(propertyName);
                 
                 if ( pd==null ) {
-                    log.warning("unable to locate property: "+propertyName+", ignoring");
+                    log.log(Level.WARNING, "unable to locate property: {0}, ignoring", propertyName);
                     continue;
                 }
                 
@@ -116,7 +112,7 @@ public class DOMBuilder {
                 
                 if ( readMethod==null ) {
                     // note this happens with the indexed property getRBG of ColorBar.Type
-                    log.info( "skipping property "+propertyName+" of "+elementName+", failed to find read method." );
+                    log.log( Level.INFO, "skipping property {0} of {1}, failed to find read method.", new Object[]{propertyName, elementName});
                     continue;
                 }
                 
@@ -127,7 +123,7 @@ public class DOMBuilder {
                 value= readMethod.invoke( object, new Object[0] );
                 
                 if ( value==null ) {
-                    log.info( "skipping property "+propertyName+" of "+elementName+", value is null." );
+                    log.log( Level.INFO, "skipping property {0} of {1}, value is null.", new Object[]{propertyName, elementName});
                     continue;
                 }
                 
@@ -202,7 +198,6 @@ public class DOMBuilder {
     
     
     public synchronized Element serialize( Document document, ProgressMonitor monitor ) {        
-        nameContext= DasApplication.getDefaultApplication().getNameContext();
         serializedObjects= new HashMap();
         
         return getDOMElement( document, this.bean, monitor );
