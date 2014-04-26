@@ -22,7 +22,6 @@
  */
 
 package org.das2.event;
-import org.das2.dataset.DataSet;
 import org.das2.datum.Datum;
 import java.util.Map;
 import org.virbo.dataset.QDataSet;
@@ -95,6 +94,10 @@ public class DataPointSelectionEvent extends DasEvent {
         this.ds= ds;
     }
     
+    /**
+     * return the context dataset, from which the selection is made.
+     * @return 
+     */
     public QDataSet getDataSet() {
         return this.ds;
     }
