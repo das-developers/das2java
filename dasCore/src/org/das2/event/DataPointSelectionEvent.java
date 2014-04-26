@@ -44,8 +44,6 @@ public class DataPointSelectionEvent extends DasEvent {
     
     private QDataSet ds=null;
     
-    private Object source;
-    
     /** Creates a new instance of DataPointSelectionEvent */
     public DataPointSelectionEvent(Object source, 
             Datum x, 
@@ -102,6 +100,7 @@ public class DataPointSelectionEvent extends DasEvent {
         return this.ds;
     }
     
+    @Override
     public String toString() {
         return "[DataPointSelectionEvent x:"+x+" y:"+y+"]";
     }
