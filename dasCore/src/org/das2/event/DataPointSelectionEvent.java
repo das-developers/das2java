@@ -28,7 +28,7 @@ import org.virbo.dataset.QDataSet;
 
 /**
  * This is the general-purpose "a data point was selected" event.  Note that
- * auxillary data is supported, such as a keystroke that triggered the event.
+ * auxiliary data is supported, such as a keystroke that triggered the event.
  * 
  * The X and Y Datums may be null, so that code may be reused.  
  *
