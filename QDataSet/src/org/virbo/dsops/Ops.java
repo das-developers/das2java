@@ -3526,10 +3526,19 @@ public class Ops {
             } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_NUMBER) ) {
                 if ( value instanceof String ) {
                     String svalue= (String)value;
-                    if ( svalue.contains(".") || svalue.contains("e") || svalue.contains("E") ) {
-                        value= Double.valueOf(svalue);
+                    Units u= (Units)mds.property(QDataSet.UNITS);
+                    if ( u!=null ) {
+                        try {
+                            value= u.parse(svalue).doubleValue(u);
+                        } catch (ParseException ex) {
+                            throw new IllegalArgumentException(ex);
+                        }
                     } else {
-                        value= Integer.valueOf(svalue);
+                        if ( svalue.contains(".") || svalue.contains("e") || svalue.contains("E") ) {
+                            value= Double.valueOf(svalue);
+                        } else {
+                            value= Integer.valueOf(svalue);
+                        }
                     }
                 }
                 mds.putProperty( name, value);
