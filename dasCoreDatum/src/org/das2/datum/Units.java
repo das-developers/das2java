@@ -185,6 +185,13 @@ public abstract class Units implements Serializable {
         celciusDegrees.registerConverter(fahrenheitDegrees, new UnitsConverter.ScaleOffset(1.8,0) );
     }
 
+    /**
+     * currencies for demonstration purposes.
+     */
+    public static final Units dollars= new NumberUnits("dollars");
+    public static final Units euros= new NumberUnits("euros");
+    public static final Units yen= new NumberUnits("yen");
+    public static final Units rupee= new NumberUnits("rupee");
     
     /**
      * Microseconds since midnight Jan 1, 2000, excluding those within a leap second.  Differences across leap
