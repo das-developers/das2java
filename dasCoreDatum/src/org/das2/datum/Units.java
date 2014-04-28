@@ -188,10 +188,10 @@ public abstract class Units implements Serializable {
     /**
      * currencies for demonstration purposes.
      */
-    public static final Units dollars= new NumberUnits("dollars","United States Dollars");
-    public static final Units euros= new NumberUnits("euros","Euro Dollars");
-    public static final Units yen= new NumberUnits("yen","Japanese Yen");
-    public static final Units rupee= new NumberUnits("rupee","Indian Rupee");
+    public static final Units dollars= new CurrencyUnits("dollars","$","United States Dollars");
+    public static final Units euros= new CurrencyUnits("euros","\u20AC", "Euro Dollars");
+    public static final Units yen= new CurrencyUnits("yen","\uFFE5","Japanese Yen");
+    public static final Units rupee= new CurrencyUnits("rupee","\u20B9", "Indian Rupee");
     
     /**
      * Microseconds since midnight Jan 1, 2000, excluding those within a leap second.  Differences across leap
