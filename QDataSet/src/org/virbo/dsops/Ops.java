@@ -3531,7 +3531,11 @@ public class Ops {
                         try {
                             value= u.parse(svalue).doubleValue(u);
                         } catch (ParseException ex) {
-                            throw new IllegalArgumentException(ex);
+                            try {
+                                value= Integer.valueOf(svalue);
+                            } catch ( NumberFormatException ex2 ) {
+                                throw new IllegalArgumentException(ex);
+                            }
                         }
                     } else {
                         if ( svalue.contains(".") || svalue.contains("e") || svalue.contains("E") ) {
