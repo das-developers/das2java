@@ -163,24 +163,23 @@ public class DataPointRecorderNew extends JPanel {
         
         @Override
         public int getRowCount() {
-            synchronized (dataPoints) {
                 int nrow = dataPoints.size();
                 return nrow;
             }
-        }
 
         
         @Override
         public Object getValueAt(int i, int j) {
+            QDataSet x;
             synchronized (dataPoints) {
-                QDataSet x = (QDataSet) dataPoints.get(i);
-                if (j < x.length()) {
-                    Datum d = unitsArray[j].createDatum(x.value(j));
-                    DatumFormatter format = d.getFormatter();
-                    return format.format(d, unitsArray[j]);
-                } else {
-                    throw new IndexOutOfBoundsException("no such column");
-                }
+                 x= (QDataSet) dataPoints.get(i);
+            }
+            if (j < x.length()) {
+                Datum d = unitsArray[j].createDatum(x.value(j));
+                DatumFormatter format = d.getFormatter();
+                return format.format(d, unitsArray[j]);
+            } else {
+                throw new IndexOutOfBoundsException("no such column");
             }
         }
     }
@@ -1343,36 +1342,25 @@ public class DataPointRecorderNew extends JPanel {
             return false;
         }
     }
-    private javax.swing.event.EventListenerList listenerList1 = null;
+    private javax.swing.event.EventListenerList listenerList1 = new javax.swing.event.EventListenerList();
 
-    public synchronized void addDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-        if (listenerList1 == null) {
-            listenerList1 = new javax.swing.event.EventListenerList();
-        }
+    public void addDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
         listenerList1.add(org.das2.dataset.DataSetUpdateListener.class, listener);
         checkUpdateEnable();
     }
 
-    public synchronized void removeDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+    public void removeDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
         listenerList1.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
         checkUpdateEnable();
     }
 
     private void fireDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
-        Object[] listeners;
-        synchronized (this) {
-            if (listenerList1 == null) {
-                return;
-            }
-
-            listeners= listenerList1.getListenerList();
-        }
+        Object[] listeners= listenerList1.getListenerList();
         for (int i = listeners.length - 2; i >=0; i-= 2) {
             if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
                 ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
             }
         }
-
     }
     
     
@@ -1382,30 +1370,19 @@ public class DataPointRecorderNew extends JPanel {
      */
     private javax.swing.event.EventListenerList selectedListenerList = null;
 
-    public synchronized void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
-        if (selectedListenerList == null) {
-            selectedListenerList = new javax.swing.event.EventListenerList();
-        }
+    public void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
         selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
         checkUpdateEnable();
     }
 
-    public synchronized void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
+    public void removeSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
         selectedListenerList.remove(org.das2.dataset.DataSetUpdateListener.class, listener);
         checkUpdateEnable();
     }
 
     
     private void fireSelectedDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
-        
-        Object[] listeners;
-        synchronized (this ) {
-            if (selectedListenerList == null) {
-                return;
-            }
-            listeners = selectedListenerList.getListenerList();
-        }
-
+        Object[] listeners= selectedListenerList.getListenerList();
         for ( int i = listeners.length - 2; i >=0; i-=2 ) {
             if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
                 ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
