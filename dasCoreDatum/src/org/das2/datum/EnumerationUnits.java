@@ -64,9 +64,10 @@ public class EnumerationUnits extends Units {
                 unitsInstances = new HashMap<String, EnumerationUnits>();
             }
         }
-        if ( unitsInstances.containsKey(id) ) {
-            logger.log(Level.WARNING, "enumeration init for {0} already defined.", id);
-        }
+        // Note that there's a class of EnumerationUnits, where the id doesn't have
+        // be unique.  This has happened accidentally, and I need to study why it
+        // works and what limitations this introduces, but this may happen.  The code
+        // briefly checked for this condition and issued a warning that was not helpful.
         highestOrdinal = 0;
         ordinals = new HashMap<Integer, Datum>();
         objects = new HashMap<Object, Datum>();
