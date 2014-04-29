@@ -565,6 +565,8 @@ public class DasPlot extends DasCanvasComponent {
                     rend.render(plotGraphics, lxaxis, lyaxis, new NullProgressMonitor());
                 } catch ( RuntimeException ex ) {
                     logger.log( Level.WARNING, ex.getMessage(), ex );
+                    //put breakpoint here:
+                    //rend.render(plotGraphics, lxaxis, lyaxis, new NullProgressMonitor());
                     postException(rend,ex);
                 }
                 noneActive = false;
