@@ -55,6 +55,7 @@ public class WebFileObject extends FileObject {
     boolean isRoot;
     boolean isFolder;
     Map<String,String> metadata;
+    long metaFresh= 0;  // freshness of the metadata.
     Date modifiedDate;  // more accessible version of the metadata
     long size=-1;       // more accessible version of the metadata
     
@@ -89,6 +90,7 @@ public class WebFileObject extends FileObject {
                     metadata= wfs.protocol.getMetadata( this );
                 }
             }
+            metaFresh= System.currentTimeMillis();
         }
     }
     
@@ -154,6 +156,10 @@ public class WebFileObject extends FileObject {
     }
 
     public java.util.Date lastModified() {
+        if ( System.currentTimeMillis() - metaFresh > 10000 ) {
+            metadata= null;
+            modifiedDate= new Date( Long.MAX_VALUE );
+        }
         if ( modifiedDate.getTime()==Long.MAX_VALUE ) {
             try {
                 maybeLoadMetadata();
