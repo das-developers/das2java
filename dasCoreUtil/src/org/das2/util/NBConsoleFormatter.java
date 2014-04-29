@@ -8,10 +8,12 @@ package org.das2.util;
 
 import java.text.MessageFormat;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
- *
+ * Formats log messages to the stdout, so that Netbeans will automatically
+ * make links from the stack traces printed to stderr.
  * @author Jeremy
  */
 public class NBConsoleFormatter extends Formatter {
@@ -20,6 +22,9 @@ public class NBConsoleFormatter extends Formatter {
     int coalesceHits=0;
     
     public String format( LogRecord rec ) {
+        //if ( rec.getLevel()==Level.WARNING &&rec.getMessage()==null ) {
+            //System.err.println("Here");
+        //}
         if ( coalesce && lastMessage!=null && lastMessage.equals(rec.getMessage()) ) {
             coalesceHits++;
             return "";
