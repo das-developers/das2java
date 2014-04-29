@@ -585,8 +585,14 @@ public class EventsRenderer extends Renderer {
 
                 GrannyTextRenderer gtr= new GrannyTextRenderer();
 
-                int gymax= ( (int) msgs.value( Ops.imax(msgs) ) );
-                int gymin= ( (int) msgs.value( Ops.imin(msgs) ) );
+                int gymax,gymin;
+                try {
+                    gymax= ( (int) msgs.value( Ops.imax(msgs) ) );
+                    gymin= ( (int) msgs.value( Ops.imin(msgs) ) );
+                } catch ( IndexOutOfBoundsException ex ) {
+                    ex.printStackTrace();  // shouldn't happen, put breakpoint here
+                    return;
+                }
                         
                 int lastMessageTailX= -10000; // avoid overlaps by keeping track of last right side.
 
