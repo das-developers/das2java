@@ -3377,7 +3377,7 @@ public class Ops {
         if ( ds.rank()!=1 ) throw new IllegalArgumentException("rank 1 only");
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
         int result= -1;
-        double v= Double.MIN_VALUE;
+        double v= Double.NEGATIVE_INFINITY;
         for ( int i=0; i<ds.length(); i++ ) {
             if ( wds.value(i)>0 ) {
                 double d= ds.value(i);
@@ -3404,7 +3404,7 @@ public class Ops {
         if ( ds.rank()!=1 ) throw new IllegalArgumentException("rank 1 only");
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
         int result= -1;
-        double v= Double.MAX_VALUE;
+        double v= Double.POSITIVE_INFINITY;
         for ( int i=0; i<ds.length(); i++ ) {
             if ( wds.value(i)>0 ) {
                 double d= ds.value(i);
