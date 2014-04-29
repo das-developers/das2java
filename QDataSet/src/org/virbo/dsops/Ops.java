@@ -4,6 +4,7 @@
  */
 package org.virbo.dsops;
 
+import java.awt.Color;
 import java.lang.reflect.Array;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -2737,6 +2738,142 @@ public class Ops {
         
         ((MutablePropertyDataSet)append).putProperty(QDataSet.RENDER_TYPE,QDataSet.VALUE_RENDER_TYPE_EVENTS_BAR);
         return append;
+        
+    }
+    
+    /**
+     * make canonical rank 2 bundle dataset of min,max,color,text
+     * This was originally part of EventsRenderer, but it became
+     * clear that this was generally useful.
+     * @param vds dataset in a number of forms that can be converted to an events dataset.
+     * @return rank 2 QDataSet [ index; 4( time, stopTime, rgbColor, label ) ]
+     */
+    public static QDataSet createEvents( QDataSet vds ) {
+        return createEvents( vds, Color.GRAY );
+    }
+    
+    /**
+     * make canonical rank 2 bundle dataset of min,max,color,text
+     * This was originally part of EventsRenderer, but it became
+     * clear that this was generally useful.
+     * @param vds dataset in a number of forms that can be converted to an events dataset.
+     * @param deftColor the color to use as the default color.
+     * @return rank 2 QDataSet [ index; 4( time, stopTime, rgbColor, label ) ]
+     */
+    public static QDataSet createEvents( QDataSet vds, Color deftColor ) {
+    
+        QDataSet xmins;
+        QDataSet xmaxs;
+        QDataSet colors;
+        QDataSet msgs;
+
+        if ( vds==null ) {
+            return null;
+        }
+        
+        int defaultColor= deftColor.getRGB();
+        
+        if ( vds.rank()==2 ) {
+            QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
+            if ( dep0==null ) {
+                xmins= DataSetOps.unbundle( vds,0 );
+                xmaxs= DataSetOps.unbundle( vds,1 );
+
+                if ( vds.length(0)>3 ) {
+                    colors= DataSetOps.unbundle( vds,2 );
+                } else {
+                    colors= Ops.replicate( defaultColor, xmins.length() );
+                }
+                
+            } else if ( dep0.rank()==2 ) {
+                if ( SemanticOps.isBins(dep0) ) {
+                    xmins= DataSetOps.slice1( dep0, 0 );
+                    xmaxs= DataSetOps.slice1( dep0, 1 );
+                    colors= Ops.replicate( 0x808080, xmins.length() );
+                    Units u0= SemanticOps.getUnits(xmins );
+                    Units u1= SemanticOps.getUnits(xmaxs );
+                    if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+                        xmaxs= Ops.add( xmins, xmaxs );
+                    }
+                } else {
+                    throw new IllegalArgumentException( "DEPEND_0 is rank 2 but not bins" );
+                }
+                
+            } else  if ( dep0.rank() == 1 ) {
+                Datum width= SemanticOps.guessXTagWidth( dep0, null ).divide(2);
+                xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                colors= Ops.replicate( defaultColor, xmins.length() );
+
+            } else {
+                throw new IllegalArgumentException( "rank 2 dataset must have dep0 of rank 1 or rank 2 bins" );
+            }
+
+            msgs= DataSetOps.unbundle( vds, vds.length(0)-1 );
+
+        } else if ( vds.rank()==1 ) {
+            QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
+            if ( dep0==null ) {
+                xmins= vds;
+                xmaxs= vds;
+                msgs= vds;
+            } else if ( dep0.rank() == 2  ) {
+                if ( SemanticOps.isBins(dep0) ) {
+                    xmins= DataSetOps.slice1( dep0, 0 );
+                    xmaxs= DataSetOps.slice1( dep0, 1 );
+                    Units u0= SemanticOps.getUnits(xmins );
+                    Units u1= SemanticOps.getUnits(xmaxs );
+                    if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+                        xmaxs= Ops.add( xmins, xmaxs );
+                    }
+                    msgs= vds;
+                } else {
+                    throw new IllegalArgumentException("DEPEND_0 is rank 2 but not bins");
+                }
+            } else if ( dep0.rank() == 1 ) {
+                Datum width= SemanticOps.guessXTagWidth( dep0, null );
+                if ( width!=null ) {
+                    width= width.divide(2);
+                } else {
+                    QDataSet sort= Ops.sort(dep0);
+                    QDataSet diffs= Ops.diff( DataSetOps.applyIndex(dep0,0,sort,false) );
+                    QDataSet w= Ops.reduceMin( diffs,0 );
+                    width= DataSetUtil.asDatum(w);                    
+                }
+                xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );                
+                msgs= vds;
+            } else {
+                throw new IllegalArgumentException("dataset is not correct form");
+            }
+            Color c0= new Color( defaultColor );
+            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
+            int irgb= c1.getRGB();
+            
+            colors= Ops.replicate( irgb, xmins.length() );
+
+        } else if ( vds.rank()==0 ) {
+            xmins= Ops.replicate(vds,1); // increase rank from 0 to 1.
+            xmaxs= xmins;
+            Color c0= new Color( defaultColor );
+            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
+            int irgb= c1.getRGB();
+            colors= Ops.replicate( irgb, xmins.length() );
+            msgs= Ops.replicate(vds,1);
+        } else {            
+            throw new IllegalArgumentException("dataset must be rank 0, 1 or 2");
+        }
+
+        Units u0= SemanticOps.getUnits( xmins );
+        Units u1= SemanticOps.getUnits( xmaxs );
+
+        if ( u1.isConvertableTo( u0.getOffsetUnits() ) && !u1.isConvertableTo(u0) ) { // maxes are dt instead of stopt.
+            xmaxs= Ops.add( xmins, xmaxs );
+        }
+
+        QDataSet lds= Ops.bundle( xmins, xmaxs, colors, msgs );
+        
+        return lds;
         
     }
     
