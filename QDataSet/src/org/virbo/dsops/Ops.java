@@ -4636,10 +4636,6 @@ public class Ops {
         QDataSet min = ds;
         QDataSet deltaplus;
         QDataSet deltaminus;
-
-        if ( ds.length()==0 ) {
-            throw new IllegalArgumentException("extent called on zero-length dataset");
-        }
         
         deltaplus = (QDataSet) ds.property(QDataSet.DELTA_PLUS);
         deltaminus = (QDataSet) ds.property(QDataSet.DELTA_MINUS);
@@ -6681,7 +6677,7 @@ public class Ops {
             if ( ds.length()>0 ) {
                 ds= DataSetOps.slice0(ds, 0);
             } else {
-                throw new IllegalArgumentException("dataset is empty");
+                return 1;
             }
         }
         return dim;
