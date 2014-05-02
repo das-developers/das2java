@@ -9,6 +9,7 @@
 
 package org.virbo.dataset;
 
+import java.lang.reflect.Array;
 import java.util.Map;
 
 /**
@@ -90,6 +91,16 @@ public final class LDataSet extends ArrayDataSet {
         return this.back;
     }
 
+    /**
+     * return a copy of the backing array, to support ArrayDataSet.copy.
+     * @return 
+     */
+    protected Object getBackCopy() {
+        Object newback = Array.newInstance( this.getBack().getClass().getComponentType(), this.back.length  );
+        System.arraycopy( this.back, 0, newback, 0, this.back.length );
+        return newback;
+    }
+        
     protected void setBack(Object back) {
         checkImmutable();
         this.back= (long[])back;

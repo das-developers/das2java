@@ -353,14 +353,18 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @return
      */
     protected abstract Object getBack();
+       
+    /**
+     * return a copy of the backing array, to support ArrayDataSet.copy.
+     * @return 
+     */
+    protected abstract Object getBackCopy();
+    
     protected abstract void setBack(Object back);
 
     private static ArrayDataSet ddcopy(ArrayDataSet ds) {
-        int dsLength = ds.len0 * ds.len1 * ds.len2 * ds.len3;
 
-        Object newback = Array.newInstance( ds.getBack().getClass().getComponentType(), dsLength);
-
-        System.arraycopy( ds.getBack(), 0, newback, 0, dsLength );
+        Object newback = ds.getBackCopy();
 
         ArrayDataSet result = ArrayDataSet.create(ds.rank, ds.len0, ds.len1, ds.len2, ds.len3, newback);
         result.properties.putAll(copyProperties(ds)); // TODO: problems...
