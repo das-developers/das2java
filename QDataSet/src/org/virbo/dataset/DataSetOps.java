@@ -1018,7 +1018,10 @@ public class DataSetOps {
                 if ( bundle1==null ) {
                     return new Slice1DataSet( bundleDs, ib ); //TODO: this was   throw new IllegalArgumentException( "Neither BUNDLE_1 nor DEPEND_1 found on dataset passed to unbundle command.");
                 }
-                if ( bundle1.rank()>1 ) {
+                if ( bundle1.rank()==2 ) {                    
+                    logger.warning("rank 2 DEPEND_1 found where rank 1 was expected");
+                    return new Slice1DataSet( bundleDs, ib ); 
+                } else if ( bundle1.rank()>1 ) {
                     throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
                 } else {
 //                    Units u= SemanticOps.getUnits( bundle1 );
