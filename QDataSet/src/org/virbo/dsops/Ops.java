@@ -3623,7 +3623,11 @@ public class Ops {
         if ( !( ds instanceof MutablePropertyDataSet ) ) {
             mds= ArrayDataSet.maybeCopy(ds);
         } else {
-            mds= (MutablePropertyDataSet)ds;            
+            if ( ((MutablePropertyDataSet)ds).isImmutable() ) {
+                mds= ArrayDataSet.copy(ds);
+            } else {
+                mds= (MutablePropertyDataSet)ds;            
+            }
         }
         
         if ( value!=null && ( value.equals("Null") || value.equals("None") ) ) {
