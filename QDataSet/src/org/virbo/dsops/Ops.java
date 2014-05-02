@@ -6182,6 +6182,38 @@ public class Ops {
     }
 
     /**
+     * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
+     * @param bundleDs
+     * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
+     * @see unbundle( QDataSet bundleDs, int ib )
+     * @throws IllegalArgumentException if no named dataset is found.
+     * @return
+     */
+    public static QDataSet unbundle( QDataSet ds, String name ) {
+        return DataSetOps.unbundle(ds, name);
+    }
+    
+    /**
+     * Extract a bundled dataset from a bundle of datasets.  The input should
+     * be a rank 2 dataset with the property BUNDLE_1 set to a bundle descriptor
+     * dataset.  See BundleDataSet for more semantics.  Note we support the case
+     * where DEPEND_1 has EnumerationUnits, and this is the same as slice1.
+     *
+     *
+     * @param bundleDs the bundle dataset.
+     * @param ib index of the dataset to extract. If the index is within a dataset,
+     *   then the entire dataset is returned.
+     * @throws IndexOutOfBoundsException if the index is invalid.
+     * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
+     * @return the ib-th dataset from the bundle.
+     */
+    public static QDataSet unbundle( QDataSet ds, int i ) {
+        return DataSetOps.unbundle(ds, i);
+    }
+    
+     
+    
+    /**
      * return true if DEPEND_1 is set and its units are EnumerationUnits.  This
      * was the pre-bundle way of representing a bundle of datasets.  It might
      * be supported indefinitely, because it has some nice rules about the data.
