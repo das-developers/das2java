@@ -489,6 +489,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         final QDataSet fds= this.ds; // make a local copy for thread safety.
 
+        logger.log(Level.FINE, "SpectrogramRenderer is rendering dataset {0}", fds);
+        
         byte[] lraster= this.raster;  // make a local copy for thread safety.
 
         DasColorBar lcolorBar= colorBar; // make a local copy
