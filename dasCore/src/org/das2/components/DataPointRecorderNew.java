@@ -1370,7 +1370,7 @@ public class DataPointRecorderNew extends JPanel {
      * the selection are the highlighted points in the table.  Listeners can grab this data and do something with the
      * dataset.
      */
-    private javax.swing.event.EventListenerList selectedListenerList = null;
+    private javax.swing.event.EventListenerList selectedListenerList = new javax.swing.event.EventListenerList();
 
     public void addSelectedDataSetUpdateListener(org.das2.dataset.DataSetUpdateListener listener) {
         selectedListenerList.add(org.das2.dataset.DataSetUpdateListener.class, listener);
