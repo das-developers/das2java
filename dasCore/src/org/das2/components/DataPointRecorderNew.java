@@ -39,7 +39,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -73,6 +75,7 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
 import org.das2.event.DataPointSelectionEvent;
+import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -85,7 +88,9 @@ import org.virbo.dsutil.DataSetBuilder;
 
 /**
  * DataPointRecorder is a GUI for storing data points selected by the user.  
- * This is the old recorder but uses QDataSet to handle the data.
+ * This is the old recorder but:
+ * 1. uses QDataSet to handle the data.  No more strange internal object.
+ * 2. allows the columns to be declared explicitly by code, and data is merged in by name.
  * @author  jbf
  */
 public class DataPointRecorderNew extends JPanel {
@@ -106,11 +111,17 @@ public class DataPointRecorderNew extends JPanel {
      */
     protected Units[] unitsArray;
     
+    protected Units[] defaultUnitsArray;
+    
     /**
      * array of names that are also the column headers. 
      */
     protected String[] namesArray;
     
+    protected String[] defaultNamesArray;
+    
+    private double[] defaultsArray;
+            
     /**
      * bundleDescriptor for the dataset.
      */
@@ -1045,7 +1056,56 @@ public class DataPointRecorderNew extends JPanel {
             }
         }
     };
-            
+    
+    /**
+     * explicitly declare the number of columns.  Call this and then 
+     * setColumn to define each column.
+     * @param count the number of columns.
+     */
+    public void setColumnCount( int count ) {
+        namesArray= new String[count];
+        unitsArray= new Units[count];
+        defaultsArray= new double[count];
+        for ( int i=0; i<count; i++ ) {
+            namesArray[i]= "field"+i;
+            unitsArray[i]= Units.dimensionless;
+        }
+    }
+    
+    /**
+     * identify the name and unit for each column.
+     * @param name a Java identifier for the column, e.g. "StartTime"
+     * @param units units for the column, or null for dimensionless.
+     * @param deft default value to use when data is not provided.
+     */
+    public void setColumn( int i, String name, Units units, Datum deft ) {
+        if ( units==null ) units= Units.dimensionless;
+        if ( namesArray==null ) {
+            throw new IllegalArgumentException("call setColumnCount first.");
+        }
+        if ( i>=namesArray.length ) {
+            throw new IndexOutOfBoundsException("column index is out of bounds (and 0 is the first column)");
+        }
+        namesArray[i]= name;
+        unitsArray[i]= units;
+        defaultsArray[i]= deft.doubleValue(units);
+    }
+
+    /**
+     * identify the name and unit for each column.
+     * @param name a Java identifier for the column, e.g. "StartTime"
+     * @param units  units units for the column, or null for dimensionless.
+     * @param deft default value to use when data is not provided, which must be parseable by units.
+     */
+    public void setColumn( int i, String name, Units units, String deft ) throws ParseException {
+        if ( units==null ) units= Units.dimensionless;
+        if ( units instanceof EnumerationUnits ) {
+            setColumn( i, name, units, ((EnumerationUnits)units).createDatum(deft) );            
+        } else {
+            setColumn( i, name, units, units.parse(deft) );
+        }
+    }
+                
     /**
      * insert the point into the data points.  If the dataset is sorted, then we
      * replace any point that is within X_LIMIT of the point.
@@ -1056,26 +1116,42 @@ public class DataPointRecorderNew extends JPanel {
         if ( newPoint.rank()==2 && newPoint.length()==1 ) {
             newPoint= newPoint.slice(0);
         }
-        // make sure all the units are correct.
-        ArrayDataSet mnp= ArrayDataSet.copy(newPoint);
+        
+        // make sure all the units are correct by converting them as they come in.
+        ArrayDataSet mnp= DDataSet.wrap( Arrays.copyOf(defaultsArray,defaultsArray.length) );
+        
+        QDataSet bds= (QDataSet) newPoint.property(QDataSet.BUNDLE_0);
         
         for ( int i=0; i<newPoint.length(); i++ ) {
             Datum d= DataSetUtil.asDatum( newPoint.slice(i) );
-            if ( unitsArray[i].isConvertableTo(d.getUnits() ) ) {
-                mnp.putValue( i,d.doubleValue( unitsArray[i] ) );
+            
+            int idx= -1;
+            if ( bds.property(QDataSet.NAME,i).equals(namesArray[i]) ) {
+                idx= i;
             } else {
-                if ( UnitsUtil.isOrdinalMeasurement(unitsArray[i]) ) {
+                for ( int j=0; j<namesArray.length; j++ ) {
+                    if ( bds.property(QDataSet.NAME,i).equals(namesArray[j]) ) {
+                        idx= j;
+                    }
+                }
+            }
+            
+            if ( unitsArray[idx].isConvertableTo(d.getUnits() ) ) {
+                mnp.putValue( idx,d.doubleValue( unitsArray[idx] ) );
+            } else {
+                if ( UnitsUtil.isOrdinalMeasurement(unitsArray[idx]) ) {
                     try {
-                        mnp.putValue( i, ((EnumerationUnits)unitsArray[i]).parse(d.toString()).doubleValue((EnumerationUnits)unitsArray[i]));
+                        mnp.putValue( idx, ((EnumerationUnits)unitsArray[idx]).parse(d.toString()).doubleValue((EnumerationUnits)unitsArray[idx]));
                     } catch (ParseException ex) {
                         throw new IllegalArgumentException(ex); // shouldn't happen...
                     }
                 } else {
-                    throw new InconvertibleUnitsException(d.getUnits(),unitsArray[i]);
+                    throw new InconvertibleUnitsException(d.getUnits(),unitsArray[idx]);
                 }
             }
             mnp.putProperty( QDataSet.BUNDLE_0, bundleDescriptor );
         }
+        
         newPoint= mnp;
         
         synchronized ( dataPoints ) {
@@ -1240,16 +1316,45 @@ public class DataPointRecorderNew extends JPanel {
                     bds= bdsb.getDataSet();
                 }
                 
-                unitsArray    = new Units[ rec.length() ];
-                namesArray    = new String[ rec.length() ];
+                if ( namesArray==null ) {
+                    logger.fine("first record defines columns");
+                    Units[] lunitsArray    = new Units[ rec.length() ];
+                    String[] lnamesArray   = new String[ rec.length() ];
                 
-                for ( int index=0; index<bds.length(); index++ ) {
-                    namesArray[index] = (String) bds.property(QDataSet.NAME,index);
-                    Units u= (Units) bds.property(QDataSet.UNITS,index);
-                    unitsArray[index] = u!=null ? u : Units.dimensionless;
+                    for ( int index=0; index<bds.length(); index++ ) {
+                        lnamesArray[index] = (String) bds.property(QDataSet.NAME,index);
+                        Units u= (Units) bds.property(QDataSet.UNITS,index);
+                        lunitsArray[index] = u!=null ? u : Units.dimensionless;
+                    }
+                
+                    unitsArray= lunitsArray;
+                    namesArray= lnamesArray;
                 }
                 
-                bundleDescriptor= bds;
+                bundleDescriptor= new AbstractDataSet() {
+                    @Override
+                    public int rank() {
+                        return 2;
+                    }
+                    @Override
+                    public Object property(String name, int i) {
+                        if ( name.equals(QDataSet.NAME) ) {
+                            return namesArray[i];
+                        } else if ( name.equals(QDataSet.UNITS) ) {
+                            return unitsArray[i];
+                        } else {
+                            return null;
+                        }
+                    }
+                    @Override
+                    public int length() {
+                        return namesArray.length;
+                    }
+                    @Override
+                    public int length(int i) {
+                        return 0;
+                    }
+                };
 
                 myTableModel.fireTableStructureChanged();
                 for ( int i=0; i<1; i++ ) { //i<unitsArray.length
