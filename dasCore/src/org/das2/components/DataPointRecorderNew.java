@@ -536,7 +536,7 @@ public class DataPointRecorderNew extends JPanel {
                 for ( int i=0; i<s.length; i++ ) {
                     String s1= s[i];
                     s1= s1.trim();
-                    if ( s1.startsWith("\"") && s1.endsWith("\"") ) {
+                    if ( s1.startsWith("\"") && s1.endsWith("\"") ) { // pop off quotes used to delimit enumeration e.g. "fuh"
                         s1= s1.substring(1,s1.length()-1);
                     }
                     s[i]= s1;
