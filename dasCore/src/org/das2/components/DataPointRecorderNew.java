@@ -398,7 +398,7 @@ public class DataPointRecorderNew extends JPanel {
                     sunits= "("+units+")";
                 }
                 header.append( lnamesArray[j] ).append(sunits);
-                if ( j<lnamesArray.length-1 ) header.append(",\t");
+                if ( j<lnamesArray.length-1 ) header.append("\t");
             }
             r.write(header.toString());
             r.newLine();
@@ -408,8 +408,8 @@ public class DataPointRecorderNew extends JPanel {
                 for (int j = 0; j < x.length(); j++) {
                     Datum d= DataSetUtil.asDatum( x.slice(j) );
                     DatumFormatter formatter = d.getFormatter();
-                    s.append(formatter.format( d, lunitsArray[j]) );
-                    if ( j<x.length()-1 ) s.append(",\t");
+                    s.append( formatter.format( d, lunitsArray[j]).trim() );
+                    if ( j<x.length()-1 ) s.append("\t");
                 }
                 r.write(s.toString());
                 r.newLine();
@@ -971,7 +971,7 @@ public class DataPointRecorderNew extends JPanel {
                 int selected = table.getSelectedRow(); // we could do a better job here
                 if (selected > -1) {
                     QDataSet dp = dataPoints.get(selected);
-                    System.err.println(dp);
+                    //System.err.println(dp);
                     Datum x= DataSetUtil.asDatum( dp.slice(0) );
                     Datum y= DataSetUtil.asDatum( dp.slice(1) );
                     DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorderNew.this, x, y );
