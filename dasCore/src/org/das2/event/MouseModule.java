@@ -85,6 +85,15 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
         return dragRenderer;
     }
     
+    /**
+     * reset the drag renderer. (Made public when the digitizer had different modes.
+     * @param d 
+     */
+    public void setDragRenderer( DragRenderer d ) {
+        this.dragRenderer= d;
+        parent.repaint();
+    }
+    
     /** 
      * Action to take when a mouse range (click, drag, release) has been selected. 
      */
@@ -173,11 +182,4 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     public void mouseWheelMoved(MouseWheelEvent e) {
     }
 
-    /**
-     * this should only be called from the mouse module constructor.  (Until 
-     * it is verified that it is okay to call it elsewhere.)
-     */
-    protected void setDragRenderer(DragRenderer dragRenderer) {
-        this.dragRenderer = dragRenderer;
-    }
 }
