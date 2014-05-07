@@ -1107,6 +1107,17 @@ public class DataPointRecorderNew extends JPanel {
     }
                 
     /**
+     * identify the name and unit for each column.
+     * @param name a Java identifier for the column, e.g. "StartTime"
+     * @param units  units units for the column, or null for dimensionless.
+     * @param deft default value to use when data is not provided.
+     */
+    public void setColumn( int i, String name, Units units, double deft ) throws ParseException {
+        if ( units==null ) units= Units.dimensionless;
+        setColumn( i, name, units, units.createDatum(deft) );
+    }
+                    
+    /**
      * insert the point into the data points.  If the dataset is sorted, then we
      * replace any point that is within X_LIMIT of the point.
      * @param newPoint 
@@ -1135,7 +1146,10 @@ public class DataPointRecorderNew extends JPanel {
                     }
                 }
             }
-            
+            if ( idx==-1 ) {
+                logger.log(Level.FINEST, "unable to find column for {0}", bds.property(QDataSet.NAME,i));
+                continue;
+            }
             if ( unitsArray[idx].isConvertableTo(d.getUnits() ) ) {
                 mnp.putValue( idx,d.doubleValue( unitsArray[idx] ) );
             } else {
