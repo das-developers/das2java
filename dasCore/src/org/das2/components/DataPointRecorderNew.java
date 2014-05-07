@@ -534,7 +534,12 @@ public class DataPointRecorderNew extends JPanel {
                 }
                 String[] s = line.split(delim);
                 for ( int i=0; i<s.length; i++ ) {
-                    s[i]= s[i].trim();
+                    String s1= s[i];
+                    s1= s1.trim();
+                    if ( s1.startsWith("\"") && s1.endsWith("\"") ) {
+                        s1= s1.substring(1,s1.length()-1);
+                    }
+                    s[i]= s1;
                 }
                 if (unitsArray1 == null) {
                     // support for legacy files
@@ -1129,7 +1134,12 @@ public class DataPointRecorderNew extends JPanel {
         }
         
         // make sure all the units are correct by converting them as they come in.
-        ArrayDataSet mnp= DDataSet.wrap( Arrays.copyOf(defaultsArray,defaultsArray.length) );
+        ArrayDataSet mnp;
+        if ( defaultsArray!=null ) {
+            mnp= DDataSet.wrap( Arrays.copyOf(defaultsArray,defaultsArray.length) );
+        } else {
+            mnp= DDataSet.createRank1(namesArray.length);
+        }
         
         QDataSet bds= (QDataSet) newPoint.property(QDataSet.BUNDLE_0);
         
@@ -1154,11 +1164,7 @@ public class DataPointRecorderNew extends JPanel {
                 mnp.putValue( idx,d.doubleValue( unitsArray[idx] ) );
             } else {
                 if ( UnitsUtil.isOrdinalMeasurement(unitsArray[idx]) ) {
-                    try {
-                        mnp.putValue( idx, ((EnumerationUnits)unitsArray[idx]).parse(d.toString()).doubleValue((EnumerationUnits)unitsArray[idx]));
-                    } catch (ParseException ex) {
-                        throw new IllegalArgumentException(ex); // shouldn't happen...
-                    }
+                    mnp.putValue( idx, ((EnumerationUnits)unitsArray[idx]).createDatum(d.toString()).doubleValue(unitsArray[idx]));
                 } else {
                     throw new InconvertibleUnitsException(d.getUnits(),unitsArray[idx]);
                 }
