@@ -6,6 +6,9 @@
 
 package org.das2.fsm;
 
+import java.io.File;
+import org.das2.datum.CacheTag;
+import org.das2.datum.DatumRange;
 import org.das2.datum.TimeParser;
 import org.das2.util.filesystem.FileSystem;
 
@@ -25,6 +28,18 @@ public final class FileStorageModelNew {
     }
     public static FileStorageModel create( FileSystem root, String template ) {
         return FileStorageModel.create( root, template );
+    }
+    
+    public static CacheTag getCacheTagFor( FileStorageModel fsm, DatumRange range, String[] names ) {
+        return FileStorageModel.getCacheTagFor(fsm, range, names);
+    }
+    
+    public static CacheTag getCacheTagFor( FileStorageModel fsm, DatumRange range, File[] files ) {
+        return FileStorageModel.getCacheTagFor( fsm, range, files );
+    }
+       
+    public static int splitIndex(String surl) { 
+        return FileStorageModel.splitIndex(surl);
     }
     
 }
