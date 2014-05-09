@@ -145,4 +145,25 @@ public class AboutUtil {
         }
         return "(dev)";
     }
+    
+    /**
+     * Identify the release by looking for build.jenkinsURL .  It's expected
+     * that the build script will insert build.tag into META-INF/build.txt
+     * @return build URL, or "" if one is not found.
+     * @throws java.io.IOException
+     */
+    public static String getJenkinsURL() throws IOException {
+        Enumeration<URL> urls = AboutUtil.class.getClassLoader().getResources("META-INF/build.txt");
+        Properties props = new Properties();
+        while (urls.hasMoreElements()) {
+            URL url = urls.nextElement();
+            props.load(url.openStream());
+            String tagName = props.getProperty("build.jenkinsURL");
+            if ( tagName!=null && tagName.trim().length()>0 ) {
+                return tagName;
+            }
+        }
+        return "";
+    }    
+    
 }
