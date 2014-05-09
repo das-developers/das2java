@@ -1050,7 +1050,7 @@ public class DataPointRecorderNew extends JPanel {
         }
     }
 
-    private Comparator comparator= new Comparator() {
+    private transient Comparator comparator= new Comparator() {
         public int compare(Object o1, Object o2) {
             if ( o1 instanceof QDataSet && o2 instanceof QDataSet ) {
                 QDataSet qds1= (QDataSet)o1;
@@ -1233,7 +1233,7 @@ public class DataPointRecorderNew extends JPanel {
      * @param y 
      */
     public void addDataPoint( Datum x, Datum y ) {
-        addDataPoint( x, y, null );
+        addDataPoint( x, y, Collections.emptyMap() );
     }
     
     /**
@@ -1453,10 +1453,8 @@ public class DataPointRecorderNew extends JPanel {
     private boolean checkUpdateEnable() {
         int listenerList1Count;
         //int selectedListenerListCount;
-        synchronized (this) {
-            listenerList1Count= listenerList1==null ? 0 : listenerList1.getListenerCount();
-            //selectedListenerListCount= selectedListenerList==null ? 0 : selectedListenerList.getListenerCount();
-        }
+        listenerList1Count= listenerList1.getListenerCount();
+
         if ( listenerList1Count>0 ) { // || selectedListenerListCount>0 ) {
             updateButton.setEnabled(true);
             updateButton.setVisible(true);
