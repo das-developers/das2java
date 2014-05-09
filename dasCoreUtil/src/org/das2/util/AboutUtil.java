@@ -122,14 +122,14 @@ public class AboutUtil {
                 return tagName;
             }
         }
-        return null;
+        return "(dev)";
     }
 
     /**
      * Identify the release version by looking a non-null build.tag.  It's expected
      * that the build script will insert build.tag into META-INF/build.txt
      * @return build tag, which should not contain spaces, or
-     *    null if no tag is found.
+     *    (dev) if no tag is found.
      * @throws java.io.IOException
      */
     public static String getReleaseTag() throws IOException {
@@ -143,6 +143,6 @@ public class AboutUtil {
                 return tagName;
             }
         }
-        return null;
+        return "(dev)";
     }
 }
