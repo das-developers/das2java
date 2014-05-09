@@ -143,7 +143,7 @@ public class DataPointRecorderNew extends JPanel {
         @Override
         public int getColumnCount() {
             synchronized (namesArrayLock) {
-                return namesArray.length;
+                return namesArray==null ? 0 : namesArray.length;
             }
         }
 
@@ -937,9 +937,6 @@ public class DataPointRecorderNew extends JPanel {
         menuBar.add(editMenu);
 
         this.add(menuBar, BorderLayout.NORTH);
-
-        namesArray= new String[] { "X", "Y" };
-        unitsArray= new Units[] { Units.dimensionless, Units.dimensionless };
                 
         table = new JTable(myTableModel);
         table.setAutoCreateRowSorter(true); // Java 1.6
@@ -1147,7 +1144,7 @@ public class DataPointRecorderNew extends JPanel {
             Datum d= DataSetUtil.asDatum( newPoint.slice(i) );
             
             int idx= -1;
-            if ( bds.property(QDataSet.NAME,i).equals(namesArray[i]) ) {
+            if ( i< bds.length() && i<namesArray.length && bds.property(QDataSet.NAME,i).equals(namesArray[i]) ) {
                 idx= i;
             } else {
                 for ( int j=0; j<namesArray.length; j++ ) {
