@@ -43,6 +43,7 @@ public abstract class WeightsDataSet implements QDataSet {
         }
         Number ofill = (Number) ds.property(QDataSet.FILL_VALUE);
         fill = (ofill == null ? u.getFillDouble() : ofill.doubleValue());
+        //ffill= (double)(float)fill;  There was old code that checked for floats that had been converted to doubles.
         vmin = validMin.doubleValue();
         vmax = validMax.doubleValue();
 
@@ -55,6 +56,7 @@ public abstract class WeightsDataSet implements QDataSet {
         return ds.rank();
     }
 
+    @Override
     public String toString() {
         return DataSetUtil.toString(ds);
     }
@@ -165,7 +167,7 @@ public abstract class WeightsDataSet implements QDataSet {
         }
         
         private double weight(double v) {
-            return v == fill || v==(float)fill || Double.isNaN(v) ? 0.0 : 1.0;
+            return v == fill || Double.isNaN(v) ? 0.0 : 1.0;
         }
 
         public double value() {
