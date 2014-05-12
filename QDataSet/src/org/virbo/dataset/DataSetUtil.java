@@ -2246,7 +2246,11 @@ public class DataSetUtil {
             double fill = (ofill == null ? Double.NaN : ofill.doubleValue());
             boolean check = (validMin.doubleValue() > -1 * Double.MAX_VALUE || validMax.doubleValue() < Double.MAX_VALUE || !(Double.isNaN(fill)));
             if (check) {
-                result = new WeightsDataSet.ValidRangeFillFinite(ds);
+                if ( validMin.doubleValue() > -1 * Double.MAX_VALUE || validMax.doubleValue() < Double.MAX_VALUE ) {
+                    result= new WeightsDataSet.FillFinite(ds);
+                } else {
+                    result = new WeightsDataSet.ValidRangeFillFinite(ds);
+                }
             } else {
                 if (u != null) {
                     result = new WeightsDataSet.FillFinite(ds); // support legacy Units to specify fill value
