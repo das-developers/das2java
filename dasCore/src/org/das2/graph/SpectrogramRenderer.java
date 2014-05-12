@@ -353,10 +353,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 }
                 if ( validCount==0 ) {
                     QDataSet bounds= bounds(ds);
-                    DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true );
+                    DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true ); 
                     DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
                     if ( xAxis.getDatumRange().intersects(xdr) && yAxis.getDatumRange().intersects(ydr) ) {
-                        parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null );
+                        parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null ); // bug 1188: gap in data is misreported.
                     } else {
                         if ( xrangeWarning==null && yrangeWarning==null ) {
                              parent.postMessage(this, "dataset is outside of axis range", DasPlot.INFO, null, null );
