@@ -2786,10 +2786,12 @@ public class DataSetUtil {
         QDataSet wds= Ops.valid(ds);
         QDataSet r;
         if ( wds instanceof ConstantDataSet && wds.value(0)==1 ) { // optimize
-            r= Ops.findgen(ds.length());
+            //r= Ops.findgen(ds.length());
+            r= null;
         } else {
             if ( Integer.valueOf(0)==DataSetAnnotations.getInstance().getAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT) ) {
-                r= Ops.findgen(ds.length());
+                //r= Ops.findgen(ds.length());
+                r= null;
             } else {
                 r= Ops.where( wds );
                 if ( r.length()<ds.length() ) {
@@ -2815,6 +2817,7 @@ public class DataSetUtil {
                 }
             }
             if ( handleFill ) {
+                assert r!=null;
                 closest= (int)r.value(closest);
             }
             return closest;
@@ -2837,6 +2840,7 @@ public class DataSetUtil {
                 }
             }
             if ( handleFill ) {
+                assert r!=null;
                 result= (int)r.value(result);
             }
             return result;
