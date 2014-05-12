@@ -2247,7 +2247,7 @@ public class DataSetUtil {
             boolean check = (validMin.doubleValue() > -1 * Double.MAX_VALUE || validMax.doubleValue() < Double.MAX_VALUE || !(Double.isNaN(fill)));
             if (check) {
                 if ( validMin.doubleValue() > -1 * Double.MAX_VALUE || validMax.doubleValue() < Double.MAX_VALUE ) {
-                    result= new WeightsDataSet.FillFinite(ds);
+                    result= new WeightsDataSet.ValidRangeFillFinite(ds);
                 } else {
                     result = new WeightsDataSet.ValidRangeFillFinite(ds);
                 }
