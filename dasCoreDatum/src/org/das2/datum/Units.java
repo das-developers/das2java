@@ -540,32 +540,13 @@ public abstract class Units implements Serializable {
     public abstract Datum createDatum( double value, double resolution );
     
     private final static double FILL_DOUBLE= -1e31;
-    private final static float FILL_FLOAT= -1e31f;
-    private final static int FILL_INT= Integer.MAX_VALUE;
-    private final static long FILL_LONG= Long.MAX_VALUE;
     
     public double getFillDouble() { return FILL_DOUBLE; }
-    public float getFillFloat() { return FILL_FLOAT; }
-    public int getFillInt() { return FILL_INT; }
-    public long getFillLong() { return FILL_LONG; }
     public Datum getFillDatum() { return this.createDatum(FILL_DOUBLE); }
     
     public boolean isFill( double value ) {  return value<FILL_DOUBLE/10 || Double.isNaN(value); }
-    public boolean isFill( float value ) { return value<FILL_FLOAT/10 || Float.isNaN(value); }
-    public boolean isFill( long value ) { return value==FILL_LONG; }
-    public boolean isFill( int value ) { return value==FILL_INT; }
     public boolean isFill( Number value ) {
-        if ( value instanceof Double ) {
-            return isFill(value.doubleValue());
-        } else if ( value instanceof Float ) {
-            return isFill(value.floatValue());
-        } else if ( value instanceof Integer ) {
-            return isFill(value.intValue());
-        } else if ( value instanceof Long ) {
-            return isFill(value.longValue());
-        } else {
-            throw new IllegalArgumentException("Unknown Number class: "+value.getClass().toString());
-        }
+        return isFill(value.doubleValue());
     }
     
     /**
