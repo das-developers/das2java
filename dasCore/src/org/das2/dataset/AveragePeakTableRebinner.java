@@ -27,12 +27,16 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import java.util.HashMap;
 import java.util.Map;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  *
  * @author  Edward West
  */
-public class AveragePeakTableRebinner { // implements DataSetRebinner {
+public class AveragePeakTableRebinner implements DataSetRebinner {
 
     /* adds additional planes for debugging */
     private boolean debug= false;
@@ -41,31 +45,41 @@ public class AveragePeakTableRebinner { // implements DataSetRebinner {
     public AveragePeakTableRebinner() {
     }        
     
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
-        if (!(ds instanceof TableDataSet)) {
-            throw new IllegalArgumentException();
+    public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
+        
+        QDataSet tds;
+        
+        JoinDataSet tds3= new JoinDataSet(3); // for AverageTableRebinner.
+        
+        if ( ds.rank()==2 ) {
+            tds3.join(ds);
+            tds= ds;
+        } else if ( ds.rank()==3 ) {
+            throw new IllegalArgumentException("dataset must be rank 2");
+        } else {
+            throw new IllegalArgumentException("dataset must be rank 2");
         }
         
-        TableDataSet tds = (TableDataSet)ds;
-        
-        if ( ddY==null && tds.tableCount()==0 ) {
-            throw new IllegalArgumentException( "empty table and null RebinDescriptor for Y, so result YTags are undefined." );
-        }
-        
-        TableDataSet weights = (TableDataSet)ds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
-        TableDataSet peaks = (TableDataSet)ds.getPlanarView(DataSet.PROPERTY_PLANE_PEAKS);
+                
+        QDataSet weights = org.virbo.dataset.DataSetUtil.weightsDataSet(ds);
+        QDataSet peaks = (QDataSet) ds.property( QDataSet.BIN_PLUS );
         
         long timer= System.currentTimeMillis();
         
-        int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
-        int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
+        int nx= (ddX == null ? tds.length() : ddX.numberOfBins());
+        int ny= (ddY == null ? tds.length(0) : ddY.numberOfBins());
         
         double[][] averageData= new double[nx][ny];
         double[][] averageWeights= new double[nx][ny];
         double[][] peakData = new double[nx][ny];
 
-        if (true) throw new RuntimeException("need to update");
-        //AverageTableRebinner.average(tds, weights, averageData, averageWeights, ddX, ddY);
+        AverageTableRebinner.average(tds3, weights, averageData, averageWeights, ddX, ddY, AverageTableRebinner.Interpolate.NearestNeighbor );
+        
+        QDataSet xtds= SemanticOps.xtagsDataSet(tds);
+        QDataSet ytds= SemanticOps.ytagsDataSet(tds);
+        
+        Units xunits= SemanticOps.getUnits(xtds);
+        Units yunits= SemanticOps.getUnits(ytds);
         
         double[] xTags;
         double[] xTagMin, xTagMax;
@@ -73,19 +87,18 @@ public class AveragePeakTableRebinner { // implements DataSetRebinner {
             xTags = ddX.binCenters();
             xTagMin = ddX.binStops();
             xTagMax = ddX.binStarts();
-            for ( int i=0; i<tds.getXLength(); i++ ) {
-                double xt= tds.getXTagDouble(i, tds.getXUnits() );
-                int ibin= ddX.whichBin( xt, tds.getXUnits() );
+            for ( int i=0; i<tds.length(); i++ ) {
+                double xt= xtds.value(i);
+                int ibin= ddX.whichBin( xt, xunits );
                 if ( ibin>-1 && ibin<nx ) {
                     xTagMin[ibin]= Math.min( xTagMin[ibin], xt );
                     xTagMax[ibin]= Math.max( xTagMax[ibin], xt );
                 }
             }            
-        }
-        else {
+        } else {
             xTags = new double[nx];
             for (int i = 0; i < nx; i++) {
-                xTags[i] = tds.getXTagDouble(i, tds.getXUnits());
+                xTags[i] = xtds.value(i);
             }
             xTagMin= xTags;
             xTagMax= xTags;      
@@ -98,17 +111,32 @@ public class AveragePeakTableRebinner { // implements DataSetRebinner {
         else {
             yTags = new double[1][ny];
             for (int j = 0; j < ny; j++) {
-                yTags[0][j] = tds.getYTagDouble(0, j, tds.getYUnits());
+                yTags[0][j] = ytds.value(j);
             }
         }
         
-        Datum xTagWidth= DataSetUtil.guessXTagWidth(ds);
-        double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
+        QDataSet xTagWidth= org.virbo.dataset.DataSetUtil.guessCadenceNew(xtds,null);
+        
+        double xTagWidthDouble;
+        if ( xTagWidth==null ) {
+            if ( ddX!=null ) {
+                xTagWidthDouble= ddX.binWidth();
+            } else {
+                xTagWidthDouble= 0.;
+            }
+        } else {
+            xTagWidthDouble= xTagWidth.value();
+        }
+        
         AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, AverageTableRebinner.Interpolate.Linear );
         
         if ( ddY!=null ) {
-            Datum yTagWidth= (Datum)ds.getProperty( DataSet.PROPERTY_Y_TAG_WIDTH );
-            AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, yTagWidth, AverageTableRebinner.Interpolate.Linear );
+            QDataSet yTagWidth= org.virbo.dataset.DataSetUtil.guessCadenceNew(ytds,null);
+            if ( yTagWidth==null ) {
+                AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, null, AverageTableRebinner.Interpolate.Linear );
+            } else {
+                AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, org.virbo.dataset.DataSetUtil.asDatum(yTagWidth), AverageTableRebinner.Interpolate.Linear );
+            }            
         }
         
         if (peaks == null) {
@@ -117,18 +145,41 @@ public class AveragePeakTableRebinner { // implements DataSetRebinner {
         else {
             PeakTableRebinner.peaks(peaks, peakData, ddX, ddY);
         }
+                          
+        double[] dd= new double[nx*ny];
+        flatten( averageData, dd, 0, nx, ny );
+        DDataSet result= DDataSet.wrap( dd, nx, ny );
+        org.virbo.dataset.DataSetUtil.copyDimensionProperties( tds, result );
+
+        double[] ww= new double[nx*ny];
+        flatten( averageWeights, ww, 0, nx, ny );
+        DDataSet wds= DDataSet.wrap( ww, nx, ny );
+
+        double[] pp= new double[nx*ny];
+        flatten( peakData, pp, 0, nx, ny );
+        DDataSet pds= DDataSet.wrap( pp, nx, ny );
         
-        Map properties= new HashMap( ds.getProperties() );
+        result.putProperty( QDataSet.DEPEND_1, ytds );
+        result.putProperty( QDataSet.WEIGHTS, wds );
+        result.putProperty( QDataSet.BIN_PLUS, pds );
         
-        if ( ddX!=null ) properties.put( DataSet.PROPERTY_X_TAG_WIDTH, ddX.binWidthDatum() );
-        if ( ddY!=null ) properties.put( DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum() );
-          
-        int[] tableOffsets = {0};
-        String[] planeIDs =     {"",               DataSet.PROPERTY_PLANE_PEAKS,          DataSet.PROPERTY_PLANE_WEIGHTS};
-        double[][][] zValues =  {averageData,      peakData,         averageWeights};
-        Units[] zUnits =        {tds.getZUnits(),  tds.getZUnits(),  Units.dimensionless};
+        return result;
         
-        return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, properties );
+    }
+
+    /**
+     * from org.virbo.cdfdatasource.CdfUtil
+     * @param data
+     * @param back
+     * @param offset
+     * @param nx
+     * @param ny 
+     */
+    public static void flatten(double[][] data, double[] back, int offset, int nx, int ny) {
+        for (int i = 0; i < nx; i++) {
+            double[] dd = data[i];
+            System.arraycopy(dd, 0, back, offset + i * ny, ny);
+        }
     }
     
     /**

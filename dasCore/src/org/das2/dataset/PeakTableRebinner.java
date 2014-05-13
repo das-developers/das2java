@@ -24,92 +24,70 @@
 package org.das2.dataset;
 
 import org.das2.datum.Units;
+import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 
 /**
  *
  * @author  Edward West
  */
-public class PeakTableRebinner { // implements DataSetRebinner {
+public class PeakTableRebinner implements DataSetRebinner {
     
     public PeakTableRebinner() {
     }
     
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
-        if (!(ds instanceof TableDataSet)) {
-            throw new IllegalArgumentException();
+    public QDataSet rebin(QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
+        if (!(ds.rank()==2 )) {
+            throw new IllegalArgumentException("dataset must be rank 2");
         }
-        TableDataSet tds = (TableDataSet)ds;
-        long timer= System.currentTimeMillis();
         
-        int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
-        int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
+        QDataSet tds = ds;
+        
+        int nx= (ddX == null ? tds.length() : ddX.numberOfBins());
+        int ny= (ddY == null ? tds.length(0) : ddY.numberOfBins());
         
         double[][] rebinData= new double[nx][ny];
-        double[][] rebinWeights= new double[nx][ny];
 
-        peaks(tds, rebinData, ddX, ddY);
+        peaks( tds, rebinData, ddX, ddY);
         
-        double[] xTags;
-        if (ddX != null) {
-            xTags = ddX.binCenters();
-        }
-        else {
-            xTags = new double[tds.getXLength()];
-            for (int i = 0; i < xTags.length; i++) {
-                xTags[i] = tds.getXTagDouble(i, tds.getXUnits());
-            }
-        }
-        double[][] yTags;
-        if (ddY != null) {
-            yTags = new double[][]{ddY.binCenters()};
-        }
-        else {
-            yTags = new double[0][tds.getYLength(0)];
-            for (int j = 0; j < yTags[0].length; j++) {
-                yTags[0][j] = tds.getYTagDouble(0, j, tds.getYUnits());
-            }
-        }
-        double[][][] zValues = {rebinData};
-        int[] tableOffsets = {0};
-        Units[] zUnits = {tds.getZUnits()};
-        String[] planeIDs = {""};
-
-        return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, java.util.Collections.EMPTY_MAP);
+        double[] dd= new double[nx*ny];
+        AveragePeakTableRebinner.flatten( rebinData, dd, 0, nx, ny );
+        DDataSet result= DDataSet.wrap( dd, nx, ny );
+        org.virbo.dataset.DataSetUtil.copyDimensionProperties( tds, result );
+        
+        return result;
+        
     }
     
-    static void peaks(TableDataSet tds, double[][] rebinData, RebinDescriptor ddX, RebinDescriptor ddY) {
-        double[] ycoordinate;
-        if (ddY != null) {
-            ycoordinate = ddY.binCenters();
-        }
-        else {
-            ycoordinate = new double[tds.getYLength(0)];
-            for (int j = 0; j < ycoordinate.length; j++) {
-                ycoordinate[j] = tds.getDouble(0, j, tds.getYUnits());
-            }
-        }
+    static void peaks( QDataSet tds, double[][] rebinData, RebinDescriptor ddX, RebinDescriptor ddY) {
 
-        int nx= (ddX == null ? tds.getXLength() : ddX.numberOfBins());
-        int ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
+        int nx= (ddX == null ? tds.length() : ddX.numberOfBins());
+        int ny= (ddY == null ? tds.length(0) : ddY.numberOfBins());
         
         for (int i = 0; i < rebinData.length; i++) {
             java.util.Arrays.fill(rebinData[i], Double.NaN);
         }
         
-        int [] ibiny= new int[tds.getYLength(0)];
+        QDataSet ytds= SemanticOps.ytagsDataSet(tds);
+        Units yunits= SemanticOps.getUnits(ytds);
+        QDataSet xtds= SemanticOps.xtagsDataSet(tds);
+        Units xunits= SemanticOps.getUnits(xtds);
+        
+        int [] ibiny= new int[tds.length(0)];
         for (int j=0; j < ibiny.length; j++) {
             if (ddY != null) {
-                ibiny[j]= ddY.whichBin(tds.getYTagDouble(0, j, tds.getYUnits()), tds.getYUnits());
+                ibiny[j]= ddY.whichBin( ytds.value(j), yunits );
             }
             else {
                 ibiny[j] = j;
             }
         }
 
-        for (int i=0; i < tds.getXLength(); i++) {
+        for (int i=0; i < tds.length(); i++) {
             int ibinx;
             if (ddX != null) {
-                ibinx= ddX.whichBin(tds.getXTagDouble(i, tds.getXUnits()), tds.getXUnits());
+                ibinx= ddX.whichBin( xtds.value(i), xunits );
             }
             else {
                 ibinx = i;
@@ -117,7 +95,7 @@ public class PeakTableRebinner { // implements DataSetRebinner {
             if (ibinx>=0 && ibinx<nx) {
                 for (int j = 0; j < ibiny.length; j++) {
                     if (ibiny[j] >= 0 && ibiny[j] < ny) {
-                        double value = tds.getDouble(i, j, tds.getZUnits());
+                        double value = tds.value(i,j);
                         if (Double.isNaN(rebinData[ibinx][ibiny[j]])) {
                             rebinData[ibinx][ibiny[j]] = value;
                         }
