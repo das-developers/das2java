@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.dataset.AveragePeakTableRebinner;
+import org.das2.dataset.AverageTableRebinner;
 import org.das2.datum.Datum;
 import org.das2.datum.LocationUnits;
 import org.virbo.dataset.DataSetUtil;
@@ -287,10 +288,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         DataSetRebinner rebinner = new Rebinner();
         
         QDataSet data=  rebinner.rebin(xtysData, xbins, null);
-        QDataSet peaks= (QDataSet) data.property(QDataSet.BIN_PLUS);
-        if ( peaks==null ) {
-            throw new IllegalArgumentException("dataset should contain property BIN_PLUS");
-        }
+        QDataSet peaks= (QDataSet) data.property(QDataSet.BIN_PLUS); // can be null for NN.
         QDataSet weights= SemanticOps.weightsDataSet(data);
         
         DasLabelAxis yAxis1;
@@ -396,10 +394,11 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }
     
     public static class Rebinner implements DataSetRebinner {
-        DataSetRebinner highResRebinner;
+        AverageTableRebinner highResRebinner;
         DataSetRebinner lowResRebinner;
         Rebinner() {
-            //highResRebinner= new NearestNeighborTableRebinner();
+            highResRebinner= new AverageTableRebinner();
+            highResRebinner.setInterpolateType( AverageTableRebinner.Interpolate.NearestNeighbor );
             //highResRebinner= new AveragePeakTableRebinner();
             lowResRebinner= new AveragePeakTableRebinner();
             //Plasma Wave Group will have to update this
@@ -419,8 +418,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                 QDataSet result= null;
                 if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
                     logger.log(Level.FINE, "using rebinner {0}", highResRebinner);
-                    //result= highResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
-                    result= lowResRebinner.rebin( ds, x, y );
+                    result= highResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
                 } else {
                     logger.log(Level.FINE, "using rebinner {0}", lowResRebinner);
                     result= lowResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
