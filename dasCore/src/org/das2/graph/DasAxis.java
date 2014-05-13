@@ -266,24 +266,33 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private JMenu backMenu;
     private static final Logger logger = LoggerManager.getLogger("das2.graphics.axis");
 
-    /** TODO
-     * @param min
-     * @param max
-     * @param orientation DasAxis.VERTICAL, DasAxis.HORIZONTAL, DasAxis.RIGHT, etc.
+    /** 
+     * Create an axis object, relating data and canvas pixel coordinates.
+     * @param min the minimum value
+     * @param max the maximum value
+     * @param orientation DasAxis.TOP, DasAxis.BOTTOM, DasAxis.LEFT, DasAxis.RIGHT.
      */
     public DasAxis(Datum min, Datum max, int orientation) {
         this(min, max, orientation, false);
     }
 
+    /** 
+     * Create an axis object, relating data and canvas pixel coordinates.
+     * @param min the minimum value
+     * @param max the maximum value
+     * @param orientation the position relative to a plot, one of DasAxis.TOP, DasAxis.BOTTOM, DasAxis.LEFT, DasAxis.RIGHT.
+     * @param log if true then the axis is a log axis.
+     */
     public DasAxis(DatumRange range, int orientation) {
         this(range.min(), range.max(), orientation);
     }
 
-    /** TODO
-     * @param min
-     * @param max
-     * @param orientation
-     * @param log
+    /** 
+     * Create an axis object, relating data and canvas pixel coordinates.
+     * @param min the minimum value
+     * @param max the maximum value
+     * @param orientation the position relative to a plot, one of DasAxis.TOP, DasAxis.BOTTOM, DasAxis.LEFT, DasAxis.RIGHT.
+     * @param log if true then the axis is a log axis.
      */
     public DasAxis(Datum min, Datum max, int orientation, boolean log) {
         this(orientation);
@@ -293,9 +302,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         copyHistory();
     }
 
-    /** TODO
-     * @param range
-     * @param orientation
+    /** 
+     * Create an axis object, relating data and canvas pixel coordinates.
+     * @param range the range object allowing connections between axes.
+     * @param orientation the position relative to a plot, one of DasAxis.TOP, DasAxis.BOTTOM, DasAxis.LEFT, DasAxis.RIGHT
      */
     protected DasAxis(DataRange range, int orientation) {
         this(orientation);
