@@ -717,7 +717,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         } catch (DasException de) {
             // TODO: there's a problem here, that the Renderer can set its own exception and dataset.  This needs to be addressed, or handled as an invalid state.
             logger.log(Level.WARNING, de.getMessage(), de);
-            ds = null;
+            //ds = null;
             renderException = de;
         } catch (RuntimeException re) {
             logger.log(Level.WARNING, re.getMessage(), re);
