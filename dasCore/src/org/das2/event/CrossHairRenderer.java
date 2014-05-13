@@ -38,6 +38,8 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 import java.text.*;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
+import org.das2.datum.format.EnumerationDatumFormatter;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
@@ -125,8 +127,12 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
 
         try {
             if (dataSetConsumer instanceof TableDataSetConsumer) {
-                nfz = ((TableDataSetConsumer) dataSetConsumer).getZAxis().getDatumFormatter();
-                nfz = addResolutionToFormat(nfz);
+                if ( !UnitsUtil.isIntervalOrRatioMeasurement( zValue.getUnits() ) ) {
+                    nfz= new EnumerationDatumFormatter();
+                } else {
+                    nfz = ((TableDataSetConsumer) dataSetConsumer).getZAxis().getDatumFormatter();
+                    nfz = addResolutionToFormat(nfz);
+                }
             } else {
                 nfz = DefaultDatumFormatterFactory.getInstance().newFormatter("0.000");
             }
