@@ -52,8 +52,13 @@ import org.das2.components.propertyeditor.Enumeration;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.das2.dataset.AveragePeakTableRebinner;
+import org.das2.datum.Datum;
+import org.das2.datum.LocationUnits;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
@@ -282,7 +287,10 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         DataSetRebinner rebinner = new Rebinner();
         
         QDataSet data=  rebinner.rebin(xtysData, xbins, null);
-        QDataSet peaks= SemanticOps.getPlanarView(data,"peaks");
+        QDataSet peaks= (QDataSet) data.property(QDataSet.BIN_PLUS);
+        if ( peaks==null ) {
+            throw new IllegalArgumentException("dataset should contain property BIN_PLUS");
+        }
         QDataSet weights= SemanticOps.weightsDataSet(data);
         
         DasLabelAxis yAxis1;
@@ -388,43 +396,40 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }
     
     public static class Rebinner implements DataSetRebinner {
-        //DataSetRebinner highResRebinner;
-        //DataSetRebinner lowResRebinner;
+        DataSetRebinner highResRebinner;
+        DataSetRebinner lowResRebinner;
         Rebinner() {
-          //  highResRebinner= new NearestNeighborTableRebinner();
+            //highResRebinner= new NearestNeighborTableRebinner();
             //highResRebinner= new AveragePeakTableRebinner();
-          //  lowResRebinner= new AveragePeakTableRebinner();
+            lowResRebinner= new AveragePeakTableRebinner();
             //Plasma Wave Group will have to update this
         }
         
         @Override
         public QDataSet rebin(QDataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException {
-            //QDataSet xds= SemanticOps.xtagsDataSet(ds);
+            QDataSet xds= SemanticOps.xtagsDataSet(ds);
+            Datum xwidth= SemanticOps.guessXTagWidth(xds,null);
+            if ( xwidth==null ) xwidth= DataSetUtil.asDatum(DataSetUtil.guessCadenceNew(xds,null));
+            Units rdUnits= x.getUnits();
+            if ( rdUnits instanceof LocationUnits ) {
+                rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
+            }
 
-            //Datum xwidth= SemanticOps.guessXTagWidth(xds,null);
-            //if ( xwidth==null ) xwidth= DataSetUtil.guessXTagWidth((TableDataSet)ds);
-            //Units rdUnits= x.getUnits();
-            //if ( rdUnits instanceof LocationUnits ) {
-            //    rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
-            //}
-
-            throw new RuntimeException("Not supported, since the introduction of QDataSet into das2.");
-
-            //try {
-                //QDataSet result= null;
-                //if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
-                    //logger.fine("using rebinner "+highResRebinner);
+            try {
+                QDataSet result= null;
+                if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
+                    logger.log(Level.FINE, "using rebinner {0}", highResRebinner);
                     //result= highResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
-                //} else {
-                    //logger.fine("using rebinner "+lowResRebinner);
-                    //result= lowResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
-                //}
+                    result= lowResRebinner.rebin( ds, x, y );
+                } else {
+                    logger.log(Level.FINE, "using rebinner {0}", lowResRebinner);
+                    result= lowResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
+                }
                 
-                //return result;
-            //} catch ( Exception e ) {
-            //    DasExceptionHandler.handle(e);
-            //    return null;
-            //}
+                return result;
+            } catch ( Exception e ) {
+                throw new DasException(e);
+            }
         }
         
     }
