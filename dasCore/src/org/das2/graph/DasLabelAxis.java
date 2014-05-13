@@ -24,17 +24,19 @@ package org.das2.graph;
 
 import java.awt.Font;
 import java.awt.Graphics2D;
-import org.das2.datum.DatumRange;
-import org.das2.datum.Units;
-import org.das2.datum.DatumVector;
+import java.text.DecimalFormat;
+import java.util.Arrays;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
-import org.das2.util.GrannyTextRenderer;
+import org.das2.datum.DatumVector;
+import org.das2.datum.Units;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.graph.event.DasUpdateEvent;
 import org.das2.graph.event.DasUpdateListener;
-import java.text.DecimalFormat;
-import java.util.Arrays;
+import org.das2.util.GrannyTextRenderer;
+import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.QDataSet;
 
 public class DasLabelAxis extends DasAxis implements DasUpdateListener {
 
@@ -83,6 +85,10 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         getDataRange().addUpdateListener(this);
     }
 
+    public DasLabelAxis( QDataSet labels, int orientation ) {
+        this( DataSetUtil.asDatumVector(labels), orientation );
+    }
+    
     public int[] getLabelPositions() {
         return Arrays.copyOf( this.labelPositions, this.labelPositions.length );
     }
