@@ -27,6 +27,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
+import org.das2.datum.DatumVector;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
@@ -2405,6 +2406,22 @@ public class DataSetUtil {
         return asDatumRange( ds, true );
     }
 
+    /**
+     * return DatumVector, which is a 1-d array of Datums.
+     * @param ds a rank 1 QDataSet
+     * @return a DatumVector
+     */
+    public static DatumVector asDatumVector( QDataSet ds ) {
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("Rank must be 1");
+        double[] dd= new double[ds.length()];
+        for ( int i=0; i<dd.length; i++ ) {
+            dd[i]= ds.value(i);
+        }
+        Units u= (Units) ds.property(QDataSet.UNITS);
+        if ( u==null ) u= Units.dimensionless;
+        return DatumVector.newDatumVector( dd, u );
+    }
+        
     /**
      * return a 2-element rank 1 bins dataset with BINS_0=QDataSet.VALUE_BINS_MIN_MAX
      * @param dr a Das2 DatumRange
