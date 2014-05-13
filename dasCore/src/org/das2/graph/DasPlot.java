@@ -1756,7 +1756,7 @@ public class DasPlot extends DasCanvasComponent {
      *DasPlot p= DasPlot.createDummyPlot( );
      *c.add(p,DasRow.create(c,0,1),DasColumn.create(c,0,1));
      *JOptionPane.showConfirmDialog(None,c)
-     *</small></pre></blockquote>
+     *}</small></pre></blockquote>
      * @param xrange the range for the x axis.
      * @param yrange the range for the y axis
      * @return a DasPlot, reader to be added to a canvas.
@@ -1775,7 +1775,7 @@ public class DasPlot extends DasCanvasComponent {
      *DasPlot p= DasPlot.createPlot( DatumRangeUtil.parseTimeRange('2001'),DatumRange.newDatumRange(0,10,Units.dimensionless) );
      *c.add(p,DasRow.create(c,0,1),DasColumn.create(c,0,1));
      *JOptionPane.showConfirmDialog(None,c)
-     *</small></pre></blockquote>
+     *}</small></pre></blockquote>
      * @param xrange the range for the x axis.
      * @param yrange the range for the y axis
      * @return a DasPlot, reader to be added to a canvas.
