@@ -52,10 +52,12 @@ public class TimeLocationUnits extends LocationUnits {
     double vmin;
     double vmax;
 
+    @Override
     public DatumFormatterFactory getDatumFormatterFactory() {
         return TimeDatumFormatterFactory.getInstance();
     }
         
+    @Override
     public Datum parse(String s) throws java.text.ParseException {
         return TimeUtil.toDatum(TimeUtil.parseTime(s),this);
     }
@@ -79,21 +81,6 @@ public class TimeLocationUnits extends LocationUnits {
         if ( Double.isNaN(vmin) ) calculateRange();
         return value<vmin || value>vmax || Double.isNaN(value);
     }
-    @Override
-    public boolean isFill( float value ) { 
-        if ( Double.isNaN(vmin) ) calculateRange();
-        return value<vmin || value>vmax || Float.isNaN(value);
-    }
-    @Override
-    public boolean isFill( long value ) { 
-        if ( Double.isNaN(vmin) ) calculateRange();
-        return value<vmin || value>vmax;
-    }
-    @Override
-    public boolean isFill( int value ) { 
-        if ( Double.isNaN(vmin) ) calculateRange();
-        return value<vmin || value>vmax;
-    }
 
     /**
      * test if the double represents a valid datum in the context of this unit.
@@ -106,10 +93,18 @@ public class TimeLocationUnits extends LocationUnits {
         return value>=vmin && value<=vmax && !Double.isNaN(value);
     }
 
+    /**
+     * return the minimum valid value.  Any value less than this value is invalid.
+     * @return the minimum valid value
+     */
     public double validMin( ) {
         return vmin;
     }
 
+    /**
+     * return the maximum valid value.  Any value greater than this value is invalid.
+     * @return the maximum valid value.
+     */
     public double validMax() {
         return vmax;
     }
