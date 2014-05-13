@@ -38,15 +38,19 @@ import java.text.ParseException;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.system.MutatorLock;
 import org.das2.util.DebugPropertyChangeSupport;
+import org.das2.util.LoggerManager;
 
 /**
  *
  * @author  jbf
  */
 public abstract class DasDevicePosition implements Editable, java.io.Serializable {
+    
+    private final static Logger logger= LoggerManager.getLogger("das2.graphics");
     
     public static final String PROP_DMAXIMUM = "dMaximum";
     public static final String PROP_DMINIMUM = "dMinimum";
@@ -96,6 +100,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         
         if ( canvas==null & ( ! isNull ) ) {
             throw new IllegalArgumentException("parent cannot be null");
+        }
+        
+        if ( isNull ) {
+            logger.finest( "null canvas and null parent is allowed if you know what you are doing.");
         }
         
         this.canvas = canvas;
@@ -335,7 +343,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public int getDMinimum() {
         if ( canvas==null && parent==null ) {
             String type= isWidth ? "column" : "row";
-            throw new RuntimeException("null "+type+", "+type+" was not set before layout");
+            throw new RuntimeException( type+" was not set before layout, having no canvas or parent "+type );
         }
         return dMinimum;
     }
@@ -348,7 +356,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     public int getDMaximum() {
         if ( canvas==null && parent==null ) {
             String type= isWidth ? "column" : "row";
-            throw new RuntimeException("null "+type+", "+type+" was not set before layout");
+            throw new RuntimeException( type+" was not set before layout, having no canvas or parent "+type);
         }
         return dMaximum;
     }
