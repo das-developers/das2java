@@ -254,6 +254,31 @@ public class EnumerationUnits extends Units {
         return this.highestOrdinal;
     }
 
+    /**
+     * return the double for ""
+     * @return 
+     */
+    @Override
+    public double getFillDouble() {
+        return createDatum("").doubleValue(this);
+    }
+
+    /**
+     * return the datum for ""
+     * @return 
+     */
+    @Override
+    public Datum getFillDatum() {
+        return createDatum("");
+    }
+
+    @Override
+    public boolean isFill(Number value) {
+        return value.doubleValue()==getFillDouble();
+    }
+
+    
+    
     @Override
     public String toString() {
         return this.getId() + "(ordinal)";
