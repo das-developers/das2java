@@ -418,7 +418,8 @@ public class StreamTool {
 
     private static final StreamException exception(Element exception) {
         String type = exception.getAttribute("type");
-        return new StreamException(type);
+        String msg= exception.getAttribute("message");
+        return new StreamException(type,msg);
     }
 
     private static boolean getChunk(ReadStreamStructure struct) throws StreamException, IOException {
