@@ -33,6 +33,9 @@ import org.xml.sax.SAXException;
  */
 public class StreamException extends DasException {
     
+    public static final String NO_DATA_IN_INTERVAL= "NoDataInInterval";
+    public static final String EMPTY_RESPONSE_FROM_READER= "EmptyResponseFromReader";
+    
     /** Creates a new instance of StreamException */
     public StreamException(String message) {
         super(message);
@@ -40,6 +43,11 @@ public class StreamException extends DasException {
     
     public StreamException(String type,String message ) {
         super(message);
+    }
+    
+    public StreamException(Exception cause) {
+        super(cause.getMessage());
+        initCause(cause);
     }
     
     public StreamException(SAXException se) {
