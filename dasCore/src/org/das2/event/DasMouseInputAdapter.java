@@ -43,6 +43,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Logger;
 import org.das2.components.propertyeditor.Editable;
+import org.das2.util.LoggerManager;
 
 /**
  * DasMouseInputAdapter delegates mouse and key events to mouse modules, which
@@ -82,7 +83,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     JCheckBoxMenuItem primarySelectedItem;
     JCheckBoxMenuItem secondarySelectedItem;    // must be non-null, but may contain null elements
     Rectangle[] dirtyBoundsList;
-    private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
+    private static final Logger logger = LoggerManager.getLogger(DasLogger.GUI_LOG.toString());
     /**
      * number of additional inserted popup menu items to the primary menu.
      */
@@ -211,12 +212,20 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     public synchronized void removeMouseModule(MouseModule module) {
         JCheckBoxMenuItem j;
         j= (JCheckBoxMenuItem) primaryActionButtonMap.remove(module);
-        if ( j!=null && !headless ) primaryPopup.remove(j);
-        numInserted--;
+        if ( j!=null && !headless ) {
+            if ( primaryPopup.isAncestorOf(j) ) {
+                primaryPopup.remove(j);
+                numInserted--;
+            }
+        }
         j= (JCheckBoxMenuItem) secondaryActionButtonMap.remove(module);
-        if ( j!=null && !headless ) secondaryPopup.remove(j);
+        if ( j!=null && !headless ) {
+            if ( secondaryPopup.isAncestorOf(j) ) {
+                secondaryPopup.remove(j);
+                numInsertedSecondary--;
+            }
+        }
         modules.removeElement(module);
-        numInsertedSecondary--;
     }
     
 
@@ -254,8 +263,16 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
                 try {
                     // insert the check box after the separator, and at the end of the actions list.
-                    primaryPopup.add(primaryNewItem, numInserted + 1 + primaryActionButtonMap.size() - 1);
-                    secondaryPopup.add(secondaryNewItem, numInsertedSecondary + 1 + secondaryActionButtonMap.size() - 1);
+                    int i= numInserted + 1 + primaryActionButtonMap.size() - 1;
+                    if ( i>primaryPopup.getComponentCount() ) {
+                        i= primaryPopup.getComponentCount();
+                    }
+                    primaryPopup.add(primaryNewItem, i );
+                    i= numInsertedSecondary + 1 + secondaryActionButtonMap.size() - 1;
+                    if ( i>secondaryPopup.getComponentCount() ) {
+                        i= secondaryPopup.getComponentCount();
+                    }
+                    secondaryPopup.add(secondaryNewItem, i );
                 } catch ( IllegalArgumentException ex ) {
                     logger.log( Level.SEVERE, ex.getMessage(), ex );
                 }
@@ -1163,6 +1180,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         if (index != -1) {
             primaryPopup.remove(index);
             numInserted--;
+            logger.finer("numInserted: "+numInserted);
         }
 
     }
