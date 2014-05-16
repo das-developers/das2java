@@ -1889,7 +1889,7 @@ public class DataSetOps {
                     String arg= getStringArg( s.next() );
                     Units newu= SemanticOps.lookupUnits(arg);
                     fillDs= ArrayDataSet.copy(fillDs).setUnits(newu);
-                } else if ( cmd.equals("|setDepend0Units") ) {
+                } else if ( cmd.equals("|setDepend0Units") ) { //TODO: this causes strange errors with auto
                     String arg= getStringArg( s.next() );
                     Units newu= SemanticOps.lookupUnits(arg);
                     QDataSet dep0= (QDataSet) fillDs.property(QDataSet.DEPEND_0);
