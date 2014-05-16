@@ -265,8 +265,13 @@ public class ColumnColumnConnector extends DasCanvasComponent {
             
             int y5,y6;
             
-            y5= (int)( bottomPlot.getYAxis().transform( drtop.max() )+0.00001 );
-            y6= (int)( bottomPlot.getYAxis().transform( drtop.min() )+0.00001 );
+            if ( showYPosition ) {
+                y5= (int)( bottomPlot.getYAxis().transform( drtop.max() )+0.00001 );
+                y6= (int)( bottomPlot.getYAxis().transform( drtop.min() )+0.00001 );
+            } else {
+                y5= bottomPlot.getYAxis().getRow().getDMinimum();
+                y6= bottomPlot.getYAxis().getRow().getDMaximum();
+            }
             
             if ( curtainOpacityPercent > 0 ) {
                 Color canvasColor= getCanvas().getBackground();
@@ -426,5 +431,23 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         propertyChangeSupport.firePropertyChange(PROP_CURTAIN_OPACITY_PERCENT, oldCurtainOpacityPercent, curtainOpacityPercent );
     }
     
+    private boolean showYPosition = true;
+    public static final String PROP_SHOWYPOSITION = "showYPosition";
+
+    public boolean isShowYPosition() {
+        return showYPosition;
+    }
+
+    /**
+     * don't indicate the y axis position, for example if relating data with the time axes but different Y units.
+     * @param showYPosition 
+     */
+    public void setShowYPosition(boolean showYPosition) {
+        boolean oldShowYPosition = this.showYPosition;
+        this.showYPosition = showYPosition;
+        repaint();
+        propertyChangeSupport.firePropertyChange(PROP_SHOWYPOSITION, oldShowYPosition, showYPosition);
+    }
+
 }
 
