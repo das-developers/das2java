@@ -43,6 +43,7 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.das2.dataset.NoDataInIntervalException;
 //import org.apache.xml.serialize.Method;
 //import org.apache.xml.serialize.OutputFormat;
 //import org.apache.xml.serialize.XMLSerializer;
@@ -418,8 +419,17 @@ public class StreamTool {
 
     private static final StreamException exception(Element exception) {
         String type = exception.getAttribute("type");
-        String msg= exception.getAttribute("message");
-        return new StreamException(type,msg);
+        String message= exception.getAttribute("message");
+        if ( type.equals( StreamException.NO_DATA_IN_INTERVAL ) ) {
+            NoDataInIntervalException ex = new NoDataInIntervalException(message);
+            StreamException se= new StreamException(ex);
+            return se;
+        } else if ( type.equals(StreamException.EMPTY_RESPONSE_FROM_READER ) ) {
+            StreamException se = new StreamException( "Empty response from reader\n"+message );
+            return se;
+        } else {
+            return new StreamException(message);
+        }        
     }
 
     private static boolean getChunk(ReadStreamStructure struct) throws StreamException, IOException {
