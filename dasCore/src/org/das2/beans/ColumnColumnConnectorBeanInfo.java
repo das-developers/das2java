@@ -27,7 +27,7 @@ import org.das2.beans.AccessLevelBeanInfo.AccessLevel;
 import org.das2.beans.AccessLevelBeanInfo.Property;
 
 /**
- * BeanInfo class for DasColorBar
+ * BeanInfo class for ColumnColumnConnector
  *
  * @author Edward West
  */
@@ -35,6 +35,7 @@ public class ColumnColumnConnectorBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
         new Property("bottomCurtain", AccessLevel.DASML, "isBottomCurtain", "setBottomCurtain", null),
+        new Property("showYPosition", AccessLevel.DASML, "isShowYPosition", "setShowYPosition", null),
         new Property("curtainOpacityPercent", AccessLevel.DASML, "getCurtainOpacityPercent", "setCurtainOpacityPercent", null),
         new Property("fill", AccessLevel.DASML, "isFill", "setFill", null),
         new Property("fillColor", AccessLevel.DASML, "getFillColor", "setFillColor", null),
