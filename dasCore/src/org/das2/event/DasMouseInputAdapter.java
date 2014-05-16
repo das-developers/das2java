@@ -76,7 +76,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     private HashMap secondaryActionButtonMap;
     protected JPopupMenu primaryPopup;
     protected JPopupMenu secondaryPopup;
-    private Point secondaryPopupLocation;
     private JPanel pngFileNamePanel;
     private JTextField pngFileTextField;
     private JFileChooser pngFileChooser;
@@ -107,10 +106,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     private boolean drawControlPoints = false;
     private DragRenderer resizeRenderer = null;
     private Point resizeStart = null;
-    /*
-     *this will be removed, and the component can add its own popup buttons.
-     */
-    Vector hotSpots = null;
+
     Rectangle dirtyBounds = null;
     private boolean hasFocus = false;
     private Point pressPosition;  // in the component frame
