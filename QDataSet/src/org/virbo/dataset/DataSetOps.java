@@ -1889,6 +1889,14 @@ public class DataSetOps {
                     String arg= getStringArg( s.next() );
                     Units newu= SemanticOps.lookupUnits(arg);
                     fillDs= ArrayDataSet.copy(fillDs).setUnits(newu);
+                } else if ( cmd.equals("|setDepend0Units") ) {
+                    String arg= getStringArg( s.next() );
+                    Units newu= SemanticOps.lookupUnits(arg);
+                    QDataSet dep0= (QDataSet) fillDs.property(QDataSet.DEPEND_0);
+                    if ( dep0!=null ) {
+                        dep0= ArrayDataSet.copy(dep0).setUnits(newu);
+                        fillDs= Ops.putProperty( fillDs, QDataSet.DEPEND_0, dep0 );
+                    }
                 } else if ( cmd.equals("|add") ) { 
                     String arg= getStringArg( s.next() );
                     Datum d= SemanticOps.getUnits(fillDs).parse(arg);
