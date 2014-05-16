@@ -38,6 +38,10 @@ public class StreamException extends DasException {
         super(message);
     }
     
+    public StreamException(String type,String message ) {
+        super(message);
+    }
+    
     public StreamException(SAXException se) {
         super(se.getMessage());
         initCause(se);
