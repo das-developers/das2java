@@ -99,7 +99,17 @@ public abstract class WebFileSystem extends FileSystem {
      * plug-in template for implementation.  if non-null, use this.
      */
     protected WebProtocol protocol;
+    
+    /**
+     * true means only local files are used from the cache.
+     */
     protected boolean offline = false;
+    
+    /**
+     * the response message explaining why the filesystem is offline.
+     */
+    protected String offlineMessage= "";
+    
     /**
      * if true, then the remote filesystem is not accessible, but local cache
      * copies may be accessed.  See FileSystemSettings.allowOffline
@@ -120,6 +130,14 @@ public abstract class WebFileSystem extends FileSystem {
         propertyChangeSupport.firePropertyChange(PROP_OFFLINE, oldOffline, offline);
     }
 
+    /**
+     * return the reason (if any provided) why the filesystem is offline,
+     * @return 
+     */
+    public String getOfflineMessage() {
+        return offlineMessage;
+    }
+    
     /**
      * alternate location to check for file before downloading.
      */
