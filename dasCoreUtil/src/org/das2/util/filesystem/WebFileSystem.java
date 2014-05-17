@@ -138,6 +138,15 @@ public abstract class WebFileSystem extends FileSystem {
         return offlineMessage;
     }
     
+    protected int offlineResponseCode= 0;
+    
+    /**
+     * if non-zero, the response code (e.g. 403) why the filesystem is offline.
+     */
+    public int getOfflineResponseCode() {
+        return offlineResponseCode;
+    }
+    
     /**
      * alternate location to check for file before downloading.
      */
