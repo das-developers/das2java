@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
+import static org.das2.util.filesystem.WebFileSystem.consumeStream;
 import org.das2.util.monitor.NullProgressMonitor;
 
 /**
@@ -114,6 +115,9 @@ public class HttpFileSystem extends WebFileSystem {
 
 
             boolean offline = true;
+            String offlineMessage= "";
+            int offlineResponseCode= 0;
+            
             if ( doCheck && !FileSystem.settings().isOffline() ) {
                 // verify URL is valid and accessible
                 HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
@@ -151,8 +155,10 @@ public class HttpFileSystem extends WebFileSystem {
                     connectFail= false;
                 } catch ( IOException ex ) {
                     int code= 0;
+                    String msg="";
                     try {
                         code= urlc.getResponseCode();
+                        msg= urlc.getResponseMessage();
                     } catch ( IOException ex2 ) {
                         // do nothing in this case, just try to get a response code.
                         logger.log(Level.SEVERE,ex2.getMessage(),ex2);
@@ -160,18 +166,29 @@ public class HttpFileSystem extends WebFileSystem {
                     if ( code==401 ) {
                         connectFail= false;
                     } else if ( code==404 ) {
-                        logger.log( Level.SEVERE, String.format( "%d: folder not found: %s", code, root ), ex );
+                        logger.log( Level.SEVERE, String.format( "%d: folder not found: %s\n%s", code, root, msg ), ex );
                         consumeStream( urlc.getErrorStream() );
                         throw (FileNotFoundException)ex;
-                    } else {
-                        logger.log( Level.SEVERE, String.format( "%d: failed to connect to %s", code, root ), ex );
+                    } else if ( code==403 ) {
+                        // leave this as-is for now, because the user might be on a network that isn't permitted now.
+                        logger.log( Level.SEVERE, String.format( "%d: failed to connect to %s\n%s", code, root, msg ), ex );
                         if ( FileSystem.settings().isAllowOffline() ) {
                             logger.info("remote filesystem is offline, allowing access to local cache.");
                         } else {
-                            throw new FileSystemOfflineException("" + urlc.getResponseCode() + ": " + urlc.getResponseMessage());
+                            throw new FileSystemOfflineException("" + code + ": " + msg );
+                        }
+                        consumeStream( urlc.getErrorStream() );
+                    } else {
+                        logger.log( Level.SEVERE, String.format( "%d: failed to connect to %s\n%s", code, root, msg ), ex );
+                        if ( FileSystem.settings().isAllowOffline() ) {
+                            logger.info("remote filesystem is offline, allowing access to local cache.");
+                        } else {
+                            throw new FileSystemOfflineException("" + code + ": " + msg );
                         }
                         consumeStream( urlc.getErrorStream() );
                     }
+                    offlineMessage= msg;
+                    offlineResponseCode= code;
                 }
 
                 if ( !connectFail ) {
@@ -214,6 +231,8 @@ public class HttpFileSystem extends WebFileSystem {
             }
             
             result.offline = offline;
+            result.offlineMessage= offlineMessage;
+            result.offlineResponseCode= offlineResponseCode;
 
             return result;
 
