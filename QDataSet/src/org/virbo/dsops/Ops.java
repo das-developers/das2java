@@ -5216,14 +5216,14 @@ public class Ops {
      * it is useful in other situations as well.
      *
      * @param uu rank 1 monotonically increasing dataset, containing no fill values.
-     * @param vv rank N dataset with values in the same physical dimension as uu.
-     * @return rank N dataset with the same geometry as vv.
+     * @param vv rank N dataset with values in the same physical dimension as uu, in an FDataSet.
+     * @return rank N dataset with the same geometry as vv.  It will have DEPEND_0=vv.
      */
     public static QDataSet findex(QDataSet uu, QDataSet vv) {
         if (!DataSetUtil.isMonotonic(uu)) {
             throw new IllegalArgumentException("u must be monotonic");
         }
-        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(vv));
+        FDataSet result = FDataSet.create(DataSetUtil.qubeDims(vv));
         QubeDataSetIterator it = new QubeDataSetIterator(vv);
         int ic0 = 0;
         int ic1 = 1;
@@ -5266,6 +5266,9 @@ public class Ops {
 
                 it.putValue(result, ic0 + ff);
             }
+        }
+        if ( result.rank()==1 ) {
+            result.putProperty( QDataSet.DEPEND_0, vv );
         }
         return result;
     }
@@ -5337,6 +5340,10 @@ public class Ops {
 
         }
         DataSetUtil.copyDimensionProperties( vv, result );
+        QDataSet depend0= (QDataSet) findex.property(QDataSet.DEPEND_0);
+        if ( depend0!=null ) {
+            result.putProperty( QDataSet.DEPEND_0, depend0 );
+        }
 
         return result;
     }
