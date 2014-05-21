@@ -123,8 +123,8 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     public void removeMouseModule(MouseModule module) {
         mouseAdapter.removeMouseModule(module);
     }
-    
-    
+
+
     /**
      * accessor for the DasRow used for positioning the component.
      * @return DasRow used for positioning the component.
@@ -341,7 +341,10 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     protected void installComponent() {}
     
-    protected void uninstallComponent() {}
+    protected void uninstallComponent() {
+        getRow().removepwUpdateListener(rl);
+        getColumn().removepwUpdateListener(rl);
+    }
     
     @Override
     public Font getFont() {
