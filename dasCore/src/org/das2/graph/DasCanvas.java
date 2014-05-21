@@ -1723,6 +1723,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
 
+    @Override
+    public void remove(Component comp) {
+        super.remove(comp); 
+        if (comp instanceof DasCanvasComponent) {
+            ((DasCanvasComponent) comp).uninstallComponent();
+        }
+    }
+
     private class CanvasDnDSupport extends org.das2.util.DnDSupport {
 
         CanvasDnDSupport() {
