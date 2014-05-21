@@ -180,10 +180,6 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
         super.mouseWheelMoved(e);
     }
     
-    private static boolean axisIsAdjustable( DasAxis axis ) {
-        return true;
-        
-    }
     /** Registers DataRangeSelectionListener to receive events.
      * @param listener The listener to register.
      */
