@@ -58,11 +58,12 @@ public class BoxZoomGesturesRenderer extends BoxRenderer {
         boolean edgeY= ymax>parent.getRow().getDMaximum() || ymin<parent.getRow().getDMinimum();
         boolean edgeX= xmax>parent.getColumn().getDMaximum() || xmin<parent.getColumn().getDMinimum();
 
+        //System.err.println("boxAspect="+boxAspect);
         //check for narrow (<5px) boxes which we will treat as accidental in the narrow dimension
-        if ( ( ymax-ymin )<5 || ( boxAspect<0.1 && edgeY ) ) {
+        if ( ( ymax-ymin )<5 || ( boxAspect<0.2 ) ) {
             return Type.XAXIS;
         }
-        if ( ( xmax-xmin )<5 || ( boxAspect>10 && edgeX ) ) {
+        if ( ( xmax-xmin )<5 || ( boxAspect>5 ) ) {
             return Type.YAXIS;
         }
         //boxes along axes must only zoom along that axes.  The intent might have been to start the box on the axis instead of the plot.
