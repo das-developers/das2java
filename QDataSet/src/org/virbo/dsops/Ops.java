@@ -5223,7 +5223,7 @@ public class Ops {
         if (!DataSetUtil.isMonotonic(uu)) {
             throw new IllegalArgumentException("u must be monotonic");
         }
-        FDataSet result = FDataSet.create(DataSetUtil.qubeDims(vv));
+        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(vv));
         QubeDataSetIterator it = new QubeDataSetIterator(vv);
         int ic0 = 0;
         int ic1 = 1;
