@@ -33,11 +33,11 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.components.propertyeditor.Editable;
 import org.das2.system.MutatorLock;
@@ -506,10 +506,17 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     public void addpwUpdateListener(DasUpdateListener l) {
         listenerList.add(DasUpdateListener.class, l);
+        if ( listenerList.getListenerCount()>100 ) {
+            logger.log(Level.WARNING, "I think I found a leak in {0}", this.getDasName());
+        }
     }
     
     public void removepwUpdateListener(DasUpdateListener l) {
+        int n0= listenerList.getListenerCount();
         listenerList.remove(DasUpdateListener.class, l);
+        if ( listenerList.getListenerCount()==n0 ) {
+            logger.fine("nothing was removed...");
+        }
     }
     
     protected void fireUpdate() {
