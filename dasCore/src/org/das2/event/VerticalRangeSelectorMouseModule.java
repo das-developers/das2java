@@ -23,12 +23,18 @@
 
 package org.das2.event;
 
+import java.awt.Point;
+import java.awt.event.MouseWheelEvent;
+import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasCanvasComponent;
 import org.das2.graph.DasPlot;
 import javax.swing.event.EventListenerList;
+import org.das2.datum.DatumRangeUtil;
+import static org.das2.event.MouseModule.logger;
 
 /**
  *
@@ -37,6 +43,7 @@ import javax.swing.event.EventListenerList;
 public class VerticalRangeSelectorMouseModule extends MouseModule {
     
     DasAxis axis;
+    long t0, tbirth;
     
     /** Utility field used by event firing mechanism. */
     private EventListenerList listenerList = new EventListenerList();
@@ -90,6 +97,93 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
         }
     }
     
+        
+    /**
+     * mouse wheel events zoom or pan rapidly.  With a physical wheel, I (jbf) found
+     * that I get 17ms per click, and this is managable.  With a touchpad on a mac,
+     * these events come much faster, like 10ms per click, which can disorient the
+     * operator.  So we limit the speed to 20ms per click, for now by dropping
+     * rapid clicks.
+     *
+     * @param e
+     */
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        double nmin, nmax; 
+        
+        double shift = 0.;
+
+        DasAxis yAxis= axis;
+        
+        if ((e.isControlDown() || e.isShiftDown())) {
+            if ( axis != null ) return; // this happens when mouse drifts onto plot during xaxis pan.
+            if (e.getWheelRotation() < 0) {
+                nmin = -0.20; // pan left on xaxis
+                nmax = +0.80;
+            } else {
+                nmin = +0.20; // pan right on xaxis
+                nmax = +1.20;
+            }
+        } else {
+            Point ep= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), parent.getCanvas() );
+            
+            //ep.translate( e.getComponent().getX(), e.getComponent().getY() );
+
+            //mac trackpads coast a while after release, so let's govern the speed a little more
+            if (e.getWheelRotation() < 0) {
+                nmin = 0.10; // zoom in
+                nmax = 0.90;
+            } else {
+                nmin = -0.125; // zoom out
+                nmax = 1.125;
+            }
+        }
+        
+
+        //int clickMag= Math.abs(e.getWheelRotation());
+        int clickMag = 1;
+        final long t1 = System.nanoTime();
+        long limitNanos = (long) 40e6;
+        if ((t1 - t0) / clickMag < limitNanos) {
+            clickMag = (int) Math.floor( (double)(t1 - t0) / limitNanos );
+        }
+
+        if (clickMag == 0) return;
+        t0 = System.nanoTime();
+
+        // these will be non-null if they should be used.
+        DatumRange xdrnew=null;
+        DatumRange ydrnew=null;
+
+        logger.log(Level.FINEST, ":ns:  {0}  {1}", new Object[]{System.nanoTime() - tbirth, clickMag});
+        if ( true ) {
+            DatumRange dr = axis.getDatumRange();
+            for (int i = 0; i < clickMag; i++) {
+                if (axis.isLog()) {
+                    dr = DatumRangeUtil.rescaleLog(dr, nmin+shift, nmax+shift);
+                } else {
+                    dr = DatumRangeUtil.rescale(dr, nmin+shift, nmax+shift);
+                }
+            }
+            dr= maybeRound( axis, dr );
+            
+            if ( ! DatumRangeUtil.isAcceptable( dr, axis.isLog() ) ) {
+                dr= null;
+            }
+            xdrnew= dr;
+        }
+        
+        if ( axisIsAdjustable(axis) && xdrnew==null ) return;
+
+        if ( axisIsAdjustable(axis) ) axis.setDatumRange(xdrnew);
+
+        super.mouseWheelMoved(e);
+    }
+    
+    private static boolean axisIsAdjustable( DasAxis axis ) {
+        return true;
+        
+    }
     /** Registers DataRangeSelectionListener to receive events.
      * @param listener The listener to register.
      */

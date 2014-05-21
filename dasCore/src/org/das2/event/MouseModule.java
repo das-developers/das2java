@@ -30,7 +30,15 @@ import org.das2.graph.DasCanvasComponent;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.logging.Logger;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.DomainDivider;
+import org.das2.datum.DomainDividerUtil;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
+import org.das2.datum.UnitsUtil;
+import org.das2.graph.DasAxis;
 import org.das2.system.DasLogger;
 
 /** A MouseModule is a pluggable unit that promotes simple
@@ -110,6 +118,44 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
         this.label= label;
     }
     
+        /**
+     * round to the nearest nice interval by looking for a DomainDivider in the axis.
+     * 
+     * @param xAxis
+     * @param dr
+     * @return
+     */
+    protected static DatumRange maybeRound(DasAxis xAxis, DatumRange dr) {
+        DomainDivider div= xAxis.getMinorTicksDomainDivider();
+        if ( false && div==null ) { // make true to experiment with maybeRound while DomainDividers are still not being used.
+            div= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), xAxis.isLog() );
+        }
+        if ( div!=null ) {
+            try {
+                int px= 999;
+                while ( px>1 ) {
+                    div= div.finerDivider(false);
+                    DatumRange minDr= div.rangeContaining(dr.min());
+                    px= (int)Math.ceil( Math.abs( xAxis.transform(minDr.max()) - xAxis.transform(minDr.min()) ) );
+                }
+                DatumRange minDr= div.rangeContaining(dr.min());
+                DatumRange maxDr= div.rangeContaining(dr.max());
+                Datum min= DatumRangeUtil.normalize( minDr, dr.min() ) < 0.5 ? minDr.min() : minDr.max();
+                Datum max= DatumRangeUtil.normalize( maxDr, dr.max() ) < 0.5 ? maxDr.min() : maxDr.max();
+                DatumRange drRound= new DatumRange( min, max );
+
+                dr= drRound;
+            } catch ( InconvertibleUnitsException ex ) {
+                // it's okay to do nothing, this is a transient state
+            }
+        }
+        return dr;
+    }
+    
+    protected static boolean axisIsAdjustable(DasAxis axis) {
+        return axis != null && (UnitsUtil.isIntervalMeasurement(axis.getUnits()) || UnitsUtil.isRatioMeasurement(axis.getUnits()));
+    }
+
     /**
      * allow one-line directions to be added to the mouse module.
      * This is used in Autoplot for the status bar.  

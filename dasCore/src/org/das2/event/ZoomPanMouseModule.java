@@ -20,10 +20,6 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.SwingUtilities;
-import org.das2.datum.DomainDivider;
-import org.das2.datum.DomainDividerUtil;
-import org.das2.datum.InconvertibleUnitsException;
-import org.das2.datum.TimeUtil;
 import org.das2.graph.DasDevicePosition;
 
 /**
@@ -52,44 +48,6 @@ public class ZoomPanMouseModule extends MouseModule {
         this.yAxis = verticalAxis;
         t0 = System.nanoTime();
         tbirth = System.nanoTime();
-    }
-
-    private boolean axisIsAdjustable(DasAxis axis) {
-        return axis != null && (UnitsUtil.isIntervalMeasurement(axis.getUnits()) || UnitsUtil.isRatioMeasurement(axis.getUnits()));
-    }
-
-    /**
-     * round to the nearest nice interval by looking for a DomainDivider in the axis.
-     * 
-     * @param xAxis
-     * @param dr
-     * @return
-     */
-    private DatumRange maybeRound(DasAxis xAxis, DatumRange dr) {
-        DomainDivider div= xAxis.getMinorTicksDomainDivider();
-        if ( false && div==null ) { // make true to experiment with maybeRound while DomainDividers are still not being used.
-            div= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), xAxis.isLog() );
-        }
-        if ( div!=null ) {
-            try {
-                int px= 999;
-                while ( px>1 ) {
-                    div= div.finerDivider(false);
-                    DatumRange minDr= div.rangeContaining(dr.min());
-                    px= (int)Math.ceil( Math.abs( xAxis.transform(minDr.max()) - xAxis.transform(minDr.min()) ) );
-                }
-                DatumRange minDr= div.rangeContaining(dr.min());
-                DatumRange maxDr= div.rangeContaining(dr.max());
-                Datum min= DatumRangeUtil.normalize( minDr, dr.min() ) < 0.5 ? minDr.min() : minDr.max();
-                Datum max= DatumRangeUtil.normalize( maxDr, dr.max() ) < 0.5 ? maxDr.min() : maxDr.max();
-                DatumRange drRound= new DatumRange( min, max );
-
-                dr= drRound;
-            } catch ( InconvertibleUnitsException ex ) {
-                // it's okay to do nothing, this is a transient state
-            }
-        }
-        return dr;
     }
 
     private enum Pos {

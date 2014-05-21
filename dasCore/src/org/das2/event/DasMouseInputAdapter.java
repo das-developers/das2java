@@ -1278,9 +1278,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     }
 
     @Override
+    /**
+     * the mouse wheel was turned so many units.  Delegate this to the primary module.
+     */
     public void mouseWheelMoved(MouseWheelEvent e) {
-        if (secondary != null) {
-            secondary.mouseWheelMoved(e);
+        if (primary != null) { // this seems more clear.
+            primary.mouseWheelMoved(e);
         }
     }
     
