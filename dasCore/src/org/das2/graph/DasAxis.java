@@ -2855,6 +2855,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
             }
         }
+        if ( bounds.x < -999 ) {
+            logger.log(Level.FINE, "suspecious bounds calculated: {0}", bounds);
+        }
         return bounds;
     }
 
