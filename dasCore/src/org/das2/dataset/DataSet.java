@@ -61,28 +61,28 @@ public interface DataSet {
      */
     final static String PROPERTY_X_RANGE="xRange";
 	 
-	 /** Datum, used to indicate minimum valid X value */
+	 /** Double, used to indicate minimum valid X value */
 	 final static String PROPERTY_X_VALID_MIN="xValidMin";
 	 
-	 /** Datum, used to indicate maximum valid X value */
+	 /** Double, used to indicate maximum valid X value */
 	 final static String PROPERTY_X_VALID_MAX="xValidMax";
     
     /** Datum, useful for setting scales  */
     final static String PROPERTY_Y_RANGE="yRange";
     
-	 /** Datum, used to indicate minimum valid X value */
+	 /** Double, used to indicate minimum valid X value */
 	 final static String PROPERTY_Y_VALID_MIN="yValidMin";
 	 
-	 /** Datum, used to indicate maximum valid X value */
+	 /** Double, used to indicate maximum valid X value */
 	 final static String PROPERTY_Y_VALID_MAX="yValidMax";
 	 
     /** DatumRange useful for setting scales */
     final static String PROPERTY_Z_RANGE="zRange";
 	 
-	 /** Datum, used to indicate minimum valid X value */
+	 /** Double, used to indicate minimum valid X value */
 	 final static String PROPERTY_Z_VALID_MIN="zValidMin";
 	 
-	 /** Datum, used to indicate maximum valid X value */
+	 /** Double, used to indicate maximum valid X value */
 	 final static String PROPERTY_Z_VALID_MAX="zValidMax";
 	 
 	 /** Raw value used to indicate fill data.

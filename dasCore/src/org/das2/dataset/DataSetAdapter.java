@@ -9,7 +9,6 @@
 
 package org.das2.dataset;
 
-import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
@@ -90,10 +89,12 @@ public class DataSetAdapter {
             return 1;
         }
 
+		  @Override
         public double value(int i) {
             return source.getXTagDouble( i+offset, source.getXUnits() );
         }
 
+		  @Override
         public int length() {
             return length;
         }
@@ -104,7 +105,7 @@ public class DataSetAdapter {
         XTagsDataSet( org.das2.dataset.DataSet source ) {
             this.source= source;
             properties.put( QDataSet.UNITS, source.getXUnits() );
-            properties.put( QDataSet.LABEL, source.getProperty( source.PROPERTY_X_LABEL ) );
+            properties.put( QDataSet.LABEL, source.getProperty( DataSet.PROPERTY_X_LABEL ) );
             Object o= source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC );
             if ( o!=null ) properties.put( QDataSet.MONOTONIC, o );
         }
@@ -113,10 +114,12 @@ public class DataSetAdapter {
             return 1;
         }
         
+		  @Override
         public double value(int i) {
             return source.getXTagDouble( i, source.getXUnits() );
         }
         
+		  @Override
         public int length() {
             return source.getXLength();
         }
@@ -129,9 +132,9 @@ public class DataSetAdapter {
         Vector( VectorDataSet source ) {
             super();
             this.source= source;
-            properties.put( QDataSet.TITLE, source.getProperty( source.PROPERTY_TITLE ) );
+            properties.put( QDataSet.TITLE, source.getProperty( DataSet.PROPERTY_TITLE ) );
             properties.put( QDataSet.UNITS, source.getYUnits() );
-            properties.put( QDataSet.LABEL, source.getProperty( source.PROPERTY_Y_LABEL ) );
+            properties.put( QDataSet.LABEL, source.getProperty( DataSet.PROPERTY_Y_LABEL ) );
             properties.put( QDataSet.DEPEND_0, new XTagsDataSet( source ) );
             properties.put( PROPERTY_SOURCE, source );
         }
@@ -140,10 +143,12 @@ public class DataSetAdapter {
             return 1;
         }
         
+		  @Override
         public double value(int i) {
             return source.getDouble( i, source.getYUnits() );
         }
         
+		  @Override
         public int length() {
             return source.getXLength();
         }
@@ -157,17 +162,19 @@ public class DataSetAdapter {
             this.source= source;
             this.table= table;
             properties.put( QDataSet.UNITS, source.getYUnits() );
-            properties.put( QDataSet.LABEL, source.getProperty( source.PROPERTY_Y_LABEL ) );
+            properties.put( QDataSet.LABEL, source.getProperty( DataSet.PROPERTY_Y_LABEL ) );
 
         }
         public int rank() {
             return 1;
         }
         
+		  @Override
         public double value(int i) {
             return source.getYTagDouble( table, i, source.getYUnits() );
         }
         
+		  @Override
         public int length() {
             return source.tableCount()>0 ? source.getYLength(table) : 99;
         }
@@ -202,12 +209,8 @@ public class DataSetAdapter {
 				properties.put( QDataSet.MONOTONIC, source.getProperty(DataSet.PROPERTY_X_MONOTONIC));
 				properties.put( QDataSet.FILL_VALUE, source.getProperty(DataSet.PROPERTY_Z_FILL));
 				
-				Datum zMin = (Datum) source.getProperty(DataSet.PROPERTY_Z_VALID_MIN);
-				if(zMin != null)
-					properties.put( QDataSet.VALID_MIN, zMin.value());
-				Datum zMax = (Datum) source.getProperty(DataSet.PROPERTY_Z_VALID_MAX);
-				if(zMax != null)
-					properties.put( QDataSet.VALID_MAX, zMax.value());
+				properties.put(QDataSet.VALID_MIN, source.getProperty(DataSet.PROPERTY_Z_VALID_MIN));
+				properties.put(QDataSet.VALID_MIN, source.getProperty(DataSet.PROPERTY_Z_VALID_MAX));
 				
 				// Just throw the rest of this jaz into user_properties so that I can at least
 				// see it.
@@ -219,14 +222,17 @@ public class DataSetAdapter {
             return 2;
         }
         
+		  @Override
         public int length(int i) {
             return source.getYLength( 0 );
         }
         
+		  @Override
         public double value( int i, int j ) {
             return source.getDouble( i, j, source.getZUnits() );
         }
         
+		  @Override
         public int length() {
             return source.getXLength();
         }
@@ -243,7 +249,7 @@ public class DataSetAdapter {
             properties.put( QDataSet.JOIN_0, DDataSet.create( new int[0] ) );
             properties.put( QDataSet.UNITS, source.getZUnits() );
             properties.put( PROPERTY_SOURCE, source );
-            properties.put( QDataSet.TITLE, source.getProperty( source.PROPERTY_TITLE ) );
+            properties.put( QDataSet.TITLE, source.getProperty( DataSet.PROPERTY_TITLE ) );
 				//cwp
 				//properties.put( QDataSet.FILL_VALUE, source.getProperty( source.p))
         }
@@ -252,14 +258,17 @@ public class DataSetAdapter {
             return 3;
         }
 
+		  @Override
         public int length() {
             return source.tableCount();
         }
 
+		  @Override
         public int length(int i) {
             return source.tableEnd(i) - source.tableStart(i);
         }
 
+		  @Override
         public int length(int i, int j) {
             try {
                 return source.getYLength( i );
@@ -268,6 +277,7 @@ public class DataSetAdapter {
             }
         }
 
+		  @Override
         public double value( int i, int j, int k ) {
             int ts= source.tableStart(i);
             try {
