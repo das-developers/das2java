@@ -263,6 +263,8 @@ public class StreamTool {
     public static void readStream(ReadableByteChannel stream, StreamHandler handler) throws StreamException {
         ReadStreamStructure struct = new ReadStreamStructure(stream, handler);
         try {
+			   // Stream properties are loaded in the next line, but not placed in a dataset
+			   // yet.
             StreamDescriptor sd = getStreamDescriptor(struct);
             if ("deflate".equals(sd.getCompression())) {
                 stream = getInflaterChannel(stream);

@@ -60,16 +60,36 @@ public interface DataSet {
      * DatumRange useful for setting scales
      */
     final static String PROPERTY_X_RANGE="xRange";
+	 
+	 /** Datum, used to indicate minimum valid X value */
+	 final static String PROPERTY_X_VALID_MIN="xValidMin";
+	 
+	 /** Datum, used to indicate maximum valid X value */
+	 final static String PROPERTY_X_VALID_MAX="xValidMax";
     
-    /**
-     * DatumRange useful for setting scales
-     */
+    /** Datum, useful for setting scales  */
     final static String PROPERTY_Y_RANGE="yRange";
     
-    /**
-     * DatumRange useful for setting scales
-     */
+	 /** Datum, used to indicate minimum valid X value */
+	 final static String PROPERTY_Y_VALID_MIN="yValidMin";
+	 
+	 /** Datum, used to indicate maximum valid X value */
+	 final static String PROPERTY_Y_VALID_MAX="yValidMax";
+	 
+    /** DatumRange useful for setting scales */
     final static String PROPERTY_Z_RANGE="zRange";
+	 
+	 /** Datum, used to indicate minimum valid X value */
+	 final static String PROPERTY_Z_VALID_MIN="zValidMin";
+	 
+	 /** Datum, used to indicate maximum valid X value */
+	 final static String PROPERTY_Z_VALID_MAX="zValidMax";
+	 
+	 /** Raw value used to indicate fill data.
+	  * Since yscan's are rectangular it's handy to have a fill value to indicate
+	  * gaps in the rectangle
+	  */
+	 final static String PROPERTY_Z_FILL="zFill";
     
     /**
      * suggest render method to use.  These are 
@@ -95,6 +115,18 @@ public interface DataSet {
     final static String PROPERTY_Y_LABEL="yLabel";
     
     final static String PROPERTY_Z_LABEL="zLabel";
+	 
+	 /** A brief description of the x direction values */
+	 final static String PROPERTY_X_SUMMARY="xSummary";
+	 
+	 /** A brief description of the y direction values */
+	 final static String PROPERTY_Y_SUMMARY="ySummary";
+	 
+	 /** A brief description of the z direction values */
+	 final static String PROPERTY_Z_SUMMARY="zSummary";
+	 
+	 /** A brief description for the entire stream */
+	 final static String PROPERTY_SUMMARY="summary";
 
     /**
      * finally, this data model is done with the addition of title.

@@ -9,6 +9,8 @@
 
 package org.das2.dataset;
 
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
@@ -176,18 +178,41 @@ public class DataSetAdapter {
         
         SimpleTable( TableDataSet source ) {
             super();
-            if ( source.tableCount() > 1 ) throw new IllegalArgumentException("only simple tables are supported" );
+            if ( source.tableCount() > 1 ) 
+					throw new IllegalArgumentException("only simple tables are supported" );
             
             this.source= source;
             properties.put( QDataSet.UNITS, source.getZUnits() );
-            properties.put( QDataSet.LABEL, source.getProperty( source.PROPERTY_Z_LABEL ) );
-            properties.put( QDataSet.TITLE, source.getProperty( source.PROPERTY_TITLE ) );
+            properties.put( QDataSet.LABEL, source.getProperty( DataSet.PROPERTY_Z_LABEL ) );
+            properties.put( QDataSet.TITLE, source.getProperty( DataSet.PROPERTY_TITLE ) );
             QDataSet xtags= new XTagsDataSet( source );
             properties.put( QDataSet.DEPEND_0, xtags );
             QDataSet ytags= new YTagsDataSet( source, 0 );
             properties.put( QDataSet.DEPEND_1, ytags );
             properties.put( QDataSet.QUBE, Boolean.TRUE );
             properties.put( PROPERTY_SOURCE, source );
+				
+				//Let Das2 Streams set a Z-Axis range
+				DatumRange zRng = (DatumRange) source.getProperty(DataSet.PROPERTY_Z_RANGE);
+				if(zRng != null){
+					properties.put( QDataSet.TYPICAL_MIN, zRng.min().value());
+					properties.put( QDataSet.TYPICAL_MAX, zRng.max().value());
+				}
+				properties.put( QDataSet.RENDER_TYPE, source.getProperty(DataSet.PROPERTY_RENDERER));
+				properties.put( QDataSet.MONOTONIC, source.getProperty(DataSet.PROPERTY_X_MONOTONIC));
+				properties.put( QDataSet.FILL_VALUE, source.getProperty(DataSet.PROPERTY_Z_FILL));
+				
+				Datum zMin = (Datum) source.getProperty(DataSet.PROPERTY_Z_VALID_MIN);
+				if(zMin != null)
+					properties.put( QDataSet.VALID_MIN, zMin.value());
+				Datum zMax = (Datum) source.getProperty(DataSet.PROPERTY_Z_VALID_MAX);
+				if(zMax != null)
+					properties.put( QDataSet.VALID_MAX, zMax.value());
+				
+				// Just throw the rest of this jaz into user_properties so that I can at least
+				// see it.
+				properties.put( QDataSet.USER_PROPERTIES, source.getProperties());
+				
         }
         
         public int rank() {
@@ -219,6 +244,8 @@ public class DataSetAdapter {
             properties.put( QDataSet.UNITS, source.getZUnits() );
             properties.put( PROPERTY_SOURCE, source );
             properties.put( QDataSet.TITLE, source.getProperty( source.PROPERTY_TITLE ) );
+				//cwp
+				//properties.put( QDataSet.FILL_VALUE, source.getProperty( source.p))
         }
 
         public int rank() {

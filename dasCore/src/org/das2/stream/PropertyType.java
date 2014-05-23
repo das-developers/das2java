@@ -23,9 +23,11 @@
 
 package org.das2.stream;
 
-import org.das2.datum.Units;
 import java.util.HashMap;
 import java.util.Map;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
 import org.virbo.dataset.SemanticOps;
 
 /**
@@ -38,6 +40,7 @@ public final class PropertyType {
     public static final PropertyType DOUBLE = new PropertyType("double");
     public static final PropertyType DOUBLE_ARRAY = new PropertyType("doubleArray");
     public static final PropertyType DATUM = new PropertyType("Datum");
+	 public static final PropertyType DATUM_RANGE = new PropertyType("DatumRange");
     public static final PropertyType INTEGER = new PropertyType("int");
 	 public static final PropertyType STRING = new PropertyType("String");
     
@@ -103,11 +106,33 @@ public final class PropertyType {
                 throw new IllegalArgumentException("Too many tokens: '" + s + "'");
             }
         }
+		  else if (name.equals("DatumRange")){
+			   String[] split = s.split("\\s+");
+				if (split.length < 3){
+					throw new IllegalArgumentException("Too few tokens in range: '" + s + "'");
+				}
+				if(! split[1].toLowerCase().equals("to"))
+						throw new java.text.ParseException("Range '"+s+"' is missing the word 'to'", 0);
+					
+				if (split.length == 3){
+					Datum begin = Units.dimensionless.parse(split[0]);
+					Datum end = Units.dimensionless.parse(split[2]);
+					return new DatumRange(begin, end);
+				}
+				if (split.length == 4){
+					Units units = SemanticOps.lookupUnits(split[3]);
+					Datum begin = units.parse(split[0]);
+					Datum end = units.parse(split[2]);
+					return new DatumRange(begin, end);
+				}
+				throw new IllegalArgumentException("Too many tokens in range: '" + s + "'");
+		  }
         else {
             throw new IllegalStateException("unrecognized name: " + name);
         }
     }
     
+	 @Override
     public String toString() {
         return name;
     }
