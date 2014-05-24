@@ -5216,8 +5216,8 @@ public class Ops {
      * it is useful in other situations as well.
      *
      * @param uu rank 1 monotonically increasing dataset, containing no fill values.
-     * @param vv rank N dataset with values in the same physical dimension as uu, in an FDataSet.
-     * @return rank N dataset with the same geometry as vv.  It will have DEPEND_0=vv.
+     * @param vv rank N dataset with values in the same physical dimension as uu.  Now fill is allowed.
+     * @return rank N dataset with the same geometry as vv.  It will have DEPEND_0=vv when vv is rank 1. 
      */
     public static QDataSet findex(QDataSet uu, QDataSet vv) {
         if (!DataSetUtil.isMonotonic(uu)) {
@@ -5233,11 +5233,24 @@ public class Ops {
         Units vvunits= SemanticOps.getUnits( vv );
         Units uuunits= SemanticOps.getUnits( uu );
 
+        QDataSet ww= DataSetUtil.weightsDataSet(vv);
+        
         UnitsConverter uc= UnitsConverter.getConverter( vvunits, uuunits );
 
+        double fill= -1e31;
+        boolean hasFill= false;
+        
         while (it.hasNext()) {
             it.next();
-            double d = uc.convert( it.getValue(vv) ); //TODO: assumes no fill data.
+            double d = uc.convert( it.getValue(vv) ); 
+            double w = it.getValue(ww);
+            
+            if ( w==0 ) {
+                it.putValue(result, fill );
+                hasFill= true;
+                continue;
+            }
+            
             // TODO: optimize by only doing binary search below or above ic0&ic1.
             if (uc0 <= d && d <= uc1) { // optimize by seeing if old pair still backets the current point.
                 double ff = d==uc0 ? 0 : (d - uc0) / (uc1 - uc0); // may be 1.0
@@ -5269,6 +5282,9 @@ public class Ops {
         }
         if ( result.rank()==1 ) {
             result.putProperty( QDataSet.DEPEND_0, vv );
+        }
+        if ( hasFill ) {
+            result.putProperty( QDataSet.FILL_VALUE, fill );
         }
         return result;
     }
@@ -5307,10 +5323,20 @@ public class Ops {
         Double fill= (Double)wds.property(QDataSet.FILL_VALUE);
         if ( fill==null ) fill= -1e38;
         result.putProperty( QDataSet.FILL_VALUE, fill );
+        boolean hasFill= false;
 
+        QDataSet wfindex= DataSetUtil.weightsDataSet(findex);
+        wfindex= copy(wfindex);
+        
         while (it.hasNext()) {
             it.next();
 
+            if ( it.getValue(wfindex)==0 ) {
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            }
+            
             double ff = it.getValue(findex);
 
             if (ff < 0) {
@@ -5336,6 +5362,7 @@ public class Ops {
                 
             } else {
                 it.putValue(result, fill );
+                hasFill= true;
             }
 
         }
@@ -5343,6 +5370,9 @@ public class Ops {
         QDataSet depend0= (QDataSet) findex.property(QDataSet.DEPEND_0);
         if ( depend0!=null ) {
             result.putProperty( QDataSet.DEPEND_0, depend0 );
+        }
+        if ( hasFill ) {
+            result.putProperty( QDataSet.FILL_VALUE, fill );
         }
 
         return result;
