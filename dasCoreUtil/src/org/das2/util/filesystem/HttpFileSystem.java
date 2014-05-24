@@ -162,6 +162,7 @@ public class HttpFileSystem extends WebFileSystem {
                     } catch ( IOException ex2 ) {
                         // do nothing in this case, just try to get a response code.
                         logger.log(Level.SEVERE,ex2.getMessage(),ex2);
+                        msg= ex2.getMessage();
                     }
                     if ( code==401 ) {
                         connectFail= false;
