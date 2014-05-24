@@ -102,7 +102,12 @@ public class AboutUtil {
                 version = cvsTagName.substring(6, cvsTagName.length() - 2);
             }
 
-            result.add(name + ": " + version + "(" + props.getProperty("build.timestamp") + " " + props.getProperty("build.user.name") + ")");
+            String ch= name + ": " + version + "(" + props.getProperty("build.timestamp") + " " + props.getProperty("build.user.name") + ")";
+            if ( result.contains(ch) ) {
+                
+            } else {
+                result.add(ch);
+            }
 
         }
         return result;
