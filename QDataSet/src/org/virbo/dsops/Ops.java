@@ -5922,7 +5922,19 @@ public class Ops {
             return ds2;
         } else {
             // use append to combine the two datasets.  Note append copies the data.
-            return ArrayDataSet.append( ArrayDataSet.maybeCopy(ds1), ArrayDataSet.maybeCopy(ds2) );
+            Class c1= double.class;
+            Class c2= double.class;
+            if ( ds1 instanceof ArrayDataSet ) {
+                c1= ((ArrayDataSet)ds1).getComponentType();
+            }
+            if ( ds2 instanceof ArrayDataSet ) {
+                c2= ((ArrayDataSet)ds2).getComponentType();
+            }
+            Class c= double.class;
+            if ( c1==c2 ) {
+                c= c1;
+            }
+            return ArrayDataSet.append( ArrayDataSet.maybeCopy(c,ds1), ArrayDataSet.maybeCopy(c,ds2) );
         }
     }
             
