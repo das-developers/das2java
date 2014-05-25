@@ -336,15 +336,16 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
     /**
      * Copy the dataset to a ArrayDataSet only if the dataset is not already a
-     * particular instance of ArrayDataSet.
-     * @param ds
-     * @return ArrayDayaSet of component type c.
+     * particular instance of the given type of ArrayDataSet.
+     * @param c component type, e.g. float.class double.class int.class, etc.
+     * @param ds the dataset.
+     * @return ArrayDayaSet of component type c, e.g. double.class, float.class, etc.
      */
     public static ArrayDataSet maybeCopy( Class c, QDataSet ds ) {
         if ( ds instanceof ArrayDataSet && ((ArrayDataSet)ds).getComponentType()==c ) {
             return (ArrayDataSet)ds;
         } else {
-            return copy(ds);
+            return copy(c,ds);
         }
     }
 
@@ -484,7 +485,9 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         if ( ds.len1!=ths.len1 ) throw new IllegalArgumentException("len1 mismatch");
         if ( ds.len2!=ths.len2 ) throw new IllegalArgumentException("len2 mismatch");
         if ( ds.len3!=ths.len3 ) throw new IllegalArgumentException("len3 mismatch");
-        if ( ths.getBack().getClass()!=ds.getBack().getClass() ) throw new IllegalArgumentException("backing type mismatch");
+        if ( ths.getBack().getClass()!=ds.getBack().getClass() ) {
+            throw new IllegalArgumentException("backing type mismatch");
+        }
 
         int myLength= ths.len0 * ths.len1 * ths.len2 * ths.len3;
         int dsLength= ds.len0 * ds.len1 * ds.len2 * ds.len3;
