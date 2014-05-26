@@ -2457,7 +2457,7 @@ public class DataSetUtil {
     public static double[] asArrayOfDoubles( QDataSet d ) {
         double[] result;
         if ( d.rank()==1 ) {
-            DDataSet ds= (DDataSet)ArrayDataSet.maybeCopy( DDataSet.class, d );
+            DDataSet ds= (DDataSet)ArrayDataSet.maybeCopy( double.class, d );
             double[] back= ds.back;
             result= new double[d.length()];
             System.arraycopy( back, 0, result, 0, d.length() );
@@ -2477,7 +2477,7 @@ public class DataSetUtil {
     public static double[][] as2DArrayOfDoubles( QDataSet d ) {
         double[][] result;
         if ( d.rank()==2 ) {
-            DDataSet ds= (DDataSet)ArrayDataSet.maybeCopy( DDataSet.class, d );
+            DDataSet ds= (DDataSet)ArrayDataSet.maybeCopy( double.class, d );
             double[] back= ds.back;
             int l1=d.length(0);
             result= new double[d.length()][l1];
