@@ -162,6 +162,10 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         return len3;
     }
 
+    /**
+     * return the component type of the backing array, such as double.class.
+     * @return the component type of the backing array.
+     */
     public Class getComponentType() {
         return getBack().getClass().getComponentType();
     }
