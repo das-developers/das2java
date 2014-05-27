@@ -164,10 +164,23 @@ public class DataSetStreamHandler implements StreamHandler {
     }
     
     public void streamComment(StreamComment sc) throws StreamException {
-        logger.log(Level.FINEST, "got stream comment: {0}", sc);
-        if ( sc.getType().equals(sc.TYPE_TASK_PROGRESS) && taskSize!=-1 ) {
-            if ( !monitor.isCancelled() ) monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );
-        } else if ( sc.getType().matches(sc.TYPE_LOG) ) {
+		logger.log(Level.FINEST, "got stream comment: {0}", sc);
+		  		  
+		if (sc.getType().equals(sc.TYPE_TASK_SIZE)){
+			if(! monitor.isCancelled()){
+				taskSize = Integer.parseInt(sc.getValue());
+				monitor.setTaskSize(taskSize);
+			}
+			return;
+		}
+		  
+		if ( sc.getType().equals(sc.TYPE_TASK_PROGRESS) ) {  
+         if ( taskSize != -1 && !monitor.isCancelled() ) 
+				monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );
+			return;
+		}
+		  
+		  if ( sc.getType().matches(sc.TYPE_LOG) ) {
             String level= sc.getType().substring(4);
             Level l= Level.parse(level.toUpperCase());
             if ( l.intValue()>Level.FINE.intValue() ) {
