@@ -9,9 +9,12 @@
 
 package org.das2.dataset;
 
+import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
@@ -106,7 +109,13 @@ public class DataSetAdapter {
             this.source= source;
             properties.put( QDataSet.UNITS, source.getXUnits() );
             properties.put( QDataSet.LABEL, source.getProperty( DataSet.PROPERTY_X_LABEL ) );
-            Object o= source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC );
+				
+				// QDataSet Cadences are a rank 0 dataset
+				Datum d = (Datum) source.getProperty(DataSet.PROPERTY_X_TAG_WIDTH);
+				if(d != null)
+					properties.put( QDataSet.CADENCE, DRank0DataSet.create(d));
+				
+            Object o = source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC );
             if ( o!=null ) properties.put( QDataSet.MONOTONIC, o );
         }
         
