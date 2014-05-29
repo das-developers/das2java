@@ -34,6 +34,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.das2.datum.format.DatumFormatterFactory;
 
 /**
@@ -591,6 +593,168 @@ public abstract class Units implements Serializable {
         } else return units;
     }
     
+    /**
+     * return canonical das2 unit for colloquial time.
+     * @param s string containing time unit like s, sec, millisec, etc.
+     * @return
+     */
+    public static Units lookupTimeLengthUnit(String s) throws ParseException {
+        s= s.toLowerCase().trim();
+        if ( s.startsWith("sec") || s.equals("s") ) {
+            return Units.seconds;
+        } else if ( s.startsWith("ms") || s.startsWith("millisec") || s.startsWith("milliseconds") ) {
+            return Units.milliseconds;
+        } else if ( s.equals("hr") || s.startsWith("hour") ) {
+            return Units.hours;
+        } else if ( s.equals("mn") || s.startsWith("min") ) {
+            return Units.minutes;
+        } else if ( s.startsWith("us") || s.startsWith("\u00B5s" ) || s.startsWith("micros")) {
+            return Units.microseconds;
+        } else if ( s.startsWith("ns") || s.startsWith("nanos" ) ) {
+            return Units.nanoseconds;
+        } else if ( s.startsWith("d") ) { //TODO: yikes...
+            return Units.days;
+        } else {
+            throw new ParseException("failed to identify unit: "+s,0);
+        }
+    }
+
+    /**
+     * lookupUnits canonical units object, or allocate one.  If one is
+     * allocated, then parse for "<unit> since <datum>" and add conversion to
+     * "microseconds since 2000-001T00:00."  Note leap seconds are ignored!
+     * @param base the base time, for example 2000-001T00:00.
+     * @param offsetUnits the offset units for example microseconds.  Positive values of the units will be since the base time.
+     * @return the unit.
+     */
+    public static synchronized Units lookupTimeUnits( Datum base, Units offsetUnits ) {
+        Units result;
+        String canonicalName = "" + offsetUnits + " since "+ base;
+        try {
+            result= Units.getByName(canonicalName);
+            return result;
+        } catch ( IllegalArgumentException ex ) {
+            Basis basis= new Basis( "since "+ base, "since "+ base, Basis.since2000, base.doubleValue(Units.us2000), Units.us2000.getOffsetUnits() );
+            result= new TimeLocationUnits( canonicalName, canonicalName, offsetUnits, basis );
+            result.registerConverter( Units.us2000,
+                    new UnitsConverter.ScaleOffset(
+                    offsetUnits.convertDoubleTo(Units.microseconds, 1.0),
+                    base.doubleValue(Units.us2000) ) );
+            return result;
+        }        
+    }
+    
+    /**
+     * lookupUnits canonical units object, or allocate one.  If one is
+     * allocated, then parse for "&lt;unit&gt; since &ltdatum&gt" and add conversion to
+     * "microseconds since 2000-001T00:00" (us2000).  Note leap seconds are ignored
+     * in the returned units, so each day is 86400 seconds long.
+     * @param units string like "microseconds since 2000-001T00:00"
+     * @return a units object that implements.
+     */
+    public static synchronized Units lookupTimeUnits( String units ) throws ParseException {
+
+        Units result;
+
+        //for speed, see if it's already registered.
+        try {
+            result= Units.getByName(units);
+            return result;
+        } catch ( IllegalArgumentException ex ) {
+            //do nothing until later
+        }
+
+
+        String[] ss= units.split("since");
+        Units offsetUnits= lookupTimeLengthUnit(ss[0]);
+        Datum datum;
+
+        if ( ss[1].equals(" 1-1-1 00:00:00" ) ) { // make this into something that won't crash.
+            //datum= Units.mj1958.createDatum(-714779);
+            ss[1]= "1901-01-01 00:00:00"; // /media/mini/data.backup/examples/netcdf/sst.ltm.1961-1990.nc
+        }
+        if ( ss[1].contains("1970-01-01 00:00:00.0 0:00") ) {
+            ss[1]= "1970-01-01 00:00:00";
+        }
+        if ( ss[1].endsWith(" UTC") ) { // http://www.ngdc.noaa.gov/stp/satellite/dmsp/f16/ssj/2011/01/f16_20110101_ssj.h5?TIME
+            ss[1]= ss[1].substring(0,ss[1].length()-4);
+        }
+        datum= TimeUtil.create(ss[1]);
+        return lookupTimeUnits( datum, offsetUnits );
+    }
+    
+    /**
+     * lookupUnits canonical units object, or allocate one.
+     * Examples include:
+     *   "nT" where it's already allocated,
+     *   "apples" where it allocates a new one, and
+     *   "seconds since 2011-12-21T00:00" where it uses lookupTimeUnits.
+     * @param sunits string identifier.
+     * @return canonical units object.
+     */
+    public static synchronized Units lookupUnits(String sunits) {
+        Units result;
+        sunits= sunits.trim();
+        try {
+            result= Units.getByName(sunits);
+            
+        } catch ( IllegalArgumentException ex ) {
+            if ( sunits.contains(" since ") ) {
+                try {
+                    result = lookupTimeUnits(sunits);
+                } catch (ParseException ex1) {
+                    result= new NumberUnits( sunits );
+                }
+            } else if ( sunits.equals("sec") ) {   // begin, giant table of kludges
+                result= Units.seconds;
+            } else if ( sunits.equals("msec") ) {  // CDF
+                result= Units.milliseconds;
+            } else if ( sunits.contains("(All Qs)")) { //themis files have this annotation on the units. Register a converter. TODO: solve this in a nice way.  The problem is I wouldn't want to assume nT(s) doesn't mean nT * sec.
+                result= new NumberUnits( sunits );
+                Units targetUnits= lookupUnits( sunits.replace("(All Qs)","").trim() );
+                result.registerConverter( targetUnits, UnitsConverter.IDENTITY );
+            } else {
+                Pattern multPattern= Pattern.compile("([.0-9]+)\\s*([a-zA-Z]+)");
+                Matcher m= multPattern.matcher(sunits);
+                if ( m.matches() ) { // kludge for ge_k0_mgf which has "0.1nT" for units.  We register a converter when we see these.  Note this is going to need more attention
+                    try {
+                        Units convTo;
+                        convTo = lookupUnits(m.group(2));
+                        if ( convTo!=null ) {
+                            double fact= Double.parseDouble(m.group(1));
+                            result= new NumberUnits( sunits );
+                            result.registerConverter( convTo, new UnitsConverter.ScaleOffset(fact,0.0) );
+                        } else {
+                            result= lookupUnits(sunits);
+                        }
+                    } catch ( NumberFormatException ex2 ) {
+                        result= lookupUnits(sunits);
+                    }
+                } else {
+                    result= new NumberUnits( sunits );
+                }
+            }
+        }
+
+        // look to see if there is a standard unit for this and register a converter if so.  E.g.  [ms]<-->ms
+        String stdunits= sunits;
+        if ( stdunits.startsWith("[") && stdunits.endsWith("]") ) { // we can't just pop these off.  Hudson has case where this causes problems.  We need to make units in vap files canonical as well.
+            stdunits= stdunits.substring(1,stdunits.length()-1);
+        }
+        if ( stdunits.startsWith("(") && stdunits.endsWith(")") ) { // often units get [] or () put around them.  Pop these off.
+            stdunits= stdunits.substring(1,stdunits.length()-1);
+        }
+        if ( !stdunits.equals(sunits) ) {
+            Units stdUnit= lookupUnits(stdunits);  // we need to register "foo" when "[foo]" so that order doesn't matter.
+            if ( !stdUnit.isConvertableTo(result) ) {
+                logger.log(Level.FINE, "registering identity converter {0} -> {1}", new Object[]{stdUnit, result});
+                stdUnit.registerConverter( result, UnitsConverter.IDENTITY );
+                stdUnit.getConverter(result);
+            }
+        }
+        return result;
+    }
+
     public static void main( String[] args ) throws java.text.ParseException {
         //Datum ratio = Datum.create(100);
         Datum ratio = Units.ampRatio.createDatum(100);
