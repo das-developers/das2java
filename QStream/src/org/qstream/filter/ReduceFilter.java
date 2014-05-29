@@ -120,7 +120,7 @@ public class ReduceFilter implements StreamHandler {
             if ( sunits!=null ) {
                 try {
                     Units xunits;
-                    xunits= SemanticOps.lookupTimeUnits(sunits);
+                    xunits= Units.lookupTimeUnits(sunits);
                     double secmult= Units.seconds.getConverter( xunits.getOffsetUnits() ).convert(1);
                     length= secmult * lengthSeconds;
                 } catch ( InconvertibleUnitsException ex ) {

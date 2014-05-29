@@ -71,7 +71,7 @@ public class FlattenWaveformDataSet extends AbstractDataSet {
             timeArray[5]= 0;
             timeArray[6]= 0;
             t0= TimeUtil.toDatum(timeArray);
-            newDep0Units= SemanticOps.lookupTimeUnits( t0, (Units)dsdep1.property(QDataSet.UNITS) );
+            newDep0Units= Units.lookupTimeUnits( t0, (Units)dsdep1.property(QDataSet.UNITS) );
         }
         final UnitsConverter ucbase= UnitsConverter.getConverter( dep0units, newDep0Units );
         final Units fnewDep0Units= newDep0Units;
