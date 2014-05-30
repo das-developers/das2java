@@ -231,6 +231,12 @@ public interface QDataSet {
     public final static String TITLE="TITLE";
                 
     /**
+     * String, Human-consumable string suitable for describing the data more fully.  This should be html
+     * text, or just a link to other documentation (one URL, or two sentences to one page of text).
+     */
+    public final static String DESCRIPTION="DESCRIPTION";
+    
+    /**
      * QDataSet, dataset of same geometry that indicates the weights for each point.  Often weights are computed
      * in processing, and this is where they should be stored for other routines.  When the weights plane is 
      * present, routines can safely ignore the FILL_VALUE, VALID_MIN, and VALID_MAX properties, and use non-zero weight to 
