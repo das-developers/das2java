@@ -58,7 +58,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         DataTransferType type = DataTransferType.getByName(typeStr);
         String unitsString = element.getAttribute("units");
         if (unitsString != null) {
-            units = SemanticOps.lookupUnits(unitsString);
+            units = Units.lookupUnits(unitsString);
         }
         NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {

@@ -616,7 +616,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                                 } else if ( m.group(2).trim().equals("ordinal") ) {
                                     unitsArray1[i] = EnumerationUnits.create("ordinal");
                                 } else {
-                                    unitsArray1[i] = SemanticOps.lookupUnits(m.group(2).trim());
+                                    unitsArray1[i] = Units.lookupUnits(m.group(2).trim());
                                 }
                             } catch (IndexOutOfBoundsException e) {
                                 throw e;

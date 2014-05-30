@@ -27,7 +27,6 @@ import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import org.virbo.dataset.SemanticOps;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -55,7 +54,6 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         String yTagsText = element.getAttribute("yTags");
         if (yTagsText != null) {
             yTags = new double[nitems];
-            int parseInt = 0;
             String[] tokens = yTagsText.split("\\s*,\\s*");
             for (int i = 0; i < nitems; i++) {
                 yTags[i] = Double.parseDouble(tokens[i]);
@@ -71,15 +69,15 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         }
 	String yUnitsString = element.getAttribute("yUnits");
 	if (yUnitsString != null) {
-            yUnits = SemanticOps.lookupUnits(yUnitsString);
+            yUnits = Units.lookupUnits(yUnitsString);
         }
         String zUnitsString = element.getAttribute("zUnits");
         if (zUnitsString != null) {
-            zUnits = SemanticOps.lookupUnits(zUnitsString);
+            zUnits = Units.lookupUnits(zUnitsString);
         }
-        String name = element.getAttribute("name");
-        if ( name != null ) {
-            this.name = name;
+        String lname = element.getAttribute("name");
+        if ( lname != null ) {
+            this.name = lname;
         }
     }
     
@@ -204,7 +202,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
     }
     
     private static String toString(double[] d) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append(d[0]);
         for (int i = 1; i < d.length; i++) {
             buffer.append(", ").append(d[i]);
@@ -212,6 +210,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         return buffer.toString();
     }
     
+    @Override
     public Object clone() {
         try {
             StreamYScanDescriptor clone = (StreamYScanDescriptor)super.clone();
@@ -223,6 +222,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         }
     }
     
+    @Override
     public String toString() {
         return "<yScan nitems="+nitems+">";
     }

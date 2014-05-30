@@ -497,8 +497,8 @@ public class DataPointRecorderNew extends JPanel {
                 if (line.startsWith("## ") || line.length()>0 && Character.isJavaIdentifierStart( line.charAt(0) ) ) {
                     if ( unitsArray1!=null ) continue;
                     while ( line.startsWith("#") ) line = line.substring(1);
-                    if ( line.indexOf(delim)==-1 ) delim= "\t";
-                    if ( line.indexOf(delim)==-1 ) delim= "\\s+";
+                    if ( !line.contains(delim) ) delim= "\t";
+                    if ( !line.contains(delim) ) delim= "\\s+";
                     String[] s = line.split(delim);
                     for ( int i=0; i<s.length; i++ ) {
                         s[i]= s[i].trim();
@@ -517,7 +517,7 @@ public class DataPointRecorderNew extends JPanel {
                                 } else if ( m.group(2).trim().equals("ordinal") ) {
                                     unitsArray1[i] = EnumerationUnits.create("default");
                                 } else {
-                                    unitsArray1[i] = SemanticOps.lookupUnits(m.group(2).trim());
+                                    unitsArray1[i] = Units.lookupUnits(m.group(2).trim());
                                 }
                             } catch (IndexOutOfBoundsException e) {
                                 throw e;
