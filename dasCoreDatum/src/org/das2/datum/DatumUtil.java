@@ -379,7 +379,7 @@ public final class DatumUtil {
      * assumed to be dimensionless.  This also requires the the
      * unit be registered already, and lookup should be used if
      * the unit should be registered automatically.
-     * @param s the string representing the Datum, e.g. "5 Hz"
+     * @param s the string representing the Datum, e.g. "5 Hz" (but not 5Hz).
      * @return the Datum
      * @throws ParseException when the double can't be parsed or the units aren't recognized.
      */
@@ -445,6 +445,7 @@ public final class DatumUtil {
         if ( ss.length==1 && ss[0].contains("T") && ( s.contains(":") || dashCount>2 ) ) {
             try {
                 Datum time= Units.us2000.parse(ss[0]);
+                return time;
             } catch ( ParseException ex ) {
                 // guess it wasn't a time.
             }
