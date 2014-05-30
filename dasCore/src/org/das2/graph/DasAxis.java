@@ -2392,20 +2392,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return;
         }
 
-        QDataSet dep0= (QDataSet)tcaData.property(QDataSet.DEPEND_0);
+        QDataSet ltcaData= DDataSet.copy(tcaData);
+        
+        QDataSet dep0= (QDataSet)ltcaData.property(QDataSet.DEPEND_0);
 
         baseLine = y;
         leftEdge = x;
         rightEdge = leftEdge + width;
 
         index = org.virbo.dataset.DataSetUtil.closestIndex( dep0, value);
-        if ( index < 0 || index >= tcaData.length() ) {
+        if ( index < 0 || index >= ltcaData.length() ) {
             return;
         }
 
         pixelSize = getDatumRange().width().divide(getDLength()).doubleValue( getUnits().getOffsetUnits() );
 
-        if (tcaData.length() == 0) {
+        if (ltcaData.length() == 0) {
             g.drawString("tca data is empty", leftEdge, baseLine);
             return;
         }
@@ -2433,13 +2435,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         FontMetrics fm = getFontMetrics(tickLabelFont);
         int lineHeight = tickLabelFont.getSize() + getLineSpacing();
 
-        int lines= Math.min( MAX_TCA_LINES, tcaData.length(0) );
+        int lines= Math.min( MAX_TCA_LINES, ltcaData.length(0) );
 
         for (int i = 0; i < lines; i++) {
             try {
                 baseLine += lineHeight;
-                QDataSet test1= tcaData.slice(index);
-                QDataSet v1= test1.slice(i);
+                QDataSet test1= ltcaData.slice(index);
+                QDataSet v1= ArrayDataSet.copy( test1.slice(i) );
                 String item;
                 item= org.virbo.dataset.DataSetUtil.getStringValue( v1, v1.value() );
                 width = fm.stringWidth(item);
