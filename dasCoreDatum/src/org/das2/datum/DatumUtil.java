@@ -376,7 +376,11 @@ public final class DatumUtil {
     /**
      * attempt to parse the string as a datum.  Note that if the
      * units aren't specified, then of course the Datum will be
-     * assumed to be dimensionless.
+     * assumed to be dimensionless.  This also requires the the
+     * unit be registered already, and lookup should be used if
+     * the unit should be registered automatically.
+     * @param s the string representing the Datum, e.g. "5 Hz"
+     * @return the Datum
      * @throws ParseException when the double can't be parsed or the units aren't recognized.
      */
     public static Datum parse(java.lang.String s) throws ParseException {
@@ -395,6 +399,14 @@ public final class DatumUtil {
         return Datum.create( Double.parseDouble(ss[0]), units );
     }
     
+    /**
+     * parse the string which contains a valid representation of a
+     * a Datum.  A runtime exception is thrown when the string 
+     * cannot be parsed.
+     * @param s the string representing the Datum, e.g. "5 Hz"
+     * @return the Datum
+     * @throws RuntimeException when the value wasn't parseable.
+     */
     public static Datum parseValid(java.lang.String s) {
         try {
             return parse( s );
@@ -403,6 +415,58 @@ public final class DatumUtil {
         }
     }
 
+    /**
+     * Attempts to resolve strings commonly encountered.  This was introduced to create a standard 
+     * method for resolving Strings in ASCII files to a Datum.
+     * This follows the rules that:
+     * <ul>
+     * <li> Things that appear to be times are parsed to a TimeLocationUnit.
+     * <li> a double followed by whitespace then a unit is parsed as lookupUnit then parse(double)
+     * </ul>
+     * Here is a list to test against, and the motivation:
+     * <ul>
+     * <li> 2014-05-29T00:00 ISO8601 times, cannot contain spaces.
+     * <li> 5.e4 Hz          registered known units
+     * <li> 5.6 foos         units from the wild
+     * <li> 5.7 bytes/sec    mix of MKS and units from the wild.
+     * <li> 5.7Hz            no space
+     * <li> 5.7T             no space, contains T.
+     * <li> +5.7E+2Hz        more challenging double.
+     * <li> $57              unit before number
+     * </ul>
+     * @param s
+     * @return a Datum containing the value.
+     * @throws java.text.ParseException
+     * @see units.parseDatum(String);
+     */
+    public static Datum lookupDatum( String s ) throws ParseException {
+        String [] ss= s.trim().split("\\s+");
+        int dashCount= ss[0].split("-",-2).length-1;
+        if ( ss.length==1 && ss[0].contains("T") && ( s.contains(":") || dashCount>2 ) ) {
+            try {
+                Datum time= Units.us2000.parse(ss[0]);
+            } catch ( ParseException ex ) {
+                // guess it wasn't a time.
+            }
+        }
+        if ( ss.length>1 && "1234567890+=.".indexOf(ss[0].charAt(0))>-1 ) {
+            try {
+                return DatumUtil.parse(s); //TODO: someone is going to want lookupUnits that will allocate new units.
+            } catch (ParseException ex) {
+                Units u= Units.lookupUnits(ss[1]);
+                try {
+                    return u.parse(s);
+                } catch (ParseException ex1) {
+                    logger.log(Level.SEVERE, null, ex1);
+                    throw ex1;
+                }
+            }
+        } else {
+            //TODO: handle $57 +5.7E+2Hz
+            throw new ParseException("unrecognized form, try adding space",0 );
+        }
+    }
+    
     /**
      * create a dimensionless datum by parsing the string.
      * See TimeUtil.createValid( String stime ).
