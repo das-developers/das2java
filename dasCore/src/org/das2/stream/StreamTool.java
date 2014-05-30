@@ -616,13 +616,13 @@ public class StreamTool {
 		 */
     }
 
-    public static Map processPropertiesElement(Element element) throws StreamException {
+    public static Map<String,Object> processPropertiesElement(Element element) throws StreamException {
         try {
             if (!element.getTagName().equals("properties")) {
                 // TODO maybe this should be a RuntimeException
                 throw new StreamException("expecting 'properties' element, encountered '" + element.getTagName() + "'");
             }
-            HashMap map = new HashMap();
+            HashMap<String, Object> map = new HashMap();
             NamedNodeMap attributes = element.getAttributes();
             for (int i = 0; i < attributes.getLength(); i++) {
                 Attr attr = (Attr) attributes.item(i);

@@ -85,6 +85,9 @@ public interface DataSet {
 	 /** Double, used to indicate maximum valid X value */
 	 final static String PROPERTY_Z_VALID_MAX="zValidMax";
 	 
+	 /** Double: Raw value used to indicate fill data. */
+	 final static String PROPERTY_Y_FILL="yFill";
+	 
 	 /** Raw value used to indicate fill data.
 	  * Since yscan's are rectangular it's handy to have a fill value to indicate
 	  * gaps in the rectangle
@@ -133,12 +136,14 @@ public interface DataSet {
      */
     final static String PROPERTY_TITLE="title";
 
-    /**
-     * Boolean assuring that the dataset is monotonic in X.  This allows 
-     * some optimizations to be made.
-     */
+    /** Boolean assuring that the dataset is monotonic in X.  This allows 
+     * some optimizations to be made. */
     final static String PROPERTY_X_MONOTONIC="xMonotonic";
-    
+	 
+	 /** Boolean assuring that the dataset is monotonic in Y.  This allows 
+     * some optimizations to be made. */
+    final static String PROPERTY_Y_MONOTONIC="yMonotonic";
+	 
     /**
      * dataset containing the peaks when available
      */

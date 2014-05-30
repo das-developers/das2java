@@ -11,7 +11,6 @@ package org.das2.dataset;
 
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
-import org.das2.datum.Units;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
@@ -146,6 +145,39 @@ public class DataSetAdapter {
             properties.put( QDataSet.LABEL, source.getProperty( DataSet.PROPERTY_Y_LABEL ) );
             properties.put( QDataSet.DEPEND_0, new XTagsDataSet( source ) );
             properties.put( PROPERTY_SOURCE, source );
+				
+				//New properties after 2014-05-28 Das2 Dev meeting
+				Datum d = (Datum) source.getProperty( DataSet.PROPERTY_Y_VALID_MIN);
+				if (d != null){
+					double val = d.doubleValue(source.getYUnits());
+					properties.put( QDataSet.VALID_MIN, val);
+				}
+				d = (Datum) source.getProperty( DataSet.PROPERTY_Y_VALID_MAX);
+				if (d != null){
+					double val = d.doubleValue(source.getYUnits());
+					properties.put( QDataSet.VALID_MAX, val);
+				}
+				
+				properties.put( QDataSet.FILL_VALUE, source.getProperty(DataSet.PROPERTY_Y_FILL));
+				properties.put( QDataSet.SCALE_TYPE, source.getProperty(DataSet.PROPERTY_Y_SCALETYPE));
+				properties.put( QDataSet.MONOTONIC, source.getProperty(DataSet.PROPERTY_Y_MONOTONIC));
+				
+				//Add this in after next autoplot update
+				//properties.put( QDataSet.DESCRIPTION, source.getProperty(DataSet.PROPERTY_Y_SUMMARY));
+				
+				//Let Das2 Streams set a Y-Axis range
+				DatumRange yRng = (DatumRange) source.getProperty(DataSet.PROPERTY_Y_RANGE);
+				if(yRng != null){
+					properties.put( QDataSet.TYPICAL_MIN, yRng.min().value());
+					properties.put( QDataSet.TYPICAL_MAX, yRng.max().value());
+				}
+				
+				d = (Datum) source.getProperty(DataSet.PROPERTY_Y_TAG_WIDTH);
+				if(d != null)
+					properties.put( QDataSet.CADENCE, DRank0DataSet.create(d));
+				
+				//Throw everything including the well-known stuff into user properties
+				properties.put( QDataSet.USER_PROPERTIES, source.getProperties());
         }
         
         public int rank() {
