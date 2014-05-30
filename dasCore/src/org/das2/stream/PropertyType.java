@@ -99,7 +99,7 @@ public final class PropertyType {
                 return Units.dimensionless.parse(split[0]);
             }
             else if (split.length == 2) {
-                Units units = SemanticOps.lookupUnits(split[1]);
+                Units units = Units.lookupUnits(split[1]);
                 return units.parse(split[0]);
             }
             else {
@@ -120,7 +120,7 @@ public final class PropertyType {
 					return new DatumRange(begin, end);
 				}
 				if (split.length == 4){
-					Units units = SemanticOps.lookupUnits(split[3]);
+					Units units = Units.lookupUnits(split[3]);
 					Datum begin = units.parse(split[0]);
 					Datum end = units.parse(split[2]);
 					return new DatumRange(begin, end);
