@@ -169,7 +169,8 @@ public class DataSetStreamHandler implements StreamHandler {
 		if (sc.getType().equals(sc.TYPE_TASK_SIZE)){
 			if(! monitor.isCancelled()){
 				taskSize = Integer.parseInt(sc.getValue());
-				monitor.setTaskSize(taskSize);
+                                monitor.setTaskSize(taskSize);
+                                monitor.started();
 			}
 			return;
 		}
