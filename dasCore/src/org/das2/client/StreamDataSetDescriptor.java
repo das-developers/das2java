@@ -450,6 +450,11 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
             dioe.initCause(dioe);
             throw dioe;
         }
+        catch ( StreamException dnfe) {
+            DasIOException dioe = new DasIOException(dnfe.getMessage());
+            dioe.initCause(dioe);
+            throw dioe;
+        }
         catch ( SAXException ex ) {
             DasIOException e= new DasIOException(ex.getMessage());
             e.initCause(ex);
