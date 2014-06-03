@@ -9,7 +9,6 @@
 package org.virbo.dataset;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.Map;
 import org.das2.datum.Units;
 
@@ -24,8 +23,6 @@ import org.das2.datum.Units;
 public final class DDataSet extends ArrayDataSet {
 
     double[] back;
-
-    Units units; // for debugging
 
     private static final boolean RANGE_CHECK = "true".equals( System.getProperty("rangeChecking","false") );
     
@@ -229,15 +226,6 @@ public final class DDataSet extends ArrayDataSet {
         }
         return back[i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3];
     }
-
-    @Override
-    public void putProperty(String name, Object value) {
-        super.putProperty(name, value);
-        if ( name.equals( QDataSet.UNITS ) ) {
-            this.units= (Units)value;
-        }
-    }
-
 
     public void putValue(double value) {
         checkImmutable();
