@@ -302,22 +302,36 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             org.das2.DasProperties.showEditor();
         }
     };
+    
+    private static boolean printBusy= false;
+    
     public static final Action PRINT_ACTION = new CanvasAction("Print...") {
-
         public void actionPerformed(ActionEvent e) {
-            Printable p = currentCanvas.getPrintable();
-            PrinterJob pj = PrinterJob.getPrinterJob();
-            pj.setPrintable(p);
-            if (pj.printDialog()) {
-                try {
-                    pj.print();
-                } catch (PrinterException pe) {
-                    Object[] message = {"Error printing", pe.getMessage()};
-                    JOptionPane.showMessageDialog(null, message, "ERROR", JOptionPane.ERROR_MESSAGE);
-                }
+            if ( printBusy ) {
+                JOptionPane.showMessageDialog(null, "Another task is trying to print, please wait.", "ERROR", JOptionPane.ERROR_MESSAGE );
+            } else {
+                printBusy= true;
+                Runnable run= new Runnable() {
+                    public void run() {
+                        Printable p = currentCanvas.getPrintable();
+                        PrinterJob pj = PrinterJob.getPrinterJob();
+                        pj.setPrintable(p);
+                        if (pj.printDialog()) {
+                           try {
+                                pj.print();
+                            } catch (PrinterException pe) {
+                                Object[] message = {"Error printing", pe.getMessage()};
+                                JOptionPane.showMessageDialog(null, message, "ERROR", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                        printBusy= false;
+                    }
+                };
+                new Thread(run,"printThread").start();
             }
         }
     };
+    
     public static final Action REFRESH_ACTION = new CanvasAction("Refresh") {
 
         public void actionPerformed(ActionEvent e) {
