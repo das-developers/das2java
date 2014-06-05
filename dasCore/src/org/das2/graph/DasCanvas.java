@@ -308,7 +308,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     public static final Action PRINT_ACTION = new CanvasAction("Print...") {
         public void actionPerformed(ActionEvent e) {
             if ( printBusy ) {
-                JOptionPane.showMessageDialog(null, "Another task is trying to print, please wait.", "ERROR", JOptionPane.ERROR_MESSAGE );
+                JOptionPane.showMessageDialog(null, "Another task is trying to print, please wait.", "Please Wait", JOptionPane.INFORMATION_MESSAGE );
             } else {
                 printBusy= true;
                 Runnable run= new Runnable() {
