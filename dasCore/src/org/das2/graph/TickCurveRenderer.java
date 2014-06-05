@@ -406,16 +406,25 @@ public class TickCurveRenderer extends Renderer {
             idata[1][i]= yAxis.transform(yds.value(i),yunits);
         }
 
-
+        QDataSet wds= Ops.multiply( Ops.valid(xds), Ops.valid(yds) );
+        
         GeneralPath p= new GeneralPath();
-        p.moveTo( (float)idata[0][0],(float)idata[1][0] ); // Java5 requires floats
+        p.moveTo( idata[0][0],idata[1][0] ); // Java5 requires floats
+        
+        double w0= wds.value(0);
+        
         for ( int i=1; i<xds.length(); i++ ) {
-            p.lineTo( (float)idata[0][i],(float)idata[1][i] );
+            double w1= wds.value(i);
+            if ( w0==0 || w1==0 ) {
+                p.moveTo( idata[0][i],idata[1][i] );
+            } else {
+                p.lineTo( idata[0][i],idata[1][i] );
+            }
+            w0= w1;
         }
         GeneralPath rp= new GeneralPath();
         GraphUtil.reducePath( p.getPathIterator(null), rp, 2 );
         g.draw(rp);
-        
         
         QDataSet findex;
         Units tunits= SemanticOps.getUnits(tds);
@@ -438,7 +447,7 @@ public class TickCurveRenderer extends Renderer {
         tickLabeller.init( tickv );
         
         for ( int i=0; i<tickv.minorTickV.getLength(); i++ ) {
-            if ( findex.value(i)>=0 && findex.value(i)<xds.length() ) {
+            if ( findex.value(i)>=0 && findex.value(i)<xds.length()-1.0 ) {
                 drawTick( g, findex.value(i) );
             }
         }
