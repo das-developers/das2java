@@ -2421,6 +2421,17 @@ public class DataSetUtil {
         if ( u==null ) u= Units.dimensionless;
         return DatumVector.newDatumVector( dd, u );
     }
+    
+    /**
+     * return the rank 1 dataset equivalent to the DatumVector
+     * @param dv 
+     * @return rank 1 QDataSet.
+     */
+    public static QDataSet asDataSet( DatumVector dv ) {
+        DDataSet result= DDataSet.wrap(dv.toDoubleArray(dv.getUnits()));
+        result.putProperty( QDataSet.UNITS, dv.getUnits() );
+        return result;
+    }
         
     /**
      * return a 2-element rank 1 bins dataset with BINS_0=QDataSet.VALUE_BINS_MIN_MAX
