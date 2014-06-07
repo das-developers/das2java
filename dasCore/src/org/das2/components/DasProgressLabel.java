@@ -7,6 +7,7 @@ package org.das2.components;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.das2.util.monitor.NullProgressMonitor;
 
@@ -58,6 +59,11 @@ public class DasProgressLabel extends NullProgressMonitor {
         @Override
         public void finished() {
             repaintTimer.setRepeats(false);
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                     if ( label!=null ) label.setText( "<html><em>&nbsp;" + taskLabel + "...finished</em></html>" );
+                }
+            });
         }
         
 }
