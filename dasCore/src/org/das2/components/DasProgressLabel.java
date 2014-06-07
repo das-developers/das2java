@@ -44,12 +44,20 @@ public class DasProgressLabel extends NullProgressMonitor {
             }
         } );
         
+        /**
+         * create the DasProgessLabel with the given label for the task.
+         * @param taskLabel the label for the task.
+         */
         public DasProgressLabel( String taskLabel ) {
             repaintTimer.setRepeats(true);
             repaintTimer.start();
             this.taskLabel= taskLabel;
         }
         
+        /**
+         * get the assigned label component, or create one if one has not been assigned.
+         * @return 
+         */
         public synchronized JLabel getLabelComponent() {
             if ( label==null ) {
                 label= new JLabel();
@@ -57,6 +65,10 @@ public class DasProgressLabel extends NullProgressMonitor {
             return label;
         }
         
+        /**
+         * set the label to use for the progress monitor.
+         * @param label 
+         */
         public synchronized void setLabelComponent( JLabel label ) {
             this.label= label;
         }
