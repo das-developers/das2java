@@ -38,7 +38,7 @@ public class DasProgressLabel extends NullProgressMonitor {
                     if ( isFinished() ) {
                         label.setText( "<html><em>&nbsp;" + taskLabel + "...finished</em></html>" );
                     } else {
-                        label.setText( "<html><em>&nbsp;" + taskLabel + "...".substring(0,ndot)+p+"</em></html>" );
+                        label.setText( "<html><em>&nbsp;" + taskLabel + "...".substring(0,ndot) + "   ".substring(ndot,3)+p+"</em></html>" );
                     }
                 }
             }
