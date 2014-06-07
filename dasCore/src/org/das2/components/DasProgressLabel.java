@@ -33,7 +33,7 @@ public class DasProgressLabel extends NullProgressMonitor {
                 }
                 ndot++;
                 if ( ndot==4 ) ndot=1;
-                if ( label!=null ) label.setText( "<html><em><br>&nbsp;" + taskLabel + "...".substring(0,ndot)+p+"</em></html>" );
+                if ( label!=null ) label.setText( "<html><em>&nbsp;" + taskLabel + "...".substring(0,ndot)+p+"</em></html>" );
             }
         } );
         
