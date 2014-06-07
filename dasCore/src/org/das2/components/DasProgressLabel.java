@@ -34,7 +34,13 @@ public class DasProgressLabel extends NullProgressMonitor {
                 }
                 ndot++;
                 if ( ndot==4 ) ndot=1;
-                if ( label!=null ) label.setText( "<html><em>&nbsp;" + taskLabel + "...".substring(0,ndot)+p+"</em></html>" );
+                if ( label!=null ) {
+                    if ( isFinished() ) {
+                        label.setText( "<html><em>&nbsp;" + taskLabel + "...finished</em></html>" );
+                    } else {
+                        label.setText( "<html><em>&nbsp;" + taskLabel + "...".substring(0,ndot)+p+"</em></html>" );
+                    }
+                }
             }
         } );
         
@@ -58,7 +64,9 @@ public class DasProgressLabel extends NullProgressMonitor {
         
         @Override
         public void finished() {
+            super.finished();
             repaintTimer.setRepeats(false);
+            repaintTimer.stop();
             SwingUtilities.invokeLater( new Runnable() {
                 public void run() {
                      if ( label!=null ) label.setText( "<html><em>&nbsp;" + taskLabel + "...finished</em></html>" );
