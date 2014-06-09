@@ -78,7 +78,7 @@ public class BinAverage {
      * @param ds rank 2 bundle(x,y,z)
      * @param dep0 the depend0 for the result
      * @param dep1 the depend1 for the result
-     * @return rank 2 dataset of z averages with depend_0 and depend_1.
+     * @return rank 2 dataset of z averages with depend_0 and depend_1.  WEIGHTS contains the total weight for each bin.
      */
     public static DDataSet rebinBundle( QDataSet ds, QDataSet dep0, QDataSet dep1 ) {
         DDataSet sresult= DDataSet.createRank2( dep0.length(), dep1.length() );
@@ -94,7 +94,8 @@ public class BinAverage {
         int ny= dep1.length();
 
         for ( int ids=0; ids<ds.length(); ids++ ) {
-            if ( wds.value(ids)>0 ) {
+            double w= wds.value(ids);
+            if ( w>0 ) {
                 double x= ds.value(ids,0);
                 double y= ds.value(ids,1);
                 double z= ds.value(ids,2);
@@ -103,7 +104,7 @@ public class BinAverage {
                 if ( i<0 || j<0 ) continue;
                 if ( i>=nx || j>=ny ) continue;
                 sresult.putValue( i, j, z + sresult.value( i, j ) );
-                nresult.putValue( i, j, 1 + nresult.value( i, j ) );
+                nresult.putValue( i, j, w + nresult.value( i, j ) );
             }
         }
 
@@ -131,10 +132,10 @@ public class BinAverage {
 
     /**
      * returns a dataset with tags specified by newTags
-     * @param ds a rank 2 dataset.
+     * @param ds a rank 2 dataset.  If it's a bundle, then rebinBundle is called.
      * @param newTags0 rank 1 monotonic dataset
      * @param newTags1 rank 1 monotonic dataset
-     * @return rank 2 dataset with newTags0 for the DEPEND_0 tags, newTags1 for the DEPEND_1 tags.
+     * @return rank 2 dataset with newTags0 for the DEPEND_0 tags, newTags1 for the DEPEND_1 tags.  WEIGHTS property contains the weights.
      */
     public static DDataSet rebin(QDataSet ds, QDataSet newTags0, QDataSet newTags1) {
 
