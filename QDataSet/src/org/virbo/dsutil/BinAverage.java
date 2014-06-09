@@ -121,6 +121,8 @@ public class BinAverage {
         }
 
         DataSetUtil.copyDimensionProperties( ds, sresult );
+        nresult.putProperty( QDataSet.DEPEND_0, dep0 );
+        nresult.putProperty( QDataSet.DEPEND_1, dep1 );
         sresult.putProperty( QDataSet.DEPEND_0, dep0 );
         sresult.putProperty( QDataSet.DEPEND_1, dep1 );
         sresult.putProperty( QDataSet.FILL_VALUE, fill );
@@ -199,6 +201,8 @@ public class BinAverage {
             }
         }
 
+        weights.putProperty(QDataSet.DEPEND_0, newTags0);
+        weights.putProperty(QDataSet.DEPEND_1, newTags1);
         result.putProperty(QDataSet.DEPEND_0, newTags0);
         result.putProperty(QDataSet.DEPEND_1, newTags1);
         result.putProperty(QDataSet.FILL_VALUE, fill );
