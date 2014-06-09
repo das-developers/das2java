@@ -123,6 +123,7 @@ public class BinAverage {
         sresult.putProperty( QDataSet.DEPEND_0, dep0 );
         sresult.putProperty( QDataSet.DEPEND_1, dep1 );
         sresult.putProperty( QDataSet.FILL_VALUE, fill );
+        sresult.putProperty( QDataSet.WEIGHTS, nresult );
         sresult.putProperty( QDataSet.RENDER_TYPE, "nnSpectrogram" );
 
         return sresult;
@@ -199,6 +200,7 @@ public class BinAverage {
 
         result.putProperty(QDataSet.DEPEND_0, newTags0);
         result.putProperty(QDataSet.DEPEND_1, newTags1);
+        result.putProperty(QDataSet.FILL_VALUE, fill );
         result.putProperty(QDataSet.WEIGHTS, weights);
 
         return result;
