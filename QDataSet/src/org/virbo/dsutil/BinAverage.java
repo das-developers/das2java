@@ -66,7 +66,10 @@ public class BinAverage {
             }
         }
 
+        weights.putProperty(QDataSet.DEPEND_0,newTags0);
         result.putProperty(QDataSet.DEPEND_0, newTags0);
+        result.putProperty(QDataSet.FILL_VALUE,fill);
+        result.putProperty(QDataSet.WEIGHTS,weights);
 
         return result;
     }
