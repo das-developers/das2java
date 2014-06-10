@@ -1133,23 +1133,26 @@ public class DataSetUtil {
         Logger logger= LoggerManager.getLogger("qdataset.guesscadence");
         
         Object o= xds.property( QDataSet.CADENCE );
-        Units u= (Units) xds.property( QDataSet.UNITS );
+        Units u= SemanticOps.getUnits(xds);
 
         if ( UnitsUtil.isNominalMeasurement(u) ) return null;
         
-        if ( o!=null ) {
-            if ( o instanceof RankZeroDataSet ) {
-                return (RankZeroDataSet) o;
-            } else if ( o instanceof QDataSet ) {
-                QDataSet q= (QDataSet)o;
-                while ( q.rank()>0 ) {
-                    logger.log( Level.SEVERE, "averaging CADENCE rank 0: {0}", q);
-                    q= Ops.reduceMax( q, 0 );
+        if ( o!=null && o instanceof QDataSet ) {
+            QDataSet q= (QDataSet)o;
+            Units qu= SemanticOps.getUnits(q);
+            if ( UnitsUtil.isRatiometric(qu) || qu.isConvertableTo( SemanticOps.getUnits(xds).getOffsetUnits() ) ) {
+                if ( q.rank()==0 ) {    
+                    return (RankZeroDataSet) o;
+                
+                } else if ( o instanceof QDataSet ) {
+                    while ( q.rank()>0 ) {
+                        logger.log( Level.SEVERE, "averaging CADENCE rank 0: {0}", q);
+                        q= Ops.reduceMax( q, 0 );
+                    }
+                    return DRank0DataSet.create( DataSetUtil.asDatum(q) );
                 }
-                return DRank0DataSet.create( DataSetUtil.asDatum(q) );
             } else {
-                return DataSetUtil.asDataSet( ((Number)o).doubleValue(), u.getOffsetUnits() );
-                //TODO: This legacy behavior should be removed.
+                logger.log(Level.INFO, "CADENCE units ({0}) are inconvertable to {1}", new Object[]{qu, u});
             }
         }
 
