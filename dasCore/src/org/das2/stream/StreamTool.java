@@ -273,6 +273,7 @@ public class StreamTool {
             struct.descriptorCount++;
             int bytesRead;
             int totalBytesRead = 0;
+            //TODO: bug https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=441 (empty deflated stream hangs)
             while ((bytesRead = stream.read(struct.bigBuffer)) != -1) {
                 struct.byteOffset += struct.bigBuffer.position();
                 struct.bigBuffer.flip();
