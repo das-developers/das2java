@@ -6,6 +6,7 @@
 
 package org.das2.fsm;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -165,6 +166,11 @@ public class FileStorageModel {
         String parentRegex=null;
         DatumRange range1;  // the range from the parent we are looking for.  This is to limit searches...
         
+        if ( EventQueue.isDispatchThread() ) {
+            logger.info("FileSystem use on the GUI event thread will often cause problems.");
+            new Exception("FileSystem uses event thread stack trace").printStackTrace();
+        }
+        
         if ( parent!=null ) {
             parentRegex= getParentRegex(regex);
             String one= parent.getRepresentativeFile( monitor,regex.substring(parentRegex.length()+1), range );
@@ -190,7 +196,7 @@ public class FileStorageModel {
 
         while ( result==null ) {
             for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
-                String[] files1= fileSystems[i].listDirectory( "/", listRegex );
+                String[] files1= fileSystems[i].listDirectory( "/", listRegex, monitor );
                 int j= files1.length-1;
                 while ( j>=0 && result==null ) {
                     String ff= names[i].equals("") ? files1[ j ] : names[i]+"/"+files1[ j ];
@@ -203,7 +209,7 @@ public class FileStorageModel {
                         if ( versionLt!=null && versioningType.comp.compare( extra.get("v"), versionLt )>=0 ) versionOk=false;
                         if ( versionOk && timeParser.getValidRange().contains( tr ) && ( range==null || range.intersects(tr) ) ) {
                             if ( childRegex!=null ) {
-                                String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex);
+                                String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex, monitor );
                                 if ( kids.length>0 ) {
                                     result= ff;
                                 }
