@@ -110,25 +110,47 @@ public class FileStorageModel {
     String versionGe= null; // the version must be greater than or equal to this if non-null. 
     String versionLt= null; // the version must be less than this if non-null. 
 
-
+    /**
+     * return the filesystem used to implement this.
+     * @return filesystem
+     */
     public FileSystem getFileSystem() {
         return this.root;
     }
 
+    /**
+     * return a random file from the FSM, which can be used to represent a typical file.  For
+     * example, we need to look at metadata to see what is available.
+     * @param monitor progress monitor in case a file must be downloaded.
+     * @return a reference to the file within the FileSystem, or null if one is not found.
+     * @throws IOException 
+     */
     public String getRepresentativeFile( ProgressMonitor monitor ) throws IOException {
         return getRepresentativeFile( monitor, null );
     }
     
-    public String getRepresentativeFile( ProgressMonitor monitor, String childRegex ) throws IOException {
+    /**
+     * return a random file from the FSM, which can be used to represent a typical file.  For
+     * example, we need to look at metadata to see what is available.
+     * @param monitor progress monitor in case a file must be downloaded.
+     * @param childRegex the parent must contain a file/folder matching childRegex
+     * @return a reference to the file within the FileSystem, or null if one is not found.
+     * @throws IOException 
+     */  
+    public String getRepresentativeFile( ProgressMonitor monitor, String childRegex ) throws IOException {     
         return getRepresentativeFile( monitor, childRegex, null );
     }
     /**
-     * this is introduced to support discovery, where we just need one file to
+     * Return a random file from the FSM, which can be used to represent a typical file.  For
+     * example, we need to look at metadata to see what is available.  This is introduced 
+     * to support discovery, where we just need one file to
      * get started.  Before, there was code that would list all files, then use
      * just the first one.  This may return a skeleton file, but getFileFor() must
      * return a result.
      * This implementation does the same as getNames(), but stops after finding a file.
+     * @param monitor progress monitor in case a file must be downloaded.
      * @param childRegex the parent must contain a file/folder matching childRegex
+     * @param range hint at the range where we are looking.  
      * @return null if no file is found
      */
     public String getRepresentativeFile( ProgressMonitor monitor, String childRegex, DatumRange range ) throws IOException {
