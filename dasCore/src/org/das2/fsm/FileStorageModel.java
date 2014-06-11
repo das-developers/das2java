@@ -6,16 +6,6 @@
 
 package org.das2.fsm;
 
-import org.das2.datum.DatumRange;
-import org.das2.datum.Datum;
-import org.das2.datum.TimeUtil.TimeStruct;
-import org.das2.util.filesystem.FileObject;
-import org.das2.util.filesystem.FileSystem;
-import org.das2.datum.CacheTag;
-import org.das2.util.monitor.ProgressMonitor;
-import org.das2.util.monitor.NullProgressMonitor;
-import org.das2.util.monitor.SubTaskMonitor;
-import org.das2.datum.TimeParser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -25,9 +15,21 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.*;
+import org.das2.datum.CacheTag;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.TimeParser;
+import org.das2.datum.TimeUtil.TimeStruct;
 import org.das2.util.LoggerManager;
+import org.das2.util.filesystem.FileObject;
+import org.das2.util.filesystem.FileSystem;
 import org.das2.util.filesystem.FileSystemUtil;
+import org.das2.util.filesystem.LocalFileSystem;
+import org.das2.util.filesystem.WebFileSystem;
+import org.das2.util.monitor.NullProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
+import org.das2.util.monitor.SubTaskMonitor;
 
 /**
  * Represents a method for storing data sets in a set of files by time.  The
@@ -58,6 +60,8 @@ public class FileStorageModel {
     HashMap fileNameMap=null;
     private boolean allowGz= true;  // if true, the getFile can use a .gz version to retrieve a file.
 
+    List<String> oldVersions= new ArrayList();
+    
     /**
      * Versioning types 
      */
@@ -309,8 +313,8 @@ public class FileStorageModel {
     /**
      * return the timerange that contains the given timerange and
      * exactly contains a set of granules.
-     * @param timeRange
-     * @return 
+     * @param timeRange arbitrary time range
+     * @return list of file timeranges covering file input timeRange.
      */
     public DatumRange quantize(DatumRange timeRange) {
                 
@@ -335,8 +339,7 @@ public class FileStorageModel {
     /**
      * return the names in the range, or all names if the range is null.
      * @param targetRange range limit, or null.
-     * @param monitor
-     * @return
+     * @return array of names within the system.
      * @throws java.io.IOException
      */
     public String[] getNamesFor( final DatumRange targetRange ) throws IOException {
@@ -347,7 +350,7 @@ public class FileStorageModel {
      * return the names in the range, or all names if the range is null.
      * @param targetRange range limit, or null.
      * @param monitor
-     * @return
+     * @return array of names within the system.
      * @throws java.io.IOException
      */
     public String[] getNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
@@ -358,7 +361,7 @@ public class FileStorageModel {
      * return the names in the range, minding version numbers, or all names if the range is null.
      * @param targetRange range limit, or null.
      * @param monitor
-     * @return
+     * @return array of names within the system.
      * @throws java.io.IOException
      */
     public String[] getBestNamesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
@@ -372,7 +375,7 @@ public class FileStorageModel {
      * @param targetRange range limit, or null if no constraint used here.
      * @param versioning true means check versions.
      * @param monitor
-     * @return
+     * @return array of names within the system.
      * @throws IOException
      */
     private String[] getNamesFor( final DatumRange targetRange, boolean versioning, ProgressMonitor monitor ) throws IOException {
@@ -382,6 +385,8 @@ public class FileStorageModel {
         FileSystem[] fileSystems;
         String[] names;
 
+        oldVersions.clear();
+        
         if ( parent!=null ) {
             names= parent.getNamesFor(targetRange,versioning,new NullProgressMonitor());   // note recursive call
             fileSystems= new FileSystem[names.length];
@@ -423,8 +428,10 @@ public class FileStorageModel {
             if ( this.allowGz ) {
                 theListRegex= theListRegex+"(.gz)?";
             }
+            
             String[] files1= fileSystems[i].listDirectory( "/", theListRegex );
             logger.log( Level.FINER, "listDirectory({0})->{1}", new Object[]{theListRegex, files1.length});
+            
             for ( int j=0; j<files1.length; j++ ) {
                 String ff= names[i].equals("") ? files1[j] : names[i]+"/"+files1[j];
                 if ( ff.endsWith("/") ) ff=ff.substring(0,ff.length()-1);
@@ -447,6 +454,21 @@ public class FileStorageModel {
                     //System.err.println("ignoring file "+ff +" because of error when parsing as "+template);
                 }
                 monitor.setTaskProgress( i*10 + j * 10 / files1.length );
+            }
+            if ( fileSystems[i] instanceof WebFileSystem ) {
+                WebFileSystem wfs= (WebFileSystem)fileSystems[i];
+                File f= wfs.getLocalRoot();
+                FileSystem lfs= FileSystem.create( f.toURI() );
+                String[] files2= lfs.listDirectory( "/", theListRegex );
+                List<String> deleteRemote= new ArrayList();
+                List<String> remoteFiles= Arrays.asList( files1 );
+                for ( String s: files2 ) {
+                    if ( remoteFiles.indexOf(s)==-1 ) {
+                        deleteRemote.add(s);
+                    }
+                }
+                logger.fine("local files that do not exist on remote: "+deleteRemote );
+                oldVersions.addAll(deleteRemote);
             }
         }
 
@@ -480,7 +502,10 @@ public class FileStorageModel {
                                 && ( versionLt==null || comp.compare( thss, versionLt )<0 )
                                 && comp.compare( thss, best ) > 0 ) {
                             bestVersions.put( key,thss );
-                            bestFiles.put( key,ff );
+                            String rm= bestFiles.put( key,ff );
+                            if ( !oldVersions.contains(rm) ) {
+                                oldVersions.add(rm);
+                            }
                         }
                     } catch ( Exception ex ) {
                         logger.log( Level.WARNING, ex.getMessage(), ex );
@@ -488,6 +513,7 @@ public class FileStorageModel {
                     }
                 }
             }
+            
             list= Arrays.asList( bestFiles.values().toArray( new String[ bestFiles.size()] ) );
         }
 
@@ -528,6 +554,21 @@ public class FileStorageModel {
 
     public File[] getBestFilesFor( final DatumRange targetRange ) throws IOException {
         return getBestFilesFor( targetRange, new NullProgressMonitor() );
+    }
+    
+    /**
+     * remove files that have been identified as old versions.
+     */
+    public void cacheCleanup() {
+        if ( getFileSystem() instanceof LocalFileSystem ) {
+            logger.fine("local filesystems do not cache");
+        } else {
+            for ( String s: oldVersions ) {
+                if ( getFileSystem().getFileObject(s).removeLocalFile()==false ) {
+                    logger.finer("removeLocalFile returned false: "+s);
+                }
+            }
+        }
     }
 
     /**
