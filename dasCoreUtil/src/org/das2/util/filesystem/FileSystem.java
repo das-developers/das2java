@@ -443,8 +443,30 @@ public abstract class FileSystem  {
      * in "/" are themselves directories, and the "/" is not part of the name.
      * This is optional, and a directory may or may not be tagged with the trailing
      * slash.
+     * @param directory the directory name within the filesystem.
+     * @return list of files and folders within the filesystem.
+     * @throws java.io.IOException 
      */
     abstract public String[] listDirectory( String directory ) throws IOException;
+
+    /**
+     * returns a list of the names of the files in a directory.  Names ending
+     * in "/" are themselves directories, and the "/" is not part of the name.
+     * This is optional, and a directory may or may not be tagged with the trailing
+     * slash.  (REALLY?  This needs to be fixed...)
+     * 
+     * @param directory the directory name within the filesystem.
+     * @param monitor a progress monitor for the task.
+     * @return list of files and folders within the filesystem.
+     * @throws java.io.IOException 
+     */
+    public String[] listDirectory( String directory, ProgressMonitor monitor ) throws IOException {
+        monitor.started();
+        monitor.setProgressMessage( "listing "+directory );
+        String[] result= listDirectory( directory );
+        monitor.finished();
+        return result;
+    }
     
     /**
      * returns a list of the names of the files in a directory that match regex.
@@ -457,6 +479,26 @@ public abstract class FileSystem  {
      * @throws IOException
      */
     abstract public String[] listDirectory( String directory, String regex ) throws IOException;
+    
+    /**
+     * returns a list of the names of the files in a directory that match regex.
+     * Trailing slashes on directory names are not part of the name and need
+     * not be part of the regex.  
+     * Note regex is a regular expression (.*\.dat), not a glob (*.dat)
+     * 
+     * @param directory
+     * @param regex regular expression that must be matched, or null.
+     * @param monitor progress monitor for the task.  
+     * @return
+     * @throws IOException 
+     */
+    public String[] listDirectory( String directory, String regex, ProgressMonitor monitor ) throws IOException {
+        monitor.started();
+        monitor.setProgressMessage( "listing "+directory );
+        String[] result= listDirectory( directory, regex );
+        monitor.finished();
+        return result;
+    }
     
     /**
      * do a deep listing of directories, resolving wildcards along the way.  Note this
