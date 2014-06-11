@@ -1116,6 +1116,7 @@ public class DatumRangeUtil {
                 }
                 string= snew.toString();
             }
+            string= string.replaceAll("\\+"," "); // Allow Jan+2014
             return new TimeRangeParser().parse(string);
         }
     }
