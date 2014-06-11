@@ -241,6 +241,30 @@ public class WebFileObject extends FileObject {
         return this.localFile;
     }
 
+    @Override
+    public boolean removeLocalFile() {
+        if ( this.localFile==null ) {
+            logger.fine("failed to removeLocalFile, it is null.  Applet mode" );
+            return true;
+        }
+        if ( !this.localFile.exists() ) {
+            logger.fine("localfile does not exist." );
+            return true;
+        }
+        if ( this.localFile.canWrite() ) {
+            if ( !this.localFile.delete() ) {
+                logger.log(Level.FINE, "failed to removeLocalFile: {0}", this.localFile);
+                return false;
+            } else {
+                logger.log(Level.FINER, "local file was removed: {0}", localFile);
+                return true;
+            }
+        } else {
+            logger.log(Level.FINE, "user does not have access to delete the local file: {0}", this.localFile);
+            return true;
+        }
+    }
+
     public boolean exists() {
         if ( wfs.getReadOnlyCache()!=null ) {
             File f= wfs.getReadOnlyCache();

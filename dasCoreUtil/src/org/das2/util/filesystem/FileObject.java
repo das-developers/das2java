@@ -200,4 +200,14 @@ public abstract class FileObject {
     public <T> T getCapability( Class<T> clazz ) {
         return null;
     }
+
+    /**
+     * remove the local file in the cache, if any.  This can/will be overriden by other 
+     * filesystems.
+     * @return true if the action was handled.  (Local files are not deleted.)
+     */
+    public boolean removeLocalFile() {
+        return true;
+    }
+    
 }
