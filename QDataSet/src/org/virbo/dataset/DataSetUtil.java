@@ -1142,7 +1142,11 @@ public class DataSetUtil {
             Units qu= SemanticOps.getUnits(q);
             if ( UnitsUtil.isRatiometric(qu) || qu.isConvertableTo( SemanticOps.getUnits(xds).getOffsetUnits() ) ) {
                 if ( q.rank()==0 ) {    
-                    return (RankZeroDataSet) o;
+                    if ( q instanceof RankZeroDataSet ) {
+                        return (RankZeroDataSet) q;
+                    } else {
+                        return DRank0DataSet.create(q.value(),qu);
+                    }
                 
                 } else if ( o instanceof QDataSet ) {
                     while ( q.rank()>0 ) {
