@@ -204,6 +204,17 @@ public class DataSetAdapter {
             this.table= table;
             properties.put( QDataSet.UNITS, source.getYUnits() );
             properties.put( QDataSet.LABEL, source.getProperty( DataSet.PROPERTY_Y_LABEL ) );
+				properties.put( QDataSet.SCALE_TYPE, source.getProperty(DataSet.PROPERTY_Y_SCALETYPE));
+				
+				Datum d = (Datum) source.getProperty(DataSet.PROPERTY_Y_TAG_WIDTH);
+				if(d != null)
+					properties.put( QDataSet.CADENCE, DRank0DataSet.create(d));
+				
+				DatumRange yRng = (DatumRange) source.getProperty(DataSet.PROPERTY_Y_RANGE);
+				if(yRng != null){
+					properties.put( QDataSet.TYPICAL_MIN, yRng.min().value());
+					properties.put( QDataSet.TYPICAL_MAX, yRng.max().value());
+				}
 
         }
         public int rank() {
