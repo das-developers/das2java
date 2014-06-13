@@ -1832,6 +1832,26 @@ public class DataSetOps {
                             throw new IllegalArgumentException("expected argument to hanning filter");
                         }
                     }
+                } else if ( cmd.equals("|butterworth") ) { //int order, Datum f, boolean lowp 
+                    if ( fillDs.length()>0 ) {
+                        if ( s.hasNextInt() ) {
+                            int order= s.nextInt();
+                            String f= s.next();
+                            String arg= s.next();
+                            if ( s.hasNext() ) {
+                                String flow= f;
+                                String fhigh= arg;
+                                arg= s.next();
+                                arg= arg.toLowerCase();
+                                fillDs= Ops.butterworth( fillDs, order, Units.hertz.parse(flow), Units.hertz.parse(fhigh), arg.startsWith("t") ); 
+                            } else {
+                                arg= arg.toLowerCase();
+                                fillDs= Ops.butterworth( fillDs, order, Units.hertz.parse(f), arg.startsWith("t") );
+                            }
+                        } else {
+                            throw new IllegalArgumentException("expected argument to butterworth filter");
+                        }
+                    }
 
                 } else if ( cmd.equals("|unbundle" ) ) {
                     String comp= getStringArg( s.next() );
