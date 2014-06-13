@@ -119,13 +119,20 @@ public final class PropertyType {
 					Datum end = Units.dimensionless.parse(split[2]);
 					return new DatumRange(begin, end);
 				}
-				if (split.length == 4){
-					Units units = Units.lookupUnits(split[3]);
-					Datum begin = units.parse(split[0]);
-					Datum end = units.parse(split[2]);
-					return new DatumRange(begin, end);
+				
+				// New for 2014-06-12, allow units strings to have spaces, thus
+				// "V**2 m**-2 Hz**-1" is legal
+				StringBuilder bldr = new StringBuilder();
+				for(int i = 3; i < split.length; i++){
+					if(i > 3) bldr.append(" ");
+					bldr.append(split[i]);
 				}
-				throw new IllegalArgumentException("Too many tokens in range: '" + s + "'");
+			
+				Units units = Units.lookupUnits(bldr.toString());	
+				Datum begin = units.parse(split[0]);
+				Datum end = units.parse(split[2]);
+				return new DatumRange(begin, end);
+				
 		  }
         else {
             throw new IllegalStateException("unrecognized name: " + name);
