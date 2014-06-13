@@ -75,11 +75,11 @@ public class Butterworth extends AbstractFilter {
          * Generate a Butterworth band pass/reject filter at the given cutoff
          * frequencies.
          *
-         * @param source
+         * @param source rank 1 dataset
          * @param order
          * @param freq1 in Hz
          * @param freq2 in Hz
-         * @param pass true for bandpass, false for bandreject
+         * @param pass true for bandpass, false for band reject
          */
         public Butterworth( QDataSet source, int order, Datum freq1, Datum freq2, boolean pass) {
                 super(source);
