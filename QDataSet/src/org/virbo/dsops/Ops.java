@@ -878,7 +878,7 @@ public class Ops {
      * @param in the rank 1 waveform
      * @param order the order of the filter (2,3,4)
      * @param f the frequency, e.g. Units.hertz.createDatum(10)
-     * @param pass true for low pass, false for high pass.
+     * @param lowp true for low pass, false for high pass.
      * @return the dataset in the same form.
      */    
     public static QDataSet butterworth( QDataSet in, int order, Datum f, boolean lowp ) {
