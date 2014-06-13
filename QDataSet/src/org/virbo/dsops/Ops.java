@@ -34,6 +34,7 @@ import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
+import org.das2.math.filter.Butterworth;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
@@ -872,6 +873,32 @@ public class Ops {
         return sqrt( dataset(ds1) );
     }
     
+    /**
+     * Perform Butterworth filter for high pass or low pass.
+     * @param in the rank 1 waveform
+     * @param order the order of the filter (2,3,4)
+     * @param f the frequency, e.g. Units.hertz.createDatum(10)
+     * @param pass true for low pass, false for high pass.
+     * @return the dataset in the same form.
+     */    
+    public static QDataSet butterworth( QDataSet in, int order, Datum f, boolean lowp ) {
+        Butterworth b= new Butterworth( in, order, f, lowp );
+        return b.filter();
+    }
+
+    /**
+     * Perform Butterworth filter for notch or band pass or band reject.
+     * @param in the rank 1 waveform
+     * @param order the order of the filter (2,3,4)
+     * @param flow the lower band limit, e.g. Units.hertz.createDatum(10)
+     * @param fhigh the higher band limit, e.g. Units.hertz.createDatum(20)
+     * @param pass true for band pass, false for band reject.
+     * @return the dataset in the same form.
+     */
+    public static QDataSet butterworth( QDataSet in, int order, Datum flow, Datum fhigh, boolean pass ) {
+        Butterworth b= new Butterworth( in, order, flow, fhigh, pass );
+        return b.filter();
+    }
     
     /**
      * Solves each of a set of cubic equations of the form:
