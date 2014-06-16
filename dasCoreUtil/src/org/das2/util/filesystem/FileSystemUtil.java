@@ -34,7 +34,7 @@ public class FileSystemUtil {
 
     private final static Logger logger= LoggerManager.getLogger( "das2.filesystem" );
     /**
-     * Dump the contents of the inputstream into a file.  If the inputStream comes
+     * Dump the contents of the InputStream into a file.  If the inputStream comes
      * from a file, then java.nio is used to transfer the data quickly.
      * @param in
      * @param f
@@ -65,20 +65,23 @@ public class FileSystemUtil {
 
     /**
      * encapsulate the logic that cleanly closes both channels.  
-     * This is an experiment to see if this satisfies findbugs OBL_UNSATISFIED_OBLIGATION, and it does!
-     * @param ch1 channel that needs closing
-     * @param ch2 channel that needs closing.
+     * @param chout channel that needs closing
+     * @param chin channel that needs closing.
+     * @throws java.io.IOException
      */
-    public static void closeResources( Channel chout, Channel chin ) throws IOException {
+    private static void closeResources( Channel chout, Channel chin ) throws IOException {
         if ( chout!=null && chout.isOpen() ) {
             try { 
                 chout.close(); 
             } finally {
-                if ( chin!=null && chin.isOpen() ) chin.close();
             }
-        } else {
-            if ( chin!=null && chin.isOpen() ) chin.close();
         }        
+        if ( chin!=null && chin.isOpen() ) {
+            try { 
+                chin.close(); 
+            } finally {
+            }
+        } 
     }
     
     /**
