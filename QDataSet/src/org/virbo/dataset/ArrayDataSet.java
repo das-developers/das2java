@@ -613,13 +613,17 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         Boolean m= (Boolean) ths.property( QDataSet.MONOTONIC );
         if ( m!=null && m.equals(Boolean.TRUE) && m.equals( ds.property( QDataSet.MONOTONIC ) ) ) {
             // check to see that result would be monotonic
-            int[] fl1= DataSetUtil.rangeOfMonotonic( ths );
-            int[] fl2= DataSetUtil.rangeOfMonotonic( ds );
-            Units u1= SemanticOps.getUnits(ds);
-            Units u2= SemanticOps.getUnits(ths);
-            UnitsConverter uc= u2.getConverter(u1);
-            if ( ds.value(fl2[0]) -  uc.convert( ths.value(fl1[1]) ) >= 0 ) { 
-                result.put( QDataSet.MONOTONIC, Boolean.TRUE );
+            try {
+                int[] fl1= DataSetUtil.rangeOfMonotonic( ths );
+                int[] fl2= DataSetUtil.rangeOfMonotonic( ds );
+                Units u1= SemanticOps.getUnits(ds);
+                Units u2= SemanticOps.getUnits(ths);
+                UnitsConverter uc= u2.getConverter(u1);
+                if ( ds.value(fl2[0]) -  uc.convert( ths.value(fl1[1]) ) >= 0 ) { 
+                    result.put( QDataSet.MONOTONIC, Boolean.TRUE );
+                }
+            } catch ( IllegalArgumentException ex ) {
+                logger.fine("rte_1282463981: can't show that result has monotonic timetags because each dataset is not monotonic.");
             }
         }
 
