@@ -1343,9 +1343,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
     }
 
-    private TickVDescriptor updateTickVLog() {
-
-        DatumRange dr= getDatumRange();
+    private TickVDescriptor updateTickVLog( DatumRange dr ) {
 
         GrannyTextRenderer idlt = new GrannyTextRenderer();
         idlt.setString(this.getTickLabelFont(), "10!U-10");
@@ -1365,9 +1363,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     }
 
-    private TickVDescriptor updateTickVLinear() {
-
-        DatumRange dr= getDatumRange();
+    private TickVDescriptor updateTickVLinear( DatumRange dr ) {
 
         TickVDescriptor tickV1;
 
@@ -1538,8 +1534,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     }
 
-    private TickVDescriptor updateTickVDomainDivider() {
-        DatumRange dr = getDatumRange();
+    private TickVDescriptor updateTickVDomainDivider( DatumRange dr ) {
 
         try {
             long nminor= minorTicksDomainDivider.boundaryCount( dr.min(), dr.max() );
@@ -1560,11 +1555,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    private TickVDescriptor updateTickVTime() {
+    private TickVDescriptor updateTickVTime( DatumRange dr ) {
 
         int nTicksMax;
 
-        DatumRange dr = getDatumRange();
         Datum pixel = dr.width().divide(getDLength());
         DatumFormatter tdf;
 
@@ -1718,6 +1712,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     protected void updateTickV() {
         boolean lautoTickV= getAutoTickV();
+        DatumRange dr= getDatumRange();
+        if ( !dr.min().isFinite() && !dr.max().isFinite() ) {
+            logger.info( "range is not finite...");
+            return; 
+        }
         if (!valueIsAdjusting()) {
             if ( getFont()==null ) return;
             
@@ -1733,17 +1732,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     throw new IllegalArgumentException("datum range width is zero" );
                 }
                 if (majorTicksDomainDivider != null) {
-                    TickVDescriptor newTicks= updateTickVDomainDivider();
+                    TickVDescriptor newTicks= updateTickVDomainDivider(dr);
                     TickMaster.getInstance().offerTickV( this, newTicks );
                 } else {
                     TickVDescriptor newTicks;
                     synchronized ( tickLock ) {
                         if (getUnits() instanceof TimeLocationUnits) {
-                            newTicks= updateTickVTime();
+                            newTicks= updateTickVTime(dr);
                         } else if (dataRange.isLog()) {
-                            newTicks= updateTickVLog();
+                            newTicks= updateTickVLog(dr);
                         } else {
-                            newTicks= updateTickVLinear();
+                            newTicks= updateTickVLinear(dr);
                         }
                     }
                     //resetTickV(newTicks);
@@ -1755,16 +1754,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (lautoTickV) {
                 try {
                     if (majorTicksDomainDivider != null) {
-                        TickVDescriptor newTicks= updateTickVDomainDivider();
+                        TickVDescriptor newTicks= updateTickVDomainDivider(dr);
                         TickMaster.getInstance().offerTickV( this, newTicks );
                     } else {
                         TickVDescriptor newTicks= null;
                         if (getUnits() instanceof TimeLocationUnits) {
-                            newTicks= updateTickVTime();
+                            newTicks= updateTickVTime(dr);
                         } else if (dataRange.isLog()) {
-                            newTicks= updateTickVLog();
+                            newTicks= updateTickVLog(dr);
                         } else {
-                            newTicks= updateTickVLinear();
+                            newTicks= updateTickVLinear(dr);
                         }
                         //resetTickV(newTicks);
                         if ( this.tickV==null ) this.tickV= newTicks;  // transition cases
