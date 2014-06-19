@@ -107,7 +107,7 @@ public class SeriesRenderer extends Renderer {
     boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
     boolean xunitsWarning= false;
 
-    private static final Logger log = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
+    private static final Logger logger = LoggerManager.getLogger("das2.graphics.renderer.series");
     /**
      * indicates the dataset was clipped by dataSetSizeLimit 
      */
@@ -623,6 +623,8 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
 
+            long t0= System.currentTimeMillis();
+            
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
@@ -777,7 +779,9 @@ public class SeriesRenderer extends Renderer {
                     newPath.lineTo(fx, fy0);
                 }
             }
-
+            
+            logger.fine( String.format("time to create general path (ms): "+ ( System.currentTimeMillis()-t0  ) ) );
+            
             if (!histogram && simplifyPaths && colorByDataSetId.length()==0 ) {
                 //j   System.err.println( "input: " );
                 //j   System.err.println( GraphUtil.describe( newPath, true) );
@@ -1372,11 +1376,11 @@ public class SeriesRenderer extends Renderer {
 
         if (tds != null) {
             graphics.setColor(color);
-            log.log(Level.FINEST, "drawing psymConnector in {0}", color);
+            logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
             int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, tds, mon); // tds is only to check units
 
-            log.log(Level.FINEST, "connectCount: {0}", connectCount);
+            logger.log(Level.FINEST, "connectCount: {0}", connectCount);
             errorElement.render(graphics, xAxis, yAxis, tds, mon);
 
         } else {
@@ -1386,17 +1390,17 @@ public class SeriesRenderer extends Renderer {
             }
 
             graphics.setColor(color);
-            log.log(Level.FINEST, "drawing psymConnector in {0}", color);
+            logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
             int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon); // vds is only to check units
-            log.log(Level.FINEST, "connectCount: {0}", connectCount);
+            logger.log(Level.FINEST, "connectCount: {0}", connectCount);
             errorElement.render(graphics, xAxis, yAxis, vds, mon);
 
             int symCount;
             if (psym != DefaultPlotSymbol.NONE) {
 
                 symCount= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
-                log.log(Level.FINEST, "symCount: {0}", symCount);
+                logger.log(Level.FINEST, "symCount: {0}", symCount);
                 
                 mon.finished();
             }
@@ -1407,7 +1411,7 @@ public class SeriesRenderer extends Renderer {
 
         setRenderPointsPerMillisecond(dppms);
 
-        logger.log(Level.FINER, "render: {0} total:{1} fps:{2} pts/ms:{3}", new Object[]{renderTime, milli - lastUpdateMillis, 1000. / (milli - lastUpdateMillis), dppms});
+        logger.log(Level.FINER, "render: {0}ms total:{1} fps:{2} pts/ms:{3}", new Object[]{renderTime, milli - lastUpdateMillis, 1000. / (milli - lastUpdateMillis), dppms});
         lastUpdateMillis = milli;
 
         int ldataSetSizeLimit= getDataSetSizeLimit();
