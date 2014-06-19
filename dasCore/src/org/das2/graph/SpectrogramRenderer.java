@@ -878,9 +878,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             this.raster = null;
             clearPlotImage();
             updateCacheImage();
-            propertyChangeSupport.firePropertyChange("rebinner", old, rebinnerEnum);
+            propertyChangeSupport.firePropertyChange(PROP_REBINNER, old, rebinnerEnum);
         }
     }
+    
+    public static final String PROP_REBINNER = "rebinner";
 
     /** Getter for property sliceRebinnedData.
      * @return Value of property sliceRebinnedData.
