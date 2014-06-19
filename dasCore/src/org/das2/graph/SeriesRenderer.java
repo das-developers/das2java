@@ -199,7 +199,7 @@ public class SeriesRenderer extends Renderer {
 
 
 
-    class PsymRenderElement implements RenderElement {
+    private class PsymRenderElement implements RenderElement {
 
         int[] colors; // store the color index  of each psym
 
@@ -454,7 +454,7 @@ public class SeriesRenderer extends Renderer {
         }
     }
 
-    class ErrorBarRenderElement implements RenderElement {
+    private class ErrorBarRenderElement implements RenderElement {
 
         GeneralPath p;
 
@@ -550,11 +550,7 @@ public class SeriesRenderer extends Renderer {
         }
     }
 
-    class PsymConnectorRenderElement implements RenderElement {
-
-        private GeneralPath path1;
-
-//        private void dumpPath( ) {
+//        private static void dumpPath( GeneralPath path1 ) {
 //            if ( path1!=null ) {
 //                try {
 //                    BufferedWriter w= new BufferedWriter( new FileWriter("/tmp/foo.dat") );
@@ -570,7 +566,12 @@ public class SeriesRenderer extends Renderer {
 //                    ex.printStackTrace();
 //                }
 //            }
-//        }        
+//        }     
+    
+    private class PsymConnectorRenderElement implements RenderElement {
+
+        private GeneralPath path1;
+   
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
             if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) ) {
