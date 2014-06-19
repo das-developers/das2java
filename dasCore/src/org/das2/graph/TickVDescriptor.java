@@ -167,6 +167,12 @@ public class TickVDescriptor {
 
     /**
      * return a set of linear ticks, within the given constraints.
+     * @param min the minimum
+     * @param max the maximum
+     * @param nTicksMin the minimum number of ticks.
+     * @param nTicksMax the maximum number of ticks.
+     * @param fin final, useful when debugging.
+     * @return 
      */
     public static TickVDescriptor bestTickVLinear(Datum min, Datum max, int nTicksMin, int nTicksMax, boolean fin) {
         
