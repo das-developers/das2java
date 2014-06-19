@@ -26,7 +26,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 /**
- *
+ * Draw one of a set of commonly used plot symbols, such as box, diamond, circle or star.
  * @author jbf
  */
 public class DefaultPlotSymbol implements Enumeration, Displayable, PlotSymbol, PathIterable {
