@@ -320,7 +320,7 @@ public class GraphUtil {
 
     /**
      * Returns the input GeneralPath filled with new points which will be rendered identically to the input path,
-     * but contains a minimal number of points.  We bin average the points within a cell, because descretization
+     * but contains a minimal number of points.  We bin average the points within a cell, because discretization
      * would mess up the label orientation in contour plotting.
      *
      * a new GeneralPath which will be rendered identically to the input path,
@@ -335,7 +335,7 @@ public class GraphUtil {
     }
     /**
      * Returns the input GeneralPath filled with new points which will be rendered identically to the input path,
-     * but contains a minimal number of points.  We bin average the points within a cell, because descretization
+     * but contains a minimal number of points.  We bin average the points within a cell, because discretization
      * would mess up the label orientation in contour plotting.
      *
      * a new GeneralPath which will be rendered identically to the input path,
@@ -586,7 +586,7 @@ public class GraphUtil {
                 lineToCount++;
             }
             if (enumeratePoints) {
-                //j   System.err.println(" " + coords[0] + " " + coords[1]);
+                System.err.println(" " + coords[0] + " " + coords[1]);
             }
             count++;
             it.next();
