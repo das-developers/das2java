@@ -86,9 +86,9 @@ import org.w3c.dom.Element;
 public class SeriesRenderer extends Renderer {
 
     private DefaultPlotSymbol psym = DefaultPlotSymbol.CIRCLES;
-    private double symSize = 3.0; // radius in pixels
+    private float symSize = 3.0f; // radius in pixels
 
-    private double lineWidth = 1.0; // width in pixels
+    private float lineWidth = 1.0f; // width in pixels
 
     private boolean histogram = false;
     private PsymConnector psymConnector = PsymConnector.SOLID;
@@ -253,7 +253,7 @@ public class SeriesRenderer extends Renderer {
          */
         private int renderDraw(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
-            float fsymSize = (float) symSize;
+            float fsymSize = symSize;
 
             QDataSet colorByDataSet=null;
             if ( colorByDataSetId != null && !colorByDataSetId.equals("")) {
@@ -511,10 +511,10 @@ public class SeriesRenderer extends Renderer {
 
             lp = new GeneralPath();
             for (int i = firstIndex; i < lastIndex; i++) {
-                float ix = (float) xAxis.transform( xds.value(i), xunits );
+                double ix = xAxis.transform( xds.value(i), xunits );
                 if ( wup.value(i)>0 && wdn.value(i)>0 ) {
-                    float iym = (float) yAxis.transform( dn.value(i), yunits );
-                    float iyp = (float) yAxis.transform( up.value(i), yunits );
+                    double iym = yAxis.transform( dn.value(i), yunits );
+                    double iyp = yAxis.transform( up.value(i), yunits );
                     lp.moveTo(ix, iym);
                     lp.lineTo(ix, iyp);
                 }
@@ -582,7 +582,7 @@ public class SeriesRenderer extends Renderer {
                 return 0;
             }
             //dumpPath();
-            psymConnector.draw(g, lpath1, (float) lineWidth);
+            psymConnector.draw(g, lpath1, (float)lineWidth);
             return 0;
         }
 
@@ -656,10 +656,10 @@ public class SeriesRenderer extends Renderer {
             double x0; /* the last plottable point */
             //double y0; /* the last plottable point */
 
-            float fx;
-            float fy;
-            float fx0;
-            float fy0;
+            double fx;
+            double fy;
+            double fx0;
+            double fy0;
             boolean visible;  // true if this point can be seen
             boolean visible0; // true if the last point can be seen
             
@@ -672,13 +672,13 @@ public class SeriesRenderer extends Renderer {
             // first point //
             logger.log(Level.FINE, "firstPoint moveTo,LineTo= {0},{1}", new Object[]{x, y});
             try {
-                fx = (float) xAxis.transform(x, xUnits);
+                fx = xAxis.transform(x, xUnits);
             } catch ( InconvertibleUnitsException ex ) {
                 xunitsWarning= true;
                 return;
             }
             try {
-                fy = (float) yAxis.transform(y, yUnits);
+                fy = yAxis.transform(y, yUnits);
             } catch ( InconvertibleUnitsException ex ) {
                 unitsWarning= true;
                 return;
@@ -686,7 +686,7 @@ public class SeriesRenderer extends Renderer {
 
             visible0= window.contains(fx,fy);
             if (histogram) {
-                float fx1 = midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
+                double fx1 = midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
                 newPath.moveTo(fx1, fy);
                 newPath.lineTo(fx, fy);
             } else {
@@ -712,8 +712,8 @@ public class SeriesRenderer extends Renderer {
 
                 isValid = wds.value( index )>0 && xUnits.isValid(x);
 
-                fx = (float) xAxis.transform(x, xUnits);
-                fy = (float) yAxis.transform(y, yUnits);
+                fx = xAxis.transform(x, xUnits);
+                fy = yAxis.transform(y, yUnits);
                 visible= isValid && window.intersectsLine( fx0,fy0, fx,fy );
                 
                 if (isValid) {
@@ -721,7 +721,7 @@ public class SeriesRenderer extends Renderer {
                     if ( ignoreCadence || step < xSampleWidth) {
                         // draw connect-a-dot between last valid and here
                         if (histogram) {
-                            float fx1 = (fx0 + fx) / 2;
+                            double fx1 = (fx0 + fx) / 2;
                             newPath.lineTo(fx1, fy0);
                             newPath.lineTo(fx1, fy);
                             newPath.lineTo(fx, fy);
@@ -738,10 +738,10 @@ public class SeriesRenderer extends Renderer {
                     } else {
                         // introduce break in line
                         if (histogram) {
-                            float fx1 = (float) xAxis.transform(x0 + xSampleWidthExact / 2, xUnits);
+                            double fx1 = xAxis.transform(x0 + xSampleWidthExact / 2, xUnits);
                             newPath.lineTo(fx1, fy0);
                             // there's a bug here if you pan around the dataset shown in SeriesBreakHist.java
-                            fx1 = (float) xAxis.transform(x - xSampleWidthExact / 2, xUnits);
+                            fx1 = xAxis.transform(x - xSampleWidthExact / 2, xUnits);
                             newPath.moveTo(fx1, fy);
                             newPath.lineTo(fx, fy);
 
@@ -763,7 +763,7 @@ public class SeriesRenderer extends Renderer {
                 } else {
                     if (visible0) {
                         if ( histogram ) {
-                            float fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
+                            double fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
                             newPath.lineTo(fx1, fy0);
                         } else {
                             newPath.moveTo(fx0, fy0); // place holder
@@ -776,7 +776,7 @@ public class SeriesRenderer extends Renderer {
 
             if ( histogram ) {
                 if ( isValid ) {
-                    fx = (float) xAxis.transform( x + xSampleWidthExact / 2, xUnits );
+                    fx = xAxis.transform( x + xSampleWidthExact / 2, xUnits );
                     newPath.lineTo(fx, fy0);
                 }
             }
@@ -793,6 +793,7 @@ public class SeriesRenderer extends Renderer {
                 this.path1 = newPath;
             }
 
+            //GraphUtil.describe( path1, true );
         }
 
         @Override
@@ -822,12 +823,12 @@ public class SeriesRenderer extends Renderer {
         }
     }
 
-    private float midPoint(DasAxis axis, double d1, Units units, double delta, boolean ratiometric, double alpha ) {
-        float fx1;
+    private double midPoint(DasAxis axis, double d1, Units units, double delta, boolean ratiometric, double alpha ) {
+        double fx1;
         if (axis.isLog() && ratiometric ) {
-            fx1 = (float) axis.transform( Math.exp( Math.log(d1) + delta * alpha ), units);
+            fx1 = (double) axis.transform( Math.exp( Math.log(d1) + delta * alpha ), units);
         } else {
-            fx1 = (float) axis.transform( d1 + delta * alpha, units);
+            fx1 = (double) axis.transform( d1 + delta * alpha, units);
         }
         return fx1;
     }
@@ -938,23 +939,23 @@ public class SeriesRenderer extends Renderer {
             double x0; /* the last plottable point */
             //double y0; /* the last plottable point */
 
-            float fyref = (float) yAxis.transform(yref, yUnits);
-            float fx;
-            float fy;
-            float fx0;
-            float fy0;
+            double fyref = yAxis.transform(yref, yUnits);
+            double fx;
+            double fy;
+            double fx0;
+            double fy0;
 
             int index;
 
             index = firstIndex;
-            x = (double) xds.value(index);
-            y = (double) vds.value(index);
+            x = xds.value(index);
+            y = vds.value(index);
 
             // first point //
-            fx = (float) xAxis.transform(x, xUnits);
-            fy = (float) yAxis.transform(y, yUnits);
+            fx = xAxis.transform(x, xUnits);
+            fy = yAxis.transform(y, yUnits);
             if (histogram) {
-                float fx1;
+                double fx1;
                 fx1= midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
                 fillPath.moveTo(fx1-1, fyref); // doesn't line up, -1 is fudge
                 fillPath.lineTo(fx1-1, fy);
@@ -981,15 +982,15 @@ public class SeriesRenderer extends Renderer {
 
                     final boolean isValid = wds.value( index )>0 && xUnits.isValid(x);
 
-                    fx = (float) xAxis.transform(x, xUnits);
-                    fy = (float) yAxis.transform(y, yUnits);
+                    fx = xAxis.transform(x, xUnits);
+                    fy = yAxis.transform(y, yUnits);
 
                     if (isValid) {
                         double step= logStep ? Math.log(x/x0) : x-x0;
                         if ( ignoreCadence || step < xSampleWidth) {
                             // draw connect-a-dot between last valid and here
                             if (histogram) {
-                                float fx1 = (fx0 + fx) / 2; //sloppy with ratiometric spacing
+                                double fx1 = (fx0 + fx) / 2; //sloppy with ratiometric spacing
                                 fillPath.lineTo(fx1, fy0);
                                 fillPath.lineTo(fx1, fy);
                                 fillPath.lineTo(fx, fy);
@@ -1000,7 +1001,7 @@ public class SeriesRenderer extends Renderer {
                         } else {
                             // introduce break in line
                             if (histogram) {
-                                float fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
+                                double fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
                                 fillPath.lineTo(fx1, fy0);
                                 fillPath.lineTo(fx1, fyref);
                                 fx1 = midPoint( xAxis, x, xUnits, xSampleWidthExact, logStep, -0.5 );
@@ -1028,7 +1029,7 @@ public class SeriesRenderer extends Renderer {
             }
 
             if ( histogram ) {
-                float fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
+                double fx1 = midPoint( xAxis, x0, xUnits, xSampleWidthExact, logStep, 0.5 );
                 fillPath.lineTo(fx1, fy0);
                 fillPath.lineTo(fx1, fyref);
             } else {
@@ -1077,7 +1078,7 @@ public class SeriesRenderer extends Renderer {
         
         g.setStroke(new BasicStroke((float) lineWidth));
 
-        psym.draw(g, dcmx, dcmy, (float) symSize, fillStyle);
+        psym.draw(g, dcmx, dcmy, symSize, fillStyle);
         psymImage = image;
 
         DasColorBar lcolorBar=  this.colorBar;
@@ -1102,7 +1103,7 @@ public class SeriesRenderer extends Renderer {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
             g.setColor(c);
             g.setStroke(new BasicStroke((float) lineWidth));
-            psym.draw(g, dcmx, dcmy, (float) symSize, this.fillStyle);
+            psym.draw(g, dcmx, dcmy, symSize, this.fillStyle);
             coloredPsyms[i] = image;
         }
     }
@@ -1855,13 +1856,13 @@ public class SeriesRenderer extends Renderer {
      * @param symSize New value of property symsize.
      */
     public void setSymSize(double symSize) {
-        double old = this.symSize;
+        float old = this.symSize;
         if (this.symSize != symSize) {
-            this.symSize = symSize;
+            this.symSize =(float)symSize;
             setPsym(this.psym);
             updatePsym();
             refreshRender();
-            propertyChangeSupport.firePropertyChange("symSize", new Double(old), new Double(symSize));
+            propertyChangeSupport.firePropertyChange("symSize", old, symSize );
         }
 
     }
@@ -1894,13 +1895,17 @@ public class SeriesRenderer extends Renderer {
         return lineWidth;
     }
 
+    /**
+     * set the width of the connecting lines.
+     * @param f 
+     */
     public void setLineWidth(double f) {
         double old = this.lineWidth;
         if (this.lineWidth != f) {
-            lineWidth = f;
+            lineWidth = (float)f;
             updatePsym();
             refreshRender();
-            propertyChangeSupport.firePropertyChange("lineWidth", new Double(old), new Double(f));
+            propertyChangeSupport.firePropertyChange("lineWidth", old, f );
         }
 
     }
@@ -1954,7 +1959,7 @@ public class SeriesRenderer extends Renderer {
 
     /**
      * Setter for property fillReference.
-     * @param fillReference New value of property fillReference.
+     * @param color the color
      */
     public void setFillColor(Color color) {
         Color old = this.fillColor;
