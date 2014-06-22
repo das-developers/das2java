@@ -376,26 +376,26 @@ public class GraphUtil {
                 boolean atMaxy=false;
                 exity= y0;
                 if ( miny==maxy ) { // implies entryx==exitx
-                    result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+                    result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
                     atMaxy=true;
                     atMiny=true;
                 } else if ( entryy==miny ) {
-                    result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+                    result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
                     atMiny= true;
                 } else if ( entryy==maxy ) {
-                    result.lineTo( ((float)x0)/resd, ((float)maxy)/resd );  points++;
+                    result.lineTo( ((float)x0)*resn/resd, ((float)maxy)*resn/resd );  points++;
                     atMaxy= true;
                 } else {
-                    result.lineTo( ((float)x0)/resd, ((float)entryy)/resd );  points++;
-                    result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+                    result.lineTo( ((float)x0)*resn/resd, ((float)entryy)*resn/resd );  points++;
+                    result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
                     atMiny= true;
                 }
                 if ( miny<maxy ) {
                     if ( atMiny ) {
-                        result.lineTo(  ((float)x0)/resd, ((float)maxy)/resd );  points++;
+                        result.lineTo(  ((float)x0)*resn/resd, ((float)maxy)*resn/resd );  points++;
                         atMaxy= true;
                     } else if ( !atMiny ) {
-                        result.lineTo(  ((float)x0)/resd, ((float)miny)/resd );  points++;
+                        result.lineTo(  ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
                         atMiny= true;                                         
                     }
                 }
@@ -404,9 +404,9 @@ public class GraphUtil {
                     // nothing to do
                 } else if ( exity==miny ) {
                     if ( atMiny ) {
-                        result.lineTo( ((float)x0)/resd, ((float)exity)/resd );  points++;
+                        result.lineTo( ((float)x0)*resn/resd, ((float)exity)*resn/resd );  points++;
                     } else if ( atMaxy ) {
-                        result.lineTo( ((float)x0)/resd, ((float)exity)/resd );  points++;
+                        result.lineTo( ((float)x0)*resn/resd, ((float)exity)*resn/resd );  points++;
                     } else {
                         throw new RuntimeException("shouldn't get here 1");
                     }
@@ -419,13 +419,13 @@ public class GraphUtil {
                         throw new RuntimeException("shouldn't get here");
                     }
                 } else {
-                    result.lineTo( ((float)x0)/resd, ((float)exity)/resd );  points++;
+                    result.lineTo( ((float)x0)*resn/resd, ((float)exity)*resn/resd );  points++;
                 }
                 
                 if ( type==PathIterator.SEG_LINETO ) {
-                    result.lineTo( ((float)xx)/resd, ((float)yy)/resd );  points++;
+                    result.lineTo( ((float)xx)*resn/resd, ((float)yy)*resn/resd );  points++;
                 } else if ( type==PathIterator.SEG_MOVETO ) {
-                    result.moveTo( ((float)xx)/resd, ((float)yy)/resd );  points++;
+                    result.moveTo( ((float)xx)*resn/resd, ((float)yy)*resn/resd );  points++;
                 }
                 
                 entryy= yy;             
@@ -435,7 +435,7 @@ public class GraphUtil {
             }
             
             if ( type == PathIterator.SEG_MOVETO ) {
-                result.moveTo( ((float)xx/resd), ((float)yy)/resd );
+                result.moveTo( ((float)xx)*resn/resd, ((float)yy)*resn/resd );
                 points++;
             }
 
@@ -446,14 +446,14 @@ public class GraphUtil {
         }
         
         if ( miny==maxy ) { // implies entryx==exitx
-            result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+            result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
         } else if ( entryy==miny ) {
-            result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+            result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
         } else if ( entryy==maxy ) {
-            result.lineTo( ((float)x0)/resd, ((float)maxy)/resd );  points++;
+            result.lineTo( ((float)x0)*resn/resd, ((float)maxy)*resn/resd );  points++;
         } else {
-            result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
-            result.lineTo( ((float)x0)/resd, ((float)maxy)/resd );  points++;
+            result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
+            result.lineTo( ((float)x0)*resn/resd, ((float)maxy)*resn/resd );  points++;
         }
         
         logger.log(Level.FINE, "reduce {0} to {1} in {2}ms", new Object[]{inCount, points, System.currentTimeMillis()-t0 });
