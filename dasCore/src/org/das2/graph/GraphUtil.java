@@ -318,6 +318,149 @@ public class GraphUtil {
 //        return result;
 //    }
 
+
+    /**
+     * New ReducePath reduces a path by keeping track of vertically collinear points, and reducing them to an entry
+     * point, an exit point, min and max.  This can be all four in one point.
+     * @param it input path.
+     * @param result output path.
+     * @param resn the resolution numerator (e.g. 1)
+     * @param resd the resolution denominator (e.g. 5)
+     * @return 
+     */
+    public static int reducePath20140622( PathIterator it, GeneralPath result, int resn, int resd ) {
+        logger.fine( "enter reducePath20140622" );
+        long t0= System.currentTimeMillis();
+        
+        float[] p = new float[6];
+
+        int x0 = -99999;
+        int y0 = -99999;
+        int entryy= -99999;
+        int exity;
+        int miny= 99999;
+        int maxy= -99999;
+
+        int type0 = -999; // the previous segment type.
+
+        //String[] types = new String[]{"M", "L", "QUAD", "CUBIC", "CLOSE"};
+
+        int points = 0;
+        int inCount = 0;
+
+        while (!it.isDone()) {
+            inCount++;
+
+            int type = it.currentSegment(p);
+            it.next();
+            int xx = (int)( (p[0]*resd) ) / resn;
+            int yy = (int)( (p[1]*resd) ) / resn;
+            
+            if ( type0==-999 ) {
+                result.moveTo((float)xx/resd,(float)yy/resd);
+                x0= xx;
+                entryy= yy;
+                miny= yy;
+                maxy= yy;
+            }
+            
+            if ( (type == PathIterator.SEG_MOVETO ) && xx==x0 ) {
+                // do nothing
+            } else if ( (type == PathIterator.SEG_LINETO || type == type0) && xx==x0 ) {
+                miny= Math.min( miny, yy );
+                maxy= Math.max( maxy, yy );
+            }
+            
+            if ( xx!=x0 ) {
+                boolean atMiny=false;
+                boolean atMaxy=false;
+                exity= y0;
+                if ( miny==maxy ) { // implies entryx==exitx
+                    result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+                    atMaxy=true;
+                    atMiny=true;
+                } else if ( entryy==miny ) {
+                    result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+                    atMiny= true;
+                } else if ( entryy==maxy ) {
+                    result.lineTo( ((float)x0)/resd, ((float)maxy)/resd );  points++;
+                    atMaxy= true;
+                } else {
+                    result.lineTo( ((float)x0)/resd, ((float)entryy)/resd );  points++;
+                    result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+                    atMiny= true;
+                }
+                if ( miny<maxy ) {
+                    if ( atMiny ) {
+                        result.lineTo(  ((float)x0)/resd, ((float)maxy)/resd );  points++;
+                        atMaxy= true;
+                    } else if ( !atMiny ) {
+                        result.lineTo(  ((float)x0)/resd, ((float)miny)/resd );  points++;
+                        atMiny= true;                                         
+                    }
+                }
+                
+                if ( miny==maxy ) {
+                    // nothing to do
+                } else if ( exity==miny ) {
+                    if ( atMiny ) {
+                        result.lineTo( ((float)x0)/resd, ((float)exity)/resd );  points++;
+                    } else if ( atMaxy ) {
+                        result.lineTo( ((float)x0)/resd, ((float)exity)/resd );  points++;
+                    } else {
+                        throw new RuntimeException("shouldn't get here 1");
+                    }
+                } else if ( exity==maxy ) {
+                    if ( atMaxy ) {
+                        
+                    } else if ( atMiny ) {
+                        throw new RuntimeException("shouldn't get here 2");
+                    } else {
+                        throw new RuntimeException("shouldn't get here");
+                    }
+                } else {
+                    result.lineTo( ((float)x0)/resd, ((float)exity)/resd );  points++;
+                }
+                
+                if ( type==PathIterator.SEG_LINETO ) {
+                    result.lineTo( ((float)xx)/resd, ((float)yy)/resd );  points++;
+                } else if ( type==PathIterator.SEG_MOVETO ) {
+                    result.moveTo( ((float)xx)/resd, ((float)yy)/resd );  points++;
+                }
+                
+                entryy= yy;             
+                miny= yy;
+                maxy= yy;
+                
+            }
+            
+            if ( type == PathIterator.SEG_MOVETO ) {
+                result.moveTo( ((float)xx/resd), ((float)yy)/resd );
+                points++;
+            }
+
+            x0 = xx;
+            y0 = yy;
+
+            type0 = type;
+        }
+        
+        if ( miny==maxy ) { // implies entryx==exitx
+            result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+        } else if ( entryy==miny ) {
+            result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+        } else if ( entryy==maxy ) {
+            result.lineTo( ((float)x0)/resd, ((float)maxy)/resd );  points++;
+        } else {
+            result.lineTo( ((float)x0)/resd, ((float)miny)/resd );  points++;
+            result.lineTo( ((float)x0)/resd, ((float)maxy)/resd );  points++;
+        }
+        
+        logger.log(Level.FINE, "reduce {0} to {1} in {2}ms", new Object[]{inCount, points, System.currentTimeMillis()-t0 });
+        return points;
+        
+    }
+    
     /**
      * Returns the input GeneralPath filled with new points which will be rendered identically to the input path,
      * but contains a minimal number of points.  We bin average the points within a cell, because discretization
@@ -333,6 +476,7 @@ public class GraphUtil {
     public static int reducePath(PathIterator it, GeneralPath result) {
         return reducePath( it, result, 1 );
     }
+   
     /**
      * Returns the input GeneralPath filled with new points which will be rendered identically to the input path,
      * but contains a minimal number of points.  We bin average the points within a cell, because discretization
