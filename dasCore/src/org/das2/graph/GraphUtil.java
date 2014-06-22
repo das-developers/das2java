@@ -359,8 +359,8 @@ public class GraphUtil {
         float sy0 = 0;
         int nx0 = 0;
         int ny0 = 0;
-        float ax0 = Float.NaN;
-        float ay0 = Float.NaN;  // last averaged location
+        float ax0;
+        float ay0;  // last averaged location
 
         int type0 = -999;
 
@@ -575,22 +575,35 @@ public class GraphUtil {
         return new Color(255, 255, 255, 128);
     }
 
+    /**
+     * describe the path for debugging.
+     * @param path the Path to describe
+     * @param enumeratePoints if true, print all the points as well.
+     * @return String description.
+     */
     public static String describe(GeneralPath path, boolean enumeratePoints) {
         PathIterator it = path.getPathIterator(null);
         int count = 0;
         int lineToCount = 0;
-        double[] coords = new double[6];
+        double[] seg = new double[6];
         while (!it.isDone()) {
-            int type = it.currentSegment(coords);
+            int type = it.currentSegment(seg);
             if (type == PathIterator.SEG_LINETO) {
                 lineToCount++;
             }
             if (enumeratePoints) {
-                System.err.println(" " + coords[0] + " " + coords[1]);
+                if ( type==PathIterator.SEG_MOVETO ) {
+                   System.err.println( String.format( "moveTo( %9.2f, %9.2f )\n", seg[0], seg[1] ) );
+                } else if ( type==PathIterator.SEG_LINETO ) {
+                   System.err.println( String.format( "lineTo( %9.2f, %9.2f )\n", seg[0], seg[1] ) );
+                } else {
+                    System.err.println( String.format( "%4d %9.2f, %9.2f )\n", type, seg[0], seg[1] ) );
+                }
             }
             count++;
             it.next();
         }
+        System.err.println("count: " + count + "  lineToCount: " + lineToCount);
         return "count: " + count + "  lineToCount: " + lineToCount;
     }
 
