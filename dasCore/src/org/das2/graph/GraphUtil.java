@@ -597,7 +597,7 @@ public class GraphUtil {
                 } else if ( type==PathIterator.SEG_LINETO ) {
                    System.err.println( String.format( "lineTo( %9.2f, %9.2f )\n", seg[0], seg[1] ) );
                 } else {
-                    System.err.println( String.format( "%4d %9.2f, %9.2f )\n", type, seg[0], seg[1] ) );
+                    System.err.println( String.format( "%4d( %9.2f, %9.2f )\n", type, seg[0], seg[1] ) );
                 }
             }
             count++;
