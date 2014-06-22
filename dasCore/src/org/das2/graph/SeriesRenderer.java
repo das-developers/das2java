@@ -550,23 +550,45 @@ public class SeriesRenderer extends Renderer {
         }
     }
 
-//        private static void dumpPath( GeneralPath path1 ) {
-//            if ( path1!=null ) {
-//                try {
-//                    BufferedWriter w= new BufferedWriter( new FileWriter("/tmp/foo.dat") );
-//                    PathIterator it= path1.getPathIterator(null);
-//                    float [] seg= new float[6];
-//                    while ( !it.isDone() ) {
-//                        int r= it.currentSegment(seg);
-//                        w.write( String.format( "%d\t%s\t%s\t%s\t%s\t%s\t%s\n", r, seg[0], seg[1], seg[2], seg[3], seg[4], seg[5] ) );
-//                        it.next();
-//                    }
-//                    w.close();
-//                } catch ( IOException ex ) {
-//                    ex.printStackTrace();
-//                }
-//            }
-//        }     
+        private static void dumpPath( int width, int height, GeneralPath path1 ) {
+            if ( path1!=null ) {
+                try {
+                    java.io.BufferedWriter w= new java.io.BufferedWriter( new java.io.FileWriter("/tmp/foo.jy") );
+                    w.write( "from java.awt.geom import GeneralPath\nlp= GeneralPath()\n");
+                    w.write( "h= " + height + "\n" );
+                    w.write( "w= " + width + "\n" );
+                    PathIterator it= path1.getPathIterator(null);
+                    float [] seg= new float[6];
+                    while ( !it.isDone() ) {
+                        int r= it.currentSegment(seg);
+                        if ( r==PathIterator.SEG_MOVETO ) {
+                            w.write( String.format( "lp.moveTo( %9.2f, %9.4f )\n", seg[0], seg[1] ) );
+                        } else {
+                            w.write( String.format( "lp.lineTo( %9.2f, %9.4f )\n", seg[0], seg[1] ) );
+                        }
+                        it.next();
+                    }
+                    w.write( "from javax.swing import JPanel, JOptionPane\n" +
+                            "from java.awt import Dimension, RenderingHints\n" +
+                            "\n" +
+                            "class MyPanel( JPanel ):\n" +
+                            "   def paintComponent( self, g ):\n" +
+                            "       g.setColor(Color.WHITE)\n" +
+                            "       g.fillRect(0,0,w,h)\n" + 
+                            "       g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON )\n" +
+                            "       g.setColor(Color.BLACK)\n" +
+                            "       g.draw( lp )\n" +
+                            "\n" +
+                            "p= MyPanel()\n" +
+                            "p.setMinimumSize( Dimension( w,h ) )\n" +
+                            "p.setPreferredSize( Dimension( w,h ) )\n" +
+                            "JOptionPane.showMessageDialog( getViewWindow(), p )" );
+                    w.close();
+                } catch ( java.io.IOException ex ) {
+                    ex.printStackTrace();
+                }
+            }
+        }     
     
     private class PsymConnectorRenderElement implements RenderElement {
 
@@ -793,6 +815,7 @@ public class SeriesRenderer extends Renderer {
                 this.path1 = newPath;
             }
 
+            //dumpPath( getParent().getCanvas().getWidth(), getParent().getCanvas().getHeight(), path1);  // dumps jython script showing problem.
             //GraphUtil.describe( path1, true );
         }
 
