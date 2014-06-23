@@ -596,6 +596,7 @@ public class SeriesRenderer extends Renderer {
    
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
+            logger.log(Level.FINE, "enter connector render" );
             if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) ) {
                 renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
             }
@@ -614,7 +615,7 @@ public class SeriesRenderer extends Renderer {
         
         @Override
         public synchronized void update(DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
-
+            logger.log(Level.FINE, "enter connector update" );
             QDataSet xds= SemanticOps.xtagsDataSet( dataSet );
             if ( xds.rank()==2 && xds.property( QDataSet.BINS_1 )!=null ) {
                 xds= Ops.reduceMean(xds,1);
@@ -651,7 +652,7 @@ public class SeriesRenderer extends Renderer {
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath newPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
-            Datum sw = SemanticOps.guessXTagWidth(xds,vds);
+            Datum sw = SemanticOps.guessXTagWidth( xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) ); // TODO: this really shouldn't be here, since we calculate it once.
             double xSampleWidth;
             boolean logStep;
             if ( sw!=null) {
@@ -810,7 +811,7 @@ public class SeriesRenderer extends Renderer {
                 //j   System.err.println( GraphUtil.describe( newPath, true) );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
                 int count = GraphUtil.reducePath(newPath.getPathIterator(null), path1 );
-                //int count = GraphUtil.reducePath20140622(newPath.getPathIterator(null), path1, 1, 5 );
+   //int count = GraphUtil.reducePath20140622(newPath.getPathIterator(null), path1, 1, 5 );
                 logger.fine( String.format("reduce path in=%d  out=%d\n", lastIndex-firstIndex, count) );
             } else {
                 this.path1 = newPath;
@@ -930,7 +931,7 @@ public class SeriesRenderer extends Renderer {
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
-            Datum sw = SemanticOps.guessXTagWidth(xds,dataSet);
+            Datum sw = SemanticOps.guessXTagWidth( xds, dataSet.trim(firstIndex,lastIndex) );
             double xSampleWidth;
             boolean logStep;
             if ( sw!=null ) {
@@ -1606,10 +1607,14 @@ public class SeriesRenderer extends Renderer {
                 updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
 
                 logger.log( Level.FINE, "data reduced to {0} {1}", new Object[] { vds, Ops.extent(xds) } );
+                logger.log(Level.FINE, "reduceDataSet complete {0}", System.currentTimeMillis()-t0 );                
+            } else {
+                logger.log(Level.FINE, "data not reduced");
             }
             
             if (fillToReference) {
                 fillElement.update(xAxis, yAxis, vds, monitor);
+                logger.log(Level.FINE, "fillElement.update complete {0}", System.currentTimeMillis()-t0 );
             }
 
         } else if (tds != null) {
@@ -1634,7 +1639,7 @@ public class SeriesRenderer extends Renderer {
                 updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
                 LoggerManager.markTime("updateFirstLast again");
             }
-           
+            logger.log(Level.FINE, "renderWaveform updateFirstLast complete {0}", System.currentTimeMillis()-t0 );
             
         } else {
             System.err.println("both tds and vds are null");
@@ -1655,11 +1660,13 @@ public class SeriesRenderer extends Renderer {
             } else {
                 psymsElement.update(xAxis, yAxis, vds, monitor);
             }
+            logger.log(Level.FINE, "psymsElement.update complete {0}", System.currentTimeMillis()-t0 );            
         } catch ( InconvertibleUnitsException ex ) {
             return;
         }
 
         selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );        
+        logger.log(Level.FINE, "calcSelectionArea complete {0}", System.currentTimeMillis()-t0);  
         //if (getParent() != null) {
         //    getParent().repaint();
         //}
@@ -1675,6 +1682,11 @@ public class SeriesRenderer extends Renderer {
 
     private Shape calcSelectionArea( DasAxis xaxis, DasAxis yaxis, QDataSet xds, QDataSet ds ) {
 
+        if ( psymConnectorElement.getPath()!=null ) {
+            Shape s = new BasicStroke(5.f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND).createStrokedShape( psymConnectorElement.getPath() );
+            return s;
+        }
+        
         long t0= System.currentTimeMillis();
 
         Datum widthx;
