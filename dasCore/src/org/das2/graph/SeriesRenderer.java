@@ -22,17 +22,6 @@
  */
 package org.das2.graph;
 
-import java.util.logging.Level;
-import org.das2.DasApplication;
-import org.das2.DasProperties;
-import org.virbo.dataset.DataSetUtil;
-import org.das2.datum.Datum;
-import org.das2.datum.DatumRange;
-import org.das2.datum.Units;
-import org.das2.event.DasMouseInputAdapter;
-import org.das2.event.LengthDragRenderer;
-import org.das2.event.MouseModule;
-import org.das2.system.DasLogger;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -55,17 +44,27 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.das2.DasApplication;
+import org.das2.DasProperties;
 import org.das2.dataset.VectorUtil;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 import org.das2.datum.InconvertibleUnitsException;
+import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.event.CrossHairMouseModule;
-import static org.das2.graph.Renderer.logger;
+import org.das2.event.DasMouseInputAdapter;
+import org.das2.event.LengthDragRenderer;
+import org.das2.event.MouseModule;
+import org.das2.system.DasLogger;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetOps;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -80,6 +79,8 @@ import org.w3c.dom.Element;
  * The SymbolLineRenderer is limited to about 30,000 points, beyond which 
  * contracts for speed start breaking degrading usability.  The goal of the
  * SeriesRenderer is to plot 1,000,000 points without breaking the contracts.
+ * 
+ * It should be said that five years after its introduction that it's still quite limited.
  * 
  * @author  jbf
  */
