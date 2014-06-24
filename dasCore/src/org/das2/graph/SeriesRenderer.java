@@ -811,8 +811,8 @@ public class SeriesRenderer extends Renderer {
                 //j   System.err.println( "input: " );
                 //j   System.err.println( GraphUtil.describe( newPath, true) );
                 this.path1= new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
-                int count = GraphUtil.reducePath(newPath.getPathIterator(null), path1 );
-   //int count = GraphUtil.reducePath20140622(newPath.getPathIterator(null), path1, 1, 5 );
+                //int count = GraphUtil.reducePath(newPath.getPathIterator(null), path1 );
+                int count = GraphUtil.reducePath20140622(newPath.getPathIterator(null), path1, 1, 5 );
                 logger.fine( String.format("reduce path in=%d  out=%d\n", lastIndex-firstIndex, count) );
             } else {
                 this.path1 = newPath;
