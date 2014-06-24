@@ -321,12 +321,15 @@ public class GraphUtil {
 
     /**
      * New ReducePath reduces a path by keeping track of vertically collinear points, and reducing them to an entry
-     * point, an exit point, min and max.  This can be all four in one point.
+     * point, an exit point, min and max.  This can be all four in one point.  We also limit the resolution and 
+     * combine points that are basically the same value, using resn and resd (numerator and denominator).  For 
+     * example (1/5) would mean that points within x of 1/5 of one another are considered vertically collinear.
+     * 
      * @param it input path.
      * @param result output path.
      * @param resn the resolution numerator (e.g. 1)
      * @param resd the resolution denominator (e.g. 5)
-     * @return 
+     * @return the reduced path.
      */
     public static int reducePath20140622( PathIterator it, GeneralPath result, int resn, int resd ) {
         logger.fine( "enter reducePath20140622" );
@@ -376,7 +379,6 @@ public class GraphUtil {
                 boolean atMaxy=false;
                 exity= y0;
                 if ( miny==maxy ) { // implies entryx==exitx
-                    result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
                     atMaxy=true;
                     atMiny=true;
                 } else if ( entryy==miny ) {
@@ -446,7 +448,6 @@ public class GraphUtil {
         }
         
         if ( miny==maxy ) { // implies entryx==exitx
-            result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
         } else if ( entryy==miny ) {
             result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
         } else if ( entryy==maxy ) {
