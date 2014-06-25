@@ -321,12 +321,14 @@ public class AsciiHeadersParser {
                         int icol= -1;
                         int count= 0;
                         List<Integer> icols= new ArrayList();
-                        for ( int j=0; j<columns.length; j++ ) {
-                            if ( columns[j].equals(lookFor) ) {
-                                logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
-                                if ( count==0 ) icol= j;
-                                count++;
-                                icols.add(j);
+                        if ( !jo1.has("VALUES") ) {
+                            for ( int j=0; j<columns.length; j++ ) {
+                                if ( columns[j].equals(lookFor) ) {
+                                    logger.log( Level.FINE, "found column named {0} at {1}", new Object[]{lookFor, j} );
+                                    if ( count==0 ) icol= j;
+                                    count++;
+                                    icols.add(j);
+                                }
                             }
                         }
                         if ( icol!=-1 ) {
