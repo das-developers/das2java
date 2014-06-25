@@ -570,7 +570,7 @@ public class SeriesRenderer extends Renderer {
                         it.next();
                     }
                     w.write( "from javax.swing import JPanel, JOptionPane\n" +
-                            "from java.awt import Dimension, RenderingHints\n" +
+                            "from java.awt import Dimension, RenderingHints, Color\n" +
                             "\n" +
                             "class MyPanel( JPanel ):\n" +
                             "   def paintComponent( self, g ):\n" +
@@ -583,7 +583,7 @@ public class SeriesRenderer extends Renderer {
                             "p= MyPanel()\n" +
                             "p.setMinimumSize( Dimension( w,h ) )\n" +
                             "p.setPreferredSize( Dimension( w,h ) )\n" +
-                            "JOptionPane.showMessageDialog( getViewWindow(), p )" );
+                            "JOptionPane.showMessageDialog( None, p )" );
                     w.close();
                 } catch ( java.io.IOException ex ) {
                     ex.printStackTrace();
