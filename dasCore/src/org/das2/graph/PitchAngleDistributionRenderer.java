@@ -186,6 +186,21 @@ public class PitchAngleDistributionRenderer extends Renderer {
 
         double da= ( ads.value(1) - ads.value(0) ) / 2;
 
+        ArrayDataSet damin= ArrayDataSet.copy(ads);
+        ArrayDataSet damax= ArrayDataSet.copy(ads);
+        for ( int i=0; i<damin.length(); i++ ) {
+            if ( i==0 ) {
+                damin.putValue( i, Math.max( 0., ads.value(i)-da) );
+                damax.putValue( i, ( ads.value(i+1) + ads.value(i) ) / 2 );
+            } else if ( i<damin.length()-1 ) {
+                damin.putValue( i, ( ads.value(i-1) + ads.value(i) ) / 2 );
+                damax.putValue( i, ( ads.value(i+1) + ads.value(i) ) / 2 );
+            } else {
+                damin.putValue( i, ( ads.value(i-1) + ads.value(i) ) / 2 );
+                damax.putValue( i, Math.min( 180, ads.value(i)+da) );
+            }
+        }
+        
         double x0= xAxis.transform(0,yunits);
         double y0= yAxis.transform(0,yunits);
 
@@ -200,8 +215,8 @@ public class PitchAngleDistributionRenderer extends Renderer {
                 double r1y= y0 - ( yAxis.transform(v2,yunits) ); // outer ring radius at x=0, equal to r1x when isotropic (round)
                 
                 for ( int i=0; i<ads.length(); i++ ) {
-                    double a0= ads.value(i) - da;
-                    double a1= ads.value(i) + da;
+                    double a0= damin.value(i);
+                    double a1= damax.value(i);
                     if ( iflip==1 ) {
                         a0= -a0;
                         a1= -a1;
