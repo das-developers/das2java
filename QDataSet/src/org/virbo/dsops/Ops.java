@@ -5608,8 +5608,9 @@ public class Ops {
      * returns a dataset with zero where the data is invalid, and positive 
      * non-zero where the data is valid.  (This just returns the weights
      * plane of the dataset.)
-     * 
-     *   r= where( valid( ds ) )
+     *<blockquote><pre><small>{@code
+     *r= where( valid( ds ) )
+     *</small></pre></blockquote> 
      * 
      * @param ds a rank N dataset that might have FILL_VALUE, VALID_MIN or VALID_MAX
      *   set.
@@ -5620,6 +5621,25 @@ public class Ops {
         // Note because data can always contain NaNs, there is no optimization for this.
         return DataSetUtil.weightsDataSet(ds);
     }
+    
+    /**
+     * returns 1 where the data is not NaN, Inf, etc  I needed this when I was working with
+     * the RBSP polar scatter script.  Note valid should be used to check for valid data, which
+     * also checks for NaN.
+     * 
+     * @param ds qdataset of any rank.
+     * @return 1 where the data is not Nan or Inf, 0 otherwise.
+     */
+    public static QDataSet finite( QDataSet ds ) {
+        ArrayDataSet result= ArrayDataSet.copy(ds);
+        DataSetIterator it= new QubeDataSetIterator(ds);
+        while ( it.hasNext() ) {
+            it.next();
+            double d1= it.getValue(ds);
+            it.putValue( result, Double.isInfinite(d1) || Double.isNaN(d1) ? 0. : 1. );
+        }
+        return result;
+    };
     
     /**
      * run boxcar average over the dataset, returning a dataset of same geometry.  Points near the edge are simply copied from the
