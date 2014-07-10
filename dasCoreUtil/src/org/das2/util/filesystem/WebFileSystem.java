@@ -310,6 +310,8 @@ public abstract class WebFileSystem extends FileSystem {
             result.modified= connection.getLastModified();
             result.name= key;
             result.size= connection.getContentLength();
+            connection.disconnect();
+            logger.log(Level.FINER, "done HEAD request to get timestamp ({0})", url);
             return result;
         }
     }
