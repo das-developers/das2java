@@ -2189,12 +2189,12 @@ public class Ops {
             FDataSet result = (FDataSet) ArrayDataSet.copy(ds1);
             if ( ds2.rank()==0 && ds1.rank()==1 ) {
                 FDataSet t= FDataSet.createRank1(1);
-                t.putValue(ds2.value());
+                t.putValue(0,ds2.value());
                 DataSetUtil.putProperties( DataSetUtil.getProperties(ds2), t );
                 ds2= t;
             } else if ( ds1.rank()==0 && ds2.rank()==1 ) {
                 FDataSet t= FDataSet.createRank1(1);
-                t.putValue(ds1.value());
+                t.putValue(0,ds1.value());
                 DataSetUtil.putProperties( DataSetUtil.getProperties(ds1), t );
                 result= t;
             }
@@ -2204,12 +2204,12 @@ public class Ops {
             assert ds2!=null && ds1!=null;
             if ( ds2.rank()==0 && ds1.rank()==1 ) {
                 DDataSet t= DDataSet.createRank1(1); //TODO: better promote rank is found on add, etc.
-                t.putValue(ds2.value());
+                t.putValue(0,ds2.value());
                 DataSetUtil.putProperties( DataSetUtil.getProperties(ds2), t );
                 ds2= t;
             } else if ( ds1.rank()==0 && ds2.rank()==1 ) {
                 DDataSet t= DDataSet.createRank1(1);
-                t.putValue(ds1.value());
+                t.putValue(0,ds1.value());
                 DataSetUtil.putProperties( DataSetUtil.getProperties(ds1), t );
                 result= t;
             }
