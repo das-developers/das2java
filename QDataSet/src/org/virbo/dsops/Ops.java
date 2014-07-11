@@ -771,8 +771,10 @@ public class Ops {
         return averageGen(ds, dim, new AverageOp() {
 
             public void accum(double d1, double w1, double[] accum) {
-                accum[0] += w1 * d1;
-                accum[1] += w1;
+                if ( w1 > 0.0 ) { // because 0 * NaN is NaN...
+                    accum[0] += w1 * d1;
+                    accum[1] += w1;
+                }
             }
 
             public void initStore(double[] store) {
