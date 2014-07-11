@@ -568,14 +568,18 @@ public class Ops {
         return total( dataset(ds1) );
     }    
     
+    /**
+     * interface for an average operation that combines numbers.  For example, mean or geometric mean, but
+     * also "maxOf" and total are AverageOps that can be implemented.
+     */
     private interface AverageOp {
 
         /**
          * average in measurement d1 with weight w1 into accum.
-         * @param d1
-         * @param w1
-         * @param store 
-         * @return
+         * @param d1 the data point.
+         * @param w1 the weight of the data, where 0 indicates the measurement can be ignored, and a positive 
+         * number indicates the weight relative others in the average.
+         * @param accum storage for the average and the weight.  accum[0] is the average, accum[1] is the weight. 
          */
         void accum(double d1, double w1, double[] accum);
 
@@ -612,6 +616,7 @@ public class Ops {
         int[] newQube = DataSetOps.removeElement(qube, dim);
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
         DDataSet result = DDataSet.create(newQube);
+        DDataSet wresult= DDataSet.create(newQube);
         QubeDataSetIterator it1 = new QubeDataSetIterator(result);
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
         double[] store = new double[2];
@@ -632,11 +637,13 @@ public class Ops {
             }
             op.normalize(store);
             it1.putValue(result, store[1] > 0 ? store[0] : fill);
+            it1.putValue(wresult, store[1] );
         }
         Map<String,Object> props= DataSetUtil.getProperties(ds);
         props= DataSetOps.sliceProperties( props, dim );
         DataSetUtil.putProperties( props, result );
         result.putProperty(QDataSet.FILL_VALUE,fill);
+        result.putProperty(QDataSet.WEIGHTS,wresult);
 
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( dim==0 && dep0!=null ) {
@@ -753,7 +760,8 @@ public class Ops {
 
     /**
      * reduce the dataset's rank by reporting the max of all the elements along a dimension.
-     * Only QUBEs are supported presently.
+     * Only QUBEs are supported presently.  Note this does not contain code that would remove
+     * large offsets from zero when making the average, so the number of points is limited.
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
@@ -773,7 +781,7 @@ public class Ops {
             }
 
             public void normalize(double[] accum) {
-                if (accum[1] > 0) {
+                if (accum[1] > 0.) {
                     accum[0] /= accum[1];
                 }
             }
@@ -782,7 +790,7 @@ public class Ops {
 
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the zeroth dimension.
-     *   collapse1( ds[30,20] ) -> ds[20]
+     *   collapse0( ds[30,20] ) -> ds[20]
      * @param fillDs
      * @param st the start index
      * @param en the non-inclusive end index
@@ -796,7 +804,7 @@ public class Ops {
 
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the zeroth dimension.
-     *   collapse1( ds[30,20] ) -> ds[20]
+     *   collapse0( ds[30,20] ) -> ds[20]
      * @param fillDs
      * @return the averaged dataset
      */
