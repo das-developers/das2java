@@ -646,7 +646,7 @@ public class Ops {
         result.putProperty(QDataSet.WEIGHTS,wresult);
 
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
-        if ( dim==0 && dep0!=null ) {
+        if ( dim==0 && dep0!=null && dep0.length()>0 ) {
             QDataSet extent= Ops.extent(dep0);
             DataSetUtil.addContext( result, extent );
         }
@@ -4713,7 +4713,7 @@ public class Ops {
         int ilast= n-1;
         
         boolean monoCheck= Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC ));
-        if ( ds.rank()==1 && monoCheck ) {
+        if ( ds.rank()==1 && monoCheck && n>0 ) {
             while ( ifirst<n && wds.value(ifirst)==0.0 ) ifirst++;
             while ( ilast>=0 && wds.value(ilast)==0.0 ) ilast--;
             int imiddle= ( ifirst + ilast ) / 2;
