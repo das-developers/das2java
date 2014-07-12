@@ -86,7 +86,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
             this.colorBar.removePropertyChangeListener(DasColorBar.PROPERTY_TYPE, rebinListener);
             this.colorBar.removePropertyChangeListener(DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
 
-        }
+            }
         this.colorBar = colorBar;
         if (this.colorBar != null) {
             colorBar.addPropertyChangeListener("dataMinimum", rebinListener);
@@ -94,10 +94,10 @@ public class PitchAngleDistributionRenderer extends Renderer {
             colorBar.addPropertyChangeListener("log", rebinListener);
             colorBar.addPropertyChangeListener(DasColorBar.PROPERTY_TYPE, rebinListener);
             colorBar.addPropertyChangeListener(DasColorBar.PROPERTY_FILL_COLOR, rebinListener);
-        }
+            }
         propertyChangeSupport.firePropertyChange(PROP_COLORBAR, oldColorBar, colorBar);
     }
-
+   
     public static QDataSet doAutorange(QDataSet tds) {
 
         QDataSet zdesc = Ops.extent( tds );
@@ -271,15 +271,12 @@ public class PitchAngleDistributionRenderer extends Renderer {
     }
 
     protected void installRenderer() {
-//        if (parent != null && parent.getCanvas() != null) {
-//            if (colorBar != null) {
-//                if (colorBar.getColumn() == DasColumn.NULL) {
-//                    DasColumn column = parent.getColumn();
-//                    colorBar.setColumn(new DasColumn(null, column, 1.0, 1.0, 1, 2, 0, 0));
-//                }
-//                parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
-//            }
-//        }
+        DasPlot parent= getParent();
+        if (parent != null && parent.getCanvas() != null) {
+            if (colorBar != null) {
+                parent.getCanvas().add(colorBar, parent.getRow(), colorBar.getColumn());
+            }
+        }
     }
 
     protected void uninstallRenderer() {
