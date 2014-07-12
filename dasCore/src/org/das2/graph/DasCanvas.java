@@ -1537,6 +1537,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param column  DasColumn specifying the layout of the component.
      */
     public void add(DasCanvasComponent c, DasRow row, DasColumn column) {
+        logger.log( Level.FINE, "adding DasCanvasComponent {0}", c);
         if (c.getRow() == DasRow.NULL || c.getRow().getParent() != this) {
             c.setRow(row);
         }
