@@ -5,6 +5,9 @@ import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.QDataSet;
 
 /**
+ * Linear Fit routine.  This will allow errors on the Y values, and
+ * will report chi squared.
+ * 
  * Borrowed from pamguard, https://sourceforge.net/projects/pamguard/.
  * @author Doug Gillespie
  * Simple linear regression. Fitting line y = a + bx
@@ -126,6 +129,10 @@ public class LinFit {
         doneErrors = true;
     }
 
+    /**
+     * return the result A of the fit y = A + B * x
+     * @return the result A of the fit y = A + B * x
+     */
     public double getA() {
         if (doneErrors == false) {
             doErrors();
@@ -133,6 +140,10 @@ public class LinFit {
         return a;
     }
 
+    /**
+     * return the result B of the fit y = A + B * x
+     * @return the result B of the fit y = A + B * x
+     */
     public double getB() {
         if (doneErrors == false) {
             doErrors();
@@ -140,6 +151,9 @@ public class LinFit {
         return b;
     }
 
+    /**
+     * return Chi-Squared result from the fit.
+     */
     public double getChi2() {
         if (doneErrors == false) {
             doErrors();
