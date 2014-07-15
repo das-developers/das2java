@@ -5744,7 +5744,7 @@ public class Ops {
      * not particularly efficient and would make a nice project for a student.
      * @param ds rank 1 dataset.  Future implementations may support higher rank data.
      * @param size the boxcar size
-     * @return 
+     * @return rank 1 dataset.
      */
     public static QDataSet medianFilter( QDataSet ds, int size ) {
         if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
@@ -5754,27 +5754,31 @@ public class Ops {
         
         ArrayDataSet res= ArrayDataSet.copy(ds);
         for ( int i=0; i<res.length(); i++ ) res.putValue(i,0);
-        TreeSet<Double> less= new TreeSet();
-        TreeSet<Double> more= new TreeSet();
+        LinkedList<Double> less= new LinkedList();
+        LinkedList<Double> more= new LinkedList();
         LinkedList<Double> vv= new LinkedList();
         int hsize= size/2;
         for ( int i=0; i<size-1; i++ ) {
             double d=ds.value(i);
             vv.add(d);
-            if ( less.isEmpty() ) {
+            if ( less.size()==0 ) {
                 less.add(d);
-            } else if ( less.last()<d ) {
-                more.add(d);
+            } else if ( less.getLast()<d ) {
+                int index= Collections.binarySearch( more,d );
+                if ( index<0 ) index= ~index;
+                more.add(index,d);
             } else {
-                less.add(d);
+                int index= Collections.binarySearch( less,d );
+                if ( index<0 ) index= ~index;
+                less.add(index,d);
             }
             // balance the two sets, so that they are within one in size.
             if ( less.size()<more.size()-1 ) {
-                double mv= more.first();
+                double mv= more.getFirst();
                 less.add( mv );
-                more.remove( mv );
+                more.remove( 0 );
             } else if ( less.size()-1>more.size() ) {
-                double mv= less.last();
+                double mv= less.getLast();
                 less.remove( mv );
                 more.add( mv );
             }
@@ -5783,18 +5787,22 @@ public class Ops {
         for ( int i=hsize; i<ds.length()-hsize; i++ ) {
             double d=ds.value(i+hsize);
             vv.add(d);
-            if ( less.last()<d ) {
-                more.add(d);
+            if ( less.getLast()<d ) {
+                int index= Collections.binarySearch( more,d ); // not terribly efficient, but not inefficient... O(n)
+                if ( index<0 ) index= ~index;
+                more.add(index,d);
             } else {
-                less.add(d);
+                int index= Collections.binarySearch( less,d );
+                if ( index<0 ) index= ~index;
+                less.add(index,d);
             }
             if ( less.size()>more.size() ) {
-                res.putValue(i,less.last());
+                res.putValue(i,less.getLast());
             } else {
-                res.putValue(i,more.first());
+                res.putValue(i,more.getFirst());
             }
             double rm= vv.remove(0);
-            if ( less.last()>=rm ) {
+            if ( less.getLast()>=rm ) {
                 less.remove(rm);
             } else {
                 more.remove(rm);
@@ -5802,11 +5810,11 @@ public class Ops {
             
             // balance the two sets, so that they are within one in size.
             if ( less.size()<more.size()-1 ) {
-                double mv= more.first();
+                double mv= more.getFirst();
                 less.add( mv );
                 more.remove( mv );
             } else if ( less.size()-1>more.size() ) {
-                double mv= less.last();
+                double mv= less.getLast();
                 less.remove( mv );
                 more.add( mv );
             }
