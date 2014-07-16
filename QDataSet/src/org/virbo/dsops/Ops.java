@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.das2.datum.CacheTag;
 import org.das2.datum.DatumRange;
@@ -5739,6 +5738,89 @@ public class Ops {
         return detrend( dataset(yy), size );
     }
     
+ /**
+     * Mean function that returns the average of a rank 1 dataset
+     * @param ds rank 1 dataset, that does not contain fill or NaN.
+     * @return rank 0 dataset
+     * mmclouth
+     */
+    public static QDataSet mean( QDataSet ds ) {
+        double avg = 0;
+        for (int i=0; i < ds.length(); i++)  {
+            avg += ds.value(i);
+        }
+        double m = avg / ds.length();
+        return DataSetUtil.asDataSet(m,SemanticOps.getUnits(ds));
+    }
+    
+    
+    /**
+     * Median function that sorts a rank 1 dataset and returns its median
+     * @param ds rank 1 dataset that does not contain fill or NaN.
+     * @return rank 0 dataset
+     * mmclouth
+     */
+    public static QDataSet median( QDataSet ds ) {
+        
+    
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
+        if ( Ops.reduceMin( Ops.valid(ds), 0 ).value()==0 ) throw new IllegalArgumentException("fill data is not supported");
+        
+        
+        ArrayDataSet res= ArrayDataSet.copy(ds);
+        int size= ds.length();
+        for ( int i=0; i<res.length(); i++ ) res.putValue(i,0);
+        LinkedList<Double> less= new LinkedList();
+        LinkedList<Double> more= new LinkedList();
+        
+        // sort elements in to two lists 
+        for ( int i=0; i<size; i++ ) {
+            double d=ds.value(i);
+            if ( less.isEmpty() ) {
+                less.add(d);
+                Collections.sort(less);
+            }
+            else if ( less.getLast() >= d) {
+                less.add(d);
+                Collections.sort(less);
+            }
+            else if ( less.getLast()<d ) {
+                more.add(d);
+                Collections.sort(more);
+            } else  {
+                more.add(d);
+                Collections.sort(more);
+            }
+            // balance the two sets, so that they are within one in size.
+            if ( less.size()<more.size()-1 ) {
+                double mv= more.getFirst();
+                less.add( mv );
+                more.remove( mv );
+                Collections.sort(less);
+            } else if ( less.size()-1>more.size() ) {
+                double mv= less.getLast();
+                less.remove( mv );
+                more.add( mv );
+                Collections.sort(more);
+            }
+        }
+        
+        //assign the median based on which list is bigger
+        //if lists are equal in size (even number of elements), always choose first element of 'more' list
+        double ans;
+        if ( less.size() > more.size() )  {
+            ans = less.getLast();
+        }
+        else if ( less.size()< more.size() )  {
+            ans = more.getFirst();
+        }
+        else  {
+            ans = more.getFirst();
+        }
+    
+        return DataSetUtil.asDataSet( ans, SemanticOps.getUnits(ds) );
+    }
+       
     /**
      * 1-D median filter with a boxcar of the given size.  This is 
      * not particularly efficient and would make a nice project for a student.
