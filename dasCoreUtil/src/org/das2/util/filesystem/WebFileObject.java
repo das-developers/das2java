@@ -63,6 +63,7 @@ public class WebFileObject extends FileObject {
      * true if we know if it's a folder or not.
      */
     boolean isFolderResolved = false;
+    public int METADATA_FRESH_TIMEOUT_MS = 10000;
 
     public boolean canRead() {
         return true;
@@ -156,7 +157,7 @@ public class WebFileObject extends FileObject {
     }
 
     public java.util.Date lastModified() {
-        if ( System.currentTimeMillis() - metaFresh > 10000 ) {
+        if ( System.currentTimeMillis() - metaFresh > METADATA_FRESH_TIMEOUT_MS ) {
             metadata= null;
             modifiedDate= new Date( Long.MAX_VALUE );
         }
