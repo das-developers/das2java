@@ -33,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -40,8 +41,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -70,6 +73,12 @@ public class HttpFileSystem extends WebFileSystem {
 
     protected static final Logger logger= org.das2.util.LoggerManager.getLogger( "das2.filesystem.http" );
 
+    /**
+     * provide some caching for directory entries.
+     */
+    private final Map<String,DirectoryEntry> listingEntries= new HashMap();
+    private final Map<String,Long> listingEntryFreshness= new HashMap();
+    
     /** Creates a new instance of WebFileSystem */
     private HttpFileSystem(URI root, File localRoot) {
         super(root, localRoot);
@@ -399,8 +408,18 @@ public class HttpFileSystem extends WebFileSystem {
     /**
      * this is introduced to support checking if the symbol foo/bar is a folder by checking
      * for a 303 redirect.
+     *<blockquote><pre><small>{@code
      *   EXIST->Boolean
      *   REAL_NAME->String
+     *}</small></pre></blockquote>    
+     * others are just HTTP header fields like (see wget --server-response https://raw.githubusercontent.com/autoplot/jyds/master/dd.jyds):
+     *<blockquote><pre><small>{@code
+     *   Content-Length   the length in bytes of the resource.
+     *   Cache-Control    max-age=300
+     *   Date: Fri, 18 Jul 2014 12:07:18 GMT  time stamp.
+     *   ETag: "750d4f66c58a0ac7fef2784253bf6954d4d38a85"
+     *   Accept-Ranges    accepts requests for part of a file.
+     *}</small></pre></blockquote>     
      * @param f
      * @throws java.io.IOException
      */
@@ -435,6 +454,7 @@ public class HttpFileSystem extends WebFileSystem {
 
             Map<String, Object> result = new HashMap<String, Object>();
             result.putAll(connect.getHeaderFields());
+            result.put( "EXIST", exists );
             connect.disconnect();
 
             return result;
@@ -741,4 +761,49 @@ public class HttpFileSystem extends WebFileSystem {
         return (String[]) result.toArray(new String[result.size()]);
 
     }
+
+    
+    /**
+     * HTTP listings are really done by querying the single file, so support this by issuing a head request
+     * @param filename filename within the system
+     * @param force if true, then guarantee a listing and throw an IOException if it cannot be done.
+     * @return the DirectoryEntry showing size and date.
+     * @throws IOException 
+     */
+    @Override
+    public DirectoryEntry maybeUpdateDirectoryEntry(String filename, boolean force) throws IOException {
+        Long fresh= listingEntryFreshness.get(filename);
+        if ( fresh!=null ) {
+            if ( new Date().getTime()-fresh < HttpFileSystem.HTTP_CHECK_TIMESTAMP_LIMIT_MS ) {
+                return listingEntries.get(filename);
+            } else {
+                synchronized ( this ) {
+                    listingEntryFreshness.remove(filename);
+                    listingEntries.remove(filename);
+                }
+            }
+        }
+        try {
+            Map<String,Object> meta= getHeadMeta(filename);
+            DirectoryEntry de= new DirectoryEntry();
+            List odate= (List)meta.get("Date");
+            List osize= (List)meta.get("Content-Length");
+            de.type= filename.endsWith("/") ? 'd' : 'f';
+            if ( odate!=null && osize!=null ) {
+                de.modified= new Date((String)odate.get(0)).getTime();
+                de.size= Long.parseLong((String)osize.get(0));
+                synchronized ( this ) {
+                    listingEntries.put(filename,de);
+                    listingEntryFreshness.put(filename,new Date().getTime());
+                }
+                return de;
+            } else {
+                return super.maybeUpdateDirectoryEntry(filename, force);
+            }
+        } catch (CancelledOperationException ex) {
+            return super.maybeUpdateDirectoryEntry(filename, force);
+        }
+    }
+    
+    
 }
