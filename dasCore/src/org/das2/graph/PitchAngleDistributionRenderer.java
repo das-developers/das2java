@@ -101,6 +101,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
     public static QDataSet doAutorange(QDataSet tds) {
 
         QDataSet zdesc = Ops.extent( tds );
+        zdesc= Ops.putProperty( zdesc, QDataSet.SCALE_TYPE, tds.property(QDataSet.SCALE_TYPE ) );
 
         QDataSet ads= SemanticOps.xtagsDataSet(tds);
         QDataSet rds= SemanticOps.ytagsDataSet(tds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
