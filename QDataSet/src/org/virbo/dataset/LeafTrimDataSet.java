@@ -48,6 +48,12 @@ public class LeafTrimDataSet extends AbstractDataSet {
         if ( end>len ) {
             throw new IndexOutOfBoundsException("end is greater than last dimension length");
         }
+        if ( start<0 ) {
+            throw new IndexOutOfBoundsException("start is less than 0");
+        }
+        if ( start>end ) {
+            throw new IndexOutOfBoundsException("start is greater than end");
+        }
 
         String depNName = "DEPEND_" + (ds.rank() - 1);
         QDataSet depN = (QDataSet) ds.property(depNName);
