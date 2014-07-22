@@ -49,7 +49,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
             if ( SemanticOps.isBundle(ds) ) return false;
             QDataSet yds= SemanticOps.ytagsDataSet(ds);
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
-            if ( SemanticOps.getUnits(yds)==Units.degrees || SemanticOps.getUnits(xds)==Units.degrees || SemanticOps.getUnits(yds)==Units.radians || SemanticOps.getUnits(xds)==Units.radians ) {
+            if ( SemanticOps.getUnits(yds).isConvertableTo(Units.radians) || SemanticOps.getUnits(xds).isConvertableTo(Units.radians) ) {
                 return true;
             } else {
                 QDataSet extent= Ops.extent(yds);
@@ -223,10 +223,11 @@ public class PitchAngleDistributionRenderer extends Renderer {
                         a0= -a0;
                         a1= -a1;
                     }
-                    if ( xunits==Units.degrees ) {
+                    if ( xunits==Units.degrees || xunits==Units.deg ) {
                         a0= Math.toRadians(a0);
                         a1= Math.toRadians(a1);
                     }
+                    
                     if ( originNorth ) {
                         yy[i][j]= (float) ( y0 - cos(a0) * r0y );
                         xx[i][j]= (float) ( x0 - sin(a0) * r0x );
