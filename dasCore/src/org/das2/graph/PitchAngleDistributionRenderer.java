@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.das2.graph;
 
 import javax.swing.ImageIcon;
@@ -22,10 +17,16 @@ import java.beans.PropertyChangeListener;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
 import static java.lang.Math.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.virbo.dataset.ArrayDataSet;
 
 /**
- *
+ * Draws a pitch angle distribution, which is a spectrogram wrapped around an origin.  Datasets must
+ * be of the form Z[Angle,Radius].  The dataset Angle must be in radians (Units.radians or dimensionless), or 
+ * have units Units.degrees.  Note, at one time it would guess the angles dimension, but this was unreliable and was
+ * removed.
+ * 
  * @author jbf
  */
 public class PitchAngleDistributionRenderer extends Renderer {
@@ -191,14 +192,14 @@ public class PitchAngleDistributionRenderer extends Renderer {
         ArrayDataSet damax= ArrayDataSet.copy(ads);
         for ( int i=0; i<damin.length(); i++ ) {
             if ( i==0 ) {
-                damin.putValue( i, Math.max( 0., ads.value(i)-da) );
+                damin.putValue( i, ads.value(i)-da );
                 damax.putValue( i, ( ads.value(i+1) + ads.value(i) ) / 2 );
             } else if ( i<damin.length()-1 ) {
                 damin.putValue( i, ( ads.value(i-1) + ads.value(i) ) / 2 );
                 damax.putValue( i, ( ads.value(i+1) + ads.value(i) ) / 2 );
             } else {
                 damin.putValue( i, ( ads.value(i-1) + ads.value(i) ) / 2 );
-                damax.putValue( i, Math.min( 180, ads.value(i)+da) );
+                damax.putValue( i, ads.value(i)+da );
             }
         }
         
@@ -271,6 +272,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
 
     }
 
+    @Override
     protected void installRenderer() {
         DasPlot parent= getParent();
         if (parent != null && parent.getCanvas() != null) {
@@ -280,17 +282,28 @@ public class PitchAngleDistributionRenderer extends Renderer {
         }
     }
 
+    @Override
     protected void uninstallRenderer() {
 //        if (colorBar != null && colorBar.getCanvas() != null) {
 //            colorBar.getCanvas().remove(colorBar);
 //        }
     }
+
+    @Override
+    public String getControl() {
+        Map<String,String> controls= new LinkedHashMap();
+        controls.put( "mirror", setBooleanControl( mirror ) );
+        controls.put( "originNorth", setBooleanControl( originNorth ) );
+        return Renderer.formatControl(controls);
+    }
     
 
+    
     @Override
     public void setControl(String s) {
         super.setControl(s);
-        this.mirror= getBooleanControl( "mirror", mirror );
+        this.mirror= getBooleanControl( "mirror", false );
+        this.originNorth= getBooleanControl("originNorth", false );
     }    
 
     /**
@@ -298,7 +311,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
      * it is in the positive x direction
      */
     public static final String PROP_ORIGINNORTH = "originNorth";
-    protected boolean originNorth = false;
+    protected boolean originNorth = false; // see setControl, which must also be false.
 
     public boolean isOriginNorth() {
         return originNorth;
@@ -314,7 +327,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
     /**
      * if true, then mirror the image about angle=0.
      */
-    protected boolean mirror = false;
+    protected boolean mirror = false; // see setControl, which must also be false.
     public static final String PROP_MIRROR = "mirror";
 
     public boolean isMirror() {
