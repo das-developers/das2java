@@ -411,8 +411,9 @@ public class DataSetUtil {
      * return properties attached to the slice at index.  Note the slice
      * implementations use this, and this only returns properties from
      * dimensionProperties().
-     * @param ds
-     * @param index
+     * @param ds the dataset to slice.
+     * @param index index to slice at.
+     * @param result a map to insert the new properties, or null if a new one should be created.
      * @return
      */
     public static Map<String, Object> sliceProperties( QDataSet ds, int index, Map<String,Object> result ) {
