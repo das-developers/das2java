@@ -52,8 +52,10 @@ public abstract class Units implements Serializable {
 
     public static final Units radians= new NumberUnits("radian");
     public static final Units degrees= new NumberUnits("degrees");
+    public static final Units deg= new NumberUnits("deg");
     static {
         degrees.registerConverter(radians, new UnitsConverter.ScaleOffset(Math.PI/180.0,0.0) );
+        degrees.registerConverter(deg, UnitsConverter.IDENTITY);
     }
 
     /**
