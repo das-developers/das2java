@@ -186,20 +186,34 @@ public class PitchAngleDistributionRenderer extends Renderer {
         }
         Units zunits= SemanticOps.getUnits(tds);
 
+        double amin= Double.NEGATIVE_INFINITY;
+        double amax= Double.POSITIVE_INFINITY;
         double da= ( ads.value(1) - ads.value(0) ) / 2;
-
+        QDataSet rangea= Ops.extent(ads);
+        if ( xunits==Units.degrees || xunits==Units.deg ) {
+            if ( rangea.value(1) - rangea.value(0) < 180*3/2 ) {
+                amin= 180 * (int)( ads.value(1)  / 180 );
+                amax= 180 * ( 1 + (int)( ads.value(ads.length()-2) / 180 ) );
+            }
+        } else {
+            if ( rangea.value(1) - rangea.value(0) < Math.PI * 3 / 2 ) {
+                amin= Math.PI * (int)( ads.value(1)  / 180 );
+                amax= Math.PI * ( 1 + (int)( ads.value(ads.length()-2) / 180 ) );
+            }
+        }
+        
         ArrayDataSet damin= ArrayDataSet.copy(ads);
         ArrayDataSet damax= ArrayDataSet.copy(ads);
         for ( int i=0; i<damin.length(); i++ ) {
             if ( i==0 ) {
-                damin.putValue( i, ads.value(i)-da );
+                damin.putValue( i, Math.max( amin, ads.value(i)-da ) );
                 damax.putValue( i, ( ads.value(i+1) + ads.value(i) ) / 2 );
             } else if ( i<damin.length()-1 ) {
                 damin.putValue( i, ( ads.value(i-1) + ads.value(i) ) / 2 );
                 damax.putValue( i, ( ads.value(i+1) + ads.value(i) ) / 2 );
             } else {
                 damin.putValue( i, ( ads.value(i-1) + ads.value(i) ) / 2 );
-                damax.putValue( i, ads.value(i)+da );
+                damax.putValue( i, Math.min( amax, ads.value(i)+da ) );
             }
         }
         
