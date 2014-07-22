@@ -137,6 +137,25 @@ public class ContoursRenderer extends Renderer {
         
         Graphics2D g = (Graphics2D) g1.create();
 
+        if ( ds.rank()!=2 ) {
+            super.renderException( g1, xAxis, yAxis, new IllegalArgumentException("dataset rank must be 2") );
+            return;
+        }
+        QDataSet _xds= SemanticOps.xtagsDataSet(ds);
+        if ( _xds.rank()!=1 ) {
+            super.renderException( g1, xAxis, yAxis, new IllegalArgumentException("xtags must be rank 1") );
+            return;
+        }
+        QDataSet _yds= SemanticOps.ytagsDataSet(ds);
+        if ( _yds.rank()!=1 ) {
+            super.renderException( g1, xAxis, yAxis, new IllegalArgumentException("ytags must be rank 1") );
+            return;
+        }
+
+        if ( paths==null ) {
+            return;
+        }
+        
         if (lparent.getCanvas().isAntiAlias()) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
@@ -201,10 +220,9 @@ public class ContoursRenderer extends Renderer {
     @Override
     public void setDataSet(QDataSet ds) {
         super.setDataSet(ds); //To change body of generated methods, choose Tools | Templates.
-        if ( !acceptsDataSet(ds) ) {
-            throw new IllegalArgumentException("ContoursRenderer does not accept this data");
-        }
-        updateContours();
+        if ( acceptsDataSet(ds) ) {
+            updateContours();
+        }        
     }
 
     QDataSet vds; // the contours
@@ -341,6 +359,7 @@ public class ContoursRenderer extends Renderer {
         if ( tds==null ) {
             return;
         }
+
         Units units = SemanticOps.getUnits( tds );
 
         double d0 = units.getFillDouble();
