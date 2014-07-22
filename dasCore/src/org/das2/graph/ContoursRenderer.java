@@ -187,8 +187,23 @@ public class ContoursRenderer extends Renderer {
     }
 
     @Override
+    public boolean acceptsDataSet(QDataSet ds) {
+        if ( ds==null ) return true;
+        if ( ds.rank()!=2 ) return false;
+        QDataSet xds= SemanticOps.xtagsDataSet(ds);
+        if ( xds.rank()!=1 ) return false;
+        QDataSet yds= SemanticOps.ytagsDataSet(ds);
+        if ( yds.rank()!=1 ) return false;
+        return true;
+    }
+
+    
+    @Override
     public void setDataSet(QDataSet ds) {
         super.setDataSet(ds); //To change body of generated methods, choose Tools | Templates.
+        if ( !acceptsDataSet(ds) ) {
+            throw new IllegalArgumentException("ContoursRenderer does not accept this data");
+        }
         updateContours();
     }
 
