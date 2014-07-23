@@ -26,9 +26,7 @@ package org.das2.beans;
 public class DasMouseInputAdapterBeanInfo extends AccessLevelBeanInfo {
     
     private static final Property[] properties = {
-        new Property("mouseModules", AccessLevel.DASML, "getMouseModules", null, "getMouseModule", null, null),
-        //new Property("hoverHighlite", AccessLevel.DASML, "isHoverHighlite", "setHoverHighlite", null ),
-        
+        new Property("mouseModules", AccessLevel.DASML, "getMouseModules", null, "getMouseModule", null, null),        
         new Property("primaryModule", AccessLevel.DASML, PersistenceLevel.PERSISTENT,
                 "getPrimaryModule", "setPrimaryModule", null ),
         new Property("secondaryModule", AccessLevel.DASML, PersistenceLevel.PERSISTENT,
