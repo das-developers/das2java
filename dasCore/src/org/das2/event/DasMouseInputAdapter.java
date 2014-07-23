@@ -69,9 +69,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * that a few modules could be used together simultaneously, but this implementation
      * only allows for one to be active at a time.
      */
-    private Vector active = null;
+    private ArrayList active = null;
     private boolean pinned = false;
-    private Vector modules;
+    private ArrayList modules;
     private HashMap primaryActionButtonMap;
     private HashMap secondaryActionButtonMap;
     protected JPopupMenu primaryPopup;
@@ -162,7 +162,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
         this.parent = parent;
 
-        modules = new Vector();
+        modules = new ArrayList();
 
         primaryActionButtonMap = new HashMap();
         secondaryActionButtonMap = new HashMap();
@@ -202,8 +202,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         primaryActionButtonMap.remove(oldModule);
         secondaryActionButtonMap.put(newModule, secondaryActionButtonMap.get(oldModule));
         secondaryActionButtonMap.remove(oldModule);
-        modules.removeElement(oldModule);
-        modules.addElement(newModule);
+        modules.remove(oldModule);
+        modules.add(newModule);
     }
     
     public synchronized void removeMouseModule(MouseModule module) {
@@ -222,7 +222,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 numInsertedSecondary--;
             }
         }
-        modules.removeElement(module);
+        modules.remove(module);
     }
     
 
@@ -894,7 +894,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     }
                 } else {
 
-                    active = new Vector();
+                    active = new ArrayList();
 
                     if (button == MouseEvent.BUTTON1 || button == MouseEvent.BUTTON3) {
                         for (int i = 0; i < modules.size(); i++) {
@@ -914,8 +914,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
                     Runnable run= new Runnable() {
                         public void run() {
-                            Vector lactive= active;
-                            if ( lactive==null || lactive.size()==0 ) return;
+                            ArrayList lactive= active;
+                            if ( lactive==null || lactive.isEmpty() ) return;
                             MouseModule theone= ((MouseModule)lactive.get(0));
                             if ( theone==null ) return;
                             try {
@@ -1106,7 +1106,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     public MouseModule[] getMouseModules() {
         MouseModule[] result = new MouseModule[modules.size()];
-        modules.copyInto(result);
+        result= (MouseModule[]) modules.toArray(result);
         return result;
     }
 
