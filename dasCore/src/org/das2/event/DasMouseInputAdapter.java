@@ -83,6 +83,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     JCheckBoxMenuItem secondarySelectedItem;    // must be non-null, but may contain null elements
     Rectangle[] dirtyBoundsList;
     private static final Logger logger = LoggerManager.getLogger(DasLogger.GUI_LOG.toString());
+    
     /**
      * number of additional inserted popup menu items to the primary menu.
      */
