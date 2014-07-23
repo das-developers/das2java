@@ -57,12 +57,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.dataset.LanlNNRebinner;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
-import static org.das2.graph.Renderer.logger;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -74,6 +75,8 @@ import org.virbo.dataset.SemanticOps;
  */
 public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer, org.das2.components.propertyeditor.Displayable {
 
+    private static final Logger logger = LoggerManager.getLogger("das2.graphics.renderer.spectrogram");
+    
     //final private Object lockObject = new Object();
     private Image plotImage;
     /**
@@ -489,7 +492,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         final QDataSet fds= this.ds; // make a local copy for thread safety.
 
-        logger.log(Level.FINE, "SpectrogramRenderer is rendering dataset {0}", fds);
+        logger.log(Level.FINE, "SpectrogramRenderer is rendering dataset {0} on {1}", new Object[] {  fds, Thread.currentThread().getName() } );
         
         byte[] lraster= this.raster;  // make a local copy for thread safety.
 
