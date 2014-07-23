@@ -474,7 +474,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         popup.addSeparator();
         // mouse modules go here
         popup.addSeparator();
-
+                
         Action[] canvasActions = DasCanvas.getActions();
         for (int iaction = 0; iaction < canvasActions.length; iaction++) {
             JMenuItem item = new JMenuItem();
@@ -1225,6 +1225,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         JMenu result = new JMenu(label);
         addMenuItem(result);
         return result;
+    }
+    
+    /**
+     * return number of elements for diagnostic purposes.
+     * @return 
+     */
+    public int getNumInserted() {
+        return numInserted;
     }
 
     private DasCanvas.GlassPane getGlassPane() {
