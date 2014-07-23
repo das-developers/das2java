@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.das2.datum.CacheTag;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.util.LoggerManager;
@@ -241,26 +242,33 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         Units u1= SemanticOps.getUnits(this);
         Units u2= SemanticOps.getUnits(ds);
         if ( u1!=u2 ) {
-            UnitsConverter uc= UnitsConverter.getConverter(u2,u1);
-            Class backClass= this.getBack().getClass().getComponentType();
-            for ( int i=myLength; i<myLength+dsLength; i++ ) {
-                Number nv=  uc.convert(Array.getDouble( this.getBack(),i) ) ;
-                if ( backClass==double.class ) {
-                    Array.set( this.getBack(), i, nv.doubleValue() );
-                } else if ( backClass==float.class ) {
-                    Array.set( this.getBack(), i, nv.floatValue() );
-                } else if ( backClass==long.class ) {
-                    Array.set( this.getBack(), i, nv.longValue() );
-                } else if ( backClass==int.class ) {
-                    Array.set( this.getBack(), i, nv.intValue() );
-                } else if ( backClass==short.class ) {
-                    Array.set( this.getBack(), i, nv.shortValue() );
-                } else if ( backClass==byte.class ) {
-                    Array.set( this.getBack(), i, nv.byteValue() );
-                } else {
-                    throw new IllegalArgumentException("unsupported type: "+backClass );
+            if ( u1 instanceof EnumerationUnits && u2 instanceof EnumerationUnits ) {
+                for ( int i=myLength; i<myLength+dsLength; i++ ) {
+                    double d= Array.getDouble( this.getBack(),i );
+                    d= ((EnumerationUnits)u1).createDatum( u2.createDatum(d).toString() ).doubleValue(u1);
+                    Array.set( this.getBack(), i, d );
                 }
-                
+            } else {
+                UnitsConverter uc= UnitsConverter.getConverter(u2,u1);
+                Class backClass= this.getBack().getClass().getComponentType();
+                for ( int i=myLength; i<myLength+dsLength; i++ ) {
+                    Number nv=  uc.convert(Array.getDouble( this.getBack(),i) ) ;
+                    if ( backClass==double.class ) {
+                        Array.set( this.getBack(), i, nv.doubleValue() );
+                    } else if ( backClass==float.class ) {
+                        Array.set( this.getBack(), i, nv.floatValue() );
+                    } else if ( backClass==long.class ) {
+                        Array.set( this.getBack(), i, nv.longValue() );
+                    } else if ( backClass==int.class ) {
+                        Array.set( this.getBack(), i, nv.intValue() );
+                    } else if ( backClass==short.class ) {
+                        Array.set( this.getBack(), i, nv.shortValue() );
+                    } else if ( backClass==byte.class ) {
+                        Array.set( this.getBack(), i, nv.byteValue() );
+                    } else {
+                        throw new IllegalArgumentException("unsupported type: "+backClass );
+                    }
+                }
             }
         }
         
