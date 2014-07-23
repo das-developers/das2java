@@ -3827,6 +3827,7 @@ public class Ops {
         }
         QDataSet findex= Ops.findex( dep0, sliceds );
         double f= findex.value();
+        //TODO: bug 1234: slice at string appears to mis with FFTPower result
         if ( f>=0. && f<dep0.length() ) {
             return slice0( ds, (int)Math.round(f) );
         } else if ( f<0 ) {
