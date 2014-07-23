@@ -263,10 +263,18 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     if ( i>primaryPopup.getComponentCount() ) {
                         i= primaryPopup.getComponentCount();
                     }
+                    if ( i<0 ) {
+                        logger.finer("here is that bug where numInserted is negative...");
+                        i= 0;
+                    }
                     primaryPopup.add(primaryNewItem, i );
                     i= numInsertedSecondary + 1 + secondaryActionButtonMap.size() - 1;
                     if ( i>secondaryPopup.getComponentCount() ) {
                         i= secondaryPopup.getComponentCount();
+                    }
+                    if ( i<0 ) {
+                        logger.finer("here is that bug where numInsertedSecondary is negative...");
+                        i= 0;
                     }
                     secondaryPopup.add(secondaryNewItem, i );
                 } catch ( IllegalArgumentException ex ) {
