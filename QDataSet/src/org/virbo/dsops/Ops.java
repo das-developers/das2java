@@ -5415,8 +5415,14 @@ public class Ops {
         return result;
     }
 
-    public static QDataSet interpolate( Object x, Object y ) {
-        return interpolate( dataset(x), dataset(y) );
+    /**
+     * 
+     * @param vv object that can be converted to rank 1 dataset, such as array. These are the rank 1 dataset that is the data to be interpolated.
+     * @param findex object that can be converted to a rank N dataset, such as an array.  These are the rank N dataset of fractional indeces. 
+     * @return rank N dataset.
+     */
+    public static QDataSet interpolate( Object vv, Object findex ) {
+        return interpolate( dataset(vv), dataset(findex) );
     }    
     
     /**
@@ -5500,9 +5506,20 @@ public class Ops {
 
         return result;
     }
+     
         
-    public static QDataSet interpolate( Object x, Object y, Object z ) {
-        return interpolate( dataset(x), dataset(y), dataset(z) );
+    /**
+     * interpolate values from rank 2 dataset vv using fractional indeces
+     * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
+     *
+     * @see findex the 1-D findex command.
+     * @param vv object convertible to rank 2 dataset.
+     * @param findex0 object convertible to rank N dataset of fractional indeces for the zeroth index.
+     * @param findex1 object convertible to rank N dataset of fractional indeces for the first index.
+     * @return rank N dataset 
+     */
+    public static QDataSet interpolate( Object vv, Object findex0, Object findex1 ) {
+        return interpolate( dataset(vv), dataset(findex0), dataset(findex1) );
     }    
 
     /**
