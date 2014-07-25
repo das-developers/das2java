@@ -1574,7 +1574,7 @@ public class DataSetOps {
     /**
      * container for the logic for slicing at an index vs slicing at a datum.  If the string is
      * an integer, then we return the index.  If the index is a string, then we need to 
-     * find the corresponding index.
+     * find the corresponding index to the rank 0 dataset elsewhere.
      * @param arg String that encodes a datum position or index.
      * @return an integer index or a dataset indicating the index.
      */
