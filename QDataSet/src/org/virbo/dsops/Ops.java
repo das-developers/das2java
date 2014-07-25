@@ -5536,7 +5536,7 @@ public class Ops {
             }
 
         }
-
+        DataSetUtil.copyDimensionProperties( vv, result );
         return result;
     }
      
@@ -5649,7 +5649,8 @@ public class Ops {
                 }
             } // second index
         }
-
+        
+        DataSetUtil.copyDimensionProperties( vv, result );
         QDataSet result1= result;
         if ( slice0 ) {
             result1= result1.slice(0);
