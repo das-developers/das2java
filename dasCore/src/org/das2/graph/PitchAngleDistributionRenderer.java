@@ -49,7 +49,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
         double delta= extent.value(1)-extent.value(0);
         if ( u==Units.dimensionless && ( delta>160 && delta<181 || delta>320 && delta<362 ) ) {
             return Math.PI/180;
-        } else if ( u==Units.dimensionless && ( delta>160 && delta<181 || delta>160 && delta<181 ) ) {
+        } else if ( u==Units.dimensionless && ( delta>Math.PI*160/180 && delta<Math.PI*181/180 || delta>Math.PI*320/180 && delta<Math.PI*362/180 ) ) {
             return 1.;
         } else {
             return null;
