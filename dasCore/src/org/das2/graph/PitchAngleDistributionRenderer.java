@@ -19,6 +19,7 @@ import org.das2.util.monitor.ProgressMonitor;
 import static java.lang.Math.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.ArrayDataSet;
 
 /**
@@ -36,6 +37,26 @@ public class PitchAngleDistributionRenderer extends Renderer {
     }
 
     /**
+     * return true if the dataset can be interpreted as radian degrees from 0 to PI or from 0 to 2*PI.
+     * @param ds any QDataSet.
+     * @return the multiplier to make the dataset into radians, or null.
+     */
+    private static Double isAngleRange( QDataSet ds ) {
+        Units u= SemanticOps.getUnits(ds);
+        if ( u==Units.radians ) return 1.;
+        if ( u==Units.deg || u==Units.degrees ) return Math.PI/180;
+        QDataSet extent= Ops.extent(ds);
+        double delta= extent.value(1)-extent.value(0);
+        if ( u==Units.dimensionless && ( delta>160 && delta<181 || delta>320 && delta<362 ) ) {
+            return Math.PI/180;
+        } else if ( u==Units.dimensionless && ( delta>160 && delta<181 || delta>160 && delta<181 ) ) {
+            return 1.;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
      * accepts data that is rank 2 and not a timeseries.  Angles
      * may be in radians or in Units.degrees.  
      * ds[Energy,Pitch] or ds[Pitch,Energy] where Pitch is in:
@@ -49,16 +70,9 @@ public class PitchAngleDistributionRenderer extends Renderer {
             if ( SemanticOps.isBundle(ds) ) return false;
             QDataSet yds= SemanticOps.ytagsDataSet(ds);
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
-            if ( SemanticOps.getUnits(yds).isConvertableTo(Units.radians) || SemanticOps.getUnits(xds).isConvertableTo(Units.radians) ) {
-                return true;
-            } else {
-                QDataSet extent= Ops.extent(yds);
-                if ( extent.value(0)<-2*PI || extent.value(1)>2*PI ) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
+            if ( isAngleRange(xds)!=null ) return true;
+            if ( isAngleRange(yds)!=null ) return true;
+            return false;
         } else {
             return false;
         }
@@ -110,8 +124,9 @@ public class PitchAngleDistributionRenderer extends Renderer {
         Units xunits= SemanticOps.getUnits(ads);
         Units yunits= SemanticOps.getUnits(rds);
 
-        if ( yunits.isConvertableTo(Units.degrees) && !xunits.isConvertableTo(Units.degrees) ) { // swap em
+        if ( isAngleRange(rds)!=null && isAngleRange(ads)==null ) { // swap em
             rds= SemanticOps.xtagsDataSet(tds);
+            //ads= SemanticOps.ytagsDataSet(tds); // not used
         }
 
         ArrayDataSet xdesc= DDataSet.wrap( new double[] { 0, Ops.extent(rds).value(1) }, yunits );
@@ -166,40 +181,35 @@ public class PitchAngleDistributionRenderer extends Renderer {
         QDataSet ads= SemanticOps.xtagsDataSet(tds);
         QDataSet rds= SemanticOps.ytagsDataSet(tds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
 
-        Units xunits= SemanticOps.getUnits(ads);
         Units yunits= SemanticOps.getUnits(rds);
 
-        if ( yunits.isConvertableTo(Units.degrees) && !xunits.isConvertableTo(Units.degrees) ) { // swap em
+        Double angleFactor= isAngleRange(ads);
+        if ( isAngleRange(rds)!=null && angleFactor==null ) { // swap em
             rds= SemanticOps.xtagsDataSet(tds);
             ads= SemanticOps.ytagsDataSet(tds);
-            xunits= SemanticOps.getUnits(ads);
             yunits= SemanticOps.getUnits(rds);
-            tds= Ops.transpose(tds);
+            tds= Ops.transpose(tds);            
+            angleFactor= isAngleRange(ads);
         }
+        if ( angleFactor!=1. ) {
+            ads= Ops.multiply(ads,angleFactor);
+        }
+        // assert all angles are now in radians.
+        
         QDataSet wds= SemanticOps.weightsDataSet(tds);
 
         float[][] xx= new float[ tds.length()+1 ] [ tds.length(0)+1 ];
         float[][] yy= new float[ tds.length()+1 ] [ tds.length(0)+1 ];
 
-        if ( SemanticOps.getUnits(ads)==Units.dimensionless ) {
-            xunits= Units.radians;
-        }
         Units zunits= SemanticOps.getUnits(tds);
 
         double amin= Double.NEGATIVE_INFINITY;
         double amax= Double.POSITIVE_INFINITY;
         double da= ( ads.value(1) - ads.value(0) ) / 2;
         QDataSet rangea= Ops.extent(ads);
-        if ( xunits==Units.degrees || xunits==Units.deg ) {
-            if ( rangea.value(1) - rangea.value(0) < 180*3/2 ) {
-                amin= 180 * (int)( ads.value(1)  / 180 );
-                amax= 180 * ( 1 + (int)( ads.value(ads.length()-2) / 180 ) );
-            }
-        } else {
-            if ( rangea.value(1) - rangea.value(0) < Math.PI * 3 / 2 ) {
-                amin= Math.PI * (int)( ads.value(1)  / 180 );
-                amax= Math.PI * ( 1 + (int)( ads.value(ads.length()-2) / 180 ) );
-            }
+        if ( rangea.value(1) - rangea.value(0) < Math.PI * 3 / 2 ) {
+            amin= Math.PI * (int)( ads.value(1)  / 180 );
+            amax= Math.PI * ( 1 + (int)( ads.value(ads.length()-2) / 180 ) );
         }
         
         ArrayDataSet damin= ArrayDataSet.copy(ads);
@@ -236,12 +246,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
                     if ( iflip==1 ) {
                         a0= -a0;
                         a1= -a1;
-                    }
-                    if ( xunits==Units.degrees || xunits==Units.deg ) {
-                        a0= Math.toRadians(a0);
-                        a1= Math.toRadians(a1);
-                    }
-                    
+                    }                    
                     if ( originNorth ) {
                         yy[i][j]= (float) ( y0 - cos(a0) * r0y );
                         xx[i][j]= (float) ( x0 - sin(a0) * r0x );
@@ -279,8 +284,6 @@ public class PitchAngleDistributionRenderer extends Renderer {
                     } else {
                         //g.setColor( Color.lightGray );
                     }
-
-
                 }
             }
         }
