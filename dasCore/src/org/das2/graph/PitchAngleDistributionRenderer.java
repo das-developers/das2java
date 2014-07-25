@@ -200,7 +200,11 @@ public class PitchAngleDistributionRenderer extends Renderer {
 
         float[][] xx= new float[ tds.length()+1 ] [ tds.length(0)+1 ];
         float[][] yy= new float[ tds.length()+1 ] [ tds.length(0)+1 ];
-
+        //float[][] cx1=new float[ tds.length()+1 ] [ tds.length(0)+1 ];
+        //float[][] cy1=new float[ tds.length()+1 ] [ tds.length(0)+1 ];
+        //float[][] cx2=new float[ tds.length()+1 ] [ tds.length(0)+1 ];
+        //float[][] cy2=new float[ tds.length()+1 ] [ tds.length(0)+1 ];        
+        
         Units zunits= SemanticOps.getUnits(tds);
 
         double amin= Double.NEGATIVE_INFINITY;
@@ -230,6 +234,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
         double x0= xAxis.transform(0,yunits);
         double y0= yAxis.transform(0,yunits);
 
+        //boolean useBelzier= true;
         for ( int iflip=0; iflip<2; iflip++ ) {
             if ( !mirror && iflip==1 ) continue;
             for ( int j=0; j<rds.length()-1; j++ ) {
@@ -239,6 +244,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
                 double r0y= y0 - ( yAxis.transform(v1,yunits) ); // inner ring radius at x=0, equal to r0x when isotropic (round)
                 double r1x= ( xAxis.transform(v2,yunits) ) - x0; // outer ring radius at y=0
                 double r1y= y0 - ( yAxis.transform(v2,yunits) ); // outer ring radius at x=0, equal to r1x when isotropic (round)
+                //double r= Math.sqrt( r1y*r1y + r1x*r1x );
                 
                 for ( int i=0; i<ads.length(); i++ ) {
                     double a0= damin.value(i);
@@ -250,12 +256,17 @@ public class PitchAngleDistributionRenderer extends Renderer {
                     if ( originNorth ) {
                         yy[i][j]= (float) ( y0 - cos(a0) * r0y );
                         xx[i][j]= (float) ( x0 - sin(a0) * r0x );
-                        yy[i][j+1]= (float) ( y0 - cos(a0) * r1y );
-                        xx[i][j+1]= (float) ( x0 - sin(a0) * r1x );
+                        yy[i][j+1]= (float) ( y0 - cos(a0) * r1y ); // outer
+                        xx[i][j+1]= (float) ( x0 - sin(a0) * r1x ); // outer
                         yy[i+1][j]= (float) ( y0 - cos(a1) * r0y );
                         xx[i+1][j]= (float) ( x0 - sin(a1) * r0x );
-                        yy[i+1][j+1]= (float) ( y0 - cos(a1) * r1y );
-                        xx[i+1][j+1]= (float) ( x0 - sin(a1) * r1x );
+                        yy[i+1][j+1]= (float) ( y0 - cos(a1) * r1y ); // outer
+                        xx[i+1][j+1]= (float) ( x0 - sin(a1) * r1x ); // outer
+//                        if ( useBelzier ) {
+//                            double Θ= a1-a0;
+//                            double ε= 2 * sin(Θ/2)* r / ( 1 + 2 * cos(Θ/2) );  //http://www.tsplines.com/resources/class_notes/Bezier_curves.pdf, page 15
+//                            cx1[i][j]= xx[i][j+1] + cos(  ) // Not completed!
+//                        }
                     } else {
                         xx[i][j]= (float) ( x0 + cos(a0) * r0x );
                         yy[i][j]= (float) ( y0 - sin(a0) * r0y );
@@ -274,6 +285,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
                         GeneralPath gp= new GeneralPath( GeneralPath.WIND_NON_ZERO,6);
                         gp.moveTo( xx[i][j], yy[i][j] );
                         gp.lineTo( xx[i][j+1], yy[i][j+1] );
+                        //gp.curveTo( 0,0, 0,0, xx[i+1][j+1], yy[i+1][j+1] );
                         gp.lineTo( xx[i+1][j+1], yy[i+1][j+1] );
                         gp.lineTo( xx[i+1][j], yy[i+1][j] );
                         gp.lineTo( xx[i][j], yy[i][j] );
