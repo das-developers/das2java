@@ -5330,6 +5330,11 @@ public class Ops {
         return findex( dataset(x), dataset(y) );
     }
     
+    private static boolean isDimensionless( QDataSet ds ) {
+        Units u= (Units)ds.property(QDataSet.UNITS);
+        return u==null || u==Units.dimensionless;
+    }
+            
     /**
      * interpolate values from rank 1 dataset vv using fractional indeces 
      * in rank N findex.  For example, findex=1.5 means interpolate
@@ -5343,12 +5348,20 @@ public class Ops {
      * calculated and used for findex.
      * 
      * @param vv rank 1 dataset that is the data to be interpolated.
-     * @param findex rank N dataset of fractional indeces.
+     * @param findex rank N dataset of fractional indeces.  This must be dimensionless and is typically calculated by the findex command.
      * @return the result.  
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex) {
         if ( vv.rank()!=1 ) {
             throw new IllegalArgumentException("vv is not rank1");
+        }
+        if ( !isDimensionless(findex) ) throw new IllegalArgumentException("findex argument should be dimensionless, expected output from findex command.");
+        QDataSet fex0= extent(findex);
+        if ( ( fex0.value(1)-vv.length() ) / vv.length() > 100 ) {
+            logger.warning("findex looks suspicious, where it's max will result in unrealistic extrapolations");
+        }
+        if ( fex0.value(0) / vv.length() < -100 ) {
+            logger.warning("findex looks suspicious, where it's min will result in unrealistic extrapolations");
         }
         
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex));
@@ -5431,14 +5444,34 @@ public class Ops {
      *
      * @see findex the 1-D findex command.
      * @param vv rank 2 dataset.
-     * @param findex0 rank N dataset of fractional indeces for the zeroth index.
-     * @param findex1 rank N dataset of fractional indeces for the first index.
+     * @param findex0 rank N dataset of fractional indeces for the zeroth index.  This must be dimensionless and is typically calculated by the findex command.
+     * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless and is typically calculated by the findex command.
      * @return rank N dataset 
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
 
         if ( findex0.rank()>0 && findex0.length()!=findex1.length() ) {
             throw new IllegalArgumentException("findex0 and findex1 must have the same geometry.");
+        }
+        if ( !isDimensionless(findex0) ) throw new IllegalArgumentException("findex0 argument should be dimensionless, expected output from findex command.");
+        if ( !isDimensionless(findex1) ) throw new IllegalArgumentException("findex1 argument should be dimensionless, expected output from findex command.");
+        
+        if ( !DataSetUtil.checkQube(vv) ) {
+            logger.warning("vv is not a qube");
+        }
+        QDataSet fex0= extent(findex0);
+        if ( ( fex0.value(1)-vv.length() ) / vv.length() > 100 ) {
+            logger.warning("findex0 looks suspicious, where it's max will result in unrealistic extrapolations");
+        }
+        if ( fex0.value(0) / vv.length() < -100 ) {
+            logger.warning("findex0 looks suspicious, where it's min will result in unrealistic extrapolations");
+        }
+        QDataSet fex1= extent(findex1);
+        if ( ( fex1.value(1)-vv.length(0) ) / vv.length(0) > 100 ) {
+            logger.warning("findex1 looks suspicious, where it's max will result in unrealistic extrapolations");
+        }
+        if ( fex1.value(0) / vv.length(0) < -100 ) {
+            logger.warning("findex1 looks suspicious, where it's min will result in unrealistic extrapolations");
         }
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex0));
 
