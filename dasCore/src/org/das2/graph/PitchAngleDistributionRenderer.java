@@ -16,10 +16,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.das2.datum.Units;
 import org.das2.util.monitor.ProgressMonitor;
-import static java.lang.Math.*;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.ArrayDataSet;
 
 /**
