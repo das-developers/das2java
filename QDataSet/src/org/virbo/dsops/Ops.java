@@ -5483,7 +5483,6 @@ public class Ops {
         int n1 = vv.length(0);
 
         double fill= -1e38;
-        result.putProperty( QDataSet.FILL_VALUE, fill );
         
         while (it.hasNext()) {
             it.next();
@@ -5537,6 +5536,16 @@ public class Ops {
 
         }
         DataSetUtil.copyDimensionProperties( vv, result );
+        QDataSet depend0= (QDataSet) findex0.property(QDataSet.DEPEND_0);
+        if ( depend0!=null ) {
+            result.putProperty( QDataSet.DEPEND_0, depend0 );
+        }
+        QDataSet depend1= (QDataSet) findex1.property(QDataSet.DEPEND_1);
+        if ( depend1!=null ) {
+            result.putProperty( QDataSet.DEPEND_1, depend1 );
+        }
+        result.putProperty( QDataSet.FILL_VALUE, fill );
+        
         return result;
     }
      
@@ -5651,6 +5660,16 @@ public class Ops {
         }
         
         DataSetUtil.copyDimensionProperties( vv, result );
+        QDataSet depend0= (QDataSet) findex0.property(QDataSet.DEPEND_0);
+        if ( depend0!=null ) {
+            result.putProperty( QDataSet.DEPEND_0, depend0 );
+        }
+        QDataSet depend1= (QDataSet) findex1.property(QDataSet.DEPEND_1);
+        if ( depend1!=null ) {
+            result.putProperty( QDataSet.DEPEND_1, depend1 );
+        }
+        result.putProperty( QDataSet.FILL_VALUE, fill );
+                
         QDataSet result1= result;
         if ( slice0 ) {
             result1= result1.slice(0);
