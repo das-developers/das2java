@@ -94,7 +94,9 @@ public class LocalFileSystem extends FileSystem {
     
     public String[] listDirectory(String directory) {
         File f= new File( localRoot, directory );
-        if ( !f.canRead() || ( f.getParentFile()!=null && f.isHidden() ) ) throw new IllegalArgumentException("cannot read directory " +f );
+        if ( !f.canRead() || ( f.getParentFile()!=null && f.isHidden() ) ) {
+            throw new IllegalArgumentException("cannot read directory " +f );
+        }
         File[] files= f.listFiles();
         if ( files==null ) { // On Windows, I was getting null with c:\Users\sklemuk\Documents.
             return new String[0];
