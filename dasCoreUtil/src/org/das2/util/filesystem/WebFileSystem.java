@@ -177,15 +177,21 @@ public abstract class WebFileSystem extends FileSystem {
 
     /**
      * return the name of the folder containing a local copy of the cache.
-     * @param localRoot
-     * @return
+     * @param localRoot the root which will typically be a subfolder of 
+     * FileSystem.settings().getLocalCacheDir();
+     * @return null or ...
      */
-    private static File lookForROCache( File start ) {
+    
+     private static File lookForROCache( File start ) {
 
         File localRoot= start;
         File stopFile= FileSystem.settings().getLocalCacheDir();
         File result= null;
 
+        if ( !localRoot.toString().startsWith(stopFile.toString()) ) {
+            throw new IllegalArgumentException("localRoot filename must start with start filename");
+        }
+        
         while ( !( localRoot.equals(stopFile) ) ) {
             File f= new File( localRoot, "ro_cache.txt" );
             if ( f.exists() ) {
