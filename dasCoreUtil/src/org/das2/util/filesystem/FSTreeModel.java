@@ -58,7 +58,11 @@ public class FSTreeModel implements TreeModel {
                         listCache = fs.listDirectory("/");
                     } else {
                         listCache = fs.listDirectory(parent.toString());
+                        for ( int i=0; i<listCache.length; i++ ) {
+                            listCache[i]= parent + listCache[i];
+                        }
                     }
+                    listCacheFolder= parent.toString();
                     return listCache;
                 } catch (IOException ex) {
                     listCache = new String[]{"error: " + ex.getMessage()};
