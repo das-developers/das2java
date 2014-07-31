@@ -53,6 +53,9 @@ public class FSTreeModel implements TreeModel {
             if (parent.equals(listCacheFolder)) {
                 return listCache;
             } else {
+
+//TODO: Resolve this on a different thread!!!
+                
                 try {
                     if ( parent instanceof FileSystem ) {
                         listCache = fs.listDirectory("/");
