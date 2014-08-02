@@ -50,7 +50,7 @@ public class FSTreeModel implements TreeModel {
 
     private String[] getChildren(Object parent) {
         synchronized (this) {
-            if (parent.toString().equals(listCacheFolder.toString())) {  // so fs needn't implement equals...
+            if ( listCacheFolder!=null && parent.toString().equals(listCacheFolder.toString())) {  // so fs needn't implement equals...
                 return listCache;
             } else {
 
