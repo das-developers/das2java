@@ -96,11 +96,14 @@ public class DataSetUtil {
 
     /**
      * returns true if the dataset is monotonically increasing.
-     * If the dataset says it's monotonic, believe it.
+     * If the dataset has the MONOTONIC property set to Boolean.TRUE, believe it.
+     * The data can contain repeated values. 
      * An empty dataset is not monotonic.
      * We now use a weights dataset to more thoroughly check for fill.
-     * The dataset may now contain fill data.
+     * The dataset may contain fill data, only the non-fill portions are considered.
      * See QDataSet.MONOTONIC.
+     * @param ds the rank 1 dataset with physical units.
+     * @return true when the dataset is monotonically increasing.
      */
     public static boolean isMonotonic(QDataSet ds) {
         if (ds.rank() != 1) { // TODO: support bins dataset rank 2 with BINS_1="min,max"
