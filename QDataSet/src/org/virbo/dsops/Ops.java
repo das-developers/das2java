@@ -3578,6 +3578,83 @@ public class Ops {
     public static QDataSet sort(Object ds) {
         return DataSetOps.sort(dataset(ds));
     }
+    
+    /**
+     * Return the unique indeces from the rank 1 dataset.  If the 
+     * set is not monotonic, then return unique indeces from the monotonic
+     * portions.
+     * 
+     * @param ds rank 1 dataset, sorted, or mostly sorted.
+     * @return the element indeces.
+     */
+    public static QDataSet uniq( QDataSet ds ) {
+        return uniq( ds, null );
+    }
+    
+    /**
+     * Return the unique indeces from the rank 1 dataset, using sort to resort the indeces.
+     * If sort is null, then
+     * the dataset is assumed to be monotonic, and only repeating values are
+     * coalesced.  If sort is non-null, then it is the result of the function
+     * "sort" and should be a rank 1 list of indeces that sort the data.
+     *
+     * @see uniqValues, which returns the values.
+     * @param ds rank 1 dataset, sorted, or mostly sorted.
+     * @param sort null, or the rank 1 dataset of indeces
+     */
+    public static QDataSet uniq( QDataSet ds, QDataSet sort ) {
+        if ( ds.rank()>1 ) throw new IllegalArgumentException("ds.rank()>1" );
+        if ( sort!=null && sort.rank()>1 ) throw new IllegalArgumentException("sort.rank()>1" );
+
+        DataSetBuilder builder= new DataSetBuilder(1,100);
+
+        double d;
+        int didx;
+        if ( sort==null ) {
+            DataSetIterator it= new QubeDataSetIterator(ds);
+            if ( !it.hasNext() ) {
+                return builder.getDataSet();
+            }
+            it.next();
+            d= it.getValue(ds);
+            didx= it.index(0);
+            while ( it.hasNext() ) {
+                it.next();
+                double d1= it.getValue(ds);
+                if ( d!=d1 ) {
+                    builder.putValue(-1, didx );
+                    builder.nextRecord();
+                    d= d1;
+                    didx= it.index(0);
+                }
+            }
+        } else {
+            DataSetIterator it= new QubeDataSetIterator(sort);
+            if ( !it.hasNext() ) {
+                return builder.getDataSet();
+            }
+            it.next();
+            int i;
+            didx= (int) it.getValue(sort);
+            d= ds.value(didx);
+            while ( it.hasNext() ) {
+                it.next();
+                i= (int) it.getValue(sort);
+                double d1= ds.value( i );
+                if ( d!=d1 ) {
+                    builder.putValue(-1, didx );
+                    builder.nextRecord();
+                    d= d1;
+                    didx= i;
+                }
+            }
+        }
+        builder.putValue(-1, didx );
+        builder.nextRecord();
+
+        return builder.getDataSet();
+
+    }
 
     /**
      * return the unique elements from the dataset.  If sort is null, then
@@ -3587,60 +3664,15 @@ public class Ops {
      *
      * renamed uniqValues from uniq to avoid confusion with the IDL command.
      *
-     * TODO: should this return the values or the indeces?  This needs example
-     * code and should not be used for now.  See VirboAutoplot/src/scripts/test/testUniq.jy
-     * 
-     * @param ds
-     * @param sort
+     * This needs example code and should not be used for now.  See VirboAutoplot/src/scripts/test/testUniq.jy
+     * @see uniq, which returns the indeces.
+     * @param ds rank 1 dataset, sorted, or mostly sorted.
+     * @param sort null, or the rank 1 dataset of indeces
      * @return
      */
     public static QDataSet uniqValues( QDataSet ds, QDataSet sort  ) {
-        if ( ds.rank()>1 ) throw new IllegalArgumentException("ds.rank()>1" );
-        if ( sort!=null && sort.rank()>1 ) throw new IllegalArgumentException("sort.rank()>1" );
-
-        DataSetBuilder builder= new DataSetBuilder(1,100);
-
-        builder.putProperty( QDataSet.UNITS, ds.property( QDataSet.UNITS ) );
-        double d;
-        if ( sort==null ) {
-            DataSetIterator it= new QubeDataSetIterator(ds);
-            if ( !it.hasNext() ) {
-                return builder.getDataSet();
-            }
-            it.next();
-            d= it.getValue(ds);
-            while ( it.hasNext() ) {
-                it.next();
-                double d1= it.getValue(ds);
-                if ( d!=d1 ) {
-                    builder.putValue(-1, d);
-                    builder.nextRecord();
-                    d= d1;
-                }
-            }
-        } else {
-            DataSetIterator it= new QubeDataSetIterator(sort);
-            if ( !it.hasNext() ) {
-                return builder.getDataSet();
-            }
-            it.next();
-            int i= (int) it.getValue(sort);
-            d= ds.value(i);
-            while ( it.hasNext() ) {
-                it.next();
-                i= (int) it.getValue(sort);
-                double d1= ds.value(i);
-                if ( d!=d1 ) {
-                    builder.putValue(-1, d);
-                    builder.nextRecord();
-                    d= d1;
-                }
-            }
-        }
-        builder.putValue(-1, d);
-        builder.nextRecord();
-        return builder.getDataSet();
-
+        QDataSet idx= uniq( ds, sort );
+        return DataSetOps.applyIndex( ds, 0, idx, true );
     }
     
     /**
