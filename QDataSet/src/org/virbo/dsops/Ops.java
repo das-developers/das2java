@@ -3625,8 +3625,8 @@ public class Ops {
                     builder.putValue(-1, didx );
                     builder.nextRecord();
                     d= d1;
-                    didx= it.index(0);
                 }
+                didx= it.index(0);
             }
         } else {
             DataSetIterator it= new QubeDataSetIterator(sort);
@@ -3645,8 +3645,8 @@ public class Ops {
                     builder.putValue(-1, didx );
                     builder.nextRecord();
                     d= d1;
-                    didx= i;
                 }
+                didx= i;
             }
         }
         builder.putValue(-1, didx );
