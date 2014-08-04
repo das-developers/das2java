@@ -5260,6 +5260,10 @@ public class Ops {
         if (!DataSetUtil.isMonotonic(uu)) {
             throw new IllegalArgumentException("u must be monotonic");
         }
+        QDataSet duu= diff(uu);
+        if ( where( eq( duu, 0. ) ).length()>0 ) {
+            throw new IllegalArgumentException("u must be monotonically increasing and non-repeating");
+        }
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(vv));
         QubeDataSetIterator it = new QubeDataSetIterator(vv);
         int ic0 = 0;
@@ -5291,7 +5295,12 @@ public class Ops {
             // TODO: optimize by only doing binary search below or above ic0&ic1.
             if (uc0 <= d && d <= uc1) { // optimize by seeing if old pair still backets the current point.
                 double ff = d==uc0 ? 0 : (d - uc0) / (uc1 - uc0); // may be 1.0
+                
+                if ( ic0 + ff < -50 || ic0 + ff > n+50 ) {
+                    System.err.println("here big number");
+                }
                 it.putValue(result, ic0 + ff);
+                
             } else {
                 int index = DataSetUtil.binarySearch(uu, d, 0, uu.length() - 1);
                 if (index == -1) {
@@ -5314,6 +5323,9 @@ public class Ops {
                 uc1 = uu.value(ic1);
                 double ff = d==uc0 ? 0 : (d - uc0) / (uc1 - uc0); // may be 1.0
 
+                if ( ic0 + ff < -50 || ic0 + ff > n+50 ) {
+                    System.err.println("here big number");
+                }
                 it.putValue(result, ic0 + ff);
             }
         }
@@ -5358,10 +5370,10 @@ public class Ops {
         if ( !isDimensionless(findex) ) throw new IllegalArgumentException("findex argument should be dimensionless, expected output from findex command.");
         QDataSet fex0= extent(findex);
         if ( ( fex0.value(1)-vv.length() ) / vv.length() > 100 ) {
-            logger.warning("findex looks suspicious, where it's max will result in unrealistic extrapolations");
+            logger.warning("findex looks suspicious, where its max will result in unrealistic extrapolations");
         }
         if ( fex0.value(0) / vv.length() < -100 ) {
-            logger.warning("findex looks suspicious, where it's min will result in unrealistic extrapolations");
+            logger.warning("findex looks suspicious, where its min will result in unrealistic extrapolations");
         }
         
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex));
@@ -5461,17 +5473,17 @@ public class Ops {
         }
         QDataSet fex0= extent(findex0);
         if ( ( fex0.value(1)-vv.length() ) / vv.length() > 100 ) {
-            logger.warning("findex0 looks suspicious, where it's max will result in unrealistic extrapolations");
+            logger.warning("findex0 looks suspicious, where its max will result in unrealistic extrapolations");
         }
         if ( fex0.value(0) / vv.length() < -100 ) {
-            logger.warning("findex0 looks suspicious, where it's min will result in unrealistic extrapolations");
+            logger.warning("findex0 looks suspicious, where its min will result in unrealistic extrapolations");
         }
         QDataSet fex1= extent(findex1);
         if ( ( fex1.value(1)-vv.length(0) ) / vv.length(0) > 100 ) {
-            logger.warning("findex1 looks suspicious, where it's max will result in unrealistic extrapolations");
+            logger.warning("findex1 looks suspicious, where its max will result in unrealistic extrapolations");
         }
         if ( fex1.value(0) / vv.length(0) < -100 ) {
-            logger.warning("findex1 looks suspicious, where it's min will result in unrealistic extrapolations");
+            logger.warning("findex1 looks suspicious, where its min will result in unrealistic extrapolations");
         }
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex0));
 
