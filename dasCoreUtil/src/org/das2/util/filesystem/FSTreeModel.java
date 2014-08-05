@@ -26,6 +26,7 @@ public class FSTreeModel implements TreeModel {
     FileSystem fs;
     String[] listCache;
     String listCacheFolder;
+    String listCachePendingFolder= "";
 
     public FSTreeModel(FileSystem fs) {
         this.fs = fs;
@@ -48,33 +49,46 @@ public class FSTreeModel implements TreeModel {
         return kids[index];
     }
 
+    private void listingImmediately() {
+        System.err.println("herelisting immediately");
+        try {
+            listCache = fs.listDirectory(listCachePendingFolder);
+            for ( int i=0; i<listCache.length; i++ ) {
+                listCache[i]= listCachePendingFolder + listCache[i];
+            }
+            listCachePendingFolder= "";
+        } catch (IOException ex) {
+            listCache = new String[]{"error: " + ex.getMessage()};
+        }
+    }
+    
+    private void startListing() {
+        Runnable run= new Runnable() {
+            public void run() {
+                listingImmediately();
+            } 
+        };
+        new Thread( run ).start();
+
+    }
+    
     private String[] getChildren(Object parent) {
         synchronized (this) {
-            if ( listCacheFolder!=null && parent.toString().equals(listCacheFolder.toString())) {  // so fs needn't implement equals...
-                return listCache;
-            } else {
-
-//TODO: Resolve this on a different thread!!!
-                
-                try {
-                    if ( parent instanceof FileSystem ) {
-                        listCache = fs.listDirectory("/");
-                    } else {
-                        listCache = fs.listDirectory(parent.toString());
-                        for ( int i=0; i<listCache.length; i++ ) {
-                            listCache[i]= parent + listCache[i];
-                        }
-                    }
-                    listCacheFolder= parent.toString();
+            if ( listCacheFolder!=null && ((FileSystem)parent).getRootURI().toString().equals(listCacheFolder.toString())) {  // so fs needn't implement equals...
+                if ( listCachePendingFolder.length()==0 ) {
                     return listCache;
-                } catch (IOException ex) {
-                    listCache = new String[]{"error: " + ex.getMessage()};
-                    return listCache;
+                } else {
+                    return new String[] { "listing "+listCachePendingFolder+"..." };
                 }
+            } else {
+                listCacheFolder= ((FileSystem)parent).getRootURI().toString();
+                listCache= null;
+                listCachePendingFolder= listCacheFolder;
+                startListing();
+                return new String[] { "listing "+listCachePendingFolder+"..." };
             }
         }
     }
-
 
     public Object getRoot() {
         return fs;
