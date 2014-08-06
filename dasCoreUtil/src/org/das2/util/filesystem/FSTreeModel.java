@@ -176,10 +176,11 @@ public class FSTreeModel implements TreeModel {
         
     public static void main( String[] args ) throws FileNotFoundException, UnknownHostException, FileSystem.FileSystemOfflineException {
         //FileSystem fs= FileSystem.create("file:///home/jbf/tmp/");
+        //FileSystem fs= FileSystem.create("http://autoplot.org/data/vap/");
         FileSystem fs= FileSystem.create("http://emfisis.physics.uiowa.edu/pub/jyds/");
         JTree mytree= new JTree( new FSTreeModel(fs) );
-        mytree.setMinimumSize( new Dimension(400,400) );
-        mytree.setPreferredSize( new Dimension(400,400) );
+        mytree.setMinimumSize( new Dimension(400,600) );
+        mytree.setPreferredSize( new Dimension(400,600) );
         JOptionPane.showMessageDialog( null, new JScrollPane(mytree), "Test FSTREE", JOptionPane.INFORMATION_MESSAGE );
         
     }
