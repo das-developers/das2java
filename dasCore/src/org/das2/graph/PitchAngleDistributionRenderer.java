@@ -263,7 +263,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
                         yy[i+1][j+1]= (float) ( y0 - cos(a1) * r1y ); // outer
                         xx[i+1][j+1]= (float) ( x0 - sin(a1) * r1x ); // outer
 //                        if ( useBelzier ) {
-//                            double theta= a1-a0;
+//                            double θ= a1-a0;
 //                            double epsilon= 2 * sin(theta/2)* r / ( 1 + 2 * cos(theta/2) );  //http://www.tsplines.com/resources/class_notes/Bezier_curves.pdf, page 15
 //                            cx1[i][j]= xx[i][j+1] + cos(  ) // Not completed!
 //                        }
