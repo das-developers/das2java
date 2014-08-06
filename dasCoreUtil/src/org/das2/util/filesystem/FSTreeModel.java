@@ -10,26 +10,46 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 
 /**
- * present a filesystem as a TreeModel to display in JTrees.
+ * present a FileSystem as a TreeModel to display in JTrees.
  * @author jbf
  */
 public class FSTreeModel implements TreeModel {
 
     FileSystem fs;
-    String[] listCache;
+    List<String> listCachePath= new ArrayList();
+    TreeNode[] listCache;
     String listCacheFolder;
     String listCachePendingFolder= "";
 
     public FSTreeModel(FileSystem fs) {
         this.fs = fs;
+    }
+    
+    private class FSTreeNode extends DefaultMutableTreeNode {
+        String path;
+        String label;
+        FSTreeNode( String fileSystemPath, String label ) {
+            this.path= fileSystemPath;
+            this.label= label;
+        }
+        @Override
+        public String toString() {
+            return this.label;
+        }
+        public String getFileSystemPath() {
+            return this.path;
+        }
     }
 
     @Override
@@ -42,23 +62,27 @@ public class FSTreeModel implements TreeModel {
         return getChildren(parent).length;
     }
 
-    
     @Override
     public Object getChild(Object parent, int index) {
-        String[] kids= getChildren(parent);
+        Object[] kids= getChildren(parent);
         return kids[index];
     }
 
     private void listingImmediately() {
-        System.err.println("herelisting immediately");
         try {
-            listCache = fs.listDirectory(listCachePendingFolder);
+            String folder= listCachePendingFolder;
+            final String[] folderKids= fs.listDirectory(folder);
+            listCache = new DefaultMutableTreeNode[folderKids.length];
             for ( int i=0; i<listCache.length; i++ ) {
-                listCache[i]= listCachePendingFolder + listCache[i];
+                final String ss= folder + folderKids[i];
+                final String label= folderKids[i];
+                DefaultMutableTreeNode dmtn= new FSTreeNode( ss, label );
+                listCache[i]= dmtn;
             }
             listCachePendingFolder= "";
+            //fireTreeStructureChanged( new TreePath( listCachePath.toArray() ) );
         } catch (IOException ex) {
-            listCache = new String[]{"error: " + ex.getMessage()};
+            listCache = new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "error: " + ex.getMessage() ) };
         }
     }
     
@@ -72,20 +96,36 @@ public class FSTreeModel implements TreeModel {
 
     }
     
-    private String[] getChildren(Object parent) {
+    private TreeNode[] getChildren(Object parent) {
         synchronized (this) {
-            if ( listCacheFolder!=null && ((FileSystem)parent).getRootURI().toString().equals(listCacheFolder.toString())) {  // so fs needn't implement equals...
+            String theFolder;
+            if ( parent instanceof FileSystem ) {
+                theFolder= "/";
+            } else {
+                theFolder= ((FSTreeNode)parent).getFileSystemPath();
+            }
+            
+            if ( listCacheFolder!=null && theFolder.equals(listCacheFolder.toString())) {  // so fs needn't implement equals...
                 if ( listCachePendingFolder.length()==0 ) {
                     return listCache;
                 } else {
-                    return new String[] { "listing "+listCachePendingFolder+"..." };
+                    return new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "listing "+listCachePendingFolder+"..." ) };
                 }
             } else {
-                listCacheFolder= ((FileSystem)parent).getRootURI().toString();
+                listCacheFolder= theFolder;
                 listCache= null;
                 listCachePendingFolder= listCacheFolder;
-                startListing();
-                return new String[] { "listing "+listCachePendingFolder+"..." };
+                //TODO: This should be asynchronous:
+                //if ( theFolder.equals("/") ) {
+                //    listCachePath.clear();
+                //}
+                //listCachePath.add(theFolder);
+                //startListing();
+                //return new String[] { "listing "+listCachePendingFolder+"..." };
+                
+                listingImmediately();
+                return listCache;
+                
             }
         }
     }
@@ -95,17 +135,24 @@ public class FSTreeModel implements TreeModel {
     }
 
     public void valueForPathChanged(TreePath path, Object newValue) {
-        
+        System.err.println("valueForPathChanged");
     }
 
     public int getIndexOfChild(Object parent, Object child) {
-        String[] cc= getChildren(parent);
+        Object[] cc= getChildren(parent);
         for ( int i=0; i<cc.length; i++ ) {
             if ( cc[i].equals(child) ) return i;
         }
         throw new IllegalArgumentException("no such child: "+child);
     }
     
+    
+    protected void fireTreeStructureChanged( TreePath path ) {
+        TreeModelEvent e = new TreeModelEvent(this,path);
+        for (TreeModelListener tml : listeners ) {
+            tml.treeStructureChanged(e);
+        }
+    }
     
     protected void fireTreeStructureChanged( ) {
         TreeModelEvent e = new TreeModelEvent(this,new Object[] {fs});
@@ -127,7 +174,7 @@ public class FSTreeModel implements TreeModel {
     }
         
     public static void main( String[] args ) throws FileNotFoundException, UnknownHostException, FileSystem.FileSystemOfflineException {
-        FileSystem fs= FileSystem.create("file:///Users/jbf/tmp/");
+        FileSystem fs= FileSystem.create("file:///home/jbf/tmp/");
         JTree mytree= new JTree( new FSTreeModel(fs) );
         mytree.setMinimumSize( new Dimension(400,400) );
         mytree.setPreferredSize( new Dimension(400,400) );
