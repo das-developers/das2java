@@ -28,7 +28,7 @@ import javax.swing.tree.TreeNode;
 public class FSTreeModel implements TreeModel {
 
     FileSystem fs;
-    List<String> listCachePath= new ArrayList();
+    List<TreePath> listCachePath= new ArrayList();
     TreeNode[] listCache;
     String listCacheFolder;
     String listCachePendingFolder= "";
@@ -74,14 +74,16 @@ public class FSTreeModel implements TreeModel {
             String folder= listCachePendingFolder;
             final String[] folderKids= fs.listDirectory(folder);
             listCache = new DefaultMutableTreeNode[folderKids.length];
+            //int[] nodes= new int[folderKids.length];
             for ( int i=0; i<listCache.length; i++ ) {
                 final String ss= folder + folderKids[i];
                 final String label= folderKids[i];
                 DefaultMutableTreeNode dmtn= new FSTreeNode( ss, label );
                 listCache[i]= dmtn;
+                //nodes[i]= i;
             }
             listCachePendingFolder= "";
-            //fireTreeStructureChanged( new TreePath( listCachePath.toArray() ) );
+            //fireTreeNodesChanged( listCachePath.get( listCachePath.size()-1 ),nodes );
         } catch (IOException ex) {
             listCache = new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "error: " + ex.getMessage() ) };
         }
@@ -116,13 +118,15 @@ public class FSTreeModel implements TreeModel {
                 listCacheFolder= theFolder;
                 listCache= null;
                 listCachePendingFolder= listCacheFolder;
-                //TODO: This should be asynchronous:
-                //if ( theFolder.equals("/") ) {
-                //    listCachePath.clear();
-                //}
-                //listCachePath.add(theFolder);
-                //startListing();
-                //return new String[] { "listing "+listCachePendingFolder+"..." };
+//                
+//                if ( theFolder.equals("/") ) {
+//                    listCachePath.clear();
+//                    listCachePath.add( new TreePath( fs ) );
+//                } else {
+//                    listCachePath.add( new TreePath( parent ) );
+//                }
+//                startListing();
+//                return new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "listing "+listCachePendingFolder+"..." ) };
                 
                 listingImmediately();
                 return listCache;
@@ -159,6 +163,13 @@ public class FSTreeModel implements TreeModel {
         TreeModelEvent e = new TreeModelEvent(this,new Object[] {fs});
         for (TreeModelListener tml : listeners ) {
             tml.treeStructureChanged(e);
+        }
+    }
+    
+    protected void fireTreeNodesChanged( TreePath parent, int[] nodes ) {
+        TreeModelEvent e= new TreeModelEvent( this, parent, nodes, null );
+        for (TreeModelListener tml : listeners ) {
+            tml.treeNodesInserted(e);
         }
     }
     
