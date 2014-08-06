@@ -553,15 +553,15 @@ public abstract class WebFileSystem extends FileSystem {
 
     public synchronized void cacheListing( String directory, DirectoryEntry[] listing ) {
          listings.put( directory, listing );
-         listingFreshness.put( directory, Long.valueOf(System.currentTimeMillis()) );
+         listingFreshness.put( directory, System.currentTimeMillis() );
     }
 
     /**
      * list the directory using the ram memory cache.  MEMORY_LISTING_TIMEOUT_MS=60s limits the lifespan
      * of a cache entry, and this is really to avoid expensive listings of the same resource when searches are
      * done.
-     * @param directory
-     * @return
+     * @param directory the directory name within the filesystem.
+     * @return null or the listing.
      */
     protected synchronized DirectoryEntry[] listDirectoryFromMemory( String directory ) {
         directory= toCanonicalFilename(directory);
