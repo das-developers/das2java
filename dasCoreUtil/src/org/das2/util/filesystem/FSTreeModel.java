@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -174,11 +175,12 @@ public class FSTreeModel implements TreeModel {
     }
         
     public static void main( String[] args ) throws FileNotFoundException, UnknownHostException, FileSystem.FileSystemOfflineException {
-        FileSystem fs= FileSystem.create("file:///home/jbf/tmp/");
+        //FileSystem fs= FileSystem.create("file:///home/jbf/tmp/");
+        FileSystem fs= FileSystem.create("http://emfisis.physics.uiowa.edu/pub/jyds/");
         JTree mytree= new JTree( new FSTreeModel(fs) );
         mytree.setMinimumSize( new Dimension(400,400) );
         mytree.setPreferredSize( new Dimension(400,400) );
-        JOptionPane.showMessageDialog( null, mytree, "Test FSTREE", JOptionPane.INFORMATION_MESSAGE );
+        JOptionPane.showMessageDialog( null, new JScrollPane(mytree), "Test FSTREE", JOptionPane.INFORMATION_MESSAGE );
         
     }
 }
