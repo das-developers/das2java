@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.util.filesystem;
 
 import java.awt.Dimension;
@@ -10,7 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -18,13 +16,13 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 /**
  * present a FileSystem as a TreeModel to display in JTrees.
@@ -36,10 +34,8 @@ public class FSTreeModel extends DefaultTreeModel {
     
     FileSystem fs;
     List<TreePath> listCachePath= new ArrayList();
-    TreeNode[] listCache;
-    String listCacheFolder;
-    String listCachePendingFolder= "";
-    TreeNode listPendingNode;
+    Map<Object,String> listCachePendingFolders= new HashMap();
+    Map<Object,TreeNode[]> listCache= new HashMap();
 
     public FSTreeModel(FileSystem fs) {
         super( new FSTreeNode(fs.getRootURI().toString(),"Root") );
@@ -64,85 +60,99 @@ public class FSTreeModel extends DefaultTreeModel {
 
     @Override
     public boolean isLeaf(Object node) {
-        logger.log(Level.FINEST, "isLeaf({0}) -> ", new Object[] { node, !node.toString().endsWith("/")  } );
+        logger.log(Level.FINEST, "isLeaf({0}) -> {1}", new Object[] { node, !node.toString().endsWith("/")  } );
         return !node.toString().endsWith("/");
     }
 
     @Override
     public int getChildCount(Object parent) {
-        logger.log(Level.FINEST, "getChildCount({0}) -> {1}", new Object[] { parent, getChildren(parent).length } ) ;
-        return getChildren(parent).length;
+        int count=  getChildren(parent).length;
+        logger.log(Level.FINEST, "getChildCount({0}) -> {1}", new Object[] { parent, count } ) ;
+        return count;
     }
 
     @Override
     public Object getChild(Object parent, int index) {
         Object[] kids= getChildren(parent);
-        logger.log(Level.FINEST, "getChild({0},{1}) -> ", new Object[]{parent, index,kids[index] } );
+        logger.log(Level.FINEST, "getChild({0},{1}) -> {2}", new Object[]{parent, index,kids[index] } );
         return kids[index];
     }
 
     boolean stopTest= false;
-    private void listingImmediately() {
+    private void listingImmediately( Object listCachePendingFolder ) {
         try {
-            String folder= listCachePendingFolder;
+            String folder= folderForNode(listCachePendingFolder);
+
+            System.err.println("listImmediately "+folder);
             final String[] folderKids= fs.listDirectory(folder);
-            listCache = new DefaultMutableTreeNode[folderKids.length];
-            int[] nodes= new int[folderKids.length];
-            for ( int i=0; i<listCache.length; i++ ) {
+            TreeNode[] listCache1 = new DefaultMutableTreeNode[folderKids.length];
+            final int[] nodes= new int[folderKids.length];
+            for ( int i=0; i<listCache1.length; i++ ) {
                 final String ss= folder + folderKids[i];
                 final String label= folderKids[i];
                 DefaultMutableTreeNode dmtn= new FSTreeNode( ss, label );
-                listCache[i]= dmtn;
+                listCache1[i]= dmtn;
                 nodes[i]= i;
             }
-            listCachePendingFolder= "";
+            listCachePendingFolders.put( listCachePendingFolder, "" );
+            listCache.put( listCachePendingFolder, listCache1 );
             
             stopTest= true;
-            if ( listPendingNode==null ) {
-                fireTreeNodesInserted( this, new Object[] { root }, nodes, null );
-            } else {
-                fireTreeNodesInserted( this, listCachePath.toArray(), nodes, null );
-            }
-            //fireTreeNodesChanged( listCachePath.get( listCachePath.size()-1 ),nodes );
+            
+            Runnable run= new Runnable() {
+                public void run() {
+                    logger.fine("== fireTreeNodesInserted ==");
+                    fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
+                    //if ( listPendingNode==null ) {
+                    //    fireTreeNodesInserted( this, new Object[] { root }, nodes, listCache );
+                    //} else {
+                    //    fireTreeNodesInserted( this, listCachePath.toArray(), nodes, listCache );
+                    //}
+                }
+            };
+            SwingUtilities.invokeLater(run);
+            
         } catch (IOException ex) {
-            listCache = new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "error: " + ex.getMessage() ) };
+            //listCache.put( listCachePendingFolder, DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "error: " + ex.getMessage() ) } );
+            throw new RuntimeException(ex);
         }
     }
     
-    private void startListing() {
+    private void startListing( final Object folder ) {
         Runnable run= new Runnable() {
             public void run() {
-                listingImmediately();
+                listingImmediately(folder);
             } 
         };
         new Thread( run ).start();
 
     }
     
-    private TreeNode[] getChildren(Object parent) {
-        if ( stopTest ) {
-            System.err.println("breakpoint here");
+    private static String folderForNode( Object parent ) {
+        String theFolder;
+        if ( parent instanceof FileSystem ) {
+            theFolder= "/";
+        } else {
+            theFolder= ((FSTreeNode)parent).getFileSystemPath();
         }
+        return theFolder;
+    }
+    
+    private TreeNode[] getChildren(Object parent) {
+        
         synchronized (this) {
-            String theFolder;
-            if ( parent instanceof FileSystem ) {
-                theFolder= "/";
-            } else {
-                theFolder= ((FSTreeNode)parent).getFileSystemPath();
-            }
+            String theFolder= folderForNode(parent);
+                        
+            TreeNode[] result= listCache.get( parent );
             
-            if ( listCacheFolder!=null && theFolder.equals(listCacheFolder.toString())) {  // so fs needn't implement equals...
-                if ( listCachePendingFolder.length()==0 ) {
-                    return listCache;
-                } else {
-                    return new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "listing "+listCachePendingFolder+"..." ) };
-                }
+            if ( result!=null ) { 
+                return result;
+
             } else {
-                listCacheFolder= theFolder;
-                listCache= null;
-                listCachePendingFolder= listCacheFolder;
+                listCache.put( parent, new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "listing "+listCachePendingFolders+"..." ) } );
+                listCachePendingFolders.put( parent, theFolder );
                 
-                boolean async= false;
+                boolean async= true;
                 if ( async ) {
                     if ( theFolder.equals("/") ) {
                         listCachePath.clear();
@@ -150,14 +160,14 @@ public class FSTreeModel extends DefaultTreeModel {
                     } else {
                         listCachePath.add( new TreePath( parent ) );
                     }
-                    listPendingNode= parent instanceof FSTreeNode ? ((FSTreeNode)parent) : null;
                 
-                    startListing();
-                    return new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "listing "+listCachePendingFolder+"..." ) };
+                    startListing(parent);
+                    return listCache.get( parent );
                 } else {
                 
-                    listingImmediately();
-                    return listCache;
+                    listingImmediately(parent);
+                    result= listCache.get( parent );
+                    return result;
                 }
                 
             }
@@ -166,24 +176,25 @@ public class FSTreeModel extends DefaultTreeModel {
 
     @Override
     public Object getRoot() {
-        logger.finest("getRoot()");
+        logger.log(Level.FINEST, "getRoot() -> {0}", fs);
         return fs;
     }
 
     @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
-        logger.finest("valueForPathChanged("+path+","+newValue+")");
+        logger.log(Level.FINEST, "valueForPathChanged({0},{1})", new Object[]{path, newValue});
         System.err.println("valueForPathChanged");
     }
 
     @Override
     public int getIndexOfChild(Object parent, Object child) {
-        logger.finest("getIndexOfChild("+parent+","+child+")");
         Object[] cc= getChildren(parent);
+        int result= -1;
         for ( int i=0; i<cc.length; i++ ) {
-            if ( cc[i].equals(child) ) return i;
+            if ( cc[i].equals(child) ) result= i;
         }
-        throw new IllegalArgumentException("no such child: "+child);
+        logger.log(Level.FINEST, "getIndexOfChild({0},{1}) -> {2}", new Object[]{parent, child, result });
+        return result;
     }
     
     
@@ -204,7 +215,7 @@ public class FSTreeModel extends DefaultTreeModel {
     protected void fireTreeNodesChanged( TreePath parent, int[] nodes ) {
         TreeModelEvent e= new TreeModelEvent( this, parent, nodes, null );
         for (TreeModelListener tml : listeners ) {
-            tml.treeNodesInserted(e);
+            tml.treeStructureChanged(e);
         }
     }
     
