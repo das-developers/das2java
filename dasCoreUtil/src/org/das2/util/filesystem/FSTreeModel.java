@@ -102,7 +102,8 @@ public class FSTreeModel extends DefaultTreeModel {
             Runnable run= new Runnable() {
                 public void run() {
                     logger.fine("== fireTreeNodesInserted ==");
-                    fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
+                    //fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
+                    fireTreeNodesChanged( this, new Object[] { root }, nodes, listCache );
                     //if ( listPendingNode==null ) {
                     //    fireTreeNodesInserted( this, new Object[] { root }, nodes, listCache );
                     //} else {
