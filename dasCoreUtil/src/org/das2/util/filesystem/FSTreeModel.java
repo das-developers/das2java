@@ -11,12 +11,17 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
@@ -25,19 +30,23 @@ import javax.swing.tree.TreeNode;
  * present a FileSystem as a TreeModel to display in JTrees.
  * @author jbf
  */
-public class FSTreeModel implements TreeModel {
+public class FSTreeModel extends DefaultTreeModel {
 
+    private static final Logger logger= Logger.getLogger( "gui.fstreemodel");
+    
     FileSystem fs;
     List<TreePath> listCachePath= new ArrayList();
     TreeNode[] listCache;
     String listCacheFolder;
     String listCachePendingFolder= "";
+    TreeNode listPendingNode;
 
     public FSTreeModel(FileSystem fs) {
+        super( new FSTreeNode(fs.getRootURI().toString(),"Root") );
         this.fs = fs;
     }
     
-    private class FSTreeNode extends DefaultMutableTreeNode {
+    private static class FSTreeNode extends DefaultMutableTreeNode {
         String path;
         String label;
         FSTreeNode( String fileSystemPath, String label ) {
@@ -55,34 +64,45 @@ public class FSTreeModel implements TreeModel {
 
     @Override
     public boolean isLeaf(Object node) {
+        logger.log(Level.FINEST, "isLeaf({0}) -> ", new Object[] { node, !node.toString().endsWith("/")  } );
         return !node.toString().endsWith("/");
     }
 
     @Override
     public int getChildCount(Object parent) {
+        logger.log(Level.FINEST, "getChildCount({0}) -> {1}", new Object[] { parent, getChildren(parent).length } ) ;
         return getChildren(parent).length;
     }
 
     @Override
     public Object getChild(Object parent, int index) {
         Object[] kids= getChildren(parent);
+        logger.log(Level.FINEST, "getChild({0},{1}) -> ", new Object[]{parent, index,kids[index] } );
         return kids[index];
     }
 
+    boolean stopTest= false;
     private void listingImmediately() {
         try {
             String folder= listCachePendingFolder;
             final String[] folderKids= fs.listDirectory(folder);
             listCache = new DefaultMutableTreeNode[folderKids.length];
-            //int[] nodes= new int[folderKids.length];
+            int[] nodes= new int[folderKids.length];
             for ( int i=0; i<listCache.length; i++ ) {
                 final String ss= folder + folderKids[i];
                 final String label= folderKids[i];
                 DefaultMutableTreeNode dmtn= new FSTreeNode( ss, label );
                 listCache[i]= dmtn;
-                //nodes[i]= i;
+                nodes[i]= i;
             }
             listCachePendingFolder= "";
+            
+            stopTest= true;
+            if ( listPendingNode==null ) {
+                fireTreeNodesInserted( this, new Object[] { root }, nodes, null );
+            } else {
+                fireTreeNodesInserted( this, listCachePath.toArray(), nodes, null );
+            }
             //fireTreeNodesChanged( listCachePath.get( listCachePath.size()-1 ),nodes );
         } catch (IOException ex) {
             listCache = new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "error: " + ex.getMessage() ) };
@@ -100,6 +120,9 @@ public class FSTreeModel implements TreeModel {
     }
     
     private TreeNode[] getChildren(Object parent) {
+        if ( stopTest ) {
+            System.err.println("breakpoint here");
+        }
         synchronized (this) {
             String theFolder;
             if ( parent instanceof FileSystem ) {
@@ -118,32 +141,44 @@ public class FSTreeModel implements TreeModel {
                 listCacheFolder= theFolder;
                 listCache= null;
                 listCachePendingFolder= listCacheFolder;
-//                
-//                if ( theFolder.equals("/") ) {
-//                    listCachePath.clear();
-//                    listCachePath.add( new TreePath( fs ) );
-//                } else {
-//                    listCachePath.add( new TreePath( parent ) );
-//                }
-//                startListing();
-//                return new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "listing "+listCachePendingFolder+"..." ) };
                 
-                listingImmediately();
-                return listCache;
+                boolean async= false;
+                if ( async ) {
+                    if ( theFolder.equals("/") ) {
+                        listCachePath.clear();
+                        listCachePath.add( new TreePath( fs ) );
+                    } else {
+                        listCachePath.add( new TreePath( parent ) );
+                    }
+                    listPendingNode= parent instanceof FSTreeNode ? ((FSTreeNode)parent) : null;
+                
+                    startListing();
+                    return new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "listing "+listCachePendingFolder+"..." ) };
+                } else {
+                
+                    listingImmediately();
+                    return listCache;
+                }
                 
             }
         }
     }
 
+    @Override
     public Object getRoot() {
+        logger.finest("getRoot()");
         return fs;
     }
 
+    @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
+        logger.finest("valueForPathChanged("+path+","+newValue+")");
         System.err.println("valueForPathChanged");
     }
 
+    @Override
     public int getIndexOfChild(Object parent, Object child) {
+        logger.finest("getIndexOfChild("+parent+","+child+")");
         Object[] cc= getChildren(parent);
         for ( int i=0; i<cc.length; i++ ) {
             if ( cc[i].equals(child) ) return i;
@@ -188,6 +223,10 @@ public class FSTreeModel implements TreeModel {
     public static void main( String[] args ) throws FileNotFoundException, UnknownHostException, FileSystem.FileSystemOfflineException {
         //FileSystem fs= FileSystem.create("file:///home/jbf/tmp/");
         //FileSystem fs= FileSystem.create("http://autoplot.org/data/vap/");
+        logger.setLevel(Level.ALL);
+        Handler h=  new ConsoleHandler();
+        h.setLevel(Level.ALL);
+        logger.addHandler(h );
         FileSystem fs= FileSystem.create("http://emfisis.physics.uiowa.edu/pub/jyds/");
         JTree mytree= new JTree( new FSTreeModel(fs) );
         mytree.setMinimumSize( new Dimension(400,600) );
