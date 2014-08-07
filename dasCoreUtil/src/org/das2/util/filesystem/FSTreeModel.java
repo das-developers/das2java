@@ -34,8 +34,8 @@ public class FSTreeModel extends DefaultTreeModel {
     
     FileSystem fs;
     List<TreePath> listCachePath= new ArrayList();
-    Map<Object,String> listCachePendingFolders= new HashMap();
-    Map<Object,TreeNode[]> listCache= new HashMap();
+    Map<String,String> listCachePendingFolders= new HashMap();
+    Map<String,TreeNode[]> listCache= new HashMap();
 
     public FSTreeModel(FileSystem fs) {
         super( new FSTreeNode(fs.getRootURI().toString(),"Root") );
@@ -85,7 +85,7 @@ public class FSTreeModel extends DefaultTreeModel {
 
             System.err.println("listImmediately "+folder);
             final String[] folderKids= fs.listDirectory(folder);
-            TreeNode[] listCache1 = new DefaultMutableTreeNode[folderKids.length];
+            final TreeNode[] listCache1 = new DefaultMutableTreeNode[folderKids.length];
             final int[] nodes= new int[folderKids.length];
             for ( int i=0; i<listCache1.length; i++ ) {
                 final String ss= folder + folderKids[i];
@@ -94,16 +94,16 @@ public class FSTreeModel extends DefaultTreeModel {
                 listCache1[i]= dmtn;
                 nodes[i]= i;
             }
-            listCachePendingFolders.put( listCachePendingFolder, "" );
-            listCache.put( listCachePendingFolder, listCache1 );
+            listCachePendingFolders.put( listCachePendingFolder.toString(), "" );
+            listCache.put( listCachePendingFolder.toString(), listCache1 );
             
             stopTest= true;
             
             Runnable run= new Runnable() {
                 public void run() {
                     logger.fine("== fireTreeNodesInserted ==");
-                    //fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
-                    fireTreeNodesChanged( this, new Object[] { root }, nodes, listCache );
+                    fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
+                    //fireTreeNodesChanged( this, new Object[] { root }, nodes, listCache1 );
                     //if ( listPendingNode==null ) {
                     //    fireTreeNodesInserted( this, new Object[] { root }, nodes, listCache );
                     //} else {
@@ -144,14 +144,15 @@ public class FSTreeModel extends DefaultTreeModel {
         synchronized (this) {
             String theFolder= folderForNode(parent);
                         
-            TreeNode[] result= listCache.get( parent );
+            String key= parent.toString();
+            TreeNode[] result= listCache.get( key );
             
             if ( result!=null ) { 
                 return result;
 
             } else {
-                listCache.put( parent, new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "listing "+listCachePendingFolders+"..." ) } );
-                listCachePendingFolders.put( parent, theFolder );
+                listCache.put( key, new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "listing "+listCachePendingFolders+"..." ) } );
+                listCachePendingFolders.put( key, theFolder );
                 
                 boolean async= true;
                 if ( async ) {
@@ -163,11 +164,11 @@ public class FSTreeModel extends DefaultTreeModel {
                     }
                 
                     startListing(parent);
-                    return listCache.get( parent );
+                    return listCache.get( key );
                 } else {
                 
                     listingImmediately(parent);
-                    result= listCache.get( parent );
+                    result= listCache.get( key );
                     return result;
                 }
                 
