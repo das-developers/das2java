@@ -17,10 +17,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
@@ -35,10 +35,10 @@ public class FSTreeModel extends DefaultTreeModel {
     FileSystem fs;
     List<TreePath> listCachePath= new ArrayList();
     Map<String,String> listCachePendingFolders= new HashMap();
-    Map<String,TreeNode[]> listCache= new HashMap();
+    Map<String,MutableTreeNode[]> listCache= new HashMap();
 
     public FSTreeModel(FileSystem fs) {
-        super( new FSTreeNode(fs.getRootURI().toString(),"Root") );
+        super( new FSTreeNode( "/",fs.getRootURI().toString()) );
         this.fs = fs;
     }
     
@@ -67,7 +67,7 @@ public class FSTreeModel extends DefaultTreeModel {
     @Override
     public int getChildCount(Object parent) {
         int count=  getChildren(parent).length;
-        logger.log(Level.FINEST, "getChildCount({0}) -> {1}", new Object[] { parent, count } ) ;
+        logger.log(Level.FINER, "getChildCount({0}) -> {1}", new Object[] { parent, count } ) ;
         return count;
     }
 
@@ -79,13 +79,14 @@ public class FSTreeModel extends DefaultTreeModel {
     }
 
     boolean stopTest= false;
-    private void listingImmediately( Object listCachePendingFolder ) {
+    private void listingImmediately( final Object listCachePendingFolder ) {
+        logger.log(Level.FINE, "listingImmediatey({0})", new Object[]{ listCachePendingFolder } );
         try {
-            String folder= folderForNode(listCachePendingFolder);
+            final String folder= folderForNode(listCachePendingFolder);
 
             System.err.println("listImmediately "+folder);
             final String[] folderKids= fs.listDirectory(folder);
-            final TreeNode[] listCache1 = new DefaultMutableTreeNode[folderKids.length];
+            final MutableTreeNode[] listCache1 = new DefaultMutableTreeNode[folderKids.length];
             final int[] nodes= new int[folderKids.length];
             for ( int i=0; i<listCache1.length; i++ ) {
                 final String ss= folder + folderKids[i];
@@ -95,14 +96,23 @@ public class FSTreeModel extends DefaultTreeModel {
                 nodes[i]= i;
             }
             listCachePendingFolders.put( listCachePendingFolder.toString(), "" );
+            final MutableTreeNode[] rm= listCache.get( listCachePendingFolder.toString() );
             listCache.put( listCachePendingFolder.toString(), listCache1 );
             
             stopTest= true;
             
             Runnable run= new Runnable() {
                 public void run() {
-                    logger.fine("== fireTreeNodesInserted ==");
-                    fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
+                    //fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
+                    logger.log(Level.FINE, "listingImmediatey({0}) -> array[{1}]", new Object[]{ listCachePath.get(listCachePath.size()-1), nodes.length } );
+                    
+                    for ( int i=0; i<rm.length; i++ ) {
+                        FSTreeModel.this.removeNodeFromParent(rm[i]);
+                    }
+                    for ( int i=0; i<listCache1.length; i++ ) {
+                        FSTreeModel.this.insertNodeInto( listCache1[i], (MutableTreeNode)listCachePendingFolder, i );
+                    }
+                    
                     //fireTreeNodesChanged( this, new Object[] { root }, nodes, listCache1 );
                     //if ( listPendingNode==null ) {
                     //    fireTreeNodesInserted( this, new Object[] { root }, nodes, listCache );
@@ -148,10 +158,11 @@ public class FSTreeModel extends DefaultTreeModel {
             TreeNode[] result= listCache.get( key );
             
             if ( result!=null ) { 
+                logger.log( Level.FINEST, "getChildren({0}) -> {1}", new Object[]{parent, result});
                 return result;
 
             } else {
-                listCache.put( key, new DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "listing "+listCachePendingFolders+"..." ) } );
+                listCache.put( key, new DefaultMutableTreeNode[] { } );
                 listCachePendingFolders.put( key, theFolder );
                 
                 boolean async= true;
@@ -164,11 +175,14 @@ public class FSTreeModel extends DefaultTreeModel {
                     }
                 
                     startListing(parent);
-                    return listCache.get( key );
+                    result= listCache.get( key );
+                    logger.log( Level.FINEST, "getChildren({0}) -> {1}", new Object[]{parent, result});                    
+                    return result;
                 } else {
                 
                     listingImmediately(parent);
                     result= listCache.get( key );
+                    logger.log( Level.FINEST, "getChildren({0}) -> {1}", new Object[]{parent, result});  
                     return result;
                 }
                 
@@ -176,17 +190,6 @@ public class FSTreeModel extends DefaultTreeModel {
         }
     }
 
-    @Override
-    public Object getRoot() {
-        logger.log(Level.FINEST, "getRoot() -> {0}", fs);
-        return fs;
-    }
-
-    @Override
-    public void valueForPathChanged(TreePath path, Object newValue) {
-        logger.log(Level.FINEST, "valueForPathChanged({0},{1})", new Object[]{path, newValue});
-        System.err.println("valueForPathChanged");
-    }
 
     @Override
     public int getIndexOfChild(Object parent, Object child) {
@@ -199,49 +202,19 @@ public class FSTreeModel extends DefaultTreeModel {
         return result;
     }
     
-    
-    protected void fireTreeStructureChanged( TreePath path ) {
-        TreeModelEvent e = new TreeModelEvent(this,path);
-        for (TreeModelListener tml : listeners ) {
-            tml.treeStructureChanged(e);
-        }
-    }
-    
-    protected void fireTreeStructureChanged( ) {
-        TreeModelEvent e = new TreeModelEvent(this,new Object[] {fs});
-        for (TreeModelListener tml : listeners ) {
-            tml.treeStructureChanged(e);
-        }
-    }
-    
-    protected void fireTreeNodesChanged( TreePath parent, int[] nodes ) {
-        TreeModelEvent e= new TreeModelEvent( this, parent, nodes, null );
-        for (TreeModelListener tml : listeners ) {
-            tml.treeStructureChanged(e);
-        }
-    }
-    
-    ArrayList<TreeModelListener> listeners = new ArrayList();
-
-    @Override
-    public void addTreeModelListener(TreeModelListener l) {
-        listeners.add(l);
-    }
-
-    @Override
-    public void removeTreeModelListener(TreeModelListener l) {
-        listeners.remove(l);
-    }
-        
     public static void main( String[] args ) throws FileNotFoundException, UnknownHostException, FileSystem.FileSystemOfflineException {
+        logger.setLevel(Level.FINER);
+        for ( Handler h: logger.getHandlers() ) {
+            logger.removeHandler(h);
+        }
+        Handler h=  new ConsoleHandler();
+        h.setLevel(Level.FINER);
+        logger.addHandler(h );
         //FileSystem fs= FileSystem.create("file:///home/jbf/tmp/");
         //FileSystem fs= FileSystem.create("http://autoplot.org/data/vap/");
-        logger.setLevel(Level.ALL);
-        Handler h=  new ConsoleHandler();
-        h.setLevel(Level.ALL);
-        logger.addHandler(h );
         FileSystem fs= FileSystem.create("http://emfisis.physics.uiowa.edu/pub/jyds/");
-        JTree mytree= new JTree( new FSTreeModel(fs) );
+        TreeModel tm= new FSTreeModel(fs) ;
+        JTree mytree= new JTree( tm );
         mytree.setMinimumSize( new Dimension(400,600) );
         mytree.setPreferredSize( new Dimension(400,600) );
         JOptionPane.showMessageDialog( null, new JScrollPane(mytree), "Test FSTREE", JOptionPane.INFORMATION_MESSAGE );
