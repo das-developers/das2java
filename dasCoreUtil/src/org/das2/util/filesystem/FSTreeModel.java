@@ -21,7 +21,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 /**
@@ -31,11 +30,12 @@ import javax.swing.tree.TreePath;
 public class FSTreeModel extends DefaultTreeModel {
 
     private static final Logger logger= Logger.getLogger( "gui.fstreemodel");
+    public static final String PENDING_NOTE = " PENDING";
     
     FileSystem fs;
     List<TreePath> listCachePath= new ArrayList();
     Map<String,String> listCachePendingFolders= new HashMap();
-    Map<String,MutableTreeNode[]> listCache= new HashMap();
+    Map<String,DefaultMutableTreeNode[]> listCache= new HashMap();
 
     public FSTreeModel(FileSystem fs) {
         super( new FSTreeNode( "/",fs.getRootURI().toString()) );
@@ -45,23 +45,33 @@ public class FSTreeModel extends DefaultTreeModel {
     private static class FSTreeNode extends DefaultMutableTreeNode {
         String path;
         String label;
+        boolean pending;
         FSTreeNode( String fileSystemPath, String label ) {
             this.path= fileSystemPath;
             this.label= label;
+            this.pending= false;
         }
         @Override
         public String toString() {
-            return this.label;
+            return this.label + ( pending ? PENDING_NOTE : "" );
         }
         public String getFileSystemPath() {
             return this.path;
+        }
+        
+        public boolean isPending() {
+            return pending;
+        }
+        public void setPending( boolean pending ) {
+            this.pending= pending;
         }
     }
 
     @Override
     public boolean isLeaf(Object node) {
-        logger.log(Level.FINEST, "isLeaf({0}) -> {1}", new Object[] { node, !node.toString().endsWith("/")  } );
-        return !node.toString().endsWith("/");
+        boolean isFolder= ((FSTreeNode)node).path.endsWith("/");
+        logger.log(Level.FINEST, "isLeaf({0}) -> {1}", new Object[] { node, !isFolder  } );
+        return !isFolder;
     }
 
     @Override
@@ -86,7 +96,7 @@ public class FSTreeModel extends DefaultTreeModel {
 
             System.err.println("listImmediately "+folder);
             final String[] folderKids= fs.listDirectory(folder);
-            final MutableTreeNode[] listCache1 = new DefaultMutableTreeNode[folderKids.length];
+            final DefaultMutableTreeNode[] listCache1 = new DefaultMutableTreeNode[folderKids.length];
             final int[] nodes= new int[folderKids.length];
             for ( int i=0; i<listCache1.length; i++ ) {
                 final String ss= folder + folderKids[i];
@@ -95,16 +105,20 @@ public class FSTreeModel extends DefaultTreeModel {
                 listCache1[i]= dmtn;
                 nodes[i]= i;
             }
-            listCachePendingFolders.put( listCachePendingFolder.toString(), "" );
-            final MutableTreeNode[] rm= listCache.get( listCachePendingFolder.toString() );
-            listCache.put( listCachePendingFolder.toString(), listCache1 );
+            String s= listCachePendingFolder.toString();
+            listCachePendingFolders.put( s, "" );
+            if ( s.endsWith(PENDING_NOTE) ) {
+                s= s.substring(0,s.length()-PENDING_NOTE.length());
+            }
+            final MutableTreeNode[] rm= listCache.get( s );
+            listCache.put( s, listCache1 );
             
             stopTest= true;
             
             Runnable run= new Runnable() {
                 public void run() {
                     //fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
-                    logger.log(Level.FINE, "listingImmediatey({0}) -> array[{1}]", new Object[]{ listCachePath.get(listCachePath.size()-1), nodes.length } );
+                    logger.log(Level.FINE, "listingImmediately({0}) -> array[{1}]", new Object[]{ listCachePath.get(listCachePath.size()-1), nodes.length } );
                     
                     for ( int i=0; i<rm.length; i++ ) {
                         FSTreeModel.this.removeNodeFromParent(rm[i]);
@@ -130,9 +144,12 @@ public class FSTreeModel extends DefaultTreeModel {
     }
     
     private void startListing( final Object folder ) {
+        final FSTreeNode fst= (FSTreeNode)folder;
+        fst.setPending(true);
         Runnable run= new Runnable() {
             public void run() {
                 listingImmediately(folder);
+                fst.setPending(false);
             } 
         };
         new Thread( run ).start();
@@ -149,13 +166,13 @@ public class FSTreeModel extends DefaultTreeModel {
         return theFolder;
     }
     
-    private TreeNode[] getChildren(Object parent) {
+    private DefaultMutableTreeNode[] getChildren(Object parent) {
         
         synchronized (this) {
             String theFolder= folderForNode(parent);
                         
             String key= parent.toString();
-            TreeNode[] result= listCache.get( key );
+            DefaultMutableTreeNode[] result= listCache.get( key );
             
             if ( result!=null ) { 
                 logger.log( Level.FINEST, "getChildren({0}) -> {1}", new Object[]{parent, result});
