@@ -22,6 +22,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.das2.util.LoggerManager;
 
 /**
  * present a FileSystem as a TreeModel to display in JTrees.
@@ -29,7 +30,7 @@ import javax.swing.tree.TreePath;
  */
 public class FSTreeModel extends DefaultTreeModel {
 
-    private static final Logger logger= Logger.getLogger( "gui.fstreemodel");
+    private static final Logger logger= LoggerManager.getLogger( "das2.filesystem.fstree");
     public static final String PENDING_NOTE = " PENDING";
     
     FileSystem fs;
@@ -141,21 +142,13 @@ public class FSTreeModel extends DefaultTreeModel {
             SwingUtilities.invokeLater(run);
             
         } catch (final IOException ex) {
-            //listCache.put( listCachePendingFolder, DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "error: " + ex.getMessage() ) } );
-            //throw new RuntimeException(ex);
+
             Runnable run= new Runnable() {
                 public void run() {
-                    //fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
-                    logger.log(Level.FINE, "exception");
+
+                    logger.log(Level.SEVERE, null, ex );
                     ((FSTreeNode)listCachePendingFolder).setPending(false);
-                    //FSTreeModel.this.insertNodeInto( new DefaultMutableTreeNode( "error: " + ex.getMessage() ),(MutableTreeNode)listCachePendingFolder, 0 );
-                    
-                    //fireTreeNodesChanged( this, new Object[] { root }, nodes, listCache1 );
-                    //if ( listPendingNode==null ) {
-                    //    fireTreeNodesInserted( this, new Object[] { root }, nodes, listCache );
-                    //} else {
-                    //    fireTreeNodesInserted( this, listCachePath.toArray(), nodes, listCache );
-                    //}
+
                 }
             };
             SwingUtilities.invokeLater(run);
