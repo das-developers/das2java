@@ -94,8 +94,10 @@ public class FSTreeModel extends DefaultTreeModel {
         try {
             final String folder= folderForNode(listCachePendingFolder);
 
-            System.err.println("listImmediately "+folder);
+            long t0= System.currentTimeMillis();
+            logger.log(Level.FINE, "listImmediately {0}", folder);
             final String[] folderKids= fs.listDirectory(folder);
+            logger.fine( String.format( "done in %5.2f sec: listImmediately %s", (System.currentTimeMillis()-t0)/1000.0, folder ) );
             final DefaultMutableTreeNode[] listCache1 = new DefaultMutableTreeNode[folderKids.length];
             final int[] nodes= new int[folderKids.length];
             for ( int i=0; i<listCache1.length; i++ ) {
@@ -106,6 +108,7 @@ public class FSTreeModel extends DefaultTreeModel {
                 nodes[i]= i;
             }
             String s= listCachePendingFolder.toString();
+            ((FSTreeNode)listCachePendingFolder).setPending(false);
             listCachePendingFolders.put( s, "" );
             if ( s.endsWith(PENDING_NOTE) ) {
                 s= s.substring(0,s.length()-PENDING_NOTE.length());
@@ -137,9 +140,25 @@ public class FSTreeModel extends DefaultTreeModel {
             };
             SwingUtilities.invokeLater(run);
             
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             //listCache.put( listCachePendingFolder, DefaultMutableTreeNode[] { new DefaultMutableTreeNode( "error: " + ex.getMessage() ) } );
-            throw new RuntimeException(ex);
+            //throw new RuntimeException(ex);
+            Runnable run= new Runnable() {
+                public void run() {
+                    //fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
+                    logger.log(Level.FINE, "exception");
+                    ((FSTreeNode)listCachePendingFolder).setPending(false);
+                    //FSTreeModel.this.insertNodeInto( new DefaultMutableTreeNode( "error: " + ex.getMessage() ),(MutableTreeNode)listCachePendingFolder, 0 );
+                    
+                    //fireTreeNodesChanged( this, new Object[] { root }, nodes, listCache1 );
+                    //if ( listPendingNode==null ) {
+                    //    fireTreeNodesInserted( this, new Object[] { root }, nodes, listCache );
+                    //} else {
+                    //    fireTreeNodesInserted( this, listCachePath.toArray(), nodes, listCache );
+                    //}
+                }
+            };
+            SwingUtilities.invokeLater(run);
         }
     }
     
@@ -172,6 +191,10 @@ public class FSTreeModel extends DefaultTreeModel {
             String theFolder= folderForNode(parent);
                         
             String key= parent.toString();
+            if ( key.endsWith(PENDING_NOTE) ) {
+                key= key.substring(0,key.length()-PENDING_NOTE.length());
+            }
+            
             DefaultMutableTreeNode[] result= listCache.get( key );
             
             if ( result!=null ) { 
@@ -220,16 +243,17 @@ public class FSTreeModel extends DefaultTreeModel {
     }
     
     public static void main( String[] args ) throws FileNotFoundException, UnknownHostException, FileSystem.FileSystemOfflineException {
-        logger.setLevel(Level.FINER);
+        logger.setLevel(Level.FINE);
         for ( Handler h: logger.getHandlers() ) {
             logger.removeHandler(h);
         }
         Handler h=  new ConsoleHandler();
-        h.setLevel(Level.FINER);
+        h.setLevel(Level.FINE);
         logger.addHandler(h );
         //FileSystem fs= FileSystem.create("file:///home/jbf/tmp/");
         //FileSystem fs= FileSystem.create("http://autoplot.org/data/vap/");
-        FileSystem fs= FileSystem.create("http://emfisis.physics.uiowa.edu/pub/jyds/");
+        //FileSystem fs= FileSystem.create("http://emfisis.physics.uiowa.edu/pub/jyds/");
+        FileSystem fs= FileSystem.create("http://sarahandjeremy.net/~jbf/");
         TreeModel tm= new FSTreeModel(fs) ;
         JTree mytree= new JTree( tm );
         mytree.setMinimumSize( new Dimension(400,600) );
