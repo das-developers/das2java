@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import org.das2.DasApplication;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.AbstractProgressMonitor;
 
@@ -36,6 +37,12 @@ public class DasProgressWheel extends AbstractProgressMonitor {
 
         @Override
         protected void paintComponent(Graphics g1) {
+            
+            if ( DasApplication.getDefaultApplication().isHeadless() ) {
+                logger.info("suppressing paintComponent because graphics is headless.");
+                return;
+            }
+            
             Graphics2D g2 = (Graphics2D) g1;
 
             String txt= ""+DasProgressWheel.this.getTaskProgress()+" of "+DasProgressWheel.this.getTaskSize();
