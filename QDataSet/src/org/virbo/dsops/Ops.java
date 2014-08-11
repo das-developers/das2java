@@ -3592,6 +3592,38 @@ public class Ops {
     }
     
     /**
+     * return a rank 1 hash of the dataset, with one hash value for each record.  The value of hash 
+     * should repeat if the record repeats.  
+     * 
+     * NOTE: This is under-implemented and should not be used
+     * without understanding the code.
+     * 
+     * @param ds dataset.
+     * @return rank 1 dataset.
+     */
+    public static QDataSet hash( QDataSet ds ) {
+        if ( ds.rank()==0 ) throw new IllegalArgumentException("rank 0 not supported");
+        if ( ds.rank()==1 ) return ds;
+        IDataSet result= IDataSet.createRank1(ds.length());
+        for ( int i=0; i<ds.length(); i++ ) {
+            QDataSet slice= ds.slice(i);
+            QDataSet wds= Ops.valid(slice);
+            int hash= 0;
+            DataSetIterator it= new QubeDataSetIterator(slice);
+            while ( it.hasNext() ) {
+                it.next();
+                if ( it.getValue(wds)>0. ) {
+                    hash= hash * 31 + Double.valueOf(it.getValue(slice)).hashCode();
+                } else {
+                    hash= hash * 31;
+                }
+            }
+            result.putValue( i,hash );
+        }
+        return result;
+    }
+    
+    /**
      * Return the unique indeces from the rank 1 dataset, using sort to resort the indeces.
      * If sort is null, then
      * the dataset is assumed to be monotonic, and only repeating values are
@@ -5868,6 +5900,47 @@ public class Ops {
         return DataSetUtil.asDataSet(m,SemanticOps.getUnits(ds));
     }
     
+    /**
+     * return the most frequently occurring element.
+     * @param ds
+     * @return 
+     */
+    public static QDataSet mode( QDataSet ds ) {
+        if ( ds.rank()!=1 ) {
+            throw new IllegalArgumentException("only rank 1 is supported (but see flatten).");
+        }
+        
+        Map<Double,Integer> m= new HashMap();
+        DataSetIterator it= new QubeDataSetIterator(ds);
+        QDataSet wds= valid(ds);
+        
+        while ( it.hasNext() ) {
+            it.next();
+            double w= it.getValue(wds);
+            if ( w>0 ) {
+                double d= it.getValue(ds);
+                Integer i= m.get(d);
+                if ( i==null ) {
+                    m.put( d, 1 );
+                } else {
+                    m.put( d, i+1 );
+                }
+            }
+        }
+        int max= 0;
+        double maxd= Double.NaN;
+        for ( Entry<Double,Integer> vv : m.entrySet() ) {
+            if ( vv.getValue() > max ) {
+                max= vv.getValue();
+                maxd= vv.getKey();
+            }
+        }
+        DDataSet result= DDataSet.create( new int[0] );
+        result.putValue(maxd);
+        DataSetUtil.copyDimensionProperties( ds,result );
+        return result;
+        
+    }
     
     /**
      * Median function that sorts a rank 1 dataset and returns its median
