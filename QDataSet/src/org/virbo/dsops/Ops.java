@@ -3592,16 +3592,16 @@ public class Ops {
     }
     
     /**
-     * return a rank 1 hash of the dataset, with one hash value for each record.  The value of hash 
-     * should repeat if the record repeats.  
+     * return a rank 1 hashcodes of each record the dataset, with one hashcodes value for each record.  The 
+     * value of hashcodes should repeat if the record repeats.  
      * 
      * NOTE: This is under-implemented and should not be used
      * without understanding the code.
      * 
-     * @param ds dataset.
+     * @param ds dataset with rank greater than 0.
      * @return rank 1 dataset.
      */
-    public static QDataSet hash( QDataSet ds ) {
+    public static QDataSet hashcodes( QDataSet ds ) {
         if ( ds.rank()==0 ) throw new IllegalArgumentException("rank 0 not supported");
         if ( ds.rank()==1 ) return ds;
         IDataSet result= IDataSet.createRank1(ds.length());
