@@ -28,6 +28,7 @@ class EnumerationUnitDescriptor implements Descriptor {
         this.name= element.getAttribute("name"); // the context for the value -> label.
         this.svalue= element.getAttribute("value");
         this.label= element.getAttribute("label");
+        this.element= element;
     }
 
     private String name;
@@ -61,7 +62,8 @@ class EnumerationUnitDescriptor implements Descriptor {
     }
 
     Element element;
-    
+  
+    @Override
     public Element getDomElement() {
         return element;
     }
