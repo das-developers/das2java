@@ -463,9 +463,12 @@ public abstract class FileSystem  {
     public String[] listDirectory( String directory, ProgressMonitor monitor ) throws IOException {
         monitor.started();
         monitor.setProgressMessage( "listing "+directory );
-        String[] result= listDirectory( directory );
-        monitor.finished();
-        return result;
+        try {
+            String[] result= listDirectory( directory );        
+            return result;
+        } finally {
+            monitor.finished();
+        }
     }
     
     /**
