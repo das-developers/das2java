@@ -825,6 +825,8 @@ public class DataSetOps {
      *}</small></pre></blockquote>
      * demonstrates its use.
      * 
+     * Last, extraneous spaces and underscores are removed to see if this will result in a match.
+     * 
      * @param bundleDs a bundle dataset with the property BUNDLE_1 or DEPEND_1 having EnumerationUnits.
      * @param name the named dataset.
      * @return the index or -1 if the name is not found.
@@ -835,6 +837,8 @@ public class DataSetOps {
         int i= name.indexOf("["); // allow name to be "Flux[Time=1440,en=10]"
         if ( i>0 ) {
             name= name.substring(i);
+            name= Ops.saferName(name);
+        } else {
             name= Ops.saferName(name);
         }
 
@@ -896,9 +900,33 @@ public class DataSetOps {
             }
         }
         //}
+        
+        if ( ib==-1 ) {
+            name= name.replaceAll("_| ","");
+            for ( int j=0; j<bundle1.length(); j++ ) {
+                String n1= (String) bundle1.property( QDataSet.NAME, j );
+                if ( n1!=null ) n1= Ops.saferName(n1);
+                if ( n1!=null ) n1= n1.replaceAll("_| ","");
+                if ( n1!=null && n1.equals(name) ) {
+                    ib= j;
+                }
+                if ( bundle1.length(j)>0 ) {
+                    n1= (String) bundle1.property( QDataSet.ELEMENT_NAME, j );
+                    if ( n1!=null ) n1= Ops.saferName(n1);
+                    if ( n1!=null && n1.equals(name) ) {
+                        ib= j;
+                        highRank= true;
+                        break;
+                    }
+                }
+            }
+        }
+        
         if ( highRank ) {
             logger.log(Level.FINER, "index of bundled dataset \"{0}\" is {1} (highrank={2})", new Object[]{name, ib, highRank});
         } 
+        
+
         return ib;
     }
     
