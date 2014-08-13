@@ -498,9 +498,12 @@ public abstract class FileSystem  {
     public String[] listDirectory( String directory, String regex, ProgressMonitor monitor ) throws IOException {
         monitor.started();
         monitor.setProgressMessage( "listing "+directory );
-        String[] result= listDirectory( directory, regex );
-        monitor.finished();
-        return result;
+        try {
+            String[] result= listDirectory( directory, regex );
+            return result;
+        } finally {
+            monitor.finished();
+        }
     }
     
     /**
@@ -563,6 +566,9 @@ public abstract class FileSystem  {
     /**
      * create a new filesystem that is a part of this filesystem, rooted at
      * directory.
+     * @param directory subdirectory within the filesystem.
+     * @return the new FileSystem
+     * @throws java.net.URISyntaxException
      */
     public FileSystem createFileSystem( String directory ) throws URISyntaxException {
         try {
@@ -580,7 +586,8 @@ public abstract class FileSystem  {
      *   [3] is proto + path + file
      *   [4] is file ext
      *   [5] is params, not including ?.
-     * @param surl an url string to parse.
+     * @param surl a URL string to parse.
+     * @return the parsed URL.
      */
     public static String[] splitUrl( String surl ) {
         
