@@ -41,7 +41,7 @@ public class JoinDataSet extends AbstractDataSet {
         if ( DataSetUtil.isQube(rds) ) {
             return ArrayDataSet.copy(rds);
         }
-        JoinDataSet result= new JoinDataSet( rds.rank()+1 );
+        JoinDataSet result= new JoinDataSet( rds.rank() );
         for ( int i=0; i<rds.length(); i++ ) {
             QDataSet s1= rds.slice(i);
             if ( DataSetUtil.isQube(s1) ) {
