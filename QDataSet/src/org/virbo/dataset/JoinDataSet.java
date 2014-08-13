@@ -10,6 +10,7 @@
 package org.virbo.dataset;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,30 @@ public class JoinDataSet extends AbstractDataSet {
      * that assumes a qube...
      */
     private static final int NO_DATASET_SIZE = 10;
+
+    /**
+     * return a copy of the dataset, creating a new JoinDataSet and 
+     * copying each slice into the JoinDataSet.
+     * @param rds any dataset
+     * @return a copy of the original dataset.
+     */
+    public static QDataSet deepCopy( QDataSet rds ) {
+        if ( DataSetUtil.isQube(rds) ) {
+            return ArrayDataSet.copy(rds);
+        }
+        JoinDataSet result= new JoinDataSet( rds.rank()+1 );
+        for ( int i=0; i<rds.length(); i++ ) {
+            QDataSet s1= rds.slice(i);
+            if ( DataSetUtil.isQube(s1) ) {
+                result.join( ArrayDataSet.copy( s1 ) );
+            } else {
+                result.join( deepCopy(s1) );
+            }
+        }
+        Map srcProps= DataSetUtil.getProperties(rds);
+        DataSetUtil.putProperties( srcProps, result );
+        return result;
+    }
     
     List<QDataSet> datasets;
     /**
@@ -54,7 +79,7 @@ public class JoinDataSet extends AbstractDataSet {
      *    assert( ds1.rank()==1 );
      *    assert( jds.rank()==2 );
      *    assert( jds.slice(0).equals(ds1) );
-     * @param ds1
+     * @param ds1 rank N-1 dataset that will be the first slice to add to this rank N dataset.
      */
     public JoinDataSet( QDataSet ds1 ) {
         this( ds1.rank()+1 );
