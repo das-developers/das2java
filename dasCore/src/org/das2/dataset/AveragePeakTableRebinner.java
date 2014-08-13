@@ -64,7 +64,7 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         QDataSet weights = org.virbo.dataset.DataSetUtil.weightsDataSet(ds);
         QDataSet peaks = (QDataSet) ds.property( QDataSet.BIN_PLUS );
         
-        long timer= System.currentTimeMillis();
+        //long timer= System.currentTimeMillis();
         
         int nx= (ddX == null ? tds.length() : ddX.numberOfBins());
         int ny= (ddY == null ? tds.length(0) : ddY.numberOfBins());
@@ -79,7 +79,6 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         QDataSet ytds= SemanticOps.ytagsDataSet(tds);
         
         Units xunits= SemanticOps.getUnits(xtds);
-        Units yunits= SemanticOps.getUnits(ytds);
         
         double[] xTags;
         double[] xTagMin, xTagMax;
@@ -104,16 +103,16 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
             xTagMax= xTags;      
         }
         
-        double[][] yTags;
-        if (ddY != null) {
-            yTags = new double[][]{ddY.binCenters()};
-        }
-        else {
-            yTags = new double[1][ny];
-            for (int j = 0; j < ny; j++) {
-                yTags[0][j] = ytds.value(j);
-            }
-        }
+//        double[][] yTags;
+//        if (ddY != null) {
+//            yTags = new double[][]{ddY.binCenters()};
+//        }
+//        else {
+//            yTags = new double[1][ny];
+//            for (int j = 0; j < ny; j++) {
+//                yTags[0][j] = ytds.value(j);
+//            }
+//        }
         
         QDataSet xTagWidth= org.virbo.dataset.DataSetUtil.guessCadenceNew(xtds,null);
         
