@@ -121,7 +121,6 @@ public class PitchAngleDistributionRenderer extends Renderer {
         QDataSet ads= SemanticOps.xtagsDataSet(tds);
         QDataSet rds= SemanticOps.ytagsDataSet(tds); // this is why they are semanticOps.  ytagsDataSet is just used for convenience even though this is not the y values.
 
-        Units xunits= SemanticOps.getUnits(ads);
         Units yunits= SemanticOps.getUnits(rds);
 
         if ( isAngleRange(rds)!=null && isAngleRange(ads)==null ) { // swap em
