@@ -238,7 +238,7 @@ public class DasPlot extends DasCanvasComponent {
 
         for (int i = 0; i < legendElements.size(); i++) {
             LegendElement le = legendElements.get(i);
-            if ( ( le.renderer!=null && le.renderer.isActive() ) || drawInactiveInLegend ) {
+            if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) {
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
                 gtr.setString(graphics, String.valueOf(le.label).trim()); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
@@ -332,7 +332,7 @@ public class DasPlot extends DasCanvasComponent {
         for (int i = 0; i < llegendElements.size(); i++) {
             LegendElement le = llegendElements.get(i);
 
-            if ( ( le.renderer!=null && le.renderer.isActive() ) || drawInactiveInLegend ) {
+            if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) {
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
                 gtr.setString(graphics, String.valueOf(le.label).trim()); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
@@ -350,7 +350,11 @@ public class DasPlot extends DasCanvasComponent {
                         le.icon.getIconHeight() );
                 boolean printing= true;
                 if ( printing ) {
-                    le.drawIcon( graphics, msgx - (le.icon.getIconWidth() + em / 4), msgy + icony );
+                    if ( le.renderer==null ) {
+                        graphics.drawImage(le.icon.getImage(), imgBounds.x, imgBounds.y, null);
+                    } else {
+                        le.drawIcon( graphics, msgx - (le.icon.getIconWidth() + em / 4), msgy + icony );
+                    }
                 } else {
                     graphics.drawImage(le.icon.getImage(), imgBounds.x, imgBounds.y, null);
                 }
