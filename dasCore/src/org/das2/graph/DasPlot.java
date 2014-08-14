@@ -238,7 +238,7 @@ public class DasPlot extends DasCanvasComponent {
 
         for (int i = 0; i < legendElements.size(); i++) {
             LegendElement le = legendElements.get(i);
-            if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) {
+            if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) { 
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
                 gtr.setString(graphics, String.valueOf(le.label).trim()); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
