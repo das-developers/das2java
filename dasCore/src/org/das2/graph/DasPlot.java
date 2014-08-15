@@ -219,6 +219,23 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     /**
+     * for multiline labels, the alignment, where 0 is left, 0.5 is center, and 1.0 is right.
+     */
+    private float multiLineTextAlignment = 0.f;
+    public static final String PROP_MULTILINETEXTALIGNMENT = "multiLineTextAlignment";
+
+    public float getMultiLineTextAlignment() {
+        return multiLineTextAlignment;
+    }
+
+    public void setMultiLineTextAlignment(float multiLineTextAlignment) {
+        float oldMultiLineTextAlignment = this.multiLineTextAlignment;
+        this.multiLineTextAlignment = multiLineTextAlignment;
+        firePropertyChange(PROP_MULTILINETEXTALIGNMENT, oldMultiLineTextAlignment, multiLineTextAlignment);
+        repaint();
+    }
+    
+    /**
      * returns the bounds of the legend, or null if there is no legend.
      * @param graphics
      * @param msgx
@@ -337,6 +354,7 @@ public class DasPlot extends DasCanvasComponent {
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) {
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
+                gtr.setAlignment( GrannyTextRenderer.LEFT_ALIGNMENT );
                 gtr.setString(graphics, String.valueOf(le.label).trim()); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
                 mrect.translate(msgx, msgy + (int) gtr.getAscent());
@@ -431,6 +449,7 @@ public class DasPlot extends DasCanvasComponent {
             }
 
             GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setAlignment(multiLineTextAlignment);
             gtr.setString(graphics, String.valueOf(message.text)); // protect from nulls, which seems to happen
 
             Rectangle mrect = gtr.getBounds();
@@ -845,6 +864,7 @@ public class DasPlot extends DasCanvasComponent {
             String atstr = GraphUtil.getATScaleTranslateString(at);
 
             GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setAlignment(multiLineTextAlignment);
             gtr.setString(atGraphics, atstr);
             gtr.draw(atGraphics, x + 10, y + 10 + atGraphics.getFontMetrics().getHeight());
         }
@@ -1196,7 +1216,7 @@ public class DasPlot extends DasCanvasComponent {
 
         if ( displayTitle && plotTitle != null && plotTitle.length() != 0) {
             GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT);
+            gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT); // funny I never noticed this was different.
             gtr.setString(graphics, plotTitle);
             int titleWidth = (int) gtr.getWidth();
             int titleX = x + (xSize - titleWidth) / 2;
@@ -1468,6 +1488,7 @@ public class DasPlot extends DasCanvasComponent {
             Rectangle oldBounds= getBounds();
 
             GrannyTextRenderer gtr = new GrannyTextRenderer();
+            gtr.setAlignment(multiLineTextAlignment);
             gtr.setString(getFont(), getTitle());
 
             titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
