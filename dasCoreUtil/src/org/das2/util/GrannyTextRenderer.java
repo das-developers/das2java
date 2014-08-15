@@ -58,18 +58,18 @@ import java.util.Stack;
  */
 public class GrannyTextRenderer {
     
-    public static final int LEFT_ALIGNMENT = 0;
-    public static final int CENTER_ALIGNMENT = 1;
-    public static final int RIGHT_ALIGNMENT = 2;
+    public static final float LEFT_ALIGNMENT = 0.0f;
+    public static final float CENTER_ALIGNMENT = 0.5f;
+    public static final float RIGHT_ALIGNMENT = 1.0f;
     
     private Rectangle bounds=null;
     private ArrayList lineBounds;
     private String str;
     private String[] tokens;
-    private int alignment = LEFT_ALIGNMENT;
+    private float alignment = LEFT_ALIGNMENT;
     
     public GrannyTextRenderer( ) {
-    
+        //setAlignment(CENTER_ALIGNMENT);
     }
     
     /**
@@ -215,7 +215,7 @@ public class GrannyTextRenderer {
      * returns the current alignment, by default LEFT_ALIGNMENT.
      * @return the current alignment.
      */
-    public int getAlignment() {
+    public float getAlignment() {
         return alignment;
     }
     
@@ -223,9 +223,9 @@ public class GrannyTextRenderer {
      * set the alignment for rendering, one of LEFT_ALIGNMENT  CENTER_ALIGNMENT or RIGHT_ALIGNMENT.
      * @param a the alignment, one of LEFT_ALIGNMENT  CENTER_ALIGNMENT or RIGHT_ALIGNMENT.
      */
-    public void setAlignment(int a) {
+    public void setAlignment( float a) {
         if (a != LEFT_ALIGNMENT && a != CENTER_ALIGNMENT && a != RIGHT_ALIGNMENT) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("alignment should 0., 0.5, or 1.0");
         }
         alignment = a;
     }
