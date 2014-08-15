@@ -2353,7 +2353,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         g.setFont(getTickLabelFont());
         GrannyTextRenderer idlt = new GrannyTextRenderer();
-        if ( dasPlot!=null ) idlt.setAlignment( dasPlot.getMultiLineTextAlignment() );
         idlt.setString(g, label);
 
         int width;
