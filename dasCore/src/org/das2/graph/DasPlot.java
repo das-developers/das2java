@@ -449,7 +449,7 @@ public class DasPlot extends DasCanvasComponent {
             }
 
             GrannyTextRenderer gtr = new GrannyTextRenderer();
-            gtr.setAlignment(multiLineTextAlignment);
+            gtr.setAlignment( GrannyTextRenderer.LEFT_ALIGNMENT );
             gtr.setString(graphics, String.valueOf(message.text)); // protect from nulls, which seems to happen
 
             Rectangle mrect = gtr.getBounds();
