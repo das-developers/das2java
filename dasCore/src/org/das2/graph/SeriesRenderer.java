@@ -1513,6 +1513,10 @@ public class SeriesRenderer extends Renderer {
                 logger.fine("dataset is not rank 1 or a rank 2 waveform");
                 return;
             }
+            if ( xds.rank()!=1 ) {
+                logger.fine("dataset xtags are not rank 1.");
+                return;
+            }
             if ( vds.rank()!=1 ) {
                 logger.fine("dataset is rank 2 and not a bundle.");
                 return;
