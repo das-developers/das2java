@@ -86,7 +86,9 @@ public final class TimeUtil {
      * @param day day of month. For day of year, use month=1 and doy for day.
      */
     public static int julianDay( int year, int month, int day ) {
-        if ( year<=1582 ) throw new IllegalArgumentException("year must be more than 1582");
+        if ( year<=1582 ) {
+            throw new IllegalArgumentException("year must be more than 1582");
+        }
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
