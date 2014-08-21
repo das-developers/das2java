@@ -38,6 +38,7 @@ import java.awt.image.WritableRaster;
 import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
@@ -556,10 +557,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     private void ghostlyImage(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
 
-        DatumRange xrange = new DatumRange(xAxis.invTransform(plotImageBounds2.x),
-                xAxis.invTransform(plotImageBounds2.x + plotImageBounds2.width));
-        DatumRange yrange = new DatumRange(yAxis.invTransform(plotImageBounds2.y + plotImageBounds2.height),
-                yAxis.invTransform(plotImageBounds2.y));
+        DatumRange xrange = GraphUtil.invTransformRange( xAxis, plotImageBounds2.x, plotImageBounds2.x + plotImageBounds2.width);
+        DatumRange yrange = GraphUtil.invTransformRange( yAxis, plotImageBounds2.y + plotImageBounds2.height,plotImageBounds2.y);
 
         RebinDescriptor ddx = new RebinDescriptor(
                 xrange.min(),
@@ -588,7 +587,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
 
         int h = ddy.numberOfBins();
-        int w = ddx.numberOfBins();
+        int w = ddx.numberOfBins(); 
 
         logger.log(Level.FINE, "ghostlyImage: h={0} w={1}", new Object[]{h, w});
 
@@ -680,6 +679,13 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         if (!yAxis.getUnits().isConvertableTo( SemanticOps.getUnits(ds1) )) {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
+        }
+        
+        if ( yAxis.isFlipped() ) {
+            parent.postMessage(this, "flipped yaxis is not supported", DasPlot.WARNING, null, null );
+        }
+        if ( xAxis.isFlipped() ) {
+            parent.postMessage(this, "flipped xaxis is not supported", DasPlot.WARNING, null, null );
         }
 
         plotImageBounds= parent.getUpdateImageBounds();
