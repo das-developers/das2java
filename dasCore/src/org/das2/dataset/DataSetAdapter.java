@@ -28,7 +28,8 @@ public class DataSetAdapter {
     public static final String PROPERTY_SOURCE= "adapterSource";
     
     public static AbstractDataSet create( org.das2.dataset.DataSet ds ) {
-        if ( ( ds instanceof VectorDataSet ) && ds.getPlaneIds().length>2 ) {  // TCAs  kludge
+        // Handle x multi y as a bundle
+        if ( ( ds instanceof VectorDataSet ) && ds.getPlaneIds().length>1 ) {
             VectorDataSet vds= (VectorDataSet)ds;
             AbstractDataSet bds= (AbstractDataSet) Ops.bundle( null, new Vector(vds) );
             String[] planes= ds.getPlaneIds();
@@ -41,6 +42,8 @@ public class DataSetAdapter {
             return bds;
         } else if ( ds instanceof VectorDataSet ) {
             return new Vector((VectorDataSet) ds);
+        // Todo: Use bundle here as well?  Not sure how multi yscan items should be
+        //       handled by default.  -cwp
         } else if ( ds instanceof TableDataSet ) {
             TableDataSet tds= (TableDataSet) ds;
             if ( tds.tableCount()<=1 ) {
