@@ -68,7 +68,7 @@ public class AsciiTransferType extends TransferType {
             } else if ( length==6 ) {
                 return "0.#";
             } else if ( length<6 ) {
-                throw new IllegalArgumentException("length is too short: "+length);
+                return "0";
             } else {
                 return "0.####";
             }
