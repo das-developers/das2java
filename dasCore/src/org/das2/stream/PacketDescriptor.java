@@ -136,7 +136,7 @@ public class PacketDescriptor implements Cloneable {
     }
     
     /** Returns a List of SkeletonDescriptor instances that represent the y
-     * planes in a packet.  The List is unmodifiable and will throw an acception
+     * planes in a packet.  The List is unmodifiable and will throw an exception
      * if any attempt is made to alter the list.  The contents of the list will
      * not be updated if a yDescriptor is added to this packet descriptor.
      * @return a List of y planes

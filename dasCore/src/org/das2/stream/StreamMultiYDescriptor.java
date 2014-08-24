@@ -37,7 +37,9 @@ import org.w3c.dom.NodeList;
 
 public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
 
-    private String name = "";
+	private static final String g_sCkAry[] = {"name","type","units"};
+	
+	 private String name = "";
     private Units units = Units.dimensionless;
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
 
@@ -49,17 +51,24 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         }
     }
 
-    private void processElement(Element element) throws StreamException {
-        String name = element.getAttribute("name");
-        if (name != null) {
-            this.name = name;
-        }
+    private void processElement(Element element) throws StreamException 
+	 {	 
+		 //name, units, and type are required, though they can be null
+		 for(String s: g_sCkAry){
+			 if(! element.hasAttribute(s) )
+			 throw new StreamException("Das2 Stream Format error: Required Attribute '"+s+
+				                        "' missing in <" + element.getTagName()+"> plane.");
+		 }
+		 
+		 //element.getAttribute returns empty string if attr is not specified
+		 //so safe to just use it directly
+        name = element.getAttribute("name");
+        
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
         String unitsString = element.getAttribute("units");
-        if (unitsString != null) {
-            units = Units.lookupUnits(unitsString);
-        }
+        units = Units.lookupUnits(unitsString);
+        
         NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             Node n = attrs.item(i);
@@ -154,7 +163,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         return element;
     }
 
-    public Object clone() {
+	 public Object clone() {
         try {
             return super.clone();
         } catch (CloneNotSupportedException cnse) {

@@ -33,6 +33,9 @@ import org.w3c.dom.Element;
 
 public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
 
+	private static final String g_sCkAry[] = {"name","type","nitems","yTags","yUnits",
+		                                       "zUnits"};
+	
     private Units yUnits = Units.dimensionless;
     private Units zUnits = Units.dimensionless;
     private double[] yTags;
@@ -40,7 +43,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
     private String name = "";
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
 
-    public StreamYScanDescriptor( Element element ) {
+    public StreamYScanDescriptor( Element element ) throws StreamException {
         if ( element.getTagName().equals("yscan") ) {
             processElement(element);
         }
@@ -49,7 +52,17 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         }
     }
     
-    private void processElement(Element element) {
+    private void processElement(Element element) throws StreamException
+	 {
+		 
+		 //name, units, nitems, yUnits, yTags, zUnits are required, though they can be null
+		 //name, units, and type are required, though they can be null
+		 for(String s: g_sCkAry){
+			 if(! element.hasAttribute(s) )
+			 throw new StreamException("Das2 Stream Format error: Required Attribute '"+s+
+				                        "' missing in <" + element.getTagName()+"> plane.");
+		 }
+		 
         nitems = Integer.parseInt(element.getAttribute("nitems"));
         String yTagsText = element.getAttribute("yTags");
         if (yTagsText != null) {
