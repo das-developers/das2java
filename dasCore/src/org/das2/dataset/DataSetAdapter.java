@@ -39,6 +39,7 @@ public class DataSetAdapter {
                 Ops.bundle( bds, v );
             }
             bds.putProperty( QDataSet.DEPEND_0, new XTagsDataSet(vds) );
+				bds.putProperty( QDataSet.TITLE, ds.getProperty(org.das2.dataset.DataSet.PROPERTY_TITLE));
             return bds;
         } else if ( ds instanceof VectorDataSet ) {
             return new Vector((VectorDataSet) ds);
