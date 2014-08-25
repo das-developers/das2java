@@ -471,8 +471,8 @@ public class Ops {
      * return a dataset with each element negated.
      * If units are specified, Units must be ratiometric units, like "5 km" 
      * or dimensionless, and not ordinal or time location units.
-     * @see copysign
-     * @see signum
+     * @see #copysign
+     * @see #signum
      * @param ds1
      * @return
      */
@@ -1228,7 +1228,7 @@ public class Ops {
      * TODO: units improvements.
      * @param ds1
      * @param ds2
-     * @see multiplyUnits.
+     * @see #multiplyUnits.
      * @return
      */
     public static QDataSet multiply(QDataSet ds1, QDataSet ds2) {
@@ -3630,7 +3630,7 @@ public class Ops {
      * coalesced.  If sort is non-null, then it is the result of the function
      * "sort" and should be a rank 1 list of indeces that sort the data.
      *
-     * @see uniqValues, which returns the values.
+     * @see #uniqValues, which returns the values.
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @param sort null, or the rank 1 dataset of indeces
      */
@@ -3697,7 +3697,7 @@ public class Ops {
      * renamed uniqValues from uniq to avoid confusion with the IDL command.
      *
      * This needs example code and should not be used for now.  See VirboAutoplot/src/scripts/test/testUniq.jy
-     * @see uniq, which returns the indeces.
+     * @see #uniq, which returns the indeces.
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @param sort null, or the rank 1 dataset of indeces
      * @return
@@ -3903,7 +3903,7 @@ public class Ops {
     
     
     /**
-     * @see DataSetOps.slice1
+     * @see org.virbo.dataset.DataSetOps.slice1
      * @param ds
      * @param idx
      * @return
@@ -3938,7 +3938,7 @@ public class Ops {
     }        
 
     /**
-     * @see DataSetOps.slice2
+     * @see org.virbo.dataset.DataSetOps.slice2
      * @param ds
      * @param idx
      * @return
@@ -3948,7 +3948,7 @@ public class Ops {
     }
 
     /**
-     * @see DataSetOps.slice3
+     * @see org.virbo.dataset.DataSetOps.slice3
      * @param ds
      * @param idx
      * @return
@@ -5255,8 +5255,8 @@ public class Ops {
      * zero, 1.0 if the argument is greater than zero, -1.0 if the argument 
      * is less than zero.
      * @param ds1
-     * @see copysign
-     * @see negate
+     * @see #copysign
+     * @see #negate
      * @return 
      */
     public static QDataSet signum(QDataSet ds1) {
@@ -5280,8 +5280,8 @@ public class Ops {
      * second floating-point argument.
      * @param magnitude
      * @param sign 
-     * @see signum
-     * @see negate
+     * @see #signum
+     * @see #negate
      * @return
      */
     public static QDataSet copysign(QDataSet magnitude, QDataSet sign) {
@@ -5426,7 +5426,7 @@ public class Ops {
      * @param vv rank 1 dataset that is the data to be interpolated.
      * @param findex rank N dataset of fractional indeces.  This must be dimensionless and is typically calculated by the findex command.
      * @return the result.  
-     * @see interpolateMod for data like longitude where 259 deg is 2 degrees away from 1 deg.
+     * @see #interpolateMod interpolateMode for data like longitude where 259 deg is 2 degrees away from 1 deg.
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex) {
         if ( vv.rank()!=1 ) {
@@ -5519,7 +5519,7 @@ public class Ops {
      * interpolate values from rank 2 dataset vv using fractional indeces
      * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
      *
-     * @see findex the 1-D findex command.
+     * @see #findex the 1-D findex command.
      * @param vv rank 2 dataset.
      * @param findex0 rank N dataset of fractional indeces for the zeroth index.  This must be dimensionless and is typically calculated by the findex command.
      * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless and is typically calculated by the findex command.
@@ -5631,7 +5631,7 @@ public class Ops {
      * interpolate values from rank 2 dataset vv using fractional indeces
      * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
      *
-     * @see findex the 1-D findex command.
+     * @see #findex the 1-D findex command.
      * @param vv object convertible to rank 2 dataset.
      * @param findex0 object convertible to rank N dataset of fractional indeces for the zeroth index.
      * @param findex1 object convertible to rank N dataset of fractional indeces for the first index.
@@ -5648,6 +5648,7 @@ public class Ops {
      * @param mod rank 0 dataset that is the mod of the space (e.g. 360deg)
      * @param findex rank N dataset of fractional indeces.  This must be dimensionless and is typically calculated by the findex command.
      * @return the result, a rank 1 dataset with one element for each findex.
+     * @see #interpolate(QDataSet,QDataSet)
      */
     public static QDataSet interpolateMod( QDataSet vv, QDataSet mod, QDataSet findex ) {
         if ( vv.rank()!=1 ) {
@@ -5739,7 +5740,7 @@ public class Ops {
      * in rank N findex, using bilinear interpolation.  Here the two rank1
      * indexes form a grid and the result is rank 2.
      *
-     * @see findex the 1-D findex command.
+     * @see #findex(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) the 1-D findex command.
      * @param vv rank 2 dataset.
      * @param findex0 rank 1 dataset of fractional indeces for the zeroth index.
      * @param findex1 rank 1 dataset of fractional indeces for the first index.
@@ -6215,7 +6216,7 @@ public class Ops {
      * N-1 elements is returned.  DEPEND_0 will contain the average of the two points.
      * @param ds a rank 1 dataset with N elements.
      * @return a rank 1 dataset with N-1 elements.
-     * @see accum
+     * @see #accum(org.virbo.dataset.QDataSet) 
      */
     public static QDataSet diff(QDataSet ds) {
         if (ds.rank() > 1) {
@@ -6270,10 +6271,10 @@ public class Ops {
      * return an array that is the running sum of each element in the array,
      * starting with the value accum.
      * Result[i]= accum + total( ds[0:i+1] )
-     * @param accum the initial value of the running sum.  Last value of Rank 0 or Rank 1 dataset is used, or may be null.
+     * @param accumDs the initial value of the running sum.  Last value of Rank 0 or Rank 1 dataset is used, or may be null.
      * @param ds each element is added to the running sum
      * @return the running of each element in the array.
-     * @see diff
+     * @see #diff(org.virbo.dataset.QDataSet) 
      */
     public static QDataSet accum( QDataSet accumDs, QDataSet ds ) {
         if (ds.rank() > 1) {
@@ -6325,7 +6326,7 @@ public class Ops {
      * Result[i]= total( ds[0:i+1] )
      * @param ds each element is added to the running sum
      * @return the running of each element in the array.
-     * @see diff
+     * @see #diff(org.virbo.dataset.QDataSet) 
      */
     public static QDataSet accum( QDataSet ds ) {
         return accum( null, ds );
@@ -6343,7 +6344,7 @@ public class Ops {
      *    print append(ds1,ds2)  ; dataSet[22] (dimensionless)
      * @param ds1 null or rank N dataset
      * @param ds2 rank N dataset with compatible geometry.
-     * @see concatenate, which may do the same thing.
+     * @see #concatenate(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet)  which may do the same thing.
      * @return 
      */
     public static QDataSet append( QDataSet ds1, QDataSet ds2 ) {
@@ -6391,8 +6392,8 @@ public class Ops {
      * The result for rank 2 is an n,3 dataset of [x,y,z], or if there are no tags, just [z].
      * The last index will be the dependent variable, and the first indeces will
      * be the independent variables sorted by dimension.
-     * @see DataSetOps.flattenRank2
-     * @see DataSetOps.grid
+     * @see org.virbo.dataset.DataSetOps.flattenRank2
+     * @see org.virbo.dataset.DataSetOps.grid
      * @param ds
      * @return
      */
@@ -6661,9 +6662,9 @@ public class Ops {
 
     /**
      * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
-     * @param bundleDs
+     * @param ds the bundle of datasets, often rank 2 with BUNDLE_1 property
      * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
-     * @see unbundle( QDataSet bundleDs, int ib )
+     * @see #unbundle( QDataSet bundleDs, int ib )
      * @throws IllegalArgumentException if no named dataset is found.
      * @return
      */
@@ -6950,8 +6951,8 @@ public class Ops {
      * 
      * @param ds1 rank N dataset, or null
      * @param ds2 rank N dataset
-     * @see slices
-     * @see concatenate
+     * @see #slices
+     * @see #concatenate
      * @return rank N+1 dataset
      */
     public static QDataSet join(QDataSet ds1, QDataSet ds2) {
