@@ -5426,6 +5426,7 @@ public class Ops {
      * @param vv rank 1 dataset that is the data to be interpolated.
      * @param findex rank N dataset of fractional indeces.  This must be dimensionless and is typically calculated by the findex command.
      * @return the result.  
+     * @see interpolateMod for data like longitude where 259 deg is 2 degrees away from 1 deg.
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex) {
         if ( vv.rank()!=1 ) {
@@ -5640,6 +5641,99 @@ public class Ops {
         return interpolate( dataset(vv), dataset(findex0), dataset(findex1) );
     }    
 
+    /**
+     * like interpolate, but the findex is recalculated when the two bracketed points are closer in the 
+     * modulo space than they would be in the linear space.
+     * @param vv rank 1 dataset that is the data to be interpolated. (e.g. longitude from 0 to 360deg)
+     * @param mod rank 0 dataset that is the mod of the space (e.g. 360deg)
+     * @param findex rank N dataset of fractional indeces.  This must be dimensionless and is typically calculated by the findex command.
+     * @return the result, a rank 1 dataset with one element for each findex.
+     */
+    public static QDataSet interpolateMod( QDataSet vv, QDataSet mod, QDataSet findex ) {
+        if ( vv.rank()!=1 ) {
+            throw new IllegalArgumentException("vv is not rank1");
+        }
+        if ( !isDimensionless(findex) ) throw new IllegalArgumentException("findex argument should be dimensionless, expected output from findex command.");
+        QDataSet fex0= extent(findex);
+        if ( ( fex0.value(1)-vv.length() ) / vv.length() > 100 ) {
+            logger.warning("findex looks suspicious, where its max will result in unrealistic extrapolations");
+        }
+        if ( fex0.value(0) / vv.length() < -100 ) {
+            logger.warning("findex looks suspicious, where its min will result in unrealistic extrapolations");
+        }
+        
+        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex));
+        QubeDataSetIterator it = new QubeDataSetIterator(findex);
+        int ic0, ic1;
+        int n = vv.length();
+
+        QDataSet wds= DataSetUtil.weightsDataSet( vv );
+        Double fill= (Double)wds.property(QDataSet.FILL_VALUE);
+        if ( fill==null ) fill= -1e38;
+        result.putProperty( QDataSet.FILL_VALUE, fill );
+        boolean hasFill= false;
+
+        QDataSet wfindex= DataSetUtil.weightsDataSet(findex);
+        wfindex= copy(wfindex);
+        
+        double dmod= DataSetUtil.asDatum(mod).doubleValue( SemanticOps.getUnits(vv).getOffsetUnits() );
+        double dmodLimit= dmod/2;
+        
+        while (it.hasNext()) {
+            it.next();
+
+            if ( it.getValue(wfindex)==0 ) {
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            }
+            
+            double ff = it.getValue(findex);
+
+            if (ff < 0) {
+                ic0 = 0; // extrapolate
+
+                ic1 = 1;
+            } else if (ff >= n - 1) {
+                ic0 = n - 2; // extrapolate
+
+                ic1 = n - 1;
+            } else {
+                ic0 = (int) Math.floor(ff);
+                ic1 = ic0 + 1;
+            }
+
+            double alpha = ff - ic0;
+
+            if ( wds.value(ic0)>0 && wds.value(ic1)>0 ) {
+                double vv0 = vv.value(ic0);
+                double vv1 = vv.value(ic1);
+                while ( (vv1-vv0)> dmodLimit ) {
+                    vv0= vv0 + dmod;
+                }
+                while ( (vv0-vv1)> dmodLimit ) {
+                    vv1= vv1 + dmod;
+                }
+                it.putValue(result, vv0 + alpha * (vv1 - vv0));
+                
+            } else {
+                it.putValue(result, fill );
+                hasFill= true;
+            }
+
+        }
+        DataSetUtil.copyDimensionProperties( vv, result );
+        QDataSet depend0= (QDataSet) findex.property(QDataSet.DEPEND_0);
+        if ( depend0!=null ) {
+            result.putProperty( QDataSet.DEPEND_0, depend0 );
+        }
+        if ( hasFill ) {
+            result.putProperty( QDataSet.FILL_VALUE, fill );
+        }
+
+        return result;        
+    }
+    
     /**
      * interpolate values from rank 2 dataset vv using fractional indeces
      * in rank N findex, using bilinear interpolation.  Here the two rank1
