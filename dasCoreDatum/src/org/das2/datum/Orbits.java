@@ -89,13 +89,13 @@ public class Orbits {
                         urls.add( lurl );
                     }
                 } else if ( sc.equals("crres" ) ) {
-                    urls.add( new URL( "http://das2.org/wiki/index.php/Orbits/crres" ) );
+                    urls.add( new URL( "http://www-pw.physics.uiowa.edu/das2/Orbits/crres.dat" ) );
                     urls.add( new URL( "ftp://virbo.org/mirror/das2.org/wiki/index.php/Oribts/crres/crres-orbits.dat" ) );
 
                 } else if ( sc.equals("cassini") ) {
                     urls.add( new URL( "http://www-pw.physics.uiowa.edu/~jbf/cassini/cassiniOrbits.txt" ) );
                 } else {
-                    urls.add( new URL( "http://das2.org/wiki/index.php/Orbits/"+sc ) );
+                    urls.add( new URL( "http://www-pw.physics.uiowa.edu/das2/Orbits/"+sc+".dat" ) );
                 }
             }
         } catch ( MalformedURLException ex ) {
