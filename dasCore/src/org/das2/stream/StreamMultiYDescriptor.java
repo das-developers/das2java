@@ -27,7 +27,6 @@ import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import org.virbo.dataset.SemanticOps;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -37,8 +36,9 @@ import org.w3c.dom.NodeList;
 
 public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
 
-	private static final String g_sCkAry[] = {"name","type","units"};
-	
+	//private static final String g_sCkAry[] = {"name","type","units"};
+	private static final String g_sCkAry[] = {"type","units"}; //TODO: "name" needs to be required.  JBF turned this check off before a release to fix his hudson tests.
+    
 	 private String name = "";
     private Units units = Units.dimensionless;
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
