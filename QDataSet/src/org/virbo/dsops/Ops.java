@@ -4953,14 +4953,14 @@ public class Ops {
         
         double binsizex= ( xrange.value(1)-xrange.value(0) ) / nx;
         double binsizey= ( yrange.value(1)-yrange.value(0) ) / ny;
-        MutablePropertyDataSet xtags = DataSetUtil.tagGenDataSet( nx, minx, binsizex, SemanticOps.getUnits(xrange) );        
+        MutablePropertyDataSet xtags = DataSetUtil.tagGenDataSet( nx, minx+binsizex/2, binsizex, SemanticOps.getUnits(xrange) );        
         xtags.putProperty( QDataSet.NAME, x.property(QDataSet.NAME) );
         xtags.putProperty( QDataSet.LABEL, x.property(QDataSet.LABEL) );
         xtags.putProperty( QDataSet.TITLE, x.property(QDataSet.TITLE) );
         xtags.putProperty( QDataSet.TYPICAL_MAX, x.property(QDataSet.TYPICAL_MAX) );
         xtags.putProperty( QDataSet.TYPICAL_MIN, x.property(QDataSet.TYPICAL_MIN) );
         
-        MutablePropertyDataSet ytags = DataSetUtil.tagGenDataSet( ny, miny, binsizey, SemanticOps.getUnits(yrange) );
+        MutablePropertyDataSet ytags = DataSetUtil.tagGenDataSet( ny, miny, binsizey+binsizey/2, SemanticOps.getUnits(yrange) );
         ytags.putProperty( QDataSet.NAME, y.property(QDataSet.NAME) );
         ytags.putProperty( QDataSet.LABEL, y.property(QDataSet.LABEL) );
         ytags.putProperty( QDataSet.TITLE, y.property(QDataSet.TITLE) );
@@ -5009,7 +5009,7 @@ public class Ops {
      * @param ds rank N dataset
      * @param min the min of the first bin.  If min=-1 and max=-1, then automatically set the min and max.
      * @param max the max of the last bin.
-     * @param binsize the size of each bin.
+     * @param binSize the size of each bin.
      * @return a rank 1 dataset with each bin's count.  DEPEND_0 indicates the bin locations.
      */
     public static QDataSet histogram(QDataSet ds, double min, double max, double binSize) {
