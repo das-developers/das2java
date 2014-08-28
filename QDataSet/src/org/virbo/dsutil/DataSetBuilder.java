@@ -45,7 +45,7 @@ public class DataSetBuilder {
     Units[] us= null; // for Rank 1 bundles
     
     /**
-     * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
+     * Create a new builder for a rank 0 dataset.
      * @param rank the number of indeces of the result dataset.
      */
     public DataSetBuilder( int rank ) {
@@ -54,8 +54,9 @@ public class DataSetBuilder {
     }
     
     /**
-     * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
-     * @param rank the number of indeces of the result dataset.
+     * Create a new builder for a rank 1 dataset.
+     * guessRecCount is the guess of dim0 size.  Bad guesses will simply result in an extra array copy.
+     * @param rank must be 1.
      * @param guessRecCount initial allocation for the first dimension.
      */
     public DataSetBuilder( int rank, int guessRecCount ) {
@@ -65,10 +66,11 @@ public class DataSetBuilder {
     }
     
     /**
-     * recCount is the guess of dim0 size.  Bad guesses will result in an extra copy.
-     * @param rank the number of indeces of the result dataset.
+     * Create a new builder for a rank 2 dataset.
+     * guessRecCount is the guess of dim0 size.  Bad guesses will simply result in an extra array copy.
+     * @param rank must be 2.
      * @param guessRecCount initial allocation for the first dimension.
-     * @param dim1 when rank 2 or greater is used.
+     * @param dim1 fixed size of the second index.
      */
     public DataSetBuilder( int rank, int guessRecCount, int dim1 ) {
         this( rank, guessRecCount, dim1, 1 );
@@ -77,11 +79,12 @@ public class DataSetBuilder {
     }
     
     /**
-     * recCount is the guess of dim0 size.  Bad guesses may result in an extra copy.
-     * @param rank the number of indeces of the result dataset.
+     * Create a new builder for a rank 3 dataset.
+     * guessRecCount is the guess of dim0 size.  Bad guesses will simply result in an extra array copy.
+     * @param rank must be 3.
      * @param guessRecCount initial allocation for the first dimension.
-     * @param dim1 when rank 2 or greater is used.
-     * @param dim2 when rank 3 or greater is used.
+     * @param dim1 fixed size of the second index.
+     * @param dim2 fixed size of the third index.
      */
     public DataSetBuilder( int rank, int guessRecCount, int dim1, int dim2 ) {
         this.rank= rank;
