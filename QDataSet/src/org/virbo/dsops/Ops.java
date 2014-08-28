@@ -4879,7 +4879,8 @@ public class Ops {
      * @param dr
      * @param min
      * @param max
-     * @return 
+     * @return two-element rank 1 QDataSet
+     * @see org.virbo.dataset.QDataSet#SCALE_TYPE
      */
     public static QDataSet rescaleRangeLogLin( QDataSet dr, double min, double max ) {
         if ( dr.rank()!=1 ) {
@@ -4922,12 +4923,13 @@ public class Ops {
     
 
     /**
-     * make a 2-D histogram of the data in x and y.  For example<tt>
-     * x= randn(10000)+1
-     * y= randn(10000)+4
-     * zz= histogram2d( x,y, [30,30], dataset([0,8]), dataset([-2,6]) )
-     * plot( zz )
-     * </tt>
+     * make a 2-D histogram of the data in x and y.  For example
+     *<blockquote><pre><small>{@code
+     *x= randn(10000)+1
+     *y= randn(10000)+4
+     *zz= histogram2d( x,y, [30,30], dataset([0,8]), dataset([-2,6]) )
+     *plot( zz )
+     *}</small></pre></blockquote>
      * The result will be a rank 2 dataset with DEPEND_0 and DEPEND_1 indicating
      * the bin locations.
      * @param x the x values
@@ -4936,6 +4938,8 @@ public class Ops {
      * @param xrange a rank 1 2-element bounds dataset, so that Units can be specified.
      * @param yrange a rank 1 2-element bounds dataset, so that Units can be specified.
      * @return a rank 2 dataset
+     * @see #histogram(org.virbo.dataset.QDataSet, double, double, double) 
+     * @see org.virbo.dsutil.Reduction#histogram2D(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet histogram2d( QDataSet x, QDataSet y, int[] bins, QDataSet xrange, QDataSet yrange ) {
 
