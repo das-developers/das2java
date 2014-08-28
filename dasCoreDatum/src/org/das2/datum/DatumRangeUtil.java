@@ -895,7 +895,7 @@ public class DatumRangeUtil {
                 for ( int i=0; i<beforeToUnresolved.size(); i++ ) {
                     while( ts1[idx]!=-1 ) idx++;
                     ts1[idx]= parseInt((String)beforeToUnresolved.get(i));
-                    String[] s= format.split("UNRSV1"+(i+1));
+                    String[] s= format.split("UNRSV1"+(i+1),-2);
                     format= s[0]+formatCodes[idx]+s[1];
                 }
                 beforeToUnresolved.removeAll(beforeToUnresolved);
