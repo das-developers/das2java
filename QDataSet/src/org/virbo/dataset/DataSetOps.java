@@ -421,7 +421,6 @@ public class DataSetOps {
         }
 
         int n = (int) Math.ceil((max - min) / binsize);
-        //TODO: half-bin offset needs to be corrected.  Correcting it by binsize/2  caused problems with autoranging and hudson.
         
         MutablePropertyDataSet tags = DataSetUtil.tagGenDataSet(n, min + binsize/2 , binsize, (Units)ds.property(QDataSet.UNITS) );
         
