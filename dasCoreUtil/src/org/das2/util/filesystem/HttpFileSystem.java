@@ -179,16 +179,8 @@ public class HttpFileSystem extends WebFileSystem {
                         logger.log( Level.SEVERE, String.format( "%d: folder not found: %s\n%s", code, root, msg ), ex );
                         consumeStream( urlc.getErrorStream() );
                         throw (FileNotFoundException)ex;
-                    } else if ( code==403 ) {
-                        // leave this as-is for now, because the user might be on a network that isn't permitted now.
-                        logger.log( Level.SEVERE, String.format( "%d: failed to connect to %s\n%s", code, root, msg ), ex );
-                        if ( FileSystem.settings().isAllowOffline() ) {
-                            logger.info("remote filesystem is offline, allowing access to local cache.");
-                        } else {
-                            throw new FileSystemOfflineException("" + code + ": " + msg );
-                        }
-                        consumeStream( urlc.getErrorStream() );
                     } else {
+                        // Note this may still be code 403.  We still enter the same branch for now, because the user might be on a network that isn't permitted now.
                         logger.log( Level.SEVERE, String.format( "%d: failed to connect to %s\n%s", code, root, msg ), ex );
                         if ( FileSystem.settings().isAllowOffline() ) {
                             logger.info("remote filesystem is offline, allowing access to local cache.");
