@@ -1349,6 +1349,13 @@ public class DatumRangeUtil {
         return new DatumRange( Datum.create(lower), Datum.create(upper) );
     }
     
+    /**
+     * parse the datum range in the context of units.
+     * @param str input like "5 to 15 cm"
+     * @param units unit like Units.km
+     * @return the DatumRange
+     * @throws ParseException 
+     */
     public static DatumRange parseDatumRange( String str, Units units ) throws ParseException {
         if ( units instanceof TimeLocationUnits ) {
             return parseTimeRange( str );
@@ -1391,6 +1398,10 @@ public class DatumRangeUtil {
      * Note px is acceptable, but pt is proper.
      * Ems are rounded to the nearest hundredth.
      * Percents are returned as normal (0-1) and rounded to the nearest thousandth.
+     * @param s the string, like "100%-5hr"
+     * @param result a two-element Datum array with [npos,datum] result[1] provides the units.
+     * @return a two-element Datum array with [npos,datum]
+     * @throws java.text.ParseException
      */
     public static Datum[] parseRescaleStr( String s, Datum[] result ) throws ParseException {
         String[] ss= s.split("%",-2);
@@ -1515,11 +1526,14 @@ public class DatumRangeUtil {
     }
     
     /**
-     * Like DatumRange.intesects, but returns a zero-width range when the two do
+     * Like DatumRange.intersects, but returns a zero-width range when the two do
      * not intersect.  When they do not intersect, the min or max of the first range
      * is returned, depending on whether or not the second range is above or below
      * the first range.  Often this allows for simpler code.
-     * @see DatumRange.intersection.
+     * @param range the first DatumRange
+     * @param include the second DatumRange
+     * @return a DatumRange that contains parts of both ranges, or is zero-width.
+     * @see DatumRange#intersection(org.das2.datum.DatumRange) 
      */
     public static DatumRange sloppyIntersection( DatumRange range, DatumRange include ) {
         Units units= range.getUnits();
