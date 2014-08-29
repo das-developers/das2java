@@ -164,7 +164,13 @@ public class DasLogger {
             h= new Handler() {
                 @Override
                 public void publish(LogRecord record) {
-                    System.err.println( MessageFormat.format( record.getMessage(), record.getParameters() ) + " "+record.getLevel() );
+                    if ( record.getMessage()!=null ) {
+                        System.err.println( MessageFormat.format( record.getMessage(), record.getParameters() ) + " "+record.getLevel() );
+                    } else if ( record.getThrown()!=null ) {
+                        System.err.println( record.getThrown() );
+                    } else {
+                        System.err.println( "log record with no message: " + record );
+                    }
                 }
                 public void flush() { }
                 public void close() throws SecurityException {  }
