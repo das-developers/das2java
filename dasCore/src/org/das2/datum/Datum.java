@@ -518,7 +518,7 @@ public class Datum implements Comparable<Datum> {
      * Returns a Datum with the given value and limited to the given resolution.
      * When formatted, the formatter should use this resolution to limit the 
      * precision displayed.
-     * @param value the magnitude of the datum, or value to be interpretted in the context of units.
+     * @param value the magnitude of the datum, or value to be interpreted in the context of units.
      * @param units the units of the datum.
      * @param resolution the limit to which the datum's precision is known.
      * @return a Datum with the given units and value.
@@ -533,7 +533,7 @@ public class Datum implements Comparable<Datum> {
      * Returns a Datum with the given value and limited to the given resolution.
      * When formatted, the formatter should use this resolution to limit the 
      * precision displayed.
-     * @param value the magnitude of the datum, or value to be interpretted in the context of units.
+     * @param value the magnitude of the datum, or value to be interpreted in the context of units.
      * @param units the units of the datum.
      * @param resolution the limit to which the datum's precision is known.
      * @param formatter the DatumFormatter that should be used to format this datum, which will be

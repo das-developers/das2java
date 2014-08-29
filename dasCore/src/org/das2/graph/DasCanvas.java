@@ -201,10 +201,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private static FileFilter getFileNameExtensionFilter(final String description, final String ext) {
         return new FileFilter() {
 
+				@Override
             public boolean accept(File f) {
                 return f.isDirectory() || f.toString().endsWith(ext);
             }
 
+				@Override
             public String getDescription() {
                 return description;
             }
@@ -213,6 +215,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     private static File currentFile;
     public static final Action SAVE_AS_PNG_ACTION = new CanvasAction("Save as PNG") {
 
+		  @Override
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Write to PNG");
@@ -245,6 +248,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     };
     public static final Action SAVE_AS_SVG_ACTION = new CanvasAction("Save as SVG") {
 
+		  @Override
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setApproveButtonText("Select File");
@@ -278,6 +282,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     };
     public static final Action SAVE_AS_PDF_ACTION = new CanvasAction("Save as PDF") {
 
+		  @Override
         public void actionPerformed(ActionEvent e) {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setApproveButtonText("Select File");
@@ -311,12 +316,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     };
     public static final Action EDIT_DAS_PROPERTIES_ACTION = new AbstractAction("DAS Properties") {
 
+		  @Override
         public void actionPerformed(ActionEvent e) {
             org.das2.DasProperties.showEditor();
         }
     };
     public static final Action PRINT_ACTION = new CanvasAction("Print...") {
 
+		  @Override
         public void actionPerformed(ActionEvent e) {
             Printable p = currentCanvas.getPrintable();
             PrinterJob pj = PrinterJob.getPrinterJob();
@@ -341,15 +348,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     };
 
-    public void setBounds(int x, int y, int width, int height) {
-        super.setBounds(x, y, width, height);
-    }
-
-    public void invalidate() {
-        super.invalidate();
-    }
     public static final Action ABOUT_ACTION = new CanvasAction("About") {
 
+		  @Override
         public void actionPerformed(ActionEvent e) {
             String aboutContent = AboutUtil.getAboutHtml();
 
@@ -527,6 +528,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /** simply returns getPreferredSize().
      * @return getPreferredSize()
      */
+	 @Override
     public Dimension getMaximumSize() {
         return getPreferredSize();
     }
@@ -534,6 +536,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /** paints the canvas itself.  If printing, stamps the date on it as well.
      * @param gl the Graphics object
      */
+	 @Override
     protected void paintComponent(Graphics g1) {
         logger.fine("entering DasCanvas.paintComponent");
 
@@ -585,6 +588,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param pageIndex should be 0, since the image will be on one page.
      * @return Printable.PAGE_EXISTS or Printable.NO_SUCH_PAGE
      */
+	 @Override
     public int print(Graphics printGraphics, PageFormat format, int pageIndex) {
 
         if (pageIndex != 0) return NO_SUCH_PAGE;
@@ -625,6 +629,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      */
     protected static class RowColumnLayout implements LayoutManager {
 
+		  @Override
         public void layoutContainer(Container target) {
             synchronized (target.getTreeLock()) {
                 int count = target.getComponentCount();
@@ -640,17 +645,21 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
 
+		  @Override
         public Dimension minimumLayoutSize(Container target) {
             return new Dimension(0, 0);
         }
 
+		  @Override
         public Dimension preferredLayoutSize(Container target) {
             return new Dimension(400, 300);
         }
 
+		  @Override
         public void addLayoutComponent(String name, Component comp) {
         }
 
+		  @Override
         public void removeLayoutComponent(Component comp) {
         }
     }
@@ -664,6 +673,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
 
+	 @Override
     public void print(Graphics g) {
         synchronized (this) {
             if (printingThreads == null) {
@@ -1011,6 +1021,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param constraints
      * @param index
      */
+	 @Override
     protected void addImpl(Component comp, Object constraints, int index) {
         if (comp == null) {
             org.das2.util.DasDie.println("NULL COMPONENT");
@@ -1157,6 +1168,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @return
      * @param document
      */
+	 @Override
     public Element getDOMElement(Document document) {
         Element element = document.createElement("canvas");
         Dimension size = getPreferredSize();
@@ -1340,6 +1352,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * from this container.
      * @param     index   the index of the component to be removed.
      */
+	 @Override
     public void remove(int index) {
         Component comp = this.getComponent(index);
         super.remove(index);
@@ -1403,6 +1416,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             return (nx > ny ? (b ? DasAxis.TOP : DasAxis.RIGHT) : (b ? DasAxis.LEFT : DasAxis.BOTTOM));
         }
 
+		  @Override
         protected int canAccept(DataFlavor[] flavors, int x, int y, int action) {
             glassPane.setAccepting(true);
             List flavorList = java.util.Arrays.asList(flavors);
@@ -1439,6 +1453,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             return -1;
         }
 
+		  @Override
         protected void done() {
             glassPane.setAccepting(false);
             if (glassPane.target != null) {
@@ -1448,6 +1463,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
 
+		  @Override
         protected boolean importData(Transferable t, int x, int y, int action) {
             boolean success = false;
             try {
@@ -1491,6 +1507,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             return success;
         }
 
+		  @Override
         protected Transferable getTransferable(int x, int y, int action) {
             DasCanvasComponent component = DasCanvas.this.getCanvasComponentAt(x, y);
             if (component instanceof DasColorBar) {
@@ -1504,6 +1521,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
 
+		  @Override
         protected void exportDone(Transferable t, int action) {
         }
     }
@@ -1556,6 +1574,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             this.p2 = p2;
         }
 
+		  @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             if (blocking) {
@@ -1620,24 +1639,31 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
             }
         }
 
+		  @Override
         public void mouseClicked(MouseEvent e) {
         }
 
+		  @Override
         public void mouseDragged(MouseEvent e) {
         }
 
+		  @Override
         public void mouseEntered(MouseEvent e) {
         }
 
+		  @Override
         public void mouseExited(MouseEvent e) {
         }
 
+		  @Override
         public void mouseMoved(MouseEvent e) {
         }
 
+		  @Override
         public void mousePressed(MouseEvent e) {
         }
 
+		  @Override
         public void mouseReleased(MouseEvent e) {
         }
 
@@ -1645,6 +1671,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
          * See the class description for {@link KeyEvent} for a definition of
          * a key pressed event.
          */
+		  @Override
         public void keyPressed(KeyEvent e) {
         }
 
@@ -1652,6 +1679,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
          * See the class description for {@link KeyEvent} for a definition of
          * a key released event.
          */
+		  @Override
         public void keyReleased(KeyEvent e) {
         }
 
@@ -1659,6 +1687,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
          * See the class description for {@link KeyEvent} for a definition of
          * a key typed event.
          */
+		  @Override
         public void keyTyped(KeyEvent e) {
         }
     }
@@ -1826,6 +1855,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /** TODO
      * @return
      */
+	 @Override
     public FormBase getForm() {
         Component parent = getParent();
         if (parent instanceof FormComponent) {
@@ -1837,6 +1867,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /** TODO
      * @return
      */
+	 @Override
     public boolean getEditingMode() {
         return editable;
     }
@@ -1844,6 +1875,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /** TODO
      * @param b
      */
+	 @Override
     public void setEditingMode(boolean b) {
         if (editable == b) {
             return;
@@ -1855,6 +1887,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /** TODO
      * @return
      */
+	 @Override
     public org.das2.util.DnDSupport getDnDSupport() {
         return dndSupport;
     }
@@ -1866,6 +1899,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param evt
      * @return
      */
+	 @Override
     public boolean startDrag(int x, int y, int action, java.awt.event.MouseEvent evt) {
         for (int i = 0; i < getComponentCount(); i++) {
             if (getComponent(i).getBounds().contains(x, y)) {
@@ -1879,6 +1913,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
     /** TODO
      * @return
      */
+	 @Override
     public String getDasName() {
         return dasName;
     }
@@ -1887,6 +1922,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @param name
      * @throws DasNameException
      */
+	 @Override
     public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
@@ -1903,6 +1939,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         this.firePropertyChange("name", oldName, name);
     }
 
+	 @Override
     public void deregisterComponent() {
         DasApplication app = getDasApplication();
         if (app != null) {
@@ -1970,6 +2007,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
 
+	 @Override
     public DasApplication getDasApplication() {
         Container p = getParent();
         if (p instanceof FormComponent) {
@@ -1979,6 +2017,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
 
+	 @Override
     public void registerComponent() throws org.das2.DasException {
         try {
             DasApplication app = getDasApplication();
@@ -2131,6 +2170,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         /** TODO
          * @param e
          */
+		  @Override
         public void propertyChange(PropertyChangeEvent e) {
             if (e.getSource() == row) {
                 rc.y = (int) Math.floor(row.getDMinimum() + 0.5);
@@ -2145,6 +2185,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
          * @param o
          * @return
          */
+		  @Override
         public boolean equals(Object o) {
             if (o instanceof Cell) {
                 Cell box = (Cell) o;
@@ -2156,6 +2197,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         /** TODO
          * @return
          */
+		  @Override
         public String toString() {
             return "{" + row.getDasName() + " x " + column.getDasName() + ": " + rc.toString() + "}";
         }
@@ -2278,10 +2320,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         revalidate();
     }
 
+	 @Override
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
     }
 
+	 @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         switch (orientation) {
             case SwingConstants.HORIZONTAL:
@@ -2293,6 +2337,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
 
+	 @Override
     public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
         switch (orientation) {
             case SwingConstants.HORIZONTAL:
@@ -2304,10 +2349,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
         }
     }
 
+	 @Override
     public boolean getScrollableTracksViewportWidth() {
         return fitted;
     }
 
+	 @Override
     public boolean getScrollableTracksViewportHeight() {
         return fitted;
     }

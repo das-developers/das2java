@@ -1,8 +1,7 @@
 /* File: DasColumn.java
- * Copyright (C) 2002-2003 The University of Iowa
- * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
- *             Jessica Swanner <jessica@space.physics.uiowa.edu>
- *             Edward E. West <eew@space.physics.uiowa.edu>
+ * Copyright (C) 2002-2014 The University of Iowa
+ * Created by: Jeremy Faden <jeremy-faden@space.physics.uiowa.edu>
+ *             Edward E. West <edward-west@space.physics.uiowa.edu>
  *
  * This file is part of the das2 library.
  *
@@ -31,23 +30,48 @@ import java.text.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-/**
- *
- * @author  jbf
+/** Define a vertical region on a DasCanvas.
+ * Extends from the top to the bottom of the canvas.  Canvas components such as
+ * plots, axes, colorbars and labels use DasColumns and DasRows for positioning.
+ * 
+ * @author jbf
+ * @author eew
+ * @since 2.0
  */
 public class DasColumn extends DasDevicePosition {
-    
-    public DasColumn(DasCanvas parent, double left, double right) {
-        super(parent,left,right,true);
+
+	/** Create a new vertical region on a DasCanvas.
+	 * 
+	 * @param parent The canvas on which the region will be defined
+	 * @param rLeft a value between 0.0 and 1.0 defining the left boundary of the column
+	 * @param rRight a value between 0.0 and 1.0 defining the right boundary of the column
+	 */
+    public DasColumn(DasCanvas parent, double rLeft, double rRight)
+	 {
+        super(parent,rLeft,rRight,true);
     }
     
-    public DasColumn( DasCanvas canvas, DasColumn parent, double nMin, double nMax,
-            double emMin, double emMax, int ptMin, int ptMax ) {
-        super( canvas, true, parent, nMin, nMax, emMin, emMax, ptMin, ptMax );
+	 /** Create a new vertical region on a DasCanvas
+	  * 
+	  * @param canvas The canvas on which the region will be defined
+	  * @param parent If not null, the column is defined relative to another column.  So
+	  *        rMin = 0.0 is the left position of the parent column and rMax = 1.0 is the
+	  *        right position of the parent column.
+	  * @param rLeft a value between 0.0 and 1.0 defining the left boundary of the column
+	  * @param rRight a value between 0.0 and 1.0 defining the right boundary of the column
+	  * @param emMin Offset from rLeft in "M's", adds with ptMin
+	  * @param emMax Offset from rRight in "M's", adds with ptMax
+	  * @param ptMin Offset from rLeft in pixels, adds with emMin
+	  * @param ptMax Offset from rRight in pixels, adds with emMax
+	  */
+    public DasColumn(DasCanvas canvas, DasColumn parent, double rLeft, double rRight,
+                     double emMin, double emMax, int ptMin, int ptMax )
+	 {
+        super( canvas, true, parent, rLeft, rRight, emMin, emMax, ptMin, ptMax );
     }
     
     
-    /**
+    /** Makes a new DasColumn by parsing a formatted string
      * makes a new DasColumn by parsing a string like "100%-5em+3pt" to get the offsets.
      * The three qualifiers are "%", "em", and "pt", but "px" is allowed as well 
      * as surely people will use that by mistake.  If an offset or the normal position
@@ -59,7 +83,9 @@ public class DasColumn extends DasDevicePosition {
      * @param maxStr a string like "100%-7em"
      * @throws IllegalArgumentException if the strings cannot be parsed
      */
-    public static DasColumn create( DasCanvas canvas, DasColumn parent, String minStr, String maxStr ) {
+    public static DasColumn create(DasCanvas canvas, DasColumn parent, String minStr, 
+	                                String maxStr ) 
+	 {
         double[] min, max;
         try {
             min= parseFormatStr( minStr );

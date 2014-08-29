@@ -33,7 +33,7 @@ import java.nio.channels.*;
  * is similar to java.io.File, except that it can describe files on remote
  * file systems like an ftp site.</p>
  *
- * <p>Note: this is modelled after the NetBeans fileSystem FileObject, with the
+ * <p>Note: this is modeled after the NetBeans fileSystem FileObject, with the
  * thought that we might use it later. </p>
  * 
  * <p>TODO: investigate using javax.tools.FileObject.
