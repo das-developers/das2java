@@ -47,6 +47,7 @@ import org.das2.datum.Units;
 import org.das2.system.DasLogger;
 import java.text.ParseException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,6 +65,7 @@ public class DataSetStreamHandler implements StreamHandler {
     int taskSize= -1;
     int packetCount= 0;
     Datum xTagMax= null;
+	 boolean bReadPkts = true;
     
     private static final Logger logger= DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
     private boolean monotonic= true; // generally streams are monotonic, so check for monotonicity.
@@ -73,6 +75,7 @@ public class DataSetStreamHandler implements StreamHandler {
         this.monitor= monitor==null ? new NullProgressMonitor() : monitor;
     }
     
+	 @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         logger.finest("got stream descriptor");
         this.sd = sd;
@@ -104,10 +107,11 @@ public class DataSetStreamHandler implements StreamHandler {
             
         }
         if ( ( o=sd.getProperty("pid") )!=null ) {
-            logger.fine("stream pid="+o);
+            logger.log(Level.FINE, "stream pid={0}", o);
         }
     }
     
+	 @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         logger.finest("got packet descriptor");
         if (delegate == null) {
@@ -123,8 +127,19 @@ public class DataSetStreamHandler implements StreamHandler {
             delegate.packetDescriptor(pd);
         }
     }
+
+	 public void setReadPackets(boolean b){
+		 bReadPkts = b;
+	 }
+
+	 public boolean getReadPackets(){
+		 return bReadPkts;
+	 }
     
+	 @Override
     public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
+		 if(!bReadPkts) return;
+		 
         logger.finest("got packet");
         ensureNotNullDelegate();
         if ( xTagMax==null || xTag.ge( this.xTagMax ) ) {
@@ -139,6 +154,7 @@ public class DataSetStreamHandler implements StreamHandler {
         }
     }
     
+	 @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         logger.finest("got streamClosed");
         if (delegate != null) {
@@ -146,24 +162,45 @@ public class DataSetStreamHandler implements StreamHandler {
         }
     }
     
+	 @Override
     public void streamException(StreamException se) throws StreamException {
         logger.finest("got stream exception");
     }
     
+	 @Override
     public void streamComment(StreamComment sc) throws StreamException {
-        logger.finest("got stream comment: "+sc);
-        if ( sc.getType().equals(sc.TYPE_TASK_PROGRESS) && taskSize!=-1 ) {
-            if ( !monitor.isCancelled() ) monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );
-        } else if ( sc.getType().matches(sc.TYPE_LOG) ) {
+		logger.log(Level.FINEST, "got stream comment: {0}", sc);
+		  		  
+		if (sc.getType().equals(sc.TYPE_TASK_SIZE)){
+			if(! monitor.isCancelled()){
+				taskSize = Integer.parseInt(sc.getValue());
+                                monitor.setTaskSize(taskSize);
+                                monitor.started();
+			}
+			return;
+		}
+		  
+		if ( sc.getType().equals(sc.TYPE_TASK_PROGRESS) ) {  
+         if ( taskSize != -1 && !monitor.isCancelled() ) 
+				monitor.setTaskProgress( Long.parseLong(sc.getValue() ) );
+			return;
+		}
+		  
+		  if ( sc.getType().matches(sc.TYPE_LOG) ) {
             String level= sc.getType().substring(4);
             Level l= Level.parse(level.toUpperCase());
-            logger.log(l,sc.getValue());
+            if ( l.intValue()>Level.FINE.intValue() ) {
+                logger.log(Level.FINE,sc.getValue());                
+            } else {
+                logger.log(l,sc.getValue());
+            }
             monitor.setProgressMessage(sc.getValue());
         }
     }
     
     public DataSet getDataSet() {
         if (delegate == null) {
+            System.err.println("never established delegate, which might mean the stream contains no packets.");
             return null;
         } else {
             return delegate.getDataSet();
@@ -193,15 +230,18 @@ public class DataSetStreamHandler implements StreamHandler {
         private VectorDataSetBuilder builder;
         
         private DatumRange validRange=null;
-        
-        private double[] doubles = new double[1];
-        
+
         private VectorDataSetStreamHandler(PacketDescriptor pd) throws StreamException {
             StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(0);
             Datum base = pd.getXDescriptor().getBase();
             Units xUnits = base == null ? pd.getXDescriptor().getUnits() : base.getUnits();
             Units yUnits = y.getUnits();
             builder = new VectorDataSetBuilder(xUnits,yUnits);
+            builder.addProperties( Collections.singletonMap( DataSet.PROPERTY_Y_LABEL, y.getProperty("name") ));
+            for ( int i=1; i<pd.getYCount(); i++ ) {
+                StreamMultiYDescriptor smyd= (StreamMultiYDescriptor)pd.getYDescriptor(i);
+                builder.addProperties( Collections.singletonMap( smyd.getName()+ "." + DataSet.PROPERTY_Y_LABEL, smyd.getName()));
+            }
             String srange= (String)y.getProperty("valid_range");
             if ( srange!=null ) {
                 try {
@@ -213,9 +253,11 @@ public class DataSetStreamHandler implements StreamHandler {
             this.packetDescriptor(pd);
         }
         
+		  @Override
         public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
             Datum base = pd.getXDescriptor().getBase();
             double x = getXWithBase(base, xTag);
+            
             for (int i = 0; i < pd.getYCount(); i++) {
                 if (pd.getYDescriptor(i) instanceof StreamMultiYDescriptor) {
                     StreamMultiYDescriptor my = (StreamMultiYDescriptor)pd.getYDescriptor(i);
@@ -230,29 +272,44 @@ public class DataSetStreamHandler implements StreamHandler {
                     } else {
                         builder.insertY(x, y);
                     }
-                    
+                    Map<String,Object> props= my.getProperties();
+                    for ( Entry<String,Object> p: props.entrySet() ) {
+                        if ( i==0 ) {
+                            builder.setProperty( p.getKey(), p.getValue() );                            
+                        } else {
+                            builder.setProperty( my.getName()+"."+p.getKey(), p.getValue() );
+                        }
+                    }
                 } else {
                     throw new StreamException("Mixed data sets are not currently supported");
                 }
             }
+            //TODO: see TableDataSet below, where PacketDescriptor can have properties.
+            
         }
         
+		  @Override
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
-            logger.fine("got packet descriptor: "+pd);
+            logger.log(Level.FINE, "got packet descriptor: {0}", pd);
             for (int i = 1; i < pd.getYCount(); i++) {
                 StreamMultiYDescriptor y = (StreamMultiYDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(),y.getUnits());
             }
         }
         
+		  @Override
         public void streamClosed(StreamDescriptor sd) throws StreamException {}
         
+		  @Override
         public void streamDescriptor(StreamDescriptor sd) throws StreamException {}
         
+		  @Override
         public void streamException(StreamException se) throws StreamException {}
         
+		  @Override
         public void streamComment(StreamComment sc) throws StreamException {}
         
+		  @Override
         public DataSet getDataSet() {
             builder.addProperties(sd.getProperties());
             builder.addProperties(extraProperties);
@@ -278,6 +335,7 @@ public class DataSetStreamHandler implements StreamHandler {
             this.packetDescriptor(pd);
         }
         
+		  @Override
         public void packet(PacketDescriptor pd, Datum xTag, DatumVector[] vectors) throws StreamException {
             StreamYScanDescriptor yscan = (StreamYScanDescriptor)pd.getYDescriptor(0);
             Datum base = pd.getXDescriptor().getBase();
@@ -290,36 +348,43 @@ public class DataSetStreamHandler implements StreamHandler {
             builder.insertYScan(x, y, vectors, planeIDs);
         }
         
+		  @Override
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
             StreamYScanDescriptor y = (StreamYScanDescriptor)pd.getYDescriptor(0);
             for (int i = 1; i < pd.getYCount(); i++) {
                 y = (StreamYScanDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(), y.getZUnits());
             }
-            Map p= pd.getProperties();
-            for ( Iterator i=p.keySet().iterator(); i.hasNext(); ) {
-                String key= (String)i.next();
+            Map<String,String> p= pd.getProperties();
+            for ( Entry e: p.entrySet() ) {
+                String key= (String)e.getKey();
                 Object p0= builder.getProperty(key);
                 if ( p0==null ) {
-                    builder.setProperty( key, p.get(key) );
+                    builder.setProperty( key, e.getValue() );
                 } else {
-                    if ( ! p0.equals(p.get(key) ) ) {
+                    if ( ! p0.equals( e.getValue() ) ) {
                         int i2;
                         for ( i2=1; builder.getProperty(""+key+"."+i2)!=null; i2++ ) { /* nothing */ }
-                        builder.setProperty( ""+key+"."+i2, p.get(key) );
+                        builder.setProperty( ""+key+"."+i2, e.getValue() );
                     }
                 }
             }
+            //TODO: see VectorDataSet above, where each plane can have properties.
         }
         
+		  @Override
         public void streamClosed(StreamDescriptor sd) throws StreamException {}
         
+		  @Override
         public void streamDescriptor(StreamDescriptor sd) throws StreamException {}
         
+		  @Override
         public void streamException(StreamException se) throws StreamException {}
         
+		  @Override
         public void streamComment(StreamComment sc) throws StreamException {}
         
+		  @Override
         public DataSet getDataSet() {
             builder.addProperties(sd.getProperties());
             builder.addProperties(extraProperties);
