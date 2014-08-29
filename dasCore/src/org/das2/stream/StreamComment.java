@@ -32,7 +32,8 @@ import org.w3c.dom.*;
 public class StreamComment {
     
     Element element;
-    
+	 
+    public final String TYPE_TASK_SIZE="taskSize";
     public final String TYPE_TASK_PROGRESS="taskProgress";
     public final String TYPE_LOG="log:(.*)";
     
@@ -43,5 +44,6 @@ public class StreamComment {
     public String getType() { return element.getAttribute("type"); }
     public String getValue() { return element.getAttribute("value"); }
     
+	 @Override
     public String toString() { return "stream comment: "+getType()+"="+getValue(); }
 }
