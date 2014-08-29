@@ -22,63 +22,62 @@
  */
 package org.das2.graph;
 
-import org.das2.event.MouseModule;
-import org.das2.event.TimeRangeSelectionEvent;
-import org.das2.event.TimeRangeSelectionListener;
-import org.das2.event.HorizontalRangeSelectorMouseModule;
-import org.das2.event.DataRangeSelectionEvent;
-import org.das2.event.DataRangeSelectionListener;
-import org.das2.event.VerticalRangeSelectorMouseModule;
-import org.das2.event.ZoomPanMouseModule;
-import org.das2.dataset.DataSetUpdateEvent;
-import org.das2.dataset.DataSetDescriptor;
-import org.das2.dataset.VectorDataSet;
-import org.das2.dataset.DataSetUpdateListener;
-import org.das2.dataset.DataSetUtil;
-import org.das2.datum.format.DefaultDatumFormatterFactory;
-import org.das2.datum.DatumRange;
-import org.das2.datum.format.DatumFormatter;
-import org.das2.datum.Units;
-import org.das2.datum.DatumVector;
-import org.das2.datum.Datum;
-import org.das2.datum.DatumRangeUtil;
-import org.das2.datum.InconvertibleUnitsException;
-import org.das2.datum.TimeLocationUnits;
-import org.das2.datum.TimeUtil;
-import org.das2.DasProperties;
-import org.das2.util.GrannyTextRenderer;
-import org.das2.util.DasExceptionHandler;
-import org.das2.util.DasMath;
-import org.das2.util.monitor.NullProgressMonitor;
-import org.das2.DasApplication;
-import org.das2.DasNameException;
-import org.das2.DasPropertyException;
-import org.das2.NameContext;
-import org.das2.dasml.FormBase;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
-
-import javax.swing.border.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.*;
-import javax.swing.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.*;
 
-import org.das2.system.DasLogger;
-import java.util.logging.Logger;
+import javax.swing.*;
+import javax.swing.border.*;
+import org.das2.DasApplication;
 import org.das2.DasException;
+import org.das2.DasNameException;
+import org.das2.DasProperties;
+import org.das2.DasPropertyException;
+import org.das2.NameContext;
+import org.das2.dasml.FormBase;
+import org.das2.dataset.DataSet;
+import org.das2.dataset.DataSetDescriptor;
+import org.das2.dataset.DataSetUpdateEvent;
+import org.das2.dataset.DataSetUpdateListener;
+import org.das2.dataset.DataSetUtil;
+import org.das2.dataset.VectorDataSet;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.DatumVector;
+import org.das2.datum.InconvertibleUnitsException;
+import org.das2.datum.TimeLocationUnits;
+import org.das2.datum.TimeUtil;
+import org.das2.datum.Units;
+import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DatumFormatterFactory;
+import org.das2.datum.format.DefaultDatumFormatterFactory;
 import org.das2.datum.format.TimeDatumFormatterFactory;
+import org.das2.event.DataRangeSelectionEvent;
+import org.das2.event.DataRangeSelectionListener;
+import org.das2.event.HorizontalRangeSelectorMouseModule;
+import org.das2.event.MouseModule;
+import org.das2.event.TimeRangeSelectionEvent;
+import org.das2.event.TimeRangeSelectionListener;
+import org.das2.event.VerticalRangeSelectorMouseModule;
+import org.das2.event.ZoomPanMouseModule;
+import org.das2.system.DasLogger;
+import org.das2.util.DasExceptionHandler;
+import org.das2.util.DasMath;
 import org.das2.util.Entities;
+import org.das2.util.GrannyTextRenderer;
+import org.das2.util.monitor.NullProgressMonitor;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /** 
  * One dimensional axis component that transforms data to device space and back, 
@@ -1379,7 +1378,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             for (int i = 0; i < tcaData.length; i++) {
                 baseLine += lineHeight;
-                idlt.setString(g, (String) tcaData[i].getProperty(PROP_LABEL));
+                idlt.setString(g, (String) tcaData[i].getProperty(DataSet.PROPERTY_Y_LABEL));
                 width = (int) Math.floor(idlt.getWidth() + 0.5);
                 leftEdge = rightEdge - width;
                 idlt.draw(g, (float) leftEdge, (float) baseLine);
@@ -2056,7 +2055,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 idlt.setString(tickLabelFont, "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
                 for (int i = 0; i < tcaData.length; i++) {
-                    idlt.setString(tickLabelFont, (String) tcaData[i].getProperty(PROP_LABEL));
+                    idlt.setString(tickLabelFont, (String) tcaData[i].getProperty(DataSet.PROPERTY_Y_LABEL));
                     int width = (int) Math.floor(idlt.getWidth() + 0.5);
                     tcaLabelWidth = Math.max(tcaLabelWidth, width);
                 }
