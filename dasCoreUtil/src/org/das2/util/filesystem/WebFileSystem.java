@@ -446,21 +446,25 @@ public abstract class WebFileSystem extends FileSystem {
                 logger.log(Level.FINE, "this thread will download {0}.", filename);
                 downloads.put(filename, monitor);
                 monitor.started();  // this is necessary for the other monitors
+                return new LocalReentrantLock(filename);
+            }
+        }
+    }
+    
+    private class LocalReentrantLock extends ReentrantLock {
+        String filename;
+        private LocalReentrantLock( String filename ) {
+            this.filename= filename;
+        }
+        @Override
+        public void lock() {
+        }
 
-                return new ReentrantLock() {
-                    @Override
-                    public void lock() {
-
-                    }
-                    @Override
-                    public void unlock() {
-                        synchronized (downloads) {
-                            downloads.remove(filename);
-                            downloads.notifyAll();
-                        }
-                    }
-                };
-
+        @Override
+        public void unlock() {
+            synchronized (downloads) {
+                downloads.remove(filename);
+                downloads.notifyAll();
             }
         }
     }
