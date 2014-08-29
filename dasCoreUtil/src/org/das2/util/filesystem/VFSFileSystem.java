@@ -28,8 +28,9 @@ import org.das2.util.monitor.CancelledOperationException;
 //import org.apache.commons.vfs.provider.ftp.FtpFileSystemConfigBuilder;
 
 /**
- *
- * @author ed
+ * FileSystem provides additional abstraction to Apache VFS to implement das2 FileSystems, and provide
+ * SFTP access.
+ * @author Ed Jackson
  */
 public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
 
@@ -279,11 +280,11 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
      * @return MutatorLock.  The client should call mutatorLock.unlock() when the download is complete
      */
     protected Lock getDownloadLock(final String filename, File f, ProgressMonitor monitor) throws IOException {
-        logger.finer("" + Thread.currentThread().getName() + " wants download lock for " + filename + " wfs impl " + this.hashCode());
+        logger.log(Level.FINER, "{0} wants download lock for {1} wfs impl {2}", new Object[]{Thread.currentThread().getName(), filename, this.hashCode()});
         synchronized (downloads) {
             ProgressMonitor mon = (ProgressMonitor) downloads.get(filename);
             if (mon != null) { // the webfilesystem is already loading this file, so wait.
-                logger.fine("another thread is downloading " + filename + ", waiting...");
+                logger.log(Level.FINE, "another thread is downloading {0}, waiting...", filename);
                 waitForDownload(monitor, filename);
                 if (f.exists()) {
                     return null;
@@ -291,26 +292,32 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
                     throw new FileNotFoundException("expected to find " + f);
                 }
             } else {
-                logger.fine("this thread will download " + filename + ".");
+                logger.log(Level.FINE, "this thread will download {0}.", filename);
                 downloads.put(filename, monitor);
                 monitor.started();  // this is necessary for the other monitors
-
-                return new ReentrantLock() {
-
-                    public void lock() {
-                    }
-
-                    public void unlock() {
-                        synchronized (downloads) {
-                            downloads.remove(filename);
-                            downloads.notifyAll();
-                        }
-                    }
-                };
-
+                return new LocalReentrantLock(filename);
             }
         }
     }
+
+    private class LocalReentrantLock extends ReentrantLock {
+        String filename;
+        private LocalReentrantLock( String filename ) {
+            this.filename= filename;
+        }
+        @Override
+        public void lock() {
+        }
+
+        @Override
+        public void unlock() {
+            synchronized (downloads) {
+                downloads.remove(filename);
+                downloads.notifyAll();
+            }
+        }
+    }
+    
 
     /**
      * Wait while another thread is downloading the file.
