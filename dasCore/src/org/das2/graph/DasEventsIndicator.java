@@ -29,6 +29,22 @@ public class DasEventsIndicator extends DasPlot implements DataSetUpdateListener
         renderer= new EventsRenderer( dsd ) ;
         addRenderer( renderer );
     }
+	 
+	 public DasEventsIndicator(DasAxis axis, DasAxis yAxis, String planeId ) {
+        super( axis, yAxis );
+        renderer= new EventsRenderer( ) ;
+        addRenderer( renderer );
+    }
+	 
+	 
+	 /** Creates a new instance of a DasEventsIndicator that doesn't auto-request data 
+	  * 
+	  */
+	 public static DasEventsIndicator create(DasAxis xAxis, String planeId){
+		  DasAxis yAxis= new DasAxis( new DatumRange( 0,1, Units.dimensionless ), DasAxis.VERTICAL );
+        yAxis.setVisible(false);
+        return new DasEventsIndicator(xAxis, yAxis, planeId );
+	 }
     
     /**
      * This method replaces the old constructor.  This is unavoidable
