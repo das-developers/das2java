@@ -156,7 +156,10 @@ public class BeansUtil {
     /**
      * Use reflection to get a list of all the property names for the class.
      * The properties are returned in the order specified, and put inherited properties
-     * at the end of the list.  Implement the include/exclude logic.
+     * at the end of the list.  Implement the include/exclude logic.  
+     * 
+     * This will not return write-only descriptors!!!
+     * 
      */
     public static PropertyDescriptor[] getPropertyDescriptors(Class c) {
         Set excludePropertyNames;
@@ -184,7 +187,7 @@ public class BeansUtil {
 
             for (PropertyDescriptor pdthi : pdthis) {
                 boolean isUseable = pdthi.getReadMethod() != null && !excludePropertyNames.contains(pdthi.getName());
-                if (isUseable || (pdthi instanceof IndexedPropertyDescriptor)) {
+                if (isUseable) {
                     propertyList.add(pdthi);
                 }
             }
@@ -197,7 +200,7 @@ public class BeansUtil {
                     for (PropertyDescriptor pdthi : pdthis) {
                         String name = pdthi.getName();
                         boolean isUseable = pdthi.getReadMethod() != null && !excludePropertyNames.contains(name);
-                        if (isUseable || (pdthi instanceof IndexedPropertyDescriptor)) {
+                        if (isUseable) {
                             propertyList.add(pdthi);
                         }
                     }
