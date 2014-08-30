@@ -4964,7 +4964,7 @@ public class Ops {
         xtags.putProperty( QDataSet.TYPICAL_MAX, x.property(QDataSet.TYPICAL_MAX) );
         xtags.putProperty( QDataSet.TYPICAL_MIN, x.property(QDataSet.TYPICAL_MIN) );
         
-        MutablePropertyDataSet ytags = DataSetUtil.tagGenDataSet( ny, miny, binsizey+binsizey/2, SemanticOps.getUnits(yrange) );
+        MutablePropertyDataSet ytags = DataSetUtil.tagGenDataSet( ny, miny+binsizey/2, binsizey, SemanticOps.getUnits(yrange) );
         ytags.putProperty( QDataSet.NAME, y.property(QDataSet.NAME) );
         ytags.putProperty( QDataSet.LABEL, y.property(QDataSet.LABEL) );
         ytags.putProperty( QDataSet.TITLE, y.property(QDataSet.TITLE) );
