@@ -1639,7 +1639,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         if (getOrientation() == BOTTOM && drawTca && tcaData != null) {
             offset += tcaData.length * (tickLabelFont.getSize() + getLineSpacing());
-            offset += tickLabelFont.getSize() + getLineSpacing();
         }
         return offset;
     }
