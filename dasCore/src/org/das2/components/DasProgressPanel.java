@@ -138,6 +138,11 @@ public class DasProgressPanel implements ProgressMonitor {
         if ( label!=null ) setProgressMessage(label);
         return SubTaskMonitor.create( this, start, end, cancelCheckFailures < 2 );
     }
+    
+    public ProgressMonitor getSubtaskMonitor( String label ) {
+        if ( label!=null ) setProgressMessage(label);
+        return SubTaskMonitor.create( this, cancelCheckFailures < 2 );
+    }
 
     private static class MyPanel extends JPanel {
 
