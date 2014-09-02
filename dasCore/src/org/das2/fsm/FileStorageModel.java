@@ -730,7 +730,7 @@ public class FileStorageModel {
      * @throws IOException
      */
     public File[] getBestFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
-        String[] names= getNamesFor( targetRange, true, monitor );
+        String[] names= getNamesFor( targetRange, true, monitor.getSubtaskMonitor("get names") );
         File[] files= new File[names.length];
 
         if ( fileNameMap==null ) fileNameMap= new HashMap();
