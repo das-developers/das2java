@@ -400,13 +400,17 @@ public class DasProgressPanel implements ProgressMonitor {
         componentsInitialized = true;
     }
 
+    StackTraceElement[] stackTrace= null;
+    
     @Override
     public synchronized void finished() {
         if ( finished==true ) {
             logger.warning("monitor finished was called twice!");
+            logger.warning("here was the first call:");
             new Exception().printStackTrace();
         } else {
             logger.fine("enter monitor finished");
+            stackTrace= Thread.currentThread().getStackTrace();
         }
         running = false;
         finished = true;
