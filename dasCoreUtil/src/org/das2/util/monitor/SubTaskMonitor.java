@@ -43,6 +43,11 @@ public class SubTaskMonitor implements ProgressMonitor {
     ProgressMonitor parent;
     long min, max, progress, size;
     String label;
+    
+    /**
+     * echo progress messages up to parent to mimic old behavior.
+     */
+    boolean doEchoToParent= false;
 
     boolean cancelCheck;
     
@@ -69,7 +74,9 @@ public class SubTaskMonitor implements ProgressMonitor {
      * @return 
      */
     public static SubTaskMonitor create( ProgressMonitor parent, boolean cancelChecked ) {
-        return new SubTaskMonitor( parent, -1, -1, cancelChecked );
+        SubTaskMonitor result= new SubTaskMonitor( parent, -1, -1, cancelChecked );
+        result.doEchoToParent= true;  // See sftp://klunk.physics.uiowa.edu:/home/jbf/project/autoplot/script/bugs/1251_subtask_monitor/demo2.jy
+        return result;
     }
 
     public void cancel() {
@@ -125,6 +132,11 @@ public class SubTaskMonitor implements ProgressMonitor {
 
     public void setTaskSize(long taskSize) {
         this.size= taskSize;
+        if ( max==min && min==-1 && doEchoToParent ) {
+            min= 0;
+            max= taskSize;
+            parent.setTaskSize(taskSize);
+        }
     }
 
     public long getTaskSize() {
@@ -144,6 +156,9 @@ public class SubTaskMonitor implements ProgressMonitor {
 
     public void setLabel(String label) {
         this.label= label;
+        if ( this.doEchoToParent ) {
+            parent.setLabel(label);
+        }
     }
 
     public String getLabel() {
@@ -160,10 +175,13 @@ public class SubTaskMonitor implements ProgressMonitor {
     }
 
     /**
-     * these messages are lost.
+     * these messages are lost, unless doEchoToParent is set.
      * @param message 
      */
     public void setProgressMessage(String message) {
+        if( this.doEchoToParent ) {
+            parent.setProgressMessage(message);
+        }
         //parent.setProgressMessage(message);
     }
 
