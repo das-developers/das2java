@@ -132,7 +132,11 @@ public class DasProgressWheel extends AbstractProgressMonitor {
     Timer timer;
     long t0= System.currentTimeMillis();
 
-
+    /**
+     * return the small component that visually shows the wheel.
+     * @param parent
+     * @return 
+     */
     public JComponent getPanel( JComponent parent ) {
         if ( thePanel==null ) {
             thePanel= new MyPanel();
