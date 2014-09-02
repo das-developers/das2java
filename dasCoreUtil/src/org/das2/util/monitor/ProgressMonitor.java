@@ -167,4 +167,12 @@ public interface ProgressMonitor {
      * @return a new progress monitor.  (generally type SubTaskMonitor)
      */
     public ProgressMonitor getSubtaskMonitor( int start, int end, String label);
+    
+    /**
+     * get the subtask monitor when the current task length is indeterminate.  This avoids clients having to
+     * put in dummy numbers that will cause problems in the future.
+     * @param label a label for the subtask, often this is handled as progress message; or null.
+     * @return a new progress monitor.  (generally type SubTaskMonitor)
+     */
+    public ProgressMonitor getSubtaskMonitor( String label );
 }

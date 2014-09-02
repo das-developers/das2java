@@ -131,6 +131,12 @@ public class AbstractProgressMonitor implements ProgressMonitor {
         return SubTaskMonitor.create( this, start, end );
     }
 
+    public ProgressMonitor getSubtaskMonitor(String label) {
+        if ( label!=null ) setProgressMessage(label);
+        return SubTaskMonitor.create( this, true );
+    }
+
+    
     public boolean canBeCancelled() {
         return cancelCheck>0;
     }

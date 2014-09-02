@@ -57,6 +57,16 @@ public class SubTaskMonitor implements ProgressMonitor {
         return new SubTaskMonitor( parent, min, max, cancelChecked );
     }
 
+    /**
+     * mode for when parent is indeterminate
+     * @param parent
+     * @param cancelChecked 
+     * @return 
+     */
+    public static SubTaskMonitor create( ProgressMonitor parent, boolean cancelChecked ) {
+        return new SubTaskMonitor( parent, -1, -1, cancelChecked );
+    }
+
     public void cancel() {
         if ( parent.canBeCancelled() ) {
             parent.cancel();
@@ -91,10 +101,14 @@ public class SubTaskMonitor implements ProgressMonitor {
         if ( cancelCheck ) {
             parent.isCancelled(); // so there is one setTaskProgress for each isCancelled
         }
-        if ( size==-1 ) {
-            parent.setTaskProgress( min );
+        if ( max==min && min==-1 ) {
+            // parent is indeterminate
         } else {
-            parent.setTaskProgress( min + ( max - min ) * position / size );
+            if ( size==-1 ) {
+                parent.setTaskProgress( min );
+            } else {
+                parent.setTaskProgress( min + ( max - min ) * position / size );
+            }
         }
     }
 
@@ -150,9 +164,18 @@ public class SubTaskMonitor implements ProgressMonitor {
      */
     public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
         //setProgressMessage(label);
-        return SubTaskMonitor.create( this, start, end, cancelCheck );
+        if ( this.min==-1 && this.max==-1 ) {
+            return SubTaskMonitor.create( this, cancelCheck );            
+        } else {
+            return SubTaskMonitor.create( this, start, end, cancelCheck );
+        }
     }
 
+    public ProgressMonitor getSubtaskMonitor(String label) {
+        return SubTaskMonitor.create( this, cancelCheck );
+    }
+
+    
     public boolean canBeCancelled() {
         return cancelCheck;
     }
