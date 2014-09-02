@@ -173,13 +173,13 @@ public class FileStorageModel {
         
         if ( parent!=null ) {
             parentRegex= getParentRegex(regex);
-            String one= parent.getRepresentativeFile( monitor,regex.substring(parentRegex.length()+1), range );
+            String one= parent.getRepresentativeFile( monitor.getSubtaskMonitor("get representative file"),regex.substring(parentRegex.length()+1), range );
             if ( one==null ) return null;
             names= new String[] { one }; //parent.getNamesFor(null);
             fileSystems= new FileSystem[names.length];
             for ( int i=0; i<names.length; i++ ) {
                 try {
-                    fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor ); // 3523492: allow the FS type to change; eg to zip.
+                    fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor.getSubtaskMonitor("create") ); // 3523492: allow the FS type to change; eg to zip.
                     //fileSystems[i]= root.createFileSystem( names[i] );
                 } catch ( Exception e ) {
                     throw new RuntimeException(e);
@@ -196,7 +196,7 @@ public class FileStorageModel {
 
         while ( result==null ) {
             for ( int i=fileSystems.length-1; result==null && i>=0; i-- ) {
-                String[] files1= fileSystems[i].listDirectory( "/", listRegex, monitor );
+                String[] files1= fileSystems[i].listDirectory( "/", listRegex, monitor.getSubtaskMonitor("create") );
                 int j= files1.length-1;
                 while ( j>=0 && result==null ) {
                     String ff= names[i].equals("") ? files1[ j ] : names[i]+"/"+files1[ j ];
@@ -209,7 +209,7 @@ public class FileStorageModel {
                         if ( versionLt!=null && versioningType.comp.compare( extra.get("v"), versionLt )>=0 ) versionOk=false;
                         if ( versionOk && timeParser.getValidRange().contains( tr ) && ( range==null || range.intersects(tr) ) ) {
                             if ( childRegex!=null ) {
-                                String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex, monitor );
+                                String[] kids= fileSystems[i].listDirectory( files1[ j ],childRegex, monitor.getSubtaskMonitor("list directory") );
                                 if ( kids.length>0 ) {
                                     result= ff;
                                 }
@@ -248,13 +248,13 @@ public class FileStorageModel {
                     if ( range!=null && !range.intersects(range1) ) {
                         return null;
                     }
-                    String one= parent.getRepresentativeFile( monitor,regex.substring(parentRegex.length()+1), range1 );
+                    String one= parent.getRepresentativeFile( monitor.getSubtaskMonitor("getRepresentativeFile"),regex.substring(parentRegex.length()+1), range1 );
                     if ( one==null ) return null;
                     names= new String[] { one }; //parent.getNamesFor(null);
                     fileSystems= new FileSystem[names.length];
                     for ( int i=0; i<names.length; i++ ) {
                         try {
-                            fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor ); // 3523492: allow the FS type to change; eg to zip.
+                            fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor.getSubtaskMonitor("create") ); // 3523492: allow the FS type to change; eg to zip.
                         } catch ( Exception e ) {
                             throw new RuntimeException(e);
                         }
