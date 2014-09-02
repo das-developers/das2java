@@ -173,6 +173,9 @@ public interface ProgressMonitor {
     /**
      * get the subtask monitor when the current task length is indeterminate.  This avoids clients having to
      * put in dummy numbers that will cause problems in the future.
+     * 
+     * The subtask can set the taskSize and taskProgress and these should be conveyed to the parent.
+     * 
      * @param label a label for the subtask, often this is handled as progress message; or null.
      * @return a new progress monitor.  (generally type SubTaskMonitor)
      */
