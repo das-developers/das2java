@@ -26,6 +26,9 @@
 
 package org.das2.util.monitor;
 
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
+
 /**
  * This is a progress monitor to use when we don't care about the progress,
  * this doesn't provide a view of the progress to the client.
@@ -35,6 +38,8 @@ package org.das2.util.monitor;
  * @author jbf
  */
 public class AbstractProgressMonitor implements ProgressMonitor {
+    
+    private static final Logger logger = LoggerManager.getLogger("das2.system");
     
     public AbstractProgressMonitor() {
     }
@@ -84,6 +89,12 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     private boolean finished= false;
     
     public void finished() {
+        if ( finished ) {
+            logger.warning("monitor finished was called twice!");
+            new Exception().printStackTrace();
+        } else {
+            logger.fine("enter monitor finished");
+        }
         finished= true;
     }
     
