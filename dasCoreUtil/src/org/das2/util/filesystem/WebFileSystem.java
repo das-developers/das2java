@@ -776,6 +776,7 @@ public abstract class WebFileSystem extends FileSystem {
 
     /**
      * copies data from in to out, sending the number of bytesTransferred to the monitor.
+     * NOTE: monitor.finished is not called, breaking monitor rules.
      */
     protected void copyStream(InputStream is, OutputStream out, ProgressMonitor monitor) throws IOException {
         byte[] buffer = new byte[2048];
