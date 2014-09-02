@@ -465,7 +465,7 @@ public class WebFileObject extends FileObject {
                     FileSystemUtil.maybeMkdirs( localFile.getParentFile() );
                 }
                 File partFile = new File(localFile.toString() + ".part");
-                wfs.downloadFile(pathname, localFile, partFile, monitor);
+                wfs.downloadFile(pathname, localFile, partFile, monitor.getSubtaskMonitor("download file"));
 
                 if ( !localFile.setLastModified(remoteDate.getTime()) ) {
                     logger.log(Level.INFO, "unable to modify date of {0}", localFile);
