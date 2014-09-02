@@ -23,6 +23,9 @@
 
 package org.das2.util.monitor;
 
+import java.util.logging.Logger;
+import org.das2.util.LoggerManager;
+
 
 /**
  * creates a ProgressMonitor that maps its progress to a parent's progress.
@@ -35,6 +38,8 @@ package org.das2.util.monitor;
  */
 public class SubTaskMonitor implements ProgressMonitor {
 
+    private static final Logger logger = LoggerManager.getLogger("das2.system");
+    
     ProgressMonitor parent;
     long min, max, progress, size;
     String label;
@@ -76,6 +81,12 @@ public class SubTaskMonitor implements ProgressMonitor {
     private boolean finished= false;
 
     public void finished() {
+        if ( finished ) {
+            logger.warning("monitor finished was called twice!");
+            new Exception().printStackTrace();
+        } else {
+            logger.fine("enter monitor finished");
+        }
         this.finished= true; // only to support the bean property
     }
 

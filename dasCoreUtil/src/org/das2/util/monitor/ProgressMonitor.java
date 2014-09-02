@@ -53,7 +53,6 @@ package org.das2.util.monitor;
  */
 public interface ProgressMonitor {
 
-    
     public final static long SIZE_INDETERMINATE= -1;
     
     /** Sets the maximum value for the task progress of this
@@ -90,12 +89,14 @@ public interface ProgressMonitor {
      * ignored.  It is only provided so a process can describe the task that
      * is going on.  This is usually set by the client of the process to indicate
      * what service we are waiting for.  e.g. "Loading Data"
+     * @param label the label describing the task.
      */
     public void setLabel( String label );
     
     /**
      * Return the label string displayed.  This is primarily to aid in debugging,
      * and this method need not return the string set by setLabel.
+     * @return the label.
      */
     public String getLabel();
     
@@ -109,7 +110,8 @@ public interface ProgressMonitor {
     void started();
     
     /** Notifies the <code>ProgressMonitor</code> that the task
-     * being monitored has finished.
+     * being monitored has finished.  This must only be called once, and note that isFinished() must return
+     * the state of this monitor.
      */
     void finished();
     
