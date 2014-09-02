@@ -152,7 +152,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
         super.close();
         deathTimeMilli= System.currentTimeMillis();
         if (monitor != null) {
-            monitor.finished();
+            if ( !monitor.isFinished() ) monitor.finished();  // it should be finished already from the read command.
             started= false;
         }
     }
