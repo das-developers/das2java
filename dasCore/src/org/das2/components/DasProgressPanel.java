@@ -402,6 +402,12 @@ public class DasProgressPanel implements ProgressMonitor {
 
     @Override
     public synchronized void finished() {
+        if ( finished==true ) {
+            logger.warning("monitor finished was called twice!");
+            new Exception().printStackTrace();
+        } else {
+            logger.fine("enter monitor finished");
+        }
         running = false;
         finished = true;
         Runnable run= new Runnable() {
