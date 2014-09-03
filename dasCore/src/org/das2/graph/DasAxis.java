@@ -1204,7 +1204,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         dep0.putProperty(QDataSet.UNITS,u);
 
         QDataSet outDescriptor=null;
-
+        
+        QDataSet ticks1= null;
         for ( int i=0; i<ltickV.length; i++ ) {
             ex.putValue( 0,uc.convert(ltickV[i]) );
             QDataSet ticks= ltcaFunction.value(ex);
@@ -1220,8 +1221,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     }
                 }
             }
-            ltcaData.join(ticks);
-            dep0.putValue(i,ltickV[i]);
+            if ( ticks1==null ) ticks1=ticks;
+            if ( ticks1.length()==ticks.length() ) { // ensure that it's a qube.
+                ltcaData.join(ticks);
+                dep0.putValue(i,ltickV[i]);
+            } else {
+                logger.finer("skipping irregular record: "+ticks);
+            }
         }
         ltcaData.putProperty( QDataSet.BUNDLE_1, outDescriptor );
         ltcaData.putProperty( QDataSet.DEPEND_0, dep0 );
@@ -2394,7 +2400,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return;
         }
 
-        QDataSet ltcaData= DDataSet.copy(tcaData);
+        QDataSet ltcaData;
+        try {
+            ltcaData= DDataSet.copy(tcaData);
+        } catch ( IllegalArgumentException ex ) {
+            ltcaData= DDataSet.copy(tcaData);
+        }
         
         QDataSet dep0= (QDataSet)ltcaData.property(QDataSet.DEPEND_0);
 
