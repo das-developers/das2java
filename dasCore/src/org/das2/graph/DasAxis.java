@@ -828,9 +828,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange("dataPath", oldValue, dataset);
     }
 
-    /** Add auxilary data to an axis (usually OA data for a time axis).
+    /** Add auxiliary data to an axis (usually OA data for a time axis).
      * This function does the same thing as setDataPath, but with a different interface.
-     * @param will be called upon to generate auillary data sets.  To avoid nonsensical
+	 * <code>dsdAux</code> must return a non-empty string from <code>getDataSetID()</code>
+     * @param dsdAux will be called upon to generate auxiliary data sets.  To avoid nonsensical
      * graphs the X axis for this dataset must be the same as the that handed to the
      * renderer.
      */

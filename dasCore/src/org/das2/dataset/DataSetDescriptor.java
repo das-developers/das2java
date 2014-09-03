@@ -81,7 +81,8 @@ public abstract class DataSetDescriptor implements Displayable {
     }
 
     protected DataSetDescriptor() {
-        this("");
+        dataSetCache = DasApplication.getDefaultApplication().getDataSetCache();
+		dataSetID = "class:"+this.getClass().getName();
     }
     private static final Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
 
