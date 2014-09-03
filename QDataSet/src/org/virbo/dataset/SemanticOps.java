@@ -545,13 +545,21 @@ public class SemanticOps {
     }
 
     /**
-     * return the bounds DS[ (x,y), (min,max) ] of the datasets
+     * return the bounds DS[ JOIN_0=x,y; BINS_1=min,maxInclusive ] of the datasets
      * independent parameters.  This is only implemented for:
-     *   rank 2 Tables
-     *   rank 3 array of tables
-     *   rank 1 Y(X)
-     *   not for rank 2 bundle dataset
-     *   not for rank 1 bundle dataset
+     * <table>
+     *   <tr><td>rank 2 Tables</td><td>extent(X),extent(Y) and Z is not represented</td></tr>
+     *   <tr><td>rank 3 array of tables</td><td>extent(X),extent(Y) and Z is not represented</td></tr>
+     *   <tr><td>rank 1 Y(X)</td><td>extent(X),extent(Y)</td></tr>
+     *   <tr><td>not for rank 2 bundle dataset</td></tr>
+     *   <tr><td>not for rank 1 bundle dataset</td></tr>
+     * </table>
+     * The zeroth dimension will be the physical dimension of the DEPEND_0 values.  Or said another way:
+     * <table>
+     *   <tr><td>bounds[0,0]= X min</td><td>bounds[0,1] = X max</td><td>bounds.slice(0) is the extent of X<td></tr>
+     *   <tr><td>bounds[1,0]= Y min</td><td>bounds[1,1] = Y max</td><td>bounds.slice(1) is the extent of Y<td></tr>
+     * </table>
+     * 
      * @param ds rank 2 dataset with BINS_1="min,maxInclusive"
      * @throws IllegalArgumentException when the dataset scheme is not supported
      * @return
