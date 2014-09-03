@@ -1668,7 +1668,8 @@ public class DatumRangeUtil {
      * round to a nice interval with very roughly n divisions.  For example,
      * <pre>
      *   -0.048094730687625806 to 0.047568, 100  -> -0.048 to 0.048
-     *   2012-04-18 0:00:00 to 23:59:40, 24 -> 2012-04-18 
+     *   2012-04-18 0:00:00 to 23:59:40, 24 -> 2012-04-18  
+     *   2014-08-10 0:00:00 to 2014-08-11T00:00:59, 24 -> 2014-08-10
      * </pre>
      * @param dr
      * @param n
@@ -1685,7 +1686,15 @@ public class DatumRangeUtil {
         while ( dd.boundaryCount( dr.min(), dr.max() ) < n ) {
             dd= dd.finerDivider(false);
         }
-        return union( dd.rangeContaining( dr.min() ), dd.rangeContaining( dr.max() ) );
+        DatumRange min= dd.rangeContaining( dr.min() );
+        DatumRange max= dd.rangeContaining( dr.max() );
+        if ( DatumRangeUtil.normalize( min, dr.min() )>0.99 ) {
+            min= min.next();
+        }
+        if ( DatumRangeUtil.normalize( max, dr.max() )<0.01 ) {
+            max=max.previous();
+        }
+        return union( min,max );
     }
 
 }
