@@ -5988,7 +5988,9 @@ public class Ops {
      * Mean function that returns the average of a rank 1 dataset
      * @param ds rank 1 dataset, that does not contain fill or NaN.
      * @return rank 0 dataset
-     * mmclouth
+     * @see #mode
+     * @see #median
+     * @author mmclouth
      */
     public static QDataSet mean( QDataSet ds ) {
         double avg = 0;
@@ -6001,8 +6003,10 @@ public class Ops {
     
     /**
      * return the most frequently occurring element.
-     * @param ds
-     * @return 
+     * @param ds rank 1 dataset, that does not contain fill or NaN.
+     * @return the rank 0 dataset
+     * @see #mean
+     * @see #median
      */
     public static QDataSet mode( QDataSet ds ) {
         if ( ds.rank()!=1 ) {
@@ -6045,7 +6049,9 @@ public class Ops {
      * Median function that sorts a rank 1 dataset and returns its median
      * @param ds rank 1 dataset that does not contain fill or NaN.
      * @return rank 0 dataset
-     * mmclouth
+     * @author mmclouth
+     * @see #mean
+     * @see #mode
      */
     public static QDataSet median( QDataSet ds ) {
         
