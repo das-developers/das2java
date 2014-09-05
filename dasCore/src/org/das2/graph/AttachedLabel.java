@@ -24,27 +24,7 @@
 package org.das2.graph;
 
 import org.das2.util.GrannyTextRenderer;
-import org.das2.DasApplication;
-import org.das2.DasNameException;
-import org.das2.DasPropertyException;
-import org.das2.NameContext;
-import org.das2.dasml.FormBase;
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.AffineTransform;
-
-import javax.swing.border.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import java.awt.geom.GeneralPath;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.text.*;
-import javax.swing.*;
-import java.util.*;
-import java.util.List;
-import java.util.regex.*;
 
 /**
  * A canvas component for labeling things that is positioned just outside of a row,column box.
@@ -85,17 +65,9 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
     private Rectangle trTitleRect;
     
     private double emOffset;
-    
-    /* Custom rendering options */
-    private boolean rot90 = false;
-    /* TOP(1) -> RIGHT(4)
-     * BOTTOM(2) -> LEFT(3)
-     * LEFT(3) -> TOP(1)
-     * RIGHT(4) -> BOTTOM(2)
-     */
-    private static int[] rot90map = {0, 4, 3, 1, 2, };
-    private static int[] rot90unMap = {0, 3, 4, 2, 1, };
 
+	private boolean flipLabel = false;
+    
     /* DEBUGGING INSTANCE MEMBERS */
     private static final boolean DEBUG_GRAPHICS = false;
     private static final Color[] DEBUG_COLORS;
@@ -269,10 +241,6 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
             if (bottomLabel) {
                 leftEdge = DMin + (DMax-DMin - titleWidth)/2;
                 baseline = bottomPosition + titlePositionOffset;
-                if (rot90) {
-                    g2.rotate(Math.PI, leftEdge, baseline);
-                    g2.translate(-gtr.getWidth(), gtr.getAscent());
-                }
                 gtr.draw(g2, (float)leftEdge, (float)baseline);
             }
             if (topLabel) {
@@ -318,16 +286,28 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
                 leftEdge = -DMax + (DMax-DMin - titleWidth)/2;
                 baseline = leftPosition - titlePositionOffset;
                 gtr.draw(g2, (float)leftEdge, (float)baseline);
+                //leftEdge = DMin + (DMax-DMin - titleWidth)/2;
+                //baseline = topPosition - titlePositionOffset;
+                //gtr.draw(g2, (float)leftEdge, (float)baseline);
             }
             if (rightLabel) {
-                g2.rotate(Math.PI/2.0);
-                leftEdge = DMin + (DMax-DMin - titleWidth)/2;
-                baseline = - rightPosition - titlePositionOffset;
-                if (rot90) {
-                    g2.rotate(Math.PI, leftEdge, baseline);
-                    g2.translate(-gtr.getWidth(), gtr.getAscent());
-                }
-                gtr.draw(g2, (float)leftEdge, (float)baseline);
+				if (flipLabel) {
+					g2.rotate(-Math.PI/2.0);
+					leftEdge = -DMax + (DMax-DMin - titleWidth)/2;
+					baseline = rightPosition + titlePositionOffset
+							+ (int)Math.ceil(gtr.getHeight())
+							- 2*(int)Math.ceil(gtr.getDescent());
+					gtr.draw(g2, (float)leftEdge, (float)baseline);
+					//leftEdge = DMin + (DMax-DMin - titleWidth)/2;
+					//baseline = bottomPosition + titlePositionOffset;
+					//gtr.draw(g2, (float)leftEdge, (float)baseline);
+				}
+				else {
+					g2.rotate(Math.PI/2.0);
+					leftEdge = DMin + (DMax-DMin - titleWidth)/2;
+					baseline = - rightPosition - titlePositionOffset;
+					gtr.draw(g2, (float)leftEdge, (float)baseline);
+				}
             }
             g2.dispose();
         }
@@ -344,15 +324,22 @@ public class AttachedLabel extends DasCanvasComponent implements Cloneable {
         
         int offset = (int)Math.ceil(emOffset * labelFont.getSize());
         
-        orientation = rot90map[orientation];
         if (orientation == BOTTOM) {
             offset += gtr.getAscent();
         }
-        orientation = rot90unMap[orientation];
         return offset;
     }
+
+	public boolean isLabelFlipped() {
+		return flipLabel;
+	}
+
+	public void setLabelFlipped(boolean flipLabel) {
+		this.flipLabel = flipLabel;
+		update();
+	}
     
-    /** get the current font of the compoennt.
+    /** get the current font of the component.
      * @return Font of the component.
      */
     public Font getLabelFont() {
