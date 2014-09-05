@@ -6113,6 +6113,48 @@ public class Ops {
     
         return DataSetUtil.asDataSet( ans, SemanticOps.getUnits(ds) );
     }
+    
+    /**
+     * 1-D standard deviation function.
+     * @param ds rank 1 dataset.
+     * @return double.
+     * @author mmclouth
+     */
+    public static double stddev( QDataSet ds ) {
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
+
+        int n = ds.length();
+
+        double sum = 0;
+        for (int i=0; i < ds.length(); i++)  {
+            sum += ds.value(i);
+        }
+        double u = sum / n;
+        double sub = 0;
+        double square = 0;
+        for (int i=0; i < ds.length(); i++)  {
+            sub = (ds.value(i) - u);
+            square += Math.pow(sub, 2);
+        }
+        double undersqrrt = square / (n-1);
+        double result = sqrt(undersqrrt);
+        //System.out.println(result);
+        return result;
+    }
+
+    /**
+     * 1-D variance function.
+     * @param ds rank 1 dataset.
+     * @return double.
+     * @author mmclouth
+     * @see #stddev
+     */
+    public static double variance( QDataSet ds ) {
+        if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
+        double result = Math.pow(stddev(ds), 2);
+        return result;
+    }
+    
        
     /**
      * 1-D median filter with a boxcar of the given size.  This is 
