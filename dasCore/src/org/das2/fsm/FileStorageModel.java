@@ -328,8 +328,14 @@ public class FileStorageModel {
             String tf1= timeParser.format( timeRange.min(), timeRange.min() );
             String tf2= timeParser.format( timeRange.max(), timeRange.max() );
             
-            DatumRange dr1= timeParser.parse(tf1).getTimeRange();
-            DatumRange dr2= timeParser.parse(tf2).getTimeRange();
+            DatumRange dr1,dr2;
+            try {
+                dr1= timeParser.parse(tf1).getTimeRange();
+                dr2= timeParser.parse(tf2).getTimeRange();
+            } catch ( IllegalArgumentException ex ) {
+                logger.log(Level.WARNING, "Strange bug shown in test033: >>{0}<< >>{1}<<", new Object[]{tf1, tf2});
+                throw ex;
+            }
             
             if ( dr2.min().equals(timeRange.max() ) ) {
                 return DatumRangeUtil.union( dr1, dr2.min() );
