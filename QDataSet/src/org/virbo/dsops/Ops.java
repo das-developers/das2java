@@ -6117,10 +6117,10 @@ public class Ops {
     /**
      * 1-D standard deviation function.
      * @param ds rank 1 dataset.
-     * @return double.
+     * @return rank 0 dataset with units matching those of the input.
      * @author mmclouth
      */
-    public static double stddev( QDataSet ds ) {
+    public static QDataSet stddev( QDataSet ds ) {
         if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
 
         int n = ds.length();
@@ -6139,20 +6139,18 @@ public class Ops {
         double undersqrrt = square / (n-1);
         double result = sqrt(undersqrrt);
         //System.out.println(result);
-        return result;
+        return DataSetUtil.asDataSet( result, SemanticOps.getUnits(ds).getOffsetUnits() );
     }
 
     /**
      * 1-D variance function.
      * @param ds rank 1 dataset.
-     * @return double.
+     * @return Rank 0 QDataSet containing the variance.  The result is currently dimensionless, but this will change.
      * @author mmclouth
      * @see #stddev
      */
-    public static double variance( QDataSet ds ) {
-        if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
-        double result = Math.pow(stddev(ds), 2);
-        return result;
+    public static QDataSet variance( QDataSet ds ) {
+        return Ops.pow(ds,2);
     }
     
        
