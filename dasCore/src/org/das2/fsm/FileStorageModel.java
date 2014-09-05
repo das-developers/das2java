@@ -22,6 +22,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.TimeParser;
 import org.das2.datum.TimeUtil.TimeStruct;
+import org.das2.datum.Units;
 import org.das2.util.LoggerManager;
 import org.das2.util.filesystem.FileObject;
 import org.das2.util.filesystem.FileSystem;
@@ -334,6 +335,14 @@ public class FileStorageModel {
                 dr2= timeParser.parse(tf2).getTimeRange();
             } catch ( IllegalArgumentException ex ) {
                 logger.log(Level.WARNING, "Strange bug shown in test033: {2}\n>>{0}<<\n>>{1}<<", new Object[]{tf1, tf2,this.timeParser});
+                TimeParser tp1= timeParser.parse(tf1);
+                logger.log( Level.WARNING, "tp1 start {0}", tp1.getTime(Units.us2000) );
+                logger.log( Level.WARNING, "tp1 end {0}", tp1.getEndTime(Units.us2000) );
+                logger.log( Level.WARNING, "tp1 tr {0}", tp1.getTimeRange() );
+                TimeParser tp2= timeParser.parse(tf2);
+                logger.log( Level.WARNING, "tp2 start {0}", tp2.getTime(Units.us2000) );
+                logger.log( Level.WARNING, "tp2 end {0}", tp2.getEndTime(Units.us2000) );
+                logger.log( Level.WARNING, "tp2 tr {0}", tp2.getTimeRange() );
                 throw ex;
             }
             
