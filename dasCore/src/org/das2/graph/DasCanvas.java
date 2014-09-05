@@ -726,6 +726,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      * @throws IOException if there is an error opening the file for writing
      */
     public void writeToPng(String filename) throws IOException {
+		writeToPng(filename, Collections.EMPTY_MAP);
+	}
+
+    public void writeToPng(String filename, Map<String,String> txt) throws IOException {
 
         final FileOutputStream out = new FileOutputStream(filename);
 
@@ -735,6 +739,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
 
         DasPNGEncoder encoder = new DasPNGEncoder();
         encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
+		for (String key : txt.keySet()) {
+			encoder.addText(key, txt.get(key));
+		}
         try {
             logger.fine("Encoding image into png");
             encoder.write((BufferedImage) image, out);
