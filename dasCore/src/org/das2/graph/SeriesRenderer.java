@@ -1488,7 +1488,7 @@ public class SeriesRenderer extends Renderer {
     private QDataSet doDataSetReduce( DasAxis xAxis, DasAxis yAxis, QDataSet vds, int xlimit, int ylimit ) {
         DatumRange xdr= xAxis.getDatumRange();
         QDataSet xxx= xAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), Math.log10( xdr.max().doubleValue(xdr.getUnits()) ), xAxis.getDLength() ) ) :
-                Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), xAxis.getDLength()/xlimit );
+                Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), Math.max( 2, xAxis.getDLength()/xlimit ) );
         MutablePropertyDataSet mxxx= DataSetOps.makePropertiesMutable(xxx);  // it is already
         mxxx.putProperty( QDataSet.UNITS, xdr.getUnits() );
         if ( xAxis.isLog() ) {
@@ -1496,7 +1496,7 @@ public class SeriesRenderer extends Renderer {
         }
         DatumRange ydr= yAxis.getDatumRange();
         QDataSet yyy= yAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), Math.log10( ydr.max().doubleValue(ydr.getUnits()) ), yAxis.getDLength() ) ) :
-                Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), yAxis.getDLength()/ylimit );
+                Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), Math.max( 2, yAxis.getDLength()/ylimit ) );
         MutablePropertyDataSet myyy= DataSetOps.makePropertiesMutable(yyy);  // it is already
         myyy.putProperty( QDataSet.UNITS, ydr.getUnits() );
         if ( yAxis.isLog() ) {
