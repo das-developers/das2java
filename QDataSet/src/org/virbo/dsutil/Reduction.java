@@ -504,6 +504,13 @@ public class Reduction {
         if ( ds.rank()!=1 ) {
             throw new IllegalArgumentException("ds.rank() must be 1");
         }
+        if ( xxx.length()<2 ) {
+            throw new IllegalArgumentException("xxx.length() must be at least 2");
+        }
+        if ( yyy.length()<2 ) {
+            throw new IllegalArgumentException("yyy.length() must be at least 2");
+        }
+        
         boolean xlog= QDataSet.VALUE_SCALE_TYPE_LOG.equals( xxx.property(QDataSet.SCALE_TYPE) );
         boolean ylog= QDataSet.VALUE_SCALE_TYPE_LOG.equals( yyy.property(QDataSet.SCALE_TYPE) );
         double xspace= xlog ? Math.log10(xxx.value(1))-Math.log10(xxx.value(0)) : xxx.value(1)-xxx.value(0);
