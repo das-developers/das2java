@@ -1778,7 +1778,7 @@ public class SeriesRenderer extends Renderer {
                     );
 
                 logger.fine( String.format( "reduce path in calcSelectionArea: %s\n", reduce ) );
-                GeneralPath path = GraphUtil.getPath( xaxis, yaxis, SemanticOps.xtagsDataSet(reduce), reduce, histogram ? GraphUtil.CONNECT_MODE_HISTOGRAM : GraphUtil.CONNECT_MODE_SCATTER, true );
+                GeneralPath path = GraphUtil.getPath( xaxis, yaxis, SemanticOps.xtagsDataSet(reduce), reduce, histogram ? GraphUtil.CONNECT_MODE_HISTOGRAM : GraphUtil.CONNECT_MODE_SERIES, true );
 
                 Shape s = new BasicStroke( Math.min(14,(float)getSymSize()+8.f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ).createStrokedShape(path);
                 return s;
