@@ -453,36 +453,79 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         });
     }
 
+    /**
+     * add a decorator that will be painted on top of all other objects.  
+     * Each decorator object should complete painting within 100 milliseconds, and the
+     * total for all decorators should not exceed 300 milliseconds.
+     * This should be done on the event thread.
+     * @param painter 
+     */
     public void addTopDecorator(Painter painter) {
         this.topDecorators.add( painter );
         repaint();
     }
+
+    /**
+     * remove the decorator.  This should be done on the event thread.
+     * @param painter 
+     */
     public void removeTopDecorator(Painter painter) {
         this.topDecorators.remove( painter );
         repaint();
     }
+
+    /**
+     * remove all top decorators.  This should be done on the event thread.
+     * @param painter 
+     */
     public void removeTopDecorators() {
         this.topDecorators.clear( );
         repaint();
     }
 
+    /**
+     * returns true if there are any top decorators.
+     * @return true if there are any decorators.
+     */
     public boolean hasTopDecorators() {
         return ! this.topDecorators.isEmpty();
     }
 
+    /**
+     * add a decorator that will be painted on below all other objects.  
+     * Each decorator object should complete painting within 100 milliseconds, and the
+     * total for all decorators should not exceed 300 milliseconds.
+     * This should be done on the event thread.
+     * @param painter 
+     */
     public void addBottomDecorator(Painter painter) {
         this.bottomDecorators.add( painter );
         repaint();
     }
+    
+    /**
+     * remove the decorator.  This should be done on the event thread.
+     * @param painter 
+     */
     public void removeBottomDecorator(Painter painter) {
         this.bottomDecorators.remove( painter );
         repaint();
     }
+    
+    /**
+     * remove all bottom decorators.  This should be done on the event thread.
+     * @param painter 
+     */    
     public void removeBottomDecorators() {
         this.bottomDecorators.clear( );
         repaint();
     }
 
+
+    /**
+     * returns true if there are any bottom decorators.
+     * @return true if there are any decorators.
+     */
     public boolean hasBottomDecorators() {
         return ! this.bottomDecorators.isEmpty();
     }
