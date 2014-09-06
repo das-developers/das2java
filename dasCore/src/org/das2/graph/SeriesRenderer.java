@@ -1256,6 +1256,13 @@ public class SeriesRenderer extends Renderer {
         if ( active ) updatePsym();
     }
 
+    /**
+     * render the dataset by delegating to internal components such as the symbol connector and error bars.
+     * @param g the graphics context.
+     * @param xAxis the x axis
+     * @param yAxis the y axis
+     * @param mon a progress monitor
+     */
     @Override
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
@@ -1401,38 +1408,40 @@ public class SeriesRenderer extends Renderer {
         } else {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
-
+        
+        mon.started();
         if (tds != null) {
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
-            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, tds, mon); // tds is only to check units
+            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, tds, mon.getSubtaskMonitor("psymConnectorElement.render")); // tds is only to check units
 
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
-            errorElement.render(graphics, xAxis, yAxis, tds, mon);
+            errorElement.render(graphics, xAxis, yAxis, tds, mon.getSubtaskMonitor("errorElement.render"));
 
         } else {
 
             if (this.fillToReference) {
-                fillElement.render(graphics, xAxis, yAxis, vds, mon);
+                fillElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("fillElement.render"));
             }
 
             graphics.setColor(color);
             logger.log(Level.FINEST, "drawing psymConnector in {0}", color);
 
-            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon); // vds is only to check units
+            int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
-            errorElement.render(graphics, xAxis, yAxis, vds, mon);
+            errorElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("errorElement.render"));
 
             int symCount;
             if (psym != DefaultPlotSymbol.NONE) {
 
-                symCount= psymsElement.render(graphics, xAxis, yAxis, vds, mon);
+                symCount= psymsElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("psymsElement.render"));
                 logger.log(Level.FINEST, "symCount: {0}", symCount);
                 
-                mon.finished();
             }
         }
+        mon.finished();
+        
         long milli = System.currentTimeMillis();
         long renderTime = (milli - timer0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
@@ -1467,9 +1476,62 @@ public class SeriesRenderer extends Renderer {
         graphics.dispose();
     }
 
-
     /**
-     * do the same as updatePlotImage, but use AffineTransform to implement axis transform.
+     * reduce the dataset by coalescing points in the same location.
+     * @param xAxis the current xaxis
+     * @param yAxis the current yaxis
+     * @param vds the dataset
+     * @xlimit limit the resolution of the result to so many pixels
+     * @ylimit limit the resolution of the result to so many pixels
+     * @return reduced version of the dataset
+     */
+    private QDataSet doDataSetReduce( DasAxis xAxis, DasAxis yAxis, QDataSet vds, int xlimit, int ylimit ) {
+        DatumRange xdr= xAxis.getDatumRange();
+        QDataSet xxx= xAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), Math.log10( xdr.max().doubleValue(xdr.getUnits()) ), xAxis.getDLength() ) ) :
+                Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), xAxis.getDLength()/xlimit );
+        MutablePropertyDataSet mxxx= DataSetOps.makePropertiesMutable(xxx);  // it is already
+        mxxx.putProperty( QDataSet.UNITS, xdr.getUnits() );
+        if ( xAxis.isLog() ) {
+            mxxx.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
+        }
+        DatumRange ydr= yAxis.getDatumRange();
+        QDataSet yyy= yAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), Math.log10( ydr.max().doubleValue(ydr.getUnits()) ), yAxis.getDLength() ) ) :
+                Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), yAxis.getDLength()/ylimit );
+        MutablePropertyDataSet myyy= DataSetOps.makePropertiesMutable(yyy);  // it is already
+        myyy.putProperty( QDataSet.UNITS, ydr.getUnits() );
+        if ( yAxis.isLog() ) {
+            myyy.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
+        }
+        long tt0= System.currentTimeMillis();
+        QDataSet hds= Reduction.histogram2D( vds, mxxx, myyy );
+        logger.log( Level.FINEST, "histogram2D: {0}", ( System.currentTimeMillis()-tt0 ));
+        DataSetBuilder buildx= new DataSetBuilder(1,100);
+        DataSetBuilder buildy= new DataSetBuilder(1,100);
+        for ( int ii=0; ii<hds.length(); ii++ ) {                
+            for ( int jj=0; jj<hds.length(0); jj++ ) {
+                if ( hds.value(ii,jj)>0 ) {
+                    buildx.putValue(-1,xxx.value(ii));
+                    buildy.putValue(-1,yyy.value(jj));
+                    buildx.nextRecord(); 
+                    buildy.nextRecord();
+                }
+            }
+        }
+        // logger.log( Level.FINEST, "build new 1-D dataset: {0}", ( System.currentTimeMillis()-tt0 )); // this takes a trivial (<3ms) amount of time.
+        buildx.putProperty( QDataSet.UNITS, xdr.getUnits() );
+        buildy.putProperty( QDataSet.UNITS, ydr.getUnits() );
+        MutablePropertyDataSet mvds= DataSetOps.makePropertiesMutable( Ops.link( buildx.getDataSet(), buildy.getDataSet() ) );
+        DataSetUtil.copyDimensionProperties( vds, mvds );        
+        return mvds;
+    }
+    
+    /**
+     * Do the same as updatePlotImage, but use AffineTransform to implement axis transform.  This is the
+     * main updatePlotImage method, which will delegate to internal components of the plot, such as connector
+     * and error bar elements.
+     * @param xAxis the x axis
+     * @param yAxis the y axis
+     * @param monitor progress monitor is used to provide feedback
      */
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
@@ -1563,49 +1625,16 @@ public class SeriesRenderer extends Renderer {
         firstIndex= -1;
         lastIndex= -1;
         
+        monitor.started();
         if (vds != null) {
 
             updateFirstLast(xAxis, yAxis, xds, vds );
 
             if ( dataSetReduced ) {
                 logger.fine("reducing data that is bigger than dataSetSizeLimit");
-                long tt0= System.currentTimeMillis();
                 
-                DatumRange xdr= xAxis.getDatumRange();
-                QDataSet xxx= xAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( xdr.min().doubleValue(xdr.getUnits()) ), Math.log10( xdr.max().doubleValue(xdr.getUnits()) ), xAxis.getDLength() ) ) :
-                        Ops.linspace( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits() ), xAxis.getDLength()/1 );
-                MutablePropertyDataSet mxxx= DataSetOps.makePropertiesMutable(xxx);  // it is already
-                mxxx.putProperty( QDataSet.UNITS, xdr.getUnits() );
-                if ( xAxis.isLog() ) {
-                    mxxx.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
-                }
-                DatumRange ydr= yAxis.getDatumRange();
-                QDataSet yyy= yAxis.isLog() ? Ops.exp10( Ops.linspace( Math.log10( ydr.min().doubleValue(ydr.getUnits()) ), Math.log10( ydr.max().doubleValue(ydr.getUnits()) ), yAxis.getDLength() ) ) :
-                        Ops.linspace( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits() ), yAxis.getDLength()/1 );
-                MutablePropertyDataSet myyy= DataSetOps.makePropertiesMutable(yyy);  // it is already
-                myyy.putProperty( QDataSet.UNITS, ydr.getUnits() );
-                if ( yAxis.isLog() ) {
-                    myyy.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
-                }
-                QDataSet hds= Reduction.histogram2D( vds, mxxx, myyy );
-                logger.log( Level.FINEST, "histogram2D: {0}", ( System.currentTimeMillis()-tt0 ));
-                DataSetBuilder buildx= new DataSetBuilder(1,100);
-                DataSetBuilder buildy= new DataSetBuilder(1,100);
-                for ( int ii=0; ii<hds.length(); ii++ ) {                
-                    for ( int jj=0; jj<hds.length(0); jj++ ) {
-                        if ( hds.value(ii,jj)>0 ) {
-                            buildx.putValue(-1,xxx.value(ii));
-                            buildy.putValue(-1,yyy.value(jj));
-                            buildx.nextRecord(); 
-                            buildy.nextRecord();
-                        }
-                    }
-                }
-                // logger.log( Level.FINEST, "build new 1-D dataset: {0}", ( System.currentTimeMillis()-tt0 )); // this takes a trivial (<3ms) amount of time.
-                buildx.putProperty( QDataSet.UNITS, xdr.getUnits() );
-                buildy.putProperty( QDataSet.UNITS, ydr.getUnits() );
-                MutablePropertyDataSet mvds= DataSetOps.makePropertiesMutable( Ops.link( buildx.getDataSet(), buildy.getDataSet() ) );
-                DataSetUtil.copyDimensionProperties( vds, mvds );
+                QDataSet mvds= doDataSetReduce( xAxis, yAxis, vds, 1, 1 );
+                
                 vds= mvds;
                 xds= SemanticOps.xtagsDataSet(vds);
 
@@ -1618,7 +1647,7 @@ public class SeriesRenderer extends Renderer {
             }
             
             if (fillToReference) {
-                fillElement.update(xAxis, yAxis, vds, monitor);
+                fillElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("fillElement.update"));
                 logger.log(Level.FINE, "fillElement.update complete {0}", System.currentTimeMillis()-t0 );
             }
 
@@ -1652,18 +1681,18 @@ public class SeriesRenderer extends Renderer {
         
         if (psymConnector != PsymConnector.NONE) {
             try {
-                psymConnectorElement.update(xAxis, yAxis, vds, monitor);
+                psymConnectorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.update"));
             } catch ( InconvertibleUnitsException ex ) {
                 return;
             }
         }
 
         try {
-            errorElement.update(xAxis, yAxis, vds, monitor);
+            errorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.update"));
             if ( vds!=null && vds.rank()==1 && dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
-                psymsElement.update(xAxis, yAxis, dataSet, monitor);     // color scatter
+                psymsElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymsElement.update"));     // color scatter
             } else {
-                psymsElement.update(xAxis, yAxis, vds, monitor);
+                psymsElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.update"));
             }
             logger.log(Level.FINE, "psymsElement.update complete {0}", System.currentTimeMillis()-t0 );            
         } catch ( InconvertibleUnitsException ex ) {
@@ -1682,15 +1711,20 @@ public class SeriesRenderer extends Renderer {
         long renderTime = (milli - t0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
 
+        monitor.finished();
         setUpdatesPointsPerMillisecond(dppms);
     }
 
+    /**
+     * calculate a selection area that is used to indicate selection and is a target for mouse clicks.
+     * When a dataset is longer than 10000 points, the connecting lines are not included in the Shape.
+     * @param xaxis the xaxis
+     * @param yaxis the yaxis
+     * @param xds the x values
+     * @param ds the y values
+     * @return a Shape that can be rendered within 100 millis.
+     */
     private Shape calcSelectionArea( DasAxis xaxis, DasAxis yaxis, QDataSet xds, QDataSet ds ) {
-
-        if ( psymConnectorElement.getPath()!=null ) {
-            Shape s = new BasicStroke(5.f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND).createStrokedShape( psymConnectorElement.getPath() );
-            return s;
-        }
         
         long t0= System.currentTimeMillis();
 
@@ -1725,19 +1759,30 @@ public class SeriesRenderer extends Renderer {
         }
 
         try {
-            QDataSet reduce = VectorUtil.reduce2D(
-                xds, ds2,
-                firstIndex,
-                lastIndex,
-                widthx.divide(xaxis.getColumn().getWidth()/5),
-                widthy.divide(yaxis.getRow().getHeight()/5)
-                );
+            if ( this.psymConnector==PsymConnector.NONE || ds2.length()>10000 ) {
+                QDataSet reduce= doDataSetReduce( xaxis, yaxis, ds2, 5, 5 );
 
-            logger.fine( String.format( "reduce path in calcSelectionArea: %s\n", reduce ) );
-            GeneralPath path = GraphUtil.getPath(xaxis, yaxis, reduce, histogram, true );
+                logger.fine( String.format( "reduce path in calcSelectionArea: %s\n", reduce ) );
+                GeneralPath path = GraphUtil.getPath( xaxis, yaxis, SemanticOps.xtagsDataSet(reduce), reduce, GraphUtil.CONNECT_MODE_SCATTER, true );
 
-            Shape s = new BasicStroke(5.f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND).createStrokedShape(path);
-            return s;
+                Shape s = new BasicStroke( Math.min(14,(float)getSymSize()+8.f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ).createStrokedShape(path);
+                return s;                
+                
+            } else {
+                QDataSet reduce = VectorUtil.reduce2D(
+                    xds, ds2,
+                    firstIndex,
+                    lastIndex,
+                    widthx.divide(xaxis.getColumn().getWidth()/5),
+                    widthy.divide(yaxis.getRow().getHeight()/5)
+                    );
+
+                logger.fine( String.format( "reduce path in calcSelectionArea: %s\n", reduce ) );
+                GeneralPath path = GraphUtil.getPath( xaxis, yaxis, SemanticOps.xtagsDataSet(reduce), reduce, histogram ? GraphUtil.CONNECT_MODE_HISTOGRAM : GraphUtil.CONNECT_MODE_SCATTER, true );
+
+                Shape s = new BasicStroke( Math.min(14,(float)getSymSize()+8.f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ).createStrokedShape(path);
+                return s;
+            }
 
         } catch ( InconvertibleUnitsException ex ) {
             logger.fine("failed to convert units in calcSelectionArea");
