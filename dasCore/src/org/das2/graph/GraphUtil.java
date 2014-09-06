@@ -44,36 +44,78 @@ public class GraphUtil {
     }
 
 
+    /**
+     * get the path for the points, checking for breaks in the data from fill values.
+     * @param xAxis the x axis.
+     * @param yAxis the y axis.
+     * @param ds the y values.  SemanticOps.xtagsDataSet is used to extract the x values.
+     * @param histogram if true, use histogram (stair-step) mode
+     * @param clip limit path to what's visible for each axis.
+     * @return the GeneralPath.
+     */
     public static GeneralPath getPath(DasAxis xAxis, DasAxis yAxis, QDataSet ds, boolean histogram, boolean clip ) {
         return getPath(xAxis, yAxis, SemanticOps.xtagsDataSet(ds), ds, histogram, clip );
     }
 
     /**
-     *
-     * @param xAxis
-     * @param yAxis
-     * @param xds
-     * @param yds
-     * @param histogram histogram (stair-step) mode
+     * get the path for the points, checking for breaks in the data from fill values.
+     * @param xAxis the x axis.
+     * @param yAxis the y axis.
+     * @param xds the x values.
+     * @param yds the y values.
+     * @param histogram if true, use histogram (stair-step) mode
      * @param clip limit path to what's visible for each axis.
-     * @return
+     * @return the GeneralPath.
      */
     public static GeneralPath getPath( DasAxis xAxis, DasAxis yAxis, QDataSet xds, QDataSet yds, boolean histogram, boolean clip ) {
+        return getPath( xAxis, yAxis, xds, yds, histogram ? CONNECT_MODE_HISTOGRAM : CONNECT_MODE_SERIES, clip );
+    }
+    
+    /**
+     * draw the lines in histogram mode, horizontal to the half-way point, then vertical, then horizontal the rest of the way.
+     */
+    public static final String CONNECT_MODE_HISTOGRAM= "histogram";
+    
+    /**
+     * don't draw connecting lines.
+     */
+    public static final String CONNECT_MODE_SCATTER= "scatter";
+    
+    /**
+     * the normal connecting mode from point-to-point in a series.
+     */
+    public static final String CONNECT_MODE_SERIES= "series";
+    
+    /**
+     * get the path for the points, checking for breaks in the data from fill values.
+     * @param xAxis the x axis.
+     * @param yAxis the y axis.
+     * @param xds the x values.
+     * @param yds the y values.
+     * @param mode one of CONNECT_MODE_SERIES, CONNECT_MODE_SCATTER, or CONNECT_MODE_HISTOGRAM
+     * @param clip limit path to what's visible for each axis.
+     * @see #CONNECT_MODE_SERIES
+     * @see #CONNECT_MODE_SCATTER
+     * @see #CONNECT_MODE_HISTOGRAM
+     * @return the GeneralPath.
+     */
+
+    public static GeneralPath getPath( DasAxis xAxis, DasAxis yAxis, QDataSet xds, QDataSet yds, String mode, boolean clip ) {
 
         GeneralPath newPath = new GeneralPath();
 
-        Dimension d;
+        //Dimension d;
 
         Units xUnits = SemanticOps.getUnits(xds);
         Units yUnits = SemanticOps.getUnits(yds);
 
         QDataSet tagds= SemanticOps.xtagsDataSet(xds); // yes, it's true, I think because of orbit plots
 
-        double xSampleWidth= Double.MAX_VALUE; // old code had 1e31.  MAX_VALUE is better.
-        if ( tagds.property( QDataSet.CADENCE ) != null ) { //e.g. Orbit(T);
+        //double xSampleWidth= Double.MAX_VALUE; // old code had 1e31.  MAX_VALUE is better.
+        //if ( tagds.property( QDataSet.CADENCE ) != null ) { //e.g. Orbit(T);
             //Datum xSampleWidthDatum = (Datum) org.virbo.dataset.DataSetUtil.asDatum( (RankZeroDataSet)tagds.property( QDataSet.CADENCE ) );
             //xSampleWidth = xSampleWidthDatum.doubleValue(xUnits.getOffsetUnits());
-        }
+        //}
 
         //double t0 = -Double.MAX_VALUE;
         double i0 = -Double.MAX_VALUE;
@@ -86,8 +128,11 @@ public class GraphUtil {
         
         Rectangle rclip= clip ? DasDevicePosition.toRectangle( yAxis.getRow(), xAxis.getColumn() ) : null;
 
+        boolean histogram= mode.equals(CONNECT_MODE_HISTOGRAM);
+        boolean scatter= mode.equals(CONNECT_MODE_SCATTER);
+        
         for (int index = 0; index < n; index++) {
-            double t = index;
+            //double t = index;
             double x = xds.value(index);
             double y = yds.value(index);
             double i = xAxis.transform(x, xUnits);
@@ -97,6 +142,9 @@ public class GraphUtil {
                 skippedLast = true;
             } else if ( skippedLast ) { //|| (t - t0) > xSampleWidth ) { // remove use of t until it is compared with physical data, not dimensionless
                 newPath.moveTo((float) i, (float) j);
+                if ( scatter ) {
+                    newPath.lineTo((float) i, (float) j);
+                }
                 skippedLast = !v;
             } else {
                 if ( v||v0 ) {
@@ -105,6 +153,9 @@ public class GraphUtil {
                         newPath.lineTo((float) i1, (float) j0);
                         newPath.lineTo((float) i1, (float) j);
                         newPath.lineTo((float) i, (float) j);
+                    } else if (scatter) {
+                        newPath.moveTo((float) i, (float) j); 
+                        newPath.lineTo((float) i, (float) j);                        
                     } else {
                         newPath.lineTo((float) i, (float) j);
                     }
