@@ -54,7 +54,9 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
     
     private void processElement(Element element) throws StreamException
 	 {
-		 
+		
+             boolean doCheck= false;
+             if ( doCheck ) {
 		 //name, units, nitems, yUnits, yTags, zUnits are required, though they can be null
 		 //name, units, and type are required, though they can be null
 		 for(String s: g_sCkAry){
@@ -62,6 +64,7 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
 			 throw new StreamException("Das2 Stream Format error: Required Attribute '"+s+
 				                        "' missing in <" + element.getTagName()+"> plane.");
 		 }
+             }
 		 
         nitems = Integer.parseInt(element.getAttribute("nitems"));
         String yTagsText = element.getAttribute("yTags");
