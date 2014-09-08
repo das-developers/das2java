@@ -54,8 +54,19 @@ public class TimeParser {
      * the width of the interval.  Note stopTime should be consistent with this.
      */
     private TimeStruct timeWidth;
+    
+    /**
+     * the context for parsing times.  For example 2014-09-08 can be the context, and then 
+     * "11:00" will result in 2014-09-08T11:00.  This is set in the constructor and will not be 
+     * mutated after.
+     */
     private TimeStruct context;
 
+    /**
+     * non-null means someone is parsing.
+     */
+    private String lock="";
+            
     /**
      * keep track of the orbit DatumRange parsed.
      */
@@ -1087,6 +1098,9 @@ public class TimeParser {
      * @throws ParseException
      */
     public synchronized TimeParser parse(String timeString, Map<String,String> extra ) throws ParseException {
+        
+        lock= Thread.currentThread().getName();
+        
         int offs = 0;
         int len = 0;
 
@@ -1212,6 +1226,9 @@ public class TimeParser {
             }
 
         }
+        
+        this.lock= "";
+        
         return this;
     }
 
@@ -1621,6 +1638,7 @@ public class TimeParser {
      * This accesses time, timeWidth, orbitDatumRange, startTime.
      */
     public DatumRange getTimeRange() {
+        if ( !lock.equals("") ) throw new IllegalArgumentException("someone is messing with the parser on a different thread "+lock+ " this thread is "+Thread.currentThread().getName() );
         if ( startTime.day==1 && startTime.hour==0 && startTime.minute==0 && startTime.seconds==0 &&
                 timeWidth.year==0 && timeWidth.month==1 && timeWidth.day==0 && timeWidth.year==0 ) { // special code for months.
             TimeStruct lstopTime = startTime.add(timeWidth);
