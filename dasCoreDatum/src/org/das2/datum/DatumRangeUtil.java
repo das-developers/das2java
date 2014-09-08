@@ -386,20 +386,20 @@ public class DatumRangeUtil {
      */
     public static String formatISO8601Duration( int[] t ) {
         StringBuilder result= new StringBuilder(24);
-        result.append("P");
-        if ( t[0]!=0 ) result.append(t[0]).append("Y");
-        if ( t[1]!=0 ) result.append(t[1]).append("M");
-        if ( t[2]!=0 ) result.append(t[2]).append("D");
+        result.append('P');
+        if ( t[0]!=0 ) result.append(t[0]).append('Y');
+        if ( t[1]!=0 ) result.append(t[1]).append('M');
+        if ( t[2]!=0 ) result.append(t[2]).append('D');
         if ( t[3]!=0 || t[4]!=0 || t[5]!=0 || ( t.length==7 && t[6]!=0 ) ) {
-            result.append("T");
-            if ( t[3]!=0 ) result.append(t[3]).append("H");
-            if ( t[4]!=0 ) result.append(t[4]).append("M");
+            result.append('T');
+            if ( t[3]!=0 ) result.append(t[3]).append('H');
+            if ( t[4]!=0 ) result.append(t[4]).append('M');
             if ( t[5]!=0 || ( t.length==7 && t[6]!=0 ) ) {
                 if ( t.length<7 || t[6]==0 ) {
-                    result.append(t[5]).append("S");
+                    result.append(t[5]).append('S');
                 } else {
                     double sec= t[5] + t[6]/1000000000.;
-                    result.append( sec ).append("S");
+                    result.append( sec ).append('S');
                 }
             }
         }
