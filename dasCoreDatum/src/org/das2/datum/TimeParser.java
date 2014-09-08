@@ -25,6 +25,8 @@ import org.das2.datum.Orbits.OrbitFieldHandler;
 /**
  * TimeParser designed to quickly parse strings with a known format.  This parser has been
  * shown to perform around 20 times faster than the discovery parser.
+ * 
+ * This class is not thread-safe, so clients must make sure that only one thread accesses the class at a time.
  *
  * @author Jeremy
  */
@@ -38,9 +40,19 @@ public class TimeParser {
     public static final String TIMEFORMAT_Z = "$Y-$m-$dT$H:$M:$S.$(subsec;places=3)Z";
     private static final int AFTERSTOP_INIT = 999;
 
-    private TimeStruct time;
+    /**
+     * the beginning of the interval.
+     */
     private TimeStruct startTime;
+    
+    /**
+     * the end of the interval.  Note timeWidth should be consistent with this.
+     */
     private TimeStruct stopTime;
+    
+    /**
+     * the width of the interval.  Note stopTime should be consistent with this.
+     */
     private TimeStruct timeWidth;
     private TimeStruct context;
 
@@ -617,7 +629,9 @@ public class TimeParser {
         logger.log(Level.FINE, "new TimeParser({0},...)", formatString);
         
         startTime = new TimeUtil.TimeStruct();
+        startTime.isLocation= true;
         stopTime = new TimeUtil.TimeStruct();
+        stopTime.isLocation= true;
 
         this.fieldHandlers = fieldHandlers;
 
@@ -1017,13 +1031,15 @@ public class TimeParser {
     /**
      * reset the seconds register.  setDigit( String formatCode, double val ) accumulates 
      * fractional part in the seconds.
+     * 
+     * TODO: where is this used?  
      */
     public void resetSeconds() {
-        time.seconds = 0;
+        startTime.seconds = 0;
     }
 
     /**
-     * force the parser to look for delimiters
+     * force the parser to look for delimiters.  This should be called immediately after 
      */
     public void sloppyColumns() {
         this.lengths[0] = -1;
@@ -1070,13 +1086,15 @@ public class TimeParser {
      * @return the TimeParser, call getTimeRange or getTime to get result.
      * @throws ParseException
      */
-    public TimeParser parse(String timeString, Map<String,String> extra ) throws ParseException {
+    public synchronized TimeParser parse(String timeString, Map<String,String> extra ) throws ParseException {
         int offs = 0;
         int len = 0;
 
         if ( extra==null ) extra= new HashMap();
         
         orbitDatumRange=null;
+
+        TimeStruct time;
         
         time= startTime;
         
@@ -1272,7 +1290,9 @@ public class TimeParser {
      * @param value like 2014
      */
     public void setDigit(String format, double value) {
-        
+
+        TimeStruct time;
+
         time= startTime;
         
         format= makeCanonical(format);
@@ -1377,7 +1397,8 @@ public class TimeParser {
      * @return
      */
     public TimeParser setDigit(String format, int value) {
-        time= startTime;
+
+        TimeStruct time= startTime;
         
         String[] ss = format.split("%", -2);
         for (int i = ss.length - 1; i > 0; i--) {
@@ -1492,6 +1513,8 @@ public class TimeParser {
      * @throws IllegalArgumentException if the digit does not exist.
      */
     public TimeParser setDigit(int digitNumber, int digit) {
+        TimeStruct time;
+        
         time= startTime;
         switch (handlers[digitNumber + 1]) {
             case 0:
@@ -1558,7 +1581,7 @@ public class TimeParser {
      * @return a datum representing the parsed time.
      */
     public Datum getTimeDatum() {
-        if (time.year < 1990) {
+        if (startTime.year < 1990) {
             return Units.us1980.createDatum(toUs1980(startTime));
         } else {
             return Units.us2000.createDatum(toUs2000(startTime));
@@ -1594,13 +1617,15 @@ public class TimeParser {
      * Returns the implicit interval as a DatumRange.
      * For example, "Jan 1, 2003" would have a getTimeDatum of "Jan 1, 2003 00:00:00",
      * and getDatumRange() would go from midnight to midnight.
+     * 
+     * This accesses time, timeWidth, orbitDatumRange, startTime.
      */
     public DatumRange getTimeRange() {
-        if ( time.day==1 && time.hour==0 && time.minute==0 && time.seconds==0 &&
-                timeWidth.year==0 && timeWidth.month==1 && timeWidth.day==0 && timeWidth.year==0 ) { //TODO: sloppy!
-            TimeStruct time2 = time.add(timeWidth);
-            int[] t1= new int[] { time.year, time.month, time.day, time.hour, time.minute, (int)time.seconds, time.millis };
-            int[] t2= new int[] { time2.year, time2.month, time2.day, time2.hour, time2.minute, (int)time2.seconds, time2.millis };
+        if ( startTime.day==1 && startTime.hour==0 && startTime.minute==0 && startTime.seconds==0 &&
+                timeWidth.year==0 && timeWidth.month==1 && timeWidth.day==0 && timeWidth.year==0 ) { // special code for months.
+            TimeStruct lstopTime = startTime.add(timeWidth);
+            int[] t1= new int[] { startTime.year, startTime.month, startTime.day, startTime.hour, startTime.minute, (int)startTime.seconds, startTime.millis };
+            int[] t2= new int[] { lstopTime.year, lstopTime.month, lstopTime.day, lstopTime.hour, lstopTime.minute, (int)lstopTime.seconds, lstopTime.millis };
             return new MonthDatumRange( t1, t2 );
         } else if ( orbitDatumRange!=null ) {
             return orbitDatumRange;
@@ -1671,7 +1696,7 @@ public class TimeParser {
         StringBuilder result = new StringBuilder(100);
 
         int offs = 0;
-        int len = 0;
+        int len;
 
         TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
 
