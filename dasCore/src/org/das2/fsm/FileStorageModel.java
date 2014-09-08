@@ -320,10 +320,12 @@ public class FileStorageModel {
     /**
      * return the timerange that contains the given timerange and
      * exactly contains a set of granules.
+     * 
+     * This needs to be synchronized because the timeParser.
      * @param timeRange arbitrary time range
      * @return list of file timeranges covering file input timeRange.
      */
-    public DatumRange quantize(DatumRange timeRange) {
+    public synchronized DatumRange quantize(DatumRange timeRange) {
                 
         try {
             String tf1= timeParser.format( timeRange.min(), timeRange.min() );
@@ -333,6 +335,16 @@ public class FileStorageModel {
             try {
                 dr1= timeParser.parse(tf1).getTimeRange();
                 dr2= timeParser.parse(tf2).getTimeRange();
+//                if ( true ) {
+//                    TimeParser tp1= timeParser.parse(tf1);
+//                    logger.log( Level.WARNING, "tp1 start {0}", tp1.getTime(Units.us2000) );
+//                    logger.log( Level.WARNING, "tp1 end {0}", tp1.getEndTime(Units.us2000) );
+//                    logger.log( Level.WARNING, "tp1 tr {0}", tp1.getTimeRange() );
+//                    TimeParser tp2= timeParser.parse(tf2);
+//                    logger.log( Level.WARNING, "tp2 start {0}", tp2.getTime(Units.us2000) );
+//                    logger.log( Level.WARNING, "tp2 end {0}", tp2.getEndTime(Units.us2000) );
+//                    logger.log( Level.WARNING, "tp2 tr {0}", tp2.getTimeRange() );
+//                }
             } catch ( IllegalArgumentException ex ) {
                 logger.log(Level.WARNING, "Strange bug shown in test033: {2}\n>>{0}<<\n>>{1}<<", new Object[]{tf1, tf2,this.timeParser});
                 TimeParser tp1= timeParser.parse(tf1);
