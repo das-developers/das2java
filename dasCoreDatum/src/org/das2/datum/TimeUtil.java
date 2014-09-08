@@ -144,7 +144,13 @@ public final class TimeUtil {
         
         @Override
         public String toString() {
-            return String.format( "%4d/%02d/%02d %02d:%02d:%06.3f", year,month,day,hour,minute,seconds );
+            if ( isLocation ) {
+                return String.format( "%4d/%02d/%02d %02d:%02d:%06.3f", year,month,day,hour,minute,seconds );
+            } else {
+                int intSeconds= (int)seconds;
+                int nanos= (int)( 1000000000 * ( seconds - intSeconds ) );
+                return DatumRangeUtil.formatISO8601Duration( new int[] { year,month,day,hour,minute,intSeconds,nanos } ); //TODO: test this.
+            }
         }
         public boolean[] want;
         
