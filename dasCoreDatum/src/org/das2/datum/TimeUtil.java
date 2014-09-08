@@ -149,6 +149,8 @@ public final class TimeUtil {
             } else {
                 int intSeconds= (int)seconds;
                 int nanos= (int)( 1000000000 * ( seconds - intSeconds ) );
+                nanos+=micros*1000;
+                nanos+=millis*1000000;
                 return DatumRangeUtil.formatISO8601Duration( new int[] { year,month,day,hour,minute,intSeconds,nanos } ); //TODO: test this.
             }
         }
@@ -164,6 +166,7 @@ public final class TimeUtil {
             result.seconds= this.seconds;
             result.millis= this.millis;
             result.micros= this.micros;
+            result.isLocation= this.isLocation;
             return result;
         }
         
