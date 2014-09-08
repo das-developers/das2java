@@ -380,6 +380,33 @@ public class DatumRangeUtil {
     }
     
     /**
+     * format ISO8601 duration string, for example [1,0,0,1,0,0,0] -> P1YT1H
+     * @param t 6 or 7-element array with [year,mon,day,hour,min,sec,nanos]
+     * @return the formatted ISO8601 duration
+     */
+    public static String formatISO8601Duration( int[] t ) {
+        StringBuilder result= new StringBuilder(24);
+        result.append("P");
+        if ( t[0]!=0 ) result.append(t[0]).append("Y");
+        if ( t[1]!=0 ) result.append(t[1]).append("M");
+        if ( t[2]!=0 ) result.append(t[2]).append("D");
+        if ( t[3]!=0 || t[4]!=0 || t[5]!=0 || ( t.length==7 && t[6]!=0 ) ) {
+            result.append("T");
+            if ( t[3]!=0 ) result.append(t[3]).append("H");
+            if ( t[4]!=0 ) result.append(t[4]).append("M");
+            if ( t[5]!=0 || ( t.length==7 && t[6]!=0 ) ) {
+                if ( t.length<7 || t[6]==0 ) {
+                    result.append(t[5]).append("S");
+                } else {
+                    double sec= t[5] + t[6]/1000000000.;
+                    result.append( sec ).append("S");
+                }
+            }
+        }
+        return result.toString();
+    }
+    
+    /**
      * returns the time found in an iso8601 string, or null.  This supports
      * periods (durations) as in: 2007-03-01T13:00:00Z/P1Y2M10DT2H30M
      * Other examples:
