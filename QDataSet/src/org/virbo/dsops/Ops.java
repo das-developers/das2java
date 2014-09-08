@@ -6001,6 +6001,10 @@ public class Ops {
         return DataSetUtil.asDataSet(m,SemanticOps.getUnits(ds));
     }
     
+    public static QDataSet mean( Object o ) {
+        return mean( dataset(o) );
+    }
+    
     /**
      * return the most frequently occurring element.
      * @param ds rank 1 dataset, that does not contain fill or NaN.
@@ -6043,6 +6047,10 @@ public class Ops {
         DataSetUtil.copyDimensionProperties( ds,result );
         return result;
         
+    }
+    
+    public static QDataSet median( Object o ) {
+        return median( dataset(o) );
     }
     
     /**
@@ -6114,6 +6122,10 @@ public class Ops {
         return DataSetUtil.asDataSet( ans, SemanticOps.getUnits(ds) );
     }
     
+    public static QDataSet stddev( Object o ) {
+        return stddev( dataset(o) );
+    }
+    
     /**
      * 1-D standard deviation function.
      * @param ds rank 1 dataset.
@@ -6142,6 +6154,10 @@ public class Ops {
         return DataSetUtil.asDataSet( result, SemanticOps.getUnits(ds).getOffsetUnits() );
     }
 
+    public static QDataSet variance( Object o ) {
+        return variance( dataset(o) );
+    }
+    
     /**
      * 1-D variance function.
      * @param ds rank 1 dataset.
@@ -6150,7 +6166,7 @@ public class Ops {
      * @see #stddev
      */
     public static QDataSet variance( QDataSet ds ) {
-        return Ops.pow(ds,2);
+        return Ops.pow(stddev(ds),2);
     }
     
        
