@@ -108,6 +108,9 @@ public class QubeDataSetIterator implements DataSetIterator {
 
         public IndexListIterator(QDataSet ds) {
             this.ds = ds;
+            if ( ds.rank()!=1 ) {
+                throw new IllegalArgumentException("list of indeces dataset must be rank 1");
+            }
             this.index = -1;
         }
 
