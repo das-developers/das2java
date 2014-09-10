@@ -1399,8 +1399,9 @@ public class Ops {
     /**
      * element-wise equality test.  1.0 is returned where the two datasets are
      * equal.  Fill is returned where either measurement is invalid.
-     * @param ds
-     * @return
+     * @param ds1 rank n dataset
+     * @param ds2 rank m dataset with compatible geometry.
+     * @return rank n or m dataset.
      */
     public static QDataSet eq(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
