@@ -142,6 +142,9 @@ public class QubeDataSetIterator implements DataSetIterator {
 
         public IndexListIteratorFactory(QDataSet ds) {
             this.ds = ds;
+            if ( ds.rank()!=1 ) {
+                throw new IllegalArgumentException("list of indeces dataset must be rank 1");
+            }
         }
 
         public DimensionIterator newIterator(int length) {
