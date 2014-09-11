@@ -1204,9 +1204,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         QDataSet outDescriptor=null;
         
         QDataSet ticks1= null;
+        
+        JoinDataSet jds= new JoinDataSet(2);
         for ( int i=0; i<ltickV.length; i++ ) {
             ex.putValue( 0,uc.convert(ltickV[i]) );
-            QDataSet ticks= ltcaFunction.value(ex);
+            jds.join( ArrayDataSet.copy(double.class,ex) );
+        }
+        jds.putProperty( QDataSet.BUNDLE_1, jds.slice(0).property(QDataSet.BUNDLE_0) );
+        QDataSet tickss= ltcaFunction.values(jds);
+                
+        for ( int i=0; i<ltickV.length; i++ ) {
+            QDataSet ticks= tickss.slice(i);
             if ( outDescriptor==null ) {
                 outDescriptor= (QDataSet) ticks.property(QDataSet.BUNDLE_0);
                 if ( outDescriptor!=null ) {
