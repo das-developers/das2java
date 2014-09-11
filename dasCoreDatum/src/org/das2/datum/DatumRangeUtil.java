@@ -1655,13 +1655,16 @@ public class DatumRangeUtil {
     /**
      * return the union of a DatumRange and Datum.  If they do not intersect, the
      * range between the two is included as well.
-     * @param range
+     * @param range the range or null.  If range is null, then new DatumRange( include, include ) is returned.
      * @param include a datum to add this this range.  If its the max, then
      * it will be the end of the datum range, not included.
      * @return DatumRange containing all three boundaries of the range and datum
      * @throws InconvertibleUnitsException 
      */
     public static DatumRange union( DatumRange range, Datum include ) {
+        if ( range==null ) {
+            return new DatumRange( include, include );
+        }
         Units units= range.getUnits();
         double s11= range.min().doubleValue(units);
         double s12= include.doubleValue(units);
@@ -1675,12 +1678,14 @@ public class DatumRangeUtil {
     /**
      * return the union of two DatumRanges.  If they do not intersect, the
      * range between the two is included as well.
-     * @param range
-     * @param include
+     * @param range the range, or null.  If range is null then include is returned.
+     * @param include the DatumRange to include.
      * @return DatumRange containing all four boundaries of the two datum ranges.
      * @throws InconvertibleUnitsException 
      */
     public static DatumRange union( DatumRange range, DatumRange include ) {
+        if ( include==null ) throw new NullPointerException("include argument is null");
+        if ( range==null ) return include;
         Units units= range.getUnits();
         double s11= range.min().doubleValue(units);
         double s12= include.min().doubleValue(units);
