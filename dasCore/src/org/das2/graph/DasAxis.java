@@ -1158,10 +1158,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         logger.fine("updateTCADataSet");
 
         if ( valueIsAdjusting() ) {
-            //TODO: https://sourceforge.net/tracker/index.php?func=detail&aid=3611281&group_id=199733&atid=970682
-            // There's still a bug if another axis is adjusting, this will not wait to call.
             logger.finest("someone is adjusting this, wait until later to call.");
-            return; // this assumes someone is going to call update later, which appears to be true.
+            return; 
         }
         
         Units u= getUnits();
