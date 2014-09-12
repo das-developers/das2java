@@ -77,7 +77,7 @@ import org.w3c.dom.Element;
 /**
  * SeriesRender is a high-performance replacement for the SymbolLineRenderer.
  * The SymbolLineRenderer is limited to about 30,000 points, beyond which 
- * contracts for speed start breaking degrading usability.  The goal of the
+ * contracts for speed start breaking, degrading usability.  The goal of the
  * SeriesRenderer is to plot 1,000,000 points without breaking the contracts.
  * 
  * It should be said that five years after its introduction that it's still quite limited.
@@ -229,7 +229,9 @@ public class SeriesRenderer extends Renderer {
             if (colorByDataSet != null) {
                 for (int i = 0; i < count; i++) {
                     int icolor = colors[i];
-                    g.drawImage(coloredPsyms[icolor], (int)dpsymsPath[i * 2] - cmx, (int)dpsymsPath[i * 2 + 1] - cmy, lparent);
+                    if ( icolor>=0 ) {
+                        g.drawImage(coloredPsyms[icolor], (int)dpsymsPath[i * 2] - cmx, (int)dpsymsPath[i * 2 + 1] - cmy, lparent);
+                    }
                 }
             } else {
                 try {
@@ -281,9 +283,10 @@ public class SeriesRenderer extends Renderer {
 
             if (colorByDataSet != null) {
                 for (int i = 0; i < count; i++) {
-                    graphics.setColor(ccolors[colors[i]]);
-//                    psym.draw(graphics, ipsymsPath[i * 2], ipsymsPath[i * 2 + 1], fsymSize, fillStyle);
-                    psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                    if ( colors[i]>=0 ) {
+                        graphics.setColor(ccolors[colors[i]]);
+                        psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                    }
                 }
 
             } else {
@@ -410,8 +413,12 @@ public class SeriesRenderer extends Renderer {
                     dpsymsPath[i * 2 + 1] = dy;
                     if ( wdsz!=null && colorByDataSet1 != null && fcolorBar!=null ) {
                         try {
-                            if ( wdsz.value(index)>0 ) haveValidColor= true;
-                            colors[i] = fcolorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
+                            if ( wdsz.value(index)>0 ) {
+                                haveValidColor= true;
+                                colors[i] = fcolorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
+                            } else {
+                                colors[i] = -1;
+                            }
                         } catch ( NullPointerException ex ) {
                             //System.err.println("here391");
                             logger.log( Level.WARNING, ex.getMessage(), ex );
