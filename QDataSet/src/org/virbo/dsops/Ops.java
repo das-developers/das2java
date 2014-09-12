@@ -5422,33 +5422,34 @@ public class Ops {
      * the 1st and 2nd indeces with equal weight, 1.1 means
      * 90% of the first mixed with 10% of the second.  No extrapolation is
      * done, data with findex&lt;0 or findex&gt;(vv.length()-1) are assigned the
-     * first or last value.
+     * first or last value.  
+     * Only modest extrapolations where findex&gt;=0.5 and findex&lt;=L-0.5 are allowed.
+     * The findex parameter must be dimensionless, to ensure that the caller is not passing in physical data.
      *
      * Note there is no check on CADENCE.
-     * Note nothing is done with DEPEND_0, presumably because was already
-     * calculated and used for findex.
+     * Note nothing is done with DEPEND_0, presumably because was already calculated and used for findex.
      * 
-     * @param vv rank 1 dataset that is the data to be interpolated.
-     * @param findex rank N dataset of fractional indeces.  This must be dimensionless and is typically calculated by the findex command.
+     * @param vv rank 1 dataset having length L that is the data to be interpolated.
+     * @param findex rank N dataset of fractional indeces.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return the result.  
-     * @see #interpolateMod interpolateMode for data like longitude where 259 deg is 2 degrees away from 1 deg.
+     * @see #interpolateMod for data like longitude where 259 deg is 2 degrees away from 1 deg.
      */
-    public static QDataSet interpolate(QDataSet vv, QDataSet findex) {
+    public static QDataSet interpolate( QDataSet vv, QDataSet findex ) {
         if ( vv.rank()!=1 ) {
             throw new IllegalArgumentException("vv is not rank1");
         }
         if ( !isDimensionless(findex) ) throw new IllegalArgumentException("findex argument should be dimensionless, expected output from findex command.");
         QDataSet fex0= extent(findex);
         if ( ( fex0.value(1)-vv.length() ) / vv.length() > 100 ) {
-            logger.warning("findex looks suspicious, where its max will result in unrealistic extrapolations");
+            logger.warning("findex looks suspicious, where its max would result in unrealistic extrapolations");
         }
         if ( fex0.value(0) / vv.length() < -100 ) {
-            logger.warning("findex looks suspicious, where its min will result in unrealistic extrapolations");
+            logger.warning("findex looks suspicious, where its min would result in unrealistic extrapolations");
         }
         
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex));
         QubeDataSetIterator it = new QubeDataSetIterator(findex);
-        int ic0, ic1;
+        int ic0=0, ic1=0;
         int n = vv.length();
 
         QDataSet wds= DataSetUtil.weightsDataSet( vv );
@@ -5459,6 +5460,9 @@ public class Ops {
 
         QDataSet wfindex= DataSetUtil.weightsDataSet(findex);
         wfindex= copy(wfindex);
+        
+        // Starting with v2014a_12, immodest extrapolations beyond 0.5 are no longer allowed.
+        boolean noExtrapolate= true;
         
         while (it.hasNext()) {
             it.next();
@@ -5471,19 +5475,25 @@ public class Ops {
             
             double ff = it.getValue(findex);
 
-            if (ff < 0) {
+            if ( ff>=0 && ff<n-1 ) {
+                ic0 = (int) Math.floor(ff);
+                ic1 = ic0 + 1;                
+            } else if ( noExtrapolate && ff < -0.5 ) {  // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if ( noExtrapolate && ff >= n - 0.5 ) { // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if (ff < 0.0 ) {
                 ic0 = 0; // extrapolate
-
                 ic1 = 1;
             } else if (ff >= n - 1) {
                 ic0 = n - 2; // extrapolate
-
                 ic1 = n - 1;
-            } else {
-                ic0 = (int) Math.floor(ff);
-                ic1 = ic0 + 1;
-            }
-
+            } 
+            
             double alpha = ff - ic0;
 
             if ( wds.value(ic0)>0 && wds.value(ic1)>0 ) {
@@ -5499,17 +5509,22 @@ public class Ops {
 
         }
         DataSetUtil.copyDimensionProperties( vv, result );
-        QDataSet depend0= (QDataSet) findex.property(QDataSet.DEPEND_0);
-        if ( depend0!=null ) {
-            result.putProperty( QDataSet.DEPEND_0, depend0 );
+        
+        //allow findex0 to provide DEPEND_0 and DEPEND_1.
+        for ( int i=0; i<=findex.rank(); i++ ) {
+            QDataSet depend= (QDataSet) findex.property( "DEPEND_"+i );
+            if ( depend!=null ) {
+                result.putProperty( "DEPEND_"+i, depend );
+            }
         }
+
         if ( hasFill ) {
             result.putProperty( QDataSet.FILL_VALUE, fill );
         }
 
         return result;
     }
-
+    
     /**
      * 
      * @param vv object that can be converted to rank 1 dataset, such as array. These are the rank 1 dataset that is the data to be interpolated.
@@ -5524,11 +5539,12 @@ public class Ops {
      * interpolate values from rank 2 dataset vv using fractional indeces
      * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
      *
-     * @see #findex the 1-D findex command.
      * @param vv rank 2 dataset.
-     * @param findex0 rank N dataset of fractional indeces for the zeroth index.  This must be dimensionless and is typically calculated by the findex command.
-     * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless and is typically calculated by the findex command.
+     * @param findex0 rank N dataset of fractional indeces for the zeroth index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
+     * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
      * @return rank N dataset 
+     * @see #findex the 1-D findex command.
+     * @see #interpolateGrid 
      */
     public static QDataSet interpolate(QDataSet vv, QDataSet findex0, QDataSet findex1) {
 
@@ -5543,28 +5559,32 @@ public class Ops {
         }
         QDataSet fex0= extent(findex0);
         if ( ( fex0.value(1)-vv.length() ) / vv.length() > 100 ) {
-            logger.warning("findex0 looks suspicious, where its max will result in unrealistic extrapolations");
+            logger.warning("findex0 looks suspicious, where its max would result in unrealistic extrapolations");
         }
         if ( fex0.value(0) / vv.length() < -100 ) {
-            logger.warning("findex0 looks suspicious, where its min will result in unrealistic extrapolations");
+            logger.warning("findex0 looks suspicious, where its min would result in unrealistic extrapolations");
         }
         QDataSet fex1= extent(findex1);
         if ( ( fex1.value(1)-vv.length(0) ) / vv.length(0) > 100 ) {
-            logger.warning("findex1 looks suspicious, where its max will result in unrealistic extrapolations");
+            logger.warning("findex1 looks suspicious, where its max would result in unrealistic extrapolations");
         }
         if ( fex1.value(0) / vv.length(0) < -100 ) {
-            logger.warning("findex1 looks suspicious, where its min will result in unrealistic extrapolations");
+            logger.warning("findex1 looks suspicious, where its min would result in unrealistic extrapolations");
         }
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex0));
 
         QDataSet wds= DataSetUtil.weightsDataSet(vv);
 
         QubeDataSetIterator it = new QubeDataSetIterator(findex0);
-        int ic00, ic01, ic10, ic11;
+        int ic00=0, ic01=0, ic10=0, ic11=0;
         int n0 = vv.length();
         int n1 = vv.length(0);
 
         double fill= -1e38;
+        boolean hasFill= false;
+        
+        // Starting with v2014a_12, immodest extrapolations beyond 0.5 are no longer allowed.
+        boolean noExtrapolate= true;
         
         while (it.hasNext()) {
             it.next();
@@ -5572,26 +5592,42 @@ public class Ops {
             double ff0 = it.getValue(findex0);
             double ff1 = it.getValue(findex1);
 
-            if (ff0 < 0) {
+            if ( ff0>=0 && ff0<n0-1 ) {
+                ic00 = (int) Math.floor(ff0);
+                ic01 = ic00 + 1;                
+            } else if ( noExtrapolate && ff0 < -0.5 ) {  // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if ( noExtrapolate && ff0 >= n0 - 0.5 ) { // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if (ff0 < 0) {
                 ic00 = 0; // extrapolate
                 ic01 = 1;
             } else if (ff0 >= n0 - 1) {
                 ic00 = n0 - 2; // extrapolate
                 ic01 = n0 - 1;
-            } else {
-                ic00 = (int) Math.floor(ff0);
-                ic01 = ic00 + 1;
-            }
+            } 
 
-            if (ff1 < 0) {
+            if ( ff1>=0 && ff1<n1-1 ) {
+                ic10 = (int) Math.floor(ff1);
+                ic11 = ic10 + 1;                
+            } else if ( noExtrapolate && ff1 < -0.5 ) {  // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if ( noExtrapolate && ff1 >= n1 - 0.5 ) { // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;            
+            } else if (ff1 < 0) {
                 ic10 = 0; // extrapolate
                 ic11 = 1;
             } else if (ff1 >= n1 - 1) {
                 ic10 = n1 - 2; // extrapolate
                 ic11 = n1 - 1;
-            } else {
-                ic10 = (int) Math.floor(ff1);
-                ic11 = ic10 + 1;
             }
 
             double alpha0 = ff0 - ic00;
@@ -5614,19 +5650,24 @@ public class Ops {
                 it.putValue(result, value);
             } else {
                 it.putValue(result, fill );
+                hasFill= true;
             }
 
         }
+
         DataSetUtil.copyDimensionProperties( vv, result );
-        QDataSet depend0= (QDataSet) findex0.property(QDataSet.DEPEND_0);
-        if ( depend0!=null ) {
-            result.putProperty( QDataSet.DEPEND_0, depend0 );
+        
+        //allow findex0 to provide DEPEND_0 and DEPEND_1.
+        for ( int i=0; i<=findex0.rank(); i++ ) {
+            QDataSet depend= (QDataSet) findex0.property( "DEPEND_"+i );
+            if ( depend!=null ) {
+                result.putProperty( "DEPEND_"+i, depend );
+            }
         }
-        QDataSet depend1= (QDataSet) findex1.property(QDataSet.DEPEND_1);
-        if ( depend1!=null ) {
-            result.putProperty( QDataSet.DEPEND_1, depend1 );
+
+        if ( hasFill ) {
+            result.putProperty( QDataSet.FILL_VALUE, fill );
         }
-        result.putProperty( QDataSet.FILL_VALUE, fill );
         
         return result;
     }
@@ -5670,7 +5711,7 @@ public class Ops {
         
         DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex));
         QubeDataSetIterator it = new QubeDataSetIterator(findex);
-        int ic0, ic1;
+        int ic0=0, ic1=0;
         int n = vv.length();
 
         QDataSet wds= DataSetUtil.weightsDataSet( vv );
@@ -5685,6 +5726,8 @@ public class Ops {
         double dmod= DataSetUtil.asDatum(mod).doubleValue( SemanticOps.getUnits(vv).getOffsetUnits() );
         double dmodLimit= dmod/2;
         
+        boolean noExtrapolate= true;
+        
         while (it.hasNext()) {
             it.next();
 
@@ -5696,17 +5739,23 @@ public class Ops {
             
             double ff = it.getValue(findex);
 
-            if (ff < 0) {
+            if ( ff>=0 && ff<n-1 ) {
+                ic0 = (int) Math.floor(ff);
+                ic1 = ic0 + 1;                
+            } else if ( noExtrapolate && ff < -0.5 ) {  // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if ( noExtrapolate && ff >= n - 0.5 ) { // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if (ff < 0) {
                 ic0 = 0; // extrapolate
-
                 ic1 = 1;
             } else if (ff >= n - 1) {
                 ic0 = n - 2; // extrapolate
-
                 ic1 = n - 1;
-            } else {
-                ic0 = (int) Math.floor(ff);
-                ic1 = ic0 + 1;
             }
 
             double alpha = ff - ic0;
@@ -5729,10 +5778,15 @@ public class Ops {
 
         }
         DataSetUtil.copyDimensionProperties( vv, result );
-        QDataSet depend0= (QDataSet) findex.property(QDataSet.DEPEND_0);
-        if ( depend0!=null ) {
-            result.putProperty( QDataSet.DEPEND_0, depend0 );
+        
+        //allow findex to provide DEPEND_0 and DEPEND_1.
+        for ( int i=0; i<=findex.rank(); i++ ) {
+            QDataSet depend= (QDataSet) findex.property( "DEPEND_"+i );
+            if ( depend!=null ) {
+                result.putProperty( "DEPEND_"+i, depend );
+            }
         }
+
         if ( hasFill ) {
             result.putProperty( QDataSet.FILL_VALUE, fill );
         }
@@ -5770,7 +5824,7 @@ public class Ops {
         QDataSet wds= DataSetUtil.weightsDataSet(vv);
 
 
-        int ic00, ic01, ic10, ic11;
+        int ic00=0, ic01=0, ic10=0, ic11=0;
         int n0 = vv.length();
         int n1 = vv.length(0);
 
@@ -5779,6 +5833,8 @@ public class Ops {
         
         QubeDataSetIterator it = new QubeDataSetIterator(findex0);
         
+        boolean noExtrapolate= true;
+        boolean hasFill= false;
         while (it.hasNext()) {
             it.next();
             QubeDataSetIterator it2= new QubeDataSetIterator(findex1);
@@ -5786,30 +5842,46 @@ public class Ops {
             while ( it2.hasNext() ) {
                 it2.next();
                 double ff0 = it.getValue(findex0);
-
-                if (ff0 < 0) {
+                
+                if ( ff0>=0 && ff0<n0-1 ) {
+                    ic00 = (int) Math.floor(ff0);
+                    ic01 = ic00 + 1;                
+                } else if ( noExtrapolate && ff0 < -0.5 ) {  // would extrapolate immodestly
+                    result.putValue( it.index(0),it2.index(0),fill );
+                    hasFill= true;
+                    continue;
+                } else if ( noExtrapolate && ff0 >= n0 - 0.5 ) { // would extrapolate immodestly
+                    result.putValue( it.index(0),it2.index(0),fill );
+                    hasFill= true;
+                    continue;
+                } else if (ff0 < 0) {
                     ic00 = 0; // extrapolate
                     ic01 = 1;
                 } else if (ff0 >= n0 - 1) {
                     ic00 = n0 - 2; // extrapolate
                     ic01 = n0 - 1;
-                } else {
-                    ic00 = (int) Math.floor(ff0);
-                    ic01 = ic00 + 1;
-                }
-
+                } 
+                
                 double ff1 = it2.getValue(findex1);
 
-                if (ff1 < 0) {
+                if ( ff1>=0 && ff1<n1-1 ) {
+                    ic10 = (int) Math.floor(ff1);
+                    ic11 = ic10 + 1;                
+                } else if ( noExtrapolate && ff1 < -0.5 ) {  // would extrapolate immodestly
+                    result.putValue( it.index(0),it2.index(0),fill );
+                    hasFill= true;
+                    continue;
+                } else if ( noExtrapolate && ff1 >= n1 - 0.5 ) { // would extrapolate immodestly
+                    result.putValue( it.index(0),it2.index(0),fill );
+                    hasFill= true;
+                    continue;            
+                } else if (ff1 < 0) {
                     ic10 = 0; // extrapolate
                     ic11 = 1;
                 } else if (ff1 >= n1 - 1) {
                     ic10 = n1 - 2; // extrapolate
                     ic11 = n1 - 1;
-                } else {
-                    ic10 = (int) Math.floor(ff1);
-                    ic11 = ic10 + 1;
-                }
+                }                
 
                 double alpha0 = ff0 - ic00;
                 double alpha1 = ff1 - ic10;
@@ -5844,7 +5916,9 @@ public class Ops {
         if ( depend1!=null ) {
             result.putProperty( QDataSet.DEPEND_1, depend1 );
         }
-        result.putProperty( QDataSet.FILL_VALUE, fill );
+        if ( hasFill ) {
+            result.putProperty( QDataSet.FILL_VALUE, fill );
+        }
                 
         QDataSet result1= result;
         if ( slice0 ) {
