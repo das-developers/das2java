@@ -15,7 +15,7 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dsops.Ops;
 
 /**
- *
+ * Example of a QFunction used to label the TCAs. 
  * @author jbf
  */
 public class QFunctionLarry extends AbstractQFunction {
