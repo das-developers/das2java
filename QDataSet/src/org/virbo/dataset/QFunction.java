@@ -11,6 +11,8 @@ package org.virbo.dataset;
  *
  * Implementations will generally extend AbstractQFunction, which implements
  * values() and exampleOutput().
+ * 
+ * See 
  *
  * @author jbf
  */
@@ -62,7 +64,7 @@ public interface QFunction {
      * Note, for functions that have only one argument, like F(T)->[R,MLT,MLAT], this
      * may return a rank 0 dataset.  Clients should pass a dataset to the value method a
      * dataset with the same geometry.
-     * @return rank 1 bundle of N elements.
+     * @return rank 1 bundle of N elements, or rank 0 for functions when the function has just one parameter.
      */
     QDataSet exampleInput();
 
