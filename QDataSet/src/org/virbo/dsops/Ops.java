@@ -5829,7 +5829,6 @@ public class Ops {
         int n1 = vv.length(0);
 
         double fill= -1e38;
-        result.putProperty( QDataSet.FILL_VALUE, fill );
         
         QubeDataSetIterator it = new QubeDataSetIterator(findex0);
         
@@ -5902,6 +5901,7 @@ public class Ops {
                     double value= vv00 * beta0 * beta1 + vv01 * beta0 * alpha1 + vv10 * alpha0 * beta1 + vv11 * alpha0 * alpha1;
                     result.putValue( it.index(0),it2.index(0),value );
                 } else {
+                    hasFill= true;
                     result.putValue( it.index(0),it2.index(0),fill );
                 }
             } // second index
