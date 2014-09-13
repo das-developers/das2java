@@ -12,8 +12,7 @@ package org.virbo.dataset;
  * Implementations will generally extend AbstractQFunction, which implements
  * values() and exampleOutput().
  * 
- * See 
- *
+ * @see http://jfaden.net:8080/hudson/job/autoplot-test037/lastSuccessfulBuild/artifact/tcaQFunctionTest.jy
  * @author jbf
  */
 public interface QFunction {
