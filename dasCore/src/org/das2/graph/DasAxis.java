@@ -236,6 +236,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /* TCA RELATED INSTANCE MEMBERS */
     private QFunction tcaFunction;
     private QDataSet tcaData = null;
+    private final Object tcaDataLock= new Object();
+    
     private String dataset = "";
     private boolean drawTca;
     
@@ -1205,22 +1207,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         
         QDataSet ticks1= null;
         
-        JoinDataSet jds;
-        jds= new JoinDataSet( ex.rank()+1 );
+        JoinDataSet timeDs= new JoinDataSet(2);
         for ( int i=0; i<ltickV.length; i++ ) {
-            ArrayDataSet ex1= ArrayDataSet.copy(ex);
-            if ( ex.rank()==0 ) {                
-                ex1.putValue( uc.convert(ltickV[i]) );
-            } else if ( ex.rank()==1 ) {
-                ex1.putValue( 0, uc.convert(ltickV[i]) );
-            }
-            jds.join( ex1 );
+            ex.putValue( 0,uc.convert(ltickV[i]) );
+            timeDs.join( ArrayDataSet.copy(double.class,ex) );
         }
-        if ( ex.rank()==1 ) {
-            jds.putProperty( QDataSet.BUNDLE_1, jds.slice(0).property(QDataSet.BUNDLE_0) );
-        }            
-        
-        QDataSet tickss= ltcaFunction.values(jds);
+        timeDs.putProperty( QDataSet.BUNDLE_1, timeDs.slice(0).property(QDataSet.BUNDLE_0) );
+        QDataSet tickss= ltcaFunction.values(timeDs);
                 
         for ( int i=0; i<ltickV.length; i++ ) {
             QDataSet ticks= tickss.slice(i);
@@ -1228,7 +1221,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 outDescriptor= (QDataSet) ticks.property(QDataSet.BUNDLE_0);
                 if ( outDescriptor!=null ) {
                     int n= outDescriptor.length();
-                    if ( outDescriptor.property(QDataSet.NAME,0)==null && 
+                    if ( outDescriptor.property(QDataSet.NAME,0)==null && // if the bundle descriptor attached to the ticks doesn't have labels, ignore it.
                          outDescriptor.property(QDataSet.LABEL,0)==null && 
                          ( n<1 || ( outDescriptor.property(QDataSet.NAME,n-1)==null && 
                                     outDescriptor.property(QDataSet.LABEL,n-1)==null ) ) ) {
@@ -1241,12 +1234,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 ltcaData.join(ticks);
                 dep0.putValue(i,ltickV[i]);
             } else {
-                logger.finer("skipping irregular record: "+ticks);
+                logger.log(Level.FINER, "skipping irregular record: {0}", ticks);
             }
         }
-        ltcaData.putProperty( QDataSet.BUNDLE_1, outDescriptor );
+        if ( outDescriptor==null ) {
+            outDescriptor= (QDataSet)tickss.property(QDataSet.BUNDLE_1);
+        }
+        ltcaData.putProperty( QDataSet.BUNDLE_1, outDescriptor ); //labels will come from here, units may be null.
         ltcaData.putProperty( QDataSet.DEPEND_0, dep0 );
-                    
+            
         this.tcaData= ltcaData;
         update();
         
@@ -2404,6 +2400,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /**
+     * draw the TCA (Ephemeris) labels on the event queue.
+     * @param g graphics context.
+     * @param value value to look up.
+     * @param x tick position relative to the canvas
+     * @param y tick position relative to the canvas
+     * @param width nominal width (?), not used.
+     */
     private void drawTCAItems(Graphics g, Datum value, int x, int y, int width) {
         int index;
 
@@ -2411,18 +2415,23 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         double pixelSize;
         double tcaValue;
 
-        if (tcaData == null || tcaData.length() == 0) {
+        QDataSet ltcaData= tcaData;
+        
+        if ( ltcaData == null || ltcaData.length() == 0) {
             return;
         }
 
-        QDataSet ltcaData;
-        try {
-            ltcaData= DDataSet.copy(tcaData);
-        } catch ( IllegalArgumentException ex ) {
-            ltcaData= DDataSet.copy(tcaData);
-        }
-        
         QDataSet dep0= (QDataSet)ltcaData.property(QDataSet.DEPEND_0);
+        try { // special code to make a local copy of the dataset needs to copy slices since units can be enumeration or data units.
+            //JoinDataSet jds= new JoinDataSet(ltcaData.slice(0));
+            //for ( int i=1; i<ltcaData.length(); i++ ) {
+            //    jds.join(ltcaData.slice(i));
+            //}
+            //ltcaData= jds;
+        } catch ( IllegalArgumentException ex ) {
+            ltcaData= DDataSet.copy(ltcaData);
+        }
+                
 
         baseLine = y;
         leftEdge = x;
