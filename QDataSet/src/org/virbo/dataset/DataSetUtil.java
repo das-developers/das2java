@@ -48,6 +48,8 @@ public class DataSetUtil {
 
     /**
      * creates a dataset of integers 0,1,2,...,n-1.
+     * @param n the bound
+     * @return the dataset
      */
     public static MutablePropertyDataSet indexGenDataSet(int n) {
         return new IndexGenDataSet(n);
@@ -58,6 +60,10 @@ public class DataSetUtil {
      * This is danger code, because the CADENCE must be reset if the UNITS are reset.
      * use tagGenDataSet( int n, final double start, final double cadence, Units units ) if
      * units are going to be specified.
+     * @param n the number of elements
+     * @param start the value for the first element.
+     * @param cadence the step size between elements
+     * @return  the dataset
      */
     public static MutablePropertyDataSet tagGenDataSet(int n, final double start, final double cadence) {
         IndexGenDataSet result = new IndexGenDataSet(n) {
@@ -75,6 +81,11 @@ public class DataSetUtil {
      * creates a dataset with the given cadence, start and length.  QDataSet.CADENCE
      * will be set based on the units specified.  Do not change the units of the
      * result without updating cadence as well.
+     * @param n the number of elements
+     * @param start the value for the first element.
+     * @param cadence the step size between elements
+     * @param units the units of the dataset, for example Units.cm
+     * @return  the dataset
      */
     public static MutablePropertyDataSet tagGenDataSet(int n, final double start, final double cadence, Units units ) {
         return new TagGenDataSet( n, cadence, start, units );
@@ -82,6 +93,9 @@ public class DataSetUtil {
 
     /**
      * creates a dataset with the given cadence, start and length.
+     * @param n the number of elements
+     * @param value the value for each element
+     * @return the dataset
      */
     public static MutablePropertyDataSet replicateDataSet(int n, final double value) {
         IndexGenDataSet result = new IndexGenDataSet(n) {
@@ -227,9 +241,10 @@ public class DataSetUtil {
     }
 
     /**
-     * Return the set of non-structural properties of the dataset, like the UNITS and CADENCE.
+     * Return the names of non-structural properties of the dataset, like the UNITS and CADENCE.
      * These are the dimensionProperties, plus others specific to the dataset, such as CADENCE and
      * DELTA_PLUS.
+     * @return the names of non-structural properties of the dataset, like the UNITS and CADENCE.
      */
     public static String[] propertyNames() {
         return new String[]{
@@ -665,7 +680,7 @@ public class DataSetUtil {
                 return "Error: "+ex;
             }
         }
-
+        
         if ( ds.rank()==1 && QDataSet.VALUE_BINS_MIN_MAX.equals(ds.property(QDataSet.BINS_0)) ) {
             if (  ds.value(0) <= ds.value(1) ) {
                 DatumRange dr= new DatumRange( ds.value(0), ds.value(1), u );
