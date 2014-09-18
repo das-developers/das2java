@@ -67,6 +67,7 @@ import org.das2.components.DasProgressWheel;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.OrbitDatumRange;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.UnitsConverter;
@@ -77,9 +78,11 @@ import org.das2.util.TickleTimer;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QFunction;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /** 
  * One dimensional axis component that transforms data to device space and back, 
@@ -1163,7 +1166,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             logger.finest("someone is adjusting this, wait until later to call.");
             return; 
         }
-        
+
         Units u= getUnits();
         DatumVector tickVDV= getTickV().tickV;
         if ( !u.isConvertableTo(tickVDV.getUnits()) ) {
@@ -1171,81 +1174,90 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         double[] ltickV = tickVDV.toDoubleArray(u);
 
-        logger.log(Level.FINEST, "update for {0} to {1}", new Object[]{tickVDV.get(0), tickVDV.get(tickVDV.getLength()-1)});
-        
-        JoinDataSet ltcaData= new JoinDataSet(2);
-        ArrayDataSet ex= ArrayDataSet.copy( ltcaFunction.exampleInput() );
-        QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
-        Units tcaUnits;
-        if ( bds==null ) {
-            logger.info("no bundle descriptor, dealing with it.");
-            tcaUnits= (Units) ex.property( QDataSet.UNITS, 0 );
-        } else {
-            tcaUnits= (Units)bds.property( QDataSet.UNITS, 0 );
-        }
-        if ( tcaUnits==null ) tcaUnits=Units.dimensionless;
-
-        UnitsConverter uc;
-        if ( !u.isConvertableTo(tcaUnits) ) {
-            logger.info("tca units are not convertable");
-            return;
-        }
-        uc= UnitsConverter.getConverter( u, tcaUnits );
-
-        DatumRange context= getDatumRange(); // this may not contain all the ticks.
-        context= DatumRangeUtil.union( context, u.createDatum( uc.convert(ltickV[0]) ) );
-        context= DatumRangeUtil.union( context, u.createDatum( uc.convert(ltickV[ltickV.length-1]) ) );
-        ex.putProperty( QDataSet.CONTEXT_0, 0, org.virbo.dataset.DataSetUtil.asDataSet( context ) );
-        QDataSet dx= org.virbo.dataset.DataSetUtil.asDataSet( getDatumRange().width().divide( getColumn().getWidth() ) );
-        ex.putProperty( QDataSet.DELTA_PLUS, 0, dx );
-        ex.putProperty( QDataSet.DELTA_MINUS, 0, dx );
-
         DDataSet dep0= DDataSet.createRank1(ltickV.length);
         dep0.putProperty(QDataSet.UNITS,u);
+            
+        logger.log(Level.FINEST, "update for {0} to {1}", new Object[]{tickVDV.get(0), tickVDV.get(tickVDV.getLength()-1)});
+        
+        try {
 
-        QDataSet outDescriptor=null;
-        
-        QDataSet ticks1= null;
-        
-        JoinDataSet timeDs= new JoinDataSet(2);
-        for ( int i=0; i<ltickV.length; i++ ) {
-            ex.putValue( 0,uc.convert(ltickV[i]) );
-            timeDs.join( ArrayDataSet.copy(double.class,ex) );
-        }
-        timeDs.putProperty( QDataSet.BUNDLE_1, timeDs.slice(0).property(QDataSet.BUNDLE_0) );
-        QDataSet tickss= ltcaFunction.values(timeDs);
-                
-        for ( int i=0; i<ltickV.length; i++ ) {
-            QDataSet ticks= tickss.slice(i);
-            if ( outDescriptor==null ) {
-                outDescriptor= (QDataSet) ticks.property(QDataSet.BUNDLE_0);
-                if ( outDescriptor!=null ) {
-                    int n= outDescriptor.length();
-                    if ( outDescriptor.property(QDataSet.NAME,0)==null && // if the bundle descriptor attached to the ticks doesn't have labels, ignore it.
-                         outDescriptor.property(QDataSet.LABEL,0)==null && 
-                         ( n<1 || ( outDescriptor.property(QDataSet.NAME,n-1)==null && 
-                                    outDescriptor.property(QDataSet.LABEL,n-1)==null ) ) ) {
-                        outDescriptor= null;
+            JoinDataSet ltcaData= new JoinDataSet(2);
+            ArrayDataSet ex= ArrayDataSet.copy( ltcaFunction.exampleInput() ); // can be rank 0 or rank 1.
+            QDataSet bds= (QDataSet) ex.property(QDataSet.BUNDLE_0);
+            Units tcaUnits;
+            if ( bds==null ) {
+                logger.info("no bundle descriptor, dealing with it.");
+                tcaUnits= (Units) ex.property( QDataSet.UNITS, 0 );
+            } else {
+                tcaUnits= (Units)bds.property( QDataSet.UNITS, 0 );
+            }
+            if ( tcaUnits==null ) tcaUnits=Units.dimensionless;
+
+            UnitsConverter uc;
+            if ( !u.isConvertableTo(tcaUnits) ) {
+                logger.info("tca units are not convertable");
+                return;
+            }
+            uc= UnitsConverter.getConverter( u, tcaUnits );
+
+            DatumRange context= getDatumRange(); // this may not contain all the ticks.
+            context= DatumRangeUtil.union( context, u.createDatum( uc.convert(ltickV[0]) ) );
+            context= DatumRangeUtil.union( context, u.createDatum( uc.convert(ltickV[ltickV.length-1]) ) );
+            ex.putProperty( QDataSet.CONTEXT_0, 0, org.virbo.dataset.DataSetUtil.asDataSet( context ) );
+            QDataSet dx= org.virbo.dataset.DataSetUtil.asDataSet( getDatumRange().width().divide( getColumn().getWidth() ) );
+            ex.putProperty( QDataSet.DELTA_PLUS, 0, dx );
+            ex.putProperty( QDataSet.DELTA_MINUS, 0, dx );
+
+            QDataSet outDescriptor=null;
+
+            QDataSet ticks1= null;
+
+            JoinDataSet timeDs= new JoinDataSet(ex.rank()+1);
+            for ( int i=0; i<ltickV.length; i++ ) {
+                ex.putValue( 0,uc.convert(ltickV[i]) ); // this is sloppy if ex.rank() is 0, but it will work for ArrayDataSet.
+                timeDs.join( ArrayDataSet.copy(double.class,ex) );
+            }
+            timeDs.putProperty( QDataSet.BUNDLE_1, timeDs.slice(0).property(QDataSet.BUNDLE_0) );
+            QDataSet tickss= ltcaFunction.values(timeDs);
+
+            for ( int i=0; i<ltickV.length; i++ ) {
+                QDataSet ticks= tickss.slice(i);
+                if ( outDescriptor==null ) {
+                    outDescriptor= (QDataSet) ticks.property(QDataSet.BUNDLE_0);
+                    if ( outDescriptor!=null ) {
+                        int n= outDescriptor.length();
+                        if ( outDescriptor.property(QDataSet.NAME,0)==null && // if the bundle descriptor attached to the ticks doesn't have labels, ignore it.
+                             outDescriptor.property(QDataSet.LABEL,0)==null && 
+                             ( n<1 || ( outDescriptor.property(QDataSet.NAME,n-1)==null && 
+                                        outDescriptor.property(QDataSet.LABEL,n-1)==null ) ) ) {
+                            outDescriptor= null;
+                        }
                     }
                 }
+                if ( ticks1==null ) ticks1=ticks;
+                if ( ticks1.length()==ticks.length() ) { // ensure that it's a qube.
+                    ltcaData.join(ticks);
+                    dep0.putValue(i,ltickV[i]);
+                } else {
+                    logger.log(Level.FINER, "skipping irregular record: {0}", ticks);
+                }
             }
-            if ( ticks1==null ) ticks1=ticks;
-            if ( ticks1.length()==ticks.length() ) { // ensure that it's a qube.
-                ltcaData.join(ticks);
-                dep0.putValue(i,ltickV[i]);
-            } else {
-                logger.log(Level.FINER, "skipping irregular record: {0}", ticks);
+            if ( outDescriptor==null ) {
+                outDescriptor= (QDataSet)tickss.property(QDataSet.BUNDLE_1);
             }
+            ltcaData.putProperty( QDataSet.BUNDLE_1, outDescriptor ); //labels will come from here, units may be null.
+            ltcaData.putProperty( QDataSet.DEPEND_0, dep0 );
+
+            this.tcaData= ltcaData;
+            update();
+        } catch ( Exception ex ) { //TODO: provide some feedback!
+            //EnumerationUnits eu= EnumerationUnits.create("tcafeedback");
+            //QDataSet result= Ops.bundle(null,Ops.replicate( Ops.dataset(eu.createDatum("err")), dep0.length() ));
+            //this.tcaData= Ops.link( dep0, result );
+            logger.log(Level.WARNING, "exception occured while reading tca", ex );
+            this.tcaData= null;
+            //update();
         }
-        if ( outDescriptor==null ) {
-            outDescriptor= (QDataSet)tickss.property(QDataSet.BUNDLE_1);
-        }
-        ltcaData.putProperty( QDataSet.BUNDLE_1, outDescriptor ); //labels will come from here, units may be null.
-        ltcaData.putProperty( QDataSet.DEPEND_0, dep0 );
-            
-        this.tcaData= ltcaData;
-        update();
-        
     }
 
     /** TODO
@@ -1676,9 +1688,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             DasProgressWheel tcaProgress= new DasProgressWheel();
             tcaProgress.started();
             tcaProgress.getPanel(this);
-            updateTCADataSet();
-            tcaProgress.finished();
-            repaint();
+            try {
+                updateTCADataSet();
+            } finally {
+                tcaProgress.finished();
+                repaint();
+            }
         }
     }
 
