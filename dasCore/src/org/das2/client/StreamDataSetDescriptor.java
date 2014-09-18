@@ -403,7 +403,9 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     
     private static final byte[] HEADER = { (byte)'d', (byte)'a', (byte)'s', (byte)'2', (byte)0177, (byte)0177 };
     
-    private PacketDescriptor getPacketDescriptor(PushbackInputStream in) throws DasIOException {
+    private PacketDescriptor getPacketDescriptor(PushbackInputStream in) 
+		 throws DasIOException, StreamException 
+	 {
         try {
             byte[] four = new byte[HEADER.length];
             

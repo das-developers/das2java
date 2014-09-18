@@ -51,7 +51,8 @@ public class PacketDescriptor implements Cloneable {
     private Map properties;
     
     /** Creates a new instance of StreamProperties */
-    public PacketDescriptor( Element element ) {
+    public PacketDescriptor( Element element ) throws StreamException 
+	 {
         properties= new HashMap();        
         if (element.getTagName().equals("packet")) {
             processElement(element);
@@ -60,7 +61,8 @@ public class PacketDescriptor implements Cloneable {
         }
     }
     
-    private void processElement(Element element) {
+    private void processElement(Element element) throws StreamException 
+	 {
         NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);
@@ -91,7 +93,9 @@ public class PacketDescriptor implements Cloneable {
         }
     }
     
-    private void processLegacyElement(Element element) {
+    private void processLegacyElement(Element element) 
+		 throws StreamException 
+	 {
         NodeList children= element.getChildNodes();
         for (int i=0; i<children.getLength(); i++) {
             Node node= children.item(i);

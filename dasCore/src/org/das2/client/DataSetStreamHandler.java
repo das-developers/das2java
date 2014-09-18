@@ -237,10 +237,13 @@ public class DataSetStreamHandler implements StreamHandler {
             Units xUnits = base == null ? pd.getXDescriptor().getUnits() : base.getUnits();
             Units yUnits = y.getUnits();
             builder = new VectorDataSetBuilder(xUnits,yUnits);
-            builder.addProperties( Collections.singletonMap( DataSet.PROPERTY_Y_LABEL, y.getProperty("name") ));
+            builder.addProperties( Collections.singletonMap( DataSet.PROPERTY_Y_LABEL, 
+					                    y.getProperty("name") ));
             for ( int i=1; i<pd.getYCount(); i++ ) {
                 StreamMultiYDescriptor smyd= (StreamMultiYDescriptor)pd.getYDescriptor(i);
-                builder.addProperties( Collections.singletonMap( smyd.getName()+ "." + DataSet.PROPERTY_Y_LABEL, smyd.getName()));
+					 Map mTmp = Collections.singletonMap(smyd.getName()+ "." + DataSet.PROPERTY_Y_LABEL, 
+							                       smyd.getName());
+                builder.addProperties( mTmp );
             }
             String srange= (String)y.getProperty("valid_range");
             if ( srange!=null ) {

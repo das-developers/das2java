@@ -27,11 +27,13 @@ import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import org.das2.util.StreamTool;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
     
@@ -39,7 +41,8 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
     private Units units = Units.dimensionless;
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
     
-    public StreamMultiYDescriptor(Element element) {
+    public StreamMultiYDescriptor(Element element) throws StreamException 
+	 {
         if ( element.getTagName().equals("y") ) {
             processElement(element);
         }
@@ -48,22 +51,44 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         }
     }
     
-    private void processElement(Element element) {
-        String name = element.getAttribute("name");
-        if ( name != null) {
-            this.name = name;
-        }
-        String typeStr = element.getAttribute("type");
-        DataTransferType type = DataTransferType.getByName(typeStr);
-    	String unitsString = element.getAttribute("units");
-	if (unitsString != null) {
-            units = Units.getByName(unitsString);
-        }
+    private void processElement(Element element) throws StreamException {
+		 
+		//element.getAttribute returns empty string if attr is not specified
+		//so safe to just use it directly
+      String name = element.getAttribute("name");
+      if ( name != null) {
+         this.name = name;
+      }
+      String typeStr = element.getAttribute("type");
+      DataTransferType type = DataTransferType.getByName(typeStr);
+    	
+		String unitsString = element.getAttribute("units");
+		if (unitsString != null) {
+         units = Units.getByName(unitsString);
+      }
+		
         NamedNodeMap attrs= element.getAttributes();
         for ( int i=0; i<attrs.getLength(); i++ ) {
             Node n= attrs.item(i);
             properties.put( n.getNodeName(), n.getNodeValue() );
         }
+		  
+		  NodeList nl = element.getElementsByTagName("properties");
+        for (int i = 0; i < nl.getLength(); i++) {
+            Element el = (Element) nl.item(i);
+				Map<String,Object> m = StreamTool.processPropertiesElement(el);
+				
+				// make sure we don't conflict with the 3 reserved properites, 
+				// name, type and units
+				for(String sPropName: m.keySet()){
+					if(sPropName.equals("name")||sPropName.equals("type")||
+						sPropName.equals("units"))
+						throw new StreamException("Can't use reserved property names 'name'"+
+							"'type' or 'units' in side a y-plane properties element.");
+				}
+				properties.putAll(m);
+		  }
+		  
     if (type != null) {
             transferType = type;
         }

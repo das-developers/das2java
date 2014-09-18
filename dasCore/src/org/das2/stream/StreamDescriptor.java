@@ -78,7 +78,7 @@ public class StreamDescriptor implements SkeletonDescriptor, Cloneable {
         }
     }
     
-    private void processLegacyElement(Element element) {
+    private void processLegacyElement(Element element) throws StreamException {
         NodeList children= element.getChildNodes();
         for (int i=0; i<children.getLength(); i++) {
             Node node= children.item(i);

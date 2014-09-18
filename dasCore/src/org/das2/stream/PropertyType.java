@@ -26,6 +26,8 @@ package org.das2.stream;
 import org.das2.datum.Units;
 import java.util.HashMap;
 import java.util.Map;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
 
 /**
  *
@@ -37,7 +39,9 @@ public final class PropertyType {
     public static final PropertyType DOUBLE = new PropertyType("double");
     public static final PropertyType DOUBLE_ARRAY = new PropertyType("doubleArray");
     public static final PropertyType DATUM = new PropertyType("Datum");
+	 public static final PropertyType DATUM_RANGE = new PropertyType("DatumRange");
     public static final PropertyType INTEGER = new PropertyType("int");
+	 public static final PropertyType STRING = new PropertyType("String");
     
     public static PropertyType getByName(String name) {
         PropertyType result= (PropertyType)map.get(name);
@@ -56,53 +60,86 @@ public final class PropertyType {
     }
     
     public Object parse(String s) throws java.text.ParseException {
-        if (name.equals("double")) {
-            try {
-                return new Double(s);
-            }
-            catch (NumberFormatException nfe) {
-                throw new java.text.ParseException(nfe.getMessage(), 0);
-            }
-        }
-        else if (name.equals("int")) {
-            try {
+		 switch(name){
+		 case "String":
+		 {
+			 return s;
+		 }
+		 case "double":
+			 try {
+				 return new Double(s);
+			 }
+			 catch (NumberFormatException nfe) {
+				 throw new java.text.ParseException(nfe.getMessage(), 0);
+			 }
+		 case "int":
+			 try {
                 return new Integer(s);
-            }
-            catch (NumberFormatException nfe) {
-                throw new java.text.ParseException(nfe.getMessage(), 0);
-            }
-        }
-        else if (name.equals("doubleArray")) {
-            try {
-                String[] strings = s.split(",");
-                double[] doubles = new double[strings.length];
-                for (int i = 0; i < strings.length; i++) {
-                    doubles[i] = Double.parseDouble(strings[i]);
-                }
-                return doubles;
-            }
-            catch (NumberFormatException nfe) {
-                throw new java.text.ParseException(nfe.getMessage(), 0);
-            }
-        }
-        else if (name.equals("Datum")) {
-            String[] split = s.split("\\s+");
-            if (split.length == 1) {
+			 }
+			 catch (NumberFormatException nfe) {
+				 throw new java.text.ParseException(nfe.getMessage(), 0);
+			 }
+		 case "doubleArray":
+			 try {
+				 String[] strings = s.split(",");
+				 double[] doubles = new double[strings.length];
+				 for (int i = 0; i < strings.length; i++) {
+					 doubles[i] = Double.parseDouble(strings[i]);
+				 }
+				 return doubles;
+			 }
+			 catch (NumberFormatException nfe) {
+				 throw new java.text.ParseException(nfe.getMessage(), 0);
+			 }
+		 case "Datum":
+		 {
+			 String[] split = s.split("\\s+");
+			 if (split.length == 1) {
                 return Units.dimensionless.parse(split[0]);
             }
             else if (split.length == 2) {
-                Units units = Units.getByName(split[1]);
-                return units.parse(split[0]);
-            }
-            else {
-                throw new IllegalArgumentException("Too many tokens: '" + s + "'");
-            }
-        }
-        else {
-            throw new IllegalStateException("unrecognized name: " + name);
-        }
-    }
+					Units units = Units.getByName(split[1]);
+					return units.parse(split[0]);
+				}
+				else {
+					throw new IllegalArgumentException("Too many tokens: '" + s + "'");
+				}
+		 }
+		 case "DatumRange":
+		 {
+			 String[] split = s.split("\\s+");
+			 if (split.length < 3){
+				 throw new IllegalArgumentException("Too few tokens in range: '" + s + "'");
+			 }
+			 if(! split[1].toLowerCase().equals("to"))
+				 throw new java.text.ParseException("Range '"+s+"' is missing the word 'to'", 0);
+			 
+			 if (split.length == 3){
+				 Datum begin = Units.dimensionless.parse(split[0]);
+				 Datum end = Units.dimensionless.parse(split[2]);
+				 return new DatumRange(begin, end);
+			 }
+			 
+			 // New for 2014-06-12, allow units strings to have spaces, thus
+			 // "V**2 m**-2 Hz**-1" is legal
+			 StringBuilder bldr = new StringBuilder();
+			 for(int i = 3; i < split.length; i++){
+				 if(i > 3) bldr.append(" ");
+				 bldr.append(split[i]);
+			 }
+			 
+			 Units units = Units.getByName(bldr.toString());
+			 Datum begin = units.parse(split[0]);
+			 Datum end = units.parse(split[2]);
+			 return new DatumRange(begin, end);
+			 
+		 }
+		 default:
+			 throw new IllegalStateException("unrecognized name: " + name);
+		 }
+	 }
     
+	 @Override
     public String toString() {
         return name;
     }
