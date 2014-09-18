@@ -105,12 +105,15 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             if (timeResolution != null) {
                 formData.append("&resolution=").append(timeResolution.doubleValue(Units.seconds));
             }
-        } else if ( "x_multi_y".equals(form) && dsd.getProperty("items") != null) {
+        } 
+		  else if( "1".equals(dsd.getProperty("requiresInterval")) 
+			        || ("x_multi_y".equals(form) && dsd.getProperty("items") != null) ){
             formData.append("server=dataset");
             if (timeResolution != null) {
                 formData.append("&interval=").append(timeResolution.doubleValue(Units.seconds));
             }
-        } else {
+        } 
+		  else {
             formData.append("server=compactdataset");
             if (timeResolution != null) {
                 formData.append("&resolution=").append(timeResolution.doubleValue(Units.seconds));
