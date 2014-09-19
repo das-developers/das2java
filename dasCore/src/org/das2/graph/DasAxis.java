@@ -614,6 +614,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /**
+     * Set the range for the axis.  Note this is allowed to change the units as well.
+     * @param dr the new range.  The range must be interval or ratio measurements.
+     */
     public void setDatumRange(DatumRange dr) {
         //System.err.println("setDatumRange("+dr+")");
         if ( !UnitsUtil.isIntervalOrRatioMeasurement(dr.getUnits()) ) {
@@ -642,21 +646,28 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange( PROPERTY_DATUMRANGE, oldRange, dr );
     }
 
+    /**
+     * return the current range
+     * @return the current range
+     */
     public DatumRange getDatumRange() {
         return dataRange.getDatumRange();
     }
 
     /*
-     * @returns true is the range is acceptible, false otherwise.  This method
-     * is overriden by DasLabelAxis.
+     * Return true if the range is acceptable, having some non-zero length,
+     * false otherwise.  Note this method is overriden by DasLabelAxis.
+     * @return true if the range is acceptible.
      */
     protected boolean rangeIsAcceptable(DatumRange dr) {
         return dr.min().lt(dr.max());
     }
 
-    /** TODO
-     * @param minimum
-     * @param maximum
+    /** 
+     * Set the data range.  minimum must be less than maximum, but for nominal
+     * data they can be equal.
+     * @param minimum the minimum value
+     * @param maximum the maximum value
      */
     public void setDataRange(Datum minimum, Datum maximum) {
 
@@ -703,6 +714,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROPERTY_DATUMRANGE, oldRange, newRange);
     }
 
+    /**
+     * clear the internal history.
+     */
     public void clearHistory() {
         dataRange.clearHistory();
     }
@@ -715,7 +729,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** TODO */
+    /** 
+     * set the range to the previous interval.
+     */
     public void setDataRangePrev() {
         logger.fine("enter dasAxis.setDataRangePrev()");
         DatumRange oldRange = dataRange.getDatumRange();
@@ -731,7 +747,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROPERTY_DATUMRANGE, oldRange, newRange);
     }
 
-    /** TODO */
+    /**
+     * set the range to the next interval.  
+     */
     public void setDataRangeForward() {
         logger.fine("enter dasAxis.setDataRangeForward()");
         double min0 = dataRange.getMinimum();
@@ -747,14 +765,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROPERTY_DATUMRANGE, oldRange, newRange);
     }
 
-    /** TODO */
+    /** 
+     * set the range to min-width to max+width.
+     */
     public void setDataRangeZoomOut() {
         logger.fine("enter dasAxis.setDataRangeZoomOut()");
         double t1 = dataRange.getMinimum();
         double t2 = dataRange.getMaximum();
-        double delta = t2 - t1;
-        double min = t1 - delta;
-        double max = t2 + delta;
+        double width = t2 - t1;
+        double min = t1 - width;
+        double max = t2 + width;
         animateChange(t1, t2, min, max);
         DatumRange oldRange = dataRange.getDatumRange();
         if ( !DatumRangeUtil.isAcceptable( DatumRange.newDatumRange( min, max, getUnits() ), isLog() ) ) {
@@ -768,8 +788,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROPERTY_DATUMRANGE, oldRange, newRange);
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return the mutable DataRange object.  This is used 
+     * to bind axes together by sharing an internal model.
+     * @return the DataRange.
      */
     public DataRange getDataRange() {
         return this.dataRange;
@@ -779,23 +801,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected void deviceRangeChanged() {
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return the minimum value
+     * @return the minimum value
      */
     public Datum getDataMinimum() {
         return dataRange.getDatumRange().min();
     }
 
-    /** TODO
-     * @return
+    /**
+     * return the maximum value
+     * @return the maximum value
      */
     public Datum getDataMaximum() {
         return dataRange.getDatumRange().max();
     }
 
-    /*
-     *
-     */
     /**
      * This is the preferred method for getting the range of the axis.
      * @return a DatumRange indicating the range of the axis.
@@ -3514,16 +3535,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
 
-
+    /**
+     * create another axis that follows this axis.  It will have the same
+     * range and orientation.
+     * @return attached axis.
+     */
     public DasAxis createAttachedAxis() {
         return new DasAxis(this.dataRange, this.getOrientation());
     }
 
-    /** TODO
-     * @param row
-     * @param column
-     * @param orientation
-     * @return
+    /**
+     * create another axis that follows this axis.  It will have the same
+     * range.
+     * @return attached axis.
      */
     public DasAxis createAttachedAxis(int orientation) {
         return new DasAxis(this.dataRange, orientation);
