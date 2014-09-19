@@ -824,9 +824,12 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
-    /*
+    /**
      * returns the AffineTransform to transform data from the last updatePlotImage call
      * axes (if super.updatePlotImage was called), or null if the transform is not possible.
+     * This is used for the purpose of showing previews.
+     * @param xAxis the xaxis of the target coordinate frame
+     * @param yAxis the yaxis of the target coordinate frame
      */
     protected AffineTransform getAffineTransform(DasAxis xAxis, DasAxis yAxis) {
         if (xmemento == null) {
@@ -843,10 +846,12 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * at.isIdentity returns false if the at is not precisely identity,
      * so this allows for some fuzz.
+     * @param at the transform to be tested.
      */
-    private boolean isIdentity(AffineTransform at) {
+    private static boolean isIdentity(AffineTransform at) {
         return at.isIdentity() ||
-                (Math.abs(at.getScaleX() - 1.00) < 0.001 && Math.abs(at.getScaleY() - 1.00) < 0.001 && Math.abs(at.getTranslateX()) < 0.001 && Math.abs(at.getTranslateY()) < 0.001);
+                (Math.abs(at.getScaleX() - 1.00) < 0.001 && Math.abs(at.getScaleY() - 1.00) < 0.001 
+                && Math.abs(at.getTranslateX()) < 0.001 && Math.abs(at.getTranslateY()) < 0.001);
     }
 
     private void paintInvalidScreen(Graphics atGraphics, AffineTransform at) {
@@ -1270,6 +1275,13 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
+    /**
+     * add or remove the menu item to get at the renderer properties.
+     * Das2 applications generally allow this so that applications don't have
+     * to bother handling this.  Others like Autoplot have their own systems and uses for the
+     * click.
+     * @param b false to remove the menu item if it has been added.
+     */
     public void setEnableRenderPropertiesAction(boolean b) {
         if ( b ) {
             this.editRendererMenuItem=new JMenuItem(getEditAction());
@@ -1449,8 +1461,11 @@ public class DasPlot extends DasCanvasComponent {
         legendElements.add(new LegendElement(icon, renderer, message));
     }
     
-    public void setReduceOutsideLegendTopMargin(boolean reduceOutsideLegendTopMargin)
-    {
+    /**
+     * Used at APL for layout.  This is off by default.  This appears to shift the Y position.
+     * @param reduceOutsideLegendTopMargin shift the Y position.
+     */
+    public void setReduceOutsideLegendTopMargin(boolean reduceOutsideLegendTopMargin) {
     	this.reduceOutsideLegendTopMargin = reduceOutsideLegendTopMargin;
         update();
     }
@@ -1481,6 +1496,9 @@ public class DasPlot extends DasCanvasComponent {
         // override me to add to the axes.
     }
 
+    /**
+     * recalculate the bounds of the component.  TODO: this is used a lot and needs to be explained in more detail.
+     */
     @Override
     public void resize() {
         logger.finer("resize DasPlot");
@@ -1530,8 +1548,8 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
-    /** Sets the title which will be displayed above this plot.
-     *
+    /** 
+     * Sets the title which will be displayed above this plot.
      * @param t The new title for this plot.
      */
     public void setTitle(String t) {
@@ -1562,10 +1580,20 @@ public class DasPlot extends DasCanvasComponent {
 
     public static final String PROP_DISPLAYTITLE="displayTitle";
 
+    /**
+     * return the state of enable/disable display of the title.
+     * @return the current state.
+     * @see #setDisplayTitle(boolean) 
+     */
     public boolean isDisplayTitle() {
         return this.displayTitle;
     }
 
+    /**
+     * enable/disable display of the title.
+     * @param v 
+     * @see #isDisplayTitle() 
+     */
     public void setDisplayTitle(boolean v) {
         boolean old= this.displayTitle;
         this.displayTitle= v;
@@ -1584,10 +1612,26 @@ public class DasPlot extends DasCanvasComponent {
      */
     DatumRange context= null;
 
+    /**
+     * convenient place to put the plot context.  The context is used to
+     * store the timerange when there is no axis for it, for example, to
+     * show the state of data during a range.  This may change to a QDataSet
+     * to provide several context dimensions.
+     * @return the context
+     * @see #setContext(org.das2.datum.DatumRange) 
+     */
     public DatumRange getContext() {
         return context;
     }
-
+    
+    /**
+     * convenient place to put the plot context.  The context is used to
+     * store the timerange when there is no axis for it, for example, to
+     * show the state of data during a range.  This may change to a QDataSet
+     * to provide several context dimensions.
+     * @param the context
+     * @see #getContext() 
+     */
     public void setContext(DatumRange context) {
         DatumRange old= this.context;
         this.context = context;
