@@ -1670,22 +1670,6 @@ public class DasPlot extends DasCanvasComponent {
         return this.yAxis;
     }
 
-    /** Getter for property dataSetDescriptor.
-     * @return Value of property dataSetDescriptor.
-     */
-    public DataSetDescriptor getDataSetDescriptor() {
-        return dataSetDescriptor;
-    }
-
-    /** Setter for property dataSetDescriptor.
-     * @param dataSetDescriptor New value of property dataSetDescriptor.
-     */
-    public void setDataSetDescriptor(DataSetDescriptor dataSetDescriptor) {
-        this.dataSetDescriptor = dataSetDescriptor;
-        markDirty("dataDescriptor");
-        DasPlot.this.update();
-    }
-
     protected class RebinListener implements java.beans.PropertyChangeListener {
         @Override
         public void propertyChange(java.beans.PropertyChangeEvent e) {
@@ -1739,6 +1723,11 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
+    /**
+     * add the renderer to the stack of renderers.  It will be the 
+     * last element drawn.
+     * @param rend the renderer
+     */
     public void addRenderer(Renderer rend) {
         logger.log(Level.FINE, "addRenderer({0})", rend);
 
@@ -1755,6 +1744,12 @@ public class DasPlot extends DasCanvasComponent {
         invalidateCacheImage();
     }
 
+    /**
+     * add the renderer to the stack of renderers at the given index.
+     * Index 0 is drawn first.
+     * @param index the index, 0 is drawn first.
+     * @param rend the renderer
+     */
     public void addRenderer(int index, Renderer rend) {
         logger.log(Level.FINE, "addRenderer({0},{1})", new Object[]{index, rend});
         DasPlot parent= rend.getParent();
@@ -1857,7 +1852,7 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * return one of the renderers, which paint the data on to the plot.
      * @param index the index of the renderer
-     * @return the Renderer
+     * @return the renderer
      */
     public synchronized Renderer getRenderer(int index) {
         return (Renderer) renderers.get(index);
@@ -1920,6 +1915,10 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
+    /**
+     * return a Shape containing the plot.
+     * @return 
+     */
     @Override
     public Shape getActiveRegion() {
         return getBounds();
