@@ -189,6 +189,11 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return labels.get(iclose);
     }
 
+    /**
+     * override this to allow a single Datum.
+     * @param dr
+     * @return 
+     */
     @Override
     protected boolean rangeIsAcceptable(DatumRange dr) {
         return true;
@@ -208,6 +213,11 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return (int) Math.abs(transform(labels.get(1)) - transform(labels.get(0)));
     }
 
+    /**
+     * get the minimum pixel location of the bin allocated to the Datum.
+     * @param d
+     * @return pixel location of the min.
+     */
     public int getItemMin(Datum d) {
         Units units = d.getUnits();
         double value = d.doubleValue(units);
@@ -218,6 +228,11 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return tickPosition - w / 2;
     }
 
+    /**
+     * get the maximum pixel location  of the bin allocated to the Datum.
+     * @param d
+     * @return  pixel location of the max.
+     */
     public int getItemMax(Datum d) {
         int w = getInterItemSpace();
         return getItemMin(d) + w;
