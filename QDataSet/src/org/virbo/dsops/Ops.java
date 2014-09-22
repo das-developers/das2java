@@ -6061,7 +6061,7 @@ public class Ops {
     
  /**
      * Mean function that returns the average of a rank 1 dataset
-     * @param ds rank 1 dataset, that does not contain fill or NaN.
+     * @param ds rank N dataset, that does not contain fill or NaN.
      * @return rank 0 dataset
      * @see #mode
      * @see #median
@@ -6069,11 +6069,17 @@ public class Ops {
      */
     public static QDataSet mean( QDataSet ds ) {
         double avg = 0;
-        for (int i=0; i < ds.length(); i++)  {
-            avg += ds.value(i);
+        int n= 0;
+        
+        DataSetIterator it= new QubeDataSetIterator(ds);
+        
+        while ( it.hasNext() )  {
+            it.next();
+            avg += it.getValue(ds);
+            n+= 1;
         }
-        double m = avg / ds.length();
-        return DataSetUtil.asDataSet(m,SemanticOps.getUnits(ds));
+        double m = avg / n;
+        return DataSetUtil.asDataSet( m,SemanticOps.getUnits(ds) );
     }
     
     public static QDataSet mean( Object o ) {
@@ -6082,15 +6088,12 @@ public class Ops {
     
     /**
      * return the most frequently occurring element.
-     * @param ds rank 1 dataset, that does not contain fill or NaN.
+     * @param ds rank N dataset.
      * @return the rank 0 dataset
      * @see #mean
      * @see #median
      */
     public static QDataSet mode( QDataSet ds ) {
-        if ( ds.rank()!=1 ) {
-            throw new IllegalArgumentException("only rank 1 is supported (but see flatten).");
-        }
         
         Map<Double,Integer> m= new HashMap();
         DataSetIterator it= new QubeDataSetIterator(ds);
@@ -6129,8 +6132,9 @@ public class Ops {
     }
     
     /**
-     * Median function that sorts a rank 1 dataset and returns its median
-     * @param ds rank 1 dataset that does not contain fill or NaN.
+     * Median function that sorts a rank 1 dataset and returns its median.  
+     * If lists are equal in size (even number of elements), always choose first element of 'more' list
+     * @param ds rank N dataset that does not contain fill or NaN.
      * @return rank 0 dataset
      * @author mmclouth
      * @see #mean
@@ -6138,20 +6142,17 @@ public class Ops {
      */
     public static QDataSet median( QDataSet ds ) {
         
-    
-        if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
-        if ( Ops.reduceMin( Ops.valid(ds), 0 ).value()==0 ) throw new IllegalArgumentException("fill data is not supported");
-        
-        
-        ArrayDataSet res= ArrayDataSet.copy(ds);
-        int size= ds.length();
-        for ( int i=0; i<res.length(); i++ ) res.putValue(i,0);
+        if ( Ops.reduceMin( Ops.valid(ds), 0 ).value()==0 ) throw new IllegalArgumentException("fill data is not supported");   
+
         LinkedList<Double> less= new LinkedList();
         LinkedList<Double> more= new LinkedList();
         
-        // sort elements in to two lists 
-        for ( int i=0; i<size; i++ ) {
-            double d=ds.value(i);
+        DataSetIterator iter= new QubeDataSetIterator(ds);
+        
+        // sort elements into two lists 
+        while ( iter.hasNext() ) {
+            iter.next();
+            double d= iter.getValue(ds);
             if ( less.isEmpty() ) {
                 less.add(d);
                 Collections.sort(less);
@@ -6191,7 +6192,11 @@ public class Ops {
             ans = more.getFirst();
         }
         else  {
-            ans = more.getFirst();
+            if ( more.size()==0 ) {
+                ans= Double.NaN;
+            } else {
+                ans = more.getFirst();
+            }
         }
     
         return DataSetUtil.asDataSet( ans, SemanticOps.getUnits(ds) );
@@ -6202,25 +6207,31 @@ public class Ops {
     }
     
     /**
-     * 1-D standard deviation function.
-     * @param ds rank 1 dataset.
+     * standard deviation function.
+     * @param ds rank N dataset.
      * @return rank 0 dataset with units matching those of the input.
      * @author mmclouth
      */
     public static QDataSet stddev( QDataSet ds ) {
-        if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
 
-        int n = ds.length();
+        int n = 0;
 
+        DataSetIterator iter= new QubeDataSetIterator(ds);
+        
         double sum = 0;
-        for (int i=0; i < ds.length(); i++)  {
-            sum += ds.value(i);
+        while ( iter.hasNext() )  {
+            iter.next();
+            sum += iter.getValue(ds);
+            n= n+1;
         }
         double u = sum / n;
-        double sub = 0;
+        double sub;
         double square = 0;
-        for (int i=0; i < ds.length(); i++)  {
-            sub = (ds.value(i) - u);
+        
+        iter= new QubeDataSetIterator(ds);
+        while ( iter.hasNext() )  {
+            iter.next();
+            sub = ( iter.getValue(ds) - u);
             square += Math.pow(sub, 2);
         }
         double undersqrrt = square / (n-1);
