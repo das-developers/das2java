@@ -792,6 +792,7 @@ public class SemanticOps {
                         
                     } else {
                         int[] back= new int[ xds.length() ];
+                        if ( j==xds.length() ) j= xds.length()-1; // bugfix: if xrange.max is gt last point.
                         for ( int ii=i; ii<=j; ii++ ) {
                             back[ii]= 1;
                         }
