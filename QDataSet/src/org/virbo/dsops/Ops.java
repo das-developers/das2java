@@ -5940,8 +5940,8 @@ public class Ops {
      * plane of the dataset.)
      *<blockquote><pre><small>{@code
      *r= where( valid( ds ) )
-     *</small></pre></blockquote> 
-     * 
+     *}</small></pre></blockquote> 
+     *
      * @param ds a rank N dataset that might have FILL_VALUE, VALID_MIN or VALID_MAX
      *   set.
      * @return a rank N dataset with the same geometry, with zeros where the data
@@ -6061,7 +6061,7 @@ public class Ops {
     
  /**
      * Mean function that returns the average of a rank 1 dataset
-     * @param ds rank N dataset, that does not contain fill or NaN.
+     * @param ds rank N dataset
      * @return rank 0 dataset
      * @see #mode
      * @see #median
@@ -6072,11 +6072,13 @@ public class Ops {
         int n= 0;
         
         DataSetIterator it= new QubeDataSetIterator(ds);
+        QDataSet wds= valid(ds);
         
         while ( it.hasNext() )  {
             it.next();
+            if ( it.getValue(wds)==0 ) continue;
             avg += it.getValue(ds);
-            n+= 1;
+            n= n+1;
         }
         double m = avg / n;
         return DataSetUtil.asDataSet( m,SemanticOps.getUnits(ds) );
@@ -6134,7 +6136,7 @@ public class Ops {
     /**
      * Median function that sorts a rank 1 dataset and returns its median.  
      * If lists are equal in size (even number of elements), always choose first element of 'more' list
-     * @param ds rank N dataset that does not contain fill or NaN.
+     * @param ds rank N dataset.
      * @return rank 0 dataset
      * @author mmclouth
      * @see #mean
@@ -6142,17 +6144,20 @@ public class Ops {
      */
     public static QDataSet median( QDataSet ds ) {
         
-        if ( Ops.reduceMin( Ops.valid(ds), 0 ).value()==0 ) throw new IllegalArgumentException("fill data is not supported");   
-
         LinkedList<Double> less= new LinkedList();
         LinkedList<Double> more= new LinkedList();
         
+        QDataSet wds= valid(ds);
         DataSetIterator iter= new QubeDataSetIterator(ds);
         
         // sort elements into two lists 
         while ( iter.hasNext() ) {
             iter.next();
+            
+            if ( iter.getValue(wds)==0 ) continue;
+            
             double d= iter.getValue(ds);
+            
             if ( less.isEmpty() ) {
                 less.add(d);
                 Collections.sort(less);
