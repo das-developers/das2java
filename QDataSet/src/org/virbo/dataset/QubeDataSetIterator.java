@@ -11,7 +11,13 @@ import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
 
 /**
- *
+ * DataSetIterator implementation that can be used for all datasets--not just qubes.  Originally this 
+ * only worked for QDataSets that were qubes, or datasets that had the same dataset geometry for each
+ * slice.  At some point this was modified to work with any dataset but the name remains.
+ * 
+ * TODO: This does not work for Rank 0 datasets.  See
+ * sftp://klunk.physics.uiowa.edu/home/jbf/project/autoplot/script/demos/jeremy/qubeDataSetIteratorForNonQubes.jy
+ * 
  * @author jbf
  */
 public class QubeDataSetIterator implements DataSetIterator {
