@@ -95,16 +95,26 @@ public final class PropertyType {
         }
         else if (name.equals("Datum")) {
             String[] split = s.split("\\s+");
-            if (split.length == 1) {
+				if (split.length < 1)
+					throw new IllegalArgumentException("Empty datum string");
+				
+				if (split.length == 1)
                 return Units.dimensionless.parse(split[0]);
-            }
-            else if (split.length == 2) {
+            
+				if (split.length == 2) {
                 Units units = Units.lookupUnits(split[1]);
                 return units.parse(split[0]);
             }
-            else {
-                throw new IllegalArgumentException("Too many tokens: '" + s + "'");
-            }
+				
+				//Allow for units that contain single spaces
+				StringBuilder bldr = new StringBuilder();
+				for(int i = 1; i < split.length; i++){
+					if(i > 1) bldr.append(" ");
+					bldr.append(split[i]);
+				}
+				
+            Units units = Units.lookupUnits(bldr.toString());
+				return units.parse(split[0]);
         }
 		  else if (name.equals("DatumRange")){
 			   String[] split = s.split("\\s+");

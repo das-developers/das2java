@@ -30,8 +30,13 @@ import org.das2.datum.Datum;
 import java.util.*;
 import java.util.Map.Entry;
 
-/**
+/** Handles 1-N planes of table data.
  *
+ * Update Note:  Historically by default there was an un-named plane, that was always
+ *               present in the builder.  I removed that so that all planes could have a
+ *               name, it probably breaks lots of stuff so extensive tests are needed
+ *               before this change is committed. -cwp 2014-09-22
+ * 
  * @author  Edward West
  */
 public class TableDataSetBuilder {
@@ -43,9 +48,12 @@ public class TableDataSetBuilder {
     
     private List zValues = new ArrayList();
     
-    private List planeIDs = new ArrayList(); {
-        planeIDs.add("");
-    }
+	// No default plane
+   // private List planeIDs = new ArrayList(); {
+   //     planeIDs.add("");
+   // }
+	 
+	private List planeIDs = new ArrayList();
     
     private Units xUnits = Units.dimensionless;
     
@@ -60,11 +68,30 @@ public class TableDataSetBuilder {
     private Map properties = new HashMap();
     private List<Map> tableProperties= new ArrayList<Map>();
     
-    /** Creates a new instance of TableDataSetBuilder */
+    /** Creates a new instance of TableDataSetBuilder with a default plane
+	  * A single plane with the empty string as it's name is defined.
+	  * 
+	  * @param xUnits Units for the X-axis data
+	  * @param yUnits Units for the Y-axis data
+	  * @param zUnits Units for the Z-axis data
+	  */ 
     public TableDataSetBuilder( Units xUnits, Units yUnits, Units zUnits ) {
-        setXUnits(xUnits);
-        setYUnits(yUnits);
-        setZUnits(zUnits);
+        this(xUnits, yUnits, zUnits, "");
+    }
+	 
+	 /** Creates a new instance of TableDataSetBuilder with a named default plane
+	  * 
+	  * @param xUnits Units for the X-axis data
+	  * @param yUnits Units for the Y-axis data
+	  * @param zUnits Units for the Z-axis data
+	  * @param name The name for data plane at index 0, may be the empty string "".
+	  */
+	 public TableDataSetBuilder( Units xUnits, Units yUnits, Units zUnits, String name ) {
+      
+		setXUnits(xUnits);
+		setYUnits(yUnits);
+		setZUnits(zUnits);
+		planeIDs.add(name);
     }
     
     public void setProperty(String name, Object value) {
