@@ -251,9 +251,12 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         ymin= yAxis.getDataMinimum().doubleValue(yUnits);
         
         if ( psymConnector!=PsymConnector.NONE ) {
-            ixmin= DataSetUtil.getPreviousColumn( dataSet, visibleRange.min() );
-            ixmax= DataSetUtil.getNextColumn( dataSet, visibleRange.max() );
-            
+			Rectangle2D visibleRectangle = new Rectangle2D.Double(
+					Math.min(xmin,xmax),Math.min(ymin,ymax),
+					Math.abs(xmax-xmin),Math.abs(ymax-ymin));
+            ixmin= findFirstVisibleSegment(dataSet, visibleRectangle, xUnits, yUnits, false);
+            ixmax= findFirstVisibleSegment(dataSet, visibleRectangle, xUnits, yUnits, true);
+
             GeneralPath newPath = new GeneralPath( GeneralPath.WIND_NON_ZERO, Math.max( 100, 110 * ( ixmax - ixmin ) / 100 ) );
             
             double xSampleWidth;
@@ -485,4 +488,26 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     public boolean acceptContext(int x, int y) {
         return path!=null && path.intersects( x-5, y-5, 10, 10 );
     }
+
+	private int findFirstVisibleSegment(
+			VectorDataSet dataSet,
+			Rectangle2D visibleRectangle,
+			Units xUnits, Units yUnits,
+			boolean inReverse)
+	{
+		int n = dataSet.getXLength();
+		for (int i = 0; i < n-1; i++) {
+			int index0 = inReverse ? n-1-i : i;
+			int index1 = inReverse ? index0-1 : index0+1;
+			double x0 = dataSet.getXTagDouble(index0, xUnits);
+			double x1 = dataSet.getXTagDouble(index1, xUnits);
+			double y0 = dataSet.getDouble(index0, yUnits);
+			double y1 = dataSet.getDouble(index1, yUnits);
+			if (visibleRectangle.intersectsLine(x0, y0, x1, y1)) {
+				return index0;
+			}
+		}
+		return -1;
+	}
+
 }
