@@ -48,9 +48,12 @@ public class ArgumentList {
     
     private String UNDEFINED_SWITCH = new String( "__undefinedSwitch__" );
     
-    private String FALSE = new String("__false__");
-    
-    private String TRUE = new String("__true__");
+	 // This is supposed to be compatable with the preferences API, so "__false__" must
+	 // become "false", ditto for "__true__"
+    //private String FALSE = new String("__false__");
+	 //private String TRUE = new String("__true__");
+	 private String FALSE = "false";
+    private String TRUE = "true";
     
     private static final Logger logger= DasLogger.getLogger( DasLogger.GUI_LOG );
     
@@ -139,7 +142,7 @@ public class ArgumentList {
     }
     
     public boolean getBooleanValue(String key) {
-        return values.get( key ) == this.TRUE;
+		 return values.get( key ) == TRUE;
     }
     
     /**
