@@ -57,6 +57,7 @@ import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 import javax.swing.SwingUtilities;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
 import static org.das2.util.filesystem.WebFileSystem.consumeStream;
@@ -308,7 +309,23 @@ public class HttpFileSystem extends WebFileSystem {
                 urlc.setRequestProperty("Authorization", "Basic " + encode);
             }
             
-            InputStream in= urlc.getInputStream();
+            InputStream in;
+            try {
+                in= urlc.getInputStream();
+                
+            } catch ( FileNotFoundException ex ) {
+                remoteURL= new URL(root.toString() + filename.substring(1) + ".gz" );
+
+                urlc = remoteURL.openConnection();
+                urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
+                 
+                if ( userInfo != null) {
+                    String encode = Base64.encodeBytes(userInfo.getBytes());
+                    urlc.setRequestProperty("Authorization", "Basic " + encode);
+                }
+                in= new GZIPInputStream( urlc.getInputStream() );
+                
+            }
             
             HttpURLConnection hurlc = (HttpURLConnection) urlc;
             if (hurlc.getResponseCode() == 404) {
