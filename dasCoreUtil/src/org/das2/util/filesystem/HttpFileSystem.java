@@ -297,7 +297,7 @@ public class HttpFileSystem extends WebFileSystem {
 
             //TODO: consider setting the following:
             //urlc.setUseCaches(false);
-
+            
             String userInfo;
             try {
                 userInfo = KeyChain.getDefault().getUserInfo(root);
@@ -374,10 +374,19 @@ public class HttpFileSystem extends WebFileSystem {
                 monitor.setLabel("downloading file");
                 monitor.started();
                 try {
+                    // https://sourceforge.net/p/autoplot/bugs/1229/
+                    String contentLocation= urlc.getHeaderField("Content-Location");
+                    String contentType= urlc.getHeaderField("Content-Type");
+                    
+                    boolean doUnzip= !filename.endsWith(".gz" ) && "application/x-gzip".equals( contentType ) && ( contentLocation!=null && contentLocation.endsWith(".gz") );
+                    if ( doUnzip ) {
+                        in= new GZIPInputStream( in );
+                    }
+                    
                     copyStream(in, out, monitor);
                     monitor.finished();
                     out.close();
-                    in.close();
+                    in.close();                    
                     if ( d!=null ) {
                         try {
                             partFile.setLastModified(d.getTime()+10); // add 10 secs because of bad experiences with Windows filesystems.  Also this is probably a good idea in case local clock is not set properly.
