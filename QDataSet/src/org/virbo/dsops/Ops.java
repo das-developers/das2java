@@ -2263,69 +2263,89 @@ public class Ops {
     }
 
     /**
-     * return returns a rank 0 dataset of random uniform numbers from [0,1].
+     * returns a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @return a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
     public static QDataSet rand() {
         return rand(new int[]{}, new Random());
     }
     
     /**
-     * return returns a rank 1 dataset of random uniform numbers from [0,1].
+     * returns a rank 1 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @param len0 the number of elements in the result.
+     * @return a rank 1 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
     public static QDataSet rand(int len0) {
         return rand(new int[]{len0}, new Random());
     }
 
     /**
-     * return returns a rank 2 dataset of random uniform numbers from [0,1].
-     */
+     * returns a rank 2 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @param len0 the number of elements in the first index.
+     * @param len1 the number of elements in the second index.
+     * @return a rank 2 dataset of random uniform numbers from 0 to 1 but not including 1.
+     */    
     public static QDataSet rand(int len0, int len1) {
         return rand(new int[]{len0, len1}, new Random());
     }
 
     /**
-     * return returns a rank 3 dataset of random uniform numbers from [0,1].
+     * returns a rank 3 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @param len0 the number of elements in the first index.
+     * @param len1 the number of elements in the second index.
+     * @param len2 the number of elements in the third index.
+     * @return a rank 3 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
     public static QDataSet rand(int len0, int len1, int len2) {
         return rand(new int[]{len0, len1, len2}, new Random());
     }
 
     /**
-     * return returns a rank 0 dataset of random numbers of a guassian (normal) distribution.
+     * return a rank 0 dataset of random numbers of a Gaussian (normal) distribution.
+     * @return a rank 0 dataset of random numbers of a Gaussian (normal) distribution.
      */
     public static QDataSet randn() {
         return randn(new int[]{}, new Random());
     }
     
     /**
-     * return returns a rank 1 dataset of random numbers of a guassian (normal) distribution.
+     * return a rank 1 dataset of random numbers of a Gaussian (normal) distribution.
+     * @param len0 the number of elements in the first index.
+     * @return a rank 1 dataset of random numbers of a Gaussian (normal) distribution.
      */
     public static QDataSet randn(int len0) {
         return randn(new int[]{len0}, new Random());
     }
 
     /**
-     * return returns a rank 2 dataset of random numbers of a guassian (normal) distribution.
+     * return a rank 2 dataset of random numbers of a Gaussian (normal) distribution.
+     * @param len0 the number of elements in the first index.
+     * @param len1 the number of elements in the second index.
+     * @return a rank 2 dataset of random numbers of a Gaussian (normal) distribution.
      */
     public static QDataSet randn(int len0, int len1) {
         return randn(new int[]{len0, len1}, new Random());
     }
 
     /**
-     * return returns a rank 3 dataset of random numbers of a guassian (normal) distribution.
+     * return a rank 3 dataset of random numbers of a Gaussian (normal) distribution.
+     * @param len0 the number of elements in the first index.
+     * @param len1 the number of elements in the second index.
+     * @param len2 the number of elements in the third index.
+     * @return a rank 3 dataset of random numbers of a Gaussian (normal) distribution.
      */
     public static QDataSet randn(int len0, int len1, int len2) {
         return randn(new int[]{len0, len1, len2}, new Random());
     }
 
     /**
-     * returns a rank 0 dataset of random numbers of a guassian (normal) distribution.
+     * returns a rank 0 dataset of random numbers of a Gaussian (normal) distribution.
      * System.currentTimeMillis() may be used for the seed.  Note this is unlike
      * the IDL randomn function because the seed is not modified.  (Any long parameter in Jython
      * and Java is read-only.)
-     * @param seed
-     * @param len0
-     * @return
+     * System.currentTimeMillis() may be used for the seed.
+     * @param seed basis for the random number (which will not be modified).
+     * @return rank 0 dataset
      */
     public static QDataSet randomn(long seed) {
         double[] back = randomnBack(seed,1);
@@ -2333,11 +2353,11 @@ public class Ops {
     }
     
     /**
-     * returns a rank 1 dataset of random numbers of a guassian (normal) distribution.
+     * returns a rank 1 dataset of random numbers of a Gaussian (normal) distribution.
      * System.currentTimeMillis() may be used for the seed.
-     * @param seed
-     * @param len0
-     * @return
+     * @param seed basis for the random number (which will not be modified).
+     * @param len0 number of elements in the first index
+     * @return rank 1 dataset of normal distribution
      */
     public static QDataSet randomn(long seed, int len0) {
         double[] back = randomnBack(seed, len0);
@@ -2345,11 +2365,11 @@ public class Ops {
     }
 
     /**
-     * returns a rank 2 dataset of random numbers of a guassian (normal) distribution.
-     * @param seed
-     * @param len0
-     * @param len1
-     * @return
+     * returns a rank 2 dataset of random numbers of a Gaussian (normal) distribution.
+     * @param seed basis for the random number (which will not be modified).
+     * @param len0 number of elements in the first index
+     * @param len1 number of elements in the second index
+     * @return rank 2 dataset of normal distribution
      */
     public static QDataSet randomn(long seed, int len0, int len1) {
         double[] back = randomnBack(seed, len0 * len1 );
@@ -2357,12 +2377,12 @@ public class Ops {
     }
 
     /**
-     * returns a rank 3 dataset of random numbers of a guassian (normal) distribution.
-     * @param seed
-     * @param len0
-     * @param len1
-     * @param len2
-     * @return
+     * returns a rank 3 dataset of random numbers of a gaussian (normal) distribution.
+     * @param seed basis for the random number (which will not be modified).
+     * @param len0 number of elements in the first index
+     * @param len1 number of elements in the second index
+     * @param len2 number of elements in the third index
+     * @return rank 3 dataset of normal distribution
      */
     public static QDataSet randomn(long seed, int len0, int len1, int len2) {
         double[] back = randomnBack(seed, len0 * len1 * len2 );
@@ -2392,9 +2412,8 @@ public class Ops {
      * System.currentTimeMillis() may be used for the seed.  Note this is unlike
      * the IDL randomn function because the seed is not modified.  (Any long parameter in Jython
      * and Java is read-only.)
-     * @param seed
-     * @param len0
-     * @return
+     * @param seed basis for the random number (which will not be modified).
+     * @return a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
     public static QDataSet randomu(long seed) {
         double[] back = randomuBack(seed, 1);
@@ -2404,9 +2423,9 @@ public class Ops {
     /**
      * returns a rank 1 dataset of random numbers of a uniform distribution.
      * System.currentTimeMillis() may be used for the seed.
-     * @param seed
-     * @param len0
-     * @return
+     * @param seed basis for the random number (which will not be modified).
+     * @param len0 number of elements in the first index
+     * @return a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
     public static QDataSet randomu(long seed, int len0) {
         double[] back = randomuBack(seed, len0);
@@ -2415,10 +2434,10 @@ public class Ops {
 
     /**
      * returns a rank 2 dataset of random numbers of a uniform distribution.
-     * @param seed
-     * @param len0
-     * @param len1
-     * @return
+     * @param seed basis for the random number (which will not be modified).
+     * @param len0 number of elements in the first index
+     * @param len1 number of elements in the second index
+     * @return a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
     public static QDataSet randomu(long seed, int len0, int len1) {
         double[] back = randomuBack(seed, len0 * len1 );
@@ -2427,11 +2446,11 @@ public class Ops {
 
     /**
      * returns a rank 3 dataset of random numbers of a uniform distribution.
-     * @param seed
-     * @param len0
-     * @param len1
-     * @param len2
-     * @return
+     * @param seed basis for the random number (which will not be modified).
+     * @param len0 number of elements in the first index
+     * @param len1 number of elements in the second index
+     * @param len2 number of elements in the third index
+     * @return a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
     public static QDataSet randomu(long seed, int len0, int len1, int len2) {
         double[] back = randomuBack(seed, len0 * len1 * len2 );
@@ -2440,10 +2459,9 @@ public class Ops {
 
 
     /**
-     * rank 1 dataset for demos.
+     * rank 1 dataset for demos and testing.
      * @param len0
-     * @param len1
-     * @return
+     * @return rank 1 dataset for demos and testing.
      */
     public static QDataSet ripples( int len0 ) {
         //TableDataSet tds= new RipplesDataSet( len0/10., len1/10., len1/20., len0/2., len1/2., len1/10., len0, len1 );
@@ -2452,10 +2470,10 @@ public class Ops {
     }
 
     /**
-     * rank 2 dataset for demos.
+     * rank 2 dataset for demos and testing.
      * @param len0
      * @param len1
-     * @return
+     * @return rank 2 dataset for demos and testing.
      */
     public static QDataSet ripples( int len0, int len1 ) {
         //TableDataSet tds= new RipplesDataSet( len0/10., len1/10., len1/20., len0/2., len1/2., len1/10., len0, len1 );
@@ -2464,15 +2482,18 @@ public class Ops {
     }
 
     /**
-     * rank 3 dataset for demos.
-     * @return
+     * rank 3 dataset for demos and testing.
+     * @param len0
+     * @param len1
+     * @param len2
+     * @return rank 3 dataset for demos and testing.
      */
-    public static QDataSet ripples( int len, int len0, int len1 ) {
-        FDataSet result= org.virbo.dataset.FDataSet.createRank3( len, len0, len1 );
-        for ( int i=0; i<len; i++ ) {
-            double eps= 1+(i/(float)len);
-            double eps2= 1+(i*5/(float)len);
-            QDataSet d2= new RipplesDataSet( (len0*eps)/10., len1/10., (len1*eps2)/20., (len0*eps)/2., len1/2., (len1*eps)/10., len0, len1 );
+    public static QDataSet ripples( int len0, int len1, int len2 ) {
+        FDataSet result= org.virbo.dataset.FDataSet.createRank3( len0, len1, len2 );
+        for ( int i=0; i<len0; i++ ) {
+            double eps= 1+(i/(float)len0);
+            double eps2= 1+(i*5/(float)len0);
+            QDataSet d2= new RipplesDataSet( (len1*eps)/10., len2/10., (len2*eps2)/20., (len1*eps)/2., len2/2., (len2*eps)/10., len1, len2 );
             QubeDataSetIterator it= new QubeDataSetIterator(d2);
             while ( it.hasNext() ) {
                 it.next();
@@ -2486,18 +2507,22 @@ public class Ops {
 
 
     /**
-     * rank 4 dataset for demos.
-     * @return
+     * rank 4 dataset for demos and testing.
+     * @param len0
+     * @param len1
+     * @param len2
+     * @param len3
+     * @return rank 4 dataset for demos and testing.
      */
-    public static QDataSet ripples( int len, int len0, int len1, int len4 ) {
-        FDataSet result= org.virbo.dataset.FDataSet.createRank4( len, len0, len1, len4 );
+    public static QDataSet ripples( int len0, int len1, int len2, int len3 ) {
+        FDataSet result= org.virbo.dataset.FDataSet.createRank4( len0, len1, len2, len3 );
         Random r= new java.util.Random(0);
-        for ( int j=0; j<len4; j++ ) {
+        for ( int j=0; j<len3; j++ ) {
             double d= r.nextDouble();
-            for ( int i=0; i<len; i++ ) {
-                double eps= 1+(i/(float)len);
-                double eps2= 1+(i*5/(float)len);
-                QDataSet d2= new RipplesDataSet( (len0*eps)/10., len1/10., (len1*eps2)/20., (len0*eps)/2., len1/2., (len1*eps)/10., len0, len1 );
+            for ( int i=0; i<len0; i++ ) {
+                double eps= 1+(i/(float)len0);
+                double eps2= 1+(i*5/(float)len0);
+                QDataSet d2= new RipplesDataSet( (len1*eps)/10., len2/10., (len2*eps2)/20., (len1*eps)/2., len2/2., (len2*eps)/10., len1, len2 );
                 QubeDataSetIterator it= new QubeDataSetIterator(d2);
                 while ( it.hasNext() ) {
                     it.next();
