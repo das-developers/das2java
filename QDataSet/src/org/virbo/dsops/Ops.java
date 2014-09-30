@@ -3961,6 +3961,7 @@ public class Ops {
     /**
      * Enumeration identifying windows applied to data before doing FFTs.
      *@see #fftFilter
+     *@see #windowFunction(org.virbo.dsops.Ops.FFTFilterType, int) 
      */
     public static enum FFTFilterType{ Hanning, TenPercentEdgeCosine, Unity };
 
