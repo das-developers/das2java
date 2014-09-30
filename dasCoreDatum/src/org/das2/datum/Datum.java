@@ -210,15 +210,75 @@ public class Datum implements Comparable, Serializable {
     }
     
     /**
-     * returns a Datum whose value is the sum of <tt>this</tt> and <tt>datum</tt>, in <tt>this.getUnits()</tt>.
-     * @return a Datum that is the sum of the two values in this Datum's units.
+     * Groovy scripting language uses this for overloading.
      * @param datum Datum to add, that is convertible to this.getUnits().
+     * @return a Datum that is the sum of the two values in this Datum's units.
+     */
+    public Datum plus( Datum datum ) {
+        return add(datum);
+    }
+    
+    /**
+     * Groovy scripting language uses this for overloading.
+     * @param datum Datum to subtract, that is convertible to this.getUnits().
+     * @return a Datum that is the sum of the two values in this Datum's units.
+     */
+    public Datum minus( Datum datum ) {
+        return subtract(datum);
+    }
+    
+    /**
+     * Groovy scripting language uses this for overloading.
+     * @param datum Datum to divide, that is convertible to this.getUnits().
+     * @return a Datum that is the sum of the two values in this Datum's units.
+     */
+    public Datum div( Datum datum ) {
+        return divide(datum);
+    }
+    
+    public Datum power( Datum datum ) {
+        if ( datum.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(units) ) {
+            return Datum.create( Math.pow( this.value(),datum.value() ), Units.dimensionless );
+        } else {
+            throw new IllegalArgumentException("power argument must be dimensionless");
+        }
+    }
+    
+    /**
+     * Groovy scripting language uses this negation operator.
+     * @return a Datum such that it plus this is 0.
+     * @throws IllegalArgumentException when the units are location units.
+     */
+    public Datum negative() {
+        if ( UnitsUtil.isRatioMeasurement(units) ) {
+            return Datum.create( -1*value(), units );
+        } else if ( UnitsUtil.isNominalMeasurement(units) ) {
+            throw new IllegalArgumentException("units are Stevens ordinal");
+        } else if ( UnitsUtil.isIntervalMeasurement(units) ) {
+            throw new IllegalArgumentException("units are Stevens interval measurement");
+        } else {
+            throw new IllegalArgumentException("units are not Stevens ratio measurement");
+        }
+    }
+    
+    /**
+     * Groovy scripting language uses this positive operator.
+     * @return this datum.
+     */
+    public Datum positive() {
+        return this;
+    }
+    
+    /**
+     * returns a Datum whose value is the sum of <tt>this</tt> and <tt>datum</tt>, in <tt>this.getUnits()</tt>.
+     * @param datum Datum to add, that is convertible to this.getUnits().
+     * @return a Datum that is the sum of the two values in this Datum's units.
      */
     public Datum add( Datum datum ) { 
         Datum result= add( datum.getValue(), datum.getUnits() ); 
         result.resolution= Math.sqrt( datum.resolution * datum.resolution + this.resolution * this.resolution );
         return result;
-    }    
+    }   
     
     /**
      * returns a Datum whose value is the sum of <tt>this</tt> and value in 
