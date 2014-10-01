@@ -5376,6 +5376,8 @@ public class Ops {
         double fill= -1e31;
         boolean hasFill= false;
         
+        int extentWarning= 0; 
+        
         while (it.hasNext()) {
             it.next();
             double d = uc.convert( it.getValue(vv) ); 
@@ -5392,7 +5394,7 @@ public class Ops {
                 double ff = d==uc0 ? 0 : (d - uc0) / (uc1 - uc0); // may be 1.0
                 
                 if ( ic0 + ff < -50 || ic0 + ff > n+50 ) {
-                    logger.warning("alarming extrapolation in findex is suspicious, ");
+                    extentWarning++;
                 }
                 it.putValue(result, ic0 + ff);
                 
@@ -5419,10 +5421,13 @@ public class Ops {
                 double ff = d==uc0 ? 0 : (d - uc0) / (uc1 - uc0); // may be 1.0
 
                 if ( ic0 + ff < -50 || ic0 + ff > n+50 ) {
-                    logger.warning("alarming extrapolation in findex is suspicious,");
+                    extentWarning++;
                 }
                 it.putValue(result, ic0 + ff);
             }
+        }
+        if ( extentWarning>0 ) {
+            logger.log(Level.WARNING, "alarming extrapolation in findex is suspicious: count:{0} uu:{1} vv:{2}", new Object[]{ extentWarning, extent(uu), extent(vv)});
         }
         if ( result.rank()==1 ) {
             result.putProperty( QDataSet.DEPEND_0, vv );
