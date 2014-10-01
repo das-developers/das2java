@@ -461,21 +461,46 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return result;
     }
 
+    /**
+     * Get the control.  This provides an easy way for renderers to have controls in a compact string.
+     * @param key the key name.
+     * @param deft the default value.
+     * @return the string value of the control.
+     * @see #getDoubleControl(java.lang.String, double) 
+     * @see #getBooleanControl(java.lang.String, boolean) 
+     */
     public String getControl( String key, String deft ) {
         if ( this.control.trim().length()==0 ) return deft;
         String v= controls.get(key);
         if ( v!=null ) return v; else return deft;
     }
 
+    /**
+     * get the boolean control.
+     * @param key the key name.
+     * @param deft the default value.
+     * @return the boolean value, where "T" is true, false otherwise; or the default when the value is not found.
+     */
     public boolean getBooleanControl( String key, boolean deft ) {
         String v= controls.get(key);
         if ( v!=null ) return v.equalsIgnoreCase("T"); else return deft;
     }
 
-    public String setBooleanControl( boolean v ) {
+    /**
+     * return the encoding for the boolean value.
+     * @param v the boolean value.
+     * @return "T" or "F"
+     */
+    public String encodeBooleanControl( boolean v ) {
         return v ? "T" : "F";
     }
     
+    /**
+     * get the double control.
+     * @param key the key name.
+     * @param deft the default value.
+     * @return the double, parsed with Double.parseDouble; or the default when the value is not found.
+     */
     public double getDoubleControl( String key, double deft ) {
         String v= controls.get(key);
         if ( v!=null ) {
@@ -490,6 +515,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
 
+    /**
+     * get the integer control.
+     * @param key the key name.
+     * @param deft the default value.
+     * @return the int, parsed with Integer.parseInt; or the default when the value is not found.
+     */
     public int getIntegerControl( String key, int deft ) {
         String v= controls.get(key);
         if ( v!=null ) {
@@ -504,6 +535,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
 
+    /**
+     * get the double array control.  These should be encoded on a string
+     * with commas delimiting values.
+     * @param key the key name.
+     * @param deft the default value.
+     * @return the double array, each element parsed with Double.parseDouble or the default when the value is not found.
+     */
     public double[] getDoubleArrayControl( String key, double[] deft ) {
         String v= controls.get(key);
         if ( v!=null ) {
@@ -523,6 +561,12 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
 
+    /**
+     * get the Datum control. 
+     * @param key the key name.
+     * @param deft the default value, which also provides the units.
+     * @return the Datum or the default when the value is not found.
+     */
     public Datum getDatumControl( String key, Datum deft ) {
         String v= controls.get(key);
         if ( v!=null ) {
@@ -537,6 +581,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
 
+    /**
+     * get the Color control.  
+     * @param key the key name.
+     * @param deft the default value
+     * @return the Color or the default when the value is not found.
+     * @see ColorUtil#decodeColor(java.lang.String) 
+     */
     public Color getColorControl( String key, Color deft ) {
         String v= controls.get(key);
         if ( v!=null ) {
@@ -551,7 +602,13 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         }
     }
     
-    public String setColorControl( Color color ) {
+    /**
+     * encode the Color control.  
+     * @param color
+     * @return the color encoded as a string.
+     * @see ColorUtil#encodeColor(java.awt.Color) 
+     */
+    public String encodeColorControl( Color color ) {
         return ColorUtil.encodeColor(color);
     }
     
