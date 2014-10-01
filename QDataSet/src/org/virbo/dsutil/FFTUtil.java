@@ -116,13 +116,18 @@ public class FFTUtil {
         return DDataSet.wrap(ww);
     }
 
+    /**
+     * return a "Hanning" (Hann) window of the given size.
+     * @param size
+     * @return 
+     */
     public static QDataSet getWindowHanning( final int size ) {
         final int n= size;
         final double[] ww= new double[n];
 
-        int halfsize= size/2;
         for ( int k=0; k<size; k++ ) {
-            ww[k] = 1.0 + Math.cos( 2.0*Math.PI*(double)(k-halfsize) /(double)size );
+            double eta= (double)(k) /(double)(size-1);
+            ww[k] = 1.0 - Math.cos( 2 * Math.PI * eta );
         }
         return DDataSet.wrap(ww);
     }
