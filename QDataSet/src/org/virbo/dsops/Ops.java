@@ -5392,7 +5392,7 @@ public class Ops {
                 double ff = d==uc0 ? 0 : (d - uc0) / (uc1 - uc0); // may be 1.0
                 
                 if ( ic0 + ff < -50 || ic0 + ff > n+50 ) {
-                    System.err.println("here big number");
+                    logger.warning("alarming extrapolation in findex is suspicious, ");
                 }
                 it.putValue(result, ic0 + ff);
                 
@@ -5419,7 +5419,7 @@ public class Ops {
                 double ff = d==uc0 ? 0 : (d - uc0) / (uc1 - uc0); // may be 1.0
 
                 if ( ic0 + ff < -50 || ic0 + ff > n+50 ) {
-                    System.err.println("here big number");
+                    logger.warning("alarming extrapolation in findex is suspicious,");
                 }
                 it.putValue(result, ic0 + ff);
             }
