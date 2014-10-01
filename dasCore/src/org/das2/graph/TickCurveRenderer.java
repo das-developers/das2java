@@ -28,10 +28,13 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.propertyeditor.Enumeration;
 import java.awt.*;
 import java.awt.geom.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
+import static org.das2.graph.ContoursRenderer.PROP_LINETHICK;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
@@ -45,8 +48,6 @@ import org.virbo.dsops.Ops;
  * @author  jbf
  */
 public class TickCurveRenderer extends Renderer {
-    
-    private Stroke stroke;
     
     TickVDescriptor tickv;
     DomainDivider ticksDivider;
@@ -64,6 +65,7 @@ public class TickCurveRenderer extends Renderer {
     private TickStyle tickStyle= TickCurveRenderer.TickStyle.outer;
     
     private double lineWidth=  1.0f;
+    private Color color= Color.BLACK;
     
     private float tickLength= 8.0f;
     
@@ -102,7 +104,22 @@ public class TickCurveRenderer extends Renderer {
 
     public TickCurveRenderer() {
         super();
-        stroke= new BasicStroke((float)lineWidth);
+    }
+
+    @Override
+    public void setControl(String s) {
+        super.setControl(s);
+        this.lineWidth= getDoubleControl( PROP_LINETHICK, lineWidth );
+        this.color= getColorControl( CONTROL_KEY_COLOR, color );
+        update();
+    }
+    
+    @Override
+    public String getControl() {
+        Map<String,String> controls= new LinkedHashMap();
+        controls.put( PROP_LINETHICK, String.valueOf(lineWidth) );
+        controls.put( CONTROL_KEY_COLOR, encodeColorControl(color) );
+        return Renderer.formatControl(controls);
     }
 
     /**
@@ -375,11 +392,14 @@ public class TickCurveRenderer extends Renderer {
         }
         
         Graphics2D g= (Graphics2D)g1;
+        
+        BasicStroke stroke= new BasicStroke((float)lineWidth);
         g.setStroke( stroke );
 
         g.setFont( getParent().getFont() );
         
-        //g.setColor( parent.getForeground() );
+        g.setColor( color );
+        
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
         QDataSet ds3= ds2;
@@ -509,7 +529,6 @@ public class TickCurveRenderer extends Renderer {
      */
     public void setLineWidth(double lineWidth) {
         this.lineWidth = lineWidth;
-        stroke= new BasicStroke((float)lineWidth);
         invalidateParentCacheImage();
     }
     
