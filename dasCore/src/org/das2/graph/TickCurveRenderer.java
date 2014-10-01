@@ -58,7 +58,7 @@ public class TickCurveRenderer extends Renderer {
     private QDataSet yds;
     private Units xunits; // xUnits of the axis
     private Units yunits; // yUnits of the axis
-    private double[][] idata;  // data transformed to pixel space
+    private double[][] ddata;  // data transformed to pixel space
     
     TickLabeller tickLabeller;
     
@@ -218,13 +218,13 @@ public class TickCurveRenderer extends Renderer {
         int index0, index1, index2;
         if ( findex<1 ) {
             index0= 0;
-        } else if ( findex>nvert-2 ) {
-            index0= nvert-3;
+        } else if ( findex>nvert-4 ) {
+            index0= nvert-5;
         } else {
             index0= (int)Math.floor(findex)-1;
         }
-        index1= index0+1;
-        index2= index1+1;            
+        index1= index0+2;
+        index2= index1+2;            
                     
         return turnDir( xds.value(index0), yds.value(index0),
                         xds.value(index1), yds.value(index1),
@@ -235,13 +235,13 @@ public class TickCurveRenderer extends Renderer {
         int nvert= xds.length();
         int index0= (int)Math.floor(findex);
         if ( index0==nvert-1 ) index0--;            
-        double x1= idata[0][index0];
-        double x2= idata[0][index0+1];
-        double y1= idata[1][index0];
-        double y2= idata[1][index0+1];
+        double x1= ddata[0][index0];
+        double x2= ddata[0][index0+1];
+        double y1= ddata[1][index0];
+        double y2= ddata[1][index0+1];
 
-        double xinterp= DasMath.interpolate( idata[0], findex );
-        double yinterp= DasMath.interpolate( idata[1], findex );
+        double xinterp= DasMath.interpolate( ddata[0], findex );
+        double yinterp= DasMath.interpolate( ddata[1], findex );
         
         double dx= x2-x1;
         double dy= y2-y1;
@@ -315,17 +315,17 @@ public class TickCurveRenderer extends Renderer {
         
         double plen= 0;
         int ic= 1;
-        for ( int i=1; i<idata[0].length; i++ ) {
-            if ( Math.abs( idata[0][i] )<10000 && Math.abs( idata[0][i-1] )<10000 &&  Math.abs( idata[1][i] )<10000 && Math.abs( idata[1][i-1] )<10000 ) {
-                double dx= idata[0][i] - idata[0][i-1];
-                double dy= idata[1][i] - idata[1][i-1];
+        for ( int i=1; i<ddata[0].length; i++ ) {
+            if ( Math.abs( ddata[0][i] )<10000 && Math.abs( ddata[0][i-1] )<10000 &&  Math.abs( ddata[1][i] )<10000 && Math.abs( ddata[1][i-1] )<10000 ) {
+                double dx= ddata[0][i] - ddata[0][i-1];
+                double dy= ddata[1][i] - ddata[1][i-1];
                 plen += Math.sqrt( dx*dx + dy*dy );
                 ic++;
             }
         }
         
         if ( ic>0 ) { // compensate for stuff that can't be transformed.
-            plen= plen * idata[0].length / ic;
+            plen= plen * ddata[0].length / ic;
         }
         if ( plen<100 ) plen=100;
 
@@ -360,13 +360,13 @@ public class TickCurveRenderer extends Renderer {
 
         for ( int i=0; i<tickv.tickV.getLength(); i++ ) {
             int index0= (int)Math.floor(findex.value(i));
-            if ( index0>=0 && index0<idata[0].length ) {
+            if ( index0>=0 && index0<ddata[0].length ) {
                 if ( x0==Double.MAX_VALUE ) {
-                    x0= idata[0][index0];
-                    y0= idata[1][index0];
+                    x0= ddata[0][index0];
+                    y0= ddata[1][index0];
                 } else {
-                    double x1= idata[0][index0];
-                    double y1= idata[1][index0];
+                    double x1= ddata[0][index0];
+                    double y1= ddata[1][index0];
                     double r= (x1-x0)*(x1-x0) + (y1-y0)*(y1-y0);
                     if ( r<rmin ) rmin= Math.sqrt(r);
                     x0= x1;
@@ -425,25 +425,40 @@ public class TickCurveRenderer extends Renderer {
         xunits= SemanticOps.getUnits(xds);
         yunits= SemanticOps.getUnits(yds);
         
-        idata= new double[2][xds.length()];
+        double limit= 1;
+        ddata= new double[2][xds.length()];
         for ( int i=0; i<xds.length(); i++ ) {
-            idata[0][i]= xAxis.transform(xds.value(i),xunits);
-            idata[1][i]= yAxis.transform(yds.value(i),yunits);
+            ddata[0][i]= xAxis.transform(xds.value(i),xunits);
+            ddata[1][i]= yAxis.transform(yds.value(i),yunits);
+            if ( i>0 ) {
+                double len1=  Math.sqrt( Math.pow(ddata[0][i]- ddata[0][i-1],2 ) 
+                        + Math.pow(ddata[1][i]- ddata[1][i-1],2 ) );
+                if ( len1>limit && len1/limit < 30 ) {
+                    limit= len1;
+                }
+                
+            }
         }
 
         QDataSet wds= Ops.multiply( Ops.valid(xds), Ops.valid(yds) );
         
         GeneralPath p= new GeneralPath();
-        p.moveTo( idata[0][0],idata[1][0] ); // Java5 requires floats
+        p.moveTo( ddata[0][0],ddata[1][0] );
         
         double w0= wds.value(0);
         
         for ( int i=1; i<xds.length(); i++ ) {
             double w1= wds.value(i);
-            if ( w0==0 || w1==0 ) {
-                p.moveTo( idata[0][i],idata[1][i] );
+            double len1=  Math.sqrt( Math.pow(ddata[0][i]- ddata[0][i-1],2 ) 
+                        + Math.pow(ddata[1][i]- ddata[1][i-1],2 ) );
+            if ( len1>limit ) {
+                p.moveTo( ddata[0][i],ddata[1][i] );
             } else {
-                p.lineTo( idata[0][i],idata[1][i] );
+                if ( w0==0 || w1==0 ) {
+                    p.moveTo( ddata[0][i],ddata[1][i] );
+                } else {
+                    p.lineTo( ddata[0][i],ddata[1][i] );
+                }
             }
             w0= w1;
         }
@@ -485,11 +500,11 @@ public class TickCurveRenderer extends Renderer {
             }
         }
 
-        int n= idata[0].length;
+        int n= ddata[0].length;
         int em= 10;
         Arrow.paintArrow( g,
-                new Point2D.Double( idata[0][n-1],idata[1][n-1] ),
-                new Point2D.Double( idata[0][n-3],idata[1][n-3] ), em, Arrow.HeadStyle.DRAFTING );
+                new Point2D.Double( ddata[0][n-1],ddata[1][n-1] ),
+                new Point2D.Double( ddata[0][n-3],ddata[1][n-3] ), em, Arrow.HeadStyle.DRAFTING );
         tickLabeller.finished();
         
     }
