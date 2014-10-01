@@ -65,6 +65,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
     DatumRange imageXRange;
     private Color color = Color.BLACK;
     private int ixstepLimitSq=1000000;  /** pixels, limit of x increment before line break */
+
+    /**
+     * pixels, limit of x increment before line break
+     */
     private Shape selectionArea;
 
     public ImageVectorDataSetRenderer(DataSetDescriptor dsd) {

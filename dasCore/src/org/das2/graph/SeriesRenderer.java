@@ -155,8 +155,8 @@ public class SeriesRenderer extends Renderer {
     @Override
     public String getControl() {
         Map<String,String> controls= new LinkedHashMap();
-        controls.put( CONTROL_KEY_COLOR, setColorControl(color) );
-        controls.put( CONTROL_KEY_FILL_COLOR, setColorControl(fillColor) );
+        controls.put( CONTROL_KEY_COLOR, encodeColorControl(color) );
+        controls.put( CONTROL_KEY_FILL_COLOR, encodeColorControl(fillColor) );
         controls.put( CONTROL_KEY_LINE_THICK, String.valueOf(lineWidth) );
         controls.put( CONTROL_KEY_SYMBOL_SIZE, String.valueOf( symSize ) );
         return formatControl(controls);

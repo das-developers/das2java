@@ -321,8 +321,8 @@ public class PitchAngleDistributionRenderer extends Renderer {
     @Override
     public String getControl() {
         Map<String,String> controls= new LinkedHashMap();
-        controls.put( "mirror", setBooleanControl( mirror ) );
-        controls.put( "originNorth", setBooleanControl( originNorth ) );
+        controls.put( "mirror", encodeBooleanControl( mirror ) );
+        controls.put( "originNorth", encodeBooleanControl( originNorth ) );
         return Renderer.formatControl(controls);
     }
     

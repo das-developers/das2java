@@ -198,10 +198,10 @@ public class ContoursRenderer extends Renderer {
     public String getControl() {
         Map<String,String> controls= new LinkedHashMap();
         controls.put( "levels", contours );
-        controls.put( "labels", setBooleanControl( drawLabels ) );
+        controls.put( "labels", encodeBooleanControl( drawLabels ) );
         controls.put( PROP_LINETHICK, String.valueOf(lineThick) );
         controls.put( "labelCadence", String.valueOf(labelCadence) );
-        controls.put( CONTROL_KEY_COLOR, setColorControl( color ) );
+        controls.put( CONTROL_KEY_COLOR, encodeColorControl( color ) );
         return Renderer.formatControl(controls);
     }
 

@@ -41,7 +41,7 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
 /**
- *
+ * Renderer showing ticks along a curve, useful for orbits.
  * @author  jbf
  */
 public class TickCurveRenderer extends Renderer {
@@ -84,8 +84,13 @@ public class TickCurveRenderer extends Renderer {
         
     }
     
-    /** The dataset be a Vector data set with planes identified
-     *  by xplane and yplane.
+    /** 
+     * Create a new renderer with the x and y planes of the bundle ds identified.  If the xplane or yplane is 
+     * not identified, then use unbundle(1) for the xplane and unbundle(y) for the yplane.
+     * @param ds
+     * @param xplane
+     * @param yplane
+     * @param tickv
      */
     public TickCurveRenderer( QDataSet ds, String xplane, String yplane, TickVDescriptor tickv) {
         this();
