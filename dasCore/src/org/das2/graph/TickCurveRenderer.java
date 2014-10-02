@@ -28,8 +28,11 @@ import org.das2.util.monitor.ProgressMonitor;
 import org.das2.components.propertyeditor.Enumeration;
 import java.awt.*;
 import java.awt.geom.*;
+import java.awt.image.BufferedImage;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumVector;
 import org.das2.datum.DomainDivider;
@@ -147,6 +150,16 @@ public class TickCurveRenderer extends Renderer {
         }
     }
 
+    @Override
+    public Icon getListIcon() {
+        BufferedImage img= new BufferedImage( 16, 16, BufferedImage.TYPE_INT_ARGB );
+        Graphics2D g= (Graphics2D) img.getGraphics();
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        g.setColor( color );
+        g.drawLine(2,10,14,6);
+        return new ImageIcon( img );
+    }
+    
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
      *
