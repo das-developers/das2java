@@ -547,6 +547,25 @@ public class TickCurveRenderer extends Renderer {
         invalidateParentCacheImage();
     }
     
+    /**
+     * get the color of the orbit
+     * @return the color
+     */
+    public Color getColor() {
+        return this.color;
+    }
+    
+    /**
+     * set the color of the orbit
+     * @param color
+     */
+    public void setColor( Color color ) {
+        this.color= color;
+        invalidateParentCacheImage();
+    }
+    
+    
+    
     /** Getter for property tickLength.
      * @return Value of property tickLength.
      *
