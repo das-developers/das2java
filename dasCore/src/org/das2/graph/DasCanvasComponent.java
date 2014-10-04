@@ -480,24 +480,18 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * was first introduced to support the annotation component, which draws a compact
      * background bubble around a message, which is typically smaller than its bounds,
      * plus an arrow.
-     * @param x
-     * @param y
+     * @param x the x location on the canvas, with (0,0) being the upper-left corner.
+     * @param y the y location on the canvas, with (0,0) being the upper-left corner.
      * @return true if the component accepts the context at this point.
      */
     public boolean acceptContext( int x, int y ) {
-	return true;
+        return true;
     }
     
     /**
-     * accessor to the DasMouseInputAdapter handling mouse input for the component.
-     * Note there is also getDasMouseInputAdapter.
-     * @return DasMouseInputAdaptor handling mouse input for the component.
-     * @deprecated use getDasMouseInputAdapter instead
+     * return a list of actions.  This is used by the DasMouseInputAdapter.
+     * @return the actions this provides.
      */
-    public DasMouseInputAdapter getMouseAdapter() {
-        return mouseAdapter;
-    }
-    
     public Action[] getActions() {
         return new Action[] {
             PROPERTIES_ACTION,
