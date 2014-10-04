@@ -39,7 +39,8 @@ import org.das2.components.propertyeditor.Editable;
 import org.das2.components.propertyeditor.PropertyEditor;
 
 /**
- *
+ * Super class providing base functionality for all canvas components such as 
+ * DasAxis, DasPlot, and DasLabel.
  * @author  eew
  */
 public abstract class DasCanvasComponent extends JComponent implements Editable {
@@ -72,6 +73,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     };
     
     public static final Action PROPERTIES_ACTION = new CanvasComponentAction("Properties") {
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (getCurrentComponent() != null) {
                 getCurrentComponent().showProperties();
@@ -176,6 +178,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * class for handling resize events.
      */
     private class ResizeListener implements DasUpdateListener {
+        @Override
         public void update(org.das2.graph.event.DasUpdateEvent e) {
             logger.log(Level.FINE, "component row or column moved: {0}", e.getSource());
             markDirty("resize");
