@@ -7164,6 +7164,54 @@ public class Ops {
     }
 
     /**
+     * interleave the two sorted lists, using their DEPEND_0 datasets.  If neither dataset has DEPEND_0,
+     * then this will use the datasets themselves.
+     * When ds2[i]==ds1[j], use ds1[j].
+     * Thanks to: http://stackoverflow.com/questions/5958169/how-to-merge-two-sorted-arrays-into-a-sorted-array
+     * @param ds1 rank N dataset
+     * @param ds2 rank N dataset
+     * @return dataset of rank N with elements interleaved.
+     */
+    public static QDataSet merge( QDataSet ds1, QDataSet ds2 ) {
+        JoinDataSet result= new JoinDataSet(ds1.rank());
+        QDataSet dep01= (QDataSet)ds1.property(QDataSet.DEPEND_0);
+        QDataSet dep02= (QDataSet)ds2.property(QDataSet.DEPEND_0);
+        if ( dep01==null ) {
+            if ( dep02==null ) {
+                dep01= ds1;
+                dep02= ds2;
+            } else {
+                throw new IllegalArgumentException("ds1 is missing DEPEND_0");
+            }
+        } else {
+            if ( dep02==null ) {
+                throw new IllegalArgumentException("ds2 is missing DEPEND_0");
+            }
+        }
+        int n1= dep01.length();
+        int n2= dep02.length();
+        int i1= 0; 
+        int i2= 0;
+        while (i1 < n1 && i2 < n2 ) {
+            if ( Ops.eq( dep01.slice(i1), dep02.slice(i2) ).value()>0 ) {
+                result.join( ds1.slice(i1++) );
+                i2++;
+            } else if ( Ops.le( dep01.slice(i1), dep02.slice(i2) ).value()>0 ) {
+                result.join( ds1.slice(i1++) );
+            } else {
+                result.join( ds2.slice(i2++) );
+            }
+        }
+        while ( i1<n1 ) {
+            result.join( ds1.slice(i1++) );
+        }
+        while ( i2<n2 ) {
+            result.join( ds2.slice(i2++) );
+        }
+        return result;
+    }
+    
+    /**
      * guess a name for the dataset, looking for NAME and then safeName(LABEL).  The
      * result will be a C/Python/Java-style identifier suitable for the variable.
      * @param ds
