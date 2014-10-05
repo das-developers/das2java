@@ -6821,7 +6821,7 @@ public class Ops {
      * will try to bundle on the second dimension, unlike join.  This will also
      * isolate the semantics of bundle dimensions as it's introduced.  Note the
      * first argument can be null in order to simplify loops in client code.
-     * @param ds1 null, rank N-1 dataset or a rank N bundle dataset.
+     * @param ds1 null, rank N-1 dataset, or a rank N bundle dataset.
      * @param ds2 rank N-1 dataset.
      * @return rank N+1 bundle dataset
      */
