@@ -2185,11 +2185,11 @@ public class Ops {
      * the lower rank dataset is promoted before appending.  If the first dataset
      * is null and the second is non-null, then return the second dataset.
      *
-     * This was briefly known as "join."
      * @param ds1 null or a dataset of length m.
      * @param ds2 dataset of length n to be concatenated.
      * @return a dataset length m+n.
      * @throws IllegalArgumentException if the two datasets don't have the same rank.
+     * @see #merge(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
         if ( ds1==null && ds2!=null ) return ds2;
@@ -6748,8 +6748,8 @@ public class Ops {
 
     /**
      * change the dimensionality of the elements of the QUBE dataset.  For example,
-     *   convert [1,2,3,4,5,6] to [[1,2],[3,4],[5,6]].
-     * @param ds
+     * convert [1,2,3,4,5,6] to [[1,2],[3,4],[5,6]].
+     * @param ds dataset
      * @param qube the dimensions of the result dataset.
      * @return a new dataset with the specified dimensions, and the properties (e.g. UNITS) of the input dataset.
      */
@@ -6852,7 +6852,7 @@ public class Ops {
      * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
      * @param ds the bundle of datasets, often rank 2 with BUNDLE_1 property
      * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
-     * @see #unbundle( QDataSet bundleDs, int ib )
+     * @see #unbundle(org.virbo.dataset.QDataSet, int) 
      * @throws IllegalArgumentException if no named dataset is found.
      * @return
      */
@@ -6868,11 +6868,10 @@ public class Ops {
      *
      *
      * @param bundleDs the bundle dataset.
-     * @param ib index of the dataset to extract. If the index is within a dataset,
-     *   then the entire dataset is returned.
+     * @param i index of the dataset to extract. If the index is within a high-rank dataset, then the entire dataset is returned.
      * @throws IndexOutOfBoundsException if the index is invalid.
      * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
-     * @return the ib-th dataset from the bundle.
+     * @return the i-th dataset from the bundle.
      */
     public static QDataSet unbundle( QDataSet ds, int i ) {
         return DataSetOps.unbundle(ds, i);
@@ -6884,8 +6883,8 @@ public class Ops {
      * return true if DEPEND_1 is set and its units are EnumerationUnits.  This
      * was the pre-bundle way of representing a bundle of datasets.  It might
      * be supported indefinitely, because it has some nice rules about the data.
-     * For example, data must be of the same units since there is no place to put
-     * the property.
+     * For example, bundled data must be of the same units since there is no place to put
+     * the property, and each bundled item must be rank 1.
      * @param zds
      * @return
      */
@@ -7134,8 +7133,7 @@ public class Ops {
      * If the first dataset is rank N+1 JoinDataset and the other is rank N, then the rank N dataset is
      * added to the rank N+1 dataset.
      * 
-     * This is underimplemented right now, and can only join two rank N datasets
-     * or if the first dataset is the result of a join.
+     * This is underimplemented right now, and can only join two rank N datasets or if the first dataset is the result of a join.
      * 
      * @param ds1 rank N dataset, or null
      * @param ds2 rank N dataset
@@ -7164,15 +7162,19 @@ public class Ops {
     }
 
     /**
-     * interleave the two sorted lists, using their DEPEND_0 datasets.  If neither dataset has DEPEND_0,
-     * then this will use the datasets themselves.
-     * When ds2[i]==ds1[j], use ds1[j].
+     * Merge the two sorted rank N datasets, using their DEPEND_0 datasets, into one rank N dataset.  
+     * If neither dataset has DEPEND_0, then this will use the datasets themselves.  When ds1 occurs "before" ds2, then this 
+     * is the same as concatenate.
+     * When there is a collision where two data points are coincident, use ds1[j].
+     * When ds1 is null (or None), use ds2.
      * Thanks to: http://stackoverflow.com/questions/5958169/how-to-merge-two-sorted-arrays-into-a-sorted-array
-     * @param ds1 rank N dataset
+     * @param ds1 rank N dataset, or null.
      * @param ds2 rank N dataset
      * @return dataset of rank N with elements interleaved.
+     * @see #concatenate(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet merge( QDataSet ds1, QDataSet ds2 ) {
+        if ( ds1==null ) return ds2;
         JoinDataSet result= new JoinDataSet(ds1.rank());
         QDataSet dep01= (QDataSet)ds1.property(QDataSet.DEPEND_0);
         QDataSet dep02= (QDataSet)ds2.property(QDataSet.DEPEND_0);
@@ -7214,7 +7216,7 @@ public class Ops {
     /**
      * guess a name for the dataset, looking for NAME and then safeName(LABEL).  The
      * result will be a C/Python/Java-style identifier suitable for the variable.
-     * @param ds
+     * @param ds the dataset
      * @return the name or null if there is no NAME or LABEL
      */
     public static String guessName( QDataSet ds ) {
@@ -7224,7 +7226,7 @@ public class Ops {
     /**
      * guess a name for the dataset, looking for NAME and then safeName(LABEL).  The
      * result will be a C/Python/Java-style identifier suitable for the variable.
-     * @param ds
+     * @param ds the dataset
      * @return the name, or deft if there is no NAME or LABEL.
      */
     public static String guessName( QDataSet ds, String deft ) {
