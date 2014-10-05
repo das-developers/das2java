@@ -2233,11 +2233,11 @@ public class Ops {
     }  
     
     /**
-     * return returns a rank 1 dataset of uniform numbers from [0,1].
-     * @param len0
-     * @return
+     * return returns a rank N dataset of uniform numbers from [0,1].
+     * @param qube the dimensions of the result.
+     * @return the result
      */
-    private static QDataSet rand(int[] qube, Random rand) {
+    private static QDataSet randu(int[] qube, Random rand) {
         DDataSet result = DDataSet.create(qube);
         QubeDataSetIterator it = new QubeDataSetIterator(result);
         while (it.hasNext()) {
@@ -2248,8 +2248,8 @@ public class Ops {
     }
 
     /**
-     * return returns a rank 1 dataset of random numbers of a guassian (normal) distribution.
-     * @param len0
+     * return returns a rank N dataset of random numbers of a Gaussian (normal) distribution.
+     * @param qube the dimensions of the result.
      * @return
      */
     private static QDataSet randn(int[] qube, Random rand) {
@@ -2265,9 +2265,51 @@ public class Ops {
     /**
      * returns a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
      * @return a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @deprecated use randu instead
      */
     public static QDataSet rand() {
-        return rand(new int[]{}, new Random());
+        return randu(new int[]{}, new Random());
+    }
+    
+    /**
+     * returns a rank 1 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @param len0 the number of elements in the result.
+     * @return a rank 1 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @deprecated use randu instead.  This is used in many test programs and Jython codes, and will not be removed.
+     */
+    public static QDataSet rand(int len0) {
+        return randu(new int[]{len0}, new Random());
+    }
+
+    /**
+     * returns a rank 2 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @param len0 the number of elements in the first index.
+     * @param len1 the number of elements in the second index.
+     * @return a rank 2 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @deprecated use randu instead
+     */    
+    public static QDataSet rand(int len0, int len1) {
+        return randu(new int[]{len0, len1}, new Random());
+    }
+
+    /**
+     * returns a rank 3 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @param len0 the number of elements in the first index.
+     * @param len1 the number of elements in the second index.
+     * @param len2 the number of elements in the third index.
+     * @return a rank 3 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @deprecated use randu instead
+     */
+    public static QDataSet rand(int len0, int len1, int len2) {
+        return randu(new int[]{len0, len1, len2}, new Random());
+    }
+
+    /**
+     * returns a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @return a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
+     */
+    public static QDataSet randu() {
+        return randu(new int[]{}, new Random());
     }
     
     /**
@@ -2275,8 +2317,8 @@ public class Ops {
      * @param len0 the number of elements in the result.
      * @return a rank 1 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
-    public static QDataSet rand(int len0) {
-        return rand(new int[]{len0}, new Random());
+    public static QDataSet randu(int len0) {
+        return randu(new int[]{len0}, new Random());
     }
 
     /**
@@ -2285,8 +2327,8 @@ public class Ops {
      * @param len1 the number of elements in the second index.
      * @return a rank 2 dataset of random uniform numbers from 0 to 1 but not including 1.
      */    
-    public static QDataSet rand(int len0, int len1) {
-        return rand(new int[]{len0, len1}, new Random());
+    public static QDataSet randu(int len0, int len1) {
+        return randu(new int[]{len0, len1}, new Random());
     }
 
     /**
@@ -2296,10 +2338,10 @@ public class Ops {
      * @param len2 the number of elements in the third index.
      * @return a rank 3 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
-    public static QDataSet rand(int len0, int len1, int len2) {
-        return rand(new int[]{len0, len1, len2}, new Random());
+    public static QDataSet randu(int len0, int len1, int len2) {
+        return randu(new int[]{len0, len1, len2}, new Random());
     }
-
+    
     /**
      * return a rank 0 dataset of random numbers of a Gaussian (normal) distribution.
      * @return a rank 0 dataset of random numbers of a Gaussian (normal) distribution.
