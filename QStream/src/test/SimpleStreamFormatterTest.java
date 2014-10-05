@@ -73,11 +73,11 @@ public class SimpleStreamFormatterTest {
         MutablePropertyDataSet tags = (MutablePropertyDataSet) Ops.timegen("2003-09-09", "13.86 " + Units.seconds, 11 );
         tags.putProperty( QDataSet.NAME, "time");
         
-        MutablePropertyDataSet ds = (MutablePropertyDataSet) Ops.multiply( Ops.pow( Ops.replicate(1e5,11,3), Ops.rand(11,3) ), Ops.rand( 11, 3) );
+        MutablePropertyDataSet ds = (MutablePropertyDataSet) Ops.multiply( Ops.pow( Ops.replicate(1e5,11,3), Ops.randu(11,3) ), Ops.randu( 11, 3) );
         ds.putProperty(QDataSet.DEPEND_0, tags);
         ds.putProperty(QDataSet.NAME,"B_GSM");
         
-        MutablePropertyDataSet mode = (MutablePropertyDataSet) Ops.floor( Ops.multiply( Ops.rand( 11 ), Ops.replicate(4,11) ) );
+        MutablePropertyDataSet mode = (MutablePropertyDataSet) Ops.floor( Ops.multiply( Ops.randu( 11 ), Ops.replicate(4,11) ) );
         EnumerationUnits u= new EnumerationUnits("quality");
         u.createDatum( 0, "Good" );
         u.createDatum( 1, "Better" );
