@@ -10,15 +10,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static org.das2.util.filesystem.FileSystem.PROP_CASE_INSENSITIVE;
-import org.das2.util.filesystem.FileSystemSettings;
 import org.das2.util.filesystem.Glob;
 
 /**
@@ -31,6 +29,19 @@ import org.das2.util.filesystem.Glob;
 public class FileUtil {
 
     private FileUtil() {
+    }
+    
+    /**
+     * return true of the maybeChild parent is a child of possibleParent
+     * @param possibleParent
+     * @param maybeChild
+     * @return true if the possibleParent is actually a parent of maybeChild.
+     */
+    public static boolean isParent(File possibleParent, File maybeChild ) {
+        URI parentURI = possibleParent.toURI();
+        URI childURI = maybeChild.toURI();
+        if ( !childURI.isAbsolute() ) throw new IllegalArgumentException("child in test is not absolute");
+        return !parentURI.relativize(childURI).isAbsolute();
     }
     
     /**
