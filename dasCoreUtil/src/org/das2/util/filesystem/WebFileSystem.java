@@ -345,7 +345,12 @@ public abstract class WebFileSystem extends FileSystem {
         }
     }
     
-    static protected File localRoot(URI root) {
+    /**
+     * return the local root for the URI.
+     * @param root the URI such as http://das2.org/data/
+     * @return /home/jbf/autoplot_data/fscache/http/das2.org/data/
+     */
+    public static File localRoot(URI root) {
 
         File local = FileSystem.settings().getLocalCacheDir();
 
@@ -362,6 +367,7 @@ public abstract class WebFileSystem extends FileSystem {
 
         return local;
     }
+    
     /**
      * Keep track of active downloads.  This handles, for example, the case
      * where the same file is requested several times by different threads.
