@@ -33,14 +33,19 @@ public class FileUtil {
     
     /**
      * return true of the maybeChild parent is a child of possibleParent
-     * @param possibleParent
-     * @param maybeChild
+     * @param possibleParent parent file.
+     * @param maybeChild a file or folder which may exist within possibleParent.
      * @return true if the possibleParent is actually a parent of maybeChild.
      */
     public static boolean isParent(File possibleParent, File maybeChild ) {
-        URI parentURI = possibleParent.toURI();
-        URI childURI = maybeChild.toURI();
-        if ( !childURI.isAbsolute() ) throw new IllegalArgumentException("child in test is not absolute");
+        possibleParent= possibleParent.getAbsoluteFile();
+        if ( !possibleParent.exists() || !possibleParent.isDirectory() ) {
+            // this cannot possibly be the parent
+            return false;
+        }
+        maybeChild= maybeChild.getAbsoluteFile();
+        URI parentURI = possibleParent.toURI(),
+        childURI = maybeChild.toURI();
         return !parentURI.relativize(childURI).isAbsolute();
     }
     
