@@ -32,12 +32,14 @@ public class FileUtil {
     }
     
     /**
-     * return true of the maybeChild parent is a child of possibleParent
+     * return true of the maybeChild parent is a child of possibleParent.  Note either
+     * can be null, and this will not throw an exception, but will return false.
      * @param possibleParent parent file.
      * @param maybeChild a file or folder which may exist within possibleParent.
      * @return true if the possibleParent is actually a parent of maybeChild.
      */
     public static boolean isParent(File possibleParent, File maybeChild ) {
+        if ( possibleParent==null || maybeChild==null ) return false;
         possibleParent= possibleParent.getAbsoluteFile();
         if ( !possibleParent.exists() || !possibleParent.isDirectory() ) {
             // this cannot possibly be the parent
