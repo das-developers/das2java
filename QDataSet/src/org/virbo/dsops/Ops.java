@@ -7232,26 +7232,37 @@ public class Ops {
                 throw new IllegalArgumentException("ds2 is missing DEPEND_0");
             }
         }
+        //there's a bug in result.join where it doesn't look for CONTEXT_0, otherwise this would work without dep0result.
+        DataSetBuilder dep0result= new DataSetBuilder(1,ds1.length()+ds2.length());
         int n1= dep01.length();
         int n2= dep02.length();
         int i1= 0; 
         int i2= 0;
         while (i1 < n1 && i2 < n2 ) {
             if ( Ops.eq( dep01.slice(i1), dep02.slice(i2) ).value()>0 ) {
+                dep0result.putValue( -1, DataSetUtil.asDatum( dep01.slice(i1) ) );
                 result.join( ds1.slice(i1++) );
                 i2++;
             } else if ( Ops.le( dep01.slice(i1), dep02.slice(i2) ).value()>0 ) {
+                dep0result.putValue( -1, DataSetUtil.asDatum( dep01.slice(i1) ) );
                 result.join( ds1.slice(i1++) );
             } else {
+                dep0result.putValue( -1, DataSetUtil.asDatum( dep02.slice(i2) ) );
                 result.join( ds2.slice(i2++) );
             }
+            dep0result.nextRecord();
         }
         while ( i1<n1 ) {
+            dep0result.putValue( -1, DataSetUtil.asDatum( dep01.slice(i1) ) );
+            dep0result.nextRecord();
             result.join( ds1.slice(i1++) );
         }
         while ( i2<n2 ) {
+            dep0result.putValue( -1, DataSetUtil.asDatum( dep02.slice(i2) ) );
+            dep0result.nextRecord();
             result.join( ds2.slice(i2++) );
         }
+        result.putProperty( QDataSet.DEPEND_0, dep0result.getDataSet() );
         return result;
     }
     
