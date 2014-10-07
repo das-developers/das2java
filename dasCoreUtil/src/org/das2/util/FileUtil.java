@@ -14,6 +14,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -74,7 +75,10 @@ public class FileUtil {
         if (!root.exists()) {
             return true;
         }
-        File[] children = root.listFiles();
+        if (!root.canRead()) {
+            throw new IllegalArgumentException("cannot read folder " + root );
+        }
+        File[] children = root.listFiles(); // root is known to exist.
         boolean success = true;
         boolean noExclude= true;
         for (int i = 0; i < children.length; i++) {
@@ -110,6 +114,10 @@ public class FileUtil {
         if (!root.exists()) {
             return true;
         }
+        if ( !root.canRead() ) {
+            System.err.println("unable to read folder: "+root );
+            return true;
+        }
         File[] children = root.listFiles();
         boolean success = true;
         for (int i = 0; i < children.length; i++) {
@@ -137,7 +145,13 @@ public class FileUtil {
         if (!root.exists()) {
             throw new IllegalArgumentException("File does not exist:"+root);
         }
-        File[] children = root.listFiles();
+        if ( !root.isDirectory() ) {
+            throw new IllegalArgumentException("root should be a directory: "+root);
+        }
+        if ( !root.canRead() ) {
+            throw new IllegalArgumentException("unable to read root: "+root);
+        }
+        File[] children = root.listFiles(); // root is known to exist
         for (int i = 0; i < children.length; i++) {
             if (children[i].isDirectory()) {
                 File f= find(children[i],name);
@@ -180,8 +194,12 @@ public class FileUtil {
         if (!root.exists()) {
             throw new IllegalArgumentException("File does not exist:"+root);
         }
+        if (!root.isDirectory()) {
+            throw new IllegalArgumentException("root is not a folder:"+root);
+        }
+        if (!root.canRead()) return Collections.emptyList();
         if ( matches==null ) matches= new ArrayList();
-        File[] children = root.listFiles();
+        File[] children = root.listFiles(); // root is known to exist.
         for (int i = 0; i < children.length; i++) {
             if (children[i].isDirectory()) {
                 listRecursively(children[i],name,matches);
@@ -217,6 +235,8 @@ public class FileUtil {
      * @throws IOException 
      */
     public static void fileCopy( File src, File dst ) throws FileNotFoundException, IOException {
+        if ( !src.exists() ) throw new IllegalArgumentException("src does not exist.");
+        if ( !src.canRead() ) throw new IllegalArgumentException("src cannot be read.");
         if ( src.isDirectory() && ( !dst.exists() || dst.isDirectory() ) ) {
             if ( !dst.exists() ) {
                 if ( !dst.mkdirs() ) throw new IOException("unable to mkdir " + dst);
@@ -224,7 +244,7 @@ public class FileUtil {
             File dst1= new File( dst, src.getName() );
             if ( !dst1.exists() && !dst1.mkdir() ) throw new IOException("unable to mkdir " + dst1);
             dst= dst1;
-            File[] files= src.listFiles();
+            File[] files= src.listFiles(); // src is known to exist.
             for ( File f:files ) {
                 if ( f.isDirectory() ) {
                     dst1= new File( dst, f.getName() );
