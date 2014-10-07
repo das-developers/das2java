@@ -230,12 +230,30 @@ public class Datum implements Comparable, Serializable {
     /**
      * Groovy scripting language uses this for overloading.
      * @param datum Datum to divide, that is convertible to this.getUnits().
-     * @return a Datum that is the sum of the two values in this Datum's units.
+     * @return a Datum that is the divide of the two values in this Datum's units.
      */
     public Datum div( Datum datum ) {
         return divide(datum);
     }
     
+    /**
+     * Groovy scripting language uses this for overloading a**b. 
+     * @param b double to exponentiate, that is dimensionless.
+     * @return a Datum that is the exponentiate of the two values in this Datum's units.
+     */
+    public Datum power( double b ) {
+        if ( UnitsUtil.isRatioMeasurement(units) ) {
+            return Datum.create( Math.pow( this.value(),2 ), Units.dimensionless );
+        } else {
+            throw new IllegalArgumentException("power argument must be dimensionless");
+        }
+    }
+
+    /**
+     * Groovy scripting language uses this for overloading a**b. 
+     * @param datum Datum to exponentiate, that is dimensionless.
+     * @return a Datum that is the sum of the two values in this Datum's units.
+     */
     public Datum power( Datum datum ) {
         if ( datum.getUnits()==Units.dimensionless && UnitsUtil.isRatioMeasurement(units) ) {
             return Datum.create( Math.pow( this.value(),datum.value() ), Units.dimensionless );
