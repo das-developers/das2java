@@ -455,7 +455,11 @@ public class StreamTool {
             for (int i = 0; i < nodes.getLength(); i++) {
                 Element n = (Element) nodes.item(i);
                 String name = n.getAttribute("id");
-                int rank = Integer.parseInt(n.getAttribute("rank"));
+                String srank= n.getAttribute("rank");
+                if ( srank.trim().length()==0 ) {
+                    throw new StreamException( String.format( "rank not specified for qdataset \""+name+"\"" ) );
+                }
+                int rank = Integer.parseInt(srank);
 
                 int[] dims= null;
                 String ttype=null; // ttype or
