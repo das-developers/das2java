@@ -271,6 +271,8 @@ public class DasServer {
     /**
      * Return a tree of the datasets and folders, listing the sub-folders 
      * first in a folder.
+     * 
+     * 2014-10-08: There can be pipe characters in the response. https://sourceforge.net/p/autoplot/feature-requests/393/
      * @param uin input stream 
      * @return treeModel of the data on the server.
      * @throws IOException 
@@ -285,6 +287,10 @@ public class DasServer {
         String line = in.readLine();
 
         while (line != null) {
+            int ipipe= line.indexOf('|');
+            if ( ipipe>-1 ) {
+                line= line.substring(0,ipipe);
+            }
             DefaultMutableTreeNode current = root;
             StringTokenizer tokenizer = new StringTokenizer(line, "/");
             token: while (tokenizer.hasMoreTokens()) {
