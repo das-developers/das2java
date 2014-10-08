@@ -289,7 +289,7 @@ public class DasServer {
         while (line != null) {
             int ipipe= line.indexOf('|');
             if ( ipipe>-1 ) {
-                line= line.substring(0,ipipe);
+                line= line.substring(0,ipipe).trim();
             }
             DefaultMutableTreeNode current = root;
             StringTokenizer tokenizer = new StringTokenizer(line, "/");
