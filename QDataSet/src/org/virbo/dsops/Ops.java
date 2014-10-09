@@ -72,12 +72,10 @@ import org.virbo.dsutil.LinFit;
 import org.virbo.math.Contour;
 
 /**
- * A fairly complete set of operations for QDataSets.  Currently, most operations
- * require that the dataset be a qube.  
- * Most operations check for fill data. 
- * Few operations check units. (TODO: check units)
- * 
- * 2013-06-24: add logic so that most routines handle arrays and scalars as well as QDataSets.
+ * A fairly complete set of operations for QDataSets, including binary operations
+ * like "add" and "subtract", but also more abstract (and complex) operations like
+ * smooth and fftPower.  Most operations check data units and validity, but
+ * consult the documentation for each function.
  * 
  * @author jbf
  */
