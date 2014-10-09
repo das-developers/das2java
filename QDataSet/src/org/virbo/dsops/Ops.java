@@ -7207,7 +7207,7 @@ public class Ops {
      * Merge the two sorted rank N datasets, using their DEPEND_0 datasets, into one rank N dataset.  
      * If neither dataset has DEPEND_0, then this will use the datasets themselves.  When ds1 occurs "before" ds2, then this 
      * is the same as concatenate.
-     * When there is a collision where two data points are coincident, use ds1[j].
+     * When there is a collision where two data points are coincident, use ds1[j].  This is fuzzy, based on the depend_0 cadence of ds1.
      * When ds1 is null (or None), use ds2.
      * Thanks to: http://stackoverflow.com/questions/5958169/how-to-merge-two-sorted-arrays-into-a-sorted-array
      * @param ds1 rank N dataset, or null.
