@@ -2210,7 +2210,7 @@ public class Ops {
             }
             return ArrayDataSet.append(result,FDataSet.maybeCopy(ds2));
         } else {
-            DDataSet result = (DDataSet)DDataSet.copy(ds1);
+            DDataSet result = (DDataSet)ArrayDataSet.copy(double.class,ds1);
             assert ds2!=null && ds1!=null;
             if ( ds2.rank()==0 && ds1.rank()==1 ) {
                 DDataSet t= DDataSet.createRank1(1); //TODO: better promote rank is found on add, etc.
