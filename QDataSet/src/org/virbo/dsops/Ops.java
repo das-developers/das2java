@@ -77,6 +77,9 @@ import org.virbo.math.Contour;
  * smooth and fftPower.  Most operations check data units and validity, but
  * consult the documentation for each function.
  * 
+ * These operations are all available in Jython scripts, and some, like add, are
+ * connected to operator symbols like +.
+ * 
  * @author jbf
  */
 public class Ops {
