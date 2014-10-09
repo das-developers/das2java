@@ -7238,8 +7238,14 @@ public class Ops {
         int n2= dep02.length();
         int i1= 0; 
         int i2= 0;
+        
+        QDataSet cadenceDep01= DataSetUtil.guessCadenceNew( dep01, null );
+        Units dep0u= SemanticOps.getUnits(dep01);
+        if ( cadenceDep01==null ) cadenceDep01= DataSetUtil.asDataSet(0,dep0u);
+        cadenceDep01= Ops.divide(cadenceDep01,2);
+        
         while (i1 < n1 && i2 < n2 ) {
-            if ( Ops.eq( dep01.slice(i1), dep02.slice(i2) ).value()>0 ) {
+            if ( Ops.lt( Ops.abs( Ops.subtract( dep01.slice(i1), dep02.slice(i2) ) ), cadenceDep01 ).value()!=0 ) {
                 dep0result.putValue( -1, DataSetUtil.asDatum( dep01.slice(i1) ) );
                 result.join( ds1.slice(i1++) );
                 i2++;
