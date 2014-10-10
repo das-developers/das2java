@@ -398,6 +398,11 @@ public abstract class WebFileSystem extends FileSystem {
             if (monitor.isCancelled()) {
                 downloadMonitor.cancel();
             }
+            
+            if ( downloadMonitor.isFinished() ) {
+                logger.warning("watched downloadMonitor is finished but is not being unlocked");
+                monitor.setProgressMessage("file is downloaded, just a moment");
+            }
 
             if ( !monitor.isCancelled() ) {  //TODO: syncronized block or something
                 // echo what the download monitor is reporting.
