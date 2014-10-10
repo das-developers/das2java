@@ -1633,92 +1633,97 @@ public class SeriesRenderer extends Renderer {
         lastIndex= -1;
         
         monitor.started();
-        if (vds != null) {
-
-            updateFirstLast(xAxis, yAxis, xds, vds );
-
-            if ( dataSetReduced ) {
-                logger.fine("reducing data that is bigger than dataSetSizeLimit");
-                
-                QDataSet mvds= doDataSetReduce( xAxis, yAxis, vds, 1, 1 );
-                
-                vds= mvds;
-                xds= SemanticOps.xtagsDataSet(vds);
-
-                updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
-
-                logger.log( Level.FINE, "data reduced to {0} {1}", new Object[] { vds, Ops.extent(xds) } );
-                logger.log(Level.FINE, "reduceDataSet complete {0}", System.currentTimeMillis()-t0 );                
-            } else {
-                logger.log(Level.FINE, "data not reduced");
-            }
-            
-            if (fillToReference) {
-                fillElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("fillElement.update"));
-                logger.log(Level.FINE, "fillElement.update complete {0}", System.currentTimeMillis()-t0 );
-            }
-
-        } else if (tds != null) {
-            
-            LoggerManager.resetTimer("render waveform");
-            
-            updateFirstLast(xAxis, yAxis, xds, tds ); // minimal support assumes vert slice data is all valid or all invalid.
-            LoggerManager.markTime("updateFirstLast");
-            
-            if ( SemanticOps.isRank2Waveform(dataSet) ) {
-                QDataSet res= DataSetUtil.asDataSet( xAxis.getDatumRange().width().divide(xAxis.getWidth()) );
-                vds= dataSet.trim( this.firstIndex, this.lastIndex );
-                LoggerManager.markTime("trim");
-            
-                vds= Reduction.reducex( vds,res );  // waveform
-                LoggerManager.markTime("reducex");
-                if ( vds.rank()==2 ) {
-                    vds= DataSetOps.flattenWaveform(vds);
-                    LoggerManager.markTime("flatten");
-                }
-                xds= SemanticOps.xtagsDataSet(vds); 
-                updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
-                LoggerManager.markTime("updateFirstLast again");
-            }
-            logger.log(Level.FINE, "renderWaveform updateFirstLast complete {0}", System.currentTimeMillis()-t0 );
-            
-        } else {
-            System.err.println("both tds and vds are null");
-        }
         
-        if (psymConnector != PsymConnector.NONE) {
+        try {
+            if (vds != null) {
+
+                updateFirstLast(xAxis, yAxis, xds, vds );
+
+                if ( dataSetReduced ) {
+                    logger.fine("reducing data that is bigger than dataSetSizeLimit");
+
+                    QDataSet mvds= doDataSetReduce( xAxis, yAxis, vds, 1, 1 );
+
+                    vds= mvds;
+                    xds= SemanticOps.xtagsDataSet(vds);
+
+                    updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
+
+                    logger.log( Level.FINE, "data reduced to {0} {1}", new Object[] { vds, Ops.extent(xds) } );
+                    logger.log(Level.FINE, "reduceDataSet complete {0}", System.currentTimeMillis()-t0 );                
+                } else {
+                    logger.log(Level.FINE, "data not reduced");
+                }
+
+                if (fillToReference) {
+                    fillElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("fillElement.update"));
+                    logger.log(Level.FINE, "fillElement.update complete {0}", System.currentTimeMillis()-t0 );
+                }
+
+            } else if (tds != null) {
+
+                LoggerManager.resetTimer("render waveform");
+
+                updateFirstLast(xAxis, yAxis, xds, tds ); // minimal support assumes vert slice data is all valid or all invalid.
+                LoggerManager.markTime("updateFirstLast");
+
+                if ( SemanticOps.isRank2Waveform(dataSet) ) {
+                    QDataSet res= DataSetUtil.asDataSet( xAxis.getDatumRange().width().divide(xAxis.getWidth()) );
+                    vds= dataSet.trim( this.firstIndex, this.lastIndex );
+                    LoggerManager.markTime("trim");
+
+                    vds= Reduction.reducex( vds,res );  // waveform
+                    LoggerManager.markTime("reducex");
+                    if ( vds.rank()==2 ) {
+                        vds= DataSetOps.flattenWaveform(vds);
+                        LoggerManager.markTime("flatten");
+                    }
+                    xds= SemanticOps.xtagsDataSet(vds); 
+                    updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
+                    LoggerManager.markTime("updateFirstLast again");
+                }
+                logger.log(Level.FINE, "renderWaveform updateFirstLast complete {0}", System.currentTimeMillis()-t0 );
+
+            } else {
+                System.err.println("both tds and vds are null");
+            }
+
+            if (psymConnector != PsymConnector.NONE) {
+                try {
+                    psymConnectorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.update"));
+                } catch ( InconvertibleUnitsException ex ) {
+                    return;
+                }
+            }
+
             try {
-                psymConnectorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.update"));
+                errorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.update"));
+                if ( vds!=null && vds.rank()==1 && dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
+                    psymsElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymsElement.update"));     // color scatter
+                } else {
+                    psymsElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.update"));
+                }
+                logger.log(Level.FINE, "psymsElement.update complete {0}", System.currentTimeMillis()-t0 );            
             } catch ( InconvertibleUnitsException ex ) {
                 return;
             }
+
+            selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );        
+            logger.log(Level.FINE, "calcSelectionArea complete {0}", System.currentTimeMillis()-t0);  
+            //if (getParent() != null) {
+            //    getParent().repaint();
+            //}
+
+            logger.log(Level.FINE, "done updatePlotImage in {0} ms", (System.currentTimeMillis() - t0));
+
+        } finally {
+            monitor.finished();
         }
 
-        try {
-            errorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("errorElement.update"));
-            if ( vds!=null && vds.rank()==1 && dataSet.rank()==2 && SemanticOps.isBundle(dataSet) ) {
-                psymsElement.update(xAxis, yAxis, dataSet, monitor.getSubtaskMonitor("psymsElement.update"));     // color scatter
-            } else {
-                psymsElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.update"));
-            }
-            logger.log(Level.FINE, "psymsElement.update complete {0}", System.currentTimeMillis()-t0 );            
-        } catch ( InconvertibleUnitsException ex ) {
-            return;
-        }
-
-        selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );        
-        logger.log(Level.FINE, "calcSelectionArea complete {0}", System.currentTimeMillis()-t0);  
-        //if (getParent() != null) {
-        //    getParent().repaint();
-        //}
-
-        logger.log(Level.FINE, "done updatePlotImage in {0} ms", (System.currentTimeMillis() - t0));
-        
         long milli = System.currentTimeMillis();
         long renderTime = (milli - t0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
 
-        monitor.finished();
         setUpdatesPointsPerMillisecond(dppms);
     }
 
