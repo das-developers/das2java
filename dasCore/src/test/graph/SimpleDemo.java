@@ -103,8 +103,8 @@ public class SimpleDemo {
                     QDataSet time= parm.slice(0);
 
                     sec.putValue( i, Ops.mod( time, DataSetUtil.asDataSet(3600,Units.seconds) ).value() );
-                    rand.putValue(i, Ops.rand(1).slice(0).value() );
-                    rand2.putValue( Ops.rand(1).slice(0).value() );
+                    rand.putValue(i, Ops.randu(1).slice(0).value() );
+                    rand2.putValue( Ops.randu(1).slice(0).value() );
 
                 }
 
