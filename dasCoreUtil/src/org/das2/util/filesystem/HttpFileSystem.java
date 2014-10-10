@@ -251,11 +251,25 @@ public class HttpFileSystem extends WebFileSystem {
 
     }
 
-    private boolean waitDownloadExternal( File f, File partFile ) {
+    /**
+     * It looks like an external process (another das2 app) is downloading the resource.  Wait for the other
+     * process to download the file.  If the file is idle for more than the allowable external idle millisecond limit
+     * (FileSystemSettings.allowableExternalIdleMs), then return false.
+     * @param f the file
+     * @param partFile the part file we're watching
+     * @param monitor 
+     * @return true if the other app appears to have loaded the resource, false otherwise.
+     */
+    private boolean waitDownloadExternal( File f, File partFile, ProgressMonitor monitor ) {
+        monitor.setProgressMessage("waiting for other process load");
         while ( partFile.exists() && ( System.currentTimeMillis() - partFile.lastModified() ) < FileSystemSettings.allowableExternalIdleMs ) {
             try {
                 Thread.sleep(300);
                 logger.log(Level.FINEST, "waiting for external process to download {0}", partFile);
+                monitor.setTaskProgress(partFile.length());
+                if ( monitor.isCancelled() ) {
+                    return false;
+                }
             } catch (InterruptedException ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
@@ -264,8 +278,13 @@ public class HttpFileSystem extends WebFileSystem {
             logger.fine("timeout waiting for partFile to be deleted");
             return false;
         } else {
-            logger.fine("successfully waited for external download to complete");
-            return true;
+            if ( f.exists() ) {
+                logger.fine("successfully waited for external download to complete");
+                return true;
+            } else {
+                logger.fine("part file removed but complete file is not found");
+                return false;
+            }
         }
     }
     
@@ -352,10 +371,14 @@ public class HttpFileSystem extends WebFileSystem {
                 logger.log(Level.FINE, "partFile exists {0}", partFile);
                 long ageMillis= System.currentTimeMillis() - partFile.lastModified(); // TODO: this is where OS-level locking would be nice...
                 if ( ageMillis<FileSystemSettings.allowableExternalIdleMs ) { // if it's been modified less than sixty seconds ago, then wait to see if it goes away, then check again.
-                    if ( waitDownloadExternal( f, partFile ) ) {
+                    if ( waitDownloadExternal( f, partFile, monitor ) ) {
                         return; // success
                     } else {
-                        throw new IOException( "timeout waiting for external process to download "+partFile );
+                        if ( monitor.isCancelled() ) {
+                            throw new InterruptedIOException("interrupt while waiting for external process to download "+partFile);
+                        } else {
+                            throw new IOException( "timeout waiting for external process to download "+partFile );
+                        }
                     }
                 } else {
                     if (!partFile.delete()) {
