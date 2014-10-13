@@ -190,6 +190,9 @@ public class PitchAngleDistributionRenderer extends Renderer {
             tds= Ops.transpose(tds);            
             angleFactor= isAngleRange(ads);
         }
+        if ( angleFactor==null ) {
+            throw new IllegalArgumentException("neither dimension appears to be angles");
+        }
         if ( angleFactor!=1. ) {
             ads= Ops.multiply(ads,angleFactor);
         }
