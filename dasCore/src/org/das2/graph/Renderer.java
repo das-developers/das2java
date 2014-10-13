@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.ParseException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -386,7 +385,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * set the control string which contains a number of properties.  These are defined for
      * each renderer, but they should try to be consistent.  See http://autoplot.org/developer.guessRenderType#Proposed_extensions
      * When overriding this, be sure to call super.
-     * See CONTROL_KEY
+     * @see #CONTROL_KEY_COLOR, etc
      * @param s 
      */
     public void setControl( String s ) {
