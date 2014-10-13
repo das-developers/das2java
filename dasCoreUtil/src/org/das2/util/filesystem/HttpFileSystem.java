@@ -342,7 +342,11 @@ public class HttpFileSystem extends WebFileSystem {
                     String encode = Base64.encodeBytes(userInfo.getBytes());
                     urlc.setRequestProperty("Authorization", "Basic " + encode);
                 }
-                in= new GZIPInputStream( urlc.getInputStream() );
+                try {
+                    in= new GZIPInputStream( urlc.getInputStream() );
+                } catch ( FileNotFoundException ex2 ) {
+                    throw ex;
+                }
                 
             }
             
