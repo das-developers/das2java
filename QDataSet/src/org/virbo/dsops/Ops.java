@@ -84,7 +84,7 @@ import org.virbo.math.Contour;
  */
 public class Ops {
 
-    private static final Logger logger= LoggerManager.getLogger("qdataset");
+    private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
     /**
      * UnaryOps are one-argument operations, such as sin, abs, and sqrt
      */
@@ -320,10 +320,19 @@ public class Ops {
         return result;
     }
     /**
-     * add the two datasets have the same geometry.
-     * @param ds1
-     * @param ds2
-     * @return
+     * add the two datasets which have the compatible geometry and units.  For example,
+     **<blockquote><pre><small>{@code
+     *ds1=timegen('2014-10-15T07:23','60s',300)
+     *ds2=dataset('30s')
+     *print add(ds1,ds2)
+     *}</small></pre></blockquote>
+     * The units handling is quite simple, and this will soon change.
+     * Note that the Jython operator + is overloaded to this method.
+     * 
+     * @param ds1 a rank N dataset
+     * @param ds2 a rank M dataset
+     * @return the element-wise sum of the two datasets.
+     * @see #addGen(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, java.util.Map) which shows how units are resolved.
      */
     public static QDataSet add(QDataSet ds1, QDataSet ds2) {
         Map<String,Object> props= new HashMap();
