@@ -13,9 +13,9 @@ public class Ratio {
         this.denominator= 1;
     }
     
-    public static Ratio one= new Ratio(1);
+    public static final Ratio one= new Ratio(1);
     
-    public static Ratio zero= new Ratio(0);
+    public static final Ratio zero= new Ratio(0);
     
     public Ratio( int n, int d ) {
         if ( n % d == 0 ) {
@@ -190,16 +190,20 @@ public class Ratio {
     }
     
     @Override
+    public int hashCode() {
+        return Double.valueOf(numerator/(double)denominator).hashCode();
+    }
+    
+    @Override
     public boolean equals( Object o ) {
         if ( o instanceof Ratio ) {
             Ratio r= (Ratio)o;
             return r.numerator * this.denominator == r.denominator * this.numerator;
-        } else if ( o instanceof Number ) {
-            return ((Number)o).doubleValue() * this.denominator == this.numerator;
         } else {
             return super.equals(o);
         }
     }
+    
     @Override
     public String toString() {
         if ( denominator==1 ) {
