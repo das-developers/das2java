@@ -40,7 +40,7 @@ public class DataSetAdapter {
             }
             bds.putProperty( QDataSet.DEPEND_0, new XTagsDataSet(vds) );
 				bds.putProperty( QDataSet.TITLE, ds.getProperty(org.das2.dataset.DataSet.PROPERTY_TITLE));
-            return bds;
+            return DDataSet.copy(bds);
         } else if ( ds instanceof VectorDataSet ) {
             return new Vector((VectorDataSet) ds);
         // Todo: Use bundle here as well?  Not sure how multi yscan items should be
