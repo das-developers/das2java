@@ -191,18 +191,22 @@ public class RGBImageRenderer extends Renderer {
      */
     public static QDataSet doAutorange( QDataSet ds ) {
 
-        QDataSet xds;
-        QDataSet yds;
-
         QDataSet xrange;
         QDataSet yrange;
 
-        if ( ds.rank()==2 ) {
-            xrange= DDataSet.wrap( new double[] { 0, ds.length() } );
-            yrange= DDataSet.wrap( new double[] { 0, ds.length(0) } );
-        } else if ( ds.rank()==3 ) {
-            xrange= DDataSet.wrap( new double[] { 0, ds.length() } );
-            yrange= DDataSet.wrap( new double[] { 0, ds.length(0) } );
+        if ( ds.rank()==2 || ds.rank()==3 ) {
+            QDataSet xx= (QDataSet)ds.property( QDataSet.DEPEND_0 );
+            QDataSet yy= (QDataSet)ds.property( QDataSet.DEPEND_1 );
+            if ( xx!=null ) {
+                xrange= Ops.extent(xx);
+            } else {
+                xrange= DDataSet.wrap( new double[] { 0, ds.length() } );
+            }
+            if ( yy!=null ) {
+                yrange= Ops.extent(yy);
+            } else {
+                yrange= DDataSet.wrap( new double[] { 0, ds.length(0) } );
+            }
         } else {
             throw new IllegalArgumentException("dataset should be rank 2 or rank 3: "+ds );
         }
