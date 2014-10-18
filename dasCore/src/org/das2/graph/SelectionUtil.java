@@ -19,8 +19,9 @@ public class SelectionUtil {
 
     /**
      * returns the selection area, or SelectionUtil.NULL.
-     * @param r
-     * @return
+     * @param r the renderer, one of a list of coded renderers
+     * @return the renderer-specific selection area, or the current bounds of the renderer parent.
+     * TODO: this should be part of the Renderer interface.
      */
     public static Shape getSelectionArea( Renderer r ) {
         if ( r instanceof SeriesRenderer ) {
@@ -34,6 +35,10 @@ public class SelectionUtil {
             return ((EventsRenderer)r).selectionArea();
         } else if ( r instanceof ImageVectorDataSetRenderer ) {
             return ((ImageVectorDataSetRenderer)r).selectionArea();
+        } else if ( r instanceof RGBImageRenderer ) {
+            return ((RGBImageRenderer)r).selectionArea();
+        } else if ( r instanceof TickCurveRenderer ) {
+            return ((TickCurveRenderer)r).selectionArea();
         } else {
             Rectangle rect= DasDevicePosition.toRectangle( r.getParent().getRow(), r.getParent().getColumn() );
             rect= new Rectangle( rect.x+5, rect.y+5, rect.width-10, rect.height-10 );

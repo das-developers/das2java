@@ -71,6 +71,7 @@ public class TickCurveRenderer extends Renderer {
     private Color color= Color.BLACK;
     
     private float tickLength= 8.0f;
+    private GeneralPath path;
     
     public static class TickStyle implements Enumeration {
         private String name;
@@ -150,6 +151,16 @@ public class TickCurveRenderer extends Renderer {
         }
     }
 
+    @Override
+    public boolean acceptContext(int x, int y) {
+        return selectionArea().contains(x,y);
+    }
+
+    public Shape selectionArea() {
+        Shape s = new BasicStroke( Math.min(14,1.f+8.f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ).createStrokedShape(path);
+        return s;
+    }
+    
     @Override
     public Icon getListIcon() {
         BufferedImage img= new BufferedImage( 16, 16, BufferedImage.TYPE_INT_ARGB );
@@ -446,7 +457,7 @@ public class TickCurveRenderer extends Renderer {
             if ( i>0 ) {
                 double len1=  Math.sqrt( Math.pow(ddata[0][i]- ddata[0][i-1],2 ) 
                         + Math.pow(ddata[1][i]- ddata[1][i-1],2 ) );
-                if ( len1>limit && len1/limit < 30 ) {
+                if ( len1>limit && len1/limit < 10 ) { // if each length is within 10 times the previous
                     limit= len1;
                 }
                 
@@ -460,10 +471,18 @@ public class TickCurveRenderer extends Renderer {
         
         double w0= wds.value(0);
         
+        //PrintStream fo=null;
+        //try {
+        //    fo= new PrintStream( "/tmp/foo.txt" );
+        //} catch (Exception ex) {
+        //    Logger.getLogger(TickCurveRenderer.class.getName()).log(Level.SEVERE, null, ex);
+        //}
+        
         for ( int i=1; i<xds.length(); i++ ) {
             double w1= wds.value(i);
             double len1=  Math.sqrt( Math.pow(ddata[0][i]- ddata[0][i-1],2 ) 
                         + Math.pow(ddata[1][i]- ddata[1][i-1],2 ) );
+        //    fo.println(""+i+" "+len1+" " + limit);
             if ( len1>limit ) {
                 p.moveTo( ddata[0][i],ddata[1][i] );
             } else {
@@ -475,9 +494,12 @@ public class TickCurveRenderer extends Renderer {
             }
             w0= w1;
         }
+        //fo.close();
         GeneralPath rp= new GeneralPath();
         GraphUtil.reducePath( p.getPathIterator(null), rp, 2 );
         g.draw(rp);
+        
+        path= rp;
         
         QDataSet findex;
         Units tunits= SemanticOps.getUnits(tds);

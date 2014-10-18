@@ -5,7 +5,11 @@
 
 package org.das2.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import org.das2.DasException;
 import org.das2.datum.Units;
@@ -25,6 +29,11 @@ public class RGBImageRenderer extends Renderer {
 
     BufferedImage image=null;
 
+    /**
+     * the bounds of the last rendering
+     */
+    Rectangle rect= null;
+    
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         QDataSet ds= getDataSet();
@@ -58,7 +67,7 @@ public class RGBImageRenderer extends Renderer {
         int x1= (int)xAxis.transform( dep0.value(w-1) + dx0/2, xunits );
         int y1= (int)yAxis.transform( dep1.value(h-1) + dy0/2, yunits );
         g.drawImage( im, x0, y0, x1-x0, y1-y0, null );
-        
+        rect= new Rectangle( x0, y1, x1-x0, y0-y1 );
     }
 
     @Override
@@ -183,6 +192,17 @@ public class RGBImageRenderer extends Renderer {
         }
     }
 
+    @Override
+    public boolean acceptContext(int x, int y) {
+        return rect!=null && rect.contains(x,y);
+    }
+    
+    public Shape selectionArea() {
+        //GeneralPath gp= new GeneralPath();
+        //gp.append( new BasicStroke( Math.min(14,1.f+8.f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ).createStrokedShape(rect), true );
+        return rect;
+    }
+    
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
      *
