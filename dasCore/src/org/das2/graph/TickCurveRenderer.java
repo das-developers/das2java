@@ -47,7 +47,9 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
 /**
- * Renderer showing ticks along a curve, useful for orbits.
+ * Renderer showing ticks along a curve, useful for orbits.  Note this renderer
+ * assumes that someone else is showing the context, so just HH:MM is shown, 
+ * assuming YYYY-MM-DD is shown elsewhere.
  * @author  jbf
  */
 public class TickCurveRenderer extends Renderer {
@@ -167,6 +169,7 @@ public class TickCurveRenderer extends Renderer {
         Graphics2D g= (Graphics2D) img.getGraphics();
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
         g.setColor( color );
+        g.setStroke( new BasicStroke((float)lineWidth) );
         g.drawLine(2,10,14,6);
         return new ImageIcon( img );
     }
@@ -174,8 +177,8 @@ public class TickCurveRenderer extends Renderer {
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
      *
-     * @param fillDs
-     * @return
+     * @param ds1 the dataset
+     * @return rank 2 bounding box.  r[0,0] is x min, r[0,1] is x max.
      */
     public static QDataSet doAutorange( QDataSet ds1 ) {
 
