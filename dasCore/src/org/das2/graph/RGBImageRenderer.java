@@ -7,10 +7,13 @@ package org.das2.graph;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.das2.DasException;
 import org.das2.datum.Units;
 import org.das2.system.DasLogger;
@@ -202,6 +205,17 @@ public class RGBImageRenderer extends Renderer {
         //gp.append( new BasicStroke( Math.min(14,1.f+8.f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ).createStrokedShape(rect), true );
         return rect;
     }
+
+    @Override
+    public Icon getListIcon() {
+        BufferedImage result= new BufferedImage(16,16,BufferedImage.TYPE_INT_RGB);
+        
+        Graphics2D g= (Graphics2D) result.getGraphics();
+        
+        g.drawImage( image, 0,0, 16,16, null ); // TODO: preserve aspect ratio, pick representative region. 
+        return new ImageIcon( result );
+    }
+    
     
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
