@@ -1,5 +1,6 @@
 package org.das2.util;
 
+import java.io.File;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -82,6 +83,20 @@ public class ArgumentList {
             return (String)values.get( key );
         } else {
             throw new IllegalArgumentException( "No such key: "+key );
+        }
+    }
+    
+    /**
+     * make a standard way to make file names absolute
+     * @param ref e.g. files/afile/foo.txt
+     * @return  /home/jbf/data/files/afile/foo.txt because PWD is /home/jbf/data
+     */
+    public static String makeFileReferenceAbsolute( String ref ) {
+        File ff= new File(ref);
+        if ( !ff.isAbsolute() ) {
+            return ff.getAbsolutePath();
+        } else {
+            return ref;
         }
     }
     
