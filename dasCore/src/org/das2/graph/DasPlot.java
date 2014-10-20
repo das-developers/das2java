@@ -1220,9 +1220,13 @@ public class DasPlot extends DasCanvasComponent {
         graphics.setClip(clip0);
 
         if ( displayTitle && plotTitle != null && plotTitle.length() != 0) {
+            String t= plotTitle;
+            if ( plotTitle.contains("%{CONTEXT}") ) {
+                t= t.replace("%{CONTEXT}",this.context.toString());
+            }
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT); // funny I never noticed this was different.
-            gtr.setString(graphics, plotTitle);
+            gtr.setString(graphics, t);
             int titleWidth = (int) gtr.getWidth();
             int titleX = x + (xSize - titleWidth) / 2;
             int titleY = y - (int) gtr.getDescent() - (int) gtr.getAscent() / 2;
