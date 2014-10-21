@@ -1945,6 +1945,14 @@ public class DataSetOps {
                         dep0= ArrayDataSet.copy(dep0).setUnits(newu);
                         fillDs= Ops.putProperty( fillDs, QDataSet.DEPEND_0, dep0 );
                     }
+                } else if ( cmd.equals("|setDepend0Cadence") ) {
+                    String arg= getStringArg( s.next() );
+                    QDataSet dep0= (QDataSet) fillDs.property(QDataSet.DEPEND_0);
+                    if ( dep0!=null ) {
+                        Units dep0units= SemanticOps.getUnits(dep0);
+                        MutablePropertyDataSet mdep0= Ops.putProperty( dep0, QDataSet.CADENCE, DataSetUtil.asDataSet( dep0units.getOffsetUnits().parse(arg) ) );
+                        fillDs= Ops.putProperty( fillDs, QDataSet.DEPEND_0, mdep0 );
+                    }
                 } else if ( cmd.equals("|add") ) { 
                     String arg= getStringArg( s.next() );
                     Datum d= SemanticOps.getUnits(fillDs).parse(arg);
