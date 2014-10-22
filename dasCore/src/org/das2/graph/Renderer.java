@@ -611,6 +611,45 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return ColorUtil.encodeColor(color);
     }
     
+    /**
+     * encode the plot symbol as a string, such as:
+     * none, cicles, triangles, cross, ex, star, diamond, box
+     * @param psym the plot symbol.
+     * @return the string encoding.
+     */
+    public String encodePlotSymbolControl( PlotSymbol psym ) {
+        return psym.toString().toLowerCase();
+    }
+    
+    /**
+     * decode the string into a plot symbol.
+     * @param s the symbol name, such as none, cicles, triangles, cross, ex, star, diamond, box
+     * @param deflt the symbol to use when the value is not parsed.
+     * @return the parsed value.
+     */
+    public PlotSymbol decodePlotSymbolControl( String s, PlotSymbol deflt ) {
+        if ( s.equalsIgnoreCase("NONE") ) {
+            return DefaultPlotSymbol.NONE;
+        } else if ( s.equalsIgnoreCase("CIRCLES") ) {
+            return DefaultPlotSymbol.CIRCLES;
+        } else if ( s.equalsIgnoreCase("TRIANGLES") ) {
+            return DefaultPlotSymbol.TRIANGLES;
+        } else if ( s.equalsIgnoreCase("CROSS") ) {
+            return DefaultPlotSymbol.CROSS;
+        } else if ( s.equalsIgnoreCase("EX") ) {
+            return DefaultPlotSymbol.EX;
+        } else if ( s.equalsIgnoreCase("STAR") ) {
+            return DefaultPlotSymbol.STAR;
+        } else if ( s.equalsIgnoreCase("DIAMOND") ) {
+            return DefaultPlotSymbol.DIAMOND;
+        } else if ( s.equalsIgnoreCase("BOX") ) {
+            return DefaultPlotSymbol.BOX;
+        } else {
+            logger.log(Level.FINE, "unable to parse symbol: {0}", deflt);
+            return deflt;
+        }
+    }
+    
     /*
      * returns the AffineTransform to transform data from the last updatePlotImage call
      * axes (if super.updatePlotImage was called), or null if the transform is not possible.
