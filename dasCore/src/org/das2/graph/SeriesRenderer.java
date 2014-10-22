@@ -150,6 +150,7 @@ public class SeriesRenderer extends Renderer {
         setFillColor( getColorControl( CONTROL_KEY_FILL_COLOR, fillColor ));
         setLineWidth( getDoubleControl( CONTROL_KEY_LINE_THICK, lineWidth ) );
         setSymSize( getDoubleControl( CONTROL_KEY_SYMBOL_SIZE, symSize ) );
+        setPsym( decodePlotSymbolControl( getControl( CONTROL_KEY_SYMBOL, psym.toString() ), psym ) );
     }
 
     @Override
@@ -159,6 +160,7 @@ public class SeriesRenderer extends Renderer {
         controls.put( CONTROL_KEY_FILL_COLOR, encodeColorControl(fillColor) );
         controls.put( CONTROL_KEY_LINE_THICK, String.valueOf(lineWidth) );
         controls.put( CONTROL_KEY_SYMBOL_SIZE, String.valueOf( symSize ) );
+        controls.put( CONTROL_KEY_SYMBOL, encodePlotSymbolControl(psym) );
         return formatControl(controls);
     }
     
