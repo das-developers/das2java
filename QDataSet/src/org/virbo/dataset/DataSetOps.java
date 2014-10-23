@@ -1743,11 +1743,19 @@ public class DataSetOps {
                 } else if ( cmd.equals("|exp10") ) {
                     fillDs= Ops.exp10(fillDs);
                 } else if ( cmd.equals("|trim") ) {
-                    int d0= s.nextInt();
-                    int d1= s.nextInt();
-                    if ( d0<0 ) d0+= fillDs.length();
-                    if ( d1<0 ) d1+= fillDs.length();
-                    fillDs= fillDs.trim(d0,d1);
+                    Object arg1= getArgumentIndex( s.next() );
+                    Object arg2= getArgumentIndex( s.next() );
+                    if ( arg1 instanceof Integer ) {
+                        int d0= (Integer) arg1;
+                        int d1= (Integer) arg2;
+                        if ( d0<0 ) d0+= fillDs.length();
+                        if ( d1<0 ) d1+= fillDs.length();
+                        fillDs= fillDs.trim(d0,d1);    
+                    } else {
+                        QDataSet d0= (QDataSet)arg1;
+                        QDataSet d1= (QDataSet)arg2;
+                        fillDs= Ops.trim( fillDs, d0, d1 ); 
+                    }
                 } else if ( cmd.startsWith("|collapse") && cmd.length()>9 ) {
                     int dim= cmd.charAt(9)-'0';
                     if ( s.hasNextInt() ) {
