@@ -136,19 +136,22 @@ public class ContoursRenderer extends Renderer {
         DasPlot lparent= getParent();
         
         Graphics2D g = (Graphics2D) g1.create();
-
+        if ( ds==null ) {
+            lparent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+            return;
+        }
         if ( ds.rank()!=2 ) {
-            super.renderException( g1, xAxis, yAxis, new IllegalArgumentException("dataset rank must be 2") );
+            lparent.postMessage(this, "dataset rank must be 2", DasPlot.INFO, null, null);
             return;
         }
         QDataSet _xds= SemanticOps.xtagsDataSet(ds);
         if ( _xds.rank()!=1 ) {
-            super.renderException( g1, xAxis, yAxis, new IllegalArgumentException("xtags must be rank 1") );
+            lparent.postMessage(this, "xtags must be rank 1", DasPlot.INFO, null, null);
             return;
         }
         QDataSet _yds= SemanticOps.ytagsDataSet(ds);
         if ( _yds.rank()!=1 ) {
-            super.renderException( g1, xAxis, yAxis, new IllegalArgumentException("ytags must be rank 1") );
+            lparent.postMessage(this, "ytags must be rank 1", DasPlot.INFO, null, null);
             return;
         }
 
