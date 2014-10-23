@@ -870,6 +870,39 @@ public class Ops {
     }
 
     /**
+     * trim the dataset to the indeces on the zeroth dimension.  Note
+     * the trim function can also be called directly.  
+     * @param ds the dataset to be trimmed.
+     * @param bounds rank 1 bounding cube
+     * @return
+     * @see #slice0(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
+    public static QDataSet trim( QDataSet ds, QDataSet bounds ) {
+        if ( bounds.rank()!=1 ) {
+            throw new IllegalArgumentException("bounds must be rank 1");
+        }
+        if ( bounds.length()!=2 ) {
+            throw new IllegalArgumentException("bounds must be length 2");
+        }
+        QDataSet dep0= SemanticOps.xtagsDataSet(ds);
+        if ( dep0.rank()!=1 ) {
+            throw new IllegalArgumentException("dataset must have rank 1 tags");
+        }
+        QDataSet findex= Ops.findex( dep0, bounds );
+        
+        double f1= findex.value(0);
+        double f2= findex.value(1);
+        
+        int n= dep0.length();
+        f1= 0>f1 ? 0 : f1;
+        f1= n<f1 ? n : f1;
+        f2= 0>f2 ? 0 : f2;
+        f2= n<f2 ? 0 : f2;
+        
+        return ds.trim((int)f1,(int)f2);
+    }
+    
+    /**
      * element-wise sqrt.
      * @param ds
      * @return
@@ -3956,8 +3989,9 @@ public class Ops {
     /**
      * returns the slice at the given slice location.
      * @param ds ripples(20,20).  Presently this must be a simple table.
-     * @param slice dataset("10.3")
-     * @return 
+     * @param sliceds dataset("10.3")
+     * @return the slice at the given location
+     * @see #trim(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet slice0( QDataSet ds, QDataSet sliceds ) {
         if ( sliceds.rank()!=0 ) {
