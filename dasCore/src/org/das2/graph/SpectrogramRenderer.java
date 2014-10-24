@@ -255,7 +255,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
         DasPlot parent= getParent();
         if ( parent==null ) return;
-
+        
         //synchronized (lockObject) {
         {
             if (plotImage == null) {
@@ -697,6 +697,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
                         } catch ( RuntimeException ex ) {
                             logger.log( Level.WARNING, ex.getMessage(), ex );  //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
+                            plotImage= null;
+                            plotImageBounds= null;
+                            lastException= ex;
                             lparent.postException( this,ex );
                             return;
                         }
@@ -775,11 +778,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 lparent.repaint();
             }
 
-        } catch (NullPointerException ex) {
-            logger.log( Level.WARNING, ex.getMessage(), ex );
         } catch (NoDataInIntervalException e) {
             lastException = e;
             plotImage = null;
+        } catch (Exception ex) {
+            logger.log( Level.WARNING, ex.getMessage(), ex );
+            lastException= ex;
+            plotImage= null;
+            lparent.postException( this,ex );
         } finally {
             logger.log(Level.FINE, "done SpectrogramRenderer.updatePlotImage in {0} millis", (System.currentTimeMillis()-t0));
             lparent.repaint();
