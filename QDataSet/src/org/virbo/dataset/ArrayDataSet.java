@@ -441,7 +441,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                                 result.putValue( i, j, k, l, ds.value(i,j,k,l));
                 break;
 
-            default: throw new IllegalArgumentException("bad rank");
+            default: 
+                throw new IllegalArgumentException("bad rank");
         }
         result.properties.putAll( copyProperties(ds) );
         result.checkFill();
