@@ -465,6 +465,7 @@ public interface QDataSet {
      * which affords a slice operation to reduce rank.  When a dataset's rank is 0, it should implement the RankZeroDataSet interface,
      * which has a no-argument accessor.  (TODO: Note that rank 0 and rank N have very limited use, so many routines aren't 
      * coded to handle them.)
+     * @return the rank, or number of indeces used to access data.
      */
     int rank();
     
@@ -477,24 +478,38 @@ public interface QDataSet {
 
     /**
      * rank 1 accessor.  
+     * @param i the index
+     * @return the value, see the property UNITS to interpret this.
      * @throws IllegalArgumentException if the dataset is not rank 1.
      */
     double value( int i );
     
     /**
      * rank 2 accessor.
+     * @param i0 the index
+     * @param i1 the index
+     * @return the value, see the property UNITS to interpret this.
      * @throws IllegalArgumentException if the dataset is not rank 2.
      */
     double value( int i0, int  i1 );
     
     /**
      * rank 3 accessor.
+     * @param i0 the index
+     * @param i1 the index
+     * @param i2 the index
+     * @return the value, see the property UNITS to interpret this.     
      * @throws IllegalArgumentException if the dataset is not rank 3.
      */
     double value( int i0, int  i1, int i2 );
 
     /**
      * rank 4 accessor.
+     * @param i0 the index
+     * @param i1 the index
+     * @param i2 the index
+     * @param i3 the index
+     * @return the value, see the property UNITS to interpret this.          
      * @throws IllegalArgumentException if the dataset is not rank 4.
      */
 
@@ -502,6 +517,10 @@ public interface QDataSet {
     /**
      * accessor for properties attached to the dataset.  See final static members
      * for example properties.
+     * @param name property name, such as "DEPEND_0" or "UNITS"
+     * @return the value
+     * @see #DEPEND_0
+     * @see #UNITS
      */
     Object property( String name );
     
@@ -511,12 +530,18 @@ public interface QDataSet {
      * will simply return the result of the no-index accessor.
      *
      * Note: properties of higher dimension are accessible only by slicing.
+     * @param name property name, such as "DEPEND_0" or "UNITS"
+     * @param i the index
+     * @return the value
+     * @see #DEPEND_0
+     * @see #UNITS
      */    
     Object property( String name, int i );
     
     
     /**
      * return the length of the first dimension
+     * @return the length of the first dimension
      */
     int length( );
     
@@ -524,16 +549,25 @@ public interface QDataSet {
      * return the length of the second dimension, for the ith element of the first dimension.  Note
      * if there are zero elements in the first dimension, but this is a QUBE, then this should not
      * throw an IndexOutOfBoundsException.
+     * @param i the index
+     * @return the length of the second dimension at index i.
      */
     int length( int i );
 
     /**
      *return the length of the third dimension, for the ith element of the first dimension and jth element of the second dimension.
+     * @param i the index
+     * @param j the index
+     * @return the length of the second dimension at index i.
      */
     int length( int i, int j );
 
     /**
-     *  return the length of the fourth dimension for the ith, jth and kth elements of the first three dimensions.
+     * return the length of the fourth dimension for the ith, jth and kth elements of the first three dimensions.
+     * @param i the index
+     * @param j the index
+     * @param k the index
+     * @return the length of the fourth dimension for the ith, jth and kth elements of the first three dimensions.
      */
     int length( int i, int j, int k);
 
@@ -575,6 +609,8 @@ public interface QDataSet {
      * }
      * </pre>
      * This allows operations to be performed efficiently.
+     * @param clazz the class, such as WriteCapability.class
+     * @return the implementing class, or null (Jython None) if the capabilty is not provided.
      */
     <T> T capability( Class<T> clazz );
         
