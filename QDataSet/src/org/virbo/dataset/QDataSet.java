@@ -610,9 +610,11 @@ public interface QDataSet {
      *    write.putValue( 99, -1e31 );
      * }
      * </pre>
-     * This allows operations to be performed efficiently.
+     * This allows operations to be performed efficiently.  Note there is no WriteCapability class, this is 
+     * just an example.
+     * 
      * @param clazz the class, such as WriteCapability.class
-     * @return the implementing class, or null (Jython None) if the capabilty is not provided.
+     * @return the implementing class, or null (Jython None) if the capability is not provided.
      */
     <T> T capability( Class<T> clazz );
         
