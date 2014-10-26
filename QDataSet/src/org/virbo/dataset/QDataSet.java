@@ -335,6 +335,7 @@ public interface QDataSet {
      * that all dimensions have fixed length and certain optimizations and 
      * operators are allowed.  Note that when DEPEND_1 is a rank 1 dataset,
      * this implies QUBE.  Likewise BUNDLE_1 is a qube.
+     * Note the result of any slice must be a qube.
      */
     public final static String QUBE="QUBE";
     
@@ -576,6 +577,7 @@ public interface QDataSet {
      * A slice will be the elements at this index, for example if this dataset
      * is a rank 2 dataset flux(Time,Energy) then the slice of this will be
      * a rank 1 dataset flux(Energy).
+     * The result of any slice will be a qube.
      * @throws IllegalArgumentException when dataset rank is zero.
      * @param i
      * @return the QDataSet at index i.
