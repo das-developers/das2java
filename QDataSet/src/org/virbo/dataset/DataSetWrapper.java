@@ -8,6 +8,7 @@ package org.virbo.dataset;
 /**
  * Wraps a dataset, making the properties mutable.  This is also intended to be base class for extension.
  * @author jbf
+ * @see WritableDataSetWrapper which makes the values writable.
  */
 public class DataSetWrapper extends AbstractDataSet {
     QDataSet ds;
