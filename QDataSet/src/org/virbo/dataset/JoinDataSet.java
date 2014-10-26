@@ -36,6 +36,7 @@ public class JoinDataSet extends AbstractDataSet {
      * copying each slice into the JoinDataSet.
      * @param rds any dataset
      * @return a copy of the original dataset.
+     * @deprecated see WritableJoinDataSet
      */
     public static QDataSet deepCopy( QDataSet rds ) {
         if ( DataSetUtil.isQube(rds) ) {
@@ -44,7 +45,7 @@ public class JoinDataSet extends AbstractDataSet {
         JoinDataSet result= new JoinDataSet( rds.rank() );
         for ( int i=0; i<rds.length(); i++ ) {
             QDataSet s1= rds.slice(i);
-            if ( DataSetUtil.isQube(s1) ) {
+            if ( DataSetUtil.isQube(s1) ) { //Note QDataSet all but says that Join can only have slices that are qubes.
                 result.join( ArrayDataSet.copy( s1 ) );
             } else {
                 result.join( deepCopy(s1) );
