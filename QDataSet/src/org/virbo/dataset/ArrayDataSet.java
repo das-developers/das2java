@@ -14,6 +14,7 @@ import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.util.LoggerManager;
+import org.virbo.dsops.Ops;
 
 /**
  * A number of static methods were initially defined in DDataSet, then
@@ -303,37 +304,6 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
-     * copies the properties, copying depend datasets as well.
-     */
-    private static Map copyProperties( QDataSet ds ) {
-        Map result = new HashMap();
-        Map srcProps= DataSetUtil.getProperties(ds);
-
-        result.putAll(srcProps);
-
-        for ( int i=0; i < ds.rank(); i++) {
-            QDataSet dep = (QDataSet) ds.property("DEPEND_" + i);
-            if (dep == ds) {
-                throw new IllegalArgumentException("dataset is dependent on itsself!");
-            }
-            if (dep != null) {
-                result.put("DEPEND_" + i, copy(dep) ); // for timetags
-            }
-        }
-
-        for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
-            QDataSet plane0 = (QDataSet) ds.property("PLANE_" + i);
-            if (plane0 != null) {
-                result.put("PLANE_" + i, copy(plane0));
-            } else {
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * Copy the dataset to an ArrayDataSet only if the dataset is not already an ArrayDataSet.
      * @param ds
      * @return an ArrayDataSet.
@@ -380,7 +350,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         Object newback = ds.getBackCopy();
 
         ArrayDataSet result = ArrayDataSet.create(ds.rank, ds.len0, ds.len1, ds.len2, ds.len3, newback);
-        result.properties.putAll(copyProperties(ds)); // TODO: problems...
+        result.properties.putAll( Ops.copyProperties(ds) ); // TODO: problems...
 
         return result;
     }
@@ -444,7 +414,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             default: 
                 throw new IllegalArgumentException("bad rank");
         }
-        result.properties.putAll( copyProperties(ds) );
+        result.properties.putAll( Ops.copyProperties(ds) );
         result.checkFill();
 
         return result;
@@ -453,8 +423,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
     /**
      * copies the dataset into a writable ArrayDataSet, and all of its depend datasets as well.
+     * Note this does not verify that the data is a qube!!!
+     * @param ds the data to be copied.
+     * @return a copy of the data.
      */
     public static ArrayDataSet copy( QDataSet ds ) {
+        //TODO: this should check that the data is a qube.
         if ( ds instanceof ArrayDataSet ) {
             return ddcopy( (ArrayDataSet)ds );
         } else if ( ds instanceof JoinDataSet && ds.length()>0 ) {
