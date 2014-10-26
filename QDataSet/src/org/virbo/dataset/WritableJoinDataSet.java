@@ -5,6 +5,9 @@
 
 package org.virbo.dataset;
 
+import java.util.Map;
+import org.virbo.dsops.Ops;
+
 /**
  * Join of WritableDataSets where each dataset is writable.  Note type checking is
  * only done when the constructor that accepts a dataset, otherwise type checking
@@ -25,6 +28,30 @@ public class WritableJoinDataSet extends JoinDataSet implements WritableDataSet 
         }
     }
 
+    /**
+     * create a copy of the dataset src, which can be a join of qubes.
+     * Note this assumes that each slice is a qube, which was not asserted until now.
+     * @param src
+     * @return 
+     */
+    public static WritableDataSet copy(QDataSet src) {
+        WritableJoinDataSet result= new WritableJoinDataSet( src.rank() );
+        for ( int i=0; i<src.length(); i++ ) {
+            QDataSet ds1= src.slice(i);
+            if ( !DataSetUtil.isQube(ds1) ) {
+                throw new IllegalArgumentException("src contains slices that are not qubes.");
+            }
+            result.join( ArrayDataSet.copy(ds1) );
+        }
+        Map<String,Object> props= Ops.copyProperties(src);
+        for ( Map.Entry<String,Object> en: props.entrySet() ) {
+            result.putProperty( en.getKey(), en.getValue() );
+        }
+        return result;
+
+    }
+
+    
     public void putValue(double d) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
