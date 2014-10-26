@@ -38,6 +38,7 @@ import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
+import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.demos.RipplesDataSet;
 import org.virbo.dataset.BundleDataSet;
@@ -2202,12 +2203,38 @@ public class Ops {
     }
 
     /**
-     * return new dataset filled with ones.
-     * @param len0
-     * @return
+     * return a rank two dataset filled with ones.  This is currently mutable, but future versions may not be.
+     * @param len0 the length of the first index.
+     * @param len1 the length of the second index.
+     * @return dataset filled with ones.
      */
-    public static QDataSet ones(int len0, int len1) {
-        return replicate(1.0, len0, len1);
+    public static QDataSet ones( final int len0, final int len1) {
+        boolean returnMutableCopy= true; // for demonstration purposes, see http://sourceforge.net/p/autoplot/bugs/1148/
+        if ( returnMutableCopy ) {
+            return replicate(1.0, len0, len1);
+        } else {
+            return new AbstractDataSet() {
+                @Override
+                public int rank() {
+                    return 2;
+                }
+
+                @Override
+                public int length() {
+                    return len0;
+                }
+
+                @Override
+                public int length(int i0) {
+                    return len1;
+                }
+
+                @Override
+                public double value(int i0,int i1) {
+                    return 1.;
+                }
+            };
+        }
     }
 
     /**
