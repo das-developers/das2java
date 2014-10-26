@@ -3074,9 +3074,12 @@ public class Ops {
 
 
     /**
-     * copies the properties, copying depend datasets as well.  Copied from ArrayDataSet.
+     * copies the properties, copying depend datasets as well.  
+     * TODO: This is not thorough, and this needs to be reviewed.
+     * @param ds the data from which the properties are extracted.
+     * @return a map of the properties.
      */
-    private static Map copyProperties( QDataSet ds ) {
+    public static Map copyProperties( QDataSet ds ) {
         Map result = new HashMap();
         Map srcProps= DataSetUtil.getProperties(ds);
 
@@ -3113,15 +3116,7 @@ public class Ops {
     public static WritableDataSet copy( QDataSet src ) {
         logger.log(Level.FINE, "copy({0})", src);
         if ( SemanticOps.isJoin(src) ) {
-            WritableJoinDataSet result= new WritableJoinDataSet( src.rank() );
-            for ( int i=0; i<src.length(); i++ ) {
-                result.join( ArrayDataSet.copy(src.slice(i)) );
-            }
-            Map<String,Object> props= copyProperties(src);
-            for ( Entry<String,Object> en: props.entrySet() ) {
-                result.putProperty( en.getKey(), en.getValue() );
-            }
-            return result;
+            return WritableJoinDataSet.copy(src);
         } else {
             return ArrayDataSet.copy(src);
         }
