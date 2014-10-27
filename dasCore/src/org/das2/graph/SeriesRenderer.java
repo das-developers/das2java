@@ -941,7 +941,7 @@ public class SeriesRenderer extends Renderer {
             int pathLengthApprox= Math.max( 5, 110 * (lastIndex - firstIndex) / 100 );
             GeneralPath fillPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, pathLengthApprox );
 
-            Datum sw = SemanticOps.guessXTagWidth( xds, dataSet.trim(firstIndex,lastIndex) );
+            Datum sw = SemanticOps.guessXTagWidth( xds.trim(firstIndex,lastIndex) , dataSet.trim(firstIndex,lastIndex) );
             double xSampleWidth;
             boolean logStep;
             if ( sw!=null ) {
