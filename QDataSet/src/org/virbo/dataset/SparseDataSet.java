@@ -78,6 +78,7 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
      * @param length 
      */
     public void setLength( int length ) {
+        checkImmutable();
         this.length0= length;
     }
     
@@ -135,10 +136,12 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
 
     
     public void putValue(double d) {
+        checkImmutable();
         data.put( "", d );
     }
 
     public void putValue(int i0, double d) {
+        checkImmutable();
         if ( qube==null ) {
             length0= Math.max( i0+1, length0 );
         }
@@ -146,6 +149,7 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
     }
 
     public void putValue(int i0, int i1, double d) {
+        checkImmutable();
         if ( qube==null ) {
             length0= Math.max( i0+1, length0 );
             Integer length1= length.get( String.valueOf(i0) );
@@ -158,6 +162,7 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
     }
 
     public void putValue(int i0, int i1, int i2, double d) {
+        checkImmutable();
         if ( qube==null ) {
             length0= Math.max( i0+1, length0 );
             Integer length1= length.get( String.valueOf(i0) );
@@ -175,6 +180,7 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
     }
 
     public void putValue(int i0, int i1, int i2, int i3, double d) {
+        checkImmutable();
         if ( qube==null ) {
             length0= Math.max( i0+1, length0 );
             Integer length1= length.get( String.valueOf(i0) );
