@@ -11,11 +11,11 @@ import java.util.Map;
 /**
  * DataSet for storing sparse data.  This is used initially to describe bundles.
  * This returns 0 where no data has been set.  For example,
- * <code>
+ **<blockquote><pre><small>{@code
  * sp= SparseDataSet.createQube([2,4])
  * sp[2,2]= 1
  * print sp[0,0]
- * </code>
+ *}</small></pre></blockquote>
  * @author jbf
  */
 public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
@@ -37,9 +37,12 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
     }
     
     /**
-     * create the dataset with the given rank.  
-     * @param rank
-     * @return 
+     * create the dataset with the given rank.  The length of any dimension is explicitly set with the setLength
+     * method or implicitly by the highest index assigned a value.  Note Jython scripts are unable to call the setLength method.
+     * @param rank number of indeces
+     * @return a dataset that is empty.
+     * @see #createRankLen(int, int) 
+     * @see #createQube(int[]) 
      */
     public static SparseDataSet createRank( int rank ) {
         return new SparseDataSet(rank);
@@ -51,7 +54,7 @@ public class SparseDataSet extends AbstractDataSet implements WritableDataSet {
      * Each record will have length(i) based on the highest index assigned.
      * @param rank the result's rank.
      * @param len0 the number of records in the result.  
-     * @see createRank(int[] qube)
+     * @see #createQube(int[]) 
      * @return SparseDataSet with the given rank.
      */
     public static SparseDataSet createRankLen( int rank, int len0 ) {
