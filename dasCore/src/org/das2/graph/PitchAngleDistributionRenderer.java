@@ -1,5 +1,6 @@
 package org.das2.graph;
 
+import java.awt.BasicStroke;
 import javax.swing.ImageIcon;
 import javax.swing.Icon;
 import org.virbo.dataset.DDataSet;
@@ -12,6 +13,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.das2.datum.Units;
@@ -20,6 +22,8 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumVector;
 import org.virbo.dataset.ArrayDataSet;
 
 /**
@@ -301,6 +305,44 @@ public class PitchAngleDistributionRenderer extends Renderer {
                 }
             }
         }
+        
+        if ( drawPolarAxes ) {
+            g.setColor( xAxis.getForeground() );
+            g.setStroke( new BasicStroke(0.4f) );
+            TickVDescriptor rr= xAxis.getTickV();
+            DatumVector ticks= rr.tickV;
+            Units u= ticks.getUnits();
+            for ( int i=0; i<ticks.getLength(); i++ ) {
+                Datum t= ticks.get(i);
+                if ( t.doubleValue(ticks.getUnits())>0 ) {
+                    double xc0= xAxis.transform(t.multiply(-1));
+                    double yc0= yAxis.transform(t);
+                    double xc1= xAxis.transform(t);
+                    double yc1= yAxis.transform(t.multiply(-1));
+                    g.drawOval((int)xc0,(int)yc0,(int)(xc1-xc0),(int)(yc1-yc0));
+                }
+            }
+            Datum rmax= ticks.get(0).abs();
+            Datum rmax1=ticks.get(ticks.getLength()-1);
+            if ( rmax.lt(rmax1) ) rmax= rmax1;
+            for ( int i=0; i<360; i+=45 ) {
+                double xr0= xAxis.transform(0,u);
+                double yr0= yAxis.transform(0,u);
+                double xr1= xAxis.transform(rmax.value()*Math.cos(i*Math.PI/180),u);
+                double yr1= yAxis.transform(rmax.value()*Math.sin(i*Math.PI/180),u);
+                g.drawLine((int)xr0,(int)yr0,(int)xr1,(int)yr1);
+            }
+            if ( originNorth ) {
+                Point2D p1= new Point2D.Double( xAxis.transform(0,u), yAxis.transform(0,u) );
+                Point2D p0= new Point2D.Double( xAxis.transform(0,u), yAxis.getRow().getDMinimum() );
+                Arrow.paintArrow( g, p0, p1, 10.0, Arrow.HeadStyle.DRAFTING );                
+            } else {
+                Point2D p1= new Point2D.Double( xAxis.transform(0,u), yAxis.transform(0,u) );
+                Point2D p0= new Point2D.Double( xAxis.getColumn().getDMaximum(), yAxis.transform(0,u) );
+                Arrow.paintArrow( g, p0, p1, 10.0, Arrow.HeadStyle.DRAFTING );
+            }
+            
+        }
 
     }
 
@@ -326,6 +368,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
         Map<String,String> controls= new LinkedHashMap();
         controls.put( "mirror", encodeBooleanControl( mirror ) );
         controls.put( "originNorth", encodeBooleanControl( originNorth ) );
+        controls.put( "drawPolarAxes", encodeBooleanControl( drawPolarAxes ) );
         return Renderer.formatControl(controls);
     }
     
@@ -336,6 +379,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
         super.setControl(s);
         this.mirror= getBooleanControl( "mirror", false );
         this.originNorth= getBooleanControl("originNorth", false );
+        this.drawPolarAxes= getBooleanControl("drawPolarAxes",false );
     }    
 
     /**
@@ -355,6 +399,25 @@ public class PitchAngleDistributionRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_ORIGINNORTH, oldOriginNorth, originNorth);
         update();
     }
+    
+    /**
+     * if true, then draw circular axes.
+     */
+    private boolean drawPolarAxes = false;
+    
+    public static final String PROP_DRAWPOLARAXES = "drawPolarAxes";
+
+    public boolean isDrawPolarAxes() {
+        return drawPolarAxes;
+    }
+
+    public void setDrawPolarAxes(boolean drawPolarAxes) {
+        boolean oldDrawPolarAxes = this.drawPolarAxes;
+        this.drawPolarAxes = drawPolarAxes;
+        propertyChangeSupport.firePropertyChange(PROP_DRAWPOLARAXES, oldDrawPolarAxes, drawPolarAxes);
+        update();
+    }
+
 
     /**
      * if true, then mirror the image about angle=0.
