@@ -23,10 +23,8 @@
 
 package org.das2.event;
 
-import java.awt.Point;
 import java.awt.event.MouseWheelEvent;
 import java.util.logging.Level;
-import javax.swing.SwingUtilities;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.graph.DasAxis;
@@ -130,7 +128,6 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
                 nmax = +1.005;
             }
         } else {
-
             //mac trackpads coast a while after release, so let's govern the speed a little more
             if (e.getWheelRotation() < 0) {
                 nmin = 0.10; // zoom in
@@ -141,8 +138,6 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
             }
         }
         
-
-        //int clickMag= Math.abs(e.getWheelRotation());
         int clickMag = 1;
         final long t1 = System.nanoTime();
         long limitNanos = (long) 40e6;
@@ -181,6 +176,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
         super.mouseWheelMoved(e);
     }
     
+    
     /** Registers DataRangeSelectionListener to receive events.
      * @param listener The listener to register.
      */
@@ -194,6 +190,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
     public void removeDataRangeSelectionListener(org.das2.event.DataRangeSelectionListener listener) {
         listenerList.remove(org.das2.event.DataRangeSelectionListener.class, listener);
     }
+    
     
     /** Notifies all registered listeners about the event.
      *
