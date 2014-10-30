@@ -121,7 +121,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
                 nmin = +0.20; // pan right on xaxis
                 nmax = +1.20;
             }
-        } else if ( e.isShiftDown() ) {
+        } else if ( e.isShiftDown() ) { 
             if (e.getWheelRotation() < 0) {
                 nmin = -0.005; // pan left on xaxis
                 nmax = +0.995;
