@@ -100,7 +100,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
         
     /**
      * mouse wheel events zoom or pan rapidly.  With a physical wheel, I (jbf) found
-     * that I get 17ms per click, and this is managable.  With a touchpad on a mac,
+     * that I get 17ms per click, and this is manageable.  With a touchpad on a mac,
      * these events come much faster, like 10ms per click, which can disorient the
      * operator.  So we limit the speed to 20ms per click, for now by dropping
      * rapid clicks.
@@ -113,10 +113,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
         
         double shift = 0.;
 
-        DasAxis yAxis= axis;
-        
-        if ((e.isControlDown() || e.isShiftDown())) {
-            if ( axis != null ) return; // this happens when mouse drifts onto plot during xaxis pan.
+        if ( (e.isControlDown() )) {
             if (e.getWheelRotation() < 0) {
                 nmin = -0.20; // pan left on xaxis
                 nmax = +0.80;
@@ -124,10 +121,15 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
                 nmin = +0.20; // pan right on xaxis
                 nmax = +1.20;
             }
+        } else if ( e.isShiftDown() ) {
+            if (e.getWheelRotation() < 0) {
+                nmin = -0.005; // pan left on xaxis
+                nmax = +0.995;
+            } else {
+                nmin = +0.005; // pan right on xaxis
+                nmax = +1.005;
+            }
         } else {
-            Point ep= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), parent.getCanvas() );
-            
-            //ep.translate( e.getComponent().getX(), e.getComponent().getY() );
 
             //mac trackpads coast a while after release, so let's govern the speed a little more
             if (e.getWheelRotation() < 0) {
@@ -152,8 +154,7 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
         t0 = System.nanoTime();
 
         // these will be non-null if they should be used.
-        DatumRange xdrnew=null;
-        DatumRange ydrnew=null;
+        DatumRange xdrnew;
 
         logger.log(Level.FINEST, ":ns:  {0}  {1}", new Object[]{System.nanoTime() - tbirth, clickMag});
         if ( true ) {
