@@ -1234,8 +1234,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     
     /**
      * add just the x and y values.
-     * @param x
-     * @param y 
+     * @param x the x position
+     * @param y the y position
      */
     public void addDataPoint( Datum x, Datum y ) {
         addDataPoint( x, y, null );
@@ -1243,8 +1243,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     
     /**
      * add the x and y values with unnamed metadata.
-     * @param x
-     * @param y 
+     * @param x the x position
+     * @param y the y position
      * @param meta any metadata to be recorded along with the data point.
      */    
     public void addDataPoint( Datum x, Datum y, Object meta ) {
