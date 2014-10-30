@@ -1253,9 +1253,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     
     /**
      * add the data point, along with metadata such as the key press.
-     * @param x
-     * @param y
-     * @param planes 
+     * @param x the x position
+     * @param y the y position
+     * @param planes additional planes, map from String name -> String, Datum, Number, or  value.
+     * @throws RuntimeException when the units are not convertible. 
      */
     public void addDataPoint( Datum x, Datum y, Map planes ) {
         synchronized (dataPoints) {
@@ -1288,7 +1289,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         } else if ( value instanceof Number ) {
                             unitsArray[index]= Units.dimensionless;
                         } else if ( value instanceof String ) {
-                            unitsArray[index]= EnumerationUnits.create("default");
+                            unitsArray[index]= EnumerationUnits.create("default"); //TODO:  we already checked for this.
                         } else {
                             throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet");
                         }
