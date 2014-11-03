@@ -50,6 +50,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathExpressionException;
+import org.das2.DasException;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
@@ -299,9 +300,10 @@ public class StreamTool {
             int bytesRead;
             //int totalBytesRead = 0;
 
-            boolean endOfStream= false;
-            while ( !endOfStream && ( (bytesRead = stream.read(struct.bigBuffer)) >= 0 || struct.bigBuffer.position()!=0 ) ) {
-                if ( bytesRead==-1 ) endOfStream= true;
+            while ( (bytesRead = stream.read(struct.bigBuffer)) >= 0 ) {
+                if ( bytesRead==-1 ) {
+                    logger.fine("handling remaining data in the buffer.");
+                }
                 struct.byteOffset += struct.bigBuffer.position();
                 struct.bigBuffer.flip();
                 
@@ -311,6 +313,10 @@ public class StreamTool {
                 }
                 struct.bigBuffer.compact();
             }
+            if ( struct.bigBuffer.position()!=0 ) {
+                throw new StreamException("Stream ends with partial packet");
+            }
+            
             handler.streamClosed( struct.sd );
         } catch (StreamException se) {
             handler.streamException(se);
