@@ -51,7 +51,7 @@ public class PsymConnector implements Enumeration, Displayable {
     BasicStroke.JOIN_ROUND, 1.0f, new float[] {1.5f,2.0f}, 0.f ) );
     public static final PsymConnector DASHFINE= new PsymConnector( "DashFine",
     new BasicStroke( 1.0f, BasicStroke.CAP_ROUND,
-    BasicStroke.JOIN_ROUND, 1.0f, new float[] {3.0f,2.0f}, 0.f ) );
+    BasicStroke.JOIN_ROUND, 1.0f, new float[] {3.0f,2.0f}, 2.5f ) );
     
     private PsymConnector( String name, BasicStroke stroke ) {
         line= new Line2D.Double();
