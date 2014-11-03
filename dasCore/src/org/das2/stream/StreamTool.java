@@ -288,6 +288,10 @@ public class StreamTool {
                 }
                 struct.bigBuffer.compact();
             }
+            if ( struct.bigBuffer.position()!=0 ) {
+                throw new StreamException("Stream ends with partial packet");
+            }
+            
             handler.streamClosed(sd);
         } catch (StreamException se) {
             handler.streamException(se);
