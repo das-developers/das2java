@@ -88,7 +88,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
                 monitor.started();
             }
             if (bytesRead == -1) {
-                monitor.finished();
+                if ( !monitor.isFinished() ) monitor.finished();
             }
             else {
                 bytesRead++;
@@ -109,7 +109,7 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
                 monitor.started();
             }
             if (bytesRead == -1) {
-                monitor.finished();
+                if ( !monitor.isFinished() ) monitor.finished();
             }
             else {
                 bytesRead += result;
@@ -130,7 +130,11 @@ public class DasProgressMonitorInputStream extends java.io.FilterInputStream {
                 monitor.started();
             }
             if (bytesRead == -1) {
-                monitor.finished();
+                if ( !monitor.isFinished() ) {
+                    monitor.finished();
+                } else {
+                    // Something fishy is happening.  See /home/jbf/project/autoplot/bugs/20141103
+                }
             }
             else {
                 bytesRead += result;
