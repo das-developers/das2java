@@ -297,13 +297,15 @@ public class StreamTool {
         try {
 
             int bytesRead;
-            int totalBytesRead = 0;
+            //int totalBytesRead = 0;
 
-            while ( (bytesRead = stream.read(struct.bigBuffer)) >= 0 || struct.bigBuffer.position()!=0 ) {
+            boolean endOfStream= false;
+            while ( !endOfStream && ( (bytesRead = stream.read(struct.bigBuffer)) >= 0 || struct.bigBuffer.position()!=0 ) ) {
+                if ( bytesRead==-1 ) endOfStream= true;
                 struct.byteOffset += struct.bigBuffer.position();
                 struct.bigBuffer.flip();
                 
-                totalBytesRead += bytesRead;
+                //totalBytesRead += bytesRead;
                 while (getChunk(struct)) {
                     // this block is intentionally empty
                 }
