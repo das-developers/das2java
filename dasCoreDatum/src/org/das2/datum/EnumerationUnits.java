@@ -83,11 +83,14 @@ public class EnumerationUnits extends Units {
     /**
      * creates the datum, explicitly setting the ordinal.  Use with caution.
      * @param ival the integer value of the datum
-     * @param sval the object to associate.  This can be an object for legacy reasons.
+     * @param sval the object to associate.  This can be an object for legacy reasons, but should be a String.
      * @param color RGB color to associate with this value.  
      * @throws IllegalArgumentException if this ordinal is already taken by a different value.
      */
     public Datum createDatum(int ival, Object sval, int color ) {
+        if ( sval instanceof String ) {
+            sval= ((String)sval).trim();
+        }
         if (objects.containsKey(sval)) {
             return objects.get(sval);
         } else {
@@ -134,7 +137,17 @@ public class EnumerationUnits extends Units {
         return DatumVector.newDatumVector(doubles, this);
     }
 
+    /**
+     * return the Datum that represents this object, or create a Datum for 
+     * the object.  The object should be a String, but to support legacy applications
+     * it is an object 
+     * @param object
+     * @return Datum representing the object.
+     */
     public Datum createDatum(Object object) {
+        if ( object instanceof String ) {
+            object= ((String)object).trim();
+        }
         if (objects.containsKey(object)) {
             return objects.get(object);
         } else {
@@ -191,6 +204,7 @@ public class EnumerationUnits extends Units {
      */
     public static synchronized EnumerationUnits create(Object o) {
         String ss= o.toString();
+        ss= ss.trim();
         if (unitsInstances == null) {
             unitsInstances = new HashMap<String, EnumerationUnits>();
         }
