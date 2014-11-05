@@ -59,8 +59,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -119,6 +121,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
     private final JButton clearSelectionButton;
     private final JButton deleteSelectionButton;
+    private final JPanel accessoryPanel;
+    
     /**
      * Note this is all pre-QDataSet.  QDataSet would be a much better way of implementing this.
      */
@@ -1090,6 +1094,10 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         deleteSelectionButton = new JButton( getDeleteSelectedAction() );
         controlPanel.add( deleteSelectionButton );
         
+        controlPanel.add( Box.createGlue() );
+        accessoryPanel= new JPanel( new BorderLayout() );
+        controlPanel.add( accessoryPanel );
+        
         messageLabel = new JLabel("ready");
         messageLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
 
@@ -1112,6 +1120,15 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         return result;
     }
 
+    /**
+     * add a small component to the lower-right portion of the DataPointRecorder.  It should be roughly the size of a
+     * button.
+     * @param c the component.
+     */
+    public void addAccessory( JComponent c ) {
+        accessoryPanel.add(c);
+    }
+    
     /**
      * update fires off the TableDataChanged, and sets the current selected
      * row if necessary.
