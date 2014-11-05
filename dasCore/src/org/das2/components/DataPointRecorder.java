@@ -118,7 +118,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     private static final Logger logger = DasLogger.getLogger(DasLogger.GUI_LOG);
     private final JButton clearSelectionButton;
-
+    private final JButton deleteSelectionButton;
     /**
      * Note this is all pre-QDataSet.  QDataSet would be a much better way of implementing this.
      */
@@ -749,19 +749,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             this.parent = parent;
             popup = new JPopupMenu("Options");
             menuItem = new JMenuItem("Delete Row(s)");
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    int[] selectedRows = getSelectedRowsInModel();
-                    deleteRows(selectedRows);
-                    //for (int i = 0; i < selectedRows.length; i++) {
-                    //    deleteRow(selectedRows[i]);
-                    //    for (int j = i + 1; j < selectedRows.length; j++) {
-                    //        selectedRows[j]--; // indeces change because of deletion
-                    //    }
-                    //}
-                }
-            });
+            menuItem.setAction( getDeleteSelectedAction() );
             popup.add(menuItem);
         }
 
@@ -989,6 +977,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         };
     }
 
+    private Action getDeleteSelectedAction() {
+        return new AbstractAction("Delete Selected") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int[] selectedRows = getSelectedRowsInModel();
+                deleteRows(selectedRows);                
+            }            
+        };
+    }
+    
     /**
      * Notify listeners that the dataset has updated.  Pressing the "Update" 
      * button calls this.
@@ -1066,7 +1064,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorder.this, dp.get(0), dp.get(1));
                     fireDataPointSelectionListenerDataPointSelected(e2);
                 }
-
+                deleteSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
+                clearSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
             }
         });
 
@@ -1087,6 +1086,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         clearSelectionButton = new JButton( getClearSelectionAction() );
         controlPanel.add( clearSelectionButton );
+
+        deleteSelectionButton = new JButton( getDeleteSelectedAction() );
+        controlPanel.add( deleteSelectionButton );
         
         messageLabel = new JLabel("ready");
         messageLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
