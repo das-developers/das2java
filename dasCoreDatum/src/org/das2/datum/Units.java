@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -580,6 +581,14 @@ public abstract class Units implements Serializable {
     public abstract Datum subtract( Number a, Number b, Units bUnits );
     public abstract Datum multiply( Number a, Number b, Units bUnits );
     public abstract Datum divide( Number a, Number b, Units bUnits );
+    
+    /**
+     * return all the known units.
+     * @return list of all the known units.
+     */
+    public static List<Units> getAllUnits() {
+        return new ArrayList<Units>(unitsMap.keySet());
+    }
     
     /**
      * returns a Units object with the given string representation that is stored in the unitsMap.
