@@ -383,6 +383,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * returns a data set of the table data.
      */
     public QDataSet getDataSet() {
+        if ( unitsArray[0]==null ) return null;
         VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
         synchronized ( dataPoints ) {
             if (dataPoints.isEmpty()) {
