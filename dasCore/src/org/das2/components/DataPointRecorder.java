@@ -452,17 +452,39 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     /**
      * Selects all the points within the DatumRange
+     * @param xrange the x range
+     * @param yrange the y range or null if no constraint
+     * @return the selected index, or -1 if no elements are found.
      */
-    public void select(DatumRange xrange, DatumRange yrange) {
+    public int select( DatumRange xrange, DatumRange yrange ) {
+        return select(xrange,yrange,false);
+    }
+    
+    /**
+     * Selects all the points within the DatumRange
+     * @param xrange the x range
+     * @param yrange the y range or null if no constraint
+     * @param xOrY if true, then match if either yrange or xrange
+     * @return the selected index, or -1 if no elements are found.
+     */
+    public int select(DatumRange xrange, DatumRange yrange, boolean xOrY ) {
+        if ( xOrY && yrange==null ) throw new IllegalArgumentException("yrange is null with or condition--this would select all points.");
         Datum mid= xrange.rescale( 0.5,0.5 ).min();
         synchronized (dataPoints) {
-            List selectMe = new ArrayList();
+            List<Integer> selectMe = new ArrayList();
             int iclosest= -1;
             Datum closestDist=null;
             for (int i = 0; i < dataPoints.size(); i++) {
                 DataPoint p = (DataPoint) dataPoints.get(i);
-                if (xrange.contains(p.data[0]) && yrange.contains(p.data[1])) {
-                    selectMe.add( i );
+                if ( xOrY ) {
+                    assert yrange!=null;
+                    if ( xrange.contains(p.data[0]) || ( yrange.contains(p.data[1]) ) ) {
+                        selectMe.add( i );
+                    }
+                } else {
+                    if ( xrange.contains(p.data[0]) && ( yrange==null || yrange.contains(p.data[1]) ) ) {
+                        selectMe.add( i );
+                    }
                 }
                 if ( closestDist==null || p.data[0].subtract(mid).abs().lt( closestDist ) ) {
                     iclosest= i;
@@ -470,17 +492,25 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 }
             }
             if ( iclosest!=-1 && selectMe.isEmpty() ) {
-                selectMe= Collections.singletonList(iclosest);
+                assert closestDist!=null;
+                if ( closestDist.gt( xrange.width() ) ) {
+                    return -1;
+                } else {
+                    selectMe= Collections.singletonList(iclosest);
+                }
             }
             table.getSelectionModel().clearSelection();
-            for (int i = 0; i < selectMe.size(); i++) {
-                int iselect = ((Integer) selectMe.get(i)).intValue();
+            for ( Integer selectMe1 : selectMe ) {
+                int iselect = selectMe1;
                 table.getSelectionModel().addSelectionInterval(iselect, iselect);
             }
 
             if ( selectMe.size()>0 ) {
-                int iselect= (Integer)selectMe.get(0);
+                int iselect= selectMe.get(0);
                 table.scrollRectToVisible(new Rectangle(table.getCellRect( iselect, 0, true)) );
+                return iselect;
+            } else {
+                return -1;
             }
         }
     }
