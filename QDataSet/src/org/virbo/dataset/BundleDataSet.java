@@ -65,6 +65,7 @@ public final class BundleDataSet extends AbstractDataSet {
     /** Creates a new instance of BundleDataSet with the given rank.  Rank 1
      * datasets can bundle rank 0 datasets, while rank 2 can only bundle
      * rank 1 datasets with the same depend_0.
+     * @param rank rank of the bundle.
      */
     public BundleDataSet( int rank ) {
         this.rank= rank;
@@ -78,6 +79,11 @@ public final class BundleDataSet extends AbstractDataSet {
 
     }
 
+    /**
+     * create a bundle with the first dataset.  The result will have 
+     * rank N+1 where ds has rank N.
+     * @param ds rank N dataset.
+     */
     public BundleDataSet( QDataSet ds ) {
         this( ds.rank()+1 );
         bundle(ds);
@@ -106,8 +112,8 @@ public final class BundleDataSet extends AbstractDataSet {
 
     /**
      * allow to simply unbundle the dataset.
-     * @param i
-     * @return
+     * @param i the index.
+     * @return the dataset at i.
      */
     public QDataSet unbundle(int i) {
         return datasets.get(i);
@@ -171,6 +177,7 @@ public final class BundleDataSet extends AbstractDataSet {
         }
     }
 
+    @Override
     public int rank() {
         return rank;
     }
@@ -224,10 +231,6 @@ public final class BundleDataSet extends AbstractDataSet {
                 return result;
             }
         }
-    }
-
-    public Object property(String name, int i0, int i1) {
-        return datasets.get(i0).property(name,i1);
     }
 
     @Override
