@@ -1960,6 +1960,17 @@ public class DataSetOps {
                         Units dep0units= SemanticOps.getUnits(dep0);
                         MutablePropertyDataSet mdep0= Ops.putProperty( dep0, QDataSet.CADENCE, DataSetUtil.asDataSet( dep0units.getOffsetUnits().parse(arg) ) );
                         fillDs= Ops.putProperty( fillDs, QDataSet.DEPEND_0, mdep0 );
+                    } else if ( SemanticOps.isJoin(fillDs) ) {
+                        JoinDataSet n= new JoinDataSet(fillDs.rank());
+                        for ( int ii=0; ii<fillDs.length(); ii++ ) {
+                            QDataSet fillDs1= fillDs.slice(ii);
+                            dep0= (QDataSet) fillDs1.property(QDataSet.DEPEND_0);
+                            Units dep0units= SemanticOps.getUnits(dep0);
+                            MutablePropertyDataSet mdep0= Ops.putProperty( dep0, QDataSet.CADENCE, DataSetUtil.asDataSet( dep0units.getOffsetUnits().parse(arg) ) );
+                            fillDs1= Ops.putProperty( fillDs1, QDataSet.DEPEND_0, mdep0 );
+                            n.join(fillDs1);
+                        }
+                        fillDs= n;
                     }
                 } else if ( cmd.equals("|add") ) { 
                     String arg= getStringArg( s.next() );
