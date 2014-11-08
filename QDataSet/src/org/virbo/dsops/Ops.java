@@ -6887,7 +6887,7 @@ public class Ops {
      * first argument can be null in order to simplify loops in client code.
      * @param ds1 null, rank N-1 dataset, or a rank N bundle dataset.
      * @param ds2 rank N-1 dataset.
-     * @return rank N+1 bundle dataset
+     * @return rank N bundle dataset
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1==null && ds2==null ) {
@@ -6906,7 +6906,7 @@ public class Ops {
         } else if ( ds2==null ) {
             throw new NullPointerException("ds2 is null while ds1 ("+ds1+") is not null.");
         } else if ( ds1.rank() == ds2.rank() ) { // findbugs fails to realize that this must be okay.
-            BundleDataSet ds= new BundleDataSet( );
+            BundleDataSet ds= new BundleDataSet( ds1.rank() + 1 );
             ds.bundle(ds1);
             ds.bundle(ds2);
             return ds;
