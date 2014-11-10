@@ -189,7 +189,11 @@ public class CoerceUtil {
             public QDataSet trim(int start, int end) {
                 return new TrimDataSet(this, start, end ); //TODO: I'm sure there is a better solution for this--like trim on ds2.
             }
-
+            
+            @Override
+            public String toString() {
+                return DataSetUtil.toString(this);
+            }
         };
     }
 
@@ -267,6 +271,11 @@ public class CoerceUtil {
             public QDataSet trim(int start, int end) {
                 return new TrimDataSet(this, start, end );
             }
+            
+            @Override
+            public String toString() {
+                return DataSetUtil.toString(this);
+            }            
         };
     }
 
@@ -343,6 +352,11 @@ public class CoerceUtil {
 
             public QDataSet trim(int start, int end) {
                 return new TrimDataSet(this, start, end );
+            }
+            
+            @Override
+            public String toString() {
+                return DataSetUtil.toString(this);
             }
         };
     }
