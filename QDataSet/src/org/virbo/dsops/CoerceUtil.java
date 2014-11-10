@@ -20,13 +20,14 @@ import org.virbo.dataset.WritableDataSet;
  * the target geometry.  This might result in keeping data in memory that would
  * otherwise be released, so a future implementation of this should probably
  * use a non-qube dataset to store each index's length:
- *
+ *<blockquote><pre><small>{@code
  * public int length() {
  *    return lengths.length()
  * }
  * public int length(int i0) {
  *    return lengths.value(i0);
  * }
+ *}</small></pre></blockquote>
  * 
  * @author jbf
  */
