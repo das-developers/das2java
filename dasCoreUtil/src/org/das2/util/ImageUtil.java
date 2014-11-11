@@ -18,7 +18,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- *
+ * Utilities for image files and images.
  * @author jbf
  */
 public class ImageUtil {
