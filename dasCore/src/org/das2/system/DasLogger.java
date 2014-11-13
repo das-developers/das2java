@@ -12,10 +12,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.*;
 
-/**
- *
+/** Das Logging Facility
+ * 
+ * This class was created before Java had a standard log facility.  Don't use it for new
+ * code.  Use the standard Java Logger instead and get logger names from the LogCategory
+ * class.
+ * 
  * @author Jeremy
  */
+@Deprecated
 public class DasLogger {
     
     public static void reload() throws IOException {
@@ -90,47 +95,47 @@ public class DasLogger {
     /**
      * messages having to do with the application-specific Das 2 Application
      */
-    public static final LoggerId APPLICATION_LOG= new LoggerId( "" );
+    public static final LoggerId APPLICATION_LOG= new LoggerId( LogCategory.APPLICATION_LOG );
     
     /**
      * system messages such as RequestProcessor activity
      */
-    public static final LoggerId SYSTEM_LOG= new LoggerId( "das2.system" );
+    public static final LoggerId SYSTEM_LOG= new LoggerId( LogCategory.SYSTEM_LOG );
     
     /**
      * events, gestures, user feedback
      */
-    public static final LoggerId GUI_LOG= new LoggerId( "das2.gui" );
+    public static final LoggerId GUI_LOG= new LoggerId( LogCategory.GUI_LOG );
     
     /**
      * renders, drawing
      */
-    public static final LoggerId GRAPHICS_LOG= new LoggerId( "das2.graphics" );
+    public static final LoggerId GRAPHICS_LOG= new LoggerId( LogCategory.GUI_LOG );
     
     /**
      * renderer's logger
      */
-    public static final LoggerId RENDERER_LOG= new LoggerId( "das2.graphics" );
+    public static final LoggerId RENDERER_LOG= new LoggerId( LogCategory.RENDERER_LOG );
     
     /**
      * rebinning  and dataset operators
      */
-    public static final LoggerId DATA_OPERATIONS_LOG= new LoggerId( "das2.dataOperations" );
+    public static final LoggerId DATA_OPERATIONS_LOG= new LoggerId( LogCategory.DATA_OPERATIONS_LOG );
     
     /**
      * internet transactions, file I/O
      */
-    public static final LoggerId DATA_TRANSFER_LOG= new LoggerId( "das2.dataTransfer" );
+    public static final LoggerId DATA_TRANSFER_LOG= new LoggerId( LogCategory.DATA_TRANSFER_LOG );
     
     /**
      * virtual file system activities
      */
-    public static final LoggerId FILESYSTEM_LOG= new LoggerId( "das2.filesystem" );
+    public static final LoggerId FILESYSTEM_LOG= new LoggerId( LogCategory.FILESYSTEM_LOG );
     
     /**
      * das2 application description files
      */
-    public static final LoggerId DASML_LOG= new LoggerId( "das2.dasml" );
+    public static final LoggerId DASML_LOG= new LoggerId( LogCategory.DASML_LOG );
     
     /**
      * logger for messages to end users

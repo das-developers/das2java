@@ -148,6 +148,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }
     
     
+	 @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
         Graphics2D g2= (Graphics2D)g.create();
@@ -238,6 +239,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }
     
     
+	 @Override
     synchronized public void updatePlotImage( DasAxis xAxis, DasAxis yAxis_1, ProgressMonitor monitor ) throws DasException {
         super.updatePlotImage( xAxis, yAxis_1, monitor );
         final Color BAR_COLOR= getParent().getForeground();

@@ -1,6 +1,5 @@
 package org.das2.util;
 
-import org.das2.DasApplication;
 import org.das2.system.DasLogger;
 import java.util.*;
 import java.util.logging.Logger;
@@ -42,11 +41,11 @@ public class ArgumentList {
      */
     boolean allowUndefinedSwitch= false;
     
-    private String UNSPECIFIED = new String("__unspecified__");
+    private String UNSPECIFIED = "__unspecified__";
     
-    private String REFERENCEWITHOUTVALUE = new String( "__referencewithoutvalue__" );
+    private String REFERENCEWITHOUTVALUE = "__referencewithoutvalue__";
     
-    private String UNDEFINED_SWITCH = new String( "__undefinedSwitch__" );
+    private String UNDEFINED_SWITCH = "__undefinedSwitch__";
     
 	 // This is supposed to be compatable with the preferences API, so "__false__" must
 	 // become "false", ditto for "__true__"
@@ -98,11 +97,13 @@ public class ArgumentList {
      */
     public Preferences getPreferences() {
         return new AbstractPreferences(null,"") {
+				@Override
             protected void putSpi(String key, String value) {
                 formUsed.put(key,value);
                 values.put(key,value);
             }
             
+				@Override
             protected String getSpi(String key) {
                 if ( formUsed.containsKey(key) ) {
                     return (String) values.get(key);
@@ -111,30 +112,37 @@ public class ArgumentList {
                 }
             }
             
+				@Override
             protected void removeSpi(String key) {
                 // do nothing
             }
             
+				@Override
             protected void removeNodeSpi() throws BackingStoreException {
                 // do nothing
             }
             
+				@Override
             protected String[] keysSpi() throws BackingStoreException {
                 return (String[])values.keySet().toArray(new String[values.size()]);
             }
             
+				@Override
             protected String[] childrenNamesSpi() throws BackingStoreException {
                 return new String[0];
             }
             
+				@Override
             protected AbstractPreferences childSpi(String name) {
                 return null;
             }
             
+				@Override
             protected void syncSpi() throws BackingStoreException {
                 // do nothing
             }
             
+				@Override
             protected void flushSpi() throws BackingStoreException {
                 // do nothing
             }

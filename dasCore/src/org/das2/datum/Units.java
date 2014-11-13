@@ -35,7 +35,7 @@ import org.das2.datum.format.DatumFormatterFactory;
  */
 public abstract class Units implements Displayable {
     
-    private static Map unitsMap = new HashMap();
+    private static final Map unitsMap = new HashMap();
     
     public static final Units dimensionless= new NumberUnits("","dimensionless quantities");
     public static final Units dB = new NumberUnits("dB");
@@ -114,16 +114,19 @@ public abstract class Units implements Displayable {
      * volts / m<sup>2</sup> Hz 
      */
     public static final Units v2pm2Hz= new NumberUnits("V!a2!nm!a-2!nHz!a-1");
+	 static{ unitsMap.put( "V**2 m**-2 Hz**-1", v2pm2Hz ); }
 
 	/**
 	 * volts / meter
 	 */
 	public static final Units V_m = new NumberUnits("V/m");
+	static{ unitsMap.put( "V m**-1", V_m ); }
     
     /**
      * Watts / m<sup>2</sup>
      */
     public static final Units wpm2= new NumberUnits("W/m!a-2!n");
+	 static{ unitsMap.put( "W m**-2", wpm2 ); }
     
     public static final Units inches = new NumberUnits("inch");
     

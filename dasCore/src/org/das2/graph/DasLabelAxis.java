@@ -33,7 +33,7 @@ import org.das2.graph.event.DasUpdateEvent;
 import org.das2.graph.event.DasUpdateListener;
 import java.awt.*;
 import java.text.DecimalFormat;
-import javax.swing.JFrame;
+
 
 public class DasLabelAxis extends DasAxis implements DasUpdateListener {
 
@@ -119,17 +119,20 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         }
     }
 
+	 @Override
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
         // somehow tickv.minor is set to non-zero, and Axis.findTick gets messed up.
         // This is a work-around...
         return xDatum;
     }
 
+	 @Override
     public void updateTickV() {
         //super.updateTickV();
         updateTickPositions();
     }
 
+	 @Override
     public TickVDescriptor getTickV() {
         TickVDescriptor result = new TickVDescriptor();
         result.units = getUnits();
@@ -138,6 +141,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return result;
     }
 
+	 @Override
     public double transform(double value, Units units) {
         if (units != this.labelUnits) {
             throw new IllegalArgumentException("units don't match");
@@ -172,6 +176,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return iclose;
     }
 
+	 @Override
     public Datum invTransform(double d) {
         int iclose = findClosestIndex(labelPositions, (int) d);
         return labels.get(iclose);
@@ -216,10 +221,12 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         return result;
     }
 
+	 @Override
     public DasAxis createAttachedAxis(int orientation) {
         return new DasLabelAxis(labels, getDataRange(), orientation);
     }
 
+	 @Override
     public void update(DasUpdateEvent e) {
         double minimum = getDataRange().getMinimum();
         double maximum = getDataRange().getMaximum();
@@ -450,6 +457,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         update();
     }
 
+	 @Override
     public java.awt.geom.AffineTransform getAffineTransform(Memento memento, java.awt.geom.AffineTransform at) {
         return at;
     //equals doesn't seem to work

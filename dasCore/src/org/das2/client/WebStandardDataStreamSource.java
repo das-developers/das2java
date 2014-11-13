@@ -38,43 +38,41 @@ import org.das2.util.URLBuddy;
 import org.das2.DasException;
 import org.das2.DasIOException;
 import org.das2.datum.format.DatumFormatter;
-import org.das2.system.DasLogger;
 import java.io.*;
 import java.net.*;
+import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import org.das2.system.LogCategory;
+import org.das2.util.CredentialsManager;
 
-/*
- * Web standard data stream source */
-
-/** */
+/** Web standard data stream source
+ * 
+ * This class handles Das 1 and Das 2 streams served from a server implementing the
+ * Das 2.1 client - server protocol, including HTTP authentication.  The Das 2.2 
+ * client - server protocol is not handled at this time.
+ */
 public class WebStandardDataStreamSource implements StandardDataStreamSource {
 
     private DasServer server;
-    private boolean legacyStream = true;
+	 protected String m_sHost;
+	 protected String m_sDataSet;
     private String extraParameters;
-
-    /**
-     * Holds value of property compress.
-     */
+	 
+    /* Holds value of property compress. */
     private boolean compress;
 
-    /**
-     * Holds value of property lastRequestURL.
-     */
+    /* Holds value of property lastRequestURL. */
     private String lastRequestURL;
 
     public WebStandardDataStreamSource(DasServer server, URL url) {
         this.server = server;
+		  m_sHost = url.getHost();
         String[] query = url.getQuery() == null ? new String[0] : url.getQuery().split("&");
-        if (query.length >= 2) {
-            extraParameters = query[1];
-        }
+		  if (query.length > 0) m_sDataSet = query[0];
+        if (query.length > 1) extraParameters = query[1];
     }
 
-    public boolean isLegacyStream() {
-        return legacyStream;
-    }
-
-
+	 @Override
     public InputStream getInputStream(StreamDataSetDescriptor dsd, Datum start, Datum end) throws DasException {
         String serverType="dataset";
 
@@ -84,9 +82,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         InputStream in= openURLConnection( dsd, start, end, formData );
         in= DasApplication.getDefaultApplication().getInputStreamMeter().meterInputStream(in);
         return in;
-
     }
-
 
 	 @Override
     public InputStream getReducedInputStream( StreamDataSetDescriptor dsd, Datum start, Datum end, Datum timeResolution) throws DasException {
@@ -125,88 +121,156 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
         //}
 
         //compress= true;
-        if (compress) {
-            formData.append("&compress=true");
-        }
-
-        if ( !devel.equals("") ) {
-            formData.append("&devel="+devel);
-        }
+        if (compress) formData.append("&compress=true");
+        
+        if ( !devel.equals("") ) formData.append("&devel=").append(devel);
         
         InputStream in= openURLConnection( dsd, start, end, formData );
-
+		  
         in= DasApplication.getDefaultApplication().getInputStreamMeter().meterInputStream(in);
-
         return in;
-
     }
 
     private String createFormDataString(String dataSetID, Datum start, Datum end, StringBuffer additionalFormData) throws UnsupportedEncodingException {
         DatumFormatter formatter = start.getUnits().getDatumFormatterFactory().defaultFormatter();
         String startStr = formatter.format(start);
         String endStr= formatter.format(end);
-        StringBuffer formData= new StringBuffer("dataset=");
+        StringBuilder formData= new StringBuilder("dataset=");
         formData.append(URLBuddy.encodeUTF8(dataSetID));
         formData.append("&start_time=").append(URLBuddy.encodeUTF8(startStr));
         formData.append("&end_time=").append(URLBuddy.encodeUTF8(endStr));
         formData.append("&").append(additionalFormData);
         return formData.toString();
     }
+	 
+	// Get the location ID associated with the dataSetId 
+	protected String getLocId(){
+		if((m_sHost != null)&&(m_sDataSet != null))
+			return String.format("%s|%s", m_sHost, m_sDataSet);
+		else
+			return null;
+	}
+	
+	// Check / Set location information
+	protected void checkSetLocDescription(CredentialsManager cm){
+		String sLocId = getLocId();
+		if(sLocId == null) return;
+		
+		if(cm.hasDescription(sLocId)) return;
+		
+		String sSvrName = server.getName();
+		String sDesc = String.format("<html><h3>%s</h3><hr>Server: <b>%s</b><br>"
+			+ "Data Set: <b>%s</b>", sSvrName, m_sHost, m_sDataSet);
+		
+		ImageIcon icon = server.getLogo();
+		cm.setDescription(sLocId, sDesc, icon);
+	}
 
-    protected synchronized InputStream openURLConnection( StreamDataSetDescriptor dsd, Datum start, Datum end, StringBuffer additionalFormData ) throws DasException {
+	@SuppressWarnings("null")
+	protected synchronized InputStream openURLConnection( 
+		StreamDataSetDescriptor dsd, Datum start, Datum end, StringBuffer additionalFormData ) 
+		throws DasException {
 
-        String[] tokens = dsd.getDataSetID().split("\\?|\\&");
-        String dataSetID = tokens[1];
+		String[] tokens = dsd.getDataSetID().split("\\?|\\&");
+		String dataSetID = tokens[1];
+  
+		URL serverURL;
+		InputStream inStream = null;
+		String sContentType = null;
+		try{
+			//Construct the GET string
+			String formData = createFormDataString(dataSetID, start, end, additionalFormData);
 
-        try {
-            String formData = createFormDataString(dataSetID, start, end, additionalFormData);
-            if ( dsd.isRestrictedAccess() ) {
-                key= server.getKey("");
-                if (key!=null) {
-                    formData+= "&key="+URLEncoder.encode(key.toString(),"UTF-8");
-                }
-            }
+			//Handle old-style das2 authentication
+			if(dsd.isRestrictedAccess()){
+				key = server.getKey("");
+				if(key != null){
+					formData += "&key=" + URLEncoder.encode(key.toString(), "UTF-8");
+				}
+			}
 
-            if ( redirect ) {
-                formData+= "&redirect=1";
-            }
+			if(redirect){
+				formData += "&redirect=1";
+			}
+			serverURL = server.getURL(formData);
 
-            URL serverURL= this.server.getURL(formData);
+			// Loop handling authentication if needed
+			Logger.getLogger(LogCategory.DATA_TRANSFER_LOG).fine("opening " + serverURL.toString());
+			String sLocId = getLocId();
+			
+			while(inStream == null){
+				HttpURLConnection httpConn = null;
+				URLConnection conn = serverURL.openConnection();
+				if(serverURL.getProtocol().startsWith("http")){
+					httpConn = (HttpURLConnection) conn;
+				}
+				else{
+					throw new DasException("Das2 Server Protocol " + serverURL.getProtocol()
+						+ "is not supported.");
+				}
 
-            this.lastRequestURL= String.valueOf( serverURL );
+				CredentialsManager cm = CredentialsManager.getMannager();
+				if(cm.hasCredentials(sLocId)){
+					httpConn.setRequestProperty("Authorization", 
+						                         "Basic " + cm.getHttpBasicHash(sLocId));
+				}
 
-            DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG).fine("opening "+serverURL.toString());
+				httpConn.connect();
+				sContentType = httpConn.getContentType();
+				
+				int nStatus = httpConn.getResponseCode();
+				
+				if(nStatus == HttpURLConnection.HTTP_UNAUTHORIZED){
+					checkSetLocDescription(cm);
+					// If the cm had credentials for this location, they obviously didn't
+					// work, so invalidate them.
+					cm.invalidate(sLocId);
+					if(cm.getHttpBasicHash(sLocId) == null){
+						throw new DasIOException("Failed to gather credentials for " + sLocId);
+					}
 
-            URLConnection urlConnection = serverURL.openConnection();
-            urlConnection.connect();
+					// Try again...
+					httpConn.disconnect();
+					continue;
+				}
+				
+				if(nStatus >= 400){
+					inStream = httpConn.getErrorStream();
+				}
+				else{
+					inStream = httpConn.getInputStream();
+				}
+			}
+		}
+		catch(IOException ex){
+			throw new DasIOException(ex);
+		}
 
-            String contentType = urlConnection.getContentType();
+		this.lastRequestURL = String.valueOf(serverURL);
+		
+		try{
+				
+		//if (!contentType.equalsIgnoreCase("application/octet-stream")) {
+		if (sContentType.equalsIgnoreCase("text/plain")) {
+			BufferedReader bin = new BufferedReader(new InputStreamReader(inStream));
+			String line = bin.readLine();
+			String message = "";
+			while (line != null) {
+				message = message.concat(line);
+				line = bin.readLine();
+			}
+			throw new DasIOException(message);
+		}
 
-            if (!contentType.equalsIgnoreCase("application/octet-stream")) {
-                BufferedReader bin = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String line = bin.readLine();
-                String message = "";
-                while (line != null) {
-                    message = message.concat(line);
-                    line = bin.readLine();
-                }
-                throw new DasIOException(message);
-            }
-
-            InputStream in= urlConnection.getInputStream();
-
-            if (isLegacyStream()) {
-                return processLegacyStream(in);
-            } else {
-                throw new UnsupportedOperationException();
-            }
-        } catch (IOException e) {
-            throw new DasIOException(e);
-        }
+		return processStream(inStream);
+		}
+		catch(IOException ex){
+			throw new DasIOException(ex);
+		}
     }
 
-    private InputStream processLegacyStream(InputStream in) throws IOException, DasException {
-        /* advances the inputStream past the old das2server tags */
+    private InputStream processStream(InputStream in) throws IOException, DasException {
+        /* advances the inputStream past the old das2server tags if needed */
         BufferedInputStream bin= new BufferedInputStream(in);
 
         bin.mark(Integer.MAX_VALUE);
@@ -231,14 +295,14 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
                 org.das2.util.DasDie.println("error="+error);
 
                 /* presume that the endUser has opted out */
-                if (error.equals("<needKey/>")) {;
+                if (error.equals("<needKey/>")) {
                 throw new NoKeyProvidedException("");
                 }
 
                 if (error.equals("<accessDenied/>")) {
                     /* the server says the key used does not have access to the resouce requested. Allow the user to reauthenticate */
-                    server.setKey(null);
-                    server.getKey("");
+                    //server.setKey(null);
+                    //server.getKey("");
                     throw new AccessDeniedException("");
                 }
 
@@ -285,7 +349,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
             }
 
             if ( new String(data,0,14,"UTF-8").equals("<"+das2ResponseTag+">")) {
-                while ( new String( data,0,offset,"UTF-8" ).indexOf("</"+das2ResponseTag+">")==-1 &&
+                while (! new String( data,0,offset,"UTF-8" ).contains("</"+das2ResponseTag+">") &&
                         offset<4096 ) {
                     offset+= bytesRead;
                     bytesRead= in.read(data,offset,4096-offset);
@@ -313,15 +377,17 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
 
     }
 
+	 @Override
     public void reset() {
     }
 
-    public void authenticate( String restrictedResourceLabel ) {
-        Authenticator authenticator;
-        authenticator= new Authenticator(server,restrictedResourceLabel);
-        Key key= authenticator.authenticate();
-        if ( key!=null ) server.setKey(key);
-    }
+	 // Looks like graveyard code, bring back if app building fails
+    //public void authenticate( String restrictedResourceLabel ) {
+    //    Authenticator authenticator;
+    //    authenticator= new Authenticator(server,restrictedResourceLabel);
+    //    Key key= authenticator.authenticate();
+    //    if ( key!=null ) server.setKey(key);
+    //}
 
     /**
      * Getter for property compress.

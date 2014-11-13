@@ -104,6 +104,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         }
     }
     
+	 @Override
     protected void setProperties( Map properties ) {
         setProperties(properties, false);
     }
@@ -166,10 +167,12 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         return data;
     }
     
+	 @Override
     public String toString() {
         return "dsd "+getDataSetID();
     }
     
+	 @Override
     protected DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, ProgressMonitor monitor ) throws DasException {
         if ( resolution != null && !resolution.isFinite() ) throw new IllegalArgumentException( "resolution is not finite" );
         InputStream in;

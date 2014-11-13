@@ -43,29 +43,40 @@ import org.das2.DasException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-/**
- *
+/** Represents a remote Das 2.1 compliant server.  
+ * 
+ * Use the create() method to instantiate new Das 2 server objects.  Each call to
+ * create() will only allocate a new server instance if no server matching the given URL
+ * has already been created.  
+ * 
  * @author  jbf
- * A DasServer is the object that holds the methods of a remote das server.
- * These include, for example, getLogo() which returns a graphical mnemonic
- * for the server, authenticate() and setPassword().
  */
 
 public class DasServer {
 
+    private String sProto;
     private String host;
     private String path;
     private int port;
-    private HashMap keys; // <key>
-    private Key key;
+	 
+	 @Deprecated
+    private HashMap keys; // Holds a list of all non-http auth das2 server keys
+	 
+	 //Probably dead code, let's see
+    //private Key key;
 
-    private static Logger logger= DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG );
+    private static final Logger logger= DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG );
 
+	 /* Holds the global list of Das2 Server objects */
     private static HashMap instanceHashMap= new HashMap();
 
+	 @Deprecated
     public static DasServer plasmaWaveGroup;
+	 
+	 @Deprecated
     public static DasServer sarahandjeremy;
-    static {
+	 
+	 static {
         try {
             plasmaWaveGroup= DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/das2Server"));
             sarahandjeremy= DasServer.create(new URL("http://www.sarahandjeremy.net/das/dasServer.cgi"));
@@ -74,8 +85,7 @@ public class DasServer {
         }
     }
 
-    /** Creates a new instance of DasServer */
-    private DasServer(String host, String path) {
+    private DasServer(String sProto, String host, String path) {
         String[] s= host.split(":");
         if ( s.length>1 ) {
             this.port= Integer.parseInt(s[1]);
@@ -83,38 +93,57 @@ public class DasServer {
         } else {
             port= -1;
         }
+		  this.sProto = sProto;
         this.host= host;
         this.path= path;
         this.keys= new HashMap();
     }
-
+    
+	 /** Provide the Das2 Server location.  
+	  * Note that more than one Das2 server may be present on a single host web-site.  
+	  * @return A URL string containing protocol, host and path information.
+	  */
     public String getURL() {
         if ( port==-1 ) {
-            return "http://"+host+path;
+            return sProto+"://"+host+path;
         } else {
-            return "http://"+host+":"+port+path;
+            return sProto+"://"+host+":"+port+path;
         }
     }
 
+	 /** Get a Das2 server instance.
+	  * 
+	  * @param url A Das2 resource URL.  Only the protocol, host, port and path information
+	  *            are used.  All other items, such as a GET query are ignored.
+	  * 
+	  * @return If a server matching the given url's protocol, host and path has already
+	  * been created, that instance is returned, otherwise a new instance is created.
+	  */
     public static DasServer create( URL url ) {
+		  String proto = url.getProtocol();
         String host= url.getHost();
         int port = url.getPort();
         if ( port!=-1 ) {
             host+= ":"+port;
         }
-        String key= "http://" + host + url.getPath();
+        String key= proto+"://" + host + url.getPath();
         if ( instanceHashMap.containsKey( key ) ) {
             logger.fine( "Using existing DasServer for "+url);
             return (DasServer) instanceHashMap.get( key );
         } else {
             String path= url.getPath();
             logger.fine( "Creating DasServer for "+url);
-            DasServer result= new DasServer(host,path);
+            DasServer result= new DasServer(proto, host, path);
             instanceHashMap.put(key,result);
             return result;
         }
     }
-
+    
+	 /** Query the remote DasServer for it's id string.
+	  * For Das 2.1 servers this is handled by sending the GET query ?server=id.
+	  * 
+	  * @return A string containing the id, or the empty string if the query failed
+	  */
     public String getName() {
         String formData= "server=id";
 
@@ -126,7 +155,6 @@ public class DasServer {
             urlConnection.connect();
 
             String contentType = urlConnection.getContentType();
-
             InputStream in= urlConnection.getInputStream();
 
             String result= new String(  read(in) );
@@ -134,14 +162,17 @@ public class DasServer {
 
             return result;
         } catch (IOException e) {
-
             return "";
         }
-
     }
 
+	 /** Query the remote DasServer for it's image icon.
+	  * For Das 2.1 servers this is handled by sending the GET query ?server=logo.
+	  * 
+	  * @return An ImageIcon with the server logo, or an empty ImageIcon if the request
+	  *         failed
+	  */
     public ImageIcon getLogo() {
-
         String formData= "server=logo";
 
         try {
@@ -152,7 +183,6 @@ public class DasServer {
             urlConnection.connect();
 
             String contentType = urlConnection.getContentType();
-
             InputStream in= urlConnection.getInputStream();
 
             byte[] data= read(in);
@@ -160,12 +190,16 @@ public class DasServer {
             return new ImageIcon(data);
 
         } catch (IOException e) {
-
             return new ImageIcon();
         }
-
     }
 
+	 /** Query the remote DasServer for a hierarchical tree of all data sources on 
+	  * the server.
+	  * For Das 2.1 servers this is handled by sending the GET query ?server=list.
+	  * 
+	  * @return 
+	  */
     public TreeModel getDataSetList() throws org.das2.DasException {
         String formData= "server=list";
 
@@ -178,7 +212,6 @@ public class DasServer {
             urlConnection.connect();
 
             String contentType = urlConnection.getContentType();
-
             InputStream in= urlConnection.getInputStream();
 
             TreeModel result= createModel(in);
@@ -186,10 +219,8 @@ public class DasServer {
             return result;
 
         } catch (IOException e) {
-
             throw new DasIOException( e.getMessage() );
         }
-
     }
 
     private TreeModel createModel(InputStream uin) throws IOException {
@@ -234,7 +265,7 @@ public class DasServer {
     public StreamDescriptor getStreamDescriptor( URL dataSetID ) throws DasException {
         try {
             String dsdf = dataSetID.getQuery().split("&")[0];
-            URL url = new URL("http", host, port, path+"?server=dsdf&dataset=" + dsdf);
+            URL url = new URL(sProto, host, port, path+"?server=dsdf&dataset=" + dsdf);
 
             logger.fine( "connecting to "+url);
             URLConnection connection = url.openConnection();
@@ -242,9 +273,19 @@ public class DasServer {
             String contentType = connection.getContentType();
             String[] s1= contentType.split(";"); // dump charset info
             contentType= s1[0];
+				
+				InputStream inStream = null;
+				if(connection instanceof HttpURLConnection){
+					HttpURLConnection httpConn = (HttpURLConnection) connection;
+					int nStatus = httpConn.getResponseCode();
+					if(nStatus >= 400)
+						inStream = httpConn.getErrorStream();
+				}
+				if(inStream == null) inStream = connection.getInputStream();
 
-            if (contentType.equalsIgnoreCase("text/plain")) {
-                PushbackReader reader = new PushbackReader(new InputStreamReader(connection.getInputStream()), 4);
+            if (contentType.equalsIgnoreCase("text/plain") ||
+					 contentType.equalsIgnoreCase("text/vnd.das2.das2stream") ) {
+                PushbackReader reader = new PushbackReader(new InputStreamReader(inStream), 4);
                 char[] four = new char[4];
                 reader.read(four);
                 if (new String(four).equals("[00]")) {
@@ -252,24 +293,24 @@ public class DasServer {
                     reader.skip(6);
                     Document header = StreamDescriptor.parseHeader(reader);
                     Element root = header.getDocumentElement();
-                    if (root.getTagName().equals("stream")) {
-                        return new StreamDescriptor(root);
-                    }
-                    else if ( root.getTagName().equals("exception") ) {
-                        logger.fine("response is an exception");
-                        String type= root.getAttribute("type");
-                        StreamException se= new StreamException( "stream exception: "+type );
-                        DasException de= new DasException( "stream exception: "+type );
-                        de.initCause(se);
-                        throw de;
-                    }
-                    else if (root.getTagName().equals("")) {
-                        throw new DasStreamFormatException();
-                    }
-                    else {
-                        throw new DasStreamFormatException();
-                    }
-                }
+						 switch(root.getTagName()){
+						 case "stream":
+							 return new StreamDescriptor(root);
+						 case "exception":
+							 logger.fine("response is an exception");
+							 String type= root.getAttribute("type");
+							 String sMsg = root.getAttribute("message");
+							 String sExceptMsg = "stream exception: "+type;
+							 if(!sMsg.isEmpty())
+								 sExceptMsg = sExceptMsg + ", " + sMsg;
+							 StreamException se= new StreamException( sExceptMsg );
+							 throw new DasException(sExceptMsg, se);
+						 case "":
+							 throw new DasStreamFormatException();
+						 default:
+							 throw new DasStreamFormatException();
+						 }
+					 }
                 else {
                     logger.fine("response is a legacy descriptor");
                     reader.unread(four);
@@ -279,8 +320,8 @@ public class DasServer {
                 }
             }
             else {
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuffer message = new StringBuffer();
+                BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
+                StringBuilder message = new StringBuilder();
                 for (String line = in.readLine(); line != null; line = in.readLine()) {
                     message.append(line).append('\n');
                 }
@@ -293,10 +334,10 @@ public class DasServer {
         } catch ( IOException e ) {
             throw new DasIOException(e.toString());
         }
-
-
     }
-
+	 
+	 /** Handles key based authentication */
+	 @Deprecated
     public Key authenticate( String user, String passCrypt) {
         try {
             Key result= null;
@@ -332,9 +373,8 @@ public class DasServer {
         }
     }
 
-    /**
-     * returns a List<String> of resource Id's available with this key
-     */
+    /** returns a List<String> of resource Id's available with this key */
+	 @Deprecated
     public List groups( Key key ) {
         try {
             String formData= "server=groups";
@@ -362,6 +402,7 @@ public class DasServer {
         } 
     }
 
+	 @Deprecated
     public void changePassword( String user, String oldPass, String newPass ) throws DasServerException {
         try {
             String formData= "server=changePassword";
@@ -398,6 +439,7 @@ public class DasServer {
 
     }
 
+	 @Deprecated
     public String readServerResponse( BufferedInputStream in ) {
         // Read <dasResponse>...</dasResponse>, leaving the InputStream immediately after //
 
@@ -425,7 +467,7 @@ public class DasServer {
             }
 
             if ( new String(data,0,14,"UTF-8").equals("<"+das2ResponseTag+">")) {
-                while ( new String( data,0,offset,"UTF-8" ).indexOf("</"+das2ResponseTag+">")==-1 &&
+                while ( !new String( data,0,offset,"UTF-8" ).contains("</"+das2ResponseTag+">") &&
                 offset<4096 ) {
                     offset+= bytesRead;
                     bytesRead= in.read(data,offset,4096-offset);
@@ -454,6 +496,8 @@ public class DasServer {
         return das2Response;
     }
 
+	 // Utility function to handle reading data off the HTTP stream.  Used by functions
+	 // such as getName and getLogo that don't expect to receive a Das2 Stream
     private byte[] read(InputStream uin) throws IOException {
         LinkedList list = new LinkedList();
         byte[] data;
@@ -527,6 +571,10 @@ public class DasServer {
         return data;
     }
 
+	 public String getProto() {
+	     return sProto;	 
+	 }
+	 
     public String getHost() {
         return host;
     }
@@ -541,7 +589,7 @@ public class DasServer {
     }
 
     public URL getURL( String formData ) throws MalformedURLException {
-        return new URL( "http", host, port, path+"?"+formData );
+        return new URL( sProto, host, port, path+"?"+formData );
     }
 
     public Key getKey( String resource ) {
@@ -556,10 +604,12 @@ public class DasServer {
         return (Key)keys.get(resource);
     }
 
-    public void setKey( Key key ) {
-        this.key= key;
-    }
+	 //Let's see if this is actually used anywhere
+    //public void setKey( Key key ) {
+    //    this.key= key;
+    //}
 
+	 @Override
     public String toString() {
         return this.getURL();
     }

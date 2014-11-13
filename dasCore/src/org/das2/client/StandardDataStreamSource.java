@@ -25,7 +25,6 @@ package org.das2.client;
 
 import org.das2.datum.Datum;
 import org.das2.DasException;
-import org.das2.dataset.DataSetDescriptor;
 
 import java.io.InputStream;
 
