@@ -491,17 +491,19 @@ public class FileStorageModel {
             if ( fileSystems[i] instanceof WebFileSystem ) {
                 WebFileSystem wfs= (WebFileSystem)fileSystems[i];
                 File f= wfs.getLocalRoot();
-                FileSystem lfs= FileSystem.create( f.toURI() );
-                String[] files2= lfs.listDirectory( "/", theListRegex );
-                List<String> deleteRemote= new ArrayList();
-                List<String> remoteFiles= Arrays.asList( files1 );
-                for ( String s: files2 ) {
-                    if ( remoteFiles.indexOf(s)==-1 ) {
-                        deleteRemote.add(s);
+                if ( f!=null ) { // e.g. Applet support, where applets have no local root.
+                    FileSystem lfs= FileSystem.create( f.toURI() );
+                    String[] files2= lfs.listDirectory( "/", theListRegex );
+                    List<String> deleteRemote= new ArrayList();
+                    List<String> remoteFiles= Arrays.asList( files1 );
+                    for ( String s: files2 ) {
+                        if ( remoteFiles.indexOf(s)==-1 ) {
+                            deleteRemote.add(s);
+                        }
                     }
+                    logger.log(Level.FINE, "local files that do not exist on remote: {0}", deleteRemote);
+                    oldVersions.addAll(deleteRemote);
                 }
-                logger.fine("local files that do not exist on remote: "+deleteRemote );
-                oldVersions.addAll(deleteRemote);
             }
         }
 
@@ -598,7 +600,7 @@ public class FileStorageModel {
         } else {
             for ( String s: oldVersions ) {
                 if ( getFileSystem().getFileObject(s).removeLocalFile()==false ) {
-                    logger.finer("removeLocalFile returned false: "+s);
+                    logger.log(Level.FINER, "removeLocalFile returned false: {0}", s);
                 }
             }
         }
