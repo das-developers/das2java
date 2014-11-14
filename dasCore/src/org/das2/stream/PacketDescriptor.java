@@ -131,7 +131,14 @@ public class PacketDescriptor implements Cloneable {
         yCount++;
         Map<String,String> names= new HashMap();
         for ( int i=0; i<yCount; i++ ) {
-            if ( names.containsKey(yDescriptors[i].getProperty("name")) ) {
+            Object pp= yDescriptors[i].getProperty("name");
+            if ( pp==null && yDescriptors[i] instanceof StreamYScanDescriptor ) {
+                pp= ((StreamYScanDescriptor)yDescriptors[i]).getName();
+            }
+            if ( pp==null && yDescriptors[i] instanceof StreamMultiYDescriptor ) {
+                pp= ((StreamMultiYDescriptor)yDescriptors[i]).getName();
+            }
+            if ( names.containsKey(pp) ) {
                 throw new IllegalArgumentException("Das2 Stream Format error: Required Attribute '"+"name"+
 				                        "' missing in "+y+" plane.");
             }
