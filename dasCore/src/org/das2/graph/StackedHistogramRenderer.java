@@ -55,7 +55,6 @@ import org.das2.components.propertyeditor.Enumeration;
 
 import java.awt.*;
 import java.awt.geom.*;
-import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.beans.*;
 import java.text.*;
@@ -66,7 +65,9 @@ import org.w3c.dom.*;
  *
  * @author  jbf
  */
-public class StackedHistogramRenderer extends org.das2.graph.Renderer implements TableDataSetConsumer, PropertyChangeListener, Displayable  {
+public class StackedHistogramRenderer extends org.das2.graph.Renderer 
+	implements TableDataSetConsumer, PropertyChangeListener, Displayable  
+{
     
     private DasLabelAxis yAxis= null;
     private DasAxis zAxis= null;
@@ -118,10 +119,12 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
          */
         public static final PeaksIndicator MaxLines= new PeaksIndicator("Lines");
         
+		  @Override
         public String getListLabel() {
             return this.id;
         }
         
+		  @Override
         public javax.swing.Icon getListIcon() {
             return null;
         }
@@ -129,6 +132,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }
     
     protected class RebinListener implements PropertyChangeListener {
+		  @Override
         public void propertyChange(PropertyChangeEvent e) {
             update();
         }
@@ -166,6 +170,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         g2.dispose();
     }
     
+	 @Override
     protected void installRenderer() {
         DasCanvas canvas= parent.getCanvas();
         littleRow= new DasRow( canvas, 0.5,0.6 );
@@ -198,6 +203,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         mouseAdapter.addMouseModule( new MouseModule( p, new LengthDragRenderer(p,p.getXAxis(),p.getYAxis()), "Length" ) );
     }
     
+	 @Override
     protected void uninstallRenderer() {
     }
     
@@ -207,8 +213,10 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         throw new IllegalStateException("not supported");
     }
     
+	 @Override
     public void propertyChange(java.beans.PropertyChangeEvent e) {
-        // this code was intended to make it so the zaxis component would move up and down with the labelAxis.
+        // this code was intended to make it so the zaxis component would move up and down 
+		  // with the labelAxis.
       /*  DasLabelAxis axis= (DasLabelAxis)getYAxis();
        
         if ( axis!=null ) {
@@ -405,6 +413,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
     }
     
+	 @Override
     public DasAxis getZAxis() {
         return zAxis;
     }
@@ -422,6 +431,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             lowResRebinner= new AveragePeakTableRebinner();
         }
         
+		  @Override
         public DataSet rebin(DataSet ds, RebinDescriptor x, RebinDescriptor y) throws IllegalArgumentException, DasException {
             Datum xwidth= (Datum)ds.getProperty( "xTagWidth" );
             if ( xwidth==null ) xwidth= DataSetUtil.guessXTagWidth((TableDataSet)ds);
@@ -440,7 +450,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                     result= lowResRebinner.rebin( ds, x, y );
                 }
                 return result;
-            } catch ( Exception e ) {
+            } catch ( IllegalArgumentException | DasException e ) {
                 DasExceptionHandler.handle(e);
                 return null;
             }
@@ -491,6 +501,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         propertyChangeSupport.firePropertyChange(PROP_TRANSPARENTBACKGROUND, oldTransparentBackground, transparentBackground);
     }
 
+	 @Override
     public Element getDOMElement(Document document) {
         
         Element element = document.createElement("stackedHistogram");
@@ -499,7 +510,9 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         return element;
     }
     
-    public static Renderer processStackedHistogramElement(Element element, DasPlot parent, FormBase form) throws DasPropertyException, DasNameException, ParseException {
+    public static Renderer processStackedHistogramElement(Element element, DasPlot parent, FormBase form) 
+		 throws DasPropertyException, DasNameException, ParseException 
+	 {
         String dataSetID = element.getAttribute("dataSetID");
         
         Renderer renderer = new StackedHistogramRenderer( parent, (DataSetDescriptor)null, (DasAxis)null, (DasLabelAxis)parent.getYAxis() );
@@ -511,10 +524,12 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         return renderer;
     }
     
+	 @Override
     public String getListLabel() {
         return "stacked histogram";
     }
     
+	 @Override
     public Icon getListIcon() {
         return null;
     }

@@ -45,29 +45,57 @@ public class TableDataSetBuilder {
     
     private List zValues = new ArrayList();
     
-    private List planeIDs = new ArrayList(); {
-        planeIDs.add("");
-    }
+    private List planeIDs = new ArrayList();
     
     private Units xUnits = Units.dimensionless;
     
     private Units yUnits = Units.dimensionless;
     
-    private Map zUnitsMap = new HashMap(); {
-        zUnitsMap.put("", Units.dimensionless);
-    }
+    private Map zUnitsMap = new HashMap();
     
     private SortedSet yTagSet = new TreeSet(new DoubleArrayComparator());
     
     private Map properties = new HashMap();
-    private List<Map> tableProperties= new ArrayList<Map>();
+    private List<Map> tableProperties= new ArrayList<>();
     
-    /** Creates a new instance of TableDataSetBuilder */
-    public TableDataSetBuilder( Units xUnits, Units yUnits, Units zUnits ) {
-        setXUnits(xUnits);
-        setYUnits(yUnits);
-        setZUnits(zUnits);
+	 /** Creates a new instance of TableDataSetBuilder
+	  * This version assigns a 0-length string to the name of the first plane, and 
+	  * assumes that the zUnits are dimensionless.
+	  */
+    public TableDataSetBuilder( Units xUnits, Units yUnits) {
+		 setXUnits(xUnits);
+       setYUnits(yUnits);
+       
+       zUnitsMap.put("", Units.dimensionless);
+       planeIDs.add("");
     }
+	 
+    /** Creates a new instance of TableDataSetBuilder
+	  * This version assigns a 0-length string to the name of the first plane.
+	  */
+    public TableDataSetBuilder( Units xUnits, Units yUnits, Units zUnits ) {
+		 setXUnits(xUnits);
+       setYUnits(yUnits);
+       
+       zUnitsMap.put("", zUnits);
+		 planeIDs.add("");
+    }
+	 
+	 /** Create a new instance of TableDataSetBuilder
+	  * 
+	  * @param xUnits The X Axis Units
+	  * @param yUnits The Y Axis Units
+	  * @param zUnits The Z Axis Units
+	  * @param sPlane0Name A name for the 0th plane of the dataset
+	  */
+	 public TableDataSetBuilder( Units xUnits, Units yUnits, Units zUnits, String sPlane0Name ) 
+	 {
+		  setXUnits(xUnits);
+        setYUnits(yUnits);
+        zUnitsMap = new HashMap(); 
+        zUnitsMap.put(sPlane0Name, zUnits);
+        planeIDs.add(sPlane0Name);
+	 }
     
     public void setProperty(String name, Object value) {
         properties.put(name, value);
@@ -218,7 +246,12 @@ public class TableDataSetBuilder {
         yUnits = units;
     }
     
+	 /** Set the default Z-Units for the first <yscan> plane in the dataset.
+	  * 
+	  * @param units 
+	  */
     public void setZUnits(Units units) {
+		 
         setZUnits(units, "");
     }
     

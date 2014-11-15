@@ -83,11 +83,6 @@ public class CredentialsDialog extends JDialog{
       setTitle("Authorization Required");
       setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
       setName("Authorization"); // NOI18N
-      addKeyListener(new java.awt.event.KeyAdapter() {
-         public void keyTyped(java.awt.event.KeyEvent evt) {
-            formKeyTyped(evt);
-         }
-      });
       getContentPane().setLayout(new java.awt.GridBagLayout());
 
       lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/das2logo-64.png"))); // NOI18N
@@ -121,9 +116,9 @@ public class CredentialsDialog extends JDialog{
       getContentPane().add(jLabel4, gridBagConstraints);
 
       tfUser.setText("someone");
-      tfUser.addKeyListener(new java.awt.event.KeyAdapter() {
-         public void keyTyped(java.awt.event.KeyEvent evt) {
-            tfUserKeyTyped(evt);
+      tfUser.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            tfUserActionPerformed(evt);
          }
       });
       gridBagConstraints = new java.awt.GridBagConstraints();
@@ -137,9 +132,9 @@ public class CredentialsDialog extends JDialog{
       getContentPane().add(tfUser, gridBagConstraints);
 
       tfPasswd.setText("jPasswor");
-      tfPasswd.addKeyListener(new java.awt.event.KeyAdapter() {
-         public void keyTyped(java.awt.event.KeyEvent evt) {
-            tfPasswdKeyTyped(evt);
+      tfPasswd.addActionListener(new java.awt.event.ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            tfPasswdActionPerformed(evt);
          }
       });
       gridBagConstraints = new java.awt.GridBagConstraints();
@@ -196,20 +191,13 @@ public class CredentialsDialog extends JDialog{
 		setVisible(false);
    }//GEN-LAST:event_btnCancelActionPerformed
 
-   private void formKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyTyped
-      if(evt.getKeyCode() == KeyEvent.VK_ENTER){
-			m_nRet = JOptionPane.OK_OPTION;
-			setVisible(false);
-		}
-   }//GEN-LAST:event_formKeyTyped
+   private void tfPasswdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfPasswdActionPerformed
+     btnOKActionPerformed(evt);
+   }//GEN-LAST:event_tfPasswdActionPerformed
 
-   private void tfUserKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfUserKeyTyped
-      formKeyTyped(evt);
-   }//GEN-LAST:event_tfUserKeyTyped
-
-   private void tfPasswdKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfPasswdKeyTyped
-		formKeyTyped(evt);
-   }//GEN-LAST:event_tfPasswdKeyTyped
+   private void tfUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfUserActionPerformed
+     btnOKActionPerformed(evt);
+   }//GEN-LAST:event_tfUserActionPerformed
 
 
    // Variables declaration - do not modify//GEN-BEGIN:variables

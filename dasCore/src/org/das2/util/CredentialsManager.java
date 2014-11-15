@@ -1,27 +1,15 @@
 /* Part of the Das2 libraries, which the LGPL with class-path exception license */
 package org.das2.util;
 
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JSeparator;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import org.das2.system.DasLogger;
 import org.das2.system.LogCategory;
-import sun.font.CreatedFontTracker;
 
 
 /** Provides per-resource login credentials 

@@ -334,7 +334,8 @@ public class DataSetStreamHandler implements StreamHandler {
             Units xUnits = base != null ? base.getUnits() : pd.getXDescriptor().getUnits();
             Units yUnits = y.getYUnits();
             Units zUnits = y.getZUnits();
-            builder = new TableDataSetBuilder(xUnits, yUnits, zUnits);
+				
+            builder = new TableDataSetBuilder(xUnits, yUnits, zUnits, y.getName());
             this.packetDescriptor(pd);
         }
         
