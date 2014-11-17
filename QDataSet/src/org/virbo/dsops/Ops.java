@@ -6821,9 +6821,10 @@ public class Ops {
 
     /**
      * Reshape the dataset to remove the first dimension with length 1, reducing
-     * its rank by 1.  Dependencies are also preserved.
-     * @param ds
-     * @return
+     * its rank by 1.  Dependencies are also preserved.  If no indeces are found, then the dataset is returned.
+     * 
+     * @param ds rank N dataset
+     * @return the dataset, or rank N-1 dataset with the first 1-element dimension removed.
      */
     public static QDataSet reform(QDataSet ds) {
         int[] dsqube = DataSetUtil.qubeDims(ds);
@@ -6841,7 +6842,7 @@ public class Ops {
             }
         }
         if (foundDim == false) {
-            throw new IllegalArgumentException("there were no dimensions with length 1");
+            return ds;
         }
         int[] qube = new int[newQube.size()];
         for (int i = 0; i < newQube.size(); i++) {
