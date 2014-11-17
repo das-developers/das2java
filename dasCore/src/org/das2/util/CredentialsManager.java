@@ -258,8 +258,12 @@ public class CredentialsManager{
 	}
 	
 	////////////////////////// User Interaction ////////////////////////////////////
-	// This may need to move to different classes in the future
 	
+	/** Gather User Credentials
+	 * 
+	 * @param loc The Location in question
+	 * @return True if user hit OK, False if user canceled the operation
+	 */
 	protected synchronized boolean getCredentialsGUI(final Location loc) {
 		
 		// Check again to see if another thread managed to set the credentials before

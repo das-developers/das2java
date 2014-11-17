@@ -42,6 +42,7 @@ import java.io.*;
 import java.net.*;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.das2.CancelledOperationException;
 import org.das2.system.LogCategory;
 import org.das2.util.CredentialsManager;
 
@@ -73,7 +74,8 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     }
 
 	 @Override
-    public InputStream getInputStream(StreamDataSetDescriptor dsd, Datum start, Datum end) throws DasException {
+    public InputStream getInputStream(StreamDataSetDescriptor dsd, Datum start, Datum end) 
+		 throws DasException {
         String serverType="dataset";
 
         StringBuffer formData = new StringBuffer();
@@ -226,7 +228,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
 					// work, so invalidate them.
 					cm.invalidate(sLocId);
 					if(cm.getHttpBasicHash(sLocId) == null){
-						throw new DasIOException("Failed to gather credentials for " + sLocId);
+						throw new CancelledOperationException("Failed to gather credentials for "+sLocId);
 					}
 
 					// Try again...

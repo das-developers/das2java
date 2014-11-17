@@ -47,8 +47,7 @@ public class TableDataSetBuilder {
     
     private List planeIDs = new ArrayList();
     
-    private Units xUnits = Units.dimensionless;
-    
+    private Units xUnits = Units.dimensionless;  
     private Units yUnits = Units.dimensionless;
     
     private Map zUnitsMap = new HashMap();
