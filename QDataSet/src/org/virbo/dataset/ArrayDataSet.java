@@ -8,11 +8,13 @@ package org.virbo.dataset;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.CacheTag;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
+import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.virbo.dsops.Ops;
 
@@ -129,6 +131,60 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         throw new IllegalArgumentException("component type not supported: "+c );
 
     }
+    
+    /**
+     * ensure that there are no non-monotonic or repeat records, by removing
+     * the first N-1 records of N repeated records.  
+     * @param ds ArrayDataSet, which must be writable.
+     * @return dataset, possibly with records removed.
+     */
+    public static ArrayDataSet monotonicSubset( ArrayDataSet ds ) {
+        if ( ds.isImmutable() ) throw new IllegalArgumentException("dataset must be mutable");
+        
+        QDataSet sdep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
+        if ( sdep0==null && UnitsUtil.isTimeLocation( SemanticOps.getUnits(ds) ) ) {
+            sdep0= ds;
+        } else if ( sdep0==null ) {
+            return ds;
+        }
+        ArrayDataSet dep0= ArrayDataSet.maybeCopy( sdep0 ); // I don't think this will copy.
+        if ( !UnitsUtil.isTimeLocation( SemanticOps.getUnits(dep0) ) ) {
+            return ds;
+        }
+        if ( dep0.length()==0 ) return ds;
+        if ( dep0.rank()!=1 ) return ds;
+        QDataSet vdep0= Ops.valid(dep0);
+        
+        int[] rback= new int[dep0.length()];
+        rback[0]= 0;
+        double a= ds.value(0);
+        int index=1;
+        for ( int i=1; i<dep0.length(); i++ ) {
+            if ( vdep0.value(i)>0 ) {
+                double a1=dep0.value(i);
+                if ( a1>a ) {
+                    rback[index]= i;
+                    a= a1;
+                    index++;
+                }
+            }
+        }
+        QDataSet r= ArrayDataSet.wrap( rback, new int[] { index }, true);
+        int nrm= dep0.length()-1 - r.length();
+        if ( nrm>0 ) {
+            logger.log(Level.FINE, "ensureMono removes {0} points", nrm);
+            Class c= ds.getComponentType();
+            int[] idx= new int[r.length()+1];
+            for ( int i=0; i<r.length(); i++ ) idx[i]= (int)r.value(i);
+            idx[r.length()]= (int)dep0.length()-1;
+            ds.putProperty( QDataSet.DEPEND_0, null );
+            ds= ArrayDataSet.copy( c, new SortDataSet( ds, Ops.dataset(idx) ) );
+            Class depclass= dep0.getComponentType();
+            ds.putProperty( QDataSet.DEPEND_0, ArrayDataSet.copy( depclass, new SortDataSet( dep0, Ops.dataset(idx) ) ) );
+        }
+        return ds;
+    }
+    
 
     public int rank() {
         return rank;
