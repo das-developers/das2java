@@ -147,6 +147,9 @@ public class TableDataSetBuilder {
         for (int i = 0; i < planeIDs.length; i++) {
             String planeID = planeIDs[i];
             Units zUnits = (Units)zUnitsMap.get(planeID);
+            if ( zUnits==null && i==0 ) {
+                zUnits = (Units)zUnitsMap.get("");
+            }
             if (zUnits == null) {
                 zUnits = Units.dimensionless;
                 addPlane(planeID, zUnits);
