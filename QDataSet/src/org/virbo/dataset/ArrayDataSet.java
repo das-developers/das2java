@@ -171,6 +171,10 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         }
         int nrm= dep0.length() - index;
         if ( nrm>0 ) {
+            if ( index==1 ) {
+                logger.log(Level.FINE, "ensureMono removes all points, assume it's monotonic decreasing" );
+                return ds;
+            }
             logger.log(Level.FINE, "ensureMono removes {0} points", nrm);
             Class c= ds.getComponentType();
             int[] idx= new int[index];
