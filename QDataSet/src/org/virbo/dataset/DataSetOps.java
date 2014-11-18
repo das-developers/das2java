@@ -815,6 +815,55 @@ public class DataSetOps {
     }
 
     /**
+     * return the names of the dataset that can be unbundled.
+     * @param bundleDs
+     * @return and array of the bundle names.
+     * @throws IllegalArgumentException when bundleDs is not a bundle.
+     */
+    public static String[] bundleNames( QDataSet bundleDs ) {
+        
+        List<String> result= new ArrayList(bundleDs.length(0));
+        
+        QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
+
+        if ( bundle1==null ) {
+            bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
+            if ( bundle1!=null && bundle1.rank()>1 ) {
+                throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+            } else if ( bundle1!=null ) {
+                Units u= SemanticOps.getUnits( bundle1 );
+                for ( int i2=0; i2<bundle1.length(); i2++ ) {
+                    result.add( Ops.saferName( u.createDatum( bundle1.value(i2) ).toString() ) );
+                }
+            } else {
+                throw new IllegalArgumentException("expected to find BUNDLE_1 or DEPEND_1 with ordinal units." );
+            }
+        } else {
+            for ( int j=0; j<bundle1.length(); j++ ) { // allow label to be used to access data, since old vap files may contain these.
+                String n1= (String) bundle1.property( QDataSet.NAME, j );
+                if ( n1!=null ) {
+                    n1= Ops.saferName(n1);
+                    result.add(n1);
+                } else {
+                    n1= (String) bundle1.property( QDataSet.LABEL, j );
+                    if ( n1!=null ) {
+                        n1= Ops.saferName(n1);
+                        result.add(n1);
+                    } else {
+                        n1= (String) bundle1.property( QDataSet.ELEMENT_LABEL, j );
+                        if ( n1!=null ) {
+                            n1= Ops.saferName(n1);
+                            result.add(n1);
+                        }
+                    }
+                    
+                } 
+            }
+        }
+        return result.toArray( new String[0] );
+    }
+    
+    /**
      * return the index of the named bundled dataset.  This cleans up
      * the name so that is contains just a Java-style identifier.  Also, ch_1 is
      * always implicitly index 1.  
