@@ -157,7 +157,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         
         int[] rback= new int[dep0.length()];
         rback[0]= 0;
-        double a= ds.value(0);
+        double a= dep0.value(0);
         int index=1;
         for ( int i=1; i<dep0.length(); i++ ) {
             if ( vdep0.value(i)>0 ) {
@@ -169,14 +169,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 }
             }
         }
-        QDataSet r= ArrayDataSet.wrap( rback, new int[] { index }, true);
-        int nrm= dep0.length()-1 - r.length();
+        int nrm= dep0.length() - index;
         if ( nrm>0 ) {
             logger.log(Level.FINE, "ensureMono removes {0} points", nrm);
             Class c= ds.getComponentType();
-            int[] idx= new int[r.length()+1];
-            for ( int i=0; i<r.length(); i++ ) idx[i]= (int)r.value(i);
-            idx[r.length()]= (int)dep0.length()-1;
+            int[] idx= new int[index];
+            System.arraycopy( rback, 0, idx, 0, index );
             ds.putProperty( QDataSet.DEPEND_0, null );
             ds= ArrayDataSet.copy( c, new SortDataSet( ds, Ops.dataset(idx) ) );
             Class depclass= dep0.getComponentType();
