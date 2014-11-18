@@ -266,8 +266,8 @@ public class DataSetUtilTest extends TestCase {
         System.out.println("guessCadence");
         QDataSet xds = null;
         QDataSet yds = null;
-        Double expResult = null;
-        Double result = DataSetUtil.guessCadence(xds, yds);
+        QDataSet expResult = null;
+        QDataSet result = DataSetUtil.guessCadenceNew(xds, yds);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -279,8 +279,8 @@ public class DataSetUtilTest extends TestCase {
     public void testGuessCadence_QDataSet() {
         System.out.println("guessCadence");
         QDataSet xds = null;
-        Double expResult = null;
-        Double result = DataSetUtil.guessCadence(xds);
+        QDataSet expResult = null;
+        QDataSet result = DataSetUtil.guessCadence(xds,null);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
