@@ -1526,137 +1526,34 @@ public class DataSetUtil {
         }
     }
 
-
+    
     /**
-     * calculate cadence by averaging consistent inter-point distances, 
-     * taking invalid measurements into account.  This number needs to be interpretted
-     * in the context of the dataset using the properties UNITS and
-     * SCALE_TYPE.  If SCALE_TYPE is "log", then this number should be interpreted
-     * as the ratiometric spacing in natural log space.  
-     * Math.log( xds.value(1) ) - Math.log( xds.value(0) ) or
-     * Math.log( xds.value(1) / xds.value(0) )
-     *
-     * @deprecated  use guessCadenceNew which is more robust.
-     * @return double in the units of xds's units.getOffsetUnits(), or null if
-     * no cadence is detected.
+     * return the cadence for the given x tags.  The goal will be a rank 0
+     * dataset that describes the intervals, but this will also return a rank 1
+     * dataset when multiple cadences are found.
+     * @param xds the x tags, which may not contain fill values for non-null result.
+     * @param yds the y values, which if non-null is only used for fill values.  This is only used if it is rank 1.
+     * @return rank 0 or rank 1 dataset.
      */
-    public static Double guessCadence(QDataSet xds, QDataSet yds) {
-        RankZeroDataSet d= (RankZeroDataSet) xds.property( QDataSet.CADENCE );
-        if ( d!=null ) {
-            if ( "log".equals(xds.property(QDataSet.SCALE_TYPE)) ) {
-                return DataSetUtil.asDatum(d).doubleValue(Units.logERatio);
-            } else {
-                return d.value();
+    public static QDataSet guessCadence( QDataSet xds, QDataSet yds ) {
+        
+        QDataSet dxds= Ops.diff( xds );
+        dxds= Ops.divide( Ops.add( Ops.append( dxds.slice(0), dxds ), Ops.append( dxds, dxds.slice(dxds.length()-1) ) ), Ops.dataset(2) );
+        
+        QDataSet hh= Ops.autoHistogram( dxds );
+        
+        int maxhh= -1;
+        int imaxhh= -1;
+        for ( int i=0; i<hh.length(); i++ ) {
+            if ( hh.value(i)>maxhh) {
+                maxhh= (int)hh.value(i);
+                imaxhh= i;
             }
         }
+        QDataSet dephh= (QDataSet)hh.property(QDataSet.DEPEND_0);
         
-        if (yds == null) {
-            yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
-        }
-        assert (xds.length() == yds.length());
-
-        if ( yds.rank()>1 ) { //TODO: check for fill columns.
-            yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
-        }
-        
-        Units u = (Units) yds.property(QDataSet.UNITS);
-        if (u == null) {
-            u = Units.dimensionless;
-        }
-        double cadence = Double.MAX_VALUE;
-
-        if ( xds.length()<2 ) return cadence;
-
-        // calculate average cadence for points consistent with max.  Preload to avoid extra branch.
-        double cadenceSMax = 0;
-        int cadenceNMax = 1;
-        
-        // calculate average cadence for points consistent with min.  Preload to avoid extra branch.
-        double cadenceSMin = Double.MAX_VALUE;
-        int cadenceNMin = 1;
-
-        int i = 0;
-        double x0;
-        while (i < xds.length() && !u.isValid(yds.value(i))) {
-            i++;
-        }
-        if (i < yds.length()) {
-            x0 = xds.value(i);
-        } else {
-            return Double.MAX_VALUE;
-        }
-        final boolean log= "log".equals( xds.property( QDataSet.SCALE_TYPE ) );
-        for (i++; i < xds.length() && i<DataSetOps.DS_LENGTH_LIMIT; i++) {
-            if (u.isValid(yds.value(i))) {
-                double cadenceAvgMin;
-                cadenceAvgMin = cadenceSMin / cadenceNMin;
-                double cadenceAvgMax;
-                cadenceAvgMax = cadenceSMax / cadenceNMax;
-                if (log) {
-                    cadence = Math.abs( Math.log( xds.value(i) / x0 ) );
-                } else {
-                    cadence = Math.abs( xds.value(i) - x0 );
-                }
+        return dephh.slice(imaxhh);
                 
-                if ( cadence < 0.5 * cadenceAvgMin && cadenceNMin < 10 ) {  // set the initial value
-                    cadenceSMin = cadence;
-                    cadenceNMin = 1;
-                    cadenceAvgMin = cadence; // set this, since cadenceMax uses it.
-                } else if (cadence > 0.5 * cadenceAvgMin && cadence < 1.5 * cadenceAvgMin) {
-                    cadenceSMin += cadence;
-                    cadenceNMin += 1;
-                }
-
-                if ( cadence > 1.5 * cadenceAvgMax && cadenceNMax < 10 && cadence < 100 * cadenceAvgMin ) {  // set the initial value
-                    cadenceSMax = cadence;
-                    cadenceNMax = 1;
-                } else if (cadence > 0.5 * cadenceAvgMax && cadence < 1.5 * cadenceAvgMax) {
-                    cadenceSMax += cadence;
-                    cadenceNMax += 1;
-                }
-                
-                x0 = xds.value(i);
-            }
-        }
-        
-        double avgMin= cadenceSMin / cadenceNMin;
-        double avgMax= cadenceSMax / cadenceNMax;
-        
-        QDataSet hist= Ops.histogram( Ops.diff(xds), 0, avgMin*10, avgMin*10/99 );
-        
-        int maxPeak= -1;
-        int minPeak= -1;
-        int peakHeight= Math.max( 1, xds.length() / 100 );
-        for ( i=0; i<hist.length(); i++ ) {  // expect to see just one peak, otherwise use max peak.
-            // TODO: verify that the cadence is in the middle of the 10th bin.  
-            // TODO: check for peaks at integer multiples of the cadence.
-            if ( hist.value(i)>=peakHeight ) {
-                if ( minPeak==-1 ) minPeak= i;
-                maxPeak= i;
-                peakHeight= (int)hist.value(i);
-            }
-        }
-        if ( maxPeak>minPeak ) {
-            return avgMax*2;
-        } else {
-            return avgMin;
-        }    
-    }
-
-    /**
-     * calculate cadence by averaging the smallest set of consistent inter-point
-     * distance.  Assumes all points are valid.  This number needs to be interpreted
-     * in the context of the dataset, for example using the properties UNITS and
-     * SCALE_TYPE.  If SCALE_TYPE is "log", then this number should be interpreted
-     * as the ratiometric spacing in natural log space.  
-     * Math.log( xds.value(1) ) - Math.log( xds.value(0) ) or
-     * Math.log( xds.value(1) / xds.value(0) )
-     * 
-     * result can be null, indicating that no cadence can be established.
-     * @deprecated use guessCadenceNew which is more robust.
-     */
-    public static Double guessCadence(QDataSet xds) {
-        return guessCadence(xds, null);
     }
 
     /**
