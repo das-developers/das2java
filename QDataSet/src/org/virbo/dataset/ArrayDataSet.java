@@ -526,6 +526,19 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @param ds rank N dataset of the same type and geometry as ths.
      */
     public static ArrayDataSet append( ArrayDataSet ths, ArrayDataSet ds ) {
+        if ( ths==null ) return ds;
+        if ( ds==null ) throw new NullPointerException("ds is null");
+        
+        if ( ths.rank()==ds.rank()-1 ) {
+            Units u= SemanticOps.getUnits(ths);
+            ths= ArrayDataSet.create( ths.rank()+1, 1, ths.len0, ths.len1, ths.len2, ths.getBack() );
+            ths.putProperty( QDataSet.UNITS,u);
+        }
+        if ( ths.rank()-1==ds.rank() ) {
+            Units u= SemanticOps.getUnits(ds);
+            ds= ArrayDataSet.create( ds.rank()+1, 1, ds.len0, ds.len1, ds.len2, ds.getBack() );
+            ds.putProperty( QDataSet.UNITS,u);
+        }
         if ( ds.rank()!=ths.rank ) throw new IllegalArgumentException("rank mismatch");
         if ( ds.len1!=ths.len1 ) throw new IllegalArgumentException("len1 mismatch");
         if ( ds.len2!=ths.len2 ) throw new IllegalArgumentException("len2 mismatch");
