@@ -1526,6 +1526,52 @@ public class DataSetUtil {
         }
     }
 
+    /**
+     * use K-means algorithm to find N means in a rank 1 dataset.  
+     * @param xds dataset containing data from N normal distributions
+     * @param n number of divisions.
+     * @return dataset containing the index for each point.
+     * NOT FOR PRODUCTION USE...
+     */
+    public static QDataSet kmeansCadence( QDataSet xds, int n ) {
+        boolean done= false;
+        double[] boundaries;
+        QDataSet ext= Ops.extent(xds);
+        double min= ext.value(0);
+        double max= ext.value(1);
+        boundaries= new double[n-1];
+        for ( int i=0; i<n-1; i++ ) {
+            boundaries[i]= min + ( i+1 ) * ( max-min ) / n;
+        }
+        double[] means= new double[n];
+        double[] ww= new double[n];
+        int[] bs= new int[xds.length()];
+        int b= 0; // the current 1-D triangle
+        while ( !done ) {
+            for ( int i=0; i<xds.length(); i++ ) {
+                double d= xds.value(i);
+                while ( b < n-1 && d >= boundaries[b]) b++;
+                while ( b > 0 &&  d < boundaries[b-1] ) b--;
+                means[b] += d;
+                ww[b] += 1;
+                bs[i]= b;
+            }
+            done= true;
+            for ( int j=0; j<n-1; j++ ) {
+                double bb= ( means[j]/ww[j] + means[j+1]/ww[j+1] ) / 2;
+                if ( bb!=boundaries[j] ) {
+                    done= false;
+                    boundaries[j]= bb;
+                }
+            }
+            means= new double[n];
+            ww= new double[n];
+            System.err.println( boundaries[0] );
+        }
+        throw new IllegalArgumentException("NOT FOR PRODUCTION USE");
+        //return DDataSet.wrap(boundaries,SemanticOps.getUnits(xds));
+        
+    }
     
     /**
      * return the cadence for the given x tags.  The goal will be a rank 0
