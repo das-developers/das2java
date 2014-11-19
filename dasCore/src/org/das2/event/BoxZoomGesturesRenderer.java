@@ -25,6 +25,7 @@ package org.das2.event;
 import org.das2.graph.DasCanvasComponent;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * BoxZoom renderer that shows delegation to X and Y axis zooms.
@@ -76,9 +77,20 @@ public class BoxZoomGesturesRenderer extends BoxRenderer {
         return Type.BOX;
     }
 
+    //java.util.List<Point> pts= new ArrayList();
+        
     public Rectangle[] renderDrag(Graphics g1, Point p1, Point p2) {
         Graphics2D g= (Graphics2D) g1;
-                
+//
+//        if ( Point.distance( p1.x, p1.y, p2.x, p2.y ) < 5 ) {
+//            pts.clear();
+//        } else {
+//            pts.add(p2);
+//        }
+//        for ( Point p: pts ) {
+//            g1.drawRect( p.x, p.y, 1, 1 );
+//        }        
+        
         if ( gr.isGesture( p1, p2 ) ) {
             Rectangle[] rr= gr.renderDrag( g, p1, p2 );
             dirtyBounds= rr[0];
