@@ -37,7 +37,7 @@ public class Selector {
 			throw new IllegalArgumentException(String.format("Constraint format is %s, "
 				+ "expected %s", cons.getFormat(), m_format));
 		if(m_lConstraints == null){
-			m_lConstraints = new LinkedList<Constraint>();
+			m_lConstraints = new LinkedList<>();
 		}
 		m_lConstraints.add(cons);
 	}
@@ -71,6 +71,22 @@ public class Selector {
 	/** Grab a constraint to work with */
 	public Constraint getConstraint(int i){
 		return m_lConstraints.get(i);
+	}
+	
+	/** Get a constraint by type.
+	 * 
+	 * @param op The type of comparision to check.
+	 * @return null if the given comparison isn't one of the one's specified, otherwise
+	 *         a constraint object is returned.  It will have to be queiried to find it's
+	 *         value type.
+	 */
+	public Constraint getConstraint(Constraint.Op op){
+		for(Constraint cons: m_lConstraints){
+			if(cons.getOp() == op){
+				return cons;
+			}
+		}
+		return null;
 	}
 
 	// Check that we can use the convenience rountines
