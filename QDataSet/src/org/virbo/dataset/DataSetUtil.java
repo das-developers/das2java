@@ -1560,8 +1560,17 @@ public class DataSetUtil {
             }
             done= true;
             for ( int j=0; j<n; j++ ) {
-                means[j]= means[j]/ww[j];
+                if ( ww[j]==0 ) {
+                    for ( int i=0; i<n-1; i++ ) {
+                       boundaries[i]= min + ( i+1 ) * ( max-min ) / n;
+                    }
+                    done= false;
+                    throw new IllegalArgumentException("algorithm fails");
+                } else {
+                    means[j]= means[j]/ww[j];
+                }
             }
+            if ( !done ) continue;
             for ( int j=0; j<n-1; j++ ) {
                 double bb= ( means[j] + means[j+1] ) / 2;
                 if ( bb!=boundaries[j] ) {
@@ -1569,6 +1578,7 @@ public class DataSetUtil {
                     boundaries[j]= bb;
                 }
             }
+            System.err.println("boundaries[0]="+boundaries[0]);
         }
         IDataSet result= IDataSet.wrap(bs);
         result.putProperty( QDataSet.DEPEND_0, xds );
