@@ -13,6 +13,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
 import java.util.logging.Level;
 import org.das2.datum.Units;
@@ -1531,7 +1532,6 @@ public class DataSetUtil {
      * @param xds dataset containing data from N normal distributions
      * @param n number of divisions.
      * @return dataset containing the index for each point.
-     * NOT FOR PRODUCTION USE...
      */
     public static QDataSet kmeansCadence( QDataSet xds, int n ) {
         boolean done= false;
@@ -1543,11 +1543,13 @@ public class DataSetUtil {
         for ( int i=0; i<n-1; i++ ) {
             boundaries[i]= min + ( i+1 ) * ( max-min ) / n;
         }
-        double[] means= new double[n];
-        double[] ww= new double[n];
+        double[] means=null;
+        double[] ww;
         int[] bs= new int[xds.length()];
         int b= 0; // the current 1-D triangle
         while ( !done ) {
+            means= new double[n];
+            ww= new double[n];            
             for ( int i=0; i<xds.length(); i++ ) {
                 double d= xds.value(i);
                 while ( b < n-1 && d >= boundaries[b]) b++;
@@ -1557,20 +1559,23 @@ public class DataSetUtil {
                 bs[i]= b;
             }
             done= true;
+            for ( int j=0; j<n; j++ ) {
+                means[j]= means[j]/ww[j];
+            }
             for ( int j=0; j<n-1; j++ ) {
-                double bb= ( means[j]/ww[j] + means[j+1]/ww[j+1] ) / 2;
+                double bb= ( means[j] + means[j+1] ) / 2;
                 if ( bb!=boundaries[j] ) {
                     done= false;
                     boundaries[j]= bb;
                 }
             }
-            means= new double[n];
-            ww= new double[n];
-            System.err.println( boundaries[0] );
         }
-        throw new IllegalArgumentException("NOT FOR PRODUCTION USE");
-        //return DDataSet.wrap(boundaries,SemanticOps.getUnits(xds));
-        
+        IDataSet result= IDataSet.wrap(bs);
+        result.putProperty( QDataSet.DEPEND_0, xds );
+        Map<String,Object> userProps= new HashMap<String, Object>();
+        userProps.put( "means", means );
+        result.putProperty( QDataSet.USER_PROPERTIES, userProps );
+        return result;
     }
     
     /**
