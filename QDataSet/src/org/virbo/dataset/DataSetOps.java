@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -2021,6 +2022,24 @@ public class DataSetOps {
                         }
                         fillDs= n;
                     }
+                } else if ( cmd.equals("|setDepend1Cadence" ) ) {
+                    String arg= getStringArg( s.next() );
+                    fillDs= Ops.copy(fillDs);
+                    QDataSet dep1= (QDataSet) fillDs.property(QDataSet.DEPEND_1);
+                    if ( dep1!=null ) {
+                        Units dep1units= SemanticOps.getUnits(dep1);
+                        Datum news;
+                        try {
+                            news= dep1units.getOffsetUnits().parse(arg);
+                        } catch ( ParseException ex ) {
+                            news= DatumUtil.parse(arg);
+                        } catch ( InconvertibleUnitsException ex ) {
+                            news= DatumUtil.parse(arg);
+                        }
+                        
+                        MutablePropertyDataSet mdep0= Ops.putProperty( dep1, QDataSet.CADENCE, DataSetUtil.asDataSet( news ) );
+                        fillDs= Ops.putProperty( fillDs, QDataSet.DEPEND_1, mdep0 );
+                    } 
                 } else if ( cmd.equals("|add") ) { 
                     String arg= getStringArg( s.next() );
                     Datum d= SemanticOps.getUnits(fillDs).parse(arg);
