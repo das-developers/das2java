@@ -2065,6 +2065,55 @@ public class DataSetOps {
     }
 
     /**
+     * indicate if this one operator changes the dimensions.  For example, |smooth(5) doesn't
+     * change the dimensions.
+     * @param p
+     * @return 
+     */
+    public static boolean changesDimensions( String p ) {
+        if ( p.equals("|smooth") ) {
+            return false;
+        } else if ( p.equals("|nop") ) {
+            return false;
+        } else if ( p.equals("|trim") ) {
+            return false;
+        } else if ( p.equals("|magnitude") ) {
+            return false;
+        } else if ( p.equals("|abs") ) {
+            return false;
+        } else if ( p.equals("|hanning") ) {
+            return false;
+        } else if ( p.equals("|butterworth") ) {
+            return false;
+        } else if ( p.equals("|detrend") ) {
+            return false;
+        } else if ( p.equals("|medianFilter") ) {
+            return false;
+        } else if ( p.equals("|copy") ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    /**
+     * return the next command that changes dimensions.
+     * @param s0
+     * @return 
+     */
+    private static String nextDimensionChangingCommand( Scanner s0 ) {
+        while ( s0.hasNext() ) {
+            String cmd= s0.next();
+            if ( cmd.startsWith("|") ) {
+                if ( changesDimensions(cmd) ) {
+                    return cmd;
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
      * indicate if the operators change dimensions of the dataset.  Often
      * this will result in true when the dimensions do not change, this is the better way to err.
      * @param c0 process string like "slice0(0)"
@@ -2078,9 +2127,9 @@ public class DataSetOps {
         Scanner s1= new Scanner( c1 );
         s1.useDelimiter("[\\(\\),]");
         boolean slicesChangesDim= false;
-        while ( s0.hasNext() && s1.hasNext() ) {
-            String cmd0= s0.next();
-            String cmd1= s1.next();
+        String cmd0= nextDimensionChangingCommand( s0 );
+        String cmd1= nextDimensionChangingCommand( s1 );
+        while ( cmd0!=null && cmd1!=null ) {
             if ( !cmd1.equals(cmd0) ) {
                 return true;
             }
@@ -2099,31 +2148,12 @@ public class DataSetOps {
                         s1.next();
                     }
                 }
-                if ( s0.hasNext() ) s0.next(); // ?? why TODO: verify this
-            } else if (cmd0.startsWith("|slice") && cmd0.length() > 6) {
-                s0.next();
-                s1.next();
-            } else if (cmd0.equals("|smooth") ) {
-                s0.nextInt();
-                s1.nextInt();
-            } else if (cmd0.equals("|hanning") ) {
-                s0.nextInt();
-                s1.nextInt();
-            } else if (cmd0.equals("|fftPower") ) {
-                s0.nextInt();
-                s1.nextInt();
-                if ( s0.hasNextInt() && s1.hasNextInt() ) {
-                    s0.nextInt();  // don't care if they change the slide
-                    s1.nextInt();            
-                }
-                Pattern p= Pattern.compile("\'[a-zA-Z0-9_]*\'");
-                if ( s0.hasNext(p) && s1.hasNext(p) ) { // don't care if they change the window
-                    s0.next();
-                    s1.next();    
-                }
             }
+            cmd0= nextDimensionChangingCommand( s0 );
+            cmd1= nextDimensionChangingCommand( s1 );                
         }
-        boolean res= slicesChangesDim || s0.hasNext() || s1.hasNext();
+        
+        boolean res= slicesChangesDim || cmd0!=null || cmd1!=null;
         logger.log(Level.FINE, "  changesDimensions {0} , {1} ->{2}", new Object[]{c0, c1, res});
         return res;
     }
