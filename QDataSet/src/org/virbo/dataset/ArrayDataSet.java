@@ -133,14 +133,57 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
     
     /**
+     * ensure that there are no non-monotonic or repeat records, by starting at the middle
+     * of the dataset and finding the monotonic subsection.  The input need not be writable.
+     * @param ds ArrayDataSet, which must be writable.
+     * @return dataset, possibly with records removed.
+     */
+    public static ArrayDataSet monotonicSubset2( ArrayDataSet ds ) {
+        
+        QDataSet ssdep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
+        if ( ssdep0==null && UnitsUtil.isTimeLocation( SemanticOps.getUnits(ds) ) ) {
+            ssdep0= ds;
+        } else if ( ssdep0==null ) {
+            return ds;
+        }
+        
+        int mid= ssdep0.length()/2;
+        int start=0;
+        for ( int i=mid-1; i>0; i-- ) { // trim the left side
+            if ( ssdep0.value(i)>=ssdep0.value(i+1) ) {
+                start= i+1;
+                break;
+            }
+        }
+        int stop= ssdep0.length();
+        for ( int i=mid+1; i<ssdep0.length(); i++ ) { // trim the right side
+            if ( ssdep0.value(i-1)>=ssdep0.value(i) ) {
+                stop= i-1;
+                break;
+            }
+        }
+        if ( start>0 || stop<ssdep0.length() ) {
+            ds= (ArrayDataSet)ds.trim(start,stop);
+            return ds;
+        } else {
+            return ds;
+        }
+        
+    }
+    
+    /**
      * ensure that there are no non-monotonic or repeat records, by removing
      * the first N-1 records of N repeated records.  
      * @param ds ArrayDataSet, which must be writable.
      * @return dataset, possibly with records removed.
      */
     public static ArrayDataSet monotonicSubset( ArrayDataSet ds ) {
-        if ( ds.isImmutable() ) throw new IllegalArgumentException("dataset must be mutable");
         
+        if ( ds.isImmutable() ) {
+            ds= ArrayDataSet.copy(ds);
+            logger.warning("immutabilty forced copy.");
+        }
+               
         QDataSet sdep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
         if ( sdep0==null && UnitsUtil.isTimeLocation( SemanticOps.getUnits(ds) ) ) {
             sdep0= ds;
