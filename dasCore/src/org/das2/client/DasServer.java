@@ -44,8 +44,12 @@ import org.das2.DasException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-/**
+/** Represents a remote Das 2.1 compliant server.  
  *
+ * Use the create() method to instantiate new Das 2 server objects.  Each call to
+ * create() will only allocate a new server instance if no server matching the given URL
+ * has already been created.  
+ * 
  * @author  jbf
  * A DasServer is the object that holds the methods of a remote das server.
  * These include, for example, getLogo() which returns a graphical mnemonic
@@ -54,17 +58,28 @@ import org.w3c.dom.Element;
 
 public class DasServer {
 
-    private final String host;
-    private final String path;
-    private final int port;
-    private final HashMap keys; // <key>
+    private String sProto;
+    private String host;
+    private String path;
+    private int port;
     
+	 @Deprecated
+    private final HashMap keys; // Holds a list of all non-http auth das2 server keys
+	 
+	 //Probably dead code, let's see
+    //private Key key;
+
     private static final Logger logger= DasLogger.getLogger( DasLogger.DATA_TRANSFER_LOG );
 
-    private static final HashMap instanceHashMap= new HashMap();
+	 /* Holds the global list of Das2 Server objects */
+    private static HashMap instanceHashMap= new HashMap();
 
-    public static final DasServer plasmaWaveGroup;
-    public static final DasServer sarahandjeremy;
+	 @Deprecated
+    public static DasServer plasmaWaveGroup;
+	 
+	 @Deprecated
+    public static DasServer sarahandjeremy;
+	 
     static {
         try {
             plasmaWaveGroup= DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/das2Server"));
@@ -78,8 +93,28 @@ public class DasServer {
         }
     }
 
-    /** Creates a new instance of DasServer */
-    private DasServer(String host, String path) {
+	/** Class to represent know information about an item in a list of data sources.
+	 * @author cwp
+	 */
+	public class DataSrcListItem {
+		private boolean bDirectory;
+		private String sName;
+		private String sDesc;
+		/** Create a data source item with a description string */
+		public DataSrcListItem(boolean bDirectory, String sName, String sDesc){
+			this.bDirectory = bDirectory;
+			this.sName = sName;
+			this.sDesc = sDesc;
+		}
+		public boolean isDirectory(){return bDirectory;}
+		public boolean isDataSource(){return !bDirectory;}
+		public String name(){return sName;}
+		public String description(){return sDesc;}
+		@Override
+		public String toString(){return sName;}
+	}
+	 
+    private DasServer(String sProto, String host, String path) {
         String[] s= host.split(":");
         if ( s.length>1 ) {
             this.port= Integer.parseInt(s[1]);
@@ -87,38 +122,57 @@ public class DasServer {
         } else {
             port= -1;
         }
+		  this.sProto = sProto;
         this.host= host;
         this.path= path;
         this.keys= new HashMap();
     }
 
+	 /** Provide the Das2 Server location.  
+	  * Note that more than one Das2 server may be present on a single host web-site.  
+	  * @return A URL string containing protocol, host and path information.
+	  */
     public String getURL() {
         if ( port==-1 ) {
-            return "http://"+host+path;
+            return sProto+"://"+host+path;
         } else {
-            return "http://"+host+":"+port+path;
+            return sProto+"://"+host+":"+port+path;
         }
     }
 
+	 /** Get a Das2 server instance.
+	  * 
+	  * @param url A Das2 resource URL.  Only the protocol, host, port and path information
+	  *            are used.  All other items, such as a GET query are ignored.
+	  * 
+	  * @return If a server matching the given url's protocol, host and path has already
+	  * been created, that instance is returned, otherwise a new instance is created.
+	  */
     public static DasServer create( URL url ) {
+		  String proto = url.getProtocol();
         String host= url.getHost();
         int port = url.getPort();
         if ( port!=-1 ) {
             host+= ":"+port;
         }
-        String key= "http://" + host + url.getPath();
+        String key= proto+"://" + host + url.getPath();
         if ( instanceHashMap.containsKey( key ) ) {
             logger.log( Level.FINE, "Using existing DasServer for {0}", url);
             return (DasServer) instanceHashMap.get( key );
         } else {
             String path= url.getPath();
             logger.log( Level.FINE, "Creating DasServer for {0}", url);
-            DasServer result= new DasServer(host,path);
+            DasServer result= new DasServer(proto, host, path);
             instanceHashMap.put(key,result);
             return result;
         }
     }
 
+	 /** Query the remote DasServer for it's id string.
+	  * For Das 2.1 servers this is handled by sending the GET query ?server=id.
+	  * 
+	  * @return A string containing the id, or the empty string if the query failed
+	  */
     public String getName() {
         String formData= "server=id";
         InputStream in=null;
@@ -183,7 +237,7 @@ public class DasServer {
 
         InputStream in=null;
         try {
-            URL server= new URL("http",host,port,path+"?"+formData);
+            URL server= new URL(sProto,host,port,path+"?"+formData);
 
             logger.log( Level.FINE, "connecting to {0}", server);
 
@@ -211,7 +265,7 @@ public class DasServer {
         String formData= "server=list";
         InputStream in=null;
         try {
-            URL server= new URL("http",host,port,path+"?"+formData);
+            URL server= new URL(sProto,host,port,path+"?"+formData);
 
             logger.log( Level.FINE, "connecting to {0}", server);
 
@@ -270,7 +324,7 @@ public class DasServer {
 
     /**
      * Return a tree of the datasets and folders, listing the sub-folders 
-     * first in a folder.
+     * first in a folder.  Node user objects are 
      * 
      * 2014-10-08: There can be pipe characters in the response. https://sourceforge.net/p/autoplot/feature-requests/393/
      * @param uin input stream 
@@ -281,16 +335,21 @@ public class DasServer {
 
         BufferedReader in = new BufferedReader( new InputStreamReader(uin) );
 
-        DefaultMutableTreeNode root =
-        new DefaultMutableTreeNode( getURL(), true );
+		  DataSrcListItem rootData = new DataSrcListItem(true, getURL(), null);
+		  
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(rootData, true );
         DefaultTreeModel model = new DefaultTreeModel(root, true);
         String line = in.readLine();
 
         while (line != null) {
+			  String sDesc = null;
             int ipipe= line.indexOf('|');
             if ( ipipe>-1 ) {
-                line= line.substring(0,ipipe).trim();
-            }
+					sDesc = line.substring(ipipe+1).trim();
+					if(sDesc.isEmpty()) sDesc = null;
+               line = line.substring(0,ipipe).trim();
+				}
+				
             DefaultMutableTreeNode current = root;
             StringTokenizer tokenizer = new StringTokenizer(line, "/");
             token: while (tokenizer.hasMoreTokens()) {
@@ -298,16 +357,13 @@ public class DasServer {
                 for (int index = 0; index < current.getChildCount(); index++) {
                     String str = current.getChildAt(index).toString();
                     if (str.equals(tok)) {
-                        current =
-                        (DefaultMutableTreeNode)current.getChildAt(index);
+                        current = (DefaultMutableTreeNode)current.getChildAt(index);
                         continue token;
                     }
                 }
-                DefaultMutableTreeNode node =
-                new DefaultMutableTreeNode(tok,
-                (tokenizer.hasMoreElements()
-                ? true
-                : line.endsWith("/")));
+					 boolean bDir = tokenizer.hasMoreElements() ? true : line.endsWith("/");
+					 DataSrcListItem dsItem = new DataSrcListItem(bDir, tok, sDesc);
+                DefaultMutableTreeNode node = new DefaultMutableTreeNode(dsItem, bDir);
                 current.add(node);
                 current = node;
             }
@@ -324,7 +380,7 @@ public class DasServer {
     public StreamDescriptor getStreamDescriptor( URL dataSetID ) throws DasException {
         try {
             String dsdf = dataSetID.getQuery().split("&")[0];
-            URL url = new URL("http", host, port, path+"?server=dsdf&dataset=" + dsdf);
+            URL url = new URL(sProto, host, port, path+"?server=dsdf&dataset=" + dsdf);
 
             logger.log( Level.FINE, "connecting to {0}", url);
             URLConnection connection = url.openConnection();
@@ -333,8 +389,18 @@ public class DasServer {
             String[] s1= contentType.split(";"); // dump charset info
             contentType= s1[0];
 
-            if (contentType.equalsIgnoreCase("text/plain")) {
-                PushbackReader reader = new PushbackReader(new InputStreamReader(connection.getInputStream()), 4);
+				InputStream inStream = null;
+				if(connection instanceof HttpURLConnection){
+					HttpURLConnection httpConn = (HttpURLConnection) connection;
+					int nStatus = httpConn.getResponseCode();
+					if(nStatus >= 400)
+						inStream = httpConn.getErrorStream();
+				}
+				if(inStream == null) inStream = connection.getInputStream();
+
+            if (contentType.equalsIgnoreCase("text/plain") ||
+					 contentType.equalsIgnoreCase("text/vnd.das2.das2stream") ) {
+                PushbackReader reader = new PushbackReader(new InputStreamReader(inStream), 4);
                 char[] four = new char[4];
                 int count= reader.read(four);
                 if ( count!=4 ) throw new IllegalArgumentException("failed to read four characters");
@@ -386,6 +452,8 @@ public class DasServer {
 
     }
 
+	 /** Handles key based authentication */
+	 @Deprecated
     public Key authenticate( String user, String passCrypt) {
         try {
             Key result= null;
@@ -421,9 +489,8 @@ public class DasServer {
         }
     }
 
-    /**
-     * returns a List<String> of resource Id's available with this key
-     */
+    /** returns a List<String> of resource Id's available with this key */
+	 @Deprecated
     public List groups( Key key ) {
         try {
             String formData= "server=groups";
@@ -451,6 +518,7 @@ public class DasServer {
         } 
     }
 
+	 @Deprecated
     public void changePassword( String user, String oldPass, String newPass ) throws DasServerException {
         try {
             String formData= "server=changePassword";
@@ -487,6 +555,7 @@ public class DasServer {
 
     }
 
+	 @Deprecated
     public String readServerResponse( BufferedInputStream in ) {
         // Read <dasResponse>...</dasResponse>, leaving the InputStream immediately after //
 
@@ -514,7 +583,7 @@ public class DasServer {
             }
 
             if ( new String(data,0,14,"UTF-8").equals("<"+das2ResponseTag+">")) {
-                while ( new String( data,0,offset,"UTF-8" ).indexOf("</"+das2ResponseTag+">")==-1 &&
+                while ( !new String( data,0,offset,"UTF-8" ).contains("</"+das2ResponseTag+">") &&
                 offset<4096 ) {
                     offset+= bytesRead;
                     bytesRead= in.read(data,offset,4096-offset);
@@ -547,6 +616,8 @@ public class DasServer {
         return das2Response;
     }
 
+	 // Utility function to handle reading data off the HTTP stream.  Used by functions
+	 // such as getName and getLogo that don't expect to receive a Das2 Stream
     private byte[] read(InputStream uin) throws IOException {
         LinkedList<byte[]> list = new LinkedList();
         byte[] data;
@@ -618,6 +689,10 @@ public class DasServer {
         return data;
     }
 
+	 public String getProto() {
+	     return sProto;	 
+	 }
+	 
     public String getHost() {
         return host;
     }
@@ -632,7 +707,7 @@ public class DasServer {
     }
 
     public URL getURL( String formData ) throws MalformedURLException {
-        return new URL( "http", host, port, path+"?"+formData );
+        return new URL( sProto, host, port, path+"?"+formData );
     }
 
     public Key getKey( String resource ) {
