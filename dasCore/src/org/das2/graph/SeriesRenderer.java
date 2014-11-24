@@ -702,8 +702,6 @@ public class SeriesRenderer extends Renderer {
             x = (double) xds.value(index);
             y = (double) vds.value(index);
 
-            // first point //
-            logger.log(Level.FINE, "firstPoint moveTo,LineTo= {0},{1}", new Object[]{x, y});
             try {
                 fx = xAxis.transform(x, xUnits);
             } catch ( InconvertibleUnitsException ex ) {
@@ -716,6 +714,9 @@ public class SeriesRenderer extends Renderer {
                 unitsWarning= true;
                 return;
             }
+
+            // first point //
+            logger.log(Level.FINE, "firstPoint moveTo,LineTo (plotCoordinates)= {0}, {1}", new Object[]{fx, fy});
 
             visible0= window.contains(fx,fy);
             if (histogram) {
@@ -1157,6 +1158,8 @@ public class SeriesRenderer extends Renderer {
      */
     private synchronized void updateFirstLast(DasAxis xAxis, DasAxis yAxis, QDataSet xds, QDataSet dataSet ) {
         
+        long t0= System.currentTimeMillis();
+        
         int ixmax;
         int ixmin;
                 
@@ -1256,7 +1259,7 @@ public class SeriesRenderer extends Renderer {
             lastIndex = index;
         }
         
-        logger.log( Level.FINE, "ds: {0},  firstIndex={1} to lastIndex={2}", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex});
+        logger.log( Level.FINE, "updateFirstLast ds: {0},  firstIndex={1} to lastIndex={2} in {3}ms", new Object[]{ String.valueOf(this.ds), this.firstIndex, this.lastIndex, System.currentTimeMillis()-t0 });
     }
 
     @Override
@@ -1690,6 +1693,8 @@ public class SeriesRenderer extends Renderer {
                 System.err.println("both tds and vds are null");
             }
 
+            logger.log( Level.FINE, "updatePlotImage uses subset from firstIndex, lastIndex: {0}, {1} ({2} points})", new Object[]{ firstIndex, lastIndex, lastIndex-firstIndex } );
+            
             if (psymConnector != PsymConnector.NONE) {
                 try {
                     psymConnectorElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymConnectorElement.update"));
@@ -1710,7 +1715,7 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
 
-            selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );        
+            selectionArea= calcSelectionArea( xAxis, yAxis, xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );        
             logger.log(Level.FINE, "calcSelectionArea complete {0}", System.currentTimeMillis()-t0);  
             //if (getParent() != null) {
             //    getParent().repaint();
@@ -1785,8 +1790,8 @@ public class SeriesRenderer extends Renderer {
             } else {
                 QDataSet reduce = VectorUtil.reduce2D(
                     xds, ds2,
-                    firstIndex,
-                    lastIndex,
+                    0,
+                    xds.length(),
                     widthx.divide(xaxis.getColumn().getWidth()/5),
                     widthy.divide(yaxis.getRow().getHeight()/5)
                     );
