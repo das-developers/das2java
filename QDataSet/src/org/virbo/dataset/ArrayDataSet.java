@@ -199,33 +199,53 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         QDataSet vdep0= Ops.valid(dep0);
         
         int[] rback= new int[dep0.length()];
-        rback[0]= 0;
-        double a= dep0.value(0);
-        int index=1;
-        for ( int i=1; i<dep0.length(); i++ ) {
+        rback[dep0.length()/2]= dep0.length()/2;
+        int rindex=dep0.length()/2+1;
+        double a= dep0.value(rindex-1);
+        for ( int i=rindex; i<dep0.length(); i++ ) {
             if ( vdep0.value(i)>0 ) {
                 double a1=dep0.value(i);
                 if ( a1>a ) {
-                    rback[index]= i;
+                    rback[rindex]= i;
                     a= a1;
-                    index++;
+                    rindex++;
+                } else {
+                    logger.log(Level.FINER, "data point breaks monotonic rule: {0}", i);
                 }
             }
         }
-        int nrm= dep0.length() - index;
+        int lindex=dep0.length()/2;
+        a= dep0.value(lindex+1);
+        for ( int i=lindex; i>=0; i-- ) {
+            if ( vdep0.value(i)>0 ) {
+                double a1=dep0.value(i);
+                if ( a1<a ) {
+                    rback[lindex]= i;
+                    a= a1;
+                    lindex--;
+                } else {
+                    logger.log(Level.FINER, "data point breaks monotonic rule: {0}", i);
+                }
+            }
+        }
+        lindex+=1;
+        
+        int nrm= dep0.length() - ( rindex-lindex );
         if ( nrm>0 ) {
-            if ( index==1 ) {
+            if ( rindex==1 ) {
                 logger.log(Level.FINE, "ensureMono removes all points, assume it's monotonic decreasing" );
                 return ds;
             }
             logger.log(Level.FINE, "ensureMono removes {0} points", nrm);
             Class c= ds.getComponentType();
-            int[] idx= new int[index];
-            System.arraycopy( rback, 0, idx, 0, index );
+            int[] idx= new int[rindex-lindex];
+            System.arraycopy( rback, 0, idx, 0, ( rindex-lindex ) );
             ds.putProperty( QDataSet.DEPEND_0, null );
             ds= ArrayDataSet.copy( c, new SortDataSet( ds, Ops.dataset(idx) ) );
             Class depclass= dep0.getComponentType();
-            ds.putProperty( QDataSet.DEPEND_0, ArrayDataSet.copy( depclass, new SortDataSet( dep0, Ops.dataset(idx) ) ) );
+            ArrayDataSet dep0copy= ArrayDataSet.copy( depclass, new SortDataSet( dep0, Ops.dataset(idx) ) );
+            dep0copy.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
+            ds.putProperty( QDataSet.DEPEND_0, dep0copy );
         }
         return ds;
     }
