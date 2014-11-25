@@ -239,7 +239,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             logger.log(Level.FINE, "ensureMono removes {0} points", nrm);
             Class c= ds.getComponentType();
             int[] idx= new int[rindex-lindex];
-            System.arraycopy( rback, 0, idx, 0, ( rindex-lindex ) );
+            System.arraycopy( rback, lindex, idx, 0, ( rindex-lindex ) );
             ds.putProperty( QDataSet.DEPEND_0, null );
             ds= ArrayDataSet.copy( c, new SortDataSet( ds, Ops.dataset(idx) ) );
             Class depclass= dep0.getComponentType();
