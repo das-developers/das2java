@@ -194,7 +194,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         if ( !UnitsUtil.isTimeLocation( SemanticOps.getUnits(dep0) ) ) {
             return ds;
         }
-        if ( dep0.length()==0 ) return ds;
+        if ( dep0.length()<2 ) return ds;
         if ( dep0.rank()!=1 ) return ds;
         QDataSet vdep0= Ops.valid(dep0);
         
