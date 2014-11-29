@@ -318,6 +318,61 @@ public class FileStorageModel {
     }
 
     /**
+     * generate the names of the files that would cover this range.  This was
+     * taken from Autoplot's org.virbo.jythonsupport.Util.  
+     * TODO: versioning, etc.
+     * @param range the time range to cover.
+     * @return the string names, each in the context of the filesystem.
+     */
+    public String[] generateNamesFor( DatumRange range ) {
+        String sstart;
+        TimeParser tp= timeParser;
+        try {
+            sstart= tp.format( range.min(), null );
+        } catch ( Exception ex ) { // orbit files have limited range
+            DatumRange dr= tp.getValidRange();
+            DatumRange dd= DatumRangeUtil.sloppyIntersection(range, dr);
+            if ( dd.width().value()==0 ) {
+                return new String[0]; // no intersection
+            }
+            sstart= tp.format( dd.min(), null );
+        }
+
+        
+        try {
+            tp.parse(sstart);
+        } catch ( ParseException ex ) {
+            throw new RuntimeException(ex);
+        }
+        DatumRange curr= tp.getTimeRange();
+        
+        int countLimit= 1000000;
+        int approxCount= (int)( 1.01 * range.width().divide(curr.width()).value() ); // extra 1% for good measure.
+
+        if ( approxCount>countLimit*1.03 ) {
+            throw new IllegalArgumentException("too many intervals would be created, this is limited to about 1000000 intervals.");
+        }
+        
+        List<String> result= new ArrayList<String>( approxCount );
+        
+        if ( !range.intersects(curr) ) { // Sebastian has a strange case that failed, see 
+            curr= curr.next();
+        }
+        
+        while ( range.intersects(curr) ) {
+            String scurr= tp.format( curr.min(), curr.max() );
+            result.add( scurr );
+            DatumRange oldCurr= curr;
+            curr= curr.next();
+            if ( oldCurr.equals(curr) ) { // orbits return next() that is this at the ends.
+                break;
+            }
+        }
+        return result.toArray( new String[result.size()] );
+        
+    }
+        
+    /**
      * return the timerange that contains the given timerange and
      * exactly contains a set of granules.
      * 
@@ -380,7 +435,8 @@ public class FileStorageModel {
     }
 
     /**
-     * return the names in the range, or all names if the range is null.
+     * return the names in the range, or all available names if the range is null.
+     * This will list directories.
      * @param targetRange range limit, or null.
      * @param monitor
      * @return array of names within the system.
@@ -391,7 +447,8 @@ public class FileStorageModel {
     }
 
     /**
-     * return the names in the range, minding version numbers, or all names if the range is null.
+     * return the names in the range, minding version numbers, or all available 
+     * names if the range is null.  This will list directories.
      * @param targetRange range limit, or null.
      * @param monitor
      * @return array of names within the system.
@@ -404,12 +461,14 @@ public class FileStorageModel {
 
 
     /**
-     * return the names in the range, maybe with versioning.  
+     * return the names in the range, maybe with versioning.  This will 
+     * list directories.
      * @param targetRange range limit, or null if no constraint used here.
      * @param versioning true means check versions.
      * @param monitor
      * @return array of names within the system.
      * @throws IOException
+     * @see generateNamesFor
      */
     private String[] getNamesFor( final DatumRange targetRange, boolean versioning, ProgressMonitor monitor ) throws IOException {
         logger.log( Level.FINE, "getNamesFor {0}", this.root);
