@@ -871,16 +871,18 @@ public class Ops {
     }
 
     /**
-     * trim the dataset to the indeces on the zeroth dimension.  Note
-     * the trim function can also be called directly.  
-     * @param ds the dataset to be trimmed.
+     * trim the dataset to the range of the zeroth dimension.  For example,
+     * if ds was 7-days from 2014-01-01 through 2014-01-07, and st=2014-01-02
+     * and en=2014-01-03 then just the records collected on this one day would
+     * be returned.
+     * @param ds the dataset to be trimmed, with a rank 1 monotonic DEPEND_0.
      * @param st rank 0 min
      * @param en rank 0 max
-     * @return
+     * @return the subset of the data.
      * @see #slice0(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet trim( QDataSet ds, QDataSet st, QDataSet en ) {
-        if ( st.rank()!=0 ) {
+        if ( st.rank()!=0 || en.rank()!=0 ) {
             throw new IllegalArgumentException("bounds must be rank 0");
         }
         QDataSet dep0= SemanticOps.xtagsDataSet(ds);
