@@ -226,9 +226,9 @@ public class TableDataSetBuilder {
         }
         double[] scan = new double[tds.getYLength(table)];
         for (int j = 0; j < tds.getYLength(table); j++) {
-            scan[j] = tds.getDouble(i, j, yUnits);
+            scan[j] = tds.getDouble(i, j, tds.getZUnits());
         }
-        return DatumVector.newDatumVector(scan, yUnits);
+        return DatumVector.newDatumVector(scan, tds.getZUnits());
     }
     
     public void setXUnits(Units units) {

@@ -127,6 +127,8 @@ public abstract class Units implements Displayable {
      */
     public static final Units wpm2= new NumberUnits("W/m!a-2!n");
 	 static{ unitsMap.put( "W m**-2", wpm2 ); }
+	 
+	 public static final Units PowerSpecDens = new NumberUnits("W m**-2 Hz**-1");
     
     public static final Units inches = new NumberUnits("inch");
     

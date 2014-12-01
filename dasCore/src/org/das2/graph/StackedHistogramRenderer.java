@@ -106,6 +106,14 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer
          * draw red bar up to max observed.
          */
         public static final PeaksIndicator RedPeaks= new PeaksIndicator("Red Peaks");
+		  /**
+         * draw blue bar up to max observed.
+         */
+        public static final PeaksIndicator BluePeaks= new PeaksIndicator("Blue Peaks");
+		  /**
+         * draw green bar up to max observed.
+         */
+        public static final PeaksIndicator GreenPeaks= new PeaksIndicator("Green Peaks");
         /**
          * draw a connect-a-dot line from peak to peak.
          */
@@ -396,6 +404,14 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer
                                     g.setColor(BAR_COLOR);
                                 } else if ( peaksIndicator==PeaksIndicator.RedPeaks ) {
                                     g.setColor(Color.red);
+                                    g.drawLine(x0,yMax,x0,y0);
+                                    g.setColor(BAR_COLOR);
+										  } else if ( peaksIndicator==PeaksIndicator.GreenPeaks ) {
+                                    g.setColor(Color.GREEN);
+                                    g.drawLine(x0,yMax,x0,y0);
+                                    g.setColor(BAR_COLOR);
+										  } else if ( peaksIndicator==PeaksIndicator.BluePeaks ) {
+                                    g.setColor(Color.CYAN);
                                     g.drawLine(x0,yMax,x0,y0);
                                     g.setColor(BAR_COLOR);
                                 } else if ( peaksIndicator==PeaksIndicator.LinePeaks ) {
