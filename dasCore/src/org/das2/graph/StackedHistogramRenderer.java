@@ -246,6 +246,14 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer
         }
     }
     
+	protected String getPrimaryPeaksId(){
+		String sPrimary = getDataSet().getPlaneIds()[0];
+		
+		if(sPrimary.equals(""))  // Handle un-named primary planes
+			return "peaks";
+		else
+			return sPrimary + ".peaks";  // Handle named primary planes
+	 }
     
 	 @Override
     synchronized public void updatePlotImage( DasAxis xAxis, DasAxis yAxis_1, ProgressMonitor monitor ) throws DasException {
@@ -306,7 +314,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer
         DataSetRebinner rebinner = new Rebinner();
         
         TableDataSet data= (TableDataSet)rebinner.rebin(xtysData, xbins, null);
-        TableDataSet peaks= (TableDataSet)data.getPlanarView("peaks");
+        TableDataSet peaks= (TableDataSet)data.getPlanarView(getPrimaryPeaksId());
         
         DasLabelAxis yAxis= (DasLabelAxis)yAxis_1;
         

@@ -108,17 +108,17 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     
     private double[][] flatten(double[][][] d) {
         int sum = 0;
-        for (int index = 0; index < d.length; index++) {
-            sum += d[index].length;
-        }
+		 for(double[][] d1 : d){
+			 sum += d1.length;
+		 }
         double[][] flat = new double[sum][];
         int offset = 0;
-        for (int i = 0; i < d.length; i++) {
-            for (int j = 0; j < d[i].length; j++) {
-                flat[offset] = (double[])d[i][j].clone();
-                offset++;
-            }
-        }
+		 for(double[][] d2 : d){
+			 for(double[] d1 : d2){
+				 flat[offset] = (double[]) d1.clone();
+				 offset++;
+			 }
+		 }
         return flat;
     }
     
@@ -139,7 +139,8 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             double[] yTags, Units yUnits,
             double[][] zValues, Units zUnits,
             Map properties) {
-        this(xTags, xUnits, new double[][]{yTags}, yUnits, new double[][][]{zValues}, zUnits, null, null, properties);
+        this(xTags, xUnits, new double[][]{yTags}, yUnits, new double[][][]{zValues}, zUnits,
+			    null, null, properties);
     }
     
     DefaultTableDataSet(double[] xTags, Units xUnits,
@@ -192,11 +193,12 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         int currentOffset = 0;
         for (int index = 0; index < tableOffsets.length; index++) {
             tableOffsets[index] = currentOffset;
-            currentOffset += tableData[index].length;;
+            currentOffset += tableData[index].length;
         }
         return tableOffsets;
     }
     
+	 @Override
     public Datum getDatum(int i, int j) {
         int table = tableOfIndex(i);
         int yLength = yTags[table].length;
@@ -223,6 +225,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         }
     }
     
+	 @Override
     public DatumVector getScan(int i) {
         int table = tableOfIndex(i);
         if (i < 0 || i >= tableData[0].length) {
@@ -241,6 +244,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         }
     }
     
+	 @Override
     public double getDouble(int i, int j, Units units) {
         int table;
         int yLength;
@@ -262,6 +266,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         return zUnits[0].getConverter(units).convert(value);
     }
     
+	 @Override
     public double[] getDoubleScan(int i, Units units) {
         int table = tableOfIndex(i);
         int yLength = yTags[table].length;
@@ -278,10 +283,12 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         return retValues;
     }
     
+	 @Override
     public int getInt(int i, int j, Units units) {
         return (int)Math.round(getDouble(i, j, units));
     }
     
+	 @Override
     public DataSet getPlanarView(String planeID) {
         int planeIndex = -1;
         for (int index = 0; index < planeIDs.length; index++) {
@@ -296,21 +303,25 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         }
     }
     
+	 @Override
     public String[] getPlaneIds() {
         String[] result= new String[planeIDs.length];
         System.arraycopy( planeIDs, 0, result, 0, planeIDs.length );
         return result;
     }
     
+	 @Override
     public int getYLength(int table) {
         return yTags[table].length;
     }
     
+	 @Override
     public Datum getYTagDatum(int table, int j) {
         double value = yTags[table][j];
         return Datum.create(value, getYUnits());
     }
     
+	 @Override
     public double getYTagDouble(int table, int j, Units units) {
         double value = yTags[table][j];
         if (units == getYUnits()) {
@@ -319,18 +330,22 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         return getYUnits().getConverter(units).convert(value);
     }
     
+	 @Override
     public int getYTagInt(int table, int j, Units units) {
         return (int)Math.round(getYTagDouble(table, j, units));
     }
     
+	 @Override
     public DatumVector getYTags(int table) {
         return DatumVector.newDatumVector(yTags[table], 0, getYLength(table), getYUnits());
     }
     
+	 @Override
     public int tableCount() {
         return tableCount;
     }
     
+	 @Override
     public int tableEnd(int table) {
         if (table == tableOffsets.length - 1) {
             return getXLength();
@@ -339,6 +354,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         }
     }
     
+	 @Override
     public int tableOfIndex(int i) {
         if ( yTags.length>5 ) {
             int table = Arrays.binarySearch(tableOffsets, i);
@@ -356,6 +372,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         }
     }
     
+	 @Override
     public int tableStart(int table) {
         return tableOffsets[table];
     }
@@ -379,10 +396,10 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         out.println("    Table Count: " + tableCount());
         Object[] args = new Object[4];
         for (int table = 0; table < tableCount(); table++) {
-            args[0] = new Integer(table);
-            args[1] = new Integer(yTags[table].length);
-            args[2] = new Integer(tableStart(table));
-            args[3] = new Integer(tableEnd(table));
+            args[0] = table;
+            args[1] = yTags[table].length;
+            args[2] = tableStart(table);
+            args[3] = tableEnd(table);
             String str = tableFormat.format(args);
             out.println(str);
             out.print("        Y Tags:");
@@ -411,6 +428,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         out.println("============================================================");
     }
     
+	 @Override
     public String toString() {
         return "DefaultTableDataSet "+TableUtil.toString(this);
     }
@@ -437,14 +455,23 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             this.index = index;
         }
         
+		  @Override
         public DataSet getPlanarView(String planeID) {
             return planeID.equals("") ? this : null;
         }
+		  
+		 // @Override
+		 // public DataSet getPlanarView(int nPlaneIdx){
+		//	  if(nPlaneIdx > );
+		  //return null;
+		 // }
         
+		  @Override
         public String[] getPlaneIds() {
             return new String[0];
         }
         
+		  @Override
         public Datum getDatum(int i, int j) {
             int table = tableOfIndex(i);
             int yLength = yTags[table].length;
@@ -452,6 +479,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             return Datum.create(value, zUnits[index]);
         }
         
+		  @Override
         public double getDouble(int i, int j, Units units) {
             int table = tableOfIndex(i);
             int yLength = yTags[table].length;
@@ -459,6 +487,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             return zUnits[index].getConverter(units).convert(value);
         }
         
+		  @Override
         public double[] getDoubleScan(int i, Units units) {
             int table = tableOfIndex(i);
             int yLength = yTags[table].length;
@@ -475,6 +504,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             return retValues;
         }
         
+		  @Override
         public DatumVector getScan(int i) {
             int table = tableOfIndex(i);
             if (i < 0 || i >= tableData[0].length) {
@@ -493,70 +523,86 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
             }
         }
         
+		  @Override
         public int getInt(int i, int j, Units units) {
             return (int)Math.round(getDouble(i, j, units));
         }
         
+		  @Override
         public VectorDataSet getXSlice(int i) {
             return new XSliceDataSet(this, i);
         }
         
+		  @Override
         public int getYLength(int table) {
             return DefaultTableDataSet.this.getYLength(table);
         }
         
+		  @Override
         public VectorDataSet getYSlice(int j, int table) {
             return new YSliceDataSet(this, j, table);
         }
         
+		  @Override
         public Datum getYTagDatum(int table, int j) {
             return DefaultTableDataSet.this.getYTagDatum(table, j);
         }
         
+		  @Override
         public double getYTagDouble(int table, int j, Units units) {
             return DefaultTableDataSet.this.getYTagDouble(table, j, units);
         }
         
+		  @Override
         public int getYTagInt(int table, int j, Units units) {
             return DefaultTableDataSet.this.getYTagInt(table, j, units);
         }
         
+		  @Override
         public Units getZUnits() {
             return DefaultTableDataSet.this.zUnits[index];
         }
         
+		  @Override
         public int tableCount() {
             return DefaultTableDataSet.this.tableCount();
         }
         
+		  @Override
         public int tableEnd(int table) {
             return DefaultTableDataSet.this.tableEnd(table);
         }
         
+		  @Override
         public int tableOfIndex(int i) {
             return DefaultTableDataSet.this.tableOfIndex(i);
         }
         
+		  @Override
         public int tableStart(int table) {
             return DefaultTableDataSet.this.tableStart(table);
         }
         
+		  @Override
         public Object getProperty(String name) {
             Object result= DefaultTableDataSet.this.getProperty(planeIDs[index] + "." + name);
             if ( result==null ) result= DefaultTableDataSet.this.getProperty(name);
             return result;
         }
 
+		  @Override
         public Object getProperty(int table, String name) {
             Object result= DefaultTableDataSet.this.getProperty(table,planeIDs[index] + "." + name);
             if ( result==null ) result= DefaultTableDataSet.this.getProperty(table,name);
             return result;
         }
         
+		  @Override
         public DatumVector getYTags(int table) {
             return DefaultTableDataSet.this.getYTags(table);
         }
         
+		  @Override
         public String toString() {
             return TableUtil.toString(this);
         }

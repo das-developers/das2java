@@ -182,7 +182,7 @@ public interface DataSet {
     //TODO: consider throwing IllegalArgumentException if the plane doesn't exist.
     //   we have methods to query for the plane names.
     DataSet getPlanarView(String planeID);
-    
+	 
     /** 
      * Returns a list of auxillary planes (e.g. weights, peaks) for the dataset.
      * Note that the default plane, "" may or may not be returned, based on
