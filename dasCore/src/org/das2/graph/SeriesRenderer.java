@@ -1336,6 +1336,16 @@ public class SeriesRenderer extends Renderer {
             return;
         }
 
+        boolean foreBackSameColor= true;
+        if ( !color.equals( lparent.getBackground() ) ) foreBackSameColor= false;
+        if ( fillToReference &&  !color.equals( lparent.getBackground() ) ) foreBackSameColor= false;
+        if ( lparent.getRenderers().length>1 ) foreBackSameColor= false; // weak test but better than nothing.
+        if ( foreBackSameColor ) {
+            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("foreground and background colors are the same");
+            lparent.postMessage(this, "foreground and background colors are the same", DasPlot.INFO, null, null);
+            return;
+        }
+        
         QDataSet tds = null;
         QDataSet vds = null;
         boolean yaxisUnitsOkay;
