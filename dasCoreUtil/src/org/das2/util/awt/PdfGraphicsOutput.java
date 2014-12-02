@@ -107,8 +107,8 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                         com.itextpdf.text.pdf.BaseFont.createFont( f.toString(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED ); // check to see if iText is going to fuss about licensing.
                         in = new FileInputStream(f);
                         Font font= Font.createFont(Font.TRUETYPE_FONT, in );
-                        logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFamily(), f});
-                        fontToTtfMap1.put( font.getFamily(), f );                    
+                        logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFontName(), f});
+                        fontToTtfMap1.put( font.getFontName(), f );                    
                     } catch ( DocumentException ex ) {
                         logger.log( Level.SEVERE, ex.getMessage(), ex );
                     } catch (FontFormatException ex) {
@@ -166,33 +166,33 @@ public class PdfGraphicsOutput implements GraphicsOutput {
      * @return the name of the .ttf file, or null.
      */
     public static String ttfFromName( java.awt.Font font ) {
-        String osName= System.getProperty( "os.name" ); 
-        if ( osName.startsWith("Mac") ) {
+//        String osName= System.getProperty( "os.name" ); 
+//        if ( osName.startsWith("Mac") ) {
             Map<String,File> map= getFontToTtfMap();
-            File f= map.get(font.getName());
+            File f= map.get(font.getFontName());
             if ( f==null ) {
                 return null;
             } else {
                 return f.toString();
             }
-        } else if ( osName.startsWith("Linux") ) {
-            Map<String,File> map= getFontToTtfMap();
-            File f= map.get(font.getFamily());
-            if ( f==null ) {
-                return null;
-            } else {
-                return f.toString();
-            }
-        } else if ( osName.startsWith("Windows") ) {
-            Map<String,File> map= getFontToTtfMap();
-            File f= map.get(font.getName());
-            if ( f==null ) {
-                return null;
-            } else {
-                return f.toString();
-            }
-        }
-        return null;
+//        } else if ( osName.startsWith("Linux") ) {
+//            Map<String,File> map= getFontToTtfMap();
+//            File f= map.get(font.getFontName());
+//            if ( f==null ) {
+//                return null;
+//            } else {
+//                return f.toString();
+//            }
+//        } else if ( osName.startsWith("Windows") ) {
+//            Map<String,File> map= getFontToTtfMap();
+//            File f= map.get(font.getName());
+//            if ( f==null ) {
+//                return null;
+//            } else {
+//                return f.toString();
+//            }
+//        }
+//        return null;
     }
         
     FontMapper fontMapper = new FontMapper() {
