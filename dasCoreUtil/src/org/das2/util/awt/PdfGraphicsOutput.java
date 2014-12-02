@@ -146,6 +146,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                 if ( state==STATE_IDLE ) {
                     state= STATE_READING;
                     Runnable run= new Runnable() {
+                        @Override
                         public void run() {
                             String x= ttfFromName( font );
                             logger.log(Level.FINEST, "ttfFromName()->{0}", x);
@@ -166,8 +167,6 @@ public class PdfGraphicsOutput implements GraphicsOutput {
      * @return the name of the .ttf file, or null.
      */
     public static String ttfFromName( java.awt.Font font ) {
-//        String osName= System.getProperty( "os.name" ); 
-//        if ( osName.startsWith("Mac") ) {
             Map<String,File> map= getFontToTtfMap();
             File f= map.get(font.getFontName());
             if ( f==null ) {
@@ -175,27 +174,10 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             } else {
                 return f.toString();
             }
-//        } else if ( osName.startsWith("Linux") ) {
-//            Map<String,File> map= getFontToTtfMap();
-//            File f= map.get(font.getFontName());
-//            if ( f==null ) {
-//                return null;
-//            } else {
-//                return f.toString();
-//            }
-//        } else if ( osName.startsWith("Windows") ) {
-//            Map<String,File> map= getFontToTtfMap();
-//            File f= map.get(font.getName());
-//            if ( f==null ) {
-//                return null;
-//            } else {
-//                return f.toString();
-//            }
-//        }
-//        return null;
     }
         
     FontMapper fontMapper = new FontMapper() {
+        @Override
         public BaseFont awtToPdf(java.awt.Font font) {
             try {
                 String ffile= ttfFromName(font);
@@ -215,6 +197,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             return null;
         }
 
+        @Override
         public java.awt.Font pdfToAwt(BaseFont font, int size) {
             return null;
         }
@@ -223,6 +206,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
     /** Creates a new instance of PDFGraphicsOutput */
     public PdfGraphicsOutput() {}
 
+    @Override
     public Graphics2D getGraphics2D() {
         if (graphics != null) {
             return graphics;
@@ -236,16 +220,19 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         return graphics;
     }
 
+    @Override
     public void finish() throws IOException {
         graphics.dispose();
         cb.restoreState();
         doc.close();
     }
 
+    @Override
     public Graphics getGraphics() {
         return getGraphics2D();
     }
 
+    @Override
     public void setOutputStream(OutputStream out) {
         this.out = out;
     }
@@ -266,10 +253,12 @@ public class PdfGraphicsOutput implements GraphicsOutput {
      * @param width
      * @param height 
      */
+    @Override
     public void setSize( int width, int height ) {
         this.width = (float)width;
         this.height = (float)height;
     }
+    @Override
     public void start() {
         try {
             Rectangle rect = new Rectangle(width, height);
