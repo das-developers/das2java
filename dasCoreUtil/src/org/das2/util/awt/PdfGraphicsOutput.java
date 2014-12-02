@@ -170,7 +170,12 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             Map<String,File> map= getFontToTtfMap();
             File f= map.get(font.getFontName());
             if ( f==null ) {
-                return null;
+                f= map.get( font.getFamily() );
+                if ( f==null ) {
+                    return null;
+                } else {
+                    return f.toString();
+                }
             } else {
                 return f.toString();
             }
