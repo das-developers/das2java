@@ -193,6 +193,14 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
             boolean edgeY= e.getYMaximum()>yAxis.getRow().getDMaximum() || e.getYMinimum()<yAxis.getRow().getDMinimum();
             boolean edgeX= e.getXMaximum()>xAxis.getColumn().getDMaximum() || e.getXMinimum()<xAxis.getColumn().getDMinimum();
 
+            BoxZoomGesturesRenderer.Type t= BoxZoomGesturesRenderer.idType( parent, e.getPressPoint(), e.getPoint() );
+            if ( t==BoxZoomGesturesRenderer.Type.XAXIS ) {
+                yrange= yAxis.getDatumRange();
+            }
+            if ( t==BoxZoomGesturesRenderer.Type.YAXIS ) {
+                xrange= xAxis.getDatumRange();
+            }
+            
             //check for narrow (<5px) boxes which we will treat as accidental in the narrow dimension
             if ( ( e.getYMaximum()-e.getYMinimum() )<5 || ( boxAspect<0.1 && edgeY ) ) {
                 yrange= yAxis.getDatumRange();
@@ -221,10 +229,10 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
                     my= DatumRangeUtil.rescale(my, 0.5-f/2, 0.5+f/2 );
                 }
                 xrange= GraphUtil.invTransformRange( xAxis, mx.min().doubleValue(Units.dimensionless),
-                        mx.max().doubleValue(Units.dimensionless) );
+                    mx.max().doubleValue(Units.dimensionless) );
                 yrange= GraphUtil.invTransformRange( yAxis, my.max().doubleValue(Units.dimensionless),
-                        my.min().doubleValue(Units.dimensionless) );
-            }
+                    my.min().doubleValue(Units.dimensionless) );
+            } 
             
             zoomBox();
             
