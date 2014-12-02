@@ -129,6 +129,8 @@ public class DasPlot extends DasCanvasComponent {
      */
     private static String testSentinal= null;
     
+    private boolean reluctantLegendIcons= "true".equals( System.getProperty("reluctantLegendIcons","false") );
+    
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         super();
 
@@ -325,11 +327,18 @@ public class DasPlot extends DasCanvasComponent {
         msgx = xAxis.getColumn().getDMiddle() + em;
         msgy = yAxis.getRow().getDMinimum() + em/2;
 
+        Icon nullIcon= new ImageIcon(new BufferedImage(1,1,BufferedImage.TYPE_INT_ARGB) );
+        
         int maxIconWidth= 0;
         for (int i = 0; i < llegendElements.size(); i++) {
             LegendElement le = llegendElements.get(i);
             Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
             maxIconWidth = Math.max(maxIconWidth, icon.getIconWidth());
+            if ( reluctantLegendIcons ) {
+                if ( llegendElements.size()==1 ) {
+                    maxIconWidth = 0;
+                }
+            }
         }
 
         mrect= getLegendBounds(graphics,msgx,msgy);
@@ -353,6 +362,9 @@ public class DasPlot extends DasCanvasComponent {
 
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) {
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
+                if ( llegendElements.size()==1 && reluctantLegendIcons ) {
+                    icon = nullIcon;
+                }
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
                 gtr.setAlignment( GrannyTextRenderer.LEFT_ALIGNMENT );
                 gtr.setString(graphics, String.valueOf(le.label).trim()); // protect from nulls, which seems to happen
@@ -372,7 +384,11 @@ public class DasPlot extends DasCanvasComponent {
                 if ( le.icon!=null ) {
                     graphics.drawImage( ((ImageIcon)icon).getImage(), imgBounds.x, imgBounds.y, null );
                 } else {
-                    le.drawIcon( graphics, msgx - (icon.getIconWidth() + em / 4), msgy + icony );
+                    if ( llegendElements.size()==1 && reluctantLegendIcons ) {
+                        
+                    } else {
+                        le.drawIcon( graphics, msgx - (icon.getIconWidth() + em / 4), msgy + icony );
+                    }
                 }
                 msgy += mrect.getHeight();
                 mrect.add(imgBounds);
