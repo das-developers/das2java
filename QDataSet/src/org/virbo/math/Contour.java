@@ -38,6 +38,12 @@ public class Contour {
         
         public ContourPlot( QDataSet tds, QDataSet contourValues ) {
             super();
+
+            if ( contourValues.length()>1 ) {
+                System.err.println( "contour tds="+ tds );
+                System.err.println( "contour contourValues="+ contourValues );        
+            }
+            
             this.zz= tds;
             this.xx= SemanticOps.xtagsDataSet(tds);
             this.yy= SemanticOps.ytagsDataSet(tds);
@@ -82,7 +88,10 @@ public class Contour {
             result= DataSetOps.leafTrim( result, 0, 3 );
             result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(this,result) );
             result.putProperty( QDataSet.DEPEND_0, istep );
+            result.putProperty( QDataSet.RENDER_TYPE, "contour" );
 
+            System.err.println(result);
+            
             return result;
         }
         
@@ -536,25 +545,38 @@ public class Contour {
 
         return bds;
     }
+
     /**
      * returns a rank 2 dataset, a bundle dataset, listing the points
      * of the contour paths.  The dataset will be ds[n,3] where
      * the bundled datasets are: [x,y,z] and where DEPEND_0 indicates the step number.
      * Jumps in the step number indicate a break in the contour.
      *
+     * @param tds the rank 2 table dataset
+     * @param levels the rank 1 levels
+     * @return rank 2 bundle of x,y,z where DEPEND_0 indicates the step number.
      */
     public static QDataSet contour( QDataSet tds, QDataSet levels ) {
         Contour.ContourPlot cp= new ContourPlot( tds, levels );
         return cp.performContour();
     }
     
+    /**
+     * returns a rank 2 dataset, a bundle dataset, listing the points
+     * of the contour paths.  The dataset will be ds[n,3] where
+     * the bundled datasets are: [x,y,z] and where DEPEND_0 indicates the step number.
+     * Jumps in the step number indicate a break in the contour.
+     *
+     * @param tds the rank 2 table dataset
+     * @param level the level
+     * @return rank 2 bundle of x,y,z where DEPEND_0 indicates the step number.
+     */
     public static QDataSet contour( QDataSet tds, Datum level ) {
         Units units= level.getUnits();
         double value= level.doubleValue(units);
         DDataSet levels= DDataSet.wrap( new double[] { value } );
         levels.putProperty( QDataSet.UNITS, units );
-        Contour.ContourPlot cp= new ContourPlot( tds, levels );
-        return cp.performContour();
+        return contour( tds, levels );
     }
     
     
