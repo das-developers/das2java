@@ -552,6 +552,8 @@ public class EventsRenderer extends Renderer {
 
         DasPlot parent= getParent();
         
+        Rectangle current= null;
+        
         if ( lastException!=null ) {
             renderException( g, xAxis, yAxis, lastException );
             
@@ -635,17 +637,30 @@ public class EventsRenderer extends Renderer {
 
                     if ( column.getDMinimum() < ixmax || column.getDMaximum() > ixmin ) { // if any part is visible
                         if ( iwidth==0 ) iwidth=1;
+                        Rectangle r1;
                         if ( this.orbitMode ) {
-                            g.fill( new Rectangle( ixmin, row.getDMaximum()-textHeight, iwidth-1, textHeight ) );
-                            if ( dt<100 ) sa.append( new Rectangle( ixmin, row.getDMaximum()-textHeight, iwidth-1, textHeight ), false );
+                            r1= new Rectangle( ixmin, row.getDMaximum()-textHeight, iwidth-1, textHeight );
+                            g.fill( r1 );
                         } else if ( this.ganttMode ) {
                             int iymin= row.getDMinimum() + row.getHeight() * ((int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) + 1;
                             int iymax= row.getDMinimum() + row.getHeight() * (1+(int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) - 1;
-                            g.fill( new Rectangle( ixmin, iymin, iwidth, iymax-iymin ) );
-                            if ( dt<100 ) sa.append( new Rectangle( ixmin, iymin, iwidth, iymax-iymin ), false );
+                            r1= new Rectangle( ixmin, iymin, iwidth, iymax-iymin );
+                            g.fill( r1 );
+                        } else {                
+                            r1= new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() );
+                            g.fill( r1 );
+                        }
+                        r1.x= r1.x-2;
+                        r1.y= r1.y-2;
+                        r1.width= r1.width+4;
+                        r1.height= r1.height+4;
+                        if ( current==null ) {
+                            current= r1;
+                        } else if ( current.intersects(r1) ) {
+                            current= current.union(r1);
                         } else {
-                            g.fill( new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() ) );
-                            if ( dt<100 ) sa.append( new Rectangle( ixmin-2, row.getDMinimum(), iwidth+4, row.getHeight() ), false );
+                            sa.append( current, false );
+                            current= r1;
                         }
                         int im= ixmin-column.getDMinimum();
                         int em0= im-1;
@@ -670,6 +685,7 @@ public class EventsRenderer extends Renderer {
                         }
                     }
                 }
+                if ( current!=null ) sa.append( current, false );
 
                 if ( ganttMode ) {
                     int di= Math.max( 1, ( gymax-gymin)  / ( row.getHeight() / textHeight ) );
