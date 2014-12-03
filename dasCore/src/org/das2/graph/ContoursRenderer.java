@@ -236,6 +236,14 @@ public class ContoursRenderer extends Renderer {
             vds= null;
             return;
         }
+        
+        if ( tds.rank()==2 && tds.length(0)==3 && tds.property(QDataSet.DEPEND_0)!=null ) {
+            // hey it was already done...
+            logger.fine("contour was already performed");
+            vds= tds;
+            return;
+        }
+        
         Units units = SemanticOps.getUnits(tds);
 
         String[] cons = this.contours.trim().split(",");
