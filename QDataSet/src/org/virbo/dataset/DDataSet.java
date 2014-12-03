@@ -298,6 +298,18 @@ public final class DDataSet extends ArrayDataSet {
      *   dd.putValue( i0,i1, dd.getValue( i0,i1 ) + z )
      * which is inefficient.
      * @param i0
+     * @param value
+     */
+    public void accumValue( int i0, double value ) {
+        checkImmutable();        
+        back[i0] += value;
+    }    
+    
+    /**
+     * add the value to the position.  This is done all over the place with code like:
+     *   dd.putValue( i0,i1, dd.getValue( i0,i1 ) + z )
+     * which is inefficient.
+     * @param i0
      * @param i1
      * @param value
      */
