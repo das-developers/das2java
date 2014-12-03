@@ -240,11 +240,12 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * returns the bounds of the legend, or null if there is no legend.
      * @param graphics
-     * @param msgx
-     * @param msgy
+     * @param msgx the location of the box
+     * @param msgy the location of the box
+     * @param llegendElements the elements 
      * @return
      */
-    private Rectangle getLegendBounds( Graphics2D graphics, int msgx, int msgy ) {
+    private Rectangle getLegendBounds( Graphics2D graphics, int msgx, int msgy, List<LegendElement> llegendElements) {
         int maxIconWidth = 0;
 
         Rectangle mrect;
@@ -252,17 +253,22 @@ public class DasPlot extends DasCanvasComponent {
 
         int em = (int) getEmSize();
 
-        if ( legendElements==null ) return null;
+        if ( llegendElements==null ) return null;
         if ( graphics==null ) return null;
 
-        for (int i = 0; i < legendElements.size(); i++) {
-            LegendElement le = legendElements.get(i);
+        for (int i = 0; i < llegendElements.size(); i++) {
+            LegendElement le = llegendElements.get(i);
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) { 
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
                 gtr.setString(graphics, String.valueOf(le.label).trim()); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
                 maxIconWidth = Math.max(maxIconWidth, icon.getIconWidth());
+                if ( reluctantLegendIcons ) {
+                    if ( llegendElements.size()==1 ) {
+                        maxIconWidth = 0;
+                    }
+                }                
                 int theheight = Math.max(mrect.height, icon.getIconHeight());
                 mrect.translate(msgx, msgy + (int) gtr.getAscent() );
                 mrect.height= theheight;
@@ -341,7 +347,7 @@ public class DasPlot extends DasCanvasComponent {
             }
         }
 
-        mrect= getLegendBounds(graphics,msgx,msgy);
+        mrect= getLegendBounds(graphics,msgx,msgy, llegendElements);
         if ( mrect==null ) return; // nothing is active
         
         msgx= mrect.x;
@@ -1534,7 +1540,8 @@ public class DasPlot extends DasCanvasComponent {
             //if ( this.getDasName().startsWith("plot_3")) {
             //    System.err.println("here");
             //}
-            Rectangle legendBounds= getLegendBounds( (Graphics2D) getGraphics(), 0, 0 );
+            List<LegendElement> llegendElements= this.legendElements==null ? null : new ArrayList(this.legendElements);
+            Rectangle legendBounds= getLegendBounds((Graphics2D) getGraphics(), 0, 0, llegendElements );
 
             Rectangle bounds = new Rectangle();
             bounds.x = getColumn().getDMinimum() - 1;
