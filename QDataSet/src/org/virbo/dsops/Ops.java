@@ -516,7 +516,7 @@ public class Ops {
      */
     public static QDataSet magnitude(QDataSet ds) {
         int r = ds.rank();
-        if ( ds.rank()==0 ) {
+        if ( r==0 ) {
             return DataSetUtil.asDataSet( Math.abs(ds.value()), (Units) ds.property(QDataSet.UNITS) ); //TODO: invalid.
         }
         QDataSet depn = (QDataSet) ds.property("DEPEND_" + (r - 1));
@@ -679,28 +679,48 @@ public class Ops {
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
         DDataSet result= DDataSet.create(newQube);
         DDataSet weights= DDataSet.create(newQube);
-        QubeDataSetIterator it1 = new QubeDataSetIterator(result);
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
-        while (it1.hasNext()) {
-            it1.next();
-            int n = ds.length(dim);
-            double s = 0;
-            double w = 0;
-            QubeDataSetIterator it0 = new QubeDataSetIterator(ds);
-            for (int i = 0; i < ds.rank(); i++) {
-                int ndim = i < dim ? i : i - 1;
-                if (i != dim) {
-                    it0.setIndexIteratorFactory(i, new QubeDataSetIterator.SingletonIteratorFactory(it1.index(ndim)));
+        
+        if ( ds.rank()==2 && dim==1 ) {
+            int jlen= ds.length(0);
+            for ( int i=0; i<result.length(); i++ ) {
+                boolean isfill=false;
+                for ( int j=0; j<jlen; j++ ) {
+                    if ( wds.value(i,j)==0 ) {
+                        isfill= true;
+                    } else {
+                        result.accumValue( i, ds.value(i,j) );
+                    }
+                }
+                if ( isfill ) {
+                    result.putValue( i, fill );
+                } else {
+                    weights.putValue( i, 1 );
                 }
             }
-            while (it0.hasNext()) {
-                it0.next();
-                double w1 = it0.getValue(wds);
-                s += w1 * it0.getValue(ds);
-                w += w1;
+        } else {
+            QubeDataSetIterator it1 = new QubeDataSetIterator(result);
+            while (it1.hasNext()) {
+                it1.next();
+                int n = ds.length(dim);
+                double s = 0;
+                double w = 0;
+                QubeDataSetIterator it0 = new QubeDataSetIterator(ds);
+                for (int i = 0; i < ds.rank(); i++) {
+                    int ndim = i < dim ? i : i - 1;
+                    if (i != dim) {
+                        it0.setIndexIteratorFactory(i, new QubeDataSetIterator.SingletonIteratorFactory(it1.index(ndim)));
+                    }
+                }
+                while (it0.hasNext()) {
+                    it0.next();
+                    double w1 = it0.getValue(wds);
+                    s += w1 * it0.getValue(ds);
+                    w += w1;
+                }
+                it1.putValue(result, w > 0 ? s : fill);
+                it1.putValue(weights, w );
             }
-            it1.putValue(result, w > 0 ? s : fill);
-            it1.putValue(weights, w );
         }
         Map<String,Object> props= DataSetUtil.getProperties(ds);
         props= DataSetOps.sliceProperties( props, dim );
