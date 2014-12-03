@@ -39,11 +39,6 @@ public class Contour {
         public ContourPlot( QDataSet tds, QDataSet contourValues ) {
             super();
 
-            if ( contourValues.length()>1 ) {
-                System.err.println( "contour tds="+ tds );
-                System.err.println( "contour contourValues="+ contourValues );        
-            }
-            
             this.zz= tds;
             this.xx= SemanticOps.xtagsDataSet(tds);
             this.yy= SemanticOps.ytagsDataSet(tds);
