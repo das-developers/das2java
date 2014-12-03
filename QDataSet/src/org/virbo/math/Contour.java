@@ -66,7 +66,6 @@ public class Contour {
          * x is ds[:,0], y is ds[:,1], and Zval is ds[:,2]
          * DEPEND_0 is a step number, where steps greater than 1 indicate a break in the contour.
          */
-        
         public QDataSet performContour() {
             DataSetBuilder builder= new DataSetBuilder( 2, 100, 4 ); // store ii in the last column.
 
@@ -84,8 +83,6 @@ public class Contour {
             result.putProperty( QDataSet.BUNDLE_1, getBundleDescriptor(this,result) );
             result.putProperty( QDataSet.DEPEND_0, istep );
             result.putProperty( QDataSet.RENDER_TYPE, "contour" );
-
-            System.err.println(result);
             
             return result;
         }
