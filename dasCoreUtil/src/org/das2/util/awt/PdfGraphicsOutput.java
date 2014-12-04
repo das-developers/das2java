@@ -18,12 +18,20 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.util.FileUtil;
@@ -158,6 +166,28 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             } else {
                 return ttfFromName(font);
             }
+        }
+    }
+    
+    /**
+     * dump the keys out to a file.
+     * @param f a file target.
+     */
+    public static void dumpMapToFile( File f ) {
+        Map<String,File> map= getFontToTtfMap();
+        List<String> keys= new ArrayList( map.keySet() );
+        Collections.sort(keys);
+        
+        PrintWriter out=null;
+        try {
+            out= new PrintWriter( f );
+            for ( String k: keys ) {
+                out.printf( "%s %s\n", k, map.get(k) );
+            }
+        } catch (FileNotFoundException ex) {
+            throw new IllegalArgumentException(ex);
+        } finally {
+            if ( out!=null ) out.close();
         }
     }
     
