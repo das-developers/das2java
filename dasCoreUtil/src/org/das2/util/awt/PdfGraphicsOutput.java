@@ -182,7 +182,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
         try {
             out= new PrintWriter( f );
             for ( String k: keys ) {
-                out.printf( "%s %s\n", k, map.get(k) );
+                out.printf( "\"%s\" \"%s\"\n", k, map.get(k) );
             }
         } catch (FileNotFoundException ex) {
             throw new IllegalArgumentException(ex);
