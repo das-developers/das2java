@@ -25,6 +25,7 @@ public class DasProgressLabel extends NullProgressMonitor {
         private JLabel label=null;
 
         Timer repaintTimer= new Timer( 333,new ActionListener() {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 String p;
                 if ( getTaskSize()==-1 ) {
@@ -36,9 +37,9 @@ public class DasProgressLabel extends NullProgressMonitor {
                 if ( ndot==4 ) ndot=1;
                 if ( label!=null ) {
                     if ( isFinished() ) {
-                        label.setText( "<html><em>&nbsp;" + taskLabel + "...finished</em></html>" );
+                        label.setText( "<html><i>&nbsp;" + taskLabel + "...finished</i></html>" );
                     } else {
-                        label.setText( "<html><em>&nbsp;" + taskLabel + "...".substring(0,ndot) + "   ".substring(ndot,3)+p+"</em></html>" );
+                        label.setText( "<html><i>&nbsp;" + taskLabel + "...".substring(0,ndot) + "   ".substring(ndot,3)+p+"</i></html>" );
                     }
                 }
             }
@@ -80,6 +81,7 @@ public class DasProgressLabel extends NullProgressMonitor {
             repaintTimer.setRepeats(false);
             repaintTimer.stop();
             SwingUtilities.invokeLater( new Runnable() {
+                @Override
                 public void run() {
                      if ( label!=null ) label.setText( "<html><em>&nbsp;" + taskLabel + "...finished</em></html>" );
                 }
