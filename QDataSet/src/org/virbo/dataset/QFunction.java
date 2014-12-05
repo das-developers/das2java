@@ -12,28 +12,33 @@ package org.virbo.dataset;
  * Implementations will generally extend AbstractQFunction, which implements
  * values() and exampleOutput().
  * 
+ * Goals:
+ * <ul>
+ * <li> support extra tick labels of axis, which are often the result of SPICE kernel evaluations.
+ * <li> allow discovery of function, so the system can pick it up and use it.
+ * <li> allow tabulation and plotting of a function.
+ * <li> non-linear function optimization.
+ * </ul>
+ * 
  * @see http://jfaden.net:8080/hudson/job/autoplot-test037/lastSuccessfulBuild/artifact/tcaQFunctionTest.jy
  * @author jbf
  */
 public interface QFunction {
 
     /**
+     * Evaluate the function at the location.
      * A rank 1 dataset of N parameters is passed in, and a
      * rank 1 dataset of M parameters is returned.  It's presumed that this
      * is calculated in interactive time (1/30sec) for GUI applications like
-     * attaching ephemeris ticks to an axis.
+     * attaching ephemeris ticks to an axis (note no monitor parameter to indicate feedback).
      * 
-     * Goals:
-     * <li> support extra tick labels of axis.
-     * <li> allow discovery of function, so I can pick it up and use it
-     * <li> allow tabulation and plotting of a function
-     * <li> non-linear function optimization
      * @param parm rank 1 bundle of N elements, or rank 2 array of such.
      * @return rank 1 bundle of M elements, or rank 2 array of such.
      */
     QDataSet value( QDataSet parm );
 
     /**
+     * Evaluate the function at the locations in parm.
      * A rank 2 dataset of CxN parameters is passed in, and a
      * rank 1 dataset of CxM parameters is returned, where C is the number
      * of repeated value operations.  This is useful for when it's expensive
