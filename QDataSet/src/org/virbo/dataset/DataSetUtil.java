@@ -2699,7 +2699,7 @@ public class DataSetUtil {
                     } else {
                         String name= (String) cds.property(QDataSet.NAME);
                         if ( name==null ) name="data";
-                        String label= name + " is not a single value and varies from " + extent.slice(0) + " to "+ extent.slice(1);
+                        String label= name + " varies from " + extent.slice(0) + " to "+ extent.slice(1);
                         result.append(label);
                         //result.append(DataSetUtil.format(extent, false)).append(" ").append( cds.length() ).append( " different values"); // slice was probably done when we should't have.
                     }
