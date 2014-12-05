@@ -1592,6 +1592,7 @@ public class DataSetUtil {
      * return the cadence for the given x tags.  The goal will be a rank 0
      * dataset that describes the intervals, but this will also return a rank 1
      * dataset when multiple cadences are found.
+     * TODO: this needs review.
      * @param xds the x tags, which may not contain fill values for non-null result.
      * @param yds the y values, which if non-null is only used for fill values.  This is only used if it is rank 1.
      * @return rank 0 or rank 1 dataset.
