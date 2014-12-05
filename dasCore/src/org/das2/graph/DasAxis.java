@@ -1239,6 +1239,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 timeDs.join( ArrayDataSet.copy(double.class,ex) );
             }
             timeDs.putProperty( QDataSet.BUNDLE_1, timeDs.slice(0).property(QDataSet.BUNDLE_0) );
+            
+            // Here the TCA function is called via the "values" method.
             QDataSet tickss= ltcaFunction.values(timeDs);
 
             for ( int i=0; i<ltickV.length; i++ ) {
