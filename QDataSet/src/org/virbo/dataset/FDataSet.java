@@ -312,7 +312,9 @@ public final class FDataSet extends ArrayDataSet {
         int noff1= start * len1 * len2 * len3;
         int noff2= end * len1 * len2 * len3;
         float[] newback = new float[noff2-noff1];
-        System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
+        if ( noff2-noff1>0 ) {
+            System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
+        }
         FDataSet result= new FDataSet( nrank, end-start, len1, len2, len3, newback );
         Map<String,Object> props= DataSetUtil.getProperties(this);
         Map<String,Object> depProps= DataSetUtil.trimProperties( this, start, end );

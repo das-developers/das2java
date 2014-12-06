@@ -224,7 +224,9 @@ public final class SDataSet extends ArrayDataSet {
         int noff1= start * len1 * len2 * len3;
         int noff2= end * len1 * len2 * len3;
         short[] newback = new short[noff2-noff1];
-        System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
+        if ( noff2-noff1>0 ) {
+            System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
+        }
         SDataSet result= new SDataSet( nrank, end-start, len1, len2, len3, newback );
         Map<String,Object> props= DataSetUtil.getProperties(this);
         Map<String,Object> depProps= DataSetUtil.trimProperties( this, start, end );

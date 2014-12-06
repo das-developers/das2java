@@ -224,7 +224,9 @@ public final class LDataSet extends ArrayDataSet {
         int noff1= start * len1 * len2 * len3;
         int noff2= end * len1 * len2 * len3;
         long[] newback = new long[noff2-noff1];
-        System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
+        if ( noff2-noff1>0 ) {
+            System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
+        }
         LDataSet result= new LDataSet( nrank, end-start, len1, len2, len3, newback );
         Map<String,Object> props= DataSetUtil.getProperties(this);
         Map<String,Object> depProps= DataSetUtil.trimProperties( this, start, end );
