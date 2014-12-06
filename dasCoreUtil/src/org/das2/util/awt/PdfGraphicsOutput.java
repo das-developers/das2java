@@ -116,7 +116,7 @@ public class PdfGraphicsOutput implements GraphicsOutput {
                         in = new FileInputStream(f);
                         Font font= Font.createFont(Font.TRUETYPE_FONT, in );
                         logger.log( Level.FINEST, "adding {0} -> {1}", new Object[]{font.getFontName(), f});
-                        fontToTtfMap1.put( font.getFontName(), f );                    
+                        fontToTtfMap1.put( font.getFontName(), f ); 
                     } catch ( DocumentException ex ) {
                         logger.log( Level.SEVERE, ex.getMessage(), ex );
                     } catch (FontFormatException ex) {
@@ -200,7 +200,10 @@ public class PdfGraphicsOutput implements GraphicsOutput {
             Map<String,File> map= getFontToTtfMap();
             File f= map.get(font.getFontName());
             if ( f==null ) {
-                f= map.get( font.getFamily() );
+                String s= font.getFamily();
+                if ( ( font.getStyle() & Font.BOLD )==Font.BOLD ) s= s + " Bold";
+                if ( ( font.getStyle() & Font.ITALIC )==Font.ITALIC ) s= s + " Italic";
+                f= map.get( s );
                 if ( f==null ) {
                     return null;
                 } else {
