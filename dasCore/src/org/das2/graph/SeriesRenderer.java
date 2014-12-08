@@ -1725,7 +1725,10 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
 
-            selectionArea= calcSelectionArea( xAxis, yAxis, xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );        
+            if ( vds!=null ) {
+                selectionArea= calcSelectionArea( xAxis, yAxis, xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );        
+            }
+            
             logger.log(Level.FINE, "calcSelectionArea complete {0}", System.currentTimeMillis()-t0);  
             //if (getParent() != null) {
             //    getParent().repaint();
