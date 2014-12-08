@@ -74,25 +74,37 @@ public class DasServer {
 	 /* Holds the global list of Das2 Server objects */
     private static HashMap instanceHashMap= new HashMap();
 
-	 @Deprecated
-    public static DasServer plasmaWaveGroup;
-	 
-	 @Deprecated
-    public static DasServer sarahandjeremy;
-	 
-    static {
+//	 @Deprecated
+//    public static DasServer plasmaWaveGroup;
+//	 
+//	 @Deprecated
+//    public static DasServer sarahandjeremy;
+//	 
+//    static {
+//        try {
+//            plasmaWaveGroup= DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/das2Server"));
+//        } catch ( java.net.MalformedURLException e ) {
+//            throw new IllegalArgumentException(e);
+//        }
+//        try {
+//            sarahandjeremy= DasServer.create(new URL("http://www.sarahandjeremy.net/das/dasServer.cgi"));
+//        } catch ( java.net.MalformedURLException e ) {
+//            throw new IllegalArgumentException(e);
+//        }
+//    }
+
+    /**
+     * return one DasServer to serve as an example.
+     * @return 
+     */
+    public static DasServer createPlasmaWaveGroup() {
         try {
-            plasmaWaveGroup= DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/das2Server"));
-        } catch ( java.net.MalformedURLException e ) {
-            throw new IllegalArgumentException(e);
-        }
-        try {
-            sarahandjeremy= DasServer.create(new URL("http://www.sarahandjeremy.net/das/dasServer.cgi"));
+            return DasServer.create(new URL("http://www-pw.physics.uiowa.edu/das/das2Server"));
         } catch ( java.net.MalformedURLException e ) {
             throw new IllegalArgumentException(e);
         }
     }
-
+    
 	/** Class to represent know information about an item in a list of data sources.
 	 * @author cwp
 	 */
