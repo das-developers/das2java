@@ -35,7 +35,7 @@ import org.das2.datum.Units;
 
 /**
  * Formatter is configured with strings of SimpleDateFormat (yyyy-MM-DD)
- * or $ dollar or % percent format (%Y-%m-%d) specifiers.  
+ * or % percent format (%Y-%m-%d) specifiers.  
  * SimpleDateFormat is discouraged because most other parts of das2 use the
  * shorter form.
  * @author  Edward West
