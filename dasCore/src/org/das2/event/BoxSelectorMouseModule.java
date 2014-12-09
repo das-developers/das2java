@@ -28,9 +28,9 @@ import java.util.HashMap;
  *
  * Three properties control when BoxSelectionEvents are to be fired:
  * <ul>
- * <li> dragEvents     as the mouse is dragged,
- * <li> keyEvents      when a key is pressed.  (The key is the "keyChar" plane of the event)
- * <li> releaseEvents  when the mouse is released.  (false by default)
+ * <li> dragEvents,     as the mouse is dragged,
+ * <li> keyEvents,      when a key is pressed.  (The key is the "keyChar" plane of the event)
+ * <li> releaseEvents,  when the mouse is released.  (false by default)
  * </ul>
  * This is intended to be used as a base class for other slicers which need a
  * range to be selected in X, Y, or both.
