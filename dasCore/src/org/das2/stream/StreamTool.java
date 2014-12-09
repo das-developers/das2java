@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -49,6 +50,7 @@ import org.das2.dataset.NoDataInIntervalException;
 //import org.apache.xml.serialize.XMLSerializer;
 import org.das2.util.ByteBufferInputStream;
 import org.das2.util.InflaterChannel;
+import org.das2.util.LoggerManager;
 import org.w3c.dom.*;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
@@ -58,6 +60,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 public class StreamTool {
+    private static final Logger logger= LoggerManager.getLogger("das2.stream.d2s");
 
     private StreamTool() {
         // utility class 
@@ -466,6 +469,7 @@ public class StreamTool {
                 return false;
             }
 
+            logger.log(Level.FINE, "packetDescriptor len={0}", contentLength);
             try {
                 Document doc = getXMLDocument(struct.bigBuffer, contentLength);
                 Element root = doc.getDocumentElement();
@@ -493,6 +497,7 @@ public class StreamTool {
                 struct.bigBuffer.reset();
                 return false;
             }
+            logger.log(Level.FINE, "packetHeader len={0}", contentLength);
             int yCount = pd.getYCount();
             Datum xTag = pd.getXDescriptor().readDatum(struct.bigBuffer);
             DatumVector[] vectors = new DatumVector[yCount];
@@ -506,7 +511,7 @@ public class StreamTool {
             String s = new String(struct.four);
             s = s.replaceAll("\n", "\\\\n"); // TODO: what's the right way to say this?
             msg += s;
-            msg += "' at byteOffset=" + (struct.byteOffset + struct.bigBuffer.position() - 4);
+            msg += "' at byte offset " + (struct.byteOffset + struct.bigBuffer.position()  - struct.bigBuffer.limit() - 10 -4 );
             msg += " after reading " + struct.descriptorCount + " descriptors and " + struct.packetCount + " packets.";
 
             if ( s.contains("\\n==") ) {
