@@ -50,27 +50,6 @@ public class ZoomPanMouseModule extends MouseModule {
         tbirth = System.nanoTime();
     }
 
-    private enum Pos {
-        _null, beyondMin, min, middle, max, beyondMax
-    };
-
-    private Pos position(DasDevicePosition ddp, int pos, int threshold) {
-        int max = ddp.getDMaximum();
-        int min = ddp.getDMinimum();
-        if (((max - min) / threshold) < 3) threshold = (max - min) / 3;
-        if (pos < min) {
-            return Pos.beyondMin;
-        } else if (pos < min + threshold ) {
-            return Pos.min;
-        } else if (pos <= max - threshold) {
-            return Pos.middle;
-        } else if (pos <= max) {
-            return Pos.max;
-        } else {
-            return Pos.beyondMax;
-        }
-    }
-
     /**
      * mouse wheel events zoom or pan rapidly.  With a physical wheel, I (jbf) found
      * that I get 17ms per click, and this is managable.  With a touchpad on a mac,

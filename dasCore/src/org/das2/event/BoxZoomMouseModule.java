@@ -44,27 +44,7 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
         if ( yrange!=null ) yAxis.setDatumRange(yrange);
         if ( xrange!=null ) xAxis.setDatumRange(xrange);
     }
-    
-    private enum Pos {
-        _null, beyondMin, min, middle, max, beyondMax
-    };
    
-    private Pos position(DasDevicePosition ddp, int pos, int threshold) {
-        int max = ddp.getDMaximum();
-        int min = ddp.getDMinimum();
-        if (((max - min) / threshold) < 3) threshold = (max - min) / 3;
-        if (pos < min) {
-            return Pos.beyondMin;
-        } else if (pos < min + threshold ) {
-            return Pos.min;
-        } else if (pos <= max - threshold) {
-            return Pos.middle;
-        } else if (pos <= max) {
-            return Pos.max;
-        } else {
-            return Pos.beyondMax;
-        }
-    }
     /**
      * mouse wheel events zoom or pan rapidly.  With a physical wheel, I (jbf) found
      * that I get 17ms per click, and this is managable.  With a touchpad on a mac,
@@ -78,7 +58,7 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
     public void mouseWheelMoved(MouseWheelEvent e) {
         double nmin, nmax; 
         
-        double xshift = 0., yshift = 0.;
+        double xshift = 0., yshift = 0.; // these are use to cancel out zoom/expand corrections to anchor a corner.
 
         if ((e.isControlDown() || e.isShiftDown())) {
             if (xAxis != null && yAxis != null) return; // this happens when mouse drifts onto plot during xaxis pan.
@@ -106,7 +86,7 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
             }
             switch (xpos) {
                 case min:
-                    xshift = -nmin;
+                    xshift = -nmin; // this will cancel out nmin
                     break;
                 case max:
                     xshift = nmin;
@@ -114,7 +94,7 @@ public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
             }
             switch (ypos) {
                 case min:
-                    yshift = nmin;
+                    yshift = nmin; // this will cancel out nmin
                     break;
                 case max:
                     yshift = -nmin;

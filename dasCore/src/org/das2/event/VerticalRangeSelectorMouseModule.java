@@ -23,8 +23,10 @@
 
 package org.das2.event;
 
+import java.awt.Point;
 import java.awt.event.MouseWheelEvent;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.graph.DasAxis;
@@ -138,6 +140,18 @@ public class VerticalRangeSelectorMouseModule extends MouseModule {
             }
         }
         
+        Point ep= SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), parent.getCanvas() );
+            
+        Pos ypos = axis == null ? Pos._null : position( axis.getRow(), ep.y, 20 );
+        switch (ypos) {
+            case min:
+                shift = nmin; // this will cancel out nmin
+                break;
+            case max:
+                shift = -nmin;
+                break;
+        }
+            
         int clickMag = 1;
         final long t1 = System.nanoTime();
         long limitNanos = (long) 40e6;

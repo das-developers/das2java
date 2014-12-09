@@ -39,6 +39,7 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.UnitsUtil;
 import org.das2.graph.DasAxis;
+import org.das2.graph.DasDevicePosition;
 import org.das2.system.DasLogger;
 
 /** A MouseModule is a pluggable unit that promotes simple
@@ -227,5 +228,36 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
     }
-
+    
+    /**
+     * used by subclasses to describe positions.
+     */
+    protected enum Pos {
+        _null, beyondMin, min, middle, max, beyondMax
+    };
+    
+    /**
+     * indicate if the position (pixels) is near the ends of the DasRow or
+     * DasColumn.  Note that the max of a row is its bottom.
+     * @param ddp the row or column
+     * @param pos the position to describe.
+     * @param threshold pixel distance to the boundary, 20 is often used.
+     * @return Pos enum.
+     */
+    public Pos position( DasDevicePosition ddp, int pos, int threshold ) {
+        int max = ddp.getDMaximum();
+        int min = ddp.getDMinimum();
+        if (((max - min) / threshold) < 3) threshold = (max - min) / 3;
+        if (pos < min) {
+            return Pos.beyondMin;
+        } else if (pos < min + threshold ) {
+            return Pos.min;
+        } else if (pos <= max - threshold) {
+            return Pos.middle;
+        } else if (pos <= max) {
+            return Pos.max;
+        } else {
+            return Pos.beyondMax;
+        }
+    }    
 }
