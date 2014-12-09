@@ -450,7 +450,7 @@ public class StreamTool {
         struct.bigBuffer.get(struct.four);
         if ( struct.four[0]== 0xa ) {
             // Jeremy's temperature sensors had the wrong content length for about a year.  Short of fixing this data, check for this for now.
-            logger.log(Level.WARNING, "off-by-one error in the content length preceeding byte offset {0}", (struct.byteOffset + struct.bigBuffer.position()  - struct.bigBuffer.limit() - 10 -4));
+            logger.log(Level.WARNING, "off-by-one error in the content length preceding byte offset {0}", (struct.byteOffset + struct.bigBuffer.position()  - struct.bigBuffer.limit() - 10 -4));
             struct.four[0]= struct.four[1];
             struct.four[1]= struct.four[2];
             struct.four[2]= struct.four[3];
