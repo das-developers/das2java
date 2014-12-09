@@ -34,7 +34,10 @@ import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 
 /**
- *
+ * Formatter is configured with strings of SimpleDateFormat (yyyy-MM-DD)
+ * or $ dollar or % percent format (%Y-%m-%d) specifiers.  
+ * SimpleDateFormat is discouraged because most other parts of das2 use the
+ * shorter form.
  * @author  Edward West
  */
 public class TimeDatumFormatter extends DatumFormatter {
@@ -204,6 +207,12 @@ public class TimeDatumFormatter extends DatumFormatter {
         return format;
     }
     
+    /**
+     * parse message format strings like yyyy-MM-DD
+     * @param input
+     * @return
+     * @throws ParseException 
+     */
     protected String parseTimeFormatString(String input) throws ParseException {
         final String formatPattern = "(([yMDdHmsS])\\2*)";
         final String delimiterPattern = "([-/:.,_ \t]+)";
@@ -273,9 +282,10 @@ public class TimeDatumFormatter extends DatumFormatter {
     }
     
     /**
-     * create the message format, based on %Y, %m, %d format specification.
-     * @param input
-     * @return
+     * create the message format, based on %Y, %m, %d format specification
+     * of the unix date command.
+     * @param format
+     * @return a SimpleDateFormat string.
      * @throws java.text.ParseException
      */
     protected String parseTimeFormatStringPercent(String format) throws ParseException {
