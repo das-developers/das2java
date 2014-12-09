@@ -27,10 +27,13 @@ import java.util.HashMap;
  * crosshair.
  *
  * Three properties control when BoxSelectionEvents are to be fired:
- *   dragEvents     as the mouse is dragged,
- *   keyEvents      when a key is pressed.  (The key is the "keyChar" plane of the event)
- *   releaseEvents  when the mouse is released.  (false by default)
- *
+ * <ul>
+ * <li> dragEvents     as the mouse is dragged,
+ * <li> keyEvents      when a key is pressed.  (The key is the "keyChar" plane of the event)
+ * <li> releaseEvents  when the mouse is released.  (false by default)
+ * </ul>
+ * This is intended to be used as a base class for other slicers which need a
+ * range to be selected in X, Y, or both.
  * @see BoxRenderer
  * @author Jeremy
  */
@@ -44,10 +47,25 @@ public class BoxSelectorMouseModule extends MouseModule {
     boolean tweakable = false;
     BoxSelectionEvent lastSelectionEvent = null;
 
+    /**
+     * create a BoxSelectorMouseModule
+     * @param parent the plot component
+     * @param label the label for this mouseModule.
+     * @return new  BoxSelectorMouseModule
+     */
     public static BoxSelectorMouseModule create( DasPlot parent, String label ) {
         return new BoxSelectorMouseModule( parent, parent.getXAxis(), parent.getYAxis(), null, new BoxRenderer(parent,true), label );
     }
     
+    /**
+     * create a new BoxSelectorMouseModule
+     * @param parent the parent component
+     * @param xAxis
+     * @param yAxis
+     * @param consumer used by some subclasses, such as CutoffMouseModule.
+     * @param dragRenderer the drag renderer to use, typically a BoxRenderer but needn't be.
+     * @param label the label for this mouseModule.
+     */
     public BoxSelectorMouseModule(DasCanvasComponent parent, DasAxis xAxis, DasAxis yAxis,
             DataSetConsumer consumer,
             DragRenderer dragRenderer, String label) {
