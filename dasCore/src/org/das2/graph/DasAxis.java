@@ -4222,6 +4222,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if (formatString.equals("")) {
                 setUserDatumFormatter(null);
             } else {
+                if ( formatString.contains("$") && !formatString.contains("%") ) {
+                    formatString= formatString.replaceAll("\\$","%");
+                }
                 setUserDatumFormatter(getUnits().getDatumFormatterFactory().newFormatter(formatString));
             }
             updateTickV();
