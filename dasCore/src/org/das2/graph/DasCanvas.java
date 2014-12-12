@@ -1123,8 +1123,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * parameter settings.
      * @param out OutputStream to receive the data
      * @param go GraphicsOutput object.
+     * @throws java.io.IOException
      */
-    public void writeToGraphicsOutput(OutputStream out, GraphicsOutput go) throws IOException, IllegalAccessException {
+    public void writeToGraphicsOutput(OutputStream out, GraphicsOutput go) throws IOException {
         go.setOutputStream(out);
         go.setSize(getWidth(), getHeight());
         go.start();
