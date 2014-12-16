@@ -12,6 +12,7 @@ import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,9 +50,9 @@ import javax.swing.text.JTextComponent;
  */
 public final class LoggerManager {
 
-    private static Set<String> loggers= new HashSet();
-    private static Map<String,Logger> log= new HashMap();
-    private static Set<Handler> extraHandlers= new HashSet();
+    private static final Set<String> loggers= new HashSet();
+    private static final Map<String,Logger> log= new HashMap();
+    private static final Set<Handler> extraHandlers= new HashSet();
 
     /**
      * return the requested logger, but add it to the list of known loggers.
@@ -374,6 +375,12 @@ public final class LoggerManager {
         logGuiEvent( e.getSource(), "itemEvent" );
     }
                 
+    public static void logGuiEvent( FocusEvent e ) {
+        if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
+            return;
+        }
+        logGuiEvent( e.getSource(), "focusEvent" );
+    }
             
     public static void main( String[] args ) {
         Logger l= LoggerManager.getLogger("test");
