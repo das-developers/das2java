@@ -814,6 +814,19 @@ public class DataSetOps {
 
         return bundleDescriptor;
     }
+    
+    /**
+     * create array of [ "ch_0", "ch_1", ... ]
+     * @param len
+     * @return string array containing the names that will always work.
+     */
+    private static String[] backupBundleNames( int len ) {
+        String[] result= new String[len];
+        for ( int i2=0; i2<len; i2++ ) {
+            result[i2]= "ch_"+i2;
+        }
+        return result;
+    }
 
     /**
      * return the names of the dataset that can be unbundled.
@@ -830,14 +843,18 @@ public class DataSetOps {
         if ( bundle1==null ) {
             bundle1= (QDataSet) bundleDs.property(QDataSet.DEPEND_1); //simple legacy bundle was once DEPEND_1.
             if ( bundle1!=null && bundle1.rank()>1 ) {
-                throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+                if ( bundle1.rank()!=2 ) {
+                    throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
+                } else {
+                    result= Arrays.asList( backupBundleNames( bundle1.length(0) ) );
+                }
             } else if ( bundle1!=null ) {
                 Units u= SemanticOps.getUnits( bundle1 );
                 for ( int i2=0; i2<bundle1.length(); i2++ ) {
                     result.add( Ops.saferName( u.createDatum( bundle1.value(i2) ).toString() ) );
                 }
             } else {
-                throw new IllegalArgumentException("expected to find BUNDLE_1 or DEPEND_1 with ordinal units." );
+                result= Arrays.asList( backupBundleNames( bundleDs.length(0) ) );
             }
         } else {
             for ( int j=0; j<bundle1.length(); j++ ) { // allow label to be used to access data, since old vap files may contain these.
@@ -1097,8 +1114,7 @@ public class DataSetOps {
                     return new Slice1DataSet( bundleDs, ib ); //TODO: this was   throw new IllegalArgumentException( "Neither BUNDLE_1 nor DEPEND_1 found on dataset passed to unbundle command.");
                 }
                 if ( bundle1.rank()==2 ) {                    
-                    logger.warning("rank 2 DEPEND_1 found where rank 1 was expected");
-                    return new Slice1DataSet( bundleDs, ib ); 
+                    return new Slice1DataSet( bundleDs, ib );  // warning message removed, because rank 1 context is used.
                 } else if ( bundle1.rank()>1 ) {
                     throw new IllegalArgumentException("high rank DEPEND_1 found where rank 1 was expected");
                 } else {
