@@ -1915,9 +1915,9 @@ public class DataSetOps {
                                 if ( window.length()==0 ) window= "Unity";
                                 FFTFilterType ff= Ops.FFTFilterType.valueOf(window);
                                 QDataSet wqds= Ops.windowFunction( ff, len );
-                                fillDs= Ops.fftPower( fillDs, wqds, step, mon);
+                                fillDs= Ops.fftPower( fillDs, wqds, step, mon.getSubtaskMonitor("fftPower"));
                             } else {
-                                fillDs= Ops.fftPower(fillDs,len, mon);
+                                fillDs= Ops.fftPower(fillDs,len, mon.getSubtaskMonitor("fftPower"));
                             }
                         } else {
                             fillDs= Ops.fftPower(fillDs);
@@ -2009,11 +2009,11 @@ public class DataSetOps {
 
                 } else if ( cmd.equals("|setUnits" ) ) {
                     String arg= getStringArg( s.next() );
-                    Units newu= SemanticOps.lookupUnits(arg);
+                    Units newu= Units.lookupUnits(arg);
                     fillDs= ArrayDataSet.copy(fillDs).setUnits(newu);
                 } else if ( cmd.equals("|setDepend0Units") ) { //TODO: this causes strange errors with auto
                     String arg= getStringArg( s.next() );
-                    Units newu= SemanticOps.lookupUnits(arg);
+                    Units newu= Units.lookupUnits(arg);
                     QDataSet dep0= (QDataSet) fillDs.property(QDataSet.DEPEND_0);
                     if ( dep0!=null ) {
                         dep0= ArrayDataSet.copy(dep0).setUnits(newu);
