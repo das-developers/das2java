@@ -1167,6 +1167,10 @@ public class SeriesRenderer extends Renderer {
         
         if ( xds.length()!=yds.length() ) {
             logger.fine("xds and yds have different lengths.  Assuming transitional case.");
+            firstIndex_v= 0;
+            lastIndex_v= xds.length();
+            firstIndex= 0;
+            lastIndex= xds.length();
             return;
             //throw new IllegalArgumentException("xds and yds are different lengths.");
         }
@@ -1609,6 +1613,10 @@ public class SeriesRenderer extends Renderer {
                 logger.fine("dataset is rank 2 and not a bundle");
                 return;
             }
+            if ( vds.length()!=ds.length() ) {
+                logger.fine("dataset is rank 2 and will cause problems");
+                return;
+            }
             unitsWarning= false;
             plottable = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits());
             if ( !plottable ) {
@@ -1726,6 +1734,9 @@ public class SeriesRenderer extends Renderer {
             }
 
             if ( vds!=null ) {
+                if ( vds.rank()!=1 ) {
+                    return; // transitional case.
+                }
                 selectionArea= calcSelectionArea( xAxis, yAxis, xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );        
             }
             
