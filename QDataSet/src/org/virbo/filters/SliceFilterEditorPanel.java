@@ -27,8 +27,7 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
      */
     public SliceFilterEditorPanel() {
         initComponents();
-        setName("cb"+String.format( "%04d", (System.currentTimeMillis()-t0)/100 ));
-        setToolTipText( getName() );
+        setName("sliceFilterEditorPanel" + String.format( "%04d", (System.currentTimeMillis()-t0)/100 ));
     }
 
     /**
