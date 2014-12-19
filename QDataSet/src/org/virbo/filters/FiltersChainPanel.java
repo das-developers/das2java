@@ -104,9 +104,13 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        scrollPane = new javax.swing.JScrollPane();
+
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
+        add(scrollPane);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -229,6 +233,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     private final ActionListener requestUpdateListener= new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+            logger.fine( "requestUpdateFrom "+e.getSource());
             updateSoon(inputDs, null );
         }
     };
@@ -486,12 +491,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         BoxLayout lo= new BoxLayout( content, BoxLayout.Y_AXIS );
         content.setLayout( lo );
 
-        JScrollPane pane= new JScrollPane( content );
-        pane.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
-        pane.getVerticalScrollBar().setUnitIncrement( pane.getFont().getSize() );
+        int scroll0= scrollPane.getVerticalScrollBar().getValue();
         
-        this.removeAll();
-        
+        scrollPane.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
+        scrollPane.getVerticalScrollBar().setUnitIncrement( scrollPane.getFont().getSize() );
+                
         for ( int i=0; i<ss.length; i++ ) {
             ss[i]= ss[i].trim();
         }
@@ -526,8 +530,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         content.add( add );
 
         content.add(Box.createVerticalGlue());
-           
-        this.add( pane );
+        
+        scrollPane.setViewportView(content);
+        scrollPane.getVerticalScrollBar().setValue(scroll0);
         
         //content.revalidate();
         this.revalidate();
@@ -557,8 +562,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
      * TODO: This does data processing on the event thread and will surely cause problems.
      */
     private void updateSoon( final QDataSet inputDs, final String filter) {
+        logger.entering( CLASS_NAME, "updateSoon", filter);
         //this.inputDs= null;
-        timer.tickle(filter);
+        timer.tickle(filter); 
     }
     
     /**
