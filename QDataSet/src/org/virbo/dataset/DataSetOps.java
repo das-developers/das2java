@@ -1981,6 +1981,11 @@ public class DataSetOps {
                     String comp= s.next();
                     int icomp= Integer.parseInt(comp);
                     fillDs= Ops.detrend(fillDs, icomp);
+                } else if ( cmd.equals("|smoothfit") ) {
+                    String comp= s.next();
+                    int icomp= Integer.parseInt(comp);
+                    QDataSet x= SemanticOps.xtagsDataSet(fillDs);
+                    fillDs= Ops.smoothFit(x,fillDs, icomp);
                 } else if ( cmd.equals("|medianFilter") ) {
                     String comp= s.next();
                     int icomp= Integer.parseInt(comp);
