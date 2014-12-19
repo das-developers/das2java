@@ -132,7 +132,7 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
                         .add(cutoffFreq, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel3)
-                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap(22, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, subPanel3Layout.createSequentialGroup()
                         .add(jLabel10)
                         .addContainerGap())))
@@ -149,6 +149,7 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
 
         jLabel4.setText("Low Frequency:");
 
+        lowFreq.setName("lowf"); // NOI18N
         lowFreq.setPreferredSize(new java.awt.Dimension(75, 27));
 
         jLabel5.setText("Hz");
