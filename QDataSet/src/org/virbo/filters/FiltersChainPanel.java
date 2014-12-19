@@ -218,12 +218,12 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
 
         @Override
         public void focusGained(FocusEvent e) {
-            logger.log(Level.FINE, "focusGained {0}", e.getComponent());
+            logger.log(Level.FINE, "focusGained {0}", e.getComponent().getName() );
         }
 
         @Override
         public void focusLost(FocusEvent e) {
-            logger.log(Level.FINE, "focusLost {0}", e.getComponent());
+            logger.log(Level.FINE, "focusLost {0}", e.getComponent().getName() );
             updateSoon(inputDs, null );
         }
         
