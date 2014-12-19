@@ -388,7 +388,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         Dimension limit= new Dimension(24,24);
         
         JButton subAdd= new JButton("");
-        subAdd.setIcon( new ImageIcon( FiltersChainPanel.class.getResource("/org/virbo/datasource/add.png") ) );
+        subAdd.setIcon( new ImageIcon( FiltersChainPanel.class.getResource("/resources/add.png") ) );
         subAdd.setMaximumSize( limit );
         subAdd.setPreferredSize( limit );
 
@@ -416,7 +416,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
 
         if ( fi>=0 ) {
             JButton subDelete= new JButton("");
-            subDelete.setIcon( new ImageIcon( FiltersChainPanel.class.getResource("/org/virbo/datasource/subtract.png") ) );
+            subDelete.setIcon( new ImageIcon( FiltersChainPanel.class.getResource("/resources/subtract.png") ) );
             subDelete.setMaximumSize( limit );
             subDelete.setPreferredSize( limit );
             subDelete.setToolTipText( "remove filter " + sfilter );
