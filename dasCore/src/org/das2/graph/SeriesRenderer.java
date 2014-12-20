@@ -666,7 +666,7 @@ public class SeriesRenderer extends Renderer {
             try {// TODO: this really shouldn't be here, since we calculate it once.
                 sw= SemanticOps.guessXTagWidth( xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );
             } catch ( IllegalArgumentException ex ) {
-                
+                ex.printStackTrace();
             }
             double xSampleWidth;
             boolean logStep;
