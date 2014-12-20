@@ -483,7 +483,13 @@ public class DataSetUtil {
         String [] props= DataSetUtil.correlativeProperties();
         for ( String s: props ) {
             dsp= (QDataSet) ds.property( s );
-            if ( dsp!=null ) result.put( s, dsp.trim(start,stop) );
+            if ( dsp!=null ) {
+                if ( dsp.rank()>0 ) {
+                    result.put( s, dsp.trim(start,stop) );
+                } else {
+                    result.put( s, dsp );
+                }
+            }
         }
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
