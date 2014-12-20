@@ -469,6 +469,9 @@ public final class DDataSet extends ArrayDataSet {
      */
     @Override
     public QDataSet trim(int start, int end) {
+        if ( rank==0 ) {
+            logger.warning("trim called on rank 0 dataset, this may soon throw exception");
+        }
         if ( RANGE_CHECK ) {
             if ( start>len0 ) throw new IndexOutOfBoundsException("start="+start+" > "+len0 );
             if ( end>len0 ) throw new IndexOutOfBoundsException("end="+end+" > "+len0 );
