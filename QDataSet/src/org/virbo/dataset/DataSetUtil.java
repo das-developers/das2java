@@ -463,7 +463,7 @@ public class DataSetUtil {
     public static Map<String,Object> trimProperties( QDataSet ds, int start, int stop ) {
 
         Map<String,Object> result= new LinkedHashMap();
-        getDimensionProperties(ds,result);
+        result= getDimensionProperties(ds,result);
 
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( dep0!=null ) result.put( QDataSet.DEPEND_0, dep0.trim(start,stop) );
