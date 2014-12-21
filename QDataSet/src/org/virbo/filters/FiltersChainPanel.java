@@ -64,7 +64,7 @@ import org.virbo.dsops.Ops;
 public final class FiltersChainPanel extends javax.swing.JPanel implements FilterEditorPanel {
     
     private QDataSet inputDs;
-    //private String currentFilter= null;
+    private String currentFilter= null; // the currently implemented filter.
     private boolean implicitUnbundle= false;
     TickleTimer timer;
 
@@ -224,7 +224,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         @Override
         public void focusLost(FocusEvent e) {
             logger.log(Level.FINE, "focusLost {0}", e.getComponent().getName() );
-            updateSoon(inputDs, null );
+            if ( !getFilter().equals(currentFilter) ) {
+                updateSoon(inputDs, null );
+            } else {
+                logger.log( Level.FINER, "... already up to date");
+            }
         }
         
     };
@@ -533,6 +537,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
         scrollPane.setViewportView(content);
         scrollPane.getVerticalScrollBar().setValue(scroll0);
+        
+        this.currentFilter= filter;
         
         //content.revalidate();
         this.revalidate();
