@@ -90,7 +90,7 @@ public class HttpFileSystem extends WebFileSystem {
 
             String auth= rooturi.getAuthority();
             if ( auth==null ) {
-                throw new MalformedURLException("URL doesn't contain authority, check for ///");
+                throw new MalformedURLException("URL does not contain authority, check for ///");
             }
             String[] ss= auth.split("@");
 
@@ -118,7 +118,7 @@ public class HttpFileSystem extends WebFileSystem {
             if ( parentURI!=null ) {
                 HttpFileSystem parent= (HttpFileSystem) peek( parentURI );
                 if ( parent!=null && parent.isOffline() ) {
-                    logger.fine("parent is offline, don't check...");
+                    logger.fine("parent is offline, do not check...");
                     doCheck= false;
                 }
             }
@@ -441,7 +441,7 @@ public class HttpFileSystem extends WebFileSystem {
                     throw e;
                 }
             } else {
-                throw new IOException("couldn't create local file: " + f);
+                throw new IOException("could not create local file: " + f);
             }
         } finally {
 
