@@ -165,7 +165,7 @@ public class HttpFileSystem extends WebFileSystem {
                     connectFail= false;
                 } catch ( IOException ex ) {
                     int code= 0;
-                    String msg="";
+                    String msg;
                     try {
                         code= urlc.getResponseCode();
                         msg= urlc.getResponseMessage();
@@ -296,6 +296,7 @@ public class HttpFileSystem extends WebFileSystem {
      * @param monitor  monitor the progress.
      * @throws IOException 
      */
+    @Override
     protected void downloadFile(String filename, File f, File partFile, ProgressMonitor monitor) throws IOException {
 
         Lock lock = getDownloadLock(filename, f, monitor);
@@ -465,8 +466,10 @@ public class HttpFileSystem extends WebFileSystem {
      *   ETag: "750d4f66c58a0ac7fef2784253bf6954d4d38a85"
      *   Accept-Ranges    accepts requests for part of a file.
      *}</small></pre></blockquote>     
-     * @param f
+     * @param f the name within the filesystem
+     * @return the metadata, such as the Date and ETag.
      * @throws java.io.IOException
+     * @throws org.das2.util.monitor.CancelledOperationException
      */
     protected Map<String, Object> getHeadMeta(String f) throws IOException, CancelledOperationException {
         String realName = f;
@@ -513,7 +516,10 @@ public class HttpFileSystem extends WebFileSystem {
     /** dumb method looks for / in parent directory's listing.  Since we have
      * to list the parent, then IOException can be thrown.
      * 
+     * @return true if the name appears to be a directory (folder).
+     * @throws java.io.IOException
      */
+    @Override
     public boolean isDirectory(String filename) throws IOException {
 
         if (localRoot == null) {
@@ -539,8 +545,8 @@ public class HttpFileSystem extends WebFileSystem {
                 } else {
                     lookFor = filename + "/";
                 }
-                for (int i = 0; i < list.length; i++) {
-                    if (list[i].equals(lookFor)) {
+                for (String list1 : list) {
+                    if (list1.equals(lookFor)) {
                         return true;
                     }
                 }
@@ -560,10 +566,11 @@ public class HttpFileSystem extends WebFileSystem {
     /**
      * list the directory, using the cached entry from listDirectoryFromMemory, or
      * by HtmlUtil.getDirectoryListing.  If there is a ro_cache, then add extra entries from here as well.
-     * @param directory
-     * @return
+     * @param directory name within the filesystem
+     * @return names within the directory
      * @throws IOException
      */
+    @Override
     public String[] listDirectory(String directory) throws IOException {
 
         DirectoryEntry[] cached= listDirectoryFromMemory( directory );
@@ -601,7 +608,7 @@ public class HttpFileSystem extends WebFileSystem {
 
             File listing= listingFile(directory);
             
-            URL[] list=null;
+            URL[] list;
             FileInputStream fin=null;
             try {
                 fin= new FileInputStream(listing);
@@ -614,8 +621,7 @@ public class HttpFileSystem extends WebFileSystem {
             
             result = new LinkedHashMap(list.length);
             int n = directory.length();
-            for (int i = 0; i < list.length; i++) {
-                URL url = list[i];
+            for (URL url : list) {
                 DirectoryEntry de1= new DirectoryEntry();
                 de1.modified= Long.MAX_VALUE; // HTTP is somewhat expensive to get dates and sizes, so put in Long.MAX_VALUE to indicate need to load.
                 de1.name= getLocalName(url).substring(n);
@@ -640,10 +646,8 @@ public class HttpFileSystem extends WebFileSystem {
             if ( !f.exists() ) throw new FileSystemOfflineException("unable to list "+f+" when offline");
             File[] listing = f.listFiles();
 
-            int n= f.toString().length();
             List<String> result1= new ArrayList();
-            for ( int i=0; i<listing.length; i++ ) {
-                File f1= listing[i];
+            for (File f1 : listing) {
                 if ( f1.getName().endsWith(".listing") ) continue;
                 if ( f1.isDirectory() ) {
                     result1.add( f1.getName() + "/" );
@@ -667,13 +671,6 @@ public class HttpFileSystem extends WebFileSystem {
             logger.log(Level.FINE, "list {0}", directory);
             URL[] list;
             try {
-                URL listUrl= getURL(directory);
-
-                String file= listUrl.getFile();
-                if ( file.charAt(file.length()-1)!='/' ) {
-                    listUrl= new URL( listUrl.toString()+'/' );
-                }
-
                 File listing= listingFile( directory );
 
                 downloadFile( directory, listing, new File( listing.toString()+".part" ), new NullProgressMonitor() );
@@ -700,8 +697,7 @@ public class HttpFileSystem extends WebFileSystem {
 
                 result = new LinkedHashMap();
                 int n = directory.length();
-                for (int i = 0; i < list.length; i++) {
-                    URL url = list[i];
+                for (URL url : list) {
                     DirectoryEntry de1= new DirectoryEntry();
                     de1.modified= Long.MAX_VALUE;
                     de1.name= getLocalName(url).substring(n);
@@ -796,11 +792,10 @@ public class HttpFileSystem extends WebFileSystem {
         String[] listing = listDirectory(directory);
         Pattern pattern = Pattern.compile(regex);
         ArrayList result = new ArrayList();
-        for (int i = 0; i < listing.length; i++) {
-            String s= listing[i];
+        for (String s : listing) {
             if ( s.charAt(s.length()-1)=='/' ) s= s.substring(0,s.length()-1);
             if (pattern.matcher(s).matches()) {
-                result.add(listing[i]);
+                result.add(s);
             }
         }
         return (String[]) result.toArray(new String[result.size()]);
