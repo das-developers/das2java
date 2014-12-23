@@ -154,7 +154,7 @@ public class HttpFileSystem extends WebFileSystem {
                     logger.log( Level.FINE, "urlc={0}", urlc );
                     if ( userInfo!=null && !userInfo.contains(":") ) {
                         logger.log( Level.INFO, "urlc={0}", urlc );
-                        logger.log( Level.INFO, "userInfo doesn't appear to contain password: {0}", userInfo );
+                        logger.log( Level.INFO, "userInfo does not appear to contain password: {0}", userInfo );
                     } else {
                         logger.log( Level.FINE, "userInfo.length={0}", ( userInfo==null ? -1 : userInfo.length() ));
                     }
