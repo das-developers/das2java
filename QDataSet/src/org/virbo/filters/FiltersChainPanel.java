@@ -171,6 +171,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new SetUnitsFilterEditorPanel();
         } else if ( f.matches("\\|slice(\\d)\\((\\d+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SliceFilterEditorPanel();
+        } else if ( f.matches("\\|slices\\((.*)\\)") ) { 
+            result= new SlicesFilterEditorPanel();
         } else if ( f.matches("\\|smooth\\(\\d+\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SmoothFilterEditorPanel();
         } else if ( f.matches("\\|smoothfit\\(\\d+\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
