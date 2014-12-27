@@ -60,6 +60,7 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
         p1.setLayout( new BoxLayout( p1, BoxLayout.X_AXIS ) );
         //p1.setBorder( new TitledBorder("One Panel"));
         final JCheckBox cb1= new JCheckBox("Index"+i+":");
+        cb1.setToolTipText("slice on this dimension");
         p1.add( cb1 );
         checkboxs[i]=cb1;
         cb1.addActionListener( new ActionListener() {
@@ -110,6 +111,7 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
                 add( getDimensionPanel( i,":") );
             }
             checkboxs[i].setText(depNames1[i]);
+            checkboxs[i].setToolTipText("slice on "+depNames1[i]);
             int max;
             if ( dep==null ) {
                 max= Integer.MAX_VALUE;
