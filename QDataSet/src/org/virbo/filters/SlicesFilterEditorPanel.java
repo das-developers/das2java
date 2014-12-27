@@ -129,7 +129,7 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
 
     public static void main( String[] args ) {
         FilterEditorPanel filter= new SlicesFilterEditorPanel();
-        QDataSet ds= FiltersChainPanel.getDataSet("qube");
+        QDataSet ds= FiltersChainPanel.getExampleDataSet("qube");
         filter.setFilter("|slices(0,:)");
         filter.setInput(ds);
         JOptionPane.showMessageDialog( null, filter);

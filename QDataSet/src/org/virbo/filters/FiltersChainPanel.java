@@ -636,10 +636,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     
     /**
      * dataset for testing.
+     * @param s name of dataset, including: rank1TimeSeries, qube
      * @see #main(java.lang.String[]) 
      * @return dataset for testing.
      */
-    private static QDataSet getDataSet( String s ) {
+    protected static QDataSet getExampleDataSet( String s ) {
         try {
             if ( s.equals("rank1TimeSeries" ) ) {
                 return Ops.ripplesTimeSeries(20);
@@ -674,7 +675,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         final FiltersChainPanel ff= new FiltersChainPanel();
 
         //QDataSet ds= getDataSet( "rank1TimeSeries" );
-        final QDataSet ds= getDataSet( "qube" );
+        final QDataSet ds= getExampleDataSet( "qube" );
         
         //ff.setFilter("|slice0(2)|cos()|collapse1()|butterworth(2,500,750,True)"); //butterworth(2,500,550,True)");
         //ff.setFilter("|butterworth(2,500,550,True)"
