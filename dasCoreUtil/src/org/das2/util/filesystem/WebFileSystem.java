@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -53,6 +54,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.das2.util.FileUtil;
+import org.das2.util.OsUtil;
 
 /**
  * Base class for HTTP and FTP-based filesystems.  A local cache is kept of
@@ -421,6 +423,24 @@ public abstract class WebFileSystem extends FileSystem {
         monitor.finished();
     }
 
+    protected static String id= String.format( "%014d_%s", System.currentTimeMillis(), ManagementFactory.getRuntimeMXBean().getName() );
+            
+    /**
+     * return a name where the download is to be staged.  This will
+     * be unique for any process.  We make the following assumptions:
+     * <ul>
+     * <li> multiple Java processes will be using and modifying the file database.
+     * <li> java processes may be on different machines
+     * <li> an ID conflict may occur should two processes have the same UID, hostname, and are started at the same clock time millisecond.
+     * </ul>
+     * See https://sourceforge.net/p/autoplot/bugs/1301/
+     * @param localFile
+     * @return the temporary filename to use.
+     */
+    public final File getPartFile( File localFile ) {
+        return new File( localFile.toString()+ "." + id + ".part" );
+    }
+    
     /**
      * Request lock to download file.  If this thread gets the lock, then it
      * should download the file and call  mutatorLock.unlock() when the
