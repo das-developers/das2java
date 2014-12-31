@@ -433,7 +433,9 @@ public class WebFileObject extends FileObject {
                     this.setLastModified( remoteDate );
                     this.setSize( remoteLength );
                 }
-                if ( !( wfs instanceof HttpFileSystem ) ) download= true; //FTP filesystem timetags are very course.
+                if ( !( wfs instanceof HttpFileSystem ) ) {
+                    download= true;
+                } //FTP filesystem timetags are very course.
             }
             remoteDate = this.lastModified();
             remoteLength= this.getSize();
