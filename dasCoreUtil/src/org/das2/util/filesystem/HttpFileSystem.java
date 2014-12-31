@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.swing.SwingUtilities;
+import org.das2.util.OsUtil;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
 import static org.das2.util.filesystem.WebFileSystem.consumeStream;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -423,6 +424,17 @@ public class HttpFileSystem extends WebFileSystem {
                         }
                     }
                     if ( f.exists() ) {
+                        if ( f.length()==partFile.length() ) {
+                            if ( OsUtil.contentEquals(f, partFile ) ) {
+                                logger.fine("another thread must have downloaded file.");
+                                if ( !partFile.delete() ) {
+                                    throw new IllegalArgumentException("unable to delete "+partFile );
+                                }
+                                return;
+                            } else {
+                                logger.fine("another thread must have downloaded different file.");
+                            }
+                        }
                         logger.log(Level.FINE, "deleting old file {0}", f);
                         if ( ! f.delete() ) {
                             throw new IllegalArgumentException("unable to delete "+f );
