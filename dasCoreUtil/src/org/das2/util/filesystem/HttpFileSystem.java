@@ -307,7 +307,7 @@ public class HttpFileSystem extends WebFileSystem {
         
         filename = toCanonicalFilename(filename);
                 
-        logger.log(Level.FINE, "downloadFile({0})", filename);
+        logger.log(Level.FINE, "downloadFile {0}, using temp file {1}", new Object[] { filename, partFile } );
 
         try {
             URL remoteURL = new URL(root.toString() + filename.substring(1) );
@@ -673,7 +673,7 @@ public class HttpFileSystem extends WebFileSystem {
             try {
                 File listing= listingFile( directory );
 
-                downloadFile( directory, listing, new File( listing.toString()+".part" ), new NullProgressMonitor() );
+                downloadFile( directory, listing, getPartFile(listing), new NullProgressMonitor() );
 
                 FileInputStream fin=null;
                 try {

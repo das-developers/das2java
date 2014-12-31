@@ -127,7 +127,7 @@ public class FTPFileSystem extends WebFileSystem {
             File listing= new File( localRoot, directory + ".listing" );
             if ( !listing.canRead() ) {
                 File partFile= listing;
-                downloadFile( directory, listing, partFile, new NullProgressMonitor() );
+                downloadFile( directory, listing, getPartFile(listing), new NullProgressMonitor() );
             }
             listing.deleteOnExit();
             return parseLsl( directory, listing );
