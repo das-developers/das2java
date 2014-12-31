@@ -464,7 +464,7 @@ public class WebFileObject extends FileObject {
                 if (!localFile.getParentFile().exists()) {
                     FileSystemUtil.maybeMkdirs( localFile.getParentFile() );
                 }
-                File partFile = new File(localFile.toString() + ".part");
+                File partFile = wfs.getPartFile( localFile );
                 wfs.downloadFile(pathname, localFile, partFile, monitor.getSubtaskMonitor("download file"));
 
                 if ( !localFile.setLastModified(remoteDate.getTime()) ) {
