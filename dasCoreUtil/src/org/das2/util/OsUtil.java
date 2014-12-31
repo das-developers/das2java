@@ -8,12 +8,10 @@ package org.das2.util;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.management.ManagementFactory;
-import java.nio.file.Files;
 
 /**
  * Utility methods for operating system functions.
