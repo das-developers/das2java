@@ -2168,10 +2168,11 @@ public class Ops {
     }
 
     /**
-     * returns a rank N+1 dataset
-     * @param val
-     * @param len0
-     * @return 
+     * returns a rank N+1 dataset by repeating the rank N dataset, so
+     * all records will have the same value. E.g. result.value(i,j)= val.value(j)
+     * @param val the rank N dataset
+     * @param len0 the number of times to repeat
+     * @return rank N+1 dataset.
      */
     public static MutablePropertyDataSet replicate( final QDataSet val, final int len0 ) {
         return new ReplicateDataSet( val, len0 );
