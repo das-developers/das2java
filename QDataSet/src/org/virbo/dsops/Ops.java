@@ -363,6 +363,7 @@ public class Ops {
         if ( units2.isConvertableTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
             result= (MutablePropertyDataSet)  applyBinaryOp(ds1, ds2, new BinaryOp() {
+                @Override
                 public double op(double d1, double d2) {
                     return d1 - uc.convert(d2);
                 }
@@ -371,6 +372,7 @@ public class Ops {
         } else if ( UnitsUtil.isIntervalMeasurement(units1) && UnitsUtil.isIntervalMeasurement(units2) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1 );
             result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+                @Override
                 public double op(double d1, double d2) {
                     return d1 - uc.convert(d2);
                 }
@@ -379,6 +381,7 @@ public class Ops {
         } else if ( UnitsUtil.isIntervalMeasurement(units1) && !UnitsUtil.isIntervalMeasurement(units2)) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
             result= (MutablePropertyDataSet) applyBinaryOp(ds1, ds2, new BinaryOp() {
+                @Override
                 public double op(double d1, double d2) {
                     return d1 - uc.convert(d2);
                 }
@@ -493,6 +496,7 @@ public class Ops {
             throw new IllegalArgumentException("Units are not ratiometric units");
         }
         MutablePropertyDataSet mpds= applyUnaryOp(ds1, new UnaryOp() {
+            @Override
             public double op(double d1) {
                 return -d1;
             }
@@ -740,19 +744,19 @@ public class Ops {
      */
     public static QDataSet reduceMax(QDataSet ds, int dim) {
         return averageGen(ds, dim, new AverageOp() {
-
+            @Override
             public void accum(double d1, double w1, double[] accum) {
                 if (w1 > 0.0) {
                     accum[0] = Math.max(d1, accum[0]);
                     accum[1] = w1;
                 }
             }
-
+            @Override
             public void initStore(double[] store) {
                 store[0] = Double.NEGATIVE_INFINITY;
                 store[1] = 0.;
             }
-
+            @Override
             public void normalize(double[] accum) {
                 // nothing to do
             }
@@ -769,19 +773,19 @@ public class Ops {
      */
     public static QDataSet reduceMin(QDataSet ds, int dim) {
         return averageGen(ds, dim, new AverageOp() {
-
+            @Override
             public void accum(double d1, double w1, double[] accum) {
                 if (w1 > 0.0) {
                     accum[0] = Math.min(d1, accum[0]);
                     accum[1] = w1;
                 }
             }
-
+            @Override
             public void initStore(double[] store) {
                 store[0] = Double.POSITIVE_INFINITY;
                 store[1] = 0.;
             }
-
+            @Override
             public void normalize(double[] accum) {
                 // nothing to do
             }
@@ -799,19 +803,19 @@ public class Ops {
      */
     public static QDataSet reduceMean(QDataSet ds, int dim) {
         return averageGen(ds, dim, new AverageOp() {
-
+            @Override
             public void accum(double d1, double w1, double[] accum) {
                 if ( w1 > 0.0 ) { // because 0 * NaN is NaN...
                     accum[0] += w1 * d1;
                     accum[1] += w1;
                 }
             }
-
+            @Override
             public void initStore(double[] store) {
                 store[0] = 0.;
                 store[1] = 0.;
             }
-
+            @Override
             public void normalize(double[] accum) {
                 if (accum[1] > 0.) {
                     accum[0] /= accum[1];
@@ -896,8 +900,8 @@ public class Ops {
      * and en=2014-01-03 then just the records collected on this one day would
      * be returned.
      * @param ds the dataset to be trimmed, with a rank 1 monotonic DEPEND_0.
-     * @param st rank 0 min
-     * @param en rank 0 max
+     * @param st rank 0 min value
+     * @param en rank 0 max value
      * @return the subset of the data.
      * @see #slice0(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
@@ -931,6 +935,7 @@ public class Ops {
     public static QDataSet sqrt(QDataSet ds) {
         //MutablePropertyDataSet result= (MutablePropertyDataSet) pow(ds, 0.5);
         MutablePropertyDataSet result= applyUnaryOp( ds, new UnaryOp() {
+            @Override
             public double op(double d1) {
                 return Math.sqrt(d1);
             }
@@ -1105,6 +1110,7 @@ public class Ops {
      */
     public static QDataSet abs(QDataSet ds1) {
         MutablePropertyDataSet result= applyUnaryOp(ds1, new UnaryOp() {
+            @Override
             public double op(double d1) {
                 return Math.abs(d1);
             }
@@ -1135,7 +1141,7 @@ public class Ops {
      */
     public static QDataSet pow(QDataSet ds1, QDataSet pow) {
         MutablePropertyDataSet result=  applyBinaryOp(ds1, pow, new BinaryOp() {
-
+            @Override
             public double op(double d1, double d2) {
                 return Math.pow(d1, d2);
             }
@@ -1170,6 +1176,7 @@ public class Ops {
      */
     public static QDataSet exp(QDataSet ds) {
         MutablePropertyDataSet result=  applyUnaryOp(ds, new UnaryOp() {
+            @Override
             public double op(double d1) {
                 return Math.pow(Math.E, d1);
             }
@@ -1193,7 +1200,7 @@ public class Ops {
      */
     public static QDataSet exp10(QDataSet ds) {
         MutablePropertyDataSet result=   applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double d1) {
                 return Math.pow(10, d1);
             }
@@ -1218,7 +1225,7 @@ public class Ops {
      */
     public static QDataSet log(QDataSet ds) {
         MutablePropertyDataSet result=  applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double d1) {
                 return Math.log(d1);
             }
@@ -1243,7 +1250,7 @@ public class Ops {
      */
     public static QDataSet log10(QDataSet ds) {
         MutablePropertyDataSet result=  applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double d1) {
                 return Math.log10(d1);
             }
@@ -1301,6 +1308,7 @@ public class Ops {
         Units resultUnits= multiplyUnits( units1, units2 );
 
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return d1 * d2;
             }
@@ -1380,6 +1388,7 @@ public class Ops {
      */
     public static QDataSet mod(QDataSet ds1, QDataSet ds2) {
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return d1 % d2;
             }
@@ -1403,6 +1412,7 @@ public class Ops {
      */
     public static QDataSet modp(QDataSet ds1, QDataSet ds2) {
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 double t= d1 % d2;
                 return ( t<0 ) ? t+d2 : t;
@@ -1427,6 +1437,7 @@ public class Ops {
      */
     public static QDataSet divp(QDataSet ds1, QDataSet ds2) {
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return Math.floor( d1 / d2);
             }
@@ -1448,6 +1459,7 @@ public class Ops {
      */
     public static QDataSet div(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return (int) (d1 / d2);
             }
@@ -1470,6 +1482,7 @@ public class Ops {
     public static QDataSet eq(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+           @Override
            public double op(double d1, double d2) {
                return uc.convert(d1) == d2 ? 1.0 : 0.0;
            }
@@ -1490,6 +1503,7 @@ public class Ops {
     public static QDataSet ne(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return uc.convert(d1) != d2 ? 1.0 : 0.0;
             }
@@ -2218,8 +2232,8 @@ public class Ops {
 
     /**
      * return new dataset filled with ones.
-     * @param len0
-     * @return
+     * @param len0 the length of the first index.
+     * @return dataset filled with ones.
      */
     public static QDataSet ones(int len0) {
         return replicate(1.0, len0);
@@ -2262,8 +2276,10 @@ public class Ops {
 
     /**
      * return new dataset filled with ones.
-     * @param len0
-     * @return
+     * @param len0 the length of the first index.
+     * @param len1 the length of the second index.
+     * @param len2 the length of the third index.
+     * @return dataset filled with ones.
      */
     public static QDataSet ones(int len0, int len1, int len2) {
         return replicate(1.0, len0, len1, len2);
