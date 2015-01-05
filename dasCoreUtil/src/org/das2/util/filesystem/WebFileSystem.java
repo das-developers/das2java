@@ -423,7 +423,10 @@ public abstract class WebFileSystem extends FileSystem {
         monitor.finished();
     }
 
-    protected static String id= String.format( "%014d_%s", System.currentTimeMillis(), ManagementFactory.getRuntimeMXBean().getName() );
+    /**
+     * ID string for the process.
+     */
+    protected static final String id= String.format( "%014d_%s", System.currentTimeMillis(), ManagementFactory.getRuntimeMXBean().getName() );
             
     /**
      * return a name where the download is to be staged.  This will
