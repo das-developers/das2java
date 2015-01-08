@@ -1008,12 +1008,16 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      *
      * Note this now puts in a JSON representation of plot locations in the "plotInfo" tag.  The plotInfo
      * tag will contain:
+     *<blockquote><pre><small>{@code
      *   "size:[640,480]"
      *   "numberOfPlots:0"   
      *   "plots: { ... }"  where each plot contains:
      *   "title" "xaxis" "yaxis"
-     *
+     *}</small></pre></blockquote>
+     * See http://autoplot.org/richPng.
      * @param out the outputStream. This is left open, so the opener code must close it!
+     * @param w width in pixels
+     * @param h height in pixels
      * @throws IOException if there is an error opening the file for writing
      */
     public void writeToPng( OutputStream out, int w, int h ) throws IOException {
