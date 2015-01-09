@@ -1896,8 +1896,8 @@ public class DataSetOps {
                 } else if ( cmd.equals("|abs") ) {
                     fillDs= Ops.abs(fillDs);
                 } else if ( cmd.equals("|pow")) {
-                    int idx= s.nextInt();
-                    fillDs= Ops.pow(fillDs,idx);
+                    double n= s.nextDouble();
+                    fillDs= Ops.pow(fillDs,n);
                 } else if ( cmd.equals("|total")) {
                     int idx= s.nextInt();
                     fillDs= Ops.total(fillDs, idx);
@@ -2088,6 +2088,7 @@ public class DataSetOps {
                 }
             }
         } catch ( InputMismatchException ex ) {
+            ex.printStackTrace();
             String msg= ex.getLocalizedMessage();
             if ( msg==null ) msg= ex.toString();
             ParseException ex2;
