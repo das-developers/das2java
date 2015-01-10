@@ -39,12 +39,12 @@ public class LeapSecondsConverter extends UnitsConverter {
     private static int tt2000_c=-1;
 
     private static void updateLeapSeconds() throws IOException, MalformedURLException, NumberFormatException {
-        URL url = new URL("http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt");
+        URL url = LeapSecondsConverter.class.getResource("CDFLeapSeconds.txt");
         InputStream in;
         try {
             in= url.openStream();
         } catch ( IOException ex ) {
-            url= LeapSecondsConverter.class.getResource("CDFLeapSeconds.txt");
+            url= new URL("http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt");
             in= url.openStream();
             logger.info("Using local copy of leap seconds!!!");
         }
@@ -55,11 +55,11 @@ public class LeapSecondsConverter extends UnitsConverter {
             leapSeconds = new ArrayList(50);
             withoutLeapSeconds = new ArrayList(50);
             String lastLine= s;
-            while ( s != null ) {  //netbeans asserts this is never null--which is not correct.  See 4 lines down...
+            while ( true ) {  
                 s = r.readLine();
                 if (s == null) {
                     logger.log( Level.FINE, "Last leap second read from {0} {1}", new Object[]{url, lastLine});
-                    continue;
+                    break;
                 }
                 if (s.startsWith(";")) {
                     continue;
@@ -73,7 +73,7 @@ public class LeapSecondsConverter extends UnitsConverter {
                 int iday = Integer.parseInt(ss[2]);
                 int ileap = (int) (Double.parseDouble(ss[3])); // I thought these could only be whole numbers
                 double us2000 = TimeUtil.createTimeDatum(iyear, imonth, iday, 0, 0, 0, 0).doubleValue(Units.us2000);
-                leapSeconds.add( Long.valueOf( ((long) us2000) * 1000L - 43200000000000L + (long) ( ileap-32 ) * 1000000000) );
+                leapSeconds.add( ((long) us2000) * 1000L - 43200000000000L + (long) ( ileap-32 ) * 1000000000 );
                 withoutLeapSeconds.add( us2000 );
             }
             leapSeconds.add( Long.MAX_VALUE );
@@ -96,11 +96,11 @@ public class LeapSecondsConverter extends UnitsConverter {
     }
 
     /**
-     * calculate the number of leap seconds in the tt2000, since 2000.
+     * calculate the number of leap seconds in the us2000, since 2000.
      * This is intended to replicate the table http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt
-     * @param tt2000 the time in tt2000, which include the leap seconds.
-     * @return
-     * @throws Exception
+     * @param us2000 the time in us2000, which include the leap seconds.
+     * @return the number of leap seconds for the time.
+     * @throws IOException
      */
     public synchronized static int getLeapSecondCountForUs2000( double us2000 ) throws IOException {
 
@@ -128,8 +128,8 @@ public class LeapSecondsConverter extends UnitsConverter {
      * calculate the number of leap seconds in the tt2000, since 2000.
      * This is intended to replicate the table http://cdf.gsfc.nasa.gov/html/CDFLeapSeconds.txt
      * @param tt2000 the time in tt2000, which include the leap seconds.
-     * @return
-     * @throws Exception
+     * @return the number of leap seconds for the time.
+     * @throws IOException
      */
     public synchronized static int getLeapSecondCountForTT2000( long tt2000 ) throws IOException {
 
