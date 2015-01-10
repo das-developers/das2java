@@ -39,7 +39,7 @@ public class LeapSecondsConverter extends UnitsConverter {
     private static int tt2000_c=-1;
 
     private static void updateLeapSeconds() throws IOException, MalformedURLException, NumberFormatException {
-        URL url = LeapSecondsConverter.class.getResource("CDFLeapSeconds.txt");
+        URL url = LeapSecondsConverter.class.getResource("/orbits/CDFLeapSeconds.txt");
         InputStream in;
         try {
             in= url.openStream();
