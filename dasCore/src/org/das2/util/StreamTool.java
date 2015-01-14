@@ -604,9 +604,14 @@ public class StreamTool {
                 if (split.length == 1) {
                     map.put(name, attr.getValue());
                 } else if (split.length == 2) {
-                    PropertyType type = PropertyType.getByName(split[0]);
-                    Object value = type.parse(attr.getValue());
-                    map.put(split[1], value);
+					try {
+						PropertyType type = PropertyType.getByName(split[0]);
+						Object value = type.parse(attr.getValue());
+						map.put(split[1], value);
+					}
+					catch (IllegalArgumentException ex) {
+						map.put(name, attr.getValue());
+					}
                 } else {
                     throw new IllegalArgumentException("Invalid typed name: " + name);
                 }
