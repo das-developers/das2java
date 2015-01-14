@@ -26,23 +26,33 @@ package org.das2.stream;
 import org.das2.datum.Units;
 import java.util.HashMap;
 import java.util.Map;
+import org.das2.datum.CalendarTime;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 
 /**
  *
  * @author  eew
  */
-public final class PropertyType {
+public enum PropertyType {
     
+    DOUBLE("double"),
+    DOUBLE_ARRAY("doubleArray"),
+    DATUM("Datum"),
+	DATUM_RANGE("DatumRange"),
+    INTEGER("int"),
+	STRING("String"),
+	TIME("Time"),
+	TIME_RANGE("TimeRange"),
+    ;
+
     private static final Map map = new HashMap();
-    public static final PropertyType DOUBLE = new PropertyType("double");
-    public static final PropertyType DOUBLE_ARRAY = new PropertyType("doubleArray");
-    public static final PropertyType DATUM = new PropertyType("Datum");
-	 public static final PropertyType DATUM_RANGE = new PropertyType("DatumRange");
-    public static final PropertyType INTEGER = new PropertyType("int");
-	 public static final PropertyType STRING = new PropertyType("String");
-    
+	static {
+		for (PropertyType t : values())
+			map.put(t.name, t);
+	}
+	
     public static PropertyType getByName(String name) {
         PropertyType result= (PropertyType)map.get(name);
         if ( result==null ) {
@@ -56,30 +66,29 @@ public final class PropertyType {
     /** Creates a new instance of PropertyType */
     private PropertyType(String name) {
         this.name = name;
-        map.put(name, this);
     }
     
     public Object parse(String s) throws java.text.ParseException {
-		 switch(name){
-		 case "String":
+		 switch(this){
+		 case STRING:
 		 {
 			 return s;
 		 }
-		 case "double":
+		 case DOUBLE:
 			 try {
 				 return new Double(s);
 			 }
 			 catch (NumberFormatException nfe) {
 				 throw new java.text.ParseException(nfe.getMessage(), 0);
 			 }
-		 case "int":
+		 case INTEGER:
 			 try {
                 return new Integer(s);
 			 }
 			 catch (NumberFormatException nfe) {
 				 throw new java.text.ParseException(nfe.getMessage(), 0);
 			 }
-		 case "doubleArray":
+		 case DOUBLE_ARRAY:
 			 try {
 				 String[] strings = s.split(",");
 				 double[] doubles = new double[strings.length];
@@ -91,7 +100,7 @@ public final class PropertyType {
 			 catch (NumberFormatException nfe) {
 				 throw new java.text.ParseException(nfe.getMessage(), 0);
 			 }
-		 case "Datum":
+		 case DATUM:
 		 {
 			 String[] split = s.split("\\s+");
 			 if (split.length == 1) {
@@ -105,7 +114,7 @@ public final class PropertyType {
 					throw new IllegalArgumentException("Too many tokens: '" + s + "'");
 				}
 		 }
-		 case "DatumRange":
+		 case DATUM_RANGE:
 		 {
 			 String[] split = s.split("\\s+");
 			 if (split.length < 3){
@@ -133,6 +142,14 @@ public final class PropertyType {
 			 Datum end = units.parse(split[2]);
 			 return new DatumRange(begin, end);
 			 
+		 }
+		 case TIME:
+		 {
+			 return new CalendarTime(s).toDatum();
+		 }
+		 case TIME_RANGE:
+		 {
+			 return DatumRangeUtil.parseTimeRange(s);
 		 }
 		 default:
 			 throw new IllegalStateException("unrecognized name: " + name);
