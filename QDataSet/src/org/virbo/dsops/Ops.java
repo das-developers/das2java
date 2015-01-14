@@ -4943,23 +4943,32 @@ public class Ops {
             if ( range.value(0)==fill ) System.err.println("range passed into extent contained fill");
         }
 
-        // find the first and last valid points.
-        int ifirst=0;
-        int n= ds.length();
-        int ilast= n-1;
-        
-        boolean monoCheck= Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC ));
-        if ( ds.rank()==1 && monoCheck && n>0 ) {
-            while ( ifirst<n && wds.value(ifirst)==0.0 ) ifirst++;
-            while ( ilast>=0 && wds.value(ilast)==0.0 ) ilast--;
-            int imiddle= ( ifirst + ilast ) / 2;
-            if ( wds.value(imiddle)>0 ) {
-                double dir= ds.value(ilast) - ds.value(ifirst) ;
-                if ( ( ds.value(imiddle) - ds.value(ifirst) ) * dir < 0 ) {
-                    logger.fine("this data isn't really monotonic.");
-                    monoCheck= false;
+        boolean monoCheck;
+        int ifirst,ilast;
+
+        if ( ds.rank()>0 ) {
+            // find the first and last valid points.
+            ifirst=0;
+            int n= ds.length();
+            ilast= n-1;
+
+            monoCheck= Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC ));
+            if ( ds.rank()==1 && monoCheck && n>0 ) {
+                while ( ifirst<n && wds.value(ifirst)==0.0 ) ifirst++;
+                while ( ilast>=0 && wds.value(ilast)==0.0 ) ilast--;
+                int imiddle= ( ifirst + ilast ) / 2;
+                if ( wds.value(imiddle)>0 ) {
+                    double dir= ds.value(ilast) - ds.value(ifirst) ;
+                    if ( ( ds.value(imiddle) - ds.value(ifirst) ) * dir < 0 ) {
+                        logger.fine("this data isn't really monotonic.");
+                        monoCheck= false;
+                    }
                 }
             }
+        } else {
+            monoCheck= false;
+            ifirst=0;
+            ilast= 0; // not used.
         }
         
         if ( ds.rank()==1 && monoCheck && deltaplus==null ) {
