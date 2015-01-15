@@ -579,7 +579,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     
     /**
      * the filter must be set before this is called.  This will set droplist labels, etc.
-     * @param ds 
+     * @param ds the dataset, or null.
      */
     @Override
     public synchronized void setInput( QDataSet ds) {
