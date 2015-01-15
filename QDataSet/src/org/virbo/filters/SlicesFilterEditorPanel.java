@@ -86,10 +86,10 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
     public final void setFilter(String filter) {
         logger.log(Level.FINE, "setFilter {0}", filter);
         
-        Pattern p= Pattern.compile("\\|slices(\\d)\\((.*)\\)");
+        Pattern p= Pattern.compile("\\|slices\\((.*)\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
-            String arg= m.group(2);
+            String arg= m.group(1);
             String[] ss= arg.split(",");
             rank= ss.length;
             this.removeAll();
