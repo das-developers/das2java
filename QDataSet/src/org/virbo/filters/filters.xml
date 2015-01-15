@@ -10,12 +10,12 @@
                 <bookmark-list>
                     <bookmark>
                         <title>FFT with sliding window </title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/FFTPowerGUI.jy</uri>
+                        <filter>|fftPower(3,4,'Unity')</filter>
                         <description>Initializes the FFTPower filter</description>
                     </bookmark>
                     <bookmark>
                         <title>Hanning</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/hanningGUI.jy</uri>
+                        <filter>|hanning(128)</filter>
                         <description>Runs a Hanning window before taking the fft</description>
                     </bookmark>
                 </bookmark-list>
@@ -25,72 +25,72 @@
                 <bookmark-list>
                     <bookmark>
                         <title>Collapse Zeroth Dimension</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/collapse0GUI.jy</uri>
+                        <filter>|collapse0()</filter>
                         <description>Average over the zeroth dimension to reduce the dimensionality</description>
                     </bookmark>
                     <bookmark>
                         <title>Collapse First Dimension</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/collapse1GUI.jy</uri>
+                        <filter>|collapse1()</filter>
                         <description>Average over the first dimension to reduce the dimensionality</description>
                     </bookmark>
                     <bookmark>
                         <title>Contour</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/contourGUI.jy</uri>
+                        <filter>|contour(1,5)</filter>
                         <description>Initializes Contour Filter</description>
                     </bookmark>
                     <bookmark>
                         <title>dbAbovebackgroundDim1</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/dbAboveBackgroundDim1GUI.jy</uri>
+                        <filter>|dbAboveBackgroundDim1(10)</filter>
                         <description>Shows data as decibels above a specified percentile level</description>
                     </bookmark>
                     <bookmark>
                         <title>Detrend</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/detrendGUI.jy</uri>
+                        <filter>|detrend(10)</filter>
                         <description>Initializes Detrend Filter</description>
                     </bookmark>
                     <bookmark>
                         <title>Flatten</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/flattenGUI.jy</uri>
+                        <filter>|flatten()</filter>
                         <description>Flattens a rank 2 dataset.  The result is a n,3 dataset of [x,y,z]. </description>
                     </bookmark>
                     <bookmark>
                         <title>Histogram</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/histogramGUI.jy</uri>
+                        <filter>|histogram()</filter>
                         <description>Perform an "auto" histogram of the data that automatically sets bins</description>
                     </bookmark>
                     <bookmark>
-                        <title>Reduce</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/reducexGUI.jy</uri>
+                        <title>Reduce In Zeroth Dimension</title>
+                        <filter>|reducex('1 hr')</filter>
                         <description>Reduces data to selected time/data intervals</description>
                     </bookmark> 
                     <bookmark>
                         <title>Slice</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/sliceGUI.jy</uri>
+                        <filter>|slice0(0)</filter>
                         <description>Slices data at selected indices</description>
                     </bookmark> 
                     <bookmark>
                         <title>Smooth</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/smoothGUI.jy</uri>
+                        <filter>|smooth(5)</filter>
                         <description>Initializes Smooth Filter</description>
                     </bookmark>
                     <bookmark>
                         <title>Total 1</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/total1GUI.jy</uri>
+                        <filter>|total1()</filter>
                         <description>Totals over the first dimension to reduce the dimensionality</description>
                     </bookmark>
                     <bookmark>
-                        <title>Transpose 1</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/transposeGUI.jy</uri>
+                        <title>Transpose</title>
+                        <filter>|transpose()</filter>
                         <description>Transpose the rank 2 dataset</description>
                     </bookmark>
                     <bookmark>
                         <title>Unbundle</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/unbundleGUI.jy</uri>
+                        <filter>|unbundle('Bx')</filter>
                         <description>Unbundles a component</description>
                     </bookmark>
                     <bookmark>
                         <title>Valid</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/validGUI.jy</uri>
+                        <filter>|valid()</filter>
                         <description>Replaces data with 1 where valid and 0 where invalid</description>
                     </bookmark>          
                 </bookmark-list>
@@ -103,37 +103,37 @@
                         <bookmark-list>
                             <bookmark>
                                 <title>Absolute Value</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/absGUI.jy</uri>
+                                <filter>|abs()</filter>
                                 <description>Takes absolute value of dataset</description>
                             </bookmark>
                             <bookmark>
                                 <title>Accum</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/accumGUI.jy</uri>
+                                <filter>|accum()</filter>
                                 <description>Returns the running sum of a rank 1 dataSet</description>
                             </bookmark>
                             <bookmark>
                                 <title>Add</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/addGUI.jy</uri>
-                                <description>Initializes the Add filter</description>
+                                <filter>|add(1.)</filter>
+                                <description>Add a scalar</description>
                             </bookmark>
                             <bookmark>
                                 <title>Diff</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/diffGUI.jy</uri>
+                                <filter>|diff()</filter>
                                 <description> Returns the finite differences between adjacent elements in a rank 1 dataSet</description>
                             </bookmark>
                             <bookmark>
                                 <title>Divide</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/divideGUI.jy</uri>
-                                <description>Initializes the Divide filter</description>
+                                <filter>|divide(2.)</filter>
+                                <description>Divide by a scalar</description>
                             </bookmark>
                             <bookmark>
                                 <title>Multiply</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/multiplyGUI.jy</uri>
+                                <filter>|multiply(2.)</filter>
                                 <description>Initilializes the Multiply filter</description>
                             </bookmark>
                             <bookmark>
                                 <title>Negate</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/negateGUI.jy</uri>
+                                <filter>|negate()</filter>
                                 <description>Flips the sign of the dataSet</description>
                             </bookmark>
                         </bookmark-list>
@@ -143,17 +143,17 @@
                         <bookmark-list>
                             <bookmark>
                                 <title>Exponent</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/exponentGUI.jy</uri>
+                                <filter>|exp10()</filter>
                                 <description>Takes the dataset, ds, to the given exponent [exp10() = pow(10,ds)]</description>
                             </bookmark>
                             <bookmark>
-                                <title>Log 10</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/log10GUI.jy</uri>
+                                <title>Log Base 10</title>
+                                <filter>|log10()</filter>
                                 <description>Takes the base-10 log of the data</description>
                             </bookmark>
                             <bookmark>
                                 <title>Log Histogram</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/logHistogramGUI.jy</uri>
+                                <filter>|logHistogram()</filter>
                                 <description>Perform the auto histogram in the log space</description>
                             </bookmark>
                         </bookmark-list>
@@ -163,17 +163,17 @@
                         <bookmark-list>
                             <bookmark>
                                 <title>Detrend</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/detrendGUI.jy</uri>
+                                <filter>|detrend(5)</filter>
                                 <description>Initializes Detrend Filter</description>
                             </bookmark>
                             <bookmark>
                                 <title>Median</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/medianGUI.jy</uri>
+                                <filter>|median(5)</filter>
                                 <description>Finds and returns the boxcar median of the dataset</description>
                             </bookmark>
                             <bookmark>
                                 <title>Smooth</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/smoothGUI.jy</uri>
+                                <filter>|smooth(5)</filter>
                                 <description>Finds and returns the boxcar average of a rank 1 dataSet</description>
                             </bookmark>
                         </bookmark-list>
@@ -183,22 +183,22 @@
                         <bookmark-list>
                             <bookmark>
                                 <title>Cosine</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/cosGUI.jy</uri>
+                                <filter>|cos()</filter>
                                 <description>Finds the cosine of the dataset</description>
                             </bookmark>
                             <bookmark>
                                 <title>Sine</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/sinGUI.jy</uri>
+                                <filter>|sin()</filter>
                                 <description>Finds the sine of the dataset</description>
                             </bookmark>
                             <bookmark>
                                 <title>toDegrees</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/toDegreesGUI.jy</uri>
+                                <filter>|toDegrees()</filter>
                                 <description>Converts from Radians to Degrees</description>
                             </bookmark>
                             <bookmark>
                                 <title>toRadians</title>
-                                <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/toRadiansGUI.jy</uri>
+                                <filter>|toRadians()</filter>
                                 <description>Converts from Degrees to Radians</description>
                             </bookmark>
                         </bookmark-list>
@@ -210,7 +210,7 @@
                 <bookmark-list>
                     <bookmark>
                         <title>Butterworth</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/newButterworthGUI.jy</uri>
+                        <filter>|butterworth(2,500,550,True)</filter>
                         <description>Initializes the Butterworth filter</description>
                     </bookmark>                    
                 </bookmark-list>
@@ -220,17 +220,17 @@
                 <bookmark-list>
                     <bookmark>
                         <title>setUnits</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/setUnitsGUI.jy</uri>
+                        <filter>|setUnits('nT')</filter>
                         <description>Resets current units to new units</description>
                     </bookmark>
                     <bookmark>
                         <title>setDepend0Units</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/setDepend0UnitsGUI.jy</uri>
+                        <filter>|setDepend0Units('nT')</filter>
                         <description>Resets current DEPEND_0 units to new units</description>
                     </bookmark>   
                     <bookmark>
                         <title>setDepend0Cadence</title>
-                        <uri>http://emfisis.physics.uiowa.edu/pub/jy/filters/setDepend0CadenceGUI.jy</uri>
+                        <filter>|setDepend0Cadence('50s')</filter>
                         <description>Resets current DEPEND_0 cadence to new cadence (scalar and units)</description>
                     </bookmark>                            
                 </bookmark-list>
