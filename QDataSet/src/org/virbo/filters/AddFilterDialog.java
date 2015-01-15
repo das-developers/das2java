@@ -107,15 +107,13 @@ public class AddFilterDialog extends javax.swing.JPanel {
         };
     }
 
-    public class RestrictedTreeSelectionModel extends DefaultTreeSelectionModel {
+    private class RestrictedTreeSelectionModel extends DefaultTreeSelectionModel {
 
         @Override
         public void setSelectionPaths(final TreePath[] pPaths) {
             final ArrayList<TreePath> temp = new ArrayList<TreePath>();
-            for (int i = 0, n = pPaths != null ? pPaths.length : 0; i < n;
-                    i++) {
-                final Object lastPathComponent
-                        = pPaths[i].getLastPathComponent();
+            for ( int i = 0, n = pPaths != null ? pPaths.length : 0; i < n; i++ ) {
+                final Object lastPathComponent= pPaths[i].getLastPathComponent();
                 if (lastPathComponent instanceof TreeNode) {
                     if (((TreeNode) lastPathComponent).isLeaf()) {
                         temp.add(pPaths[i]);
@@ -123,7 +121,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
                 }
             }
             if (!temp.isEmpty()) {
-                super.setSelectionPaths(temp.toArray(new TreePath[temp.size()]));
+                super.setSelectionPaths( temp.toArray(new TreePath[temp.size()]) );
             }
         }
     }
