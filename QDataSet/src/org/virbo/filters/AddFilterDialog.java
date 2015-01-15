@@ -16,7 +16,6 @@ import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.xml.parsers.ParserConfigurationException;
@@ -29,7 +28,9 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- *
+ * Dialog for picking a new filter to add.  This uses a tree to sort the filters, using the 
+ * specification from Kenzie and Craig at U. Iowa, and keeps track of opened nodes.
+ * 
  * @author jbf
  */
 public class AddFilterDialog extends javax.swing.JPanel {
@@ -74,7 +75,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
                     DefaultMutableTreeNode m = new DefaultMutableTreeNode();
                     m.setUserObject(new Bookmark());
                     stack.peek().insert(m, stack.peek().getChildCount());
-                    stack.push(m);
+                    stack.push(m);        
                 } else if (localName.equals("title")) {
 
                 } else if (localName.equals("filter")) {
@@ -126,8 +127,8 @@ public class AddFilterDialog extends javax.swing.JPanel {
         }
     }
 
-    private DefaultMutableTreeNode build(InputStream in) {
-        DefaultMutableTreeNode result = new DefaultMutableTreeNode("ff");
+    private DefaultMutableTreeNode build( InputStream in ) {
+        DefaultMutableTreeNode result = new DefaultMutableTreeNode("");
         DefaultHandler sax = createHandler(result);
         try {
             SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -165,7 +166,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
     }
 
     private TreeNode getTree() {
-        return build(AddFilterDialog.class.getResourceAsStream("filters.xml"));
+        return build( AddFilterDialog.class.getResourceAsStream("filters.xml") );
     }
 
     /**
