@@ -106,7 +106,9 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
         QDataSet dep0= SemanticOps.xtagsDataSet(ds);
         Units tu= SemanticOps.getUnits(dep0);
         Units[] array= tu.getOffsetUnits().getConvertableUnits();
+        Object u= unitsCB.getSelectedItem();
         unitsCB.setModel(new javax.swing.DefaultComboBoxModel(array));  
+        unitsCB.setSelectedItem(u);
     }
 
 }
