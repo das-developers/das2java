@@ -42,7 +42,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
     DefaultHandler createHandler( final DefaultMutableTreeNode root ) {
         final StringBuilder charsBuilder= new StringBuilder();
         
-        final Deque<MutableTreeNode> stack = new ArrayDeque();
+        final Deque<DefaultMutableTreeNode> stack = new ArrayDeque();
         
         stack.push(root);
         
@@ -62,14 +62,20 @@ public class AddFilterDialog extends javax.swing.JPanel {
             @Override
             public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                 if ( localName.equals("bookmark") ) {
-                    MutableTreeNode m= new DefaultMutableTreeNode();
+                    DefaultMutableTreeNode m= new DefaultMutableTreeNode();
+                    m.setUserObject( new Bookmark() );
                     stack.peek().insert( m, stack.peek().getChildCount() );
                     stack.push(m);
                 } else if ( localName.equals("bookmark-folder") ) {
-                    MutableTreeNode m= new DefaultMutableTreeNode();
+                    DefaultMutableTreeNode m= new DefaultMutableTreeNode();
+                    m.setUserObject( new Bookmark() );
                     stack.peek().insert( m, stack.peek().getChildCount() );
                     stack.push(m);
                 } else if ( localName.equals("title") ) {
+                    
+                } else if ( localName.equals("filter") ) {
+                    
+                } else if ( localName.equals("description") ) {
                     
                 }
             }
@@ -81,8 +87,12 @@ public class AddFilterDialog extends javax.swing.JPanel {
                 } else if ( localName.equals("bookmark-folder") ) {
                     stack.pop();
                 } else if ( localName.equals("title") ) {
-                    stack.peek().setUserObject(charsBuilder.toString());
-                } 
+                    ((Bookmark)(stack.peek().getUserObject())).title= charsBuilder.toString();
+                } else if ( localName.equals("filter") ) {
+                    ((Bookmark)(stack.peek().getUserObject())).filter= charsBuilder.toString();
+                } else if ( localName.equals("description") ) {
+                    ((Bookmark)(stack.peek().getUserObject())).description= charsBuilder.toString();
+                }
                 charsBuilder.delete(0,charsBuilder.length());
             }
 
@@ -94,7 +104,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
         };
     }
 
-    private DefaultMutableTreeNode build2( int level, InputStream in )  {
+    private DefaultMutableTreeNode build( InputStream in )  {
         DefaultMutableTreeNode result= new DefaultMutableTreeNode("ff");
         DefaultHandler sax= createHandler(result);
         try {
@@ -114,7 +124,8 @@ public class AddFilterDialog extends javax.swing.JPanel {
             } catch (IOException ex) {
                 Logger.getLogger(AddFilterDialog.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } catch ( ParserConfigurationException ex ) {           Logger.getLogger(AddFilterDialog.class.getName()).log(Level.SEVERE, null, ex);
+        } catch ( ParserConfigurationException ex ) {       
+            Logger.getLogger(AddFilterDialog.class.getName()).log(Level.SEVERE, null, ex);
             // this is expected.
         } catch (SAXException ex) {
             Logger.getLogger(AddFilterDialog.class.getName()).log(Level.SEVERE, null, ex);
@@ -122,14 +133,35 @@ public class AddFilterDialog extends javax.swing.JPanel {
         return result;
     }
     
+    private static class Bookmark {
+        String title;
+        String filter;
+        String description;
+        public String toString() {
+            return title;
+        }
+    }
 
     private TreeNode getTree() {
-        return build2(0, AddFilterDialog.class.getResourceAsStream("filters.xml") );                                    
+        return build( AddFilterDialog.class.getResourceAsStream("filters.xml") );                                    
+    }
+    
+    /**
+     * return the selected filter.
+     * @return 
+     */
+    public String getValue() {
+        Object o= this.jTree1.getSelectionPath().getLastPathComponent();
+        DefaultMutableTreeNode tn= (DefaultMutableTreeNode)o;
+        Bookmark b= (Bookmark)tn.getUserObject();
+        return b.filter;
     }
     
     public static void main( String[] args ) {
-        JOptionPane.showMessageDialog( null, new AddFilterDialog() );
-        System.err.println("here");
+        AddFilterDialog afd= new AddFilterDialog();
+        if ( JOptionPane.OK_OPTION== JOptionPane.showConfirmDialog( null, afd ) ) {
+            System.err.println(afd.getValue());
+        }
     }
     
     /**
