@@ -167,8 +167,8 @@
                                 <description>Initializes Detrend Filter</description>
                             </bookmark>
                             <bookmark>
-                                <title>Median</title>
-                                <filter>|median(5)</filter>
+                                <title>Median Boxcar</title>
+                                <filter>|medianFilter(5)</filter>
                                 <description>Finds and returns the boxcar median of the dataset</description>
                             </bookmark>
                             <bookmark>
