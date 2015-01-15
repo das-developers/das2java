@@ -211,9 +211,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         FilterEditorPanel p= editors.remove(fi);
         removeFocusListeners(p.getPanel());
         setFilter( getFilter() );
-        QDataSet inputDs1= inputDs;
-        this.inputDs= null;
-        updateSoon(inputDs1, getFilter() );
+        updateSoon( inputDs, getFilter() );
     }
     
     private final FocusListener lostFocusListener= new FocusListener() {
