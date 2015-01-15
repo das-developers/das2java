@@ -242,6 +242,24 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         }
     };
         
+    private void addFilterNew( int idx ) {
+        AddFilterDialog afd= new AddFilterDialog();
+        int r= JOptionPane.showConfirmDialog( this, afd, "Add Filter", JOptionPane.OK_CANCEL_OPTION );
+        if ( r==JOptionPane.OK_OPTION ) {
+            String ss= afd.getValue();
+            FilterEditorPanel filter1= getEditorFor(ss, null);
+            filter1.getPanel().addFocusListener( lostFocusListener );
+            addFocusListeners( filter1.getPanel() );
+            editors.add( idx, filter1 );
+            String filter= getFilter();
+            setFilter( filter );
+            QDataSet inputDs1= this.inputDs;
+            setInput(null);
+            setInput(inputDs1);
+            updateSoon(inputDs1, filter );
+        }
+    }
+    
     private void addFilter( int idx ) {
         JPanel optionsPanel= new JPanel();
 
@@ -401,7 +419,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     org.das2.util.LoggerManager.logGuiEvent(e);                    
-                    addFilter(fi);
+                    if ( System.getProperty("user.name").equals("jbf") ) {
+                        addFilterNew(fi);
+                    } else {
+                        addFilter(fi);
+                    }
                 }
             } );
         } else {
@@ -410,7 +432,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     org.das2.util.LoggerManager.logGuiEvent(e);
-                    addFilter(editors.size());
+                    if ( System.getProperty("user.name").equals("jbf") ) {
+                        addFilterNew(editors.size());
+                    } else {
+                        addFilter(editors.size());
+                    }
                 }
             } );
         }
