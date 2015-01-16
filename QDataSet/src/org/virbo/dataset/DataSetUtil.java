@@ -2682,7 +2682,7 @@ public class DataSetUtil {
      * <li>rank 1 bundle
      *
      * @param ds the dataset containing context properties which are rank 0 datums or rank 1 datum ranges.
-     * @param the delimiter between context elements, such as "," or "!c"
+     * @param delim the delimiter between context elements, such as "," or "!c"
      * @return a string describing the context.
      */
     public static String contextAsString( QDataSet ds, String delim ) {
@@ -2700,7 +2700,8 @@ public class DataSetUtil {
                         result.append( DataSetUtil.format(cds,false) );
                     }
                 } else {
-                    QDataSet extent= Ops.extent(cds);
+                    
+                    QDataSet extent= Ops.extentSimple(cds,DataSetUtil.weightsDataSet(cds),null);
                     if ( extent.value(1)==extent.value(0) ) {
                         result.append( DataSetUtil.format(cds.slice(0),false) );  // for CLUSTER/PEACE this happens where rank 1 context is all the same value
                     } else {
@@ -2752,6 +2753,7 @@ public class DataSetUtil {
      * @param datum value we are looking for
      * @param low inclusive lower bound of the search
      * @param high inclusive upper bound of the search
+     * @return the index of a tag, or the  <tt>(-(<i>insertion point</i>) - 1)</tt>
      */
     public static int xTagBinarySearch( QDataSet ds, Datum datum, int low, int high ) {
         Units toUnits= SemanticOps.getUnits( ds );
