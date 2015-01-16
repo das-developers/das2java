@@ -81,8 +81,10 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
         if ( s.startsWith("'") && s.endsWith("'") ) s= s.substring(1,s.length()-1);
         if ( s.equals(":") ) {
             sp1.setEnabled(false);
+            cb1.setSelected(false);
         } else {
             sp1.setValue(Integer.parseInt(s));
+            cb1.setSelected(true);
         }
         p1.add( sp1 );
         p1.add( Box.createGlue() );
@@ -150,7 +152,10 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
                     max= Integer.MAX_VALUE;                    
                 }
             }
-            spinners[i].setModel( new SpinnerNumberModel( ((Integer)spinners[i].getValue()).intValue(), 0, max, 1 ) );
+            int val= ((Integer)spinners[i].getValue());
+            if ( val<0 ) val=0;
+            if ( val>=max ) val= max;
+            spinners[i].setModel( new SpinnerNumberModel( val, 0, max, 1 ) );
         }
     }
     
