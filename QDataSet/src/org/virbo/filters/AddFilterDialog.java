@@ -5,16 +5,24 @@
  */
 package org.virbo.filters;
 
+import java.awt.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
@@ -30,14 +38,21 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Dialog for picking a new filter to add.  This uses a tree to sort the filters, using the 
- * specification from Kenzie and Craig at U. Iowa, and keeps track of opened nodes.
+ * Dialog for picking a new filter to add.  This uses a tree to sort the filters, based on
+ * http://emfisis.physics.uiowa.edu/pub/jy/filters/filters.xml
+ * at U. Iowa, and keeps track of opened nodes.
  * 
  * @author jbf
  */
 public class AddFilterDialog extends javax.swing.JPanel {
 
-    private static String expansionState= null;
+    private static final Preferences prefs= Preferences.userNodeForPackage(AddFilterDialog.class);
+    
+    private static final String PREF_EXPANSION_STATE = "expansionState";
+    private static final String PREF_TAB = "tabPreference";
+    private static final String PREF_INDEX = "indexPreference";
+
+    private static String expansionState= prefs.get(PREF_EXPANSION_STATE, null );
     
     DefaultMutableTreeNode root= null;
     
@@ -54,9 +69,51 @@ public class AddFilterDialog extends javax.swing.JPanel {
         } else {
             TreeUtil.restoreExpanstionState( jTree1, 0, expansionState); 
         }
-        this.jTree1.setSelectionModel( new RestrictedTreeSelectionModel() );            
+        this.jTree1.setRootVisible(false);
+        this.jTree1.setSelectionModel( new RestrictedTreeSelectionModel() );        
+        populateList();
+        this.jTabbedPane1.setSelectedIndex( prefs.getInt(PREF_TAB, 0 ) );
+        int selectedIndex= prefs.getInt(PREF_INDEX, 0 );
+        if ( selectedIndex<0 ) selectedIndex=0;
+        if ( selectedIndex>= this.jList1.getModel().getSize() ) selectedIndex= this.jList1.getModel().getSize()-1;
+        this.jList1.setSelectedIndex( selectedIndex );
+        this.jList1.ensureIndexIsVisible( selectedIndex );
+        //this.jList1.setCellRenderer( getListCellRenderer() );
     }
-
+    
+    /**
+     * simply alphabetize the tree elements to make a list more like the old list.
+     */
+    private void populateList( ) {
+        List<Bookmark> elements= new ArrayList<Bookmark>(100);
+        getElementsFromTree( elements, (DefaultMutableTreeNode)this.jTree1.getModel().getRoot() );
+        Collections.sort(elements, new Comparator<Bookmark>() {
+            @Override
+            public int compare(Bookmark o1, Bookmark o2) {
+                return o1.filter.compareTo(o2.filter);
+            }
+        } );
+        DefaultListModel model = new DefaultListModel();
+        
+        Bookmark last= null;
+        for( Bookmark val : elements ) {
+            if ( last==null || !last.title.equals(val.title) ) {
+                model.addElement(val);
+                last= val;
+            }
+        }
+        this.jList1.setModel( model );
+    }
+    
+    private void getElementsFromTree( List<Bookmark> list, DefaultMutableTreeNode node ) {
+        if ( node.isLeaf() ) {
+            list.add((Bookmark)node.getUserObject());
+        }        
+        for ( int i=0; i<node.getChildCount(); i++ ) {
+            getElementsFromTree( list, (DefaultMutableTreeNode)node.getChildAt(i) );
+        }
+    }
+    
     DefaultHandler createHandler(final DefaultMutableTreeNode root) {
         final StringBuilder charsBuilder = new StringBuilder();
 
@@ -172,9 +229,9 @@ public class AddFilterDialog extends javax.swing.JPanel {
     }
 
     private static class Bookmark {
-        String title;
-        String filter;
-        String description;
+        String title="";
+        String filter="";
+        String description="";
         public String toString() {
             return title;
         }
@@ -185,23 +242,38 @@ public class AddFilterDialog extends javax.swing.JPanel {
     }
 
     /**
-     * return the selected filter.
+     * return the selected filter, such as "|smooth(5)"
      *
-     * @return
+     * @return the selected filter.
      */
     public String getValue() {
-        Object o = this.jTree1.getSelectionPath().getLastPathComponent();
-        DefaultMutableTreeNode tn = (DefaultMutableTreeNode) o;
-        Bookmark b = (Bookmark) tn.getUserObject();
-        List<TreePath> paths= new ArrayList();
-        
-        Enumeration<TreePath> add= this.jTree1.getExpandedDescendants( new TreePath(root) );
-        while ( add.hasMoreElements() ) {
-            TreePath p= add.nextElement();
-            paths.add(p);
+        Bookmark result;
+        int tabPreference;
+        if ( jTabbedPane1.getSelectedIndex()==0 ) {
+            Object o = this.jTree1.getSelectionPath().getLastPathComponent();
+            DefaultMutableTreeNode tn = (DefaultMutableTreeNode) o;
+            Bookmark b = (Bookmark) tn.getUserObject();
+            List<TreePath> paths= new ArrayList();
+
+            Enumeration<TreePath> add= this.jTree1.getExpandedDescendants( new TreePath(root) );
+            while ( add.hasMoreElements() ) {
+                TreePath p= add.nextElement();
+                paths.add(p);
+            }
+            expansionState= TreeUtil.getExpansionState( jTree1, 0 );
+            tabPreference= 0;
+            result= b;
+        } else {
+            Bookmark b= (Bookmark)jList1.getSelectedValue();
+            expansionState= TreeUtil.getExpansionState( jTree1, 0 );
+            tabPreference= 1;
+            result= b;
         }
-        expansionState= TreeUtil.getExpansionState( jTree1, 0 );
-        return b.filter;
+        prefs.put( PREF_EXPANSION_STATE, expansionState );
+        prefs.putInt(PREF_TAB, tabPreference );
+        prefs.putInt( PREF_INDEX, jList1.getSelectedIndex() );
+        
+        return result.filter;
     }
 
     public static void main(String[] args) {
@@ -223,27 +295,56 @@ public class AddFilterDialog extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jTabbedPane1 = new javax.swing.JTabbedPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTree1 = new javax.swing.JTree();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
 
-        jTree1.setRootVisible(false);
         jScrollPane1.setViewportView(jTree1);
+
+        jTabbedPane1.addTab("Category", jScrollPane1);
+
+        jList1.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane2.setViewportView(jList1);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Alpha", jPanel1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JList jList1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTree jTree1;
     // End of variables declaration//GEN-END:variables
 }
