@@ -30,13 +30,13 @@ public class TreeUtil {
  
     public static String getExpansionState(JTree tree, int row){
         TreePath rowPath = tree.getPathForRow(row);
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         int rowCount = tree.getRowCount();
         for(int i=row; i<rowCount; i++){
             TreePath path = tree.getPathForRow(i);
             if(i==row || isDescendant(path, rowPath)){
                 if(tree.isExpanded(path))
-                    buf.append(","+String.valueOf(i-row));
+                    buf.append(",").append(String.valueOf(i-row));
             }else
                 break;
         }
