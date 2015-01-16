@@ -260,101 +260,101 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         }
     }
     
-    private void addFilter( int idx ) {
-        JPanel optionsPanel= new JPanel();
-
-        optionsPanel.setLayout( new BoxLayout(optionsPanel,BoxLayout.Y_AXIS) );
-
-        ButtonGroup group= new ButtonGroup();
-
-        // CAUTION: ") " is used to delimit the annotation from the command.
-        String[] opts= new String[] {
-        "abs() return the absolute value of the data.",
-        "accum() running sum of the rank 1 data. (opposite of diff).",
-        "add(1.) add a scalar",
-        "butterworth(2,500,550,True) Butterworth notch filter",
-        "contour(0,1,10) convert to contours at 0 1 and 10",
-        "collapse0() average over the zeroth dimension to reduce the dimensionality. (See total)",
-        "collapse1() average over the first dimension to reduce the dimensionality.",
-        "cos() cos of the data in radians. (No units check)",
-        "dbAboveBackgroundDim1(10) show data as decibels above the 10% level",
-        "detrend(5) remove boxcar average from the rank 1 data. (See smooth)",
-        "diff() finite differences between adjacent elements in the rank 1 data.",
-        "divide(2.) divide by a scalar",
-        "exp10() plot pow(10,ds)",
-        "fftPower(128) plot power spectrum by breaking waveform data in windows of length size.",
-        "fftPower(128,2,'Hanning') power spectrum with sliding window (1=no overlap,2=50% 4=75%).",
-        "flatten() flatten a rank 2 dataset. The result is a n,3 dataset of [x,y,z]. (opposite of grid)",
-        "grid() grid the rank2 buckshot but gridded data into a rank 2 table.",
-        "hanning(128) run a hanning window before taking fft.",
-        "histogram() perform an \"auto\" histogram of the data that automatically sets bins. ",
-        "logHistogram() perform the auto histogram in the log space.",
-        "log10() take the base-10 log of the data." ,
-        "magnitude() calculate the magnitude of the vectors ",
-        "medianFilter(5) boxcar median filter.",
-        "multiply(2) multiply by a scalar ",
-        "negate() flip the sign on the data.",
-        "pow(2.) square the data",
-        "setUnits('nT') reset the units to the new units",
-        "setDepend0Units('nT') reset the units to the new units",
-        "setDepend0Cadence('50s') reset the cadence to 50 seconds",
-        "sin() sin of the data in radians. (No units check)",
-        "slice0(0) slice the data on the zeroth dimension (often time) at the given index.",
-        "slice1(0) slice the data on the first dimension at the given index.",
-        "slices(':',2,3) slice the data on the first and second dimensions, leaving the zeroth alone.",
-        "sqrt() square root of the data",
-        "smooth(5) boxcar average over the rank 1 data.  (See detrend)",
-        "reducex('1 hr') reduce data to 1 hr intervals",
-        "toDegrees() convert the data to degrees. (No units check)",
-        "toRadians() convert the data to radians. (No units check) ",
-        "total1() total over the first dimension to reduce the dimensionality. (See collapse0)",
-        "transpose() transpose the rank 2 dataset.",
-        "unbundle('Bx') unbundle a component ",
-        "valid() replace data with 1 where valid, 0 where invalid",
-        };
-
-        for ( String opt : opts ) {
-            JRadioButton cb = new JRadioButton(opt);
-            group.add(cb);
-            optionsPanel.add(cb);
-        }
-
-        JScrollPane p= new JScrollPane(optionsPanel);
-        Dimension d= java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-
-        Dimension v= new Dimension( 700, Math.min( 700, d.height-100 ) );
-        p.setMaximumSize(v);
-        p.setPreferredSize(v);
-        
-        p.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
-        p.getVerticalScrollBar().setUnitIncrement(optionsPanel.getFont().getSize());
-       int r= JOptionPane.showConfirmDialog( this, p, "Add Filter", JOptionPane.OK_CANCEL_OPTION );
-       if ( r==JOptionPane.OK_OPTION ) {
-           String ss=null;
-           Enumeration<AbstractButton> ee= group.getElements();
-           while ( ee.hasMoreElements() ) {
-               AbstractButton b= ee.nextElement();
-               if ( b.isSelected() ) {
-                   String s= b.getText();
-                   int ii= s.indexOf(") ");
-                   ss= s.substring(0,ii+1);
-               }
-           }
-           if ( ss!=null ) {
-               FilterEditorPanel filter1= getEditorFor(ss, null);
-               filter1.getPanel().addFocusListener( lostFocusListener );
-               addFocusListeners( filter1.getPanel() );
-               editors.add( idx, filter1 );
-               String filter= getFilter();
-               setFilter( filter );
-               QDataSet inputDs1= this.inputDs;
-               setInput(null);
-               setInput(inputDs1);
-               updateSoon(inputDs1, filter );
-           }
-       }
-
-    }
+//    private void addFilter( int idx ) {
+//        JPanel optionsPanel= new JPanel();
+//
+//        optionsPanel.setLayout( new BoxLayout(optionsPanel,BoxLayout.Y_AXIS) );
+//
+//        ButtonGroup group= new ButtonGroup();
+//
+//        // CAUTION: ") " is used to delimit the annotation from the command.
+//        String[] opts= new String[] {
+//        "abs() return the absolute value of the data.",
+//        "accum() running sum of the rank 1 data. (opposite of diff).",
+//        "add(1.) add a scalar",
+//        "butterworth(2,500,550,True) Butterworth notch filter",
+//        "contour(0,1,10) convert to contours at 0 1 and 10",
+//        "collapse0() average over the zeroth dimension to reduce the dimensionality. (See total)",
+//        "collapse1() average over the first dimension to reduce the dimensionality.",
+//        "cos() cos of the data in radians. (No units check)",
+//        "dbAboveBackgroundDim1(10) show data as decibels above the 10% level",
+//        "detrend(5) remove boxcar average from the rank 1 data. (See smooth)",
+//        "diff() finite differences between adjacent elements in the rank 1 data.",
+//        "divide(2.) divide by a scalar",
+//        "exp10() plot pow(10,ds)",
+//        "fftPower(128) plot power spectrum by breaking waveform data in windows of length size.",
+//        "fftPower(128,2,'Hanning') power spectrum with sliding window (1=no overlap,2=50% 4=75%).",
+//        "flatten() flatten a rank 2 dataset. The result is a n,3 dataset of [x,y,z]. (opposite of grid)",
+//        "grid() grid the rank2 buckshot but gridded data into a rank 2 table.",
+//        "hanning(128) run a hanning window before taking fft.",
+//        "histogram() perform an \"auto\" histogram of the data that automatically sets bins. ",
+//        "logHistogram() perform the auto histogram in the log space.",
+//        "log10() take the base-10 log of the data." ,
+//        "magnitude() calculate the magnitude of the vectors ",
+//        "medianFilter(5) boxcar median filter.",
+//        "multiply(2) multiply by a scalar ",
+//        "negate() flip the sign on the data.",
+//        "pow(2.) square the data",
+//        "setUnits('nT') reset the units to the new units",
+//        "setDepend0Units('nT') reset the units to the new units",
+//        "setDepend0Cadence('50s') reset the cadence to 50 seconds",
+//        "sin() sin of the data in radians. (No units check)",
+//        "slice0(0) slice the data on the zeroth dimension (often time) at the given index.",
+//        "slice1(0) slice the data on the first dimension at the given index.",
+//        "slices(':',2,3) slice the data on the first and second dimensions, leaving the zeroth alone.",
+//        "sqrt() square root of the data",
+//        "smooth(5) boxcar average over the rank 1 data.  (See detrend)",
+//        "reducex('1 hr') reduce data to 1 hr intervals",
+//        "toDegrees() convert the data to degrees. (No units check)",
+//        "toRadians() convert the data to radians. (No units check) ",
+//        "total1() total over the first dimension to reduce the dimensionality. (See collapse0)",
+//        "transpose() transpose the rank 2 dataset.",
+//        "unbundle('Bx') unbundle a component ",
+//        "valid() replace data with 1 where valid, 0 where invalid",
+//        };
+//
+//        for ( String opt : opts ) {
+//            JRadioButton cb = new JRadioButton(opt);
+//            group.add(cb);
+//            optionsPanel.add(cb);
+//        }
+//
+//        JScrollPane p= new JScrollPane(optionsPanel);
+//        Dimension d= java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+//
+//        Dimension v= new Dimension( 700, Math.min( 700, d.height-100 ) );
+//        p.setMaximumSize(v);
+//        p.setPreferredSize(v);
+//        
+//        p.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
+//        p.getVerticalScrollBar().setUnitIncrement(optionsPanel.getFont().getSize());
+//       int r= JOptionPane.showConfirmDialog( this, p, "Add Filter", JOptionPane.OK_CANCEL_OPTION );
+//       if ( r==JOptionPane.OK_OPTION ) {
+//           String ss=null;
+//           Enumeration<AbstractButton> ee= group.getElements();
+//           while ( ee.hasMoreElements() ) {
+//               AbstractButton b= ee.nextElement();
+//               if ( b.isSelected() ) {
+//                   String s= b.getText();
+//                   int ii= s.indexOf(") ");
+//                   ss= s.substring(0,ii+1);
+//               }
+//           }
+//           if ( ss!=null ) {
+//               FilterEditorPanel filter1= getEditorFor(ss, null);
+//               filter1.getPanel().addFocusListener( lostFocusListener );
+//               addFocusListeners( filter1.getPanel() );
+//               editors.add( idx, filter1 );
+//               String filter= getFilter();
+//               setFilter( filter );
+//               QDataSet inputDs1= this.inputDs;
+//               setInput(null);
+//               setInput(inputDs1);
+//               updateSoon(inputDs1, filter );
+//           }
+//       }
+//
+//    }
  
     private void addFocusListeners( JPanel p ) {
         for ( Component c: p.getComponents() ) {
@@ -419,11 +419,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     org.das2.util.LoggerManager.logGuiEvent(e);                    
-                    if ( System.getProperty("user.name").equals("jbf") ) {
+                    //if ( true ) {
                         addFilterNew(fi);
-                    } else {
-                        addFilter(fi);
-                    }
+                    //} else {
+                    //    addFilter(fi);
+                    //}
                 }
             } );
         } else {
@@ -432,11 +432,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     org.das2.util.LoggerManager.logGuiEvent(e);
-                    if ( System.getProperty("user.name").equals("jbf") ) {
+                    //if ( true ) {
                         addFilterNew(editors.size());
-                    } else {
-                        addFilter(editors.size());
-                    }
+                    //} else {
+                    //    addFilter(editors.size());
+                    //}
                 }
             } );
         }
