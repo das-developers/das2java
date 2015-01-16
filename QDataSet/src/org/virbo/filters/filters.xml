@@ -74,9 +74,9 @@
                         <description>Initializes Smooth Filter</description>
                     </bookmark>
                     <bookmark>
-                        <title>Total 1</title>
+                        <title>Total Over a Dimension</title>
                         <filter>|total1()</filter>
-                        <description>Totals over the first dimension to reduce the dimensionality</description>
+                        <description>Totals over a dimension to reduce the dimensionality</description>
                     </bookmark>
                     <bookmark>
                         <title>Transpose</title>
