@@ -4,11 +4,13 @@
  */
 package org.virbo.filters;
 
+import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import static org.virbo.filters.FilterEditorPanel.PROP_FILTER;
@@ -21,6 +23,7 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
 
     static final long t0= System.currentTimeMillis();
     int[] qube= null;
+    WeakReference<QDataSet> inputDs= null;
     
     /**
      * Creates new form SlicesFilterEditorPanel
@@ -43,6 +46,7 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         jLabel1 = new javax.swing.JLabel();
         sliceIndexSpinner = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
+        sliceFeedbackLabel = new javax.swing.JLabel();
 
         sliceDimensionCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         sliceDimensionCB.addActionListener(new java.awt.event.ActionListener() {
@@ -72,16 +76,19 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(24, 24, 24)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sliceIndexSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sliceDimensionCB, 0, 291, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(24, 24, 24)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sliceIndexSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sliceFeedbackLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sliceDimensionCB, 0, 291, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -94,8 +101,9 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(sliceIndexSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(sliceIndexSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sliceFeedbackLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -111,12 +119,14 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                 snm.setValue(qube[idx]-1);
             }
         }
+        updateFeedback();
     }//GEN-LAST:event_sliceDimensionCBActionPerformed
 
     private void sliceIndexSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sliceIndexSpinnerStateChanged
         final String ff= getFilter();
         logger.log(Level.FINEST, "1: {0}{1}", new Object[]{ff, this.getName()});
         firePropertyChange( PROP_FILTER, null, ff );
+        updateFeedback();
     }//GEN-LAST:event_sliceIndexSpinnerStateChanged
 
     private void sliceIndexSpinnerMouseWheelMoved(java.awt.event.MouseWheelEvent evt) {//GEN-FIRST:event_sliceIndexSpinnerMouseWheelMoved
@@ -129,18 +139,48 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
             if ( newIndex>maxIndex ) newIndex= maxIndex;
         }
         snm.setValue( newIndex );
+        updateFeedback();
     }//GEN-LAST:event_sliceIndexSpinnerMouseWheelMoved
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JComboBox sliceDimensionCB;
+    private javax.swing.JLabel sliceFeedbackLabel;
     private javax.swing.JSpinner sliceIndexSpinner;
     // End of variables declaration//GEN-END:variables
 
+    private void updateFeedback() {
+        Runnable run= new Runnable() {
+            public void run() {
+                int dim= sliceDimensionCB.getSelectedIndex();
+                int index= (Integer)sliceIndexSpinner.getValue();
+                boolean na= true;
+                if ( inputDs!=null ) {
+                    QDataSet ds= inputDs.get();
+                    if ( ds!=null ) {
+                        QDataSet dep= (QDataSet)ds.property("DEPEND_"+dim);
+                        if ( dep!=null && dep.rank()==1 ) {
+                            String s= DataSetUtil.asDatum( dep.slice(index) ).toString();
+                            sliceFeedbackLabel.setText(s);
+                            sliceFeedbackLabel.setToolTipText(null);
+                            na= false;
+                        }
+                    }
+                }        
+                if ( na ) {
+                    sliceFeedbackLabel.setText("N/A");
+                    sliceFeedbackLabel.setToolTipText("value cannot be found easily");
+                }
+            }
+        };
+        SwingUtilities.invokeLater(run);
+    }
+    
     @Override
     public String getFilter() {
         logger.fine( "getFilter" );
+        updateFeedback();
         return String.format( "|slice%d(%d)", sliceDimensionCB.getSelectedIndex(), (Integer)sliceIndexSpinner.getValue() );
     }
 
@@ -153,14 +193,17 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         Pattern p= Pattern.compile("\\|slice(\\d)\\((\\d+)\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
-            sliceDimensionCB.setSelectedIndex( Integer.parseInt(m.group(1)) );
-            sliceIndexSpinner.setValue( Integer.parseInt(m.group(2)) );
+            int dim= Integer.parseInt(m.group(1));
+            int index= Integer.parseInt(m.group(2));
+            sliceDimensionCB.setSelectedIndex( dim );
+            sliceIndexSpinner.setValue( index );
         }
     }
 
     @Override
     public void setInput(QDataSet ds) {
         logger.log(Level.FINE, "setInput {0}", ds.toString() );
+        this.inputDs= new WeakReference(ds);
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
         int idx= sliceDimensionCB.getSelectedIndex();
         sliceDimensionCB.setModel(new DefaultComboBoxModel(depNames1));
