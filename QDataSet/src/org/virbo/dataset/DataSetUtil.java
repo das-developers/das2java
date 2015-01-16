@@ -1627,6 +1627,7 @@ public class DataSetUtil {
     /**
      * return true if each record of DEPEND_0 is the same.  Rank 0 datasets
      * are trivially constant.
+     * TODO: ds.slice(i) can be slow because equivalent does so much with the metadata.
      * @param ds any dataset
      * @return true if the dataset doesn't change with DEPEND_0 or is rank 0.
      */
