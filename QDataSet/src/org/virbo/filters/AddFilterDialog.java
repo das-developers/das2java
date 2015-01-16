@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -35,13 +37,24 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class AddFilterDialog extends javax.swing.JPanel {
 
+    private static String expansionState= null;
+    
+    DefaultMutableTreeNode root= null;
+    
     /**
      * Creates new form AddFilterDialog
      */
     public AddFilterDialog() {
         initComponents();
         this.jTree1.setModel(new DefaultTreeModel(getTree()));
-        this.jTree1.setSelectionModel( new RestrictedTreeSelectionModel() );
+        if ( expansionState==null ) {
+            for (int i = 0; i < jTree1.getRowCount(); i++) {
+                jTree1.expandRow(i);
+            }
+        } else {
+            TreeUtil.restoreExpanstionState( jTree1, 0, expansionState); 
+        }
+        this.jTree1.setSelectionModel( new RestrictedTreeSelectionModel() );            
     }
 
     DefaultHandler createHandler(final DefaultMutableTreeNode root) {
@@ -129,6 +142,8 @@ public class AddFilterDialog extends javax.swing.JPanel {
 
     private DefaultMutableTreeNode build( InputStream in ) {
         DefaultMutableTreeNode result = new DefaultMutableTreeNode("");
+        root= result;
+        
         DefaultHandler sax = createHandler(result);
         try {
             SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -178,11 +193,23 @@ public class AddFilterDialog extends javax.swing.JPanel {
         Object o = this.jTree1.getSelectionPath().getLastPathComponent();
         DefaultMutableTreeNode tn = (DefaultMutableTreeNode) o;
         Bookmark b = (Bookmark) tn.getUserObject();
+        List<TreePath> paths= new ArrayList();
+        
+        Enumeration<TreePath> add= this.jTree1.getExpandedDescendants( new TreePath(root) );
+        while ( add.hasMoreElements() ) {
+            TreePath p= add.nextElement();
+            paths.add(p);
+        }
+        expansionState= TreeUtil.getExpansionState( jTree1, 0 );
         return b.filter;
     }
 
     public static void main(String[] args) {
         AddFilterDialog afd = new AddFilterDialog();
+        if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(null, afd)) {
+            System.err.println(afd.getValue());
+        }
+        afd = new AddFilterDialog();
         if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(null, afd)) {
             System.err.println(afd.getValue());
         }
