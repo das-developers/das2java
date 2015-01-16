@@ -4900,6 +4900,107 @@ public class Ops {
     }
 
     /**
+     * like extent, but does not account for DELTA_PLUS, DELTA_MINUS,
+     * BIN_PLUS, or BIN_MINUS properties.  This was introduced to provide
+     * a fast way to identify constant datasets and the extent that non-constant 
+     * datasets vary.
+     * @param ds the dataset to measure the extent rank 1 or rank 2 bins
+     * @param wds a weights dataset, containing zero where the data is not valid, positive non-zero otherwise.  If null, then all finite data is treated as valid.
+     * @param range, if non-null, return the union of this range and the extent.  This must not contain fill!
+     * @return two element, rank 1 "bins" dataset.
+     */
+    public static QDataSet extentSimple( QDataSet ds, QDataSet wds, QDataSet range  ) {
+
+        int count=0;
+        
+        if ( wds==null ) {
+            wds= new WeightsDataSet.Finite(ds);
+        }
+
+        double [] result;
+        Number dfill= ((Number)wds.property(QDataSet.FILL_VALUE));
+        double fill= dfill!=null ? dfill.doubleValue() : -1e31;
+
+        if ( range==null ) {
+            result= new double[]{ Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        } else {
+            result= new double[]{ range.value(0), range.value(1) };
+            if ( range.value(0)==fill ) System.err.println("range passed into extent contained fill");
+        }
+
+        boolean monoCheck; // true if the data appears to be monotonic decreasing or increasing.
+        int ifirst,ilast;
+
+        if ( ds.rank()>0 ) {
+            // find the first and last valid points.
+            ifirst=0;
+            int n= ds.length();
+            ilast= n-1;
+
+            monoCheck= Boolean.TRUE.equals( ds.property(QDataSet.MONOTONIC ));
+            if ( ds.rank()==1 && monoCheck && n>0 ) {
+                while ( ifirst<n && wds.value(ifirst)==0.0 ) ifirst++;
+                while ( ilast>=0 && wds.value(ilast)==0.0 ) ilast--;
+                int imiddle= ( ifirst + ilast ) / 2;
+                if ( wds.value(imiddle)>0 ) {
+                    double dir= ds.value(ilast) - ds.value(ifirst) ;
+                    if ( ( ds.value(imiddle) - ds.value(ifirst) ) * dir < 0 ) {
+                        logger.fine("this data isn't really monotonic.");
+                        monoCheck= false;
+                    }
+                }
+            }
+        } else {
+            monoCheck= false;
+            ifirst=0;
+            ilast= 0; // not used.
+        }
+        
+        if ( ds.rank()==1 && monoCheck ) {
+            count= Math.max( 0, ilast - ifirst + 1 );
+            if ( count>0 ) {
+                result[0]= Math.min( result[0], ds.value(ifirst) );
+                result[1]= Math.max( result[1], ds.value(ilast) );
+            } else {
+                result[0] = range==null ? fill : range.value(0);
+                result[1] = range==null ? fill : range.value(1);
+            }
+            if ( result[0]>result[1] ) { // okay with fill.
+                double t= result[1];
+                result[1]= result[0];
+                result[0]= t;
+            }
+        } else {
+
+            QubeDataSetIterator it = new QubeDataSetIterator(ds);
+
+            while (it.hasNext()) {
+                it.next();
+                if (it.getValue(wds) > 0.) {
+                    count++;
+                    result[0] = Math.min(result[0], it.getValue(ds));
+                    result[1] = Math.max(result[1], it.getValue(ds));
+                } else {
+
+                }
+            }
+            if ( count==0 ) {  // no valid data!
+                result[0] = fill;
+                result[1] = fill;
+            }
+        }
+
+        DDataSet qresult= DDataSet.wrap(result);
+        qresult.putProperty( QDataSet.SCALE_TYPE, ds.property(QDataSet.SCALE_TYPE) );
+        qresult.putProperty( QDataSet.USER_PROPERTIES, Collections.singletonMap( "count", count ) );
+        qresult.putProperty( QDataSet.BINS_0, "min,maxInclusive" );
+        qresult.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
+        if ( result[0]==fill ) qresult.putProperty( QDataSet.FILL_VALUE, fill);
+        
+        return qresult;
+        
+    }
+    /**
      * returns a two element, rank 1 dataset containing the extent (min to max) of the data, allowing an external
      * evaluation of the weightsDataSet.  If no valid data is found then [fill,fill] is returned.
      * @param ds the dataset to measure the extent rank 1 or rank 2 bins
