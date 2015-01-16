@@ -5,7 +5,6 @@
  */
 package org.virbo.filters;
 
-import java.awt.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayDeque;
@@ -13,16 +12,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.ListCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
@@ -253,13 +248,6 @@ public class AddFilterDialog extends javax.swing.JPanel {
             Object o = this.jTree1.getSelectionPath().getLastPathComponent();
             DefaultMutableTreeNode tn = (DefaultMutableTreeNode) o;
             Bookmark b = (Bookmark) tn.getUserObject();
-            List<TreePath> paths= new ArrayList();
-
-            Enumeration<TreePath> add= this.jTree1.getExpandedDescendants( new TreePath(root) );
-            while ( add.hasMoreElements() ) {
-                TreePath p= add.nextElement();
-                paths.add(p);
-            }
             expansionState= TreeUtil.getExpansionState( jTree1, 0 );
             tabPreference= 0;
             result= b;
