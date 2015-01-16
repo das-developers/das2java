@@ -5,9 +5,12 @@
  */
 package org.virbo.filters;
 
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,8 +72,11 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
                 spinners[i].setEnabled( cb1.isSelected() );
             }
         });
-        p1.add( Box.createGlue() );
+        p1.add( Box.createHorizontalStrut(14) );
         JSpinner sp1= new JSpinner();
+        sp1.setMinimumSize(new Dimension(30,14));
+        sp1.setPreferredSize(new Dimension(30,14));
+        addMouseWheelListenerToSpinner( sp1 );
         spinners[i]= sp1;
         if ( s.startsWith("'") && s.endsWith("'") ) s= s.substring(1,s.length()-1);
         if ( s.equals(":") ) {
@@ -79,9 +85,29 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
             sp1.setValue(Integer.parseInt(s));
         }
         p1.add( sp1 );
+        p1.add( Box.createGlue() );
         return p1;
     }
 
+    public static void addMouseWheelListenerToSpinner( final JSpinner sliceIndexSpinner ) {
+            
+        sliceIndexSpinner.addMouseWheelListener( new MouseWheelListener() { 
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent evt) {
+                SpinnerNumberModel snm= ((SpinnerNumberModel)sliceIndexSpinner.getModel());
+                int newIndex= snm.getNumber().intValue() - evt.getWheelRotation();
+                if ( newIndex<0 ) newIndex= 0;
+                Number nmax= (Number)snm.getMaximum();
+                if ( nmax!=null ) {
+                   int maxIndex= nmax.intValue();
+                   if ( newIndex>maxIndex ) newIndex= maxIndex;
+                }
+                snm.setValue( newIndex );
+            }
+        } );        
+    }
+    
     @Override
     public final void setFilter(String filter) {
         logger.log(Level.FINE, "setFilter {0}", filter);
