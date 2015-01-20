@@ -30,6 +30,7 @@ import javax.swing.tree.TreePath;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.das2.datum.LoggerManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -45,6 +46,8 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class AddFilterDialog extends javax.swing.JPanel {
 
+    private static final Logger logger= LoggerManager.getLogger("qdataset.filters");
+    
     private static final Preferences prefs= Preferences.userNodeForPackage(AddFilterDialog.class);
     
     private static final String PREF_EXPANSION_STATE = "expansionState";
@@ -124,7 +127,12 @@ public class AddFilterDialog extends javax.swing.JPanel {
     
     private void getElementsFromTree( List<Bookmark> list, DefaultMutableTreeNode node ) {
         if ( node.isLeaf() ) {
-            list.add((Bookmark)node.getUserObject());
+            Object o= node.getUserObject();
+            if ( o instanceof Bookmark ) {
+                list.add((Bookmark)node.getUserObject());
+            } else {
+                logger.info("Seth's strange case where root is a leaf: "+o);
+            }
         }        
         for ( int i=0; i<node.getChildCount(); i++ ) {
             getElementsFromTree( list, (DefaultMutableTreeNode)node.getChildAt(i) );

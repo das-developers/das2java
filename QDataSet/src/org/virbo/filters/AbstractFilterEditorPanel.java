@@ -17,7 +17,7 @@ import org.virbo.dataset.QDataSet;
  */
 public abstract class AbstractFilterEditorPanel extends JPanel implements FilterEditorPanel {
     
-    protected static final Logger logger= LoggerManager.getLogger("apdss.filters");
+    protected static final Logger logger= LoggerManager.getLogger("qdataset.filters");
     
     /**
      * configure the GUI based on this filter.  The filter string will

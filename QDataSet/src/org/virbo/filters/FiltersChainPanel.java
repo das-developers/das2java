@@ -65,7 +65,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     private boolean implicitUnbundle= false;
     TickleTimer timer;
 
-    private static final Logger logger= LoggerManager.getLogger("apdss.filters");
+    private static final Logger logger= LoggerManager.getLogger("qdataset.filters");
     private static final String CLASS_NAME = FiltersChainPanel.class.getName();
     
     /**
