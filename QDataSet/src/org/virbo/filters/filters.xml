@@ -66,12 +66,12 @@
                     <bookmark>
                         <title>Slice0</title>
                         <filter>|slice0(0)</filter>
-                        <description>Slice the zeroth dimension at selected indices</description>
+                        <description>Slice the zeroth dimension at selected index</description>
                     </bookmark> 
                     <bookmark>
                         <title>Slice1</title>
                         <filter>|slice1(0)</filter>
-                        <description>Slice the first dimension at selected indices</description>
+                        <description>Slice the first dimension at selected index</description>
                     </bookmark> 
                     <bookmark>
                         <title>Slices</title>
