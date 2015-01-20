@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,6 +28,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -99,6 +101,10 @@ public class AddFilterDialog extends javax.swing.JPanel {
                 jLabel2.setText( b.filter );
             }
         });
+                        
+        Bookmark b= (Bookmark)this.jList1.getSelectedValue(); 
+        ensureFolderOpen( this.root, b );
+
     }
     
     /**
@@ -136,6 +142,48 @@ public class AddFilterDialog extends javax.swing.JPanel {
         }        
         for ( int i=0; i<node.getChildCount(); i++ ) {
             getElementsFromTree( list, (DefaultMutableTreeNode)node.getChildAt(i) );
+        }
+    }
+    
+    private DefaultMutableTreeNode ensureFolderOpen( DefaultMutableTreeNode node, Bookmark filter ) {
+        Object uo= node.getUserObject();
+        if ( uo instanceof String ) {
+            return ensureFolderOpen( (DefaultMutableTreeNode)node.getFirstChild(), filter );
+        } else {
+            DefaultMutableTreeNode found= null;
+            Enumeration n= node.children();
+            String searchFor= filter.filter;
+            int i= searchFor.indexOf("(");
+            searchFor= searchFor.substring(0,i);
+            DefaultMutableTreeNode aleaf= null;
+            while ( n.hasMoreElements() ) {
+                DefaultMutableTreeNode c= (DefaultMutableTreeNode)n.nextElement();
+                if ( c.isLeaf() ) {
+                    if ( ( (Bookmark)c.getUserObject() ).filter.startsWith(searchFor) ) {
+                        found= c;
+                        break;
+                    } else {
+                        if ( aleaf==null ) aleaf= c;
+                    }
+                } else {
+                    ensureFolderOpen( c, filter );
+                }
+            }
+            if ( found==null && this.jTree1.getSelectionPath()==null ) {
+                TreePath tp = new TreePath( aleaf.getPath() );
+                this.jTree1.expandPath( tp.getParentPath() );
+                this.jTree1.setSelectionPath( tp );
+                this.jTree1.scrollPathToVisible( tp );                
+                return aleaf;
+            } else if ( found==null ) {
+                return (DefaultMutableTreeNode) this.jTree1.getSelectionPath().getLastPathComponent();
+            } else {
+                TreePath tp= new TreePath( found.getPath() );
+                this.jTree1.expandPath( tp.getParentPath() );
+                this.jTree1.setSelectionPath( tp );
+                this.jTree1.scrollPathToVisible( tp );
+                return found;
+            }
         }
     }
     
