@@ -223,7 +223,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
     }
 
     private DefaultMutableTreeNode build( InputStream in ) {
-        DefaultMutableTreeNode result = new DefaultMutableTreeNode("");
+        DefaultMutableTreeNode result = new DefaultMutableTreeNode("root");
         root= result;
         
         DefaultHandler sax = createHandler(result);
@@ -236,19 +236,26 @@ public class AddFilterDialog extends javax.swing.JPanel {
             xmlReader.setContentHandler(sax);
 
             try {
+                logger.fine("done parsing filters.xml");
                 xmlReader.parse(new InputSource(in));
-                in.close();
+                logger.info("done parsing filters.xml");
 
             } catch (RuntimeException ex) {
                 // this is expected.
             } catch (IOException ex) {
-                Logger.getLogger(AddFilterDialog.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
             }
         } catch (ParserConfigurationException ex) {
-            Logger.getLogger(AddFilterDialog.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
             // this is expected.
         } catch (SAXException ex) {
-            Logger.getLogger(AddFilterDialog.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                in.close();
+            } catch ( IOException ex ) {
+                ex.printStackTrace();
+            }
         }
         return result;
     }
@@ -263,7 +270,9 @@ public class AddFilterDialog extends javax.swing.JPanel {
     }
 
     private TreeNode getTree() {
-        return build( AddFilterDialog.class.getResourceAsStream("filters.xml") );
+        System.err.println( "filters.xml resouce: "  + String.valueOf( AddFilterDialog.class.getResource("filters.xml") ) );
+        InputStream in = AddFilterDialog.class.getResourceAsStream("filters.xml");
+        return build( in );
     }
 
     /**
