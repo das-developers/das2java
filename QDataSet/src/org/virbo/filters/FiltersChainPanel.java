@@ -163,6 +163,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new SetUnitsFilterEditorPanel();
         } else if ( f.matches("\\|slice(\\d)\\((\\d+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SliceFilterEditorPanel();
+        } else if ( f.matches("\\|sin\\(\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
+            result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|total(\\d)\\(()\\)") ) {
             result= new TotalFilterEditorPanel();
         } else if ( f.matches("\\|slices\\((.*)\\)") ) { 
@@ -179,6 +181,16 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new UnbundleFilterEditorPanel();
         } else if ( f.matches("\\|dbAboveBackgroundDim1\\((\\d+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new dbAboveBackgroundDim1FilterEditorPanel();
+        } else if ( f.matches("\\|transpose\\(\\)") ) {
+            result= new NoArgFilterEditorPanel();
+        } else if ( f.matches("\\|toDegrees\\(\\)") ) {
+            result= new NoArgFilterEditorPanel();
+        } else if ( f.matches("\\|toRadians\\(\\)") ) {
+            result= new NoArgFilterEditorPanel();
+        } else if ( f.matches("\\|valid\\(\\)") ) {
+            result= new NoArgFilterEditorPanel();
+        } else if ( f.matches("\\|diff\\(\\)") ) {
+            result= new NoArgFilterEditorPanel();
         } else {
             result= new AnyFilterEditorPanel();
         }
