@@ -103,7 +103,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
         });
                         
         Bookmark b= (Bookmark)this.jList1.getSelectedValue(); 
-        ensureFolderOpen( this.root, b );
+        ensureFolderOpen( 0, this.root, b );
 
     }
     
@@ -145,10 +145,10 @@ public class AddFilterDialog extends javax.swing.JPanel {
         }
     }
     
-    private DefaultMutableTreeNode ensureFolderOpen( DefaultMutableTreeNode node, Bookmark filter ) {
+    private DefaultMutableTreeNode ensureFolderOpen( int depth, DefaultMutableTreeNode node, Bookmark filter ) {
         Object uo= node.getUserObject();
         if ( uo instanceof String ) {
-            return ensureFolderOpen( (DefaultMutableTreeNode)node.getFirstChild(), filter );
+            return ensureFolderOpen( depth+1, (DefaultMutableTreeNode)node.getFirstChild(), filter );
         } else {
             DefaultMutableTreeNode found= null;
             Enumeration n= node.children();
@@ -166,17 +166,15 @@ public class AddFilterDialog extends javax.swing.JPanel {
                         if ( aleaf==null ) aleaf= c;
                     }
                 } else {
-                    ensureFolderOpen( c, filter );
+                    DefaultMutableTreeNode aleaf1= ensureFolderOpen( depth+1, c, filter );
+                    if ( aleaf1!=null ) {
+                        found= aleaf1;
+                        break;
+                    }
                 }
             }
-            if ( found==null && this.jTree1.getSelectionPath()==null ) {
-                TreePath tp = new TreePath( aleaf.getPath() );
-                this.jTree1.expandPath( tp.getParentPath() );
-                this.jTree1.setSelectionPath( tp );
-                this.jTree1.scrollPathToVisible( tp );                
-                return aleaf;
-            } else if ( found==null ) {
-                return (DefaultMutableTreeNode) this.jTree1.getSelectionPath().getLastPathComponent();
+            if ( found==null ) {
+                return null;
             } else {
                 TreePath tp= new TreePath( found.getPath() );
                 this.jTree1.expandPath( tp.getParentPath() );
