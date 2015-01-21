@@ -137,7 +137,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
             if ( o instanceof Bookmark ) {
                 list.add((Bookmark)node.getUserObject());
             } else {
-                logger.info("Seth's strange case where root is a leaf: "+o);
+                logger.fine("node is a lead but shouldn't be");
             }
         }        
         for ( int i=0; i<node.getChildCount(); i++ ) {
