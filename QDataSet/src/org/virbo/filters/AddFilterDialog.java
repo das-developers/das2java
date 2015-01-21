@@ -235,11 +235,11 @@ public class AddFilterDialog extends javax.swing.JPanel {
                 } else if (localName.equals("bookmark-folder")) {
                     stack.pop();
                 } else if (localName.equals("title")) {
-                    ((Bookmark) (stack.peek().getUserObject())).title = charsBuilder.toString();
+                    ((Bookmark) (stack.peek().getUserObject())).title = charsBuilder.toString().trim();
                 } else if (localName.equals("filter")) {
-                    ((Bookmark) (stack.peek().getUserObject())).filter = charsBuilder.toString();
+                    ((Bookmark) (stack.peek().getUserObject())).filter = charsBuilder.toString().trim();
                 } else if (localName.equals("description")) {
-                    ((Bookmark) (stack.peek().getUserObject())).description = charsBuilder.toString();
+                    ((Bookmark) (stack.peek().getUserObject())).description = charsBuilder.toString().trim();
                 }
                 charsBuilder.delete(0, charsBuilder.length());
             }
