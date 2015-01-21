@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -74,8 +75,9 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
         });
         p1.add( Box.createHorizontalStrut(14) );
         JSpinner sp1= new JSpinner();
-        sp1.setMinimumSize(new Dimension(30,14));
-        sp1.setPreferredSize(new Dimension(30,14));
+        if ( sp1.getEditor() instanceof JFormattedTextField ) {
+            ((JFormattedTextField)sp1.getEditor()).setColumns(10);
+        }
         addMouseWheelListenerToSpinner( sp1 );
         spinners[i]= sp1;
         if ( s.startsWith("'") && s.endsWith("'") ) s= s.substring(1,s.length()-1);
