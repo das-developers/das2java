@@ -90,7 +90,7 @@ public class DivideFilterEditorPanel extends AbstractFilterEditorPanel implement
         if ( m.matches() ) {
             scalar.setText(m.group(1));
         } else {
-            scalar.setText("1");
+            scalar.setText("1.");
         }
         
     }
