@@ -94,11 +94,14 @@ public class AddFilterDialog extends javax.swing.JPanel {
         this.jTree1.addTreeSelectionListener( new TreeSelectionListener() {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
-                Object o = jTree1.getSelectionPath().getLastPathComponent();
-                DefaultMutableTreeNode tn = (DefaultMutableTreeNode) o;
-                Bookmark b = (Bookmark) tn.getUserObject();
-                jLabel1.setText( b.description );
-                jLabel2.setText( b.filter );
+                TreePath tp= jTree1.getSelectionPath();
+                if ( tp!=null ) {
+                    Object o = tp.getLastPathComponent();
+                    DefaultMutableTreeNode tn = (DefaultMutableTreeNode) o;
+                    Bookmark b = (Bookmark) tn.getUserObject();
+                    jLabel1.setText( b.description );
+                    jLabel2.setText( b.filter );
+                }
             }
         });
                         
