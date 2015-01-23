@@ -131,9 +131,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         FilterEditorPanel result;
         if ( f.matches("\\|add\\((.*)\\)") ) {
             result= new AddFilterEditorPanel();
-        } else if ( f.matches("\\|butterworth\\((\\d),(\\d+),(\\w+)\\)") ) {
+        } else if ( f.matches("\\|butterworth\\((\\d),(\\w+),(\\w+)\\)") ) {
             result= new ButterworthFilterEditorPanel();
-        } else if ( f.matches("\\|butterworth\\((\\d),(\\d+),(\\d+),(\\w+)\\)") ) {
+        } else if ( f.matches("\\|butterworth\\((\\d),(\\w+),(\\w+),(\\w+)\\)") ) {
             result= new ButterworthFilterEditorPanel();
         } else if ( f.matches("\\|collapse(\\d)\\(\\)") ) {
             result= new CollapseFilterEditorPanel();
@@ -175,11 +175,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new SmoothFilterEditorPanel();
         } else if ( f.matches("\\|histogram\\(\\)") ) { 
             result= new HistogramFilterEditorPanel();
-        } else if ( f.matches("\\|histogram\\((\\d),(\\d+),(\\d+)\\)") ) { 
+        } else if ( f.matches("\\|histogram\\((\\w+),(\\w+),(\\w+)\\)") ) { 
             result= new HistogramFilterEditorPanel();            
         } else if ( f.matches( UnbundleFilterEditorPanel.PROP_REGEX ) ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new UnbundleFilterEditorPanel();
-        } else if ( f.matches("\\|dbAboveBackgroundDim1\\((\\d+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
+        } else if ( f.matches("\\|dbAboveBackgroundDim1\\((\\w+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new dbAboveBackgroundDim1FilterEditorPanel();
         } else if ( f.matches("\\|transpose\\(\\)") ) {
             result= new NoArgFilterEditorPanel();
