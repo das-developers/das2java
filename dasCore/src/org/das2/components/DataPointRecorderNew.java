@@ -1076,6 +1076,7 @@ public class DataPointRecorderNew extends JPanel {
     
     /**
      * identify the name and unit for each column.
+     * @param i the column number 
      * @param name a Java identifier for the column, e.g. "StartTime"
      * @param units units for the column, or null for dimensionless.
      * @param deft default value to use when data is not provided.
@@ -1095,6 +1096,7 @@ public class DataPointRecorderNew extends JPanel {
 
     /**
      * identify the name and unit for each column.
+     * @param i the column number
      * @param name a Java identifier for the column, e.g. "StartTime"
      * @param units  units units for the column, or null for dimensionless.
      * @param deft default value to use when data is not provided, which must be parseable by units.
@@ -1110,6 +1112,7 @@ public class DataPointRecorderNew extends JPanel {
                 
     /**
      * identify the name and unit for each column.
+     * @param i the column number
      * @param name a Java identifier for the column, e.g. "StartTime"
      * @param units  units units for the column, or null for dimensionless.
      * @param deft default value to use when data is not provided.
@@ -1226,17 +1229,17 @@ public class DataPointRecorderNew extends JPanel {
     
     /**
      * add just the x and y values.
-     * @param x
-     * @param y 
+     * @param x the x value
+     * @param y the y value
      */
     public void addDataPoint( Datum x, Datum y ) {
-        addDataPoint( x, y, Collections.emptyMap() );
+        addDataPoint( x, y, null );
     }
     
     /**
      * add the x and y values with unnamed metadata.
-     * @param x
-     * @param y 
+     * @param x the x value
+     * @param y the y value
      * @param meta any metadata (String, Double, etc ) to be recorded along with the data point.
      */    
     public void addDataPoint( Datum x, Datum y, Object meta ) {
@@ -1245,12 +1248,14 @@ public class DataPointRecorderNew extends JPanel {
     
     /**
      * add the data point, along with metadata such as the key press.
-     * @param x
-     * @param y
-     * @param planes 
+     * @param x the x value
+     * @param y the y value
+     * @param planes null or additional planes.  Note LinkedHashMap will keep the order of the tabs.
      */
     public void addDataPoint( Datum x, Datum y, Map<String,Object> planes ) {
 
+        if ( planes==null ) planes= Collections.emptyMap();
+        
         DDataSet rec= DDataSet.createRank1( 2 + planes.size() );        
         SparseDataSetBuilder bdsb= new SparseDataSetBuilder(2);
         
