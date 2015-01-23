@@ -90,6 +90,9 @@ import org.virbo.dataset.SemanticOps;
 
 /**
  * DataPointRecorder is a GUI for storing data points selected by the user.  
+ * 
+ * This will be reimplemented with DataPointRecorderNew.
+ * 
  * @author  jbf
  */
 public class DataPointRecorder extends JPanel implements DataPointSelectionListener {
