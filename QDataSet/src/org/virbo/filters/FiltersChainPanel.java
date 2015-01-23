@@ -131,9 +131,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         FilterEditorPanel result;
         if ( f.matches("\\|add\\((.*)\\)") ) {
             result= new AddFilterEditorPanel();
-        } else if ( f.matches("\\|butterworth\\((\\d),(\\w+),(\\w+)\\)") ) {
+        } else if ( f.matches("\\|butterworth\\((\\d),(\\S+),(\\S+)\\)") ) {
             result= new ButterworthFilterEditorPanel();
-        } else if ( f.matches("\\|butterworth\\((\\d),(\\w+),(\\w+),(\\w+)\\)") ) {
+        } else if ( f.matches("\\|butterworth\\((\\d),(\\S+),(\\S+),(\\S+)\\)") ) {
             result= new ButterworthFilterEditorPanel();
         } else if ( f.matches("\\|collapse(\\d)\\(\\)") ) {
             result= new CollapseFilterEditorPanel();
@@ -145,7 +145,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new DetrendFilterEditorPanel();
         } else if ( f.matches("\\|divide\\((.*)\\)") ) {
             result= new DivideFilterEditorPanel();
-        } else if ( f.matches("\\|fftPower\\((\\d+),(\\d),'?(\\w+)'?\\)") ) {
+        } else if ( f.matches("\\|fftPower\\((\\d+),(\\d),'?(\\S+)'?\\)") ) {
             result= new FftPowerFilterEditorPanel();
         } else if ( f.matches("\\|hanning\\((.*)\\)") ) {
             result= new HanningFilterEditorPanel();
@@ -153,13 +153,13 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new MedianFilterEditorPanel();
         } else if ( f.matches("\\|multiply\\((.*)\\)") ) {
             result= new MultiplyFilterEditorPanel();
-        } else if ( f.matches("\\|reducex\\('?(\\d+)\\s(\\w+)'?\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
+        } else if ( f.matches("\\|reducex\\('?(\\d+)\\s?(\\S+)'?\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new ReducexFilterEditorPanel();
         } else if ( f.matches( SetDepend0CadenceFilterEditorPanel.PROP_REGEX ) ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SetDepend0CadenceFilterEditorPanel();
-        } else if ( f.matches("\\|setDepend0Units\\('(\\w+)'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
+        } else if ( f.matches("\\|setDepend0Units\\('(\\S+)'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SetDepend0UnitsFilterEditorPanel();
-        } else if ( f.matches("\\|setUnits\\('(\\w+)'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
+        } else if ( f.matches("\\|setUnits\\('(\\S+)'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SetUnitsFilterEditorPanel();
         } else if ( f.matches("\\|slice(\\d)\\((\\d+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SliceFilterEditorPanel();
@@ -175,11 +175,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new SmoothFilterEditorPanel();
         } else if ( f.matches("\\|histogram\\(\\)") ) { 
             result= new HistogramFilterEditorPanel();
-        } else if ( f.matches("\\|histogram\\((\\w+),(\\w+),(\\w+)\\)") ) { 
+        } else if ( f.matches("\\|histogram\\((\\S+),(\\S+),(\\S+)\\)") ) { 
             result= new HistogramFilterEditorPanel();            
         } else if ( f.matches( UnbundleFilterEditorPanel.PROP_REGEX ) ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new UnbundleFilterEditorPanel();
-        } else if ( f.matches("\\|dbAboveBackgroundDim1\\((\\w+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
+        } else if ( f.matches("\\|dbAboveBackgroundDim1\\((\\S+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new dbAboveBackgroundDim1FilterEditorPanel();
         } else if ( f.matches("\\|transpose\\(\\)") ) {
             result= new NoArgFilterEditorPanel();
