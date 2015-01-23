@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -279,7 +280,10 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ButterworthFilterEditorPanel().setVisible(true);
+                FilterEditorPanel p= new ButterworthFilterEditorPanel();
+                p.setFilter("|butterworth(1,45.,46.,True)");
+                JOptionPane.showMessageDialog( null, p );
+                System.err.println( p.getFilter() );
             }
         });
     }
