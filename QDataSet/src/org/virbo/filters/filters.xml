@@ -10,7 +10,7 @@
                 <bookmark-list>
                     <bookmark>
                         <title>FFT with sliding window </title>
-                        <filter>|fftPower(3,4,'Unity')</filter>
+                        <filter>|fftPower(512,2,'Hanning')</filter>
                         <description>Initializes the FFTPower filter</description>
                     </bookmark>
                     <bookmark>
