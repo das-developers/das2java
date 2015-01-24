@@ -4418,7 +4418,7 @@ public class Ops {
             mon.finished();
 
             result.putProperty( QDataSet.QUBE, Boolean.TRUE );
-            result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
+            result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); 
             if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
             
             return result;
@@ -4590,7 +4590,7 @@ public class Ops {
 
             if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
             result.putProperty( QDataSet.QUBE, Boolean.TRUE );
-            result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
+            result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); 
             return result;
 
         } else {
