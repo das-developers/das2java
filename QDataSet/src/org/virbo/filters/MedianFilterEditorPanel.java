@@ -8,6 +8,9 @@ package org.virbo.filters;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.InputVerifier;
+import javax.swing.JComponent;
+import javax.swing.JTextField;
 
 /**
  *
@@ -34,7 +37,9 @@ public class MedianFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel1 = new javax.swing.JLabel();
         sizeTF = new javax.swing.JTextField();
 
-        jLabel1.setText("Median Boxcar Size:  ");
+        setToolTipText("The median boxcar size can be between 5 and n/2, where n is the length of the data");
+
+        jLabel1.setText("Median Boxcar Size (5 to n/2):  ");
 
         sizeTF.setText("3");
         sizeTF.setPreferredSize(new java.awt.Dimension(50, 27));
@@ -69,19 +74,30 @@ public class MedianFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|median\\((.*)\\)");
+        Pattern p= Pattern.compile("\\|medianFilter\\((.*)\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             sizeTF.setText( m.group(1) );
+        } else {
+            sizeTF.setText("5");
         }
-        else {
-            sizeTF.setText("1");
-        }
-        
+        sizeTF.setInputVerifier( new InputVerifier() {
+            @Override
+            public boolean verify(JComponent input) {
+                String t= ((JTextField)input).getText();
+                int i;
+                try {
+                    i=Integer.parseInt(t);
+                } catch ( NumberFormatException ex ) {
+                    return false;
+                }
+                return i>4 && i<10000;
+            }
+        } );
     }
 
     @Override
     public String getFilter() {
-        return "|median(" + sizeTF.getText() + ")";
+        return "|medianFilter(" + sizeTF.getText() + ")";
     }
 }
