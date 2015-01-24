@@ -34,8 +34,9 @@ public class FFTUtil {
 
     /**
      * returns a rank 2 dataset from the rank 1 dataset, where the
-     * fft would be run on each of the datasets.
+     * FFT would be run on each of the datasets.
      * @param ds rank 1 dataset of length N
+     * @param size size of each FFT.
      * @return rank 2 dataset[N/size,size]
      */
     public static QDataSet window( QDataSet ds, int size ) {
@@ -78,6 +79,11 @@ public class FFTUtil {
         return jds;
     }
     
+    /**
+     * Window that is all ones, also called a boxcar.
+     * @param size the window size
+     * @return window
+     */
     public static QDataSet getWindowUnity( final int size ) {
         QDataSet unity= new AbstractDataSet() {
             @Override
@@ -99,6 +105,11 @@ public class FFTUtil {
         return unity;
     }
     
+    /**
+     * Window with ones in the middle, and then the last 10% taper with cos.
+     * @param size the window size
+     * @return window
+     */
     public static QDataSet getWindow10PercentEdgeCosine( final int size ) {
         final int n= size;
         int maxlim= 410;
@@ -140,6 +151,7 @@ public class FFTUtil {
      * @param fft FFT engine
      * @param vds rank 1 dataset with depend 0 units TimeLocationUnits.
      * @param weights rank 1 datasets that is the window to apply to the data.
+     * @return the rank 2 FFT
      */
     public static QDataSet fftPower( GeneralFFT fft, QDataSet vds, QDataSet weights ) {
         return fftPower( fft, vds, weights, null );
@@ -153,7 +165,8 @@ public class FFTUtil {
      * @param fft FFT engine
      * @param vds rank 1 dataset with depend 0 units TimeLocationUnits.
      * @param weights rank 1 datasets that is the window to apply to the data.
-     * @param xtags if non-null, then use these xtags instead of calculating them for each record.
+     * @param powxTags if non-null, then use these xtags instead of calculating them for each record.
+     * @return the rank 2 FFT
      */
     public static QDataSet fftPower( GeneralFFT fft, QDataSet vds, QDataSet weights, QDataSet powxTags ) {
         double [] yreal= new double[ fft.size() ];
@@ -206,6 +219,7 @@ public class FFTUtil {
      * @param fft FFT code to use, such as GeneralFFT.newDoubleFFT(len)
      * @param vds QDataSet rank 1 dataset with depend 0 units TimeLocationUnits.
      * @param weights QDataSet rank 1 dataset containing weights, as in hanning.  null indicates no weights.
+     * @return the rank 2 FFT
      */
     public static QDataSet fft( GeneralFFT fft, QDataSet vds, QDataSet weights ) {
         double [] yreal= new double[ fft.size() ];
