@@ -4130,14 +4130,32 @@ public class Ops {
 
     /**
      * Enumeration identifying windows applied to data before doing FFTs.
-     *@see #fftFilter
-     *@see #windowFunction(org.virbo.dsops.Ops.FFTFilterType, int) 
+     * @see #fftFilter
+     * @see #windowFunction(org.virbo.dsops.Ops.FFTFilterType, int) 
      */
-    public static enum FFTFilterType{ Hanning, TenPercentEdgeCosine, Unity };
+    public static enum FFTFilterType{ 
+        /**
+         * Hanning, or Hann window http://en.wikipedia.org/wiki/Hann_function
+         */
+        Hanning, 
+        /**
+         * Hanning, or Hann window http://en.wikipedia.org/wiki/Hann_function
+         */
+        Hann, 
+        /**
+         * Ones in the middle, and tapers down to zero with a cosine at the ends.
+         */
+        TenPercentEdgeCosine, 
+        /**
+         * Unity or boxcar is all ones.
+         */
+        Unity 
+    };
 
     /**
      * Apply windows to the data to prepare for FFT.  The data is reformed into a rank 2 dataset [N,len].
      * The filter is applied to the data to remove noise caused by the discontinuity.
+     * This is deprecated, and windowFunction should be used.
      * @param ds rank 1, 2, or 3 data
      * @param len
      * @param filt FFTFilterType.Hanning or FFTFilterType.TenPercentEdgeCosine
@@ -4217,6 +4235,8 @@ public class Ops {
             QDataSet filter;
             if ( filt==FFTFilterType.Hanning ) {
                 filter= FFTUtil.getWindowHanning(len);
+            } else if ( filt==FFTFilterType.Hann ) {
+                filter= FFTUtil.getWindowHanning(len);
             } else if ( filt==FFTFilterType.TenPercentEdgeCosine ) {
                 filter= FFTUtil.getWindow10PercentEdgeCosine(len);
             } else if ( filt==FFTFilterType.Unity ) {
@@ -4272,12 +4292,14 @@ public class Ops {
     }
 
     /**
-     * Apply Hanning windows to the data to prepare for FFT.  The data is reformed into a rank 2 dataset [N,len].
-     * Hanning windows taper the ends of the interval to remove noise caused by the discontinuity.
+     * Apply Hanning (Hann) windows to the data to prepare for FFT.  The 
+     * data is reformed into a rank 2 dataset [N,len].  Hanning windows taper 
+     * the ends of the interval to remove noise caused by the discontinuity.
      * This is deprecated, and windowFunction should be used.
      * @param ds, rank 1, 2, or 3 data
      * @param len
      * @return data[N,len] with the hanning window applied.
+     * @see #windowFunction(org.virbo.dsops.Ops.FFTFilterType, int) 
      */
     public static QDataSet hanning( QDataSet ds, int len ) {
         return fftFilter(  ds, len, FFTFilterType.Hanning );
@@ -4285,7 +4307,7 @@ public class Ops {
 
     /**
      * create a power spectrum on the dataset by breaking it up and
-     * doing ffts on each segment.
+     * doing FFTs on each segment.  A unity (or "boxcar") window is used.
      *
      * data may be rank 1, rank 2, or rank 3.
      *
@@ -4296,7 +4318,7 @@ public class Ops {
      * @param ds rank 2 dataset ds(N,M) with M>len
      * @param len the number of elements to have in each fft.
      * @param mon a ProgressMonitor for the process
-     * @return rank 2 fft spectrum
+     * @return rank 2 FFT spectrum
      */
     public static QDataSet fftPower( QDataSet ds, int len, ProgressMonitor mon ) {
         QDataSet unity= ones(len);
@@ -4311,6 +4333,8 @@ public class Ops {
      */
     public static QDataSet windowFunction( FFTFilterType filt, int len ) {
         if ( filt==FFTFilterType.Hanning ) {
+            return FFTUtil.getWindowHanning(len);
+        } else if ( filt==FFTFilterType.Hann ) {
             return FFTUtil.getWindowHanning(len);
         } else if ( filt==FFTFilterType.TenPercentEdgeCosine ) {
             return FFTUtil.getWindow10PercentEdgeCosine(len);
@@ -4342,7 +4366,8 @@ public class Ops {
      *
      * Looks for DEPEND_1.USER_PROPERTIES.FFT_Translation, which should
      * be a rank 0 or rank 1 QDataSet.  If it is rank 1, then it should correspond
-     * to the DEPEND_0 dimension.
+     * to the DEPEND_0 dimension.  This is used to indicate that the waveform
+     * collected with respect to a carrier tone, and the result should be translated.
      *
      * No normalization is done with non-unity windows.  TODO: This probably should be done.  
      * I verified this is not done, see 
@@ -4393,6 +4418,7 @@ public class Ops {
             mon.finished();
 
             result.putProperty( QDataSet.QUBE, Boolean.TRUE );
+            result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
             if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
             
             return result;
@@ -4564,7 +4590,7 @@ public class Ops {
 
             if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
             result.putProperty( QDataSet.QUBE, Boolean.TRUE );
-            
+            result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
             return result;
 
         } else {
