@@ -149,7 +149,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new FftPowerFilterEditorPanel();
         } else if ( f.matches("\\|hanning\\((.*)\\)") ) {
             result= new HanningFilterEditorPanel();
-        } else if ( f.matches("\\|median\\((.*)\\)") ) {
+        } else if ( f.matches("\\|medianFilter\\((.*)\\)") ) {
             result= new MedianFilterEditorPanel();
         } else if ( f.matches("\\|multiply\\((.*)\\)") ) {
             result= new MultiplyFilterEditorPanel();
