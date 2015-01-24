@@ -41,7 +41,7 @@ public class MedianFilterEditorPanel extends AbstractFilterEditorPanel {
 
         jLabel1.setText("Median Boxcar Size (5 to n/2):  ");
 
-        sizeTF.setText("3");
+        sizeTF.setText("5");
         sizeTF.setPreferredSize(new java.awt.Dimension(50, 27));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
