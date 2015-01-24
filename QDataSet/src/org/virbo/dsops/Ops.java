@@ -4305,6 +4305,9 @@ public class Ops {
 
     /**
      * return a dataset for the given filter type.  The result will be rank 1 and length len.
+     * @param filt the type of the window.
+     * @param len the length of the window.
+     * @return rank 1 QDataSet with length len.
      */
     public static QDataSet windowFunction( FFTFilterType filt, int len ) {
         if ( filt==FFTFilterType.Hanning ) {
@@ -4318,6 +4321,15 @@ public class Ops {
         }
     }
 
+    /**
+     * perform the fft with the window, using no overlap.
+     * @param ds rank 1,2 or 3 waveform dataset.
+     * @param window the window
+     * @param mon a ProgressMonitor for the process
+     * @return rank 2 fft spectrum
+     * @see #fftPower(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, int, org.das2.util.monitor.ProgressMonitor)      
+     * @see #windowFunction(org.virbo.dsops.Ops.FFTFilterType, int) 
+     */
     public static QDataSet fftPower( QDataSet ds, QDataSet window, ProgressMonitor mon ) {
         return fftPower( ds, window, 1, mon );
     }
@@ -4332,7 +4344,9 @@ public class Ops {
      * be a rank 0 or rank 1 QDataSet.  If it is rank 1, then it should correspond
      * to the DEPEND_0 dimension.
      *
-     * No normalization is done with non-unity windows.  TODO: check this, I think it is done now.
+     * No normalization is done with non-unity windows.  TODO: This probably should be done.  
+     * I verified this is not done, see 
+     * sftp://jbf@jfaden.net/home/jbf/ct/autoplot/script/bugs/1317/testWindowFunctionNormalization.jy
      *
      * @param ds rank 2 dataset ds(N,M) with M>len
      * @param window window to apply to the data before performing FFT (Hann,Unity,etc.)
