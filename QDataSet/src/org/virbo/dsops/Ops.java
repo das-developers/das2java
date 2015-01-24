@@ -6598,7 +6598,7 @@ public class Ops {
         if ( ds.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
         if ( Ops.reduceMin( Ops.valid(ds), 0 ).value()==0 ) throw new IllegalArgumentException("fill data is not supported");
         if ( size>ds.length()/2 ) throw new IllegalArgumentException("size cannot be greater than ds.length()/2");
-        if ( size<5 ) throw new IllegalArgumentException("size cannot be less than 5");
+        if ( size<3 ) throw new IllegalArgumentException("size cannot be less than 3");
         
         ArrayDataSet res= ArrayDataSet.copy(ds);
         for ( int i=0; i<res.length(); i++ ) res.putValue(i,0);
