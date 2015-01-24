@@ -49,9 +49,10 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
         slideCB.setMinimumSize(new java.awt.Dimension(125, 27));
         slideCB.setPreferredSize(new java.awt.Dimension(125, 27));
 
+        sizeTF.setText("512");
         sizeTF.setPreferredSize(new java.awt.Dimension(90, 27));
 
-        windowCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Hanning", "Unity" }));
+        windowCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Hanning (Hann)", "TenPercentEdgeCosine", "Unity" }));
         windowCB.setPreferredSize(new java.awt.Dimension(125, 27));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -66,10 +67,10 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
                     .add(jLabel3))
                 .add(29, 29, 29)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(windowCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(sizeTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(slideCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(slideCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(windowCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 192, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -121,7 +122,7 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
             windowCB.setSelectedItem( m.group(3) );
         }
         else {
-            sizeTF.setText("1");
+            sizeTF.setText("512");
             slideCB.setSelectedIndex( 0 );
             windowCB.setSelectedIndex( 0 );
         }
@@ -139,7 +140,9 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
         else if (slideCB.getSelectedItem().equals("3/4 Overlap")) {
             slide = "4";
         }
+        String window= (String)windowCB.getSelectedItem();
+        if ( window.startsWith("Hanning") ) window= "Hanning";
         
-        return "|fftPower(" + sizeTF.getText() + "," + slide + ",'" + windowCB.getSelectedItem() + "')";
+        return "|fftPower(" + sizeTF.getText() + "," + slide + ",'" + window + "')";
     }
 }
