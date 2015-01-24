@@ -287,10 +287,11 @@ public class AddFilterDialog extends javax.swing.JPanel {
             try {
                 logger.fine("done parsing filters.xml");
                 xmlReader.parse(new InputSource(in));
-                logger.info("done parsing filters.xml");
 
             } catch (RuntimeException ex) {
-                // this is expected.
+                logger.log(Level.SEVERE, null, ex );
+                throw ex;
+                
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
@@ -319,7 +320,6 @@ public class AddFilterDialog extends javax.swing.JPanel {
     }
 
     private TreeNode getTree() {
-        System.err.println( "filters.xml resouce: "  + String.valueOf( AddFilterDialog.class.getResource("filters.xml") ) );
         InputStream in = AddFilterDialog.class.getResourceAsStream("filters.xml");
         return build( in );
     }
