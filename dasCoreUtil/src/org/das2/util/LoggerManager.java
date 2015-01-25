@@ -14,6 +14,8 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,6 +23,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
@@ -78,7 +81,7 @@ public final class LoggerManager {
      * return the list of known loggers.
      * @return
      */
-    public static Set getLoggers() {
+    public static Set<String> getLoggers() {
         return loggers;
     }
     
@@ -389,5 +392,37 @@ public final class LoggerManager {
         l.log( Level.WARNING, e.getMessage(), e );
         l.log( Level.WARNING, "Exception: {0}", e );
         l.log( Level.INFO, "hello there..." );
+    }
+
+    /**
+     * A slightly more transparent logging configuration would provide feedback
+     * about what configuration file it's loading.  This will echo
+     * when the configuration file would be.
+     * 
+     * The idea is when you are completely frustrated with not getting the logger
+     * to behave, you can add:
+     * org.das2.util.LoggerManager.readConfiguration() 
+     * to your code.
+     * 
+     */
+    public static void readConfiguration() {
+        String configfile= System.getProperty("java.util.logging.config.file");
+        if ( configfile==null ) {
+            System.err.println("no config file, set java property java.util.logging.config.file like so:");
+            System.err.println("-Djava.util.logging.config.file=/tmp/logging.properties");
+        } else {
+            File ff= new File( configfile );
+            if ( ff.isAbsolute() ) {
+                System.err.println("loading logging configuration from "+ff);
+            } else {
+                ff= ff.getAbsoluteFile();
+                System.err.println("loading logging configuration from "+ff);
+            }
+        }
+        try {
+            LogManager.getLogManager().readConfiguration();
+        } catch ( IOException ex ) {
+            ex.printStackTrace();
+        }
     }
 }
