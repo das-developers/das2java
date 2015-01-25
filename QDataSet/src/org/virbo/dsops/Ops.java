@@ -5050,6 +5050,8 @@ public class Ops {
      */
     public static QDataSet extent( QDataSet ds, QDataSet wds, QDataSet range ) {
 
+        logger.entering( Ops.class.getCanonicalName(), "extent" );
+        
         QDataSet max = ds;
         QDataSet min = ds;
         QDataSet deltaplus;
@@ -5160,6 +5162,8 @@ public class Ops {
         qresult.putProperty( QDataSet.BINS_0, "min,maxInclusive" );
         qresult.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
         if ( result[0]==fill ) qresult.putProperty( QDataSet.FILL_VALUE, fill);
+        
+        logger.exiting( Ops.class.getCanonicalName(), "extent" );
         
         return qresult;
         
