@@ -21,10 +21,27 @@ public class TimingConsoleFormatter extends Formatter {
         String recMsg;
         String rm1= rec.getMessage();
         if ( rm1!=null ) {
-            if ( rec.getMessage().equals("ENTRY {0}") ) {
-                recMsg= "ENTRY "+ rec.getSourceClassName() + "." +rec.getSourceMethodName() + " {0}";
-            } else if ( rec.getMessage().equals("ENTRY") ) {
-                recMsg= "ENTRY "+ rec.getSourceClassName() + "." +rec.getSourceMethodName();
+            if ( rm1.length()>1 ) {
+                char c= rm1.charAt(0);
+                if ( c=='E' ) {
+                    if ( rm1.equals("ENTRY {0}") ) {
+                        recMsg= "ENTRY "+ rec.getSourceClassName() + "." +rec.getSourceMethodName() + " {0}";
+                    } else if ( rm1.equals("ENTRY") ) {
+                        recMsg= "ENTRY "+ rec.getSourceClassName() + "." +rec.getSourceMethodName();
+                    } else {
+                        recMsg= rm1;
+                    }
+                } else if ( c=='R' ) {
+                    if ( rm1.equals("RETURN {0}") ) {
+                        recMsg= "RETURN "+ rec.getSourceClassName() + "." +rec.getSourceMethodName() + " {0}";
+                    } else if ( rm1.equals("RETURN") ) {
+                        recMsg= "RETURN "+ rec.getSourceClassName() + "." +rec.getSourceMethodName();
+                    } else {
+                        recMsg= rm1;
+                    }
+                } else {
+                    recMsg = rm1;
+                }
             } else {
                 recMsg = rec.getMessage();
             }
