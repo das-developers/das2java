@@ -13,8 +13,8 @@ import org.virbo.dataset.WritableDataSet;
  * have an exponent the same size as a 4-byte float, but the mantissa has just 7(?) bits.
  * @author jbf
  */
-public class TruncatedFloat extends BufferDataSet implements WritableDataSet {
-    public TruncatedFloat( int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back ) {
+public class TruncatedFloatDataSet extends BufferDataSet implements WritableDataSet {
+    public TruncatedFloatDataSet( int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back ) {
         super( rank, reclen, recoffs, len0, len1, len2, len3, TRUNCATEDFLOAT, back );
     }
 

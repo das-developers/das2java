@@ -6,9 +6,9 @@ import java.nio.ByteBuffer;
  * Unsigned Integer.
  * @author jbf
  */
-public class UInt extends BufferDataSet {
+public class UIntDataSet extends BufferDataSet {
 
-    public UInt(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back ) {
+    public UIntDataSet(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back ) {
         super(rank, reclen, recoffs, len0, len1, len2, len3, UINT, back );
     }
 

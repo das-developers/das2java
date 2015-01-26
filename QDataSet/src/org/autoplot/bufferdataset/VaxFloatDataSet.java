@@ -11,14 +11,14 @@ import java.nio.ByteBuffer;
  * vap+bin:sftp://klunk.physics.uiowa.edu/opt/project/isee/archive/a1977/77295.arc?recLength=880&type=vaxfloat&recOffset=20
  * @author jbf
  */
-public class VaxFloat extends BufferDataSet {
+public class VaxFloatDataSet extends BufferDataSet {
 // from http://www.codeproject.com/Articles/12363/Transform-between-IEEE-IBM-or-VAX-floating-point-n
 //SEF :       S        EEEEEEEE        FFFFFFF        FFFFFFFF        FFFFFFFF
 //bits :      1        2      9        10                                    32
 //bytes :     byte2           byte1                   byte4           byte3
 // JBF: Note the above wasn't used, but instead code from google for "vax float java nio Jenness"
 
-    public VaxFloat(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back) {
+    public VaxFloatDataSet(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back) {
         super(rank, reclen, recoffs, len0, len1, len2, len3, VAX_FLOAT, back);
     }
 

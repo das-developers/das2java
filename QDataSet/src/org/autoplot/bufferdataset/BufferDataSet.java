@@ -15,8 +15,11 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.WritableDataSet;
 
 /**
- * rank 1,2,or 3 dataset backed by NIO buffers.  These have the advantage that data can be stored outside
- * of the JVM, and in fact they can be backed by a huge file on disk.  
+ * rank 1, 2, 3, and 4 datasets backed by NIO buffers.  These have the 
+ * advantage that data can be stored outside of the JVM, and in fact they 
+ * can be backed by a huge file on disk.  
+ * 
+ * This code was copied from BinaryDataSource.
  *
  * @author jbf
  */
@@ -125,27 +128,27 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             throw new IllegalArgumentException( String.format( "buffer length (%d bytes) is too small to contain data (%d %d-byte records)", buf.limit(), len0, reclen ) );
         }
         if ( type.equals(DOUBLE) ) {
-            result=new Double( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result=new DoubleDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(FLOAT) ) {
-            result=new  Float( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result=new  FloatDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(VAX_FLOAT) ) {
-            result= new VaxFloat( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result= new VaxFloatDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(LONG) ) {
-            result=new  Long( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result=new  LongDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(INT) ) {
-            result=new  Int( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result=new  IntDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(UINT) ) {
-            result=new  UInt( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result=new  UIntDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(SHORT) ) {
-            result=new  Short( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result=new  ShortDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(USHORT) ) {
-            result=new  UShort( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result=new  UShortDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(TRUNCATEDFLOAT) ) {
-            result=new  TruncatedFloat( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result=new  TruncatedFloatDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(BYTE) ) {
-            result=new  Byte( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result=new  ByteDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if (type.equals(UBYTE) ) {
-            result=new UByte( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            result=new UByteDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else {
             throw new IllegalArgumentException("bad data type: "+type);
         }

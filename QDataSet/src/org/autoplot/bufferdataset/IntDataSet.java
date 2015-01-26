@@ -3,9 +3,9 @@ package org.autoplot.bufferdataset;
 import java.nio.ByteBuffer;
 import org.virbo.dataset.WritableDataSet;
 
-public class Int extends BufferDataSet implements WritableDataSet {
+public class IntDataSet extends BufferDataSet implements WritableDataSet {
 
-    public Int(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back) {
+    public IntDataSet(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back) {
         super(rank, reclen, recoffs, len0, len1, len2, len3, INT, back);
     }
 

@@ -6,9 +6,9 @@ import java.nio.ByteBuffer;
  * Unsigned Byte.
  * @author jbf
  */
-public class UByte extends BufferDataSet {
+public class UByteDataSet extends BufferDataSet {
 
-    public UByte(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back ) {
+    public UByteDataSet(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back ) {
         super(rank, reclen, recoffs, len0, len1, len2, len3, UBYTE, back );
     }
 
