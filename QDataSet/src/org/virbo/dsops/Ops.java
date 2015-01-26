@@ -2296,7 +2296,8 @@ public class Ops {
      * @param ds2 dataset of length n to be concatenated.
      * @return a dataset length m+n.
      * @throws IllegalArgumentException if the two datasets don't have the same rank.
-     * @see #merge(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #merge(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) which will interleave to preserve monotonic.
+     * @see #append(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
         if ( ds1==null && ds2!=null ) return ds2;
@@ -6832,10 +6833,14 @@ public class Ops {
     
     /**
      * append two datasets that are QUBEs.  DEPEND_0 and other metadata is
-     * handled as well.  So for example:
+     * handled as well.  So for example: 
+     *<blockquote><pre><small>{@code
      *    ds1= findgen(10)
      *    ds2= findgen(12)
      *    print append(ds1,ds2)  ; dataSet[22] (dimensionless)
+     *}</small></pre></blockquote>     
+     * If both datasets are ArrayDataSets and of the same component type, then
+     * the result will have this type as well.  Otherwise DDataSet is returned.
      * @param ds1 null or rank N dataset
      * @param ds2 rank N dataset with compatible geometry.
      * @see #concatenate(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet)  which may do the same thing.
