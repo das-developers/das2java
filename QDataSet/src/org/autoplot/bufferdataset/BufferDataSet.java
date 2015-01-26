@@ -4,9 +4,13 @@
  */
 package org.autoplot.bufferdataset;
 
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.das2.datum.EnumerationUnits;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsConverter;
 import org.das2.util.LoggerManager;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
@@ -15,6 +19,7 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 
@@ -330,6 +335,16 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         return result;
     }
     
+    /**
+     * return a copy of the data.  If the data is a BufferDataSet, then a BufferDataSet
+     * is used for the copy.  
+     * 
+     * Note this does not consider isMutable.  If the dataset is not mutable, then the
+     * original data could be returned (probably).
+     * 
+     * @param ds
+     * @return 
+     */
     public static BufferDataSet copy( QDataSet ds ) {
         //TODO: this should check that the data is a qube.
         if ( ds instanceof BufferDataSet ) {
@@ -337,7 +352,100 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         } else {
             return copy( DOUBLE, ds ); // strange type does legacy behavior.
         }
+    }
+    
+    /**
+     * Copy the dataset to an BufferDataSet only if the dataset is not already an BufferDataSet.
+     * @param ds
+     * @return a BufferDataSet.
+     */
+    public static BufferDataSet maybeCopy( QDataSet ds ) {
+        if ( ds instanceof BufferDataSet ) {
+            return (BufferDataSet)ds;
+        } else {
+            return copy(ds);
+        }
     }    
+    
+    /**
+     * return true if the dataset can be appended.  Note this assumes that the
+     * same length, etc.  This just checks that we have the number of spare records
+     * in the backing store.
+     * @param ds
+     * @return
+     */
+    public boolean canAppend( BufferDataSet ds ) {
+        if ( ds.rank()!=this.rank ) throw new IllegalArgumentException("rank mismatch");
+        if ( ds.len1!=this.len1 ) throw new IllegalArgumentException("len1 mismatch");
+        if ( ds.len2!=this.len2 ) throw new IllegalArgumentException("len2 mismatch");
+        if ( ds.len3!=this.len3 ) throw new IllegalArgumentException("len3 mismatch");
+        if ( this.getType()!=ds.getType() ) {
+            String s1,s2;
+            s1= "" + this.getType();
+            s2= "" + ds.getType();
+            throw new IllegalArgumentException("backing type mismatch: "+ s2 + "["+ds.length()+",*] can't be appended to "+ s1 + "["+this.length()+",*]" );
+        }
+        int trec=  this.back.limit() / this.jvmMemory() / this.len1 / this.len2 / this.len3;
+        
+        throw new IllegalArgumentException("not verified");
+        //return trec-this.len0 > ds.length();
+        
+    }
+    
+        /**
+     * append the dataset with the same geometry but different number of records (zeroth dim)
+     * to this.  An IllegalArgumentException is thrown when there is not enough room.  
+     * See grow(newRecCount).
+     * Not thread safe--we need to go through and make it so...
+     * @param ds
+     */
+    public synchronized void append( BufferDataSet ds ) {
+        if ( ds.rank()!=this.rank ) throw new IllegalArgumentException("rank mismatch");
+        if ( ds.len1!=this.len1 ) throw new IllegalArgumentException("len1 mismatch");
+        if ( ds.len2!=this.len2 ) throw new IllegalArgumentException("len2 mismatch");
+        if ( ds.len3!=this.len3 ) throw new IllegalArgumentException("len3 mismatch");
+        if ( this.type!=ds.type ) throw new IllegalArgumentException("backing type mismatch");
+
+        int elementSizeBytes= byteCount(this.type);
+        
+        int myLength= elementSizeBytes * this.len0 * this.len1 * this.len2 * this.len3;
+        int dsLength= elementSizeBytes * ds.len0 * ds.len1 * ds.len2 * ds.len3;
+
+        if ( this.back.limit() < ( myLength + dsLength - recoffset ) ) {
+            throw new IllegalArgumentException("unable to append dataset, not enough room");
+        }
+
+        ByteBuffer dsBuffer= ds.back.duplicate(); // TODO: verify thread safety
+        
+        this.back.position( recoffset + myLength );
+        this.back.limit( recoffset + myLength + dsLength );
+        this.back.put( dsBuffer );
+        
+        Units u1= SemanticOps.getUnits(this);
+        Units u2= SemanticOps.getUnits(ds);
+        if ( u1!=u2 ) {
+            if ( u1 instanceof EnumerationUnits && u2 instanceof EnumerationUnits ) { // convert so the enumeration units are the same.
+                for ( int i=myLength; i<myLength+dsLength; i++ ) {
+                    double d= this.back.getDouble( i*elementSizeBytes );
+                    d= ((EnumerationUnits)u1).createDatum( u2.createDatum(d).toString() ).doubleValue(u1);
+                    this.back.putDouble( i*elementSizeBytes, d );
+                }
+            } else {
+                UnitsConverter uc= UnitsConverter.getConverter(u2,u1); // convert so the time location units are the same (for example).
+                for ( int i=myLength; i<myLength+dsLength; i++ ) {
+                    Number nv=  uc.convert( ds.value(i) ) ;
+                    this.putValue( i, nv.doubleValue() );
+                }
+            }
+        }
+        
+        this.len0= this.len0 + ds.len0;
+
+        throw new IllegalArgumentException("not verified");
+        
+        //TODO!!!properties.putAll( joinProperties( this, ds ) ); //TODO: verify
+
+    }
     
     /**
      * Return the type for the given class.  Note that there is a type for
