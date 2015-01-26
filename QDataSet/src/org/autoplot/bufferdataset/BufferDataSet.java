@@ -9,10 +9,14 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
 import org.virbo.dataset.AbstractDataSet;
+import org.virbo.dataset.ArrayDataSet;
+import static org.virbo.dataset.ArrayDataSet.copy;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.WritableDataSet;
+import org.virbo.dsops.Ops;
 
 /**
  * rank 1, 2, 3, and 4 datasets backed by NIO buffers.  These have the 
@@ -245,10 +249,194 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         }
     }
 
+    /**
+     * create a rank 0 dataset backed by the given type.
+     * @param type DOUBLE, FLOAT, UINT, etc
+     * @return BufferDataSet of the given type.
+     */
+    public static BufferDataSet createRank0( Object type ) {
+        int typeLen= byteCount(type);
+        ByteBuffer buf= ByteBuffer.allocateDirect( typeLen );
+        int recLen= typeLen;
+        return makeDataSet( 0, recLen, 0, 1, 1, 1, 1, buf, type );
+    }
+
+    /**
+     * create a rank 1 dataset backed by the given type.
+     * @param type DOUBLE, FLOAT, UINT, etc
+     * @param len0 length of the zeroth index
+     * @return BufferDataSet of the given type.
+     */
+    public static BufferDataSet createRank1( Object type, int len0 ) {
+        int typeLen= byteCount(type);
+        ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 );
+        int recLen= typeLen;
+        return makeDataSet( 0, recLen, 0, len0, 1, 1, 1, buf, type );
+    }    
+
+    /**
+     * create a rank 2 dataset backed by the given type.
+     * @param type DOUBLE, FLOAT, UINT, etc
+     * @param len0 length of the zeroth index
+     * @param len1 length of the first index
+     * @return BufferDataSet of the given type.
+     */    
+    public static BufferDataSet createRank2( Object type, int len0, int len1 ) {
+        int typeLen= byteCount(type);
+        ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 );
+        int recLen= typeLen;
+        return makeDataSet( 0, recLen, 0, len0, len1, 1, 1, buf, type );
+    }
+    
+    /**
+     * create a rank 3 dataset backed by the given type.
+     * @param type DOUBLE, FLOAT, UINT, etc
+     * @param len0 length of the zeroth index
+     * @param len1 length of the first index
+     * @param len2 length of the second index
+     * @return BufferDataSet of the given type.
+     */
+    public static BufferDataSet createRank3( Object type, int len0, int len1, int len2 ) {
+        int typeLen= byteCount(type);
+        ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 * len2 );
+        int recLen= typeLen;
+        return makeDataSet( 0, recLen, 0, len0, len1, len2, 1, buf, type );
+    }
+
+    /**
+     * create a rank 4 dataset backed by the given type.
+     * @param type DOUBLE, FLOAT, UINT, etc
+     * @param len0 length of the zeroth index
+     * @param len1 length of the first index
+     * @param len2 length of the second index
+     * @param len3 length of the third index
+     * @return BufferDataSet of the given type.
+     */
+    public static BufferDataSet createRank4( Object type, int len0, int len1, int len2, int len3 ) {
+        int typeLen= byteCount(type);
+        ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 * len2 * len3 );
+        int recLen= typeLen;
+        return makeDataSet( 0, recLen, 0, len0, len1, len2, len3, buf, type );
+    }
+
+    private static BufferDataSet ddcopy(BufferDataSet ds) {
+        
+        ByteBuffer newback= ByteBuffer.allocateDirect(ds.back.limit());
+        ds.copyTo(newback);
+        
+        BufferDataSet result = BufferDataSet.makeDataSet( ds.rank, ds.reclen, ds.recoffset, ds.len0, ds.len1, ds.len2, ds.len3, newback, ds.type );
+        result.properties.putAll( Ops.copyProperties(ds) );
+
+        return result;
+    }
+    
+    public static BufferDataSet copy( QDataSet ds ) {
+        //TODO: this should check that the data is a qube.
+        if ( ds instanceof BufferDataSet ) {
+            return ddcopy( (BufferDataSet)ds );
+        } else {
+            return copy( DOUBLE, ds ); // strange type does legacy behavior.
+        }
+    }    
+    
+    /**
+     * Return the type for the given class.  Note that there is a type for
+     * each native type (Byte,Short,Float,etc), but not a class for each type. 
+     * (E.g. UBYTE is unsigned byte.)
+     * @param c java class
+     * @return DOUBLE,FLOAT,etc.
+     */
+    public static Object typeFor( Class c ) {
+        Object result;
+        if ( c==byte.class ) {
+            result=BufferDataSet.BYTE;
+        } else if ( c==short.class ) {
+            result=BufferDataSet.SHORT;
+        } else if ( c==int.class ) {
+            result=BufferDataSet.INT;
+        } else if ( c==long.class ) {
+            result=BufferDataSet.LONG;
+        } else if ( c==float.class ) {
+            result=BufferDataSet.FLOAT;
+        } else if ( c==double.class ) {
+            result=BufferDataSet.DOUBLE;
+        } else {
+            throw new IllegalArgumentException("bad class type: "+c);
+        }      
+        return result;
+    }
+    
+    /**
+     * Copy to array of specific type.  For example, copy( DOUBLE, ds ) would return a copy
+     * in a DoubleDataSet.
+     * @param type the primitive type to use (e.g. double.class).
+     * @param ds the data to copy.
+     * @return BufferDataSet of specific type.
+     */
+    public static BufferDataSet copy( Object type, QDataSet ds ) {
+        
+        if ( ds instanceof BufferDataSet && ((BufferDataSet)ds).getType()==type ) return ddcopy( (BufferDataSet)ds );
+        
+        int rank= ds.rank();
+        BufferDataSet result;
+
+        switch (rank) {
+            case 0:
+                result= createRank0( type );
+                result.putValue( ds.value() );
+                break;
+            case 1:
+                result= createRank1( type, ds.length() );
+                for ( int i=0; i<ds.length(); i++ ) {
+                    result.putValue( i, ds.value(i) );
+                }
+                break;
+            case 2:
+                result= createRank2( type, ds.length(), ds.length(0) );
+                int i0= ds.length()>0 ? ds.length(0) : -1;
+                for ( int i=0; i<ds.length(); i++ ) {
+                    if ( ds.length(i)!=i0 ) throw new IllegalArgumentException("Attempt to copy non-qube into ArrayDataSet which must be qube: "+ds );
+                    for ( int j=0; j<ds.length(i); j++ ) {
+                        result.putValue( i, j, ds.value(i,j) );
+                    }
+                }
+                break;
+            case 3:
+                result= createRank3( type, ds.length(), ds.length(0), ds.length(0,0) );
+                int i0_= ds.length()>0 ? ds.length(0) : -1;
+                for ( int i=0; i<ds.length(); i++ ) {
+                    if ( ds.length(i)!=i0_ ) throw new IllegalArgumentException("Attempt to copy non-qube into ArrayDataSet which must be qube: "+ds );
+                    for ( int j=0; j<ds.length(i); j++ ) {
+                        for ( int k=0; k<ds.length(i,j); k++ ) {
+                            result.putValue( i, j, k, ds.value(i,j,k) );
+                        }
+                    }
+                }
+                break;
+            case 4:
+                result = createRank4( type, ds.length(), ds.length(0), ds.length(0,0), ds.length(0,0,0));
+                for ( int i=0; i<ds.length(); i++ )
+                    for ( int j=0; j<ds.length(i); j++ )
+                        for ( int k=0; k<ds.length(i,j); k++ )
+                            for ( int l=0; l<ds.length(i,j,k); l++ )
+                                result.putValue( i, j, k, l, ds.value(i,j,k,l));
+                break;
+
+            default: 
+                throw new IllegalArgumentException("bad rank");
+        }
+        result.properties.putAll( Ops.copyProperties(ds) );
+        //result.checkFill();
+
+        return result;
+
+    }
+    
     public Object getType() {
         return this.type;
     }
 
+    @Override
     public int rank() {
         return rank;
     }
