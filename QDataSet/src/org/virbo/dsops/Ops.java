@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.regex.Pattern;
+import org.autoplot.bufferdataset.BufferDataSet;
 import org.das2.datum.CacheTag;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
@@ -62,6 +63,7 @@ import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.DataSetAnnotations;
 import static org.virbo.dataset.DataSetOps.histogram;
+import org.virbo.dataset.SortDataSet;
 import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
@@ -3189,6 +3191,124 @@ public class Ops {
         }
     }
 
+    /**
+     * Copy the dataset to an ArrayDataSet only if the dataset is not already an ArrayDataSet
+     * or BufferDataSet.
+     * @param ads0
+     * @return an ArrayDataSet or BufferDataSet
+     */    
+    public static MutablePropertyDataSet maybeCopy( QDataSet ads0) {
+        if ( ads0 instanceof BufferDataSet ) {
+            return BufferDataSet.maybeCopy( ads0 );
+        } else {
+            return ArrayDataSet.maybeCopy( ads0 );
+        }
+    }    
+    
+    
+    /**
+     * ensure that there are no non-monotonic or repeat records, by removing
+     * the first N-1 records of N repeated records.  
+     * 
+     * Warning: this was extracted from AggregatingDataSource to support BufferDataSets,
+     * and is minimally implemented.
+     * 
+     * @param ds ArrayDataSet, which must be writable.
+     * @return dataset, possibly with records removed.
+     */
+    public static MutablePropertyDataSet monotonicSubset( MutablePropertyDataSet ds ) {
+        
+        if ( ds instanceof BufferDataSet ) {
+            
+        } else if ( ds instanceof ArrayDataSet ) {
+            
+        } else {
+            ds= ArrayDataSet.copy(ds);
+        }
+        
+        assert ds instanceof ArrayDataSet || ds instanceof BufferDataSet;
+        
+        if ( ds.isImmutable() ) {
+            ds= ArrayDataSet.copy(ds);
+            logger.warning("immutabilty forced copy.");
+        }
+               
+        QDataSet sdep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
+        if ( sdep0==null && UnitsUtil.isTimeLocation( SemanticOps.getUnits(ds) ) ) {
+            sdep0= ds;
+        } else if ( sdep0==null ) {
+            return ds;
+        }
+        MutablePropertyDataSet dep0= Ops.maybeCopy( sdep0 ); // I don't think this will copy.
+        if ( !UnitsUtil.isTimeLocation( SemanticOps.getUnits(dep0) ) ) {
+            return ds;
+        }
+        if ( dep0.length()<2 ) return ds;
+        if ( dep0.rank()!=1 ) return ds;
+        QDataSet vdep0= Ops.valid(dep0);
+        
+        int[] rback= new int[dep0.length()];
+        rback[dep0.length()/2]= dep0.length()/2;
+        int rindex=dep0.length()/2+1;
+        double a= dep0.value(rindex-1);
+        for ( int i=rindex; i<dep0.length(); i++ ) {
+            if ( vdep0.value(i)>0 ) {
+                double a1=dep0.value(i);
+                if ( a1>a ) {
+                    rback[rindex]= i;
+                    a= a1;
+                    rindex++;
+                } else {
+                    logger.log(Level.FINER, "data point breaks monotonic rule: {0}", i);
+                }
+            }
+        }
+        int lindex=dep0.length()/2;
+        a= dep0.value(lindex+1);
+        for ( int i=lindex; i>=0; i-- ) {
+            if ( vdep0.value(i)>0 ) {
+                double a1=dep0.value(i);
+                if ( a1<a ) {
+                    rback[lindex]= i;
+                    a= a1;
+                    lindex--;
+                } else {
+                    logger.log(Level.FINER, "data point breaks monotonic rule: {0}", i);
+                }
+            }
+        }
+        lindex+=1;
+        
+        int nrm= dep0.length() - ( rindex-lindex );
+        if ( nrm>0 ) {
+            if ( rindex==1 ) {
+                logger.log(Level.FINE, "ensureMono removes all points, assume it's monotonic decreasing" );
+                return ds;
+            }
+            logger.log(Level.FINE, "ensureMono removes {0} points", nrm);
+            int[] idx= new int[rindex-lindex];
+            System.arraycopy( rback, lindex, idx, 0, ( rindex-lindex ) );
+            ds.putProperty( QDataSet.DEPEND_0, null );
+            MutablePropertyDataSet dep0copy;
+            if ( ds instanceof ArrayDataSet ) {
+                Class c= ((ArrayDataSet)ds).getComponentType();
+                ds= ArrayDataSet.copy( c, new SortDataSet( ds, Ops.dataset(idx) ) );
+                Class depclass= ((ArrayDataSet)dep0).getComponentType();
+                dep0copy= ArrayDataSet.copy( depclass, new SortDataSet( dep0, Ops.dataset(idx) ) );
+            } else if ( ds instanceof BufferDataSet ) {
+                Object c= ((BufferDataSet)ds).getType();
+                ds= BufferDataSet.copy( c, new SortDataSet( ds, Ops.dataset(idx) ) );
+                Object depclass= ((BufferDataSet)dep0).getType();
+                dep0copy= BufferDataSet.copy( depclass, new SortDataSet( dep0, Ops.dataset(idx) ) );
+            } else {
+                throw new IllegalArgumentException("dataset must be ArrayDataSet or BufferDataSet");
+            }
+            dep0copy.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
+            ds.putProperty( QDataSet.DEPEND_0, dep0copy );
+        }
+        return ds;
+    }
+        
     /**
      * element-wise sin.
      * @param ds
