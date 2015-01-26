@@ -73,6 +73,11 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     public final static Object BYTE= "byte";
     public final static Object UBYTE= "ubyte";
     
+    /**
+     * return the number of bytes of each type (double=8, etc).
+     * @param type DOUBLE, FLOAT, UBYTE, etc.
+     * @return 8, 4, 1, etc.
+     */
     public static int byteCount(Object type) {
         if (type.equals(DOUBLE)) {
             return 8;
@@ -105,7 +110,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * Make a BufferDataSet of the given type.
      * @param rank the rank (number of indeces) of the data.
      * @param reclen  length in bytes of each record.  This may be longer than len1*len2*len3*byteCount(type)
-     * @param recoffs  byte offet of each record
+     * @param recoffs  byte offset of each record
      * @param len0   number of elements in the first index
      * @param len1   number of elements in the second index
      * @param len2   number of elements in the third index
@@ -159,8 +164,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * Make a BufferDataSet of the given type.
      * @param rank the rank (number of indeces) of the data.
      * @param reclen  length in bytes of each record
-     * @param recoffs  byte offet of each record
-     * @param qube int array of the number of elements in each index.  If rank is less than the number of elements, then ignore extra trailing elements.
+     * @param recoffs  byte offset of each record
+     * @param qube integer array of the number of elements in each index.  If rank is less than the number of elements, then ignore extra trailing elements.
      * @param buf  ByteBuffer containing the data, which should be at least recoffs + reclen * len0 bytes long.
      * @param type BufferDataSet.INT, BufferDataSet.DOUBLE, etc...
      * @return BufferDataSet of the given type.
