@@ -388,10 +388,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             s2= "" + ds.getType();
             throw new IllegalArgumentException("backing type mismatch: "+ s2 + "["+ds.length()+",*] can't be appended to "+ s1 + "["+this.length()+",*]" );
         }
-        int trec=  this.back.limit() / this.jvmMemory() / this.len1 / this.len2 / this.len3;
+        int trec=  this.back.capacity() / ( byteCount(type) * this.len1 * this.len2 * this.len3 );
         
-        throw new IllegalArgumentException("not verified");
-        //return trec-this.len0 > ds.length();
+        return trec > ds.length() + this.len0;
         
     }
     
