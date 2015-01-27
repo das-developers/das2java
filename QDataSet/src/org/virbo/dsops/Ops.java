@@ -5085,7 +5085,7 @@ public class Ops {
         int count=0;
         
         if ( wds==null ) {
-            wds= new WeightsDataSet.Finite(ds);
+            wds= DataSetUtil.weightsDataSet(ds);
         }
 
         double [] result;
@@ -5203,7 +5203,7 @@ public class Ops {
         int count=0;
 
         if ( wds==null ) {
-            wds= new WeightsDataSet.Finite(ds);
+            wds= DataSetUtil.weightsDataSet(ds);
         }
 
         double [] result;
