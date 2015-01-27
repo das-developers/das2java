@@ -329,6 +329,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         ByteBuffer newback= ByteBuffer.allocateDirect(ds.back.limit());
         ds.copyTo(newback);
         
+        newback.flip();
+        
         BufferDataSet result = BufferDataSet.makeDataSet( ds.rank, ds.reclen, ds.recoffset, ds.len0, ds.len1, ds.len2, ds.len3, newback, ds.type );
         result.properties.putAll( Ops.copyProperties(ds) );
 
@@ -411,8 +413,10 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         int myLength= elementSizeBytes * this.len0 * this.len1 * this.len2 * this.len3;
         int dsLength= elementSizeBytes * ds.len0 * ds.len1 * ds.len2 * ds.len3;
 
-        if ( this.back.limit() < ( myLength + dsLength - recoffset ) ) {
+        if ( this.back.capacity()< ( recoffset + myLength + dsLength ) ) {
             throw new IllegalArgumentException("unable to append dataset, not enough room");
+        } else {
+            this.back.limit( recoffset + myLength + dsLength );
         }
 
         ByteBuffer dsBuffer= ds.back.duplicate(); // TODO: verify thread safety
@@ -420,6 +424,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         this.back.position( recoffset + myLength );
         this.back.limit( recoffset + myLength + dsLength );
         this.back.put( dsBuffer );
+        this.back.flip();
         
         Units u1= SemanticOps.getUnits(this);
         Units u2= SemanticOps.getUnits(ds);
@@ -728,8 +733,10 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     }
     
     /**
-     * grow the internal store so that append may be used to resize the dataset.
-     * @param newRecCount
+     * grow the internal store so that append may be used to resize the 
+     * dataset.  This simply grows the internal buffer, so for example length()
+     * will return the same value after.
+     * @param newRecCount the new record count, generally larger than the old rec count.
      */
     public void grow( int newRecCount ) {
         
@@ -737,18 +744,18 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         
         int newSize= newRecCount * len1 * len2 * len3 * byteCount(type);
         
-        ByteBuffer back= this.back;
+        ByteBuffer lback= this.back.duplicate();
         int oldSize= len0 *  len1 * len2 * len3 * byteCount(type);
 
         if ( newSize<oldSize ) { // it's possible that the dataset already has a backing that can support this.  Check for this.
             return;
         }
 
-        Object type= this.getType();
-        
         ByteBuffer newBack= ByteBuffer.allocateDirect( newSize );
-        newBack.put(back);
-        
+        newBack.put(lback);
+        lback.flip();
+        newBack.flip();
+                
         this.back= newBack;
     }
 
@@ -915,7 +922,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     }
     
     /**
-     * dump the contents to this buffer.
+     * dump the contents to this buffer into buf.  The buffer buf is 
+     * left with its position at the end of the copied data.
      * @param buf
      */
     public void copyTo( ByteBuffer buf ) {
@@ -924,7 +932,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         lback.position( recoffset );
         lback.mark();
         lback.limit( recoffset + reclen * len0 );
-        buf.put( this.back );
+        buf.put( lback );
     }
 
     /**
