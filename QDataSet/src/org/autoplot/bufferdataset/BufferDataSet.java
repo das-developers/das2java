@@ -6,18 +6,18 @@ package org.autoplot.bufferdataset;
 
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.das2.datum.CacheTag;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.util.LoggerManager;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
-import static org.virbo.dataset.ArrayDataSet.copy;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
-import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
@@ -392,7 +392,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         
     }
     
-        /**
+    /**
      * append the dataset with the same geometry but different number of records (zeroth dim)
      * to this.  An IllegalArgumentException is thrown when there is not enough room.  
      * See grow(newRecCount).
@@ -441,10 +441,197 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         
         this.len0= this.len0 + ds.len0;
 
-        throw new IllegalArgumentException("not verified");
-        
-        //TODO!!!properties.putAll( joinProperties( this, ds ) ); //TODO: verify
+        properties.putAll( joinProperties( this, ds ) ); //TODO: verify
 
+    }
+    
+    /**
+     * append the two datasets.  The two datasets need only have convertible units, 
+     * so for example two time arrays may be appended even if their units don't 
+     * have the same base.  Only properties of the two datasets that do not change 
+     * are preserved.
+     * @param ths rank N dataset
+     * @param ds rank N dataset of the same type and geometry as ths.
+     * @return the dataset 
+     */
+    public static BufferDataSet append( BufferDataSet ths, BufferDataSet ds ) {
+        if ( ths==null ) return ds;
+        if ( ds==null ) throw new NullPointerException("ds is null");
+        
+        if ( ths.rank()==ds.rank()-1 ) {
+            Units u= SemanticOps.getUnits(ths);
+            ths= BufferDataSet.makeDataSet( ths.rank()+1, 1, 0, ths.len0, ths.len1, ths.len2, 1, ths.back, ths.type );
+            ths.putProperty( QDataSet.UNITS,u);
+        }
+        if ( ths.rank()-1==ds.rank() ) {
+            Units u= SemanticOps.getUnits(ds);
+            ds= BufferDataSet.makeDataSet( ds.rank()+1, 1, 0, ds.len0, ds.len1, ds.len2, 1, ds.back, ds.type );
+            ds.putProperty( QDataSet.UNITS,u);
+        }
+        if ( ds.rank()!=ths.rank ) throw new IllegalArgumentException("rank mismatch");
+        if ( ds.len1!=ths.len1 ) throw new IllegalArgumentException("len1 mismatch");
+        if ( ds.len2!=ths.len2 ) throw new IllegalArgumentException("len2 mismatch");
+        if ( ds.len3!=ths.len3 ) throw new IllegalArgumentException("len3 mismatch");
+        if ( ths.getType()!=ds.getType() ) {
+            throw new IllegalArgumentException("backing type mismatch");
+        }
+
+        int myLength= byteCount(ths.type) * ths.len0 * ths.len1 * ths.len2 * ths.len3;
+        int dsLength= byteCount(ds.type) * ds.len0 * ds.len1 * ds.len2 * ds.len3;
+
+        ByteBuffer newback= ByteBuffer.allocateDirect( myLength + dsLength );
+        
+        newback.put( ths.back );
+        newback.put( ds.back );
+        newback.flip();
+                
+        BufferDataSet result= BufferDataSet.makeDataSet( ths.rank, ths.reclen, 0, 
+                ths.len0 + ds.len0, ths.len1, ths.len2, ths.len3, 
+                newback, ths.type );
+                
+        Units u1= SemanticOps.getUnits(ths);
+        Units u2= SemanticOps.getUnits(ds);
+        if ( u1!=u2 ) {
+            if ( u1 instanceof EnumerationUnits && u2 instanceof EnumerationUnits ) { // convert so the enumeration units are the same.
+                for ( int i=myLength; i<myLength+dsLength; i++ ) {
+                    double d= ths.value( i );
+                    d= ((EnumerationUnits)u1).createDatum( u2.createDatum(d).toString() ).doubleValue(u1);
+                    ths.putValue( i, d );
+                }
+            } else {
+                UnitsConverter uc= UnitsConverter.getConverter(u2,u1); // convert so the time location units are the same (for example).
+                for ( int i=myLength; i<myLength+dsLength; i++ ) {
+                    Number nv=  uc.convert( ds.value(i) ) ;
+                    ths.putValue( i, nv.doubleValue() );
+                }
+            }
+        }
+        
+        result.properties.putAll( joinProperties( ths, ds ) );
+        result.properties.put( QDataSet.UNITS, u1 ); // since we resolve units when they change (bug 3469219)
+
+        return result;
+    }
+
+
+    /**
+     * join the properties of the two datasets.  (for append, really...)
+     * Note MONOTONIC assumes the ds will be added after ths.
+     * 
+     * @param ths 
+     * @param ds
+     * @return the two sets combined.
+     */
+    protected static Map joinProperties( BufferDataSet ths, BufferDataSet ds ) {
+        Map result= new HashMap();
+        for ( int i=0; i<ds.rank(); i++ ) {
+            QDataSet thatDep= (QDataSet) ds.property( "DEPEND_"+i );
+            if ( thatDep!=null && ( i==0 || thatDep.rank()>1 ) ) {
+                QDataSet thisDep= (QDataSet) ths.property( "DEPEND_"+i );
+                BufferDataSet djoin= copy( thisDep ); //TODO: reconcile types
+                BufferDataSet ddep1= thatDep instanceof BufferDataSet ? (BufferDataSet) thatDep : maybeCopy( thatDep );
+                djoin= append( djoin, ddep1 );
+                result.put( "DEPEND_"+i, djoin );
+
+            } else if ( thatDep!=null && thatDep.rank()==1 ) {
+                //TODO: check properties equal.
+                result.put( "DEPEND_"+i, thatDep );
+            }
+            QDataSet thatBundle= (QDataSet) ds.property( "BUNDLE_"+i );
+            QDataSet thisBundle= (QDataSet) ths.property("BUNDLE_"+i );
+            if ( i>0 && thatBundle!=null && thisBundle!=null ) {
+                if ( thisBundle.length()!=thatBundle.length() ) {
+                    throw new IllegalArgumentException("BUNDLE_"+i+" should be the same length to append, but they are not");
+                }
+                for ( int j=0; j<thatBundle.length(); j++ ) {
+                    Units thatu= (Units)thatBundle.property( QDataSet.UNITS, j );
+                    Units thisu= (Units)thisBundle.property( QDataSet.UNITS, j );
+                    if ( thisu!=thatu ) {
+                        throw new IllegalArgumentException("units in BUNDLE_"+i+" change...");
+                    }
+                }
+                //TODO: other safety checks...
+                result.put( "BUNDLE_"+i, thatBundle );
+            }
+        }
+        String[] props;
+        props= DataSetUtil.correlativeProperties();
+        for ( int iprop= -1; iprop<props.length; iprop++ ) {
+            String prop= iprop==-1 ? QDataSet.PLANE_0 : props[iprop];
+            QDataSet w1= (QDataSet) ds.property( prop );
+            if ( w1!=null ) {
+                QDataSet dep0= (QDataSet) ths.property( prop );
+                if ( dep0!=null ) {
+                    BufferDataSet djoin=  copy( dep0 );
+                    BufferDataSet dd1=  maybeCopy(w1);
+                    djoin= append( djoin, dd1 );
+                    result.put( prop, djoin );
+                } else {
+                    logger.info( "dataset doesn't have property \""+prop+"\" but other dataset does: "+ths);
+                }
+            }
+        }
+
+        props= DataSetUtil.dimensionProperties();
+        for ( int i=0; i<props.length; i++ ) {
+            String prop= props[i];
+            Object value= ths.property(prop);
+            if ( value!=null && value.equals(ds.property(prop) ) ) {
+                result.put( prop, ths.property(prop) );
+            }
+        }
+        // special handling for QDataSet.CADENCE, and QDataSet.MONOTONIC
+        props= new String[] { QDataSet.CADENCE, QDataSet.BINS_1 };
+        for ( int iprop= 0; iprop<props.length; iprop++ ) {
+            Object o= ths.property( props[iprop] );
+            if ( o!=null && o.equals( ds.property( props[iprop] ) ) ) {
+                result.put( props[iprop], o );
+            }
+        }
+
+        // special handling for monotonic property.
+        Boolean m= (Boolean) ths.property( QDataSet.MONOTONIC );
+        if ( m!=null && m.equals(Boolean.TRUE) && m.equals( ds.property( QDataSet.MONOTONIC ) ) ) {
+            // check to see that result would be monotonic
+            try {
+                int[] fl1= DataSetUtil.rangeOfMonotonic( ths );
+                int[] fl2= DataSetUtil.rangeOfMonotonic( ds );
+                Units u1= SemanticOps.getUnits(ds);
+                Units u2= SemanticOps.getUnits(ths);
+                UnitsConverter uc= u2.getConverter(u1);
+                if ( ds.value(fl2[0]) -  uc.convert( ths.value(fl1[1]) ) >= 0 ) { 
+                    result.put( QDataSet.MONOTONIC, Boolean.TRUE );
+                }
+            } catch ( IllegalArgumentException ex ) {
+                logger.fine("rte_1282463981: can't show that result has monotonic timetags because each dataset is not monotonic.");
+            }
+        }
+
+        // special handling for cacheTag property.
+        org.das2.datum.CacheTag ct0= (CacheTag) ths.property( QDataSet.CACHE_TAG );
+        org.das2.datum.CacheTag ct1= (CacheTag) ds.property( QDataSet.CACHE_TAG );
+        if ( ct0!=null && ct1!=null ) {
+            // If cache tags are not adjacent, the range between them is included in the new tag.
+            CacheTag newTag= null;
+            try {
+                newTag= CacheTag.append(ct0, ct1);
+            } catch ( IllegalArgumentException ex ) {
+                logger.fine( "append of two datasets that have CACHE_TAGs and are not adjacent, dropping CACHE_TAG" );
+            }
+            if ( newTag!=null ) {
+                result.put( QDataSet.CACHE_TAG, newTag );
+            }
+        }
+
+        // special handling of TYPICAL_MIN _MAX properties
+        Number dmin0= (Number) ths.property(QDataSet.TYPICAL_MIN );
+        Number dmax0= (Number) ths.property(QDataSet.TYPICAL_MAX );
+        Number dmin1= (Number) ds.property(QDataSet.TYPICAL_MIN );
+        Number dmax1= (Number) ds.property(QDataSet.TYPICAL_MAX );
+        if ( dmin0!=null && dmin1!=null ) result.put( QDataSet.TYPICAL_MIN, Math.min( dmin0.doubleValue(), dmin1.doubleValue() ) );
+        if ( dmax0!=null && dmax1!=null ) result.put( QDataSet.TYPICAL_MAX, Math.max( dmin0.doubleValue(), dmin1.doubleValue() ) );
+
+        return result;
     }
     
     /**
@@ -539,6 +726,32 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         return result;
 
     }
+    
+    /**
+     * grow the internal store so that append may be used to resize the dataset.
+     * @param newRecCount
+     */
+    public void grow( int newRecCount ) {
+        
+        if ( newRecCount < len0 ) throw new IllegalArgumentException("new recsize for grow smaller than old");
+        
+        int newSize= newRecCount * len1 * len2 * len3 * byteCount(type);
+        
+        ByteBuffer back= this.back;
+        int oldSize= len0 *  len1 * len2 * len3 * byteCount(type);
+
+        if ( newSize<oldSize ) { // it's possible that the dataset already has a backing that can support this.  Check for this.
+            return;
+        }
+
+        Object type= this.getType();
+        
+        ByteBuffer newBack= ByteBuffer.allocateDirect( newSize );
+        newBack.put(back);
+        
+        this.back= newBack;
+    }
+
     
     public Object getType() {
         return this.type;
@@ -748,5 +961,14 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         } else {
             return 0; // not sure
         }
+    }
+    
+    /**
+     * print some info about this BufferDataSet.
+     */
+    public void about() {
+        System.err.println("== "+this.toString() + "==");
+        System.err.println(this.back);
+        System.err.println(this.recoffset);
     }
 }
