@@ -290,7 +290,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     public static BufferDataSet createRank2( Object type, int len0, int len1 ) {
         int typeLen= byteCount(type);
         ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 );
-        int recLen= typeLen;
+        int recLen= typeLen * len1;
         return makeDataSet( 2, recLen, 0, len0, len1, 1, 1, buf, type );
     }
     
@@ -305,7 +305,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     public static BufferDataSet createRank3( Object type, int len0, int len1, int len2 ) {
         int typeLen= byteCount(type);
         ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 * len2 );
-        int recLen= typeLen;
+        int recLen= typeLen * len1 * len2;
         return makeDataSet( 3, recLen, 0, len0, len1, len2, 1, buf, type );
     }
 
@@ -321,7 +321,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     public static BufferDataSet createRank4( Object type, int len0, int len1, int len2, int len3 ) {
         int typeLen= byteCount(type);
         ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 * len2 * len3 );
-        int recLen= typeLen;
+        int recLen= typeLen * len1 * len2 * len3;
         return makeDataSet( 4, recLen, 0, len0, len1, len2, len3, buf, type );
     }
 
