@@ -2206,6 +2206,58 @@ public class DataSetOps {
      *   rank 2 waveform: r.slice(0) x bounds, r.slice(1) y bounds
      *   rank 2 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
      *   rank 3 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
+     * This does not take DELTA_PLUS and DELTA_MINUS into account.
+     * @param ds
+     * @return
+     */
+    public static QDataSet dependBoundsSimple( QDataSet ds ) {
+        QDataSet xrange;
+        QDataSet yrange;
+
+        if ( ds.rank()==1 ) {
+            xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null, null );
+            yrange= Ops.extentSimple( ds, null, null );
+        } else if( ds.rank() == 2 ) {
+            if ( SemanticOps.isRank2Waveform(ds) ) {
+                xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null, null );
+                yrange= Ops.extentSimple( ds, null, null );
+            //} else if ( SemanticOps.isBundle(ds) ) { //bug: spectrogram rend of rbspb_pre_ect-mageisM75-sp-L1_20120908_v1.0.0.cdf?Count_Rate_SpinSetAvg
+            //    xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
+            //    yrange= null;
+            //    for ( int i=0; i<ds.length(0); i++ ) {
+            //        yrange= Ops.extent( DataSetOps.unbundle( ds, i ), yrange );
+            //    }
+            } else {
+                xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null, null );
+                yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds), null, null );
+            }
+        } else if ( ds.rank()==3 ) {
+            QDataSet ds1= ds.slice(0);
+            xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds1), null, null );
+            yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds1), null, null );
+            for ( int i=1; i<ds.length(); i++ ) {
+                ds1= ds.slice(i);
+                xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds1), null, xrange );
+                yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds1), null, yrange );
+            }
+        } else {
+            throw new IllegalArgumentException("bad rank");
+        }
+
+        QDataSet result= makePropertiesMutable( Ops.join( xrange, yrange ) );
+        ((MutablePropertyDataSet)result).putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+
+        return result;
+        
+    }
+    
+    /**
+     * return a bounding qube of the independent dimensions containing
+     * the dataset.  If r is the result of the function, then for
+     *   rank 1: r.slice(0) x bounds, r.slice(1) y bounds
+     *   rank 2 waveform: r.slice(0) x bounds, r.slice(1) y bounds
+     *   rank 2 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
+     *   rank 3 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
      * @param ds
      * @return
      */
