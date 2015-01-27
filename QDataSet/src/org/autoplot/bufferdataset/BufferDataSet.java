@@ -328,6 +328,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     private static BufferDataSet ddcopy(BufferDataSet ds) {
         
         ByteBuffer newback= ByteBuffer.allocateDirect(ds.back.limit());
+        newback.order(ds.back.order());
         ds.copyTo(newback);
         
         newback.flip();
@@ -477,14 +478,14 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if ( ds.len1!=ths.len1 ) throw new IllegalArgumentException("len1 mismatch");
         if ( ds.len2!=ths.len2 ) throw new IllegalArgumentException("len2 mismatch");
         if ( ds.len3!=ths.len3 ) throw new IllegalArgumentException("len3 mismatch");
-        if ( ths.getType()!=ds.getType() ) {
-            throw new IllegalArgumentException("backing type mismatch");
-        }
+        if ( ths.getType()!=ds.getType() ) throw new IllegalArgumentException("backing type mismatch");
+        if ( ths.back.order()!=ds.back.order() ) throw new IllegalArgumentException("byte order (endianness) must be the same");
 
         int myLength= byteCount(ths.type) * ths.len0 * ths.len1 * ths.len2 * ths.len3;
         int dsLength= byteCount(ds.type) * ds.len0 * ds.len1 * ds.len2 * ds.len3;
 
         ByteBuffer newback= ByteBuffer.allocateDirect( myLength + dsLength );
+        newback.order( ths.back.order() );
         
         newback.put( ths.back );
         newback.put( ds.back );
@@ -750,6 +751,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         int newSize= newRecCount * len1 * len2 * len3 * byteCount(type);
         
         ByteBuffer lback= this.back.duplicate();
+        lback.order( this.back.order() );
         int oldSize= len0 *  len1 * len2 * len3 * byteCount(type);
 
         if ( newSize<oldSize ) { // it's possible that the dataset already has a backing that can support this.  Check for this.
@@ -757,7 +759,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         }
 
         ByteBuffer newBack= ByteBuffer.allocateDirect( newSize );
+        newBack.order( lback.order() );
         newBack.put(lback);
+        
         lback.flip();
         newBack.flip();
                 
@@ -949,6 +953,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         }
         if ( back.isReadOnly() ) {
             ByteBuffer wback= ByteBuffer.allocateDirect( back.capacity() );
+            wback.order( back.order() );
             wback.put(back);
             back= wback;
         }
