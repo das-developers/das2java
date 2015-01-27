@@ -488,7 +488,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         
         newback.put( ths.back );
         newback.put( ds.back );
-        newback.flip();
+        newback.rewind(); // why not flip()?
                 
         BufferDataSet result= BufferDataSet.makeDataSet( ths.rank, ths.reclen, 0, 
                 ths.len0 + ds.len0, ths.len1, ths.len2, ths.len3, 
@@ -534,8 +534,14 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             if ( thatDep!=null && ( i==0 || thatDep.rank()>1 ) ) {
                 QDataSet thisDep= (QDataSet) ths.property( "DEPEND_"+i );
                 BufferDataSet djoin= copy( thisDep ); //TODO: reconcile types
+                if ( thatDep instanceof BufferDataSet ) {
+                    System.err.println("== DEPEND_0 ==");
+                    ((BufferDataSet)thatDep).about();
+                }
                 BufferDataSet ddep1= thatDep instanceof BufferDataSet ? (BufferDataSet) thatDep : maybeCopy( thatDep );
+                ((BufferDataSet)thatDep).about();
                 djoin= append( djoin, ddep1 );
+                ((BufferDataSet)djoin).about();
                 result.put( "DEPEND_"+i, djoin );
 
             } else if ( thatDep!=null && thatDep.rank()==1 ) {
@@ -977,7 +983,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         System.err.println("== "+this.toString() + "==");
         System.err.println("back="+this.back);
         System.err.println("recoffset="+this.recoffset);
-        QDataSet extent= Ops.extent(this);
-        System.err.println("extent="+this.recoffset);
+        //QDataSet extent= Ops.extent(this);  // this is occasionally very slow. TODO: investigate
+        //System.err.println("extent="+extent);
     }
 }
