@@ -3229,7 +3229,11 @@ public class Ops {
         assert ds instanceof ArrayDataSet || ds instanceof BufferDataSet;
         
         if ( ds.isImmutable() ) {
-            ds= ArrayDataSet.copy(ds);
+            if ( ds instanceof ArrayDataSet ) {
+                ds= ArrayDataSet.copy(ds);
+            } else {
+                ds= BufferDataSet.copy(ds);
+            } 
             logger.warning("immutabilty forced copy.");
         }
                
