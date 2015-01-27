@@ -657,7 +657,9 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     /**
      * join the properties of the two datasets.  (for append, really...)
      * Note MONOTONIC assumes the ds will be added after ths.
+     * @param ths 
      * @param ds
+     * @return the two sets combined.
      */
     protected static Map joinProperties( ArrayDataSet ths, ArrayDataSet ds ) {
         Map result= new HashMap();
@@ -704,14 +706,13 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                     djoin= append( djoin, dd1 );
                     result.put( prop, djoin );
                 } else {
-                    logger.info( "dataset doesn't have property \""+prop+"\" but other dataset does: "+ths);
+                    logger.log(Level.INFO, "dataset doesn''t have property \"{0}\" but other dataset does: {1}", new Object[]{prop, ths});
                 }
             }
         }
 
         props= DataSetUtil.dimensionProperties();
-        for ( int i=0; i<props.length; i++ ) {
-            String prop= props[i];
+        for (String prop : props) {
             Object value= ths.property(prop);
             if ( value!=null && value.equals(ds.property(prop) ) ) {
                 result.put( prop, ths.property(prop) );
@@ -719,10 +720,10 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         }
         // special handling for QDataSet.CADENCE, and QDataSet.MONOTONIC
         props= new String[] { QDataSet.CADENCE, QDataSet.BINS_1 };
-        for ( int iprop= 0; iprop<props.length; iprop++ ) {
-            Object o= ths.property( props[iprop] );
-            if ( o!=null && o.equals( ds.property( props[iprop] ) ) ) {
-                result.put( props[iprop], o );
+        for (String prop : props) {
+            Object o = ths.property(prop);
+            if (o!=null && o.equals(ds.property(prop))) {
+                result.put(prop, o);
             }
         }
 
@@ -766,7 +767,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         Number dmin1= (Number) ds.property(QDataSet.TYPICAL_MIN );
         Number dmax1= (Number) ds.property(QDataSet.TYPICAL_MAX );
         if ( dmin0!=null && dmin1!=null ) result.put( QDataSet.TYPICAL_MIN, Math.min( dmin0.doubleValue(), dmin1.doubleValue() ) );
-        if ( dmax0!=null && dmax1!=null ) result.put( QDataSet.TYPICAL_MAX, Math.max( dmin0.doubleValue(), dmin1.doubleValue() ) );
+        if ( dmax0!=null && dmax1!=null ) result.put( QDataSet.TYPICAL_MAX, Math.max( dmax0.doubleValue(), dmax1.doubleValue() ) );
 
         return result;
     }
