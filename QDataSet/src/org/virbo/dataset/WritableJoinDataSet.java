@@ -41,7 +41,7 @@ public class WritableJoinDataSet extends JoinDataSet implements WritableDataSet 
             if ( !DataSetUtil.isQube(ds1) ) {
                 throw new IllegalArgumentException("src contains slices that are not qubes.");
             }
-            result.join( ArrayDataSet.copy(ds1) );
+            result.join( Ops.copy(ds1) );
         }
         Map<String,Object> props= Ops.copyProperties(src);
         for ( Map.Entry<String,Object> en: props.entrySet() ) {
