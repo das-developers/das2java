@@ -244,7 +244,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
 
     private QDataSet bounds( QDataSet ds ) {
-        return DataSetOps.dependBounds(ds);
+        return DataSetOps.dependBoundsSimple(ds);
     }
 
     @Override
