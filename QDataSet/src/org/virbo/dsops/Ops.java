@@ -3187,7 +3187,11 @@ public class Ops {
         if ( SemanticOps.isJoin(src) ) {
             return WritableJoinDataSet.copy(src);
         } else {
-            return ArrayDataSet.copy(src);
+            if ( src instanceof BufferDataSet ) {
+                return BufferDataSet.copy(src);                
+            } else {
+                return ArrayDataSet.copy(src);
+            }
         }
     }
 
