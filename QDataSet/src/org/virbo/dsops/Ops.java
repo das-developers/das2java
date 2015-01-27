@@ -3651,10 +3651,12 @@ public class Ops {
             //return DataSetUtil.asDataSet(arg0); // I think this is probably a better implementation.
             List<Integer> qqube= new ArrayList( );
             qqube.add( Array.getLength(arg0) );
-            Object slice= Array.get(arg0, 0);
-            while ( slice.getClass().isArray() ) {
-                qqube.add( Array.getLength(slice) );
-                slice= Array.get( slice, 0 );
+            if ( qqube.get(0)>0 ) {
+                Object slice= Array.get(arg0, 0);
+                while ( slice.getClass().isArray() ) {
+                    qqube.add( Array.getLength(slice) );
+                    slice= Array.get( slice, 0 );
+                }
             }
             int[] qube= new int[qqube.size()];
             for ( int i=0; i<qube.length; i++ ) qube[i]= qqube.get(i);
