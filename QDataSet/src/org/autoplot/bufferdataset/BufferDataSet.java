@@ -276,7 +276,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         int typeLen= byteCount(type);
         ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 );
         int recLen= typeLen;
-        return makeDataSet( 0, recLen, 0, len0, 1, 1, 1, buf, type );
+        return makeDataSet( 1, recLen, 0, len0, 1, 1, 1, buf, type );
     }    
 
     /**
@@ -290,7 +290,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         int typeLen= byteCount(type);
         ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 );
         int recLen= typeLen;
-        return makeDataSet( 0, recLen, 0, len0, len1, 1, 1, buf, type );
+        return makeDataSet( 2, recLen, 0, len0, len1, 1, 1, buf, type );
     }
     
     /**
@@ -305,7 +305,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         int typeLen= byteCount(type);
         ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 * len2 );
         int recLen= typeLen;
-        return makeDataSet( 0, recLen, 0, len0, len1, len2, 1, buf, type );
+        return makeDataSet( 3, recLen, 0, len0, len1, len2, 1, buf, type );
     }
 
     /**
@@ -321,7 +321,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         int typeLen= byteCount(type);
         ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 * len2 * len3 );
         int recLen= typeLen;
-        return makeDataSet( 0, recLen, 0, len0, len1, len2, len3, buf, type );
+        return makeDataSet( 4, recLen, 0, len0, len1, len2, len3, buf, type );
     }
 
     private static BufferDataSet ddcopy(BufferDataSet ds) {
@@ -968,7 +968,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public void about() {
         System.err.println("== "+this.toString() + "==");
-        System.err.println(this.back);
-        System.err.println(this.recoffset);
+        System.err.println("back="+this.back);
+        System.err.println("recoffset="+this.recoffset);
+        QDataSet extent= Ops.extent(this);
+        System.err.println("extent="+this.recoffset);
     }
 }
