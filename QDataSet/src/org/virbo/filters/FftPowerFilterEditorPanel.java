@@ -103,7 +103,7 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|fftPower\\((\\d+),(\\d),'(\\w+)\\'\\)");
+        Pattern p= Pattern.compile("\\|fftPower\\((\\d+),(\\d),'?(\\w+)\\'?\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             sizeTF.setText( m.group(1) );
@@ -141,7 +141,6 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
             slide = "4";
         }
         String window= (String)windowCB.getSelectedItem();
-        if ( window.startsWith("Hanning") ) window= "Hanning";
         
         return "|fftPower(" + sizeTF.getText() + "," + slide + ",'" + window + "')";
     }

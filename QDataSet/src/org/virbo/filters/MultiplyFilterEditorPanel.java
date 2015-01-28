@@ -83,7 +83,7 @@ public class MultiplyFilterEditorPanel extends AbstractFilterEditorPanel {
     }
 
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|multiply\\((.*)\\)");
+        Pattern p= Pattern.compile("\\|multiply\\((\\-?\\d+\\.?\\d+)\\)");
         //Pattern p1= Pattern.compile("\\|butterworth\\((.*,.*,.*,.*)\\)");
         //Pattern p2= Pattern.compile("\\|butterworth\\((.*,.*,.*)\\)");
         Matcher m= p.matcher(filter);

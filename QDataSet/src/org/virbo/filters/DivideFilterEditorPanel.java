@@ -85,7 +85,7 @@ public class DivideFilterEditorPanel extends AbstractFilterEditorPanel implement
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|divide\\((.*)\\)");
+        Pattern p= Pattern.compile("\\|divide\\((\\-?\\d+\\.?\\d+)\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             scalar.setText(m.group(1));

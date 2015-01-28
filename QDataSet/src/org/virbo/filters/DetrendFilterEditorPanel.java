@@ -69,7 +69,7 @@ public class DetrendFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|detrend\\((.*)\\)");
+        Pattern p= Pattern.compile("\\|detrend\\((\\d+)\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             scalarTF.setText( m.group(1) );

@@ -55,8 +55,6 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
 
         FormListener formListener = new FormListener();
 
-        orderPanel.setBorder(null);
-
         jLabel1.setText("Order:  ");
 
         orderCB.setEditable(true);
@@ -167,17 +165,17 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
                 .addContainerGap()
                 .add(subPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel6)
-                    .add(subPanel4Layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(subPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(subPanel4Layout.createSequentialGroup()
-                                .add(lowFreq, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE)
-                                .add(jLabel5))
-                            .add(subPanel4Layout.createSequentialGroup()
-                                .add(highFreq, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(jLabel7))))
+                    .add(subPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(subPanel4Layout.createSequentialGroup()
+                            .add(19, 19, 19)
+                            .add(highFreq, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(jLabel7))
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, subPanel4Layout.createSequentialGroup()
+                            .add(12, 12, 12)
+                            .add(lowFreq, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(jLabel5)))
                     .add(jLabel4))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -194,9 +192,9 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
                 .add(jLabel6)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(subPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(highFreq, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel7))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(jLabel7)
+                    .add(highFreq, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
