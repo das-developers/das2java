@@ -140,15 +140,10 @@ public class DasProgressWheel extends AbstractProgressMonitor {
     public JComponent getPanel( final JComponent parent ) {
         if ( thePanel==null ) {
             thePanel= new MyPanel();
-            Runnable run= new Runnable() {
-                public void run() {
-                    thePanel.setBounds( new Rectangle(0,0,SIZE,SIZE) );
-                    parent.add(thePanel);
-                    theParent= parent;
-                    init();
-                }
-            };
-            SwingUtilities.invokeLater(run);
+            thePanel.setBounds( new Rectangle(0,0,SIZE,SIZE) );
+            parent.add(thePanel);
+            theParent= parent;
+            init();
         }
         return thePanel;
     }
