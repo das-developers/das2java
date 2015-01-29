@@ -3179,6 +3179,8 @@ public class Ops {
     /**
      * copy the dataset to make a new one that is writable.  When a join dataset is copied, a WritableJoinDataSet is used
      * to copy each dataset.  This is a deep copy, so for example DEPEND_0 is copied as well.
+     * Note that BufferDataSets will be copied to BufferDataSets, and ArrayDataSets 
+     * will be copied to ArrayDataSets.
      * @param src
      * @return a copy of src.
      */
