@@ -85,6 +85,8 @@ public class PacketDescriptor implements Cloneable {
                     } catch ( StreamException e ) {
                         throw new RuntimeException(e);
                     }
+                } else if ( name.equals("qdataset") ) {
+                    throw new StreamException("das2stream reader found that content appears to be qstream.");
                 }
             }
         }
