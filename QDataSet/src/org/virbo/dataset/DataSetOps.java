@@ -279,6 +279,7 @@ public class DataSetOps {
      * @return indeces that sort the data.
      */
     public static QDataSet sort(final QDataSet ds) {
+        logger.entering( "org.virbo.dataset.DataSetOps","sort");
         if (ds.rank() > 1) {
             throw new IllegalArgumentException( "dataset must be rank 1");
         }
@@ -306,9 +307,70 @@ public class DataSetOps {
         }
         MutablePropertyDataSet result = IDataSet.wrap(data);
         result.putProperty(QDataSet.NAME, "sort" + ds.length());
+        logger.exiting( "org.virbo.dataset.DataSetOps","sort");
         return result;
     }
 
+    /**
+     * apply the sort to the data on the zeroth dimension.  The dataset
+     * must be mutable, and the dataset itself is modified.  This was introduced
+     * to support AggregatingDataSource but should be generally useful.
+     * @param ds a writable dataset that is still mutable.
+     * @param sort the new sort indeces.
+     */
+    public static void applyIndexInSitu( WritableDataSet ds, QDataSet sort ) {
+        if ( ds.isImmutable() ) throw new IllegalArgumentException("ds is immutable");
+        if ( ds.rank()==1 ) {
+            for ( int i=0; i<sort.length(); i++ ) {
+                int j= (int)sort.value(i);
+                if ( j!=i ) {
+                    double d= ds.value(i);
+                    ds.putValue( i, ds.value( j ) );
+                    ds.putValue( j, d );
+                }
+            }
+        } else if ( ds.rank()==2 ) {
+            for ( int i=0; i<sort.length(); i++ ) {
+                int j= (int)sort.value(i);
+                if ( j!=i ) {
+                    for ( int i2=0; i2<ds.length(0); i2++ ) {
+                        double d= ds.value(i,i2);
+                        ds.putValue( i, i2, ds.value(j,i2) );
+                        ds.putValue( j, i2, d );    
+                    }
+                }
+            }
+        } else if ( ds.rank()==3 ) {
+            for ( int i=0; i<sort.length(); i++ ) {
+                int j= (int)sort.value(i);
+                if ( j!=i ) {
+                    for ( int i2=0; i2<ds.length(0); i2++ ) {
+                        for ( int i3=0; i3<ds.length(0); i3++ ) {
+                            double d= ds.value(i,i2,i3);
+                            ds.putValue( i, i2, i3, ds.value(j,i2,i3) );
+                            ds.putValue( j, i2, i3, d ); 
+                        }
+                    }
+                }
+            }            
+        } else if ( ds.rank()==4 ) {
+            for ( int i=0; i<sort.length(); i++ ) {
+                int j= (int)sort.value(i);
+                if ( j!=i ) {
+                    for ( int i2=0; i2<ds.length(0); i2++ ) {
+                        for ( int i3=0; i3<ds.length(0); i3++ ) {
+                            for ( int i4=0; i4<ds.length(0); i4++ ) {
+                                double d= ds.value(i,i2,i3,i4);
+                                ds.putValue( i, i2, i3, i4, ds.value(j,i2,i3,i4) );
+                                ds.putValue( j, i2, i3, i4, d ); 
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     /**
      * Applies the sort index to the idim-th dimension of the qube dataset ds.
      * TODO: consider sorting multiple dimensions at once, to reduce excessive copying.
