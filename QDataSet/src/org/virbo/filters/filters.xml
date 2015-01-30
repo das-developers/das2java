@@ -108,6 +108,11 @@
                         <filter>|valid()</filter>
                         <description>Replaces data with 1 where valid and 0 where invalid</description>
                     </bookmark>          
+                    <bookmark>
+                        <title>Get Property</title>
+                        <filter>|getProperty(DEPEND_0)</filter>
+                        <description>Replace the dataset with one of its properties, for example DEPEND_0 to get its timetags.</description>
+                    </bookmark>          
                 </bookmark-list>
             </bookmark-folder>
             <bookmark-folder>
