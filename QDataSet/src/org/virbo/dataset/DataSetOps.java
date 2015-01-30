@@ -17,6 +17,7 @@ import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -321,29 +322,32 @@ public class DataSetOps {
     public static void applyIndexInSitu( WritableDataSet ds, QDataSet sort ) {
         logger.entering("org.virbo.dataset","applyIndexInSitu");
         if ( ds.isImmutable() ) throw new IllegalArgumentException("ds is immutable: "+ds);
+        WritableDataSet ssort= Ops.copy(sort);
         if ( ds.rank()==1 ) {
-            for ( int i=0; i<sort.length(); i++ ) {
-                int j= (int)sort.value(i);
+            for ( int i=0; i<ssort.length(); i++ ) {
+                int j= (int)ssort.value(i);
                 if ( j!=i ) {
                     double d= ds.value(i);
                     ds.putValue( i, ds.value( j ) );
                     ds.putValue( j, d );
+                    ssort.putValue( j, j );
                 }
             }
         } else if ( ds.rank()==2 ) {
-            for ( int i=0; i<sort.length(); i++ ) {
-                int j= (int)sort.value(i);
+            for ( int i=0; i<ssort.length(); i++ ) {
+                int j= (int)ssort.value(i);
                 if ( j!=i ) {
                     for ( int i2=0; i2<ds.length(0); i2++ ) {
                         double d= ds.value(i,i2);
                         ds.putValue( i, i2, ds.value(j,i2) );
                         ds.putValue( j, i2, d );    
                     }
+                    ssort.putValue( j, j );
                 }
             }
         } else if ( ds.rank()==3 ) {
-            for ( int i=0; i<sort.length(); i++ ) {
-                int j= (int)sort.value(i);
+            for ( int i=0; i<ssort.length(); i++ ) {
+                int j= (int)ssort.value(i);
                 if ( j!=i ) {
                     for ( int i2=0; i2<ds.length(0); i2++ ) {
                         for ( int i3=0; i3<ds.length(0); i3++ ) {
@@ -352,11 +356,12 @@ public class DataSetOps {
                             ds.putValue( j, i2, i3, d ); 
                         }
                     }
+                    ssort.putValue( j, j );
                 }
             }            
         } else if ( ds.rank()==4 ) {
-            for ( int i=0; i<sort.length(); i++ ) {
-                int j= (int)sort.value(i);
+            for ( int i=0; i<ssort.length(); i++ ) {
+                int j= (int)ssort.value(i);
                 if ( j!=i ) {
                     for ( int i2=0; i2<ds.length(0); i2++ ) {
                         for ( int i3=0; i3<ds.length(0); i3++ ) {
@@ -367,6 +372,7 @@ public class DataSetOps {
                             }
                         }
                     }
+                    ssort.putValue( j, j );
                 }
             }
         }
