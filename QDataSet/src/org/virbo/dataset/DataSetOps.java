@@ -2176,7 +2176,7 @@ public class DataSetOps {
                 } else if ( cmd.equals("|getProperty") ) {
                     String arg= getStringArg( s.next() );
                     if ( arg.startsWith("QDataSet.") ) {
-                        arg= arg.substring(8);
+                        arg= arg.substring(9);
                     }
                     fillDs= Ops.dataset( fillDs.property(arg) );
                     
