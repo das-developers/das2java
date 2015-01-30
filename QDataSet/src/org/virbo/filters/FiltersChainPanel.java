@@ -191,6 +191,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new NoArgFilterEditorPanel();
         } else if ( f.matches("\\|diff\\(\\)") ) {
             result= new NoArgFilterEditorPanel();
+        } else if ( f.matches("\\|getProperty\\((.*)\\)") ) {
+            result= new GetPropertyEditorPanel();
         } else {
             result= new AnyFilterEditorPanel();
         }
