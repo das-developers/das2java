@@ -2173,6 +2173,13 @@ public class DataSetOps {
                         MutablePropertyDataSet mdep0= Ops.putProperty( dep1, QDataSet.CADENCE, DataSetUtil.asDataSet( news ) );
                         fillDs= Ops.putProperty( fillDs, QDataSet.DEPEND_1, mdep0 );
                     } 
+                } else if ( cmd.equals("|getProperty") ) {
+                    String arg= getStringArg( s.next() );
+                    if ( arg.startsWith("QDataSet.") ) {
+                        arg= arg.substring(8);
+                    }
+                    fillDs= Ops.dataset( fillDs.property(arg) );
+                    
                 } else if ( cmd.equals("|add") ) { 
                     String arg= getStringArg( s.next() );
                     Datum d= SemanticOps.getUnits(fillDs).parse(arg);
