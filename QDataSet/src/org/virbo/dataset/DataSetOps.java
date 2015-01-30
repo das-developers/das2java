@@ -319,7 +319,8 @@ public class DataSetOps {
      * @param sort the new sort indeces.
      */
     public static void applyIndexInSitu( WritableDataSet ds, QDataSet sort ) {
-        if ( ds.isImmutable() ) throw new IllegalArgumentException("ds is immutable");
+        logger.entering("org.virbo.dataset","applyIndexInSitu");
+        if ( ds.isImmutable() ) throw new IllegalArgumentException("ds is immutable: "+ds);
         if ( ds.rank()==1 ) {
             for ( int i=0; i<sort.length(); i++ ) {
                 int j= (int)sort.value(i);
@@ -369,6 +370,49 @@ public class DataSetOps {
                 }
             }
         }
+        QDataSet dep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) {
+            if ( dep0 instanceof WritableDataSet ) {
+                applyIndexInSitu( (WritableDataSet)dep0, sort );
+            } else {
+                throw new IllegalArgumentException("dep0 should be mutable");
+            }
+        }
+        QDataSet m= (QDataSet)ds.property(QDataSet.BIN_PLUS);
+        if ( m!=null ) {
+            if ( m instanceof WritableDataSet ) {
+                applyIndexInSitu( (WritableDataSet)m, sort );
+            } else {
+                throw new IllegalArgumentException("bin_plus should be mutable");
+            }
+        }
+        m= (QDataSet)ds.property(QDataSet.BIN_MINUS);
+        if ( m!=null ) {
+            if ( m instanceof WritableDataSet ) {
+                applyIndexInSitu( (WritableDataSet)m, sort );
+            } else {
+                throw new IllegalArgumentException("bin_plus should be mutable");
+            }
+        }
+        m= (QDataSet)ds.property(QDataSet.BINS_0);
+        if ( m!=null ) {
+            if ( m instanceof WritableDataSet ) {
+                applyIndexInSitu( (WritableDataSet)m, sort );
+            } else {
+                throw new IllegalArgumentException("bin_plus should be mutable");
+            }
+        }
+        for ( int i=1; i<ds.rank(); i++ ) {
+            QDataSet dep= (QDataSet)ds.property("DEPEND_"+i);
+            if ( dep!=null && dep.rank()==2 ) {
+                if ( dep instanceof WritableDataSet ) {
+                    applyIndexInSitu( (WritableDataSet)dep, sort );
+                } else {
+                    throw new IllegalArgumentException("dep0 should be mutable");
+                }
+            }
+        }
+        logger.exiting("org.virbo.dataset","applyIndexInSitu");
     }
     
     /**
