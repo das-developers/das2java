@@ -276,12 +276,13 @@ public class DataSetOps {
      * returns a list of indeces that sort the dataset.  I don't like this implementation, because
      * it requires that an array of Integers (not int[]) be created.  Invalid measurements are not indexed in
      * the returned dataset.
+     * If the sort is monotonic, then the property MONOTONIC will be Boolean.TRUE.
      * @param ds rank 1 dataset, possibly containing fill.
      * @return indeces that sort the data.
      */
     public static QDataSet sort(final QDataSet ds) {
-        logger.entering( "org.virbo.dataset.DataSetOps","sort");
-        if (ds.rank() > 1) {
+        logger.entering( "org.virbo.dataset.DataSetOps","sort",ds);
+        if (ds.rank() != 1) {
             throw new IllegalArgumentException( "dataset must be rank 1");
         }
         Integer[] indeces = new Integer[ds.length()];
@@ -294,7 +295,8 @@ public class DataSetOps {
                 i0++;
             }
         }
-        Comparator<Integer> c = new Comparator<Integer>() {
+        final Comparator<Integer> c = new Comparator<Integer>() {
+            @Override
             public int compare(Integer o1, Integer o2) {
                 int i1 = o1;
                 int i2 = o2;
@@ -303,12 +305,23 @@ public class DataSetOps {
         };
         Arrays.sort(indeces, 0, i0, c);
         final int[] data = new int[i0];
-        for (int i = 0; i < i0; i++) {
-            data[i] = indeces[i];
+        
+        boolean monotonic= true;
+        int lastData=0;
+        if ( i0>0 ) {
+            data[0] = indeces[0];
+            lastData= data[0];
         }
+        for (int i = 1; i < i0; i++) {
+            data[i] = indeces[i];
+            if ( monotonic && data[i]<lastData ) monotonic=false;
+            lastData= data[i];
+        }
+        
         MutablePropertyDataSet result = IDataSet.wrap(data);
         result.putProperty(QDataSet.NAME, "sort" + ds.length());
-        logger.exiting( "org.virbo.dataset.DataSetOps","sort");
+        if ( monotonic ) result.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
+        logger.exiting( "org.virbo.dataset.DataSetOps","sort",ds);
         return result;
     }
 
