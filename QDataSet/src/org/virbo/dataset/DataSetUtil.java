@@ -17,12 +17,10 @@ import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
 import java.util.logging.Level;
 import org.das2.datum.Units;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
@@ -158,7 +156,7 @@ public class DataSetUtil {
         }
         return true;
     }
-
+    
     /**
      * perform a binary search for key within ds, constraining the search to between low and high.
      * @param ds a rank 1 monotonic dataset.
@@ -2614,8 +2612,10 @@ public class DataSetUtil {
 
     /**
      * convert java arrays into QDataSets.
-     * @param arr
-     * @return
+     * @param x array, number, or String parsed with DatumUtil.parse
+     * @param y array, number, or String parsed with DatumUtil.parse
+     * @return dataset
+     * @see org.das2.datum.DatumUtil#parse(java.lang.String) 
      */
     public static QDataSet asDataSet(Object x, Object y) {
         QDataSet xds= asDataSet(x);
@@ -2625,8 +2625,10 @@ public class DataSetUtil {
 
     /**
      * convert java types into QDataSets.
-     * @param arr
-     * @return
+     * @param x array, number, or String parsed with DatumUtil.parse
+     * @param y array, number, or String parsed with DatumUtil.parse
+     * @param z array, number, or String parsed with DatumUtil.parse
+     * @return dataset
      */
     public static QDataSet asDataSet(Object x, Object y, Object z) {
         QDataSet xds= asDataSet(x);
@@ -2637,7 +2639,7 @@ public class DataSetUtil {
 
     /**
      * adds the rank 0 dataset (a Datum) to the dataset's properties, after all
-     * the other CONTEXT_<i> properties.
+     * the other CONTEXT_&lt;i&gt; properties.
      * @param ds
      * @param cds
      */
@@ -2649,8 +2651,8 @@ public class DataSetUtil {
 
     /**
      * adds the rank 0 dataset (a Datum) to the properties, after all
-     * the other CONTEXT_<i> properties.
-     * @param ds
+     * the other CONTEXT_&lt;i&gt properties.
+     * @param props
      * @param cds
      */
     public static void addContext( Map<String,Object> props, QDataSet cds ) {
@@ -2920,7 +2922,7 @@ public class DataSetUtil {
 
     /**
      * return the value, which gets units from index i. from rank 1 bundle dataset.
-     * @param yds
+     * @param ds
      * @param value
      * @param i
      * @return
@@ -3008,7 +3010,7 @@ public class DataSetUtil {
      * This assumes that labels is a unique set of labels.
      * See http://autoplot.org/QDataSet#DataSet_Properties under BUNDLE_1.
      * See DataSetOps.unbundle
-     * @param labelsDs
+     * @param labels
      * @throws IllegalArgumentException if the input is not rank 1.
      * @return a BundleDescriptor to be set as BUNDLE_i.  See BundleDataSet
      */
