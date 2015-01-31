@@ -423,7 +423,7 @@ public abstract class Units implements Serializable {
      * @throws InconvertibleUnitsException when the conversion is not possible.
      */
     public static UnitsConverter getConverter( final Units fromUnits, final Units toUnits ) {
-        logger.log(Level.FINE, "getConverter( {0} to {1} )", new Object[]{fromUnits, toUnits});
+        logger.log(Level.FINER, "getConverter( {0} to {1} )", new Object[]{fromUnits, toUnits}); //TODO: THIS IS CALLED WITH EVERY REPAINT!!!
         UnitsConverter result= getConverterInternal(fromUnits, toUnits);
         if ( result==null ) {
             throw new InconvertibleUnitsException( fromUnits, toUnits );
