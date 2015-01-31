@@ -7384,7 +7384,6 @@ public class Ops {
      * @return the dataset, sorted if necessary.
      */
     public static QDataSet ensureMonotonic( QDataSet ds ) {
-        logger.entering( "org.virbo.dataset.Ops","ensureMonotonic");
         if ( ds.length()==0 ) return ds;
         if ( SemanticOps.isJoin(ds) ) {
             QDataSet ds1= ds.slice(0);
@@ -7401,6 +7400,8 @@ public class Ops {
         if ( dep0==null ) {
             return ds;
         }
+
+        logger.entering( "org.virbo.dataset.Ops","ensureMonotonic");
         if ( DataSetUtil.isMonotonic(dep0) ) {
             return ds;
         }
