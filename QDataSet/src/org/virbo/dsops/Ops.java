@@ -3865,12 +3865,13 @@ public class Ops {
     /**
      * returns a rank 1 dataset of indeces that sort the rank 1 dataset ds.
      * This is not the dataset sorted.  For example:
-     * <pre>
+     *<blockquote><pre><small>{@code
      *   ds= randn(2000)
      *   s= sort( ds )
      *   dsSorted= ds[s]
-     * </pre>
-     * 
+     *}</small></pre></blockquote>
+     * Note the result will have the property MONOTONIC==Boolean.TRUE if 
+     * the data was sorted already.
      * @param ds rank 1 dataset
      * @return rank 1 dataset of indeces that sort the input dataset.
      */
@@ -7376,13 +7377,62 @@ public class Ops {
     }
 
     /**
+     * possibly sort the data where the DEPEND_0 tags are
+     * monotonically increasing.  If the data is already monotonic,
+     * then nothing is done to the data.
+     * @param ds the dataset
+     * @return the dataset, sorted if necessary.
+     */
+    public static QDataSet ensureMonotonic( QDataSet ds ) {
+        logger.entering( "org.virbo.dataset.Ops","ensureMonotonic");
+        if ( ds.length()==0 ) return ds;
+        if ( SemanticOps.isJoin(ds) ) {
+            QDataSet ds1= ds.slice(0);
+            QDataSet dep0= (QDataSet)ds1.property(QDataSet.DEPEND_0);
+            if (Boolean.TRUE.equals(dep0.property(QDataSet.MONOTONIC))) {
+                // avoid showing message when data is in fact monotonic.
+                return ds;
+            } else {
+                logger.warning("ensure monotonic does not support joins.");
+                return ds;
+            }
+        }
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dep0==null ) {
+            return ds;
+        }
+        if ( DataSetUtil.isMonotonic(dep0) ) {
+            return ds;
+        }
+        
+        QDataSet sort= Ops.sort(dep0);
+        if ( ds instanceof WritableDataSet ) {
+            if ( ((WritableDataSet)ds).isImmutable() ) {
+                ds= Ops.copy(ds);
+            }
+            DataSetOps.applyIndexInSitu( ((WritableDataSet)ds), sort );
+        } else {
+            ds= Ops.copy(ds);
+            DataSetOps.applyIndexInSitu( ((WritableDataSet)ds), sort );
+        }
+        
+        dep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
+        ((WritableDataSet)dep0).putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
+        logger.exiting( "org.virbo.dataset.Ops","ensureMonotonic" );        
+        
+        return ds;
+        
+    }
+    
+    /**
      * link is the fundamental operator where we declare that one
      * dataset is dependent on another.  For example link(x,y) creates
      * a new dataset where y is the dependent variable of the independent
      * variable x.  link is like the plot command, but doesn't plot.  For example
+     *<blockquote><pre><small>{@code
      *   plot(X,Y) shows a plot of Y(X),
      *   link(X,Y) returns the dataset Y(X).
-     *
+     *}</small></pre></blockquote>
      * @param x rank 1 dataset
      * @param y rank 1 or rank 2 bundle dataset
      * @return rank 1 dataset with DEPEND_0 set to x.
@@ -7417,8 +7467,10 @@ public class Ops {
      * dataset is dependent on another.  For example link(x,y,z) creates
      * a new dataset where z is the dependent variable of the independent
      * variables x and y.  link is like the plot command, but doesn't plot.  For example
+     *<blockquote><pre><small>{@code
      *   plot(x,y,z) shows a plot of Z(X,Y),
      *   link(x,y,z) returns the dataset Z(X,Y).
+     *}</small></pre></blockquote>
      * Note if z is a rank 1 dataset, then a bundle dataset Nx3 is returned, and names are assigned to the datasets
      *
      * @param x rank 1 dataset
