@@ -649,8 +649,11 @@ public class SemanticOps {
      * returns true if the dataset is a bundle of rank 1 datasets.  If no
      * dependence is declared, it is assumed that the first one or two datasets
      * are the independent datasets, and the last is the dependent. 
+     * <blockquote><pre><small>{@code
      *    X,Y   -->  Y(X)
      *    X,Y,Z -->  Z(X,Y)
+     *}</small></pre></blockquote>
+
      *
      * @param ds
      * @return
@@ -813,12 +816,12 @@ public class SemanticOps {
     /**
      * return a dataset with 1's where the cadence following this measurement is acceptable, and 0's where
      * there should be a break in the data.  For example, here's some pseudocode:
-     * <pre>
+     *<blockquote><pre><small>{@code
      *   findex= Ops.interpolate( xds, x )
      *   cadenceCheck= cadenceCheck(xds)
      *   r= where( cadenceCheck[floor(findex)] eq 0 )
      *   x[r]= fill
-     * </pre>
+     *}</small></pre></blockquote>
      * Presently this just uses guessXTagWidth to get the cadence, but this may allow a future version to support
      * mode changes.
      *
