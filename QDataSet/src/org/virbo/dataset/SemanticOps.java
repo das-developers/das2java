@@ -8,19 +8,13 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.das2.datum.Basis;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
-import org.das2.datum.NumberUnits;
-import org.das2.datum.TimeLocationUnits;
-import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
-import org.das2.datum.UnitsConverter.ScaleOffset;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 //import static org.virbo.dataset.DataSetUtil.isConstant;
@@ -201,7 +195,8 @@ public class SemanticOps {
 
     /**
      * return canonical das2 unit for colloquial time.
-     * @param string
+     * @param s
+     * @throws java.text.ParseException
      * @deprecated use Units.lookupTimeLengthUnit
      * @return
      */
@@ -216,6 +211,7 @@ public class SemanticOps {
      * in the returned units, so each day is 86400 seconds long.
      * @param units string like "microseconds since 2000-001T00:00"
      * @return a units object that implements.
+     * @throws java.text.ParseException
      * @deprecated use Units.lookupTimeUnits
      */
     public static synchronized Units lookupTimeUnits( String units ) throws ParseException {
@@ -224,7 +220,7 @@ public class SemanticOps {
     
     /**
      * lookupUnits canonical units object, or allocate one.  If one is
-     * allocated, then parse for "<unit> since <datum>" and add conversion to
+     * allocated, then parse for "&lt;unit&gt; since &ltdatum&gt" and add conversion to
      * "microseconds since 2000-001T00:00."  Note leap seconds are ignored!
      * @param base the base time, for example 2000-001T00:00.
      * @param offsetUnits the offset units for example microseconds.  Positive values of the units will be since the base time.
@@ -243,11 +239,7 @@ public class SemanticOps {
             QDataSet dep= (QDataSet) ds.property(QDataSet.DEPEND_0);
             if ( dep==null ) return false;
             Units depu= getUnits(dep);
-            if ( depu instanceof EnumerationUnits ) {
-                return true;
-            } else {
-                return false;
-            }
+            return depu instanceof EnumerationUnits;
         }
     }
     
@@ -632,11 +624,7 @@ public class SemanticOps {
                  return true; // Y tags can be rank2, making it a table dataset but not a simple one.
              } else {
                  QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
-                 if ( bds!=null ) {
-                     return false;
-                 } else {
-                     return true;
-                 }
+                 return bds == null;
              }
          }
          return false;
@@ -693,7 +681,7 @@ public class SemanticOps {
      */
     public static Double doubleValue( Number value ) {
         if ( value==null ) return null;
-        return Double.valueOf( value.doubleValue() );
+        return value.doubleValue();
     }
 
     /**
