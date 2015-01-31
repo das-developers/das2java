@@ -92,7 +92,6 @@ public class SetUnitsFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setInput(QDataSet ds) {
-        String unitNames = getUnits(ds).toString();
         
     }
         
