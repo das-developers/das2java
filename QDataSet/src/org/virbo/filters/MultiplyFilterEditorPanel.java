@@ -59,7 +59,7 @@ public class MultiplyFilterEditorPanel extends AbstractFilterEditorPanel {
                             .addComponent(jSeparator1)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel2)
-                                .addGap(0, 9, Short.MAX_VALUE)))
+                                .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -83,14 +83,14 @@ public class MultiplyFilterEditorPanel extends AbstractFilterEditorPanel {
     }
 
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|multiply\\((\\-?\\d+\\.?\\d+)\\)");
+        Pattern p= Pattern.compile("\\|multiply\\((.*)\\)");
         //Pattern p1= Pattern.compile("\\|butterworth\\((.*,.*,.*,.*)\\)");
         //Pattern p2= Pattern.compile("\\|butterworth\\((.*,.*,.*)\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             scalar.setText(m.group(1));
         } else {
-            scalar.setText("1");
+            scalar.setText("1.");
         }
         
     }

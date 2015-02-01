@@ -77,14 +77,14 @@ public class AddFilterEditorPanel extends AbstractFilterEditorPanel implements F
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|add\\((\\-?\\d+\\.?\\d+)\\)");
+        Pattern p= Pattern.compile("\\|add\\((.*)\\)");
         //Pattern p1= Pattern.compile("\\|butterworth\\((.*,.*,.*,.*)\\)");
         //Pattern p2= Pattern.compile("\\|butterworth\\((.*,.*,.*)\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             scalar.setText(m.group(1));
         } else {
-            scalar.setText("0");
+            scalar.setText("0.");
         }
         
     }
@@ -95,7 +95,7 @@ public class AddFilterEditorPanel extends AbstractFilterEditorPanel implements F
      */
     public static void main(String[] args) {
         FilterEditorPanel filter= new AddFilterEditorPanel();
-        filter.setFilter("|add(0)");
+        filter.setFilter("|add(0.)");
         JOptionPane.showMessageDialog( null, filter);
         System.err.println( filter.getFilter() );
     }
