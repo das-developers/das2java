@@ -141,6 +141,7 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
             slide = "4";
         }
         String window= (String)windowCB.getSelectedItem();
+        if ( window.startsWith("Hanning") ) window= "Hanning"; // This is because of (Hann) in parenthesis.
         
         return "|fftPower(" + sizeTF.getText() + "," + slide + ",'" + window + "')";
     }
