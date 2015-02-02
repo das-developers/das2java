@@ -2106,28 +2106,35 @@ public class DataSetUtil {
                 }
             }
         }
-        QDataSet bds= (QDataSet) ds.property(QDataSet.BUNDLE_1);
-        if ( ds.rank()<2 && bds!=null ) { // this happens with CDF slice1, when we don't completely implement slice1.
-            problems.add( "BUNDLE_1 found but dataset is only rank 1");
+        
+        Object obds= ds.property(QDataSet.BUNDLE_1);
+        if ( obds!=null && !(obds instanceof QDataSet) ) {
+            throw new IllegalArgumentException("BUNDLE_1 property is not a QDataSet");
         } else {
-            if ( bds!=null ) {
-                for ( int i=0; i< Math.min(1,bds.length()); i++ ) {
-                    QDataSet bds1= DataSetOps.unbundle(ds,i,true); // assumes rank1, so we have excessive work for rank>1
-                    Object o= bds1.property(QDataSet.DEPEND_1);
-                    if ( o!=null && !(o instanceof QDataSet) ) {
-                        validate( bds1,problems,1) ;
+            if ( obds!=null ) {
+                QDataSet bds= (QDataSet)obds;
+                if ( ds.rank()<2 ) { // this happens with CDF slice1, when we don't completely implement slice1.
+                    problems.add( "BUNDLE_1 found but dataset is only rank 1");
+                } else {
+                    for ( int i=0; i< Math.min(1,bds.length()); i++ ) {
+                        QDataSet bds1= DataSetOps.unbundle(ds,i,true); // assumes rank1, so we have excessive work for rank>1
+                        Object o= bds1.property(QDataSet.DEPEND_1);
+                        if ( o!=null && !(o instanceof QDataSet) ) {
+                            validate( bds1,problems,1) ;
+                        }
                     }
                 }
             }
         }
         
-        QDataSet plane0 = (QDataSet) ds.property(QDataSet.PLANE_0);
-        if ( plane0!=null ) {
-            if ( plane0.rank()>0 && plane0.length()!=ds.length() ) { 
-                problems.add( String.format( "PLANE_0 length is %d, should be %d", plane0.length(), ds.length() ) );
+        if ( ds.property(QDataSet.PLANE_0)!=null ) {
+            QDataSet plane0 = (QDataSet) ds.property(QDataSet.PLANE_0);
+            if ( plane0!=null ) {
+                if ( plane0.rank()>0 && plane0.length()!=ds.length() ) { 
+                    problems.add( String.format( "PLANE_0 length is %d, should be %d", plane0.length(), ds.length() ) );
+                }
             }
         }
-        
         return problems.isEmpty();
     }
 
