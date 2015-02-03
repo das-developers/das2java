@@ -727,6 +727,8 @@ public class QDataSetStreamHandler implements StreamHandler {
         if ( s!=null ) {
             MutablePropertyDataSet dep0= (MutablePropertyDataSet) getDataSet(s);
             dep0= (MutablePropertyDataSet)flattenJoin(dep0);
+            dep0.putProperty( QDataSet.TYPICAL_MIN, null ); // remove so we don't just use MIN and MAX from one dataset.
+            dep0.putProperty( QDataSet.TYPICAL_MAX, null );
             ((MutablePropertyDataSet)result).putProperty( QDataSet.DEPEND_0, dep0 );
             ((MutablePropertyDataSet)result).putProperty( QDataSet.DEPENDNAME_0, null );
         }
