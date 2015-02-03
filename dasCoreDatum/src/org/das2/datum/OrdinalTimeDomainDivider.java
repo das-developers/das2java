@@ -358,7 +358,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
 
     public DatumRange rangeContaining(Datum v) {
         if ( digit==ARR_SECOND && ysDivider!=null ) {
-            Datum t= Units.t2000.createDatum(0);
+            Datum t= TimeUtil.prevMidnight( v );
             DatumRange r= ysDivider.rangeContaining( v.subtract(t).convertTo(Units.seconds) );
             return new DatumRange( t.add(r.min()), t.add(r.max()) );
         }
