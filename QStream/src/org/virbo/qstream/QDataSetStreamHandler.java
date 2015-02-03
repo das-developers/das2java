@@ -490,7 +490,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         if (join != null) {
             String joinChild= (String)join.property(BUILDER_JOIN_CHILDREN);
             join= JoinDataSet.copy(join);
-            if ( builder!=null && builder.rank()>0 ) {
+            if ( builder!=null && builder.rank()>0 ) { 
                 sliceDs= builder.getDataSet();
                 List<QDataSet> childDataSets=null;
                 if ( sliceDs!=null && sliceDs.property(BUILDER_JOIN_CHILDREN)!=null ) {
@@ -669,10 +669,14 @@ public class QDataSetStreamHandler implements StreamHandler {
     }
 
     /**
-     * this is a bit of a kludge, where I don't want to flatten a dataset automatically, but we probably want to.
+     * If the dataset is a join of appendable datasets, then we can 
+     * append them to reduce the rank by 1 and make one long time series.
+     * These datasets should be equivalent, however most of the system doesn't
+     * implement this (and probably never will).  So this is a bit of a kludge, 
+     * where I don't want to flatten a dataset automatically, but we probably want to.
      *
-     * @param ds
-     * @return
+     * @param ds a join dataset of rank 2 or rank 3.
+     * @return true if the data can be joined.
      */
     public static boolean isFlattenableJoin( QDataSet ds ) {
         if ( ds.rank()==2 && ds.property(QDataSet.DEPEND_0)==null && ds.property(QDataSet.DEPENDNAME_0)!=null ) {
@@ -681,8 +685,14 @@ public class QDataSetStreamHandler implements StreamHandler {
             QDataSet dep1= (QDataSet) ds.slice(0).property(QDataSet.DEPEND_1);
             for ( int i=1; i<ds.length(); i++ ) {
                 if ( dep1==null ) {
-                    if ( ds.length(0)!=ds.length(i) ) {
-                        return false;
+                    if ( ds.rank()==3 ) { // join of vector datasets.
+                        if ( ds.length(0,0)!=ds.length(i,0) ) {
+                            return false;
+                        }
+                    } else { // ds.rank()==2, old code.
+                        if ( ds.length(0)!=ds.length(i) ) {
+                            return false;
+                        }
                     }
                 } else {
                     QDataSet dep1t= (QDataSet) ds.slice(i).property(QDataSet.DEPEND_1);
@@ -697,11 +707,11 @@ public class QDataSetStreamHandler implements StreamHandler {
     }
 
     /**
-     * since an appended series of rank 1 datasets will return as a rank 2 join, this utility provides
-     * a standard place to flatten it.
-     * This will also flatten DEPENDNAME_0.
-     * @param ds
-     * @return
+     * since an appended series of rank 1 datasets will return as a rank 
+     * 2 join, this utility provides a standard place to flatten it.
+     * This will also flatten DEPENDNAME_0.  
+     * @param ds rank 2 or 3 join dataset.
+     * @return rank 1 or 2 dataset.
      */
     public QDataSet flattenJoin( QDataSet ds ) {
         int len= 0;
