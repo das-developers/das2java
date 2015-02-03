@@ -266,6 +266,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                     bundleDataSets.put( name, ss );
 
                 } else {
+                    if ( joinDataSets.containsKey(name) ) {
+                        logger.log(Level.FINE, "propose resetting join dataset: {0}", name);
+                        //joinDataSets.remove(name);
+                    }
                     for ( int iv= 0; iv<values.getLength(); iv++ ) {
                         Element vn= (Element)values.item(iv);
                         DDataSet inlineDs= null;
