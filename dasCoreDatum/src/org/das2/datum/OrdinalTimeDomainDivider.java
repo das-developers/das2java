@@ -263,7 +263,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
         }
         
         if ( digit==ARR_SECOND && ysDivider!=null ) {
-            Datum t= Units.t2000.createDatum(0);
+            Datum t= TimeUtil.prevMidnight( min ).convertTo(Units.t2000);
             DatumVector secs= ysDivider.boundaries(min.subtract(t).convertTo(Units.seconds), max.subtract(t).convertTo(Units.seconds) );
             return secs.add(t);
         }
@@ -318,7 +318,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
 
     public long boundaryCount(Datum min, Datum max) {
         if ( digit==ARR_SECOND && ysDivider!=null ) {
-            Datum t= Units.t2000.createDatum(0);
+            Datum t= TimeUtil.prevMidnight( min ).convertTo(Units.t2000);
             return ysDivider.boundaryCount( min.subtract(t).convertTo(Units.seconds), max.subtract(t).convertTo(Units.seconds) );
         }
         if ( digit==ARR_YEAR && ysDivider!=null ) {
