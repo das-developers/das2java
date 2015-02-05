@@ -1708,9 +1708,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         logger.fine("enter updateTCAImmediately...");
         synchronized (this) {
             logger.fine("...got lock.");
-            DasProgressWheel tcaProgress= new DasProgressWheel();
+            final DasProgressWheel tcaProgress= new DasProgressWheel();
             tcaProgress.started();
-            tcaProgress.getPanel(this);
+            Runnable run= new Runnable() {
+                public void run() {
+                    tcaProgress.getPanel(DasAxis.this);
+                }
+            };
+            SwingUtilities.invokeLater(run);
+            
             try {
                 updateTCADataSet();
             } finally {

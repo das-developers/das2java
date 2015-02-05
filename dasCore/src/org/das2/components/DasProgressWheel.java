@@ -104,6 +104,9 @@ public class DasProgressWheel extends AbstractProgressMonitor {
     @Override
     public void finished() {
         super.finished();
+        if ( timer==null ) {
+            return;
+        }
         timer.stop();
         Runnable run= new Runnable() {
             @Override
@@ -138,7 +141,7 @@ public class DasProgressWheel extends AbstractProgressMonitor {
      * @return 
      */
     public JComponent getPanel( final JComponent parent ) {
-        if ( thePanel==null ) {
+        if ( thePanel==null && !( isFinished() || isCancelled() ) ) {
             thePanel= new MyPanel();
             thePanel.setBounds( new Rectangle(0,0,SIZE,SIZE) );
             parent.add(thePanel);
