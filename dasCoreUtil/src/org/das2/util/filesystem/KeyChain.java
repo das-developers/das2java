@@ -17,12 +17,15 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import org.das2.util.monitor.CancelledOperationException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -211,6 +214,30 @@ public class KeyChain {
     }
 
     /**
+     * return null or the WWW-Authenticate string.
+     * @param url
+     * @return 
+     */
+    public String getWWWAuthenticate( URL url ) {
+        try {
+            URLConnection c= url.openConnection();
+            c.connect();
+            String s= c.getHeaderField("WWW-Authenticate");
+            int i= s.indexOf("\"");
+            if ( i>-1 ) {
+                s= s.substring(i);
+            }
+            //BufferedReader in= new BufferedReader( new InputStreamReader( c.getInputStream() ) );
+            //String line= "";
+            //while ( line!=null ) line= in.readLine(); // eat the rest of the stream, because this is important.
+            return s;
+        } catch (IOException ex) {
+            Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
+    /**
      * get the user credentials, maybe throwing CancelledOperationException if the
      * user hits cancel.  If the password is "pass" or "password" then don't use
      * it, prompt for it instead.
@@ -243,6 +270,12 @@ public class KeyChain {
         String storedUserInfo= keys.get(hash);
         //TODO: shouldn't "http://ectsoc@www.rbsp-ect.lanl.gov" match "http://www.rbsp-ect.lanl.gov    ectsoc:"
         if ( storedUserInfo!=null ) return storedUserInfo;
+        
+        String n= "";
+        if ( url.getProtocol().startsWith("http")  ) {
+            n= getWWWAuthenticate(url); // extra call to server to get prompt
+            if ( n==null ) n="";
+        }
 
         String proto= url.getProtocol();
         
@@ -250,7 +283,12 @@ public class KeyChain {
             if ( !FileSystemSettings.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
                 JPanel panel= new JPanel();
                 panel.setLayout( new BoxLayout(panel, BoxLayout.Y_AXIS ) );
-                panel.add( new JLabel( url.getHost() ) );
+                if ( n!=null && n.length()>0 ) { 
+                    String s= ( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getFile();
+                    panel.add( new JLabel( "<html>Enter Login details to access<br>"+n+" on<br>"+s ));
+                } else {
+                    panel.add( new JLabel( url.getHost() ) );
+                }
                 JSeparator sep= new JSeparator( SwingConstants.HORIZONTAL );
                 sep.setPreferredSize( new Dimension(0,16) );
                 panel.add( sep );
@@ -348,6 +386,7 @@ public class KeyChain {
     }
 
     public static void main( String[]args ) throws MalformedURLException, CancelledOperationException {
+        KeyChain.getDefault().getUserInfo( new URL( "http://junomwg@www-pw.physics.uiowa.edu/juno/mwg/" ) );
         KeyChain.getDefault().getUserInfo( new URL( "ftp://jbf@localhost/" ) );
     }
 
