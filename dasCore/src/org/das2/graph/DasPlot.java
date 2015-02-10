@@ -78,24 +78,43 @@ import org.das2.datum.DatumRangeUtil;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.graph.DasAxis.Memento;
 
+/**
+ * DasPlot is the 2D plot containing a horizontal X axis and vertical Y
+ * axis, and a stack of Renderers that paint data onto the plot.  It coordinates
+ * calls to each Renderer's updatePlotImage and render methods, and manages
+ * the rendered stack image to provide previews of new axis settings.
+ * 
+ * @author jbf
+ */
 public class DasPlot extends DasCanvasComponent {
 
     /**
      * title for the plot
      */
     public static final String PROP_TITLE = "title";
-    protected DataSetDescriptor dataSetDescriptor;
+    
     private DasAxis xAxis;
     private DasAxis yAxis;
     DasAxis.Memento xmemento;
     DasAxis.Memento ymemento;
     private boolean reduceOutsideLegendTopMargin = false;
     //public String debugString = "";
-    protected String plotTitle = "";
+    private String plotTitle = "";
+    
+    /**
+     * true if the plot title should be displayed.
+     */
     protected boolean displayTitle= true;
-    protected double[] psym_x;
-    protected double[] psym_y;
+
+    /**
+     * listens for property changes and triggers the process of updating the plot image.
+     */
     protected RebinListener rebinListener = new RebinListener();
+    
+    /**
+     * listens for x and y axis tick changes, and repaints the plot when 
+     * drawing grid lines at tick positions.
+     */
     protected transient PropertyChangeListener ticksListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -104,6 +123,7 @@ public class DasPlot extends DasCanvasComponent {
             }
         }
     };
+    
     DnDSupport dndSupport;
     final static Logger logger = DasLogger.getLogger(DasLogger.GRAPHICS_LOG);
     private JMenuItem editRendererMenuItem;
@@ -113,15 +133,30 @@ public class DasPlot extends DasCanvasComponent {
      * animation-interactive time.
      */
     boolean cacheImageValid = false;
+    
+    /**
+     * the rendered data is stored in the cacheImage.  This image may be
+     * rescaled to provide immediate previews when axes are changed.
+     */
     BufferedImage cacheImage;
+    
+    /**
+     * bounds of the cache image.  
+     */
     Rectangle cacheImageBounds;
+    
     /**
      * property preview.  If set, the cache image may be scaled to reflect
      * the new axis position in animation-interactive time.
      */
     boolean preview = false;
+    
     //private int repaintCount = 0;
     private int paintComponentCount = 0;
+    
+    /**
+     * height of the title in pixels.
+     */
     private int titleHeight= 0;
 
     private boolean drawInactiveInLegend= false;
@@ -136,8 +171,8 @@ public class DasPlot extends DasCanvasComponent {
     
     /**
      * create a new plot with the x and y axes.
-     * @param xAxis
-     * @param yAxis 
+     * @param xAxis the horizontal axis
+     * @param yAxis the vertical axis
      */
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         super();
@@ -217,12 +252,23 @@ public class DasPlot extends DasCanvasComponent {
      */
     protected Renderer focusRenderer = null;
     
+    /**
+     * property name for the current renderer that the operator has selected.
+     */
     public static final String PROP_FOCUSRENDERER = "focusRenderer";
 
+    /**
+     * get the current renderer that the operator has selected.
+     * @return the current renderer that the operator has selected.
+     */
     public Renderer getFocusRenderer() {
         return focusRenderer;
     }
 
+    /**
+     * set the current renderer that the operator has selected.
+     * @param focusRenderer the current renderer that the operator has selected.
+     */
     public void setFocusRenderer(Renderer focusRenderer) {
         Renderer oldFocusRenderer = this.focusRenderer;
         this.focusRenderer = focusRenderer;
@@ -231,15 +277,27 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     /**
-     * for multiline labels, the alignment, where 0 is left, 0.5 is center, and 1.0 is right.
+     * for multiline labels, the horizontal alignment, where 0 is left, 0.5 is center, and 1.0 is right.
      */
     private float multiLineTextAlignment = 0.f;
+    
+    /**
+     * property name for multiline labels, the horizontal alignment, where 0 is left, 0.5 is center, and 1.0 is right.
+     */
     public static final String PROP_MULTILINETEXTALIGNMENT = "multiLineTextAlignment";
 
+    /**
+     * get the horizontal alignment for multiline labels, where 0 is left, 0.5 is center, and 1.0 is right.
+     * @return the alignment
+     */
     public float getMultiLineTextAlignment() {
         return multiLineTextAlignment;
     }
-
+    
+    /**
+     * set the horizontal alignment for multiline labels, where 0 is left, 0.5 is center, and 1.0 is right.
+     * @param multiLineTextAlignment the alignment
+     */
     public void setMultiLineTextAlignment(float multiLineTextAlignment) {
         float oldMultiLineTextAlignment = this.multiLineTextAlignment;
         this.multiLineTextAlignment = multiLineTextAlignment;
@@ -249,7 +307,7 @@ public class DasPlot extends DasCanvasComponent {
     
     /**
      * returns the bounds of the legend, or null if there is no legend.
-     * @param graphics
+     * @param graphics graphics context
      * @param msgx the location of the box
      * @param msgy the location of the box
      * @param llegendElements the elements 
@@ -1435,7 +1493,15 @@ public class DasPlot extends DasCanvasComponent {
      * INFO messages are displayed.
      */
     public static final int INFO = Level.INFO.intValue();
+    
+    /**
+     * mark the log message as a warning where the operator should be aware.
+     */
     public static final int WARNING = Level.WARNING.intValue();
+    
+    /**
+     * mark the log message as severe, where an error condition has occurred.
+     */
     public static final int SEVERE = Level.SEVERE.intValue(); // this was ERROR before Feb 2011.
 
     List<MessageDescriptor> messages;
@@ -1554,6 +1620,14 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
+    /**
+     * this is a stub (empty method) that can be overridden to draw content.  
+     * This can be used to add annotations to plots, but see DasCanvas 
+     * addTopDecorator as well.  This is drawn above the grid when it is the bottom, 
+     * and below the data.
+     * @param g the graphics context.
+     * @see DasCanvas#addTopDecorator(org.das2.graph.Painter) 
+     */
     protected void drawContent(Graphics2D g) {
         // override me to add to the axes.
     }
@@ -1612,8 +1686,11 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     /** 
-     * Sets the title which will be displayed above this plot.
+     * Sets the title which will be displayed above this plot.  
+     * null or empty string may be used to turn off the title.
+     * 
      * @param t The new title for this plot.
+     * @see #setDisplayTitle(boolean) 
      */
     public void setTitle(String t) {
         Object oldValue = plotTitle;
@@ -1630,16 +1707,18 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
-    /** Returns the title of this plot.
-     *
-     * @see #setTitle(String)
-     *
+    /** 
+     * Returns the title of this plot.
      * @return The plot title
+     * @see #setTitle(String)
      */
     public String getTitle() {
         return plotTitle;
     }
 
+    /**
+     * turns the plot title off or on.  
+     */
     public static final String PROP_DISPLAYTITLE="displayTitle";
 
     /**
@@ -1652,8 +1731,10 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     /**
-     * enable/disable display of the title.
-     * @param v truw if the title should be displayed.
+     * enable/disable display of the title.  Often the title contains
+     * useful information describing the plot content that we want to know during
+     * interactive use but not when the plot is printed.
+     * @param v true if the title should be displayed.
      * @see #isDisplayTitle() 
      */
     public void setDisplayTitle(boolean v) {
@@ -1704,14 +1785,17 @@ public class DasPlot extends DasCanvasComponent {
         firePropertyChange( PROP_CONTEXT, old, context );
     }
 
-    public static final String PROP_DISPLAY_CONTEXT= "displayContext";
-
     /**
      * necessary place to put the range of the data actually displayed.  The context is the controller,
      * and the displayContext closes the loop.  This is mostly here to provide legacy support to Autoplot which
      * abused the context property as both a write and read, and note there's a small problem that displayed
      * items may have different display contexts.  So this property should be used carefully, and generally
      * when just one thing is visible.
+     */
+    public static final String PROP_DISPLAY_CONTEXT= "displayContext";
+
+    /**
+     * @see #PROP_DISPLAY_CONTEXT
      */
     DatumRange displayContext= null;
 
@@ -2179,7 +2263,7 @@ JOptionPane.showConfirmDialog(None,c)
         repaint();
     }
     
-    protected boolean displayLegend = true;
+    private boolean displayLegend = true;
     
     /**
      * true if the legend should be displayed
@@ -2332,7 +2416,7 @@ JOptionPane.showConfirmDialog(None,c)
         firePropertyChange(PROP_DRAWMINORGRID, olddrawMinorGrid, newdrawMinorGrid);
     }
     
-    protected boolean drawGridOver = true;
+    private boolean drawGridOver = true;
     
     /**
      * if true, then the grid is on top of the data.
@@ -2401,7 +2485,7 @@ JOptionPane.showConfirmDialog(None,c)
         super.setVisible(visible);
     }
 
-    protected boolean overSize = false;
+    private boolean overSize = false;
     
     /**
      * boolean property indicating that the data outside the axis
