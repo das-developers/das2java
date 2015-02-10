@@ -31,15 +31,31 @@ import java.text.ParseException;
  */
 public class DasColumn extends DasDevicePosition {
     
+    /**
+     * create a DasColumn with the normal position and no offsets.
+     * @param parent the canvas where this lives.
+     * @param top the top of the row in normal coordinates.
+     * @param bottom the bottom of the row in normal (0-1.) coordinates 
+     */
     public DasColumn(DasCanvas parent, double left, double right) {
         super(parent,left,right,true);
     }
     
+    /**
+     * create a DasColumn
+     * @param canvas the canvas where this lives.
+     * @param parent the parent row or null to which this is relative.
+     * @param nMin normal position of the left with respect to the canvas or parent if non-null.
+     * @param nMax normal position of the right with respect to the canvas or parent if non-null.
+     * @param emMin em offset of the left from the minimum position, in canvas font heights.
+     * @param emMax em offset of the right from the maximum position, in canvas font heights.
+     * @param ptMin point offset of the left from the minimum position, note points are the same as pixels.
+     * @param ptMax point offset of the right from the maximum position, note points are the same as pixels.
+     */
     public DasColumn( DasCanvas canvas, DasColumn parent, double nMin, double nMax,
             double emMin, double emMax, int ptMin, int ptMax ) {
         super( canvas, true, parent, nMin, nMax, emMin, emMax, ptMin, ptMax );
     }
-    
     
     /**
      * makes a new DasColumn by parsing a string like "100%-5em+3pt" to get the offsets.
@@ -51,6 +67,7 @@ public class DasColumn extends DasDevicePosition {
      * @param parent if non-null, this DasColumn is specified with respect to parent.
      * @param minStr a string like "0%+5em"
      * @param maxStr a string like "100%-7em"
+     * @return a new DasColumn
      * @throws IllegalArgumentException if the strings cannot be parsed
      */
     public static DasColumn create( DasCanvas canvas, DasColumn parent, String minStr, String maxStr ) {
@@ -68,6 +85,9 @@ public class DasColumn extends DasDevicePosition {
         return new DasColumn( canvas, parent, min[0], max[0], min[1], max[1], (int)min[2], (int)max[2] );
     }
     
+    /**
+     * placeholder for unassigned value.
+     */
     public static final DasColumn NULL= new DasColumn(null,null,0,0,0,0,0,0);
     
     /**
@@ -81,6 +101,10 @@ public class DasColumn extends DasDevicePosition {
         return new DasColumn(getCanvas(),left+pleft*delta,left+pright*delta);
     }
     
+    /**
+     * return the width in points (pixels) of the column.
+     * @return the width in points (pixels) of the column.
+     */
     public int getWidth() {
         return getDMaximum()-getDMinimum();
     }
@@ -89,30 +113,42 @@ public class DasColumn extends DasDevicePosition {
         return new DasColumn(parent,null,0.0,1.0,5,-3,0,0);
     }
     
+    /**
+     * @deprecated a convenience method should be added.
+     * @param parent
+     * @param iplot
+     * @param nplot
+     * @return 
+     */    
     public static DasColumn create( DasCanvas parent, int iplot, int nplot ) {
         double min= 0.1 + iplot * ( 0.7 ) / nplot;
         double max= 0.099 + ( iplot + 1 ) * ( 0.7 ) / nplot;
         return new DasColumn( parent, min, max );
     }
-    
+  
+    /**
+     * create a column that is positioned relative to this column.
+     * @param pleft the normal position
+     * @param pright the normal position
+     * @return the new row.
+     */    
     public DasColumn createAttachedColumn(double pleft, double pright) {
         return new DasColumn(null,this,pleft,pright,0,0,0,0);
     }
         
     /**
-     * return the left of the column.
-     * @return
+     * return pixel location of the left of the column.
+     * @return pixel location of the left of the column.
      */
     public int left() {
         return getDMinimum();
     }
     
     /**
-     * return the right (non-inclusive) of the column.
-     * @return
+     * return pixel location the right (non-inclusive) of the column.
+     * @return pixel location the right (non-inclusive) of the column.
      */
     public int right() {
         return getDMaximum();
     }
 }
-
