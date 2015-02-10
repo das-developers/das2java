@@ -1717,7 +1717,7 @@ public class DasPlot extends DasCanvasComponent {
 
     /**
      * @see #PROP_DISPLAY_CONTEXT 
-     * @return 
+     * @return the property value
      */
     public DatumRange getDisplayContext() {
         return displayContext;
@@ -1725,7 +1725,7 @@ public class DasPlot extends DasCanvasComponent {
 
     /**
      * set the property
-     * @param displayContext 
+     * @param displayContext null or the display context.
      * @see #PROP_DISPLAY_CONTEXT
      */
     public void setDisplayContext(DatumRange displayContext) {
@@ -2141,7 +2141,7 @@ JOptionPane.showConfirmDialog(None,c)
 
     /**
      * @see #PROP_LEGENDPOSITION
-     * @param newlegendPosition 
+     * @param newlegendPosition the legend position
      */
     public void setLegendPosition(LegendPosition newlegendPosition) {
         LegendPosition oldlegendPosition = legendPosition;
@@ -2223,7 +2223,7 @@ JOptionPane.showConfirmDialog(None,c)
 
     /**
      * if not transparent, draw this background first.
-     * @param drawBackground 
+     * @param drawBackground the background, or a color with no opacity (new Color(0,0,0,0)) to turn off.
      */
     public void setDrawBackground(Color drawBackground) {
         Color oldDrawBackground = this.drawBackground;
@@ -2253,7 +2253,7 @@ JOptionPane.showConfirmDialog(None,c)
     /**
      * if not transparent, draw the grid in this color.  Otherwise
      * the grid is drawn with the tick color.
-     * @param drawGridColor 
+     * @param drawGridColor the color
      */
     public void setDrawGridColor(Color drawGridColor) {
         Color oldDrawGridColor = this.drawGridColor;
@@ -2382,7 +2382,7 @@ JOptionPane.showConfirmDialog(None,c)
      * setVisible(v) would do this, but it incorrectly couples the visible properties
      * of the separate components.
      *
-     * @param visible
+     * @param visible false if the x and y axes, and the plot is visisble. 
      */
     public void setAxisPlotVisible( boolean visible ) {
         this.setVisible(visible);
@@ -2391,8 +2391,8 @@ JOptionPane.showConfirmDialog(None,c)
     }
 
     /**
-     * if true then the componenet is visible.
-     * @param visible 
+     * if true then the component is visible.
+     * @param visible  if true then the component is visible.
      */
     @Override
     public void setVisible(boolean visible) {
@@ -2418,7 +2418,7 @@ JOptionPane.showConfirmDialog(None,c)
     }
 
     /**
-     * @param overSize 
+     * @param overSize true means draw outside the axis bounds.
      * @see #PROP_OVERSIZE
      */
     public void setOverSize(boolean overSize) {
@@ -2529,7 +2529,7 @@ JOptionPane.showConfirmDialog(None,c)
     /**
      * set the property value
      * @see #PROP_ISOTROPIC
-     * @param isotropic 
+     * @param isotropic property value
      */
     public void setIsotropic(boolean isotropic) {
         boolean oldvalud= this.isotropic;
