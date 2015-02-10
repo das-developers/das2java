@@ -324,8 +324,7 @@ public class DasPlot extends DasCanvasComponent {
         if ( llegendElements==null ) return null;
         if ( graphics==null ) return null;
 
-        for (int i = 0; i < llegendElements.size(); i++) {
-            LegendElement le = llegendElements.get(i);
+        for (LegendElement le : llegendElements) {
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) { 
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
@@ -406,8 +405,7 @@ public class DasPlot extends DasCanvasComponent {
         Icon nullIcon= new ImageIcon(new BufferedImage(1,1,BufferedImage.TYPE_INT_ARGB) );
         
         int maxIconWidth= 0;
-        for (int i = 0; i < llegendElements.size(); i++) {
-            LegendElement le = llegendElements.get(i);
+        for (LegendElement le : llegendElements) {
             Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
             maxIconWidth = Math.max(maxIconWidth, icon.getIconWidth());
             if ( reluctantLegendIcons ) {
@@ -433,9 +431,7 @@ public class DasPlot extends DasCanvasComponent {
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
         }
 
-        for (int i = 0; i < llegendElements.size(); i++) {
-            LegendElement le = llegendElements.get(i);
-
+        for (LegendElement le : llegendElements) {
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) {
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
                 if ( llegendElements.size()==1 && reluctantLegendIcons ) {
@@ -512,51 +508,40 @@ public class DasPlot extends DasCanvasComponent {
         boolean needRepaintSoon= false;
         long repaintDelay= 0;
         
-        for (int i = 0; i < lmessages.size(); i++) {
-            MessageDescriptor message = (MessageDescriptor) lmessages.get(i);
-
+        for (MessageDescriptor lmessage : lmessages) {
+            MessageDescriptor message = (MessageDescriptor) lmessage;
             if ( message.messageType<logLevel.intValue() ) {
                 continue; // skip this message
             }
-            
             // https://sourceforge.net/p/autoplot/bugs/1093/: error bubbles must be hidden when printing.
             if ( isPrint ) { 
                 if ( message.messageType<printingLogLevel.intValue() && message.birthMilli<Long.MAX_VALUE ) {
                     continue;
                 }
             }
-            
             if ( logTimeoutSec < Integer.MAX_VALUE/1000 && message.birthMilli < tnow - logTimeoutSec*1000 ) {
                 continue;
             }
-                     
             if ( !isPrint && logTimeoutSec < 1000 && message.birthMilli<Long.MAX_VALUE ) {
                 needRepaintSoon= true;
                 repaintDelay= Math.max( repaintDelay, logTimeoutSec*1000 - ( tnow - message.birthMilli ) );
             }
-            
             Icon icon=null;
             if ( message.renderer!=null && renderers1.size()>1 ) {
                 icon= message.renderer.getListIcon();
             }
-
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setAlignment( GrannyTextRenderer.LEFT_ALIGNMENT );
             gtr.setString(graphics, String.valueOf(message.text)); // protect from nulls, which seems to happen
-
             Rectangle mrect = gtr.getBounds();
-
             if ( icon!=null && mrect.height<icon.getIconHeight() ) { // spectrograms have icons taller than text
                 mrect.height= icon.getIconHeight();
                 //TODO: adjust y position: mrect.y= mrect.height / 2 - msgem - msgem ;
             }
-
             int spc= 2;
-
             if ( icon!=null ) {
                 mrect.width+= icon.getIconWidth() + spc;
             }
-
             int msgx1= msgx;
             if ( rightJustify ) {
                 msgx1= msgx - (int) mrect.getWidth();
@@ -571,9 +556,7 @@ public class DasPlot extends DasCanvasComponent {
             graphics.setColor(backColor);
             graphics.fillRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
             graphics.setColor(getForeground());
-
             if ( icon!=null ) icon.paintIcon( this, g, mrect.x, mrect.y  );
-            
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y, mrect.width + em / 2, mrect.height, 5, 5);
             if ( icon!=null ) {
                 gtr.draw(graphics, msgx1 + icon.getIconWidth() + spc, msgy);
@@ -581,7 +564,6 @@ public class DasPlot extends DasCanvasComponent {
                 gtr.draw(graphics, msgx1 , msgy);
             }
             message.bounds = mrect;
-
             msgy += gtr.getHeight() + msgem / 2;  // findbugs OKAY
         }
 
@@ -923,8 +905,8 @@ public class DasPlot extends DasCanvasComponent {
         super.updateImmediately();
         logger.finer("DasPlot.updateImmediately");
         List<Renderer> renderers1= Arrays.asList(getRenderers());
-        for (int i = 0; i < renderers1.size(); i++) {
-            Renderer rend = (Renderer) renderers1.get(i);
+        for (org.das2.graph.Renderer renderers11 : renderers1) {
+            Renderer rend = (Renderer) renderers11;
             rend.update();
         }
     }
@@ -1302,13 +1284,9 @@ public class DasPlot extends DasCanvasComponent {
 
 
             if ( !disableImageCache && !getCanvas().isPrintingThread() ) {
+                assert lcacheImageBounds!=null;
                 cacheImageValid = true;
-                //clip.y= Math.max( clip.y, getRow().getDMinimum() );
-                //clip.translate( getX(), getY() );
-                //graphics.setClip(clip);
                 graphics.drawImage(lcacheImage, lcacheImageBounds.x, lcacheImageBounds.y, lcacheImageBounds.width, lcacheImageBounds.height, this);
-                //graphics.drawString( "new image", getWidth()/2, getHeight()/2 );
-                //graphics.setClip(null);
 
                 xmemento = xAxis.getMemento();
                 ymemento = yAxis.getMemento();
@@ -1674,10 +1652,10 @@ public class DasPlot extends DasCanvasComponent {
                 SwingUtilities.invokeLater( new Runnable() {
                    @Override
                    public void run() {
-                        List<Renderer> renderers1= Arrays.asList(getRenderers());
-                        for ( int i=0; i<renderers1.size(); i++ ) {
-                            ((Renderer)renderers1.get(i)).refresh();
-                        }
+                       List<Renderer> renderers1= Arrays.asList(getRenderers());
+                       for (org.das2.graph.Renderer renderers11 : renderers1) {
+                           ((Renderer) renderers11).refresh();
+                       }
                        invalidateCacheImage();
                    }
                 });
@@ -1867,8 +1845,8 @@ public class DasPlot extends DasCanvasComponent {
             getCanvas().add(yAxis, getRow(), getColumn());
         }
         Renderer[] r = getRenderers();
-        for (int index = 0; index < r.length; index++) {
-            r[index].installRenderer();
+        for (org.das2.graph.Renderer r1 : r) {
+            r1.installRenderer();
         }
         if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
             dndSupport = new PlotDnDSupport(getCanvas().dndSupport);
@@ -1885,8 +1863,8 @@ public class DasPlot extends DasCanvasComponent {
             yAxis.getCanvas().remove(yAxis);
         }
         Renderer[] r = getRenderers();
-        for (int index = 0; index < r.length; index++) {
-            r[index].uninstallRenderer();
+        for (org.das2.graph.Renderer r1 : r) {
+            r1.uninstallRenderer();
         }
     }
 
@@ -2042,8 +2020,8 @@ JOptionPane.showConfirmDialog(None,c)
 
         @Override
         protected int canAccept(DataFlavor[] flavors, int x, int y, int action) {
-            for (int i = 0; i < flavors.length; i++) {
-                if (flavors[i].equals(TransferableRenderer.RENDERER_FLAVOR)) {
+            for (DataFlavor flavor : flavors) {
+                if (flavor.equals(TransferableRenderer.RENDERER_FLAVOR)) {
                     return action;
                 }
             }
