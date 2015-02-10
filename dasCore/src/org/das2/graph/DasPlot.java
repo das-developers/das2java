@@ -2498,7 +2498,7 @@ JOptionPane.showConfirmDialog(None,c)
     private Level logLevel= Level.INFO;
     
     /**
-     * @param level, where Level.INFO is the default.
+     * @param level where Level.INFO is the default.
      * @see #PROP_LOG_LEVEL
      */
     public void setLogLevel( Level level ) {
@@ -2535,7 +2535,7 @@ JOptionPane.showConfirmDialog(None,c)
 
     /**
      * @see #PROP_PRINTINGLOGLEVEL
-     * @param printingLogLevel, where Level.ALL is the default.
+     * @param printingLogLevel where Level.ALL is the default.
      */
     public void setPrintingLogLevel(Level printingLogLevel) {
         Level oldPrintingLogLevel = this.printingLogLevel;
@@ -2611,7 +2611,7 @@ JOptionPane.showConfirmDialog(None,c)
      * client.  However, this does have the side-effect of recalculating the
      * internal bounds.
      * @return the cache image bounds.
-     * @see getCacheImageBounds which does not recalculate.
+     * @see #getCacheImageBounds which does not recalculate.
      */
     protected Rectangle getUpdateImageBounds() {
         int x = getColumn().getDMinimum();
