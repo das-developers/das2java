@@ -86,9 +86,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     };
     
     /**
-     * create the DasDevicePosition
+     * create the DasDevicePosition.  Typically the DasRow or DasColumn 
+     * constructor is used.
      * @param canvas the canvas to which the position refers.
-     * @param isWidth ????
+     * @param isWidth true if the DasDevicePosition is a column not a row.
      * @param parent null or the parent to which this position is relative.
      * @param minimum normal position with respect to the canvas or parent if non-null.
      * @param maximum normal position with respect to the canvas or parent if non-null.
