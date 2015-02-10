@@ -80,6 +80,9 @@ import org.das2.graph.DasAxis.Memento;
 
 public class DasPlot extends DasCanvasComponent {
 
+    /**
+     * title for the plot
+     */
     public static final String PROP_TITLE = "title";
     protected DataSetDescriptor dataSetDescriptor;
     private DasAxis xAxis;
@@ -131,6 +134,11 @@ public class DasPlot extends DasCanvasComponent {
     
     private boolean reluctantLegendIcons= "true".equals( System.getProperty("reluctantLegendIcons","false") );
     
+    /**
+     * create a new plot with the x and y axes.
+     * @param xAxis
+     * @param yAxis 
+     */
     public DasPlot(DasAxis xAxis, DasAxis yAxis) {
         super();
 
@@ -203,10 +211,12 @@ public class DasPlot extends DasCanvasComponent {
             addDefaultMouseModules();
         }
     }
+
     /**
      * returns the Renderer with the current focus.  Clicking on a trace sets the focus.
      */
     protected Renderer focusRenderer = null;
+    
     public static final String PROP_FOCUSRENDERER = "focusRenderer";
 
     public Renderer getFocusRenderer() {
@@ -243,7 +253,7 @@ public class DasPlot extends DasCanvasComponent {
      * @param msgx the location of the box
      * @param msgy the location of the box
      * @param llegendElements the elements 
-     * @return
+     * @return the bounds
      */
     private Rectangle getLegendBounds( Graphics2D graphics, int msgx, int msgy, List<LegendElement> llegendElements) {
         int maxIconWidth = 0;
@@ -639,6 +649,9 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * return the index of the renderer at canvas location (x,y), or -1 if
      * no renderer is found at the position.
+     * @param x the x position on the canvas.
+     * @param y the y position on the canvas.  Note 0,0 is the upper left corner.
+     * @return the index of the renderer at the position, or -1 if no renderer is at the position.
      */
     public int findRendererAt(int x, int y) {
         List<Renderer> renderers1= Arrays.asList(getRenderers());
@@ -725,6 +738,9 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
     
+    /**
+     * Action to dump the first (0th) renderer's data to a file.
+     */
     public Action DUMP_TO_FILE_ACTION = new AbstractAction("Dump Data Set to File") {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -752,6 +768,11 @@ public class DasPlot extends DasCanvasComponent {
         }
     };
 
+    /**
+     * set the x axis.  This removes property change listeners to the old
+     * axis and adds PCLs to the new axis.
+     * @param xAxis a horizontal axis.
+     */
     public void setXAxis(DasAxis xAxis) {
         Object oldValue = this.xAxis;
         Container parent = getParent();
@@ -796,6 +817,8 @@ public class DasPlot extends DasCanvasComponent {
      *
      * TODO: plot does not seem to be responding to changes in the axis.
      * (goes grey because updatePlotImage is never done.
+     * 
+     * @param yAxis a vertical axis.
      */
     public void setYAxis(DasAxis yAxis) {
         Object oldValue = this.yAxis;
@@ -854,6 +877,8 @@ public class DasPlot extends DasCanvasComponent {
      * This is used for the purpose of showing previews.
      * @param xAxis the xaxis of the target coordinate frame
      * @param yAxis the yaxis of the target coordinate frame
+     * @return the AffineTransform from the list updatePlotImage call to these
+     * axes, if null if this is not possible.
      */
     protected AffineTransform getAffineTransform(DasAxis xAxis, DasAxis yAxis) {
         if (xmemento == null) {
@@ -965,7 +990,7 @@ public class DasPlot extends DasCanvasComponent {
      * run when we are actually printing, where we redo updatePlotImage etc, but we might just be looking to
      * create a thumbnail and existing images may work fine.  All this was introduced because Autoplot was calling
      * canvas.getImage to get thumbnails and for its layout tab, and a quick way to get the canvas image was needed.
-     * @param g
+     * @param g Java2D graphics context.
      */
     @Override
     protected void printComponent(Graphics g) {
@@ -1306,8 +1331,8 @@ public class DasPlot extends DasCanvasComponent {
     /**
      * add or remove the menu item to get at the renderer properties.
      * Das2 applications generally allow this so that applications don't have
-     * to bother handling this.  Others like Autoplot have their own systems and uses for the
-     * click.
+     * to bother handling this.  Others like Autoplot have their own systems 
+     * and uses for the click.
      * @param b false to remove the menu item if it has been added.
      */
     public void setEnableRenderPropertiesAction(boolean b) {
@@ -1406,7 +1431,8 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     /**
-     * These levels are now taken from java.util.logging.Level.
+     * These levels are now taken from java.util.logging.Level.  Generally
+     * INFO messages are displayed.
      */
     public static final int INFO = Level.INFO.intValue();
     public static final int WARNING = Level.WARNING.intValue();
@@ -1423,7 +1449,7 @@ public class DasPlot extends DasCanvasComponent {
      * cleared before the render step. (TODO:check on this)
      * 
      * @param renderer identifies the renderer posting the exception
-     * @param text the text to be displayed, may contain granny text.
+     * @param message the text to be displayed, may contain granny text.
      * @param messageType DasPlot.INFO, DasPlot.WARNING, or DasPlot.SEVERE.  (SEVERE was ERROR before)
      * @param x if non-null, the location on the x axis giving context for the text.
      * @param y if non-null, the location on the y axis giving context for the text.
@@ -1444,7 +1470,7 @@ public class DasPlot extends DasCanvasComponent {
      * cleared before the render step. (TODO:check on this)
      *
      * @param renderer identifies the renderer posting the exception
-     * @param text the text to be displayed, may contain granny text.
+     * @param message the text to be displayed, may contain granny text.
      * @param messageLevel allows java.util.logging.Level to be used, for example Level.INFO, Level.WARNING, and Level.SEVERE
      * @param x if non-null, the location on the x axis giving context for the text.
      * @param y if non-null, the location on the y axis giving context for the text.
@@ -1462,8 +1488,10 @@ public class DasPlot extends DasCanvasComponent {
      * to postMessage(renderer, exception.getMessage(), DasPlot.SEVERE, null, null )
      * except that it does catch CancelledOperationExceptions and reduced the
      * severity since the user probably initiated the condition.
+     * @param renderer the renderer posting the exception.
+     * @param exception the exception to post.
      */
-    public void postException(Renderer renderer, Exception exception) {
+    public void postException( Renderer renderer, Exception exception ) {
         String message = exception.getMessage();
         if (message == null || message.length()<7 ) {  // ArrayIndexOutOfBounds message was just "16"
             message = String.valueOf(exception);
@@ -1479,7 +1507,7 @@ public class DasPlot extends DasCanvasComponent {
     }
 
     /**
-     * 
+     * Add the message to the messages in the legend.
      * @param renderer identifies the renderer adding to the legend
      * @param icon if non-null, an icon to use.  If null, the renderer's icon is used.
      * @param pos integer order parameter, and also identifies item.
@@ -1498,6 +1526,12 @@ public class DasPlot extends DasCanvasComponent {
         update();
     }
 
+    /**
+     * draw a grid at the xticks and yticks
+     * @param g the graphics context.
+     * @param xticks the xticks
+     * @param yticks the yticks.
+     */
     private void drawGrid(Graphics2D g, DatumVector xticks, DatumVector yticks) {
         Rectangle lcacheImageBounds= new Rectangle(cacheImageBounds); // make a local copy for thread safety.
         
@@ -1606,7 +1640,6 @@ public class DasPlot extends DasCanvasComponent {
         return plotTitle;
     }
 
-
     public static final String PROP_DISPLAYTITLE="displayTitle";
 
     /**
@@ -1620,7 +1653,7 @@ public class DasPlot extends DasCanvasComponent {
 
     /**
      * enable/disable display of the title.
-     * @param v 
+     * @param v truw if the title should be displayed.
      * @see #isDisplayTitle() 
      */
     public void setDisplayTitle(boolean v) {
@@ -1631,6 +1664,10 @@ public class DasPlot extends DasCanvasComponent {
         invalidateCacheImage();
     }
     
+    /**
+     * property where the plot context can be stored.  
+     * @see #setContext(org.das2.datum.DatumRange) 
+     */
     public static final String PROP_CONTEXT= "context";
     
     /**
@@ -1658,7 +1695,7 @@ public class DasPlot extends DasCanvasComponent {
      * store the timerange when there is no axis for it, for example, to
      * show the state of data during a range.  This may change to a QDataSet
      * to provide several context dimensions.
-     * @param the context
+     * @param context the context
      * @see #getContext() 
      */
     public void setContext(DatumRange context) {
@@ -1678,10 +1715,19 @@ public class DasPlot extends DasCanvasComponent {
      */
     DatumRange displayContext= null;
 
+    /**
+     * @see #PROP_DISPLAY_CONTEXT 
+     * @return 
+     */
     public DatumRange getDisplayContext() {
         return displayContext;
     }
 
+    /**
+     * set the property
+     * @param displayContext 
+     * @see #PROP_DISPLAY_CONTEXT
+     */
     public void setDisplayContext(DatumRange displayContext) {
         DatumRange old= this.displayContext;
         this.displayContext = displayContext;
@@ -1691,10 +1737,18 @@ public class DasPlot extends DasCanvasComponent {
 
     private List<Renderer> renderers = null;
 
+    /**
+     * return the x (horizontal) axis.
+     * @return the x axis
+     */
     public DasAxis getXAxis() {
         return this.xAxis;
     }
 
+    /**
+     * return the y (vertical) axis 
+     * @return the y axis
+     */
     public DasAxis getYAxis() {
         return this.yAxis;
     }
@@ -1775,7 +1829,7 @@ public class DasPlot extends DasCanvasComponent {
 
     /**
      * add the renderer to the stack of renderers at the given index.
-     * Index 0 is drawn first.
+     * Index 0 is drawn first.  This will insert the renderer at the position.
      * @param index the index, 0 is drawn first.
      * @param rend the renderer
      */
@@ -1847,8 +1901,6 @@ DasPlot p= DasPlot.createDummyPlot( );
 c.add(p,DasRow.create(c,0,1),DasColumn.create(c,0,1));
 JOptionPane.showConfirmDialog(None,c)
 }</small></pre></blockquote>
-     * @param xrange the range for the x axis.
-     * @param yrange the range for the y axis
      * @return a DasPlot, reader to be added to a canvas.
      */
     public static DasPlot createDummyPlot() {
@@ -1944,7 +1996,7 @@ JOptionPane.showConfirmDialog(None,c)
 
     /**
      * return a Shape containing the plot.
-     * @return 
+     * @return a shape containing the active plot.
      */
     @Override
     public Shape getActiveRegion() {
@@ -2019,6 +2071,10 @@ JOptionPane.showConfirmDialog(None,c)
         }
     }
 
+    /**
+     * request that the plot be repainted.  This contains commented code that
+     * counts the number of repaints.
+     */
     @Override
     public void repaint() {
         super.repaint();
@@ -2068,12 +2124,25 @@ JOptionPane.showConfirmDialog(None,c)
 
     private LegendPosition legendPosition = LegendPosition.NE;
 
+    /**
+     * the location of the legend position, which can be one of the four corners, 
+     * or outside and to the right of the plot.
+     */
     public static final String PROP_LEGENDPOSITION = "legendPosition";
 
+    /**
+     * @see #PROP_LEGENDPOSITION
+     * @see LegendPosition
+     * @return the current legend position
+     */
     public LegendPosition getLegendPosition() {
         return this.legendPosition;
     }
 
+    /**
+     * @see #PROP_LEGENDPOSITION
+     * @param newlegendPosition 
+     */
     public void setLegendPosition(LegendPosition newlegendPosition) {
         LegendPosition oldlegendPosition = legendPosition;
         this.legendPosition = newlegendPosition;
@@ -2082,17 +2151,26 @@ JOptionPane.showConfirmDialog(None,c)
         repaint();
     }
 
+    /**
+     * relative font size for the legend.  For example, -2 will use sans-8 when the
+     * plot font is sans-10.
+     */
     public static final String PROP_LEGENDRELATIVESIZESIZE= "legendRelativeFontSize";
     
     private int legendRelativeFontSize= 0;
                 
+    /**
+     * @see #PROP_LEGENDRELATIVESIZESIZE
+     * @return the current relative size of the legend in points.
+     */
     public int getLegendRelativeFontSize() {
         return legendRelativeFontSize;
     }
     
     /**
-     * set the relative size of the legend elements.
-     * @param size 
+     * set the relative size of the legend element text.
+     * @see #PROP_LEGENDRELATIVESIZESIZE
+     * @param size relative size in points.
      */
     public void setLegendRelativeFontSize( int size ) {
         int oldF= this.legendRelativeFontSize;
@@ -2102,12 +2180,24 @@ JOptionPane.showConfirmDialog(None,c)
     }
     
     protected boolean displayLegend = true;
+    
+    /**
+     * true if the legend should be displayed
+     */
     public static final String PROP_DISPLAYLEGEND = "displayLegend";
 
+    /**
+     * true if the legend should be displayed
+     * @return true if the legend should be displayed
+     */
     public boolean isDisplayLegend() {
         return displayLegend;
     }
 
+    /**
+     * true if the legend should be displayed
+     * @param displayLegend true if the legend should be displayed
+     */
     public void setDisplayLegend(boolean displayLegend) {
         boolean oldDisplayLegend = this.displayLegend;
         this.displayLegend = displayLegend;
@@ -2117,8 +2207,16 @@ JOptionPane.showConfirmDialog(None,c)
     }
 
     private Color drawBackground = new Color(0, 0, 0, 0);
+    
+    /**
+     * the background should be drawn, if alpha is >0.
+     */
     public static final String PROP_DRAWBACKGROUND = "drawBackground";
 
+    /**
+     * return the background color, where alpha=0 (transparent) means don't draw the background.
+     * @return the background color.
+     */
     public Color getDrawBackground() {
         return drawBackground;
     }
@@ -2137,8 +2235,17 @@ JOptionPane.showConfirmDialog(None,c)
 
         
     private Color drawGridColor = new Color(0, 0, 0, 0);
+    
+    /**
+     * if not transparent, draw the grid in this color.  Otherwise
+     * the grid is drawn with the tick color.
+     */
     public static final String PROP_DRAWGRIDCOLOR = "drawGridColor";
 
+    /**
+     * @see #PROP_DRAWGRIDCOLOR
+     * @return the grid color
+     */
     public Color getDrawGridColor() {
         return drawGridColor;
     }
@@ -2164,6 +2271,12 @@ JOptionPane.showConfirmDialog(None,c)
     private boolean drawGrid = false;
 
     /**
+     * If true, faint grey lines continue the axis major
+     * ticks across the plot.
+     */
+    public static final String PROP_DRAWGRID = "drawGrid";
+ 
+    /**
      * Getter for property drawGrid.  If true, faint grey lines continue the axis major
      * ticks across the plot.
      * @return Value of property drawGrid.
@@ -2187,14 +2300,20 @@ JOptionPane.showConfirmDialog(None,c)
             firePropertyChange(PROP_DRAWGRID, bOld, drawGrid);
         }
     }
-    public static final String PROP_DRAWGRID = "drawGrid";
+    
     private boolean drawMinorGrid;
+    
+        
+    /**
+     * If true, faint grey lines continue the axis minor
+     * ticks across the plot.
+     */
     public static final String PROP_DRAWMINORGRID = "drawMinorGrid";
 
     /**
      * Get the value of drawMinorGrid
-     *
      * @return the value of drawMinorGrid
+     * @see #PROP_DRAWMINORGRID
      */
     public boolean isDrawMinorGrid() {
         return this.drawMinorGrid;
@@ -2214,12 +2333,24 @@ JOptionPane.showConfirmDialog(None,c)
     }
     
     protected boolean drawGridOver = true;
+    
+    /**
+     * if true, then the grid is on top of the data.
+     */
     public static final String PROP_DRAWGRIDOVER = "drawGridOver";
 
+    /**
+     * @see #PROP_DRAWGRIDOVER
+     * @return true if the grid is on top of the data.
+     */
     public boolean isDrawGridOver() {
         return drawGridOver;
     }
 
+    /**
+     * @see #PROP_DRAWGRIDOVER
+     * @param gridOver if the grid is on top of the data.
+     */
     public void setDrawGridOver(boolean gridOver) {
         boolean oldGridOver = this.drawGridOver;
         this.drawGridOver = gridOver;
@@ -2228,10 +2359,20 @@ JOptionPane.showConfirmDialog(None,c)
         firePropertyChange(PROP_DRAWGRIDOVER, oldGridOver, gridOver);
     }
 
+    /**
+     * if true then the data rendering will be scaled immediately to indicate 
+     * axis state changes.
+     * @param preview true if preview should be enabled.
+     */
     public void setPreviewEnabled(boolean preview) {
         this.preview = preview;
     }
 
+    /**
+     * true if the data rendering will be scaled immediately to indicate 
+     * axis state changes.
+     * @return true if preview is enabled.
+     */
     public boolean isPreviewEnabled() {
         return this.preview;
     }
@@ -2249,6 +2390,10 @@ JOptionPane.showConfirmDialog(None,c)
         this.yAxis.setVisible(visible);
     }
 
+    /**
+     * if true then the componenet is visible.
+     * @param visible 
+     */
     @Override
     public void setVisible(boolean visible) {
         //bugfix: https://sourceforge.net/tracker/index.php?func=detail&aid=3137434&group_id=199733&atid=970682
@@ -2257,12 +2402,25 @@ JOptionPane.showConfirmDialog(None,c)
     }
 
     protected boolean overSize = false;
+    
+    /**
+     * boolean property indicating that the data outside the axis
+     * bounds is rendered, to smooth animation when the axis is panned.
+     */
     public static final String PROP_OVERSIZE = "overSize";
 
+    /**
+     * @see #PROP_OVERSIZE
+     * @return oversize property
+     */
     public boolean isOverSize() {
         return overSize;
     }
 
+    /**
+     * @param overSize 
+     * @see #PROP_OVERSIZE
+     */
     public void setOverSize(boolean overSize) {
         boolean oldOverSize = this.overSize;
         this.overSize = overSize;
@@ -2270,8 +2428,17 @@ JOptionPane.showConfirmDialog(None,c)
         firePropertyChange(PROP_OVERSIZE, oldOverSize, overSize);
     }
 
+    /**
+     * the log level for the messages on the screen.
+     */
     public static final String PROP_LOG_LEVEL = "logLevel";
+    
     private Level logLevel= Level.INFO;
+    
+    /**
+     * @param level, where Level.INFO is the default.
+     * @see #PROP_LOG_LEVEL
+     */
     public void setLogLevel( Level level ) {
         Level oldLevel= this.logLevel;
         logLevel= level;
@@ -2281,17 +2448,33 @@ JOptionPane.showConfirmDialog(None,c)
         firePropertyChange(PROP_LOG_LEVEL, oldLevel, level );
     }
 
+    /**
+     * @return level 
+     * @see #PROP_LOG_LEVEL
+     */
     public Level getLogLevel( ) {
         return logLevel;
     }
 
     private Level printingLogLevel = Level.ALL;
+    
+    /**
+     * the log level to indicate the log level when printing.
+     */
     public static final String PROP_PRINTINGLOGLEVEL = "printingLogLevel";
 
+    /**
+     * @see #PROP_PRINTINGLOGLEVEL
+     * @return the level
+     */
     public Level getPrintingLogLevel() {
         return printingLogLevel;
     }
 
+    /**
+     * @see #PROP_PRINTINGLOGLEVEL
+     * @param printingLogLevel, where Level.ALL is the default.
+     */
     public void setPrintingLogLevel(Level printingLogLevel) {
         Level oldPrintingLogLevel = this.printingLogLevel;
         this.printingLogLevel = printingLogLevel;
@@ -2303,12 +2486,24 @@ JOptionPane.showConfirmDialog(None,c)
      */
     private int logTimeoutSec = Integer.MAX_VALUE;
     
+    /**
+     * number of seconds to show the log messages.  If Integer.MAX_VALUE/100 or 
+     * greater then there is no timeout.
+     */
     public static final String PROP_LOG_TIMEOUT_SEC = "logTimeoutSec";
 
+    /**
+     * @see #PROP_LOG_TIMEOUT_SEC
+     * @return property value
+     */
     public int getLogTimeoutSec() {
         return logTimeoutSec;
     }
 
+    /**
+     * @see #PROP_LOG_TIMEOUT_SEC
+     * @param logTimeoutSec the property value
+     */
     public void setLogTimeoutSec( int logTimeoutSec ) {
         int oldLogTimeoutSec = this.logTimeoutSec;
         this.logTimeoutSec = logTimeoutSec;
@@ -2316,15 +2511,26 @@ JOptionPane.showConfirmDialog(None,c)
         firePropertyChange(PROP_LOG_TIMEOUT_SEC, oldLogTimeoutSec, logTimeoutSec);
     }
 
-    
-    public static final String  PROP_ISOTROPIC= "isotropic";
+    /**
+     * true if the x and y scaling (pixel:data) ratio is locked together.
+     */
+    public static final String PROP_ISOTROPIC= "isotropic";
 
     private boolean isotropic= false;
 
+    /**
+     * @see #PROP_ISOTROPIC
+     * @return property value
+     */
     public boolean isIsotropic() {
         return isotropic;
     }
 
+    /**
+     * set the property value
+     * @see #PROP_ISOTROPIC
+     * @param isotropic 
+     */
     public void setIsotropic(boolean isotropic) {
         boolean oldvalud= this.isotropic;
         this.isotropic = isotropic;
@@ -2429,13 +2635,18 @@ JOptionPane.showConfirmDialog(None,c)
         }
     }
     
-    private boolean drawDebugMessages= false;
-    
     /**
      * draw a purple box in the lower right corner indicating the number
      * of times each renderer has updated, rendered, and the plot itself
      * has painted.
-     * @param v 
+     */
+    public String PROP_DRAWDEBUGMESSAGES= "debugMessages";
+    
+    private boolean drawDebugMessages= false;
+    
+    /**
+     * @see #PROP_DRAWDEBUGMESSAGES
+     * @param v true if the messages should be shown. 
      */
     public void setDrawDebugMessages( boolean v ) {
         this.drawDebugMessages= v;
@@ -2443,6 +2654,10 @@ JOptionPane.showConfirmDialog(None,c)
         repaint();
     }
     
+    /**
+     * @see #PROP_DRAWDEBUGMESSAGES
+     * @return true if the messages should be shown. 
+     */
     public boolean isDrawDebugMessages() {
         return this.drawDebugMessages;
     }
