@@ -587,7 +587,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     /**
-     * returns true if ( getDMinimum() <= x ) && ( x <= getDMaximum() );
+     * returns true if ( getDMinimum() &lt;= x ) &amp;&amp; ( x &lt;= getDMaximum() );
      * @param x the pixel position
      * @return 
      */
