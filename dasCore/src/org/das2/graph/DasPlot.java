@@ -322,6 +322,8 @@ public class DasPlot extends DasCanvasComponent {
 
         Graphics2D graphics= (Graphics2D) g.create();
 
+        graphics.setFont( getFont().deriveFont( getFont().getSize2D() + legendRelativeFontSize ) );
+        
         int em;
         int msgx, msgy;
 
@@ -2080,6 +2082,25 @@ JOptionPane.showConfirmDialog(None,c)
         repaint();
     }
 
+    public static final String PROP_LEGENDRELATIVESIZESIZE= "legendRelativeFontSize";
+    
+    private int legendRelativeFontSize= 0;
+                
+    public int getLegendRelativeFontSize() {
+        return legendRelativeFontSize;
+    }
+    
+    /**
+     * set the relative size of the legend elements.
+     * @param size 
+     */
+    public void setLegendRelativeFontSize( int size ) {
+        int oldF= this.legendRelativeFontSize;
+        this.legendRelativeFontSize= size;
+        firePropertyChange( PROP_LEGENDRELATIVESIZESIZE, oldF, size );
+        repaint();
+    }
+    
     protected boolean displayLegend = true;
     public static final String PROP_DISPLAYLEGEND = "displayLegend";
 
