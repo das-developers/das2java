@@ -54,7 +54,7 @@ public class ColorUtil {
     
     /**
      * return either a named color or 
-     * "#" + Integer.toHexString(color.getRGB() & 0xFFFFFF)
+     * "#" + Integer.toHexString( color.getRGB() &amp; 0xFFFFFF)
      * @param color
      * @return named color or hex string like "#FF0000" for Red.
      */
