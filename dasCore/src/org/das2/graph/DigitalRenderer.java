@@ -144,6 +144,7 @@ public class DigitalRenderer extends Renderer {
 
     /**
      * font size, 0 indicates the plot font should be used.
+     * TODO: this should be relativeSize.  Add a property for this as well.
      */
     public static final String PROP_SIZE= "size";
 
