@@ -45,7 +45,9 @@ import org.das2.util.DebugPropertyChangeSupport;
 import org.das2.util.LoggerManager;
 
 /**
- *
+ * DasRows and DasColumns are both DasDevidePositions that lay out the
+ * canvas.  Any object on the DasCanvas have a row and column object to indicate
+ * the position of the object.
  * @author  jbf
  */
 public abstract class DasDevicePosition implements Editable, java.io.Serializable {
@@ -74,7 +76,8 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     protected EventListenerList listenerList = new EventListenerList();
     
-    private PropertyChangeListener canvasListener= new PropertyChangeListener() {
+    private final PropertyChangeListener canvasListener= new PropertyChangeListener() {
+        @Override
         public void propertyChange( PropertyChangeEvent ev ) {
             if ( DasDevicePosition.this.emMinimum!=0 || DasDevicePosition.this.emMaximum!=0 ) {
                 revalidate();
@@ -82,6 +85,18 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         }
     };
     
+    /**
+     * create the DasDevicePosition
+     * @param canvas the canvas to which the position refers.
+     * @param isWidth ????
+     * @param parent null or the parent to which this position is relative.
+     * @param minimum normal position with respect to the canvas or parent if non-null.
+     * @param maximum normal position with respect to the canvas or parent if non-null.
+     * @param emMinimum em offset from the minimum position, in canvas font heights.
+     * @param emMaximum em offset from the maximum position, in canvas font heights.
+     * @param ptMinimum point offset from the minimum position, note points are the same as pixels.
+     * @param ptMaximum point offset from the maximum position, note points are the same as pixels.
+     */
     protected DasDevicePosition( DasCanvas canvas, boolean isWidth, DasDevicePosition parent,
             double minimum, double maximum,
             double emMinimum, double emMaximum,
@@ -98,7 +113,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
             isWidth= parent.isWidth;
         }
         
-        if ( canvas==null & ( ! isNull ) ) {
+        if ( canvas==null & ( ! isNull ) ) {   // HERE IS A BUG THAT NEEDS TO BE FIXED.  THANKS NETBEANS!
             throw new IllegalArgumentException("parent cannot be null");
         }
         
@@ -120,6 +135,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         this.propertyChangeDelegate = new DebugPropertyChangeSupport(this);
         if ( parent!=null ) {
             parent.addPropertyChangeListener( new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     revalidate();
                 }
@@ -127,6 +143,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         } else {
             if (canvas != null) {
                 canvas.addComponentListener(new ComponentAdapter() {
+                    @Override
                     public void componentResized(ComponentEvent e) {
                         revalidate();
                     }
@@ -175,6 +192,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * Note px is acceptable, but pt is proper. 
      * Ems are rounded to the nearest hundredth.
      * Percents are returned as normal (0-1) and rounded to the nearest thousandth.
+     * @param s string containing the position string.
+     * @return three-element array of parsed [ npos, emoffset, pt_offset ]
+     * @throws java.text.ParseException
      * @see formatFormatStr
      */
     public static double[] parseLayoutStr( String s ) throws ParseException {
@@ -216,10 +236,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
 
     /**
-     * like parseFormatStr.
-     * @param arr
-     * @return String
-     * @see parseFormatStr
+     * formats the three position specifiers efficiently.
+     * @param arr three-element array [ npos, emoffset, pt_offset ].
+     * @return String like "100%-5em+4pt"
+     * @see #parseFormatStr(java.lang.String) 
+     * @see #formatLayoutStr(org.das2.graph.DasDevicePosition, boolean) which contains repeated code.
      */
     public static String formatFormatStr( double[] arr ) {
         StringBuilder buf= new StringBuilder();
@@ -229,7 +250,14 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         return buf.toString();
     }
 
-
+    /**
+     * parses the layout string, which contains both the minimum and maximum
+     * positions, and configures the row or column.  Note that for rows,
+     * 0% refers to the top of the canvas or parent row.
+     * @param pos row or column to assign values.
+     * @param spec string like "0%+2em,100%-5em+4pt"
+     * @throws ParseException when the string cannot be parsed.
+     */
     public static void parseLayoutStr( DasDevicePosition pos, String spec ) throws ParseException {
         String[] ss= spec.split(",");
         double[] pmin= parseLayoutStr( ss[0] );
@@ -237,15 +265,25 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         
         MutatorLock lock= pos.mutatorLock();
         lock.lock();
-        pos.setMinimum(pmin[0]);
-        pos.setEmMinimum(pmin[1]);
-        pos.setPtMinimum((int)pmin[2]);
-        pos.setMaximum(pmax[0]);
-        pos.setEmMaximum(pmax[1]);
-        pos.setPtMaximum((int)pmax[2]);        
-        lock.unlock();
+        //try {
+            pos.setMinimum(pmin[0]);
+            pos.setEmMinimum(pmin[1]);
+            pos.setPtMinimum((int)pmin[2]);
+            pos.setMaximum(pmax[0]);
+            pos.setEmMaximum(pmax[1]);
+            pos.setPtMaximum((int)pmax[2]);        
+        //} finally {
+            lock.unlock();
+        //}
     }
     
+    /**
+     * formats the row or column position into a string like
+     * @param pos the row or column
+     * @param min true if the minimum boundary is to be formatted, false if the maximum boundary is to be formatted.
+     * @return String like "100%-5em+4pt"
+     * @see #formatFormatStr(double[]) which contains repeated code.
+     */
     public static String formatLayoutStr( DasDevicePosition pos, boolean min ) {
         StringBuilder buf= new StringBuilder();
         if ( min ) {
@@ -261,6 +299,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         return buf.toString();
     }
 
+    
     public DasDevicePosition(DasCanvas parent, double minimum, double maximum, boolean width) {
         this( parent, width, null, minimum, maximum, 0., 0., 0, 0 );
     }
@@ -269,6 +308,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         return this.canvas;
     }
     
+    /**
+     * set the name associated with this object.
+     * @param name
+     * @throws org.das2.DasNameException 
+     */
     public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
             return;
@@ -285,13 +329,17 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         this.firePropertyChange("name", oldName, name);
     }
     
+    /**
+     * get the name associated with this object.
+     * @return 
+     */
     public String getDasName() {
         return dasName;
     }
     
     /**
-     * returns the em size for the canvas.  We define the em size as the height of the
-     * font.
+     * returns the em size for the canvas.  We define the em size as the 
+     * height of the font.
      * @return the em height in points.
      */
     public int getEmSize() {
@@ -317,10 +365,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     private int dMinimum, dMaximum;
     
     /**
-     * recalculates dMinimum and dMaximum becased on the new values, and checks for
-     * correctness.  Note if dMaximum&lt;=dMinimum, we define dMaximum= dMinimum+1.
+     * recalculates dMinimum and dMaximum based on the new values, and 
+     * checks for correctness.  Note if dMaximum&lt;=dMinimum, we define 
+     * dMaximum= dMinimum+1.
      */
-    protected void revalidate() {
+    protected final void revalidate() {
         if ( parent!=null ) {
             parent.revalidate();
         }
@@ -363,7 +412,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     /**
      * return the normal position control of the top/left.
-     * @return
+     * @return the normal position control of the top/left.
      */
     public double getMinimum() {
         return minimum;
@@ -371,7 +420,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
 
     /**
      * return the normal position control of the bottom/right.
-     * @return
+     * @return the normal position control of the bottom/right.
      */
     public double getMaximum() {
         return maximum;
@@ -381,14 +430,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * set the new normal location of both the min and max in one operation.
      * @param minimum the top or left
      * @param maximum the bottom or right
-     * @param minimum
-     * @param maximum
      */
     private void setPosition(double minimum, double maximum) {
         double oldMin = this.minimum;
         double oldMax = this.maximum;
-        double doldMin = this.minimum;
-        double doldMax = this.maximum;
         this.minimum = Math.min(minimum, maximum);
         this.maximum = Math.max(minimum, maximum);
         revalidate();
@@ -415,6 +460,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         setPosition( nmin, nmax );
     }
     
+    /**
+     * set the normal position of the minimum of the row or column.  
+     * For a row, this is the bottom.  For a column, this is the right side.
+     * @param maximum normal (0-1) position
+     */
     public void setMaximum(double maximum) {
         if (maximum == this.maximum) {
             return;
@@ -431,9 +481,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
 
 
     /**
-     * set the new pixel position of the bottom/right boundary.  em and pt offsets
-     * are not modified, and the normal position is recalculated.
-     * @param maximum
+     * set the new pixel position of the bottom/right boundary.  
+     * em and pt offsets are not modified, and the normal position 
+     * is recalculated.
+     * @param maximum new pixel maximum
      */
     public void setDMaximum( int maximum) {
         int pmin= getParentMin();
@@ -445,9 +496,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     /**
-     * set the normal position of the minimum of the row or column.  For a row,
-     * this is the top.  For a column, this is the left side.
-     * @param minimum
+     * set the normal position of the minimum of the row or column.  
+     * For a row, this is the top.  For a column, this is the left side.
+     * @param minimum normal (0-1) position
      */
     public void setMinimum( double minimum) {
         if (minimum == this.minimum) {
@@ -466,7 +517,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     /**
      * set the new pixel position of the top/left boundary.  em and pt offsets
      * are not modified, and the normal position is recalculated.
-     * @param minimum
+     * @param minimum new pixel minimum
      */    
     public void setDMinimum( int minimum) {
         int pmin= getParentMin();
@@ -477,10 +528,18 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         setMinimum( n );
     }
     
+    /**
+     * return the parent canvas.
+     * @return the parent canvas.
+     */
     public DasCanvas getParent() {
         return this.canvas;
     }
     
+    /**
+     * set the parent canvas.
+     * @param parent canvas. 
+     */
     public void setParent(DasCanvas parent) {
         this.canvas= parent;
         fireUpdate();
@@ -488,14 +547,21 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     private boolean valueIsAdjusting= false;
     
+    /**
+     * get a lock for this object, used to mutate a number of properties
+     * as one atomic operation.
+     * @return a lock
+     */
     protected synchronized MutatorLock mutatorLock() {
         return new MutatorLock() {
+            @Override
             public void lock() {
                 if ( isValueIsAdjusting() ) {
                     System.err.println("lock is already set!");
                 }
                 valueIsAdjusting= true;
             }
+            @Override
             public void unlock() {
                 valueIsAdjusting= false;
                 propertyChangeDelegate.firePropertyChange( "mutatorLock", "locked", "unlocked");
@@ -503,7 +569,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         };
     }
     
-    
+    /**
+     * add an update listener
+     * @param l update listener
+     */
     public void addpwUpdateListener(DasUpdateListener l) {
         listenerList.add(DasUpdateListener.class, l);
         if ( listenerList.getListenerCount()>100 ) {
@@ -511,6 +580,10 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         }
     }
     
+    /**
+     * remove an update listener
+     * @param l update listener
+     */
     public void removepwUpdateListener(DasUpdateListener l) {
         int n0= listenerList.getListenerCount();
         listenerList.remove(DasUpdateListener.class, l);
@@ -519,6 +592,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         }
     }
     
+    /**
+     * fire an update to all listeners.
+     */
     protected void fireUpdate() {
         DasUpdateEvent e = new DasUpdateEvent(this);
         Object[] listeners = listenerList.getListenerList();
@@ -567,10 +643,21 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         propertyChangeDelegate.firePropertyChange(propertyName, oldValue, newValue);
     }
     
+    /**
+     * return the size in pixels (or points)
+     * @return the size in pixels (or points)
+     */
     protected int getDeviceSize() {
         return getParentMax() - getParentMin();
     }
     
+    /**
+     * convenience method for creating a rectangle from a row and column.
+     * The rectangle will be in canvas pixel coordinates.
+     * @param row row describing the top and bottom of the box.
+     * @param column column describing the left and right sides of the box.
+     * @return rectangle in canvas pixel coordinates.
+     */
     public static java.awt.Rectangle toRectangle(DasRow row, DasColumn column) {
         int xmin=column.getDMinimum();
         int ymin=row.getDMinimum();
@@ -579,6 +666,11 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
                 row.getDMaximum()-ymin);
     }
     
+    /**
+     * return a human-readable string representing the object for debugging.
+     * @return a human-readable string representing the object for debugging.
+     */
+    @Override
     public String toString() {
         //String format="%.1f%%%+.1fem%+dpt";
         //String smin= String.format(format, minimum*100, emMinimum, ptMinimum );
@@ -589,7 +681,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     /**
      * returns true if ( getDMinimum() &lt;= x ) &amp;&amp; ( x &lt;= getDMaximum() );
      * @param x the pixel position
-     * @return 
+     * @return  true if ( getDMinimum() &lt;= x ) &amp;&amp; ( x &lt;= getDMaximum() );
      */
     public boolean contains( int x ) {
         return ( getDMinimum() <= x ) && ( x <= getDMaximum() );
@@ -597,7 +689,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     
     /**
      * returns pixel position (device position) of the the middle of the row or column 
-     * @return
+     * @return pixel position (device position) of the the middle of the row or column 
      */
     public int getDMiddle() {
         return (getDMinimum()+getDMaximum())/2;
@@ -609,13 +701,17 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     private double emMinimum;
     
     /**
-     * return the em offset that controls the position of the top/left boundry.
-     * @return
+     * return the em offset that controls the position of the top/left boundary.
+     * @return the em offset that controls the position of the top/left boundary.
      */
     public double getEmMinimum() {
         return this.emMinimum;
     }
     
+    /**
+     * set the em offset that controls the position of the top/left boundary.
+     * @param emMinimum the em offset.
+     */
     public void setEmMinimum(double emMinimum) {
         double oldValue= this.emMinimum;
         this.emMinimum = emMinimum;
@@ -624,14 +720,22 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     }
     
     /**
-     * property emMaximum, the em (font height * 2/3) offset from the maximum
+     * property emMaximum, the em (font height) offset from the maximum
      */
     private double emMaximum;
     
+    /**
+     * return the em offset that controls the position of the bottom/right boundary.
+     * @return the em offset that controls the position of the bottom/right boundary.
+     */
     public double getEmMaximum() {
         return this.emMaximum;
     }
     
+    /**
+     * set the em offset that controls the position of the bottom/right boundary.
+     * @param emMaximum the em offset.
+     */
     public void setEmMaximum(double emMaximum) {
         double oldValue= this.emMaximum;
         this.emMaximum = emMaximum;
@@ -642,13 +746,17 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     private int ptMinimum;
     
     /**
-     * return the points offset that controls the position of the top/left boundry.
-     * @return
+     * return the points offset that controls the position of the top/left boundary.
+     * @return the points offset
      */
     public int getPtMinimum() {
         return this.ptMinimum;
     }
     
+    /**
+     * set the points offset that controls the position of the top/left boundary.
+     * @param ptMinimum the points offset
+     */
     public void setPtMinimum(int ptMinimum) {
         int oldValue= this.ptMinimum;
         this.ptMinimum = ptMinimum;
@@ -662,12 +770,17 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
     private int ptMaximum=0;
     
     /**
-     * return the points offset that controls the position of the bottom/right boundry.
-     * @return
+     * return the points offset that controls the position of the bottom/right boundary.
+     * @return the points offset that controls the position of the bottom/right boundary.
      */
     public int getPtMaximum() {
         return this.ptMaximum;
     }
+    
+    /**
+     * set the pt offset that controls the position of the bottom/right boundary.
+     * @param ptMaximum the em offset.
+     */
     public void setPtMaximum(int ptMaximum) {
         int oldValue= this.ptMaximum;
         this.ptMaximum = ptMaximum;
@@ -677,10 +790,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
 
     /**
      * set all three as one atomic operation
-     * norm 0-1
-     * @param norm
-     * @param em
-     * @param pt
+     * @param norm normal position from 0 to 1.
+     * @param em em offset from the normal position.
+     * @param pt points offset from the normal position.
      */
     public void setMin( double norm, double em, int pt ) {
         double[] old= new double[ ] { this.minimum, this.emMinimum, this.emMaximum };
@@ -695,10 +807,9 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
 
     /**
      * set all three as one atomic operation
-     * norm 0-1
-     * @param norm
-     * @param em
-     * @param pt
+     * @param norm normal position from 0 to 1.
+     * @param em em offset from the normal position.
+     * @param pt points offset from the normal position.
      */
     public void setMax( double norm, double em, int pt ) {
         double[] old= new double[ ] { this.maximum, this.emMaximum, this.emMaximum };
@@ -711,10 +822,20 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
         revalidate();
     }
     
+    /**
+     * return the parent, or null.  If parent is non-null, then position is 
+     * relative to the parent.
+     * @return the parent, or null.
+     */
     public DasDevicePosition getParentDevicePosition() {
         return this.parent;
     }
 
+    /**
+     * return true if the value is currently adjusting because a
+     * mutator lock is out.
+     * @return true if the value is currently adjusting.
+     */
     public boolean isValueIsAdjusting() {
         return valueIsAdjusting;
     }
