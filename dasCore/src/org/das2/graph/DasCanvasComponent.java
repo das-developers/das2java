@@ -198,11 +198,11 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         }
         Object oldValue = row;
         if (row != DasRow.NULL ) {
-            row.removepwUpdateListener(rl);
+            row.removeUpdateListener(rl);
         }
         row = r;
         if (row != DasRow.NULL ) {
-            row.addpwUpdateListener(rl);
+            row.addUpdateListener(rl);
         } /*else {
             throw new IllegalArgumentException("null row is not allowed for the meantime");
         }*/
@@ -221,11 +221,11 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         }
         Object oldValue = column;
         if (column != DasColumn.NULL ) {
-            column.removepwUpdateListener(rl);
+            column.removeUpdateListener(rl);
         }
         column = c;
         if (column != DasColumn.NULL ) {
-            column.addpwUpdateListener(rl);
+            column.addUpdateListener(rl);
         } /*else {
             throw new IllegalArgumentException("null column is not allowed for the meantime");
         }*/
@@ -345,8 +345,8 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     protected void installComponent() {}
     
     protected void uninstallComponent() {
-        getRow().removepwUpdateListener(rl);
-        getColumn().removepwUpdateListener(rl);
+        getRow().removeUpdateListener(rl);
+        getColumn().removeUpdateListener(rl);
     }
     
     @Override
