@@ -114,7 +114,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
             isWidth= parent.isWidth;
         }
         
-        if ( canvas==null & ( ! isNull ) ) {   // HERE IS A BUG THAT NEEDS TO BE FIXED.  THANKS NETBEANS!
+        if ( canvas==null && ( ! isNull ) ) {  
             throw new IllegalArgumentException("parent cannot be null");
         }
         
@@ -574,7 +574,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * add an update listener
      * @param l update listener
      */
-    public void addpwUpdateListener(DasUpdateListener l) {
+    public void addUpdateListener(DasUpdateListener l) {
         listenerList.add(DasUpdateListener.class, l);
         if ( listenerList.getListenerCount()>100 ) {
             logger.log(Level.WARNING, "I think I found a leak in {0}", this.getDasName());
@@ -585,7 +585,7 @@ public abstract class DasDevicePosition implements Editable, java.io.Serializabl
      * remove an update listener
      * @param l update listener
      */
-    public void removepwUpdateListener(DasUpdateListener l) {
+    public void removeUpdateListener(DasUpdateListener l) {
         int n0= listenerList.getListenerCount();
         listenerList.remove(DasUpdateListener.class, l);
         if ( listenerList.getListenerCount()==n0 ) {
