@@ -40,7 +40,7 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
     int rank= MAX_RANK;
     
     public SlicesFilterEditorPanel() {
-        setFilter("|slices0(:)");
+        setFilter("|slices(:)");
     }
     
     @Override
