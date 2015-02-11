@@ -34,7 +34,7 @@ import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DomainDivider;
-import org.das2.datum.DomainDividerUtil;
+//import org.das2.datum.DomainDividerUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.UnitsUtil;
@@ -50,6 +50,10 @@ import org.das2.system.DasLogger;
  *
  * The DasMouseInputAdapter will delegate mouse events, key events, and 
  * mouse wheel events to the active mouse module.
+ * 
+ * This base class will be extended by instances of MouseModule, overriding
+ * methods they wish to handle.
+ * 
  * @author jbf
  */
 public class MouseModule implements Editable, Displayable, KeyListener, MouseListener, MouseMotionListener, MouseWheelListener  {
@@ -79,24 +83,33 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     }
     
     /**
-     * returns a string that identifies the module
+     * returns a human-readable string that identifies the module
+     * @return a human-readable string that identifies the module
      */
     public String getLabel() {
         return label;
     }
     
-    /** return a cursor that indicates the selected module. */
+    /** 
+     * return a cursor that indicates the selected module.  Note this is currently
+     * not used.
+     * @return a cursor that indicates the selected module.
+     */
     public Cursor getCursor() {
         return new Cursor(Cursor.DEFAULT_CURSOR);
     }
 
+    /**
+     * return the current drag renderer.
+     * @return the current drag renderer.
+     */
     public DragRenderer getDragRenderer() {
         return dragRenderer;
     }
     
     /**
-     * reset the drag renderer. (Made public when the digitizer had different modes.
-     * @param d 
+     * set the drag renderer. (Made public when the digitizer had different modes.)
+     * @param d set the drag renderer.
      */
     public void setDragRenderer( DragRenderer d ) {
         this.dragRenderer= d;
@@ -104,33 +117,41 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
     }
     
     /** 
-     * Action to take when a mouse range (click, drag, release) has been selected. 
+     * Action to take when a mouse range (click, drag, release) has been 
+     * selected.  This is intended to be overridden. 
+     * @param e the drag event.
      */
     public void mouseRangeSelected(MouseDragEvent e) {
     }
     
     /**
-     * Action to take when a point (click or drag) is selected. 
+     * Action to take when a point (click or drag) is selected.  This is intended
+     * to be overridden.
+     * @param e the event.
      */
     public void mousePointSelected(MousePointSelectionEvent e) {
     }
     
+    /**
+     * set the human-readable label.
+     * @param label the human-readable label.
+     */
     public final void setLabel(java.lang.String label) {
         this.label= label;
     }
     
-        /**
+    /**
      * round to the nearest nice interval by looking for a DomainDivider in the axis.
      * 
-     * @param xAxis
-     * @param dr
-     * @return
+     * @param xAxis the axis
+     * @param dr a datum range.
+     * @return the DatumRange, possibly rounded to a nice range.
      */
     protected static DatumRange maybeRound(DasAxis xAxis, DatumRange dr) {
         DomainDivider div= xAxis.getMinorTicksDomainDivider();
-        if ( false && div==null ) { // make true to experiment with maybeRound while DomainDividers are still not being used.
-            div= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), xAxis.isLog() );
-        }
+        //if ( false && div==null ) { // make true to experiment with maybeRound while DomainDividers are still not being used.
+        //    div= DomainDividerUtil.getDomainDivider( dr.min(), dr.max(), xAxis.isLog() );
+        //}
         if ( div!=null ) {
             try {
                 int px= 999;
@@ -153,6 +174,11 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
         return dr;
     }
     
+    /**
+     * return true if the axis is not an axis with enumeration units.
+     * @param axis the axis, which might have enumeration units.
+     * @return true if the axis is not an axis with enumeration units.
+     */
     protected static boolean axisIsAdjustable(DasAxis axis) {
         return axis != null && (UnitsUtil.isIntervalMeasurement(axis.getUnits()) || UnitsUtil.isRatioMeasurement(axis.getUnits()));
     }
@@ -166,10 +192,20 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
         return this.directions;
     }
     
+    /**
+     * set the human-readable directions string, so clients like Autoplot can display
+     * them.
+     * @param directions human-readable directions.
+     */
     public void setDirections( String directions ) {
         this.directions= directions;
     }
     
+    /**
+     * return the list icon.  This will be be overridden by MouseModules to
+     * give a visual reference.
+     * @return the list icon.
+     */
     @Override
     public javax.swing.Icon getListIcon() {
         return null;
@@ -242,7 +278,7 @@ public class MouseModule implements Editable, Displayable, KeyListener, MouseLis
      * @param ddp the row or column
      * @param pos the position to describe.
      * @param threshold pixel distance to the boundary, 20 is often used.
-     * @return Pos enum.
+     * @return enumeration of the position, for example Pos.beyondMin.
      */
     public Pos position( DasDevicePosition ddp, int pos, int threshold ) {
         int max = ddp.getDMaximum();
