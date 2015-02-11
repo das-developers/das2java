@@ -116,10 +116,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     public static final int HORIZONTAL = BOTTOM;
     /** This value indicates that the axis should be oriented vertically */
     public static final int VERTICAL = LEFT;
-    /**  */
-    public static final int UP = 995;
-    /**  */
-    public static final int DOWN = 996;
+    /** This indicate the axis ticks should go up */
+    private static final int UP = 995;
+    /** This indicates the axis ticks should go down */
+    private static final int DOWN = 996;
 
     /* Constants defining the action commands and labels for the scan buttons. */
     private static final String SCAN_PREVIOUS_LABEL = "<< step";
@@ -128,10 +128,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /* GENERAL AXIS INSTANCE MEMBERS */
     protected DataRange dataRange;
 
+    /**
+     * get the userDatumFormatter, which converts datums into strings.  This
+     * can be null if none should be used.
+     * @return the userDatumFormatter.
+     */
     public DatumFormatter getUserDatumFormatter() {
         return userDatumFormatter;
     }
 
+    /**
+     * set the userDatumFormatter, which converts datums into strings.  This
+     * can be null if none should be used.
+     * @param userDatumFormatter  the userDatumFormatter.
+     */
     public void setUserDatumFormatter(DatumFormatter userDatumFormatter) {
         logger.log(Level.FINE, "setUserDatumFormatter({0})", userDatumFormatter);
         DatumFormatter old= this.userDatumFormatter;
@@ -140,6 +150,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             updateTickV();
         }//TODO: this results in data read on event thread
         SwingUtilities.invokeLater( new Runnable() {
+            @Override
             public void run() {
                 resize();
                 repaint();
@@ -152,6 +163,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      */
     private DatumFormatter userDatumFormatter = null;
 
+    /** 
+     * set the action for the next button 
+     * @param label the lanel (step or scan)
+     * @param abstractAction the action to invoke.
+     */
     public void setNextAction( String label, AbstractAction abstractAction) {
         if ( !DasApplication.getDefaultApplication().isHeadless() ) {
             ActionListener[] als= this.scanNext.getActionListeners();
@@ -163,6 +179,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /** 
+     * set the action for the prev button 
+     * @param label the lanel (step or scan)
+     * @param abstractAction the action to invoke.
+     */
     public void setPreviousAction( String label,AbstractAction abstractAction) {
         if ( !DasApplication.getDefaultApplication().isHeadless() ) {
             ActionListener[] als= this.scanPrevious.getActionListeners();
@@ -231,7 +252,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private Integer leftXOverride = null;  // this is deprecated, use labelOffset instead.
     private String labelOffset= ""; // empty string means default, or "5em" or "50px" etc.
     
-    /** TODO: Currently under implemented! */
     private boolean flipped;
     /* TIME LOCATION UNITS RELATED INSTANCE MEMBERS */
     private javax.swing.event.EventListenerList timeRangeListenerList = null;
@@ -252,6 +272,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private static final Color[] DEBUG_COLORS;
 
     int tickLen= 0; // this is reset after sizing.
+
+    /**
+     * the tick length specification, in em or pts. 
+     */
     String tickLenStr= "0.66em";
 
     final int TICK_LABEL_GAP_MIN= 4;  // minimum number of pixels to label
@@ -283,10 +307,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /** 
      * Create an axis object, relating data and canvas pixel coordinates.
-     * @param min the minimum value
-     * @param max the maximum value
+     * @param range the initial range for the axis.
      * @param orientation the position relative to a plot, one of DasAxis.TOP, DasAxis.BOTTOM, DasAxis.LEFT, DasAxis.RIGHT.
-     * @param log if true then the axis is a log axis.
      */
     public DasAxis(DatumRange range, int orientation) {
         this(range.min(), range.max(), orientation);
@@ -309,7 +331,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /** 
      * Create an axis object, relating data and canvas pixel coordinates.
-     * @param range the range object allowing connections between axes.
+     * @param range the range object allowing connections between axes.  A DataRange is a mutable object.
      * @param orientation the position relative to a plot, one of DasAxis.TOP, DasAxis.BOTTOM, DasAxis.LEFT, DasAxis.RIGHT
      */
     protected DasAxis(DataRange range, int orientation) {
@@ -371,11 +393,19 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         range.addPropertyChangeListener("favorites", listener);
     }
 
+    /**
+     * add the range to the favorites list, which is accessible from the popup-menu.
+     * @param range the range to add.
+     */
     public void addToFavorites(final DatumRange range) {
         dataRange.addToFavorites(range);
         copyFavorites();
     }
 
+    /**
+     * remove the range from the favorites list, which is accessible from the popup-menu.
+     * @param range the range to add.
+     */
     public void removeFromFavorites(final DatumRange range) {
         dataRange.removeFromFavorites(range);
         copyFavorites();
@@ -437,7 +467,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             final int ipop = ii;
             final DatumRange r = (DatumRange) i.next(); // copied code from addToFavorites
             Action action = new AbstractAction(r.toString()) {
-
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     LoggerManager.logGuiEvent(e);
                     dataRange.popHistory(ipop);
@@ -450,13 +480,28 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /**
+     * true if the axis built-in history is enabled.
+     */
     protected boolean enableHistory = true;
+    
+    /**
+     * true if the axis built-in history is enabled.
+     */
     public static final String PROP_ENABLEHISTORY = "enableHistory";
 
+    /**
+     * true if the axis built-in history is enabled.
+     * @return true if the axis built-in history is enabled.
+     */
     public boolean isEnableHistory() {
         return enableHistory;
     }
 
+    /**
+     * true if the axis built-in history is enabled.
+     * @param enableHistory true if the axis built-in history is enabled.
+     */
     public void setEnableHistory(boolean enableHistory) {
         boolean oldEnableHistory = this.enableHistory;
         this.enableHistory = enableHistory;
@@ -583,7 +628,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** 
      * Set the axis orientation.  One of: DasAxis.TOP, DasAxis.BOTTOM,
      *  DasAxis.LEFT, DasAxis.RIGHT
-     * @param orientation
+     * @param orientation the orientation, one of TOP,BOTTOM,LEFT,RIGHT.
+     * @see #TOP
+     * @see #BOTTOM
+     * @see #LEFT
+     * @see #RIGHT
      */
     public void setOrientation(int orientation) {
         boolean oldIsHorizontal = isHorizontal();
@@ -593,11 +642,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /* This is a private internal implementation for
+    /**
+     * This is a private internal implementation for
      * {@link #setOrientation(int)}.  This method is provided
      * to avoid calling a non-final non-private instance method
      * from a constructor.  Doing so can create problems if the
      * method is overridden in a subclass.
+     *
+     * @param orientation TOP,BOTTOM,LEFT,RIGHT
      */
     private void setOrientationInternal(int orientation) {
         this.orientation = orientation;
@@ -797,7 +849,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return this.dataRange;
     }
 
-    /** TODO */
+    /**
+     * @deprecated this is not used.
+     */
     protected void deviceRangeChanged() {
     }
 
@@ -826,40 +880,45 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return dataRange.getDatumRange();
     }
 
-    /** TODO
-     * @param units
-     * @return
+    /** 
+     * get the bigger extent of the range of this axis, in the given units.
+     * @param units the units which the result should be returned in.
+     * @return the value in the units.
      */
     public double getDataMaximum(Units units) {
         return getDataMaximum().doubleValue(units);
     }
 
-    /** TODO
-     * @param units
-     * @return
+    /** 
+     * get the smaller extent of the range of this axis, in the given units.
+     * @param units the units which the result should be returned in.
+     * @return the value in the units.
      */
     public double getDataMinimum(Units units) {
         return getDataMinimum().doubleValue(units);
     }
 
-    /** TODO
-     * @param max
+    /** 
+     * set the bigger extent of the range of this axis.
+     * @param max the new value
      */
     public void setDataMaximum(Datum max) {
         dataRange.setMaximum(max);
         update();
     }
 
-    /** TODO
-     * @param min
+    /** 
+     * set the smaller extent of the range of this axis.
+     * @param min the new value
      */
     public void setDataMinimum(Datum min) {
         dataRange.setMinimum(min);
         update();
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return true if the axis is log.
+     * @return true if the axis is log.
      */
     public boolean isLog() {
         return dataRange.isLog();
@@ -868,7 +927,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /** 
      * Set the axis to be log or linear.  If necessary, axis range will be 
      * adjusted to make the range valid.
-     * @param log
+     * @param log true if the axis should be log.
      */
     public void setLog(boolean log) {
         boolean oldLog = isLog();
@@ -884,21 +943,27 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return the units of the axis.
+     * @return the units of the axis.
      */
     public Units getUnits() {
         return dataRange.getUnits();
     }
 
+    /**
+     * set the units of the axis, which must be convertible from the old units.
+     * @param newUnits the units of the axis.
+     * @see #resetRange(org.das2.datum.DatumRange) 
+     */
     public void setUnits(Units newUnits) {
         dataRange.setUnits(newUnits);
     }
     
     /**
      * limit the scan buttons to operate within this range.
-     * http://sourceforge.net/tracker/index.php?func=detail&aid=3059009&group_id=199733&atid=970682
-     * @param range
+     * http://sourceforge.net/p/autoplot/bugs/473/
+     * @param range the range to limit the scanning
      */
     public void setScanRange( DatumRange range ) {
         DatumRange old= this.scanRange;
@@ -923,13 +988,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /**
      * get the limit the scan buttons, which may be null.
+     * @return the limit the scan buttons, which may be null.
      */
     public DatumRange getScanRange(  ) {
         return this.scanRange;
     }
 
     /**
-     * changes the units of the axis to a new unit.
+     * set the axis to the new range, allowing the units to change.
+     * @param range the new range
      */
     public synchronized void resetRange(DatumRange range) {
         DatumRange oldRange= this.getDatumRange();
@@ -951,8 +1018,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
     }
 
-    /** TODO
-     * @param visible
+    /** 
+     * if true, then the axis and its ticks on the opposite side will also be drawn.
+     * @param visible if true, then the axis and its ticks on the opposite side will also be drawn.
      */
     public void setOppositeAxisVisible(boolean visible) {
         if (visible == oppositeAxisVisible) {
@@ -965,18 +1033,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROP_OPPOSITE_AXIS_VISIBLE, oldValue, visible);
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return true if the opposite side is also drawn. 
+     * @return true if the opposite side is also drawn. 
      */
     public boolean isOppositeAxisVisible() {
         return oppositeAxisVisible;
     }
 
-    /** Mutator method for the title property of this axis.
-     *
-     * The title for this axis is displayed below the ticks for horizontal axes
+    /** 
+     * set the label for the axis.
+     * 
+     * The label for this axis is displayed below the ticks for horizontal axes
      * or to left of the ticks for vertical axes.
-     * @param t The new title for this axis
+     * @param t The new label for this axis
      */
     public void setLabel(String t) {
         if (t == null) {
@@ -989,36 +1059,44 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
-     * Accessor method for the title property of this axis.
-     *
+     * get the label for the axis.
      * @return A String instance that contains the title displayed
-     *    for this axis, or <code>null</code> if the axis has no title.
+     *    for this axis, or "" if the axis has no title.
      */
     public String getLabel() {
         return axisLabel;
     }
 
-    /** Getter for property animated.
-     * @return Value of property animated.
+    /** 
+     * true if the axis is animated.  Transitions in axis position are drawn 
+     * rapidly to animate the transition.
+     * @return true if the axis is animated.
      */
     public boolean isAnimated() {
         return this.animated;
     }
 
-    /** Setter for property animated.
-     * @param animated new value of property animated.
+    /** 
+     * if true then the axis will be animated.
+     * @param animated if true then the axis will be animated.
      */
     public void setAnimated(boolean animated) {
         this.animated = animated;
     }
 
+    /**
+     * if true then additional ephemeris (TCA) ticks are drawn.
+     * @return if true then additional ticks are drawn.
+     * TODO: this should be isDrawTca
+     */
     public boolean getDrawTca() {
         return drawTca;
     }
 
     /**
      * turn on additional tick labels using the TCA function.
-     * @param b 
+     * @param b if true then additional ticks will be drawn.
+     * @see #setTcaFunction(org.virbo.dataset.QFunction) 
      */
     public void setDrawTca(boolean b) {
         boolean oldValue = drawTca;
@@ -1032,10 +1110,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         markDirty("drawTca");
         update();
         firePropertyChange("showTca", oldValue, b);
-    }
-
-    public String getDataPath() {
-        return dataset;
     }
 
     private static QFunction tcaFunction( String dataset ) throws DasException {
@@ -1072,6 +1146,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
         }
         return result;
+    }
+        
+    /**
+     * return the path for the TCA dataset.  This will be a das2server data set
+     * address, such as http://www-pw.physics.uiowa.edu/das/das2Server?voyager/tca/earth
+     * @return the path of the TCA dataset, or "".
+     */
+    public String getDataPath() {
+        return dataset;
     }
     
     /**
@@ -1283,8 +1366,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** TODO
-     * @return
+    /** 
+     * TODO: remove this
+     * @deprecated this should not be used.
+     * @return the orientation BOTTOM TOP LEFT RIGHT.
      */
     public final int getDevicePosition() {
         if (orientation == BOTTOM) {
@@ -1299,7 +1384,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
-     * @return returns the length in pixels of the axis.
+     * return the length of the axis in pixels.
+     * @return returns the length of the axis in pixels.
      */
     public int getDLength() {
         if (isHorizontal()) {
@@ -1309,15 +1395,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return the axis this is attached to.
+     * @return the axis this is attached to.
      */
     public DasAxis getMasterAxis() {
         return dataRange.getCreator();
     }
 
-    /** TODO
-     * @param axis
+    /** 
+     * attach the axis to another axis, so they will both show the same range,
+     * as with a stack of time axes or with a slice.
+     * @param axis the axis.
      */
     public void attachTo(DasAxis axis) {
         DataRange oldRange = dataRange;
@@ -1339,7 +1428,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         copyHistory();
     }
 
-    /** TODO */
+    /** 
+     * disconnect this from the common DataRange object that ties this to other
+     * axes, and create a new DataRange.
+     */
     public void detach() {
         dataRange.removePropertyChangeListener(PROP_LOG, dataRangePropertyListener);
         dataRange.removePropertyChangeListener("minimum", dataRangePropertyListener);
@@ -1357,15 +1449,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         copyHistory();
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return true if this is attached to another axis.
+     * @return true if this is attached to another axis.
      */
     public boolean isAttached() {
         return this != getMasterAxis();
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return the current set of ticks.
+     * @return the current set of ticks.
      */
     public TickVDescriptor getTickV() {
         if (tickV == null) {
@@ -1395,6 +1489,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
     }
 
+    /**
+     * calculate a set of log spaced ticks.
+     * @param dr the range.
+     * @return the ticks.
+     */
     private TickVDescriptor updateTickVLog( DatumRange dr ) {
 
         GrannyTextRenderer idlt = new GrannyTextRenderer();
@@ -1415,6 +1514,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     }
 
+    /**
+     * calculate a set of linear spaced ticks.
+     * @param dr the range.
+     * @return the ticks.
+     */
     private TickVDescriptor updateTickVLinear( DatumRange dr ) {
 
         TickVDescriptor tickV1;
@@ -1586,6 +1690,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     }
 
+    /**
+     * calculate a set of linear spaced ticks based on the DomainDivider class.
+     * @param dr the range.
+     * @return the ticks.
+     */
     private TickVDescriptor updateTickVDomainDivider( DatumRange dr ) {
 
         try {
@@ -1606,7 +1715,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return tickV;
         }
     }
-
+    
+    /**
+     * calculate a set of time ticks.
+     * @param dr the range.
+     * @return the ticks.
+     */
     private TickVDescriptor updateTickVTime( DatumRange dr ) {
 
         int nTicksMax;
@@ -1711,6 +1825,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             final DasProgressWheel tcaProgress= new DasProgressWheel();
             tcaProgress.started();
             Runnable run= new Runnable() {
+                @Override
                 public void run() {
                     tcaProgress.getPanel(DasAxis.this);
                 }
@@ -1751,7 +1866,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /**
      * call-back for TickMaster
-     * @param ticks
+     * @param ticks the new ticks.
      */
     protected void resetTickV( TickVDescriptor ticks ) {
         TickVDescriptor oldTicks = this.tickV;
@@ -1818,7 +1933,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                         TickVDescriptor newTicks= updateTickVDomainDivider(dr);
                         TickMaster.getInstance().offerTickV( this, newTicks );
                     } else {
-                        TickVDescriptor newTicks= null;
+                        TickVDescriptor newTicks;
                         if (getUnits() instanceof TimeLocationUnits) {
                             newTicks= updateTickVTime(dr);
                         } else if (dataRange.isLog()) {
@@ -1874,7 +1989,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 //        }
 //    }
 
-    /** paints the axis component.  The tickV's and bounds should be calculated at this point */
+    /** 
+     * paints the axis component.  The tickV's and bounds should be calculated at this point
+     * @param graphics the graphics context.
+     */
     @Override
     protected void paintComponent(Graphics graphics) {
         logger.finest("enter DasAxis.paintComponent");
@@ -2093,7 +2211,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
     
-    /** Paint the axis if it is horizontal  */
+    /** 
+     * Paint the axis if it is horizontal  
+     * @param g the graphics context
+     */
     protected void paintHorizontalAxis(Graphics2D g) {
         try {
             Rectangle clip = g.getClipBounds();
@@ -2232,7 +2353,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** Paint the axis if it is vertical  */
+    /**
+     * Paint the axis if it is vertical  
+     * @param g the graphics context
+     */
     protected void paintVerticalAxis(Graphics2D g) {
         try {
             Rectangle clip = g.getClipBounds();
@@ -2365,8 +2489,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         update();
     }
 
-    /** TODO
-     * @return
+    /** 
+     * get the offset of the label from the baseline in pixels.
+     * @return the offset.
      */
     protected int getTitlePositionOffset() {
         Font tickLabelFont = getTickLabelFont();
@@ -2399,12 +2524,22 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return offset;
     }
 
+    /**
+     * calculate the spacing (whitespace) between the TCA items.
+     * @return the spacing between lines.
+     */
     public int getLineSpacing() {
         return getTickLabelFont().getSize() / 4;
     }
 
     /** 
      * Draw each label of the axis.
+     * @param g graphics context
+     * @param value value to look up.
+     * @param label the label
+     * @param index the index.  The default does not use this, but overriding methods may use it.
+     * @param x tick position relative to the canvas
+     * @param y tick position relative to the canvas
      */
     protected void drawLabel(Graphics2D g, Datum value, String label, int index, int x, int y) {
 
@@ -2534,7 +2669,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** get the font for tick labels.  If the component currently has null for the
+    /** 
+     * get the font for tick labels.  If the component currently has null for the
      * font, then Font.decode("sans-12") is used and a warning logged.
      * @return the font to use for ticks.
      */
@@ -2547,9 +2683,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return f;
     }
 
-    /** get the font for labels.  If the component currently has null for the
+    /** 
+     * get the font for labels.  If the component currently has null for the
      * font, then Font.decode("sans-12") is used.
-     * @param tickLabelFont
+     * @return the font to use for labels.
      */
     public Font getLabelFont() {
         Font f= this.getFont();
@@ -2605,6 +2742,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /**
+     * get the memento object which identifies the state of the axis transformation.
+     * @return the momento.
+     */
     public Memento getMemento() {
         Memento result = new Memento();
         result.range = this.getDatumRange();
@@ -2634,6 +2775,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * return the AffineTransform, or null.  The transform will be applied after the input
      * transform is applied.  So to just get the transform, pass in identity.
+     * @param memento memento from another axis state.
+     * @param at initial transform
+     * @return the transform from that state to this state, or null if no transform can be created.
      */
     public AffineTransform getAffineTransform(Memento memento, AffineTransform at) {
         if (at == null) {
@@ -2749,9 +2893,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** TODO
-     * @param fm
+    /** 
+     * calculate the biggest label width
+     * @param fm the font metrics.
      * @deprecated use getMaxLabelWidth()
+     * @see #getMaxLabelWidth() 
      * @return the width in pixels of the widest label.
      */
     protected int getMaxLabelWidth(FontMetrics fm) {
@@ -2799,7 +2945,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * calculate the bounds of the labels.  This should including regions that 
      * the labels could occupy if the axis were panned, so that result doesn't 
      * change during panning.
-     * 
+     * @param bounds the bounds which will be enlarged, or null.
      * @return Rectangle in the canvas coordinate frame.
      */
     protected Rectangle getLabelBounds(Rectangle bounds) {
@@ -3240,21 +3386,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return orientation == BOTTOM || orientation == TOP;
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return the tick direction, 1=down or left, -1=up or right
+     * @return 1=down or left, -1=up or right
      */
     public int getTickDirection() {
         return tickDirection;
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return the formatter which converts Datum tick positions to a string.
+     * @return the formatter which converts Datum tick positions to a string.
      */
     public DatumFormatter getDatumFormatter() {
         return datumFormatter;
     }
 
-    /** Transforms a Datum in data coordinates to a horizontal or vertical
+    /** 
+     * Transforms a Datum in data coordinates to a horizontal or vertical
      * position on the parent canvas.
      * @param datum a data value
      * @return Horizontal or vertical position on the canvas.
@@ -3263,6 +3412,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return transform(datum.doubleValue(getUnits()), getUnits());
     }
 
+    /**
+     * this was never utilized, but at_m and at_b could be used to speed up 
+     * transformation.
+     * @param data the data location
+     * @param units the units
+     * @return the pixel location.
+     */
     protected double transformFast(double data, Units units) {
         if (dataRange.isLog()) {
             if (data <= 0.) {
@@ -3275,7 +3431,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         return result;
     }
 
-    /** Transforms a double in the given units in data coordinates to a horizontal or vertical
+    /** 
+     * Transforms a double in the given units in data coordinates to a horizontal or vertical
      * position on the parent canvas.
      * @param data a data value
      * @param units the units of the given data value.
@@ -3293,6 +3450,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /**
+     * Transforms a double in the given units in data coordinates to a horizontal or vertical
+     * position on the parent canvas.
+     * @param data a data value
+     * @param units the units of the given data value.
+     * @param dmin the axis minimum.
+     * @param dmax the axis maximum.
+     * @return  Horizontal or vertical position on the canvas.
+     */
     protected double transform(double data, Units units, int dmin, int dmax) {
         if (units != dataRange.getUnits()) {
             data = units.convertDoubleTo(dataRange.getUnits(), data);
@@ -3386,52 +3552,54 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * return a label for this datum and visible range. This is intended
      * to be overridden to change behavior.  Note that both tickFormatter methods
      * should be overridden.
-     * @param tickv
+     * @param d the location
      * @return string, possibly with Granny control characters.
      */
     protected String tickFormatter(Datum d) {
-        // TODO: label the axis with the Unit!
         return datumFormatter.grannyFormat(d, d.getUnits());
-
     }
 
     /**
      * return the tick labels for these datums and visible range.  This is intended
      * to be overridden to change behavior.  Note that both tickFormatter methods
      * should be overridden.
-     * @param tickV
-     * @param datumRange
+     * @param tickV the ticks
+     * @param datumRange the range
      * @return Strings, possibly with Granny control characters.
      */
     protected String[] tickFormatter(DatumVector tickV, DatumRange datumRange) {
         return datumFormatter.axisFormat(tickV, datumRange);
     }
 
-    /** TODO
-     * @param e
+    /**
+     * target event handlers to reset the axis bounds.
+     * @param e the event 
      */
     @Override
     public void dataRangeSelected(DataRangeSelectionEvent e) {
         this.setDataRange(e.getMinimum(), e.getMaximum());
     }
 
-    /** TODO
-     * @param xDatum
-     * @param direction
-     * @param minor
-     * @return
+    /** 
+     * Locates the next or previous tick starting at xDatum.
      *
+     * @param xDatum  find the tick closest to this.
+     * @param direction  -1 previous, 1 next, 0 closest
+     * @param minor  find closest minor tick, major if false.
+     * @return the closest tick.  If there is no tick in the given direction, then
+     *   the behavior is undefined.
      * @deprecated. Use getTickVDescriptor.findTick
      */
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
         return getTickV().findTick(xDatum, direction, minor);
     }
 
-    /** TODO
-     * @param min0
-     * @param max0
-     * @param min1
-     * @param max1
+    /** 
+     * animate the change from one range to another.
+     * @param min0 the initial range
+     * @param max0 the initial range
+     * @param min1 the final range
+     * @param max1 the final range
      */
     private void animateChange(double min0, double max0, double min1, double max1) {
 
@@ -3507,14 +3675,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /**
      * true if the tick labels should be drawn.
-     * @return
+     * @return true if the tick labels should be drawn.
      */
     public boolean isTickLabelsVisible() {
         return tickLabelsVisible;
     }
 
-    /** TODO
-     * @param b
+    /** 
+     * set true if the tick labels should be drawn.
+     * @param b  true if the tick labels should be drawn.
      */
     public void setTickLabelsVisible(boolean b) {
         if (tickLabelsVisible == b) {
@@ -3526,7 +3695,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange("tickLabelsVisible", oldValue, b);
     }
 
-    /** TODO */
+    /**
+     * perform actions necessary when starting the component, such as handling TCA.
+     */
     @Override
     protected void installComponent() {
         super.installComponent();
@@ -3535,8 +3706,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             maybeStartTcaTimer();
         }
     }
-
-    /** TODO */
+  
+    /**
+     * remove the component row and column update listener.
+     */
     @Override
     protected void uninstallComponent() {
         super.uninstallComponent();
@@ -3555,13 +3728,17 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * create another axis that follows this axis.  It will have the same
      * range.
+     * @param orientation  the position relative to a plot, one of DasAxis.TOP, DasAxis.BOTTOM, DasAxis.LEFT, DasAxis.RIGHT
      * @return attached axis.
      */
     public DasAxis createAttachedAxis(int orientation) {
         return new DasAxis(this.dataRange, orientation);
     }
 
-
+    /**
+     * set the plot that will get updates
+     * @param p plot object.
+     */
     public void setPlot(DasPlot p) {
         dasPlot = p;
     }
@@ -3570,7 +3747,6 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * scan to the previous interval.  If we were looking at a day with fuzz, then
      * scan to the previous day.
-     * TODO: this should check for any ordinal, for example months, hours, or 10 kg.
      */
     public void scanPrevious() {
         setDatumRange( getDatumRange().previous() );
@@ -3584,8 +3760,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         setDatumRange( getDatumRange().next() );
     }
 
-    /** TODO
-     * @return
+    /** 
+     * get the region containing the axis.
+     * @return the region containing the axis.
      */
     @Override
     public Shape getActiveRegion() {
@@ -3609,6 +3786,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * parent panel (this), must not recieve the events.  (This is because
      * the DasPlot between them should get the events, and the DasPlot does
      * not have a simple rectangular boundary.
+     * @param l the listener
      */
     @Override
     public void addMouseWheelListener(MouseWheelListener l) {
@@ -3617,6 +3795,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         secondaryInputPanel.addMouseWheelListener(l);
     }
 
+    /**
+     * remove mouse wheel listener.  
+     * @param l the listener
+     * @see #maybeInitializeInputPanels() 
+     */
     @Override
     public void removeMouseWheelListener(MouseWheelListener l) {
         maybeInitializeInputPanels();
@@ -3624,8 +3807,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         secondaryInputPanel.removeMouseWheelListener(l);
     }
 
-    /** TODO: where are these used?
-     * @param l
+    /**
+     * add mouse wheel listener.  
+     * @param l the listener
+     * @see #maybeInitializeInputPanels() 
      */
     @Override
     public void addMouseListener(MouseListener l) {
@@ -3634,8 +3819,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         secondaryInputPanel.addMouseListener(l);
     }
 
-    /** TODO
-     * @param l
+    /**
+     * remove mouse motion listener.  
+     * @param l the listener
+     * @see #maybeInitializeInputPanels() 
      */
     @Override
     public void removeMouseListener(MouseListener l) {
@@ -3644,8 +3831,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         secondaryInputPanel.removeMouseListener(l);
     }
 
-    /** TODO
-     * @param l
+    /** 
+     * add mouse motion listener.  
+     * @param l the listener
+     * @see #maybeInitializeInputPanels() 
      */
     @Override
     public void addMouseMotionListener(MouseMotionListener l) {
@@ -3654,8 +3843,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         secondaryInputPanel.addMouseMotionListener(l);
     }
 
-    /** TODO
-     * @param l
+    /** 
+     * remove mouse motion listener.  
+     * @param l the listener
+     * @see #maybeInitializeInputPanels() 
      */
     @Override
     public void removeMouseMotionListener(MouseMotionListener l) {
@@ -3664,6 +3855,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         secondaryInputPanel.removeMouseMotionListener(l);
     }
 
+    /**
+     * call back for time range selection event.
+     * @param e the event
+     */
     @Override
     public void timeRangeSelected(TimeRangeSelectionEvent e) {
         if (e.getSource() != this && !e.equals(lastProcessedEvent)) {
@@ -3672,7 +3867,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
-    /** Registers TimeRangeSelectionListener to receive events.
+    /** 
+     * Registers TimeRangeSelectionListener to receive events.
      * @param listener The listener to register.
      */
     public synchronized void addTimeRangeSelectionListener(org.das2.event.TimeRangeSelectionListener listener) {
@@ -3682,15 +3878,16 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         timeRangeListenerList.add(org.das2.event.TimeRangeSelectionListener.class, listener);
     }
 
-    /** Removes TimeRangeSelectionListener from the list of listeners.
+    /** 
+     * Removes TimeRangeSelectionListener from the list of listeners.
      * @param listener The listener to remove.
      */
     public synchronized void removeTimeRangeSelectionListener(org.das2.event.TimeRangeSelectionListener listener) {
         timeRangeListenerList.remove(org.das2.event.TimeRangeSelectionListener.class, listener);
     }
 
-    /** Notifies all registered listeners about the event.
-     *
+    /** 
+     * Notifies all registered listeners about the event.
      * @param event The event to be fired
      */
     private synchronized void fireTimeRangeSelectionListenerTimeRangeSelected(TimeRangeSelectionEvent event) {
@@ -4094,13 +4291,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /**
+     * get the tick length string, for example "0.66em"
+     * @return the tick length string
+     */
     public String getTickLength() {
         return this.tickLenStr;
     }
 
     /**
+     * set the tick length string, for example
      * "0.33em" "5px" "-0.33em"
-     * @param tickLengthStr
+     * @param tickLengthStr the tick length string.
      */
     public void setTickLength( String tickLengthStr ) {
         this.tickLenStr= tickLengthStr;
@@ -4115,10 +4317,18 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     public static final String PROP_FLIPPED = "flipped";
     
+    /**
+     * return true if the axis is flipped.
+     * @return true if the axis is flipped.
+     */
     public boolean isFlipped() {
         return flipped;
     }
 
+    /** 
+     * flip over the axis.
+     * @param b 
+     */
     public void setFlipped(boolean b) {
         boolean oldFlipped= this.flipped;
         update();
@@ -4126,19 +4336,39 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROP_FLIPPED,oldFlipped,flipped);
     }
     
+    /**
+     * the formatString, or "" if default behavior.
+     */
     protected String formatString = "";
+    
     public static final String PROP_FORMATSTRING = "formatString";
 
+    /**
+     * return the format string for each tick.
+     * @return the format string for each tick.
+     */
     public String getFormat() {
         return formatString;
     }
+    
+    /**
+     * true means flip the right label so all vertical labels are facing the same direction.
+     */
     protected boolean flipLabel = false;
     public static final String PROP_FLIPLABEL = "flipLabel";
 
+    /**
+     * true if the right vertical label should be flipped.
+     * @return true if the right vertical label should be flipped.
+     */
     public boolean isFlipLabel() {
         return flipLabel;
     }
 
+    /**
+     * true if the right vertical label should be flipped.
+     * @param flipLabel true if the right vertical label should be flipped.
+     */
     public void setFlipLabel(boolean flipLabel) {
         boolean oldFlipLabel = this.flipLabel;
         this.flipLabel = flipLabel;
@@ -4146,7 +4376,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         firePropertyChange(PROP_FLIPLABEL, oldFlipLabel, flipLabel);
     }
 
-    /** the formatter identified to work with the divider */
+    /**
+     * the formatter identified to work with the divider 
+     */
     protected DatumFormatter dividerDatumFormatter = null;
     public static final String PROP_DIVIDERDATUMFORMATTER = "dividerDatumFormatter";
 
@@ -4163,6 +4395,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected DomainDivider minorTicksDomainDivider = null;
     public static final String PROP_MINORTICKSDOMAINDIVIDER = "minorTicksDomainDivider";
 
+    /**
+     * return the domain divider for minor ticks, or null.
+     * @return  the domain divider for minor ticks, or null.
+     */
     public DomainDivider getMinorTicksDomainDivider() {
         return minorTicksDomainDivider;
     }
@@ -4176,6 +4412,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected DomainDivider majorTicksDomainDivider = null;
     public static final String PROP_MAJORTICKSDOMAINDIVIDER = "majorTicksDomainDivider";
 
+    /**
+     * return the domain divider for major ticks, or null.
+     * @return  the domain divider for major ticks, or null.
+     */
     public DomainDivider getMajorTicksDomainDivider() {
         return majorTicksDomainDivider;
     }
@@ -4189,10 +4429,20 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected boolean useDomainDivider = false;
     public static final String PROP_USEDOMAINDIVIDER = "useDomainDivider";
 
+    /**
+     * true if the domain divider should be used.  This is a new object that
+     * locates ticks.
+     * @return true if the domain divider should be used. 
+     */
     public boolean isUseDomainDivider() {
         return useDomainDivider;
     }
 
+    /**
+     * true if the domain divider should be used.  This is a new object that
+     * locates ticks.
+     * @param useDomainDivider true if the domain divider should be used. 
+     */
     public void setUseDomainDivider(boolean useDomainDivider) {
         boolean oldUseDomainDivider = this.useDomainDivider;
         this.useDomainDivider = useDomainDivider;
@@ -4216,9 +4466,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
-     * set a hint at the format string.  Examples include:
-     *   0.000
-     *   %H:%M!c%Y-%j
+     * set a hint at the format string.  Examples include:<ul>
+     *  <li> 0.000
+     *  <li> %H:%M!c%Y-%j
+     * </ul>
      * @param formatString
      */
     public void setFormat(String formatString) {
@@ -4262,6 +4513,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         at_b = at[1];
     }
 
+    /**
+     * get an object to lock the axis for multiple operations.
+     * @return 
+     */
     public Lock mutatorLock() {
         return dataRange.mutatorLock();
     }
