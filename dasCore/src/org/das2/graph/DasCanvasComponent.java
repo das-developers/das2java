@@ -72,6 +72,9 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         }
     };
     
+    /**
+     * action for entering the properties editor.
+     */
     public static final Action PROPERTIES_ACTION = new CanvasComponentAction("Properties") {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -84,7 +87,12 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     private DasRow row;
     private DasColumn column;
     private ResizeListener rl;
+    
+    /**
+     * the mouse adapter for handling mouse events.
+     */
     protected DasMouseInputAdapter mouseAdapter;
+    
     private String dasName;
     
     /**
@@ -113,6 +121,8 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * attached to the component via the DasMouseInputAdapter.
      * MouseModules will appear the in the order that they
      * are added.
+     * @param module the mouse module to add
+     * @see org.das2.event.MouseModule
      */
     public void addMouseModule(MouseModule module) {
         mouseAdapter.addMouseModule(module);
@@ -121,6 +131,8 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     /**
      * Remove the MouseModule from the list of MouseModules
      * attached to the component via the DasMouseInputAdapter.
+     * @param module the mouse module to remove
+     * @see org.das2.event.MouseModule
      */
     public void removeMouseModule(MouseModule module) {
         mouseAdapter.removeMouseModule(module);
@@ -156,24 +168,6 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         }
     }
 
-    @Override
-    public void setBounds(int x, int y, int width, int height) {
-        if ( getDasName().startsWith("plot_") ) {
-            //new Exception().printStackTrace();
-            //System.err.println( getDasName() + " setBounds(" + new Rectangle(x, y, width, height) + ")" );
-        }
-        super.setBounds(x, y, width, height);
-    }
-
-    @Override
-    public void setBounds(Rectangle r) {
-        //if ( getDasName().startsWith("plot_3") ) {
-        //    System.err.println( getDasName() + " setBounds(" + r );
-        //}
-        super.setBounds(r);
-    }
-
-
     /**
      * class for handling resize events.
      */
@@ -191,6 +185,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * set the DasRow for positioning the component vertically.
      * The current row is disconnected, and a propertyChange is
      * fired.
+     * @param r the DasRow
      */
     public void setRow(DasRow r) {
         if (row == r) {
@@ -214,6 +209,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
      * set the DasColumn for positioning the component horizontally.
      * The current column is disconnected, and a propertyChange is
      * fired.
+     * @param c the DasColumn
      */
     public void setColumn(DasColumn c) {
         if (column == c) {
@@ -302,6 +298,10 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         }
     }
     
+    /**
+     * like processEvent, but we also check the dirty status
+     * @param e the event  
+     */
     protected void processDasUpdateEvent(org.das2.event.DasUpdateEvent e) {
         logger.fine("enter process DasUpdateEvent");
         if (isDisplayable()) {
@@ -342,13 +342,23 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
         return super.coalesceEvents(existingEvent, newEvent);
     }
     
+    /**
+     * currently does nothing.
+     */
     protected void installComponent() {}
     
+    /**
+     * remove the component row and column update listener.
+     */
     protected void uninstallComponent() {
         getRow().removeUpdateListener(rl);
         getColumn().removeUpdateListener(rl);
     }
     
+    /**
+     * return the font used to paint the component.
+     * @return the font.
+     */
     @Override
     public Font getFont() {
         return (getParent() == null ? super.getFont() : getParent().getFont());
@@ -380,7 +390,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     /**
      * mark the component as dirty, providing a reason that is useful 
      * when debugging.
-     * @param note 
+     * @param note a note useful for debugging.
      */
     void markDirty( String note ) {
         boolean loudDebug= false; // ( this instanceof DasAxis ) && ( ((DasAxis)this).isHorizontal() );
@@ -393,8 +403,9 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     }
     
     /**
-     * @return true if the component has been marked as dirty, meaning
+     * Returns true if the component has been marked as dirty, meaning
      * work needs to be done to restore it to a valid state.
+     * @return true if the component has been marked as dirty.
      */
     boolean isDirty() {
         return !dirty.isEmpty();
@@ -467,6 +478,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     /**
      * returns the active region of the canvas component, which is not necessarily the bounds.
+     * @return the active region of the canvas component
      */
     public Shape getActiveRegion() {
         int x = getColumn().getDMinimum();
@@ -493,7 +505,7 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     
     /**
      * return a list of actions.  This is used by the DasMouseInputAdapter.
-     * @return the actions this provides.
+     * @return the actions this provides.  
      */
     public Action[] getActions() {
         return new Action[] {
@@ -502,16 +514,16 @@ public abstract class DasCanvasComponent extends JComponent implements Editable 
     }
     
     /**
-     * Getter for property dasMouseInputAdapter, the DasMouseInputAdapter handling mouse input for the component.
-     * @return Value of property dasMouseInputAdapter.
+     * Get the DasMouseInputAdapter, which handles mouse input for the component.
+     * @return the dasMouseInputAdapter.
      */
     public DasMouseInputAdapter getDasMouseInputAdapter() {
         return this.mouseAdapter;
     }
     
     /**
-     * Setter for property dasMouseInputAdapter.
-     * @param dasMouseInputAdapter New value of property dasMouseInputAdapter.
+     * Set the dasMouseInputAdapter, which handles mouse input for the component
+     * @param dasMouseInputAdapter the dasMouseInputAdapter.
      */
     private void setDasMouseInputAdapter(DasMouseInputAdapter dasMouseInputAdapter) {
         if ( mouseAdapter!=null ) {
