@@ -4283,7 +4283,11 @@ public class Ops {
         /**
          * Unity or boxcar is all ones.
          */
-        Unity 
+        Unity,
+        /**
+         * Unity or boxcar is all ones.
+         */
+        Boxcar
     };
 
     /**
@@ -4474,6 +4478,8 @@ public class Ops {
             return FFTUtil.getWindow10PercentEdgeCosine(len);
         } else if ( filt==FFTFilterType.Unity ) {
             return FFTUtil.getWindowUnity(len);
+        } else if ( filt==FFTFilterType.Boxcar ) {
+            return FFTUtil.getWindowUnity(len);
         } else {
             throw new UnsupportedOperationException("unsupported op: "+filt );
         }
@@ -4493,6 +4499,21 @@ public class Ops {
     }
     
     /**
+     * fftPower that matches the filter call (|fftPower(ds,len,stepFraction,windowName)).
+     * @param ds rank 2 dataset ds(N,M) with M&gt;len
+     * @param windowLen the length of the window.
+     * @param stepFraction size, expressed as a fraction of the length (1 for no slide, 2 for half steps, 4 for quarters)
+     * @param windowName name for the window, including "Hanning" "Hann" "TenPercentEdgeCosine", "Unity", "Boxcar"
+     * @param mon a ProgressMonitor for the process
+     * @return rank 2 fft spectrum
+     * @see #fftPower(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, int, org.das2.util.monitor.ProgressMonitor)
+     */
+    public static QDataSet fftPower( QDataSet ds, int windowLen, int stepFraction, String windowName, ProgressMonitor mon ) {
+        QDataSet window= windowFunction( FFTFilterType.valueOf(windowName), windowLen );
+        return fftPower( ds, window, stepFraction, mon );
+    }
+    
+    /**
      * create a power spectrum on the dataset by breaking it up and
      * doing FFTs on each segment.
      *
@@ -4507,9 +4528,9 @@ public class Ops {
      * I verified this is not done, see 
      * sftp://jbf@jfaden.net/home/jbf/ct/autoplot/script/bugs/1317/testWindowFunctionNormalization.jy
      *
-     * @param ds rank 2 dataset ds(N,M) with M>len
+     * @param ds rank 2 dataset ds(N,M) with M&gt;len
      * @param window window to apply to the data before performing FFT (Hann,Unity,etc.)
-     * @param stepFraction size, expressed as a fraction of the length (1 for no slide, 2 for half steps, 4 for quarters);
+     * @param stepFraction size, expressed as a fraction of the length (1 for no slide, 2 for half steps, 4 for quarters)
      * @param mon a ProgressMonitor for the process
      * @return rank 2 fft spectrum
      */
