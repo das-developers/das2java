@@ -23,8 +23,6 @@
 package org.das2.graph;
 
 import org.das2.dataset.DataSetDescriptor;
-import org.das2.dataset.VectorDataSet;
-import org.das2.datum.Units;
 import org.das2.DasException;
 import org.das2.util.monitor.ProgressMonitor;
 import java.awt.*;
