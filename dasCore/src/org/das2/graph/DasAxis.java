@@ -1087,14 +1087,24 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     /**
      * if true then additional ephemeris (TCA) ticks are drawn.
      * @return if true then additional ticks are drawn.
-     * TODO: this should be isDrawTca
+     * @deprecated use isDrawTca()
      */
     public boolean getDrawTca() {
-        return drawTca;
+        return isDrawTca();
     }
 
     /**
-     * turn on additional tick labels using the TCA function.
+     * true if additional tick labels are drawn using the TCA function.
+     * @return true if additional ticks will be drawn.
+     * @see #setTcaFunction(org.virbo.dataset.QFunction) 
+     */    
+    public boolean isDrawTca() {
+        return drawTca;
+    }
+    
+
+    /**
+     * if true then turn on additional tick labels using the TCA function.
      * @param b if true then additional ticks will be drawn.
      * @see #setTcaFunction(org.virbo.dataset.QFunction) 
      */
@@ -3607,7 +3617,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
             logger.fine("animate axis");
 
-            boolean drawTca0 = getDrawTca();
+            boolean drawTca0 = isDrawTca();
             setDrawTca(false);
 
             long t0 = System.currentTimeMillis();
