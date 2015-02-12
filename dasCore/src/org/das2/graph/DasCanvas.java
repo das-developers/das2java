@@ -91,6 +91,7 @@ import java.util.TimeZone;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -476,7 +477,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
     /**
      * remove all top decorators.  This should be done on the event thread.
-     * @param painter 
      */
     public void removeTopDecorators() {
         this.topDecorators.clear( );
@@ -1052,22 +1052,28 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
 
-        DasPNGEncoder encoder = new DasPNGEncoder();
-        encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
-        javax.swing.JFrame f= DasApplication.getDefaultApplication().getMainFrame();
-        if ( f!=null ) {
-            String title= f.getTitle();
-            int i= title.indexOf(" - Autoplot");
-            if ( i>-1 ) {
-                title= title.substring(i+3) + " > " + title.substring(0,i); // Autoplot > foo.vap
-            }
-            encoder.addText(DasPNGConstants.KEYWORD_SOFTWARE, title );
-        }
-        encoder.addText(DasPNGConstants.KEYWORD_PLOT_INFO, getImageMetadata() );
-
-        logger.fine("Encoding image into png");
-        encoder.write(image, out);
+        
+        if ( getBackground().getAlpha()>0 ) {
+            logger.fine("Encoding image into png");
             
+            DasPNGEncoder encoder = new DasPNGEncoder();
+            encoder.addText(DasPNGConstants.KEYWORD_CREATION_TIME, new Date().toString());
+            javax.swing.JFrame f= DasApplication.getDefaultApplication().getMainFrame();
+            if ( f!=null ) {
+                String title= f.getTitle();
+                int i= title.indexOf(" - Autoplot");
+                if ( i>-1 ) {
+                    title= title.substring(i+3) + " > " + title.substring(0,i); // Autoplot > foo.vap
+                }
+                encoder.addText(DasPNGConstants.KEYWORD_SOFTWARE, title );
+            }
+            encoder.addText(DasPNGConstants.KEYWORD_PLOT_INFO, getImageMetadata() );
+
+            encoder.write(image, out);
+        } else {
+            logger.info("ImageIO used to create image with transparent background, no metadata will be put in image.");
+            ImageIO.write(image, "png", out );
+        }
     }
     
     /*
@@ -1444,7 +1450,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         prepareForOutput(width, height);
 
-        final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        final BufferedImage image = getBackground().getAlpha() > 0 ? new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB) :
+                new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB );
 
         if (SwingUtilities.isEventDispatchThread()) {
             writeToImageImmediately(image);
@@ -1530,9 +1537,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         } catch (InterruptedException ex) {
         }
         graphics = (Graphics2D) image.getGraphics();
-        graphics.setColor(this.getBackground());
-        graphics.fillRect(0, 0, image.getWidth(this), image.getHeight(this));
-        graphics.setColor(this.getForeground());
+        if ( this.getBackground().getAlpha()>0 ) {
+            graphics.setColor(this.getBackground());
+            graphics.fillRect(0, 0, image.getWidth(this), image.getHeight(this));
+            graphics.setColor(this.getForeground());
+        }
         graphics.setBackground(this.getBackground());
         print(graphics);
     }
