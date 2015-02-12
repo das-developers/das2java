@@ -75,6 +75,7 @@ public class ArgumentList {
     
     /**
      * get the value for this parameter
+     * @param key the argument identifier.
      * @return the parameter's value.
      * @throws IllegalArgumentException if the parameter name was never described.
      */
@@ -92,12 +93,18 @@ public class ArgumentList {
      * @return  /home/jbf/data/files/afile/foo.txt because PWD is /home/jbf/data
      */
     public static String makeFileReferenceAbsolute( String ref ) {
-        File ff= new File(ref);
-        if ( !ff.isAbsolute() ) {
-            return ff.getAbsolutePath();
+        if ( ref.startsWith("file://") ) ref= ref.substring(7);
+        if ( ref.startsWith("file:" ) ) ref= ref.substring(5);
+        if ( ref.startsWith("http://") || ref.startsWith("https://") || ref.startsWith("sftp://") || ref.startsWith("ftp://") ) {
+            throw new IllegalArgumentException("local file reference expected");
         } else {
-            return ref;
-        }
+            File ff= new File(ref);
+            if ( !ff.isAbsolute() ) {
+                return ff.getAbsolutePath();
+            } else {
+                return ref;
+            }
+        } 
     }
     
     /**
