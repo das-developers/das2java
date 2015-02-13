@@ -44,6 +44,11 @@ public class DataSetWrapper extends AbstractDataSet {
     }
 
     @Override
+    public double value(int i0, int i1, int i2, int i3) {
+        return ds.value(i0, i1, i2, i3);
+    }
+    
+    @Override
     public double value(int i0, int i1, int i2) {
         return ds.value(i0, i1, i2);
     }
@@ -72,6 +77,11 @@ public class DataSetWrapper extends AbstractDataSet {
     public Object property(String name) {
         Object v= super.property( name );
         return v!=null ? v : ds.property(name);
+    }
+
+    @Override
+    public int length(int i, int j, int k) {
+        return ds.length(i, j, k);
     }
 
     @Override
