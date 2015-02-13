@@ -67,6 +67,7 @@ public class NameContext {
      * characters and '_'.
      * @param name the name for the value to be associated with
      * @param value the value being named
+     * @throws org.das2.DasNameException when the name is not a valid name ("[A-Za-z][A-Za-z0-9_]*")
      */
     public void put(String name, Object value) throws DasNameException {
         Matcher m = SIMPLE_NAME.matcher(name);
