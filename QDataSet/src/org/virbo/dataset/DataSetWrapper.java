@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.virbo.dataset;
 
 /**
@@ -11,7 +6,9 @@ package org.virbo.dataset;
  * @see WritableDataSetWrapper which makes the values writable.
  */
 public class DataSetWrapper extends AbstractDataSet {
+    
     QDataSet ds;
+    
     public DataSetWrapper( QDataSet ds ) {
         this.ds= ds;
         for ( int i=0; i<ds.rank(); i++ ) {
@@ -63,6 +60,7 @@ public class DataSetWrapper extends AbstractDataSet {
         return ds.value(i);
     }
 
+    @Override
     public int rank() {
         return ds.rank();
     }
