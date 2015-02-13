@@ -404,7 +404,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     private JPopupMenu popup;
     private boolean editable;
     
-    List devicePositionList = new ArrayList();
+    List<DasDevicePosition> devicePositionList = new ArrayList();
     transient org.das2.util.DnDSupport dndSupport;
     ChangesSupport stateSupport;
     /** The set of Threads that are currently printing this canvas.
@@ -413,8 +413,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      */
     private Set printingThreads;
 
-    /** Creates a new instance of DasCanvas
-     * TODO
+    /** 
+     * Creates a new instance of DasCanvas.
+     * 
      */
     public DasCanvas() {
         LookAndFeel.installColorsAndFont(this, "Panel.background", "Panel.foreground", "Panel.font");
@@ -514,7 +515,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     
     /**
      * remove all bottom decorators.  This should be done on the event thread.
-     * @param painter 
      */    
     public void removeBottomDecorators() {
         this.bottomDecorators.clear( );
@@ -533,11 +533,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     private MouseInputAdapter createMouseInputAdapter() {
         return new MouseInputAdapter() {
 
+            @Override
             public void mousePressed(MouseEvent e) {
                 makeCurrent();
                 if ( e.isPopupTrigger() && e.getX()<10 && e.getY()<10 ) popup.show(DasCanvas.this, e.getX(), e.getY());
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 makeCurrent();
                 if ( e.isPopupTrigger() && e.getX()<10 && e.getY()<10 ) popup.show(DasCanvas.this, e.getX(), e.getY());
@@ -557,9 +559,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         Action[] actions = getActions();
         if ( !disableActions ) {
-            for (int iaction = 0; iaction < actions.length; iaction++) {
+            for (Action action : actions) {
                 JMenuItem item = new JMenuItem();
-                item.setAction(actions[iaction]);
+                item.setAction(action);
                 popup.add(item);
             }
         }
@@ -574,8 +576,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return glassPane;
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return a list of all the rows and columns.
+     * @return a list of all the rows and columns.
      */
     public List getDevicePositionList() {
         return Collections.unmodifiableList(devicePositionList);
@@ -616,8 +619,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
 
-    /** Creates a new instance of DasCanvas with the specified width and height
-     * TODO
+    /** 
+     * Creates a new instance of DasCanvas with the specified width and height
      * @param width The width of the DasCanvas
      * @param height The height of the DasCanvas
      */
@@ -634,16 +637,20 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         this.application = application;
     }
 
-    /** simply returns getPreferredSize().
+    /** 
+     * simply returns getPreferredSize()
      * @return getPreferredSize()
      */
+    @Override
     public Dimension getMaximumSize() {
         return getPreferredSize();
     }
 
-    /** paints the canvas itself.  If printing, stamps the date on it as well.
-     * @param gl the Graphics object
+    /** 
+     * paints the canvas itself.  If printing, stamps the date on it as well.
+     * @param g1 the Graphics object
      */
+    @Override
     protected void paintComponent(Graphics g1) {
         logger.finest("entering DasCanvas.paintComponent");
 
@@ -714,12 +721,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
     }
 
-    /** Prints the canvas, scaling and possibly rotating it to improve fit.
+    /** 
+     * Prints the canvas, scaling and possibly rotating it to improve fit.
      * @param printGraphics the Graphics object.
      * @param format the PageFormat object.
      * @param pageIndex should be 0, since the image will be on one page.
      * @return Printable.PAGE_EXISTS or Printable.NO_SUCH_PAGE
      */
+    @Override
     public int print(Graphics printGraphics, PageFormat format, int pageIndex) {
 
         if (pageIndex != 0) return NO_SUCH_PAGE;
@@ -759,7 +768,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * swing to handle the DasCanvasComponents.
      */
     protected static class RowColumnLayout implements LayoutManager {
-
+        @Override
         public void layoutContainer(Container target) {
             synchronized (target.getTreeLock()) {
                 int count = target.getComponentCount();
@@ -774,23 +783,24 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 }
             }
         }
-
+        @Override
         public Dimension minimumLayoutSize(Container target) {
             return new Dimension(0, 0);
         }
-
+        @Override
         public Dimension preferredLayoutSize(Container target) {
             return new Dimension(400, 300);
         }
-
+        @Override
         public void addLayoutComponent(String name, Component comp) {
         }
-
+        @Override
         public void removeLayoutComponent(Component comp) {
         }
     }
 
     /**
+     * return true if the current thread is registered as the one printing this component.
      * @return true if the current thread is registered as the one printing this component.
      */
     protected final boolean isPrintingThread() {
@@ -807,6 +817,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return this.lpaintingForPrint;
     }
 
+    /**
+     * print the canvas, filling the background and the painting.
+     * @param g1 the graphics context.
+     */
     @Override
     public void print(Graphics g1) {
         synchronized (this) {
@@ -852,7 +866,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
 
-    /** Returns an instance of <code>java.awt.print.Printable</code> that can
+    /** 
+     * Returns an instance of <code>java.awt.print.Printable</code> that can
      * be used to render this canvas to a printer.  The current implementation
      * returns a reference to this canvas.  This method is provided so that in
      * the future, the canvas can delegate it's printing to another object.
@@ -864,7 +879,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
     /**
      * return the colorbar or null if there is not a single, unique colorbar.
-     * @param plot
+     * @param plot a das plot
      * @return null or the single colorbar.
      */
     private DasColorBar findOneColorBar( DasPlot plot ) {
@@ -881,11 +896,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
     
     /**
-     * encode the plot in a JSON fragment.
+     * encode the plot in a JSON fragment.  See http://autoplot.org/richPng
      * @param plot the plot to describe.
      * @param indent indent new lines this amount
      * @param isInList is in list, so append a comma after the y_axis.
-     * @return
+     * @return the JSON code
      */
     private String getJSONForPlot( DasPlot plot, String indent, boolean isInList ) {
         DasColorBar cb= findOneColorBar(plot);
@@ -1032,7 +1047,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             int z0= ( image.getRGB( 150,150 ) & 0xFF );
             double dz= 0;
             for ( int i=0; i<50; i++ ) {
-                int c=  ( image.getRGB( 150,150-i ) );
                 //System.err.println( String.format( "%d %d %d %d", i, ( c & 0xFF0000 ) >> 16, ( c & 0x00FF00 ) >> 8, c & 0x0000FF ) );
                 int z1= ( image.getRGB( 150,150-i ) & 0xFF );
 
@@ -1051,8 +1065,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 broken= null;
             }
         }
-
-        
+       
         if ( getBackground().getAlpha()>0 ) {
             logger.fine("Encoding image into png");
             
@@ -1068,7 +1081,6 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 encoder.addText(DasPNGConstants.KEYWORD_SOFTWARE, title );
             }
             encoder.addText(DasPNGConstants.KEYWORD_PLOT_INFO, getImageMetadata() );
-
             encoder.write(image, out);
         } else {
             logger.info("ImageIO used to create image with transparent background, no metadata will be put in image.");
@@ -1076,17 +1088,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
     
-    /*
+    /**
      * uses getImage to get an image of the canvas and encodes it
      * as a png.
      *
-     * Note this now puts in a JSON representation of plot locations in the "plotInfo" tag.  The plotInfo
-     * tag will contain:
-     *   "size:[640,480]"
-     *   "numberOfPlots:0"   
-     *   "plots: { ... }"  where each plot contains:
-     *   "title" "xaxis" "yaxis"
-     *
+     * Note this now puts in a JSON representation of plot locations in the "plotInfo" tag.  
+     * See http://autoplot.org/richPng
      * @param filename the specified filename
      * @throws IOException if there is an error opening the file for writing
      */
@@ -1113,6 +1120,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         
     }
 
+    /**
+     * write the canvas to a PDF file.
+     * @param filename the PDF file name.
+     * @throws IOException 
+     */
     public void writeToPDF(String filename) throws IOException {
         try {
             writeToGraphicsOutput(filename, "org.das2.util.awt.PdfGraphicsOutput");
@@ -1143,6 +1155,16 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         go.finish();
     }
 
+    /**
+     * write to future implementations of graphicsOutput.
+     * @param filename
+     * @param graphicsOutput
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws InstantiationException
+     * @throws IllegalAccessException 
+     * @see org.das2.util.awt.GraphicsOutput
+     */
     public void writeToGraphicsOutput(String filename, String graphicsOutput)
             throws IOException, ClassNotFoundException,
             InstantiationException, IllegalAccessException {
@@ -1175,19 +1197,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     /**
-     * returns true if work needs to be done to make the canvas clean.  This checks each component's
-     * isDirty.
-     * 
-     * @return
+     * returns true if work needs to be done to make the canvas clean.  
+     * This checks each component's isDirty.
+     * @return true if work needs to be done to make the canvas clean
      */
     public boolean isDirty() {
         DasCanvasComponent[] cc = this.getCanvasComponents();
         boolean result = false;
-        for (int i = 0; i < cc.length; i++) {
-            boolean dirty1=cc[i].isDirty();
-            if ( dirty1 ) {
+        for (DasCanvasComponent cc1 : cc) {
+            boolean dirty1 = cc1.isDirty();
+            if (dirty1) {
                 logger.log(Level.FINE, "component is marked as dirty: {0}", cc[1]);
-                cc[i].isDirty();
+                cc1.isDirty();
             }
             result = result | dirty1 ;
         }
@@ -1197,15 +1218,15 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     /**
      * return a progress monitor if there is one that is active, and we are
      * using progress monitors.
-     * @return 
+     * @return progress monitor
      */
     private ProgressMonitor getActiveMonitor() {
         MonitorFactory mf= getApplication().getMonitorFactory();
         if ( mf instanceof DefaultMonitorFactory ) {
             DefaultMonitorFactory dmf= (DefaultMonitorFactory)mf;
             MonitorEntry[] mfs= dmf.getMonitors();
-            for ( int i=0; i<mfs.length; i++ ) {
-                ProgressMonitor mon= mfs[i].getMonitor();
+            for (MonitorEntry mf1 : mfs) {
+                ProgressMonitor mon = mf1.getMonitor();
                 if ( mon.isStarted() && !( mon.isFinished() && mon.isCancelled() ) ) {
                     return mon;
                 }
@@ -1236,6 +1257,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     /**
      * Blocks the caller's thread until all events have been dispatched from the awt event thread, and
      * then waits for the RequestProcessor to finish all tasks with this canvas as the lock object.
+     * @throws java.lang.InterruptedException
      */
     public void waitUntilIdle() throws InterruptedException {
 
@@ -1276,6 +1298,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         
         /* wait for all the RequestProcessor to complete */
         Runnable request = new Runnable() {
+            @Override
             public void run() {
                 synchronized (lockObject) {
                     lockObject.notifyAll();
@@ -1306,7 +1329,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             logger.finer("waiting for pending changes");
             while (stateSupport.isPendingChanges()) {
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(100); 
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -1357,8 +1380,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * validate or revalidate should probably do this.
      */
     public void resizeAllComponents() {
-        for ( int i=0; i<devicePositionList.size(); i++ ) {
-            ((DasDevicePosition)devicePositionList.get(i)).revalidate();
+        for (DasDevicePosition devicePositionList1 : devicePositionList) {
+            devicePositionList1.revalidate();
         }
         for (int i = 0; i < getComponentCount(); i++) {
             Component c = getComponent(i);
@@ -1400,7 +1423,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     /**
      * resets the width and height, then waits for all update
      * messages to be processed.  In headless mode,
-     * the gui components are validated.
+     * the GUI components are validated.
      * This must not be called from the event queue, because
      * it uses eventQueueBlocker!
      *
@@ -1439,7 +1462,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * 
      * @param width
      * @param height
-     * @return
+     * @return a BufferedImage
      */
     public BufferedImage getImage(int width, int height) {
 
@@ -1457,7 +1480,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             writeToImageImmediately(image);
         } else {
             Runnable run = new Runnable() {
-
+                @Override
                 public void run() {
                     logger.fine("writeToImageImmediately");
                     writeToImageImmediately(image);
@@ -1487,7 +1510,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      *
      * @param width
      * @param height
-     * @return
+     * @return an Image
      */
     public Image getImageNonPrint(int width, int height) {
 
@@ -1504,7 +1527,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             writeToImageImmediatelyNonPrint(image);
         } else {
             Runnable run = new Runnable() {
-
+                @Override
                 public void run() {
                     logger.fine("writeToImageImmediately");
                     writeToImageImmediatelyNonPrint(image);
@@ -1523,8 +1546,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return image;
     }
 
-    /** TODO
-     * @param image
+    /** 
+     * Writes on to the image without waiting, using the print method.
+     * The graphics context is accessed with image.getGraphics.
+     * @param image the image 
      */
     public void writeToImageImmediately(Image image) {
         Graphics2D graphics;
@@ -1550,6 +1575,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * This by passes the normal print method used in writeToImageImmedately, which sets the printing flags which
      * tell the components, like DasPlot, to fully reset.  This was introduced so that Autoplot could get thumbnails
      * and an image of the canvas for its layout tab without having to reset.
+     * @param image the image
      */
      public void writeToImageImmediatelyNonPrint( Image image ) {
         long t0= System.currentTimeMillis();
@@ -1581,12 +1607,14 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     private transient PropertyChangeListener repaintListener= new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             repaint();
         }
     };
 
-    /** This methods adds the specified <code>DasCanvasComponent</code> to this canvas.
+    /** 
+     * This methods adds the specified <code>DasCanvasComponent</code> to this canvas.
      * @param c the component to be added to this canvas
      * Note that the canvas will need to be revalidated after the component
      * is added.
@@ -1607,7 +1635,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         column.addPropertyChangeListener(repaintListener);
     }
 
-    /** TODO
+    /** 
+     * This is doing something special setting the LAYER_PROPERTY.  We
+     * check to see if the property is already set, and if it is not then 
+     * we set it to the default value. (This is to allow client code to 
+     * set it before adding the component.)
      * @param comp
      * @param constraints
      * @param index
@@ -1664,7 +1696,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         if (getParent() != null) ((JComponent) getParent()).revalidate();
     }
 
-
+    /**
+     * The font used should be the base font scaled based on the canvas size.
+     * If this is false, then the canvas font is simply the base font.
+     */    
     protected boolean scaleFonts = true;
 
     /**
@@ -1673,10 +1708,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      */
     public static final String PROP_SCALEFONTS = "scaleFonts";
 
+    /**
+     * true if the fonts should be rescaled as the window size is changed.
+     * @return true if the fonts should be rescaled as the window size is changed.
+     */
     public boolean isScaleFonts() {
         return scaleFonts;
     }
 
+    /**
+     * true if the fonts should be rescaled as the window size is changed.
+     * @param scaleFonts true if the fonts should be rescaled as the window size is changed.
+     */
     public void setScaleFonts(boolean scaleFonts) {
         boolean oldScaleFonts = this.scaleFonts;
         this.scaleFonts = scaleFonts;
@@ -1684,12 +1727,19 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         firePropertyChange(PROP_SCALEFONTS, oldScaleFonts, scaleFonts);
     }
 
+    /**
+     * Property name for the base font.
+     */
     public static final String PROP_BASEFONT= "baseFont";
 
+    /**
+     * the base font, which is the font or the font which is scaled when scaleFont is true.
+     */
     private Font baseFont = null;
 
-    /** TODO
-     * @return
+    /** 
+     * the base font, which is the font or the font which is scaled when scaleFont is true.
+     * @return the base font, which is the font or the font which is scaled when scaleFont is true.
      */
     public Font getBaseFont() {
         if (baseFont == null) {
@@ -1699,12 +1749,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     /**
-     * The base font is the font from which all other fonts should be derived.  When the
-     * canvas is resized, the base font size is scaled.
+     * the base font, which is the font or the font which is scaled with canvas size when scaleFont is true.
      * @param font the font used to derive all other fonts.
      */
     public void setBaseFont(Font font) {
-        logger.fine("setBaseFont("+font+")");
+        logger.log(Level.FINE, "setBaseFont({0})", font);
         Font oldFont = getFont();
         Font oldBaseFont= baseFont;
         this.baseFont = font;
@@ -1745,7 +1794,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
     private ComponentListener createResizeListener() {
         return new ComponentAdapter() {
-
+            @Override
             public void componentResized(ComponentEvent e) {
                 Font aFont;
                 if ( scaleFonts ) {
@@ -1760,7 +1809,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         };
     }
 
-    /** Returns the DasCanvasComponent that contains the (x, y) location.
+    /** 
+     * Returns the DasCanvasComponent that contains the (x, y) location.
      * If there is no component at that location, this method
      * returns <CODE>null</CODE>
      * @param x the x coordinate
@@ -1783,7 +1833,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
     /**
      * Removes the component, specified by <code>index</code>,
-     * from this container.
+     * from this container, calling its uninstallComponent 
+     * method if it's a DasCanvasComponent.
      * @param     index   the index of the component to be removed.
      */
     @Override
@@ -1795,6 +1846,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
 
+    /**
+     * Removes the component, specified by <code>index</code>,
+     * from this container, calling its uninstallComponent 
+     * method if it's a DasCanvasComponent.
+     * @param     comp  the component
+     */
     @Override
     public void remove(Component comp) {
         super.remove(comp); 
@@ -1882,6 +1939,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                     }
                     target = glassPane.target = cellBounds;
                     if (cellBounds != null) {
+                        assert target!=null;
                         glassPane.repaint(target.x - 1, target.y - 1, target.width + 2, target.height + 2);
                     }
                 }
@@ -1890,6 +1948,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             return -1;
         }
 
+        @Override
         protected void done() {
             glassPane.setAccepting(false);
             if (glassPane.target != null) {
@@ -1899,6 +1958,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
 
+        @Override
         protected boolean importData(Transferable t, int x, int y, int action) {
             boolean success = false;
             try {
@@ -1942,6 +2002,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             return success;
         }
 
+        @Override
         protected Transferable getTransferable(int x, int y, int action) {
             DasCanvasComponent component = DasCanvas.this.getCanvasComponentAt(x, y);
             if (component instanceof DasColorBar) {
@@ -1955,6 +2016,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
 
+        @Override
         protected void exportDone(Transferable t, int action) {
         }
     }
@@ -2001,6 +2063,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
 
+        /**
+         * set the DragRenderer to be painted on the glasspane.  
+         * @param r DragRenderer, for example the CrossHairRenderer or BoxZoomGesturesRenderer
+         * @param p1 the start point to render
+         * @param p2 the current point to render
+         */
         public void setDragRenderer(DragRenderer r, Point p1, Point p2) {
             this.dragRenderer = r;
             this.p1 = p1;
@@ -2043,8 +2111,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
                     RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
             DasCanvas canvas = getCanvas();
-            for (Iterator i = canvas.devicePositionList.iterator(); i.hasNext();) {
-                DasDevicePosition d = (DasDevicePosition) i.next();
+            for (DasDevicePosition d : canvas.devicePositionList) {
                 double minimum = d.getMinimum();
                 double maximum = d.getMaximum();
                 int cWidth = canvas.getWidth();
@@ -2087,45 +2154,58 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
         }
 
+        @Override
         public void mouseDragged(MouseEvent e) {
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
 
+        @Override
         public void mouseMoved(MouseEvent e) {
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         }
 
         /** Invoked when a key has been pressed.
          * See the class description for {@link KeyEvent} for a definition of
          * a key pressed event.
+         * @param e
          */
+        @Override
         public void keyPressed(KeyEvent e) {
         }
 
         /** Invoked when a key has been released.
          * See the class description for {@link KeyEvent} for a definition of
          * a key released event.
+         * @param e
          */
+        @Override
         public void keyReleased(KeyEvent e) {
         }
 
         /** Invoked when a key has been typed.
          * See the class description for {@link KeyEvent} for a definition of
          * a key typed event.
+         * @param e
          */
+        @Override
         public void keyTyped(KeyEvent e) {
         }
     }
@@ -2352,16 +2432,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return false;
     }
 
-    /** TODO
-     * @return
+    /** 
+     * return the name identifying the component.
+     * @return the name identifying the component.
      */
     public String getDasName() {
         return dasName;
     }
 
-    /** TODO
-     * @param name
-     * @throws DasNameException
+    /** 
+     * set the name identifying the component.
+     * @param name the name identifying the component.
+     * @throws org.das2.DasNameException when the name is not a valid name ("[A-Za-z][A-Za-z0-9_]*")
      */
     public void setDasName(String name) throws org.das2.DasNameException {
         if (name.equals(dasName)) {
@@ -2379,15 +2461,28 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         this.firePropertyChange("name", oldName, name);
     }
 
+    /**
+     * return the application object for this canvas.
+     * @return the application object for this canvas.
+     */
     public DasApplication getDasApplication() {
         return getApplication();
     }
 
 
+    /**
+     * return the component at the index.
+     * @param index the index
+     * @return the component at the index.
+     */
     public DasCanvasComponent getCanvasComponents(int index) {
         return (DasCanvasComponent) getComponent(index + 1);
     }
 
+    /**
+     * return the components.
+     * @return  the components.
+     */
     public DasCanvasComponent[] getCanvasComponents() {
         Component[] cc= getComponents();
         int n = cc.length - 1;
@@ -2591,21 +2686,21 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         firePropertyChange("printingTag", old, printingTag);
     }
     /**
-     * Holds value of property textAntiAlias.
+     * if true if fonts will be fully rendered.
      */
     private boolean textAntiAlias = true;
 
     /**
-     * Getter for property textAntiAlias.
-     * @return Value of property textAntiAlias.
+     * return true if fonts will be fully rendered.
+     * @return true if fonts will be fully rendered.
      */
     public boolean isTextAntiAlias() {
         return this.textAntiAlias;
     }
 
     /**
-     * Setter for property textAntiAlias.
-     * @param textAntiAlias New value of property textAntiAlias.
+     * true if fonts will be fully rendered.
+     * @param textAntiAlias true if fonts will be fully rendered.
      */
     public void setTextAntiAlias(boolean textAntiAlias) {
         boolean old = this.textAntiAlias;
@@ -2613,21 +2708,21 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         firePropertyChange("textAntiAlias", old, textAntiAlias);
     }
     /**
-     * Holds value of property antiAlias.
+     * true if data will be fully rendered with anti-aliasing.
      */
     private boolean antiAlias = "on".equals(DasProperties.getInstance().get("antiAlias"));
 
     /**
-     * Getter for property antiAlias.
-     * @return Value of property antiAlias.
+     * true if data will be fully rendered with anti-aliasing.
+     * @return true if data will be fully rendered with anti-aliasing.
      */
     public boolean isAntiAlias() {
         return this.antiAlias;
     }
 
     /**
-     * Setter for property antiAlias.
-     * @param antiAlias New value of property antiAlias.
+     * true if data will be fully rendered with anti-aliasing.
+     * @param antiAlias if data will be fully rendered with anti-aliasing.
      */
     public void setAntiAlias(boolean antiAlias) {
         boolean old = this.antiAlias;
@@ -2646,6 +2741,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return fitted;
     }
 
+    /**
+     * If true, and the canvas was added to a scrollpane, the canvas
+     * will size itself to fit within the scrollpane.
+     * 
+     * @param fitted value of fitted property
+     */
     public void setFitted(boolean fitted) {
         boolean oldValue = this.fitted;
         this.fitted = fitted;
@@ -2654,16 +2755,18 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     /**
-     * set the current canvas;
+     * make this the current canvas
      */
     public final void makeCurrent() {
         currentCanvas= this;
     }
 
+    @Override
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
     }
 
+    @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         switch (orientation) {
             case SwingConstants.HORIZONTAL:
@@ -2675,6 +2778,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
 
+    @Override
     public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
         switch (orientation) {
             case SwingConstants.HORIZONTAL:
@@ -2686,10 +2790,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
     }
 
+    @Override
     public boolean getScrollableTracksViewportWidth() {
         return fitted;
     }
 
+    @Override
     public boolean getScrollableTracksViewportHeight() {
         return fitted;
     }
@@ -2728,7 +2834,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     /**
      * returns true if there are changes pending.
      * @see ChangesSupport
-     * @return
+     * @return true if there are changes pending.
      */
     public boolean isPendingChanges() {
         return stateSupport.isPendingChanges();
@@ -2737,7 +2843,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     /**
      * access the lock for an atomic operation. 
      * @see ChangesSupport
-     * @return
+     * @return the lock.
      */
     public Lock mutatorLock() {
         return stateSupport.mutatorLock();
@@ -2746,7 +2852,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     /**
      * returns true if an operation is being performed that should be treated as atomic.
      * @see ChangesSupport
-     * @return
+     * @return true if an operation is being performed that should be treated as atomic.
      */
     public boolean isValueAdjusting() {
         return stateSupport.isValueAdjusting();
