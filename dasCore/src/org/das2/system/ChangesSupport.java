@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * mutatorLock() is a way for a client to get exclusive, read-only access to a bean.  This also sets the valueAdjusting
  * property.
  *
- * See http://das2.org/wiki/index.php/Pending_changes
+ * See http://das2.org/wiki/index.php/Pending_changes (Wiki was lost, but may be recoverable.)
  * @author jbf
  */
 public class ChangesSupport {
@@ -31,7 +31,7 @@ public class ChangesSupport {
     /**
      * if the propertyChangeSupport is provided, then change messages will be sent to
      * it directly.  If null, then one is created with the parent as the source.
-     * @param pcs
+     * @param pcs the PropertyChangeSupport 
      * @param parent  the object this is supporting, for debugging purposes.
      */
     public ChangesSupport(PropertyChangeSupport pcs, Object parent) {
@@ -46,9 +46,10 @@ public class ChangesSupport {
     /**
      * the client knows a change will be coming, and the canvas' clients should
      * know that its current state will change soon.  Example pending changes
-     * would be:
-     *   layout because tick labels are changing
-     *   data is loading
+     * would be:<ul>
+     *   <li>layout because tick labels are changing
+     *   <li>data is loading
+     * </ul>
      * Note, it is okay to call this multiple times for the same client and lock object.
      * @param client the object that will perform the change.  This allows the
      *   canvas (and developers) identify who has registered the change.
@@ -98,8 +99,8 @@ public class ChangesSupport {
     }
 
     /**
-     * the change is complete, and as far as the client is concerned, the canvas
-     * is valid.
+     * the change is complete, and as far as the client is concerned, 
+     * the canvas is valid.
      * @param lockObject
      */
     public synchronized void changePerformed(Object client, Object lockObject) {
@@ -114,43 +115,47 @@ public class ChangesSupport {
     public static final String PROP_PENDINGCHANGES = "pendingChanges";
 
     /**
-     * someone has registered a pending change.
+     * true if someone has registered a pending change.
+     * @return true if someone has registered a pending change.
      */
     public boolean isPendingChanges() {
         return changesPending.size() > 0;
     }
+    
     public static final String PROP_VALUEADJUSTING = "valueAdjusting";
 
     /**
-     * the bean state is rapidly changing.
-     * @return
+     * true when the bean state is rapidly changing.
+     * @return true when the bean state is rapidly changing.
      */
     public boolean isValueAdjusting() {
         return valueIsAdjusting;
     }
     private boolean valueIsAdjusting = false;
 
-    private Lock mutatorLock = new ReentrantLock() {
-            public void lock() {
-                super.lock();
-                if (valueIsAdjusting) {
-                    //System.err.println("lock is already set!");
-                } else {
-                    propertyChangeSupport.firePropertyChange( PROP_VALUEADJUSTING, false, true );
-                    valueIsAdjusting = true;
-                }
+    private final Lock mutatorLock = new ReentrantLock() {
+        @Override
+        public void lock() {
+            super.lock();
+            if (valueIsAdjusting) {
+                //System.err.println("lock is already set!");
+            } else {
+                propertyChangeSupport.firePropertyChange( PROP_VALUEADJUSTING, false, true );
+                valueIsAdjusting = true;
             }
+        }
 
-            public void unlock() {
-                super.unlock();
-                if ( !super.isLocked() ) {
-                    valueIsAdjusting = false;
-                    propertyChangeSupport.firePropertyChange( PROP_VALUEADJUSTING, true, false );
-                } else {
-                    //System.err.println("lock is still set, neat!");
-                }
+        @Override
+        public void unlock() {
+            super.unlock();
+            if ( !super.isLocked() ) {
+                valueIsAdjusting = false;
+                propertyChangeSupport.firePropertyChange( PROP_VALUEADJUSTING, true, false );
+            } else {
+                //System.err.println("lock is still set, neat!");
             }
-        };
+        }
+    };
 
     /**
      * one client will have write access to the bean, and when unlock
@@ -158,7 +163,7 @@ public class ChangesSupport {
      * In the future, this
      * will return null if the lock is already out, but for now,
      * clients should check the valueIsAdjusting property.
-     * @return
+     * @return the lock or null.
      */
     public synchronized Lock mutatorLock() {
         return mutatorLock;
