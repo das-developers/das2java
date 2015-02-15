@@ -3596,14 +3596,14 @@ public class Ops {
      * This is introduced to mirror the useful Jython dataset command.  This is a nasty business that
      * is surely going to cause all sorts of problems, so we should do it all in one place.
      * See http://jfaden.net:8080/hudson/job/autoplot-test029/
-     * This supports:
-     *   int, float, double, etc to Rank 0 datasets
-     *   List&lt;Number&gt; to Rank 1 datasets.
-     *   Java arrays of Number to Rank 1-4 qubes datasets
-     *   Strings to rank 0 datasets with units ("5 s" "2014-01-01T00:00")
-     *   Datums to rank 0 datasets
-     *   DatumRanges to rank 1 bins
-     * 
+     * This supports:<ul>
+     *   <li>int, float, double, etc to Rank 0 datasets
+     *   <li>List&lt;Number&gt; to Rank 1 datasets.
+     *   <li>Java arrays of Number to Rank 1-4 qubes datasets
+     *   <li>Strings to rank 0 datasets with units ("5 s" or "2014-01-01T00:00")
+     *   <li>Datums to rank 0 datasets
+     *   <li>DatumRanges to rank 1 bins
+     * </ul>
      * @param arg0 null,QDataSet,Number,Datum,DatumRange,String,List,or array.
      * @throws IllegalArgumentException if the argument cannot be parsed or converted.
      * @return QDataSet
@@ -3667,6 +3667,45 @@ public class Ops {
             throw new IllegalArgumentException("Ops.dataset is unable to coerce "+arg0+" to QDataSet");
         }
         
+    }
+    
+    /**
+     * coerce Java objects like numbers and strings into a Datum.
+     * This is introduced to mirror the useful Jython dataset command.  This is a nasty business that
+     * is surely going to cause all sorts of problems, so we should do it all in one place.
+     * See http://jfaden.net:8080/hudson/job/autoplot-test029/
+     * This supports:<ul>
+     *   <li>int, float, double, etc to Rank 0 datasets
+     *   <li>Strings to rank 0 datasets with units ("5 s" or "2014-01-01T00:00")
+     *   <li>rank 0 datasets 
+     * </ul>
+     * @param arg0 null,QDataSet,Number,Datum, or String.
+     * @throws IllegalArgumentException if the argument cannot be parsed or converted.
+     * @return Datum
+     */
+    public static Datum datum( Object arg0 ) {
+        if ( arg0==null ) {  // there was a similar test in the Python code.
+            return null;
+        } else if ( arg0 instanceof QDataSet ) {
+            return DataSetUtil.asDatum((QDataSet)arg0);
+        } else if ( arg0 instanceof Number ) {
+            return Datum.create( ((Number)arg0).doubleValue() );
+        } else if ( arg0 instanceof Datum ) {
+            return (Datum)arg0;
+        } else if ( arg0 instanceof String ) {
+            String sarg= (String)arg0;
+            try {
+               return DatumUtil.parse(sarg);
+            } catch (ParseException ex) {
+               try {
+                   return TimeUtil.create(sarg);
+               } catch ( ParseException ex2 ) {
+                   throw new IllegalArgumentException( "unable to parse string: "+sarg, ex2 );
+               }
+            }        
+        } else {
+            throw new IllegalArgumentException("unable to coerce "+arg0+" to Datum");
+        }
     }
     
     /**
