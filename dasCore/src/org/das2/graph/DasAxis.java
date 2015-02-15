@@ -1479,11 +1479,48 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
+     * convenience method for manually setting the ticks so the user
+     * needn't understand TickVDescriptor.  setTickV(null) should be 
+     * used to reset the ticks.
+     * @param minorTicks the minor ticks, or none for the current minor ticks
+     * @param majorTicks the major ticks.
+     * @see #setTickV(org.das2.graph.TickVDescriptor) 
+     */
+    public void setTickV( double[] minorTicks, double[] majorTicks ) {
+        if ( minorTicks==null ) {
+            minorTicks= getTickV().getMinorTicks().toDoubleArray( getUnits() );
+        }
+        TickVDescriptor tv= new TickVDescriptor( minorTicks, majorTicks, getUnits() );
+        setTickV(tv);
+    }
+    
+    /**
+     * add the tick to the current set of major ticks.  If the ticks were
+     * automatic, they will now be manual.  Note this copies the ticks into
+     * a new array, presuming this is done at most a few tens of times.
+     * @param majorTick tick in the same units as the axis.
+     * @see #setTickV(double[], double[]) 
+     */
+    public void addTickV( Datum majorTick ) {
+        TickVDescriptor tv= getTickV();
+        double[] minorTicks= tv.minorTickV.toDoubleArray(tv.units);
+        double[] majorTicks= tv.tickV.toDoubleArray(tv.units);
+        double[] newMajorTicks= new double[majorTicks.length+1];
+        System.arraycopy( majorTicks, 0, newMajorTicks, 0, majorTicks.length );
+        newMajorTicks[majorTicks.length]= majorTick.doubleValue(tv.units);
+        TickVDescriptor newtv= new TickVDescriptor( minorTicks, newMajorTicks, tv.units );
+        DatumFormatter f= getUserDatumFormatter();
+        if ( f==null ) f= getDatumFormatter();
+        newtv.setFormatter(f);
+        setTickV(newtv);
+    }
+    
+    /**
      * Sets the TickVDescriptor for this axis.  If null is passed in, the
      * axis will put into autoTickV mode, where the axis will attempt to
      * determine ticks using an appropriate algorithm.
      *
-     * @param tickV the new ticks for this axis, or null
+     * @param tickV the new ticks for this axis, or null for automatic
      */
     public void setTickV(TickVDescriptor tickV) {
         logger.fine("about to lock for setTickV");
@@ -1494,8 +1531,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 updateTickV();
             } else {
                 autoTickV = false;
+                this.datumFormatter= tickV.getFormatter();
             }
         }
+        if ( dasPlot!=null ) dasPlot.invalidateCacheImage();
         update();
     }
 
@@ -2364,7 +2403,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
-     * Paint the axis if it is vertical  
+     * Paint the vertical axis
      * @param g the graphics context
      */
     protected void paintVerticalAxis(Graphics2D g) {
