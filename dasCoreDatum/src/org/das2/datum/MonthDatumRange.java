@@ -48,12 +48,15 @@ public class MonthDatumRange extends DatumRange implements Serializable {
                     widthArr[1]+=widthArr[0]*12;
                     widthArr[0]= 0;
                 } else if ( widthDigit!=-1 ) {
-                    throw new IllegalArgumentException("MonthDatumRange must only vary in month or year, not both"); //TODO: why?
+                    throw new IllegalArgumentException("MonthDatumRange must only vary in month or year, not both"); 
                 } else {
                     widthDigit=i;
                     width= widthArr[widthDigit];
                 }
             }
+        }
+        if ( widthArr[0]==0 && widthArr[1]==0 ) {
+            System.err.println("*** either month or year must increment, this will be runtime error soon");
         }
     }
     
@@ -68,7 +71,8 @@ public class MonthDatumRange extends DatumRange implements Serializable {
                 end1[0]++;
             }
             case 0: break;
-            default: throw new IllegalArgumentException("not implemented");
+            default: 
+                throw new IllegalArgumentException("not implemented");
         }
         return new MonthDatumRange( this.end, end1 );
     }
