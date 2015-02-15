@@ -1634,17 +1634,24 @@ public class TimeParser {
      * Returns the implicit interval as a DatumRange.
      * For example, "Jan 1, 2003" would have a getTimeDatum of "Jan 1, 2003 00:00:00",
      * and getDatumRange() would go from midnight to midnight.
+     * This will try to create MonthDatumRanges when possible, to keep it abstract,
+     * so for example, 
+     * <blockquote><pre><small>{@code
+     *tr= tp.getTimeRange()  // "Jan 2015"
+     *tr= tr.next()          // "Feb 2015", not 31 days starting Feb 1
+     *}</small></pre></blockquote>
      * 
      * This accesses time, timeWidth, orbitDatumRange, startTime.
+     * @return the DatumRange
      */
     public DatumRange getTimeRange() {
         if ( !lock.equals("") ) throw new IllegalArgumentException("someone is messing with the parser on a different thread "+lock+ " this thread is "+Thread.currentThread().getName() );
-        if ( startTime.day==1 && startTime.hour==0 && startTime.minute==0 && startTime.seconds==0 &&
-                timeWidth.year==0 && timeWidth.month==1 && timeWidth.day==0 && timeWidth.year==0 ) { // special code for months.
+        if (  startTime.hour==0 && startTime.minute==0 && startTime.seconds==0 &&
+            timeWidth.hour==0 && timeWidth.minute==0 && timeWidth.seconds==0 ) { // special code for years.
             TimeStruct lstopTime = startTime.add(timeWidth);
             int[] t1= new int[] { startTime.year, startTime.month, startTime.day, startTime.hour, startTime.minute, (int)startTime.seconds, startTime.millis };
             int[] t2= new int[] { lstopTime.year, lstopTime.month, lstopTime.day, lstopTime.hour, lstopTime.minute, (int)lstopTime.seconds, lstopTime.millis };
-            return new MonthDatumRange( t1, t2 );
+            return new MonthDatumRange( t1, t2 );            
         } else if ( orbitDatumRange!=null ) {
             return orbitDatumRange;
         } else {
