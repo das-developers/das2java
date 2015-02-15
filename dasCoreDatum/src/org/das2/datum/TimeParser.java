@@ -1646,8 +1646,8 @@ public class TimeParser {
      */
     public DatumRange getTimeRange() {
         if ( !lock.equals("") ) throw new IllegalArgumentException("someone is messing with the parser on a different thread "+lock+ " this thread is "+Thread.currentThread().getName() );
-        if ( stopTimeDigit==AFTERSTOP_INIT && startTime.hour==0 && startTime.minute==0 && startTime.seconds==0 &&
-            timeWidth.hour==0 && timeWidth.minute==0 && timeWidth.seconds==0 ) { // special code for years.
+        if ( stopTimeDigit==AFTERSTOP_INIT && startTime.day==1 && startTime.hour==0 && startTime.minute==0 && startTime.seconds==0 &&
+            timeWidth.day==0 && timeWidth.hour==0 && timeWidth.minute==0 && timeWidth.seconds==0 ) { // special code for years.
             TimeStruct lstopTime = startTime.add(timeWidth);
             int[] t1= new int[] { startTime.year, startTime.month, startTime.day, startTime.hour, startTime.minute, (int)startTime.seconds, startTime.millis };
             int[] t2= new int[] { lstopTime.year, lstopTime.month, lstopTime.day, lstopTime.hour, lstopTime.minute, (int)lstopTime.seconds, lstopTime.millis };
