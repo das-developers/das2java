@@ -59,9 +59,7 @@ public class TableDataSetBuilder {
     
     private Units yUnits = Units.dimensionless;
     
-    private Map zUnitsMap = new HashMap(); {
-        zUnitsMap.put("", Units.dimensionless);
-    }
+    private Map zUnitsMap = new HashMap();
     
     private SortedSet yTagSet = new TreeSet(new DoubleArrayComparator());
     
@@ -90,7 +88,7 @@ public class TableDataSetBuilder {
       
 		setXUnits(xUnits);
 		setYUnits(yUnits);
-		setZUnits(zUnits);
+		setZUnits(zUnits, name);
 		planeIDs.add(name);
     }
     
