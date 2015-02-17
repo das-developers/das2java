@@ -16,18 +16,13 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dsutil.DataSetBuilder;
 
 /**
- *
+ * Model of plasma distribution function for given density, temperature, speed.
+ * A java.util.Random object is passed in so that the data may be reproducible
+ * (by using a given starting seed).
  * @author jbf
  */
 public class PlasmaModel {
 
-    /**
-    * Model of plasma distribution function for given density, temperature, speed.
-    * A java.util.Random object is passed in so that the data may be reproducible
-    * (by using a given starting seed).
-    *
-    * @author Jeremy
-    */
     private static class PlasmaModelSpec {
 
         double nc = 1.2; // core density 1/cm^3
@@ -89,9 +84,7 @@ public class PlasmaModel {
             double x = start.doubleValue(xunits);
             DataSetBuilder builder = new DataSetBuilder(2,1000,20);
             DataSetBuilder xx= new DataSetBuilder(1,1000);
-            int i = 0;
             boolean ylog = false;
-            boolean zlog = false;
             DatumVector[] yTags = new DatumVector[1];
             Random s = new java.util.Random(234567); // repeatable random sequence
 
