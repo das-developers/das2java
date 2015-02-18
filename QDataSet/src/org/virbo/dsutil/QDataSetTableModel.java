@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.virbo.dsutil;
 
 import javax.swing.JFrame;
@@ -23,7 +20,7 @@ import org.virbo.dataset.SemanticOps;
 import test.BundleBinsDemo;
 
 /**
- *
+ * TableModel that shows a QDataSet in a JTable.
  * @author jbf
  */
 public class QDataSetTableModel extends AbstractTableModel {
@@ -39,6 +36,10 @@ public class QDataSetTableModel extends AbstractTableModel {
     String[] labels;
     DatumFormatter[] df;
 
+    /**
+     * creates a QDataSetTableModel
+     * @param ds dataset to adapt to a model/
+     */
     public QDataSetTableModel(QDataSet ds) {
         this.ds = ds;
         this.wds= DataSetUtil.weightsDataSet(ds);
@@ -147,14 +148,17 @@ public class QDataSetTableModel extends AbstractTableModel {
         return ( s.contains( String.valueOf(u) ) );
     }
 
+    @Override
     public int getRowCount() {
         return ds.length();
     }
 
+    @Override
     public int getColumnCount() {
         return colCount;
     }
 
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (columnIndex < dep0Offset) {
             if ( this.dep0.rank()==2 ) {
