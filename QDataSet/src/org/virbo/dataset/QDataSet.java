@@ -23,7 +23,7 @@ package org.virbo.dataset;
  * where the dimensions do not vary in length are colloquially called "Qubes."</p>
  *
  * <p>QDataSets can have other QDataSets as property values, for example the property
- * QDataSet.DEPEND_0 indicates that the values are dependend parameters of the "tags"
+ * QDataSet.DEPEND_0 indicates that the values are dependent parameters of the "tags"
  * QDataSet found there.  This how how we get to the same abstraction level of 
  * the legacy das2 dataset.  </p>
  * 
@@ -44,7 +44,7 @@ public interface QDataSet {
     /**
      * type QDataSet.  This dataset is a dependent parameter of the independent parameter represented in this DataSet.
      * The tags for the DataSet's 1st index are identified by this tags dataset.  When DEPEND_1 is rank 2,
-     * then it's first dimension goes with DEPEND_0 and it's second are the tags for the second dimension.
+     * then its first dimension goes with DEPEND_0 and its second are the tags for the second dimension.
      * (TODO: Is this a QUBE?  Check).
      */
     public final static String DEPEND_1="DEPEND_1";
@@ -66,7 +66,8 @@ public interface QDataSet {
     public final static String DEPEND_3="DEPEND_3";
 
     /**
-     * type QDataSet.  This dataset describes how the columns should be split up
+     * type QDataSet describing each of the bundled datasets (Bundle Descriptor).  This dataset describes 
+     * how the columns should be split up
      * into separate parameters.  This rank 2 dataset has a length that is equal to the number
      * of bundled datasets.  The values(i,*) are the qube dimensions of the dataset,
      * except for the first dimension.  When all the bundled datasets are rank 1, then
@@ -81,7 +82,7 @@ public interface QDataSet {
     public final static String BUNDLE_1="BUNDLE_1";
 
     /**
-     * type QDataSet.  This dataset describes how the columns should be split up
+     * type QDataSet describing each position of the rank 1 dataset (Bundle Descriptor).  This dataset describes how the columns should be split up
      * into separate parameters.  See BUNDLE_1.  Note slicing a dataset on the zeroth
      * dimension will move BUNDLE_1 to BUNDLE_0.  
      * Properties defined in this dataset will be overwritten by the BUNDLE dataset's properties.
@@ -91,13 +92,13 @@ public interface QDataSet {
     public final static String BUNDLE_0="BUNDLE_0";
 
     /**
-     * type QDataSet.  When multiple BUNDLES are present, they must be simple bundles, bundling just
+     * type QDataSet Bundle Descriptor.  When multiple BUNDLES are present, they must be simple bundles, bundling just
      * rank 1 datasets.
      */
     public final static String BUNDLE_2="BUNDLE_2";
     
     /**
-     * type QDataSet.  When multiple BUNDLES are present, they must be simple bundles, bundling just
+     * type QDataSet Bundle Descriptor.  When multiple BUNDLES are present, they must be simple bundles, bundling just
      * rank 1 datasets.
      */
     public final static String BUNDLE_3="BUNDLE_3";
@@ -110,21 +111,22 @@ public interface QDataSet {
     public final static String START_INDEX="START_INDEX";
 
     /**
-     * type String.  This comma-delimited list of keywords that describe the boundary
+     * type String which is a comma-delimited list of keywords that describe the boundary
      * type for each column.  For example, "min,max" "min,maxInclusive" or "c95min,mean,c95max".
      * A bins dimension doesn't add a physical dimension.  Autoplot uses just "min,max" and "min,maxInclusive"
      */
     public final static String BINS_1="BINS_1";
 
     /**
-     * type String.  This comma-delimited list of keywords that describe the boundary
+     * type String which is a comma-delimited list of keywords that describe the boundary
+     * type for each column.  This comma-delimited list of keywords that describe the boundary
      * type for each column.  For example, "min,max" "min,maxInclusive" or "c95min,mean,c95max".
      * A bins dimension doesn't add a physical dimension.   Autoplot uses just "min,max" and "min,maxInclusive"
      */
     public final static String BINS_0="BINS_0";
 
     /**
-     * type String.  This non-null string identifies that elements in this dimension are
+     * type String, non-null string identifies that elements in this dimension are
      * instances of data with the same dimensions.  ds[2,20] where JOIN_0="DEPEND_1" should
      * be equivalent to ds[40].  It's not clear if the text should indicate anything, but
      * for now let's just indicate the next dimension.
@@ -132,14 +134,14 @@ public interface QDataSet {
     public final static String JOIN_0="JOIN_0";
 
     /**
-     * type QDataSet. Correlated plane of data.  An additional dependent DataSet that is correlated by the first index.  
+     * type QDataSet, a correlated plane of data.  An additional dependent DataSet that is correlated by the first index.  
      * Note "0" is just a count, and does not refer to the 0th index.  All correlated datasets must be 
      * correlated by the first index.  TODO: what about two rank 2 datasets?  
      */
     public final static String PLANE_0= "PLANE_0";
 
     /**
-     * type QDataSet.  A dataset that stores the position of a slice or range in
+     * type QDataSet, that stores the position of a slice or range in
      * a collapsed dimension.  In "Flux(Energy) @ Time=2009-03-16T11:19 UT", the Time=... comes from
      * a context property.  Note "0" is just a count, and does not refer to the 0th index.
      * A dataset can have any number of contexts:
@@ -147,8 +149,9 @@ public interface QDataSet {
      * Typically this will be a rank 0 dataset, but may also be a rank 1 dataset with a bins dimension.
      */
     public final static String CONTEXT_0= "CONTEXT_0";
+    
     /**
-     * this is the maximum number of allowed planes.  This should be used to enumerates all the planes.
+     * the maximum number of allowed planes.  This should be used to enumerate all the planes.
      */
     public final static int MAX_PLANE_COUNT=50;
 
@@ -162,9 +165,8 @@ public interface QDataSet {
     public final static int MAX_UNIT_BUNDLE_COUNT=50;
 
     /**
-     * this is the highest rank supported by the library.  Rank 0 is supported though Rank0DataSet.  High rank datasets are supported through
-     * RankNDataSet.
-     * 
+     * the highest rank supported by the library.   Arbitrary high rank datasets are supported through
+     * RankNDataSet, but must be sliced to be accessed.
      */
     public static int MAX_RANK=4;
     
@@ -183,12 +185,13 @@ public interface QDataSet {
     public final static String FORMAT="FORMAT";
 
     /**
-     * type Number, value to be considered fill (invalid) data.
+     * type Number, value to be considered fill (invalid) data.  Note because
+     * all data is accessed as doubles, noise may be inadvertently affect numbers.
      */
     public final static String FILL_VALUE="FILL_VALUE";
         
     /**
-     * type Number.  Range bounding measurements to be considered valid.  Lower
+     * type Number, minimum bounding measurements to be considered valid.  Lower
      * and Upper bounds are inclusive.  FILL_VALUE should be used to make the 
      * lower bound or upper bound exclusive.  Note DatumRange contains logic is
      * exclusive on the upper bound.
@@ -196,7 +199,7 @@ public interface QDataSet {
     public final static String VALID_MIN="VALID_MIN";
     
     /**
-     * type Number.  Range bounding measurements to be considered valid.  Lower
+     * type Number, maximum bounding measurements to be considered valid.  Lower
      * and Upper bounds are inclusive.  FILL_VALUE should be used to make the 
      * lower bound or upper bound exclusive.  Note DatumRange contains logic is
      * exclusive on the upper bound.
@@ -204,35 +207,37 @@ public interface QDataSet {
     public final static String VALID_MAX="VALID_MAX";
         
     /**
-     * type Number.  Range used to discover datasets.  This should be a reasonable representation
+     * type Number that is min used to discover datasets.  This should be a reasonable representation
      * of the expected dynamic range of the dataset.
      */    
     public final static String TYPICAL_MIN="TYPICAL_MIN";
 
     /**
-     * type Number.  Range used to discover datasets.  This should be a reasonable representation
+     * type Number that is the max used to discover datasets.  This should be a reasonable representation
      * of the expected dynamic range of the dataset.
      */    
     public final static String TYPICAL_MAX="TYPICAL_MAX";
     
     /**
-     * String "linear" or "log"
+     * String, "linear" or "log", hinting at the preference for linear or a log
+     * axis.
      */
     public final static String SCALE_TYPE="SCALE_TYPE";
     
     /**
-     * String, Concise Human-consumable label suitable for a plot label. (10 chars)
+     * String, Concise Human-consumable label suitable for a plot label (~10 chars).
      */
     public final static String LABEL="LABEL";
     
     /**
-     * String, Human-consumable string suitable for a plot title. (100 chars).
+     * String, Human-consumable string suitable for a plot title (~100 chars).
      */
     public final static String TITLE="TITLE";
                 
     /**
-     * String, Human-consumable string suitable for describing the data more fully.  This should be html
-     * text, or just a link to other documentation (one URL, or two sentences to one page of text).
+     * String, Human-consumable string suitable for describing the data more fully.  
+     * This should be html text, or just a link to other documentation (one URL, 
+     * or two sentences to one page of text).
      */
     public final static String DESCRIPTION="DESCRIPTION";
     
@@ -245,55 +250,58 @@ public interface QDataSet {
     public final static String WEIGHTS="WEIGHTS";
 
     /**
-     * @deprecated use WEIGHTS instead.
-     */
-    public final static String WEIGHTS_PLANE="WEIGHTS";
-
-    /**
-     * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Data may only contain
-     * invalid values at the beginning or end, and may contain repeated values.  Generally
-     * this will be used with tags datasets. TODO: can cadence be negative?
+     * Boolean, Boolean.TRUE if dataset is monotonically increasing.  Data may 
+     * only contain invalid values at the beginning or end, and may contain repeated 
+     * values.  Generally this will be used with tags datasets. TODO: can cadence 
+     * be negative?
      */
     public final static String MONOTONIC="MONOTONIC";
     
     /**
-     * RankZeroDataSet, the expected distance between successive measurements where it is valid to make inferences about the data.
+     * RankZeroDataSet, the expected distance between successive measurements 
+     * where it is valid to make inferences about the data.
      * For example, interpolation is disallowed for points 1.5*CADENCE apart.  
-     * This property only makes sense with a tags dataset.  TODO: can cadence be negative?
+     * This property only makes sense with a tags dataset.  Note this may be
+     * a "ratiometric" datum, like 110 percentIncrease, for logarithmically 
+     * spaced data.
+     * TODO: can cadence be negative?
      */
     public final static String CADENCE="CADENCE";
     
     /**
-     * QDataSet of rank 0, or correlated plane limits accuracy.  This should
-     * be interpreted as the one standard deviation confidence level.  See
-     * also BINS for measurement intervals.  
+     * QDataSet of rank 0, or correlated QDataSet that limits accuracy.  This should
+     * be interpreted as the one standard deviation confidence level.  
+     * @see #BIN_PLUS for measurement intervals.  
      */
     public final static String DELTA_PLUS="DELTA_PLUS";
     
     /**
-     * QDataSet of rank 0, or correlated plane limits accuracy.  This should
-     * be interpreted as the one standard deviation confidence level.   See
-     * also BINS for measurement intervals.
+     * QDataSet of rank 0, or correlated QDataSet that limits accuracy.  This should
+     * be interpreted as the one standard deviation confidence level.   
+     * @see #BIN_MINUS for measurement intervals.
      */
     public final static String DELTA_MINUS="DELTA_MINUS";
 
     /**
-     * QDataSet of rank 0 or correlated plane identifies boundary. This is added to the
-     * measurements and should be interpreted as the upper limit of 100% confidence interval where a measurement was collected.   See
-     * also DELTA_PLUS for one-standard deviation confidence interval.  Note if both DELTA_PLUS and BIN_PLUS are found,
+     * QDataSet of rank 0 or correlated QDataSet identifies boundary. This is added to the
+     * measurements and should be interpreted as the upper limit of 100% confidence 
+     * interval where a measurement was collected.   
+     * Note if both DELTA_PLUS and BIN_PLUS are found,
      * then BIN_PLUS must be greater than DELTA_PLUS.
+     * @see #DELTA_PLUS for one-standard deviation confidence interval.  
      */
     public final static String BIN_PLUS="BIN_PLUS";
 
     /**
      * QDataSet of rank 0 or correlated plane identifies boundary. This is subtracted from the
      * measurements and should be interpreted as the lower limit of the 100% confidence interval where a measurement was collected.
-     * See also DELTA_MINUS for one-standard deviation confidence interval.
+     * @see #DELTA_MINUS for one-standard deviation confidence interval.
      */
     public final static String BIN_MINUS="BIN_MINUS";
     
     /**
-     * CacheTag, to be attached to tags datasets.  This is an object that represents
+     * CacheTag, indicating the coverage and resolution of a dimension.  This is 
+     * an object that represents
      * the coverage and resolution of the interval covered.  For example, in Autoplot
      * the TimeSeriesBrowse uses this to keep track of what's already been read.
      */
@@ -366,10 +374,16 @@ public interface QDataSet {
      */
     public final static String METADATA_MODEL="METADATA_MODEL";
 
+    /**
+     * the metadata is ISTP-CDF metadata, 
+     * @see org.virbo.metatree.IstpMetadataModel
+     */
     public final static String VALUE_METADATA_MODEL_ISTP="ISTP-CDF";
     
+    /**
+     * the metadata is SPASE (Space Physics Archive Search Extract)
+     */
     public final static String VALUE_METADATA_MODEL_SPASE="SPASE";
-
 
     /**
      * String, human consumable identifying version.  Presently this is intended for human
@@ -382,7 +396,7 @@ public interface QDataSet {
      *   sep: period-delimited list of numeric sorted: 2.2.0 &lt; 2.15.2 &lt; 10.2.0
      *   alpha: alpha-numeric sorted: 20030202B&gt;20030202A
      * otherwise it should be numerically sorted.
-     * (see org.das2.fsm.FileStorageModelNew)
+     * (see org.das2.fsm.FileStorageModel)
      */
     public final static String VERSION="VERSION";
 
@@ -461,11 +475,9 @@ public interface QDataSet {
     public static double DEFAULT_FILL_VALUE= -1e31;
 
     /**
-     * returns the rank of the dataset, which is the number of indeces used to access data.  Only rank 1, 2, and 3 datasets
-     * are supported in the interface.   When a dataset's rank is 4 or greater, it should implement the HighRankDataSet interface
-     * which affords a slice operation to reduce rank.  When a dataset's rank is 0, it should implement the RankZeroDataSet interface,
-     * which has a no-argument accessor.  (TODO: Note that rank 0 and rank N have very limited use, so many routines aren't 
-     * coded to handle them.)
+     * returns the rank of the dataset, which is the number of indeces used to access data.  Only rank 0, 1, 2, 3, and 4 datasets
+     * are supported in the interface.   When a dataset's rank is 5 or greater, it should implement the HighRankDataSet interface
+     * which affords a slice operation to reduce rank. 
      * @return the rank, or number of indeces used to access data.
      */
     int rank();
@@ -513,8 +525,8 @@ public interface QDataSet {
      * @return the value, see the property UNITS to interpret this.          
      * @throws IllegalArgumentException if the dataset is not rank 4.
      */
-
     double value( int i0, int i1, int i2, int i3);
+    
     /**
      * accessor for properties attached to the dataset.  See final static members
      * for example properties.
@@ -556,10 +568,10 @@ public interface QDataSet {
     int length( int i );
 
     /**
-     *return the length of the third dimension, for the ith element of the first dimension and jth element of the second dimension.
+     * return the length of the third dimension, for the ith element of the first dimension and jth element of the second dimension.
      * @param i the index
      * @param j the index
-     * @return the length of the second dimension at index i.
+     * @return the length of the third dimension at index i.
      */
     int length( int i, int j );
 
@@ -573,14 +585,15 @@ public interface QDataSet {
     int length( int i, int j, int k);
 
     /**
-     * return a dataset that is a slice of this dataset, slicing on the first dimension.
+     * return a dataset that is a slice of this dataset, slicing on the zeroth 
+     * dimension.
      * A slice will be the elements at this index, for example if this dataset
      * is a rank 2 dataset flux(Time,Energy) then the slice of this will be
      * a rank 1 dataset flux(Energy).
      * The result of any slice will be a qube.
      * @throws IllegalArgumentException when dataset rank is zero.
-     * @param i
-     * @return the QDataSet at index i.
+     * @param i the index to slice at
+     * @return the rank n-1 QDataSet at index i.
      */
     QDataSet slice( int i );
 
