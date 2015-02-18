@@ -21,7 +21,11 @@ public interface DataSetIterator {
     int index(int dim);
 
     /**
-     * return the length of the dimension
+     * return the length of the dimension, or the length reported by the 
+     * iterator.  Use caution, because this does not imply that the result 
+     * of the iteration is a qube and does not account for slices.  (TODO:
+     * does this mean that as we iterate through, the length depends on the
+     * current index?)
      * @param dim the dimension number (0&lt;=dim&lt;inputRank) 
      * @return the length of the dimension
      */
