@@ -38,7 +38,13 @@ import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.LinFit;
 
 /**
- *
+ * Utilities for QDataSet, such as conversions from various forms
+ * to QDataSet, and doing a units conversion.  
+ * 
+ * TODO: DataSetUtil, DataSetOps, and org.virbo.dsops.Ops have become blurred 
+ * over the years.  These should either be combined or new mission statements 
+ * need to be created.
+ * 
  * @author jbf
  */
 public class DataSetUtil {
