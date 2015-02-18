@@ -23,7 +23,8 @@ import org.virbo.math.fft.ComplexArray;
 import org.virbo.math.fft.GeneralFFT;
 
 /**
- *
+ * Utilities for FFT operations, such as getting the frequencies for each bin
+ * and fftPower.
  * @author  Jeremy
  */
 public class FFTUtil {
@@ -275,6 +276,13 @@ public class FFTUtil {
      */
     private static TTagBufElement freqDomainTagsForPowerBuf= null;
 
+    /**
+     * get the frequency tags, for use when calculating the power in each
+     * channel.  This removes the DC channel, and folds over the negative 
+     * frequencies.  This also keeps a cache for performance.
+     * @param dep0 the timetags.
+     * @return the frequency tags.
+     */
     public static QDataSet getFrequencyDomainTagsForPower( QDataSet dep0 ) {
         Units xunits= SemanticOps.getUnits(dep0);
         if ( dep0.length()<2 ) {
