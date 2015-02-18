@@ -705,6 +705,7 @@ public class StreamTool {
             msg += s;
             msg += "' at byteOffset=" + (struct.getCarotPosition() - 4 - 10);
             msg += " after reading " + struct.descriptorCount + " descriptors and " + struct.packetCount + " packets.";
+            logger.log(Level.FINE, msg );
             throw new StreamException(msg);
         }
         return true;
