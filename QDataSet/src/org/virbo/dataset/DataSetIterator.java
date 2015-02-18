@@ -71,6 +71,7 @@ public interface DataSetIterator {
      * 
      * @return a dataset that will have the same geometry at the
      * dataset implied by each dimension iterator. 
+     * @see QubeDataSetIterator#createEmptyDs() 
      */
     public DDataSet createEmptyDs();
 

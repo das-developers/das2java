@@ -11,9 +11,16 @@ import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
 
 /**
- * DataSetIterator implementation that can be used for all datasets--not just qubes.  Originally this 
- * only worked for QDataSets that were qubes, or datasets that had the same dataset geometry for each
- * slice.  At some point this was modified to work with any dataset but the name remains.
+ * DataSetIterator implementation that can be used for all dataset (not just qubes).  
+ * Originally this only worked for QDataSets that were qubes, or datasets that 
+ * had the same dataset geometry for each slice.  At some point this was 
+ * modified to work with any dataset but the name remains.
+ * 
+ * DataSetIterators are intended to work with multiple datasets at once.  For example,
+ * if we want to add the data from two datasets together, we would create one 
+ * iterator that would be used to access both datasets.  One dataset is provided
+ * to the constructor, but any dataset of the same geometry can be passed to the
+ * getValue method.
  * 
  * TODO: This does not work for Rank 0 datasets.  See
  * sftp://klunk.physics.uiowa.edu/home/jbf/project/autoplot/script/demos/jeremy/qubeDataSetIteratorForNonQubes.jy
@@ -24,22 +31,57 @@ public class QubeDataSetIterator implements DataSetIterator {
 
     private static final Logger logger= LoggerManager.getLogger("qdataset");
     
+    /**
+     * DimensionIterator iterates over an index.  For example, using 
+     * Jython for brevity:
+     *<blockquote><pre><small>{@code
+     * ds= zeros(15,4,2)
+     * ds[:,:,:] has itertors that count of 0,...,14; 0,...,3; and 0,1
+     * ds[3:15,:,:]  uses a StartStopStepIterator to count off 3,4,5,...,14
+     * ds[3,:,:]  uses a SingletonIterator
+     * i1= [0,1,2,3]
+     * i2= [0,0,1,1]
+     * i3= [0,1,0,1]
+     * ds[i1,i2,i3]  # uses IndexListIterator
+     *}</small></pre></blockquote>
+     */
     public interface DimensionIterator {
 
+        /**
+         * true if there are more indeces in the iteration
+         * @return true if there are more indeces in the iteration
+         */
         boolean hasNext();
 
+        /**
+         * return the next index of the iteration
+         * @return the next index of the iteration
+         */
         int nextIndex();
 
+        /**
+         * return the current index.
+         * @return the current index.
+         */
         int index();
 
+        /**
+         * return the length of the iteration.
+         * @return the length of the iteration.
+         */
         int length();
     }
 
+    /**
+     * DimensionIteratorFactory creates DimensionIterators
+     */
     public interface DimensionIteratorFactory {
-
         DimensionIterator newIterator(int len);
     }
 
+    /**
+     * Iterator for counting off indeces.  (3:15:2 in ds[3:15:2,:])
+     */    
     public static class StartStopStepIterator implements DimensionIterator {
 
         int start;
@@ -56,19 +98,23 @@ public class QubeDataSetIterator implements DataSetIterator {
             this.all = all;
         }
 
+        @Override
         public boolean hasNext() {
             return index + step < stop;
         }
 
+        @Override
         public int nextIndex() {
             index += step;
             return index;
         }
 
+        @Override
         public int index() {
             return index;
         }
 
+        @Override
         public int length() {
             int remainder= (stop - start) % step;
             return (stop - start) / step + ( remainder>0 ? 1 :0 );
@@ -80,18 +126,28 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
     }
 
+    /**
+     * generates iterator for counting off indeces.  (3:15:2 in ds[3:15:2,:])
+     */
     public static class StartStopStepIteratorFactory implements DimensionIteratorFactory {
 
         Number start;
         Number stop;
         Number step;
 
+        /**
+         * create the factory which will create iterators.
+         * @param start the start index.  
+         * @param stop the stop index, exclusive.  null (or None) is used to indicate the end of non-qube datasets.
+         * @param step the step size, null means just use 1.
+         */
         public StartStopStepIteratorFactory(Number start, Number stop, Number step) {
             this.start = start;
             this.stop = stop;
             this.step = step;
         }
 
+        @Override
         public DimensionIterator newIterator(int length) {
             int start1 = start == null ? 0 : start.intValue();
             int stop1 = stop == null ? length : stop.intValue();
@@ -107,6 +163,9 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
     }
 
+    /**
+     * Iterator that goes through a list of indeces.
+     */
     public static class IndexListIterator implements DimensionIterator {
 
         QDataSet ds;
@@ -120,19 +179,23 @@ public class QubeDataSetIterator implements DataSetIterator {
             this.index = -1;
         }
 
+        @Override
         public boolean hasNext() {
             return index < ds.length()-1;
         }
 
+        @Override
         public int nextIndex() {
             index++;
             return (int) ds.value(index);
         }
 
+        @Override
         public int index() {
             return (int) ds.value(index);
         }
 
+        @Override
         public int length() {
             return ds.length();
         }
@@ -145,6 +208,9 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
     }
 
+    /**
+     * Factory for iterator that goes through a list of indeces.
+     */
     public static class IndexListIteratorFactory implements DimensionIteratorFactory {
 
         QDataSet ds;
@@ -156,6 +222,7 @@ public class QubeDataSetIterator implements DataSetIterator {
             }
         }
 
+        @Override
         public DimensionIterator newIterator(int length) {
             ArrayDataSet list= ArrayDataSet.copy(ds);
             for ( int i=0; i<list.length(); i++ ) {
@@ -165,6 +232,9 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
     }
 
+    /**
+     * Iterator for a single index.
+     */
     public static class SingletonIterator implements DimensionIterator {
 
         int index;
@@ -174,19 +244,23 @@ public class QubeDataSetIterator implements DataSetIterator {
             this.index = index;
         }
 
+        @Override
         public boolean hasNext() {
             return hasNext;
         }
 
+        @Override
         public int nextIndex() {
             hasNext = false;
             return index;
         }
 
+        @Override
         public int index() {
             return index;
         }
 
+        @Override
         public int length() {
             return 1;
         }
@@ -197,6 +271,9 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
     }
 
+    /**
+     * Factory for iterator for a single index.
+     */
     public static class SingletonIteratorFactory implements DimensionIteratorFactory {
 
         int index;
@@ -205,6 +282,7 @@ public class QubeDataSetIterator implements DataSetIterator {
             this.index = index;
         }
 
+        @Override
         public DimensionIterator newIterator(int length) {
             if ( index<0 ) {
                 return new SingletonIterator(length+index);
@@ -214,8 +292,9 @@ public class QubeDataSetIterator implements DataSetIterator {
             
         }
     }
-    private DimensionIterator[] it = new DimensionIterator[4];
-    private DimensionIteratorFactory[] fit = new DimensionIteratorFactory[4];
+    
+    private final DimensionIterator[] it = new DimensionIterator[ QDataSet.MAX_RANK ];
+    private DimensionIteratorFactory[] fit = new DimensionIteratorFactory[ QDataSet.MAX_RANK ];
     private boolean isAllIndexLists;
 
     private int rank;
@@ -225,12 +304,13 @@ public class QubeDataSetIterator implements DataSetIterator {
 
     /**
      * dataset iterator to help in implementing the complex indexing
-     * types of python.  
+     * types of python.  Each of the dimensions is set to iterate over all
+     * indeces (e.g ds[:,:,:])
      * 
-     * create a new iterator, set the index iterator factories, iterate.
-     * @param ds
+     * Client codes should create a new iterator, set the index iterator factories, then iterate.
+     * @param ds the dataset we will iterate over.
      */
-    public QubeDataSetIterator(QDataSet ds) {
+    public QubeDataSetIterator( QDataSet ds ) {
         List<String> problems= new ArrayList();
         if ( ! DataSetUtil.validate(ds,problems) ) {
             throw new IllegalArgumentException("data doesn't validate: "+problems );
@@ -268,14 +348,16 @@ public class QubeDataSetIterator implements DataSetIterator {
     }
 
     /**
-     * return an iterator for the slice of a dataset.  This is introduced to improve
-     * performance by reducing the number of bounds checks, etc from the general
-     * case.
-     * @param ds
-     * @param sliceIndex
-     * @return
+     * return an iterator for the slice of a dataset (on the 0th index).  
+     * This is introduced to improve performance by reducing the number of 
+     * bounds checks, etc from the general case.  Note slice is a native
+     * operation for most datasets now, so this is probably obsolete.
+     * @param ds the dataset.
+     * @param sliceIndex the index of the slice.
+     * @return an iterator for the slice.
+     * @see org.virbo.dataset.QDataSet#slice(int) 
      */
-    public static QubeDataSetIterator sliceIterator(QDataSet ds, int sliceIndex) {
+    public static QubeDataSetIterator sliceIterator( QDataSet ds, int sliceIndex ) {
         QubeDataSetIterator result;
         if (ds.rank() == 0) {
             throw new IllegalArgumentException("can't slice rank 0");
@@ -304,8 +386,8 @@ public class QubeDataSetIterator implements DataSetIterator {
 
     /**
      * reinitializes the iterator.
-     * @param dim
-     * @param fit
+     * @param dim the dimension index (0,...,rank-1)
+     * @param fit the iterator factory to use for the index.
      */
     public void setIndexIteratorFactory(int dim, DimensionIteratorFactory fit) {
         if ( dim >= this.rank ) {
@@ -332,8 +414,8 @@ public class QubeDataSetIterator implements DataSetIterator {
     /**
      * return the length of the dimension.  This is introduced with the intention
      * that this can support non-qube datasets as well.
-     * @param idim
-     * @return
+     * @param idim the dimension index (0,...,rank-1)
+     * @return the length of the dimension.
      */
     private int dimLength(int idim) {
         if (qube != null) {
@@ -360,6 +442,11 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
     }
 
+    /**
+     * true if there are more values.
+     * @return true if there are more values.
+     */
+    @Override
     public boolean hasNext() {
         if (rank == 0) {
             return this.allnext;
@@ -386,6 +473,12 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
     }
 
+    /**
+     * advance to the next index.  getValue(ds) will return the value of the
+     * dataset at this index.
+     * @see #getValue(org.virbo.dataset.QDataSet) 
+     */
+    @Override
     public void next() {
 
         if (this.allnext) {
@@ -434,22 +527,21 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
     }
 
+    @Override
     public int index(int dim) {
         return it[dim].index();
     }
 
-    /**
-     * returns the length reported by this iterator.  Use caution, because this
-     * does not imply that the result is a qube and does not account for slices.
-     */
+    @Override
     public int length(int dim) {
         return it[dim].length();
     }
 
+    @Override
     public int rank() {
         int result= rank;
-        for ( int i=0; i<it.length; i++ ) {
-            if ( it[i] instanceof QubeDataSetIterator.SingletonIterator ) {
+        for (DimensionIterator it1 : it) {
+            if (it1 instanceof QubeDataSetIterator.SingletonIterator) {
                 result--;
             }
         }
@@ -484,6 +576,7 @@ public class QubeDataSetIterator implements DataSetIterator {
      * 20120718 jbf: bugfix with ds[7,16,4,:]. Support BINS.
      * @return empty dataset with structural properties set.
      */
+    @Override
     public DDataSet createEmptyDs() {
         List<Integer> qqube = new ArrayList<Integer>();
         List<Integer> dimMap= new ArrayList<Integer>();  //e.g. [0,1,2,3]
@@ -546,11 +639,7 @@ public class QubeDataSetIterator implements DataSetIterator {
 
     }
 
-    /**
-     * get the value from ds at the current iterator position.
-     * @param ds a dataset with compatible geometry as the iterator's geometry.
-     * @return the value of ds at the current iterator position.
-     */
+    @Override
     public final double getValue(QDataSet ds) {
         switch (rank) {
             case 0:
@@ -568,11 +657,7 @@ public class QubeDataSetIterator implements DataSetIterator {
         }
     }
 
-    /**
-     * replace the value in ds at the current iterator position.
-     * @param ds a writable dataset with capatible geometry as the iterator's geometry.
-     * @param v the value to insert.
-     */
+    @Override
     public final void putValue(WritableDataSet ds, double v) {
         switch (rank) {
             case 0:
