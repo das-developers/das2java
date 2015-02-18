@@ -647,6 +647,10 @@ public class StreamTool {
                         }
                         ((PacketDescriptor)pd).setPacketId( id );
                         StreamTool.interpretPlanes((PacketDescriptor)pd);
+                        
+                        if ( struct.sd==null ) {
+                            throw new StreamException("Stream must start with a StreamDescriptor (for now)");
+                        }
                         if ( struct.sd.hasDescriptor(pd,id) ) {
                             logger.fine("found repeat packetDescriptor");
                         }
