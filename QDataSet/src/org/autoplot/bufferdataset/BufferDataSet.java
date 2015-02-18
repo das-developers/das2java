@@ -4,7 +4,6 @@
  */
 package org.autoplot.bufferdataset;
 
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +15,6 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.util.LoggerManager;
 import org.virbo.dataset.AbstractDataSet;
-import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -71,16 +69,50 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     
     private static final boolean RANGE_CHECK = true;
 
+    /**
+     * the data is in 8 byte doubles.
+     */
     public final static Object DOUBLE= "double";
+    /**
+     * the data is in 4 byte floats.
+     */
     public final static Object FLOAT= "float";
-    public final static Object TRUNCATEDFLOAT= "truncatedfloat"; // 16 bit real that has exponent like a FLOAT but mantissa precision is reduced.
+    /**
+     * the data is in 16 bit real that has exponent like a FLOAT but mantissa precision is reduced.
+     */
+    public final static Object TRUNCATEDFLOAT= "truncatedfloat"; 
+    /**
+     * VAX floats.
+     */
     public final static Object VAX_FLOAT= "vaxfloat";
+    /**
+     * 8 byte signed longs
+     */
     public final static Object LONG= "long";
+    /**
+     * 4 byte signed integers
+     */
     public final static Object INT= "int";
+    /**
+     * 4 byte unsigned integers.  Note 4-byte signed ints are used to store the data 
+     * which is unpacked in the value() method.
+     */
     public final static Object UINT= "uint";
+    /**
+     * 2 byte short integer.
+     */
     public final static Object SHORT= "short";
+    /**
+     * 2 byte unsigned short.
+     */
     public final static Object USHORT= "ushort";
+    /**
+     * 1 byte signed byte. 
+     */
     public final static Object BYTE= "byte";
+    /**
+     * 1 byte signed byte.
+     */
     public final static Object UBYTE= "ubyte";
     
     /**
@@ -768,7 +800,10 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         this.back= newBack;
     }
 
-    
+    /**
+     * return the type of this dataset, for example BufferDataSet.INT, BufferDataSet.DOUBLE, etc... 
+     * @return the type of this dataset.
+     */
     public Object getType() {
         return this.type;
     }
@@ -797,6 +832,15 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     public int length(int i0, int i1, int i2) {
         return len3;
     }
+    
+    /**
+     * for internal use, verify that the indeces are all within bounds.
+     * @param i0 the zeroth index.
+     * @param i1 the first index
+     * @param i2 the second index
+     * @param i3 the third index
+     * @see #RANGE_CHECK which is used to turn on range checking.
+     */
     protected void rangeCheck(int i0, int i1, int i2, int i3) {
         if (i0 < 0 || i0 >= len0) {
             throw new IndexOutOfBoundsException("i0=" + i0 + " " + this.toString());
@@ -810,7 +854,6 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if (i3 < 0 || i3 >= len3) {
             throw new IndexOutOfBoundsException("i3=" + i3 + " " + this.toString());
         }
-
     }
 
     /**
