@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.virbo.dsutil;
 
@@ -19,15 +15,18 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
 /**
- * Reduction is set of static methods for reducing data.
+ * Reduction is set of static methods for reducing data, or 
+ * averaging data to make smaller datasets.
  * @author jbf
  */
 public class Reduction {
+    
     /**
-     * return a converter for differences.  If dst units are specified,
+     * return a converter for differences.  If dstUnits are specified,
      * then explicitly this is the target.
      * @param src
      * @param dst
+     * @param dstUnits 
      * @return
      */
     private static UnitsConverter getDifferencesConverter( QDataSet src, QDataSet dst, Units dstUnits ) {
@@ -342,7 +341,7 @@ public class Reduction {
      * @param ds rank 1 dataset.  Must have DEPEND_0 (presently) 
      * @param xLimit the size of the bins or null to indicate no limit.
      * @param yLimit the size of the bins or null to indicate no limit.
-     * @return
+     * @return the reduced dataset, rank 1 with DEPEND_0.
      */
     public static QDataSet reduce2D( QDataSet ds, QDataSet xLimit, QDataSet yLimit ) {
 
