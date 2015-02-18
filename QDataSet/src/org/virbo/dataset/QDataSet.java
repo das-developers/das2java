@@ -171,7 +171,19 @@ public interface QDataSet {
     public static int MAX_RANK=4;
     
     /**
-     * type Units.  The dataset units, found in org.das2.units.Units.
+     * type Units indicating the units of the dataset in the enumeration of
+     * org.das2.datum.Units, as in org.das2.datum.Units.km.  New unit types
+     * can be introduced with Units.lookup.  For example,
+     * <pre>
+     * {@code
+     * from org.das2.datum import Units
+     * u= Units.lookupUnits('seconds since 2015-001T00:00')
+     * ds= findgen(3600)
+     * ds= putProperty( ds, QDataSet.UNITS, u )
+     * plot( ds )  # plots line from 00:00 to 01:00.
+     * }
+     * </pre>
+     * @see org.das2.datum.Units
      */
     public final static String UNITS="UNITS";
 
@@ -392,9 +404,10 @@ public interface QDataSet {
      * The version string should contain space-delimited version ids, so note
      * versions must not contain spaces for other purposes.  Also
      * two version strings containing the same value can be coalesced.  If this
-     * is prefixed with "&lt;scheme&gt;:", then this is to be interpreted as such:
-     *   sep: period-delimited list of numeric sorted: 2.2.0 &lt; 2.15.2 &lt; 10.2.0
-     *   alpha: alpha-numeric sorted: 20030202B&gt;20030202A
+     * is prefixed with "&lt;scheme&gt;:", then this is to be interpreted as such:<ul>
+     *  <li>sep: period-delimited list of numeric sorted: 2.2.0 &lt; 2.15.2 &lt; 10.2.0
+     *  <li>alpha: alpha-numeric sorted: 20030202B&gt;20030202A
+     * </ul>
      * otherwise it should be numerically sorted.
      * (see org.das2.fsm.FileStorageModel)
      */
