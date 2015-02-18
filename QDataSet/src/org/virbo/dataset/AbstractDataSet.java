@@ -15,8 +15,10 @@ import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
 
 /**
- * Abstract class to simplify defining datasets.  Implement rank,
- * and override value and length.
+ * Abstract class to simplify defining datasets.  This handles the
+ * properties for implementations, and they
+ * need only implement rank, and override the corresponding value and length
+ * methods.
  *
  * @author jbf
  */
@@ -30,32 +32,40 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         properties= new HashMap<String,Object>();
     }
 
+    @Override
     public abstract int rank();
 
+    @Override
     public double value() {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
     
+    @Override
     public double value(int i0) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
 
+    @Override
     public double value(int i0, int i1) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
 
+    @Override
     public double value(int i0, int i1, int i2) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
 
+    @Override
     public double value(int i0, int i1, int i2, int i3) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
 
+    @Override
     public Object property(String name) {
         return properties.get(name);
     }
 
+    @Override
     public Object property(String name, int i) {
         String pname= name + "__" + i;
         Object r= properties.get( pname );
@@ -77,8 +87,8 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
      */
     private void checkPropertyType( String name, Object value ) {
         String[] props= DataSetUtil.correlativeProperties();
-        for ( int i=0; i<props.length; i++ ) {
-            if ( name.equals(props[i]) ) {
+        for (String prop : props) {
+            if (name.equals(prop)) {
                 if ( value!=null && !( value instanceof QDataSet ) ) {
                     logger.warning( String.format( "AbstractDataSet.checkPropertyType: %s is not a QDataSet (%s)", name, value.toString() ) );
                 }
@@ -91,6 +101,7 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         }
     }
 
+    @Override
     public void putProperty( String name, Object value ) {
         checkImmutable();
         checkPropertyType( name, value );
@@ -120,22 +131,28 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         }
     }
     
+    @Override
     public void putProperty( String name, int index, Object value ) {
         checkImmutable();
         properties.put( name + "__" + index, value );
     }
 
+    @Override
     public void makeImmutable() {
         immutable= true;
     }
     
+    @Override
     public boolean isImmutable() {
         return this.immutable;
     }
     
     /**
-     * here is the one place where we check immutable, and we can make this throw an exception
-     * once things look stable.
+     * Implementations should call this when attempts to modify the dataset 
+     * are performed, so that it is guaranteed that it is safe to modify.  
+     * This will throw an exception once things look stable.  
+     * Note there are scripts in the wild that abuse mutability that need to be 
+     * fixed before this can be done.
      */
     protected final void checkImmutable() {
         if ( immutable ) {
@@ -143,35 +160,46 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
         }
     } 
         
+    @Override
     public int length() {
         throw new IllegalArgumentException("rank error, rank 0 datasets have no length()");
     }
 
+    @Override
     public int length(int i0) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
 
+    @Override
     public int length(int i0, int i1) {
         throw new IllegalArgumentException("rank error, expected "+rank());
     }
 
+    @Override
     public int length(int i0, int i1, int i2) {
         throw new IllegalArgumentException("rank error, expected "+rank()+", NAME="+this.property(QDataSet.NAME) );
     }
 
+    @Override
     public <T> T capability(Class<T> clazz) {
         return null;
     }
 
+    @Override
     public QDataSet slice(int i) {
         return new Slice0DataSet(this, i);
     }
 
+    @Override
     public QDataSet trim(int start, int end) {
         return new TrimDataSet( this, start, end );
     }
 
-
+    /**
+     * return a human-readable string representation of this QDataSet.
+     * @return a human-readable string representation of this QDataSet.
+     * @see org.virbo.dataset.DataSetUtil#toString(org.virbo.dataset.QDataSet) 
+     */
     @Override
     public String toString( ) {
         return DataSetUtil.toString(this);
