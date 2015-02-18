@@ -10,11 +10,33 @@
 package org.virbo.dataset;
 
 /**
- * DataSet that allows its properties to be changed.  
+ * QDataSet that allows its properties to be changed.  Note scripts should
+ * never assume a dataset is mutable, and should call the 
+ * putProperty method instead.  Note the terms mutable, writable, and modifiable
+ * are all used and interchangeable.
+ * @see WritableDataSet which allows the values to be modified as well.
  * @author jbf
  */
 public interface MutablePropertyDataSet extends QDataSet {
+    
+    /**
+     * assign the name value to the property.  
+     * @param name property name like "UNITS" (Use QDataSet.UNITS)
+     * @param value the property value.
+     * @see org.virbo.dsops.Ops#putProperty(org.virbo.dataset.QDataSet, java.lang.String, java.lang.Object) which properly checks mutability of the dataset.
+     * @see org.virbo.dataset.QDataSet#UNITS
+     */
     void putProperty( String name, Object value );
+    
+    /**
+     * assign the name value to the property at the slice index.  
+     * @param name property name like "UNITS" (Use QDataSet.UNITS)
+     * @param index the index of the slice.
+     * @param value the property value.
+     * @see org.virbo.dsops.Ops#putProperty(org.virbo.dataset.QDataSet, java.lang.String, java.lang.Object) 
+     * @see org.virbo.dataset.QDataSet#UNITS
+     * @see org.virbo.dataset.QDataSet#property(java.lang.String, int) 
+     */
     void putProperty( String name, int index, Object value );
     
     /**
