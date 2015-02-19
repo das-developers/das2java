@@ -48,66 +48,80 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     
     private int cancelCheck= 0;
     
+    @Override
     public void setTaskSize(long taskSize) {
         this.taskSize= taskSize;
     }
     
+    @Override
     public long getTaskSize( ) { 
         return taskSize; 
     }
 
     private String progressMessage;
 
+    @Override
     public void setProgressMessage( String message ) {
         this.progressMessage= message;
     }
 
+    /**
+     * provide access to the last progress message setting.
+     * @return the last progress message setting.
+     */
     public String getProgressMessage() {
         return this.progressMessage;
     }
         
     private long position=0;
     
+    @Override
     public void setTaskProgress(long position) throws IllegalArgumentException {
         this.position= position;
     }
         
+    @Override
     public long getTaskProgress() { 
         return position; 
     }
     
     private boolean started= false;
     
+    @Override
     public void started() {  
         this.started= false;
     }
     
+    @Override
     public boolean isStarted() {
         return started;
     }
     
     private boolean finished= false;
     
+    @Override
     public void finished() {
         if ( finished ) {
             logger.warning("monitor finished was called twice!");
-            new Exception().printStackTrace();
         } else {
             logger.fine("enter monitor finished");
         }
         finished= true;
     }
     
+    @Override
     public boolean isFinished() {
         return finished;
     }
     
     private boolean cancelled= false;
     
+    @Override
     public void cancel() {
         cancelled= true;
     }
     
+    @Override
     public boolean isCancelled() { 
         cancelCheck++;
         return cancelled; 
@@ -118,36 +132,39 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     
     private String label;
     
+    @Override
     public void setLabel( String s ) { 
         this.label= s;
     }
     
+    @Override
     public String getLabel() { 
         return label; 
     }
     
+    /**
+     * return a human-readable representation of the monitor, which is
+     * currently position + "of" + taskSize.
+     * @return return a human-readable representation of the monitor
+     */
     @Override
     public String toString() {
         return "" + this.position + " of "+ this.taskSize;
     }
 
-    /**
-     * @param start start index
-     * @param end end index, exclusive
-     * @param label label or null.
-     * @return 
-     */    
+    @Override
     public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
         if ( label!=null ) setProgressMessage(label);
         return SubTaskMonitor.create( this, start, end );
     }
 
+    @Override
     public ProgressMonitor getSubtaskMonitor(String label) {
         if ( label!=null ) setProgressMessage(label);
         return SubTaskMonitor.create( this, true );
     }
 
-    
+    @Override
     public boolean canBeCancelled() {
         return cancelCheck>0;
     }

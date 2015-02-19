@@ -78,7 +78,8 @@ public interface ProgressMonitor {
      */
     void setProgressMessage( String message );
     
-    /** Returns the current progress of the monitored task.
+    /**
+     * Returns the current progress of the monitored task.
      * @return the current progress of the monitored task.
      */
     long getTaskProgress();
@@ -100,6 +101,10 @@ public interface ProgressMonitor {
      */
     public String getLabel();
     
+    /**
+     * Return the size of the task.  The units are arbitrary
+     * @return the size of the task.
+     */
     long getTaskSize();
     
     /** Notifies the <code>ProgressMonitor</code> that the task
@@ -115,7 +120,8 @@ public interface ProgressMonitor {
      */
     void finished();
     
-    /** Notifies the <code>ProgressMonitor</code> that the task
+    /** 
+     * Notifies the <code>ProgressMonitor</code> that the task
      * being monitored should be canceled.  After this method is
      * called, implementations should return <code>true</code> on
      * any subsequent calls to {@link #isCancelled()} and should
@@ -124,7 +130,8 @@ public interface ProgressMonitor {
      */
     void cancel();
     
-    /** Returns <code>true</code> if the operation being tracked
+    /** 
+     * Returns <code>true</code> if the operation being tracked
      * should be cancelled.
      * @return <code>true</code> if the operation being tracked
      * should be cancelled.
@@ -140,6 +147,7 @@ public interface ProgressMonitor {
     /** additional information to be displayed alongside the progress.  That
      * might be of interest.
      * "85 of 100 (50KB/s)"
+     * @param s the message, such as (50KB/s)
      * @deprecated setProgressMessage should be used by the service provider 
      *    to indicate how the process is being implemented.
      */
@@ -147,11 +155,13 @@ public interface ProgressMonitor {
 
     /** 
      * true if the process has indicated that it has started.
+     * @return true if the process has indicated that it has started.
      */
     boolean isStarted();
     
     /**
      * true if the process has indicated that it is finished
+     * @return true if the process has indicated that it is finished
      */
     boolean isFinished();
     

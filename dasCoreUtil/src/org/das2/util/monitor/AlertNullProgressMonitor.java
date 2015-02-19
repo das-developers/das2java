@@ -8,16 +8,32 @@ package org.das2.util.monitor;
  * Like the NullProgressMonitor, but print to stderr when the task is
  * taking a non-trivial amount of time.  The NullProgressMonitor is used
  * when the developer thinks that a task is trivial, so this should be used
- * to verify.
+ * to verify.  After one second, this will start dumping messages to 
+ * stderr.
  * @author jbf
  */
 public class AlertNullProgressMonitor extends NullProgressMonitor {
+    
+    /**
+     * the birth time for the monitor.
+     */
     long t0= System.currentTimeMillis();
+    
+    /**
+     * the time the lastAlert was issued.
+     */
     long lastAlert= 0;
 
+    /**
+     * create a monitor.
+     */
     public AlertNullProgressMonitor() {
     }
     
+    /**
+     * create a monitor with the label.
+     * @param label the label
+     */
     public AlertNullProgressMonitor(String label) {
         this();
         this.setLabel(label);

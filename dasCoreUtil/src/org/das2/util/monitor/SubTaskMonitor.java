@@ -34,6 +34,15 @@ import org.das2.util.LoggerManager;
  * be created to monitor each step, and the client who passed in the monitor 
  * will see the whole deal as one process.
  *
+ * Note we would often abuse monitors, handing them off to several processes
+ * that would each take the monitor through its lifecycle.  Now we require the
+ * lifecycle be performed once, so that machines can use the monitors to monitor
+ * processes.  In this case, SubTaskMonitors should be used, and getSubtaskMonitor
+ * was added.  Note too that this class should not be called directly, because
+ * getSubtaskMonitor allows the source class to return a monitor of its own design.
+ * 
+ * @see ProgressMonitor#getSubtaskMonitor(int, int, java.lang.String) 
+ * @see ProgressMonitor#getSubtaskMonitor(java.lang.String) 
  * @author Jeremy
  */
 public class SubTaskMonitor implements ProgressMonitor {
@@ -49,8 +58,18 @@ public class SubTaskMonitor implements ProgressMonitor {
      */
     boolean doEchoToParent= false;
 
+    /**
+     * true if we should check the parent cancel status.
+     */
     boolean cancelCheck;
     
+    /**
+     * create the subtask monitor
+     * @param parent parent monitor
+     * @param min minium
+     * @param max maximum
+     * @param cancelChecked true if we should check the parent's cancel status
+     */
     private SubTaskMonitor( ProgressMonitor parent, long min, long max, boolean cancelChecked ) {
         this.parent= parent;
         this.min= min;
@@ -59,10 +78,25 @@ public class SubTaskMonitor implements ProgressMonitor {
         this.cancelCheck= cancelChecked;
     }
 
+    /**
+     * create the subtask monitor.
+     * @param parent parent monitor
+     * @param min minium
+     * @param max maximum
+     * @return SubTaskMonitor
+     */
     public static SubTaskMonitor create( ProgressMonitor parent, long min, long max ) {
         return new SubTaskMonitor( parent, min, max, false );
     }
     
+    /**
+     * create the subtask monitor.
+     * @param parent parent monitor
+     * @param min minium
+     * @param max maximum
+     * @param cancelChecked true if we should check the parent's cancel status
+     * @return SubTaskMonitor
+     */
     public static SubTaskMonitor create( ProgressMonitor parent, long min, long max, boolean cancelChecked ) {
         return new SubTaskMonitor( parent, min, max, cancelChecked );
     }
@@ -79,6 +113,7 @@ public class SubTaskMonitor implements ProgressMonitor {
         return result;
     }
 
+    @Override
     public void cancel() {
         if ( parent.canBeCancelled() ) {
             parent.cancel();
@@ -87,33 +122,38 @@ public class SubTaskMonitor implements ProgressMonitor {
 
     private boolean finished= false;
 
+    @Override
     public void finished() {
         if ( finished ) {
             logger.warning("monitor finished was called twice!");
-            new Exception().printStackTrace();
         } else {
             logger.fine("enter monitor finished");
         }
         this.finished= true; // only to support the bean property
     }
 
+    @Override
     public boolean isFinished() {
         return this.finished;
     }
 
+    @Override
     public long getTaskProgress() {
         return progress;
     }
 
+    @Override
     public boolean isCancelled() {
         return parent.isCancelled();
     }
 
     @Deprecated
+    @Override
     public void setAdditionalInfo(String s) {
         // ignore
     }
 
+    @Override
     public void setTaskProgress(long position) throws IllegalArgumentException {
         this.progress= position;
         if ( cancelCheck ) {
@@ -130,6 +170,7 @@ public class SubTaskMonitor implements ProgressMonitor {
         }
     }
 
+    @Override
     public void setTaskSize(long taskSize) {
         this.size= taskSize;
         if ( max==min && min==-1 && doEchoToParent ) {
@@ -139,21 +180,25 @@ public class SubTaskMonitor implements ProgressMonitor {
         }
     }
 
+    @Override
     public long getTaskSize() {
         return this.size;
     }
 
     boolean started= false;
 
+    @Override
     public void started() {
         this.started= true;
         if ( parent.isStarted()==false ) parent.started();
     }
 
+    @Override
     public boolean isStarted() {
         return started;
     }
 
+    @Override
     public void setLabel(String label) {
         this.label= label;
         if ( this.doEchoToParent ) {
@@ -161,6 +206,7 @@ public class SubTaskMonitor implements ProgressMonitor {
         }
     }
 
+    @Override
     public String getLabel() {
         return label;
     }
@@ -178,6 +224,7 @@ public class SubTaskMonitor implements ProgressMonitor {
      * these messages are lost, unless doEchoToParent is set.
      * @param message 
      */
+    @Override
     public void setProgressMessage(String message) {
         if( this.doEchoToParent ) {
             parent.setProgressMessage(message);
@@ -185,12 +232,7 @@ public class SubTaskMonitor implements ProgressMonitor {
         //parent.setProgressMessage(message);
     }
 
-    /**
-     * @param start start index
-     * @param end end index, exclusive
-     * @param label label or null.
-     * @return 
-     */
+    @Override
     public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
         //setProgressMessage(label);
         if ( this.min==-1 && this.max==-1 ) {
@@ -200,11 +242,13 @@ public class SubTaskMonitor implements ProgressMonitor {
         }
     }
 
+    @Override
     public ProgressMonitor getSubtaskMonitor(String label) {
         return SubTaskMonitor.create( this, cancelCheck );
     }
 
     
+    @Override
     public boolean canBeCancelled() {
         return cancelCheck;
     }
