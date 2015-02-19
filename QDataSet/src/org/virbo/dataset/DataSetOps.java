@@ -55,13 +55,11 @@ public class DataSetOps {
      * return a dataset that has mutable properties.  If the dataset parameter already has, then the 
      * dataset is returned.  If the dataset is a MutablePropertyDataSet but the immutable flag is
      * set, then the dataset is wrapped to make the properties mutable.  
-     * TODO: Is there a bug here?  If this wraps a dataset, then is the result now mutable, and the
-     * data points could be overwritten?  I don't believe so, because DataSetWrapper does not provide the putValue
-     * method.
-     * @param dataset
-     * @return a WritableDataSet that is either a copy of the read-only dataset provided, or the parameter writable dataset provided.
+     * @param dataset dataset
+     * @return a MutablePropertyDataSet that is has a wrapper around the dataset, or the dataset.
+     * @see DataSetWrapper
      */
-    public static MutablePropertyDataSet makePropertiesMutable( final QDataSet dataset) {
+    public static MutablePropertyDataSet makePropertiesMutable( final QDataSet dataset ) {
         if ( dataset instanceof MutablePropertyDataSet ) {
             MutablePropertyDataSet mpds= (MutablePropertyDataSet) dataset;
             if ( mpds.isImmutable() ) {
@@ -2238,12 +2236,16 @@ public class DataSetOps {
     }
 
     /**
-     * indicate if this one operator changes the dimensions.  For example, |smooth(5) doesn't
-     * change the dimensions.
-     * @param p
-     * @return 
+     * indicate if this one operator changes the dimensions.  For example, 
+     * |smooth doesn't change the dimensions, but fftPower and slice do.
+     * @param p the filter, e.g. "|smooth"
+     * @return true if the dimensions change. 
      */
     public static boolean changesDimensions( String p ) {
+        int j= p.indexOf('(');
+        if ( j>-1 ) {
+            p= p.substring(0,j);
+        }
         if ( p.equals("|smooth") ) {
             return false;
         } else if ( p.equals("|nop") ) {
@@ -2271,8 +2273,8 @@ public class DataSetOps {
     
     /**
      * return the next command that changes dimensions.
-     * @param s0
-     * @return 
+     * @param s0 scanner 
+     * @return the command, e.g. "|slice0"
      */
     private static String nextDimensionChangingCommand( Scanner s0 ) {
         while ( s0.hasNext() ) {
