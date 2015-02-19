@@ -17,7 +17,6 @@ import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,7 +38,7 @@ import org.virbo.dsutil.DataSetBuilder;
 import org.virbo.dsutil.Reduction;
 
 /**
- * Useful operations for QDataSets
+ * Useful operations for QDataSets, such as slice2, leafTrim.
  * @author jbf
  */
 public class DataSetOps {
@@ -144,15 +143,24 @@ public class DataSetOps {
      *
      * DO NOT try to optimize this by calling native trim, some native trim implementations call this.
      *
-     * @param ds
-     * @param offset
-     * @param len
-     * @return
+     * @param ds the dataset
+     * @param offset the offset
+     * @param len the length, (not the stop index!)
+     * @return trimmed dataset
      */
     public static MutablePropertyDataSet trim(final QDataSet ds, final int offset, final int len) {
         return new TrimDataSet( ds, offset, offset+len );
     }
 
+    /**
+     * reduce the number of elements in the dataset to the dim 0 indeces specified.
+     * This does not change the rank of the dataset.
+     * @param dep the dataset.
+     * @param start first index to include
+     * @param stop last index, exclusive
+     * @param stride the step size, e.g. 2 is every other element.
+     * @return trimmed dataset
+     */
     public static MutablePropertyDataSet trim( final QDataSet dep, final int start, final int stop, final int stride  ) {
         if ( dep.rank()!=1 ) throw new IllegalArgumentException("only rank 1 supported");
         QubeDataSetIterator itIn= new QubeDataSetIterator(dep);
@@ -176,10 +184,11 @@ public class DataSetOps {
     /**
      * flatten a rank 2 dataset.  The result is a n,3 dataset
      * of [x,y,z], or if there are no tags, just [z].
-     * history:
-     *    modified for use in PW group.
-     * @param ds
-     * @return
+     * History:<ul>
+     *   <li> modified for use in PW group.
+     * </ul>
+     * @param ds rank 2 table dataset
+     * @return rank 2 dataset that is 
      */
     public static QDataSet flattenRank2( final QDataSet ds ) {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
