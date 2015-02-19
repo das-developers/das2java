@@ -51,6 +51,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         throw new IllegalArgumentException("class not supported: "+c);
     }
 
+    /**
+     * create a rank 0 dataset of the class, which can be 
+     * double.class, float.class, long.class, int.class, short.class and byte.class
+     * @param c the primitive class of each element.
+     * @return the ArrayDataSet
+     */
     public static ArrayDataSet createRank0( Class c ) {
         if ( c==double.class ) return new DDataSet( 0, 1, 1, 1, 1 );
         if ( c==float.class ) return new FDataSet( 0, 1, 1, 1, 1 );
@@ -61,6 +67,13 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         throw new IllegalArgumentException("class not supported: "+c);
     }
     
+    /**
+     * create a rank 1 dataset of the class, which can be 
+     * double.class, float.class, long.class, int.class, short.class and byte.class
+     * @param c the primitive class of each element.
+     * @param len0 the length of the dimension
+     * @return the ArrayDataSet
+     */
     public static ArrayDataSet createRank1( Class c, int len0 ) {
         if ( c==double.class ) return new DDataSet( 1, len0, 1, 1, 1 );
         if ( c==float.class ) return new FDataSet( 1, len0, 1, 1, 1 );
@@ -71,6 +84,14 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         throw new IllegalArgumentException("class not supported: "+c);
     }
 
+    /**
+     * create a rank 2 dataset of the class, which can be 
+     * double.class, float.class, long.class, int.class, short.class and byte.class
+     * @param c the primitive class of each element.
+     * @param len0 the length of the dimension
+     * @param len1 the length of the dimension
+     * @return the ArrayDataSet
+     */
     public static ArrayDataSet createRank2( Class c, int len0, int len1 ) {
         if ( c==double.class ) return new DDataSet( 2, len0, len1, 1, 1 );
         if ( c==float.class ) return new FDataSet( 2, len0, len1, 1, 1 );
@@ -81,6 +102,15 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         throw new IllegalArgumentException("class not supported: "+c);
     }
 
+    /**
+     * create a rank 3 dataset of the class, which can be 
+     * double.class, float.class, long.class, int.class, short.class and byte.class
+     * @param c the primitive class of each element.
+     * @param len0 the length of the dimension
+     * @param len1 the length of the dimension
+     * @param len2 the length of the dimension
+     * @return the ArrayDataSet
+     */
     public static ArrayDataSet createRank3( Class c, int len0, int len1, int len2 ) {
         if ( c==double.class ) return new DDataSet( 3, len0, len1, len2, 1 );
         if ( c==float.class ) return new FDataSet( 3, len0, len1, len2, 1 );
@@ -91,6 +121,16 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         throw new IllegalArgumentException("class not supported: "+c);
     }
 
+    /**
+     * create a rank 4 dataset of the class, which can be 
+     * double.class, float.class, long.class, int.class, short.class and byte.class
+     * @param c the primitive class of each element.
+     * @param len0 the length of the dimension
+     * @param len1 the length of the dimension
+     * @param len2 the length of the dimension
+     * @param len3 the length of the dimension
+     * @return the ArrayDataSet
+     */
     public static ArrayDataSet createRank4( Class c, int len0, int len1, int len2, int len3 ) {
         if ( c==double.class ) return new DDataSet( 4, len0, len1, len2, len3 );
         if ( c==float.class ) return new FDataSet( 4, len0, len1, len2, len3 );
@@ -250,7 +290,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         return ds;
     }
     
-
+    @Override
     public int rank() {
         return rank;
     }
@@ -294,9 +334,11 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
-     * Shorten the dataset by changing it's dim 0 length parameter.  The same backing array is used,
-     * so the element that remain will be the same.
-     * can only shorten!
+     * Shorten the dataset by changing it's dim 0 length parameter.  
+     * The same backing array is used, so the element that remain will be the same.
+     * This can only be used to shorten datasets, see grow to lengthen.
+     * @param len new number of records
+     * @see #grow(int) 
      */
     public void putLength( int len ) {
         int limit= Array.getLength( getBack() ) / ( len1*len2*len3 );
@@ -306,7 +348,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
     /**
      * grow the internal store so that append may be used to resize the dataset.
-     * @param newRecCount
+     * @param newRecCount new number of records, which includes the old records.
+     * @see #putLength(int) 
      */
     public void grow( int newRecCount ) {
         if ( newRecCount < len0 ) throw new IllegalArgumentException("new recsize for grow smaller than old");
@@ -396,7 +439,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         
         this.len0= this.len0 + ds.len0;
 
-        properties.putAll( joinProperties( this, ds ) ); //TODO: verify
+        properties.putAll( joinProperties( this, ds ) ); 
 
     }
 
@@ -404,8 +447,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * return true if the dataset can be appended.  Note this assumes that the
      * same length, etc.  This just checks that we have the number of spare records
      * in the backing store.
-     * @param ds
-     * @return
+     * @param ds the dataset to test
+     * @return true if the dataset can be appended.
      */
     public boolean canAppend( ArrayDataSet ds ) {
         if ( ds.rank()!=this.rank ) throw new IllegalArgumentException("rank mismatch");
@@ -425,8 +468,9 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
-     * Copy the dataset to an ArrayDataSet only if the dataset is not already an ArrayDataSet.
-     * @param ds
+     * Copy the dataset to an ArrayDataSet only if the dataset is not 
+     * already an ArrayDataSet.
+     * @param ds the dataset to copy, which may be an ArrayDataSet
      * @return an ArrayDataSet.
      */
     public static ArrayDataSet maybeCopy( QDataSet ds ) {
@@ -454,19 +498,28 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
     /**
      * provide access to the backing array.
-     * @return
+     * @return the backing array for the data. 
      */
     protected abstract Object getBack();
        
     /**
      * return a copy of the backing array, to support ArrayDataSet.copy.
-     * @return 
+     * @return a copy of the array for the data.
      */
     protected abstract Object getBackCopy();
     
+    /**
+     * reset the back to this new backing array.
+     * @param back the new backing array.
+     */
     protected abstract void setBack(Object back);
 
-    private static ArrayDataSet ddcopy(ArrayDataSet ds) {
+    /**
+     * make a copy of the array dataset.
+     * @param ds the dataset to copy.
+     * @return a copy of the dataset.
+     */
+    private static ArrayDataSet internalCopy(ArrayDataSet ds) {
 
         Object newback = ds.getBackCopy();
 
@@ -477,15 +530,15 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
-     * Copy to array of specific type.  For example, copy( double.class, ds ) would return a copy
-     * in a DDataSet.
+     * Copy to array of specific type.  For example, copy( double.class, ds ) 
+     * would return a copy in a DDataSet.
      * @param c  the primitive type to use (e.g. double.class).
      * @param ds the data to copy.
      * @return ArrayDataSet of specific type.
      */
     public static ArrayDataSet copy( Class c, QDataSet ds ) {
 
-        if ( ds instanceof ArrayDataSet && ((ArrayDataSet)ds).getBack().getClass().getComponentType()==c ) return ddcopy( (ArrayDataSet)ds );
+        if ( ds instanceof ArrayDataSet && ((ArrayDataSet)ds).getBack().getClass().getComponentType()==c ) return internalCopy( (ArrayDataSet)ds );
         
         int rank= ds.rank();
         ArrayDataSet result;
@@ -543,15 +596,15 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
-     * copies the dataset into a writable ArrayDataSet, and all of its depend datasets as well.
-     * Note this does not verify that the data is a qube!!!
+     * copies the dataset into a writable ArrayDataSet, and all of its depend 
+     * datasets as well. Note this does not verify that the data is a qube!!!
      * @param ds the data to be copied.
      * @return a copy of the data.
      */
     public static ArrayDataSet copy( QDataSet ds ) {
         //TODO: this should check that the data is a qube.
         if ( ds instanceof ArrayDataSet ) {
-            return ddcopy( (ArrayDataSet)ds );
+            return internalCopy( (ArrayDataSet)ds );
         } else if ( ds instanceof JoinDataSet && ds.length()>0 ) {
             QDataSet ds1= ds.slice(0);
             if ( ds1 instanceof ArrayDataSet ) { // Juno/Waves needed to save memory and avoid converting everything to doubles
@@ -582,47 +635,49 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     }
 
     /**
-     * append the second dataset onto this dataset.  The two datasets need only have convertible units, so for example
-     * two time arrays may be appended even if their units don't have the same base.  
-     * Only properties of the two datasets that do not change are preserved.
-     * @param ths rank N dataset
-     * @param ds rank N dataset of the same type and geometry as ths.
+     * append the second dataset onto this dataset.  The two datasets need 
+     * only have convertible units, so for example two time arrays may be appended 
+     * even if their units don't have the same base, and the times will be
+     * converted.  Only properties of the two datasets that do not change are preserved.
+     * @param ds1 rank N dataset
+     * @param ds2 rank N dataset of the same type and compatible geometry as ds1.
+     * @return dataset with the data appended.
      */
-    public static ArrayDataSet append( ArrayDataSet ths, ArrayDataSet ds ) {
-        if ( ths==null ) return ds;
-        if ( ds==null ) throw new NullPointerException("ds is null");
+    public static ArrayDataSet append( ArrayDataSet ds1, ArrayDataSet ds2 ) {
+        if ( ds1==null ) return ds2;
+        if ( ds2==null ) throw new NullPointerException("ds is null");
         
-        if ( ths.rank()==ds.rank()-1 ) {
-            Units u= SemanticOps.getUnits(ths);
-            ths= ArrayDataSet.create( ths.rank()+1, 1, ths.len0, ths.len1, ths.len2, ths.getBack() );
-            ths.putProperty( QDataSet.UNITS,u);
+        if ( ds1.rank()==ds2.rank()-1 ) {
+            Units u= SemanticOps.getUnits(ds1);
+            ds1= ArrayDataSet.create( ds1.rank()+1, 1, ds1.len0, ds1.len1, ds1.len2, ds1.getBack() );
+            ds1.putProperty( QDataSet.UNITS,u);
         }
-        if ( ths.rank()-1==ds.rank() ) {
-            Units u= SemanticOps.getUnits(ds);
-            ds= ArrayDataSet.create( ds.rank()+1, 1, ds.len0, ds.len1, ds.len2, ds.getBack() );
-            ds.putProperty( QDataSet.UNITS,u);
+        if ( ds1.rank()-1==ds2.rank() ) {
+            Units u= SemanticOps.getUnits(ds2);
+            ds2= ArrayDataSet.create( ds2.rank()+1, 1, ds2.len0, ds2.len1, ds2.len2, ds2.getBack() );
+            ds2.putProperty( QDataSet.UNITS,u);
         }
-        if ( ds.rank()!=ths.rank ) throw new IllegalArgumentException("rank mismatch");
-        if ( ds.len1!=ths.len1 ) throw new IllegalArgumentException("len1 mismatch");
-        if ( ds.len2!=ths.len2 ) throw new IllegalArgumentException("len2 mismatch");
-        if ( ds.len3!=ths.len3 ) throw new IllegalArgumentException("len3 mismatch");
-        if ( ths.getBack().getClass()!=ds.getBack().getClass() ) {
+        if ( ds2.rank()!=ds1.rank ) throw new IllegalArgumentException("rank mismatch");
+        if ( ds2.len1!=ds1.len1 ) throw new IllegalArgumentException("len1 mismatch");
+        if ( ds2.len2!=ds1.len2 ) throw new IllegalArgumentException("len2 mismatch");
+        if ( ds2.len3!=ds1.len3 ) throw new IllegalArgumentException("len3 mismatch");
+        if ( ds1.getBack().getClass()!=ds2.getBack().getClass() ) {
             throw new IllegalArgumentException("backing type mismatch");
         }
 
-        int myLength= ths.len0 * ths.len1 * ths.len2 * ths.len3;
-        int dsLength= ds.len0 * ds.len1 * ds.len2 * ds.len3;
+        int myLength= ds1.len0 * ds1.len1 * ds1.len2 * ds1.len3;
+        int dsLength= ds2.len0 * ds2.len1 * ds2.len2 * ds2.len3;
 
-        Object newback= Array.newInstance( ths.getBack().getClass().getComponentType(), myLength + dsLength );
+        Object newback= Array.newInstance( ds1.getBack().getClass().getComponentType(), myLength + dsLength );
 
-        System.arraycopy( ths.getBack(), 0, newback, 0, myLength );
-        System.arraycopy( ds.getBack(), 0, newback, myLength, dsLength );
+        System.arraycopy( ds1.getBack(), 0, newback, 0, myLength );
+        System.arraycopy( ds2.getBack(), 0, newback, myLength, dsLength );
 
-        Units u1= SemanticOps.getUnits(ths);
-        Units u2= SemanticOps.getUnits(ds);
+        Units u1= SemanticOps.getUnits(ds1);
+        Units u2= SemanticOps.getUnits(ds2);
         if ( u1!=u2 ) {
             UnitsConverter uc= UnitsConverter.getConverter(u2,u1);
-            Class backClass= ths.getBack().getClass().getComponentType();
+            Class backClass= ds1.getBack().getClass().getComponentType();
             for ( int i=myLength; i<myLength+dsLength; i++ ) { //TODO: this is going to be sub-optimal that its much slower than it needs to be because if statements.
                 Number nv=  uc.convert(Array.getDouble( newback,i) ) ;
                 if ( backClass==double.class ) {
@@ -643,11 +698,11 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
             }
         }
 
-        int len0= ths.len0 + ds.len0;
+        int len0= ds1.len0 + ds2.len0;
         
-        ArrayDataSet result= create( ths.rank, len0, ths.len1, ths.len2, ths.len3, newback );
+        ArrayDataSet result= create( ds1.rank, len0, ds1.len1, ds1.len2, ds1.len3, newback );
 
-        result.properties.putAll( joinProperties( ths, ds ) );
+        result.properties.putAll( joinProperties( ds1, ds2 ) );
         result.properties.put( QDataSet.UNITS, u1 ); // since we resolve units when they change (bug 3469219)
 
         return result;
@@ -655,18 +710,20 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
 
     /**
-     * join the properties of the two datasets.  (for append, really...)
-     * Note MONOTONIC assumes the ds will be added after ths.
-     * @param ths 
-     * @param ds
+     * join the properties of the two datasets.  This was introduced to
+     * support append, but may be useful in other contexts.  Note there is special
+     * handling of properties, like CACHE_TAG and TYPICAL_MIN, TYPICAL_MAX.
+     * Note MONOTONIC assumes the ds2 will be added after ds1.
+     * @param ds1 dataset, typically a time series
+     * @param ds2 dataset, typically a time serirs
      * @return the two sets combined.
      */
-    protected static Map joinProperties( ArrayDataSet ths, ArrayDataSet ds ) {
+    protected static Map joinProperties( ArrayDataSet ds1, ArrayDataSet ds2 ) {
         Map result= new HashMap();
-        for ( int i=0; i<ds.rank(); i++ ) {
-            QDataSet thatDep= (QDataSet) ds.property( "DEPEND_"+i );
+        for ( int i=0; i<ds2.rank(); i++ ) {
+            QDataSet thatDep= (QDataSet) ds2.property( "DEPEND_"+i );
             if ( thatDep!=null && ( i==0 || thatDep.rank()>1 ) ) {
-                QDataSet thisDep= (QDataSet) ths.property( "DEPEND_"+i );
+                QDataSet thisDep= (QDataSet) ds1.property( "DEPEND_"+i );
                 ArrayDataSet djoin= copy( thisDep ); //TODO: reconcile types
                 ArrayDataSet ddep1= thatDep instanceof ArrayDataSet ? (ArrayDataSet) thatDep : maybeCopy( thatDep );
                 djoin= append( djoin, ddep1 );
@@ -676,8 +733,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 //TODO: check properties equal.
                 result.put( "DEPEND_"+i, thatDep );
             }
-            QDataSet thatBundle= (QDataSet) ds.property( "BUNDLE_"+i );
-            QDataSet thisBundle= (QDataSet) ths.property("BUNDLE_"+i );
+            QDataSet thatBundle= (QDataSet) ds2.property( "BUNDLE_"+i );
+            QDataSet thisBundle= (QDataSet) ds1.property("BUNDLE_"+i );
             if ( i>0 && thatBundle!=null && thisBundle!=null ) {
                 if ( thisBundle.length()!=thatBundle.length() ) {
                     throw new IllegalArgumentException("BUNDLE_"+i+" should be the same length to append, but they are not");
@@ -697,47 +754,47 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         props= DataSetUtil.correlativeProperties();
         for ( int iprop= -1; iprop<props.length; iprop++ ) {
             String prop= iprop==-1 ? QDataSet.PLANE_0 : props[iprop];
-            QDataSet w1= (QDataSet) ds.property( prop );
+            QDataSet w1= (QDataSet) ds2.property( prop );
             if ( w1!=null ) {
-                QDataSet dep0= (QDataSet) ths.property( prop );
+                QDataSet dep0= (QDataSet) ds1.property( prop );
                 if ( dep0!=null ) {
                     ArrayDataSet djoin=  copy( dep0 );
                     ArrayDataSet dd1=  maybeCopy(w1);
                     djoin= append( djoin, dd1 );
                     result.put( prop, djoin );
                 } else {
-                    logger.log(Level.INFO, "dataset doesn''t have property \"{0}\" but other dataset does: {1}", new Object[]{prop, ths});
+                    logger.log(Level.INFO, "dataset doesn''t have property \"{0}\" but other dataset does: {1}", new Object[]{prop, ds1});
                 }
             }
         }
 
         props= DataSetUtil.dimensionProperties();
         for (String prop : props) {
-            Object value= ths.property(prop);
-            if ( value!=null && value.equals(ds.property(prop) ) ) {
-                result.put( prop, ths.property(prop) );
+            Object value= ds1.property(prop);
+            if ( value!=null && value.equals(ds2.property(prop) ) ) {
+                result.put( prop, ds1.property(prop) );
             }
         }
         // special handling for QDataSet.CADENCE, and QDataSet.MONOTONIC
         props= new String[] { QDataSet.CADENCE, QDataSet.BINS_1 };
         for (String prop : props) {
-            Object o = ths.property(prop);
-            if (o!=null && o.equals(ds.property(prop))) {
+            Object o = ds1.property(prop);
+            if (o!=null && o.equals(ds2.property(prop))) {
                 result.put(prop, o);
             }
         }
 
         // special handling for monotonic property.
-        Boolean m= (Boolean) ths.property( QDataSet.MONOTONIC );
-        if ( m!=null && m.equals(Boolean.TRUE) && m.equals( ds.property( QDataSet.MONOTONIC ) ) ) {
+        Boolean m= (Boolean) ds1.property( QDataSet.MONOTONIC );
+        if ( m!=null && m.equals(Boolean.TRUE) && m.equals( ds2.property( QDataSet.MONOTONIC ) ) ) {
             // check to see that result would be monotonic
             try {
-                int[] fl1= DataSetUtil.rangeOfMonotonic( ths );
-                int[] fl2= DataSetUtil.rangeOfMonotonic( ds );
-                Units u1= SemanticOps.getUnits(ds);
-                Units u2= SemanticOps.getUnits(ths);
+                int[] fl1= DataSetUtil.rangeOfMonotonic( ds1 );
+                int[] fl2= DataSetUtil.rangeOfMonotonic( ds2 );
+                Units u1= SemanticOps.getUnits(ds2);
+                Units u2= SemanticOps.getUnits(ds1);
                 UnitsConverter uc= u2.getConverter(u1);
-                if ( ds.value(fl2[0]) -  uc.convert( ths.value(fl1[1]) ) >= 0 ) { 
+                if ( ds2.value(fl2[0]) -  uc.convert( ds1.value(fl1[1]) ) >= 0 ) { 
                     result.put( QDataSet.MONOTONIC, Boolean.TRUE );
                 }
             } catch ( IllegalArgumentException ex ) {
@@ -746,8 +803,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         }
 
         // special handling for cacheTag property.
-        org.das2.datum.CacheTag ct0= (CacheTag) ths.property( QDataSet.CACHE_TAG );
-        org.das2.datum.CacheTag ct1= (CacheTag) ds.property( QDataSet.CACHE_TAG );
+        org.das2.datum.CacheTag ct0= (CacheTag) ds1.property( QDataSet.CACHE_TAG );
+        org.das2.datum.CacheTag ct1= (CacheTag) ds2.property( QDataSet.CACHE_TAG );
         if ( ct0!=null && ct1!=null ) {
             // If cache tags are not adjacent, the range between them is included in the new tag.
             CacheTag newTag= null;
@@ -762,17 +819,27 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         }
 
         // special handling of TYPICAL_MIN _MAX properties
-        Number dmin0= (Number) ths.property(QDataSet.TYPICAL_MIN );
-        Number dmax0= (Number) ths.property(QDataSet.TYPICAL_MAX );
-        Number dmin1= (Number) ds.property(QDataSet.TYPICAL_MIN );
-        Number dmax1= (Number) ds.property(QDataSet.TYPICAL_MAX );
+        Number dmin0= (Number) ds1.property(QDataSet.TYPICAL_MIN );
+        Number dmax0= (Number) ds1.property(QDataSet.TYPICAL_MAX );
+        Number dmin1= (Number) ds2.property(QDataSet.TYPICAL_MIN );
+        Number dmax1= (Number) ds2.property(QDataSet.TYPICAL_MAX );
         if ( dmin0!=null && dmin1!=null ) result.put( QDataSet.TYPICAL_MIN, Math.min( dmin0.doubleValue(), dmin1.doubleValue() ) );
         if ( dmax0!=null && dmax1!=null ) result.put( QDataSet.TYPICAL_MAX, Math.max( dmax0.doubleValue(), dmax1.doubleValue() ) );
 
         return result;
     }
 
+    /**
+     * set the units for this dataset.  This is a convenience method
+     * intended to encourage setting the data units.  For example in Jython:
+     *<blockquote><pre><small>{@code
+     *ds= linspace(0.,10.,100).setUnits( Units.seconds )
+     *}</small></pre></blockquote>
+     * @param units units object, like Units.seconds
+     * @return this dataset.
+     */
     public QDataSet setUnits( Units units ) {
+        checkImmutable();        
         this.putProperty( QDataSet.UNITS, units );
         return this;
     }
@@ -784,7 +851,8 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
     /**
      * returns the size of the dataset in bytes.
-     * @return
+     * @return the size of the dataset in bytes.
+     * @see org.autoplot.bufferdataset.BufferDataSet which stores data outside of the JVM.
      */
     public int jvmMemory() {
         int sizePer;

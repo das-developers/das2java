@@ -6,6 +6,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
+
 package org.virbo.dataset;
 
 import java.lang.reflect.Array;
@@ -13,10 +14,7 @@ import java.util.Map;
 import org.das2.datum.Units;
 
 /**
- * rank 1,2,or 3 dataset backed by double array. 
- * Mutable datasets warning: No dataset should be mutable once it is accessible to the
- * rest of the system.  This would require clients make defensive copies which would 
- * seriously degrade performance.  
+ * rank 0,1,2,3 or 4 dataset backed by double array (8 byte real numbers).
  *
  * @author jbf
  */
@@ -26,20 +24,46 @@ public final class DDataSet extends ArrayDataSet {
 
     private static final boolean RANGE_CHECK = "true".equals( System.getProperty("rangeChecking","false") );
     
-    public static final String version = "20110217";
+    public static final String version="20150219";
 
+    /**
+     * create a rank 1 dataset backed by array of doubles.
+     * @param len0 length of the dimension
+     * @return rank 1 qube dataset of backed by array of doubles.
+     */
     public static DDataSet createRank1(int len0) {
         return new DDataSet(1, len0, 1, 1, 1);
     }
 
+    /**
+     * create a rank 2 qube dataset backed by array of doubles.
+     * @param len0 length of the dimension
+     * @param len1 length of the dimension
+     * @return rank 2 qube dataset of backed by array of doubles.
+     */    
     public static DDataSet createRank2(int len0, int len1) {
         return new DDataSet(2, len0, len1, 1, 1);
     }
 
+    /**
+     * create a rank 3 qube dataset backed by array of doubles.
+     * @param len0 length of the dimension
+     * @param len1 length of the dimension
+     * @param len2 length of the dimension
+     * @return rank 3 qube dataset of backed by array of doubles.
+     */    
     public static DDataSet createRank3(int len0, int len1, int len2) {
         return new DDataSet(3, len0, len1, len2, 1);
     }
 
+    /**
+     * create a rank 4 qube dataset backed by array of doubles.
+     * @param len0 length of the dimension
+     * @param len1 length of the dimension
+     * @param len2 length of the dimension
+     * @param len3 length of the dimension
+     * @return rank 4 qube dataset of backed by array of doubles.
+     */    
     public static DDataSet createRank4(int len0, int len1, int len2, int len3) {
         return new DDataSet(4, len0, len1, len2, len3);
     }
@@ -48,21 +72,19 @@ public final class DDataSet extends ArrayDataSet {
      * Makes an array from array of dimension sizes.  The result will have
      * rank qube.length(). 
      * @param qube array specifying the rank and size of each dimension
-     * @return DDataSet
+     * @return the array as a QDataSet
      */
     public static DDataSet create(int[] qube) {
         if ( qube.length==0 ) {
             return new DDataSet( 0, 1, 1, 1, 1 );
-        } else if (qube.length == 1) {
+        } else if ( qube.length == 1 ) {
             return DDataSet.createRank1(qube[0]);
-        } else if (qube.length == 2) {
+        } else if ( qube.length == 2 ) {
             return DDataSet.createRank2(qube[0], qube[1]);
-        } else if (qube.length == 3) {
+        } else if ( qube.length == 3 ) {
             return DDataSet.createRank3(qube[0], qube[1], qube[2]);
-        } else if (qube.length == 4) {
+        } else if ( qube.length == 4 ) {
             return DDataSet.createRank4(qube[0], qube[1], qube[2], qube[3]);
-        } else if (qube.length == 0 ) {
-            return new DDataSet( 0, 1, 1, 1, 1 );
         } else {
             throw new IllegalArgumentException("bad qube");
         }
@@ -85,11 +107,10 @@ public final class DDataSet extends ArrayDataSet {
     }
     /**
      * Wraps an array from array of dimension sizes.  The result will have
-     * rank qube.length(). 
+     * rank qube.length().  For rank 0, data is 1-element array.
      * @param data array containing the data, with the last dimension contiguous in memory.
-     *    for rank 0, data is 1-element array.
      * @param qube array specifying the rank and size of each dimension
-     * @return DDataSet
+     * @return the array as a QDataSet
      */
     public static DDataSet wrap( double[] data, int[] qube ) {
         if (qube.length == 1) {
@@ -108,9 +129,23 @@ public final class DDataSet extends ArrayDataSet {
         }
     }
 
+    /**
+     * wrap the array to make it into a dataset.  This is the same as
+     * wrap( back, qube ).  The data is not copied, so be sure that no outside 
+     * codes modify the data unintentionally.
+     * @param back the array
+     * @param rank the rank of the dataset
+     * @param len0 the length, or 1 if the index is not needed.
+     * @param len1 the length, or 1 if the index is not needed.
+     * @param len2 the length, or 1 if the index is not needed.
+     * @return the dataset wrapping the array.
+     */
+    public static DDataSet wrap( double[] back, int rank, int len0, int len1, int len2 ) {
+        return new DDataSet( rank, len0, len1, len2, 1, back );
+    }
         
-    protected DDataSet(int rank, int len0, int len1, int len2, int len3) {
-        this(rank, len0, len1, len2, len3, new double[len0 * len1 * len2 * len3]);
+    protected DDataSet( int rank, int len0, int len1, int len2, int len3 ) {
+        this( rank, len0, len1, len2, len3, new double[ len0 * len1 * len2 * len3] );
     }
 
     protected DDataSet(int rank, int len0, int len1, int len2, int len3, double[] back) {
@@ -127,21 +162,20 @@ public final class DDataSet extends ArrayDataSet {
         if ( rank>1 ) putProperty(QDataSet.QUBE, Boolean.TRUE);
     }
 
+    @Override
     protected Object getBack() {
         checkImmutable();
         return this.back;
     }
 
-    /**
-     * return a copy of the backing array, to support ArrayDataSet.copy.
-     * @return 
-     */
+    @Override
     protected Object getBackCopy() {
         Object newback = Array.newInstance( this.back.getClass().getComponentType(), this.back.length  );
         System.arraycopy( this.back, 0, newback, 0, this.back.length );
         return newback;
     }
     
+    @Override
     protected void setBack(Object back) {
         checkImmutable();
         this.back= (double[])back;
@@ -154,7 +188,7 @@ public final class DDataSet extends ArrayDataSet {
                 throw new IllegalArgumentException("rank 0 access on rank "+this.rank+" dataset");
             }
         }
-        return back[0];
+        return back[ 0 ];
     }
 
     @Override
@@ -167,7 +201,7 @@ public final class DDataSet extends ArrayDataSet {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);
             }
         }
-        return back[i0];
+        return back[ i0 ];
     }
 
     @Override
@@ -227,7 +261,8 @@ public final class DDataSet extends ArrayDataSet {
         return back[i0*len1*len2*len3 + i1*len2*len3 + i2*len3 +i3];
     }
 
-    public void putValue(double value) {
+    @Override
+    public void putValue( double value ) {
         checkImmutable();
         if ( this.rank!=0 ) {
             throw new IllegalArgumentException("rank 0 putValue called on dataset that is rank "+this.rank+".");
@@ -235,7 +270,8 @@ public final class DDataSet extends ArrayDataSet {
         back[0]= value;
     }
 
-    public void putValue(int i0, double value) {
+    @Override
+    public void putValue( int i0, double value ) {
         checkImmutable();
         if (RANGE_CHECK) {
             if (i0 < 0 || i0 >= len0) {
@@ -245,7 +281,8 @@ public final class DDataSet extends ArrayDataSet {
         back[i0] = value;
     }
 
-    public void putValue(int i0, int i1, double value) {
+    @Override
+    public void putValue( int i0, int i1, double value ) {
         checkImmutable();
         if (RANGE_CHECK) {
             if (i0 < 0 || i0 >= len0) {
@@ -258,7 +295,8 @@ public final class DDataSet extends ArrayDataSet {
         back[i0 * len1 + i1] = value;
     }
 
-    public void putValue(int i0, int i1, int i2, double value) {
+    @Override
+    public void putValue( int i0, int i1, int i2, double value ) {
         checkImmutable();
         if (RANGE_CHECK) {
             if (i0 < 0 || i0 >= len0) {
@@ -274,7 +312,8 @@ public final class DDataSet extends ArrayDataSet {
         back[i0 * len1 * len2 + i1 * len2 + i2] = value;
     }
 
-    public void putValue(int i0, int i1, int i2, int i3, double value) {
+    @Override
+    public void putValue( int i0, int i1, int i2, int i3, double value ) {
         checkImmutable();
         if (RANGE_CHECK) {
             if (i0 < 0 || i0 >= len0) {
@@ -292,17 +331,38 @@ public final class DDataSet extends ArrayDataSet {
         }
         back[ i0 * len1 * len2 * len3 + i1 * len2 * len3 + i2 * len3 + i3 ] = value;
     }
+    
+    /**
+     * add this value to the current value. 
+     * @param i0 the index
+     * @param value the value, which is cast to this internal type.
+     */
+    public void addValue( int i0, double value ) {
+        checkImmutable();
+        back[ i0 ]+= value;
+    }
 
+    /**
+     * add this value to the current value. 
+     * @param i0 the index
+     * @param i1 the index
+     * @param value the value, which is cast to this internal type.
+     */
+    public void addValue( int i0, int i1, double value ) {
+        checkImmutable();
+        back[  i0 * len1 + i1 ]+= value;
+    }
+    
     /**
      * add the value to the position.  This is done all over the place with code like:
      *   dd.putValue( i0,i1, dd.getValue( i0,i1 ) + z )
      * which is inefficient.
      * @param i0
      * @param value
+     * @deprecated use addValue
      */
     public void accumValue( int i0, double value ) {
-        checkImmutable();        
-        back[i0] += value;
+        addValue(i0,value);
     }    
     
     /**
@@ -312,35 +372,34 @@ public final class DDataSet extends ArrayDataSet {
      * @param i0
      * @param i1
      * @param value
+     * @deprecated use addValue
      */
     public void accumValue( int i0, int i1, double value ) {
-        checkImmutable();        
-        back[i0 * len1 + i1] += value;
+        addValue( i0,i1,value );
+    }
+    
+    /**
+     * creates a rank1 DDataSet by wrapping an existing array.
+     * @param back the new backing array
+     * @return the dataset
+     */
+    public static DDataSet wrap( double[] back ) {
+        return new DDataSet( 1, back.length, 1, 1, 1, back );
     }
 
     /**
-     * Shorten the dataset by changing it's dim 0 length parameter.  The same backing array is used, 
-     * so the element that remain will be the same.
-     * This can only shorten!
+     * creates a DDataSet by wrapping an existing array, aliasing it to rank 2.
+     * @param back the new backing array
+     * @param nx number of elements in the zeroth index
+     * @param ny number of elements in the first index
+     * @return the dataset
      */
-    public void putLength(int len) {
-        checkImmutable();        
-        if (len > len0) {
-            throw new IllegalArgumentException("dataset cannot be lengthened");
-        }
-        len0 = len;
+    public static DDataSet wrap( double[] back, int nx, int ny ) {
+        return new DDataSet( 2, nx, ny, 1, 1, back );
     }
 
-    @Override
-    public String toString() {
-        return DataSetUtil.toString(this);
-    }
-
-    /**
-     * creates a DDataSet by wrapping an existing double array.
-     */
-    public static DDataSet wrap(double[] back) {
-        return new DDataSet(1, back.length, 1, 1, 1, back);
+    public static DDataSet wrap( double[] back, int rank, int len0, int len1, int len2, int len3) {
+        return new DDataSet( rank, len0, len1, len2, len3, back);
     }
 
     /**
@@ -359,7 +418,9 @@ public final class DDataSet extends ArrayDataSet {
     /**
      * creates a DDataSet by wrapping an existing array, and aliasing it to rank2.
      * Note the last index is packed closest in memory.
+     * @param back 
      * @param n1 the size of the second dimension.
+     * @return 
      */
     public static DDataSet wrapRank2(double[] back, int n1) {
         return new DDataSet(2, back.length / n1, n1, 1, 1, back);
@@ -375,32 +436,7 @@ public final class DDataSet extends ArrayDataSet {
     public static DDataSet wrapRank3(double[] back, int n1, int n2) {
         return new DDataSet(3, back.length / (n1 * n2), n1, n2, 1, back);
     }
-
-    /**
-     * creates a DDataSet by wrapping an existing array, aliasing it to rank 2.
-     */
-    public static DDataSet wrap(double[] back, int nx, int ny) {
-        return new DDataSet(2, nx, ny, 1, 1, back);
-    }
-
-    public static DDataSet wrap( double[] back, int rank, int len0, int len1, int len2 ) {
-        return new DDataSet( rank, len0, len1, len2, 1, back );
-    }
-
-    public static DDataSet wrap( double[] back, int rank, int len0, int len1, int len2, int len3) {
-        return new DDataSet( rank, len0, len1, len2, len3, back);
-    }
     
-
-    /** 
-     * convenient method for setting the units.
-     */
-    public DDataSet setUnits( Units units ) {
-        checkImmutable();
-        properties.put(QDataSet.UNITS, units);
-        return this;
-    }
-
     /**
      * copy elements of src DDataSet into dest DDataSet, with System.arraycopy.
      * src and dst must have the same geometry, except for dim 0.  Allows for
@@ -441,11 +477,11 @@ public final class DDataSet extends ArrayDataSet {
 
     /**
      * the slice operator is better implemented here.  Presently, we
-     * use System.arraycopy to copy out the data, but this should be
-     * reimplemented along with an offset parameter so the original data
+     * use System.arraycopy to copy out the data, but this could be
+     * re-implemented along with an offset parameter so the original data
      * can be used to back the data.
-     * @param i
-     * @return
+     * @param i the index
+     * @return a rank N-1 slice of the data.
      */
     @Override
     public QDataSet slice(int i) {
@@ -463,9 +499,9 @@ public final class DDataSet extends ArrayDataSet {
 
     /**
      * trim operator copies the data into a new dataset.
-     * @param start
-     * @param end
-     * @return
+     * @param start the first index
+     * @param end the last index, exclusive
+     * @return a shorter dataset of the same rank.
      */
     @Override
     public QDataSet trim(int start, int end) {
@@ -497,8 +533,8 @@ public final class DDataSet extends ArrayDataSet {
      * method should be implemented.  Clients should use this instead of
      * casting the class to the capability class.
      * @param <T>
-     * @param clazz
-     * @return
+     * @param clazz the class, such as WritableDataSet.class
+     * @return null or the capability if exists, such as WritableDataSet
      */
     @Override
     public <T> T capability(Class<T> clazz) {
@@ -512,6 +548,5 @@ public final class DDataSet extends ArrayDataSet {
             return super.capability(clazz);
         }
     }
-
 
 }
