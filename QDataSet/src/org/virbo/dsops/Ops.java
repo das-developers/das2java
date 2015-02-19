@@ -3200,10 +3200,10 @@ public class Ops {
     /**
      * Copy the dataset to an ArrayDataSet only if the dataset is not already an ArrayDataSet
      * or BufferDataSet.
-     * @param ads0
+     * @param ads0 a dataset.
      * @return an ArrayDataSet or BufferDataSet
      */    
-    public static MutablePropertyDataSet maybeCopy( QDataSet ads0) {
+    public static WritableDataSet maybeCopy( QDataSet ads0) {
         if ( ads0 instanceof BufferDataSet ) {
             return BufferDataSet.maybeCopy( ads0 );
         } else {
