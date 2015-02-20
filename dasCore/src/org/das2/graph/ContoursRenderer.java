@@ -42,24 +42,23 @@ import org.virbo.dataset.JoinDataSet;
 import org.virbo.dsops.Ops;
 
 /**
- * Renderer for making contour plots.  This still shows a bug 
- * https://sourceforge.net/p/autoplot/bugs/1105/
- * as of 20130913, and should not be used.
+ * Renderer for making contour plots.  
  * @author jbf
  */
 public class ContoursRenderer extends Renderer {
 
-    /** Creates a new instance of ContoursRenderer */
     public ContoursRenderer() {
     }
+    
     GeneralPath[] paths;
     String[] pathLabels;
 
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
      *
-     * @param ds
-     * @return
+     * @param ds the dataset.
+     * @return a bounding box
+     * @see org.virbo.dataset.examples.Schemes#boundingBox() 
      */
     public static QDataSet doAutorange( QDataSet ds ) {
 
@@ -99,8 +98,8 @@ public class ContoursRenderer extends Renderer {
     
     /**
      * return false if the inputs are okay, true if there's no data, etc.
-     * @param lparent
-     * @return 
+     * @param lparent the parent
+     * @return false if the inputs are okay, true if there's no data
      */
     private boolean checkInputs( DasPlot lparent ) {
         QDataSet tds = (QDataSet) getDataSet();
@@ -256,6 +255,8 @@ public class ContoursRenderer extends Renderer {
     
     /**
      * returns clip, in the canvas reference frame
+     * @param g the graphics context.
+     * @return the bounds for the area affected.
      */
     private Area paintLabels(final Graphics2D g) {
 
@@ -470,7 +471,7 @@ public class ContoursRenderer extends Renderer {
         double oldLabelCadence = this.labelCadence;
         this.labelCadence = labelCadence;
         update();
-        propertyChangeSupport.firePropertyChange("labelCadence", new Double(oldLabelCadence), new Double(labelCadence));
+        propertyChangeSupport.firePropertyChange("labelCadence", oldLabelCadence, labelCadence );
     }
 
     private synchronized GeneralPath[] getPaths() {
@@ -541,14 +542,25 @@ public class ContoursRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange("color", oldColor, color);
     }
 
+    /**
+     * true if we should reduce paths to remove features that fall within a pixel, etc.
+     */
     private boolean simplifyPaths = true;
 
     public static final String PROP_SIMPLIFYPATHS = "simplifyPaths";
 
+    /**
+     * return true if we should reduce paths to remove features that fall within a pixel, etc.
+     * @return true if we should reduce paths
+     */
     public boolean isSimplifyPaths() {
         return this.simplifyPaths;
     }
 
+    /**
+     * set to true if we should reduce paths to remove features that fall within a pixel, etc.
+     * @param newsimplifyPaths true if we should reduce paths
+     */
     public void setSimplifyPaths(boolean newsimplifyPaths) {
         boolean oldsimplifyPaths = simplifyPaths;
         this.simplifyPaths = newsimplifyPaths;
@@ -556,15 +568,28 @@ public class ContoursRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_SIMPLIFYPATHS, oldsimplifyPaths, newsimplifyPaths);
     }
 
-    
+    /**
+     * the line thickness in pixels.
+     */
     private double lineThick = 1.0;
 
+    /**
+     * handle for the property lineThick.
+     */
     public static final String PROP_LINETHICK = "lineThick";
 
+    /**
+     * get the line thickness in pixels.
+     * @return the line thickness in pixels.
+     */
     public double getLineThick() {
         return this.lineThick;
     }
 
+    /**
+     * set the line thickness in pixels.
+     * @param newlineThick the line thickness in pixels.
+     */
     public void setLineThick(double newlineThick) {
         double oldlineThick = lineThick;
         this.lineThick = newlineThick;
@@ -572,5 +597,4 @@ public class ContoursRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_LINETHICK, oldlineThick, newlineThick);
     }
 
-    
 }
