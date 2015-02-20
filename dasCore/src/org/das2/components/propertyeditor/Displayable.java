@@ -21,7 +21,7 @@ public interface Displayable {
      * An icon can be provided that will be shown in a list
      * along with the textual description of the element.
      * This method should return <code>null</code> if there
-     * is no icon available.
+     * is no icon available, or a roughly 16x16 pixel icon.
      *
      * @return the icon.
      */
