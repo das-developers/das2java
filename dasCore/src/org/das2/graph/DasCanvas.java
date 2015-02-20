@@ -43,6 +43,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -53,6 +54,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -92,6 +94,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.imageio.ImageIO;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -306,25 +310,37 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     
     private static boolean printBusy= false;
     
+    private static void doPrintImmediately( Component me ) {
+        Printable p = currentCanvas.getPrintable();
+        PrinterJob pj = PrinterJob.getPrinterJob();
+        pj.setPrintable(p);
+//        PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();  // This doesn't work for me on Linux, and http://stackoverflow.com/questions/4554452/java-native-print-dialog-change-icon says there's a access restriction.
+//        if ( me!=null ) {
+//            Window w= SwingUtilities.getWindowAncestor(me);
+//            Frame owner= w instanceof Frame ? (Frame)w : null;
+//            if ( owner!=null ) aset.add(new sun.print.DialogOwner(owner)); 
+//        }
+        if (pj.printDialog()) {
+           try {
+                pj.print();
+            } catch (PrinterException pe) {
+                Object[] message = {"Error printing", pe.getMessage()};
+                JOptionPane.showMessageDialog(null, message, "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
+        }        
+    }
+    
     public static final Action PRINT_ACTION = new CanvasAction("Print...") {
+        @Override
         public void actionPerformed(ActionEvent e) {
             if ( printBusy ) {
-                JOptionPane.showMessageDialog(null, "Another task is trying to print, please wait.", "Please Wait", JOptionPane.INFORMATION_MESSAGE );
+                JOptionPane.showMessageDialog( currentCanvas, "Another task is trying to print, please wait.", "Please Wait", JOptionPane.INFORMATION_MESSAGE );
             } else {
                 printBusy= true;
                 Runnable run= new Runnable() {
+                    @Override
                     public void run() {
-                        Printable p = currentCanvas.getPrintable();
-                        PrinterJob pj = PrinterJob.getPrinterJob();
-                        pj.setPrintable(p);
-                        if (pj.printDialog()) {
-                           try {
-                                pj.print();
-                            } catch (PrinterException pe) {
-                                Object[] message = {"Error printing", pe.getMessage()};
-                                JOptionPane.showMessageDialog(null, message, "ERROR", JOptionPane.ERROR_MESSAGE);
-                            }
-                        }
+                        doPrintImmediately(currentCanvas);
                         printBusy= false;
                     }
                 };
