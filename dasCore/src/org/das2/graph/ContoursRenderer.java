@@ -9,9 +9,6 @@
 package org.das2.graph;
 
 import org.das2.DasException;
-import org.das2.dataset.AverageTableRebinner;
-import org.das2.dataset.ClippedTableDataSet;
-import org.das2.dataset.RebinDescriptor;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
 import org.virbo.math.Contour;
@@ -37,12 +34,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.das2.datum.Datum;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dsops.Ops;
 
@@ -63,7 +58,7 @@ public class ContoursRenderer extends Renderer {
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
      *
-     * @param fillDs
+     * @param ds
      * @return
      */
     public static QDataSet doAutorange( QDataSet ds ) {
@@ -178,9 +173,9 @@ public class ContoursRenderer extends Renderer {
 
         }
 
-        for (int i = 0; i < paths.length; i++) {
-            if (paths[i] != null) {
-                g.draw(paths[i]);
+        for (GeneralPath path : paths) {
+            if (path != null) {
+                g.draw(path);
             }
         }
 
@@ -431,21 +426,21 @@ public class ContoursRenderer extends Renderer {
     }
     
     /**
-     * Holds value of property contours.
+     * the contour locations, a comma-separated list
      */
     private String contours = "-.7,-.6,-.5,-.4,-.3,-.2,-.1,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9";
 
     /**
-     * Getter for property contours.
-     * @return Value of property contours.
+     * return the contour locations, a comma-separated list
+     * @return the contour locations, a comma-separated list
      */
     public String getContours() {
         return this.contours;
     }
 
     /**
-     * Setter for property contours.
-     * @param contours New value of property contours.
+     * set the contour locations, a comma-separated list
+     * @param contours the contour locations, a comma-separated list
      */
     public void setContours(String contours) {
         String oldContours = this.contours;
@@ -455,21 +450,21 @@ public class ContoursRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange("contours", oldContours, contours);
     }
     /**
-     * property labelCadence, the inter-label distance, in ems.
+     * the inter-label distance, in ems.
      */
     private double labelCadence = 100;
 
     /**
-     * Getter for property labelCadence.
-     * @return Value of property labelCadence.
+     * return the inter-label distance, in ems.
+     * @return get the inter-label distance, in ems.
      */
     public double getLabelCadence() {
         return this.labelCadence;
     }
 
     /**
-     * Setter for property labelCadence.
-     * @param labelCadence New value of property labelCadence.
+     * set the inter-label distance, in ems.
+     * @param labelCadence the inter-label distance, in ems.
      */
     public void setLabelCadence(double labelCadence) {
         double oldLabelCadence = this.labelCadence;
@@ -488,31 +483,32 @@ public class ContoursRenderer extends Renderer {
         if (lpaths == null) {
             return false;
         }
-        for (int i = 0; i < lpaths.length; i++) {
-            if (lpaths[i] != null) {
-                if (lpaths[i].intersects(x - 2, y - 2, 5, 5)) {
+        for (GeneralPath lpath : lpaths) {
+            if (lpath != null) {
+                if (lpath.intersects(x - 2, y - 2, 5, 5)) {
                     return true;
                 }
             }
         }
         return false;
     }
+    
     /**
-     * Holds value of property drawLabels.
+     * true if labels should be drawn.
      */
     private boolean drawLabels;
 
     /**
-     * Getter for property drawLabels.
-     * @return Value of property drawLabels.
+     * true if labels should be drawn.
+     * @return true if labels should be drawn.
      */
     public boolean isDrawLabels() {
         return this.drawLabels;
     }
 
     /**
-     * Setter for property drawLabels.
-     * @param drawLabels New value of property drawLabels.
+     * true if labels should be drawn.
+     * @param drawLabels true if labels should be drawn.
      */
     public void setDrawLabels(boolean drawLabels) {
         boolean oldDrawLabels = this.drawLabels;
@@ -520,22 +516,23 @@ public class ContoursRenderer extends Renderer {
         update();
         propertyChangeSupport.firePropertyChange("drawLabels", oldDrawLabels, drawLabels );
     }
+    
     /**
-     * Holds value of property color.
+     * the color for contour lines
      */
     private Color color = Color.BLACK;
 
     /**
-     * Getter for property color.
-     * @return Value of property color.
+     * Get the color for contour lines
+     * @return the color for contour lines
      */
     public Color getColor() {
         return this.color;
     }
 
     /**
-     * Setter for property color.
-     * @param color New value of property color.
+     * Set the color for contour lines
+     * @param color the color for contour lines
      */
     public void setColor(Color color) {
         Color oldColor = this.color;
