@@ -672,21 +672,37 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * has changed.  This operation should occur with an animation-interactive
      * time scale, and an image should be cached when this is not possible.  The graphics
      * object will have its origin at the upper-left corner of the screen.
+     * @param g the graphics context in the canvas reference frame.
+     * @param xAxis the axis relating x data coordinates to horizontal pixel coordinates
+     * @param yAxis the axis relating y data coordinates to horizontal pixel coordinates
+     * @param mon a monitor for the operation.  Note the render operation should 
+     *    be fast (&lt;300ms).
      */
     public abstract void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon);
 
     /**
-     * Returns true if the render thinks it can provide the context for a point.  That is,
-     * the renderer affected that point, or nearby points.  For example, this is used currently to provide
-     * a way for the operator to click on a plot and directly edit the renderer who drew the pixel.
+     * Returns true if the render will accept the context for a point.  
+     * That is, the renderer affected that point, or nearby points.  This is 
+     * used currently to provide a way for the operator to click on a plot and 
+     * directly edit the renderer which drew the pixel.
      *
      * @param x the x coordinate in the canvas coordinate system.  
      * @param y the y coordinate in the canvas coordinate system.  
+     * @return true if the renderer will accept the context.
      */
     public boolean acceptContext(int x, int y) {
         return false;
     }
 
+    /**
+     * render the exception on the graphics context.  Presently this just
+     * hands off the exception to the parent plot's postMessage method so
+     * it will appear in a message bubble.
+     * @param g the graphics context in the canvas reference frame
+     * @param xAxis the axis relating x data coordinates to horizontal pixel coordinates
+     * @param yAxis the axis relating y data coordinates to horizontal pixel coordinates
+     * @param e the exception.
+     */
     protected void renderException(Graphics g, DasAxis xAxis, DasAxis yAxis, Exception e) {
 
         String s;
@@ -716,9 +732,18 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * time scale.  This is an opportunity to create a cache
      * image of the data with the current axis state, when the render
      * operation cannot operate on an animation interactive time scale.
-     * Codes can no longer assume that the xAxis sent to render will be in
-     * the same state as it was when updatePlotImage was called, so use
-     * the getAffineTransform method.  Only Renderer should call this method!
+     * Also, several Renders can be updating at once on separate threads, while
+     * the render methods must be called sequentially.
+     * 
+     * Only Renderer should call this method!  (This should be protected then, but
+     * this is not possible because of exiting use.  TODO: introduce "revalidate"
+     * to replace this operation.)
+     * 
+     * @param xAxis the axis relating x data coordinates to horizontal pixel coordinates
+     * @param yAxis the axis relating y data coordinates to horizontal pixel coordinates
+     * @param monitor a monitor for the operation.  Note the updatePlotImage operation should 
+     *    be fast (&lt;1000ms).
+     * @throws org.das2.DasException
      */
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
     }
@@ -834,7 +859,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * been updated, or the axes have changed, so we need to perform updatePlotImage
      * to do the expensive parts of rendering.
      * 
-     * THIS IS NO LONGER USED...
+     * This is only called from the resize method of DasPlot.
      */
     protected void refresh() {
         //System.err.println("in refresh...");
@@ -850,8 +875,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             return;
         }
 
-        Runnable run = new Runnable() {
-         
+        Runnable run = new Runnable() {  
+            @Override
             public void run() {
                 refreshImmediately();
             }
@@ -917,17 +942,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         // override me
     }
 
-    private boolean overloading = false;
-
-    public boolean isOverloading() {
-        return this.overloading;
-    }
-
-    public void setOverloading(boolean overloading) {
-        this.overloading = overloading;
-        update();
-    }
-
+    // old property overloading was removed because it is no longer used.
 
     /**
      * display the renderer.  This is allows a renderer to be disabled without removing it from the application.
@@ -936,10 +951,20 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     private boolean active = true;
 
+    /**
+     * true when the renderer should be drawn.  
+     * @return true when the renderer should be drawn.
+     */
     public boolean isActive() {
         return this.active;
     }
 
+    /**
+     * set the active property, when false the renderer will not be drawn.
+     * This is allows a renderer to be 
+     * disabled without removing it from the application.
+     * @param active false if the renderer should not be drawn.
+     */
     public void setActive(boolean active) {
         boolean oldValue = this.active;
         this.active = active;
@@ -955,10 +980,20 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     protected String legendLabel = "";
 
+    /**
+     * get the label to describe the renderer in the plot's legend.   
+     * If zero-length, then the legend label should be hidden.
+     * @return the label to describe the renderer
+     */
     public String getLegendLabel() {
         return legendLabel;
     }
 
+    /**
+     * set the label to describe the renderer in the plot's legend.  
+     * If zero-length, then the legend label should be hidden.
+     * @param legendLabel  the label to describe the renderer
+     */
     public void setLegendLabel(String legendLabel) {
         String oldLegendLabel = this.legendLabel;
         this.legendLabel = legendLabel;
@@ -967,12 +1002,26 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     protected boolean drawLegendLabel = false;
+    
+    /**
+     * true if the legend label should be drawn.
+     */
     public static final String PROP_DRAWLEGENDLABEL = "drawLegendLabel";
 
+    /**
+     * get the switch used to turn off legend label.  This allows the label
+     * to be hidden without loosing the information it provides.
+     * @return true if the legend label should be drawn
+     */
     public boolean isDrawLegendLabel() {
         return drawLegendLabel;
     }
 
+    /**
+     * set the switch used to turn off legend label.  This allows the label
+     * to be hidden without loosing the information it provides.
+     * @param drawLegendLabel true if the legend label should be drawn
+     */
     public void setDrawLegendLabel(boolean drawLegendLabel) {
         boolean oldDrawLegendLabel = this.drawLegendLabel;
         this.drawLegendLabel = drawLegendLabel;
@@ -993,30 +1042,18 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         propertyChangeSupport.firePropertyChange(PROP_ID, oldId, id);
     }
 
-    /**
-     * most implementations will override me.
-     * @param g
-     * @param x
-     * @param y
-     */
+    @Override
     public void drawListIcon( Graphics2D g, int x, int y ) {
         ImageIcon icon= (ImageIcon) getListIcon();
         g.drawImage(icon.getImage(), x, y, null);
     }
 
-    /**
-     * return a 16x16 icon representing the renderer.  Subclasses that do not override this
-     * will have an empty icon displayed.
-     * @return
-     */
+    @Override
     public Icon getListIcon() {
         return new ImageIcon( new BufferedImage( 16, 16, BufferedImage.TYPE_INT_ARGB ) );
     }
 
-    /**
-     * return a short label for the renderer.
-     * @return
-     */
+    @Override
     public String getListLabel() {
         StringBuilder l= new StringBuilder( getLegendLabel() );
         if ( this.getDataSetDescriptor()!=null ) {
@@ -1034,15 +1071,19 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     protected DasColorBar colorBar;
 
     /**
-     * attach a colorBar to the renderer.  By default, the renderer simply ignores the colorbar, but instances may
-     * introduce special handling.
+     * set a colorbar for the renderer.  By default, the renderer simply ignores 
+     * the colorbar, but instances may introduce special handling.
      * WARNING: some subclasses override this, but do not call super.setColorBar.
-     * @param cb
+     * @param cb a colorbar
      */
     public void setColorBar( DasColorBar cb ) {
         this.colorBar= cb;
     }
 
+    /**
+     * get the colorbar for the renderer.  
+     * @return the colorbar for the renderer.  
+     */
     public DasColorBar getColorBar() {
         return colorBar;
     }
@@ -1056,7 +1097,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     
     /**
      * return the number of times render has been called since the last reset.
-     * @return 
+     * @return number of times render has been called since the last reset.
      */
     public int getRenderCount() {
         return renderCount;
@@ -1068,7 +1109,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     
     /**
      * return the number of times updatePlotImage has been called since the last reset.
-     * @return 
+     * @return the number of times updatePlotImage has been called since the last reset.
      */
     public int getUpdateCount() {
         return updateCount;
