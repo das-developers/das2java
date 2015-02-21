@@ -2378,7 +2378,7 @@ public class Ops {
      * @deprecated use randu instead
      */
     public static QDataSet rand() {
-        return randu(new int[]{}, new Random());
+        return randu( );
     }
     
     /**
@@ -2388,7 +2388,7 @@ public class Ops {
      * @deprecated use randu instead.  This is used in many test programs and Jython codes, and will not be removed.
      */
     public static QDataSet rand(int len0) {
-        return randu(new int[]{len0}, new Random());
+        return randu( len0 );
     }
 
     /**
@@ -2399,7 +2399,7 @@ public class Ops {
      * @deprecated use randu instead
      */    
     public static QDataSet rand(int len0, int len1) {
-        return randu(new int[]{len0, len1}, new Random());
+        return randu( len0, len1 );
     }
 
     /**
@@ -2411,7 +2411,7 @@ public class Ops {
      * @deprecated use randu instead
      */
     public static QDataSet rand(int len0, int len1, int len2) {
-        return randu(new int[]{len0, len1, len2}, new Random());
+        return randu( len0, len1, len2 );
     }
 
     /**
@@ -2419,7 +2419,7 @@ public class Ops {
      * @return a rank 0 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
     public static QDataSet randu() {
-        return randu(new int[]{}, new Random());
+        return randu(new int[]{}, random );
     }
     
     /**
@@ -2428,7 +2428,7 @@ public class Ops {
      * @return a rank 1 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
     public static QDataSet randu(int len0) {
-        return randu(new int[]{len0}, new Random());
+        return randu(new int[]{len0}, random );
     }
 
     /**
@@ -2438,7 +2438,7 @@ public class Ops {
      * @return a rank 2 dataset of random uniform numbers from 0 to 1 but not including 1.
      */    
     public static QDataSet randu(int len0, int len1) {
-        return randu(new int[]{len0, len1}, new Random());
+        return randu(new int[]{len0, len1}, random );
     }
 
     /**
@@ -2449,7 +2449,7 @@ public class Ops {
      * @return a rank 3 dataset of random uniform numbers from 0 to 1 but not including 1.
      */
     public static QDataSet randu(int len0, int len1, int len2) {
-        return randu(new int[]{len0, len1, len2}, new Random());
+        return randu(new int[]{len0, len1, len2}, random );
     }
     
     /**
@@ -2457,7 +2457,7 @@ public class Ops {
      * @return a rank 0 dataset of random numbers of a Gaussian (normal) distribution.
      */
     public static QDataSet randn() {
-        return randn(new int[]{}, new Random());
+        return randn(new int[]{}, random );
     }
     
     /**
@@ -2466,7 +2466,7 @@ public class Ops {
      * @return a rank 1 dataset of random numbers of a Gaussian (normal) distribution.
      */
     public static QDataSet randn(int len0) {
-        return randn(new int[]{len0}, new Random());
+        return randn(new int[]{len0}, random );
     }
 
     /**
@@ -2476,7 +2476,7 @@ public class Ops {
      * @return a rank 2 dataset of random numbers of a Gaussian (normal) distribution.
      */
     public static QDataSet randn(int len0, int len1) {
-        return randn(new int[]{len0, len1}, new Random());
+        return randn(new int[]{len0, len1}, random );
     }
 
     /**
@@ -2487,9 +2487,31 @@ public class Ops {
      * @return a rank 3 dataset of random numbers of a Gaussian (normal) distribution.
      */
     public static QDataSet randn(int len0, int len1, int len2) {
-        return randn(new int[]{len0, len1, len2}, new Random());
+        return randn(new int[]{len0, len1, len2}, random );
     }
 
+    private static Random random= new Random();
+    
+    /**
+     * restart the random sequence used by randu and randn.
+     * @return the seed is returned.
+     */
+    public static long randomSeed() {
+        long seed= new Random().nextLong();
+        random= new Random(seed);
+        return seed;
+    }
+    
+    /**
+     * reset the random sequence used by randu and randn to the given seed.
+     * @param seed the new seed for the sequence.
+     * @return the seed (which will be the same as the input).
+     */
+    public static long randomSeed( long seed ) {
+        random= new Random(seed);
+        return seed;
+    }
+    
     /**
      * returns a rank 0 dataset of random numbers of a Gaussian (normal) distribution.
      * System.currentTimeMillis() may be used for the seed.  Note this is unlike
@@ -4191,7 +4213,7 @@ public class Ops {
         }
         WritableDataSet wds = IDataSet.wrap(back, 1, size, 1, 1);
 
-        Random r = new Random();
+        Random r = random;
 
         for (int i = 0; i < size; i++) {
             int i1 = r.nextInt(size - i) + i;
