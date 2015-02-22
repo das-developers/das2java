@@ -10,21 +10,26 @@ import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
 /**
- * Place to experiment with runtime notes about datasets.  This
- * uses weak references so that datasets will be garbage collected.
+ * Place to experiment with runtime notes about datasets in this 
+ * single-instance lookup table.  This uses weak references so that 
+ * datasets will be garbage collected.
  * @author jbf
  */
 public class DataSetAnnotations {
     
     private static final DataSetAnnotations instance= new DataSetAnnotations();
     
-    private WeakHashMap<QDataSet,Map<String,Object>> annotations= new WeakHashMap<QDataSet,Map<String,Object>>();
+    private final WeakHashMap<QDataSet,Map<String,Object>> annotations= new WeakHashMap<QDataSet,Map<String,Object>>();
     
     /**
      * set this to true to keep track of hits.
      */
-    private boolean hitTracking= true;
-    private WeakHashMap<QDataSet,Map<String,Integer>> hits= new WeakHashMap<QDataSet,Map<String,Integer>>();
+    private final boolean hitTracking= true;
+    
+    /**
+     * keep track of how often an annotation is used.
+     */
+    private final WeakHashMap<QDataSet,Map<String,Integer>> hits= new WeakHashMap<QDataSet,Map<String,Integer>>();
      
     /**
      * access the single instance
@@ -103,6 +108,9 @@ public class DataSetAnnotations {
         annotations.put( ds, anno );
     }
     
+    /**
+     * print the map of annotations to stderr.
+     */
     public synchronized void peek() {
         for ( Entry<QDataSet,Map<String,Object>> ent: annotations.entrySet() ) {
             System.err.println( "\n---" + ent.getKey() + "---" );
