@@ -44,14 +44,22 @@ import java.awt.image.DataBuffer;
 import javax.swing.ImageIcon;
 
 /**
- *
+ * Axis that converts to RGB color instead of horizontal or vertical
+ * position.
  * @author  jbf
  */
 public class DasColorBar extends DasAxis {
     
     private static final long serialVersionUID = 1L;
 
+    /**
+     * handle for the property "type".
+     */
     public static final String PROPERTY_TYPE = "type";
+
+    /**
+     * handle for the property fillColor.
+     */
     public static final String PROPERTY_FILL_COLOR= "fillColor";
     
     private BufferedImage image;
@@ -60,23 +68,45 @@ public class DasColorBar extends DasAxis {
     private int fillColorIndex;
     private int ncolor;
     
+    /**
+     * number of colors in each table, not including the grey for fill.
+     */
     private static final int COLORTABLE_SIZE=240;
     
-    public DasColorBar( Datum min, Datum max, boolean isLog) {
-        this(min, max, RIGHT, isLog);
+    /**
+     * Create an color bar object, relating data and color.
+     * @param min the minimum value
+     * @param max the maximum value
+     * @param log if true then the axis is a log axis.
+     */
+    public DasColorBar( Datum min, Datum max, boolean log) {
+        this(min, max, RIGHT, log);
     }
     
-    public DasColorBar( Datum min, Datum max, int orientation, boolean isLog) {
-        super(min, max, orientation, isLog);
+    /**
+     * Create an color bar object, relating data and color.
+     * @param min the minimum value
+     * @param max the maximum value
+     * @param orientation the position relative to a plot, one of DasAxis.TOP, DasAxis.BOTTOM, DasAxis.LEFT, DasAxis.RIGHT.
+     * @param log if true then the axis is a log axis.
+     */
+    public DasColorBar( Datum min, Datum max, int orientation, boolean log) {
+        super(min, max, orientation, log);
         setLayout(new ColorBarLayoutManager());
         setType(DasColorBar.Type.COLOR_WEDGE);
     }
     
-    
-    public int rgbTransform(double x, Units units) {
-        int icolor= (int)transform(x,units,0, ncolor);
+    /**
+     * convert the double to an RGB color.
+     * @param data a data value
+     * @param units the units of the given data value.
+     * @return the combined RGB components
+     * @see Color#Color(int) 
+     */
+    public int rgbTransform(double data, Units units) {
+        int icolor= (int)transform(data,units,0, ncolor);
         
-        if ( units.isFill(x) ) {
+        if ( units.isFill(data) ) {
             return fillColor;
         } else {
             icolor= (icolor<0)?0:icolor;
@@ -85,30 +115,52 @@ public class DasColorBar extends DasAxis {
         }
     }
     
-    public int indexColorTransform( double x, Units units ) {
-        if ( units.isFill(x) ) {
+    /**
+     * convert the double to an indexed color.
+     * @param data a data value
+     * @param units the units of the given data value.
+     * @return the index into the color table.
+     * @see #getIndexColorModel() 
+     */
+    public int indexColorTransform( double data, Units units ) {
+        if ( units.isFill(data) ) {
             return fillColorIndex;
         } else {
-            int icolor= (int)transform(x,units,0,ncolor);
+            int icolor= (int)transform(data,units,0,ncolor);
             icolor= (icolor<0)?0:icolor;
             icolor= (icolor>=ncolor)?(ncolor-1):icolor;
             return icolor;
         }
     }
     
+    /**
+     * return the color model so that indexed color model can be used.
+     * @return the color model 
+     */
     public IndexColorModel getIndexColorModel() {
         return new IndexColorModel( 8, type.getColorCount()+1, type.colorTable, 0, true, -1, DataBuffer.TYPE_BYTE );
     }
     
+    /**
+     * return the index of the fill color in the indexed color model.
+     * @return the index of the fill color
+     */
     public int getFillColorIndex() {
         return fillColorIndex;
     }
     
+    /**
+     * return the type of colorbar (e.g. DasColorBar.Type.GRAYSCALE or DasColorBar.Type.APL_RAINBOW_BLACK0)
+     * @return the type of colorbar
+     */
     public DasColorBar.Type getType() {
         return type;
     }
     
-    
+    /**
+     * set the type of colorbar
+     * @param type type of colorbar (e.g. DasColorBar.Type.GRAYSCALE or DasColorBar.Type.APL_RAINBOW_BLACK0)
+     */
     public final void setType(DasColorBar.Type type) {
         if (this.type == type) {
             return;
@@ -163,6 +215,12 @@ public class DasColorBar extends DasAxis {
         return bounds;
     }
     
+    /**
+     * return a column suitable for the colorbar, based on the spectrogram
+     * column.
+     * @param column the column for the spectrogram described.
+     * @return the new column.
+     */
     public static DasColumn getColorBarColumn(DasColumn column) {
         return new DasColumn( null, column, 1.0, 1.0, 1, 2, 0, 0  );
     }
@@ -186,6 +244,9 @@ public class DasColorBar extends DasAxis {
         return bounds;
     }
     
+    /**
+     * TODO: Ed document me
+     */
     protected class ColorBarLayoutManager extends AxisLayoutManager {
         
         @Override
@@ -203,24 +264,82 @@ public class DasColorBar extends DasAxis {
         
     }
     
+    /**
+     * enumeration of the types of colorbars.
+     */
     public static final class Type implements Enumeration, Displayable {
         
-      public static final Type COLOR_WEDGE = new Type("color_wedge");
-      public static final Type APL_RAINBOW_BLACK0 = new Type("apl_rainbow_black0");
-      public static final Type APL_RAINBOW_WHITE0 = new Type("apl_rainbow_white0");
-      public static final Type GSFC_RP_SPECIAL = new Type("gsfc_rp_special");
-      public static final Type MATLAB_JET = new Type("matlab_jet");
+        /**
+         * Rainbow colorbar used by default.  TODO: this is a misnomer, where
+         * color_wedge was the type of object in das1, not the instance of the type,
+         * and this should be renamed to "rainbow"
+         */
+        public static final Type COLOR_WEDGE = new Type("color_wedge");
+
+        /**
+         * rainbow colorbar used at APL that has black at the bottom.
+         */
+        public static final Type APL_RAINBOW_BLACK0 = new Type("apl_rainbow_black0");
+
+        /**
+         * rainbow colorbar used at APL that has white at the bottom.
+         */
+        public static final Type APL_RAINBOW_WHITE0 = new Type("apl_rainbow_white0");
+
+        /**
+         * rainbow colorbar introduced for use at Goddard Space Flight Center.
+         */
+        public static final Type GSFC_RP_SPECIAL = new Type("gsfc_rp_special");
+
+        /**
+         * Mimic the default Matlab colorbar for comparison with Matlab-generated spectrograms.
+         */
+        public static final Type MATLAB_JET = new Type("matlab_jet");
       
         //public static final Type BLUE_TO_ORANGE = new Type("blue_to_orange");
+
+        /**
+         * gray scale with white at the minimum (bottom) and black at the maximum.
+         */
         public static final Type GRAYSCALE = new Type("grayscale");
+
+        /**
+         * gray scale with black at the minimum (bottom) and white at the maximum.
+         */
         public static final Type INVERSE_GRAYSCALE = new Type("inverse_grayscale");
+
+        /**
+         * rainbow that wraps around so that the top and bottom are the same color,
+         * When used with care this is useful for spaces that wrap around (modulo),
+         * such as longitude.
+         */
         public static final Type WRAPPED_COLOR_WEDGE = new Type("wrapped_color_wedge");
         
+        /**
+         * colorbar with black in the middle, blue at the minimum and red at the maximum
+         * for showing deviations from the center.
+         */
         public static final Type BLUE_BLACK_RED_WEDGE = new Type("blue_black_red");
+
+        /**
+         * colorbar with white in the middle, blue at the minimum and red at the maximum
+         * for showing deviations from the center.
+         */
         public static final Type BLUE_WHITE_RED_WEDGE = new Type("blue_white_red");
 
+        /**
+         * black to red, introduced to show the red component of RGB images
+         */
         public static final Type BLACK_RED = new Type("black_red");
+
+        /**
+         * black to green, introduced to show the green component of RGB images
+         */
         public static final Type BLACK_GREEN = new Type("black_green");
+
+        /**
+         * black to blue, introduced to show the blue component of RGB images
+         */
         public static final Type BLACK_BLUE = new Type("black_blue");
         
         private BufferedImage image;
@@ -232,45 +351,65 @@ public class DasColorBar extends DasAxis {
             this.desc = desc;
         }
 
-      @Override
+        @Override
         public void drawListIcon( Graphics2D g, int x, int y ) {
             ImageIcon licon= (ImageIcon) getListIcon();
             g.drawImage(licon.getImage(), x, y, null);
         }
 
-      @Override
+        @Override
         public javax.swing.Icon getListIcon() {
             maybeInitializeIcon();
             return icon;
         }
         
+        /**
+         * initialize the icon representing this colorbar, if not done already.
+         */
         public void maybeInitializeIcon() {
             if (icon == null) {
                 icon = new javax.swing.ImageIcon(getVerticalScaledImage(16, 16));
             }
         }
         
-      @Override
+        @Override
         public String toString() {
             return desc;
         }
         
-      @Override
+        @Override
         public String getListLabel() {
             return desc;
         }
         
-        /* It's understood that the colors indeces from 0 to getColorCount()-1 are the color wedge, and getColorCount() is the fill color. */
+        /**
+         * Return the number of colors in the color bar.  Fill (gray) is an additional
+         * color, and it's understood that the colors indeces from 0 to getColorCount()-1 
+         * are the color wedge, and getColorCount() is the fill color.
+         * @return the number of colors.
+         */        
         public int getColorCount() {
             maybeInitializeColorTable();
             return colorTable.length-1;
         }
         
+        /**
+         * return the RGB encoded color for the index.
+         * @param index the index, from 0 to getColorCount().
+         * @return the RGB color
+         * @see Color#Color(int) 
+         */
         public int getRGB(int index) {
             maybeInitializeColorTable();
             return colorTable[index];
         }
         
+        /**
+         * return an image showing the colors from left to right.
+         * @param width the width of the image
+         * @param height the height of the image
+         * @return the image
+         */
         public BufferedImage getHorizontalScaledImage(int width, int height) {
             maybeInitializeImage();
             BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -283,6 +422,12 @@ public class DasColorBar extends DasAxis {
             return scaled;
         }
         
+        /**
+         * return an image showing the colors from bottom to top.
+         * @param width the width of the image
+         * @param height the height of the image
+         * @return the image
+         */
         public BufferedImage getVerticalScaledImage(int width, int height) {
             maybeInitializeImage();
             BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -302,7 +447,18 @@ public class DasColorBar extends DasAxis {
             }
         }
         
-        // returns a color table with interpolated colors for the wedge from 0 to ncolor-1, and at ncolor, the fill color.
+        /**
+         * returns a color table with interpolated colors for the wedge from 0 to ncolor-1, and at ncolor, the fill color.
+         * @param index set of indeces that are control points for interpolation, including 0 and ncolor-1.
+         * @param red the red value from 0 to 255 at each index
+         * @param green the green value from 0 to 255 at each index
+         * @param blue the blue value from 0 to 255 at each index
+         * @param ncolor number of colors, typically COLORTABLE_SIZE=240.
+         * @param bottom the bottom, typically 0.
+         * @param top the top, typically COLORTABLE_SIZE=240.
+         * @return an array of RGB colors.
+         * @see Color#Color(int) 
+         */
         private static int[] makeColorTable( int [] index, int[] red, int[] green, int[] blue, int ncolor, int bottom, int top ) {
             // index should go from 0-255.
             // truncate when ncolor>COLORTABLE_SIZE
@@ -491,6 +647,11 @@ public class DasColorBar extends DasAxis {
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }   
 
+        /**
+         * from the string, identify the type.
+         * @param s string like "apl_rainbow_black0"
+         * @return type like Type.APL_RAINBOW_BLACK0.
+         */
         public static Type parse(String s) {
             if (s.equals("color_wedge")) {
                 return COLOR_WEDGE;
@@ -525,136 +686,23 @@ public class DasColorBar extends DasAxis {
         
     }
     
-    public MouseModule getRepaletteMouseModule( Renderer r ) {
-        return new ColorBarRepaletteMouseModule( r, this );
-    }
-    
-    public class ColorBarRepaletteMouseModule extends MouseModule {
-        
-        DasColorBar colorBar;
-        Renderer parent;
-        DatumRange range0;
-        int lastTopColor;
-        int lastBottomColor;
-        
-        boolean animated0;
-        int state;
-        int STATE_IGNORE=300;
-        int STATE_TOP=200;
-        int STATE_BOTTOM=100;
-                
-        @Override
-        public String getLabel() { return "Repalette"; };
-        
-        public ColorBarRepaletteMouseModule( Renderer parent, DasColorBar colorBar ) {
-            if (colorBar.isHorizontal()) {
-                throw new IllegalArgumentException("Axis orientation is not vertical");
-            }
-            if ( parent==null ) {
-                throw new IllegalArgumentException("Parent is null");
-            }
-            this.parent= parent;
-            //  this.dragRenderer= (DragRenderer)HorizontalRangeRenderer.renderer;
-            this.dragRenderer= new HorizontalSliceSelectionRenderer(parent.getParent());
-            this.colorBar= colorBar;
-        }
-        
-        private void setColorBar( int y ) {
-            
-            int bottomColor, topColor;
-            
-            // DatumRange dr;
-            DasRow row= colorBar.getRow();
-            
-            double alpha=  ( row.getDMaximum() - y ) / (1.*row.getHeight());
-            
-            if ( state==STATE_TOP ) {
-                topColor= (int)( COLORTABLE_SIZE * alpha );
-                topColor= Math.max( COLORTABLE_SIZE / 20 + 1, topColor );
-                bottomColor= 0;
-            } else if ( state==STATE_BOTTOM ) {
-                topColor= COLORTABLE_SIZE;
-                bottomColor= (int)( COLORTABLE_SIZE * alpha );
-                bottomColor= Math.min( COLORTABLE_SIZE * 19 / 20, bottomColor );
-            } else {
-                return;
-            }
-            
-            System.err.println( ""+bottomColor + " "+topColor );
-            lastTopColor= topColor;
-            lastBottomColor= bottomColor;
-            
-            colorBar.type.initializeColorTable( COLORTABLE_SIZE, bottomColor, lastTopColor );
-            
-            colorBar.image= null;
-            colorBar.type.image= null;
-            colorBar.repaint();
-            parent.updateCacheImage();
-        }
-        
-        @Override
-        public void mouseReleased( @SuppressWarnings("unused") MouseEvent e ) {
-            if ( state!=STATE_IGNORE ) {
-                colorBar.setAnimated(animated0);
-                int lastTopColor= this.lastTopColor;
-                
-                DatumRange dr;
-                double a0= lastBottomColor / ( 1.*COLORTABLE_SIZE );
-                double a1= lastTopColor / ( 1.*COLORTABLE_SIZE);
-                
-                if ( isLog() ) {
-                    dr= DatumRangeUtil.rescaleLog( range0, a0, a1 );
-                } else {
-                    dr= DatumRangeUtil.rescale( range0, a0, a1);
-                }
-                
-                colorBar.setDatumRange( dr );
-                
-                colorBar.type.initializeColorTable( COLORTABLE_SIZE, 0, COLORTABLE_SIZE );
-                
-                colorBar.image= null;
-                colorBar.type.image= null;
-                colorBar.repaint();
-                parent.updateCacheImage();
-                
-            }
-        }
-        
-        @Override
-        public void mousePointSelected(MousePointSelectionEvent e) {
-            setColorBar( e.getY() );
-        }
-        
-        @Override
-        public void mousePressed(java.awt.event.MouseEvent e) {
-            super.mousePressed(e);
-            if ( DasColorBar.this.getColumn().contains(e.getX()+DasColorBar.this.getX()) ) {
-                if ( e.getY() + DasColorBar.this.getY() > DasColorBar.this.getRow().getDMiddle() ) {
-                    state= STATE_BOTTOM;
-                } else {
-                    state= STATE_TOP;
-                }
-                animated0= colorBar.isAnimated();
-                colorBar.setAnimated(false);
-                range0= colorBar.getDatumRange();
-            } else {
-                state= STATE_IGNORE;
-            }
-        }
-        
-    }
+    /*
+     * ColorBarRepalletteMouseModule removed because it is no longer useful.
+     */
 
     /**
-     * Getter for property fillColor.
-     * @return Value of property fillColor.
+     * get the color used to indicate fill, often gray or a transparent 
+     * white.  Note all instances use the same fillColor.
+     * @return the fill color.
      */
     public Color getFillColor() {
         return new Color( this.fillColor, true );
     }
 
     /**
-     * Setter for property fillColor.
-     * @param fillColor New value of property fillColor.
+     * set the color used to indicate fill, often gray or a transparent 
+     * white.  Note all instances use the same fillColor.
+     * @param fillColor the new fill color.
      */
     public void setFillColor(Color fillColor) {
         Color oldColor= new Color( this.fillColor );
@@ -663,16 +711,6 @@ public class DasColorBar extends DasAxis {
         markDirty("fillColor");
         update();
         firePropertyChange( PROPERTY_FILL_COLOR, oldColor,fillColor );
-    }
-
-    @Override
-    public boolean isVisible() {
-        return super.isVisible();
-    }
-    
-    @Override
-    public void setVisible( boolean vi ) {
-        super.setVisible(vi);
     }
 
 }
