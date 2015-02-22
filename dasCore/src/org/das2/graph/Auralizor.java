@@ -6,7 +6,6 @@
 
 package org.das2.graph;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -14,19 +13,19 @@ import java.nio.ByteOrder;
 import java.nio.channels.WritableByteChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.das2.dataset.VectorDataSet;
 import org.das2.datum.Units;
 import org.das2.system.DasLogger;
 import javax.sound.sampled.*;
-import org.das2.dataset.DataSetUtil;
-import org.das2.datum.DatumRange;
 import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
 /**
- *
+ * Stream QDataSet to the sound system, using DEPEND_0 to control
+ * sampling rate.  Note this does not support the new waveform packet 
+ * scheme introduced a few years ago, and can easily be made to support 
+ * it.
  * @author  Owner
  */
 public class Auralizor {
@@ -42,10 +41,20 @@ public class Auralizor {
     
     QDataSet ds;
     
+    /**
+     * set the dataset to stream.  The dataset should be 
+     * rank1 and have DEPEND_0 which is convertible
+     * to seconds.
+     * @param ds the rank 1 dataset with DEPEND_0 convertible to seconds.
+     */
     void setDataSet( QDataSet ds ) {
         this.ds= ds;
     }
     
+    /**
+     * begin streaming the sound.  This will block the current
+     * thread until complete.
+     */
     public void playSound() {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(dep0).getOffsetUnits(), Units.seconds );
@@ -121,6 +130,10 @@ public class Auralizor {
         };
     }
     
+    /**
+     * create an Auralizor for rendering the dataset to the sound system.
+     * @param ds rank 1 dataset with DEPEND_0 convertible to seconds.
+     */
     public Auralizor( QDataSet ds ) {
         min= -1;
         max= 1;
