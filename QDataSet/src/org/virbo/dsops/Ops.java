@@ -2733,7 +2733,7 @@ public class Ops {
      * return fake waveform data for testing
      * result is rank 2 bundle [len,512]
      * @param len number of 512-element waveforms.
-     * @return
+     * @return rank 2 waveform
      */
     public static QDataSet ripplesWaveformTimeSeries( int len ) {
         MutablePropertyDataSet rip= (MutablePropertyDataSet) multiply( add( ripples( len,512 ), sin( divide( findgen(len,512), DataSetUtil.asDataSet(10.) ) ) ), DataSetUtil.asDataSet(5000.) );
@@ -2750,10 +2750,10 @@ public class Ops {
     }
 
     /**
-     * return fake position data for testing
+     * return fake position data for testing.
      * result is rank 2 bundle [len,3]
-     * @param len
-     * @return
+     * @param len number of records
+     * @return vector time series.
      */
     public static QDataSet ripplesVectorTimeSeries( int len ) {
         QDataSet rip= ripples( len,100 );
