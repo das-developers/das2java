@@ -4,19 +4,18 @@
  * Created on April 22, 2003, 4:58 PM
  */
 
-
-/**
- *
- * @author  jbf
- */
-// Manages a set of rows or columns, making sure they fill a space without
-// overlapping.
 package org.das2.graph;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+/**
+ * Manages a set of rows or columns, making sure they fill a space without
+ * overlapping.  This is an ancient class that would manage a set of rows to support a 
+ * PaPCo- or Autoplot-like application.
+ * @deprecated do not use.
+ * @author  jbf
+ */
 public class Leveler {
     
     ArrayList rows;  // DasDevicePositions
