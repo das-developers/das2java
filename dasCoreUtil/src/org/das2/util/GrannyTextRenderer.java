@@ -33,6 +33,8 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Renders Grandle and Nystrom strings, like "E=mc!e2"  This supports sequences
@@ -67,6 +69,8 @@ public class GrannyTextRenderer {
     private String str;
     private String[] tokens;
     private float alignment = LEFT_ALIGNMENT;
+    
+    private static final Logger logger= LoggerManager.getLogger("das2.graph");
     
     public GrannyTextRenderer( ) {
         //setAlignment(CENTER_ALIGNMENT);
@@ -199,9 +203,9 @@ public class GrannyTextRenderer {
      * of the string.  For greek and math symbols, unicode characters should be
      * used.  (See www.unicode.org).
      *
-     * @param Font the font.  This should be consistent
-     * with the Font used when drawing.
-     * @param str the granny string, such as "E=mc!e2"
+     * @param font the font.  This should be consistent
+     *    with the Font used when drawing.
+     * @param label the granny string, such as "E=mc!e2"
      */
     public void setString( Font font, String label) {
         bounds = null;
@@ -324,8 +328,7 @@ public class GrannyTextRenderer {
         
         Stack saveStack = new Stack();
         
-        for (int i = 0; i < tokens.length; i++) {
-            String strl = tokens[i];
+        for (String strl : tokens) {
             if ( !strl.equals("!!") && strl.charAt(0) == '!') {
                 if ( strl.length()==1 ) break;
                 switch (strl.charAt(1)) {
@@ -393,8 +396,12 @@ public class GrannyTextRenderer {
                         break;
                     case 'R':
                     case 'r':
-                        if (saveStack.peek() == null) return;
-                        current.copy((TextPosition)saveStack.pop());
+                        if ( !saveStack.empty() ) {
+                            if (saveStack.peek() == null) return;
+                            current.copy((TextPosition)saveStack.pop());
+                        } else {
+                            logger.log(Level.WARNING, "saveStack was empty: missing !s from: {0}", this.str);
+                        }
                         break;
                     case 'N':
                     case 'n':
@@ -463,7 +470,7 @@ public class GrannyTextRenderer {
                     current.x += ig.getFontMetrics(font).stringWidth(strl);
                 }
             }
-        } // for (int i = 0; i < tokens.length; i++)
+        } // for (String strl : tokens) {
         if (!draw) {
             lineBounds.add(boundsl);
         }
@@ -502,18 +509,19 @@ public class GrannyTextRenderer {
         return buffer.toString();
     }
     
-    /**
-     * useful for debugging.
-     */
-    private void drawBounds(Graphics g, int ix, int iy) {
-        g.setColor(Color.BLUE);
-        g.drawRect(bounds.x + ix, bounds.y + iy, bounds.width, bounds.height);
-        g.setColor(Color.GREEN);
-        for (java.util.Iterator i = lineBounds.iterator(); i.hasNext();) {
-            Rectangle rc = (Rectangle)i.next();
-            g.drawRect(rc.x + ix, rc.y + iy, rc.width, rc.height);
-        }
-    }
+//    
+//    /**
+//     * useful for debugging.
+//     */
+//    private void drawBounds(Graphics g, int ix, int iy) {
+//        g.setColor(Color.BLUE);
+//        g.drawRect(bounds.x + ix, bounds.y + iy, bounds.width, bounds.height);
+//        g.setColor(Color.GREEN);
+//        for (java.util.Iterator i = lineBounds.iterator(); i.hasNext();) {
+//            Rectangle rc = (Rectangle)i.next();
+//            g.drawRect(rc.x + ix, rc.y + iy, rc.width, rc.height);
+//        }
+//    }
 
     private static Graphics headlessGraphics=null;
     private static synchronized Graphics getHeadlessGraphicsContext() {
