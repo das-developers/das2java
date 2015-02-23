@@ -18,7 +18,8 @@ import org.das2.components.propertyeditor.Displayable;
 import org.das2.components.propertyeditor.PropertyEditor;
 
 /**
- *
+ * Legend component for the canvas.  This is similar to the 
+ * DasPlot legend, whose code was derived from here. 
  * @author  Jeremy
  */
 public class Legend extends DasCanvasComponent {
@@ -85,6 +86,7 @@ public class Legend extends DasCanvasComponent {
     
     private Action getEditAction() {
         return new AbstractAction("Renderer Properties") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Point p= getDasMouseInputAdapter().getMousePressPosition();
                 LegendElement item= (LegendElement)locator.closestObject(p);
@@ -124,6 +126,7 @@ public class Legend extends DasCanvasComponent {
         elements.add( new LegendElement( icon, label ) );
     }
     
+    @Override
     public void resize() {
         int xmin=getColumn().getDMinimum();
         int ymin=getRow().getDMinimum();
@@ -133,8 +136,9 @@ public class Legend extends DasCanvasComponent {
         setBounds( r );
     }
     
+    @Override
     public void paintComponent( Graphics g1 ) {
-        if ( elements.size()==0 ) {
+        if ( elements.isEmpty() ) {
             logger.fine("no elements in legend, returning.");
             getDasMouseInputAdapter().paint(g1);
             return;
@@ -152,8 +156,8 @@ public class Legend extends DasCanvasComponent {
         
         boolean allVisible= true;
         int maxWidth=0;
-        for ( int i=0; i<elements.size(); i++ ) {
-            LegendElement e= (LegendElement)elements.get(i);
+        for (Object element : elements) {
+            LegendElement e = (LegendElement) element;
             Icon icon= e.getIcon();
             String invisibleString="";
             if ( !e.isVisible() ) {
@@ -185,8 +189,8 @@ public class Legend extends DasCanvasComponent {
         x= 5;
         y= 5;
         
-        for ( int i=0; i<elements.size(); i++ ) {
-            LegendElement e= (LegendElement)elements.get(i);
+        for (Object element : elements) {
+            LegendElement e = (LegendElement) element;
             Icon icon= e.getIcon();
             icon.paintIcon( this, g, x, y );
             String invisibleString="";
