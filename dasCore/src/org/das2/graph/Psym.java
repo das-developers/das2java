@@ -26,16 +26,16 @@ import org.das2.components.propertyeditor.Displayable;
 import org.das2.components.propertyeditor.Enumeration;
 import org.das2.DasProperties;
 
-/** Type-safe enumeration class for the psym property of
- * a <code>DasSymbolPlot</code>.
- */
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.geom.Line2D;
 import java.awt.image.*;
 
+/** 
+ * Type-safe enumeration class for the psym property of
+ * a <code>DasSymbolPlot</code>, with values for none, dots, circles, etc.
+ */
 public class Psym implements Enumeration, Displayable {
     
     private static final String[] NAMES = {
@@ -60,7 +60,7 @@ public class Psym implements Enumeration, Displayable {
     private int nameIndex;
     
     private Line2D line = new Line2D.Double();
-    private Ellipse2D ellipse = new Ellipse2D.Double();
+    private final Ellipse2D ellipse = new Ellipse2D.Double();
     
     ImageIcon imageIcon;
     
@@ -79,18 +79,22 @@ public class Psym implements Enumeration, Displayable {
         this.imageIcon= new ImageIcon(i);
     }
     
+    @Override
     public String toString() {
         return NAMES[nameIndex];
     }
     
+    @Override
     public String getListLabel() {
         return NAMES[nameIndex];
     }
     
+    @Override
     public Icon getListIcon() {
         return imageIcon;
     }
 
+    @Override
     public void drawListIcon( Graphics2D g, int x, int y ) {
         ImageIcon i= (ImageIcon) getListIcon();
         g.drawImage(i.getImage(), x, y, null);
@@ -99,10 +103,14 @@ public class Psym implements Enumeration, Displayable {
     /** Draw the psym at the given coordinates.
      * if <code>drawsLines()</code> returns false, then the
      * ix and iy parameters are ignored.
+     * @param g the graphics context.
+     * @param x the x position of the middle of the symbol
+     * @param y the y position of the middle of the symbol
+     * @param size size of the symbol
      */
     public void draw(Graphics g, double x, double y, float size) {
-        //We are not guaranteed to get a Graphics2D.
-        Graphics2D g2 = (Graphics2D)(g instanceof Graphics2D ? g : null);
+
+        Graphics2D g2 = (Graphics2D)g;
         
         switch (nameIndex) {
             case 0: //LINES
@@ -182,6 +190,11 @@ public class Psym implements Enumeration, Displayable {
         }
     }
     
+    /**
+     * return a Psym for the name, like none, dots, circles, etc.
+     * @param str the name, e.g. none, dots, etc.
+     * @return Psym.NONE, Psym.DOTS, etc.
+     */
     public static Psym parsePsym(String str) {
         if (str.equals("none")) {
             return NONE;
