@@ -9,6 +9,7 @@ import org.virbo.dsops.Ops;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.QDataSet;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -24,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
+import org.das2.datum.format.DatumFormatter;
 import org.virbo.dataset.ArrayDataSet;
 
 /**
@@ -152,7 +154,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
 
     }
 
-
+    
     @Override
     public void render(Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
@@ -307,8 +309,12 @@ public class PitchAngleDistributionRenderer extends Renderer {
         }
         
         if ( drawPolarAxes ) {
+            Font f0= g.getFont();
+            g.setFont( f0.deriveFont( f0.getSize()/2.f ) );
             g.setColor( xAxis.getForeground() );
             g.setStroke( new BasicStroke(0.4f) );
+            int dx= f0.getSize()/6;
+            DatumFormatter df= xAxis.getDatumFormatter();
             TickVDescriptor rr= xAxis.getTickV();
             DatumVector ticks= rr.tickV;
             Units u= ticks.getUnits();
@@ -320,12 +326,32 @@ public class PitchAngleDistributionRenderer extends Renderer {
                     double xc1= xAxis.transform(t);
                     double yc1= yAxis.transform(t.multiply(-1));
                     g.drawOval((int)xc0,(int)yc0,(int)(xc1-xc0),(int)(yc1-yc0));
+                    if ( !xAxis.isVisible() ) {
+                        g.drawString(df.format(t,xAxis.getUnits()), (int)xc1+dx, (int)y0-dx );
+                        g.drawString(df.format(t,xAxis.getUnits()), (int)xc0+dx, (int)y0-dx );
+                    }
                 }
             }
+            
+            ticks= rr.minorTickV;
+            for ( int i=0; i<ticks.getLength(); i++ ) {
+                Datum t= ticks.get(i);
+                if ( t.doubleValue(ticks.getUnits())>0 ) {
+                    double xc0= xAxis.transform(t.multiply(-1));
+                    double yc0= yAxis.transform(t);
+                    double xc1= xAxis.transform(t);
+                    double yc1= yAxis.transform(t.multiply(-1));
+                    g.drawLine( (int)xc0,(int)y0-1,(int)(xc0),(int)(y0+1) );
+                    g.drawLine( (int)xc1,(int)y0-1,(int)(xc1),(int)(y0+1) );
+                    g.drawLine( (int)x0-1,(int)yc0,(int)(x0+1),(int)(yc0) );
+                    g.drawLine( (int)x0-1,(int)yc1,(int)(x0+1),(int)(yc1) );
+                }
+            }
+            g.setFont(f0);
             Datum rmax= ticks.get(0).abs();
             Datum rmax1=ticks.get(ticks.getLength()-1);
             if ( rmax.lt(rmax1) ) rmax= rmax1;
-            for ( int i=0; i<360; i+=45 ) {
+            for ( int i=0; i<360; i+=30 ) {
                 double xr0= xAxis.transform(0,u);
                 double yr0= yAxis.transform(0,u);
                 double xr1= xAxis.transform(rmax.value()*Math.cos(i*Math.PI/180),u);
@@ -340,6 +366,9 @@ public class PitchAngleDistributionRenderer extends Renderer {
                 Point2D p1= new Point2D.Double( xAxis.transform(0,u), yAxis.transform(0,u) );
                 Point2D p0= new Point2D.Double( xAxis.getColumn().getDMaximum(), yAxis.transform(0,u) );
                 Arrow.paintArrow( g, p0, p1, 10.0, Arrow.HeadStyle.DRAFTING );
+            }
+            if ( !xAxis.isVisible() ) {
+                
             }
             
         }
