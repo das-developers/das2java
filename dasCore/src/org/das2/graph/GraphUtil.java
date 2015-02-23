@@ -26,13 +26,23 @@ import org.virbo.dsops.Ops;
 //import org.apache.xml.serialize.*;
 
 /**
- *
+ * Utilities for drawing graphics and establishing standard behavior.
+ * This provides functions to get a 16x16 icon for a color, getting a Path
+ * from a series of data points, and a "visualize" method for simply looking at
+ * some data.
  * @author  Jeremy
  */
 public class GraphUtil {
 
     private static final Logger logger= LoggerManager.getLogger("das2.graphics.util");
     
+    /**
+     * create a plot for the canvas, along with the row and column for layout.
+     * @param canvas the canvas parent for the plot.
+     * @param x the x range
+     * @param y the y range
+     * @return the plot.
+     */
     public static DasPlot newDasPlot(DasCanvas canvas, DatumRange x, DatumRange y) {
         DasAxis xaxis = new DasAxis(x.min(), x.max(), DasAxis.HORIZONTAL);
         DasAxis yaxis = new DasAxis(y.min(), y.max(), DasAxis.VERTICAL);
@@ -99,7 +109,6 @@ public class GraphUtil {
      * @see #CONNECT_MODE_HISTOGRAM
      * @return the GeneralPath.
      */
-
     public static GeneralPath getPath( DasAxis xAxis, DasAxis yAxis, QDataSet xds, QDataSet yds, String mode, boolean clip ) {
 
         GeneralPath newPath = new GeneralPath();
@@ -324,6 +333,11 @@ public class GraphUtil {
         return rend;
     }
 
+    /**
+     * get a plot and renderer for the dataset.
+     * @param ds the dataset
+     * @return a plot with a renderer for the dataset.
+     */
     public static DasPlot guessPlot(QDataSet ds) {
         DasAxis xaxis = guessXAxis(ds);
         DasAxis yaxis = guessYAxis(ds);
@@ -332,6 +346,11 @@ public class GraphUtil {
         return plot;
     }
 
+    /**
+     * get a plot and add it to a JFrame.
+     * @param ds
+     * @return 
+     */
     public static DasPlot visualize(QDataSet ds) {
 
         JFrame jframe = new JFrame("DataSetUtil.visualize");
@@ -739,6 +758,9 @@ public class GraphUtil {
     }
 
     /**
+     * return a string representation of the affine transforms used in DasPlot for
+     * debugging.
+     * @param at the affine transform
      * @return a string representation of the affine transforms used in DasPlot for
      * debugging.
      */
@@ -759,6 +781,10 @@ public class GraphUtil {
 
     /**
      * calculates the slope and intercept of a line going through two points.
+     * @param x0 the first point x
+     * @param y0 the first point y
+     * @param x1 the second point x
+     * @param y1 the second point y
      * @return a double array with two elements [ slope, intercept ].
      */
     public static double[] getSlopeIntercept(double x0, double y0, double x1, double y1) {
@@ -767,6 +793,10 @@ public class GraphUtil {
         return new double[]{slope, intercept};
     }
 
+    /**
+     * return translucent white color for indicating the application is busy.
+     * @return translucent white color 
+     */
     public static Color getRicePaperColor() {
         return new Color(255, 255, 255, 128);
     }
@@ -819,7 +849,7 @@ public class GraphUtil {
      * @return
      */
     public static Point2D lineIntersection(Line2D line1, Line2D line2, boolean noBoundsCheck) {
-        Point2D result = null;
+        Point2D result;
         double a1, b1, c1, a2, b2, c2, denom;
         a1 = line1.getY2() - line1.getY1();
         b1 = line1.getX1() - line1.getX2();
@@ -903,10 +933,11 @@ public class GraphUtil {
     }
     
     /**
-     * return a block with the color and size.
-     * @param w
-     * @param h
-     * @return 
+     * return an icon block with the color and size.
+     * @param iconColor the color
+     * @param w the width in pixels
+     * @param h the height in pixels
+     * @return an icon.
      */
     public static Icon colorIcon( Color iconColor, int w, int h ) {
         BufferedImage image= new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB );
@@ -927,16 +958,17 @@ public class GraphUtil {
     /** 
      * return rectangle with same center that is percent/100 of the
      * original width and height.
-     * @param bounds
-     * @param percent
-     * @return 
+     * @param bounds the original rectangle.
+     * @param percent the percent to increase (110% is 10% bigger)
+     * @return return rectangle with same center that is percent/100 of the
+     * original width and height.
      */
     public static Rectangle shrinkRectangle(Rectangle bounds, int percent ) {
         Rectangle result= new Rectangle( 
-                bounds.x + bounds.width*(100-percent)/2/100, 
-                bounds.y + bounds.height*(100-percent)/2/100, 
-                bounds.width * percent / 100, 
-                bounds.height * percent / 100 );
+            bounds.x + bounds.width*(100-percent)/2/100, 
+            bounds.y + bounds.height*(100-percent)/2/100, 
+            bounds.width * percent / 100, 
+            bounds.height * percent / 100 );
         return result;
     }
 }
