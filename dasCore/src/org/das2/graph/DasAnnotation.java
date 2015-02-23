@@ -72,6 +72,9 @@ public class DasAnnotation extends DasCanvasComponent {
         this.getDasMouseInputAdapter().setSecondaryModule(arrowToMouseModule);
     }
 
+    /**
+     * create a PointDescriptor using and x and y Datum.
+     */
     public static class DatumPairPointDescriptor implements PointDescriptor {
 
         DasPlot p;
