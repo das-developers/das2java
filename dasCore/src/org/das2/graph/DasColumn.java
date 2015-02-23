@@ -26,7 +26,7 @@ package org.das2.graph;
 import java.text.ParseException;
 
 /**
- *
+ * DasColumn object represents the horizontal position on the canvas.
  * @author  jbf
  */
 public class DasColumn extends DasDevicePosition {
@@ -34,11 +34,11 @@ public class DasColumn extends DasDevicePosition {
     /**
      * create a DasColumn with the normal position and no offsets.
      * @param parent the canvas where this lives.
-     * @param top the top of the row in normal coordinates.
-     * @param bottom the bottom of the row in normal (0-1.) coordinates 
+     * @param nMin normal position of the left with respect to the canvas.
+     * @param nMax normal position of the right with respect to the canvas
      */
-    public DasColumn(DasCanvas parent, double left, double right) {
-        super(parent,left,right,true);
+    public DasColumn(DasCanvas parent, double nMin, double nMax) {
+        super(parent,nMin,nMax,true);
     }
     
     /**
@@ -91,17 +91,6 @@ public class DasColumn extends DasDevicePosition {
     public static final DasColumn NULL= new DasColumn(null,null,0,0,0,0,0,0);
     
     /**
-     * @deprecated This created a column that was not attached to anything, so
-     * it was simply a convenience method that didn't save much effort.
-     */
-    public DasColumn createSubColumn( double pleft, double pright ) {
-        double left= getMinimum();
-        double right= getMaximum();
-        double delta= right-left;
-        return new DasColumn(getCanvas(),left+pleft*delta,left+pright*delta);
-    }
-    
-    /**
      * return the width in points (pixels) of the column.
      * @return the width in points (pixels) of the column.
      */
@@ -109,21 +98,13 @@ public class DasColumn extends DasDevicePosition {
         return getDMaximum()-getDMinimum();
     }
     
+    /**
+     * create a DasColumn 
+     * @param parent the canvas where this lives.
+     * @return DasColumn
+     */
     public static DasColumn create(DasCanvas parent) {
         return new DasColumn(parent,null,0.0,1.0,5,-3,0,0);
-    }
-    
-    /**
-     * @deprecated a convenience method should be added.
-     * @param parent
-     * @param iplot
-     * @param nplot
-     * @return 
-     */    
-    public static DasColumn create( DasCanvas parent, int iplot, int nplot ) {
-        double min= 0.1 + iplot * ( 0.7 ) / nplot;
-        double max= 0.099 + ( iplot + 1 ) * ( 0.7 ) / nplot;
-        return new DasColumn( parent, min, max );
     }
   
     /**
