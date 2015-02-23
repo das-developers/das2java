@@ -32,7 +32,7 @@ import java.awt.image.*;
 import javax.swing.*;
 
 /**
- *
+ * Enumeration of symbol connecting lines, such as None, Solid, DotFine.
  * @author  jbf
  */
 public class PsymConnector implements Enumeration, Displayable {
@@ -107,10 +107,8 @@ public class PsymConnector implements Enumeration, Displayable {
      * @param y2
      * @param width
      */
-    public void drawLine(Graphics2D g, double x1, double y1, double x2, double y2, float width ) {
-        if ( stroke==null ) {
-            return;
-        } else {
+    public final void drawLine(Graphics2D g, double x1, double y1, double x2, double y2, float width ) {
+        if ( stroke!=null ) {
             Line2D _line;
             if (!SwingUtilities.isEventDispatchThread()) {
                 //For thread-safeness
@@ -126,19 +124,23 @@ public class PsymConnector implements Enumeration, Displayable {
         }
     }
     
+    @Override
     public javax.swing.Icon getListIcon() {
         return imageIcon;
     }
 
+    @Override
     public void drawListIcon( Graphics2D g, int x, int y ) {
         ImageIcon i= (ImageIcon) getListIcon();
         g.drawImage(i.getImage(), x, y, null);
     }
     
+    @Override
     public String getListLabel() {
         return name;
     }
               
+    @Override
     public String toString() {
         return name;
     }
