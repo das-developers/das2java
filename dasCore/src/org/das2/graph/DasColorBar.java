@@ -23,19 +23,17 @@
 
 package org.das2.graph;
 
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import org.das2.components.propertyeditor.Displayable;
-import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
-import org.das2.datum.DatumRangeUtil;
 import org.das2.components.propertyeditor.Enumeration;
-import org.das2.event.HorizontalSliceSelectionRenderer;
-import org.das2.event.MouseModule;
-import org.das2.event.MousePointSelectionEvent;
-
 import java.awt.image.IndexColorModel;
-import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
