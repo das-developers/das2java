@@ -22,6 +22,9 @@ import javax.swing.JMenuItem;
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
  * optionally adds an arrow to point at things.
+ * 
+ * TODO: See http://autoplot.org//developer.annotations
+ * 
  * @author Jeremy
  */
 public class DasAnnotation extends DasCanvasComponent {
