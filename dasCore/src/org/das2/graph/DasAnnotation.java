@@ -20,27 +20,31 @@ import javax.swing.Action;
 import javax.swing.JMenuItem;
 
 /**
- * This component-izes a GrannyTextRenderer, and composes with an Arrow.
+ * This makes a DasCanvasComponent for GrannyTextRenderer, and 
+ * optionally adds an arrow to point at things.
  * @author Jeremy
  */
 public class DasAnnotation extends DasCanvasComponent {
 
     String templateString;
     GrannyTextRenderer gtr;
+
     /**
      * point at this thing
      */
     private DasAnnotation.PointDescriptor pointAt;
-    private MouseModule arrowToMouseModule;
+    private final MouseModule arrowToMouseModule;
 
-    /** Creates a new instance of DasAnnotation */
+    /** 
+     * Create the annotation
+     * @param string the message, which may contain %p which will be replaced with a label. */
     public DasAnnotation(String string) {
         super();
         this.gtr = new GrannyTextRenderer();
         this.templateString = string;
 
         Action removeArrowAction = new AbstractAction("remove arrow") {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 pointAt = null;
                 repaint();
@@ -50,7 +54,7 @@ public class DasAnnotation extends DasCanvasComponent {
         this.getDasMouseInputAdapter().addMenuItem(new JMenuItem(removeArrowAction));
 
         Action removeMeAction = new AbstractAction("remove") {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 DasCanvas canvas = getCanvas();
                 // TODO: confirm dialog
@@ -80,12 +84,14 @@ public class DasAnnotation extends DasCanvasComponent {
             this.p = p;
         }
 
+        @Override
         public Point getPoint() {
             int ix = (int) (p.getXAxis().transform(x));
             int iy = (int) (p.getYAxis().transform(y));
             return new Point(ix, iy);
         }
 
+        @Override
         public String getLabel() {
             return "" + x + "," + y;
         }
@@ -127,6 +133,11 @@ public class DasAnnotation extends DasCanvasComponent {
         };
     }
 
+    /**
+     * Set the text, which can be Granny Text.
+     * @param string the text
+     * @see GrannyTextRenderer
+     */
     public void setText(String string) {
         this.templateString = string;
         if ( this.getGraphics()!=null ) {
@@ -138,6 +149,11 @@ public class DasAnnotation extends DasCanvasComponent {
 
     }
 
+    /**
+     * get the text, which can be Granny Text.
+     * @return the text.
+     * @see GrannyTextRenderer
+     */
     public String getText() {
         return templateString;
     }
@@ -191,8 +207,6 @@ public class DasAnnotation extends DasCanvasComponent {
 
     @Override
     public void paintComponent(Graphics g1) {
-
-        // TODO: need to draw based on row, col, not on bounds which may move with arrow.
 
         Graphics2D g = (Graphics2D) g1.create(); //SVG bug
         
@@ -272,6 +286,9 @@ public class DasAnnotation extends DasCanvasComponent {
 
     }
 
+    /**
+     * something to point at
+     */
     public interface PointDescriptor {
 
         Point getPoint();
@@ -279,9 +296,21 @@ public class DasAnnotation extends DasCanvasComponent {
         String getLabel();
     }
 
+    /**
+     * set the thing to point at.  If %p will be replaced by p.getLabel()
+     * @param p the thing.
+     */
     public void setPointAt(PointDescriptor p) {
         this.pointAt = p;
         repaint();
+    }
+
+    /**
+     * return the thing we are pointing at.
+     * @return the thing we are pointing at.
+     */
+    public PointDescriptor getPointAt() {
+        return this.pointAt;
     }
 
     private String getString() {
@@ -292,30 +321,28 @@ public class DasAnnotation extends DasCanvasComponent {
         return s;
     }
 
-    public PointDescriptor getPointAt() {
-        return this.pointAt;
-    }
-
     @Override
     protected void installComponent() {
         super.installComponent();
         this.gtr.setString( this.getFont(), getString() );
     }
 
-    float fontSize= 0;
+    /**
+     * the font size in points, or zero if we should use the canvas size.
+     */
+    float fontSize= 0.f;
     
     /**
-     * Getter for property fontSize.
-     * @return Value of property fontSize.
+     * the font size in points.  If zero, then use the canvas size.
+     * @return the font size in points.
      */
     public float getFontSize() {
         return fontSize;
     }
 
     /**
-     * override the canvas font size.  If zero, then use the canvas size, otherwise,
-     * use this size.
-     * 
+     * override the canvas font size.  If zero, then use the canvas size, 
+     * otherwise, use this size.
      * @param fontSize New value of property fontSize.
      */
     public void setFontSize(float fontSize) {
@@ -335,18 +362,35 @@ public class DasAnnotation extends DasCanvasComponent {
 
     }
 
-    
-    
+    /**
+     * Border types.
+     */
     public enum BorderType {
         NONE, RECTANGLE, ROUNDED_RECTANGLE
     }
+    
+    /**
+     * the current border type.
+     */
     private BorderType borderType = BorderType.NONE;
+    
+    /**
+     * handle for the property borderType
+     */
     public static final String PROP_BORDERTYPE = "borderType";
 
+    /**
+     * the border type
+     * @return the border type
+     */
     public BorderType getBorderType() {
         return this.borderType;
     }
 
+    /**
+     * set the border type
+     * @param newborderType the border type
+     */
     public void setBorderType(BorderType newborderType) {
         BorderType oldborderType = borderType;
         this.borderType = newborderType;
@@ -355,16 +399,22 @@ public class DasAnnotation extends DasCanvasComponent {
         firePropertyChange(PROP_BORDERTYPE, oldborderType, newborderType);
     }
     
-    
-    
     private Arrow.HeadStyle arrowStyle = Arrow.HeadStyle.DRAFTING;
 
     public static final String PROP_ARROWSTYLE = "arrowStyle";
 
+    /**
+     * get the arrow style 
+     * @return the arrow style
+     */
     public Arrow.HeadStyle getArrowStyle() {
         return this.arrowStyle;
     }
 
+    /**
+     * set the arrow style 
+     * @param newarrowStyle the arrow style
+     */
     public void setArrowStyle( Arrow.HeadStyle newarrowStyle) {
         Arrow.HeadStyle oldarrowStyle = arrowStyle;
         this.arrowStyle = newarrowStyle;
