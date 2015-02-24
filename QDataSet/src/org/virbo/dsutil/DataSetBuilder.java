@@ -9,12 +9,16 @@
 
 package org.virbo.dsutil;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.das2.datum.Datum;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
@@ -29,6 +33,8 @@ import org.virbo.dataset.SemanticOps;
  */
 public class DataSetBuilder { 
     
+    private static final Logger logger= LoggerManager.getLogger("qdataset.util");
+            
     int rank;
     
     ArrayList<DDataSet> finished;
@@ -43,6 +49,9 @@ public class DataSetBuilder {
     
     Units u= null;
     Units[] us= null; // for Rank 1 bundles
+    String[] labels= null; // for Rank 1 bundles
+    String[] names= null; // for Rank 1 bundles
+    boolean isBundle= false;
     
     /**
      * Create a new builder for a rank 0 dataset.
@@ -199,11 +208,8 @@ public class DataSetBuilder {
      */
     public void putValue( int index0, int index1, Datum d ) {
         checkStreamIndex(index0);
-        if ( us==null ) { 
-            us= new Units[this.dim1];
-        }
-        if ( us[index1]==null ) {
-            us[index1]= d.getUnits();
+        if ( us==null || us[index1]==null ) {
+            setUnits(index1, d.getUnits());
         }
         current.putValue( this.index, index1, d.doubleValue(us[index1]) );
     }
@@ -245,17 +251,23 @@ public class DataSetBuilder {
      */
     public void putValue( int index0, int index1, QDataSet d ) {
         checkStreamIndex(index0);
-        if ( us==null ) { 
-            us= new Units[this.dim1];
-        }
-        if ( us[index1]==null ) {
-            us[index1]= SemanticOps.getUnits(d);
+        Units lu= SemanticOps.getUnits(d);
+        if ( us==null || us[index1]==null ) { 
+            setUnits( index1, lu );
         }
         double v= d.value();        
-        Units lu= SemanticOps.getUnits(d);
         if ( lu!=us[index1] ) {
             v= lu.convertDoubleTo( us[index], v );
         }
+        String label= (String)d.property(QDataSet.LABEL);
+        if ( label!=null && ( labels==null || labels[index1]==null ) ) {
+            setLabel(index1,label);
+        }
+        String name= (String)d.property(QDataSet.NAME);
+        if ( name!=null && ( names==null || names[index1]==null ) ) {
+            setName(index1,name);
+        }
+
         current.putValue( this.index, index1, v );
     }
     
@@ -279,7 +291,28 @@ public class DataSetBuilder {
         current.putValue( this.index, index1, index2, v );
     }
     
-/**
+    /**
+     * insert a value into the builder, parsing the string with the column
+     * units.
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param index1 the second index
+     * @param s the a string representation of the value parse and insert.
+     * @throws java.text.ParseException
+     */
+    public void putValue( int index0, int index1, String s ) throws ParseException {
+        checkStreamIndex(index0);
+        if ( us==null || us[index1]==null ) {
+            setUnits(index1, Units.dimensionless );
+        }
+        if ( us[index1] instanceof EnumerationUnits ) {
+            current.putValue( this.index, index1, ((EnumerationUnits)us[index1]).createDatum(s).doubleValue(us[index1]) );            
+        } else {
+            current.putValue( this.index, index1, us[index1].parse(s).doubleValue(us[index1]) );
+        }
+    }
+    
+    
+    /**
      * copy the elements from one DDataSet into the builder (which can be done with
      * a system call), ignoring dataset geometry.  TODO: since the element count
      * allows for putting multiple records in at once, an index out of bounds may 
@@ -303,8 +336,7 @@ public class DataSetBuilder {
      * This must be called each time a record is complete.  
      * When -1 is used for the indexes of the streaming dimension, then this
      * will increment the internal counter.
-     * TODO:  I always forget to call this, find another way to do this.  Check
-     * for unspecified entries.
+     * TODO: Check for unspecified entries.
      */
     public void nextRecord() {
         index++;
@@ -363,18 +395,14 @@ public class DataSetBuilder {
         
         if ( u!=null ) {
             result.putProperty( QDataSet.UNITS,u );
-        } else if ( us!=null ) {
-            Units u1= us[0];
-            boolean isBundle= false;
-            for ( int i=1; i<dim1; i++ ) {
-                if ( us[i]!=u1 ) { // it's a bundle
-                    isBundle= true;
-                }
-            }
+        } 
+        if ( us!=null ) {
             if ( isBundle ) {
                 BundleBuilder bb= new BundleBuilder(dim1);
                 for ( int i=0; i<dim1; i++ ) {
-                    bb.putProperty( QDataSet.UNITS, i, us[i] );
+                    if ( us[i]!=null ) bb.putProperty( QDataSet.UNITS, i, us[i] );
+                    if ( labels[i]!=null ) bb.putProperty( QDataSet.LABEL, i, labels[i] );
+                    if ( names[i]!=null ) bb.putProperty( QDataSet.NAME, i, names[i] );
                 }
                 result.putProperty( QDataSet.BUNDLE_1, bb.getDataSet() );
             } else {
@@ -402,17 +430,56 @@ public class DataSetBuilder {
     }
     
     /**
-     * set the units for column i.  This is only used with rank 2 (2-index) datasets.
-     * @param i
-     * @param u 
+     * the user has specified a Datum or QDataSet, or called setUnits(i,..._), etc
+     * to initialize the bundle mode.
      */
-    public void setUnits( int i, Units u ) {
-        if ( this.us==null ) {
+    private void maybeInitializeBundle() {
+        if ( !isBundle ) { 
+            logger.fine("initializeBundle");
             this.us= new Units[dim1];
             for ( int j=0; j<dim1; j++ ) {
-                this.us[i]= u;
+                this.us[j]= null;
             }
-        }
+            this.labels= new String[dim1];
+            for ( int j=0; j<dim1; j++ ) {
+                this.labels[j]= null;
+            }        
+            this.names= new String[dim1];
+            for ( int j=0; j<dim1; j++ ) {
+                this.names[j]= null;
+            }
+            isBundle= true;
+        }   
+    }
+    /**
+     * set the units for column i.  This is only used with rank 2 (2-index) datasets.
+     * @param i the column number
+     * @param u the units for the column
+     */
+    public void setUnits( int i, Units u ) {
+        maybeInitializeBundle();
+        this.us[i]= u;
+    }
+    
+    /**
+     * set the label (short, descriptive label for human consumption) 
+     * for the column, for rank 2 bundle datasets.
+     * @param i the column number
+     * @param label the label for the column
+     */
+    public void setLabel( int i, String label ) {
+        maybeInitializeBundle();
+        this.labels[i]= label;
+    }
+    
+    /**
+     * set the name (valid Jython identifier) for the column.
+     * @param i the column number
+     * @param name the name (valid Jython identifier) for the column.
+     */
+    public void setName( int i, String name ) {
+        maybeInitializeBundle();
+        this.names[i]= name;
     }
     
     /**
