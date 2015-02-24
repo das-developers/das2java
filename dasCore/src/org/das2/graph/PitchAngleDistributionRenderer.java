@@ -122,6 +122,10 @@ public class PitchAngleDistributionRenderer extends Renderer {
     public static QDataSet doAutorange(QDataSet tds) {
 
         QDataSet zdesc = Ops.extent( tds );
+        if ( zdesc.value(0)==zdesc.value(1) && zdesc.value(0)>0 ) {
+            zdesc= DDataSet.wrap( new double[] { 0, zdesc.value(1) } );
+            zdesc= Ops.putProperty( zdesc, QDataSet.UNITS, tds.property(QDataSet.UNITS) );
+        }
         zdesc= Ops.putProperty( zdesc, QDataSet.SCALE_TYPE, tds.property(QDataSet.SCALE_TYPE ) );
 
         QDataSet ads= SemanticOps.xtagsDataSet(tds);
