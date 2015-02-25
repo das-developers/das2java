@@ -27,14 +27,18 @@ public class LengthDragRenderer extends LabelDragRenderer {
     private DasAxis xaxis, yaxis;
     private DasPlot plot;
     
-    /** Creates a new instance of PointSlopeDragRenderer */
+    /** Creates a new instance of PointSlopeDragRenderer
+     * @param parent
+     * @param xaxis
+     * @param yaxis 
+     */
     public LengthDragRenderer(DasCanvasComponent parent, DasAxis xaxis, DasAxis yaxis) {
         super( parent );
         this.plot= (DasPlot)parent;
         this.xaxis= xaxis;
         this.yaxis= yaxis;
     }
-    
+
     @Override
     public Rectangle[] renderDrag(java.awt.Graphics g1, java.awt.Point p1, java.awt.Point p2) {
         Graphics2D g= ( Graphics2D ) g1;
@@ -180,21 +184,21 @@ public class LengthDragRenderer extends LabelDragRenderer {
     }
     
     /**
-     * Holds value of property showSlope.
+     * true if the slope should be shown
      */
     private boolean showSlope= false;
     
     /**
-     * Getter for property showSlope.
-     * @return Value of property showSlope.
+     * true if the slope should be shown
+     * @return true if the slope should be shown
      */
     public boolean isShowSlope() {
         return this.showSlope;
     }
     
     /**
-     * Setter for property showSlope.
-     * @param showSlope New value of property showSlope.
+     * true if the slope should be shown
+     * @param showSlope true if the slope should be shown
      */
     public void setShowSlope(boolean showSlope) {
         this.showSlope = showSlope;
@@ -203,18 +207,16 @@ public class LengthDragRenderer extends LabelDragRenderer {
     protected boolean showFit = true;
 
     /**
-     * Get the value of showFit
-     *
-     * @return the value of showFit
+     * true if the fit should be shown
+     * @return true if the fit should be shown
      */
     public boolean isShowFit() {
         return showFit;
     }
 
     /**
-     * show the fit for all but xlog,ylin.
-     *
-     * @param showFit new value of showFit
+     * if true then show the fit for all but xlog,ylin.
+     * @param showFit if true then show the fit for all but xlog,ylin.
      */
     public void setShowFit(boolean showFit) {
         this.showFit = showFit;
