@@ -31,7 +31,6 @@ import org.das2.event.CrossHairMouseModule;
 import org.das2.event.BoxZoomMouseModule;
 import org.das2.event.VerticalRangeSelectorMouseModule;
 import org.das2.event.ZoomPanMouseModule;
-import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.VectorUtil;
 import org.das2.dataset.TableDataSet;
 import org.das2.dataset.DataSet;
@@ -53,7 +52,6 @@ import org.das2.graph.dnd.TransferableRenderer;
 import org.das2.system.DasLogger;
 import java.awt.image.BufferedImage;
 import javax.swing.event.MouseInputAdapter;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -764,7 +762,7 @@ public class DasPlot extends DasCanvasComponent {
         mouseAdapter.addMouseModule(new BoxZoomMouseModule(this, null, getXAxis(), getYAxis()));
         // TODO: support setYAxis, setXAxis.
 
-        x = new MouseModule(this, new LengthDragRenderer(this, null, null), "Length");
+        x = new MouseModule(this, new LengthDragRenderer(this, getXAxis(), getYAxis()), "Length");
         mouseAdapter.addMouseModule(x);
 
         x = new DisplayDataMouseModule(this);
