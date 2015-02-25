@@ -383,15 +383,16 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     /**
      * set the control string which contains a number of properties.  These are defined for
-     * each renderer, but they should try to be consistent.  See http://autoplot.org/developer.guessRenderType#Proposed_extensions
+     * each renderer, but they should try to be consistent.  
      * When overriding this, be sure to call super.
      * @see #CONTROL_KEY_COLOR, etc
-     * @param s 
+     * @param s the control string, of name=value pairs, ampersand delimited.
+     * @see http://autoplot.org/developer.guessRenderType#Proposed_extensions
      */
     public void setControl( String s ) {
         String oldValue= this.control;
         this.control= s;
-        if ( oldValue==s || ( oldValue != null && oldValue.equals(s) ) ) {
+        if ( ( oldValue != null && oldValue.equals(s) ) ) {
 	    return;
 	}
         controls= parseControl(s);
