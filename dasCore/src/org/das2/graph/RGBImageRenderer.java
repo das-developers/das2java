@@ -5,18 +5,16 @@
 
 package org.das2.graph;
 
-import java.awt.BasicStroke;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.DasException;
 import org.das2.datum.Units;
-import org.das2.system.DasLogger;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -44,10 +42,10 @@ public class RGBImageRenderer extends Renderer {
         QDataSet dep1;
 
         if ( ds==null || ds.length() == 0) {
-            DasLogger.getLogger(DasLogger.GRAPHICS_LOG).fine("null data set");
+            getParent().postMessage( this, "null data set", Level.INFO, null, null );
             return;
         }
-
+        
         BufferedImage im= image; // make local copy for thread safety
         if ( im==null ) return; // transitional state
 
@@ -57,6 +55,27 @@ public class RGBImageRenderer extends Renderer {
         if ( dep0==null ) dep0= Ops.dindgen(im.getWidth());
         if ( dep1==null ) dep1= Ops.dindgen(im.getHeight());
         
+        {
+            int n= dep0.length();
+            double dx1= ( dep0.value(1)- dep0.value(0) );
+            double dx2= ( dep0.value(n-1)- dep0.value(n-2) );
+            boolean xlog= dx1<dx2/10;
+            if ( xAxis.isLog()!=xlog ) {
+                getParent().postMessage( this, "xaxis must be " + ( xlog ? "log" : "linear" ) + ", for this image",  Level.INFO, null, null );
+                return;
+            }
+        }
+        {
+            int n= dep1.length();
+            double dy1= ( dep1.value(1)- dep1.value(0) );
+            double dy2= ( dep1.value(n-1)- dep1.value(n-2) );
+            boolean ylog= dy1<dy2/10;
+            if ( yAxis.isLog()!=ylog ) {
+                getParent().postMessage( this, "yaxis must be " + ( ylog ? "log" : "linear" )+ ", for this image",  Level.INFO, null, null );
+                return;
+            }
+        }        
+
         Units xunits= SemanticOps.getUnits(dep0);
         Units yunits= SemanticOps.getUnits(dep1);
 
@@ -90,14 +109,14 @@ public class RGBImageRenderer extends Renderer {
             image=null;
         } else {
             if ( image==null ) {
-                image= getImage(ds);
+                image= getImage(ds,xAxis,yAxis);
             }
         }
         monitor.finished();
     }
 
     
-    private BufferedImage getImage(QDataSet ds) throws IllegalArgumentException {
+    private BufferedImage getImage(QDataSet ds, DasAxis xAxis, DasAxis yAxis ) throws IllegalArgumentException {
         // ds should be a rank 2 gray scale of Width x Height values, valued from 0-255,
         // or a rank 3 color image 3,W,H.
         int imageType = -19999;
