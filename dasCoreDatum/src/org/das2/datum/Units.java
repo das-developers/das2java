@@ -97,6 +97,7 @@ public abstract class Units implements Serializable {
     public static final Units minutes= new NumberUnits("min");
     public static final Units seconds= new NumberUnits("s");
     public static final Units seconds2= new NumberUnits("sec");
+    //public static final Units seconds3= new NumberUnits("seconds");  // note s was not convertible to seconds.
     public static final Units milliseconds= new NumberUnits("ms","milliseconds");
     public static final Units milliseconds2= new NumberUnits("msec");
     public static final Units microseconds= new NumberUnits("microseconds");
@@ -472,6 +473,7 @@ public abstract class Units implements Serializable {
      * @throws InconvertibleUnitsException when the conversion is not possible.
      */
     private static UnitsConverter getConverterInternal( final Units fromUnits, final Units toUnits ) {
+        logger.log(Level.FINE, "fromUnits={0} {1} toUnits={2} {3}", new Object[]{fromUnits,fromUnits.hashCode(), toUnits,toUnits.hashCode()});
         if (fromUnits == toUnits) {
             return UnitsConverter.IDENTITY;
         }
