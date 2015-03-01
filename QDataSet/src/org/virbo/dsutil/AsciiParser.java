@@ -100,8 +100,17 @@ public class AsciiParser {
     
     int recordCountLimit = Integer.MAX_VALUE;
     int fieldCount;
+    
+    /**
+     * pattern for name:value.  
+     */
     public final static Pattern NAME_COLON_VALUE_PATTERN = Pattern.compile("\\s*([a-zA-Z_].*?)\\s*\\:\\s*(.+)\\s*");
+    
+    /**
+     * pattern for name=value.  
+     */
     public final static Pattern NAME_EQUAL_VALUE_PATTERN = Pattern.compile("\\s*([a-zA-Z_].*?)\\s*\\=\\s*(.+)\\s*");
+    
     /**
      * detect identifiers for columns.
      */
