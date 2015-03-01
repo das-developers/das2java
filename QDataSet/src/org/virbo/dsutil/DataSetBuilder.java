@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
@@ -349,6 +350,43 @@ public class DataSetBuilder {
         }
     }
 
+    /**
+     * In one step, specify all the values of the record and advance the counter.
+     * This is intended to reduce the number of lines needed in scripts.
+     * @param values the record values, in an String, Datum, or Number.
+     */
+    public void nextRecord( Object ... values ) {
+        if ( values.length>this.dim1 ) {
+            throw new IllegalArgumentException("Too many values provided: got "+values.length+", expected "+this.dim1 );
+        }
+        for ( int i=0; i<values.length; i++ ) { 
+            Object v1= values[i];
+            if ( v1 instanceof Number ) {
+                putValue( -1, i, ((Number)v1).doubleValue() );
+            } else if ( v1 instanceof String ) {
+                Units lu= us[i];
+                if ( lu==null ) lu= this.u;
+                if ( lu==null ) lu= Units.dimensionless;
+                double d;
+                if ( lu instanceof EnumerationUnits ) {
+                    d= ((EnumerationUnits)lu).createDatum(v1).doubleValue(lu);
+                } else {
+                    try {
+                        d= lu.parse((String)v1).doubleValue(lu);
+                    } catch (ParseException ex) {
+                        throw new IllegalArgumentException(ex);
+                    }
+                }
+                putValue( -1, i, d );
+            } else if ( v1 instanceof Datum ) {
+                putValue( -1, i, (Datum)v1 );
+            } else {
+                throw new IllegalArgumentException("expected string,Datum, or double");
+            }
+        } 
+        nextRecord();
+    }
+    
    /**
     * return the number of records added to the builder.
      * @return the number of records added to the builder.
