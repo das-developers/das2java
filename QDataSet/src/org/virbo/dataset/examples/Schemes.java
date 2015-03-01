@@ -6,9 +6,11 @@
 package org.virbo.dataset.examples;
 
 import java.text.ParseException;
+import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 
 /**
@@ -43,7 +45,7 @@ public class Schemes {
      */
     public static QDataSet boundingBox( ) {
         try {
-            QDataSet xx= Ops.timegen( "2015-02-20T00:30", "60 seconds", 1440 );
+            QDataSet xx= Ops.timegen( "2015-02-20T00:30", "60 s", 1440 );
             QDataSet yy= Ops.linspace( 14., 16., 1440 );
             JoinDataSet bds= new JoinDataSet(2);
             bds.join( Ops.extent( xx ) );
@@ -172,5 +174,83 @@ public class Schemes {
      */
     public static boolean isTimeSeries( QDataSet ds ) {
         return SemanticOps.isTimeSeries(ds);
+    }
+    
+    /**
+     * uniform cadence is when each tag is the same distance apart, within a reasonable threshold.
+     * @return dataset with uniform cadence
+     */
+    public static QDataSet uniformCadence() {
+        return Ops.linspace( 0., 4., 100 );
+    }
+    
+    /**
+     * return true of the data has a uniform cadence.  Note that 
+     * the CADENCE property is ignored.
+     * @param ds a rank 1 dataset
+     * @return true if the data has uniform cadence.
+     */
+    public static boolean isUniformCadence( QDataSet ds ) {
+        if ( ds.rank()!=1 ) return false;
+        double v= ds.value(0);
+        double dv= ds.value(1)-ds.value(0);
+        double manyDv= ( ds.value(ds.length()-1)-ds.value(0) ) / ( ds.length()-1)  ;
+        return ( ( manyDv - dv ) / dv ) < 0.001;
+    }
+
+    /**
+     * uniform ratiometric cadence is when the tags are uniform in log space.
+     * @return dataset with uniform ratiometric cadence.
+     */
+    public static QDataSet uniformRatiometricCadence() {
+        return Ops.pow( 10, Ops.linspace( 0., 4., 100 ) );
+    }   
+
+    /**
+     * return true of the data has a uniform cadence.  Note that 
+     * the CADENCE property is ignored.
+     * @param ds a rank 1 dataset
+     * @return true if the data has uniform cadence.
+     */
+    public static boolean isUniformRatiometricCadence( QDataSet ds ) {
+        if ( ds.rank()!=1 ) return false;
+        double v= ds.value(0);
+        double dv= Math.log( ds.value(1)/ds.value(0) );
+        double manyDv= Math.log( ds.value(ds.length()-1) / ds.value(0) ) / ( ds.length()-1 );
+        return ( ( manyDv - dv ) / dv ) < 0.001;
+    }
+    
+    /**
+     * return an example of a compositeImage.
+     * @return image[320,240,3]
+     */    
+    public static QDataSet compositeImage() {
+        WritableDataSet rgb= Ops.zeros( 320, 240, 3 );
+        for ( int i=0; i<320; i++ ) {
+            for ( int j=0; j<240; j++ ) {
+               if ( ( Math.pow((i-160),2) +  Math.pow((j-120),2) ) <2500 ) rgb.putValue( i,j,0, 255 );
+               if ( i<160 ) rgb.putValue( i,j,1, 255 );
+               if ( j<120 ) rgb.putValue( i,j,2, 255 );
+            }
+        }
+        rgb.putProperty( QDataSet.DEPEND_0, Ops.linspace(0,4,rgb.length() ) );
+        rgb.putProperty( QDataSet.DEPEND_1, Ops.pow( 10, Ops.linspace(0,4,rgb.length(0) ) ) );
+        rgb.putProperty( QDataSet.RENDER_TYPE, QDataSet.VALUE_RENDER_TYPE_COMPOSITE_IMAGE );
+                
+        return rgb;
+    }
+    
+    /**
+     * return true if the dataset is a composite image, and is plottable
+     * with the RGBImageRenderer
+     * @param ds a dataset
+     * @return true if the dataset is a composite image.
+     */
+    public static boolean isCompositeImage( QDataSet ds ) {
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        return ds.rank()==3 && DataSetUtil.checkQube(ds) 
+                && ( dep0==null || isUniformCadence(dep0) || isUniformRatiometricCadence(dep0) ) 
+                && ( dep1==null || isUniformCadence(dep1) || isUniformRatiometricCadence(dep1) );
     }
 }
