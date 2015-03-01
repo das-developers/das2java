@@ -1171,7 +1171,7 @@ public class DataSetUtil {
         if ( o!=null && o instanceof QDataSet ) {
             QDataSet q= (QDataSet)o;
             Units qu= SemanticOps.getUnits(q);
-            if ( UnitsUtil.isRatiometric(qu) || qu.isConvertableTo( SemanticOps.getUnits(xds).getOffsetUnits() ) ) {
+            if ( UnitsUtil.isRatiometric(qu) || qu.isConvertibleTo( SemanticOps.getUnits(xds).getOffsetUnits() ) ) {
                 if ( q.rank()==0 ) {    
                     if ( q instanceof RankZeroDataSet ) {
                         return (RankZeroDataSet) q;

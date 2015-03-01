@@ -293,7 +293,7 @@ public class Ops {
         Units units1 = SemanticOps.getUnits( ds1 );
         Units units2 = SemanticOps.getUnits( ds2 );
         BinaryOp result;
-        if ( units2.isConvertableTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
+        if ( units2.isConvertibleTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
             result= new BinaryOp() {
                 public double op(double d1, double d2) {
@@ -362,7 +362,7 @@ public class Ops {
         Units units2 = SemanticOps.getUnits( ds2 );
         MutablePropertyDataSet result;
 
-        if ( units2.isConvertableTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
+        if ( units2.isConvertibleTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
             result= (MutablePropertyDataSet)  applyBinaryOp(ds1, ds2, new BinaryOp() {
                 @Override
@@ -1344,7 +1344,7 @@ public class Ops {
         } else if ( units2==Units.dimensionless && UnitsUtil.isRatioMeasurement(units1) ) {
             resultUnits= units1;
             uc= UnitsConverter.IDENTITY;
-        } else if ( units2.isConvertableTo(units1) ) {
+        } else if ( units2.isConvertibleTo(units1) ) {
             resultUnits= Units.dimensionless;
             uc= units2.getConverter(units1);
         } else {
@@ -3028,7 +3028,7 @@ public class Ops {
                     colors= Ops.replicate( 0x808080, xmins.length() );
                     Units u0= SemanticOps.getUnits(xmins );
                     Units u1= SemanticOps.getUnits(xmaxs );
-                    if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+                    if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
                         xmaxs= Ops.add( xmins, xmaxs );
                     }
                 } else {
@@ -3059,7 +3059,7 @@ public class Ops {
                     xmaxs= DataSetOps.slice1( dep0, 1 );
                     Units u0= SemanticOps.getUnits(xmins );
                     Units u1= SemanticOps.getUnits(xmaxs );
-                    if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+                    if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
                         xmaxs= Ops.add( xmins, xmaxs );
                     }
                     msgs= vds;
@@ -3103,7 +3103,7 @@ public class Ops {
         Units u0= SemanticOps.getUnits( xmins );
         Units u1= SemanticOps.getUnits( xmaxs );
 
-        if ( u1.isConvertableTo( u0.getOffsetUnits() ) && !u1.isConvertableTo(u0) ) { // maxes are dt instead of stopt.
+        if ( u1.isConvertibleTo( u0.getOffsetUnits() ) && !u1.isConvertibleTo(u0) ) { // maxes are dt instead of stopt.
             xmaxs= Ops.add( xmins, xmaxs );
         }
 
@@ -4375,7 +4375,7 @@ public class Ops {
                 Units cunits= SemanticOps.getUnits(c);
                 if ( dep0ds!=null ) {
                     Units dep0units= SemanticOps.getUnits(dep0ds);
-                    if ( !cunits.getOffsetUnits().isConvertableTo(dep0units.getOffsetUnits()) ) {
+                    if ( !cunits.getOffsetUnits().isConvertibleTo(dep0units.getOffsetUnits()) ) {
                         c= null;
                     }
                 }
@@ -7975,7 +7975,7 @@ public class Ops {
             }
             return true;
         } else {
-            if ( !u1.isConvertableTo(u2) ) return false;
+            if ( !u1.isConvertibleTo(u2) ) return false;
             if ( !CoerceUtil.equalGeom( ds1, ds2 ) ) return false;
             QDataSet eq= eq( ds1, ds2 );
             QubeDataSetIterator it= new QubeDataSetIterator(eq);
