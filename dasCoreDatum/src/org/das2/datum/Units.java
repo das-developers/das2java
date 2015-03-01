@@ -68,15 +68,19 @@ public abstract class Units implements Serializable {
      * this is left in in case legacy code needs to see the conversion from dB to dimensionless offset.
      */
     private static final class dBConverter extends UnitsConverter {
+        @Override
         public double convert(double value) {
             return 10 * Math.log10(value);
         }
+        @Override
         public UnitsConverter getInverse() {
             if (inverse == null) {
                 inverse = new UnitsConverter() {
+                    @Override
                     public double convert(double value) {
                         return Math.pow(10.0, value / 10.0);
                     }
+                    @Override
                     public UnitsConverter getInverse() {
                         return dBConverter.this;
                     }
@@ -291,15 +295,19 @@ public abstract class Units implements Serializable {
     public static final Units log10Ratio= new NumberUnits("log10Ratio", "Special dimensionless number, useful for expressing distances on a log10 scale" );
     public static final Units logERatio= new NumberUnits("logERatio", "Special dimensionless number, useful for expressing distances on a logE scale" );
     private static class PercentRatioConverter extends UnitsConverter {
+        @Override
         public double convert(double value) {
             return ( Math.exp(value) - 1.0 ) * 100;
         }
+        @Override
         public UnitsConverter getInverse() {
             if (inverse == null) {
                 inverse = new UnitsConverter() {
+                    @Override
                     public double convert(double value) {
                         return Math.log( value / 100 + 1. );
                     }
+                    @Override
                     public UnitsConverter getInverse() {
                         return PercentRatioConverter.this;
                     }
@@ -313,15 +321,19 @@ public abstract class Units implements Serializable {
      * see http://en.wikipedia.org/wiki/Decibel
      */
     private static class AmpRatioConverter extends UnitsConverter {
+        @Override
         public double convert(double value) {
             return ( Math.pow(10,value/20.) );
         }
+        @Override
         public UnitsConverter getInverse() {
             if (inverse == null) {
                 inverse = new UnitsConverter() {
+                    @Override
                     public double convert(double value) {
                         return 20 * Math.log10( value );
                     }
+                    @Override
                     public UnitsConverter getInverse() {
                         return AmpRatioConverter.this;
                     }
@@ -369,10 +381,21 @@ public abstract class Units implements Serializable {
         unitsMap.put( id, this );
     };
     
+    /**
+     * get the id uniquely identifying the units.  Note the id may contain
+     * special tokens, like "since" for time locations.
+     * @return the id.
+     */
     public String getId() {
         return this.id;
     }
     
+    /**
+     * register a converter between the units.  Note these converters can be 
+     * changed together to derive conversions. (A to B, B to C defines A to C.)
+     * @param toUnits the target units
+     * @param converter the converter that goes from this unit to target units.
+     */
     public void registerConverter(Units toUnits, UnitsConverter converter) {
         conversionMap.put(toUnits, converter);
         UnitsConverter inverse = (UnitsConverter)toUnits.conversionMap.get(this);
@@ -381,6 +404,10 @@ public abstract class Units implements Serializable {
         }
     }
     
+    /**
+     * return the units to which this unit is convertible.
+     * @return the units to which this unit is convertible.
+     */
     public Units[] getConvertableUnits() {
         Set result= new HashSet();
         LinkedList queue = new LinkedList();
@@ -399,6 +426,9 @@ public abstract class Units implements Serializable {
     }
     
     /**
+     * return true if the unit can be converted to toUnits.
+     * @deprecated use isConvertibleTo (which does not contain spelling error)
+     * @param toUnits Units object.
      * @return true if the unit can be converted to toUnits.
      */
     public boolean isConvertableTo( Units toUnits ) {
@@ -407,6 +437,8 @@ public abstract class Units implements Serializable {
     }
 
     /**
+     * return true if the unit can be converted to toUnits.
+     * @param toUnits Units object.
      * @return true if the unit can be converted to toUnits.
      */
     public boolean isConvertibleTo( Units toUnits ) {
@@ -417,8 +449,8 @@ public abstract class Units implements Serializable {
     /**
      * lookup the UnitsConverter object that takes numbers from fromUnits to toUnits.  
      * This will chain together UnitsConverters registered via units.registerConverter.
-     * @param fromUnits
-     * @param toUnits
+     * @param fromUnits units instance that is the source units.
+     * @param toUnits units instance that is the target units.
      * @return UnitsConverter object
      * @throws InconvertibleUnitsException when the conversion is not possible.
      */
@@ -632,7 +664,7 @@ public abstract class Units implements Serializable {
 
     /**
      * lookupUnits canonical units object, or allocate one.  If one is
-     * allocated, then parse for "<unit> since <datum>" and add conversion to
+     * allocated, then parse for "&lt;unit&gt; since &lt;datum&gt;" and add conversion to
      * "microseconds since 2000-001T00:00."  Note leap seconds are ignored!
      * @param base the base time, for example 2000-001T00:00.
      * @param offsetUnits the offset units for example microseconds.  Positive values of the units will be since the base time.
@@ -659,15 +691,18 @@ public abstract class Units implements Serializable {
      * lookupUnits canonical units object, or allocate one.  If one is
      * allocated, then parse for "&lt;unit&gt; since &ltdatum&gt" and add conversion to
      * "microseconds since 2000-001T00:00" (us2000).  Note leap seconds are ignored
-     * in the returned units, so each day is 86400 seconds long.
-     * @param units string like "microseconds since 2000-001T00:00"
+     * in the returned units, so each day is 86400 seconds long, and differences in
+     * times should not include leap seconds.  Note this contains a few kludges 
+     * as this for datasets encountered by Autoplot.
+     * @param units string like "microseconds since 2000-001T00:00" which will be the id.
      * @return a units object that implements.
+     * @throws java.text.ParseException if the time cannot be parsed, etc.
      */
     public static synchronized Units lookupTimeUnits( String units ) throws ParseException {
 
         Units result;
 
-        //for speed, see if it's already registered.
+        //see if it's already registered.
         try {
             result= Units.getByName(units);
             return result;
