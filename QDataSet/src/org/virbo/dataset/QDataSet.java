@@ -341,7 +341,18 @@ public interface QDataSet {
      * values are drawn.
      */
     public final static String VALUE_RENDER_TYPE_DIGITAL="digital";
-    
+
+    /**
+     * values are an RGB image, a rank 3 dataset [w,h,3] or [w,h,4].  The
+     * "3" should be R,G, and B channels, and when "4" is used, ARGB is the
+     * default.  There can be a DEPEND_2 that is a QDataSet with ordinal data,
+     * specifying the channels like so Ops.labels("r","b","g","a") or
+     * Ops.labels("a","b","g","r").  Only bgr or rgb models are supported
+     * in the RGBImageRenderer, but future versions could support other color
+     * models.
+     */
+    public final static String VALUE_RENDER_TYPE_COMPOSITE_IMAGE="image";
+
     /**
      * String, a java identifier that should can be used when an identifier is needed. This is
      * originally introduced for debugging purposes, so datasets can have a concise, meaningful name 
