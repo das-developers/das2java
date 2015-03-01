@@ -180,7 +180,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
             return;
         }
 
-        if ( !xAxis.getUnits().isConvertableTo( yAxis.getUnits() ) ) {
+        if ( !xAxis.getUnits().isConvertibleTo( yAxis.getUnits() ) ) {
             parent.postException( this,
                     new IllegalArgumentException("x and y axes have different units, x="
                     +xAxis.getUnits() + " y="+yAxis.getUnits()  ) );

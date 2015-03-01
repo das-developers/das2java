@@ -174,7 +174,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
     @Override
     protected void paintComponent(Graphics g1) {
 
-        if ( ! topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() ) ) {
+        if ( ! topPlot.getXAxis().getUnits().isConvertibleTo( bottomPlot.getXAxis().getUnits() ) ) {
             //context plots
             // check to see if bottom panel is slice of top
             DatumRange bottomContext= bottomPlot.getDisplayContext(); //TODO: this is not a closed-loop system.  We should indicate timerange found in dataset.
@@ -188,7 +188,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
             //problem: the context property is the setting for the axis, not the feedback.
 
             if ( !useTop ) {
-                boolean isContext= bottomContext!=null && topPlot.getXAxis().getUnits().isConvertableTo( bottomContext.getUnits() );
+                boolean isContext= bottomContext!=null && topPlot.getXAxis().getUnits().isConvertibleTo( bottomContext.getUnits() );
                 if ( isContext ) {
                      Graphics2D g2=(Graphics2D)g1.create();
                      paintBottomContext( g2, bottomContext );
@@ -196,7 +196,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
                      return;
                 }
             } else {
-                boolean isContext= topContext!=null && bottomPlot.getXAxis().getUnits().isConvertableTo( topContext.getUnits() );
+                boolean isContext= topContext!=null && bottomPlot.getXAxis().getUnits().isConvertibleTo( topContext.getUnits() );
                 bottomContext= topPlot.getDisplayContext();
                 if ( isContext ) {
                     Graphics2D g2=(Graphics2D)g1.create();
@@ -221,7 +221,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         int y3= bottomPlot.getRow().getDMinimum()-1;
         int y4= bottomPlot.getRow().getDMaximum();
 
-        if ( ! topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() ) ) {
+        if ( ! topPlot.getXAxis().getUnits().isConvertibleTo( bottomPlot.getXAxis().getUnits() ) ) {
             // transition state (?) that caused failure of autoplot-test500 005.
             return;
         }
@@ -256,7 +256,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
         
         g.draw( gp );
         
-        if ( bottomCurtain && topPlot.getYAxis().getUnits().isConvertableTo( bottomPlot.getYAxis().getUnits() ) ) {
+        if ( bottomCurtain && topPlot.getYAxis().getUnits().isConvertibleTo( bottomPlot.getYAxis().getUnits() ) ) {
             
             DatumRange drtop= topPlot.getYAxis().getDatumRange();
             DatumRange yaxisRange= bottomPlot.getYAxis().getDatumRange();
@@ -305,7 +305,7 @@ public class ColumnColumnConnector extends DasCanvasComponent {
     private PropertyChangeListener createPropertyChangeListener() {
         return new PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
-                bottomCurtainDrawn= topPlot.getXAxis().getUnits().isConvertableTo( bottomPlot.getXAxis().getUnits() );
+                bottomCurtainDrawn= topPlot.getXAxis().getUnits().isConvertibleTo( bottomPlot.getXAxis().getUnits() );
                 markDirty();
                 update();
             }

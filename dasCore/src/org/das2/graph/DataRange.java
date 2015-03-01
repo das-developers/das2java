@@ -94,7 +94,7 @@ public class DataRange implements Cloneable {
         if (!min.isFinite()) throw new IllegalArgumentException("data_minimum on axis is not finite");
         if (!max.isFinite()) throw new IllegalArgumentException("data_maximum on axis is not finite");
         //if (min.getUnits()!=max.getUnits())  throw new IllegalArgumentException("units don't match on range");
-		if (!min.getUnits().isConvertableTo(max.getUnits())) throw new IllegalArgumentException("units are not conversion compatible");
+		if (!min.getUnits().isConvertibleTo(max.getUnits())) throw new IllegalArgumentException("units are not conversion compatible");
         this.parent= parent;
         units= min.getUnits();
         if ( log ) {
@@ -300,7 +300,7 @@ public class DataRange implements Cloneable {
     
     private void setRange( DatumRange range, boolean pushHistory ) {
         
-        if ( ! range.getUnits().isConvertableTo( this.units ) ) {
+        if ( ! range.getUnits().isConvertibleTo( this.units ) ) {
             throw new IllegalArgumentException("units may not be changed");
         }
         

@@ -413,11 +413,11 @@ public class DigitalRenderer extends Renderer {
 
         DasPlot parent= getParent();
 
-        if ( ! xunits.isConvertableTo(xAxis.getUnits() ) ) {
+        if ( ! xunits.isConvertibleTo(xAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
             return;
         }
-        if ( ! yunits.isConvertableTo(yAxis.getUnits() ) ) {
+        if ( ! yunits.isConvertibleTo(yAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
             return;
         }
@@ -528,11 +528,11 @@ public class DigitalRenderer extends Renderer {
 
         DasPlot parent= getParent();
 
-        if ( !SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits() ) ) {
+        if ( !SemanticOps.getUnits(xds).isConvertibleTo(xAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
             return;
         }
-        if ( !SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits() ) ) {
+        if ( !SemanticOps.getUnits(yds).isConvertibleTo(yAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
             return;
         }

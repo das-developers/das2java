@@ -291,8 +291,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             parent.postMessage(this, "empty data set", DasPlot.INFO, null, null);
 
                         } else {
-                            boolean xunitsOkay= SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ;
-                            boolean yunitsOkay= SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits());
+                            boolean xunitsOkay= SemanticOps.getUnits(xds).isConvertibleTo(xAxis.getUnits()) ;
+                            boolean yunitsOkay= SemanticOps.getUnits(yds).isConvertibleTo(yAxis.getUnits());
                             String message= null;
                             if ( !xunitsOkay && !yunitsOkay ) {
                                 message= "xaxis and yaxis units";
@@ -325,13 +325,13 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     } else {
                         throw new IllegalArgumentException("only rank 2 and rank 3 supported");
                     }
-                    if ( ! SemanticOps.getUnits(yds).isConvertableTo(yAxis.getUnits()) ) {
+                    if ( ! SemanticOps.getUnits(yds).isConvertibleTo(yAxis.getUnits()) ) {
                         parent.postMessage( this, "dataset y units are \""+SemanticOps.getUnits(yds)+"\" while yaxis is \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
                     }
-                    if ( ! SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits()) ) {
+                    if ( ! SemanticOps.getUnits(xds).isConvertibleTo(xAxis.getUnits()) ) {
                         parent.postMessage( this, "dataset x units are \""+SemanticOps.getUnits(xds)+"\" while xaxis is \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
                     }
-                    if ( ! SemanticOps.getUnits(zds).isConvertableTo(colorBar.getUnits()) ) {
+                    if ( ! SemanticOps.getUnits(zds).isConvertibleTo(colorBar.getUnits()) ) {
                         parent.postMessage( this, "dataset z units are \""+SemanticOps.getUnits(zds)+"\" while zaxis is \"" + colorBar.getUnits() + "\"", DasPlot.INFO, null, null );
                     }
                 }
@@ -413,7 +413,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         int icolor;
 
         Units units = SemanticOps.getUnits(rebinData);
-        if ( !units.isConvertableTo( cb.getUnits() ) ) {
+        if ( !units.isConvertibleTo( cb.getUnits() ) ) {
             // we'll print a warning later
             units= cb.getUnits();
         }
@@ -468,7 +468,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
      * @return
      */
     private int compare( Datum a, Datum b ) {
-        if ( a.getUnits().isConvertableTo(b.getUnits()) ) {
+        if ( a.getUnits().isConvertibleTo(b.getUnits()) ) {
             return a.compareTo(b);
         } else {
             if ( UnitsUtil.isRatioMeasurement(a.getUnits()) && UnitsUtil.isRatioMeasurement(b.getUnits())) {
@@ -589,7 +589,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
 
                         unitsWarning= false;
-                        if ( !xunits.isConvertableTo(xAxis.getUnits()) ) {
+                        if ( !xunits.isConvertibleTo(xAxis.getUnits()) ) {
                             if ( UnitsUtil.isRatioMeasurement( xunits ) && UnitsUtil.isRatioMeasurement( xAxis.getUnits() ) ) {
                                 unitsWarning= true;
                             } else {
@@ -601,7 +601,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
 
 
-                        if ( !yunits.isConvertableTo(yAxis.getUnits()) ) {
+                        if ( !yunits.isConvertibleTo(yAxis.getUnits()) ) {
                              if ( UnitsUtil.isRatioMeasurement( yunits ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                                 unitsWarning= true;
                             } else {
@@ -625,7 +625,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
 
                         boolean plottable;
-                        plottable = SemanticOps.getUnits(zds).isConvertableTo(lcolorBar.getUnits());
+                        plottable = SemanticOps.getUnits(zds).isConvertibleTo(lcolorBar.getUnits());
                         if ( !plottable ) {
                             if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(zds) ) && UnitsUtil.isRatioMeasurement( lcolorBar.getUnits() ) ) {
                                 plottable= true; // we'll provide a warning
@@ -646,11 +646,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 plotImageBounds2.height,
                                 yAxis.isLog());
 
-                        if ( !xunits.isConvertableTo(xAxis.getUnits()) ) {
+                        if ( !xunits.isConvertibleTo(xAxis.getUnits()) ) {
                             xRebinDescriptor= convertUnitsTo(xRebinDescriptor, xunits);
                         }
 
-                        if ( !yunits.isConvertableTo(yAxis.getUnits()) ) {
+                        if ( !yunits.isConvertibleTo(yAxis.getUnits()) ) {
                             yRebinDescriptor= convertUnitsTo(yRebinDescriptor, yunits);
                         }
 
@@ -754,10 +754,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         QDataSet bounds= bounds(fds);
                         DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true );
                         DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
-                        if ( xunits!=null && !xunits.isConvertableTo(xAxis.getUnits()) ) {
+                        if ( xunits!=null && !xunits.isConvertibleTo(xAxis.getUnits()) ) {
                             xdr= new DatumRange( xdr.min().doubleValue(xdr.getUnits()), xdr.max().doubleValue(xdr.getUnits()),xAxis.getUnits() );
                         }
-                        if ( yunits!=null && !yunits.isConvertableTo(yAxis.getUnits()) ) {
+                        if ( yunits!=null && !yunits.isConvertibleTo(yAxis.getUnits()) ) {
                             ydr= new DatumRange( ydr.min().doubleValue(ydr.getUnits()), ydr.max().doubleValue(ydr.getUnits()),yAxis.getUnits() );
                         }
                         double[] yy= GraphUtil.transformRange( yAxis, ydr );

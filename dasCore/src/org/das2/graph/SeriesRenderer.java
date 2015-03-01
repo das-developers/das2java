@@ -353,7 +353,7 @@ public class SeriesRenderer extends Renderer {
             Units cunits = null;
             if (colorByDataSet1 != null && fcolorBar!=null ) {
                 cunits = SemanticOps.getUnits( colorByDataSet1 );
-                if ( cunits.isConvertableTo(fcolorBar.getUnits()) ) {
+                if ( cunits.isConvertibleTo(fcolorBar.getUnits()) ) {
                     cunits= fcolorBar.getUnits();
                 }
             }
@@ -549,7 +549,7 @@ public class SeriesRenderer extends Renderer {
      * @return the double value.
      */
     private double doubleValue( Datum d, Units u ) {
-        if ( d.getUnits().isConvertableTo(u) ) {
+        if ( d.getUnits().isConvertibleTo(u) ) {
             return d.doubleValue(u);
         } else {
             try {
@@ -1200,7 +1200,7 @@ public class SeriesRenderer extends Renderer {
         if ( SemanticOps.isMonotonic( xds )) {
             DatumRange visibleRange = xAxis.getDatumRange();
             Units xdsu= SemanticOps.getUnits(xds);
-            if ( !visibleRange.getUnits().isConvertableTo( xdsu ) ) {
+            if ( !visibleRange.getUnits().isConvertibleTo( xdsu ) ) {
                 visibleRange= new DatumRange( visibleRange.min().doubleValue(visibleRange.getUnits()), visibleRange.max().doubleValue(visibleRange.getUnits()), xdsu );
             }
             firstIndex_v = DataSetUtil.getPreviousIndex( xds, visibleRange.min());
@@ -1361,14 +1361,14 @@ public class SeriesRenderer extends Renderer {
         boolean xaxisUnitsOkay;
 
         QDataSet xds = SemanticOps.xtagsDataSet(dataSet);
-        xaxisUnitsOkay = SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits() );
+        xaxisUnitsOkay = SemanticOps.getUnits(xds).isConvertibleTo(xAxis.getUnits() );
         if ( !SemanticOps.isTableDataSet(dataSet) ) {
             vds= ytagsDataSet(ds);
-            yaxisUnitsOkay = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
+            yaxisUnitsOkay = SemanticOps.getUnits(vds).isConvertibleTo(yAxis.getUnits()); // Ha!  QDataSet makes the code the same
 
         } else {
             tds = (QDataSet) dataSet;
-            yaxisUnitsOkay = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
+            yaxisUnitsOkay = SemanticOps.getUnits(tds).isConvertibleTo(yAxis.getUnits());
         }
 
         boolean haveReportedUnitProblem= false;
@@ -1623,7 +1623,7 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
             unitsWarning= false;
-            plottable = SemanticOps.getUnits(vds).isConvertableTo(yAxis.getUnits());
+            plottable = SemanticOps.getUnits(vds).isConvertibleTo(yAxis.getUnits());
             if ( !plottable ) {
                 if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(vds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                     unitsWarning= true;
@@ -1632,7 +1632,7 @@ public class SeriesRenderer extends Renderer {
 
         } else {
             tds = (QDataSet) dataSet;
-            plottable = SemanticOps.getUnits(tds).isConvertableTo(yAxis.getUnits());
+            plottable = SemanticOps.getUnits(tds).isConvertibleTo(yAxis.getUnits());
             if ( !plottable ) {
                 if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(tds) ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
                     unitsWarning= true;
@@ -1640,7 +1640,7 @@ public class SeriesRenderer extends Renderer {
             }
         }
 
-        plottable = SemanticOps.getUnits(xds).isConvertableTo(xAxis.getUnits());
+        plottable = SemanticOps.getUnits(xds).isConvertibleTo(xAxis.getUnits());
         xunitsWarning= false;
         if ( !plottable ) {
             if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(xds) ) && UnitsUtil.isRatioMeasurement( xAxis.getUnits() ) ) {

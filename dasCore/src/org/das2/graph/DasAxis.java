@@ -685,7 +685,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             return;
         }
         synchronized ( tickLock ) {
-            if (getUnits().isConvertableTo(dr.getUnits())) {
+            if (getUnits().isConvertibleTo(dr.getUnits())) {
                 //this.setDataRange(dr.min(), dr.max());
                 this.dataRange.setRange(dr);
             } else {
@@ -1283,7 +1283,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         Units u= getUnits();
         DatumVector tickVDV= getTickV().tickV;
-        if ( !u.isConvertableTo(tickVDV.getUnits()) ) {
+        if ( !u.isConvertibleTo(tickVDV.getUnits()) ) {
             return; // transitional state
         }
         double[] ltickV = tickVDV.toDoubleArray(u);
@@ -1308,7 +1308,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             if ( tcaUnits==null ) tcaUnits=Units.dimensionless;
 
             UnitsConverter uc;
-            if ( !u.isConvertableTo(tcaUnits) ) {
+            if ( !u.isConvertibleTo(tcaUnits) ) {
                 logger.info("tca units are not convertable");
                 return;
             }
@@ -2132,7 +2132,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
         TickVDescriptor tickV1;
         tickV1= this.tickV; //findbugs IS2_INCONSISTENT_SYNC.  This caused deadlock.  I think accessing tickV once is a correct fix and doesn't need to be synchronized.
-        if (tickV1 == null || tickV1.tickV.getUnits().isConvertableTo(getUnits())) {
+        if (tickV1 == null || tickV1.tickV.getUnits().isConvertibleTo(getUnits())) {
             if (isHorizontal()) {
                 paintHorizontalAxis(g);
             } else {
@@ -2842,7 +2842,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         if (memento.flipped != flipped) {
             return null;
         }
-        if (!memento.range.getUnits().isConvertableTo(getUnits())) {
+        if (!memento.range.getUnits().isConvertibleTo(getUnits())) {
             return null;
         }
 
@@ -2988,7 +2988,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         //setBounds(getAxisBoundsNew());
         invalidate();
         TickVDescriptor ltickV= tickV;
-        if (ltickV == null || ltickV.tickV.getUnits().isConvertableTo(getUnits())) {
+        if (ltickV == null || ltickV.tickV.getUnits().isConvertibleTo(getUnits())) {
             validate();
         }
         firePropertyChange(PROP_BOUNDS, oldBounds, getBounds());
@@ -3005,7 +3005,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         TickVDescriptor ltickV= this.getTickV();
         DatumRange dr= getDatumRange();
 
-        if ( ltickV==null || !ltickV.tickV.getUnits().isConvertableTo(getUnits() ) ) {
+        if ( ltickV==null || !ltickV.tickV.getUnits().isConvertibleTo(getUnits() ) ) {
             logger.fine("tickV cannot be used because of units.");
             return bounds;
         }
@@ -4218,7 +4218,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private void refreshScanButtons(boolean reset) {
         if ( scanNext==null ) return; // headless
         if ( scanRange!=null ) {
-            if ( !scanRange.getUnits().isConvertableTo(getDatumRange().getUnits()) ) {
+            if ( !scanRange.getUnits().isConvertibleTo(getDatumRange().getUnits()) ) {
                   scanRange=null;
             }
         }

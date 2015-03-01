@@ -89,7 +89,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
             riseString= rise.toString();
             
             String radString;
-            if ( rise.getUnits().isConvertableTo(run.getUnits()) ) {
+            if ( rise.getUnits().isConvertibleTo(run.getUnits()) ) {
                 Units u= run.getUnits();
                 double rised= rise.doubleValue(u);
                 double rund= run.doubleValue(u);
@@ -117,7 +117,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
                 
                 Datum slope;
                 Units runUnits= run.getUnits();
-                if ( rise.getUnits().isConvertableTo(runUnits ) ) {
+                if ( rise.getUnits().isConvertibleTo(runUnits ) ) {
                     slope= rise.divide(run);
                 } else {
                     slope= rise.divide(run.doubleValue(runUnits));
@@ -137,7 +137,7 @@ public class LengthDragRenderer extends LabelDragRenderer {
                     double drun= x1.subtract(x0).doubleValue(u);
                     String sslope= nf.format( drise/drun );
                     String su;
-                    if ( u.isConvertableTo(Units.seconds) ) {
+                    if ( u.isConvertibleTo(Units.seconds) ) {
                         su= UnitsUtil.divideToString( Units.dimensionless.createDatum(drise), run );
                     } else if ( u==Units.dimensionless ) {
                         su= sslope;

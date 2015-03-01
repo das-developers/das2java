@@ -1160,7 +1160,7 @@ public class DataPointRecorderNew extends JPanel {
                 logger.log(Level.FINEST, "unable to find column for {0}", bds.property(QDataSet.NAME,i));
                 continue;
             }
-            if ( unitsArray[idx].isConvertableTo(d.getUnits() ) ) {
+            if ( unitsArray[idx].isConvertibleTo(d.getUnits() ) ) {
                 mnp.putValue( idx,d.doubleValue( unitsArray[idx] ) );
             } else {
                 if ( UnitsUtil.isOrdinalMeasurement(unitsArray[idx]) ) {
@@ -1195,7 +1195,7 @@ public class DataPointRecorderNew extends JPanel {
                     }
                     
                     Datum epsilon= Units.microseconds.createDatum(10000);
-                    if ( SemanticOps.getUnits(newPoint.slice(0)).getOffsetUnits().isConvertableTo(Units.milliseconds) ) {
+                    if ( SemanticOps.getUnits(newPoint.slice(0)).getOffsetUnits().isConvertibleTo(Units.milliseconds) ) {
                         if ( qds1!=null && Ops.lt( Ops.abs( Ops.subtract( qds1.slice(0), newPoint.slice(0) ) ), epsilon ).value()==1 ) {
                             dataPoints.set( ~index, newPoint );
                         } else if ( dp1!=null && Ops.lt( Ops.abs( Ops.subtract( dp1.slice(0), newPoint.slice(0) ) ), epsilon ).value()==1 ) {

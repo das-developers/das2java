@@ -52,7 +52,7 @@ public class WaveformToSpectrum {
         
         Units frequencyUnit;
         double unitMult= 1.0;
-        if ( timeUnit.isConvertableTo(Units.seconds ) ) {
+        if ( timeUnit.isConvertibleTo(Units.seconds ) ) {
             unitMult= timeUnit.getConverter(Units.seconds).convert(1.0);
             timeUnit= Units.seconds;
             frequencyUnit= Units.hertz;

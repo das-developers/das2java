@@ -1582,13 +1582,13 @@ public class DasPlot extends DasCanvasComponent {
         int ymin = lcacheImageBounds.y;
         int ymax = lcacheImageBounds.y + lcacheImageBounds.height;
 
-        if (yticks != null && yticks.getUnits().isConvertableTo(yAxis.getUnits())) {
+        if (yticks != null && yticks.getUnits().isConvertibleTo(yAxis.getUnits())) {
             for (int i = 0; i < yticks.getLength(); i++) {
                 int y = (int) yAxis.transform(yticks.get(i));
                 g.drawLine(xmin, y, xmax, y);
             }
         }
-        if (xticks != null && xticks.getUnits().isConvertableTo(xAxis.getUnits())) {
+        if (xticks != null && xticks.getUnits().isConvertibleTo(xAxis.getUnits())) {
             for (int i = 0; i < xticks.getLength(); i++) {
                 int x = (int) xAxis.transform(xticks.get(i));
                 g.drawLine(x, ymin, x, ymax);
@@ -2649,7 +2649,7 @@ JOptionPane.showConfirmDialog(None,c)
         Datum scalex = dasPlot.getXAxis().getDatumRange().width().divide(dasPlot.getXAxis().getDLength());
         Datum scaley = dasPlot.getYAxis().getDatumRange().width().divide(dasPlot.getYAxis().getDLength());
 
-        if ( ! scalex.getUnits().isConvertableTo(scaley.getUnits())
+        if ( ! scalex.getUnits().isConvertibleTo(scaley.getUnits())
                 || dasPlot.getXAxis().isLog()
                 || dasPlot.getYAxis().isLog() ) {
             return;

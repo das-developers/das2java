@@ -217,15 +217,15 @@ public class ImageVectorDataSetRenderer extends Renderer {
             yunits= SemanticOps.getUnits( vds );
         }
 
-        if ( !xAxis.getUnits().isConvertableTo( SemanticOps.getUnits((QDataSet) xds) ) ) {
+        if ( !xAxis.getUnits().isConvertibleTo( SemanticOps.getUnits((QDataSet) xds) ) ) {
             parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
         }
 
-        if ( !yAxis.getUnits().isConvertableTo( yunits ) ) {
+        if ( !yAxis.getUnits().isConvertibleTo( yunits ) ) {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
         }
 
-        //if ( !yunits.isConvertableTo(yAxis.getUnits()) ) {
+        //if ( !yunits.isConvertibleTo(yAxis.getUnits()) ) {
         //    yunits= yAxis.getUnits();
         //}
 
@@ -315,10 +315,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
             QDataSet wds = DataSetUtil.weightsDataSet(vds);
             Units dsunits= SemanticOps.getUnits(vds);
             Units xunits= SemanticOps.getUnits(xds);
-            if ( !dsunits.isConvertableTo(yAxis.getUnits()) ) {
+            if ( !dsunits.isConvertibleTo(yAxis.getUnits()) ) {
                 dsunits= yAxis.getUnits();
             }
-            if ( !xunits.isConvertableTo(xAxis.getUnits() ) ) {
+            if ( !xunits.isConvertibleTo(xAxis.getUnits() ) ) {
                 xunits= xAxis.getUnits();
             }
             for (int i = firstIndex; i < lastIndex; i++) {
@@ -400,10 +400,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
             Units dsunits= SemanticOps.getUnits(ds);
             Units xunits= SemanticOps.getUnits(xds);
             
-            if ( !dsunits.isConvertableTo(yAxis.getUnits()) ) {
+            if ( !dsunits.isConvertibleTo(yAxis.getUnits()) ) {
                 dsunits= yAxis.getUnits();
             }
-            if ( !xunits.isConvertableTo(xAxis.getUnits() ) ) {
+            if ( !xunits.isConvertibleTo(xAxis.getUnits() ) ) {
                 xunits= xAxis.getUnits();
             }
 
@@ -487,10 +487,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
             Units xunits = SemanticOps.getUnits(xds);
             Units yunits = SemanticOps.getUnits(vds);
 
-            if ( !yunits.isConvertableTo(ddy.getUnits()) ) {
+            if ( !yunits.isConvertibleTo(ddy.getUnits()) ) {
                 yunits= ddy.getUnits();
             }
-            if ( !xunits.isConvertableTo(ddx.getUnits() ) ) {
+            if ( !xunits.isConvertibleTo(ddx.getUnits() ) ) {
                 xunits= ddx.getUnits();
             }
             boolean xmono = SemanticOps.isMonotonic(xds);
@@ -677,11 +677,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
         DasPlot parent= getParent();
         if ( parent==null ) return;
 
-        if (!xAxis.getUnits().isConvertableTo( SemanticOps.getUnits(xds) )) {
+        if (!xAxis.getUnits().isConvertibleTo( SemanticOps.getUnits(xds) )) {
             parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null);
         }
 
-        if (!yAxis.getUnits().isConvertableTo( SemanticOps.getUnits(ds1) )) {
+        if (!yAxis.getUnits().isConvertibleTo( SemanticOps.getUnits(ds1) )) {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
         }
         

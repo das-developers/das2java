@@ -102,7 +102,7 @@ public class EventsRenderer extends Renderer {
         } else {
             //TODO: probably the day/days containing would be better
             xrange= Ops.extent(xmins);
-            if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+            if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
                 xmaxs= Ops.add( xmins, xmaxs );
                 xrange= Ops.extent(xmaxs,xrange);
             } else {
@@ -245,8 +245,8 @@ public class EventsRenderer extends Renderer {
                     for ( int i=0; i<xmaxs.length(); i++ ) {
                         double sxmin= xmins.value(i);
                         double sxmax= xmaxs.value(i);
-                        if ( !sxmaxunits.isConvertableTo(sxunits) ) {
-                            if ( sxmaxunits.isConvertableTo(sxunits.getOffsetUnits() ) ) {
+                        if ( !sxmaxunits.isConvertibleTo(sxunits) ) {
+                            if ( sxmaxunits.isConvertibleTo(sxunits.getOffsetUnits() ) ) {
                                 sxmax= sxmin + sxmaxunits.convertDoubleTo( sxunits.getOffsetUnits(), sxmax );
                             } else {
                                 sxmax= sxmin;
@@ -259,7 +259,7 @@ public class EventsRenderer extends Renderer {
                             setLabel( "Error, sxmax<sxmin");
                         } else {                            
                             DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
-                            if ( !dr.getUnits().isConvertableTo(px.getUnits()) )  {
+                            if ( !dr.getUnits().isConvertibleTo(px.getUnits()) )  {
                                 logger.fine("inconvertable units");
                                 return new Rectangle[0];
                             }
@@ -277,8 +277,8 @@ public class EventsRenderer extends Renderer {
                         int i = ii1;
                         double sxmin= xmins.value(i);
                         double sxmax= xmaxs.value(i);
-                        if ( !sxmaxunits.isConvertableTo(sxunits) ) {
-                            if ( sxmaxunits.isConvertableTo(sxunits.getOffsetUnits() ) ) {
+                        if ( !sxmaxunits.isConvertibleTo(sxunits) ) {
+                            if ( sxmaxunits.isConvertibleTo(sxunits.getOffsetUnits() ) ) {
                                 sxmax= sxmin + sxmaxunits.convertDoubleTo( sxunits.getOffsetUnits(), sxmax );
                             } else {
                                 sxmax= sxmin;
@@ -418,7 +418,7 @@ public class EventsRenderer extends Renderer {
                     colors= Ops.replicate( 0x808080, xmins.length() );
                     Units u0= SemanticOps.getUnits(xmins );
                     Units u1= SemanticOps.getUnits(xmaxs );
-                    if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+                    if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
                         xmaxs= Ops.add( xmins, xmaxs );
                     }
                 } else {
@@ -451,7 +451,7 @@ public class EventsRenderer extends Renderer {
                     xmaxs= DataSetOps.slice1( dep0, 1 );
                     Units u0= SemanticOps.getUnits(xmins );
                     Units u1= SemanticOps.getUnits(xmaxs );
-                    if ( !u1.isConvertableTo(u0) && u1.isConvertableTo(u0.getOffsetUnits()) ) {
+                    if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
                         xmaxs= Ops.add( xmins, xmaxs );
                     }
                     msgs= vds;
@@ -507,7 +507,7 @@ public class EventsRenderer extends Renderer {
         Units u0= SemanticOps.getUnits( xmins );
         Units u1= SemanticOps.getUnits( xmaxs );
 
-        if ( u1.isConvertableTo( u0.getOffsetUnits() ) && !u1.isConvertableTo(u0) ) { // maxes are dt instead of stopt.
+        if ( u1.isConvertibleTo( u0.getOffsetUnits() ) && !u1.isConvertibleTo(u0) ) { // maxes are dt instead of stopt.
             xmaxs= Ops.add( xmins, xmaxs );
         }
 

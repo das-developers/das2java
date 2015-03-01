@@ -1205,14 +1205,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         throw new IllegalArgumentException("QDataSet rank must be zero: "+key+"="+o );
                     } else {
                         Datum d= DataSetUtil.asDatum((QDataSet)o);
-                        if ( !d.getUnits().isConvertableTo( unitsArray[ikey]) ) {
+                        if ( !d.getUnits().isConvertibleTo( unitsArray[ikey]) ) {
                             throw new IllegalArgumentException("Units are not convertible: "+key+"="+d + ", expected "+unitsArray[ikey]);
                         }
                         newPoint.planes.put( key, d );
                     }
                 } else if ( o instanceof Datum ) {
                     Datum d= (Datum)o;
-                    if ( !d.getUnits().isConvertableTo( unitsArray[ikey]) ) {
+                    if ( !d.getUnits().isConvertibleTo( unitsArray[ikey]) ) {
                         throw new IllegalArgumentException("Units are not convertible: "+key+"="+d+ ", expected "+unitsArray[ikey]);
                     }
                     // do nothing
@@ -1254,7 +1254,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     }
                     
                     Datum epsilon= Units.microseconds.createDatum(10000);
-                    if ( newPoint.data[0].getUnits().getOffsetUnits().isConvertableTo(Units.milliseconds) ) {
+                    if ( newPoint.data[0].getUnits().getOffsetUnits().isConvertibleTo(Units.milliseconds) ) {
                         if ( dp0!=null && dp0.data[0].subtract(newPoint.data[0]).abs().lt(epsilon) ) {
                             dataPoints.set( ~index, newPoint );
                         } else if ( dp1!=null && dp1.data[0].subtract(newPoint.data[0]).abs().lt(epsilon) ) {
@@ -1359,11 +1359,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
             }
 
-            if (!x.getUnits().isConvertableTo(unitsArray[0])) {
+            if (!x.getUnits().isConvertibleTo(unitsArray[0])) {
                 throw new RuntimeException("inconvertible units: got \"" + x.getUnits() + "\", expected \"" + unitsArray[0] + "\"");
             }
 
-            if (!y.getUnits().isConvertableTo(unitsArray[1])) {
+            if (!y.getUnits().isConvertibleTo(unitsArray[1])) {
                 throw new RuntimeException("inconvertible units: got \"" + y.getUnits() + "\", expected \"" + unitsArray[1] + "\"");
             }
 
