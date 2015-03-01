@@ -5,13 +5,11 @@
  */
 package org.qdataset.schemes;
 
-import java.util.Optional;
-
 /**
- *
+ * Note this was abandoned because we will set up a separate project.
  * @author jbf
  */
 public interface EnhancedXYProviderWithUncertainty extends EnhancedXYData {
-    Optional<UncertaintyProvider> getUncertProviderX();
-    Optional<UncertaintyProvider> getUncertProviderY();
+    //Optional<UncertaintyProvider> getUncertProviderX();
+    //Optional<UncertaintyProvider> getUncertProviderY();
 }
