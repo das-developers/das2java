@@ -96,11 +96,7 @@ public class Schemes {
         if ( dep0==null ) return false;
         QDataSet dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
         if ( dep1==null ) return false;
-        if ( SemanticOps.getUnits(dep0).getOffsetUnits().isConvertableTo(SemanticOps.getUnits(dep1)) ) {
-            return true;
-        } else {
-            return false;
-        }
+        return SemanticOps.getUnits(dep0).getOffsetUnits().isConvertibleTo(SemanticOps.getUnits(dep1));
     }
     
     /**
