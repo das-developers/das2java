@@ -92,10 +92,12 @@ public class DataSetOps {
     }
 
     /**
-     *slice on the first dimension
+     * slice on the first dimension.  Note the function ds.slice(index) was
+     * added later and will typically be more efficient.
      * @param ds rank 1 or more dataset
      * @param index the index to slice at
      * @return rank 0 or more dataset.
+     * @see QDataSet#slice(int) 
      */
     public static MutablePropertyDataSet slice0(final QDataSet ds, final int index) {
         return new Slice0DataSet(ds, index,true);
