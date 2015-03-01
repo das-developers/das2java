@@ -794,7 +794,7 @@ public abstract class Units implements Serializable {
         }
         if ( !stdunits.equals(sunits) ) {
             Units stdUnit= lookupUnits(stdunits);  // we need to register "foo" when "[foo]" so that order doesn't matter.
-            if ( !stdUnit.isConvertableTo(result) ) {
+            if ( !stdUnit.isConvertibleTo(result) ) {
                 logger.log(Level.FINE, "registering identity converter {0} -> {1}", new Object[]{stdUnit, result});
                 stdUnit.registerConverter( result, UnitsConverter.IDENTITY );
                 stdUnit.getConverter(result);

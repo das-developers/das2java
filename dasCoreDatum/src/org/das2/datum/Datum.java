@@ -494,7 +494,7 @@ public class Datum implements Comparable, Serializable {
      * @return true if the datums are equal.
      */
     public boolean equals( Datum a ) throws IllegalArgumentException {
-        return ( a!=null && this.getUnits().isConvertableTo( a.getUnits() ) && this.compareTo(a)==0 );
+        return ( a!=null && this.getUnits().isConvertibleTo( a.getUnits() ) && this.compareTo(a)==0 );
     }
     
     /**
@@ -591,7 +591,7 @@ public class Datum implements Comparable, Serializable {
     @Override
     public String toString() {
         Datum d= this;
-        if ( this.getUnits().isConvertableTo(Units.seconds ) ) {
+        if ( this.getUnits().isConvertibleTo(Units.seconds ) ) {
             d= DatumUtil.asOrderOneUnits(d);
         }
         if (formatter==null) {

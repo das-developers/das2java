@@ -24,14 +24,14 @@ public class UnitsUtil {
      * "105%" is ratiometric.
      */
     public static boolean isRatiometric( Units unit ) {
-        return unit!=Units.dimensionless && unit.isConvertableTo(Units.logERatio);
+        return unit!=Units.dimensionless && unit.isConvertibleTo(Units.logERatio);
     }
     
     /**
      * returns true if the unit describes a location in time, as in us2000.
      */
     public static boolean isTimeLocation( Units unit ) {
-        return unit==Units.us2000 || unit.isConvertableTo(Units.us2000);
+        return unit==Units.us2000 || unit.isConvertibleTo(Units.us2000);
     }
     
     /**
@@ -120,7 +120,7 @@ public class UnitsUtil {
         } else if ( unit==Units.nanoseconds ) {
             return Units.gigaHertz;
         } else {
-            if ( unit.isConvertableTo(Units.seconds ) ) {
+            if ( unit.isConvertibleTo(Units.seconds ) ) {
                 UnitsConverter uc= unit.getConverter(Units.seconds);
                 if ( uc==UnitsConverter.IDENTITY ) {
                     return Units.hertz;
@@ -139,7 +139,7 @@ public class UnitsUtil {
                 } else {
                     throw new IllegalArgumentException( "units not supported: "+unit );
                 }
-            } else if ( unit.isConvertableTo(Units.hertz ) ) {
+            } else if ( unit.isConvertibleTo(Units.hertz ) ) {
                 UnitsConverter uc= unit.getConverter(Units.hertz);
                 if ( uc==UnitsConverter.IDENTITY ) {
                     return Units.seconds;
@@ -210,7 +210,7 @@ public class UnitsUtil {
                 return bInvUnits.createDatum(a/b);
             }
         } else {
-            if ( !bUnits.isConvertableTo(aUnits) ) {
+            if ( !bUnits.isConvertibleTo(aUnits) ) {
                 throw new IllegalArgumentException("unable to calculate, b units not convertable to a");
             } else {
                 UnitsConverter uc= bUnits.getConverter(aUnits);

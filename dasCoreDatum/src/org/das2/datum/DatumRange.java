@@ -167,7 +167,7 @@ public class DatumRange implements Comparable, Serializable {
         if (!(o instanceof DatumRange)) {
             return false;
         }
-        if ( !this.getUnits().isConvertableTo( ((DatumRange)o).getUnits() ) ) {
+        if ( !this.getUnits().isConvertibleTo( ((DatumRange)o).getUnits() ) ) {
             return false;
         } else {
             return ( this==o ) || 0==compareTo(o);

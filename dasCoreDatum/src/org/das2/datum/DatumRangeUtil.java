@@ -1408,7 +1408,7 @@ public class DatumRangeUtil {
             }
             Datum d1= d2.getUnits().parse( ss[0] );
             
-            if ( d1.getUnits().isConvertableTo(units) ) {
+            if ( d1.getUnits().isConvertibleTo(units) ) {
                 return new DatumRange( d1, d2 );
             } else {
                 throw new ParseException( "Can't convert parsed unit ("+d1.getUnits()+") to "+units, 0 );
