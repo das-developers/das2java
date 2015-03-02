@@ -3910,17 +3910,19 @@ public class Ops {
     }
     
     /**
-     * return 1 where the data in ds are within the bounds.  In jython,
+     * return non-zero where the data in ds are within the bounds.  In Jython,
+     *<blockquote><pre>{@code
      *   print within( [0,1,2,3,4], '2 to 4' ) --> [ 0,0,1,1,0 ]
      *   print within( ttag, 'orbit:rbspa-pp:172' )
+     *}</pre></blockquote>
      * 
-     * This is to avoid this common 
-     * @param ds
+     * Note, before March 2, 2015, this would incorrectly return the where of the result.
+     * @param ds rank N dataset where N &gt; 0
      * @param bounds a rank 1 bounding box.  
-     * @return 
+     * @return rank N dataset containing non-zero where the condition is true.
      */
     public static QDataSet within( QDataSet ds, QDataSet bounds ) {
-        return where( and( ge( ds, bounds.slice(0) ), lt( ds, bounds.slice(1) ) ) );
+        return and( ge( ds, bounds.slice(0) ), lt( ds, bounds.slice(1) ) );
     }
     
     /**
