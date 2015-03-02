@@ -8,7 +8,6 @@ package org.das2.components;
 
 import org.das2.event.DataRangeSelectionEvent;
 import org.das2.datum.DatumRange;
-import org.das2.datum.Datum;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.util.DasExceptionHandler;
 import org.das2.util.DasPNGEncoder;
@@ -20,7 +19,7 @@ import java.awt.image.*;
 import java.io.*;
 import java.text.*;
 import java.util.*;
-import java.util.List;
+import java.util.logging.Level;
 
 
 /**
@@ -43,10 +42,6 @@ public class BatchMaster {
     public static class Timer {
         long t0= System.currentTimeMillis();;
         DecimalFormat df= new DecimalFormat( "00000.000" );
-        /**
-         *
-         * @param msg
-         */
         public void reportTime( String msg ) {
             Thread thread= Thread.currentThread();
             long elapsed= System.currentTimeMillis() - t0;
@@ -75,6 +70,7 @@ public class BatchMaster {
                         .replaceAll( "RANGE", rangeString );
                 return s;
             }
+            @Override
             public void completeTask( DatumRange range ) {
                 Image image= BatchMaster.this.canvas.getImage( canvas.getWidth(), canvas.getHeight() );
                 String s= insertRange( pngFilenameTemplate, range );
@@ -108,23 +104,25 @@ public class BatchMaster {
     }
     
     /**
-     *
-     * @param canvas
+     * create the pngwalk using the class.
+     * @param canvas the source for images
      * @param specFile flat text file containing one parsable time range per line. (For example, "1990-01-01T00:00 1990-01-02T00:00" or "1990-01-01")
      * @param pngFilenameTemplate (For example, "BEGIN_END.png")
-     * @throws java.text.ParseException
-     * @throws java.io.IOException
+     * @throws java.text.ParseException with the specFile
+     * @throws java.io.IOException with the specFile
      * @return BatchMaster object.
      */
     public static BatchMaster createPngs( DasCanvas canvas, File specFile, String pngFilenameTemplate ) throws ParseException, IOException {
-        List taskList= new ArrayList();
         BatchMaster result= new BatchMaster(canvas );
         result.setTaskOutputDescriptor( result.createPngsTaskOutputDescriptor( pngFilenameTemplate ) );
         result.readStartEndSpecFile( specFile );
         return result;
     }
     
-    /** Creates a new instance of BatchMaster */
+    /** 
+     * Creates a new instance of BatchMaster
+     * @param canvas the source for images
+     */
     public BatchMaster( DasCanvas canvas ) {
         this.canvas= canvas;
         taskList= new ArrayList();
@@ -139,14 +137,7 @@ public class BatchMaster {
     }
     
     /**
-     * @deprecated use addTask( DatumRange )
-     */
-    void addTask( Datum begin, Datum end ) {
-        taskList.add( new DataRangeSelectionEvent( this, begin, end ) );
-    }
-    
-    /**
-     *
+     * add another range
      * @param range
      */
     void addTask( DatumRange range ) {
@@ -154,7 +145,7 @@ public class BatchMaster {
     }
     
     /**
-     *
+     * The TaskOutputDescriptor is called as each task is completed.
      * @param tod
      */
     void setTaskOutputDescriptor( TaskOutputDescriptor tod ) {
@@ -162,7 +153,7 @@ public class BatchMaster {
     }
     
     /**
-     *
+     * If true, then System.exit is called after running batch.
      * @param val If true, then System.exit is called after running batch.
      */
     void setExitAfterCompletion( boolean val ) {
@@ -171,11 +162,12 @@ public class BatchMaster {
     
     void submitNextTask() {
         Thread thread= new Thread( new Runnable() {
+            @Override
             public void run() {
                 if ( itask>=taskList.size() ) {
                     if ( exit ) System.exit(0);
                 } else {
-                    DasLogger.getLogger(DasLogger.SYSTEM_LOG).info( "itask="+taskList.get(itask) );
+                    DasLogger.getLogger(DasLogger.SYSTEM_LOG).log(Level.INFO, "itask={0}", taskList.get(itask));
                     DataRangeSelectionEvent ev=  (DataRangeSelectionEvent) taskList.get(itask++);
                     fireDataRangeSelectionListenerDataRangeSelected( ev );
                     try {

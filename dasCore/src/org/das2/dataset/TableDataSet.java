@@ -57,7 +57,7 @@ public interface TableDataSet extends DataSet {
      * <code>double</code> with the given units.
      * @param j index of the x tag for the requested value.
      * @param i index of the y tag for the requested value.
-     * @param units the units the returned value should be coverted to.
+     * @param units the units the returned value should be converted to.
      * @return the value at index location (i, j) as a <code>double</code>.
      */    
     double getDouble(int i, int j, Units units);
@@ -70,18 +70,20 @@ public interface TableDataSet extends DataSet {
      * <code>int</code> with the given units.
      * @param i index of the x tag for the requested value.
      * @param j index of the y tag for the requested value.
-     * @param units the units the returned value should be coverted to.
+     * @param units the units the returned value should be converted to.
      * @return the value at index location (i, j) as a <code>int</code>.
      */    
     int getInt(int i, int j, Units units);
     
     /** Returns the yTags for this data set as a <code>DatumVector</code>
+     * @param table the table number
      * @return the yTags for this data set as a <code>DatumVector</code>
      */
     DatumVector getYTags(int table);
 
     /** Returns the value of the y tag at the given index j as a
-     *      <code>Datum</datum>.
+     *      <code>Datum</code>.
+     * @param table the table number
      * @param j the index of the requested y tag
      * @return the value of the y tag at the given index j as a
      *      <code>Datum</code>.
@@ -91,15 +93,16 @@ public interface TableDataSet extends DataSet {
     /** Returns the value of the y tag at the given index j as a
      *      <code>double</code> in the given units.  YTags must be
      *      monotonically increasing with j.
-     * @return the value of the y tag at the given index j as a
-     *      <code>double</code>.
+     * @param table the table number
      * @param units the units of the returned value
      * @param j the index of the requested y tag
+     * @return the value of the y tag at the given index j as a
+     *      <code>double</code>.
      */
     double getYTagDouble(int table, int j, Units units);
     
     /** Returns the value of the y tag at the given index j as an
-     *      <code>int</datum> in the given units.  YTags must be
+     *      <code>int</code> in the given units.  YTags must be
      *      monotonically increasing with j.
      * @return the value of the y tag at the given index j as an
      *      <code>int</code>.

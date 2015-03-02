@@ -20,6 +20,7 @@ import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.examples.Schemes;
 import org.virbo.dsops.Ops;
 
 /**
@@ -192,9 +193,9 @@ public class RGBImageRenderer extends Renderer {
     }
 
     /**
-     * accepts either rank2 data with grey scale 0-255, or rank3(w,h,3-4)
-     * @param ds
-     * @return
+     * accepts either rank2 data with grey scale 0-255, or rank3 (w,h,3 or 4)
+     * @param ds the dataset
+     * @return true if the dataset is useful.
      */
     public static boolean acceptsData( QDataSet ds ) {
         if ( ds.rank()==2 ) {
@@ -238,9 +239,9 @@ public class RGBImageRenderer extends Renderer {
     
     /**
      * autorange on the data, returning a rank 2 bounds for the dataset.
-     *
-     * @param fillDs
-     * @return
+     * @param ds the dataset
+     * @return a bounding box 
+     * @see org.virbo.dataset.examples.Schemes#boundingBox() 
      */
     public static QDataSet doAutorange( QDataSet ds ) {
 

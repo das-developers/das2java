@@ -91,7 +91,7 @@ public class TableUtil {
      * is returned.  monotonically decreasing is handled, in which case a positive tag cadence
      * is returned.
      * @param table
-     * @param the table index.
+     * @param itable the table index.
      * @return the nominal cadence of the tags.
      */
     public static Datum guessYTagWidth( TableDataSet table, int itable ) {

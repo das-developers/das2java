@@ -57,7 +57,7 @@ public class DasProgressLabel extends NullProgressMonitor {
         
         /**
          * get the assigned label component, or create one if one has not been assigned.
-         * @return 
+         * @return the assigned label component
          */
         public synchronized JLabel getLabelComponent() {
             if ( label==null ) {
@@ -68,7 +68,7 @@ public class DasProgressLabel extends NullProgressMonitor {
         
         /**
          * set the label to use for the progress monitor.
-         * @param label 
+         * @param label the assigned label component
          */
         public synchronized void setLabelComponent( JLabel label ) {
             this.label= label;

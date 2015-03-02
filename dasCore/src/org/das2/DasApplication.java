@@ -93,6 +93,8 @@ public class DasApplication {
     
     /**
      * @deprecated use DasLogger.getLogger( LoggerId )
+     * @param id the id.
+     * @return the logger.
      */
     public Logger getLogger( LoggerId id ) {
         return DasLogger.getLogger(id);
@@ -182,8 +184,9 @@ public class DasApplication {
     private static boolean restrictPermission= false;
 
     /**
-     * See FileSystemSettings, which has a copy of this code
-     * @param v
+     * true means don't attempt to gain access to applet-restricted functions.
+     * @param v true means don't attempt to gain access to applet-restricted functions.
+     * @see FileSystemSettings#setRestrictPermission(boolean) 
      */
     public static void setRestrictPermission( boolean v ) {
         restrictPermission= v;

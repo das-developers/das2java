@@ -170,6 +170,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     /**
      * clear the current dataset to avoid units errors.  If the
      * new dataset can be used, use it.
+     * @param tds the new dataset
      */
     public void clear( QDataSet tds ) {
         if ( renderer!=null ) {
@@ -209,6 +210,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         buttonPanel.add(Box.createHorizontalGlue());
 
         JButton printButton= new JButton( new AbstractAction("Print...") {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 canvas.makeCurrent();
                 DasCanvas.PRINT_ACTION.actionPerformed(e);
@@ -217,6 +219,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         buttonPanel.add( printButton );
 
         JButton settingsButton= new JButton( new AbstractAction("Settings...") {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 SpectrogramRenderer rend=null;
                 for ( Renderer r : parentPlot.getRenderers() ) {
@@ -243,6 +246,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 popupWindow.setVisible(false);
             }
@@ -287,7 +291,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     
     /**
      * show the slice at the data point selected.
-     * @param e 
+     * @param e the selection event containing the data point.
      */
     @Override
     public void dataPointSelected(DataPointSelectionEvent e) {    
@@ -332,8 +336,8 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         if (tds1 == null) {
             QDataSet jds= null;
             assert tdss.size()>0;
-            for ( int i= 0; i<tdss.size(); i++ ) {
-                tds1= tdss.get(i);
+            for (QDataSet tds2 : tdss) {
+                tds1 = tds2;
                 QDataSet xds = SemanticOps.xtagsDataSet(tds1);
                 ix = org.virbo.dataset.DataSetUtil.closestIndex(xds, xValue);
                 QDataSet s1 = tds1.slice(ix);
@@ -380,10 +384,19 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         return true;
     }
     
+    /**
+     * the color for the mark (vertical bar) indicating slice position
+     * @return the mark color
+     */
     public Color getMarkColor() {
         return markColor;
     }
 
+    /**
+     * set the color for the mark (vertical bar) indicating slice position
+     * Color(230,230,230) is the default.
+     * @param markColor the color
+     */
     public void setMarkColor(Color markColor) {
         this.markColor = markColor;
     }

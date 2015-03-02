@@ -501,8 +501,12 @@ public class DasServer {
         }
     }
 
-    /** returns a List<String> of resource Id's available with this key */
-	 @Deprecated
+    /** 
+     * returns a {@code List<String>} of resource Id's available with this key
+     * @param key the key
+     * @return a list of the groups.
+     * @deprecated this is not used.
+     */
     public List groups( Key key ) {
         try {
             String formData= "server=groups";
@@ -530,7 +534,14 @@ public class DasServer {
         } 
     }
 
-	 @Deprecated
+    /**
+     * old code for changing password
+     * @param user
+     * @param oldPass
+     * @param newPass
+     * @throws DasServerException
+     * @deprecated
+     */
     public void changePassword( String user, String oldPass, String newPass ) throws DasServerException {
         try {
             String formData= "server=changePassword";
@@ -567,7 +578,12 @@ public class DasServer {
 
     }
 
-	 @Deprecated
+    /**
+     * 
+     * @param in
+     * @return
+     * @deprecated
+     */
     public String readServerResponse( BufferedInputStream in ) {
         // Read <dasResponse>...</dasResponse>, leaving the InputStream immediately after //
 
@@ -628,8 +644,14 @@ public class DasServer {
         return das2Response;
     }
 
-	 // Utility function to handle reading data off the HTTP stream.  Used by functions
-	 // such as getName and getLogo that don't expect to receive a Das2 Stream
+    /**
+     * Utility function to handle reading data off the HTTP stream.  Used by functions
+     * such as getName and getLogo that don't expect to receive a Das2 Stream
+     * 
+     * @param uin
+     * @return
+     * @throws IOException 
+     */
     private byte[] read(InputStream uin) throws IOException {
         LinkedList<byte[]> list = new LinkedList();
         byte[] data;

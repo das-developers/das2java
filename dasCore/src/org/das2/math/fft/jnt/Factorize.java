@@ -7,7 +7,7 @@ package org.das2.math.fft.jnt;
   * @author Derived from GSL (Gnu Scientific Library)
   * @author GSL's FFT Code by Brian Gough bjg@vvv.lanl.gov
   * @author Since GSL is released under 
-  * @author <H HREF="http://www.gnu.org/copyleft/gpl.html">GPL</A>,
+  * @author <A HREF="http://www.gnu.org/copyleft/gpl.html">GPL</A>,
   * @author this package must also be.
 */
 public class Factorize {

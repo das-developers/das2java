@@ -62,17 +62,19 @@ import org.das2.util.monitor.SubTaskMonitor;
  * ProgressMonitor component used throughout das2.
  *
  * Here's an Autoplot script demoing its operation:
- * monitor.setTaskSize( 100 )
- * monitor.started()
+ *<blockquote><pre>{@code
+ *monitor.setTaskSize( 100 )
+ *monitor.started()
  *
- * for i in range(100):
- *   if ( i>50 and monitor.isCancelled() ):
- *     raise Exception('cancel pressed')
- *   print i
- *   java.lang.Thread.sleep(100)
- *   monitor.setTaskProgress(i)
+ *for i in range(100):
+ *  if ( i>50 and monitor.isCancelled() ):
+ *    raise Exception('cancel pressed')
+ *  print i
+ *  java.lang.Thread.sleep(100)
+ *  monitor.setTaskProgress(i)
  *
- * monitor.finished()
+ *monitor.finished()
+ *}</pre></blockquote>
  *
  * @author  eew
  */
@@ -127,18 +129,13 @@ public class DasProgressPanel implements ProgressMonitor {
      */
     private int unitsf=1;
 
-    /**
-     * @param start start index
-     * @param end end index, exclusive
-     * @param label label or null.
-     * @return 
-     */
     @Override
     public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
         if ( label!=null ) setProgressMessage(label);
         return SubTaskMonitor.create( this, start, end, cancelCheckFailures < 2 );
     }
     
+    @Override
     public ProgressMonitor getSubtaskMonitor( String label ) {
         if ( label!=null ) setProgressMessage(label);
         return SubTaskMonitor.create( this, cancelCheckFailures < 2 );
@@ -193,6 +190,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
     /**
      * returns the JPanel component.
+     * @return the JPanel component.
      */
     public Component getComponent() {
         if (!componentsInitialized)
@@ -215,6 +213,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
     /** Returning true here keeps the progress bar from forcing the whole canvas
      * to repaint when the label of the progress bar changes.
+     * @return this always returns true
      */
     public boolean isValidateRoot() {
         return true;
@@ -640,8 +639,8 @@ public class DasProgressPanel implements ProgressMonitor {
     }
 
     /**
-     * the the progressPanel visible or hide it.  This
-     * @param visible
+     * make the progressPanel visible or hide it.  This
+     * @param visible true if the progressPanel should be visible.
      */
     public synchronized void setVisible(final boolean visible) {
         if (!componentsInitialized && !visible)

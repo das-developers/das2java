@@ -59,6 +59,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         pcs.removePropertyChangeListener(propertyName, listener);
     }
 
+    @Override
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
@@ -67,6 +68,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         pcs.addPropertyChangeListener(propertyName, listener);
     }
 
+    @Override
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
@@ -127,6 +129,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
      * @param value the Datum object to be editted.
      * @throws IllegalArgumentException if value is not a Datum
      */
+    @Override
     public void setValue(Object value) {
         if (value instanceof Datum) {
             setDatum((Datum) value);
@@ -155,16 +158,17 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         }
     }
 
+    @Override
     public void setAsText(String text) throws IllegalArgumentException {
         try {
             setDatum(units.parse(text));
         } catch (ParseException pe) {
-            IllegalArgumentException iae = new IllegalArgumentException(pe.getMessage());
-            iae.initCause(pe);
+            IllegalArgumentException iae = new IllegalArgumentException(pe);
             throw iae;
         }
     }
 
+    @Override
     public Object getValue() {
         return getDatum();
     }
@@ -192,6 +196,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         }
     }
 
+    @Override
     public String getAsText() {
         Datum v = getDatum();
         if (v == null) {
@@ -246,6 +251,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         /** Listens for focus events on the DatumEditor and sets the editor
          * caret visible when focus is gained.
          */
+        @Override
         public void focusGained(FocusEvent e) {
             editor.getCaret().setVisible(true);
             editor.getCaret().setSelectionVisible(true);
@@ -254,6 +260,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         /** Listens for focus events on the DatumEditor and sets the editor
          * caret invisible when focus is lost.
          */
+        @Override
         public void focusLost(FocusEvent e) {
             editor.getCaret().setVisible(false);
             editor.getCaret().setSelectionVisible(false);
@@ -262,6 +269,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         /** All key events are forwarded to the editor.  Except for keyPresses
          * for VK_ENTER
          */
+        @Override
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                 fireActionPerformed();
@@ -270,10 +278,12 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
             }
         }
 
+        @Override
         public void keyReleased(KeyEvent e) {
             forwardKeyEvent(e);
         }
 
+        @Override
         public void keyTyped(KeyEvent e) {
             forwardKeyEvent(e);
         }
@@ -284,20 +294,25 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         }
 
         /** Request focus when sub-components are clicked */
+        @Override
         public void mousePressed(MouseEvent e) {
             panel.requestFocusInWindow();
         }
 
         /** Unused */
+        @Override
         public void mouseEntered(MouseEvent e) {
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         }
     }
@@ -313,6 +328,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
     /** @see java.beans.PropertyEditor#supportsCustomEditor()
      * @return true
      */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -320,6 +336,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
     /** @see java.beans.PropertyEditor#getCustomEditor()
      * @return <code>this</code>
      */
+    @Override
     public Component getCustomEditor() {
         maybeInitGui();
         return panel;
@@ -330,6 +347,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
      * code.
      * @return The string "???"
      */
+    @Override
     public String getJavaInitializationString() {
         return "???";
     }
@@ -339,32 +357,27 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
      * values.
      * @return null
      */
+    @Override
     public String[] getTags() {
         return null;
     }
 
-    /** @see java.beans.PropertyEditor#isPaintable()
-     * @return false
-     */
+    @Override
     public boolean isPaintable() {
         return false;
     }
 
-    /** Does nothing.
-     * @param g
-     * @param r
-     */
+    @Override
     public void paintValue(Graphics g, Rectangle r) {
     }
 
-    /* CellEditor stuff */
+    @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         setValue(value);
         return panel;
     }
 
-    /**
-     */
+    @Override
     public void addCellEditorListener(CellEditorListener l) {
         if (listeners == null) {
             listeners = new EventListenerList();
@@ -372,8 +385,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         listeners.add(CellEditorListener.class, l);
     }
 
-    /**
-     */
+    @Override
     public void removeCellEditorListener(CellEditorListener l) {
         if (listeners != null) {
             listeners.remove(CellEditorListener.class, l);
@@ -383,6 +395,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
     /** @see javax.swing.CellEditor#isCellEditable(java.util.EventObject)
      * @return <code>true</code>
      */
+    @Override
     public boolean isCellEditable(EventObject anEvent) {
         return true;
     }
@@ -390,6 +403,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
     /** @see javax.swing.CellEditor#shouldSelectCell(java.util.EventObject)
      * @return <code>true</code>
      */
+    @Override
     public boolean shouldSelectCell(EventObject anEvent) {
         return true;
     }
@@ -397,10 +411,12 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
     /** Returns the value stored in this editor.
      * @return the current value being edited
      */
+    @Override
     public Object getCellEditorValue() {
         return getDatum();
     }
 
+    @Override
     public boolean stopCellEditing() {
         if (getDatum() == null) {
             return false;
@@ -409,6 +425,7 @@ public class DatumEditor implements PropertyEditor, TableCellEditor {
         return true;
     }
 
+    @Override
     public void cancelCellEditing() {
         fireEditingCanceled();
     }

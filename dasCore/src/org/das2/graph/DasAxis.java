@@ -1168,7 +1168,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
     
     /**
-     * @see setDrawTca, which turns on additional ticks.
+     * @see setDrawTca which turns on additional ticks.
      * @param dataset The URL identifier string of a TCA data set, or "" for no TCAs.
      */
     public void setDataPath(String dataset) {
@@ -1245,7 +1245,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * This function does the same thing as setDataPath, but with a different interface.
      * The QFunction must have one input parameter which will be positions on this axis 
      * (e.g. times from a time axis).
-     * @see setDrawTca, which turns on additional ticks.
+     * @see setDrawTca which turns on additional ticks.
      * @param f will be called upon to generate auxiliary data sets, or null to disable.
      */
     public synchronized void setTcaFunction( QFunction f ) {
@@ -3641,7 +3641,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param minor  find closest minor tick, major if false.
      * @return the closest tick.  If there is no tick in the given direction, then
      *   the behavior is undefined.
-     * @deprecated. Use getTickVDescriptor.findTick
+     * @deprecated Use getTickVDescriptor.findTick
      */
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
         return getTickV().findTick(xDatum, direction, minor);

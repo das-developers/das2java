@@ -144,18 +144,29 @@ public class PropertyEditor extends JComponent {
         }
     }
 
+    /**
+     * create a PropertyEditor for the bean.
+     * @param bean a java bean
+     */
     public PropertyEditor(Object bean) {
         this(new PropertyTreeNode(bean), bean);
-        if (bean instanceof PropertyTreeNodeInterface) {
+        if (bean instanceof PropertyTreeNodeInterface) { // this was some bug
             throw new IllegalArgumentException("whoops!");
         }
     }
 
+    /**
+     * create a PropertyEditor when we are editing several beans at once.
+     * @param leader the leader bean, which is used to get settings for all components.
+     * @param peers the peers, which must all be instances of the leader's class.
+     * @return a PropertyEditor for editing several beans at once.
+     */
     public static PropertyEditor createPeersEditor(Object leader, Object[] peers) {
         Class leaderClass= leader.getClass();
-        for ( int i=0; i<peers.length; i++ ) {
-            if ( !leaderClass.isInstance(peers[i]) )
-                throw new IllegalArgumentException( "child is not instance of leader class: "+peers[i].getClass().getName()+", should be "+leaderClass.getName() );
+        for (Object peer : peers) {
+            if (!leaderClass.isInstance(peer)) {
+                throw new IllegalArgumentException("child is not instance of leader class: " + peer.getClass().getName() + ", should be " + leaderClass.getName());
+            }
         }
         PropertyTreeNode[] peerNodes = new PropertyTreeNode[peers.length];
         for (int i = 0; i < peers.length; i++) {
@@ -169,7 +180,7 @@ public class PropertyEditor extends JComponent {
 
     private void addActions(final JTable table) {
         table.getActionMap().put("MY_EDIT", new AbstractAction() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 table.editCellAt(focusRow, 1);
             }
@@ -181,19 +192,16 @@ public class PropertyEditor extends JComponent {
 
     private ListSelectionListener getListSelectionListener() {
         return new ListSelectionListener() {
-
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 focusRow = table.getSelectedRow(); // we could do a better job here
-
                 logger.log(Level.FINE, "focusRow={0}", focusRow);
             }
         };
     }
 
     private KeyListener getKeyListener() {
-        KeyAdapter ka;
         return new KeyAdapter() {
-
             @Override
             public void keyReleased(KeyEvent event) {
                 logger.fine(String.valueOf(event));
@@ -208,105 +216,9 @@ public class PropertyEditor extends JComponent {
         };
     }
 
-/*    private Action createSaveAction(final Object bean) {
-        return new AbstractAction("Save") {
-
-            public void actionPerformed(ActionEvent ev) {
-                try {
-                    JFileChooser chooser = new JFileChooser();
-                    chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-
-                        public boolean accept(File f) {
-                            return f.toString().matches(".*\\.das2PropertySheet");
-                        }
-
-                        public String getDescription() {
-                            return "*.das2PropertySheet";
-                        }
-                    });
-                    chooser.setSelectedFile(new File("default.das2PropertySheet"));
-                    int result = chooser.showSaveDialog(PropertyEditor.this);
-                    if (result == JFileChooser.APPROVE_OPTION) {
-                        Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-                        Element element = SerializeUtil.getDOMElement(document, bean);
-                        document.appendChild(element);
-                        OutputStream out = new FileOutputStream(chooser.getSelectedFile());
-
-                        StringWriter writer = new StringWriter();
-						DOMImplementation impl = document.getImplementation();
-						DOMImplementationLS ls = (DOMImplementationLS)impl.getFeature("LS", "3.0");
-						LSSerializer serializer = ls.createLSSerializer();
-						LSOutput output = ls.createLSOutput();
-						output.setEncoding("UTF-8");
-						output.setByteStream(out);
-						serializer.write(document, output);
-
-                        //OutputFormat format = new OutputFormat(org.apache.xml.serialize.Method.XML, "UTF-8", true);
-                        //XMLSerializer serializer = new XMLSerializer( new OutputStreamWriter(out), format);
-                        //serializer.serialize(document);
-                        out.close();
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-    }
-
-    private static Document readDocument(File file) throws IOException, ParserConfigurationException, SAXException {
-        InputStream in = new FileInputStream(file);
-        InputSource source = new InputSource();
-        source.setCharacterStream(new InputStreamReader(in));
-        DocumentBuilder builder;
-        ErrorHandler eh = null;
-        DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-        builder = domFactory.newDocumentBuilder();
-        builder.setErrorHandler(eh);
-        Document document = builder.parse(source);
-        return document;
-    }
-
-    private Action createLoadAction(final Object bean) {
-        return new AbstractAction("Load") {
-
-            public void actionPerformed(ActionEvent ev) {
-                try {
-                    JFileChooser chooser = new JFileChooser();
-                    chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-
-                        public boolean accept(File f) {
-                            return f.toString().matches(".*\\.das2PropertySheet");
-                        }
-
-                        public String getDescription() {
-                            return "*.das2PropertySheet";
-                        }
-                    });
-                    int result = chooser.showOpenDialog(PropertyEditor.this);
-                    if (result == JFileChooser.APPROVE_OPTION) {
-                        try {
-                            Document document = readDocument(chooser.getSelectedFile());
-                            Element element = document.getDocumentElement();
-                            SerializeUtil.processElement(element, bean);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        } catch (ParserConfigurationException e) {
-                            throw new RuntimeException(e);
-                        } catch (SAXException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-    }
-*/
     private Action getEditSelectedAction() {
         return new AbstractAction("Edit Selected") {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 PropertyEditor p;
                 TreeTableModel model = (TreeTableModel) table.getModel();
@@ -361,9 +273,10 @@ public class PropertyEditor extends JComponent {
         closeButton = new JButton("OK");
 
         ActionListener al = new ActionListener() {
-
+            @Override
             public void actionPerformed(final ActionEvent ef) {
                 SwingUtilities.invokeLater( new Runnable() { // allow focus event to occur first.
+                    @Override
                     public void run() {
                         if (ef.getSource() == apply) {
                             globalApplyChanges();
@@ -384,7 +297,7 @@ public class PropertyEditor extends JComponent {
 
         JButton refresh = new JButton("Refresh");
         refresh.addActionListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 refresh();
             }
@@ -497,8 +410,9 @@ public class PropertyEditor extends JComponent {
 
     /**
      * display the dialog, and use the given image for the icon.
-     * @param c
-     * @param icon
+     * @param c the parent focus
+     * @param title the dialog title.
+     * @param icon the icon branding the application.
      */
     public void showDialog( Component c, String title, Image icon ) {
         showDialog(c);
@@ -518,10 +432,11 @@ public class PropertyEditor extends JComponent {
 
     /**
      * add a save button, and perform the given action.
-     * @param abstractAction
+     * @param abstractAction the action to perform.
      */
     public void addSaveAction(final AbstractAction abstractAction) {
         buttonPanel.add( new JButton( new AbstractAction( "Save") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 globalApplyChanges();
                 refresh();

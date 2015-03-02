@@ -28,10 +28,6 @@ import org.das2.datum.Units;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.util.DasExceptionHandler;
-/**
- *
- * @author  jbf
- */
 import org.das2.datum.TimeUtil;
 import org.das2.event.TimeRangeSelectionEvent;
 import org.das2.event.TimeRangeSelectionListener;
@@ -39,9 +35,7 @@ import org.das2.system.DasLogger;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-
 import javax.swing.event.EventListenerList;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -52,11 +46,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.*;
 import javax.swing.*;
-import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsUtil;
 
 /**
- * code copied from DasTimeRangeSelector for use with Autoplot.  DasTimeRangeSelector wasn't very beany...
+ * code copied from DasTimeRangeSelector for use with Autoplot.  
+ * DasTimeRangeSelector wasn't very beany...
  * @author jbf
  */
 public class TimeRangeEditor implements TimeRangeSelectionListener {
@@ -80,6 +74,7 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
      * with this action (Popup menu, etc).
      */
     protected final Action previousAction = new AbstractAction("<<") {
+        @Override
         public void actionPerformed(ActionEvent e) {
             fireTimeRangeSelectedPrevious();
         }
@@ -90,12 +85,14 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
      * with this action (Popup menu, etc).
      */
     protected final Action nextAction = new AbstractAction(">>") {
+        @Override
         public void actionPerformed(ActionEvent e) {
             fireTimeRangeSelectedNext();
         }
     };
 
     protected final Action rangeAction = new AbstractAction() {
+        @Override
         public void actionPerformed(ActionEvent e) {
             fireTimeRangeSelected();
         }
@@ -116,7 +113,9 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
 
     private JComboBox rangeComboBox;
 
-    /** Creates a new instance of DasTimeRangeSelector */
+    /** 
+     * creates an instance of the editor, with an arbitrary range (today) loaded.
+     */
     public TimeRangeEditor() {
         updateRangeString= Preferences.userNodeForPackage(this.getClass()).getBoolean("updateRangeString", false);
         buildComponents();
@@ -127,6 +126,7 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
 
     private Action getModeAction() {
         return new AbstractAction("mode") {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 updateRangeString= !updateRangeString;
                 Preferences.userNodeForPackage(this.getClass()).putBoolean("updateRangeString", updateRangeString );
@@ -204,10 +204,19 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
         revalidateUpdateMode();
     }
 
+    /**
+     * create an editor with the initial range.
+     * @param startTime the start time
+     * @param endTime the end time, which must be greater than startTime.
+     */
     public TimeRangeEditor(Datum startTime, Datum endTime) {
         this(new DatumRange( startTime, endTime ));
     }
 
+    /**
+     * create an editor with the initial range.
+     * @param range the range
+     */
     public TimeRangeEditor( DatumRange range ) {
         this();
         this.range= range;
@@ -246,7 +255,6 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
         if ( updateRangeString!=updateRangeString0 )
             Preferences.userNodeForPackage(getClass()).putBoolean("updateRangeString", updateRangeString );
 
-        return;
     }
 
     private void refreshFavorites() {
@@ -255,6 +263,7 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
         for ( Iterator i= favoritesList.iterator(); i.hasNext(); ) {
             final String fav= (String) i.next();
             Action favAction= new AbstractAction( fav ) {
+                @Override
                 public void actionPerformed( ActionEvent e ) {
                     TimeRangeEditor.this.setRange( DatumRangeUtil.parseTimeRangeValid(fav) );
                     fireTimeRangeSelected(new TimeRangeSelectionEvent(this,range));
@@ -268,9 +277,9 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
         String favorites= Preferences.userNodeForPackage(getClass()).get( "timeRangeSelector.favorites."+favoritesGroup, "" );
         String[] ss= favorites.split("\\|\\|");
         favoritesList= new ArrayList();
-        for ( int i=0; i<ss.length; i++ ) {            
-            if ( !"".equals(ss[i]) ) {
-                favoritesList.add(ss[i]);
+        for (String s : ss) {
+            if (!"".equals(s)) {
+                favoritesList.add(s);
             }
         }
         favoritesMenu= new JPopupMenu();
@@ -281,6 +290,7 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
     
     private ActionListener getFavoritesListener() {
         return new ActionListener() {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 favoritesMenu.show(panel, favoritesButton.getX(), favoritesButton.getY() );
             }
@@ -288,6 +298,7 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
     }
     /**
      * adds a droplist of recently entered times.  This should be a spacecraft string, or null.
+     * @param group an arbitrary identifier for the group.
      */
     public void enableFavorites( String group ) {
         if ( group==null ) group="default";
@@ -378,9 +389,10 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
     }
 
 
+    @Override
     public void timeRangeSelected(TimeRangeSelectionEvent e) {
-        DatumRange range= e.getRange();
-        if ( !range.equals(this.range) ) {
+        DatumRange lrange= e.getRange();
+        if ( !lrange.equals(this.range) ) {
             setRange( e.getRange() );
             fireTimeRangeSelected(e);
         }
@@ -455,24 +467,24 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
     }
 
     /**
-     * get the GUI.  All this was because it was firing off events on construction, and
-     * I was copying DatumEditor.
-     * @return
+     * get the GUI panel.  All this was because it was firing off events on 
+     * construction, and I was copying DatumEditor.
+     * @return the GUI panel.
      */
     public JPanel getPanel() {
         return panel;
     }
 
     private void saveFavorites() {
-        if ( favoritesList.size()==0 ) return;        
-        StringBuffer favorites= new StringBuffer( (String)favoritesList.get(0) );
+        if ( favoritesList.isEmpty() ) return;        
+        StringBuilder favorites= new StringBuilder( (String)favoritesList.get(0) );
         for ( int i=1; i<favoritesList.size(); i++ ) {
-            favorites.append( "||" + favoritesList.get(i) );
+            favorites.append( "||" ).append( favoritesList.get(i) );
         }
         Preferences.userNodeForPackage(getClass()).put( "timeRangeSelector."+favoritesGroup, favorites.toString() );
     }
 
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     public synchronized void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(propertyName, listener);

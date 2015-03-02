@@ -310,9 +310,10 @@ public class VectorUtil {
      * Units.logERatio (for example, Units.log10Ratio or Units.percentIncrease).
      * Note when either is log, then averaging is done in the log space.
      *
-     * @param ds
+     * @param xds the x tags
+     * @param ds the y tags
      * @param start first index.
-     * @param end last (non-inclusive) index.
+     * @param finish last (non-inclusive) index.
      * @param xLimit the size of the bins or null to indicate no limit.
      * @param yLimit the size of the bins or null to indicate no limit.
      * @return

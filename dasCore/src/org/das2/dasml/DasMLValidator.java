@@ -122,7 +122,7 @@ public class DasMLValidator extends DefaultHandler {
      * @param errorHandler The ErrorHandler instance that will receive
      *    error messages from the parser.  This can be null
      * @return true if the document is a valid dasML document.
-     * @throws IOException if the there is an error while reading the document.
+     * @throws java.io.IOException if the there is an error while reading the document.
      */
     public boolean validate(InputSource source, ErrorHandler errorHandler) throws java.io.IOException {
         this.errorHandler = errorHandler;
@@ -148,6 +148,7 @@ public class DasMLValidator extends DefaultHandler {
      * validate(InputSource, ErrorHandler) returned false.
      * If an application wishes to have access to warnings
      * and non-fatal errors then an ErrorHandler must be provided.
+     * @return the last error.
      */
     public SAXException getLastError() {
         return lastError;
@@ -161,6 +162,7 @@ public class DasMLValidator extends DefaultHandler {
      * @see org.xml.sax.ErrorHandler#fatalError
      * @see org.xml.sax.SAXParseException
      */
+    @Override
     public void fatalError(SAXParseException e) throws SAXException {
         if (errorHandler != null) {
             errorHandler.fatalError(e);
@@ -174,6 +176,7 @@ public class DasMLValidator extends DefaultHandler {
      * @see org.xml.sax.ContentHandler#setDocumentLocator
      * @see org.xml.sax.Locator
      */
+    @Override
     public void setDocumentLocator(Locator locator) {
         this.locator = locator;
     }
@@ -186,6 +189,7 @@ public class DasMLValidator extends DefaultHandler {
      * @see org.xml.sax.ErrorHandler#warning
      * @see org.xml.sax.SAXParseException
      */
+    @Override
     public void error(SAXParseException e) throws SAXException {
         if (errorHandler != null) {
             errorHandler.error(e);
@@ -201,6 +205,7 @@ public class DasMLValidator extends DefaultHandler {
      * @see org.xml.sax.ErrorHandler#warning
      * @see org.xml.sax.SAXParseException
      */
+    @Override
     public void warning(SAXParseException e) throws SAXException {
         if (errorHandler != null) {
             errorHandler.warning(e);
@@ -214,6 +219,7 @@ public class DasMLValidator extends DefaultHandler {
      *            wrapping another exception.
      * @see org.xml.sax.ContentHandler#startDocument
      */
+    @Override
     public void startDocument() throws SAXException {
     }
     
@@ -225,6 +231,7 @@ public class DasMLValidator extends DefaultHandler {
      *            wrapping another exception.
      * @see org.xml.sax.ContentHandler#startElement
      */
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         String name = attributes.getValue("name");
         if (name != null) {

@@ -74,8 +74,8 @@ public class BoxSelectionEvent extends DasEvent {
      
     /**
      * set the end coordinates of the mouse release.
-     * @param x
-     * @param y 
+     * @param x the release coordinate X
+     * @param y the release coordinate Y
      */
     public void setFinish( Datum x, Datum y ) {
         this.finishx = x;
@@ -84,7 +84,7 @@ public class BoxSelectionEvent extends DasEvent {
             
     /**
      * get the X coordinate of the mouse button release
-     * @return 
+     * @return the release coordinate X
      */
     public Datum getFinishX() {
         return this.finishx;
@@ -92,7 +92,7 @@ public class BoxSelectionEvent extends DasEvent {
     
     /**
      * get the Y coordinate of the mouse button release
-     * @return 
+     * @return the release coordinate Y
      */
     public Datum getFinishY() {
         return this.finishy;
@@ -100,7 +100,8 @@ public class BoxSelectionEvent extends DasEvent {
     
     /**
      * set the coordinates of the mouse button press
-     * @return 
+     * @param x the x coordinate
+     * @param y the y coordinate
      */    
     public void setStart( Datum x, Datum y ) {
         this.startx = x;
@@ -109,7 +110,7 @@ public class BoxSelectionEvent extends DasEvent {
      
     /**
      * get the X coordinate or the mouse button press
-     * @return 
+     * @return the X coordinate or the mouse button press
      */
     public Datum getStartX() {
         return this.startx;
@@ -117,23 +118,23 @@ public class BoxSelectionEvent extends DasEvent {
     
     /**
      * get the Y coordinate or the mouse button press
-     * @return 
+     * @return the Y coordinate or the mouse button press
      */
     public Datum getStartY() {
         return this.starty;
     }
     
     /**
-     * get the data range of the gesture
-     * @return 
+     * get the X data range of the gesture
+     * @return the X data range of the gesture
      */
     public DatumRange getXRange() {
         return xrange;
     }
     
     /**
-     * get the data range of the gesture
-     * @return 
+     * get the Y data range of the gesture
+     * @return the Y data range of the gesture
      */
     public DatumRange getYRange() {
         return yrange;
@@ -165,7 +166,7 @@ public class BoxSelectionEvent extends DasEvent {
     
     /**
      * attach a dataset to this event.
-     * @param ds 
+     * @param ds a dataset for this event.
      */
     public void setDataSet(QDataSet ds) {
         this.ds = ds;
@@ -173,7 +174,7 @@ public class BoxSelectionEvent extends DasEvent {
     
     /**
      * get the dataset attached to this event.
-     * @return 
+     * @return the dataset attached to this event.
      */
     public QDataSet getDataSet() {
         return ds;

@@ -90,8 +90,10 @@ import org.virbo.dataset.SemanticOps;
 
 /**
  * DataPointRecorder is a GUI for storing data points selected by the user.  
+ * The columns are set dynamically as the data arrives (via addDataPoint).
  * 
- * This will be reimplemented with DataPointRecorderNew.
+ * This replaces DataPointRecorderNew.  (DataPointRecorderNew replaced an older 
+ * DataPointerRecorder whose name has been reclaimed.)
  * 
  * @author  jbf
  */
@@ -278,7 +280,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     /** 
      * delete all the points within the interval.  This was introduced to support the
-     * case where we are going to reprocess an interval, as with the experimental 
+     * case where we are going to reprocess an interval, as with the  
      * RBSP digitizer.
      * 
      * @param range range to delete, end time is exclusive.
@@ -308,7 +310,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     
     /**
      * delete the specified row.
-     * @param row 
+     * @param row the row, where zero is the first element.
      */
     public void deleteRow(int row) {
         synchronized (dataPoints) {
@@ -325,7 +327,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     
     /**
      * delete the specified rows.
-     * @param selectedRows 
+     * @param selectedRows the rows, where zero is the first element..
      */
     public void deleteRows(int[] selectedRows) {
         synchronized ( dataPoints ) {
@@ -377,17 +379,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     private MyDataSetDescriptor dataSetDescriptor;
 
     /**
-     * @deprecated  use getDataSet() and getSelectedDataSet() instead
-     */
-    public DataSetDescriptor getDataSetDescriptor() {
-        if (dataSetDescriptor == null) {
-            dataSetDescriptor = new MyDataSetDescriptor();
-        }
-        return dataSetDescriptor;
-    }
-
-    /**
      * returns a data set of the table data.
+     * @return  a data set of the table data.
      */
     public QDataSet getDataSet() {
         if ( unitsArray[0]==null ) return null;
@@ -419,8 +412,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     /**
-     * returns a data set of the selected table data.  
-     * @see select which selects part of the dataset.
+     * returns a data set of the selected table data.  Warning: this used to
+     * return a bundle dataset with Y,plane1,plane2,etc that had DEPEND_0 for X.
+     * This now returns a bundle ds[n,m] where m is the number of columns and
+     * n is the number of records.
+     * @return a data set of the selected table data.
+     * @see #select(org.das2.datum.DatumRange, org.das2.datum.DatumRange) which selects part of the dataset.
      */
     public synchronized QDataSet getSelectedDataSet() {
         int[] selectedRows = getSelectedRowsInModel();
@@ -454,9 +451,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
 
     /**
-     * Selects all the points within the DatumRange
-     * @param xrange the x range
-     * @param yrange the y range or null if no constraint
+     * Selects all the points where the first column is within xrange and
+     * the second column is within yrange.  Returns the selected index, or -1 
+     * if no elements are found.
+     * @param xrange the range constraint (non-null).
+     * @param yrange the range constraint (non-null).
      * @return the selected index, or -1 if no elements are found.
      */
     public int select( DatumRange xrange, DatumRange yrange ) {
@@ -464,7 +463,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     /**
-     * Selects all the points within the DatumRange
+     * Selects all the points within the DatumRange.  Returns the selected 
+     * index, or -1 if no elements are found.
      * @param xrange the x range
      * @param yrange the y range or null if no constraint
      * @param xOrY if true, then match if either yrange or xrange
@@ -758,7 +758,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     /**
      * active=true means fire off events on any change.  false= wait for update button.
-     * @param active
+     * @param active true means fire off events on any change
      */
     public void setActive( boolean active ) {
         this.active= active;
@@ -836,7 +836,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     
     /**
      * return true if the file was saved, false if cancel
-     * @return
+     * @return true if the file was saved, false if cancel
      */
     public boolean saveAs() {
         JFileChooser jj = new JFileChooser();
@@ -895,7 +895,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     /**
      * shows the current name for the file.
-     * @return
+     * @return the current name for the file.
      */
     public File getCurrentFile() {
         return this.saveFile;
@@ -903,8 +903,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
 
     /**
-     * return true if the file was saved or don't save was pressed by the user.
-     * @return
+     * return true if the file was saved or "don't save" was pressed by the user.
+     * @return true if the file was saved or "don't save" was pressed by the user.
      */
     public boolean saveBeforeExit( ) {
         if ( this.modified ) {
@@ -1178,6 +1178,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
     }
 
+    /**
+     * update the status label "(modified)"
+     */
     private void updateStatus() {
         String statusString = (saveFile == null ? "" : (String.valueOf(saveFile) + " ")) +
                 (modified ? "(modified)" : "");
@@ -1298,7 +1301,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * add the x and y values with unnamed metadata.
      * @param x the x position
      * @param y the y position
-     * @param meta any metadata to be recorded along with the data point.
+     * @param meta any metadata (String, Double, etc ) to be recorded along with the data point.
      */    
     public void addDataPoint( Datum x, Datum y, Object meta ) {
         addDataPoint( x, y, Collections.singletonMap("meta",meta) );
@@ -1308,7 +1311,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * add the data point, along with metadata such as the key press.
      * @param x the x position
      * @param y the y position
-     * @param planes additional planes, map from String name -> String, Datum, Number, or  value.
+     * @param planes additional planes, map from String name &rarr; String, Datum, Number, or  value.
      * @throws RuntimeException when the units are not convertible. 
      */
     public void addDataPoint( Datum x, Datum y, Map planes ) {
@@ -1410,10 +1413,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     /**
      * this adds all the points in the DataSet to the list.  This will also check the dataset for the special
      * property "comment" and add it as a comment.
+     * @return the listener to receive data set updates
+     * @see org.das2.dataset.DataSetUpdateEvent
      */
     public DataSetUpdateListener getAppendDataSetUpListener() {
         return new DataSetUpdateListener() {
-
+            @Override
             public void dataSetUpdated(DataSetUpdateEvent e) {
                 VectorDataSet ds = (VectorDataSet) e.getDataSet();
                 if (ds == null) {
@@ -1528,10 +1533,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     
     private void fireSelectedDataSetUpdateListenerDataSetUpdated(org.das2.dataset.DataSetUpdateEvent event) {
-        
-        Object[] listeners;
-        listeners = selectedListenerList.getListenerList();
-
+        Object[] listeners= selectedListenerList.getListenerList();
         for ( int i = listeners.length - 2; i >=0; i-=2 ) {
             if (listeners[i] == org.das2.dataset.DataSetUpdateListener.class) {
                 ((org.das2.dataset.DataSetUpdateListener) listeners[i + 1]).dataSetUpdated(event);
@@ -1539,6 +1541,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
     }
+    
     /**
      * Holds value of property sorted.
      */
@@ -1596,6 +1599,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         }
 
     }
+    
     /**
      * Holds value of property xTagWidth.
      */
@@ -1643,6 +1647,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
     /**
      * return true when the data point recorder has been modified.
+     * @return true when the data point recorder has been modified.
      */
     public boolean isModified() {
         return modified;

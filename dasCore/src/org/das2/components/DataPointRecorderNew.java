@@ -87,10 +87,11 @@ import org.virbo.dsops.Ops;
 import org.virbo.dsutil.DataSetBuilder;
 
 /**
- * DataPointRecorder is a GUI for storing data points selected by the user.  
+ * DataPointRecorderNew is a GUI for storing data points selected by the user.  
  * This is the old recorder but:
  * 1. uses QDataSet to handle the data.  No more strange internal object.
  * 2. allows the columns to be declared explicitly by code, and data is merged in by name.
+ * @deprecated use DataPointRecorder, which is this code.  DataPointRecorderNew is left because of use in Jython scripts.
  * @author  jbf
  */
 public class DataPointRecorderNew extends JPanel {
@@ -243,7 +244,7 @@ public class DataPointRecorderNew extends JPanel {
     
     /**
      * delete the specified row.
-     * @param row 
+     * @param row the row, where zero is the first element.
      */
     public void deleteRow(int row) {
         synchronized (dataPoints) {
@@ -260,7 +261,7 @@ public class DataPointRecorderNew extends JPanel {
     
     /**
      * delete the specified rows.
-     * @param selectedRows 
+     * @param selectedRows the rows, where zero is the first element..
      */
     public void deleteRows(int[] selectedRows) {
         synchronized ( dataPoints ) {
@@ -280,6 +281,7 @@ public class DataPointRecorderNew extends JPanel {
 
     /**
      * returns a data set of the table data.
+     * @return  a data set of the table data.
      */
     public QDataSet getDataSet() {
         DataSetBuilder b;
@@ -304,8 +306,8 @@ public class DataPointRecorderNew extends JPanel {
      * return a bundle dataset with Y,plane1,plane2,etc that had DEPEND_0 for X.
      * This now returns a bundle ds[n,m] where m is the number of columns and
      * n is the number of records.
-     * 
-     * @see select which selects part of the dataset.
+     * @return a data set of the selected table data.
+     * @see #select(org.das2.datum.DatumRange, org.das2.datum.DatumRange) which selects part of the dataset.
      */
     public QDataSet getSelectedDataSet() {
         int[] selectedRows;
@@ -337,6 +339,9 @@ public class DataPointRecorderNew extends JPanel {
     /**
      * Selects all the points where the first column is within xrange and
      * the second column is within yrange.
+     * @param xrange the range constraint (non-null).
+     * @param yrange the range constraint (non-null).
+     * return the selected index, or -1 if no elements are found.
      */
     public void select(DatumRange xrange, DatumRange yrange) {
         Datum mid= xrange.rescale( 0.5,0.5 ).min();
@@ -370,6 +375,11 @@ public class DataPointRecorderNew extends JPanel {
         }
     }
 
+    /**
+     * 
+     * @param file
+     * @throws IOException 
+     */
     public void saveToFile(File file) throws IOException {
         List<QDataSet> dataPoints1;
         String[] lnamesArray;
@@ -723,14 +733,14 @@ public class DataPointRecorderNew extends JPanel {
     
     /**
      * return true if the file was saved, false if cancel
-     * @return
+     * @return true if the file was saved, false if cancel
      */
     public boolean saveAs() {
         JFileChooser jj = new JFileChooser();
         jj.setFileFilter( new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                if ( pathname==null ) return false; // rte_1178734273_20140402_133610_wsk, I think this happens on Windows.
+                if ( pathname==null ) return false; //            rte_1178734273_20140402_133610_wsk, I think this happens on Windows.
                 String fn= pathname.toString();
                 if ( fn==null ) return false; // rte_1178734275.  Bill is still seeing this strange error, which I believe happens on Windows.
                 return fn.endsWith(".dat") || fn.endsWith(".txt");
@@ -782,7 +792,7 @@ public class DataPointRecorderNew extends JPanel {
 
     /**
      * shows the current name for the file.
-     * @return
+     * @return the current name for the file.
      */
     public File getCurrentFile() {
         return this.saveFile;
@@ -790,8 +800,8 @@ public class DataPointRecorderNew extends JPanel {
 
 
     /**
-     * return true if the file was saved or don't save was pressed by the user.
-     * @return
+     * return true if the file was saved or "don't save" was pressed by the user.
+     * @return true if the file was saved or "don't save" was pressed by the user.
      */
     public boolean saveBeforeExit( ) {
         if ( this.modified ) {
@@ -902,8 +912,8 @@ public class DataPointRecorderNew extends JPanel {
     }
 
     /**
-     * Notify listeners that the dataset has updated.  
-     * Pressing the "Update" button calls this.
+     * Notify listeners that the dataset has updated.  Pressing the "Update" 
+     * button calls this.
      */
     public void update() {
         fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
@@ -1229,8 +1239,8 @@ public class DataPointRecorderNew extends JPanel {
     
     /**
      * add just the x and y values.
-     * @param x the x value
-     * @param y the y value
+     * @param x the x position
+     * @param y the y position
      */
     public void addDataPoint( Datum x, Datum y ) {
         addDataPoint( x, y, null );
@@ -1238,8 +1248,8 @@ public class DataPointRecorderNew extends JPanel {
     
     /**
      * add the x and y values with unnamed metadata.
-     * @param x the x value
-     * @param y the y value
+     * @param x the x position
+     * @param y the y position
      * @param meta any metadata (String, Double, etc ) to be recorded along with the data point.
      */    
     public void addDataPoint( Datum x, Datum y, Object meta ) {
@@ -1248,8 +1258,8 @@ public class DataPointRecorderNew extends JPanel {
     
     /**
      * add the data point, along with metadata such as the key press.
-     * @param x the x value
-     * @param y the y value
+     * @param x the x position
+     * @param y the y position
      * @param planes null or additional planes.  Note LinkedHashMap will keep the order of the tabs.
      */
     public void addDataPoint( Datum x, Datum y, Map<String,Object> planes ) {
@@ -1310,10 +1320,10 @@ public class DataPointRecorderNew extends JPanel {
     /**
      * add the record to the collection of records.  This should be a
      * rank 1 bundle or 1-record rank 2 bundle.
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>{@code
      *dpr=DataPointRecorder()
      *dpr.addDataPoint( createEvent( '2014-04-23/P1D', 0xFF0000, 'alert' ) )
-     *}</small></pre></blockquote>
+     *}</pre></blockquote>
      * 
      * @param rec rank 1 qdataset, or 1-record rank 2 dataset (ds[1,n])
      */   
@@ -1431,10 +1441,12 @@ public class DataPointRecorderNew extends JPanel {
     /**
      * this adds all the points in the DataSet to the list.  This will also check the dataset for the special
      * property "comment" and add it as a comment.
+     * @return the listener to receive data set updates
+     * @see org.das2.dataset.DataSetUpdateEvent
      */
     public DataSetUpdateListener getAppendDataSetUpListener() {
         return new DataSetUpdateListener() {
-
+            @Override
             public void dataSetUpdated(DataSetUpdateEvent e) {
                 VectorDataSet ds = (VectorDataSet) e.getDataSet();
                 if (ds == null) {

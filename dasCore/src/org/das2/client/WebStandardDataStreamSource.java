@@ -397,6 +397,7 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     /**
      * use the develop version of the reader instead of the
      * production version.
+     * @return the devel string used instead of production server.
      */
     public String getDevel() {
         return this.devel;
@@ -405,8 +406,9 @@ public class WebStandardDataStreamSource implements StandardDataStreamSource {
     /**
      * use the develop version of the reader instead of the
      * production version.  If a reader was in dasHome/readers,
-     * then use the one in /home/<devel>/readers/ instead.
+     * then use the one in /home/DEVEL/readers/ instead.
      *
+     * @param devel string identifying the developer.
      */
     public void setDevel(String devel) {
         this.devel = devel;

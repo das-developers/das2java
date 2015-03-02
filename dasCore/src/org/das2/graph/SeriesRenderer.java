@@ -2144,7 +2144,7 @@ public class SeriesRenderer extends Renderer {
 
     /**
      * Setter for property colorBar.
-     * @param colorBar New value of property colorBar.
+     * @param cb New value of property colorBar.
      */
     @Override
     public void setColorBar(DasColorBar cb) {

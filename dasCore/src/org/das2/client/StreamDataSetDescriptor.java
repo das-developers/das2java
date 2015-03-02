@@ -75,6 +75,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     
     private static final Logger logger= DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
     
+    @Override
     public Units getXUnits() {
         return Units.us2000;
     }
@@ -82,6 +83,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
     /**
      * Creates a new instance of <code>StreamDataSetDescriptor</code>
      * from the specified file
+     * @param properties the properties
      */
     protected StreamDataSetDescriptor(Map properties) {
         setProperties(properties);
@@ -132,7 +134,9 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
      * Read data for the given start and end dates and returns an array of bytes
      *
      * @author eew
-     * @throws java.io.IOException If there is an error getting data from the reader, and IOException is thrown
+     * @param in the source
+     * @return the bytes.
+     * @throws DasException If there is an error getting data from the reader
      */
     protected byte[] readBytes(InputStream in) throws DasException {
         LinkedList<byte[]> list = new LinkedList();
@@ -182,6 +186,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         return "dsd "+getDataSetID();
     }
     
+    @Override
     protected DataSet getDataSetImpl( Datum start, Datum end, Datum resolution, ProgressMonitor monitor ) throws DasException {
         if ( resolution != null && !resolution.isFinite() ) throw new IllegalArgumentException( "resolution is not finite" );
         InputStream in;
@@ -422,7 +427,7 @@ public class StreamDataSetDescriptor extends DataSetDescriptor {
         try {
             byte[] four = new byte[HEADER.length];
             
-            int bytesRead = 0;
+            int bytesRead;
             int totalBytesRead = 0;
             do {
                 bytesRead = in.read(four, totalBytesRead, HEADER.length - totalBytesRead);

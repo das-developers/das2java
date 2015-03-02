@@ -1956,11 +1956,12 @@ public class DasPlot extends DasCanvasComponent {
 
     /**
      * provide convenient method for creating a plot.  For example:
-     *<blockquote><pre><small>{@literal DasCanvas c= new DasCanvas(400,400);
-DasPlot p= DasPlot.createDummyPlot( );
-c.add(p,DasRow.create(c,0,1),DasColumn.create(c,0,1));
-JOptionPane.showConfirmDialog(None,c)
-}</small></pre></blockquote>
+     *<blockquote><pre>{@code
+     *DasCanvas c= new DasCanvas(400,400);
+     *DasPlot p= DasPlot.createDummyPlot( );
+     *c.add(p,DasRow.create(c,0,1),DasColumn.create(c,0,1));
+     *JOptionPane.showConfirmDialog(None,c)
+     *}</pre></blockquote>
      * @return a DasPlot, reader to be added to a canvas.
      */
     public static DasPlot createDummyPlot() {
@@ -1972,11 +1973,12 @@ JOptionPane.showConfirmDialog(None,c)
 
     /**
      * provide convenient method for creating a plot.  For example:
-     *<blockquote><pre><small>{@literal DasCanvas c= new DasCanvas(400,400);
-DasPlot p= DasPlot.createPlot( DatumRangeUtil.parseTimeRange('2001'),DatumRange.newDatumRange(0,10,Units.dimensionless) );
-c.add(p,DasRow.create(c,0,1),DasColumn.create(c,0,1));
-JOptionPane.showConfirmDialog(None,c)
-}</small></pre></blockquote>
+     *<blockquote><pre>{@code 
+     *DasCanvas c= new DasCanvas(400,400);
+     *DasPlot p= DasPlot.createPlot( DatumRangeUtil.parseTimeRange('2001'),DatumRange.newDatumRange(0,10,Units.dimensionless) );
+     *c.add(p,DasRow.create(c,0,1),DasColumn.create(c,0,1));
+     *JOptionPane.showConfirmDialog(None,c)
+     *}</pre></blockquote>
      * @param xrange the range for the x axis.
      * @param yrange the range for the y axis
      * @return a DasPlot, reader to be added to a canvas.
@@ -2269,7 +2271,7 @@ JOptionPane.showConfirmDialog(None,c)
     private Color drawBackground = new Color(0, 0, 0, 0);
     
     /**
-     * the background should be drawn, if alpha is >0.
+     * the background should be drawn, if alpha is &gt;0.
      */
     public static final String PROP_DRAWBACKGROUND = "drawBackground";
 

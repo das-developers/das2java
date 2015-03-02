@@ -719,6 +719,9 @@ public class TearoffTabbedPane extends JTabbedPane {
         }
     }
 
+    /**
+     * move the frame to follow the master frame.
+     */
     private final static Object STICK_RIGHT= "right";
 
     /**
@@ -727,8 +730,8 @@ public class TearoffTabbedPane extends JTabbedPane {
      * @param frame1  master frame that controls.
      * @param panel2  component within the compliant frame
      * @param frame2  compliant frame that follows.
-     * @param direction
-     * @return
+     * @param direction the direction, which is STICK_RIGHT (private) or null
+     * @return a listener
      */
     public ComponentListener getFrameComponentListener(
             final Component panel1, final Component frame1,
@@ -870,7 +873,7 @@ public class TearoffTabbedPane extends JTabbedPane {
     /**
      * instead of undocking, "slide" the component into a second JFrame that follows the first.
      * This may create the JFrame that accepts tabs.
-     * @param tabIndex
+     * @param tabIndex the tab to slide (0 is the left or first tab)
      */
     protected void slideRight(int tabIndex) {
 
@@ -901,8 +904,8 @@ public class TearoffTabbedPane extends JTabbedPane {
     /**
      * create a new Frame to contain the tab that was torn off.  This may happen
      * with the menu item "undock" or when a drag is begun within the tab.
-     * @param tabIndex
-     * @return
+     * @param tabIndex the tab to slide (0 is the left or first tab)
+     * @return the new frame
      */
     protected JFrame tearOffIntoFrame(int tabIndex) {
         final Component c = getComponentAt(tabIndex);

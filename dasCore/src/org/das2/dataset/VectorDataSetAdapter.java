@@ -60,7 +60,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
      * In das2's dataset, Z(X,Y) where X and Y are rank 1, this is
      * a dataset with Y(X) and Y has a plane for the Z values.
      * Also we adapt a bundle with two columns to Y(X).
-     * @param y
+     * @param bds a dataset 
      * @return
      */
     public static VectorDataSet createFromBundle( QDataSet bds ) {
@@ -87,13 +87,16 @@ public class VectorDataSetAdapter implements VectorDataSet {
         return new VectorDataSetAdapter( y, x );
     }
 
-    /** Creates a new instance of VectorDataSetAdapter */
+    /** Creates a new instance of VectorDataSetAdapter
+     * @param y the dependent parameter (y is a function of x)
+     * @param x the independent parameter 
+     */
     public VectorDataSetAdapter( QDataSet y, QDataSet x  ) {
         if ( y.rank()!=1 ) {
             throw new IllegalArgumentException("y (rank="+y.rank()+") is not rank 1");
         }
         if ( x==null ) x= new IndexGenDataSet(y.length());
-        if ( x!=null && x.rank()!=1 ) throw new IllegalArgumentException("x (rank="+x.rank()+") is not rank 1");
+        if ( x.rank()!=1 ) throw new IllegalArgumentException("x (rank="+x.rank()+") is not rank 1");
         xunits= (Units) x.property(QDataSet.UNITS);
         if ( xunits==null ) xunits= Units.dimensionless;
         yunits= (Units) y.property(QDataSet.UNITS);
@@ -121,7 +124,7 @@ public class VectorDataSetAdapter implements VectorDataSet {
         }
         
         Boolean xMono=  (Boolean) x.property( QDataSet.MONOTONIC );
-        if ( xMono!=null && xMono.booleanValue() ) {
+        if ( xMono!=null && xMono ) {
             properties.put( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE );
         }
         

@@ -129,9 +129,9 @@ public class TickCurveRenderer extends Renderer {
     }
 
     /**
-     * return true if the data is ds[:,3] or ds[x[t]]  t->x->y
-     * @param ds
-     * @return
+     * return true if the data is ds[:,3] or ds[x[t]]  t&rarr;x&rarr;y
+     * @param ds the dataset
+     * @return true if the data is ds[:,3] or ds[x[t]]  
      */
     public static boolean acceptsData( QDataSet ds ) {
         if ( ds.rank()==2 && ds.length(0)==3 ) {

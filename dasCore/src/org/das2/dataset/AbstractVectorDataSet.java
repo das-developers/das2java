@@ -34,7 +34,7 @@ import java.util.*;
  * <li>{@link VectorDataSet#getDouble(int, org.das2.datum.Units)}</li>
  * <li>{@link VectorDataSet#getInt(int, org.das2.datum.Units)}</li>
  * <li>{@link DataSet#getPlanarView(java.lang.String)}</li>
- *
+ *</ul>
  * @author  Edward West
  */
 public abstract class AbstractVectorDataSet extends AbstractDataSet implements DataSet, VectorDataSet {

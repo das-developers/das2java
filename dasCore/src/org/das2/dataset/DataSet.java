@@ -183,7 +183,7 @@ public interface DataSet {
     Units getYUnits();
     
     /** Returns the value of the x tag at the given index i as a
-     *      <code>Datum</datum>.
+     *      <code>Datum</code>.
      * @param i the index of the requested x tag
      * @return the value of the x tag at the given index i as a
      *      <code>Datum</code>.
@@ -191,7 +191,7 @@ public interface DataSet {
     Datum getXTagDatum(int i);
     
     /** Returns the value of the x tag at the given index i as a
-     *      <code>double</datum> in the given units.  XTags must be
+     *      <code>double</code> in the given units.  XTags must be
      *      monotonically increasing with i.
      * @return the value of the x tag at the given index i as a
      *      <code>double</code>.
@@ -201,7 +201,7 @@ public interface DataSet {
     double getXTagDouble(int i, Units units);
     
     /** Returns the value of the x tag at the given index i as an
-     *      <code>int</datum> in the given units.  XTags must be
+     *      <code>int</code> in the given units.  XTags must be
      *      monotonically increasing with i.
      * @return the value of the x tag at the given index i as an
      *      <code>int</code>.
@@ -226,7 +226,7 @@ public interface DataSet {
     DataSet getPlanarView(String planeID);
     
     /** 
-     * Returns a list of auxillary planes (e.g. weights, peaks) for the dataset.
+     * Returns a list of auxiliary planes (e.g. weights, peaks) for the dataset.
      * Note that the default plane, "" may or may not be returned, based on
      * implementations.
      */

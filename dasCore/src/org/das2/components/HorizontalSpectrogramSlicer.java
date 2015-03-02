@@ -129,7 +129,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     
     /**
      * add a button
-     * @param a 
+     * @param a the action for the button.
      */
     public void addAction( Action a ) {
         additionalAction= a;
@@ -145,7 +145,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
 
     /**
      * provide access to the dataset
-     * @return 
+     * @return the dataset.
      */
     public QDataSet getDataSet() {
         return renderer.getDataSet();
@@ -154,7 +154,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     /**
      * provide the Y position of the data.  Note this may be different 
      * than where the user requested because the nearest channel is provided.
-     * @return 
+     * @return the slice position.
      */
     public Datum getSliceY() {
         return ySlice;
@@ -172,6 +172,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         }
         else {
             Runnable r = new Runnable() {
+                @Override
                 public void run() {
                     showPopupImpl();
                 }
@@ -201,6 +202,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     /**
      * clear the current dataset to avoid units errors.  If the
      * new dataset can be used, use it.
+     * @param tds the new dataset
      */
     public void clear( QDataSet tds ) {
         if ( renderer!=null ) {
@@ -243,6 +245,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         buttonPanel.add(Box.createHorizontalGlue());
 
         JButton printButton= new JButton( new AbstractAction("Print...") {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 canvas.makeCurrent();
                 DasCanvas.PRINT_ACTION.actionPerformed(e);
@@ -251,6 +254,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         buttonPanel.add( printButton );
 
         JButton settingsButton= new JButton( new AbstractAction("Settings...") {
+            @Override
             public void actionPerformed( ActionEvent e ) {
                 SpectrogramRenderer rend=null;
                 for ( Renderer r : parentPlot.getRenderers() ) {
@@ -277,6 +281,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
 
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 popupWindow.setVisible(false);
             }

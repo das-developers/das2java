@@ -57,7 +57,8 @@ import javax.swing.event.*;
  * 1 day.  Presently, it's implicit that this means to give bin averages of the data.
  *
  * <p>DataSetDescriptors are identified with a URL-like string:
- * <pre>http://www-pw.physics.uiowa.edu/das/das2Server?das2_1/cluster/wbd/r_wbd_dsn_cfd&spacecraft%3Dc1%26antenna%3DEy</pre></p>
+ * {@code http://www-pw.physics.uiowa.edu/das/das2Server?das2_1/cluster/wbd/r_wbd_dsn_cfd&spacecraft%3Dc1%26antenna%3DEy}
+ * </p>
  *
  * <p>The protocol of the string indicates how the DataSetDescriptor is to be constructed, and presently
  * there are:
@@ -66,7 +67,6 @@ import javax.swing.event.*;
  *   class    refers to a loadable java class that is an instanceof DataSetDescriptor and
  *            has the method newDataSetDescriptor( Map params ) throws DasException
  *</pre>
- * </P>
  * @author jbf
  */
 public abstract class DataSetDescriptor implements Displayable {
@@ -297,7 +297,8 @@ public abstract class DataSetDescriptor implements Displayable {
 
     /**
      * creates a DataSetDescriptor for the given identification string.  The identification
-     * string is a URL-like string, for example <code>http://www-pw.physics.uiowa.edu/das/das2Server?das2_1/cluster/wbd/r_wbd_dsn_cfd&spacecraft%3Dc1%26antenna%3DEy</code>
+     * string is a URL-like string, for example 
+     * {@code http://www-pw.physics.uiowa.edu/das/das2Server?das2_1/cluster/wbd/r_wbd_dsn_cfd&spacecraft%3Dc1%26antenna%3DEy}
      * The protocol of the string indicates how the DataSetDescriptor is to be constructed, and presently
      * there are:
      *<pre>
@@ -308,6 +309,9 @@ public abstract class DataSetDescriptor implements Displayable {
      *</pre>
      * Note that DataSetDescriptors are stateless, the same DataSetDescriptor object
      * may be returned to multiple clients.
+     * @param dataSetID the URL-like identifier.
+     * @return the DataSetDescriptor for the id.
+     * @throws org.das2.DasException
      */
     public static DataSetDescriptor create(final String dataSetID) throws DasException {
         java.util.regex.Matcher classMatcher = CLASS_ID.matcher(dataSetID);

@@ -393,7 +393,7 @@ public class PersistentStateSupport {
     }
     
     /**
-     * @deprecated.  What is the purpose of this method?
+     * @deprecated What is the purpose of this method?
      */
     public void close() {
         setCurrentFile(null);
