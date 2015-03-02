@@ -41,8 +41,9 @@ public class FileSystemSettings {
     private static boolean restrictPermission= false;
 
     /**
-     * see DasApplication.setRestrictPermission
-     * @param v
+     * true means don't attempt to gain access to applet-restricted functions.
+     * @param v true means don't attempt to gain access to applet-restricted functions.
+     * @see org.das2.DasApplication#setRestrictPermission
      */
     public static void setRestrictPermission( boolean v ) {
         restrictPermission= v;
