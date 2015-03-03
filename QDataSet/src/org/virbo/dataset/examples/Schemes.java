@@ -11,12 +11,16 @@ import java.util.logging.Logger;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
+import static org.virbo.dsops.Ops.PI;
+import static org.virbo.dsops.Ops.linspace;
+import static org.virbo.dsops.Ops.ripples;
 
 /**
  * For the various QDataSet schemes, show examples and documentation for
@@ -308,4 +312,62 @@ public class Schemes {
         }
         return false;
     }
+    
+    /**
+     * return example angle distribution.
+     * @return example angle distribution.
+     */
+    public static QDataSet angleDistribution( ) {
+        ArrayDataSet rip= ArrayDataSet.maybeCopy( ripples( 30, 15 ) );
+        QDataSet angle= linspace( PI/30/2, PI-PI/30/2, 30 );
+        angle= Ops.putProperty( angle, QDataSet.UNITS, Units.radians );
+        QDataSet rad= linspace( 1, 5, 15 );
+        rip.putProperty( QDataSet.DEPEND_0, angle );
+        rip.putProperty( QDataSet.DEPEND_1, rad );
+        rip.putProperty( QDataSet.RENDER_TYPE, "pitchAngleDistribution" );
+        return rip;
+    }
+    
+    /**
+     * return example angle distribution.
+     * @param i the example number.  0..n-1.
+     * @return example angle distribution.
+     */
+    public static QDataSet angleDistribution( int i ) {
+        if ( i==0 ) {
+            ArrayDataSet rip= ArrayDataSet.maybeCopy( Ops.randn( 24, 15 ) );
+            for ( int j= 0; j<15; j++ ) {
+                rip.putValue( 0, j, 20. );
+                rip.putValue( 4, j, 20. );
+            }
+            
+            QDataSet angle= Ops.multiply( linspace( 0.5, 23.5, 24 ), 15 );
+            angle= Ops.putProperty( angle, QDataSet.UNITS, Units.degrees );
+            QDataSet rad= linspace( 1, 5, 15 );
+            rip.putProperty( QDataSet.DEPEND_0, angle );
+            rip.putProperty( QDataSet.DEPEND_1, rad );
+            rip.putProperty( QDataSet.RENDER_TYPE, "pitchAngleDistribution" );
+            return rip;
+            
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * return true if the data is an angle distribution.
+     * @param ds a dataset
+     * @return true if the data is an angle distribution.
+     */
+    public static boolean isAngleDistribution( QDataSet ds ) {
+        if ( ds.rank()!=2 ) return false;
+        QDataSet ads= (QDataSet)ds.property(QDataSet.DEPEND_0);
+        QDataSet rds= (QDataSet)ds.property(QDataSet.DEPEND_1);
+        Units au= (Units) ads.property(QDataSet.UNITS);
+        if ( au!=null && !( au==Units.dimensionless || au.isConvertibleTo(Units.degrees) ) ) {
+            return false;
+        }
+        return true;
+    }
+    
 }
