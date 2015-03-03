@@ -1,21 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.util;
 
 import java.util.StringTokenizer;
 
 /**
- * Lightweight converter for LaTeX expressions to Granny strings, for
+ * Lightweight converter for LaTeX expressions to Granny strings, for the
  * MMS mission.  This handles strings like:<ul>
  * <li> cm^{-3} 
  * <li> nA/m^{2} 
  * <li> \rho^2 + 2\Gamma_{ij}
  * <li> \sqrt{a + b}  (This is not handled by the IDL library either.)
  * </ul>
- * 
+ * The IDL project that minimally specifies is: TeXtoIDL, at http://physics.mnstate.edu/craig/textoidl/
  * @author jbf
  */
 public class LatexToGranny {
@@ -26,6 +22,12 @@ public class LatexToGranny {
     private static final String STATE_SUBSCRIPT="subscript";
     private static final String STATE_BACKSLASH="backslash";
     
+    /**
+     * for the latex encoded string, return the granny string that 
+     * implements.
+     * @param latex LaTeX encoded string.  E.g. \rho^2 + 2\Gamma_{ij}
+     * @return the granny string.  E.g. <code>&rho;!U2!n + 2&Gamma;!Dij!N</code>
+     */
     public static String latexToGranny( String latex ) {
         Object state= STATE_OPEN;
         StringTokenizer st= new StringTokenizer( latex, "^_\\{}+ ", true );
@@ -83,8 +85,9 @@ public class LatexToGranny {
     }
     
     /**
-     * detect if the string is LaTeX.
-     * @param s
+     * detect if the string is LaTeX.  This currently looks for ^{ or _{,
+     * but is expected to be changed in the future.
+     * @param s the string
      * @return true if the string appears to be LaTeX.
      */
     public static boolean isLatex( String s ) {
@@ -96,8 +99,8 @@ public class LatexToGranny {
     }
     
     /**
-     * look up the entity for the given latex symbol.  E.g.:
-     * rho->rho
+     * look up the entity for the given latex symbol.  E.g.: rho->rho
+     * This is expected to be changed in the future.
      * @return the entity
      */
     private static String lookupEntity( String ent ) {
