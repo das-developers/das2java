@@ -6,6 +6,11 @@
 package org.virbo.dataset.examples;
 
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.datum.EnumerationUnits;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
@@ -248,5 +253,59 @@ public class Schemes {
         return ds.rank()==3 && DataSetUtil.checkQube(ds) 
                 && ( dep0==null || isUniformCadence(dep0) || isUniformRatiometricCadence(dep0) ) 
                 && ( dep1==null || isUniformCadence(dep1) || isUniformRatiometricCadence(dep1) );
+    }
+    
+    /**
+     * return example events list.  This is a four-column rank 2 dataset with
+     * start time, duration, RGB color, and ordinal data for the message.
+     * @return example events list.
+     */
+    public static QDataSet eventsList( ) {
+        try {
+            QDataSet xx= Ops.timegen( "2015-01-01", "60s", 1440 );
+            QDataSet dxx= Ops.putProperty( Ops.replicate( 45, 1440 ), QDataSet.UNITS, Units.seconds );
+            QDataSet color= Ops.replicate( 0xFFAAAA, 1440 );
+            for ( int i=100; i<200; i++ ) ((WritableDataSet)color).putValue( i, 0xFFAAFF );
+            EnumerationUnits eu= EnumerationUnits.create("default");
+            QDataSet msgs= Ops.putProperty( Ops.replicate( eu.createDatum("on1").doubleValue(eu), 1440 ), QDataSet.UNITS, eu );
+            QDataSet result= Ops.bundle( xx, dxx, color, msgs );
+            return result;
+        } catch (ParseException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    
+    /**
+     * return true if the data is an events list.
+     * @param ds a dataset
+     * @return true if the data is an events list.
+     */
+    public static boolean isEventsList( QDataSet ds ) {
+        QDataSet bundle1= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        if ( bundle1!=null ) {
+            if ( bundle1.length()==3 || bundle1.length()==4 ) {
+                Units u0= (Units) bundle1.property(QDataSet.UNITS,0);
+                if ( u0==null ) u0= Units.dimensionless;
+                Units u1= (Units) bundle1.property(QDataSet.UNITS,1);
+                if ( u1==null ) u1= Units.dimensionless;
+                Units u3= (Units) bundle1.property(QDataSet.UNITS,bundle1.length()-1);
+                if ( u3!=null && UnitsUtil.isOrdinalMeasurement(u3) && u0.getOffsetUnits().isConvertibleTo(u1) ) {
+                    return true;
+                }
+            } else {
+                Units u3= (Units) bundle1.property(QDataSet.UNITS,bundle1.length()-1);
+                if ( u3!=null && UnitsUtil.isOrdinalMeasurement(u3) ) {
+                    return true;
+                }            
+            }
+        } else {
+            if ( SemanticOps.getUnits(ds) instanceof EnumerationUnits ) {
+                QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+                if ( dep0!=null ) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
