@@ -266,10 +266,32 @@ public class PitchAngleDistributionRenderer extends Renderer {
                 for ( int i=0; i<ads.length(); i++ ) {
                     double a0= damin.value(i);
                     double a1= damax.value(i);
+
+                    if ( clockwise ) {
+                        a0= -a0;
+                        a1= -a1;
+                    }
+                    
                     if ( iflip==1 ) {
                         a0= -a0;
                         a1= -a1;
                     }                    
+                    
+                    if ( origin.length()>0 ) {
+                        if ( origin.equalsIgnoreCase("N") ) {
+                            a0= a0+Math.PI/2;
+                            a1= a1+Math.PI/2;
+                        } else if ( origin.equalsIgnoreCase("E") ) {
+                            
+                        } else if ( origin.equalsIgnoreCase("S") ) {
+                            a0= a0-Math.PI/2;
+                            a1= a1-Math.PI/2;
+                        } else if ( origin.equalsIgnoreCase("W") ) {
+                            a0= a0+Math.PI;
+                            a1= a1+Math.PI;                            
+                        } 
+                    }
+                    
                     if ( originNorth ) {
                         yy[i][j]= (float) ( y0 - cos(a0) * r0y );
                         xx[i][j]= (float) ( x0 - sin(a0) * r0x );
@@ -371,6 +393,24 @@ public class PitchAngleDistributionRenderer extends Renderer {
                 Point2D p1= new Point2D.Double( xAxis.transform(0,u), yAxis.transform(0,u) );
                 Point2D p0= new Point2D.Double( xAxis.transform(0,u), yAxis.getRow().getDMinimum() );
                 Arrow.paintArrow( g, p0, p1, 10.0, Arrow.HeadStyle.DRAFTING );                
+            } else if ( origin.length()>0 ) {
+                if ( origin.equalsIgnoreCase("N") ) {
+                    Point2D p1= new Point2D.Double( xAxis.transform(0,u), yAxis.transform(0,u) );
+                    Point2D p0= new Point2D.Double( xAxis.transform(0,u), yAxis.getRow().getDMinimum() );
+                    Arrow.paintArrow( g, p0, p1, 10.0, Arrow.HeadStyle.DRAFTING );              
+                } else if ( origin.equalsIgnoreCase("S") ) {
+                    Point2D p1= new Point2D.Double( xAxis.transform(0,u), yAxis.transform(0,u) );
+                    Point2D p0= new Point2D.Double( xAxis.transform(0,u), yAxis.getRow().getDMaximum() );
+                    Arrow.paintArrow( g, p0, p1, 10.0, Arrow.HeadStyle.DRAFTING );              
+                } else if ( origin.equalsIgnoreCase("W") ) {
+                    Point2D p1= new Point2D.Double( xAxis.transform(0,u), yAxis.transform(0,u) );
+                    Point2D p0= new Point2D.Double( xAxis.getColumn().getDMinimum(), yAxis.transform(0,u) );
+                    Arrow.paintArrow( g, p0, p1, 10.0, Arrow.HeadStyle.DRAFTING );                                  
+                } else if ( origin.equalsIgnoreCase("E") ) {
+                    Point2D p1= new Point2D.Double( xAxis.transform(0,u), yAxis.transform(0,u) );
+                    Point2D p0= new Point2D.Double( xAxis.getColumn().getDMaximum(), yAxis.transform(0,u) );
+                    Arrow.paintArrow( g, p0, p1, 10.0, Arrow.HeadStyle.DRAFTING );             
+                }
             } else {
                 Point2D p1= new Point2D.Double( xAxis.transform(0,u), yAxis.transform(0,u) );
                 Point2D p0= new Point2D.Double( xAxis.getColumn().getDMaximum(), yAxis.transform(0,u) );
@@ -407,6 +447,11 @@ public class PitchAngleDistributionRenderer extends Renderer {
         controls.put( "mirror", encodeBooleanControl( mirror ) );
         controls.put( "originNorth", encodeBooleanControl( originNorth ) );
         controls.put( "drawPolarAxes", encodeBooleanControl( drawPolarAxes ) );
+        if ( origin.length()>0 && origin.equalsIgnoreCase("E") ) {
+            controls.put( "origin", origin );
+            controls.remove("originNorth");
+        }
+        if ( clockwise ) controls.put("clockwise", "T" );
         return Renderer.formatControl(controls);
     }
     
@@ -418,6 +463,8 @@ public class PitchAngleDistributionRenderer extends Renderer {
         this.mirror= getBooleanControl( "mirror", false );
         this.originNorth= getBooleanControl("originNorth", false );
         this.drawPolarAxes= getBooleanControl("drawPolarAxes",false );
+        this.origin= getControl("origin","");
+        this.clockwise= getBooleanControl("clockwise",false);
     }    
 
     /**
@@ -437,6 +484,50 @@ public class PitchAngleDistributionRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_ORIGINNORTH, oldOriginNorth, originNorth);
         update();
     }
+    
+    /**
+     * true means increasing angle goes in the clockwise direction.
+     */
+    private boolean clockwise = false;
+    
+    public static final String PROP_CLOCKWISE = "clockwise";
+
+    /**
+     * true if increasing angle corresponds to clockwise when not mirror.
+     * @return true if increasing angle corresponds to clockwise
+     */
+    public boolean isClockwise() {
+        return clockwise;
+    }
+
+    /**
+     * true if increasing angle corresponds to clockwise when not mirror.
+     * @param clockwise true if increasing angle corresponds to clockwise
+     */
+    public void setClockwise(boolean clockwise) {
+        boolean oldClockwise = this.clockwise;
+        this.clockwise = clockwise;
+        propertyChangeSupport.firePropertyChange(PROP_CLOCKWISE, oldClockwise, clockwise);
+        update();
+    }
+
+    /**
+     * One of "", "N", "S", "E", "W"
+     */
+    public static final String PROP_ORIGIN = "origin";
+    
+    protected String origin = ""; // see setControl.
+
+    public String getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin( String origin ) {
+        String oldOrigin = this.origin;
+        this.origin = origin;
+        propertyChangeSupport.firePropertyChange(PROP_ORIGIN, oldOrigin, origin);
+        update();
+    }    
     
     /**
      * if true, then draw circular axes.
