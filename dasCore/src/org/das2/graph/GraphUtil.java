@@ -357,7 +357,7 @@ public class GraphUtil {
         DasCanvas canvas = new DasCanvas(400, 400);
         jframe.getContentPane().add(canvas);
         DasPlot result = guessPlot(ds);
-        canvas.add(result, DasRow.create(canvas), DasColumn.create(canvas,null,"5em","100%-10em") );
+        canvas.add(result, new DasRow(canvas,0.1,0.9), DasColumn.create(canvas,null,"5em","100%-10em") );
 
         jframe.pack();
         jframe.setVisible(true);

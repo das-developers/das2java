@@ -39,8 +39,8 @@ public class TestDirtyEventQueueBlocker {
         DasCanvas c= new DasCanvas(300,200);
         
         DasPlot p= DasPlot.createDummyPlot();
-        DasRow row= DasRow.create( c, 0, 1 );
-        DasColumn column= DasColumn.create( c, 0, 1 );
+        DasRow row= new DasRow( c, 0.1, 0.9 );
+        DasColumn column= new DasColumn( c, 0.1, 0.9 );
         c.add( p, row, column );
         c.setSize(640,480);
         row.setDMinimum(10);
