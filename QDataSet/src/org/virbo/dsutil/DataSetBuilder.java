@@ -357,7 +357,7 @@ public class DataSetBuilder {
 
     /**
      * In one step, specify all the values of the record and advance the counter.
-     * This is intended to reduce the number of lines needed in scripts.
+     * This is intended to reduce the number of lines needed in scripts.  In Jython:
      *<blockquote><pre>
      *dsb= DataSetBuilder(2,100,2)
      *dsb.nextRecord( [ '2014-001T00:00', 20. ] )
