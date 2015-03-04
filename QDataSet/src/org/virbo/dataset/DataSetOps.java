@@ -2201,7 +2201,9 @@ public class DataSetOps {
                         arg= arg.substring(9);
                     }
                     fillDs= Ops.dataset( fillDs.property(arg) );
-                    
+                } else if ( cmd.equals("|monotonicSubset") ) {
+                    WritableDataSet ds= Ops.copy(fillDs);
+                    fillDs= Ops.monotonicSubset(ds);
                 } else if ( cmd.equals("|add") ) { 
                     String arg= getStringArg( s.next() );
                     Datum d= SemanticOps.getUnits(fillDs).parse(arg);
