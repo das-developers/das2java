@@ -10,7 +10,8 @@ import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 
 /**
- *
+ * utilities for managing selection feedback, where we have a glow to indicate 
+ * focus.
  * @author jbf
  */
 public class SelectionUtil {
