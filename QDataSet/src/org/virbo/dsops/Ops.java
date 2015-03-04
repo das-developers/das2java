@@ -98,9 +98,9 @@ public class Ops {
     /**
      * apply the unary operation (such as "cos") to the dataset.
      * DEPEND_[0-3] is propagated.
-     * @param ds1
-     * @param op
-     * @return
+     * @param ds1 the argument
+     * @param op the operation for each element.
+     * @return the result the the same geometry.
      */
     public static MutablePropertyDataSet applyUnaryOp(QDataSet ds1, UnaryOp op) {
         //TODO: handle JOIN from RPWS group, which is not a QUBE...
@@ -134,7 +134,14 @@ public class Ops {
         result.putProperty( QDataSet.FILL_VALUE, fill );
         return result;
     }
-    
+ 
+    /**
+     * apply the unary operation (such as "cos") to the dataset.
+     * DEPEND_[0-3] is propagated.
+     * @param ds1 the argument which can be converted to a dataset.
+     * @param op the operation for each element.
+     * @return the result the the same geometry.
+     */    
     public static MutablePropertyDataSet applyUnaryOp(Object ds1, UnaryOp op) {
         return applyUnaryOp( dataset(ds1), op );
     }
@@ -149,11 +156,15 @@ public class Ops {
     /**
      * apply the binary operator element-for-element of the two datasets, minding
      * dataset geometry, fill values, etc.  The two datasets are coerced to
-     * compatible geometry, if possible (e.g.Temperature(Time)+2), using CoerceUtil.coerce.
-     * @param ds1
-     * @param ds2
-     * @param op
-     * @return
+     * compatible geometry, if possible (e.g.Temperature[Time]+2deg), using 
+     * CoerceUtil.coerce.  Structural metadata such as DEPEND_0 are preserved 
+     * where this is reasonable, and dimensional metadata such as UNITS are
+     * dropped.
+     * 
+     * @param ds1 the first argument
+     * @param ds2 the second argument
+     * @param op binary operation for each pair of elements
+     * @return the result with the same geometry as the pair.
      */
     public static MutablePropertyDataSet applyBinaryOp( QDataSet ds1, QDataSet ds2, BinaryOp op ) {
         //TODO: handle JOIN from RPWS group, which is not a QUBE...
@@ -223,45 +234,24 @@ public class Ops {
         return result;
     }
     
+    /**
+     * As with applyBinaryOp, but promote compatible objects to QDataSet first.
+     * @param ds1 the first operand
+     * @param ds2 the second operand
+     * @param op  binary operation for each pair of elements
+     * @return the result with the same geometry as the pair.
+     * @see #dataset(java.lang.Object) 
+     */
     public static MutablePropertyDataSet applyBinaryOp( Object ds1, Object ds2, BinaryOp op ) {
         return applyBinaryOp( dataset(ds1), dataset(ds2), op );
     }
-
-//    public static MutablePropertyDataSet applyBinaryOp(QDataSet ds1, double d2, BinaryOp op) {
-//        //TODO: handle JOIN from RPWS group, which is not a QUBE...
-//        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(ds1));
-//
-//        QubeDataSetIterator it1 = new QubeDataSetIterator(ds1);
-//        QDataSet w1= DataSetUtil.weightsDataSet(ds1);
-//
-//        double fill= -1e38;
-//        while (it1.hasNext()) {
-//            it1.next();
-//            double w= it1.getValue(w1);
-//            it1.putValue(result, w==0 ? fill : op.op(it1.getValue(ds1), d2));
-//        }
-//        Map<String,Object> props= DataSetUtil.getProperties(ds1);
-//        props.remove( QDataSet.VALID_MIN );
-//        props.remove( QDataSet.VALID_MAX );
-//        props.remove( QDataSet.TITLE );
-//        props.remove( QDataSet.LABEL );
-//        props.remove( QDataSet.MONOTONIC );
-//        props.remove( QDataSet.METADATA_MODEL );
-//        props.remove( QDataSet.METADATA );
-//        props.remove( QDataSet.BUNDLE_1 ); // because this contains FILL_VALUE, etc that are no longer correct.
-//
-//        DataSetUtil.putProperties(props, result);
-//        result.putProperty( QDataSet.FILL_VALUE, fill );
-//        
-//        return result;
-//    }
 
     /**
      * returns the subset of two groups of properties that are equal, so these
      * may be preserved through operations.
      * @param m1 map of dataset properties, including DEPEND properties.
      * @param m2 map of dataset properties, including DEPEND properties.
-     * @return
+     * @return the subset of two groups of properties that are equal
      */
     public static HashMap<String, Object> equalProperties(Map<String, Object> m1, Map<String, Object> m2) {
         HashMap result = new HashMap();
@@ -284,10 +274,10 @@ public class Ops {
 
     /**
      * returns the BinaryOp that handles the addition operation.  Properties will have the units inserted.
-     * @param ds1
-     * @param ds2
-     * @param properties
-     * @return
+     * @param ds1 the first operand
+     * @param ds2 the second operand
+     * @param properties the result properties
+     * @return the BinaryOp that handles the addition operation.
      */
     private static BinaryOp addGen( QDataSet ds1, QDataSet ds2, Map properties ) {
         Units units1 = SemanticOps.getUnits( ds1 );
@@ -324,16 +314,16 @@ public class Ops {
     }
     /**
      * add the two datasets which have the compatible geometry and units.  For example,
-     **<blockquote><pre><small>{@code
+     *<blockquote><pre>{@code
      *ds1=timegen('2014-10-15T07:23','60s',300)
      *ds2=dataset('30s')
      *print add(ds1,ds2)
-     *}</small></pre></blockquote>
+     *}</pre></blockquote>
      * The units handling is quite simple, and this will soon change.
      * Note that the Jython operator + is overloaded to this method.
      * 
      * @param ds1 a rank N dataset
-     * @param ds2 a rank M dataset
+     * @param ds2 a rank M dataset with compatible geometry
      * @return the element-wise sum of the two datasets.
      * @see #addGen(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, java.util.Map) which shows how units are resolved.
      */
@@ -347,15 +337,22 @@ public class Ops {
         return result;
     }
 
+    /**
+     * add the two datasets which have the compatible geometry and units. 
+     * @param ds1 QDataSet, array, string, scalar argument
+     * @param ds2 QDataSet, array, string, scalar argument with compatible geometry.
+     * @return the element-wise sum of the two datasets.
+     * @see #dataset(java.lang.Object) 
+     */ 
     public static QDataSet add( Object ds1, Object ds2 ) {
         return add( dataset(ds1), dataset(ds2) );
     }
     
     /**
      * subtract one dataset from another.
-     * @param ds1
-     * @param ds2
-     * @return
+     * @param ds1 a rank N dataset
+     * @param ds2 a rank M dataset with compatible geometry
+     * @return the element-wise difference of the two datasets.
      */
     public static QDataSet subtract(QDataSet ds1, QDataSet ds2) {
         Units units1 = SemanticOps.getUnits( ds1 );
@@ -400,6 +397,12 @@ public class Ops {
         return result;
     }
 
+    /**
+     * subtract one dataset from another, using dataset to convert the arguments.
+     * @param ds1 QDataSet, array, string, scalar argument
+     * @param ds2  QDataSet, array, string, scalar argument with compatible geometry
+     * @return the element-wise difference of the two datasets.
+     */
     public static QDataSet subtract( Object ds1, Object ds2 ) {
         return subtract( dataset(ds1), dataset(ds2) );
     }
