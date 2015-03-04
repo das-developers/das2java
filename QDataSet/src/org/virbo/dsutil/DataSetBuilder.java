@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
@@ -24,6 +23,7 @@ import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  * allows dataset of unknown length to be built. Presently, this only builds QUBES, but should allow for geometry changes.
@@ -236,6 +236,7 @@ public class DataSetBuilder {
     public void putValue( int index0, QDataSet d ) {
         checkStreamIndex(index0);
         if ( u==null ) u= SemanticOps.getUnits(d);
+        if ( d.rank()!=0 ) throw new IllegalArgumentException("data must be rank 0");
         double v= d.value();        
         Units lu= SemanticOps.getUnits(d);
         if ( lu!=u ) {
@@ -248,7 +249,7 @@ public class DataSetBuilder {
      * insert a value into the builder.  Note these do Units checking and are therefore less efficient
      * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
      * @param index1 the second index
-     * @param d the value to insert.
+     * @param d the rank 0 dataset value to insert.
      */
     public void putValue( int index0, int index1, QDataSet d ) {
         checkStreamIndex(index0);
@@ -256,6 +257,7 @@ public class DataSetBuilder {
         if ( us==null || us[index1]==null ) { 
             setUnits( index1, lu );
         }
+        if ( d.rank()!=0 ) throw new IllegalArgumentException("data must be rank 0");
         double v= d.value();        
         if ( lu!=us[index1] ) {
             v= lu.convertDoubleTo( us[index], v );
@@ -284,6 +286,7 @@ public class DataSetBuilder {
         if ( u==null ) {
             u= SemanticOps.getUnits(d);
         } 
+        if ( d.rank()!=0 ) throw new IllegalArgumentException("data must be rank 0");
         double v= d.value();
         Units lu= SemanticOps.getUnits(d);
         if ( lu!=u ) {
@@ -293,17 +296,19 @@ public class DataSetBuilder {
     }
     
     /**
-     * insert a value into the builder, parsing the string with the column
-     * units.
+     * insert a value into the builder, parsing the string with the column units.
      * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
      * @param index1 the second index
      * @param s the a string representation of the value parse and insert.
      * @throws java.text.ParseException
+     * @see Ops#dataset(java.lang.Object) for the logic interpreting Strings.
      */
     public void putValue( int index0, int index1, String s ) throws ParseException {
         checkStreamIndex(index0);
         if ( us==null || us[index1]==null ) {
-            setUnits(index1, Units.dimensionless );
+            QDataSet ds1= Ops.dataset(s);
+            Units units= SemanticOps.getUnits(ds1);
+            setUnits(index1, units );
         }
         if ( us[index1] instanceof EnumerationUnits ) {
             current.putValue( this.index, index1, ((EnumerationUnits)us[index1]).createDatum(s).doubleValue(us[index1]) );            
@@ -353,7 +358,16 @@ public class DataSetBuilder {
     /**
      * In one step, specify all the values of the record and advance the counter.
      * This is intended to reduce the number of lines needed in scripts.
-     * @param values the record values, in an String, Datum, or Number.
+     *<blockquote><pre>
+     *dsb= DataSetBuilder(2,100,2)
+     *dsb.nextRecord( [ '2014-001T00:00', 20. ] )
+     *dsb.nextRecord( [ '2014-002T00:00', 21. ] )
+     *dsb.nextRecord( [ '2014-003T00:00', 21.4 ] )
+     *dsb.nextRecord( [ '2014-004T00:00', 19.7 ] ) 
+     *ds= dsb.getDataSet()
+     *</pre></blockquote>
+     * Also, columns 1..N-1 are declared dependent on column 0.
+     * @param values the record values, in an String, Datum, Rank 0 QDataSet, or Number.
      */
     public void nextRecord( Object ... values ) {
         if ( values.length>this.dim1 ) {
@@ -364,24 +378,17 @@ public class DataSetBuilder {
             if ( v1 instanceof Number ) {
                 putValue( -1, i, ((Number)v1).doubleValue() );
             } else if ( v1 instanceof String ) {
-                Units lu= us[i];
-                if ( lu==null ) lu= this.u;
-                if ( lu==null ) lu= Units.dimensionless;
-                double d;
-                if ( lu instanceof EnumerationUnits ) {
-                    d= ((EnumerationUnits)lu).createDatum(v1).doubleValue(lu);
-                } else {
-                    try {
-                        d= lu.parse((String)v1).doubleValue(lu);
-                    } catch (ParseException ex) {
-                        throw new IllegalArgumentException(ex);
-                    }
+                try {
+                    putValue( -1, i, ((String)v1) );
+                } catch ( ParseException ex ) {
+                    throw new IllegalArgumentException(ex);
                 }
-                putValue( -1, i, d );
             } else if ( v1 instanceof Datum ) {
                 putValue( -1, i, (Datum)v1 );
+            } else if ( v1 instanceof QDataSet ) {
+                putValue( -1, i, (QDataSet)v1 );
             } else {
-                throw new IllegalArgumentException("expected string,Datum, or double");
+                throw new IllegalArgumentException("expected String, Datum, or double");
             }
         } 
         nextRecord();
@@ -404,13 +411,11 @@ public class DataSetBuilder {
     }
     
     /**
-     * returns the result dataset, concatenating all the datasets it has built
-     * thus far.
+     * returns the result dataset, concatenating all the datasets it has built thus far.
      * @return the result dataset
      */
     public DDataSet getDataSet() {
         DDataSet result;
-        int len;
         
         switch (rank ) {
             case 1: result= DDataSet.createRank1(length); break;
@@ -437,10 +442,18 @@ public class DataSetBuilder {
         if ( us!=null ) {
             if ( isBundle ) {
                 BundleBuilder bb= new BundleBuilder(dim1);
+                if ( Units.us2000.isConvertibleTo(us[0]) && names[0]==null ) {
+                    names[0]= "UTC";
+                }
                 for ( int i=0; i<dim1; i++ ) {
                     if ( us[i]!=null ) bb.putProperty( QDataSet.UNITS, i, us[i] );
                     if ( labels[i]!=null ) bb.putProperty( QDataSet.LABEL, i, labels[i] );
                     if ( names[i]!=null ) bb.putProperty( QDataSet.NAME, i, names[i] );
+                }
+                if ( Units.us2000.isConvertibleTo(us[0]) && names[0]!=null ) {
+                    for ( int i=1; i<dim1; i++ ) {
+                        bb.putProperty( QDataSet.DEPENDNAME_0, i, names[0] );
+                    }
                 }
                 result.putProperty( QDataSet.BUNDLE_1, bb.getDataSet() );
             } else {
