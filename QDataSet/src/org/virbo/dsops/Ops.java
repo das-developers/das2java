@@ -3244,13 +3244,13 @@ public class Ops {
      * Warning: this was extracted from AggregatingDataSource to support BufferDataSets,
      * and is minimally implemented.
      * 
-     * @param ds ArrayDataSet, which must be writable.
+     * @param ds MutablePropertyDataSet, which must be writable.
      * @return dataset, possibly with records removed.
      */
     public static MutablePropertyDataSet monotonicSubset( MutablePropertyDataSet ds ) {
         
         if ( ds instanceof BufferDataSet ) {
-            
+                
         } else if ( ds instanceof ArrayDataSet ) {
             
         } else {
