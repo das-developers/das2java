@@ -285,6 +285,7 @@ public class Ops {
         if ( units2.isConvertibleTo(units1) && UnitsUtil.isRatioMeasurement(units1) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1);
             result= new BinaryOp() {
+                @Override
                 public double op(double d1, double d2) {
                     return d1 + uc.convert(d2);
                 }
@@ -293,6 +294,7 @@ public class Ops {
         } else if ( UnitsUtil.isIntervalMeasurement(units1) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units2, units1.getOffsetUnits() );
             result= new BinaryOp() {
+                @Override
                 public double op(double d1, double d2) {
                     return d1 + uc.convert(d2);
                 }
@@ -301,6 +303,7 @@ public class Ops {
         } else if ( UnitsUtil.isIntervalMeasurement(units2) ) {
             final UnitsConverter uc= UnitsConverter.getConverter( units1, units2.getOffsetUnits() );
             result= new BinaryOp() {
+                @Override
                 public double op(double d1, double d2) {
                     return uc.convert(d1) + d2;
                 }
@@ -1368,6 +1371,7 @@ public class Ops {
         }
 
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return d1 / uc.convert(d2);
             }
@@ -1527,6 +1531,7 @@ public class Ops {
     public static QDataSet gt(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return uc.convert(d1) > d2 ? 1.0 : 0.0;
             }
@@ -1547,6 +1552,7 @@ public class Ops {
     public static QDataSet greaterOf(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds2, ds1 );
         MutablePropertyDataSet mpds=  applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return uc.convert(d2) > d1 ? d2 : d1;
             }
@@ -1569,6 +1575,7 @@ public class Ops {
     public static QDataSet lesserOf(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds2, ds1 );
         MutablePropertyDataSet mpds=  applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return uc.convert(d2) < d1 ? d2 : d1;
             }
@@ -1591,6 +1598,7 @@ public class Ops {
     public static QDataSet ge(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return uc.convert(d1) >= d2 ? 1.0 : 0.0;
             }
@@ -1610,6 +1618,7 @@ public class Ops {
     public static QDataSet lt(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return uc.convert(d1) < d2 ? 1.0 : 0.0;
             }
@@ -1630,6 +1639,7 @@ public class Ops {
     public static QDataSet le(QDataSet ds1, QDataSet ds2) {
         final UnitsConverter uc= SemanticOps.getLooseUnitsConverter( ds1, ds2 );
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return uc.convert(d1) <= d2 ? 1.0 : 0.0;
             }
@@ -1650,6 +1660,7 @@ public class Ops {
      */
     public static QDataSet or(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return d1 != 0 || d2 != 0 ? 1.0 : 0.0;
             }
@@ -1669,6 +1680,7 @@ public class Ops {
      */
     public static QDataSet and(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
             public double op(double d1, double d2) {
                 return d1 != 0 && d2 != 0 ? 1.0 : 0.0;
             }
@@ -1683,11 +1695,11 @@ public class Ops {
     /**
      * element-wise logical not function.  non-zero is true, zero is false.
      * @param ds1
-     * @param ds2
      * @return
      */
     public static QDataSet not(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
+            @Override
             public double op(double d1) {
                 return d1 != 0 ? 0.0 : 1.0;
             }
@@ -1907,6 +1919,7 @@ public class Ops {
      * @param baseTime e.g. "2003-02-04T00:00"
      * @param cadence e.g. "4.3 sec" "1 day"
      * @param len0 the number of elements.
+     * @throws ParseException
      * @return
      */
     public static QDataSet timegen(String baseTime, String cadence, int len0) throws ParseException {
@@ -1916,7 +1929,7 @@ public class Ops {
         Datum cad= null;
         if ( ss.length==2 ) {
             try {
-                Units u= SemanticOps.lookupUnits(ss[1]); 
+                Units u= Units.lookupUnits(ss[1]); 
                 cad= u.parse(ss[0]);
             } catch ( ParseException ex ) {
                 // try using old code below.
@@ -2003,8 +2016,8 @@ public class Ops {
     /**
      * creates tags.  First tag will be start and they will increase by cadence.  Units specifies
      * the units of each tag.
-     * @param start
-     * @param cadence
+     * @param base
+     * @param dcadence
      * @param len0
      * @param units
      * @return
@@ -2208,6 +2221,7 @@ public class Ops {
     /**
      * return new dataset filled with zeros.
      * @param len0
+     * @param len1
      * @return
      */
     public static WritableDataSet zeros(int len0, int len1) {
@@ -2217,6 +2231,8 @@ public class Ops {
     /**
      * return new dataset filled with zeros.
      * @param len0
+     * @param len1
+     * @param len2
      * @return
      */
     public static WritableDataSet zeros(int len0, int len1, int len2) {
@@ -2259,17 +2275,14 @@ public class Ops {
                 public int rank() {
                     return 2;
                 }
-
                 @Override
                 public int length() {
                     return len0;
                 }
-
                 @Override
                 public int length(int i0) {
                     return len1;
                 }
-
                 @Override
                 public double value(int i0,int i1) {
                     return 1.;
@@ -3136,7 +3149,7 @@ public class Ops {
 
     /**
      * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
-     * @param radius
+     * @param dradius
      * @return QDataSet that when plotted is a circle.
      */
     public static QDataSet circle( double dradius ) {
@@ -3146,8 +3159,9 @@ public class Ops {
 
     /**
      * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
-     * @param radius string parsed into rank 0 dataset
+     * @param sradius string parsed into rank 0 dataset
      * @return QDataSet that when plotted is a circle.
+     * @throws java.text.ParseException
      */
     public static QDataSet circle( String sradius ) throws ParseException {
         QDataSet radius;
@@ -3160,7 +3174,7 @@ public class Ops {
             } catch ( ParseException ex ) {
                 String[] ss= sradius.split(" ", 2);
                 if ( ss.length==2 ) {
-                    Units u= SemanticOps.lookupUnits(ss[1]);
+                    Units u= Units.lookupUnits(ss[1]);
                     d= u.parse(ss[0]);  // double.parseDouble
                 } else {
                     throw new IllegalArgumentException("unable to parse: "+sradius );
@@ -3357,7 +3371,7 @@ public class Ops {
      */
     public static QDataSet sin(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double d1) {
                 return Math.sin(d1);
             }
@@ -3381,7 +3395,7 @@ public class Ops {
      */
     public static QDataSet asin(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double d1) {
                 return Math.asin(d1);
             }
@@ -3405,7 +3419,7 @@ public class Ops {
      */
     public static QDataSet cos(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double d1) {
                 return Math.cos(d1);
             }
@@ -3429,7 +3443,7 @@ public class Ops {
      */
     public static QDataSet acos(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double d1) {
                 return Math.acos(d1);
             }
@@ -3454,7 +3468,7 @@ public class Ops {
      */
     public static QDataSet tan(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double a) {
                 return Math.tan(a);
             }
@@ -3478,7 +3492,7 @@ public class Ops {
      */
     public static QDataSet atan(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double a) {
                 return Math.atan(a);
             }
@@ -3503,7 +3517,7 @@ public class Ops {
      */
     public static QDataSet atan2(QDataSet dsy, QDataSet dsx) {
          MutablePropertyDataSet result= applyBinaryOp(dsy, dsx, new BinaryOp() {
-
+            @Override
             public double op(double y, double x) {
                 return Math.atan2(y, x);
             }
@@ -3527,7 +3541,7 @@ public class Ops {
      */
     public static QDataSet cosh(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double a) {
                 return Math.cosh(a);
             }
@@ -3551,7 +3565,7 @@ public class Ops {
      */
     public static QDataSet sinh(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double a) {
                 return Math.sinh(a);
             }
@@ -3575,7 +3589,7 @@ public class Ops {
      */
     public static QDataSet tanh(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double a) {
                 return Math.tanh(a);
             }
@@ -3603,7 +3617,7 @@ public class Ops {
      */
     public static QDataSet expm1(QDataSet ds) {
         MutablePropertyDataSet result= applyUnaryOp(ds, new UnaryOp() {
-
+            @Override
             public double op(double a) {
                 return Math.expm1(a);
             }
@@ -3747,6 +3761,7 @@ public class Ops {
      */
     public static QDataSet toRadians(QDataSet ds) {
         return applyUnaryOp(ds, new UnaryOp() {
+            @Override
             public double op(double y) {
                 return y * Math.PI / 180.;
             }
@@ -3766,6 +3781,7 @@ public class Ops {
      */
     public static QDataSet toDegrees(QDataSet ds) {
         return applyUnaryOp(ds, new UnaryOp() {
+            @Override
             public double op(double y) {
                 return y * 180 / Math.PI;
             }
@@ -3878,8 +3894,8 @@ public class Ops {
             }
             builder.putProperty(QDataSet.MONOTONIC, Boolean.TRUE);
             if ( builder.getLength()==ds.length() ) {
-                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT,Integer.valueOf(0));
-                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT,Integer.valueOf(0));
+                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT, 0);
+                DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT, 0);
             }
         } else {
             builder = new DataSetBuilder( 2, 100, ds.rank() );
@@ -3937,11 +3953,11 @@ public class Ops {
     /**
      * returns a rank 1 dataset of indeces that sort the rank 1 dataset ds.
      * This is not the dataset sorted.  For example:
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *   ds= randn(2000)
      *   s= sort( ds )
      *   dsSorted= ds[s]
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * Note the result will have the property MONOTONIC==Boolean.TRUE if 
      * the data was sorted already.
      * @param ds rank 1 dataset
@@ -4005,10 +4021,10 @@ public class Ops {
      * the dataset is assumed to be monotonic, and only repeating values are
      * coalesced.  If sort is non-null, then it is the result of the function
      * "sort" and should be a rank 1 list of indeces that sort the data.
-     *
-     * @see #uniqValues, which returns the values.
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @param sort null, or the rank 1 dataset of indeces
+     * @return 
+     * @see #uniqValues, which returns the values.
      */
     public static QDataSet uniq( QDataSet ds, QDataSet sort ) {
         if ( ds.rank()>1 ) throw new IllegalArgumentException("ds.rank()>1" );
@@ -4209,10 +4225,10 @@ public class Ops {
 
     /**
      * returns a rank 1 dataset of indeces that shuffle the rank 1 dataset ds
-     * <pre>
-     *   s= shuffle( ds )
-     *   dsShuffled= ds[s]
-     * </pre>
+     *<blockquote><pre>
+     *s= shuffle( ds )
+     *dsShuffled= ds[s]
+     *</pre></blockquote>
      * @param ds rank 1 dataset
      * @return rank 1 dataset of integer indeces.
      */
@@ -4292,7 +4308,7 @@ public class Ops {
     /**
      * returns the slice at the given slice location.
      * @param ds ripples(20,20).  Presently this must be a simple table.
-     * @param slice dataset("10.3")
+     * @param sliceds dataset("10.3")
      * @return 
      */
     public static QDataSet slice1( QDataSet ds, QDataSet sliceds ) {
@@ -4472,15 +4488,9 @@ public class Ops {
 
                     result.join(vds);
 
-                    if ( dep0!=null && dep1!=null ) {
-                        dep0b.putValue(-1, dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  ) );
-                        dep0b.nextRecord();
-                    } else if ( dep0!=null ) {
-                        dep0b.putValue(-1, dep0.value(i) );
-                        dep0b.nextRecord();
-                    } else {
-                        dep0b= null;
-                    }
+                    // Because dep0!=null and dep1!=null.
+                    dep0b.putValue(-1, dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  ) );
+                    dep0b.nextRecord();
                 }
                 mon.setTaskProgress(i);
             }
@@ -5746,6 +5756,7 @@ public class Ops {
      */
     public static QDataSet floor(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
+            @Override
             public double op(double a) {
                 return Math.floor(a);
             }
@@ -5767,6 +5778,7 @@ public class Ops {
      */
     public static QDataSet ceil(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
+            @Override
             public double op(double a) {
                 return Math.ceil(a);
             }
@@ -5788,6 +5800,7 @@ public class Ops {
      */
     public static QDataSet round(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
+            @Override
             public double op(double a) {
                 return Math.round(a);
             }
@@ -5818,6 +5831,7 @@ public class Ops {
      */
     public static QDataSet signum(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
+            @Override
             public double op(double a) {
                 return Math.signum(a);
             }
@@ -5843,6 +5857,7 @@ public class Ops {
      */
     public static QDataSet copysign(QDataSet magnitude, QDataSet sign) {
         return applyBinaryOp(magnitude, sign, new BinaryOp() {
+            @Override
             public double op(double m, double s) {
                 double s1 = Math.signum(s);
                 return Math.abs(m) * (s1 == 0 ? 1. : s1);
@@ -6936,44 +6951,38 @@ public class Ops {
         if (ds.rank() > 1) {
             throw new IllegalArgumentException("only rank 1");
         }
-        if ( true ) {
-            DDataSet result= DDataSet.createRank1( ds.length()-1 );
-            QDataSet w1= DataSetUtil.weightsDataSet(ds);
-            QDataSet dep0ds= (QDataSet) ds.property(QDataSet.DEPEND_0);
-            DDataSet dep0= null;
-            if ( dep0ds!=null ) {
-                dep0= DDataSet.createRank1( ds.length()-1 );
-                DataSetUtil.putProperties( DataSetUtil.getProperties(dep0ds), dep0 );
-            }
-            double fill= ((Number)w1.property( QDataSet.FILL_VALUE )).doubleValue();
-            for ( int i=0; i<result.length(); i++ ) {
-                if ( w1.value(i)>0 && w1.value(i+1)>0 ) {
-                    result.putValue(i, ds.value(i+1) - ds.value(i) );
-                } else {
-                    result.putValue(i,fill);
-                }
-                if ( dep0ds!=null ) dep0.putValue(i, ( dep0ds.value(i+1) + dep0ds.value(i)) / 2 );
-            }
-            result.putProperty(QDataSet.FILL_VALUE, new Double(fill) );
-            Units u= (Units) ds.property(QDataSet.UNITS);
-            if ( u!=null ) result.putProperty(QDataSet.UNITS, u.getOffsetUnits() );
-            result.putProperty(QDataSet.NAME, null );
-            result.putProperty(QDataSet.MONOTONIC, null );
-            if ( dep0ds!=null ) {
-                result.putProperty( QDataSet.DEPEND_0, dep0 );
-            }
-            String label= (String) ds.property(QDataSet.LABEL);
-            if ( label!=null ) result.putProperty(QDataSet.LABEL, "diff("+label+")" );
-            
-            return result;
-        } else {
-            TrimStrideWrapper d1 = new TrimStrideWrapper(ds); //TODO: use .trim() operator here if we use this again.
-            d1.setTrim(0, 0, ds.length() - 1, 1);
-            TrimStrideWrapper d2 = new TrimStrideWrapper(ds);
-            d2.setTrim(0, 1, ds.length(), 1);
-            QDataSet result = Ops.subtract(d2, d1);
-            return result;
+        DDataSet result= DDataSet.createRank1( ds.length()-1 );
+        QDataSet w1= DataSetUtil.weightsDataSet(ds);
+        QDataSet dep0ds= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        DDataSet dep0= null;
+        if ( dep0ds!=null ) {
+            dep0= DDataSet.createRank1( ds.length()-1 );
+            DataSetUtil.putProperties( DataSetUtil.getProperties(dep0ds), dep0 );
         }
+        double fill= ((Number)w1.property( QDataSet.FILL_VALUE )).doubleValue();
+        for ( int i=0; i<result.length(); i++ ) {
+            if ( w1.value(i)>0 && w1.value(i+1)>0 ) {
+                result.putValue(i, ds.value(i+1) - ds.value(i) );
+            } else {
+                result.putValue(i,fill);
+            }
+            if ( dep0ds!=null ) {
+                assert dep0!=null;
+                dep0.putValue(i, ( dep0ds.value(i+1) + dep0ds.value(i)) / 2 );
+            }
+        }
+        result.putProperty(QDataSet.FILL_VALUE, fill );
+        Units u= (Units) ds.property(QDataSet.UNITS);
+        if ( u!=null ) result.putProperty(QDataSet.UNITS, u.getOffsetUnits() );
+        result.putProperty(QDataSet.NAME, null );
+        result.putProperty(QDataSet.MONOTONIC, null );
+        if ( dep0ds!=null ) {
+            result.putProperty( QDataSet.DEPEND_0, dep0 );
+        }
+        String label= (String) ds.property(QDataSet.LABEL);
+        if ( label!=null ) result.putProperty(QDataSet.LABEL, "diff("+label+")" );
+
+        return result;
     }
 
     public static QDataSet diff( Object ds ) {
@@ -7026,12 +7035,10 @@ public class Ops {
             accum+= ds.value(i);
             result.putValue(i,accum);
             if ( dep0ds!=null ) {
+                assert dep0!=null;
                 dep0.putValue(i, ( accumDep0 + dep0ds.value(i)) / 2 );
                 accumDep0= dep0ds.value(i);
             }
-        }
-        if ( dep0!=null ) {
-            //result.putProperty( QDataSet.DEPEND_0, dep0 );
         }
 
         return result;
@@ -7098,7 +7105,6 @@ public class Ops {
      * @param ds the original dataset.
      * @param u units of the new dataset
      * @return a new dataset with all the same properties but with the new units.
-     * @throws InconvertibleUnitsException
      */
     public static QDataSet convertUnitsTo( QDataSet ds, Units u ) {
         UnitsConverter uc= Units.getConverter( SemanticOps.getUnits(ds), u );
@@ -7210,7 +7216,7 @@ public class Ops {
         StringBuilder docStr= new StringBuilder();
         for ( int i=0; i<args.length; i++ ) {
             if ( args[i] instanceof Integer ) {
-                int sliceIdx= ((Integer)args[i]).intValue();
+                int sliceIdx= ((Integer)args[i]);
                 if ( cdim==i ) {
                     result= result.slice(sliceIdx);
                     cdim++;
@@ -7404,8 +7410,7 @@ public class Ops {
      * dataset.  See BundleDataSet for more semantics.  Note we support the case
      * where DEPEND_1 has EnumerationUnits, and this is the same as slice1.
      *
-     *
-     * @param bundleDs the bundle dataset.
+     * @param ds the bundle dataset.
      * @param i index of the dataset to extract. If the index is within a high-rank dataset, then the entire dataset is returned.
      * @throws IndexOutOfBoundsException if the index is invalid.
      * @throws IllegalArgumentException if the dataset is not a bundle dataset, with either BUNDLE_1 or DEPEND_1 set.
@@ -7415,16 +7420,14 @@ public class Ops {
         return DataSetOps.unbundle(ds, i);
     }
     
-     
-    
     /**
      * return true if DEPEND_1 is set and its units are EnumerationUnits.  This
      * was the pre-bundle way of representing a bundle of datasets.  It might
      * be supported indefinitely, because it has some nice rules about the data.
      * For example, bundled data must be of the same units since there is no place to put
      * the property, and each bundled item must be rank 1.
-     * @param zds
-     * @return
+     * @param zds rank 1 or rank 2 dataset
+     * @return return true if DEPEND_1 is set and its units are EnumerationUnits.
      */
     public static boolean isLegacyBundle( QDataSet zds ) {
         if ( zds.rank()==2 ) {
@@ -7455,8 +7458,9 @@ public class Ops {
     /**
      * return true if the dataset is a bundle.  It is rank 2 or rank 1, and
      * has the last dimension a bundle dimension.
-     * @param zds
-     * @return
+     * @param zds the dataset
+     * @return true if the dataset is a bundle.
+     * @see org.virbo.dataset.examples.Schemes
      */
     public static boolean isBundle( QDataSet zds ) {
         if ( zds.rank()==1 ) {
@@ -7523,10 +7527,10 @@ public class Ops {
      * dataset is dependent on another.  For example link(x,y) creates
      * a new dataset where y is the dependent variable of the independent
      * variable x.  link is like the plot command, but doesn't plot.  For example
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *   plot(X,Y) shows a plot of Y(X),
      *   link(X,Y) returns the dataset Y(X).
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * @param x rank 1 dataset
      * @param y rank 1 or rank 2 bundle dataset
      * @return rank 1 dataset with DEPEND_0 set to x.
@@ -7561,10 +7565,10 @@ public class Ops {
      * dataset is dependent on another.  For example link(x,y,z) creates
      * a new dataset where z is the dependent variable of the independent
      * variables x and y.  link is like the plot command, but doesn't plot.  For example
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *   plot(x,y,z) shows a plot of Z(X,Y),
      *   link(x,y,z) returns the dataset Z(X,Y).
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * Note if z is a rank 1 dataset, then a bundle dataset Nx3 is returned, and names are assigned to the datasets
      *
      * @param x rank 1 dataset
@@ -7822,7 +7826,7 @@ public class Ops {
     
     /**
      * guess a name for the dataset, looking for NAME and then safeName(LABEL).  The
-     * result will be a C/Python/Java-style identifier suitable for the variable.
+     * result will be a Java-style identifier suitable for the variable.
      * @param ds the dataset
      * @return the name or null if there is no NAME or LABEL
      */
@@ -7832,8 +7836,9 @@ public class Ops {
 
     /**
      * guess a name for the dataset, looking for NAME and then safeName(LABEL).  The
-     * result will be a C/Python/Java-style identifier suitable for the variable.
+     * result will be a Java-style identifier suitable for the variable.
      * @param ds the dataset
+     * @param deft the default name to use.
      * @return the name, or deft if there is no NAME or LABEL.
      */
     public static String guessName( QDataSet ds, String deft ) {
@@ -8004,21 +8009,30 @@ public class Ops {
 
     /**
      * returns the number of physical dimensions of a dataset.
-     *   JOIN, BINS   do not increase dataset dimensionality.
-     *   DEPEND       increases dimensionality by dimensionality of DEPEND ds.
-     *   BUNDLE       increases dimensionality by N where N is the number of bundled datasets.
+     * <ul>
+     * <li>JOIN, BINS   do not increase dataset dimensionality.
+     * <li>DEPEND       increases dimensionality by dimensionality of DEPEND ds.
+     * <li>BUNDLE       increases dimensionality by N, where N is the number of bundled datasets.
+     * </ul>
      * Note this includes implicit dimensions taken by the primary dataset.
-     *   Z(time,freq)->3
-     *   rand(20,20)->3
-     *   B_gsm(20,[X,Y,Z])->4
-     * @param ds
-     *
+     * <ul>
+     *   <li>Z(time,freq)->3
+     *   <li>rand(20,20)->3
+     *   <li>B_gsm(20,[X,Y,Z])->4
+     * </ul>
+     * @param dss the dataset
      * @return the number of dimensions occupied by the data.
      */
     public static int dimensionCount( QDataSet dss ) {
         return dimensionCount( dss, false );
     }
 
+    /**
+     * returns the number of physical dimensions of a dataset.
+     * @param dss the dataset
+     * @param noImplicit when a dataset is the independent parameter, then there are no implicit dimensions.
+     * @return the number of dimensions occupied by the data.
+     */
     private static int dimensionCount( QDataSet dss, boolean noImplicit ) {
         int dim=1;
         QDataSet ds= dss;
@@ -8043,10 +8057,31 @@ public class Ops {
         return dim;
     }
     
+    /**
+     * returns the number of physical dimensions of the object when
+     * interpreted as a dataset.
+     * @param dss the object that can be coerced into a dataset.
+     * @return the number of dimensions occupied by the data.
+     * @see #dataset(java.lang.Object) 
+     */
     public static int dimensionCount( Object dss ) {
         return dimensionCount( dataset(dss) );
     }
         
+    /**
+     * closest double to &pi; or TAU/2
+     * @see Math#PI
+     */
     public static final double PI = Math.PI;
+    
+    /**
+     * closest double to &tau; or 2*PI
+     */
+    public static final double TAU = Math.PI * 2;
+    
+    /**
+     * the closest double to e, the base of natural logarithms.
+     * @see Math#E
+     */
     public static final double E = Math.E;
 }
