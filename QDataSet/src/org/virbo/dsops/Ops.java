@@ -6,6 +6,7 @@ package org.virbo.dsops;
 
 import java.awt.Color;
 import java.lang.reflect.Array;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.virbo.dataset.BundleDataSet.BundleDescriptor;
@@ -62,9 +63,7 @@ import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.DataSetAnnotations;
-import static org.virbo.dataset.DataSetOps.histogram;
 import org.virbo.dataset.SortDataSet;
-import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
 import org.virbo.dsutil.AutoHistogram;
@@ -2496,11 +2495,18 @@ public class Ops {
     private static Random random= new Random();
     
     /**
-     * restart the random sequence used by randu and randn.
+     * restart the random sequence used by randu and randn.  Note if there
+     * if there are multiple threads using random functions, this becomes 
+     * unpredictable.
      * @return the seed is returned.
      */
     public static long randomSeed() {
-        long seed= new Random().nextLong();
+        long seed;
+        try {
+            seed= java.security.SecureRandom.getInstanceStrong().nextLong(); //findbugs  DMI_RANDOM_USED_ONLY_ONCE suggests this.
+        } catch ( NoSuchAlgorithmException ex ) {
+            seed= 0;
+        }
         random= new Random(seed);
         return seed;
     }
