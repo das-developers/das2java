@@ -118,7 +118,7 @@ public class GraphUtil {
         Units xUnits = SemanticOps.getUnits(xds);
         Units yUnits = SemanticOps.getUnits(yds);
 
-        QDataSet tagds= SemanticOps.xtagsDataSet(xds); // yes, it's true, I think because of orbit plots
+        //QDataSet tagds= SemanticOps.xtagsDataSet(xds); // yes, it's true, I think because of orbit plots
 
         //double xSampleWidth= Double.MAX_VALUE; // old code had 1e31.  MAX_VALUE is better.
         //if ( tagds.property( QDataSet.CADENCE ) != null ) { //e.g. Orbit(T);
