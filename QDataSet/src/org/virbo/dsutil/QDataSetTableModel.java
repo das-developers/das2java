@@ -180,8 +180,13 @@ public class QDataSetTableModel extends AbstractTableModel {
                 if ( wds.value(rowIndex, columnIndex - dep0Offset)==0 ) {
                     return "fill ("+this.ds.value(rowIndex, columnIndex - dep0Offset)+")";
                 } else {
-                    Datum d= units[columnIndex].createDatum(this.ds.value(rowIndex, columnIndex - dep0Offset));
-                    return df[columnIndex].format(d,units[columnIndex]);
+                    double d= this.ds.value(rowIndex, columnIndex - dep0Offset);
+                    if ( d>-1e31 ) {
+                        Datum datum= units[columnIndex].createDatum(d);
+                        return df[columnIndex].format(datum,units[columnIndex]);
+                    } else {
+                        return "fill ("+d+")";
+                    }
                 }
                 
             } else {
