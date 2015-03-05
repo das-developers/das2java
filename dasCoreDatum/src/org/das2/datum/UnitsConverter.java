@@ -110,6 +110,16 @@ public abstract class UnitsConverter {
      */
     public abstract double convert(double value);
     
+    /**
+     * convert the value in the source units to the target units,
+     * preserving the data type.  
+     * 
+     * TODO: study where this is used, because it seems like the unit 
+     * should determine its use.  For example, Units.CDF_TT2000 might want Long.
+     * 
+     * @param number value in source units.
+     * @return value in target units.
+     */
     public Number convert( Number number ) {
         double value = number.doubleValue();
         value = convert(value);
