@@ -1,6 +1,8 @@
 
 package org.virbo.dsutil;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
@@ -13,6 +15,7 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.FormatStringFormatter;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
@@ -25,6 +28,8 @@ import test.BundleBinsDemo;
  */
 public class QDataSetTableModel extends AbstractTableModel {
 
+    private static final Logger logger= LoggerManager.getLogger("qdataset.dsutil");
+            
     QDataSet ds;
     QDataSet wds;      // weights for ds;
     QDataSet bundle1;
@@ -40,7 +45,7 @@ public class QDataSetTableModel extends AbstractTableModel {
      * creates a QDataSetTableModel
      * @param ds dataset to adapt to a model/
      */
-    public QDataSetTableModel(QDataSet ds) {
+    public QDataSetTableModel( QDataSet ds ) {
         this.ds = ds;
         this.wds= DataSetUtil.weightsDataSet(ds);
         this.dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -139,7 +144,7 @@ public class QDataSetTableModel extends AbstractTableModel {
             //TODO: would be nice if we could verify formatter.  I had %f5.2 instead of %5.2f and it wasn't telling me.
             return new FormatStringFormatter( df, false );
         } catch ( RuntimeException ex ) {
-            ex.printStackTrace();
+            logger.log(Level.FINER,null,ex);
             return u.getDatumFormatterFactory().defaultFormatter();
         }
     }
@@ -207,7 +212,7 @@ public class QDataSetTableModel extends AbstractTableModel {
         
         for (int i = 0; i < colCount; i++) {
             TableColumn c = new TableColumn(i);
-            Units u=null;
+            Units u;
             if (i < dep0Offset) {
                 c.setHeaderValue(dep0.property(QDataSet.LABEL));
                 u= (Units) dep0.property(QDataSet.UNITS);
