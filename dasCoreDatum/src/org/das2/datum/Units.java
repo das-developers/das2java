@@ -23,7 +23,6 @@
 
 package org.das2.datum;
 
-import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +42,7 @@ import org.das2.datum.format.DatumFormatterFactory;
  * Class for indicating physical units.
  * @author  jbf
  */
-public abstract class Units implements Serializable {
+public abstract class Units {
 
     private static final Logger logger= Logger.getLogger("datum.units");
 
