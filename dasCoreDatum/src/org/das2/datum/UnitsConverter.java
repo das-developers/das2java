@@ -24,15 +24,23 @@
 package org.das2.datum;
 
 /**
- *
+ * Units Converter object performs scale/offset conversions, but can
+ * also be used any double-to-double conversion, and contains an
+ * implementation to chain multiple conversions together.
+ * 
  * @author  jbf
  */
 public abstract class UnitsConverter {
     
+    /**
+     * No conversion, where convert trivially returns the value.
+     */
     public static final UnitsConverter IDENTITY = new UnitsConverter() {
+        @Override
         public UnitsConverter getInverse() {
             return this;
         }
+        @Override
         public double convert(double value) {
             return value;
         }
@@ -49,13 +57,16 @@ public abstract class UnitsConverter {
     };
 
     /**
-     * Allow conversion, but this is a flag that indicates the result should be dimensionless because the Ratiometric units were
+     * Allow conversion, but this is a flag that indicates the result 
+     * should be dimensionless because the Ratiometric units were
      * not convertible.
      */
     public static final UnitsConverter LOOSE_IDENTITY = new UnitsConverter() {
+        @Override
         public UnitsConverter getInverse() {
             return this;
         }
+        @Override
         public double convert(double value) {
             return value;
         }
@@ -92,19 +103,24 @@ public abstract class UnitsConverter {
     
     public abstract UnitsConverter getInverse();
 
+    /**
+     * convert the value in the source units to the target units.
+     * @param value value in source units.
+     * @return value in target units.
+     */
     public abstract double convert(double value);
     
     public Number convert( Number number ) {
         double value = number.doubleValue();
         value = convert(value);
         if (number instanceof Integer) {
-            return Integer.valueOf((int)value);
+            return (int)value;
         }
         else if (number instanceof Long) {
-            return Long.valueOf((long)value);
+            return (long)value;
         }
         else {
-            return new Double(value);
+            return value;
         }
     }
     
@@ -122,8 +138,9 @@ public abstract class UnitsConverter {
          * converter multiplies by scale and adds offset, so
          * offset is in the target Units.  For example,
          * deg C to deg F would be 
-         * <pre>new UnitsConverter.ScaleOffset( 9./5, 32 )</pre>.
-         * 
+         * {@code new UnitsConverter.ScaleOffset( 9./5, 32 )}.
+         * @param scale the scale to apply to the value.
+         * @param offset the offset to apply after the scale
          */
         public ScaleOffset(double scale, double offset) {
             this(scale, offset, null);
@@ -145,6 +162,7 @@ public abstract class UnitsConverter {
             return a + b;
         }
 
+        @Override
         public UnitsConverter getInverse() {
             if (((UnitsConverter)this).inverse == null) {
                 ((UnitsConverter)this).inverse = new ScaleOffset(1.0 / scale, -(offset / scale), this);
@@ -152,6 +170,7 @@ public abstract class UnitsConverter {
             return ((UnitsConverter)this).inverse;
         }
 
+        @Override
         public double convert( double value ) {
             return scale * value + offset;
         }
@@ -209,21 +228,23 @@ public abstract class UnitsConverter {
             converters = array;
         }
         
+        @Override
         public double convert(double value) {
-            for (int i = 0; i < converters.length; i++) {
-                value = converters[i].convert(value);
+            for (UnitsConverter converter : converters) {
+                value = converter.convert(value);
             }
             return value;
         }
         
         @Override
         public Number convert(Number value) {
-            for (int i = 0; i < converters.length; i++) {
-                value = converters[i].convert(value);
+            for (UnitsConverter converter : converters) {
+                value = converter.convert(value);
             }
             return value;
         }
         
+        @Override
         public UnitsConverter getInverse() {
             if (inverse == null) {
                 int length = converters.length;
