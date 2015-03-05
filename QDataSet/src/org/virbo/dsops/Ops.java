@@ -2516,7 +2516,7 @@ public class Ops {
     public static long randomSeed() {
         long seed;
         try {
-            seed= java.security.SecureRandom.getInstanceStrong().nextLong(); //findbugs  DMI_RANDOM_USED_ONLY_ONCE suggests this.
+            seed= java.security.SecureRandom.getInstance("SHA1PRNG").nextLong(); //findbugs  DMI_RANDOM_USED_ONLY_ONCE suggests this.
         } catch ( NoSuchAlgorithmException ex ) {
             seed= 0;
         }
