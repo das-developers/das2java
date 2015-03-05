@@ -197,7 +197,6 @@ public class Schemes {
      */
     public static boolean isUniformCadence( QDataSet ds ) {
         if ( ds.rank()!=1 ) return false;
-        double v= ds.value(0);
         double dv= ds.value(1)-ds.value(0);
         double manyDv= ( ds.value(ds.length()-1)-ds.value(0) ) / ( ds.length()-1)  ;
         return ( ( manyDv - dv ) / dv ) < 0.001;
@@ -219,7 +218,6 @@ public class Schemes {
      */
     public static boolean isUniformRatiometricCadence( QDataSet ds ) {
         if ( ds.rank()!=1 ) return false;
-        double v= ds.value(0);
         double dv= Math.log( ds.value(1)/ds.value(0) );
         double manyDv= Math.log( ds.value(ds.length()-1) / ds.value(0) ) / ( ds.length()-1 );
         return ( ( manyDv - dv ) / dv ) < 0.001;
@@ -362,7 +360,7 @@ public class Schemes {
     public static boolean isAngleDistribution( QDataSet ds ) {
         if ( ds.rank()!=2 ) return false;
         QDataSet ads= (QDataSet)ds.property(QDataSet.DEPEND_0);
-        QDataSet rds= (QDataSet)ds.property(QDataSet.DEPEND_1);
+        //QDataSet rds= (QDataSet)ds.property(QDataSet.DEPEND_1);
         Units au= (Units) ads.property(QDataSet.UNITS);
         if ( au!=null && !( au==Units.dimensionless || au.isConvertibleTo(Units.degrees) ) ) {
             return false;
