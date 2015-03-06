@@ -10,7 +10,6 @@
 package org.virbo.dataset;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,11 +74,13 @@ public class JoinDataSet extends AbstractDataSet {
 
     /**
      * create a new JoinDataSet, and join the first dataset.
-     *    ds1= Ops.rand(30);
-     *    jds= new JoinDataSet( ds1 );
-     *    assert( ds1.rank()==1 );
-     *    assert( jds.rank()==2 );
-     *    assert( jds.slice(0).equals(ds1) );
+     *<blockquote><pre><small>{@code
+     *ds1= Ops.rand(30);
+     *jds= new JoinDataSet( ds1 );
+     *assert( ds1.rank()==1 );
+     *assert( jds.rank()==2 );
+     *assert( jds.slice(0).equals(ds1) );
+     *}</small></pre></blockquote>
      * @param ds1 rank N-1 dataset that will be the first slice to add to this rank N dataset.
      */
     public JoinDataSet( QDataSet ds1 ) {
@@ -89,8 +90,8 @@ public class JoinDataSet extends AbstractDataSet {
 
     /**
      * copy the JoinDataSet without copying each dataset it contains.
-     * @param joinDataSet
-     * @return
+     * @param joinDataSet another JoinDataSet
+     * @return a copy of the dataset.
      */
     public static JoinDataSet copy(JoinDataSet joinDataSet) {
         JoinDataSet result= new JoinDataSet(joinDataSet.rank());
@@ -153,6 +154,7 @@ public class JoinDataSet extends AbstractDataSet {
         datasets.add( ds );
     }
 
+    @Override
     public int rank() {
         return rank;
     }
@@ -239,12 +241,6 @@ public class JoinDataSet extends AbstractDataSet {
         return DataSetUtil.toString(this);
     }
 
-    /**
-     * clean up this trim.  This was implemented before QDataSet.trim was introduced.
-     * @param imin
-     * @param imax
-     * @return
-     */
     @Override
     public JoinDataSet trim( int imin, int imax ) {
         JoinDataSet result= new JoinDataSet(this.rank);
@@ -259,11 +255,11 @@ public class JoinDataSet extends AbstractDataSet {
     /**
      * slice the dataset by returning the joined dataset at this index.  If the
      * dataset is a MutablePropertiesDataSet, then add the properties of this
-     * join dataset to it. 
-     * The result is made a mutable properties dataset if it is not already, the danger here is that we may mutate the original data.
+     * join dataset to it.  The result is made a mutable properties dataset if it 
+     * is not already, the danger here is that we may mutate the original data.
      * Capabilities will fix this.
-     * @param idx
-     * @return
+     * @param idx the index for the slice
+     * @return the rank N-1 slice at the position.
      */
     @Override
     public QDataSet slice( int idx ) {
