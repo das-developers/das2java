@@ -87,6 +87,13 @@ import org.virbo.math.Contour;
 public class Ops {
 
     private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
+    
+    /**
+     * this class cannot be instantiated.
+     */
+    private Ops() {    
+    }
+    
     /**
      * UnaryOps are one-argument operations, such as sin, abs, and sqrt
      */
@@ -2656,7 +2663,7 @@ public class Ops {
 
     /**
      * rank 1 dataset for demos and testing.
-     * @param len0
+     * @param len0 number of elements in the first index
      * @return rank 1 dataset for demos and testing.
      */
     public static QDataSet ripples( int len0 ) {
@@ -2667,8 +2674,8 @@ public class Ops {
 
     /**
      * rank 2 dataset for demos and testing.
-     * @param len0
-     * @param len1
+     * @param len0 number of elements in the first index
+     * @param len1 number of elements in the second index
      * @return rank 2 dataset for demos and testing.
      */
     public static QDataSet ripples( int len0, int len1 ) {
@@ -2679,9 +2686,9 @@ public class Ops {
 
     /**
      * rank 3 dataset for demos and testing.
-     * @param len0
-     * @param len1
-     * @param len2
+     * @param len0 number of elements in the first index
+     * @param len1 number of elements in the second index
+     * @param len2 number of elements in the third index
      * @return rank 3 dataset for demos and testing.
      */
     public static QDataSet ripples( int len0, int len1, int len2 ) {
@@ -2704,10 +2711,10 @@ public class Ops {
 
     /**
      * rank 4 dataset for demos and testing.
-     * @param len0
-     * @param len1
-     * @param len2
-     * @param len3
+     * @param len0 number of elements in the first index
+     * @param len1 number of elements in the second index
+     * @param len2 number of elements in the third index
+     * @param len3 number of elements in the fourth index
      * @return rank 4 dataset for demos and testing.
      */
     public static QDataSet ripples( int len0, int len1, int len2, int len3 ) {
@@ -2733,8 +2740,8 @@ public class Ops {
 
     /**
      * return fake rank 1 data timeseries for testing
-     * @param len
-     * @return
+     * @param len number of records
+     * @return fake rank 1 data timeseries for testing
      */
     public static QDataSet ripplesTimeSeries( int len ) {
         QDataSet rip= ripples( len,100 );
@@ -2802,8 +2809,8 @@ public class Ops {
     /**
      * return fake position data for testing
      * result is rank 2 bundle [len,27]
-     * @param len
-     * @return
+     * @param len the number of records
+     * @return fake position data for testing
      */
     public static QDataSet ripplesSpectrogramTimeSeries( int len ) {
         QDataSet rip= ripples( len,100 );
@@ -2830,8 +2837,8 @@ public class Ops {
     /**
      * return fake position data for testing
      * result is rank 2 bundle [len,27]
-     * @param len
-     * @return
+     * @param len the number of records.
+     * @return an example join spectrogram time series.
      */
     public static QDataSet ripplesJoinSpectrogramTimeSeries( int len ) {
 
@@ -2893,7 +2900,7 @@ public class Ops {
     /**
      * return an example of a QDataSet containing a pitch angle distribution.  This is
      * a rank 2 dataset with angle in radians for DEPEND_0 and radius for DEPEND_1.
-     * @return
+     * @return an example pitch angle distribution.
      */
     public static QDataSet ripplesPitchAngleDistribution() {
         ArrayDataSet rip= ArrayDataSet.maybeCopy( ripples( 30, 15 ) );
@@ -2909,21 +2916,21 @@ public class Ops {
      * generates a sawtooth from the tags, where a peak occurs with a period 2*PI.
      * All values of T should be ge zero.  TODO: I think there should be a modp 
      * function that is always positive. (-93 % 10 ->7 though...)
-     * @param t
-     * @return /|/|/|
+     * @param t the independent values
+     * @return /|/|/| sawtooth wave with a period of 2 PI.
      */
     public static QDataSet sawtooth( QDataSet t ) {
-        QDataSet modt= divide( modp( t, DataSetUtil.asDataSet(2*PI) ), 2*PI );
+        QDataSet modt= divide( modp( t, DataSetUtil.asDataSet(TAU) ), TAU );
         return link( t, modt );
     }
     
     /**
      * generates a square from the tags, where a the signal is 1 from 0-PI, 0 from PI-2*PI, etc.
-     * @param t
+     * @param t the independent values.
      * @return square wave with a period of 2 PI.
      */
     public static QDataSet square( QDataSet t ) {
-        QDataSet modt= lt( modp( t, DataSetUtil.asDataSet(2*PI) ), PI );
+        QDataSet modt= lt( modp( t, DataSetUtil.asDataSet(TAU) ), PI );
         return link( t, modt );
     }
     /**
@@ -3936,10 +3943,10 @@ public class Ops {
     
     /**
      * return non-zero where the data in ds are within the bounds.  In Jython,
-     *<blockquote><pre>{@code
-     *   print within( [0,1,2,3,4], '2 to 4' ) --> [ 0,0,1,1,0 ]
-     *   print within( ttag, 'orbit:rbspa-pp:172' )
-     *}</pre></blockquote>
+     *<blockquote><pre>
+     *print within( [0,1,2,3,4], '2 to 4' ) --> [ 0,0,1,1,0 ]
+     *print within( ttag, 'orbit:rbspa-pp:172' )
+     *</pre></blockquote>
      * 
      * Note, before March 2, 2015, this would incorrectly return the where of the result.
      * @param ds rank N dataset where N &gt; 0
@@ -3954,9 +3961,9 @@ public class Ops {
      * returns a rank 1 dataset of indeces that sort the rank 1 dataset ds.
      * This is not the dataset sorted.  For example:
      *<blockquote><pre>
-     *   ds= randn(2000)
-     *   s= sort( ds )
-     *   dsSorted= ds[s]
+     *ds= randn(2000)
+     *s= sort( ds )
+     *dsSorted= ds[s]
      *</pre></blockquote>
      * Note the result will have the property MONOTONIC==Boolean.TRUE if 
      * the data was sorted already.
@@ -5183,8 +5190,9 @@ public class Ops {
      * datasets vary.
      * @param ds the dataset to measure the extent rank 1 or rank 2 bins
      * @param wds a weights dataset, containing zero where the data is not valid, positive non-zero otherwise.  If null, then all finite data is treated as valid.
-     * @param range, if non-null, return the union of this range and the extent.  This must not contain fill!
+     * @param range if non-null, return the union of this range and the extent.  This must not contain fill!
      * @return two element, rank 1 "bins" dataset.
+     * @see #extent(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet extentSimple( QDataSet ds, QDataSet wds, QDataSet range  ) {
 
@@ -5282,7 +5290,7 @@ public class Ops {
      * evaluation of the weightsDataSet.  If no valid data is found then [fill,fill] is returned.
      * @param ds the dataset to measure the extent rank 1 or rank 2 bins
      * @param wds a weights dataset, containing zero where the data is not valid, positive non-zero otherwise.  If null, then all finite data is treated as valid.
-     * @param range, if non-null, return the union of this range and the extent.  This must not contain fill!
+     * @param range if non-null, return the union of this range and the extent.  This must not contain fill!
      * @return two element, rank 1 "bins" dataset.
      */
     public static QDataSet extent( QDataSet ds, QDataSet wds, QDataSet range ) {
@@ -5487,12 +5495,12 @@ public class Ops {
 
     /**
      * make a 2-D histogram of the data in x and y.  For example
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *x= randn(10000)+1
      *y= randn(10000)+4
      *zz= histogram2d( x,y, [30,30], dataset([0,8]), dataset([-2,6]) )
      *plot( zz )
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * The result will be a rank 2 dataset with DEPEND_0 and DEPEND_1 indicating
      * the bin locations.
      * @param x the x values
@@ -6510,9 +6518,9 @@ public class Ops {
      * returns a dataset with zero where the data is invalid, and positive 
      * non-zero where the data is valid.  (This just returns the weights
      * plane of the dataset.)
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *r= where( valid( ds ) )
-     *}</small></pre></blockquote> 
+     *</pre></blockquote> 
      *
      * @param ds a rank N dataset that might have FILL_VALUE, VALID_MIN or VALID_MAX
      *   set.
@@ -7067,11 +7075,11 @@ public class Ops {
     /**
      * append two datasets that are QUBEs.  DEPEND_0 and other metadata is
      * handled as well.  So for example: 
-     *<blockquote><pre><small>{@code
-     *    ds1= findgen(10)
-     *    ds2= findgen(12)
-     *    print append(ds1,ds2)  ; dataSet[22] (dimensionless)
-     *}</small></pre></blockquote>     
+     *<blockquote><pre>
+     *ds1= findgen(10)
+     *ds2= findgen(12)
+     *print append(ds1,ds2)  ; dataSet[22] (dimensionless)
+     *</pre></blockquote>     
      * If both datasets are ArrayDataSets and of the same component type, then
      * the result will have this type as well.  Otherwise DDataSet is returned.
      * @param ds1 null or rank N dataset
@@ -7528,8 +7536,8 @@ public class Ops {
      * a new dataset where y is the dependent variable of the independent
      * variable x.  link is like the plot command, but doesn't plot.  For example
      *<blockquote><pre>
-     *   plot(X,Y) shows a plot of Y(X),
-     *   link(X,Y) returns the dataset Y(X).
+     *plot(X,Y) shows a plot of Y(X),
+     *link(X,Y) returns the dataset Y(X).
      *</pre></blockquote>
      * @param x rank 1 dataset
      * @param y rank 1 or rank 2 bundle dataset
@@ -7696,10 +7704,10 @@ public class Ops {
     /**
      * declare that the dataset is a dependent parameter of an independent parameter.
      * This isolates the QDataSet semantics, and verifies correctness.  See also link(x,y).
-     * @param ds
+     * @param ds the dataset
      * @param dim dimension to declare dependence: 0,1,2.
      * @param dep the independent dataset.
-     * @return
+     * @return the dataset, which may be a copy if the data was not mutable.
      */
     public static MutablePropertyDataSet dependsOn( QDataSet ds, int dim, QDataSet dep ) {
         MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable(ds);
@@ -7716,6 +7724,10 @@ public class Ops {
             if ( dep!=null && ds.length(0,0)!=dep.length() ) 
                 throw new IllegalArgumentException(String.format("ds.length(0,0)!=dep.length() (%d!=%d)",ds.length(0,0),dep.length()));
             mds.putProperty( QDataSet.DEPEND_2, dep );
+        } else if ( dim==3 ) {
+            if ( dep!=null && ds.length(0,0,0)!=dep.length() ) 
+                throw new IllegalArgumentException(String.format("ds.length(0,0,0)!=dep.length() (%d!=%d)",ds.length(0,0,0),dep.length()));
+            mds.putProperty( QDataSet.DEPEND_3, dep );
         }
         return mds;
     }
@@ -7857,9 +7869,9 @@ public class Ops {
     /**
      * extra spaces and pipes cause problems in the Operations text field.  Provide so that data sources can provide
      * safer names, while we test safe-name requirements on a broader test set.  Use of this method will allow us to see
-     * where changes are needed.
-     * @param suggest
-     * @return
+     * where changes are needed.  TODO: where is this used?
+     * @param suggest a name, possibly containing pipes (|)
+     * @return suggest, but with pipe converted to underscore.
      */
     public static String saferName( String suggest ) {
         return suggest.trim().replaceAll("\\|","_");
@@ -7868,8 +7880,8 @@ public class Ops {
     /**
      * made a Java-style identifier from the provided string
      * See VirboAutoplot/src/scripts/safeName.jy which demonstrates this.
-     * @param suggest
-     * @return
+     * @param suggest a name, possibly containing spaces and illegal characters
+     * @return a Java-style identifier
      */
     public static String safeName( String suggest ) {
         if ( suggest.startsWith("|") && suggest.endsWith("|") ) { // taken from rich headers code.
@@ -7953,26 +7965,26 @@ public class Ops {
     }
 
     /**
-     * transpose the rank 2 dataset.
+     * transpose the rank 2 dataset.  result[i,j]= ds[j,i] for each i,j.
      * @param ds rank 2 dataset
-     * @return 
+     * @return rank 2 dataset
      */
     public static QDataSet transpose(QDataSet ds) {
         return DDataSet.copy(new TransposeRank2DataSet(ds));
     }
 
     public static QDataSet transpose( Object ds ) {
-        return DDataSet.copy(new TransposeRank2DataSet( dataset(ds) ));
+        return transpose( dataset(ds) );
     }
     
     /**
      * returns true iff the dataset values are equivalent.  Note this
-     * may promote rank, etc.
-     * If the two datasets have enumerations, then we create datums and check .equals.
-     * This does not check TITLE, etc.  Just units.
-     * @param ds1
-     * @param ds2
-     * @return
+     * may promote rank, etc.  If the two datasets have enumerations, then we 
+     * create datums and check .equals.  This does not check TITLE, etc,  
+     * just that the units and values are equal.
+     * @param ds1 the first dataset
+     * @param ds2 the second dataset
+     * @return true if the dataset values are equivalent.
      */
     public static boolean equivalent( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1!=null && ds1==ds2 ) return true;
@@ -8014,7 +8026,7 @@ public class Ops {
      * <li>DEPEND       increases dimensionality by dimensionality of DEPEND ds.
      * <li>BUNDLE       increases dimensionality by N, where N is the number of bundled datasets.
      * </ul>
-     * Note this includes implicit dimensions taken by the primary dataset.
+     * Note this includes implicit dimensions taken by the primary dataset:
      * <ul>
      *   <li>Z(time,freq)->3
      *   <li>rand(20,20)->3
