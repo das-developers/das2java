@@ -18,7 +18,7 @@ package org.virbo.dataset;
  *
  * <p>The QDataSet can be thought of as a fast java array that has name-value metadata
  * attached to it.  These arrays of data can have arbitrary rank, although currently
- * the interface limits rank to 1,2, and 3.  (Rank 0 and Rank N are proposed but not
+ * the interface limits rank to 0,1,2,3, and 4.  (Rank N is proposed but not
  * developed.)  Each dimension's length can vary, like java arrays, and datasets 
  * where the dimensions do not vary in length are colloquially called "Qubes."</p>
  *
@@ -29,8 +29,8 @@ package org.virbo.dataset;
  * 
  * <p>This is inspired by the CDF data model and PaPCo's dataset model.</p>
  *
- * <p>See http://autoplot.org/QDataSet</p>
- *
+ * <p>See {@link http://autoplot.org/QDataSet}</p>
+ * 
  * @author jbf
  */
 public interface QDataSet {
