@@ -81,6 +81,7 @@ public class LeafTrimDataSet extends AbstractDataSet {
         }
     }
     
+    @Override
     public int rank() {
         return ds.rank();
     }
