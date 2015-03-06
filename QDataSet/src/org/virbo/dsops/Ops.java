@@ -1119,8 +1119,8 @@ public class Ops {
      * Note Jython conflict needs to be resolved.  Note the result of this
      * will have dimensionless units, and see magnitude for the more abstract
      * operator.
-     * @param ds1
-     * @return
+     * @param ds1 the dataset
+     * @return dataset with the same geometry
      */
     public static QDataSet abs(QDataSet ds1) {
         MutablePropertyDataSet result= applyUnaryOp(ds1, new UnaryOp() {
@@ -1133,14 +1133,29 @@ public class Ops {
         return result;
     }
 
+    /**
+     * return the abs of the long, to support Jython properly.
+     * @param x the long
+     * @return abs of the long
+     */
     public static long abs( long x ) {
         return Math.abs( x );
     }
     
-    public static double abs( double ds1 ) {
-        return Math.abs( ds1 );
+    /**
+     * return the abs of the double, to support Jython properly.
+     * @param v the valye
+     * @return abs of the value
+     */
+    public static double abs( double v ) {
+        return Math.abs( v );
     }
 
+    /**
+     * promote the list, double, array etc to QDataSet before taking abs.
+     * @param ds1 list, double, array, etc
+     * @return the abs in a QDataSet
+     */
     public static QDataSet abs( Object ds1 ) {
         return abs( dataset(ds1) );
     }
@@ -1149,9 +1164,9 @@ public class Ops {
     /**
      * element-wise pow (** in FORTRAN, ^ in IDL) of two datasets with the same
      * geometry.
-     * @param ds1
-     * @param pow
-     * @return
+     * @param ds1 the base
+     * @param pow the exponent
+     * @return the value ds1**pow
      */
     public static QDataSet pow(QDataSet ds1, QDataSet pow) {
         MutablePropertyDataSet result=  applyBinaryOp(ds1, pow, new BinaryOp() {
@@ -1167,26 +1182,40 @@ public class Ops {
     /**
      * for Jython, we define this because the doubles aren't coerced.  
      * Note that pow(2,4) returns a long, not an int like Python 2.6.5
-     * @param x
-     * @param y
-     * @return
+     * @param x the base
+     * @param y the exponent
+     * @return the value x**y
      */
     public static long pow( long x, long y ) {
         return (long)Math.pow( x, y );
     }
     
-    public static double pow( double ds1, double ds2 ) {
-        return Math.pow( ds1,ds2 );
+    /**
+     * for Jython, we define this because the doubles aren't coerced.  
+     * Note that pow(2,4) returns a long, not an int like Python 2.6.5
+     * @param x the base
+     * @param y the exponent
+     * @return the value x**y
+     */
+    public static double pow( double x, double y ) {
+        return Math.pow( x,y );
     }
     
-    public static QDataSet pow( Object ds1, Object ds2 ) {
-        return pow( dataset(ds1), dataset(ds2) );
+    /**
+     * element-wise pow (** in FORTRAN, ^ in IDL) of two datasets with the same
+     * geometry.
+     * @param ds1 the base
+     * @param pow the exponent
+     * @return the value ds1**pow
+     */
+    public static QDataSet pow( Object ds1, Object pow ) {
+        return pow( dataset(ds1), dataset(pow) );
     }
       
     /**
      * element-wise exponentiate e**x.
-     * @param ds
-     * @return
+     * @param ds the dataset
+     * @return dataset of the same geometry
      */
     public static QDataSet exp(QDataSet ds) {
         MutablePropertyDataSet result=  applyUnaryOp(ds, new UnaryOp() {
@@ -1199,10 +1228,20 @@ public class Ops {
         return result;
     }
 
-    public static double exp( double ds1 ) {
-        return Math.exp( ds1 );
+    /**
+     * Jython requires this be implemented 
+     * @param d
+     * @return e**d
+     */
+    public static double exp( double d ) {
+        return Math.exp( d );
     }
 
+    /**
+     * convert array, list, double, etc to QDataSet and return exp(d)
+     * @param ds1 requires this be implemented 
+     * @return exp(ds1)
+     */
     public static QDataSet exp( Object ds1 ) {
         return exp( dataset(ds1) );
     }
@@ -1286,7 +1325,7 @@ public class Ops {
      * this only works when one unit is dimensionless.
      * @param units1 e.g. Units.ergs
      * @param units2 e.g. Units.dimensionless
-     * @return e.g. Units.ergs
+     * @return the product of the two units, e.g. Units.ergs
      */
     private static Units multiplyUnits( Units units1, Units units2 ) {
         Units resultUnits;
@@ -1340,9 +1379,9 @@ public class Ops {
      * element-wise divide of two datasets with compatible geometry.  Either
      * ds1 or ds2 should be dimensionless, or the units be convertible.
      * TODO: units improvements.
-     * @param ds1
-     * @param ds2
-     * @return a data
+     * @param ds1 the numerator
+     * @param ds2 the divisor
+     * @return the ds1/ds2
      */
     public static QDataSet divide(QDataSet ds1, QDataSet ds2) {
         Units units1= SemanticOps.getUnits(ds1);
@@ -1396,19 +1435,23 @@ public class Ops {
 
     /**
      * element-wise mod of two datasets with compatible geometry.
-     * TODO: I think there's a tacit assumption that the units are the same.  This should support Units.t2000 mod "24 hours" to get result in hours.
-     * @param ds1
-     * @param ds2
-     * @return
+     * TODO: I think there's a tacit assumption that the units are the same.  
+     * This should support Units.t2000 mod "24 hours" to get result in hours.
+     * @param ds1 the numerator
+     * @param ds2 the divisor 
+     * @return the remainder after the division
      */
     public static QDataSet mod(QDataSet ds1, QDataSet ds2) {
+        Units u1= SemanticOps.getUnits(ds1).getOffsetUnits();
+        Units u= SemanticOps.getUnits(ds2);
+        final UnitsConverter uc= u1.getConverter(u);
+        final double base= 0;
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             @Override
             public double op(double d1, double d2) {
-                return d1 % d2;
+                return uc.convert(d1-base ) % d2;
             }
-        });
-        Units u= (Units) ds2.property(QDataSet.UNITS);
+        });        
         if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
         return result;
     }
@@ -1426,14 +1469,17 @@ public class Ops {
      * @return
      */
     public static QDataSet modp(QDataSet ds1, QDataSet ds2) {
+        Units u1= SemanticOps.getUnits(ds1).getOffsetUnits();
+        Units u= SemanticOps.getUnits(ds2);
+        final UnitsConverter uc= u1.getConverter(u);
+        final double base= 0;
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             @Override
             public double op(double d1, double d2) {
-                double t= d1 % d2;
+                double t= uc.convert(d1-base ) % d2;
                 return ( t<0 ) ? t+d2 : t;
             }
         });
-        Units u= (Units) ds2.property(QDataSet.UNITS);
         if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
         return result;
     }
