@@ -9,9 +9,6 @@ package org.virbo.dataset;
  * last dimension.  This does not reduce rank.  This assumes the dataset has no
  * row with length>end.
  *
- * TODO: This probably doesn't handle bundles property.
- * TODO: slice and trim should probably be implemented here for efficiently.
- *
  * @author jbf
  */
 public class LeafTrimDataSet extends AbstractDataSet {
@@ -146,6 +143,16 @@ public class LeafTrimDataSet extends AbstractDataSet {
     @Override
     public int length(int i0, int i1, int i2) {
         return ds.rank() == 4 ? end - start : ds.length(i0, i1, i2);
+    }
+
+    @Override
+    public QDataSet slice(int i) {
+        return new LeafTrimDataSet( ds.slice(i), this.start, this.end );
+    }
+
+    @Override
+    public QDataSet trim(int start, int end) {
+        return new LeafTrimDataSet( ds.trim(start, end), this.start, this.end );
     }
 
 }
