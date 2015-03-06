@@ -43,11 +43,11 @@ public class Schemes {
      * of dimensions (cube or hypercube).
      * 
      * Note,
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *from org.virbo.dataset.examples import Schemes
      *ds= Schemes.boundingBox()
      *print asDatumRange(ds.slice(0))
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * 
      * @return a bounding box for the data.
      * @see org.virbo.dataset.DataSetUtil#asDatumRange(org.virbo.dataset.QDataSet) 
@@ -80,13 +80,13 @@ public class Schemes {
      * DEPEND_0 is the time for each packet, and DEPEND_1 is the difference in
      * time for each measurement to the packet time.  Note the additional requirement
      * that the offsets be uniform, e.g.:
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *from org.virbo.dataset.examples import Schemes
      *ds= Schemes.rank2Waveform()
      *deltaT= ds.property( QDataSet.DEPEND_1 )
      *ddeltaT= diffs(dep1)
      *print ddeltaT[0], ddeltT[-1] # should be the same
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * 
      * @return rank 2 waveform.
      */
@@ -112,14 +112,14 @@ public class Schemes {
      * return a rank 2 vectorTimeSeries, which is a bundle
      * of m rank 1 measurements.  This tacitly asserts orthogonality,
      * but the bundled data should at least all be rank 1 and in the same units.
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *from org.virbo.dataset.examples import Schemes
      *ds= Schemes.vectorTimeSeries()
      *plot( magnitude( ds ) )
      *plot( unbundle( ds, 0 ) )
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
+     * dataset&rarr;rank2bundle&rarr;vectorTimeSeries.
      * @return rank 2 vector time series.
-     *dataset>rank2bundle>vectorTimeSeries.
      */
     public static QDataSet vectorTimeSeries( ) {
         return Ops.ripplesVectorTimeSeries(1440);
@@ -368,4 +368,28 @@ public class Schemes {
         return true;
     }
     
+    /**
+     * return an example bundle dataset that bundles timetags, a rank 1 dataset
+     * and a rank 2 dataset.
+     * @return an example bundle dataset 
+     */
+    public static QDataSet bundleDataSet() {
+        try {
+            QDataSet tt= Ops.timegen( "2015-01-01", "60s", 1440 );
+            QDataSet r1= Ops.ripplesTimeSeries(1440);
+            QDataSet r2= Ops.ripplesVectorTimeSeries(1440);
+            return Ops.bundle( tt, r1, r2 );
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    /**
+     * return true if the data is a bundle dataset
+     * @param ds a dataset
+     * @return true if the data is a bundle dataset
+     */
+    public static boolean isBundleDataSet( QDataSet ds ) {
+        return Ops.isBundle(ds);
+    }
 }
