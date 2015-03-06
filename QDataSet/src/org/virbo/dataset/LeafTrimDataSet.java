@@ -7,7 +7,7 @@ package org.virbo.dataset;
 /**
  * pull out a subset of the dataset by reducing the number of columns in the
  * last dimension.  This does not reduce rank.  This assumes the dataset has no
- * row with length>end.
+ * row with length&gt;end.
  *
  * @author jbf
  */
@@ -145,14 +145,23 @@ public class LeafTrimDataSet extends AbstractDataSet {
         return ds.rank() == 4 ? end - start : ds.length(i0, i1, i2);
     }
 
+    /**
+     * {@inheritDoc}
+     * This must also copy the dimension properties explicitly.
+     * @param i
+     * @return 
+     */
     @Override
     public QDataSet slice(int i) {
-        return new LeafTrimDataSet( ds.slice(i), this.start, this.end );
+        LeafTrimDataSet result= new LeafTrimDataSet( ds.slice(i), this.start, this.end );
+        DataSetUtil.copyDimensionProperties( this, result );
+        return result;
     }
 
     @Override
     public QDataSet trim(int start, int end) {
-        return new LeafTrimDataSet( ds.trim(start, end), this.start, this.end );
+        LeafTrimDataSet result= new  LeafTrimDataSet( ds.trim(start, end), this.start, this.end );
+        DataSetUtil.copyDimensionProperties( this, result );
+        return result;
     }
-
 }
