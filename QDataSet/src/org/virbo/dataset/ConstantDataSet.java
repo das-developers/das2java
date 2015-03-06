@@ -37,58 +37,72 @@ public final class ConstantDataSet implements QDataSet {
         return rank;
     }
 
+    @Override
     public double value() {
         return value;
     }
 
+    @Override
     public double value(int i0) {
         return value;
     }
 
+    @Override
     public double value(int i0, int i1) {
         return value;
     }
 
+    @Override
     public double value(int i0, int i1, int i2) {
         return value;
     }
 
+    @Override
     public double value(int i0, int i1, int i2, int i3) {
         return value;
     }
 
+    @Override
     public Object property(String name) {
         return null;
     }
 
+    @Override
     public Object property(String name, int i) {
         return null;
     }
 
+    @Override
     public int length() {
         return len0;
     }
     
+    @Override
     public int length(int i) {
         return len1;
     }
 
+    @Override
     public int length(int i, int j) {
         return len2;
     }
 
+    @Override
     public int length(int i, int j, int k) {
         return len3;
     }
 
+    @Override
     public QDataSet slice(int i) {
         return new ConstantDataSet( rank-1, len1, len2, len3, 1, value );
     }
 
+    @Override
     public QDataSet trim(int start, int end) {
         return new ConstantDataSet( rank-1, end-start, len1, len2, len3, value );
     }
 
+    @Override
     public <T> T capability(Class<T> clazz) {
         return null;
     }
