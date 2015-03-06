@@ -30,6 +30,7 @@ public class AsciiParserDemo {
     
     /**
      * @param args the command line arguments
+     * @throws java.lang.Exception sometimes when testing
      */
     public static void main(String[] args) throws Exception {
 

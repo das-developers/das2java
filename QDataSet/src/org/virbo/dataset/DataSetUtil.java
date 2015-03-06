@@ -235,7 +235,7 @@ public class DataSetUtil {
     /**
      * return the "User" property, which allow for extensions of the data model that
      * aren't used.  This returns the property "name" under the name USER_PROPERTIES,
-     * which must either be null or a Map<String,Object>.
+     * which must either be null or a Map&lt;String,Object&gt;.
      * @param ds  The dataset containing the property.
      * @param name  The name of the user property.
      * @return
@@ -389,7 +389,7 @@ public class DataSetUtil {
     /**
      * properties that describe the dataset itself, rather than those of a dimension
      * or structural properties.
-     * @return
+     * @return the properties that describe the dataset itself
      */
     public static String[] globalProperties() {
         return new String[] {
@@ -400,7 +400,7 @@ public class DataSetUtil {
     /**
      * properties that go along with the zeroth index.  These are all QDataSets with dimensions compatible with the datasets.
      * If you trim the dataset, then these must be trimmed as well.
-     * @return
+     * @return the properties that go along with the zeroth index
      */
     public static String[] correlativeProperties() {
         return new String[] {
@@ -417,7 +417,7 @@ public class DataSetUtil {
      *    property( "DEPEND_0",0,0 ) should never return property("DEPEND_0").
      * This is false, for example, for DEPEND_1.
      * @param prop the property name.
-     * @return
+     * @return true if the property is inherited
      */
     public static boolean isInheritedProperty( String prop ) {
         boolean indexProp= prop.startsWith("DEPEND_")
@@ -438,7 +438,7 @@ public class DataSetUtil {
      * @param ds the dataset to slice.
      * @param index index to slice at.
      * @param result a map to insert the new properties, or null if a new one should be created.
-     * @return
+     * @return a map of properties attached to the slice at index
      */
     public static Map<String, Object> sliceProperties( QDataSet ds, int index, Map<String,Object> result ) {
         if ( result==null ) result= new LinkedHashMap();
@@ -462,7 +462,7 @@ public class DataSetUtil {
      * @param ds the dataset with properties to trim.
      * @param start start index of trim operation
      * @param stop exclusive stop index of the trim operation.
-     * @return
+     * @return the properties of ds, trimmed to the indeces.
      */
     public static Map<String,Object> trimProperties( QDataSet ds, int start, int stop ) {
 
@@ -856,8 +856,8 @@ public class DataSetUtil {
 
     /**
      * return just the valid points of the dataset.
-     * @param ds
-     * @return
+     * @param ds a dataset rank &gt; 0.
+     * @return the valid points of the dataset in a rank 1 dataset.
      */
    public static QDataSet validPoints( QDataSet ds ) {
 
@@ -887,14 +887,17 @@ public class DataSetUtil {
     }
 
     /**
-     * return the unit for which all elements in the dataset are
-     * integer multiples of the result.
-     * @param ds
+     * return the greatest common divisor, which is the unit for which 
+     * all elements in the dataset are integer multiples of the result.
+     * This works on continuous data, however, so limit is used to determine 
+     * the fuzz allowed.  TODO: this needs review and is not for production use.
+     * @param ds any dataset
      * @param d first factor for the dataset, error is used to detect non-zero significance.
      * @param limit the resolution for which data is considered equal, and this
      * limit should be greater than numerical precision.
      * @throws IllegalArgumentException if there is no valid data.
-     * @return
+     * @return the greatest common divisor.
+     * 
      */
    public static QDataSet gcd( QDataSet ds, QDataSet d, QDataSet limit ) {
         QDataSet r, hist, peaks;
@@ -931,13 +934,15 @@ public class DataSetUtil {
    }
 
     /**
-     * return the unit for which all elements in the dataset are 
-     * integer multiples plus some offset.
-     * @param ds
+     * return the greatest common divisor, which is the unit for which 
+     * all elements in the dataset are integer multiples of the result.
+     * This works on continuous data, however, so limit is used to determine 
+     * the fuzz allowed.  TODO: this needs review and is not for production use.
+     * @param ds any dataset
      * @param limit the resolution for which data is considered equal.  The result
      * will be an integer multiple of this.
      * @throws IllegalArgumentException if there is no valid data.
-     * @return
+     * @return the greatest common divisor.
      */
     public static QDataSet gcd( QDataSet ds, QDataSet limit ) {
         QDataSet ds1= validPoints(ds);
@@ -1012,9 +1017,9 @@ public class DataSetUtil {
     
     /**
      * true if the two datasets appear to be from the same population.
-     * @param ds1
-     * @param ds2
-     * @return 
+     * @param ds1 first dataset
+     * @param ds2 second dataset
+     * @return true if the two datasets appear to be from the same population
      */
     public static boolean samePopulation( QDataSet ds1, QDataSet ds2 ) {
         RankZeroDataSet stats1 = DataSetOps.moment(ds1);
@@ -1060,7 +1065,7 @@ public class DataSetUtil {
      * infer the bins for the rank 2 ytags.  This was first used with Juno
      * high-rate data, where the ytags follow the FCE implied by the magnetic 
      * field detector.
-     * @param ds rank 2 dataset[n,m]
+     * @param ydss rank 2 dataset[n,m]
      * @return two-element array of rank 2 datasets[n,m], where 0 is the min and 1 is the max.
      */
     public static QDataSet[] inferBinsRank2( QDataSet ydss ) {
@@ -1774,8 +1779,8 @@ public class DataSetUtil {
 
     /**
      * returns 1 for zero-length qube, the product otherwise.
-     * @param qube
-     * @return
+     * @param qube int array
+     * @return the product of the elements of the array
      */
     public static int product( int[] qube ) {
         switch ( qube.length ) {
@@ -1792,7 +1797,7 @@ public class DataSetUtil {
      * add QUBE property to dataset, maybe verifying that it is a qube.  This is
      * intended to reduce code that builds datasets, not to verify that a dataset
      * is a qube.
-     * @param ds
+     * @param ds the dataset
      * @throws IllegalArgumentException if the dataset is not a qube
      */
     public static void addQube(MutablePropertyDataSet ds) throws IllegalArgumentException {
@@ -1857,6 +1862,11 @@ public class DataSetUtil {
         }
     }
 
+    /**
+     * return a human-readable string representing the dataset
+     * @param ds the dataset to represent
+     * @return a human-readable string 
+     */
     public static String format(QDataSet ds) {
         return format( ds, true );
     }
@@ -1865,7 +1875,7 @@ public class DataSetUtil {
      * return a human-readable string representing the dataset
      * @param ds the dataset to represent
      * @param showContext show the context property (@slice2=1) if present and ds is rank0.
-     * @return
+     * @return a human-readable string 
      */
     public static String format(QDataSet ds,boolean showContext) {
         if ( ds.property(QDataSet.BUNDLE_0)!=null ) {
@@ -1978,8 +1988,8 @@ public class DataSetUtil {
     /**
      * return a human readable statistical representation of the dataset.  Currently
      * this is the mean, stddev ad number of points.
-     * @param ds
-     * @return
+     * @param ds the data
+     * @return return a human readable statistical representation
      */
     public static String statsString(QDataSet ds) {
         RankZeroDataSet stats = DataSetOps.moment(ds);
@@ -2177,8 +2187,8 @@ public class DataSetUtil {
      * special weightsDataSet for when there is a bundle, and each
      * component could have its own FILL_VALID and VALID_MAX.  Each component
      * gets its own weights dataset in a JoinDataSet.
-     * @param ds
-     * @return
+     * @param ds rank 2 bundle dataset
+     * @return dataset with the same geometry but a weightsDataSet of each bundled dataset.
      */
     public static QDataSet bundleWeightsDataSet( final QDataSet ds ) {
         QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
@@ -2201,7 +2211,7 @@ public class DataSetUtil {
     
     /**
      * Provide consistent valid logic to operators by providing a QDataSet
-     * with >0.0 where the data is valid, and 0.0 where the data is invalid.
+     * with &gt;0.0 where the data is valid, and 0.0 where the data is invalid.
      * VALID_MIN, VALID_MAX and FILL_VALUE properties are used.  
      * 
      * Note, when FILL_VALUE is not specified, -1e31 is used.  This is to
@@ -2466,8 +2476,8 @@ public class DataSetUtil {
 
     /**
      * convert the QDataSet to an array.  Units and fill are ignored...
-     * @param d
-     * @return
+     * @param d the rank 1 dataset.
+     * @return an array of doubles
      */
     public static double[] asArrayOfDoubles( QDataSet d ) {
         double[] result;
@@ -2486,8 +2496,8 @@ public class DataSetUtil {
 
     /**
      * convert the QDataSet to an array.  Units and fill are ignored...
-     * @param d
-     * @return
+     * @param d the rank 2 dataset
+     * @return 2-D array of doubles
      */
     public static double[][] as2DArrayOfDoubles( QDataSet d ) {
         double[][] result;
@@ -2664,9 +2674,9 @@ public class DataSetUtil {
 
     /**
      * adds the rank 0 dataset (a Datum) to the properties, after all
-     * the other CONTEXT_&lt;i&gt properties.
-     * @param props
-     * @param cds
+     * the other CONTEXT_&lt;i&gt; properties.
+     * @param props the properties
+     * @param cds the context in a rank 0 dataset
      */
     public static void addContext( Map<String,Object> props, QDataSet cds ) {
         int idx=0;
@@ -2676,10 +2686,11 @@ public class DataSetUtil {
 
     /**
      * provide the context as a string, for example to label a plot.  The dataset CONTEXT_i properties are inspected,
-     * each of which must be one of:
+     * each of which must be one of:<ul>
      * <li>rank 0 dataset
      * <li>rank 1 bins dataset
      * <li>rank 1 bundle
+     * </ul>
      * Here a comma is used as the delimiter.
      *
      * @param ds the dataset containing context properties which are rank 0 datums or rank 1 datum ranges.
@@ -2691,11 +2702,11 @@ public class DataSetUtil {
 
     /**
      * provide the context as a string, for example to label a plot.  The dataset CONTEXT_i properties are inspected,
-     * each of which must be one of:
+     * each of which must be one of:<ul>
      * <li>rank 0 dataset
      * <li>rank 1 bins dataset
      * <li>rank 1 bundle
-     *
+     * </ul>
      * @param ds the dataset containing context properties which are rank 0 datums or rank 1 datum ranges.
      * @param delim the delimiter between context elements, such as "," or "!c"
      * @return a string describing the context.
@@ -2741,9 +2752,11 @@ public class DataSetUtil {
      * returns the indeces of the min and max elements of the monotonic dataset.
      * This uses DataSetUtil.isMonotonic() which would be slow if MONOTONIC is
      * not set.
-     * @param ds
-     * @return
-     * @see Ops.extent which returns the range containing any data.
+     * @param ds monotonic, rank 1 dataset.
+     * @return the indeces [min,max] note max is inclusive.
+     * @see org.virbo.dsops.Ops#extent which returns the range containing any data.
+     * @see #isMonotonic(org.virbo.dataset.QDataSet) which must be true
+     * @throws IllegalArgumentException when isMonotonic(ds) is false.
      */
     public static int[] rangeOfMonotonic( QDataSet ds ) {
         if ( ds.rank()!=1 ) throw new IllegalArgumentException("must be rank 1");
@@ -2762,6 +2775,7 @@ public class DataSetUtil {
             throw new IllegalArgumentException("expected monotonic dataset");
         }
     }
+    
     /**
      * returns the index of a tag, or the  <tt>(-(<i>insertion point</i>) - 1)</tt>.  (See Arrays.binarySearch)
      * @param ds monotonically increasing data.
@@ -2935,9 +2949,9 @@ public class DataSetUtil {
 
     /**
      * return the value, which gets units from index i. from rank 1 bundle dataset.
-     * @param ds
-     * @param value
-     * @param i
+     * @param ds the dataset providing units and format information.
+     * @param value double value from the dataset
+     * @param i the index of the value
      * @return
      */
     public static String getStringValue( QDataSet ds, double value, int i ) {
@@ -2956,9 +2970,9 @@ public class DataSetUtil {
      * return the string value of the double, considering QDataSet.FORMAT, the units and the value.
      * formatting is done assuming someone else will report the units.  If the value is invalid,
      * then "***" is returned.
-     * @param yds`
-     * @param value
-     * @return
+     * @param yds the dataset, maybe with FORMAT and VALID_MIN, etc.
+     * @param value the double from the dataset (presumably).
+     * @return human-readable string representation.
      */
     public static String getStringValue( QDataSet yds, double value ) {
         Units u= SemanticOps.getUnits(yds);

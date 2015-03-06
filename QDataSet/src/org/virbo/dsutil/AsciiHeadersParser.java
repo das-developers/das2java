@@ -967,7 +967,7 @@ public class AsciiHeadersParser {
     /**
      * allow inline dataset to be retrieved.
      * @param bds a BundleDescriptor, from BUNDLE_1.  This must have been created by this code.
-     * @param column the name of the inline dataset
+     * @param name the name of the inline dataset
      * @return the dataset, or null if the dataset is not found.
      * @throws IllegalArgumentException if the dataset not a BundleDescriptor.
      */
@@ -981,6 +981,12 @@ public class AsciiHeadersParser {
         }
     }
 
+    /**
+     * return the list of inline dataset names.  This was probably used during
+     * development.
+     * @param bds bundle dataset descriptor, though only BundleDescriptor is supported.
+     * @return the inline dataset names.
+     */
     public static String[] getInlineDataSetNames( QDataSet bds ) {
         if ( bds instanceof BundleDescriptor ) {
             Map<String,QDataSet> inlineDataSets= ((BundleDescriptor)bds).inlineDataSets;

@@ -29,8 +29,7 @@ package org.virbo.dataset;
  * 
  * <p>This is inspired by the CDF data model and PaPCo's dataset model.</p>
  *
- * <p>See {@link http://autoplot.org/QDataSet}</p>
- * 
+ * @see <a href="http://autoplot.org/QDataSet">http://autoplot.org/QDataSet</a>
  * @author jbf
  */
 public interface QDataSet {
@@ -391,8 +390,7 @@ public interface QDataSet {
     public final static String METADATA_MODEL="METADATA_MODEL";
 
     /**
-     * the metadata is ISTP-CDF metadata, 
-     * @see org.virbo.metatree.IstpMetadataModel
+     * the metadata is ISTP-CDF metadata
      */
     public final static String VALUE_METADATA_MODEL_ISTP="ISTP-CDF";
     
@@ -633,16 +631,15 @@ public interface QDataSet {
     /**
      * return null or an object implementing the capability for the given interface
      * For example:
-     * <pre>
-     * {@code
-     *    ds= DDataSet.createRank1(100);
-     *    WriteCapability write= ds.capability( WriteCapability.class );
-     *    write.putValue( 99, -1e31 );
-     * }
-     * </pre>
+     *<blockquote><pre>
+     *ds= DDataSet.createRank1(100);
+     *WriteCapability write= ds.capability( WriteCapability.class );
+     *write.putValue( 99, -1e31 );
+     *</pre></blockquote>
      * This allows operations to be performed efficiently.  Note there is no WriteCapability class, this is 
      * just an example.
      * 
+     * @param <T> a capability
      * @param clazz the class, such as WriteCapability.class
      * @return the implementing class, or null (Jython None) if the capability is not provided.
      */

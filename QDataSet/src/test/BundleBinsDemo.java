@@ -20,7 +20,7 @@ import org.virbo.dsops.Ops;
 public class BundleBinsDemo {
     /**
      * create a bundle of [ rank 2 time bins, rank 2 B-gsm, rank 1 cmps ]
-     * @return
+     * @return a rank 2 bundle.
      */
      public static QDataSet demo1() {
          final DDataSet result= DDataSet.createRank2(10,6);

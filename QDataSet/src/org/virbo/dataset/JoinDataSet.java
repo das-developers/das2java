@@ -74,13 +74,13 @@ public class JoinDataSet extends AbstractDataSet {
 
     /**
      * create a new JoinDataSet, and join the first dataset.
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *ds1= Ops.rand(30);
      *jds= new JoinDataSet( ds1 );
      *assert( ds1.rank()==1 );
      *assert( jds.rank()==2 );
      *assert( jds.slice(0).equals(ds1) );
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * @param ds1 rank N-1 dataset that will be the first slice to add to this rank N dataset.
      */
     public JoinDataSet( QDataSet ds1 ) {

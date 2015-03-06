@@ -106,7 +106,7 @@ public class Butterworth extends AbstractFilter {
          *
          * @param n
          * @param lowp
-         * @return
+         * @return the B coefficients 
          */
         private static double [] computeB(int n, boolean lowp) {
                 double [] ccof = new double [n + 1];
@@ -138,7 +138,7 @@ public class Butterworth extends AbstractFilter {
          * @param f1 frequency in radians (2 * hz / samplef)
          * @param f2
          * @param pass
-         * @return
+         * @return the B coefficients
          */
         private static double [] computeB(int n, double f1, double f2, boolean pass) {
                 double [] ccof = new double [2*n + 1];
@@ -175,7 +175,7 @@ public class Butterworth extends AbstractFilter {
          * Compute the A coefficients for a low/high pass for the given frequency
          * @param n
          * @param f frequency in radians (2 * hz / samplef)
-         * @return
+         * @return the A coefficients
          */
         private static double [] computeA(int n, double f) {
                 double parg;    // pole angle
@@ -217,7 +217,7 @@ public class Butterworth extends AbstractFilter {
          * @param f1 frequency in radians (2 * hz / samplef)
          * @param f2
          * @param pass
-         * @return
+         * @return the A coefficients
          */
         private static double [] computeA(int n, double f1, double f2, boolean pass) {
                 double parg;    // pole angle
@@ -267,7 +267,7 @@ public class Butterworth extends AbstractFilter {
          * @param n
          * @param f
          * @param lowp
-         * @return
+         * @return the scale factor for the b coefficients
          */
         private static double computeScale(int n, double f, boolean lowp) {
                 double omega = Math.PI * f;
@@ -294,7 +294,7 @@ public class Butterworth extends AbstractFilter {
          * @param f1
          * @param f2
          * @param pass
-         * @return
+         * @return the scale factor for the b coefficients
          */
         private static double computeScale(int n, double f1, double f2, boolean pass) {
                 double parg;      // pole angle

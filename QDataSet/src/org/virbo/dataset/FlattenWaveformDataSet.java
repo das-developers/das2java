@@ -7,7 +7,7 @@ import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 
 /**
- * convert rank2 waveform dataset into an equivalent rank 1 dataset.
+ * convert rank 2 waveform dataset into an equivalent rank 1 dataset.
  * @author jbf
  */
 public class FlattenWaveformDataSet extends AbstractDataSet {

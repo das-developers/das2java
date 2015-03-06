@@ -8,7 +8,9 @@ import java.nio.ByteBuffer;
 
 /**
  * reader to read Vax floats, motivated by RPWS group need to read ISEE data.
- * vap+bin:sftp://klunk.physics.uiowa.edu/opt/project/isee/archive/a1977/77295.arc?recLength=880&type=vaxfloat&recOffset=20
+ *<blockquote><pre>
+ *vap+bin:sftp://klunk.physics.uiowa.edu/opt/project/isee/archive/a1977/77295.arc?recLength=880&type=vaxfloat&recOffset=20
+ *</pre></blockquote>
  * @author jbf
  */
 public class VaxFloatDataSet extends BufferDataSet {
@@ -109,22 +111,27 @@ public class VaxFloatDataSet extends BufferDataSet {
         return tmp.getFloat();
     }
 
+    @Override
     public double value() {
         return vaxFloatValue2(back, offset());
     }
 
+    @Override
     public double value(int i0) {
         return vaxFloatValue2(back, offset(i0));
     }
 
+    @Override
     public double value(int i0, int i1) {
         return vaxFloatValue2(back, offset(i0, i1));
     }
 
+    @Override
     public double value(int i0, int i1, int i2) {
         return vaxFloatValue2(back, offset(i0, i1, i2));
     }
 
+    @Override
     public double value(int i0, int i1, int i2, int i3) {
         return vaxFloatValue2(back, offset(i0, i1, i2, i3));
     }
@@ -144,22 +151,27 @@ public class VaxFloatDataSet extends BufferDataSet {
 //        System.err.println(i.value(0)); // verified.
 //    }
 
+    @Override
     public void putValue(double d) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void putValue(int i0, double d) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void putValue(int i0, int i1, double d) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void putValue(int i0, int i1, int i2, double d) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void putValue(int i0, int i1, int i2, int i3, double d) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

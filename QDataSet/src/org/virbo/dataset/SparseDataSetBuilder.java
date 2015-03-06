@@ -61,7 +61,7 @@ public class SparseDataSetBuilder {
     /**
      * set the length of the zeroth dimension.  Other dimensions have length set implicitly by the highest value set.
      * If this is not set explicitly, then it will be implicit as well.
-     * @param length 
+     * @param i0
      */
     public void setLength( int i0 ) {
         ds.setLength(i0);

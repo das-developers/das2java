@@ -11,11 +11,11 @@ import java.util.Map;
 /**
  * DataSet for storing sparse data.  This is used initially to describe bundles.
  * This returns 0 where no data has been set.  For example,
- **<blockquote><pre><small>{@code
- * sp= SparseDataSet.createQube([2,4])
- * sp[2,2]= 1
- * print sp[0,0]
- *}</small></pre></blockquote>
+ *<blockquote><pre>
+ *sp= SparseDataSet.createQube([2,4])
+ *sp[2,2]= 1
+ *print sp[0,0]
+ *</pre></blockquote>
  * @author jbf
  */
 public class SparseDataSet extends AbstractDataSet implements WritableDataSet {

@@ -407,8 +407,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * return true if the dataset can be appended.  Note this assumes that the
      * same length, etc.  This just checks that we have the number of spare records
      * in the backing store.
-     * @param ds
-     * @return
+     * @param ds dataset of the same rank and len1, len2, and len3.
+     * @return true if the dataset can be appended.
      */
     public boolean canAppend( BufferDataSet ds ) {
         if ( ds.rank()!=this.rank ) throw new IllegalArgumentException("rank mismatch");
@@ -938,12 +938,6 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     @Override
     public abstract double value(int i0, int i1, int i2, int i3);
 
-    /**
-     * provide a subset of the dataset.  Note that writes to the result dataset
-     * will affect the original dataset.  TODO: correct this since it's a WriteableDataSet.
-     * @param ist the first index 
-     * @param ien the last index, exclusive.
-     */
     @Override
     public QDataSet trim( int ist, int ien ) {
         int offset;
@@ -959,11 +953,6 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         return result;
     }
 
-    /**
-     * slice operator based on ArrayDataSet code.
-     * @param i
-     * @return
-     */
     @Override
     public QDataSet slice(int i) {
         BufferDataSet result= makeDataSet( rank-1, byteCount(type)*len2*len3, offset(i), len1, len2, len3, 1, back, type );

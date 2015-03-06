@@ -48,7 +48,7 @@ public interface MutablePropertyDataSet extends QDataSet {
     
     /**
      * return true if the dataset has been made immutable.
-     * @return 
+     * @return true if the dataset has been made immutable.
      */
     boolean isImmutable();
 }

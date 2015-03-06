@@ -840,7 +840,7 @@ public class Ops {
 
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the zeroth dimension.
-     *   collapse0( ds[30,20] ) -> ds[20]
+     *   collapse0( ds[30,20] ) &rarr; ds[20]
      * @param fillDs
      * @param st the start index
      * @param en the non-inclusive end index
@@ -854,7 +854,7 @@ public class Ops {
 
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the zeroth dimension.
-     *   collapse0( ds[30,20] ) -> ds[20]
+     *   collapse0( ds[30,20] ) &rarr; ds[20]
      * @param fillDs
      * @return the averaged dataset
      */
@@ -865,7 +865,7 @@ public class Ops {
 
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the first dimension
-     *   collapse1( ds[30,20] ) -> ds[30]
+     *   collapse1( ds[30,20] ) &rarr; ds[30]
      * @param fillDs
      * @return the averaged dataset
      */
@@ -876,7 +876,7 @@ public class Ops {
 
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the first dimension
-     *   collapse2( ds[30,20,10,5] ) -> ds[30,20,5]
+     *   collapse2( ds[30,20,10,5] ) &rarr; ds[30,20,5]
      * @param fillDs
      * @return the averaged dataset
      */
@@ -887,7 +887,7 @@ public class Ops {
 
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the first dimension
-     *   collapse3( ds[30,20,10,5] ) -> ds[30,20,10]
+     *   collapse3( ds[30,20,10,5] ) &rarr; ds[30,20,10]
      * @param fillDs
      * @return the averaged dataset
      */
@@ -1313,7 +1313,7 @@ public class Ops {
      * TODO: units improvements.
      * @param ds1
      * @param ds2
-     * @see #multiplyUnits.
+     * @see #multiplyUnits
      * @return
      */
     public static QDataSet multiply(QDataSet ds1, QDataSet ds2) {
@@ -2915,7 +2915,7 @@ public class Ops {
     /**
      * generates a sawtooth from the tags, where a peak occurs with a period 2*PI.
      * All values of T should be ge zero.  TODO: I think there should be a modp 
-     * function that is always positive. (-93 % 10 ->7 though...)
+     * function that is always positive. (-93 % 10 &rarr;7 though...)
      * @param t the independent values
      * @return /|/|/| sawtooth wave with a period of 2 PI.
      */
@@ -4031,7 +4031,7 @@ public class Ops {
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @param sort null, or the rank 1 dataset of indeces
      * @return 
-     * @see #uniqValues, which returns the values.
+     * @see #uniqValues which returns the values.
      */
     public static QDataSet uniq( QDataSet ds, QDataSet sort ) {
         if ( ds.rank()>1 ) throw new IllegalArgumentException("ds.rank()>1" );
@@ -4096,7 +4096,7 @@ public class Ops {
      * renamed uniqValues from uniq to avoid confusion with the IDL command.
      *
      * This needs example code and should not be used for now.  See VirboAutoplot/src/scripts/test/testUniq.jy
-     * @see #uniq, which returns the indeces.
+     * @see #uniq which returns the indeces.
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @param sort null, or the rank 1 dataset of indeces
      * @return
@@ -4265,21 +4265,22 @@ public class Ops {
 
     
     /**
-     * @see ds.slice
-     * @param ds
-     * @param idx
-     * @return
+     * @see org.virbo.dataset.QDataSet#slice(int) 
+     * @param ds the rank N (N&gt;0) or more dataset
+     * @param idx the index 
+     * @return rank N-1 dataset
      */
     public static QDataSet slice0( QDataSet ds, int idx ) {
         return ds.slice(idx);
     }
 
     /**
-     * returns the slice at the given slice location.
+     * returns the slice at the given slice location.  The dataset
+     * must have monotonic DEPEND_0.
      * @param ds ripples(20,20).  Presently this must be a simple table.
      * @param sliceds dataset("10.3")
      * @return the slice at the given location
-     * @see #trim(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #trim(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet slice0( QDataSet ds, QDataSet sliceds ) {
         if ( sliceds.rank()!=0 ) {
@@ -4303,7 +4304,7 @@ public class Ops {
     
     
     /**
-     * @see org.virbo.dataset.DataSetOps.slice1
+     * @see org.virbo.dataset.DataSetOps#slice1(org.virbo.dataset.QDataSet, int) 
      * @param ds
      * @param idx
      * @return
@@ -4338,7 +4339,7 @@ public class Ops {
     }        
 
     /**
-     * @see org.virbo.dataset.DataSetOps.slice2
+     * @see org.virbo.dataset.DataSetOps#slice2(org.virbo.dataset.QDataSet, int) 
      * @param ds
      * @param idx
      * @return
@@ -4348,7 +4349,7 @@ public class Ops {
     }
 
     /**
-     * @see org.virbo.dataset.DataSetOps.slice3
+     * @see org.virbo.dataset.DataSetOps#slice3(org.virbo.dataset.QDataSet, int) 
      * @param ds
      * @param idx
      * @return
@@ -4542,7 +4543,7 @@ public class Ops {
      * be a rank 0 or rank 1 QDataSet.  If it is rank 1, then it should correspond
      * to the DEPEND_0 dimension.
      *
-     * @param ds rank 2 dataset ds(N,M) with M>len
+     * @param ds rank 2 dataset ds(N,M) with M&gt;len
      * @param len the number of elements to have in each fft.
      * @param mon a ProgressMonitor for the process
      * @return rank 2 FFT spectrum
@@ -5158,7 +5159,7 @@ public class Ops {
      * The property QDataSet.SCALE_TYPE is set to lin or log.
      * The property count is set to the number of valid measurements.
      * TODO: this could use MONOTONIC, but it doesn't.  DELTA_PLUS, DELTA_MINUS make that more difficult.
-     * @see DataSetUtil.rangeOfMonotonic( QDataSet ds ).
+     * @see DataSetUtil#rangeOfMonotonic(org.virbo.dataset.QDataSet) 
      * @param ds
      * @return two element, rank 1 "bins" dataset.
      */
@@ -6525,7 +6526,7 @@ public class Ops {
      * @param ds a rank N dataset that might have FILL_VALUE, VALID_MIN or VALID_MAX
      *   set.
      * @return a rank N dataset with the same geometry, with zeros where the data
-     *   is invalid and >0 where the data is valid.
+     *   is invalid and &gt;0 where the data is valid.
      */
     public static QDataSet valid( QDataSet ds ) {
         // Note because data can always contain NaNs, there is no optimization for this.
@@ -7131,10 +7132,10 @@ public class Ops {
      * The result for rank 2 is an n,3 dataset of [x,y,z], or if there are no tags, just [z].
      * The last index will be the dependent variable, and the first indeces will
      * be the independent variables sorted by dimension.
-     * @see org.virbo.dataset.DataSetOps.flattenRank2
-     * @see org.virbo.dataset.DataSetOps.grid
-     * @param ds
-     * @return
+     * @see org.virbo.dataset.DataSetOps#flattenRank2(org.virbo.dataset.QDataSet) 
+     * @see org.virbo.dataset.DataSetOps#grid(org.virbo.dataset.QDataSet) 
+     * @param ds the rank N dataset (note only Rank 2 is supported for now).
+     * @return rank 2 dataset bundle
      */
     public static QDataSet flatten( QDataSet ds ) {
         if ( ds.rank()==0 ) {
@@ -7159,7 +7160,7 @@ public class Ops {
      * Example:
      * <tt>dep1= labels( ["X","Y","Z"], "GSM" )</tt>
      * @param labels
-     * @param context the namespace for the labels, to provide control over String->int mapping.
+     * @param context the namespace for the labels, to provide control over String&rarr;int mapping.
      * @return rank 1 QDataSet
      */
     public static QDataSet labels(String[] labels, String context) {
@@ -8028,9 +8029,9 @@ public class Ops {
      * </ul>
      * Note this includes implicit dimensions taken by the primary dataset:
      * <ul>
-     *   <li>Z(time,freq)->3
-     *   <li>rand(20,20)->3
-     *   <li>B_gsm(20,[X,Y,Z])->4
+     *   <li>Z(time,freq)&rarr;3
+     *   <li>rand(20,20)&rarr;3
+     *   <li>B_gsm(20,[X,Y,Z])&rarr;4
      * </ul>
      * @param dss the dataset
      * @return the number of dimensions occupied by the data.

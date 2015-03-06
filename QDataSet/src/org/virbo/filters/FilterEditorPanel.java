@@ -40,7 +40,7 @@ public interface FilterEditorPanel {
     
     /**
      * the panel for this editor.
-     * @return 
+     * @return the panel for this editor.
      */
     JPanel getPanel();
     

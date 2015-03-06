@@ -32,6 +32,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dataset.examples.Schemes;
 import org.virbo.dsops.Ops;
 import org.virbo.dsops.Ops.FFTFilterType;
 import org.virbo.dsutil.DataSetBuilder;
@@ -232,8 +233,8 @@ public class DataSetOps {
      * flatten a rank 2 dataset where the y depend variable is just an offset from the xtag.  This is
      * a nice example of the advantage of using a class to represent the data: this requires no additional
      * storage to handle the huge waveform.  Note the new DEPEND_0 may have different units from ds.property(DEPEND_0).
-     * @param ds
-     * @return
+     * @param ds rank 2 waveform with tags for DEPEND_0 and offsets for DEPEND_1
+     * @return rank 1 waveform
      */
     public static QDataSet flattenWaveform( final QDataSet ds ) {
         return new FlattenWaveformDataSet(ds);
@@ -241,8 +242,8 @@ public class DataSetOps {
 
     /**
      * takes rank 2 link (x,y,z) and makes a table from it z(x,y)
-     * @param ds
-     * @return
+     * @param ds rank 2 link (x,y,z)
+     * @return a table from it z(x,y)
      */
     public static QDataSet grid( final QDataSet ds ) {
         GridDataSet result= new GridDataSet();
@@ -252,9 +253,9 @@ public class DataSetOps {
 
     /**
      * removes the index-th element from the array.
-     * @param array
-     * @param index
-     * @return
+     * @param array length N array
+     * @param index the index to remove
+     * @return array without the element, length N-1.
      */
     public static int[] removeElement(int[] array, int index) {
         int[] result = new int[array.length - 1];
@@ -268,7 +269,7 @@ public class DataSetOps {
     /**
      * pull out a subset of the dataset by reducing the number of columns in the
      * last dimension.  This does not reduce rank.  This assumes the dataset has no
-     * row with length>end.
+     * row with length&gt;end.
      * This is extended to support rank 4 datasets.
      * TODO: This probably doesn't handle bundles property.
      * TODO: slice and trim should probably be implemented here for efficiently.
@@ -830,7 +831,6 @@ public class DataSetOps {
      * For example, after slicing the zeroth dimension (time), what was DEPEND_1 is
      * becomes DEPEND_0.
      * 
-     * @see MetadataUtil.sliceProperties
      * @param properties the properties to slice.
      * @param sliceDimension the dimension to slice at (0,1,2...QDataSet.MAX_RANK)
      * @return the properties after the slice.
@@ -1020,10 +1020,10 @@ public class DataSetOps {
      * the name so that is contains just a Java-style identifier.  Also, ch_1 is
      * always implicitly index 1.  
      * Last, if safe names created from labels match that this is used. For example,
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *bds=ripplesVectorTimeSeries(100)
      *2==indexOfBundledDataSet( bds, "Z" ) 
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * demonstrates its use.
      * 
      * Last, extraneous spaces and underscores are removed to see if this will result in a match.
@@ -1133,11 +1133,11 @@ public class DataSetOps {
     
     /**
      * Extract the named bundled dataset.  For example, extract B_x from bundle of components.
-     * @param bundleDs
+     * @param bundleDs a bundle of datasets
      * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
-     * @see unbundle( QDataSet bundleDs, int ib )
+     * @see #unbundle(org.virbo.dataset.QDataSet, int) 
      * @throws IllegalArgumentException if no named dataset is found.
-     * @return
+     * @return the named dataset
      */
     public static QDataSet unbundle( QDataSet bundleDs, String name ) {
         QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
@@ -1174,9 +1174,10 @@ public class DataSetOps {
 
     /**
      * extract the dataset that is dependent on others, or the last one.  
-     * For example, the dataset ds[:,"x,y"] -> y[:]
-     * @param bundleDs
-     * @return
+     * For example, the dataset ds[:,"x,y"] &rarr; y[:]
+     * @param bundleDs a bundle of datasets
+     * @return the default dataset
+     * @see Schemes#bundleDataSet() 
      */
     public static QDataSet unbundleDefaultDataSet( QDataSet bundleDs ) {
         QDataSet bundle1= (QDataSet) bundleDs.property(QDataSet.BUNDLE_1);
@@ -1458,7 +1459,7 @@ public class DataSetOps {
      * given the bundle descriptor bds, return the dataset to be put in the context property.
      * @param bundle1 rank 2 bundle descriptor of length n with indexed properties.  This was introduced
      * when sloppy slice code was using the NAME and dropping the LABEL.
-     * @param index 0<=index<n index of the unbundle
+     * @param index 0&lt;=index&lt;n index of the unbundle
      * @return rank 0 QDataSet.
      */
     protected static QDataSet getContextForUnbundle( QDataSet bundle1, int index ) {
@@ -1723,8 +1724,8 @@ public class DataSetOps {
      * that take a trivial, constant amount of time should return false, and
      * may be completed on the event thread,etc.
      * 
-     * @param c, process string, as in sprocess.
-     * @return
+     * @param c process string, as in sprocess.
+     * @return true if the process described in c is probably a slow process
      */
     public static boolean isProcessAsync(String c) {
         return c.contains("copy") || c.contains("fft") || c.contains("contour") 
@@ -1755,9 +1756,9 @@ public class DataSetOps {
      * @param c the process string, like "bgsmx|slice0(9)|histogram()"
      * @param fillDs the input dataset.
      * @param mon a monitor for the processing
-     * @return
+     * @return dataset resulting form filters.
      * @throws Exception when the processStr cannot be processed.
-     * @throws RuntimeException, Exception
+     * @throws RuntimeException when the component (e.g. bgsmx) is not found.
      */
     public static QDataSet processDataSet( String c, QDataSet fillDs, ProgressMonitor mon ) throws RuntimeException, Exception {
         c= c.trim();
@@ -1833,9 +1834,8 @@ public class DataSetOps {
      * @throws ParseException when the string cannot be parsed
      * @throws Exception when a function cannot be processed (e.g. index out of bounds)
      * @return the dataset after the process string is applied.
-     * @see http://autoplot.org/developer.dataset.filters
-     * @see http://autoplot.org/developer.panel_rank_reduction
-     * @see org.virbo.metatree.MetadataUtil.java which also handles the metadata (for now).
+     * @see <a href="http://autoplot.org/developer.dataset.filters">http://autoplot.org/developer.dataset.filters</a>
+     * @see <a href="http://autoplot.org/developer.panel_rank_reduction">http://autoplot.org/developer.panel_rank_reduction</a>
      */
     public static QDataSet sprocess( String c, QDataSet fillDs, ProgressMonitor mon ) throws Exception {
 
@@ -2304,9 +2304,9 @@ public class DataSetOps {
     /**
      * indicate if the operators change dimensions of the dataset.  Often
      * this will result in true when the dimensions do not change, this is the better way to err.
-     * @param c0 process string like "slice0(0)"
-     * @param c1 process string like "slice0(0)|slice1(0)"
-     * @return
+     * @param c0 old value for the process string, e.g. "slice0(0)"
+     * @param c1 new value for the process string, e.g. "slice0(0)|slice1(0)"
+     * @return true if the dimensions would be different.
      */
     public static boolean changesDimensions( String c0, String c1 ) {
         //if ( c.length()==0 && !c2.startsWith("|") ) return false;  //TODO: kludge to avoid true when adding component child.
@@ -2348,14 +2348,15 @@ public class DataSetOps {
 
     /**
      * return a bounding qube of the independent dimensions containing
-     * the dataset.  If r is the result of the function, then for
-     *   rank 1: r.slice(0) x bounds, r.slice(1) y bounds
-     *   rank 2 waveform: r.slice(0) x bounds, r.slice(1) y bounds
-     *   rank 2 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
-     *   rank 3 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
+     * the dataset.  If r is the result of the function, then for<ul>
+     *   <li>rank 1: r.slice(0) x bounds, r.slice(1) y bounds
+     *   <li>rank 2 waveform: r.slice(0) x bounds, r.slice(1) y bounds
+     *   <li>rank 2 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
+     *   <li>rank 3 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
+     * </li>
      * This does not take DELTA_PLUS and DELTA_MINUS into account.
-     * @param ds
-     * @return
+     * @param ds a rank 1,2, or 3 dataset.
+     * @return a bounding qube of the independent dimensions 
      */
     public static QDataSet dependBoundsSimple( QDataSet ds ) {
         QDataSet xrange;
@@ -2400,13 +2401,14 @@ public class DataSetOps {
     
     /**
      * return a bounding qube of the independent dimensions containing
-     * the dataset.  If r is the result of the function, then for
-     *   rank 1: r.slice(0) x bounds, r.slice(1) y bounds
-     *   rank 2 waveform: r.slice(0) x bounds, r.slice(1) y bounds
-     *   rank 2 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
-     *   rank 3 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
-     * @param ds
-     * @return
+     * the dataset.  If r is the result of the function, then for<ul>
+     *   <li>rank 1: r.slice(0) x bounds, r.slice(1) y bounds
+     *   <li>rank 2 waveform: r.slice(0) x bounds, r.slice(1) y bounds
+     *   <li>rank 2 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
+     *   <li>rank 3 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
+     * </li>
+     * @param ds rank 1,2, or 3 dataset.
+     * @return a bounding qube of the independent dimensions 
      */
     public static QDataSet dependBounds( QDataSet ds ) {
         QDataSet xrange;
@@ -2448,6 +2450,13 @@ public class DataSetOps {
         return result;
     }
 
+    /**
+     * return true of the bounds overlaps with the x and y range.
+     * @param bounds bounding box
+     * @param xValue the x range
+     * @param yValue the y range
+     * @return true of the bounds overlap
+     */
     public static boolean boundsContains(QDataSet bounds, Datum xValue, Datum yValue) {
         if ( bounds.property(QDataSet.BINS_1)==null ) {
             if ( bounds.property(QDataSet.BINS_0,0)==null ) {

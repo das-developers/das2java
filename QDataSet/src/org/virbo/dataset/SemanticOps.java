@@ -181,10 +181,11 @@ public class SemanticOps {
 
     /**
      * lookupUnits canonical units object, or allocate one.
-     * Examples include:
-     *   "nT" where it's already allocated,
-     *   "apples" where it allocates a new one, and
-     *   "seconds since 2011-12-21T00:00" where it uses lookupTimeUnits.
+     * Examples include:<ul>
+     * <li>"nT" where it's already allocated,
+     * <li>"apples" where it allocates a new one, and
+     * <li>"seconds since 2011-12-21T00:00" where it uses lookupTimeUnits.
+     * </ul>
      * @param sunits string identifier.
      * @return canonical units object.
      * @deprecated use Units.lookupUnits
@@ -206,7 +207,7 @@ public class SemanticOps {
 
     /**
      * lookupUnits canonical units object, or allocate one.  If one is
-     * allocated, then parse for "&lt;unit&gt; since &ltdatum&gt" and add conversion to
+     * allocated, then parse for "&lt;unit&gt; since &lt;datum&gt;" and add conversion to
      * "microseconds since 2000-001T00:00" (us2000).  Note leap seconds are ignored
      * in the returned units, so each day is 86400 seconds long.
      * @param units string like "microseconds since 2000-001T00:00"
@@ -220,7 +221,7 @@ public class SemanticOps {
     
     /**
      * lookupUnits canonical units object, or allocate one.  If one is
-     * allocated, then parse for "&lt;unit&gt; since &ltdatum&gt" and add conversion to
+     * allocated, then parse for "&lt;unit&gt; since &lt;datum&gt;" and add conversion to
      * "microseconds since 2000-001T00:00."  Note leap seconds are ignored!
      * @param base the base time, for example 2000-001T00:00.
      * @param offsetUnits the offset units for example microseconds.  Positive values of the units will be since the base time.
@@ -372,8 +373,8 @@ public class SemanticOps {
      * but this is not uniformly supported.  
      * Note: this uses QDataSet.WEIGHTS_PLANE
      * Note: calls org.virbo.dataset.DataSetUtil.weightsDataSet.
-     * @see Ops.valid, which is equivalent
-     * @see cadenceCheck, which detects for gaps in cadence.
+     * @see org.virbo.dsops.Ops#valid which is equivalent
+     * @see #cadenceCheck which detects for gaps in cadence.
      * @param ds
      * @return QDataSet with same geometry containing zeros and non-zeros.
      */
@@ -422,9 +423,9 @@ public class SemanticOps {
 
     /**
      * return the ytags for the simple table that is ds.
-     *   rank 2 spectrogram: Z[X,Y] -> Y
-     *   bundle_1: ds[ :, [x,y,z] ] -> y
-     *   [x,y,z] -> y
+     *   rank 2 spectrogram: Z[X,Y] &rarr; Y
+     *   bundle_1: ds[ :, [x,y,z] ] &rarr; y
+     *   [x,y,z] &rarr; y
      * consider: These break duck typing goal, and really need a scheme
      *   to tell it how to get the dataset.
      * @param ds
@@ -539,7 +540,7 @@ public class SemanticOps {
     /**
      * return the bounds DS[ JOIN_0=x,y; BINS_1=min,maxInclusive ] of the datasets
      * independent parameters.  This is only implemented for:
-     * <table>
+     * <table summary="">
      *   <tr><td>rank 2 Tables</td><td>extent(X),extent(Y) and Z is not represented</td></tr>
      *   <tr><td>rank 3 array of tables</td><td>extent(X),extent(Y) and Z is not represented</td></tr>
      *   <tr><td>rank 1 Y(X)</td><td>extent(X),extent(Y)</td></tr>
@@ -547,7 +548,7 @@ public class SemanticOps {
      *   <tr><td>not for rank 1 bundle dataset</td></tr>
      * </table>
      * The zeroth dimension will be the physical dimension of the DEPEND_0 values.  Or said another way:
-     * <table>
+     * <table summary="">
      *   <tr><td>bounds[0,0]= X min</td><td>bounds[0,1] = X max</td><td>bounds.slice(0) is the extent of X<td></tr>
      *   <tr><td>bounds[1,0]= Y min</td><td>bounds[1,1] = Y max</td><td>bounds.slice(1) is the extent of Y<td></tr>
      * </table>
@@ -649,10 +650,10 @@ public class SemanticOps {
      * returns true if the dataset is a bundle of rank 1 datasets.  If no
      * dependence is declared, it is assumed that the first one or two datasets
      * are the independent datasets, and the last is the dependent. 
-     * <blockquote><pre><small>{@code
+     *<blockquote><pre>
      *    X,Y   -->  Y(X)
      *    X,Y,Z -->  Z(X,Y)
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
 
      *
      * @param ds
@@ -816,18 +817,18 @@ public class SemanticOps {
     /**
      * return a dataset with 1's where the cadence following this measurement is acceptable, and 0's where
      * there should be a break in the data.  For example, here's some pseudocode:
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *   findex= Ops.interpolate( xds, x )
      *   cadenceCheck= cadenceCheck(xds)
      *   r= where( cadenceCheck[floor(findex)] eq 0 )
      *   x[r]= fill
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * Presently this just uses guessXTagWidth to get the cadence, but this may allow a future version to support
      * mode changes.
      *
      * The result is a dataset with the same length, and the last element is always 1.
      *
-     * @see Ops.valid which checks for fill and valid_min, valid_max.
+     * @see Ops#valid which checks for fill and valid_min, valid_max.
      * @param tds rank 1 dataset of length N.
      * @param ds dataset dependent on tds and used to detect valid measurements, or null.
      * @return dataset with length N

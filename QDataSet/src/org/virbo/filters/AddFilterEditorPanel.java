@@ -91,7 +91,7 @@ public class AddFilterEditorPanel extends AbstractFilterEditorPanel implements F
     
     /**
      * demonstrate filter.
-     * @param args 
+     * @param args the args are ignored
      */
     public static void main(String[] args) {
         FilterEditorPanel filter= new AddFilterEditorPanel();

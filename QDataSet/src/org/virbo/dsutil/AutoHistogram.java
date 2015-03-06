@@ -35,7 +35,7 @@ import org.virbo.dataset.TagGenDataSet;
 /**
  * Self-configuring histogram dynamically adjusts range and bin size as data
  * is added.  Also it tries to identify outlier points, which are available
- * as a Map<Double,Integer> going from value to number observed.  Also for
+ * as a {@code Map<Double,Integer>} going from value to number observed.  Also for
  * each bin, we keep track of a running mean and variance, which are useful for
  * identifying continuous bins and total moments.  Introduced to support
  * automatic cadence algorithm, should be generally useful in data discovery.
@@ -277,7 +277,7 @@ public final class AutoHistogram {
      *   binStart, Double, the left side of the first bin.
      *   binWidth, Double, the bin width.
      *   total, Integer, the number of points in the distribution.
-     *   outliers, Map<Double,Integer>, outliers and the count of each outlier.
+     *   outliers, {@code Map<Double,Integer>}, outliers and the count of each outlier.
      * @param ds
      * @param wds WeightsDataSet or null.
      * @return

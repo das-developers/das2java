@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.TimeParser;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -955,9 +956,9 @@ public class AsciiParser {
     }
 
     /**
-     * returns the high rank rich fields, from NAME to LABEL.
-     * NAME:<fieldX>  or NAME:<fieldX-fieldY>
-     * @return
+     * returns the high rank rich fields in a map from NAME to LABEL.
+     * NAME:&gt;fieldX&lt;  or NAME:&gt;fieldX-fieldY&lt;
+     * @return the high rank rich fields in a map from NAME to LABEL.
      */
     public Map<String,String> getRichFields() {
         LinkedHashMap<String,String> result= new LinkedHashMap<String, String>();
@@ -1509,11 +1510,14 @@ public class AsciiParser {
     }
 
     /**
-     * see <tt>private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers)</tt>, which is very similar.
-     *   "%5d%5d%9f%s"
-     *   "d5,d5,f9,a"
+     * see {@code private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers)</tt>},
+     * which is very similar.<ul>
+     * <li>"%5d%5d%9f%s"
+     * <li>"d5,d5,f9,a"
+     * </ul>
      * @param format
      * @return
+     * @see TimeParser
      */
     public RegexParser getRegexParserForFormat(String format) {
         String[] ss= format.split("%");

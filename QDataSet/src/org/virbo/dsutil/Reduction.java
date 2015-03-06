@@ -24,10 +24,10 @@ public class Reduction {
     /**
      * return a converter for differences.  If dstUnits are specified,
      * then explicitly this is the target.
-     * @param src
-     * @param dst
-     * @param dstUnits 
-     * @return
+     * @param src source dataset
+     * @param dst target dataset
+     * @param dstUnits if not null, then explicitly use these units.
+     * @return a converter for differences. 
      */
     private static UnitsConverter getDifferencesConverter( QDataSet src, QDataSet dst, Units dstUnits ) {
 

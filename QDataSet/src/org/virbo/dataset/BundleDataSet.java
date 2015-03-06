@@ -91,7 +91,7 @@ public final class BundleDataSet extends AbstractDataSet {
 
     /**
      * add the dataset to the bundle of datasets.  Currently this implementation only supports rank N-1 datasets (N is this
-     * dataset's rank), but the QDataSet spec allows for qube datasets of any rank>1 to be bundled.  This limitation will be removed
+     * dataset's rank), but the QDataSet spec allows for qube datasets of any rank&gt;1 to be bundled.  This limitation will be removed
      * in a future version.  (Note QDataSet changes http://autoplot.org/QDataSet#2011-Apr-13)
      * 
      * @param ds

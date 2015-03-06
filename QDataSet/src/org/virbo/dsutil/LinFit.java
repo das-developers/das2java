@@ -43,7 +43,7 @@ public class LinFit {
     }
 
     /**
-     * do fit with weights.  X and Y must not contain fill. where sig>0.
+     * do fit with weights.  X and Y must not contain fill. where sig&gt;0.
      * @param x the x data
      * @param y the y data
      * @param sig the error bar, or zero for fill.

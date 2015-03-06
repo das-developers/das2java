@@ -20,7 +20,7 @@ package org.virbo.dataset;
  * <li> non-linear function optimization.
  * </ul>
  * 
- * @see http://jfaden.net:8080/hudson/job/autoplot-test037/lastSuccessfulBuild/artifact/tcaQFunctionTest.jy
+ * @see <a href="http://jfaden.net:8080/hudson/job/autoplot-test037/lastSuccessfulBuild/artifact/tcaQFunctionTest.jy"tcaQFunctionTest.jy</a>
  * @author jbf
  */
 public interface QFunction {
@@ -50,7 +50,7 @@ public interface QFunction {
 
     /**
      * Discover an example input.  Result is a rank 1 bundle QDataSet.
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *QFunction ff= TestFunction();
      *ff.exampleInput().length();  // how many parameters the function takes
      *QDataSet bds= ff.exampleInput().property( QDataSet.BUNDLE_0 );
@@ -61,11 +61,11 @@ public interface QFunction {
      *bds.slice(0).property( QDataSet.TYPICAL_MAX )
      *bds.slice(0).property( QDataSet.CADENCE ) // granularity of the function parameter
      *bds.slice(0).property( QDataSet.LABEL )   // label for the parameter
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * slice(0) is the first argument, slice(1) would be the second, etc.
      * This would be a bundle.
      * 
-     * Note, for functions that have only one argument, like F(T)->[R,MLT,MLAT], this
+     * Note, for functions that have only one argument, like F(T)&rarr;[R,MLT,MLAT], this
      * may return a rank 0 dataset.  Clients should pass a dataset to the value method a
      * dataset with the same geometry.
      * @return rank 1 bundle of N elements, or rank 0 for functions when the function has just one parameter.
@@ -77,9 +77,9 @@ public interface QFunction {
      * was introduced to support QFunctions where it would be expensive to calculate
      * an input that would result in a meaningful output.  It's assumed that many
      * implementations will simply be:
-     *<blockquote><pre><small>{@code 
-     *   value( exampleInput() );
-     *}</small></pre></blockquote>
+     *<blockquote><pre>
+     *value( exampleInput() );
+     *</pre></blockquote>
      * @return rank 1 bundle of M elements.
      */
     QDataSet exampleOutput();

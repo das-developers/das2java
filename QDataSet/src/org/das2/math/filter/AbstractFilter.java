@@ -45,7 +45,7 @@ public class AbstractFilter {
     
     /**
      * return the units of the timetags of the dataset, as an offset.
-     * @return 
+     * @return the units of the timetags of the dataset, as an offset.
      */
     protected Units getTimeOffsetUnits() {
         QDataSet timeDomainTags= (QDataSet) source.property(QDataSet.DEPEND_0);
@@ -85,7 +85,7 @@ public class AbstractFilter {
         private double [] b;
 
         
- /**
+        /**
          * Set the filter coefficients stored in Matlab style. If a[0] not equal 1,
          * the filter coefficients are normalized by a[0].
          *

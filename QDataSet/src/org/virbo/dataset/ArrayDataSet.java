@@ -832,9 +832,9 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     /**
      * set the units for this dataset.  This is a convenience method
      * intended to encourage setting the data units.  For example in Jython:
-     *<blockquote><pre><small>{@code
+     *<blockquote><pre>
      *ds= linspace(0.,10.,100).setUnits( Units.seconds )
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * @param units units object, like Units.seconds
      * @return this dataset.
      */

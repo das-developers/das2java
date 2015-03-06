@@ -157,11 +157,11 @@ public class PoissonDistribution {
     /**
      * This function generates a random variate with the poisson distribution.
      *
-     * Uses inversion by chop-down method for L < 17, and ratio-of-uniforms
-     * method for L >= 17.
+     * Uses inversion by chop-down method for L &lt; 17, and ratio-of-uniforms
+     * method for L &gt;= 17.
      *
-     * For L < 1.E-6 numerical inaccuracy is avoided by direct calculation.
-     * For L > 2E9 too big--throws IllegalArgumentException
+     * For L &lt; 1.E-6 numerical inaccuracy is avoided by direct calculation.
+     * For L &gt; 2E9 too big--throws IllegalArgumentException
      */
     public static int poisson( double L,Random random ) {
         

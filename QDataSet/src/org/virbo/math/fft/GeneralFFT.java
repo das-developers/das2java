@@ -125,7 +125,7 @@ public class GeneralFFT {
     
     /**
      * return the number of points in the fft.
-     * @return
+     * @return the number of points in the fft.
      */
     public int size() {
         return n;

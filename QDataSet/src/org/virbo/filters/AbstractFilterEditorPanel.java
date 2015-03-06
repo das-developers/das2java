@@ -31,9 +31,9 @@ public abstract class AbstractFilterEditorPanel extends JPanel implements Filter
      * return the filter specified by the GUI.  The filter string will
      * start with the pipe character.  When this would change, implementations should fire
      * off a property change event like so:
-     **<blockquote><pre><small>{@code
+     **<blockquote><pre>
      *firePropertyChange( PROP_FILTER, null, ff );
-     *}</small></pre></blockquote>
+     *</pre></blockquote>
      * where ff is the new value.
      * @return the filter string
      */

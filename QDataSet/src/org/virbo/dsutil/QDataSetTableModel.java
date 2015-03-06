@@ -133,10 +133,11 @@ public class QDataSetTableModel extends AbstractTableModel {
     }
     
     /**
-     * copied from AsciiTableDataSourceFormat.  Get a formatter for the column.
-     * @param df the format spec.
-     * @param u the units.
+     * copied from AsciiTableDataSourceFormat.  See String.format.
+     * @param df the string, such as "%f9.2"
+     * @param u the units, which will provide the formatter when the string doesn't work.
      * @return a DatumFormatter for the column.
+     * @see String#format(java.lang.String, java.lang.Object...) 
      */
     private DatumFormatter getDataFormatter( String df, Units u ) {
         try {
@@ -202,7 +203,7 @@ public class QDataSetTableModel extends AbstractTableModel {
 
     /**
      * this currently isn't used because there's a bug.
-     * @return the model
+     * @return the table model.
      */
     public TableColumnModel getTableColumnModel() {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
