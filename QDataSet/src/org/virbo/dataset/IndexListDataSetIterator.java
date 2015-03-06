@@ -26,22 +26,27 @@ public class IndexListDataSetIterator implements DataSetIterator {
         }
     }
 
+    @Override
     public boolean hasNext() {
         return (index+1)< indeces.length();
     }
 
+    @Override
     public int index(int dim) {
         return (int)indeces.value(index, dim);
     }
 
+    @Override
     public int length(int dim) {
         return indeces.length();
     }
 
+    @Override
     public void next() {
         index++;
     }
 
+    @Override
     public int rank() {
         return 1;
     }
@@ -51,6 +56,7 @@ public class IndexListDataSetIterator implements DataSetIterator {
      * @param ds a dataset with compatible geometry as the iterator's geometry.
      * @return the value of ds at the current iterator position.
      */
+    @Override
     public final double getValue( QDataSet ds ) {
         switch ( dsrank ) {
             case 1:
@@ -69,6 +75,7 @@ public class IndexListDataSetIterator implements DataSetIterator {
      * @param ds a writable dataset with compatible geometry as the iterator's geometry.
      * @param v the value to insert.
      */
+    @Override
     public final void putValue( WritableDataSet ds, double v ) {
         switch ( dsrank ) {
             case 1:
@@ -102,6 +109,7 @@ public class IndexListDataSetIterator implements DataSetIterator {
         return "ListIter [" + its + "] @ ["+  ats + "] ";
     }
 
+    @Override
     public DDataSet createEmptyDs() {
         return DDataSet.createRank1(indeces.length());
     }
