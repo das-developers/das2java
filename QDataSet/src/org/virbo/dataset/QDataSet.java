@@ -36,32 +36,29 @@ package org.virbo.dataset;
 public interface QDataSet {
     
     /**
-     * type QDataSet.  This dataset is a dependent parameter of the independent parameter represented in this DataSet.
+     * type QDataSet, this dataset is a dependent parameter of the independent parameter represented in this DataSet.
      * The tags for the DataSet's 0th index are identified by this tags dataset.
      */
     public final static String DEPEND_0="DEPEND_0";
     
     /**
-     * type QDataSet.  This dataset is a dependent parameter of the independent parameter represented in this DataSet.
+     * type QDataSet, this dataset is a dependent parameter of the independent parameter represented in this DataSet.
      * The tags for the DataSet's 1st index are identified by this tags dataset.  When DEPEND_1 is rank 2,
      * then its first dimension goes with DEPEND_0 and its second are the tags for the second dimension.
-     * (TODO: Is this a QUBE?  Check).
      */
     public final static String DEPEND_1="DEPEND_1";
     
     /**
-     * type QDataSet.  This dataset is a dependent parameter of the independent parameter represented in this DataSet.
+     * type QDataSet, this dataset is a dependent parameter of the independent parameter represented in this DataSet.
      * The tags for the DataSet's 2nd index are identified by this tags dataset.  When DEPEND_2 is rank 2,
      * then it's first dimension goes with DEPEND_0 and it's second are the tags for the second dimension.
-     * (TODO: Is this a QUBE?  Check).
      */
     public final static String DEPEND_2="DEPEND_2";
     
     /**
-     * type QDataSet.  This dataset is a dependent parameter of the independent parameter represented in this DataSet.
+     * type QDataSet, this dataset is a dependent parameter of the independent parameter represented in this DataSet.
      * The tags for the DataSet's 3nd index are identified by this tags dataset.  When DEPEND_3 is rank 2,
      * then it's first dimension goes with DEPEND_0 and it's second are the tags for the second dimension.
-     * (TODO: Is this a QUBE?  Check).
      */
     public final static String DEPEND_3="DEPEND_3";
 
@@ -104,7 +101,7 @@ public interface QDataSet {
     public final static String BUNDLE_3="BUNDLE_3";
 
     /**
-     * type Integer.  Only found in a bundle descriptor (BUNDLE_0 or BUNDLE_1), this returns the integer
+     * type Integer, only found in a bundle descriptor (BUNDLE_0 or BUNDLE_1), this returns the integer
      * index of the start of the current dataset.  If this is null, then the index used to access
      * the value may be used.  (E.g. a bundle of Rank 1 datasets.)
      */
@@ -174,25 +171,21 @@ public interface QDataSet {
      * type Units indicating the units of the dataset in the enumeration of
      * org.das2.datum.Units, as in org.das2.datum.Units.km.  New unit types
      * can be introduced with Units.lookup.  For example,
-     * <pre>
-     * {@code
-     * from org.das2.datum import Units
-     * u= Units.lookupUnits('seconds since 2015-001T00:00')
-     * ds= findgen(3600)
-     * ds= putProperty( ds, QDataSet.UNITS, u )
-     * plot( ds )  # plots line from 00:00 to 01:00.
-     * }
-     * </pre>
+     * <blockquote><pre>
+     *from org.das2.datum import Units
+     *u= Units.lookupUnits('seconds since 2015-001T00:00')
+     *ds= findgen(3600)
+     *ds= putProperty( ds, QDataSet.UNITS, u )
+     *plot( ds )  # plots line from 00:00 to 01:00.
+     *</pre></blockquote>
      * @see org.das2.datum.Units
      */
     public final static String UNITS="UNITS";
 
     /**
-     * type String.  Java/C format string for formatting the values.  This
+     * type String, Java/C format string for formatting the values.  This
      * should imply precision, and codes that serialize data can use this
-     * to correctly format the data.  Note Java 5 supports field specs like
-     * %tY-%tj, and these may be used for time data, as long as only these
-     * field types are in the string.
+     * to correctly format the data.  
      */
     public final static String FORMAT="FORMAT";
 
@@ -409,12 +402,12 @@ public interface QDataSet {
     public final static String VALUE_METADATA_MODEL_SPASE="SPASE";
 
     /**
-     * String, human consumable identifying version.  Presently this is intended for human
-     * consumption, but eventually we may make them usable by software as well.
-     * Note if multiple versions go into making a product (e.g. aggregation), 
-     * The version string should contain space-delimited version ids, so note
-     * versions must not contain spaces for other purposes.  Also
-     * two version strings containing the same value can be coalesced.  If this
+     * String, human consumable identifying data version.  Presently this 
+     * is intended for human consumption, but eventually we may make them usable 
+     * by software as well.  Note if multiple versions go into making a product 
+     * (e.g. aggregation), the version string should contain space-delimited 
+     * version ids, so note versions must not contain spaces for other purposes.  
+     * Also two version strings containing the same value can be coalesced.  If this
      * is prefixed with "&lt;scheme&gt;:", then this is to be interpreted as such:<ul>
      *  <li>sep: period-delimited list of numeric sorted: 2.2.0 &lt; 2.15.2 &lt; 10.2.0
      *  <li>alpha: alpha-numeric sorted: 20030202B&gt;20030202A
