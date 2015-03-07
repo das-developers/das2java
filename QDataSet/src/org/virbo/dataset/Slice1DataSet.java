@@ -6,10 +6,9 @@ package org.virbo.dataset;
 
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
-import org.virbo.dsops.Ops;
 
 /**
- * return a rank N-1 dataset from a rank N dataset by slicing on the first
+ * return a rank N-1 dataset from a rank N dataset by slicing on the second
  * dimension.  (Rank 2, 3, and 4 supported.)
  * 
  * plane datasets are sliced as well, when they have rank 2 or greater.

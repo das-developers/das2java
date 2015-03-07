@@ -12,7 +12,7 @@ package org.virbo.dataset;
  * of the wrapped dataset.
  *
  * It's expected that this will be generally useful and a handy way to make
- * a Qube dataset implementation such as DDataSet support non-qube datasets.
+ * a QUBE dataset implementation such as DDataSet support non-qube datasets.
  *
  * @author jbf
  */

@@ -10,10 +10,12 @@
 package org.virbo.dataset;
 
 /**
- * QDataSets can be mutable as well, meaning their values can be assigned
- * as well as read.  These datasets cannot be written to once they are made 
- * immutable, and clients must check the isImmutable flag or call Ops.maybeCopy
- * when they need write access to the data.
+ * Some QDataSets are be mutable as well, meaning their values can be assigned
+ * as well as read.  In addition to the value() method they have putValue() methods.
+ * These datasets cannot be written to once they are made 
+ * immutable by calling the makeImmutable() of MutablePropertyDataSet, and clients 
+ * must check the isImmutable flag or call Ops.maybeCopy when they need write 
+ * access to the data.
  *   
  * Mutable datasets warning: No dataset should be mutable once it is accessible to the
  * rest of the system.  This would require clients make defensive copies which would 

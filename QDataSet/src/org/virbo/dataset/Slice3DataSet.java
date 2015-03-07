@@ -5,7 +5,7 @@
 package org.virbo.dataset;
 
 /**
- * return a rank N-1 dataset from a rank N dataset by slicing on the first
+ * return a rank N-1 dataset from a rank N dataset by slicing on the fourth
  * dimension.  (Rank 4 supported.)
  * 
  * plane datasets are sliced as well, when they have rank 4 or greater.

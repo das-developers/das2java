@@ -10,10 +10,10 @@
 package org.virbo.dataset;
 
 /**
- * QDataSet that allows its properties to be changed.  Note scripts should
- * never assume a dataset is mutable, and should call the 
- * putProperty method instead.  Note the terms mutable, writable, and modifiable
- * are all used and interchangeable.
+ * Some QDataSets allow their properties to be changed.  Note scripts should
+ * never assume a dataset is mutable, and should call the putProperty method 
+ * instead, which will make a copy if necessary.  Note the terms mutable, 
+ * writable, and modifiable are all used in this documentation and interchangeable.
  * @see WritableDataSet which allows the values to be modified as well.
  * @author jbf
  */
