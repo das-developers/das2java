@@ -124,6 +124,7 @@ public final class BundleDataSet extends AbstractDataSet {
      */
     public class BundleDescriptor extends AbstractDataSet {
 
+        @Override
         public int rank() {
             return 2;
         }
