@@ -64,6 +64,7 @@ import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.DataSetAnnotations;
 import org.virbo.dataset.SortDataSet;
+import org.virbo.dataset.SparseDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
 import org.virbo.dsutil.AutoHistogram;
@@ -4261,6 +4262,145 @@ public class Ops {
         return mds;        
         
     }
+        
+    /**
+     * Like putProperty, but this inserts the value at the index.  This
+     * was introduced to make it easier to work with bundles.  This
+     * converts types often seen in Jython and Java codes to the correct type.  For
+     * example, {@code bds= putProperty( bds, 'UNITS', 0, 'seconds since 2012-01-01')}.  
+     * The dataset may be copied to make it mutable.
+     * 
+     * @param ds the dataset to which the property is to be set.
+     * @param name the property name
+     * @param index the property index
+     * @param value the property value, which can converted to the proper type. 
+     * @return the dataset, possibly converted to a mutable dataset.
+     */
+    public static MutablePropertyDataSet putIndexedProperty( QDataSet ds, String name, int index, Object value ) {
+        
+        MutablePropertyDataSet mds;
+        if ( !( ds instanceof MutablePropertyDataSet ) ) {
+            mds= ArrayDataSet.maybeCopy(ds);
+        } else {
+            if ( ((MutablePropertyDataSet)ds).isImmutable() ) {
+                mds= ArrayDataSet.copy(ds);
+            } else {
+                mds= (MutablePropertyDataSet)ds;            
+            }
+        }
+        
+        if ( value!=null && ( value.equals("Null") || value.equals("None") ) ) {
+            if ( !"String".equals(DataSetUtil.getPropertyType(name)) ) {
+                if ( !( name.equals(QDataSet.TITLE) || name.equals(QDataSet.LABEL) ) ) {
+                    value= null;
+                }
+            }
+        }
+        if ( value==null ) {
+            mds.putProperty( name, index, null );
+            return mds;
+        }
+        
+        String type= DataSetUtil.getPropertyType(name);
+        if ( type==null ) {
+            logger.log(Level.FINE, "unrecognized property {0}...", name);
+            mds.putProperty( name, value ); 
+            
+        } else {
+            if ( type.equals(DataSetUtil.PROPERTY_TYPE_QDATASET) ) {
+                mds.putProperty(name, Ops.dataset(value));
+            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_UNITS) ) {
+                if ( value instanceof String ) {
+                    String svalue= (String)value;
+                    value= SemanticOps.lookupUnits(svalue);
+                }
+                mds.putProperty( name, value);
+            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_BOOLEAN) ) {
+                if ( value instanceof String ) {
+                    String svalue= (String)value;
+                    value= Boolean.valueOf(svalue);
+                } else if ( value instanceof Number ) {
+                    value= !((Number)value).equals(0);
+                }
+                mds.putProperty( name, value);
+            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_NUMBER) ) {
+                if ( value instanceof String ) {
+                    String svalue= (String)value;
+                    Units u= (Units)mds.property(QDataSet.UNITS);
+                    if ( u!=null ) {
+                        try {
+                            value= u.parse(svalue).doubleValue(u);
+                        } catch (ParseException ex) {
+                            try {
+                                value= Integer.valueOf(svalue);
+                            } catch ( NumberFormatException ex2 ) {
+                                throw new IllegalArgumentException(ex);
+                            }
+                        }
+                    } else {
+                        if ( svalue.contains(".") || svalue.contains("e") || svalue.contains("E") ) {
+                            value= Double.valueOf(svalue);
+                        } else {
+                            value= Integer.valueOf(svalue);
+                        }
+                    }
+                }
+                mds.putProperty( name, value);
+            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_CACHETAG) ) {
+                if ( value instanceof String ) {
+                    String svalue= (String)value;
+                    int i= svalue.indexOf("@");
+                    try {
+                        DatumRange tr= DatumRangeUtil.parseTimeRange( svalue.substring(0,i) );
+                        CacheTag r;
+                        if ( i==-1 ) {
+                            value= new CacheTag( tr, null );
+                        } else if ( svalue.substring(i+1).trim().equals("intrinsic") ) {
+                            value= new CacheTag( tr, null );
+                        } else {
+                            Datum res= Units.seconds.parse(svalue.substring(i+1));
+                            value= new CacheTag( tr, res );
+                        }
+                    } catch ( ParseException ex ) {
+                        throw new IllegalArgumentException(ex);
+                    }
+                }
+                mds.putProperty( name, index, value);
+            } else {
+                mds.putProperty( name, index, value);
+            }
+            
+        }
+        
+        return mds;        
+        
+    }
+        
+    /**
+     * Like putIndexedProperty, but manages the bundle for the client.  This
+     * was introduced to make it easier to work with bundles.  This
+     * converts types often seen in Jython and Java codes to the correct type.  For
+     * example, {@code ds= putBundleProperty( ds, 'UNITS', 0, 'seconds since 2012-01-01')}.  
+     * The dataset may be copied to make it mutable. If the bundle descriptor dataset 
+     * is not found, it is added, making the rank 2 dataset a bundle.
+     * 
+     * @param ds the rank 1 or rank 2 bundle dataset to which the property is to be set. 
+     * @param name the property name
+     * @param index the property index
+     * @param value the property value, which can converted to the proper type. 
+     * @return the dataset, possibly converted to a mutable dataset.
+     */
+    public static MutablePropertyDataSet putBundleProperty( QDataSet ds, String name, int index, Object value ) {
+        int dim=ds.rank()-1;
+        String bundleProp= "BUNDLE_"+dim;
+        QDataSet bds= (QDataSet) ds.property(bundleProp);
+        if ( bds==null ) {
+            bds= SparseDataSet.createRank(2);
+        }
+        MutablePropertyDataSet wbds= putIndexedProperty( bds, name, index, value );
+        MutablePropertyDataSet mds= putProperty( ds, bundleProp, wbds );
+        return mds;
+    }    
         
     /**
      * returns the reverse of the rank 1 dataset.
