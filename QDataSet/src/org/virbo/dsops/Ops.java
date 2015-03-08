@@ -1436,7 +1436,6 @@ public class Ops {
 
     /**
      * element-wise mod of two datasets with compatible geometry.
-     * TODO: I think there's a tacit assumption that the units are the same.  
      * This should support Units.t2000 mod "24 hours" to get result in hours.
      * @param ds1 the numerator
      * @param ds2 the divisor 
@@ -1464,10 +1463,10 @@ public class Ops {
     /**
      * element-wise mod of two datasets with compatible geometry.  This returns
      * a positive number for -18 % 10.  This is Python's behavior.
-     * TODO: I think there's a tacit assumption that the units are the same.  This should support Units.t2000 mod "24 hours" to get result in hours.
-     * @param ds1
-     * @param ds2
-     * @return
+     * This should support Units.t2000 mod "24 hours" to get result in hours.
+     * @param ds1 the numerator
+     * @param ds2 the divisor
+     * @return the remainder after the division
      */
     public static QDataSet modp(QDataSet ds1, QDataSet ds2) {
         Units u1= SemanticOps.getUnits(ds1).getOffsetUnits();
@@ -1498,19 +1497,29 @@ public class Ops {
      * @return
      */
     public static QDataSet divp(QDataSet ds1, QDataSet ds2) {
+        Units u1= SemanticOps.getUnits(ds1);
+        Units u= SemanticOps.getUnits(ds2);
+        final UnitsConverter uc;
+        UnitsConverter uc1;
+        try {
+            uc1= u1.getConverter(u);
+        } catch ( IllegalArgumentException ex ) {
+            uc1= UnitsConverter.IDENTITY;
+        }
+        uc= uc1;
         MutablePropertyDataSet result= applyBinaryOp(ds1, ds2, new BinaryOp() {
             @Override
             public double op(double d1, double d2) {
-                return Math.floor( d1 / d2);
+                return Math.floor( uc.convert(d1) / d2);
             }
         });
-        Units u= (Units) ds2.property(QDataSet.UNITS);
+        Units resultUnits= uc==UnitsConverter.IDENTITY ? u1 : Units.dimensionless;
         if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
         return result;
     }
 
     public static QDataSet divp( Object ds1, Object ds2 ) {
-        return modp( dataset(ds1), dataset(ds2) );
+        return divp( dataset(ds1), dataset(ds2) );
     }
 
     /**
