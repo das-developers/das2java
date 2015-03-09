@@ -173,6 +173,21 @@ public class TimeParser {
     };
 
     /**
+     * return true if the string appears to be an ISO8601 time.  This
+     * requires that the string contain a "T" or space and the hours component.
+     * @param exampleTime string like "1992-353T02:00"
+     * @return true if the string appears to be an ISO8601 time.
+     */
+    public static boolean isIso8601String( String exampleTime ) {
+        try { 
+            iso8601String(exampleTime);
+            return true;
+        } catch ( IllegalArgumentException ex ) {
+            return false;
+        }
+    }
+    
+    /**
      * must contain T or space to delimit date and time.
      * @param exampleTime "1992-353T02:00"
      * @return "$Y-$jT$H$M" etc.
