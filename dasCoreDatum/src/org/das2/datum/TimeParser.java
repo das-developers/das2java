@@ -198,10 +198,10 @@ public class TimeParser {
         if (i == -1) {
             i = exampleTime.indexOf(" ");
         }
-        char dateTimeDelim = exampleTime.charAt(i);
 
         String date = null, time = null;
         if (i != -1) {
+            char dateTimeDelim = exampleTime.charAt(i);
             String datePart = exampleTime.substring(0, i);
             boolean hasDelim = !datePart.matches("\\d+");
             char delim = 0;
