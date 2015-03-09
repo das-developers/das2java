@@ -1514,7 +1514,7 @@ public class Ops {
             }
         });
         Units resultUnits= uc==UnitsConverter.IDENTITY ? u1 : Units.dimensionless;
-        if ( u!=null ) result.putProperty( QDataSet.UNITS, u );
+        if ( resultUnits!=null ) result.putProperty( QDataSet.UNITS, resultUnits );
         return result;
     }
 
