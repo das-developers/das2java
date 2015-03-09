@@ -6937,15 +6937,10 @@ public class Ops {
             if ( less.isEmpty() ) {
                 less.add(d);
                 Collections.sort(less);
-            }
-            else if ( less.getLast() >= d) {
+            } else if ( less.getLast() >= d) {
                 less.add(d);
                 Collections.sort(less);
-            }
-            else if ( less.getLast()<d ) {
-                more.add(d);
-                Collections.sort(more);
-            } else  {
+            } else {
                 more.add(d);
                 Collections.sort(more);
             }
