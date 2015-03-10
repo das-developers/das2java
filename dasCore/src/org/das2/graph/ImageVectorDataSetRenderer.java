@@ -528,12 +528,16 @@ public class ImageVectorDataSetRenderer extends Renderer {
                         }
                     }
                 } else {
+                    Units targetXUnits= ddx.getUnits();
+                    UnitsConverter xuc= xunits.getConverter(targetXUnits);
+                    Units targetYUnits= ddy.getUnits();
+                    UnitsConverter yuc= yunits.getConverter(targetYUnits);
                     for (; i <= n; i++) {
                         for ( int j=0; j<nj; j++ ) {
                             boolean isValid = wds.value(i,j)>0;
                             if ( isValid ) {
-                                int ix = ddx.whichBin( xds.value(i) + xoffsets.value(j), xunits );
-                                int iy = ddy.whichBin( vds.value(i,j), yunits );
+                                int ix = ddx.whichBin( xuc.convert( xds.value(i) + xoffsets.value(j) ), targetXUnits );
+                                int iy = ddy.whichBin( yuc.convert( vds.value(i,j) ), targetYUnits );
                                 if (ix != -1 && iy != -1) {
                                     double d = tds.value(ix, iy);
                                     tds.putValue( ix, iy, d+1 );
@@ -543,11 +547,15 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     }
                 }
             } else {
+                Units targetXUnits= ddx.getUnits();
+                UnitsConverter xuc= xunits.getConverter(targetXUnits);
+                Units targetYUnits= ddy.getUnits();
+                UnitsConverter yuc= yunits.getConverter(targetYUnits);                
                 for (; i <= n; i++) {
                     boolean isValid = wds.value(i)>0;
                     if ( isValid ) {
-                        int ix = ddx.whichBin(xds.value(i), xunits);
-                        int iy = ddy.whichBin(vds.value(i), yunits);
+                        int ix = ddx.whichBin( xuc.convert( xds.value(i) ), targetXUnits);
+                        int iy = ddy.whichBin( yuc.convert( vds.value(i) ), targetYUnits);
                         if (ix != -1 && iy != -1) {
                             double d = tds.value(ix, iy);
                             tds.putValue( ix, iy, d+1 );
