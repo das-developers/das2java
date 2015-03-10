@@ -6,6 +6,7 @@ package org.virbo.dsops;
 
 import java.awt.Color;
 import java.lang.reflect.Array;
+import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -3772,7 +3773,12 @@ public class Ops {
             for ( int i=0; i<qube.length; i++ ) qube[i]= qqube.get(i);
             return ArrayDataSet.wrap( arg0, qube, true );
         } else {
-            throw new IllegalArgumentException("Ops.dataset is unable to coerce "+arg0+" to QDataSet");
+            String sarg0= String.valueOf( arg0 );
+            if ( sarg0.startsWith("<") && sarg0.endsWith(">") ) {
+                throw new IllegalArgumentException("Ops.dataset is unable to coerce \""+ sarg0.substring(1,sarg0.length()-1) + "\" to QDataSet");                
+            } else {
+                throw new IllegalArgumentException("Ops.dataset is unable to coerce "+arg0+" to QDataSet");
+            }
         }
         
     }
@@ -6097,6 +6103,8 @@ public class Ops {
      * @return rank N dataset with the same geometry as vv.  It will have DEPEND_0=vv when vv is rank 1. 
      */
     public static QDataSet findex(QDataSet uu, QDataSet vv) {
+        if ( uu==null ) throw new IllegalArgumentException("uu parameter of findex is null");
+        if ( vv==null ) throw new IllegalArgumentException("vv parameter of findex is null");
         if (!DataSetUtil.isMonotonic(uu)) {
             throw new IllegalArgumentException("u must be monotonic");
         }
