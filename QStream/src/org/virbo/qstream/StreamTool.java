@@ -50,7 +50,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathExpressionException;
-import org.das2.DasException;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
@@ -248,11 +247,11 @@ public class StreamTool {
 
     private static class ReadStreamStructure {
 
-        private ReadableByteChannel stream;
+        private final ReadableByteChannel stream;
         private ByteBuffer bigBuffer = ByteBuffer.allocate(PACKET_LENGTH_LIMIT);
-        private byte[] four = new byte[4];
-        private StreamHandler handler;
-        private Map descriptors = new HashMap();
+        private final byte[] four = new byte[4];
+        private final StreamHandler handler;
+        private final Map descriptors = new HashMap();
         private StreamDescriptor sd;
 
         /**
@@ -447,8 +446,8 @@ public class StreamTool {
     /**
      * this is code buried down in QDataSetStreamHandler, which was doing a lot of the interpretation that could
      * be done without knowing about QDataSet.
-     * @param pd
-     * @throws XPathExpressionException
+     * @param pd 
+     * @throws StreamException
      */
     public static void interpretPlanes( PacketDescriptor pd ) throws StreamException {
         try {
@@ -520,6 +519,7 @@ public class StreamTool {
                         }
 
                     }
+                    assert dims!=null;
                 }
 
                 PlaneDescriptor planeDescriptor = new PlaneDescriptor();
