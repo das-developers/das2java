@@ -20,7 +20,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathFactoryConfigurationException;
-import org.das2.datum.CacheTag;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.BundleDataSet;
 import org.virbo.dataset.DDataSet;
@@ -207,7 +206,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             total*= dims[i];
         }
         double [] data;
-        if ( svals!=null && !svals.trim().equals("") ) { //TODO: length 0?
+        if ( !svals.trim().equals("") ) { //TODO: length 0?
             data= new double[total];
             if ( total!=ss.length ) throw new IllegalArgumentException("number of elements inline doesn't match length");
             for ( int j=0; j<total; j++ ) {
@@ -419,13 +418,11 @@ public class QDataSetStreamHandler implements StreamHandler {
             }
         }
        for ( int i=0; i<2; i++ ) {
-           String pname= i==0 ? "DELTA_MINUS" : "DELTA_PLUS";
-           String s = (String) result.property( pname );
-           if (s != null) {
+            String pname= i==0 ? "DELTA_MINUS" : "DELTA_PLUS";
+            String s = (String) result.property( pname );
+            if (s != null) {
                 result.putProperty( pname, getDataSet(s) );
-            } else {
-                continue;
-            }
+            } 
        }
        return result;
     }
@@ -501,15 +498,15 @@ public class QDataSetStreamHandler implements StreamHandler {
                     if ( joinChild==null ) joinChild= (String)sliceDs.property(BUILDER_JOIN_CHILDREN);
                     String[] children= joinChild.split(",");
                     childDataSets= new ArrayList();
-                    for ( int i=0; i<children.length; i++ ) {
-                        DataSetBuilder childBuilder= builders.get(children[i]);
-                        if ( childBuilder!=null ) {
+                    for (String children1 : children) {
+                        DataSetBuilder childBuilder = builders.get(children1);
+                        if (childBuilder!=null) {
                             MutablePropertyDataSet sliceDs1= childBuilder.getDataSet();
                             resolveProps( null, sliceDs1);
                             childDataSets.add( sliceDs1 );
                             logger.log(Level.FINER, "child: {0}", sliceDs1.toString());
                         } else {
-                            logger.log(Level.WARNING, "missing child: {0}", children[i]);
+                            logger.log(Level.WARNING, "missing child: {0}", children1);
                         }
                     }
                 }
@@ -533,8 +530,8 @@ public class QDataSetStreamHandler implements StreamHandler {
 
         } else if ( sbds!=null ) {
             BundleDataSet bds= new BundleDataSet();
-            for ( int i=0; i<sbds.length; i++ ) {
-                bds.bundle( getDataSet(sbds[i]) );
+            for (String sbd : sbds) {
+                bds.bundle(getDataSet(sbd));
             }
             result= bds;
             
