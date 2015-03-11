@@ -718,7 +718,7 @@ public class EventsRenderer extends Renderer {
         
     }
     
-    private int renderTimeLimitMs = 300;
+    private int renderTimeLimitMs = 3000;
 
     @Override
     public void setDataSet(QDataSet ds) {
