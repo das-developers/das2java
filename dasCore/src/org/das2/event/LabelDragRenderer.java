@@ -14,11 +14,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
-import static org.das2.event.MouseModule.logger;
 
 /**
  *
@@ -41,6 +37,7 @@ public class LabelDragRenderer implements DragRenderer {
     
     int maxLabelWidth;
     
+    @Override
     public void clear(Graphics g) {
         if ( dirtyBounds!=null ) parent.paintImmediately(dirtyBounds);
         dirtyBounds= null;
@@ -65,10 +62,12 @@ public class LabelDragRenderer implements DragRenderer {
         return null;
     }
     
+    @Override
     public boolean isPointSelection() {
         return true;
     }
     
+    @Override
     public boolean isUpdatingDragSelection() {
         return false;
     }
@@ -141,6 +140,7 @@ public class LabelDragRenderer implements DragRenderer {
         return dirtyBounds;
     }
     
+    @Override
     public Rectangle[] renderDrag(Graphics g, Point p1, Point p2) {
         logger.log(Level.FINEST, "renderDrag {0}", p2);
         Rectangle[] result;
