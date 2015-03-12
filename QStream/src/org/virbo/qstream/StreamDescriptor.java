@@ -120,14 +120,14 @@ public class StreamDescriptor implements Descriptor {
         if ( i==null ) {
             throw new IllegalArgumentException("no descriptor ID found for descriptor: "+pd) ;
         } else {
-            return i.intValue();
+            return i;
         }
     }
 
     /**
      * indicate that no more packets will be sent with this descriptor.
      * This will free up the number so it can be reused.
-     * @param pd
+     * @param pd the descriptor.
      */
     public synchronized void retireDescriptor(Descriptor pd) {
         int i= invPackets.get(pd);
@@ -156,6 +156,14 @@ public class StreamDescriptor implements Descriptor {
 
     }
 
+    /**
+     * get the XML document that will contain the descriptor.  Note that
+     * a QStream will have many XML documents, one for each descriptor.  This
+     * keeps track of the documents for each descriptor.
+     * @param descriptor the descriptor
+     * @return the Document, which will have elements added to it.
+     * @throws ParserConfigurationException 
+     */
     public Document newDocument(Descriptor descriptor) throws ParserConfigurationException {
         Document document = factory.newDocumentBuilder().newDocument();
         documents.put(descriptor, document);

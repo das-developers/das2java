@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
  * a header).
  * @author jbf
  */
-class EnumerationUnitDescriptor implements Descriptor {
+public class EnumerationUnitDescriptor implements Descriptor {
 
     /**
      * will be called when writing streams.

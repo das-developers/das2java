@@ -17,16 +17,21 @@ public class StreamComment implements Descriptor {
 
     /**
      * task progress comments are either of the form:
+     * <blockquote><pre>
      *   [xx]000000<comment type='taskProgress' message='0 of 100'>   or
      *   [xx]000000<comment type='taskProgress' message='0 of -1'> for indeterminate
+     * </pre></blockquote>
+
      * These are currently unimplemented!
      */
     public final String TYPE_TASK_PROGRESS="taskProgress";
 
     /**
      * log comments are of the form:
+     * <blockquote><pre>
      *   [xx]000000<comment type='log:FINE' message='calc fine process'>   or
      *   [xx]000000<comment type='log:INFO' message='reading calibration'>
+     * </pre></blockquote>
      * Note the log level should be requested by the client.
      */
     public final String TYPE_LOG="log:(.*)";
@@ -44,6 +49,7 @@ public class StreamComment implements Descriptor {
         this.element= element;
     }
 
+    @Override
     public Element getDomElement() {
         return element;
     }

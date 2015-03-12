@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
  *
  * @author jbf
  */
-class ExceptionDescriptor implements Descriptor {
+public class ExceptionDescriptor implements Descriptor {
 
     /**
      * will be called when writing streams.
