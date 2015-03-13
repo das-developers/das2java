@@ -2123,6 +2123,29 @@ public class DataSetUtil {
             }
         }
         
+        { 
+            Object obds= ds.property(QDataSet.BUNDLE_0);
+            if ( obds!=null ) {
+                QDataSet bds= (QDataSet)obds;
+                if ( ds.rank()<1 ) { // this happens with CDF slice1, when we don't completely implement slice1.
+                    problems.add( "BUNDLE_0 found but dataset is only rank 0");
+                } else {
+                    if ( ds.length()!=bds.length() ) {
+                        problems.add( "ds.length() doesn't equals BUNDLE_0 length");
+                    } else {
+                        for ( int i=0; i< Math.min(1,bds.length()); i++ ) {
+                            QDataSet bds1= DataSetOps.unbundle(ds,i,true); // assumes rank1, so we have excessive work for rank>1
+                            Object o= bds1.property(QDataSet.DEPEND_1);
+                            if ( o!=null && !(o instanceof QDataSet) ) {
+                                validate( bds1,problems,1) ;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        
         Object obds= ds.property(QDataSet.BUNDLE_1);
         if ( obds!=null && !(obds instanceof QDataSet) ) {
             throw new IllegalArgumentException("BUNDLE_1 property is not a QDataSet");
