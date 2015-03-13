@@ -1371,7 +1371,9 @@ public class DataSetOps {
                 return result;
             }
         } else if ( bundle.length(j)==1 ) {
-            if ( bundleDs.rank()==1 ) throw new IllegalArgumentException("not implemented for rank 0, slice is rank 1");
+            if ( bundleDs.rank()==1 ) {
+                return bundleDs.trim(is, is+len);
+            }
             TrimStrideWrapper result= new TrimStrideWrapper(bundleDs);
             result.setTrim( 1, is, is+len, 1 );
             Integer ifirst= (Integer) bundle.property( QDataSet.START_INDEX, j  );
