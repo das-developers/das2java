@@ -1182,7 +1182,7 @@ public class DatumRangeUtil {
         
         Datum[] times= new Datum[] { time, time2 };
         for ( int i=0;i<times.length;i++ ) {
-            int[] arr= TimeUtil.fromDatum(times[i]);
+            int[] arr= TimeUtil.toTimeArray(times[i]);
             int idigit;
             for ( idigit=7; idigit>3; idigit-- ) {
                 if ( arr[idigit]>0 ) break;
@@ -1194,7 +1194,7 @@ public class DatumRangeUtil {
             stopRes= Math.min( stopRes, 4 );
         }
         
-        int[] arr= TimeUtil.fromDatum(time);
+        int[] arr= TimeUtil.toTimeArray(time);
         if ( stopRes>3 ) {
             timeString+= ( arr[4] < 10 ? "0" : "" ) + arr[4];
             if ( stopRes>4 ) {

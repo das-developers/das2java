@@ -503,7 +503,7 @@ public final class TimeUtil {
     
     /**
      * returns int[] { year, month, day, hour, minute, second, millis, micros }
-     * @deprecated use fromDatum instead, which is consistent with toDatum.
+     * @deprecated use fromDatum instead, which is consistent with toDatum.  Note the array elements are different!
      */
     public static int[] toTimeArray( Datum time ) {
         TimeStruct ts= toTimeStruct( time );

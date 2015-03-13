@@ -288,7 +288,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
             double[] values = new double[(int) nb];
             Units units = min.getUnits();
 
-            int[] tmin = ceil( TimeUtil.fromDatum(min), 1, digit );
+            int[] tmin = ceil( TimeUtil.toTimeArray(min), 1, digit );
             tmin = ceil( tmin, significand, digit );
 
             for (int i = 0; i < nb; i++) {
@@ -305,7 +305,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
             double[] values = new double[(int) nb];
             Units units = min.getUnits();
 
-            int[] tmin = ceil(TimeUtil.fromDatum(min), significand, digit);
+            int[] tmin = ceil(TimeUtil.toTimeArray(min), significand, digit);
             for (int i = 0; i < nb; i++) {
                 values[i] = TimeUtil.toDatum(tmin).doubleValue(units);
                 tmin[digit] = tmin[digit] + significand;
@@ -328,8 +328,8 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
             return ysDivider.boundaryCount( u.createDatum(yearMin), u.createDatum(yearMax) );
         }
 
-        int[] tmin = ceil(TimeUtil.fromDatum(min), significand, digit);
-        int[] tmax = floor(TimeUtil.fromDatum(max), significand, digit);
+        int[] tmin = ceil(TimeUtil.toTimeArray(min), significand, digit);
+        int[] tmax = floor(TimeUtil.toTimeArray(max), significand, digit);
 
         // branch to avoid crossing over days, which have no modulo.
         if (digit < ARR_DAY) {
@@ -339,8 +339,8 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
             }
             return (result / significand) + 1;
         } else if (digit == ARR_DAY) {
-            tmin = ceil(TimeUtil.fromDatum(min), 1, digit);
-            tmax = floor(TimeUtil.fromDatum(max), 1, digit);
+            tmin = ceil(TimeUtil.toTimeArray(min), 1, digit);
+            tmax = floor(TimeUtil.toTimeArray(max), 1, digit);
             int jmin = TimeUtil.julianDay(tmin[ARR_YEAR], tmin[ARR_MONTH], tmin[ARR_DAY]);
             int jmax = TimeUtil.julianDay(tmax[ARR_YEAR], tmax[ARR_MONTH], tmax[ARR_DAY]);
             long result = ((jmax - jmin) / significand) + 1;
@@ -371,7 +371,7 @@ public class OrdinalTimeDomainDivider implements DomainDivider {
             tmax = TimeUtil.convert((int)r.max().doubleValue(), 1, 1, 0, 0, 0, out );
             return new DatumRange( tmin, tmax, out );
         }
-        int[] tarr = floor(TimeUtil.fromDatum(v), significand, digit);
+        int[] tarr = floor(TimeUtil.toTimeArray(v), significand, digit);
         Datum dstart = TimeUtil.toDatum(tarr);
         tarr[digit] = tarr[digit] + significand;
         Datum dstop = TimeUtil.toDatum(tarr);
