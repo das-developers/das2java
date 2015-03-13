@@ -703,7 +703,7 @@ public class QDataSetStreamHandler implements StreamHandler {
      * @return true if the data can be joined.
      */
     public static boolean isFlattenableJoin(QDataSet ds) {
-        if (ds.rank() == 2 && ds.property(QDataSet.DEPEND_0) == null ) {
+        if ( ds.rank() == 2 && ds.property(QDataSet.DEPEND_0)==null && ds.property(QDataSet.BUNDLE_1)==null && ds.property(QDataSet.BINS_1)==null ) {
             return true;
         } else if (ds.rank() == 3 && ds.length() > 0 && ds.property(QDataSet.DEPEND_0) == null && ds.property(QDataSet.DEPENDNAME_0) != null) {
             QDataSet dep1 = (QDataSet) ds.slice(0).property(QDataSet.DEPEND_1);
