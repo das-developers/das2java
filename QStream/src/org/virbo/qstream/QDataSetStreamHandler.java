@@ -352,6 +352,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                                     join = new JoinDataSet(rank + 1);
                                     joinDataSets.put(name, join);
                                 }
+                                builder.setDataSetResolver( getResolver() );
                                 MutablePropertyDataSet mds = resolveProps(name, builder.getDataSet());
                                 join.join(mds);
 
@@ -486,6 +487,15 @@ public class QDataSetStreamHandler implements StreamHandler {
     public void streamException(StreamException se) throws StreamException {
     }
 
+    private DataSetBuilder.DataSetResolver getResolver() {
+        return new DataSetBuilder.DataSetResolver() {
+            @Override
+            public QDataSet resolve( String name ) {
+                return joinDataSets.get(name);
+            }
+        };
+    }
+    
     /**
      * return the dataset from the stream
      *
@@ -509,6 +519,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             String joinChild = (String) join.property(BUILDER_JOIN_CHILDREN);
             join = JoinDataSet.copy(join);
             if (builder != null && builder.rank() > 0) {
+                builder.setDataSetResolver( getResolver() );
                 sliceDs = builder.getDataSet();
                 List<QDataSet> childDataSets = null;
                 if (sliceDs != null && sliceDs.property(BUILDER_JOIN_CHILDREN) != null) {
@@ -520,7 +531,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                     for (String children1 : children) {
                         DataSetBuilder childBuilder = builders.get(children1);
                         if (childBuilder != null) {
+                            childBuilder.setDataSetResolver( getResolver() );
                             MutablePropertyDataSet sliceDs1 = childBuilder.getDataSet();
+                            
                             resolveProps(null, sliceDs1);
                             childDataSets.add(sliceDs1);
                             logger.log(Level.FINER, "child: {0}", sliceDs1.toString());
@@ -537,6 +550,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 DataSetUtil.putProperties(builder.getProperties(), join);
                 //if ( sliceDs!=null ) join.join(sliceDs);
                 if (sliceDs != null && sliceDs.length() > 0) {
+                    resolveProps(null, sliceDs);
                     logger.fine("aggregation has one last dataset to append");
                     join.join(sliceDs);
                 }
@@ -556,6 +570,7 @@ public class QDataSetStreamHandler implements StreamHandler {
 
         } else {
             assert builder != null;
+            builder.setDataSetResolver( getResolver() );
             result = builder.getDataSet();
         }
 
