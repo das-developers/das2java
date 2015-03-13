@@ -462,7 +462,16 @@ public class DataSetBuilder {
         }
         
         for (String key : properties.keySet()) {
-            result.putProperty( key, properties.get(key) );
+            if ( key.startsWith("BUNDLE_") && dataSetResolver!=null ) {
+                Object okey= properties.get(key);
+                if ( okey instanceof String ) {
+                    okey= dataSetResolver.resolve((String)properties.get(key));
+                    if ( okey==null ) throw new IllegalArgumentException("unable to resolve key: "+okey);
+                }
+                result.putProperty( key, okey );
+            } else {
+                result.putProperty( key, properties.get(key) );
+            }
         }
         
         return result;
@@ -636,5 +645,27 @@ public class DataSetBuilder {
      */
     public int rank() {
         return rank;
+    }
+
+    /**
+     * this was introduced to avoid properties where BUNDLE_1 would temporarily hold the name.
+     */
+    public static interface DataSetResolver {
+        /**
+         * return the dataset for this name, if available, or null.
+         * @param name
+         * @return the dataset for this name, if available, or null.
+        */ 
+        public QDataSet resolve( String name );
+    }
+    
+    private DataSetResolver dataSetResolver=null;
+    
+    /**
+     * add dataset resolved.
+     * @param dataSetResolver 
+     */
+    public void setDataSetResolver(DataSetResolver dataSetResolver) {
+        this.dataSetResolver= dataSetResolver;
     }
 }
