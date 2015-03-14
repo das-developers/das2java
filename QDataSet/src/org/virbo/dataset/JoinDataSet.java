@@ -28,7 +28,7 @@ public class JoinDataSet extends AbstractDataSet {
      * queried.  QDataSet supports DataSet[0,20,20].  Somewhere there is code
      * that assumes a qube...
      */
-    private static final int NO_DATASET_SIZE = 10;
+    private static final int NO_DATASET_SIZE = 999;
 
     /**
      * return a copy of the dataset, creating a new JoinDataSet and 
@@ -61,9 +61,9 @@ public class JoinDataSet extends AbstractDataSet {
      */
     int rank;
     
-    /** Creates a new instance of JoinDataSet 
+    /** 
+     * Creates a new instance of JoinDataSet 
      * @param rank The rank of the JoinDataSet.  Each dataset joined must have rank <tt>rank</tt>-1.
-     * 
      */
     public JoinDataSet( int rank ) {
         this.rank= rank;
