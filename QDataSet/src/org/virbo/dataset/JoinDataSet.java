@@ -153,6 +153,22 @@ public class JoinDataSet extends AbstractDataSet {
 //        }
         datasets.add( ds );
     }
+    
+    /**
+     * set the dataset at the index.  This must be used sequentially.
+     * @param index the index of the dataset
+     * @param ds the dataset
+     * @throws IllegalArgumentException if the dataset rank is not consistent with the other datasets.
+     */
+    public final void join( int index, QDataSet ds ) {
+        if ( ds==null )  throw new IllegalArgumentException("dataset is null");
+        if ( ds.rank()!=this.rank-1 ) throw new IllegalArgumentException("dataset rank must be "+(this.rank-1)+", it is rank "+ds.rank() );
+        if ( index==datasets.size() ) {
+            datasets.add(index,ds);            
+        } else {
+            datasets.set(index,ds);
+        }
+    }
 
     @Override
     public int rank() {
