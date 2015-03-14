@@ -185,20 +185,10 @@ public class ToAsciiStreamHandler implements StreamHandler {
         OutputStream out= System.out;
 
         if ( args.length>0 ) {
-            if ( args[0].startsWith("/") ) {
-                in= new FileInputStream(args[0]);
-                System.err.println("reading "+args[0] );
-            } else {
-                try {
-                    URL urlin= new java.net.URL(args[0]);
-                    in= urlin.openStream();
-                    System.err.println("reading "+urlin );
-                } catch ( IOException ex) {
-                    logger.log(Level.SEVERE, ex.getMessage(), ex);
-                    System.exit(-1);
-                }
-            }
+            in= new FileInputStream(args[0]);
+            System.err.println("reading "+args[0] );
         }
+        
         if ( args.length>1 ) {
             out= new FileOutputStream(args[1]);
             System.err.println("writing "+args[1] );
