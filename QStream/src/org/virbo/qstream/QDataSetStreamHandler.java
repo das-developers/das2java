@@ -395,7 +395,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                     //result.putProperty( QDataSet.DEPEND_0, result );  // sometimes it's nice to look at Epoch[Epoch]
                     continue;
                 }
-                QDataSet dep0ds = getDataSet(s);
+                QDataSet dep0ds = getDataSetInternal(s);
                 if (dep0ds.rank() == 1) {
                     result.putProperty("DEPEND_" + i, dep0ds);
                 } else if (i > 0 && dep0ds.rank() == 2) {
@@ -412,20 +412,20 @@ public class QDataSetStreamHandler implements StreamHandler {
             Object o = result.property("DEPEND_" + i);
             if (o != null && o instanceof String) {
                 logger.log(Level.WARNING, "QDataSetStreamHandler: still strings in DEPEND_{0}", i);
-                result.putProperty("DEPEND_" + i, getDataSet((String) o));
+                result.putProperty("DEPEND_" + i, getDataSetInternal((String) o));
             }
         }
         for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             Object o = result.property("BUNDLE_" + i);
             if (o instanceof String) { //TODO: still need to clean up messages here, maybe...
                 String s = (String) o;
-                result.putProperty("BUNDLE_" + i, getDataSet(s));
+                result.putProperty("BUNDLE_" + i, getDataSetInternal(s));
             }
         }
         for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
             String s = (String) result.property("PLANE_" + i);
             if (s != null) {
-                result.putProperty("PLANE_" + i, getDataSet(s));
+                result.putProperty("PLANE_" + i, getDataSetInternal(s));
             } else {
                 break;
             }
@@ -434,7 +434,7 @@ public class QDataSetStreamHandler implements StreamHandler {
             String pname = i == 0 ? "DELTA_MINUS" : "DELTA_PLUS";
             String s = (String) result.property(pname);
             if (s != null) {
-                result.putProperty(pname, getDataSet(s));
+                result.putProperty(pname, getDataSetInternal(s));
             }
         }
         return result;
@@ -515,6 +515,31 @@ public class QDataSetStreamHandler implements StreamHandler {
         }
         return join;
     }
+
+    /**
+     * return the dataset from the stream.
+     *
+     * @param name the name of the dataset to retrieve.
+     * @return the dataset
+     */
+    public QDataSet getDataSet(String name) {
+        QDataSet result= getDataSetInternal(name);
+        if ( isFlattenableJoin(result) ) {
+            logger.log(Level.FINE, "flattening join for {0}: {1}", new Object[]{name, result});
+            result= flattenJoin(result);
+        }
+        return result;
+    }    
+    
+    /**
+     * return the default dataset for the stream.  The default dataset is
+     * identified in the stream packet descriptor dataset_id attribute.
+     *
+     * @return the default dataset
+     */
+    public QDataSet getDataSet() {
+        return getDataSet(dsname);
+    }
     
     /**
      * return the dataset from the stream
@@ -522,7 +547,7 @@ public class QDataSetStreamHandler implements StreamHandler {
      * @param name the name of the dataset to retrieve.
      * @return the dataset
      */
-    public QDataSet getDataSet(String name) {
+    private QDataSet getDataSetInternal(String name) {
         logger.log(Level.FINE, "getDataSet({0})", name);
         DataSetBuilder builder = builders.get(name);
         String[] sbds = bundleDataSets.get(name);
@@ -601,17 +626,8 @@ public class QDataSetStreamHandler implements StreamHandler {
         } else {
             resolveProps(name, result);
         }
-
+        
         return result;
-    }
-
-    /**
-     * return the default dataset for the stream.
-     *
-     * @return
-     */
-    public QDataSet getDataSet() {
-        return getDataSet(dsname);
     }
 
     /**
@@ -772,7 +788,7 @@ public class QDataSetStreamHandler implements StreamHandler {
      * @param ds rank 2 or 3 join dataset.
      * @return rank 1 or 2 dataset.
      */
-    public QDataSet flattenJoin(QDataSet ds) {
+    public MutablePropertyDataSet flattenJoin(QDataSet ds) {
         int len = 0;
         for (int i = 0; i < ds.length(); i++) {
             len += ds.length(i);
