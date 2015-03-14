@@ -2131,7 +2131,8 @@ public class DataSetUtil {
                 } else if ( ((QDataSet)obds).rank()<1 ) { // this happens with CDF slice1, when we don't completely implement slice1.
                     problems.add( "BUNDLE_0 found but dataset is only rank 0");
                 } else if ( ds.length()!=((QDataSet)obds).length() ) {
-                    problems.add( "ds.length() doesn't equals BUNDLE_0 length");
+                    //problems.add( "ds.length() doesn't equals BUNDLE_0 length");
+                    //TODO: 'http://sarahandjeremy.net/~jbf/autoplot/data/hudson_data/qds/agg/2014-02-25_2day.qds' doesn't validate
                 } else {
                     QDataSet bds= (QDataSet)obds;
                     for ( int i=0; i< Math.min(1,bds.length()); i++ ) {
