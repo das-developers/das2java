@@ -277,16 +277,16 @@ public class QDataSetStreamHandler implements StreamHandler {
                     bundleDataSets.put(name, ss);
 
                 } else {
-                    if (joinDataSets.containsKey(name)) {
-                        logger.log(Level.FINE, "propose resetting join dataset: {0}", name);
-                        //joinDataSets.remove(name);
-                    }
                     for (int iv = 0; iv < values.getLength(); iv++) {
                         Element vn = (Element) values.item(iv);
                         DDataSet inlineDs = null;
+                        int index=-1;
                         if (vn.hasAttribute("values")) {  // TODO: consider "inline"
                             inlineDs = doInLine(vn);
                             isInline = true;
+                            if ( vn.hasAttribute("index") ) {
+                                index= Integer.parseInt( vn.getAttribute("index") );
+                            }
                         }
                         //index stuff--Ed W. thinks index should be implicit.
                         sdims = xpath.evaluate("@length", vn);
@@ -299,12 +299,16 @@ public class QDataSetStreamHandler implements StreamHandler {
                         }
 
                         if (isInline && inlineDs != null && inlineDs.rank() < rank) { // I believe assert inlineDs!=null
-                            JoinDataSet join = joinDataSets.get(name);
-                            if (join == null) {
-                                join = new JoinDataSet(rank);
-                                joinDataSets.put(name, join);
+                            if ( iv==0 && joinDataSets.containsKey(name) ) {
+                                logger.log(Level.FINE, "resetting join dataset for name {0}", name);
+                                joinDataSets.remove(name);
                             }
-                            join.join(inlineDs);
+                            JoinDataSet join = getJoinDataSet(name,rank);
+                            if ( index>=0 ) {
+                                join.join(index,inlineDs);                                
+                            } else {
+                                join.join(inlineDs);
+                            }
                             builder = new DataSetBuilder(0);
                             builders.put(name, builder); // rank 0 means the values were in line.
                         } else if (isInline && inlineDs != null && inlineDs.rank() == rank) {
@@ -316,11 +320,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                             }
                             builders.put(name, builder); // rank 0 means the values were in line.
                         } else if (joinChildren.length() > 0) {
-                            JoinDataSet join = joinDataSets.get(name);
-                            if (join == null) { // typically we will only declare once.
-                                join = new JoinDataSet(rank);
-                                joinDataSets.put(name, join);
-                            }
+                            getJoinDataSet(name,rank); // make sure it is allocated.
                             builder = new DataSetBuilder(1, 10);
                             builder.putProperty(BUILDER_JOIN_CHILDREN, joinChildren);
                             builders.put(name, builder); //
@@ -362,7 +362,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                         }
                     }
                 }
-
+                
                 NodeList odims = (NodeList) xpath.evaluate("properties[not(@index)]/property", n, XPathConstants.NODESET);
                 doProps(odims, builder);
 
@@ -494,6 +494,26 @@ public class QDataSetStreamHandler implements StreamHandler {
                 return joinDataSets.get(name);
             }
         };
+    }
+    
+    /**
+     * get the JoinDataSet into which we will store datasets.  Start
+     * a new one if the dataset does not exist, or return the one we are working
+     * on.
+     * @param name name of the join
+     * @param rank the requested or expected rank.
+     */
+    private JoinDataSet getJoinDataSet( String name, int rank ) {
+        JoinDataSet join = joinDataSets.get(name);
+        if (join == null) {
+            join = new JoinDataSet(rank);
+            joinDataSets.put(name, join);
+        } else {
+            if ( join.rank()!=rank ) {
+                throw new IllegalArgumentException("rank mismatch");
+            }
+        }
+        return join;
     }
     
     /**
