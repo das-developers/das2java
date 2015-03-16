@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
+import org.das2.util.filesystem.ExpensiveOpCache;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
@@ -391,5 +392,43 @@ public class Schemes {
      */
     public static boolean isBundleDataSet( QDataSet ds ) {
         return Ops.isBundle(ds);
+    }
+    
+    /**
+     * return a trajectory through a space
+     * @return rank 2 dataset
+     */
+    public static QDataSet trajectory( ) {
+        QDataSet tt= Ops.multiply("1hr",Ops.linspace(0,24,1440));
+        QDataSet xy= Ops.bundle( Ops.cos(tt), Ops.sin(tt) );
+        return Ops.link( tt, xy );
+    }
+    
+    /**
+     * return true is the data is a trajectory
+     * @param ds a dataset
+     * @return true if the data is a trajectory
+     */
+    public static boolean isTrajectory( QDataSet ds ) {
+        return isBundleDataSet(ds) && ds.rank()==2;
+    }
+    
+    /**
+     * return a rank 1 dataset that depends on a trajectory through a space.
+     * @return rank 1 dataset with DEPEND_0 a trajectory.
+     */
+    public static QDataSet rank1AlongTrajectory( ) {
+        QDataSet trajectory= trajectory();
+        QDataSet zz= Ops.sin( Ops.linspace(0,Ops.PI,trajectory.length()));
+        return Ops.link( trajectory, zz );
+    }
+    
+    /**
+     * return true if the data is rank 1 along a trajectory
+     * @param ds a dataset
+     * @return true if the data is rank 1 along a trajectory
+     */
+    public static boolean isRank1AlongTrajectory( QDataSet ds ) {
+        return ds.rank()==1 && isTrajectory( (QDataSet) ds.property(QDataSet.DEPEND_0));
     }
 }
