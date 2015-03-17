@@ -26,6 +26,9 @@ public final class RepeatIndexDataSet extends AbstractDataSet {
         }
         this.count= length;
         this.insertIndex= insertIndex;
+        if ( DataSetUtil.isQube(s) ) {
+            this.putProperty( QDataSet.QUBE, Boolean.TRUE );
+        }
     }
     
     @Override
