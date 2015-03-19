@@ -1316,8 +1316,9 @@ public class DataSetUtil {
         QDataSet diffs;
         if ( yds.rank()==1 && xds.rank()==1 ) { // ftp://virbo.org/tmp/poes_n17_20041228.cdf?P1_90[0:300] has every other value=fill.
             QDataSet r= Ops.where( Ops.valid(yds) );
-            
             if ( r.length()<2 ) {
+                diffs=  Ops.diff( xds );
+            } else if ( r.length()==yds.length() ) {
                 diffs=  Ops.diff( xds );
             } else {
                 diffs=  Ops.diff( DataSetOps.applyIndex( xds, 0, r, false ) );
