@@ -586,6 +586,15 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
 
         QDataSet newHist = histogram(ddx, ddy, ds);
+        if ( yAxis.isFlipped() && xAxis.isFlipped() ) {
+            newHist= DataSetOps.applyIndex( newHist, 1, Ops.linspace( newHist.length(0)-1, 0, newHist.length(0) ), false );
+            newHist= DataSetOps.applyIndex( newHist, 0, Ops.linspace( newHist.length()-1, 0, newHist.length() ), false );
+        } else if ( yAxis.isFlipped() ) {
+            newHist= DataSetOps.applyIndex( newHist, 1, Ops.linspace( newHist.length(0)-1, 0, newHist.length(0) ), false );
+        } else if ( xAxis.isFlipped() ) {
+            newHist= DataSetOps.applyIndex( newHist, 0, Ops.linspace( newHist.length()-1, 0, newHist.length() ), false );
+        }
+        
         //WritableTableDataSet whist= (WritableTableDataSet)hist;
 
         /* double histMax= TableUtil.tableMax(hist, Units.dimensionless);
@@ -629,6 +638,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
             int ymin = -1;
             int ymax = -1; //ymax is inclusive
             for (int j=0; j<h; j++) {
+                if ( j>=newHist.length(0) ) {
+                    System.err.println("here");
+                }
                 if (newHist.value(i,j) > 0) {
                     if (ymin<0) ymin = j;
                     ymax = j;
@@ -691,13 +703,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         if (!yAxis.getUnits().isConvertibleTo( SemanticOps.getUnits(ds1) )) {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
-        }
-        
-        if ( yAxis.isFlipped() ) {
-            parent.postMessage(this, "flipped yaxis is not supported", DasPlot.WARNING, null, null );
-        }
-        if ( xAxis.isFlipped() ) {
-            parent.postMessage(this, "flipped xaxis is not supported", DasPlot.WARNING, null, null );
         }
 
         plotImageBounds= parent.getUpdateImageBounds();
