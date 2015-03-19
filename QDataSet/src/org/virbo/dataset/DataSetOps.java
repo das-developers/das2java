@@ -24,6 +24,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+import org.autoplot.bufferdataset.BufferDataSet;
+import org.autoplot.bufferdataset.ByteDataSet;
+import org.autoplot.bufferdataset.FloatDataSet;
+import org.autoplot.bufferdataset.IntDataSet;
+import org.autoplot.bufferdataset.ShortDataSet;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
@@ -445,6 +450,52 @@ public class DataSetOps {
     }
     
     /**
+     * return the class type that can accurately store data in this 
+     * dataset.  This was motivated by DDataSets and FDataSets, but also
+     * IndexGenDataSets.
+     * 
+     * @param ds the dataset.
+     * @return the class that can store this type.  double.class is returned when the class cannot be identified.
+     * @see ArrayDataSet#create(java.lang.Class, int[]) 
+     */
+    public static Class getComponentType( QDataSet ds ) {
+        if ( ds instanceof ArrayDataSet ) {
+            return ((ArrayDataSet)ds).getComponentType();
+        } else if ( ds instanceof BufferDataSet ) {
+            return ((BufferDataSet)ds).getCompatibleComponentType();
+        } else if ( ds instanceof IndexGenDataSet ) {
+            return int.class;
+        } else if ( ds instanceof JoinDataSet && ds.length()>0 ) {
+            return getComponentType(ds.slice(0));
+        } else {
+            return double.class;
+        }
+    }
+    
+    /**
+     * return a fill value that is representable by the type.
+     * @param c the class type, including double.class, float.class, etc.
+     * @return a fill value that is representable by the type.
+     */
+    public static double suggestFillForComponentType( Class c ) {
+        if ( c==double.class ) {
+            return -1e38;
+        } else if ( c==float.class ) {
+            return -1e38;
+        } else if ( c==long.class ) {
+            return Long.MIN_VALUE;
+        } else if ( c==int.class ) {
+            return Integer.MIN_VALUE;
+        } else if ( c==short.class ) {
+            return Short.MIN_VALUE;
+        } else if ( c==byte.class ) {
+            return Byte.MIN_VALUE;
+        } else {
+            return -1e38;
+        }
+    }
+    
+    /**
      * Applies the sort index to the idim-th dimension of the qube dataset ds.
      * TODO: consider sorting multiple dimensions at once, to reduce excessive copying.
      * TODO: this should probably (and would easily) be redone by using dataset implementation that applies the sort on the ith index when read.
@@ -465,17 +516,18 @@ public class DataSetOps {
         if (ds.rank() > 3) {
             throw new IllegalArgumentException("rank limit");
         }
-
+                
         if ( idim==0 ) {
-            return DDataSet.copy( new SortDataSet( ds, sort ) ); // this was presumably for efficiency
+            return ArrayDataSet.copy( getComponentType(ds), new SortDataSet( ds, sort ) );
         }
-        
+
         int[] qube = DataSetUtil.qubeDims( ds );
         if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube and index is not on first dimension");
         
         qube[idim] = sort.length();
-
-        DDataSet cds = DDataSet.create(qube);
+        
+        ArrayDataSet cds= ArrayDataSet.create( getComponentType(ds), qube );
+        
         Map<String,Object> props= org.virbo.dataset.DataSetUtil.getDimensionProperties(ds,null);
         org.virbo.dataset.DataSetUtil.putProperties(props, cds);
         
