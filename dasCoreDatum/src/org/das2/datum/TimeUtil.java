@@ -1064,7 +1064,7 @@ public final class TimeUtil {
                 } else if (number > 31) {
                     
                     if (want[YEAR]) {
-                        if ( hold!=0 && year<100 && year>60 ) {
+                        if ( hold!=0 && year<100 && year>50 ) {
                             throw new ParseException("Held digit ("+hold+") before two-digit year ("+year+"): "+s,0);
                         }
                         year = number;
