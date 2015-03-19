@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.autoplot.bufferdataset.BufferDataSet;
 import org.autoplot.bufferdataset.ByteDataSet;
 import org.autoplot.bufferdataset.FloatDataSet;
 import org.autoplot.bufferdataset.IntDataSet;
@@ -53,6 +54,26 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
         if ( c==short.class ) return new SDataSet( rank, len0, len1, len2, len3, (short[])back );
         if ( c==byte.class ) return new BDataSet( rank, len0, len1, len2, len3, (byte[])back );
         throw new IllegalArgumentException("class not supported: "+c);
+    }
+    
+    /**
+     * create a dataset with the backing type and the dimensions given.
+     * The following component types are supported: double.class, float.class,
+     * long.class, int.class, short.class, and byte.class.  
+     * @param c the backing type, such as double.class, float.class, etc.
+     * @param qube dimensions of the dataset
+     * @return the dataset
+     * @see #getComponentType() 
+     * @see BufferDataSet which also supports unsigned types.
+     */
+    public static ArrayDataSet create( Class c, int[] qube ) {
+        if ( c==double.class ) DDataSet.create( qube );
+        if ( c==float.class ) FDataSet.create( qube );
+        if ( c==long.class ) LDataSet.create( qube );
+        if ( c==int.class ) IDataSet.create( qube );
+        if ( c==short.class ) SDataSet.create( qube );
+        if ( c==byte.class ) BDataSet.create( qube );
+        throw new IllegalArgumentException("class not supported: "+c);      
     }
 
     /**
@@ -152,6 +173,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @param qube dimensions of the dataset
      * @param copy copy the data so that original data is not modified with putValue
      * @return ArrayDataSet
+     * @see #create(java.lang.Class, int[]) 
      */
     public static ArrayDataSet wrap( Object array, int[] qube, boolean copy ) {
         Object arr;
@@ -332,6 +354,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     /**
      * return the component type of the backing array, such as double.class.
      * @return the component type of the backing array.
+     * @see #create(java.lang.Class, int[]) 
      */
     public Class getComponentType() {
         return getBack().getClass().getComponentType();
