@@ -174,9 +174,6 @@ public class DataSetBuilder {
      * @param d the value to insert.
      */
     public void putValue( int index0, int index1, double d ) {
-        if ( length==20 ) {
-            System.err.println("here20");
-        }
         checkStreamIndex(index0);
         current.putValue( this.index, index1, d );
     }
