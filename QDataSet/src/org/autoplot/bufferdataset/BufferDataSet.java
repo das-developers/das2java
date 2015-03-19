@@ -1023,4 +1023,36 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         //QDataSet extent= Ops.extent(this);  // this is occasionally very slow. TODO: investigate
         //System.err.println("extent="+extent);
     }
+
+    /**
+     * return the Java type that is capable of containing elements of this dataset.
+     * For unsigned types, the next Java class is used, for example int.class is
+     * used to store unsigned shorts.
+     * @return double.class, float.class, long.class, etc.
+     */
+    public Class getCompatibleComponentType() {
+        Object t= getType();
+        if ( t==DOUBLE ) {
+            return double.class;
+        } else if ( t==FLOAT ) {
+            return float.class;
+        } else if ( t==LONG ) {
+            return long.class;
+        } else if ( t==UINT ) {
+            return long.class;
+        } else if ( t==INT ) {
+            return int.class;
+        } else if ( t==USHORT ) {
+            return int.class;
+        } else if ( t==SHORT ) {
+            return short.class;
+        } else if ( t==UBYTE ) {
+            return short.class;
+        } else if ( t==BYTE ) {
+            return byte.class;
+        } else {
+            return double.class;
+        }
+        
+    }
 }
