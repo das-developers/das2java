@@ -66,6 +66,7 @@ import org.virbo.dataset.TrimStrideWrapper;
 import org.virbo.dataset.DataSetAnnotations;
 import org.virbo.dataset.SortDataSet;
 import org.virbo.dataset.SparseDataSet;
+import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
 import org.virbo.dsutil.AutoHistogram;
@@ -7158,7 +7159,7 @@ public class Ops {
         if (ds.rank() > 1) {
             throw new IllegalArgumentException("only rank 1");
         }
-        DDataSet result= DDataSet.createRank1( ds.length()-1 );
+        ArrayDataSet result= ArrayDataSet.createRank1( DataSetOps.getComponentType(ds), ds.length()-1 );
         QDataSet w1= DataSetUtil.weightsDataSet(ds);
         QDataSet dep0ds= (QDataSet) ds.property(QDataSet.DEPEND_0);
         DDataSet dep0= null;
@@ -7166,7 +7167,8 @@ public class Ops {
             dep0= DDataSet.createRank1( ds.length()-1 );
             DataSetUtil.putProperties( DataSetUtil.getProperties(dep0ds), dep0 );
         }
-        double fill= ((Number)w1.property( QDataSet.FILL_VALUE )).doubleValue();
+        double fill= DataSetOps.suggestFillForComponentType( DataSetOps.getComponentType(ds) );
+
         for ( int i=0; i<result.length(); i++ ) {
             if ( w1.value(i)>0 && w1.value(i+1)>0 ) {
                 result.putValue(i, ds.value(i+1) - ds.value(i) );
