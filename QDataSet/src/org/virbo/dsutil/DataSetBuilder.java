@@ -343,6 +343,7 @@ public class DataSetBuilder {
      * When -1 is used for the indexes of the streaming dimension, then this
      * will increment the internal counter.
      * TODO: Check for unspecified entries.
+     * @see #nextRecord(java.lang.Object...) which inserts all values at once.
      */
     public void nextRecord() {
         index++;
