@@ -174,6 +174,9 @@ public class DataSetBuilder {
      * @param d the value to insert.
      */
     public void putValue( int index0, int index1, double d ) {
+        if ( length==20 ) {
+            System.err.println("here20");
+        }
         checkStreamIndex(index0);
         current.putValue( this.index, index1, d );
     }
@@ -260,7 +263,7 @@ public class DataSetBuilder {
         if ( d.rank()!=0 ) throw new IllegalArgumentException("data must be rank 0");
         double v= d.value();        
         if ( lu!=us[index1] ) {
-            v= lu.convertDoubleTo( us[index], v );
+            v= lu.convertDoubleTo( us[index1], v );
         }
         String label= (String)d.property(QDataSet.LABEL);
         if ( label!=null && ( labels==null || labels[index1]==null ) ) {
