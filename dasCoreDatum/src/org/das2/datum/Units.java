@@ -533,13 +533,12 @@ public abstract class Units {
     }
     
     /**
-     * convert the double in this units' space to toUnits' space.  This
-     * method is final so that a converter must be registered.
+     * convert the double in this units' space to toUnits' space.
      * @param toUnits the units.
      * @param value the value in toUnits.
      * @return the double in the new units system.
      */
-    public final double convertDoubleTo( Units toUnits, double value ) {
+    public double convertDoubleTo( Units toUnits, double value ) {
         if ( this==toUnits ) {
             return value;
         } else {
