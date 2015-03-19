@@ -291,7 +291,15 @@ public class EnumerationUnits extends Units {
         return value.doubleValue()==getFillDouble();
     }
 
-    
+    @Override
+    public double convertDoubleTo(Units toUnits, double value) {
+        if ( !( toUnits instanceof EnumerationUnits ) ) throw new IllegalArgumentException("unable to convert ordinal data");
+        if ( this==toUnits ) {
+            return value;
+        } else {
+            return ((EnumerationUnits)toUnits).createDatum( this.createDatum(value).toString() ).doubleValue(toUnits);
+        }
+    }
     
     @Override
     public String toString() {
