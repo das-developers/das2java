@@ -10,6 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.autoplot.bufferdataset.ByteDataSet;
+import org.autoplot.bufferdataset.FloatDataSet;
+import org.autoplot.bufferdataset.IntDataSet;
+import org.autoplot.bufferdataset.ShortDataSet;
 import org.das2.datum.CacheTag;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
@@ -611,14 +615,33 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
                 Class c= ((ArrayDataSet)ds1).getBack().getClass().getComponentType();
                 return copy( c, ds );
             } else {
-                return copy( double.class, ds );
+                return copy( guessBackingStore(ds), ds );
             }
         } else {
-            return copy( double.class, ds ); // strange type does legacy behavior.
+            return copy( guessBackingStore(ds), ds ); // strange type does legacy behavior.
         }
     }
 
-
+    /**
+     * guess the type of the backing store, returning double.class
+     * if it cannot be determined.
+     * @param ds the dataset
+     * @return the backing store class, one of double.class, float.class, etc.
+     */
+    public static Class guessBackingStore( QDataSet ds ) {
+        if ( ds instanceof BDataSet || ds instanceof ByteDataSet ) {
+            return byte.class;
+        } else if ( ds instanceof SDataSet || ds instanceof ShortDataSet ) {
+            return short.class;
+        } else if ( ds instanceof IDataSet || ds instanceof IntDataSet ) {
+            return int.class;
+        } else if ( ds instanceof FDataSet || ds instanceof FloatDataSet ) {
+            return float.class;
+        } else {
+            return double.class;
+        }
+    }
+    
     
     /**
      * check for fill property and set local variable.
