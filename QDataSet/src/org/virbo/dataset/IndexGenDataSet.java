@@ -10,21 +10,24 @@
 package org.virbo.dataset;
 
 /**
- * Dataset that simply returns the index as the value.  This is also used 
- * a base class for other DataSet implementations.
+ * Dataset that simply returns the index as the value.  
  * @author jbf
  */
-public class IndexGenDataSet extends AbstractDataSet {
+public final class IndexGenDataSet extends AbstractDataSet {
     
     int length;
     
-    /** Creates a new instance of IndexGenDataSet */
+    /** 
+     * Creates a new instance of IndexGenDataSet
+     * @param length 
+     */
     public IndexGenDataSet( int length ) {
         super();
         this.length= length;
         properties.put( QDataSet.MONOTONIC, Boolean.TRUE );
     }
 
+    @Override
     public int rank() {
         return 1;
     }
