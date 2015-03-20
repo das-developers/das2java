@@ -12,6 +12,7 @@ package test;
 import java.util.HashMap;
 import java.util.Map;
 import org.das2.datum.Units;
+import org.virbo.dataset.AbstractRank1DataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -66,8 +67,9 @@ public class TestDataSetOps {
 
         System.out.println("sort");
         
-        QDataSet ds = new IndexGenDataSet(8) {
+        QDataSet ds = new AbstractRank1DataSet(8) {
             double data[]= new double[] { 3,5,7,1,2,-1e31, 5,9 };
+            @Override
             public double value(int i) {
                 return data[i];
             }
