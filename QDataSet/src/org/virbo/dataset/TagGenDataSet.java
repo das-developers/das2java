@@ -36,11 +36,13 @@ public class TagGenDataSet extends AbstractDataSet {
         this.scale= scale;
         this.offset= offset;
         if ( units!=null ) {
-            putProperty( QDataSet.CADENCE, DRank0DataSet.create(scale, units.getOffsetUnits() ) );
+            putProperty( QDataSet.CADENCE, DRank0DataSet.create( scale, units.getOffsetUnits() ) );
             putProperty( QDataSet.UNITS, units );
             this.units= units;
         } else {
             this.units= Units.dimensionless;
+            putProperty( QDataSet.CADENCE, DRank0DataSet.create( scale, Units.dimensionless ) );
+            if ( scale>0 ) putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
         }
     }
 
