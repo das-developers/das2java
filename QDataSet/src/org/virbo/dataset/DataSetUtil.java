@@ -71,7 +71,7 @@ public class DataSetUtil {
      * @return  the dataset
      */
     public static MutablePropertyDataSet tagGenDataSet(int n, final double start, final double cadence) {
-        return new TagGenDataSet( n, cadence, 0 );
+        return new TagGenDataSet( n, cadence, start );
     }
 
     /**
