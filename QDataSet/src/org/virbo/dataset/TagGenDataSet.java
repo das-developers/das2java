@@ -20,19 +20,17 @@ import org.das2.datum.Units;
  * These are the 1440 minutely timetags in the first day of 2000-01-01.
  * @author jbf
  */
-public class TagGenDataSet extends AbstractDataSet {
+public class TagGenDataSet extends AbstractRank1DataSet {
     
     double scale, offset;
     Units units;
 
-    int length;
-    
     public TagGenDataSet( int length, double scale, double offset ) {
         this( length, scale, offset, null );
     }
     
     public TagGenDataSet( int length, double scale, double offset, Units units ) {
-        this.length= length;
+        super(length);
         this.scale= scale;
         this.offset= offset;
         if ( units!=null ) {
@@ -44,11 +42,6 @@ public class TagGenDataSet extends AbstractDataSet {
             putProperty( QDataSet.CADENCE, DRank0DataSet.create( scale, Units.dimensionless ) );
             if ( scale>0 ) putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
         }
-    }
-
-    @Override
-    public int rank() {
-        return 1;
     }
 
     @Override
