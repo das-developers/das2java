@@ -71,15 +71,7 @@ public class DataSetUtil {
      * @return  the dataset
      */
     public static MutablePropertyDataSet tagGenDataSet(int n, final double start, final double cadence) {
-        IndexGenDataSet result = new IndexGenDataSet(n) {
-            @Override
-            public double value(int i) {
-                return i * cadence + start;
-            }
-        };
-        result.putProperty( QDataSet.CADENCE, DRank0DataSet.create(cadence) );
-        if ( cadence<0 ) result.putProperty( QDataSet.MONOTONIC, Boolean.FALSE );
-        return result;
+        return new TagGenDataSet( n, cadence, 0 );
     }
 
     /**
@@ -103,14 +95,7 @@ public class DataSetUtil {
      * @return the dataset
      */
     public static MutablePropertyDataSet replicateDataSet(int n, final double value) {
-        IndexGenDataSet result = new IndexGenDataSet(n) {
-
-            @Override
-            public double value(int i) {
-                return value;
-            }
-        };
-        return result;
+        return new TagGenDataSet( n, 0., value, Units.dimensionless );
     }
 
     /**
