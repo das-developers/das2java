@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.virbo.dataset.examples;
 
 import java.text.ParseException;
@@ -11,7 +7,6 @@ import java.util.logging.Logger;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
-import org.das2.util.filesystem.ExpensiveOpCache;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
@@ -34,6 +29,8 @@ import static org.virbo.dsops.Ops.ripples;
  * @author jbf 
  */
 public class Schemes {
+    
+    private static Logger logger= Logger.getLogger("qdataset.schemes");
     
     /**
      * return a bounding box for the data.  This is a rank 2 dataset where
@@ -152,6 +149,30 @@ public class Schemes {
         return ds.rank()==2;
     }
 
+    /**
+     * return a rank 1 scalar time series.
+     * @return a rank 1 scalar time series.
+     */
+    public static QDataSet scalarTimeSeries() {
+        try {
+            QDataSet density= Ops.add( Ops.ripples(20), Ops.randomn(0,20) );
+            density= Ops.putProperty( density, QDataSet.UNITS, Units.pcm3 );
+            QDataSet t = Ops.timegen("2011-10-24", "20 sec", 20 );        
+            return Ops.link( t, density );
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    /**
+     * return true if the data is a simple spectrogram.
+     * @param ds a dataset
+     * @return  true if the data is a simple spectrogram.
+     */
+    public static boolean isScalarTimeSeries( QDataSet ds ) {
+        return ds.rank()==1 && isTimeSeries(ds);
+    }
+    
     /**
      * return a rank 2 simple spectrogram, which has two indeces
      * and is a TimeSeries.

@@ -13,6 +13,8 @@ public class SchemesDemo {
         if ( ! Schemes.isTrajectory( Schemes.trajectory() ) ) throw new IllegalArgumentException();
         if ( ! Schemes.isRank1AlongTrajectory( Schemes.rank1AlongTrajectory() ) ) throw new IllegalArgumentException();
         if ( ! Schemes.isAngleDistribution( Schemes.angleDistribution() ) ) throw new IllegalArgumentException();        
+        if ( ! Schemes.isScalarTimeSeries( Schemes.scalarTimeSeries() ) ) throw new IllegalArgumentException();
+        if ( ! Schemes.isSimpleSpectrogramTimeSeries( Schemes.simpleSpectrogramTimeSeries() ) ) throw new IllegalArgumentException();
     }
         
     public static void main( String[] args ) {
