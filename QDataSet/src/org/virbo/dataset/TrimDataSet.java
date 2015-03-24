@@ -36,7 +36,14 @@ public class TrimDataSet extends AbstractDataSet {
 
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
         if ( dep1!=null && dep1.rank()==2 ) {
-                putProperty( QDataSet.DEPEND_1, new TrimDataSet( dep1, start, stop ) );
+            putProperty( QDataSet.DEPEND_1, new TrimDataSet( dep1, start, stop ) );
+        } else {
+            if ( dep1!=null ) putProperty( QDataSet.DEPEND_1, dep1 );
+        }
+        
+        QDataSet bds1= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+        if ( bds1!=null ) {
+            putProperty( QDataSet.BUNDLE_1, bds1 );
         }
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
