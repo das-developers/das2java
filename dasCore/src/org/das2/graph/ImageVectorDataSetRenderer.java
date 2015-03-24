@@ -475,8 +475,10 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 xoffsets= ArrayDataSet.copy( ( QDataSet) ds.property(QDataSet.DEPEND_1) );
                 if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
                 final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
-                for ( int j=0; j<xoffsets.length(); j++ ) {
-                    xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
+                if ( !uc.equals( UnitsConverter.IDENTITY ) ) {
+                    for ( int j=0; j<xoffsets.length(); j++ ) {
+                        xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
+                    }
                 }
             } else {
                 vds = (QDataSet) ds;
