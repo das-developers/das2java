@@ -38,7 +38,6 @@ import java.awt.image.WritableRaster;
 import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
-import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
@@ -193,6 +192,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     }
 
+    @Override
     public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         long t0= System.currentTimeMillis();
@@ -826,10 +826,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         BufferedImage im= getPlotImage();
         if ( im==null ) return false;
         Shape s= selectionArea();
-        if ( s.contains(x, y) ) {
-            return true;
-        }
-        return false;
+        return s.contains(x, y);
     }
 
     /**
