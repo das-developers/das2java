@@ -42,11 +42,13 @@ import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import static org.das2.graph.Renderer.logger;
+import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -225,10 +227,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
             parent.postMessage(this, "inconvertible yaxis units", DasPlot.INFO, null, null);
         }
 
-        //if ( !yunits.isConvertibleTo(yAxis.getUnits()) ) {
-        //    yunits= yAxis.getUnits();
-        //}
-
         Graphics2D g2 = (Graphics2D) g1;
         if (plotImage == null) {
             if (lastException != null) {
@@ -266,15 +264,21 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
 
         logger.log(Level.FINE, "done ImageVectorDataSetRenderer.render {0} ms", ( System.currentTimeMillis()-t0 ));
-         //System.err.println("done render "+ ( System.currentTimeMillis()-t0 )+ " ms" );
 
     }
 
-    private void ghostlyImage2(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
+    /**
+     * render each point with a 1-pixel dot and line connecting.
+     * @param xAxis the xAxis
+     * @param yAxis the yAxis
+     * @param ds rank 2 bundle or rank 1 dataset.
+     * @param plotImageBounds2 the bounds 
+     */
+    private void renderPointsOfRank1(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
         int ny = plotImageBounds2.height;
         int nx = plotImageBounds2.width;
 
-        logger.log(Level.FINE, "create Image (ghostlyImage2): nx={0} ny={1}", new Object[]{nx, ny});
+        logger.log(Level.FINE, "create Image (renderPointsOfRank1): nx={0} ny={1}", new Object[]{nx, ny});
 
         BufferedImage image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
@@ -357,13 +361,15 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
 
     /**
-     * super fast implementation for rank 2 waveform dataset, where DEPEND_1 is the offset from DEPEND_0.
-     * @param xAxis
-     * @param yAxis
-     * @param ds
-     * @param plotImageBounds2
+     * Super-fast implementation for rank 2 waveform dataset, where DEPEND_1 is the offset from DEPEND_0.
+     * Each point is painted, so this assumes this can be done quickly.
+     * 
+     * @param xAxis the x-axis
+     * @param yAxis the y-axis
+     * @param ds a rank 2 waveform dataset
+     * @param plotImageBounds2 the boundaries.
      */
-    private void ghostlyImageRank2(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
+    private void renderPointsOfRank2Waveform(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
         int ny = plotImageBounds2.height;
         int nx = plotImageBounds2.width;
 
@@ -411,15 +417,21 @@ public class ImageVectorDataSetRenderer extends Renderer {
             if ( xoffsets.rank()>1 ) throw new IllegalArgumentException("rank 2 DEPEND_1 not supported");
             final UnitsConverter uc= UnitsConverter.getConverter( SemanticOps.getUnits(xoffsets), SemanticOps.getUnits(xds).getOffsetUnits() );
 
-            for ( int j=0; j<xoffsets.length(); j++ ) {
-                xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
+            if ( uc!=UnitsConverter.IDENTITY ) { // RPW Group has packets with 208896 elements, so this is non-trivial.
+                for ( int j=0; j<xoffsets.length(); j++ ) {
+                    xoffsets.putValue( j, uc.convert( xoffsets.value(j) ) );
+                }
             }
+            
+            int xmin= xAxis.getColumn().getDMinimum()-xAxis.getColumn().getWidth();
+            int xmax= xAxis.getColumn().getDMaximum()+xAxis.getColumn().getWidth();
             
             for (int i = firstIndex; i < lastIndex; i++) {
                 int nj= ds.length(i);
 
+                
                 for ( int j=0; j<nj; j++ ) {
-                boolean isValid = wds.value(i,j)>0;
+                    boolean isValid = wds.value(i,j)>0;
                     if (!isValid) {
                         state = STATE_MOVETO;
                     } else {
@@ -428,18 +440,22 @@ public class ImageVectorDataSetRenderer extends Renderer {
                         if ( (ix-ix0)*(ix-ix0) > ixstepLimitSq ) state=STATE_MOVETO;
                         switch (state) {
                             case STATE_MOVETO:
-                                g.fillRect(ix, iy, 1, 1);
+                                if ( ix>xmin && ix<xmax ) {
+                                    g.fillRect(ix, iy, 1, 1);
+                                }
+                                state= STATE_LINETO;
                                 ix0 = ix;
                                 iy0 = iy;
                                 break;
                             case STATE_LINETO:
-                                g.draw(new Line2D.Float(ix0, iy0, ix, iy));
-                                g.fillRect(ix, iy, 1, 1);
+                                if ( ix>xmin && ix<xmax ) {
+                                    g.draw(new Line2D.Float(ix0, iy0, ix, iy));
+                                    g.fillRect(ix, iy, 1, 1);
+                                }
                                 ix0 = ix;
                                 iy0 = iy;
                                 break;
                         }
-                        state = STATE_LINETO;
                     }
                 }
             }
@@ -569,8 +585,15 @@ public class ImageVectorDataSetRenderer extends Renderer {
         return tds;
     }
 
-    private void ghostlyImage(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
-
+    /**
+     * This is the typical route, where we are making a 2-D histogram of the data in pixel space, and
+     * using that with the saturation count to shade each pixel.
+     * @param xAxis the x-axis
+     * @param yAxis the y-axis
+     * @param ds the rank 2 waveform dataset, or rank 2 bundle, or rank 1 dataset.
+     * @param plotImageBounds2 the bounds.
+     */
+    private void renderHistogram(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
         DatumRange xrange = GraphUtil.invTransformRange( xAxis, plotImageBounds2.x, plotImageBounds2.x + plotImageBounds2.width);
         DatumRange yrange = GraphUtil.invTransformRange( yAxis, plotImageBounds2.y + plotImageBounds2.height,plotImageBounds2.y);
 
@@ -640,9 +663,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
             int ymin = -1;
             int ymax = -1; //ymax is inclusive
             for (int j=0; j<h; j++) {
-                if ( j>=newHist.length(0) ) {
-                    System.err.println("here");
-                }
                 if (newHist.value(i,j) > 0) {
                     if (ymin<0) ymin = j;
                     ymax = j;
@@ -680,10 +700,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
         long t0= System.currentTimeMillis();
 
         super.incrementUpdateCount();
-        
-        //if ( java.swing.SwingUtilities.isEventDispatchThread() ) {
-        //    System.err.println("called on event thread");
-        //}
 
         logger.fine("entering ImageVectorDataSetRenderer.updatePlotImage");
         
@@ -761,13 +777,17 @@ public class ImageVectorDataSetRenderer extends Renderer {
         if ( SemanticOps.isRank2Waveform(ds1) ) nj= ds1.length(0);
 
         if ( nj*(lastIndex-firstIndex) > 20 * xAxis.getColumn().getWidth()) {
-            ghostlyImage(xAxis, yAxis, ds1, plotImageBounds);
+            if ( lastIndex==firstIndex+1 ) {
+                renderPointsOfRank2Waveform(xAxis, yAxis, ds1, plotImageBounds);
+            } else {
+                renderHistogram(xAxis, yAxis, ds1, plotImageBounds);
+            }
         } else {
             if ( SemanticOps.isRank2Waveform(ds1) ) {
-                ghostlyImageRank2(xAxis, yAxis, ds1, plotImageBounds);
+                renderPointsOfRank2Waveform(xAxis, yAxis, ds1, plotImageBounds);
             } else {
                 if ( ds.rank()==1 || ( ds.rank()==2 && SemanticOps.isBundle(ds) ) ) {
-                    ghostlyImage2(xAxis, yAxis, ds1, plotImageBounds);
+                    renderPointsOfRank1(xAxis, yAxis, ds1, plotImageBounds);
                 } else {
                     parent.postMessage(this, "dataset must be rank 1, rank 2 waveform, or rank 2 bundle", DasPlot.INFO, null, null);
                 }
