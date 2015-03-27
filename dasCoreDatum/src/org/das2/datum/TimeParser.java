@@ -1667,8 +1667,8 @@ public class TimeParser {
      */
     public DatumRange getTimeRange() {
         if ( !lock.equals("") ) throw new IllegalArgumentException("someone is messing with the parser on a different thread "+lock+ " this thread is "+Thread.currentThread().getName() );
-        if ( stopTimeDigit==AFTERSTOP_INIT && startTime.day==1 && startTime.hour==0 && startTime.minute==0 && startTime.seconds==0 &&
-            timeWidth.day==0 && timeWidth.hour==0 && timeWidth.minute==0 && timeWidth.seconds==0 ) { // special code for years.
+        if ( stopTimeDigit==AFTERSTOP_INIT && startTime.day==1 && startTime.hour==0 && startTime.minute==0 && startTime.seconds==0 && startTime.millis==0 && startTime.micros==0 &&
+            timeWidth.day==0 && timeWidth.hour==0 && timeWidth.minute==0 && timeWidth.seconds==0 && timeWidth.millis==0 && timeWidth.micros==0 ) { // special code for years.
             TimeStruct lstopTime = startTime.add(timeWidth);
             int[] t1= new int[] { startTime.year, startTime.month, startTime.day, startTime.hour, startTime.minute, (int)startTime.seconds, startTime.millis*1000000 + startTime.micros*1000 };
             int[] t2= new int[] { lstopTime.year, lstopTime.month, lstopTime.day, lstopTime.hour, lstopTime.minute, (int)lstopTime.seconds, lstopTime.millis*1000000 + lstopTime.micros*1000 };
@@ -1917,6 +1917,7 @@ public class TimeParser {
         testTimeParser1( "$(periodic,offset=2285,start=2000-346,period=P27D)", "1", "1832-02-08/P27D");
         testTimeParser1( "$(periodic;offset=2285;start=2000-346;period=P27D)", "2286", "2001-007/P27D");
         testTimeParser1( "$Y-$m-$dT$H:$M:$S.$(subsec,places=6)", "2000-01-01T00:00:00.000001", "2000-001T00:00:00.000001/PT.000001S");
+        testTimeParser1( "$Y-$m-$dT$H:$M:$S.$(subsec,places=6)", "2000-01-01T00:00:05.000001", "2000-001T00:00:05.000001/PT.000001S");
         TimeParser tp= TimeParser.create("$Y$m$d_v$v.dat");
         System.err.println( tp.parse("20130618_v4.05.dat").getTimeRange() );
         System.err.println( makeCanonical( "%Y-%m-%dT%H:%M:%S.%{milli}Z" ) );
