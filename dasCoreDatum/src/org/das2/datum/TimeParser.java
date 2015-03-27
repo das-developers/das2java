@@ -200,7 +200,7 @@ public class TimeParser {
         }
 
         String date = null, time = null;
-        if (i != -1) {
+        if (i != -1 && i>5 ) {
             char dateTimeDelim = exampleTime.charAt(i);
             String datePart = exampleTime.substring(0, i);
             boolean hasDelim = !datePart.matches("\\d+");
