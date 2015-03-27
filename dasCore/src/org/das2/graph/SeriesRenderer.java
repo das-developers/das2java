@@ -560,45 +560,45 @@ public class SeriesRenderer extends Renderer {
         }
     }
 
-        private static void dumpPath( int width, int height, GeneralPath path1 ) {
-            if ( path1!=null ) {
-                try {
-                    java.io.BufferedWriter w= new java.io.BufferedWriter( new java.io.FileWriter("/tmp/foo.jy") );
-                    w.write( "from java.awt.geom import GeneralPath\nlp= GeneralPath()\n");
-                    w.write( "h= " + height + "\n" );
-                    w.write( "w= " + width + "\n" );
-                    PathIterator it= path1.getPathIterator(null);
-                    float [] seg= new float[6];
-                    while ( !it.isDone() ) {
-                        int r= it.currentSegment(seg);
-                        if ( r==PathIterator.SEG_MOVETO ) {
-                            w.write( String.format( "lp.moveTo( %9.2f, %9.4f )\n", seg[0], seg[1] ) );
-                        } else {
-                            w.write( String.format( "lp.lineTo( %9.2f, %9.4f )\n", seg[0], seg[1] ) );
-                        }
-                        it.next();
-                    }
-                    w.write( "from javax.swing import JPanel, JOptionPane\n" +
-                            "from java.awt import Dimension, RenderingHints, Color\n" +
-                            "\n" +
-                            "class MyPanel( JPanel ):\n" +
-                            "   def paintComponent( self, g ):\n" +
-                            "       g.setColor(Color.WHITE)\n" +
-                            "       g.fillRect(0,0,w,h)\n" + 
-                            "       g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON )\n" +
-                            "       g.setColor(Color.BLACK)\n" +
-                            "       g.draw( lp )\n" +
-                            "\n" +
-                            "p= MyPanel()\n" +
-                            "p.setMinimumSize( Dimension( w,h ) )\n" +
-                            "p.setPreferredSize( Dimension( w,h ) )\n" +
-                            "JOptionPane.showMessageDialog( None, p )" );
-                    w.close();
-                } catch ( java.io.IOException ex ) {
-                    ex.printStackTrace();
-                }
-            }
-        }     
+//        private static void dumpPath( int width, int height, GeneralPath path1 ) {
+//            if ( path1!=null ) {
+//                try {
+//                    java.io.BufferedWriter w= new java.io.BufferedWriter( new java.io.FileWriter("/tmp/foo.jy") );
+//                    w.write( "from java.awt.geom import GeneralPath\nlp= GeneralPath()\n");
+//                    w.write( "h= " + height + "\n" );
+//                    w.write( "w= " + width + "\n" );
+//                    PathIterator it= path1.getPathIterator(null);
+//                    float [] seg= new float[6];
+//                    while ( !it.isDone() ) {
+//                        int r= it.currentSegment(seg);
+//                        if ( r==PathIterator.SEG_MOVETO ) {
+//                            w.write( String.format( "lp.moveTo( %9.2f, %9.4f )\n", seg[0], seg[1] ) );
+//                        } else {
+//                            w.write( String.format( "lp.lineTo( %9.2f, %9.4f )\n", seg[0], seg[1] ) );
+//                        }
+//                        it.next();
+//                    }
+//                    w.write( "from javax.swing import JPanel, JOptionPane\n" +
+//                            "from java.awt import Dimension, RenderingHints, Color\n" +
+//                            "\n" +
+//                            "class MyPanel( JPanel ):\n" +
+//                            "   def paintComponent( self, g ):\n" +
+//                            "       g.setColor(Color.WHITE)\n" +
+//                            "       g.fillRect(0,0,w,h)\n" + 
+//                            "       g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON )\n" +
+//                            "       g.setColor(Color.BLACK)\n" +
+//                            "       g.draw( lp )\n" +
+//                            "\n" +
+//                            "p= MyPanel()\n" +
+//                            "p.setMinimumSize( Dimension( w,h ) )\n" +
+//                            "p.setPreferredSize( Dimension( w,h ) )\n" +
+//                            "JOptionPane.showMessageDialog( None, p )" );
+//                    w.close();
+//                } catch ( java.io.IOException ex ) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//        }     
     
     private class PsymConnectorRenderElement implements RenderElement {
 
@@ -666,7 +666,7 @@ public class SeriesRenderer extends Renderer {
             try {// TODO: this really shouldn't be here, since we calculate it once.
                 sw= SemanticOps.guessXTagWidth( xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );
             } catch ( IllegalArgumentException ex ) {
-                ex.printStackTrace();
+                logger.log( Level.WARNING, null, ex );
             }
             double xSampleWidth;
             boolean logStep;
@@ -1555,7 +1555,7 @@ public class SeriesRenderer extends Renderer {
         DataSetUtil.copyDimensionProperties( vds, mvds );        
         return mvds;
     }
-    
+
     /**
      * Do the same as updatePlotImage, but use AffineTransform to implement axis transform.  This is the
      * main updatePlotImage method, which will delegate to internal components of the plot, such as connector
