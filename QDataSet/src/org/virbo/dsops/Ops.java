@@ -4183,7 +4183,7 @@ public class Ops {
         
         MutablePropertyDataSet mds;
         if ( !( ds instanceof MutablePropertyDataSet ) ) {
-            mds= ArrayDataSet.maybeCopy(ds);
+            mds= ArrayDataSet.maybeCopy(ds);  // https://sourceforge.net/p/autoplot/bugs/1357/ should this be DataSetWrapper.wrap?
         } else {
             if ( ((MutablePropertyDataSet)ds).isImmutable() ) {
                 mds= ArrayDataSet.copy(ds);
@@ -4215,7 +4215,7 @@ public class Ops {
             } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_UNITS) ) {
                 if ( value instanceof String ) {
                     String svalue= (String)value;
-                    value= SemanticOps.lookupUnits(svalue);
+                    value= Units.lookupUnits(svalue);
                 }
                 mds.putProperty( name, value);
             } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_BOOLEAN) ) {
