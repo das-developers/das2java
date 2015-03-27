@@ -503,6 +503,8 @@ public final class TimeUtil {
     
     /**
      * returns int[] { year, month, day, hour, minute, second, millis, micros }
+     * @param time the time
+     * @return the time decomposed into year, month, day, hour, minute, second, millis, micros.
      * @deprecated use 7-element fromDatum instead, which is consistent with toDatum.  Note the array elements are different!
      */
     public static int[] toTimeArray( Datum time ) {
@@ -517,7 +519,7 @@ public final class TimeUtil {
     
     /**
      * returns the 7-element array of components from the time location datum:
-     * 0:year, 1:month, 2:day, 3:hour, 4:minute, 5:second, 6:nanos
+     * 0:year, 1:month, 2:day, 3:hour, 4:minute, 5:second, 6:nanoseconds
      * @param time
      * @return seven-element int array.
      */
@@ -529,11 +531,11 @@ public final class TimeUtil {
     }
     
     /**
-     * get the datum from the 7 element timeArray.  The elements are:
-     * 0:year, 1:month, 2:day, 3:hour, 4:minute, 5:second, [ 6:nanos ] 
+     * get the datum from the 6 or 7 element timeArray.  The elements are:
+     * 0:year, 1:month, 2:day, 3:hour, 4:minute, 5:second, [ 6:nanoseconds ] 
      * 
      * @param timeArray, an int[6] or int[7].
-     * @return
+     * @return a datum representing the time.
      */
     public static Datum toDatum( int[] timeArray ) {
         int year = timeArray[0];
@@ -872,8 +874,10 @@ public final class TimeUtil {
         };
     
     /**
-     * returns 1..12 for the English month name
+     * returns 1..12 for the English month name.  (Sorry, rest of world...)
      *
+     * @param s the three-letter month name, jan,feb,...,nov,dec
+     * @return 1,2,...,11,12 for the English month name
      * @throws ParseException if the name isn't recognized
      */
     public static int monthNumber( String s ) throws ParseException {
