@@ -305,6 +305,7 @@ public class TimeParser {
         double factor;
         String format;
         
+        @Override
         public String configure(Map<String, String> args) {
             places= Integer.parseInt( args.get("places") );
             factor= Math.pow( 10, (6-places) );
@@ -312,10 +313,12 @@ public class TimeParser {
             return null;
         }
 
+        @Override
         public String getRegex() {
             return "[0-9]*";
         }
 
+        @Override
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
             double value= Double.parseDouble(fieldContent);
             startTime.micros= (int)( value * factor ); //TODO: support nanos!
@@ -323,8 +326,11 @@ public class TimeParser {
             timeWidth.micros= (int)( 1*factor );
         }
 
+        @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
-            return String.format( format, (int) ( timeWidth.micros / factor ) );
+            return String.format( format, 
+                    (int) ( ( timeWidth.seconds-(int)timeWidth.seconds ) * ( 1000000/factor ) ) 
+                    +  (int) ( timeWidth.micros / factor ) );
         }
         
     }
