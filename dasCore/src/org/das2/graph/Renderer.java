@@ -424,7 +424,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         boolean amp= false;
         for ( Entry<String,String> ee: c.entrySet() ) {
             if ( amp ) result.append(ampstr); else amp=true;
-            result.append( ee.getKey() ) .append(":").append(ee.getValue() );
+            result.append( ee.getKey() ) .append("=").append(ee.getValue() );
         }
         return result.toString();
     }
@@ -489,7 +489,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * @param v the boolean value.
      * @return "T" or "F"
      */
-    public String encodeBooleanControl( boolean v ) {
+    public static String encodeBooleanControl( boolean v ) {
         return v ? "T" : "F";
     }
     
@@ -606,7 +606,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * @return the color encoded as a string.
      * @see ColorUtil#encodeColor(java.awt.Color) 
      */
-    public String encodeColorControl( Color color ) {
+    public static String encodeColorControl( Color color ) {
         return ColorUtil.encodeColor(color);
     }
     
@@ -616,7 +616,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * @param psym the plot symbol.
      * @return the string encoding.
      */
-    public String encodePlotSymbolControl( PlotSymbol psym ) {
+    public static String encodePlotSymbolControl( PlotSymbol psym ) {
         return psym.toString().toLowerCase();
     }
     
@@ -626,7 +626,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * @param deflt the symbol to use when the value is not parsed.
      * @return the parsed value.
      */
-    public PlotSymbol decodePlotSymbolControl( String s, PlotSymbol deflt ) {
+    public static PlotSymbol decodePlotSymbolControl( String s, PlotSymbol deflt ) {
         if ( s.equalsIgnoreCase("NONE") ) {
             return DefaultPlotSymbol.NONE;
         } else if ( s.equalsIgnoreCase("CIRCLES") ) {
