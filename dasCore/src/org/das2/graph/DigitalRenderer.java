@@ -312,7 +312,7 @@ public class DigitalRenderer extends Renderer {
                 renderRank2( ds, g, xAxis, yAxis, mon);
             }
         } catch ( InconvertibleUnitsException ex ) {
-            parent.postMessage(this, "inconvertable units", DasPlot.INFO, null, null);
+            parent.postMessage(this, "inconvertible units", DasPlot.INFO, null, null);
         }
     }
 
