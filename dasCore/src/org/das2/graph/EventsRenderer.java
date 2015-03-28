@@ -259,11 +259,11 @@ public class EventsRenderer extends Renderer {
                         }
 
                         if ( sxmax<sxmin ) {
-                            setLabel( "Error, sxmax<sxmin");
+                            setLabel( "Error, sxmax<sxmin: "+ Datum.create( sxmax,sxunits)+" < "+ Datum.create(sxmin,sxmaxunits) );
                         } else {                            
                             DatumRange dr= new DatumRange( sxmin, sxmax, sxunits );
                             if ( !dr.getUnits().isConvertibleTo(px.getUnits()) )  {
-                                logger.fine("inconvertable units");
+                                logger.fine("inconvertible units");
                                 return new Rectangle[0];
                             }
                             if ( dr.contains(px) ) {
