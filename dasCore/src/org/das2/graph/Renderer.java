@@ -474,6 +474,16 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     }
 
     /**
+     * return true if the control is specified.
+     * @param key the key name
+     * @return true if the control is specified.
+     */
+    public boolean hasControl( String key ) {
+        if ( this.control.trim().length()==0 ) return false;
+        return controls.containsKey(key);
+    }
+    
+    /**
      * get the boolean control.
      * @param key the key name.
      * @param deft the default value.
