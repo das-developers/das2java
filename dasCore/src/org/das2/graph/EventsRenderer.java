@@ -26,10 +26,13 @@ import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import org.das2.datum.Units;
+import static org.das2.graph.Renderer.encodeBooleanControl;
 import org.das2.util.GrannyTextRenderer;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -408,17 +411,21 @@ public class EventsRenderer extends Renderer {
                 xmins= DataSetOps.unbundle( vds,0 );
                 xmaxs= DataSetOps.unbundle( vds,1 );
 
-                if ( vds.length(0)>3 ) {
-                    colors= DataSetOps.unbundle( vds,2 );
-                } else {
+                if ( useColor ) {
                     colors= Ops.replicate( getColor().getRGB(), xmins.length() );
+                } else {
+                    if ( vds.length(0)>3 ) {
+                        colors= DataSetOps.unbundle( vds,2 );
+                    } else {
+                        colors= Ops.replicate( getColor().getRGB(), xmins.length() );
+                    }
                 }
                 
             } else if ( dep0.rank()==2 ) {
                 if ( SemanticOps.isBins(dep0) ) {
                     xmins= DataSetOps.slice1( dep0, 0 );
                     xmaxs= DataSetOps.slice1( dep0, 1 );
-                    colors= Ops.replicate( 0x808080, xmins.length() );
+                    colors= Ops.replicate( getColor().getRGB(), xmins.length() );
                     Units u0= SemanticOps.getUnits(xmins );
                     Units u1= SemanticOps.getUnits(xmaxs );
                     if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
@@ -739,8 +746,29 @@ public class EventsRenderer extends Renderer {
         this.setOrbitMode( getBooleanControl( "orbitMode", false ));
         this.setFontSize( getControl( "fontSize", "1em" ));
         this.setGanttMode( getBooleanControl( "ganttMode", false ));
+        if ( hasControl("color") ) {
+            this.setColor( getColorControl("color",color) );
+            this.useColor= true;
+        } else {
+            this.setColor( new Color(100,100,100) );
+        }
     }
 
+    @Override
+    public String getControl() {
+        Map<String,String> controls= new LinkedHashMap();
+        controls.put( "showLabels", encodeBooleanControl( isShowLabels() ) );
+        controls.put( "orbitMode", encodeBooleanControl( isOrbitMode() ) );
+        controls.put( "fontSize", getFontSize() );
+        controls.put( "ganttMode", encodeBooleanControl( isGanttMode() ) );
+        if ( this.useColor ) {
+            controls.put( "color", encodeColorControl(color) );
+        }
+        return Renderer.formatControl(controls);
+    }
+
+    private boolean useColor= false;
+    
     private Color color= new Color(100,100,100); 
     
     public Color getColor() {
