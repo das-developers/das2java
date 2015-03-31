@@ -129,7 +129,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     protected DataRange dataRange;
 
     /**
-     * get the userDatumFormatter, which converts datums into strings.  This
+     * get the userDatumFormatter, which converts Datums into Strings.  This
      * can be null if none should be used.
      * @return the userDatumFormatter.
      */
@@ -138,7 +138,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     }
 
     /**
-     * set the userDatumFormatter, which converts datums into strings.  This
+     * set the userDatumFormatter, which converts Datums into Strings.  This
      * can be null if none should be used.
      * @param userDatumFormatter  the userDatumFormatter.
      */
@@ -165,7 +165,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /** 
      * set the action for the next button 
-     * @param label the lanel (step or scan)
+     * @param label the label (step or scan)
      * @param abstractAction the action to invoke.
      */
     public void setNextAction( String label, AbstractAction abstractAction) {
@@ -181,7 +181,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
 
     /** 
      * set the action for the prev button 
-     * @param label the lanel (step or scan)
+     * @param label the label (step or scan)
      * @param abstractAction the action to invoke.
      */
     public void setPreviousAction( String label,AbstractAction abstractAction) {
