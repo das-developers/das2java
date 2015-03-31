@@ -16,6 +16,7 @@ import java.awt.Toolkit;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
@@ -54,7 +55,10 @@ public final class EventQueueBlocker {
         }
     }
     
-    public static void clearEventQueue() throws InterruptedException {
+    /**
+     * block until the event queue is cleared.
+     */
+    public static void clearEventQueue() {
         
         if ( SwingUtilities.isEventDispatchThread() ) {
             throw new IllegalStateException( "must not be called on the EventQueue");
@@ -63,7 +67,11 @@ public final class EventQueueBlocker {
             if ( Toolkit.getDefaultToolkit().getSystemEventQueue().peekEvent(DasUpdateEvent.DAS_UPDATE_EVENT_ID) != null ) {
                 EventQueue.invokeLater( clearEventQueueImmediatelyRunnable );
                 logger.finer("waiting for lockObject to indicate eventQueue is clear");
-                lockObject.wait();  // findbugs WA_NOT_IN_LOOP okay
+                try {
+                    lockObject.wait();  // findbugs WA_NOT_IN_LOOP okay
+                } catch (InterruptedException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
             } else {
                 logger.finer("no update events found, no runnable submitted ");
             }
