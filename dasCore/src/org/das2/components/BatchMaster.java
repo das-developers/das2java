@@ -170,11 +170,7 @@ public class BatchMaster {
                     DasLogger.getLogger(DasLogger.SYSTEM_LOG).log(Level.INFO, "itask={0}", taskList.get(itask));
                     DataRangeSelectionEvent ev=  (DataRangeSelectionEvent) taskList.get(itask++);
                     fireDataRangeSelectionListenerDataRangeSelected( ev );
-                    try {
-                        canvas.waitUntilIdle();
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
+                    canvas.waitUntilIdle();
                     tod.completeTask( ev.getDatumRange() );
                     submitNextTask();
                 }
