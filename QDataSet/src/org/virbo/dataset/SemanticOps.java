@@ -726,7 +726,17 @@ public class SemanticOps {
             DataSetUtil.putProperties( DataSetUtil.getProperties(ds), jds );
             return jds;
         } else if ( rank==2 ) {
-            if ( isSimpleTableDataSet(ds) ) {
+            if ( isRank2Waveform(ds) ) {
+                QDataSet xds= SemanticOps.xtagsDataSet(ds);
+                QDataSet yds= SemanticOps.xtagsDataSet(ds.slice(0));
+                QDataSet ydsMax= DataSetUtil.asDataSet( yds.value( yds.length()-1 ), SemanticOps.getUnits(yds) );
+                QDataSet xinside= xrange==null ? null :
+                    Ops.and( Ops.ge( Ops.add( xds, ydsMax ), DataSetUtil.asDataSet(xrange.min()) ), Ops.le(  xds, DataSetUtil.asDataSet(xrange.max()) ) );
+                SubsetDataSet sds= new SubsetDataSet(ds);
+                if ( xinside!=null ) sds.applyIndex( 0, Ops.where(xinside) );  //TODO: consider the use of trim which would be more efficient.
+                return sds;
+                
+            } else if ( isSimpleTableDataSet(ds) ) {
                 QDataSet xds= SemanticOps.xtagsDataSet(ds);
                 QDataSet yds= SemanticOps.xtagsDataSet(ds.slice(0));
                 QDataSet xinside= xrange==null ? null :
@@ -737,7 +747,7 @@ public class SemanticOps {
                 if ( xinside!=null ) sds.applyIndex( 0, Ops.where(xinside) );  //TODO: consider the use of trim which would be more efficient.
                 if ( yinside!=null ) sds.applyIndex( 1, Ops.where(yinside) );
                 return sds;
-
+                
             } else { // copy over elements where
                 QDataSet xds= SemanticOps.xtagsDataSet(ds);
                 QDataSet yds= SemanticOps.getDependentDataSet(ds);
