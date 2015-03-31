@@ -1273,9 +1273,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     /**
      * Blocks the caller's thread until all events have been dispatched from the awt event thread, and
      * then waits for the RequestProcessor to finish all tasks with this canvas as the lock object.
-     * @throws java.lang.InterruptedException
      */
-    public void waitUntilIdle() throws InterruptedException {
+    public void waitUntilIdle() {
 
         String msg = "dasCanvas.waitUntilIdle";
 
@@ -1370,7 +1369,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         if ( isDirty() ) {
             logger.fine("something is still dirty, not waiting.");
             isDirty();
-            Thread.sleep(1000);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
         }
                 
         logger.fine("canvas is idle");
@@ -1428,11 +1431,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         } else {
             resizeAllComponents();
         }
-        try {
-            waitUntilIdle();
-        } catch (InterruptedException ex) {
-            throw new RuntimeException(ex);
-        }
+        waitUntilIdle();
 
     }
 
