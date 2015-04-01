@@ -2255,6 +2255,13 @@ public class DataSetOps {
                         arg= arg.substring(9);
                     }
                     fillDs= Ops.dataset( fillDs.property(arg) );
+                } else if ( cmd.equals("|putProperty") ) {
+                    String arg= getStringArg( s.next() );
+                    if ( arg.startsWith("QDataSet.") ) {
+                        arg= arg.substring(9);
+                    }
+                    String val= getStringArg( s.next() );
+                    fillDs= Ops.putProperty( fillDs, arg, val );
                 } else if ( cmd.equals("|monotonicSubset") ) {
                     WritableDataSet ds= Ops.copy(fillDs);
                     fillDs= Ops.monotonicSubset(ds);
