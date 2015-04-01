@@ -4204,6 +4204,10 @@ public class Ops {
             return mds;
         }
         
+        if ( value==ds && !name.equals("DEPEND_0") ) {
+            throw new IllegalArgumentException("a dataset cannot have itself as a property");
+        }
+        
         String type= DataSetUtil.getPropertyType(name);
         if ( type==null ) {
             logger.log(Level.FINE, "unrecognized property {0}...", name);
