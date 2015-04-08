@@ -43,11 +43,11 @@ public class Arrow extends DasCanvasComponent {
      * @param g the graphics context.
      * @param head the point locating the head of the arrow
      * @param tail the point locating the tail of the arrow
-     * @param em the thickness of the line.
+     * @param headSize the size of the arrow head.
      * @param style HeadStyle.DRAFTING, etc.
      */    
-    public static void paintArrow( Graphics2D g, Point head, Point tail, double em, HeadStyle style ) {
-        paintArrow( g, new Point2D.Double( head.getX(), head.getY() ), new Point2D.Double( tail.getX(), tail.getY() ), em, style );
+    public static void paintArrow( Graphics2D g, Point head, Point tail, double headSize, HeadStyle style ) {
+        paintArrow( g, new Point2D.Double( head.getX(), head.getY() ), new Point2D.Double( tail.getX(), tail.getY() ), headSize, style );
     }
 
     /**
@@ -55,11 +55,13 @@ public class Arrow extends DasCanvasComponent {
      * @param g the graphics context.
      * @param head the point locating the head of the arrow
      * @param tail the point locating the tail of the arrow
-     * @param em the thickness of the line.
+     * @param headSize the size of the arrow head in pixels
      * @param style HeadStyle.DRAFTING, etc.
      */
-    public static void paintArrow( Graphics2D g, Point2D head, Point2D tail, double em, HeadStyle style ) {
+    public static void paintArrow( Graphics2D g, Point2D head, Point2D tail, double headSize, HeadStyle style ) {
         
+        double pt= headSize;
+                
         g= (Graphics2D) g.create();
         
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -78,13 +80,13 @@ public class Arrow extends DasCanvasComponent {
         
         if ( dd==0 ) return;
         
-        dx= dx * em / 4 / dd;
-        dy= dy * em / 4 / dd;
+        dx= dx * pt / 4 / dd;
+        dy= dy * pt / 4 / dd;
         
         double hx= head.getX();
         double hy= head.getY();
         
-        g.setStroke( new BasicStroke( (float)(em/8)*s0, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+        g.setStroke( new BasicStroke( (float)(pt/8)*s0, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
         
         g.draw( line );
         
@@ -113,6 +115,7 @@ public class Arrow extends DasCanvasComponent {
         
     }
     
+    @Override
     protected void paintComponent(Graphics g1) {
         Graphics2D g= (Graphics2D) g1.create();
         g.translate(-getX(),-getY());
