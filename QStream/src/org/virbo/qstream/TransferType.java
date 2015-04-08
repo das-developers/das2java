@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 /**
  * A transfer type is an encoding of a double on to the stream.  It must have a fixed length in bytes.
- * Some are pure ascii, and isAscii can be used to check this.
+ * Some are pure ASCII, and isAscii can be used to check this.
  * @author jbf
  */
 public abstract class TransferType {
@@ -60,39 +60,40 @@ public abstract class TransferType {
     
     /**
      * write the data to the buffer.  The buffer's position should be incremented by sizeBytes.
-     * @param d
-     * @param buffer
-     * @param endOfPacket.  hint to AsciiType that this might be a good place for a new line.
+     * @param d the value to write.
+     * @param buffer the byte buffer positioned to receive sizeByte bytes.
      */
     public abstract void write( double d, ByteBuffer buffer  );
     
     /**
-     * read the data from the buffer.  The buffer's position should be incremented by sizeBytes.
-     * @param d
-     * @param buffer
+     * read the data from the buffer.  The implementations will increment the 
+     * buffer's position by sizeBytes.
+     * @param buffer the container for the transfer type.
+     * @return the value read
      */
     public abstract double read( ByteBuffer buffer );
     
     /**
      * return the number of bytes used by the transfer type.
-     * @return
+     * @return the size of the type in bytes.
      */
     public abstract int sizeBytes();
     
     /**
-     * return true if the transfer type uses Ascii-encodings to respresent data.
+     * return true if the transfer type uses ASCII-encodings to represent data.
      * It's assumed in this case that trailing whitespace can be modified for
      * readability.
-     * @return true if the type is ascii-based.
+     * @return true if the type is ASCII-based.
      */
     public abstract boolean isAscii( );
     
     /**
      * return a string identifying the TransferType.
-     * @return
+     * @return the name
      */
     public abstract String name();
     
+    @Override
     public String toString() {
         return name();
     }
