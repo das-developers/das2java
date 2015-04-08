@@ -789,6 +789,7 @@ public class QDataSetStreamHandler implements StreamHandler {
      */
     public MutablePropertyDataSet flattenJoin(QDataSet ds) {
         int len = 0;
+        if ( ds.rank()<2 ) throw new IllegalArgumentException("rank should be > 2" );
         for (int i = 0; i < ds.length(); i++) {
             len += ds.length(i);
         }
