@@ -84,7 +84,6 @@ public class QDataSetStreamHandler implements StreamHandler {
      * @return
      */
     public List<String> getDataSetNames() {
-        builders.get("col5");
         return new ArrayList<String>(builders.keySet());
     }
 
@@ -801,7 +800,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         String s = (String) ds.property(QDataSet.DEPENDNAME_0);
         if (s != null) {
             MutablePropertyDataSet dep0 = (MutablePropertyDataSet) getDataSet(s);
-            dep0 = (MutablePropertyDataSet) flattenJoin(dep0);
+            //dep0 = (MutablePropertyDataSet) flattenJoin(dep0); //getDataSet has already flattened it.
             dep0.putProperty(QDataSet.TYPICAL_MIN, null); // remove so we don't just use MIN and MAX from one dataset.
             dep0.putProperty(QDataSet.TYPICAL_MAX, null);
             ((MutablePropertyDataSet) result).putProperty(QDataSet.DEPEND_0, dep0);
