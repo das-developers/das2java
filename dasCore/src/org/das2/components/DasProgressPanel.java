@@ -173,7 +173,7 @@ public class DasProgressPanel implements ProgressMonitor {
     ImageIcon cancel= new ImageIcon( DasProgressPanel.class.getResource("/images/icons/cancel14.png") );
     ImageIcon cancelGrey= new ImageIcon( DasProgressPanel.class.getResource("/images/icons/cancelGrey14.png") );
     
-    public DasProgressPanel(String label) {
+    protected DasProgressPanel(String label) {
 
         componentsInitialized = false;
         label= abbrevateStringEllipsis( label, LABEL_LEN_LIMIT);
@@ -394,6 +394,8 @@ public class DasProgressPanel implements ProgressMonitor {
             removeFromComponent.add(thePanel);
 
             thePanel.setVisible(false);
+        } else {
+            thePanel.setSize(thePanel.getPreferredSize());
         }
 
         componentsInitialized = true;
