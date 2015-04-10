@@ -1420,15 +1420,40 @@ public class DatumRangeUtil {
         return parseDatumRange( str, orig.getUnits() );
     }
 	 
-	 /** Hi, we need unambiguous rules for parsing all types datum ranges strictly from
-	  * strings, with no out of band information
-	  * 
-	  * @param str
-	  * @return 
-	  */
-	 public static DatumRange parseDatumRange(String str) throws ParseException{
-		 throw new IllegalStateException();
-	 }
+    /**
+     * This provides unambiguous rules for parsing all types datum ranges strictly from strings, with no out of
+     * band information
+     *
+     * Examples include: "2013 to 2015 UTC" "3 to 4 kg" "2015-05-05/2015-06-02"
+     * @param str
+     * @return
+     */
+    public static DatumRange parseDatumRange(String str) throws ParseException {
+        str= str.trim();
+        if ( str.endsWith("UTC" ) ) {
+            return parseTimeRange(str.substring(0,str.length()-3));
+        } else if ( TimeParser.isIso8601String(str) ) {
+            return parseISO8601Range(str);
+        } else {
+            // consider Patterns -- dash not handled because of negative sign.
+            // 0to4 apples -> 0 to 4 units=apples
+            // 0 to 35 sector -> 0 to 35 units=sector  note "to" in sector.
+            String[] ss= str.split("to",2);
+            if ( ss.length==1 ) {
+                ss= str.split("\u2013");
+            }
+            if ( ss.length != 2 ) {
+                throw new ParseException("failed to parse: "+str,0);
+            }
+            
+            Datum d2;
+            d2= DatumUtil.parse(ss[1]);
+
+            Datum d1= d2.getUnits().parse( ss[0] );
+            
+            return new DatumRange( d1, d2 );
+        }
+    }            
 
     /**
      * parse position strings like "100%-5hr" into [ npos, datum ].
