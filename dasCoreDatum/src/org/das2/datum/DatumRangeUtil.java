@@ -1422,18 +1422,19 @@ public class DatumRangeUtil {
 	 
     /**
      * This provides unambiguous rules for parsing all types datum ranges strictly from strings, with no out of
-     * band information
+     * band information.  This was introduced to support das2stream parsing.
      *
      * Examples include: "2013 to 2015 UTC" "3 to 4 kg" "2015-05-05/2015-06-02"
-     * @param str
+     * @param str the string representing a time.
      * @return
+     * @throws java.text.ParseException
      */
     public static DatumRange parseDatumRange(String str) throws ParseException {
         str= str.trim();
         if ( str.endsWith("UTC" ) ) {
             return parseTimeRange(str.substring(0,str.length()-3));
-        } else if ( TimeParser.isIso8601String(str) ) {
-            return parseISO8601Range(str);
+        //TODO: handle ISO8601 strings   } else if ( TimeParser.isIso8601String(str) ) {
+        //    return parseISO8601Range(str);
         } else {
             // consider Patterns -- dash not handled because of negative sign.
             // 0to4 apples -> 0 to 4 units=apples
