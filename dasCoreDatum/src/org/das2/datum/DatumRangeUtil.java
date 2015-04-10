@@ -12,6 +12,7 @@ import java.util.logging.*;
 import java.util.regex.*;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
@@ -1375,9 +1376,8 @@ public class DatumRangeUtil {
     public static DatumRange newDimensionless(double lower, double upper) {
         return new DatumRange( Datum.create(lower), Datum.create(upper) );
     }
-    
-    /**
-     * parse the datum range in the context of units.
+	 
+    /** Parse the datum range in the context of units.
      * @param str input like "5 to 15 cm"
      * @param units unit like Units.km
      * @return the DatumRange
@@ -1419,6 +1419,16 @@ public class DatumRangeUtil {
     public static DatumRange parseDatumRange( String str, DatumRange orig ) throws ParseException {
         return parseDatumRange( str, orig.getUnits() );
     }
+	 
+	 /** Hi, we need unambiguous rules for parsing all types datum ranges strictly from
+	  * strings, with no out of band information
+	  * 
+	  * @param str
+	  * @return 
+	  */
+	 public static DatumRange parseDatumRange(String str) throws ParseException{
+		 throw new IllegalStateException();
+	 }
 
     /**
      * parse position strings like "100%-5hr" into [ npos, datum ].
