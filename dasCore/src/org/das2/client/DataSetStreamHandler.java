@@ -76,6 +76,7 @@ public class DataSetStreamHandler implements StreamHandler {
         this.monitor= monitor==null ? new NullProgressMonitor() : monitor;
     }
     
+	 @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         logger.finest("got stream descriptor");
         this.sd = sd;
@@ -102,6 +103,23 @@ public class DataSetStreamHandler implements StreamHandler {
                 e.printStackTrace();
             }
         }
+		  else{
+			  // Get the cacheTag via the xRange
+			  Object oRng = null;
+			  Object oRes = null;
+			  if(((oRng = sd.getProperty(DataSet.PROPERTY_X_RANGE)) != null)
+				  && ((oRes = sd.getProperty(DataSet.PROPERTY_X_TAG_WIDTH)) != null)){
+				  try{
+					  Datum width = DatumUtil.parse((String) oRes);
+					  DatumRange rng = DatumRangeUtil.parseDatumRange((String)oRng);
+					  extraProperties.put(DataSet.PROPERTY_CACHE_TAG,
+					                      new CacheTag(rng.min(), rng.max(), width));
+				  }
+				  catch(ParseException e){
+					  e.printStackTrace();
+				  }
+			  }
+		  }
         if ( ( o=sd.getProperty( DataSet.PROPERTY_X_MONOTONIC ) )!=null ) {
             extraProperties.put( DataSet.PROPERTY_X_MONOTONIC, Boolean.valueOf((String)o) );
             
