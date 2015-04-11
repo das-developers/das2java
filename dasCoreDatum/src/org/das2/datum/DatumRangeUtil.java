@@ -408,14 +408,50 @@ public class DatumRangeUtil {
     }
     
     /**
+     * return true if the string is an ISO8601 duration, such as:<ul>
+     * <li>P1D</li>
+     * <li>PT4H</li>
+     * <li>PT4H5M</li>
+     * <li>PT4H5.2M</li>
+     * </ul>
+     * @param string
+     * @return true if the string is a valid ISO8601 Duration
+     */
+    private static boolean isISO8601RangeDuration( String string ) {
+        if ( string.length()<3 ) return false;
+        if ( string.charAt(0)!='P' ) return false;
+        try { 
+            parseISO8601Duration(string);
+            return true;
+        }  catch ( ParseException ex ) {
+            return false;
+        }
+    }
+    
+    public static boolean isISO8601Range( String stringIn ) {
+        int i= stringIn.indexOf('/');
+        if ( i==-1 ) return false;
+        String s1= stringIn.substring(0,i);
+        String s2= stringIn.substring(i+1);
+        if ( TimeParser.isIso8601String( s1 ) ) {
+            return TimeParser.isIso8601String(s2) || isISO8601RangeDuration(s2);
+        } else if ( TimeParser.isIso8601String(s2) ) {
+            return isISO8601RangeDuration(s1);
+        } else {
+            return false;
+        }
+    }
+    
+    /**
      * returns the time found in an iso8601 string, or null.  This supports
      * periods (durations) as in: 2007-03-01T13:00:00Z/P1Y2M10DT2H30M
-     * Other examples:
-     *   2007-03-01T13:00:00Z/2008-05-11T15:30:00Z
-     *   2007-03-01T13:00:00Z/P1Y2M10DT2H30M
-     *   P1Y2M10DT2H30M/2008-05-11T15:30:00Z
-     *   2007-03-01T00:00Z/P1D
-     *   2012-100T02:00/03:45
+     * Other examples:<ul>
+     *   <li>2007-03-01T13:00:00Z/2008-05-11T15:30:00Z
+     *   <li>2007-03-01T13:00:00Z/P1Y2M10DT2H30M
+     *   <li>P1Y2M10DT2H30M/2008-05-11T15:30:00Z
+     *   <li>2007-03-01T00:00Z/P1D
+     *   <li>2012-100T02:00/03:45
+     * </ul>
      * http://en.wikipedia.org/wiki/ISO_8601#Time_intervals
      * @param stringIn
      * @return null or a DatumRange
@@ -1433,8 +1469,8 @@ public class DatumRangeUtil {
         str= str.trim();
         if ( str.endsWith("UTC" ) ) {
             return parseTimeRange(str.substring(0,str.length()-3));
-        //TODO: handle ISO8601 strings   } else if ( TimeParser.isIso8601String(str) ) {
-        //    return parseISO8601Range(str);
+        } else if ( isISO8601Range(str) ) {
+            return parseISO8601Range(str);
         } else {
             // consider Patterns -- dash not handled because of negative sign.
             // 0to4 apples -> 0 to 4 units=apples
