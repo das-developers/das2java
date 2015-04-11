@@ -174,7 +174,8 @@ public class TimeParser {
 
     /**
      * return true if the string appears to be an ISO8601 time.  This
-     * requires that the string contain a "T" or space and the hours component.
+     * requires that the string contain a "T" or space and the hours and
+     * minutes components.
      * @param exampleTime string like "1992-353T02:00"
      * @return true if the string appears to be an ISO8601 time.
      */
