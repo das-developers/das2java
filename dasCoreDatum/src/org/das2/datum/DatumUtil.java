@@ -378,25 +378,33 @@ public final class DatumUtil {
      * units aren't specified, then of course the Datum will be
      * assumed to be dimensionless.  This also requires the the
      * unit be registered already, and lookup should be used if
-     * the unit should be registered automatically.
+     * the unit should be registered automatically.  
+     * Strings containing the unit UTC are parsed as times.  
+     * Strings containing 
      * @param s the string representing the Datum, e.g. "5 Hz" (but not 5Hz).
      * @return the Datum
      * @throws ParseException when the double can't be parsed or the units aren't recognized.
      */
     public static Datum parse(java.lang.String s) throws ParseException {
-        String[] ss= splitDatumString(s);
         Units units;
-        if ( ss.length==1 ) {
+        String [] ss;
+        if ( TimeParser.isIso8601String(s) ) {
+            units= Units.us2000;
+            return units.parse(s);
+        } else {    
+            ss= splitDatumString(s);
+        
+            if ( ss.length==1 ) {
                 units= Units.dimensionless;
-        } else {
-            try {
-                units= Units.getByName(ss[1]);
-            } catch ( IllegalArgumentException e ) {
-                throw new ParseException( e.getMessage(), 0 );
+            } else {
+                try {
+                    units= Units.getByName(ss[1]);
+                } catch ( IllegalArgumentException e ) {
+                    throw new ParseException( e.getMessage(), 0 );
+                }
             }
+            return Datum.create( Double.parseDouble(ss[0]), units );
         }
-
-        return Datum.create( Double.parseDouble(ss[0]), units );
     }
     
     /**
