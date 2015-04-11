@@ -210,7 +210,9 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         sliceDimensionCB.setModel(new DefaultComboBoxModel(depNames1));
         qube= DataSetUtil.qubeDims(ds);
         if ( qube!=null ) {
-            ((SpinnerNumberModel)sliceIndexSpinner.getModel()).setMaximum(qube[idx]-1);
+            if ( idx<qube.length ) { // transitions
+                ((SpinnerNumberModel)sliceIndexSpinner.getModel()).setMaximum(qube[idx]-1);
+            }
         }
         try {
             sliceDimensionCB.setSelectedIndex(idx);
