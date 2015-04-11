@@ -232,7 +232,7 @@ public class TimeParser {
             }
             hasDelim = !timePart.matches("\\d+");
             delim = 0;
-            if (hasDelim) {
+            if (hasDelim && timePart.length()>2 ) {
                 delim = timePart.charAt(2);
             }
             switch (timePart.length()) {
