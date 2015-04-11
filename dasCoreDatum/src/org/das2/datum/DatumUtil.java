@@ -388,6 +388,7 @@ public final class DatumUtil {
     public static Datum parse(java.lang.String s) throws ParseException {
         Units units;
         String [] ss;
+        s= s.trim();
         if ( TimeParser.isIso8601String(s) ) {
             units= Units.us2000;
             return units.parse(s);
