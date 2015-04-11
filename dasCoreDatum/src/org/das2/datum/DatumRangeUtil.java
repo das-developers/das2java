@@ -1460,7 +1460,7 @@ public class DatumRangeUtil {
      * This provides unambiguous rules for parsing all types datum ranges strictly from strings, with no out of
      * band information.  This was introduced to support das2stream parsing.
      *
-     * Examples include: "2013 to 2015 UTC" "3 to 4 kg" "2015-05-05/2015-06-02"
+     * Examples include: "2013 to 2015 UTC" "3 to 4 kg" "2015-05-05T00:00/2015-06-02T00:00"
      * @param str the string representing a time.
      * @return
      * @throws java.text.ParseException
