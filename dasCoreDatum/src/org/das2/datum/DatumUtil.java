@@ -380,7 +380,7 @@ public final class DatumUtil {
      * unit be registered already, and lookup should be used if
      * the unit should be registered automatically.  
      * Strings containing the unit UTC are parsed as times.  
-     * Strings containing 
+     * Strings containing an ISO8601 string like $Y-$m-$dT$H:$M are parsed as strings.
      * @param s the string representing the Datum, e.g. "5 Hz" (but not 5Hz).
      * @return the Datum
      * @throws ParseException when the double can't be parsed or the units aren't recognized.
