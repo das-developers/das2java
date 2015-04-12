@@ -232,10 +232,16 @@ public final class LoggerManager {
     
     private static int lastEvent= 0;
     
+    // keep track of responsiveness of GUI event handling.  
+    // This is the start of the event, and clients should call logExitGuiEvent to log time.
+    private static long lastEventTime=0;
+    
     private static void logGuiEvent( Object source, String thisRef ) {
         if ( !EventQueue.isDispatchThread() ) {
             return;
         }
+        lastEventTime= System.currentTimeMillis();
+        
         AWTEvent evt= EventQueue.getCurrentEvent();
         if ( evt!=null ) {
             int thisEvent= evt.hashCode();
@@ -341,6 +347,7 @@ public final class LoggerManager {
         }
         
     }
+    
     /**
      * provide easy way to log all GUI events.
      * @param e 
@@ -364,6 +371,15 @@ public final class LoggerManager {
         }
     }
     
+    /**
+     * call this at the end of the GUI event to measure time to respond.
+     * @param e the focus event.
+     */
+    public static void logExitGuiEvent( ActionEvent e ) {
+        long t1= System.currentTimeMillis();
+        getLogger("gui").log( Level.FINE, "handled \"{0}\" in (ms): {1}", new Object[]{ "actionEvent", t1-lastEventTime });
+    }    
+    
     public static void logGuiEvent( ChangeEvent e ) {
         if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
             return;
@@ -371,18 +387,45 @@ public final class LoggerManager {
         logGuiEvent( e.getSource(), "changeEvent" );
     }
     
+    /**
+     * call this at the end of the GUI event to measure time to respond.
+     * @param e the focus event.
+     */
+    public static void logExitGuiEvent( ChangeEvent e ) {
+        long t1= System.currentTimeMillis();
+        getLogger("gui").log( Level.FINE, "handled \"{0}\" in (ms): {1}", new Object[]{ "changeEvent", t1-lastEventTime });
+    }    
+    
     public static void logGuiEvent( ItemEvent e ) {
         if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
             return;
         }
         logGuiEvent( e.getSource(), "itemEvent" );
     }
+    
+    /**
+     * call this at the end of the GUI event to measure time to respond.
+     * @param e the focus event.
+     */
+    public static void logExitGuiEvent( ItemEvent e ) {
+        long t1= System.currentTimeMillis();
+        getLogger("gui").log( Level.FINE, "handled \"{0}\" in (ms): {1}", new Object[]{ "itemEvent", t1-lastEventTime });
+    }    
                 
     public static void logGuiEvent( FocusEvent e ) {
         if ( !( getLogger("gui").isLoggable(Level.FINE ) ) ) {
             return;
         }
         logGuiEvent( e.getSource(), "focusEvent" );
+    }
+    
+    /**
+     * call this at the end of the GUI event to measure time to respond.
+     * @param e the focus event.
+     */
+    public static void logExitGuiEvent( FocusEvent e ) {
+        long t1= System.currentTimeMillis();
+        getLogger("gui").log( Level.FINE, "handled \"{0}\" in (ms): {1}", new Object[]{ "focusEvent", t1-lastEventTime });
     }
             
     public static void main( String[] args ) {
