@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import static org.virbo.filters.FilterEditorPanel.PROP_FILTER;
@@ -29,6 +30,10 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
      * Creates new form SlicesFilterEditorPanel
      */
     public SliceFilterEditorPanel() {
+        if ( !SwingUtilities.isEventDispatchThread() ) {
+            logger.log(Level.WARNING, "called off event thread");
+        }
+
         initComponents();
         setName("sliceFilterEditorPanel" + String.format( "%04d", (System.currentTimeMillis()-t0)/100 ));
     }
@@ -109,6 +114,10 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
     }// </editor-fold>//GEN-END:initComponents
 
     private void sliceDimensionCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sliceDimensionCBActionPerformed
+        if ( !SwingUtilities.isEventDispatchThread() ) {
+            logger.log(Level.WARNING, "called off event thread");
+        }
+        LoggerManager.logGuiEvent(evt);
         final String ff= getFilter();
         logger.log(Level.FINEST, "0: {0}{1}", new Object[]{ff, this.getName()});
         firePropertyChange( PROP_FILTER, null, ff );
@@ -124,6 +133,11 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
     }//GEN-LAST:event_sliceDimensionCBActionPerformed
 
     private void sliceIndexSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sliceIndexSpinnerStateChanged
+        if ( !SwingUtilities.isEventDispatchThread() ) {
+            logger.log(Level.WARNING, "called off event thread");
+        }
+
+        LoggerManager.logGuiEvent(evt);
         final String ff= getFilter();
         logger.log(Level.FINEST, "1: {0}{1}", new Object[]{ff, this.getName()});
         firePropertyChange( PROP_FILTER, null, ff );
@@ -131,6 +145,10 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
     }//GEN-LAST:event_sliceIndexSpinnerStateChanged
 
     private void sliceIndexSpinnerMouseWheelMoved(java.awt.event.MouseWheelEvent evt) {//GEN-FIRST:event_sliceIndexSpinnerMouseWheelMoved
+        if ( !SwingUtilities.isEventDispatchThread() ) {
+            logger.log(Level.WARNING, "called off event thread");
+        }
+
         SpinnerNumberModel snm= ((SpinnerNumberModel)sliceIndexSpinner.getModel());
         int newIndex= snm.getNumber().intValue() - evt.getWheelRotation();
         if ( newIndex<0 ) newIndex= 0;
@@ -187,6 +205,10 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
 
     @Override
     public void setFilter(String filter) {
+        if ( !SwingUtilities.isEventDispatchThread() ) {
+            logger.log(Level.WARNING, "called off event thread");
+        }
+        
         logger.log(Level.FINE, "setFilter {0}", filter);
         if ( getFilter().equals(filter) ) {
             logger.warning("redundant set filter");
@@ -203,6 +225,9 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
 
     @Override
     public void setInput(QDataSet ds) {
+        if ( !SwingUtilities.isEventDispatchThread() ) {
+            logger.log(Level.WARNING, "called off event thread");
+        }
         logger.log(Level.FINE, "setInput {0}", ds.toString() );
         this.inputDs= new WeakReference(ds);
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
