@@ -422,14 +422,15 @@ public class SemanticOps {
     }
 
     /**
-     * return the ytags for the simple table that is ds.
-     *   rank 2 spectrogram: Z[X,Y] &rarr; Y
-     *   bundle_1: ds[ :, [x,y,z] ] &rarr; y
-     *   [x,y,z] &rarr; y
-     * consider: These break duck typing goal, and really need a scheme
+     * return the ytags for the simple table that is ds.<ul>
+     *   <li>rank 2 spectrogram: Z[X,Y] &rarr; Y
+     *   <li>bundle_1: ds[ :, [x,y,z] ] &rarr; y
+     *   <li>[x,y,z] &rarr; y
+     * </ul>
+     * TODO: consider that these break duck typing goal, and really need a scheme
      *   to tell it how to get the dataset.
-     * @param ds
-     * @return
+     * @param ds the dataset
+     * @return the ytags
      */
     public static QDataSet ytagsDataSet( QDataSet ds ) {
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
