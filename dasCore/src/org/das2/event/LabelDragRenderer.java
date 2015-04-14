@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.das2.graph.DasCanvas;
 
 /**
  *
@@ -147,9 +148,15 @@ public class LabelDragRenderer implements DragRenderer {
         if ( tooltip ) {
             if ( infoLabel==null ) infoLabel= new InfoLabel();
             Point p= (Point)p2.clone();
-            SwingUtilities.convertPointToScreen( p, parent.getCanvas() );
-            infoLabel.setText( label, p, parent, labelPositionX, labelPositionY );
-            result= new Rectangle[0];
+            DasCanvas c= parent.getCanvas();
+            if ( c!=null ) {
+                SwingUtilities.convertPointToScreen( p, parent.getCanvas() );
+                infoLabel.setText( label, p, parent, labelPositionX, labelPositionY );
+                result= new Rectangle[0];
+            } else {
+                infoLabel.setText( label, p, parent, labelPositionX, labelPositionY );
+                result= new Rectangle[0];
+            }
         } else {
             if ( label==null ) {
                 result= new Rectangle[0];
