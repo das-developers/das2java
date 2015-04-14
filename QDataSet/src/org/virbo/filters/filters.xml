@@ -113,6 +113,11 @@
                         <filter>|getProperty(DEPEND_0)</filter>
                         <description>Replace the dataset with one of its properties, for example DEPEND_0 to get its timetags.</description>
                     </bookmark>          
+                    <bookmark>
+                        <title>Put Property</title>
+                        <filter>|putProperty(VALID_MIN,1e38)</filter>
+                        <description>Insert a property value into a dataset's properties.</description>
+                    </bookmark>          
                 </bookmark-list>
             </bookmark-folder>
             <bookmark-folder>
