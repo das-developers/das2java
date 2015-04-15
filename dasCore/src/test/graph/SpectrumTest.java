@@ -136,7 +136,7 @@ public class SpectrumTest {
                 	DasCanvas canvas = new DasCanvas(400,400);
 		
 
-                        DasRow row = DasRow.create(canvas);
+                        DasRow row = new DasRow(canvas,0.1,0.9);
                         DasColumn column = DasColumn.create(canvas,null,"7em","100%-10em");
 
                         DasPlot plot = makePlot(qd);
