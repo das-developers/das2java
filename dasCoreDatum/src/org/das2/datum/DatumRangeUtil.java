@@ -12,7 +12,6 @@ import java.util.logging.*;
 import java.util.regex.*;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
