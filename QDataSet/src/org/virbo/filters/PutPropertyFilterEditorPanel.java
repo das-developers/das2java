@@ -38,6 +38,9 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
         } else if ( name.equals("DEPEND_0" ) ) {
             vv= new String[] { "None" };
             documentationLabel.setText("use None to remove the DEPEND_0 tags");
+        } else {
+            vv= new String[] { "" };
+            documentationLabel.setText(" ");
         }
         jComboBox2.setModel( new DefaultComboBoxModel(vv) );
     }
