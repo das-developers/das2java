@@ -494,6 +494,7 @@ public abstract class Units {
                     visited.put(next, current);
                     queue.add(next);
                     if (next == toUnits) {
+                        logger.log(Level.FINE, "build conversion from {0} to {1}", new Object[]{fromUnits, toUnits});
                         return buildConversion(fromUnits, toUnits, visited);
                     }
                 }
