@@ -6032,6 +6032,45 @@ public class Ops {
     }
     
     /**
+     * element-wise round function, which rounds to i decimal places.
+     * 0.5 is round up.
+     * @param ds1 the dataset.
+     * @param ndigits round to this number of digits after the decimal point (e.g. 1=0.1 2=0.01 -1=10)
+     * @return dataset with the same geometry with each value rounded.
+     */
+    public static QDataSet round(QDataSet ds1, int ndigits ) {
+        final double res= Math.pow(10,ndigits);
+        return applyUnaryOp(ds1, new UnaryOp() {
+            @Override
+            public double op(double a) {
+                return Math.round(a*res) / res;
+            }
+        });
+    }
+
+    /**
+     * for Jython, we handle this because the double isn't coerced.
+     * @param x the double
+     * @param ndigits round to this number of digits after the decimal point (e.g. 1=0.1 2=0.01 -1=10)
+     * @return the rounded double.
+     */
+    public static double round( double x, int ndigits ) {
+        final double res= Math.pow(10,ndigits);
+        return Math.round( x*res )/res;
+    }
+
+    /**
+     * element-wise round function, which rounds to i decimal places.
+     * 0.5 is round up.
+     * @param ds1 the dataset.
+     * @param ndigits round to this number of digits after the decimal point (e.g. 1=0.1 2=0.01 -1=10)
+     * @return dataset with the same geometry with each value rounded.
+     */    
+    public static QDataSet round( Object ds1, int ndigits ) {
+        return round( dataset(ds1), ndigits );
+    }
+        
+    /**
      * Returns the signum function of the argument; zero if the argument is 
      * zero, 1.0 if the argument is greater than zero, -1.0 if the argument 
      * is less than zero.
