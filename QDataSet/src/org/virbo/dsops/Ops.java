@@ -3329,42 +3329,44 @@ public class Ops {
      * Warning: this was extracted from AggregatingDataSource to support BufferDataSets,
      * and is minimally implemented.
      * 
+     * When ds has property QDataSet.DEPEND_0, then this is used to identify the
+     * monotonic subset.  When ds is a set of timetags, then these are used.
+     * 
      * @param ds MutablePropertyDataSet, which must be writable.
      * @return dataset, possibly with records removed.
      */
-    public static MutablePropertyDataSet monotonicSubset( MutablePropertyDataSet ds ) {
+    public static MutablePropertyDataSet monotonicSubset( QDataSet ds ) {
         
+        MutablePropertyDataSet mds;
         if ( ds instanceof BufferDataSet ) {
-                
+            mds= (BufferDataSet)ds;
         } else if ( ds instanceof ArrayDataSet ) {
-            
+            mds= (BufferDataSet)ds;
         } else {
-            ds= ArrayDataSet.copy(ds);
+            mds= ArrayDataSet.copy(ds);
         }
         
-        assert ds instanceof ArrayDataSet || ds instanceof BufferDataSet;
+        assert mds instanceof ArrayDataSet || mds instanceof BufferDataSet;
         
-        if ( ds.isImmutable() ) {
-            if ( ds instanceof ArrayDataSet ) {
-                ds= ArrayDataSet.copy(ds);
+        if ( mds.isImmutable() ) {
+            if ( mds instanceof ArrayDataSet ) {
+                mds= ArrayDataSet.copy(mds);
             } else {
-                ds= BufferDataSet.copy(ds);
+                mds= BufferDataSet.copy(mds);
             } 
             logger.warning("immutabilty forced copy.");
         }
                
-        QDataSet sdep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
-        if ( sdep0==null && UnitsUtil.isTimeLocation( SemanticOps.getUnits(ds) ) ) {
-            sdep0= ds;
+        QDataSet sdep0= (QDataSet)mds.property(QDataSet.DEPEND_0);
+        if ( sdep0==null && UnitsUtil.isTimeLocation( SemanticOps.getUnits(mds) ) ) {
+            sdep0= mds;
         } else if ( sdep0==null ) {
-            return ds;
+            return mds;
         }
         MutablePropertyDataSet dep0= Ops.maybeCopy( sdep0 ); // I don't think this will copy.
-        if ( !UnitsUtil.isTimeLocation( SemanticOps.getUnits(dep0) ) ) {
-            return ds;
-        }
-        if ( dep0.length()<2 ) return ds;
-        if ( dep0.rank()!=1 ) return ds;
+
+        if ( dep0.length()<2 ) return mds;
+        if ( dep0.rank()!=1 ) return mds;
         QDataSet vdep0= Ops.valid(dep0);
         
         int[] rback= new int[dep0.length()];
@@ -3403,30 +3405,30 @@ public class Ops {
         if ( nrm>0 ) {
             if ( rindex==1 ) {
                 logger.log(Level.FINE, "ensureMono removes all points, assume it's monotonic decreasing" );
-                return ds;
+                return mds;
             }
             logger.log(Level.FINE, "ensureMono removes {0} points", nrm);
             int[] idx= new int[rindex-lindex];
             System.arraycopy( rback, lindex, idx, 0, ( rindex-lindex ) );
-            ds.putProperty( QDataSet.DEPEND_0, null );
+            mds.putProperty( QDataSet.DEPEND_0, null );
             MutablePropertyDataSet dep0copy;
-            if ( ds instanceof ArrayDataSet ) {
-                Class c= ((ArrayDataSet)ds).getComponentType();
-                ds= ArrayDataSet.copy( c, new SortDataSet( ds, Ops.dataset(idx) ) );
+            if ( mds instanceof ArrayDataSet ) {
+                Class c= ((ArrayDataSet)mds).getComponentType();
+                mds= ArrayDataSet.copy( c, new SortDataSet( mds, Ops.dataset(idx) ) );
                 Class depclass= ((ArrayDataSet)dep0).getComponentType();
                 dep0copy= ArrayDataSet.copy( depclass, new SortDataSet( dep0, Ops.dataset(idx) ) );
-            } else if ( ds instanceof BufferDataSet ) {
-                Object c= ((BufferDataSet)ds).getType();
-                ds= BufferDataSet.copy( c, new SortDataSet( ds, Ops.dataset(idx) ) );
+            } else if ( mds instanceof BufferDataSet ) {
+                Object c= ((BufferDataSet)mds).getType();
+                mds= BufferDataSet.copy( c, new SortDataSet( mds, Ops.dataset(idx) ) );
                 Object depclass= ((BufferDataSet)dep0).getType();
                 dep0copy= BufferDataSet.copy( depclass, new SortDataSet( dep0, Ops.dataset(idx) ) );
             } else {
                 throw new IllegalArgumentException("dataset must be ArrayDataSet or BufferDataSet");
             }
             dep0copy.putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
-            ds.putProperty( QDataSet.DEPEND_0, dep0copy );
+            mds.putProperty( QDataSet.DEPEND_0, dep0copy );
         }
-        return ds;
+        return mds;
     }
         
     /**
