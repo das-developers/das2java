@@ -3335,7 +3335,7 @@ public class Ops {
         if ( ds instanceof BufferDataSet ) {
             mds= (BufferDataSet)ds;
         } else if ( ds instanceof ArrayDataSet ) {
-            mds= (BufferDataSet)ds;
+            mds= (ArrayDataSet)ds;
         } else {
             mds= ArrayDataSet.copy(ds);
         }
