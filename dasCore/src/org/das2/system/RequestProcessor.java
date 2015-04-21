@@ -137,9 +137,10 @@ public final class RequestProcessor {
     /** Executes run.run() asynchronously on a thread from the thread pool.
      * The task will not be executed until after all requests made with
      * {@link #invokeAfter(java.lang.Runnable, java.lang.Object)} with the same
-     * lock have finished.
-     * @param run the taks to be executed.
+     * lock have finished.  
+     * @param run the task to be executed.
      * @param lock associates run with other tasks.
+     * @see #waitFor(java.lang.Object) 
      */
     public static void invokeLater(Runnable run, Object lock) {
         logger.log(Level.FINE, "invokeLater {0} {1}", new Object[]{String.valueOf(run), lock});
@@ -167,6 +168,7 @@ public final class RequestProcessor {
      * lock have finished.
      * @param run the task to be executed.
      * @param lock associates run with other tasks.
+     * @see #waitFor(java.lang.Object) 
      */
     public static void invokeAfter(Runnable run, Object lock) {
         logger.log(Level.FINE, "invokeAfter {0} {1}", new Object[]{String.valueOf(run), lock});
