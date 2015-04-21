@@ -1534,6 +1534,10 @@ public class SeriesRenderer extends Renderer {
             myyy.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); //TODO: cheat
         }
         long tt0= System.currentTimeMillis();
+        if ( mxxx.length()<2 || myyy.length()<2 ) {
+            logger.warning("that strange case where Kris saw  rte_1852410924");
+            return vds;
+        }
         QDataSet hds= Reduction.histogram2D( vds, mxxx, myyy );
         logger.log( Level.FINEST, "histogram2D: {0}", ( System.currentTimeMillis()-tt0 ));
         DataSetBuilder buildx= new DataSetBuilder(1,100);
