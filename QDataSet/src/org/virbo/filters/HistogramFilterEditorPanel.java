@@ -7,7 +7,10 @@ package org.virbo.filters;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
 /**
@@ -183,8 +186,16 @@ public class HistogramFilterEditorPanel extends AbstractFilterEditorPanel {
         QDataSet h= Ops.autoHistogram(ds);
         QDataSet dep0= (QDataSet) h.property(QDataSet.DEPEND_0);
         QDataSet extent= Ops.extent(dep0);
-        minimumTF.setText( extent.slice(0).toString().trim() );
-        maximumTF.setText( extent.slice(1).toString().trim() );
-        binsizeTF.setText( Ops.subtract( dep0.slice(1), dep0.slice(0) ).toString().trim() );
+        QDataSet s= extent.slice(0);
+        Units u= SemanticOps.getUnits(s);
+        if ( UnitsUtil.isTimeLocation(u) ) {
+            minimumTF.setText( extent.slice(0).toString().trim() );
+            maximumTF.setText( extent.slice(1).toString().trim() );
+            binsizeTF.setText( Ops.subtract( dep0.slice(1), dep0.slice(0) ).toString().trim() );        
+        } else {
+            minimumTF.setText( String.valueOf( extent.slice(0).value() ) );
+            maximumTF.setText( String.valueOf( extent.slice(1).value() ) );
+            binsizeTF.setText( String.valueOf( Ops.subtract( dep0.slice(1), dep0.slice(0) ).value() ) );
+        }
     }
 }
