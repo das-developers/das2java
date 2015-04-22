@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import org.das2.util.LoggerManager;
@@ -35,6 +36,10 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         }
 
         initComponents();
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(sliceIndexSpinner);
+        editor.getFormat().setGroupingUsed(false);
+        sliceIndexSpinner.setEditor(editor);
+        
         setName("sliceFilterEditorPanel" + String.format( "%04d", (System.currentTimeMillis()-t0)/100 ));
     }
 
