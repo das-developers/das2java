@@ -48,6 +48,7 @@ public class QDataSetStreamHandler implements StreamHandler {
     Map<String, DataSetBuilder> builders;
     Map<String, JoinDataSet> joinDataSets;
     Map<String, String[]> bundleDataSets;
+    Map<String, Integer> ranks;
 
     XPathFactory factory = getXPathFactory();
     XPath xpath = factory.newXPath();
@@ -58,6 +59,7 @@ public class QDataSetStreamHandler implements StreamHandler {
         builders = new HashMap<String, DataSetBuilder>();
         joinDataSets = new HashMap<String, JoinDataSet>();
         bundleDataSets = new HashMap<String, String[]>();
+        ranks= new HashMap<String,Integer>();
     }
 
     /**
@@ -248,6 +250,7 @@ public class QDataSetStreamHandler implements StreamHandler {
                 String name = n.getAttribute("id");
                 logger.log(Level.FINER, "got packetDescriptor for {0}", name);
                 int rank = Integer.parseInt(n.getAttribute("rank"));
+                ranks.put( name, rank );
                 DataSetBuilder builder = null;
                 String sdims;
                 int[] dims;
@@ -523,7 +526,8 @@ public class QDataSetStreamHandler implements StreamHandler {
      */
     public QDataSet getDataSet(String name) {
         QDataSet result= getDataSetInternal(name);
-        if ( isFlattenableJoin(result) ) {
+        Integer rank= ranks.get(name);
+        if ( rank!=result.rank() && isFlattenableJoin(result) ) {
             logger.log(Level.FINE, "flattening join for {0}: {1}", new Object[]{name, result});
             result= flattenJoin(result);
         }
