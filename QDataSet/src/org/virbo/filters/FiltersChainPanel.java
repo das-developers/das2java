@@ -208,17 +208,31 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
         logger.entering( CLASS_NAME, "getFilter" );
         
-        if ( !SwingUtilities.isEventDispatchThread() ) {
-            logger.warning("must be called from event thread");
-        }
+        final StringBuilder b= new StringBuilder();
         
-        StringBuilder b= new StringBuilder();
-        int ifilter= 0;
-        for ( FilterEditorPanel p: editors ) {
-            if ( ifilter==0 && p instanceof UnbundleFilterEditorPanel && implicitUnbundle ) {
-                b.append( ((UnbundleFilterEditorPanel)p).getComponent() );
-            } else {
-                b.append(p.getFilter());
+        Runnable run= new Runnable() {
+            @Override
+            public void run() {
+                int ifilter= 0;
+                for ( FilterEditorPanel p: editors ) {
+                    if ( ifilter==0 && p instanceof UnbundleFilterEditorPanel && implicitUnbundle ) {
+                        b.append( ((UnbundleFilterEditorPanel)p).getComponent() );
+                    } else {
+                        b.append(p.getFilter());
+                    }
+                }
+            }
+        };
+        
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            run.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(run);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(FiltersChainPanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(FiltersChainPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return b.toString();
