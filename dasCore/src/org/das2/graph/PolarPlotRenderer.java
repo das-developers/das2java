@@ -181,6 +181,18 @@ public class PolarPlotRenderer extends Renderer {
 
     }
 
+    /**
+     * TODO: experiment with delegating to a rectangular renderer and letting it draw onto special Graphics
+     * object, then mapping the result back.  The following render types will have to be supported:<ul>
+     * <li>SeriesRenderer
+     * <li>OrbitRenderer
+     * <li>DigitalRenderer
+     * <ul>
+     * @param g1
+     * @param xAxis
+     * @param yAxis
+     * @param mon 
+     */
     private void renderRank1( Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         Graphics2D g= (Graphics2D)g1;
