@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.virbo.filters;
 
@@ -20,7 +15,8 @@ import org.virbo.dataset.QDataSet;
 public interface FilterEditorPanel {
     /**
      * return the filter specified by the GUI.  The filter string will
-     * start with the pipe character.
+     * start with the pipe character.  This may be called from off of the event
+     * thread!
      * @return the filter string
      */
     String getFilter();
