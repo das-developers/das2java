@@ -8319,6 +8319,71 @@ public class Ops {
     public static int dimensionCount( Object dss ) {
         return dimensionCount( dataset(dss) );
     }
+    
+    public QDataSet fftPowerMultiThread(final QDataSet ds, final int len, final ProgressMonitor mon ){
+        
+        final QDataSet[] out = new QDataSet[4];
+        
+         Runnable run1 = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    out[0] = Ops.fftPower(ds.trim(0, len/ 4), 512, mon);
+                    //ScriptContext.plot( 1, out1 );
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        };
+
+        Runnable run2 = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    out[1] = Ops.fftPower(ds.trim(len / 4, (len * 2) / 4), 512, mon);
+                    //ScriptContext.plot( 2, out2 );
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        };
+
+        Runnable run3 = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    out[2] = Ops.fftPower(ds.trim((len * 2) / 4, (len * 3) / 4), 512, mon);
+                    //ScriptContext.plot( 3, out3 );
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        };
+
+        Runnable run4 = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    out[3] = Ops.fftPower(ds.trim((len * 3) / 4, len), 512, mon);
+                    //ScriptContext.plot( 4, out4 );
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        };
+        
+        new Thread(run1).start();
+        new Thread(run2).start();
+        new Thread(run3).start();
+        new Thread(run4).start();
+        
+        QDataSet concat= null;
+        for ( QDataSet out1 : out ) {
+            concat= Ops.concatenate( concat, out1 );
+        }
+        
+        return concat;
+    }
         
     /**
      * closest double to &pi; or TAU/2
