@@ -2113,6 +2113,13 @@ public class DataSetOps {
                     } else {
                         fillDs= Ops.fftPower(fillDs);
                     }
+                } else if ( cmd.equals("|fftPowerMultiThread" ) ) {
+                    if ( fillDs.length()>0 ) {
+                        if ( s.hasNextInt() ) {
+                            int len= s.nextInt();
+                            fillDs= Ops.fftPowerMultiThread(fillDs,len, mon.getSubtaskMonitor("fftPower"));
+                        }
+                    } 
                 } else if ( cmd.equals("|hanning") ) {
                     if ( fillDs.length()>0 ) {
                         if ( s.hasNextInt() ) {
