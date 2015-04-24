@@ -8320,15 +8320,17 @@ public class Ops {
         return dimensionCount( dataset(dss) );
     }
     
-    public QDataSet fftPowerMultiThread(final QDataSet ds, final int len, final ProgressMonitor mon ){
+    public static QDataSet fftPowerMultiThread(final QDataSet ds, final int len, final ProgressMonitor mon ){
         
         final QDataSet[] out = new QDataSet[4];
+        
+        final int length = ds.length();
         
          Runnable run1 = new Runnable() {
             @Override
             public void run() {
                 try {
-                    out[0] = Ops.fftPower(ds.trim(0, len/ 4), 512, mon);
+                    out[0] = Ops.fftPower(ds.trim(0, length/ 4), len, mon);
                     //ScriptContext.plot( 1, out1 );
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -8340,7 +8342,7 @@ public class Ops {
             @Override
             public void run() {
                 try {
-                    out[1] = Ops.fftPower(ds.trim(len / 4, (len * 2) / 4), 512, mon);
+                    out[1] = Ops.fftPower(ds.trim(length / 4, (length * 2) / 4), len, mon);
                     //ScriptContext.plot( 2, out2 );
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -8352,7 +8354,7 @@ public class Ops {
             @Override
             public void run() {
                 try {
-                    out[2] = Ops.fftPower(ds.trim((len * 2) / 4, (len * 3) / 4), 512, mon);
+                    out[2] = Ops.fftPower(ds.trim((length * 2) / 4, (length * 3) / 4), len, mon);
                     //ScriptContext.plot( 3, out3 );
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -8364,7 +8366,7 @@ public class Ops {
             @Override
             public void run() {
                 try {
-                    out[3] = Ops.fftPower(ds.trim((len * 3) / 4, len), 512, mon);
+                    out[3] = Ops.fftPower(ds.trim((length * 3) / 4, length), len, mon);
                     //ScriptContext.plot( 4, out4 );
                 } catch (Exception ex) {
                     ex.printStackTrace();
