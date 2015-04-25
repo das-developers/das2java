@@ -91,9 +91,6 @@ public class TotalFilterEditorPanel extends AbstractFilterEditorPanel implements
     @Override
     public void setFilter(String filter) {
         logger.log(Level.FINE, "setFilter {0}", filter);
-        if ( getFilter().equals(filter) ) {
-            logger.warning("redundant set filter");
-        }
         Pattern p= Pattern.compile("\\|total(\\d)\\(()\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
