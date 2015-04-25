@@ -213,11 +213,7 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         if ( !SwingUtilities.isEventDispatchThread() ) {
             logger.log(Level.WARNING, "called off event thread");
         }
-        
         logger.log(Level.FINE, "setFilter {0}", filter);
-        if ( getFilter().equals(filter) ) {
-            logger.warning("redundant set filter");
-        }
         Pattern p= Pattern.compile("\\|slice(\\d)\\((\\d+)\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
