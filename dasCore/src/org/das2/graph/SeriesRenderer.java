@@ -22,6 +22,7 @@
  */
 package org.das2.graph;
 
+import com.lowagie.text.pdf.PdfName;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -505,8 +506,17 @@ public class SeriesRenderer extends Renderer {
                 return;
             }
 
-            QDataSet up= Ops.add( vds, deltaPlusY );
-            QDataSet dn= Ops.subtract( vds, deltaMinusY );
+            QDataSet up; 
+            QDataSet dn;
+
+            try {
+                up= Ops.add( vds, deltaPlusY );
+                dn= Ops.subtract( vds, deltaMinusY );
+            } catch ( IllegalArgumentException ex ) {
+                getParent().postException(SeriesRenderer.this,ex);
+                up= vds;
+                dn= vds;
+            }
             
             QDataSet wup= Ops.valid(up);
             QDataSet wdn= Ops.valid(dn);
