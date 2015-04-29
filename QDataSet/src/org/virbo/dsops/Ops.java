@@ -2378,7 +2378,9 @@ public class Ops {
     public static QDataSet concatenate(QDataSet ds1, QDataSet ds2) {
         if ( ds1==null && ds2!=null ) return ds2;
         if ( ds1!=null && ds2==null ) throw new NullPointerException("ds2 is null while ds1 is not null");
-        if ( ds1==null && ds2==null ) throw new NullPointerException("both ds1 and ds2 are null");
+        if ( ds1==null && ds2==null ) {
+            throw new NullPointerException("both ds1 and ds2 are null");
+        }
         if ( ds1 instanceof FDataSet && ds2 instanceof FDataSet ) {
             FDataSet result = (FDataSet) ArrayDataSet.copy(ds1);
             if ( ds2.rank()==0 && ds1.rank()==1 ) {
@@ -8321,22 +8323,19 @@ public class Ops {
     }
 
     
-    public static QDataSet fftPowerMultiThread(final QDataSet ds, final int len, final ProgressMonitor mon ) throws InterruptedException{
+    public static QDataSet fftPowerMultiThread(final QDataSet ds, final int len, final ProgressMonitor mon ) {
         
         final ArrayList<ProgressMonitor> mons = new ArrayList<ProgressMonitor>();
         final QDataSet[] out = new QDataSet[4];
         
         final int length = ds.length();
+                
+        mons.add( new NullProgressMonitor() );
+        mons.add( new NullProgressMonitor() );
+        mons.add( new NullProgressMonitor() );
+        mons.add( new NullProgressMonitor() );
         
-        mon.setTaskSize(40);
-        mon.started();
-        
-        mons.add( mon.getSubtaskMonitor(0,10,"task1"));
-        mons.add( mon.getSubtaskMonitor(10,20,"task2"));
-        mons.add( mon.getSubtaskMonitor(20,30,"task3"));
-        mons.add( mon.getSubtaskMonitor(30,40,"task4"));
-        
-         Runnable run1 = new Runnable() {
+        Runnable run1 = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -8390,8 +8389,12 @@ public class Ops {
         new Thread(run4).start();
         
         
-        while ( !(mons.get(0)).isFinished() && !(mons.get(1)).isFinished() && !(mons.get(2)).isFinished() && !(mons.get(3)).isFinished()) {
-            Thread.sleep(50);
+        while ( !(mons.get(0)).isFinished() || !(mons.get(1)).isFinished() || !(mons.get(2)).isFinished() || !(mons.get(3)).isFinished()) {
+            try {
+                Thread.sleep(50);
+            } catch ( InterruptedException ex ) {
+                
+            }
         }
         
         QDataSet concat= null;
