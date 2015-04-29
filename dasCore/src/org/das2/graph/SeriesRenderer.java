@@ -22,7 +22,6 @@
  */
 package org.das2.graph;
 
-import com.lowagie.text.pdf.PdfName;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
