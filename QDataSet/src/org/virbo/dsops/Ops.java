@@ -8319,18 +8319,28 @@ public class Ops {
     public static int dimensionCount( Object dss ) {
         return dimensionCount( dataset(dss) );
     }
+
     
-    public static QDataSet fftPowerMultiThread(final QDataSet ds, final int len, final ProgressMonitor mon ){
+    public static QDataSet fftPowerMultiThread(final QDataSet ds, final int len, final ProgressMonitor mon ) throws InterruptedException{
         
+        final ArrayList<ProgressMonitor> mons = new ArrayList<ProgressMonitor>();
         final QDataSet[] out = new QDataSet[4];
         
         final int length = ds.length();
+        
+        mon.setTaskSize(40);
+        mon.started();
+        
+        mons.add( mon.getSubtaskMonitor(0,10,"task1"));
+        mons.add( mon.getSubtaskMonitor(10,20,"task2"));
+        mons.add( mon.getSubtaskMonitor(20,30,"task3"));
+        mons.add( mon.getSubtaskMonitor(30,40,"task4"));
         
          Runnable run1 = new Runnable() {
             @Override
             public void run() {
                 try {
-                    out[0] = Ops.fftPower(ds.trim(0, length/ 4), len, mon);
+                    out[0] = Ops.fftPower(ds.trim(0, length/ 4), len, mons.get(0));
                     //ScriptContext.plot( 1, out1 );
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -8342,7 +8352,7 @@ public class Ops {
             @Override
             public void run() {
                 try {
-                    out[1] = Ops.fftPower(ds.trim(length / 4, (length * 2) / 4), len, mon);
+                    out[1] = Ops.fftPower(ds.trim(length / 4, (length * 2) / 4), len, mons.get(1));
                     //ScriptContext.plot( 2, out2 );
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -8354,7 +8364,7 @@ public class Ops {
             @Override
             public void run() {
                 try {
-                    out[2] = Ops.fftPower(ds.trim((length * 2) / 4, (length * 3) / 4), len, mon);
+                    out[2] = Ops.fftPower(ds.trim((length * 2) / 4, (length * 3) / 4), len, mons.get(2));
                     //ScriptContext.plot( 3, out3 );
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -8366,7 +8376,7 @@ public class Ops {
             @Override
             public void run() {
                 try {
-                    out[3] = Ops.fftPower(ds.trim((length * 3) / 4, length), len, mon);
+                    out[3] = Ops.fftPower(ds.trim((length * 3) / 4, length), len, mons.get(3));
                     //ScriptContext.plot( 4, out4 );
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -8379,12 +8389,19 @@ public class Ops {
         new Thread(run3).start();
         new Thread(run4).start();
         
+        
+        while ( !(mons.get(0)).isFinished() && !(mons.get(1)).isFinished() && !(mons.get(2)).isFinished() && !(mons.get(3)).isFinished()) {
+            Thread.sleep(50);
+        }
+        
         QDataSet concat= null;
         for ( QDataSet out1 : out ) {
             concat= Ops.concatenate( concat, out1 );
         }
         
         return concat;
+        
+        
     }
         
     /**
