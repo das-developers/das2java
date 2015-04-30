@@ -141,6 +141,7 @@ public class BinAverage {
      * @param newTags0 rank 1 monotonic dataset
      * @param newTags1 rank 1 monotonic dataset
      * @return rank 2 dataset with newTags0 for the DEPEND_0 tags, newTags1 for the DEPEND_1 tags.  WEIGHTS property contains the weights.
+     * @see #rebin(org.virbo.dataset.QDataSet, int, int) 
      */
     public static DDataSet rebin(QDataSet ds, QDataSet newTags0, QDataSet newTags1) {
 
@@ -371,6 +372,7 @@ public class BinAverage {
         if (dep0 != null) {
             result.putProperty(QDataSet.DEPEND_0, rebin(dep0, binSize0));
         }
+        DataSetUtil.copyDimensionProperties( ds, result );
 
         return result;
     }
@@ -381,7 +383,8 @@ public class BinAverage {
      * @param ds rank 2 dataset with M by N points
      * @param n0 the number of bins in the result. Note this changed in v2013a_6 from earlier versions of this routine.
      * @param n1 the number of bins in the result.
-     * @return rank 2 dataset with M/binSize0 by N/binSize1 points, with a weights plane.
+     * @return rank 2 dataset with n0 by n1 points, with a weights plane.
+     * @see #rebin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet rebin(QDataSet ds, int n0, int n1) {
         DDataSet result = DDataSet.createRank2( n0, n1);
@@ -427,7 +430,8 @@ public class BinAverage {
         if (dep1 != null) {
             result.putProperty(QDataSet.DEPEND_1, rebin(dep1, n1));
         }
-
+        DataSetUtil.copyDimensionProperties( ds, result );
+        
         return result;
     }
 }
