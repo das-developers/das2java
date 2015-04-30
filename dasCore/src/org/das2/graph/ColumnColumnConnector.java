@@ -7,9 +7,12 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.GeneralPath;
 import java.beans.PropertyChangeListener;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLayeredPane;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.MenuElement;
 import javax.swing.event.MouseInputAdapter;
 import org.das2.DasApplication;
@@ -60,7 +63,9 @@ public class ColumnColumnConnector extends DasCanvasComponent {
             JPopupMenu mi= this.bottomPlot.getDasMouseInputAdapter().getPrimaryPopupMenu();
             mi.setLabel("Plot Menu");
         
-            getDasMouseInputAdapter().addMenuItem( mi );
+            JPopupMenu delegateMenu= makeDelegateMenu( mi );
+            
+            getDasMouseInputAdapter().addMenuItem( delegateMenu );
             MenuElement me= getDasMouseInputAdapter().getPrimaryPopupMenu().getSubElements()[0];
             ((JMenuItem)me.getComponent()).setText("Connector Properties");
 
@@ -83,6 +88,52 @@ public class ColumnColumnConnector extends DasCanvasComponent {
 
         }
     }
+    
+    
+    private JMenu makeDelegateMenu( JMenu mi ) {
+        JMenu result= new JMenu(mi.getText());
+        for ( Component c: mi.getMenuComponents() ) {
+            if ( c instanceof JMenuItem ) {
+                JMenuItem tmi= (JMenuItem)c;
+                JMenuItem cmi= new JMenuItem(tmi.getAction());
+                cmi.setText(tmi.getText());
+                result.add(cmi);
+            } else if ( c instanceof JSeparator ) {
+                result.add( new JSeparator() );
+            } else if ( c instanceof JMenu ) {
+                result.add( makeDelegateMenu( ((JMenu)c) ) );
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * create a menu that delegates to the menu underneath
+     * @param mi
+     * @return 
+     */
+    private JPopupMenu makeDelegateMenu( JPopupMenu mi ) {
+        
+        JPopupMenu result= new JPopupMenu();
+        int i=0;
+        for ( Component c: mi.getComponents() ) {
+            i=i+1;
+            if ( c instanceof javax.swing.JMenu ) {
+                result.add( makeDelegateMenu( ((JMenu)c) ) );
+            } else if ( c instanceof JCheckBoxMenuItem ) {
+                //drop it--it's a mouse module...
+            } else if ( c instanceof JMenuItem ) {
+                JMenuItem tmi= (JMenuItem)c;
+                JMenuItem cmi= new JMenuItem(tmi.getAction());
+                cmi.setText(tmi.getText());
+                result.add(cmi);
+            } else if ( c instanceof JSeparator ) {
+                result.add( new JSeparator() );
+            } 
+        }
+        return result;
+    }
+    
     
     private Rectangle getMyBounds() {
         int ytop= topRow.getDMaximum();
