@@ -375,10 +375,18 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         } else {
             formatter = xValue.getFormatter();
         }
+        String title= parentPlot.getTitle().trim();
+        if ( title.length()>0 ) title= title+"!c";
         if ( xdr!=null ) {
-            myPlot.setTitle( "x: " + xdr + " y: " + yValue );
+            myPlot.setTitle( title +  "x: " + xdr + " y: " + yValue );
         } else {
-            myPlot.setTitle( "x: " + formatter.format(xx) + " y: " + yValue );
+            myPlot.setTitle( title + "x: " + formatter.format(xx) + " y: " + yValue );
+        }
+        if ( !myPlot.getXAxis().getLabel().equals( sourceXAxis.getLabel() ) ) {
+            myPlot.getXAxis().setLabel( sourceXAxis.getLabel() );
+        }
+        if ( !myPlot.getYAxis().getLabel().equals( sourceZAxis.getLabel() ) ) {
+            myPlot.getYAxis().setLabel( sourceZAxis.getLabel() );
         }
         //eventBirthMilli= e.birthMilli;
         return true;

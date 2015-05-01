@@ -433,16 +433,35 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         } else {
             formatter = xValue.getFormatter();
         }
-        myPlot.setTitle( "x: " + formatter.format(xValue) + " y: " + yy );
+        
+        String title= parentPlot.getTitle().trim();
+        if ( title.length()>0 ) title= title+"!c";
+        myPlot.setTitle( title +  "x: " + formatter.format(xValue)  + " y: " + yy );
         ySlice= yy;
+            
+        if ( !myPlot.getXAxis().getLabel().equals( sourceXAxis.getLabel() ) ) {
+            myPlot.getXAxis().setLabel( sourceXAxis.getLabel() );
+        }
+        if ( !myPlot.getYAxis().getLabel().equals( sourceZAxis.getLabel() ) ) {
+            myPlot.getYAxis().setLabel( sourceZAxis.getLabel() );
+        }        
         //eventBirthMilli= e.birthMilli;
         return true;
     }
 
+    /**
+     * the color for the mark (vertical bar) indicating slice position
+     * @return the mark color
+     */
     public Color getMarkColor() {
         return markColor;
     }
 
+    /**
+     * set the color for the mark (vertical bar) indicating slice position
+     * Color(230,230,230) is the default.
+     * @param markColor the color
+     */
     public void setMarkColor(Color markColor) {
         this.markColor = markColor;
     }

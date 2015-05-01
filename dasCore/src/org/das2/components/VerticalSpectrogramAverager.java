@@ -274,8 +274,18 @@ public class VerticalSpectrogramAverager implements DataRangeSelectionListener {
 
         value= e.getReference();
 
-        myPlot.setTitle( new DatumRange( xValue1, xValue2 ).toString() );
-
+        String title= parentPlot.getTitle().trim();
+        if ( title.length()>0 ) {
+            title= "Averaged " + title+"!c";
+        }
+        
+        myPlot.setTitle( title + new DatumRange( xValue1, xValue2 ).toString() );
+        if ( !myPlot.getXAxis().getLabel().equals( sourceXAxis.getLabel() ) ) {
+            myPlot.getXAxis().setLabel( sourceXAxis.getLabel() );
+        }
+        if ( !myPlot.getYAxis().getLabel().equals( sourceZAxis.getLabel() ) ) {
+            myPlot.getYAxis().setLabel( sourceZAxis.getLabel() );
+        }
         //eventBirthMilli= e.birthMilli;
     }
     
