@@ -4490,19 +4490,19 @@ public class Ops {
         if ( sliceds.rank()!=0 ) {
             throw new IllegalArgumentException("sliceds must be rank 0");
         }
-        QDataSet dep0= SemanticOps.xtagsDataSet(ds);
-        if ( dep0.rank()!=1 ) {
+        QDataSet dep= SemanticOps.xtagsDataSet(ds);
+        if ( dep.rank()!=1 ) {
             throw new IllegalArgumentException("dataset must have rank 1 tags");
         }
-        QDataSet findex= Ops.findex( dep0, sliceds );
+        QDataSet findex= Ops.findex( dep, sliceds );
         double f= findex.value();
         //TODO: bug 1234: slice at string appears to mis with FFTPower result
-        if ( f>=0. && f<dep0.length() ) {
+        if ( f>=0. && f<dep.length() ) {
             return slice0( ds, (int)Math.round(f) );
         } else if ( f<0 ) {
-            throw new IndexOutOfBoundsException("slice is before the data");
+            return slice0( ds, 0 );
         } else { 
-            throw new IndexOutOfBoundsException("slice is after the data");
+            return slice0( ds, dep.length()-1 );
         }
     }    
     
@@ -4536,9 +4536,9 @@ public class Ops {
         if ( f>=0. && f<dep.length() ) {
             return slice1( ds, (int)Math.round(f) );
         } else if ( f<0 ) {
-            throw new IndexOutOfBoundsException("slice is before the data");
+            return slice1( ds, 0 );
         } else { 
-            throw new IndexOutOfBoundsException("slice is after the data");
+            return slice1( ds, dep.length()-1 );
         }
     }        
 
@@ -4571,9 +4571,9 @@ public class Ops {
         if ( f>=0. && f<dep.length() ) {
             return slice2( ds, (int)Math.round(f) );
         } else if ( f<0 ) {
-            throw new IndexOutOfBoundsException("slice is before the data");
+            return slice2( ds, 0 );
         } else { 
-            throw new IndexOutOfBoundsException("slice is after the data");
+            return slice2( ds, dep.length()-1 );
         }
     }    
     
@@ -4606,9 +4606,9 @@ public class Ops {
         if ( f>=0. && f<dep.length() ) {
             return slice3( ds, (int)Math.round(f) );
         } else if ( f<0 ) {
-            throw new IndexOutOfBoundsException("slice is before the data");
+            return slice3( ds, 0 );
         } else { 
-            throw new IndexOutOfBoundsException("slice is after the data");
+            return slice3( ds, dep.length()-1 );
         }
     }    
     
