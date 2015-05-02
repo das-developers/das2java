@@ -1858,10 +1858,11 @@ public class DataSetOps {
      * container for the logic for slicing at an index vs slicing at a datum.  If the string is
      * an integer, then we return the index.  If the index is a string, then we need to 
      * find the corresponding index to the rank 0 dataset elsewhere.
+     * If the string argument is not parseable, then deft is returned.
      * @param arg String that encodes a datum position or index.
      * @return an integer index or a dataset indicating the index.
      */
-    public static Object getArgumentIndex( String arg ) {
+    public static Object getArgumentIndex( String arg, int deft ) {
         try {
             int idx= Integer.parseInt(arg);
             return idx;
@@ -1873,8 +1874,12 @@ public class DataSetOps {
             if ( arg.length()>2 && arg.startsWith("\"") && arg.endsWith("\"") ) {
                 arg= arg.substring(1,arg.length()-1);
             }
-            QDataSet ds= Ops.dataset( arg );
-            return ds;
+            try {
+                QDataSet ds= Ops.dataset( arg );
+                return ds;
+            } catch ( IllegalArgumentException ex2 ) {
+                return deft;
+            }
         }
     }
 
@@ -1950,7 +1955,13 @@ public class DataSetOps {
 
                 } else if(cmd.startsWith("|slice") && cmd.length()>6 ) {
                     int dim= cmd.charAt(6)-'0';
-                    Object arg= getArgumentIndex( s.next() );
+                    Object arg;
+                    try {
+                        arg= getArgumentIndex( s.next(),0 );
+                    } catch ( IllegalArgumentException ex ) {
+                        ex.printStackTrace();
+                        arg= 0;
+                    }
                     if ( arg instanceof Integer ) {
                         int idx= (Integer)arg;
                         if ( dim==0 ) {
@@ -1969,14 +1980,20 @@ public class DataSetOps {
                             if ( idx>=fillDs.length(0,0,0) ) idx=fillDs.length(0,0,0)-1;
                             if ( idx<0 ) idx=0;
                             fillDs= slice3(fillDs, idx);
+                        } else {
+                            throw new IllegalArgumentException("unsupported dim: "+cmd);
                         }
                     } else {
                         if ( dim==0 ) {
                             fillDs= Ops.slice0( fillDs, (QDataSet)arg );
                         } else if ( dim==1 ) {
                             fillDs= Ops.slice1( fillDs, (QDataSet)arg );
+                        } else if ( dim==2 ) {
+                            fillDs= Ops.slice2( fillDs, (QDataSet)arg );
+                        } else if ( dim==3 ) {
+                            fillDs= Ops.slice3( fillDs, (QDataSet)arg );
                         } else {
-                            throw new IllegalArgumentException("only slice0 and slice1 works with strings");
+                            throw new IllegalArgumentException("unsupported dim: "+cmd);
                         }
                     }
                 } else if ( cmd.equals("|reducex") ) {
@@ -1997,8 +2014,8 @@ public class DataSetOps {
                 } else if ( cmd.equals("|exp10") ) {
                     fillDs= Ops.exp10(fillDs);
                 } else if ( cmd.equals("|trim") ) {
-                    Object arg1= getArgumentIndex( s.next() );
-                    Object arg2= getArgumentIndex( s.next() );
+                    Object arg1= getArgumentIndex( s.next(),0 );
+                    Object arg2= getArgumentIndex( s.next(),fillDs.length() );
                     if ( arg1 instanceof Integer ) {
                         int d0= (Integer) arg1;
                         int d1= (Integer) arg2;
