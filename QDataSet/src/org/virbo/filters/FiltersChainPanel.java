@@ -108,7 +108,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
 
     /**
      * this should return a delegate editor for the given filter.  This component
-     * will be configured as specified in f.
+     * will be configured as specified in f.  
+     * 
+     * Note that two filters that start with the same command (e.g. slice0) must
+     * use the same editor!
+     * 
      * @param f the filter, which may or may not start with a pipe.
      * @return the filter.
      */
@@ -163,6 +167,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         } else if ( f.matches("\\|setUnits\\('(\\S+)'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SetUnitsFilterEditorPanel();
         } else if ( f.matches("\\|slice(\\d)\\((\\d+)\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
+            result= new SliceFilterEditorPanel();
+        } else if ( f.matches("\\|slice(\\d)\\(\\'(\\S+)\\'\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new SliceFilterEditorPanel();
         } else if ( f.matches("\\|sin\\(\\)") ) { // TODO: FilterEditorPanel might choose to accept a filter.
             result= new NoArgFilterEditorPanel();
