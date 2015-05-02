@@ -25,6 +25,7 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
 
     static final long t0= System.currentTimeMillis();
     int[] qube= null;
+    int sliceByDatumIndex= -1; // the index we are slicing by datum.
     WeakReference<QDataSet> inputDs= null;
     
     /**
@@ -51,12 +52,16 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         sliceDimensionCB = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         sliceIndexSpinner = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
-        sliceFeedbackLabel = new javax.swing.JLabel();
+        sliceAtDatumTF = new javax.swing.JTextField();
+        sliceAtIndexButton = new javax.swing.JRadioButton();
+        sliceAtDatumButton = new javax.swing.JRadioButton();
 
         sliceDimensionCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         sliceDimensionCB.addActionListener(new java.awt.event.ActionListener() {
@@ -65,7 +70,8 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
             }
         });
 
-        jLabel1.setText("Slice Index:");
+        jLabel1.setText("Index:");
+        jLabel1.setToolTipText("Index of the slice");
 
         sliceIndexSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
         sliceIndexSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -81,24 +87,42 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
 
         jLabel2.setText("Slice Dimension:");
 
+        sliceAtDatumTF.setText("2000-01-01T00:00:00.000Z");
+
+        buttonGroup1.add(sliceAtIndexButton);
+        sliceAtIndexButton.setSelected(true);
+
+        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, sliceIndexSpinner, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), sliceAtIndexButton, org.jdesktop.beansbinding.BeanProperty.create("selected"));
+        bindingGroup.addBinding(binding);
+
+        buttonGroup1.add(sliceAtDatumButton);
+        sliceAtDatumButton.setToolTipText("Slice at time or datum location");
+
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, sliceAtDatumTF, org.jdesktop.beansbinding.ELProperty.create("${enabled}"), sliceAtDatumButton, org.jdesktop.beansbinding.BeanProperty.create("selected"));
+        bindingGroup.addBinding(binding);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(24, 24, 24)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sliceIndexSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sliceFeedbackLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sliceDimensionCB, 0, 291, Short.MAX_VALUE)))
+                        .addComponent(sliceDimensionCB, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(sliceAtIndexButton)
+                        .addGap(3, 3, 3)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sliceIndexSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(9, 9, 9)
+                        .addComponent(sliceAtDatumButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sliceAtDatumTF)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -110,12 +134,16 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(sliceFeedbackLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel1)
-                        .addComponent(sliceIndexSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .addComponent(sliceIndexSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(sliceAtIndexButton))
+                    .addComponent(sliceAtDatumTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sliceAtDatumButton))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        bindingGroup.bind();
     }// </editor-fold>//GEN-END:initComponents
 
     private void sliceDimensionCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sliceDimensionCBActionPerformed
@@ -134,6 +162,11 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                 snm.setValue(qube[idx]-1);
             }
         }
+        if ( sliceByDatumIndex!=idx ) {
+            sliceAtIndexButton.setSelected(true);
+            sliceByDatumIndex= idx;
+        }
+        
         updateFeedback();
     }//GEN-LAST:event_sliceDimensionCBActionPerformed
 
@@ -167,11 +200,15 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
     }//GEN-LAST:event_sliceIndexSpinnerMouseWheelMoved
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JRadioButton sliceAtDatumButton;
+    private javax.swing.JTextField sliceAtDatumTF;
+    private javax.swing.JRadioButton sliceAtIndexButton;
     private javax.swing.JComboBox sliceDimensionCB;
-    private javax.swing.JLabel sliceFeedbackLabel;
     private javax.swing.JSpinner sliceIndexSpinner;
+    private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 
     private void updateFeedback() {
@@ -185,27 +222,53 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
                     if ( ds!=null ) {
                         QDataSet dep= (QDataSet)ds.property("DEPEND_"+dim);
                         if ( dep!=null && dep.rank()==1 ) {
-                            String s= DataSetUtil.asDatum( dep.slice(index) ).toString();
-                            sliceFeedbackLabel.setText(s);
-                            sliceFeedbackLabel.setToolTipText(null);
-                            na= false;
+                            if ( getIndexMode() ) {
+                                String s= DataSetUtil.asDatum( dep.slice(index) ).toString();
+                                sliceAtDatumTF.setText(s);
+                                na= false;
+                            } else {
+                                
+                            }
                         }
                     }
                 }        
                 if ( na ) {
-                    sliceFeedbackLabel.setText("N/A");
-                    sliceFeedbackLabel.setToolTipText("value cannot be found easily");
+                    if ( getIndexMode() ) {
+                        sliceAtDatumTF.setText("N/A");
+                        sliceAtDatumTF.setToolTipText("value is not available");
+                    }
                 }
             }
         };
         SwingUtilities.invokeLater(run);
     }
     
+    private boolean getIndexMode() {
+        return !sliceAtDatumButton.isSelected();
+    }
+    
+    private static boolean checkIndexMode( String filter ) {
+        Pattern p= Pattern.compile("\\|slice(\\d)\\((\\d+)\\)");
+        Matcher m= p.matcher(filter);
+        if ( m.matches() ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     @Override
     public String getFilter() {
         logger.fine( "getFilter" );
         updateFeedback();
-        return String.format( "|slice%d(%d)", sliceDimensionCB.getSelectedIndex(), (Integer)sliceIndexSpinner.getValue() );
+        String s;
+        if ( getIndexMode() ) {
+            s= String.format( "|slice%d(%d)", sliceDimensionCB.getSelectedIndex(), (Integer)sliceIndexSpinner.getValue() );
+        } else {
+            s= String.format("|slice%d('%s')", sliceDimensionCB.getSelectedIndex(), sliceAtDatumTF.getText().trim() );
+        }
+        logger.log(Level.FINER, "getFilter() -> {0}", s);
+        return s;
     }
 
     @Override
@@ -221,6 +284,20 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
             int index= Integer.parseInt(m.group(2));
             sliceDimensionCB.setSelectedIndex( dim );
             sliceIndexSpinner.setValue( index );
+            sliceAtIndexButton.setSelected(true);
+            sliceByDatumIndex= dim;
+        } else {
+            Pattern p2= Pattern.compile("\\|slice(\\d)\\(\\'(\\S+)\\'\\)");
+            Matcher m2= p2.matcher(filter);
+            if ( m2.matches() ) {
+                int dim= Integer.parseInt(m2.group(1));
+                String at= m2.group(2);
+                sliceDimensionCB.setSelectedIndex( dim );
+                sliceAtDatumTF.setText(at);
+                sliceAtDatumTF.setEditable(true);
+                sliceAtDatumButton.setSelected(true);
+                sliceByDatumIndex= dim;
+            }
         }
     }
 
