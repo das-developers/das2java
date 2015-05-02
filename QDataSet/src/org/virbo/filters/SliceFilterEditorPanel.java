@@ -265,7 +265,8 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         if ( getIndexMode() ) {
             s= String.format( "|slice%d(%d)", sliceDimensionCB.getSelectedIndex(), (Integer)sliceIndexSpinner.getValue() );
         } else {
-            s= String.format("|slice%d('%s')", sliceDimensionCB.getSelectedIndex(), sliceAtDatumTF.getText().trim() );
+            String pos= sliceAtDatumTF.getText().replaceAll("\\s+","");
+            s= String.format("|slice%d('%s')", sliceDimensionCB.getSelectedIndex(), pos );
         }
         logger.log(Level.FINER, "getFilter() -> {0}", s);
         return s;
