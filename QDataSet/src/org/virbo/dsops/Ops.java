@@ -19,6 +19,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,8 @@ import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.demos.RipplesDataSet;
@@ -4271,6 +4274,24 @@ public class Ops {
                     }
                 }
                 mds.putProperty( name, value);
+            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_MAP) ) {
+                if ( !( value instanceof Map ) ) {
+                    try {
+                        String json= value.toString();
+                        JSONObject obj= new JSONObject(json); 
+                        Map<String,Object> result= new HashMap<String, Object>();
+                        Iterator i= obj.keys();
+                        while ( i.hasNext() ) {
+                            String k= String.valueOf( i.next() );
+                            result.put( k, obj.get(k) );
+                        }
+                        mds.putProperty( name, result );
+                    } catch (JSONException ex) {
+                        Logger.getLogger(Ops.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else {
+                    mds.putProperty( name, value);
+                }
             } else {
                 mds.putProperty( name, value);
             }
