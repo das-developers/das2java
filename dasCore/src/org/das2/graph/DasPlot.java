@@ -1862,6 +1862,10 @@ public class DasPlot extends DasCanvasComponent {
         }
         Renderer[] r = getRenderers();
         for (org.das2.graph.Renderer r1 : r) {
+            if ( r1==null ) {
+                System.err.println("strange hudson case of NullPointerException"); // I don't see how this could happen.  See http://sarahandjeremy.net:8080/hudson/job/autoplot-test002/8420/console
+                continue;
+            }
             r1.uninstallRenderer();
         }
     }
@@ -1873,7 +1877,9 @@ public class DasPlot extends DasCanvasComponent {
      */
     public void addRenderer(Renderer rend) {
         logger.log(Level.FINE, "addRenderer({0})", rend);
-
+        if ( rend==null ) {
+            throw new NullPointerException("added renderer was null");
+        }
         DasPlot parent= rend.getParent();
         if ( parent != null) {
             parent.removeRenderer(rend);
@@ -1895,6 +1901,9 @@ public class DasPlot extends DasCanvasComponent {
      */
     public void addRenderer(int index, Renderer rend) {
         logger.log(Level.FINE, "addRenderer({0},{1})", new Object[]{index, rend});
+        if ( rend==null ) {
+            throw new NullPointerException("added renderer was null");
+        }
         DasPlot parent= rend.getParent();
         if ( parent != null) {
             parent.removeRenderer(rend);
