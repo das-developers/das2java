@@ -452,7 +452,10 @@ public class TickCurveRenderer extends Renderer {
         xunits= SemanticOps.getUnits(xds);
         yunits= SemanticOps.getUnits(yds);
         
-        double limit= 1;
+        // there are two goals here.  First is to break the line when we cross over modulo spaces.  If
+        // we move from 23:59 to 00:01 in local time, we don't want a long line across the plot.  Second,
+        // if there's an actual gap, then we want to mark that as well.
+        double limit= -1;
         ddata= new double[2][xds.length()];
         for ( int i=0; i<xds.length(); i++ ) {
             ddata[0][i]= xAxis.transform(xds.value(i),xunits);
@@ -460,7 +463,7 @@ public class TickCurveRenderer extends Renderer {
             if ( i>0 ) {
                 double len1=  Math.sqrt( Math.pow(ddata[0][i]- ddata[0][i-1],2 ) 
                         + Math.pow(ddata[1][i]- ddata[1][i-1],2 ) );
-                if ( len1>limit && len1/limit < 10 ) { // if each length is within 10 times the previous
+                if ( limit==-1 || ( len1>limit && len1/limit < 10 ) ) { // if each length is within 10 times the previous
                     limit= len1;
                 }
                 
