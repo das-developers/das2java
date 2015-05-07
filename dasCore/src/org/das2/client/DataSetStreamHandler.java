@@ -104,16 +104,29 @@ public class DataSetStreamHandler implements StreamHandler {
             }
         }
 		  else{
-			  // Get the cacheTag via the xRange
+			  // Get the cacheTag via the new parameters, *CacheRange *CacheResolution. 
+			  // Don't use X_RANGE and X_TAG_WIDTH because these are ment for display 
+			  // purposes and don't represent the coverage period and resolution directly.
 			  Object oRng = null;
 			  Object oRes = null;
-			  if(((oRng = sd.getProperty(DataSet.PROPERTY_X_RANGE)) != null)
-				  && ((oRes = sd.getProperty(DataSet.PROPERTY_X_TAG_WIDTH)) != null)){
+			  if((oRng = sd.getProperty(DataSet.PROPERTY_X_CACHE_RNG)) != null){
 				  try{
-					  Datum width = DatumUtil.parse((String) oRes);
-					  DatumRange rng = DatumRangeUtil.parseDatumRange((String)oRng);
-					  extraProperties.put(DataSet.PROPERTY_CACHE_TAG,
-					                      new CacheTag(rng.min(), rng.max(), width));
+					  DatumRange rng = null;
+					  if(!(oRng instanceof DatumRange))
+				         rng = DatumRangeUtil.parseDatumRange((String)oRng);
+					  else
+						   rng = (DatumRange)oRng;
+					  
+						Datum res = null; // intrinsic resolution
+				      if((oRes = sd.getProperty(DataSet.PROPERTY_X_CACHE_RES)) != null){
+							if(!(oRes instanceof Datum))
+				          res = DatumUtil.parse((String) oRes);
+							else
+							 res = (Datum)oRes;
+						}
+
+					    extraProperties.put(DataSet.PROPERTY_CACHE_TAG,
+					                         new CacheTag(rng.min(), rng.max(), res));
 				  }
 				  catch(ParseException e){
 					  e.printStackTrace();

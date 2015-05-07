@@ -37,7 +37,19 @@ public interface DataSet {
      * CacheTag object describing the start, end, and resolution of the dataset. 
      */
     final static String PROPERTY_CACHE_TAG= "cacheTag";
-    
+	 
+	 /** DatumRange describing the range of a dataset in the X dimension */
+	 final static String PROPERTY_X_CACHE_RNG= "xCacheRange";
+	 
+	 /** Datum providing the resolution in the X dimension */
+	 final static String PROPERTY_X_CACHE_RES = "xCacheResolution";
+	 
+	 /** DatumRange describing the range of a dataset in the X dimension */
+	 final static String PROPERTY_Y_CACHE_RNG= "yCacheRange";
+	 
+	 /** Datum providing the resolution in the X dimension */
+	 final static String PROPERTY_Y_CACHE_RES = "xCacheResolution";
+	 
     /**
      * Long estimating the size of the dataset in memory.  For example, if a dataset is
      * backed by a local file, then zero for this indicates no penalty for storing this
