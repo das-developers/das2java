@@ -90,7 +90,7 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|reducex\\('(.*)'\\)");
+        Pattern p= Pattern.compile("\\|reducex\\('(.*)'\\)"); 
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
             try {
