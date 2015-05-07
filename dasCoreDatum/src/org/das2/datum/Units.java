@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 import org.das2.datum.format.DatumFormatterFactory;
 
 /**
- * Class for indicating physical units.
+ * Class for indicating physical units, and other random units.
  * @author  jbf
  */
 public abstract class Units {
@@ -710,7 +710,8 @@ public abstract class Units {
         } catch ( IllegalArgumentException ex ) {
             //do nothing until later
         }
-
+		  
+		  if(units.trim().equalsIgnoreCase("UTC")) return us2000;
 
         String[] ss= units.split("since");
         Units offsetUnits= lookupTimeLengthUnit(ss[0]);
@@ -746,7 +747,7 @@ public abstract class Units {
             result= Units.getByName(sunits);
             
         } catch ( IllegalArgumentException ex ) {
-            if ( sunits.contains(" since ") ) {
+            if ( sunits.contains(" since ") || sunits.equalsIgnoreCase("UTC") ) {
                 try {
                     result = lookupTimeUnits(sunits);
                 } catch (ParseException ex1) {
