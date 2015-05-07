@@ -100,6 +100,8 @@ public abstract class Units {
     public static final Units milliseconds= new NumberUnits("ms","milliseconds");
     public static final Units milliseconds2= new NumberUnits("msec");
     public static final Units microseconds= new NumberUnits("microseconds");
+    public static final Units microseconds2= new NumberUnits("\u00B5s");
+    
     public static final Units nanoseconds= new NumberUnits("nanoseconds");
     public static final Units ns= new NumberUnits("ns","nanoseconds");
     public static final Units picoseconds= new NumberUnits("picoseconds");
@@ -113,6 +115,7 @@ public abstract class Units {
         seconds.registerConverter(picoseconds,UnitsConverter.PICO);
         seconds.registerConverter(seconds2,UnitsConverter.IDENTITY);
         microseconds.registerConverter(nanoseconds, UnitsConverter.MILLI); // to support time formatting, often from us2000 to microseconds offset.
+        microseconds.registerConverter(microseconds2, UnitsConverter.IDENTITY);
         milliseconds.registerConverter(milliseconds2, UnitsConverter.IDENTITY);
         hours.registerConverter(seconds, new UnitsConverter.ScaleOffset( 3600.,0.0));
         minutes.registerConverter(seconds, new UnitsConverter.ScaleOffset( 60.,0.0));
