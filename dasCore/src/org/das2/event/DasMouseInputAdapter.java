@@ -1271,6 +1271,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * returns the position of the last mouse press.  This is a hack so that
      * the mouse position can be obtained to get the context of the press.
      * The result point is in the parent's coordinate system.
+     * @return the position of the mouse press.
      */
     public Point getMousePressPosition() {
         return this.pressPosition;
@@ -1294,10 +1295,12 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         parent.getRow().setDPosition(min + dy, max + dy);
     }
 
-    @Override
     /**
-     * the mouse wheel was turned so many units.  Delegate this to the primary module.
+     * the mouse wheel was turned so many units.  
+     * Delegate this to the primary module, so that if it is set to "ZoomX"
+     * then the mousewheel will be in just the X direction.
      */
+    @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         if (primary != null) { // this seems more clear.
             primary.mouseWheelMoved(e);
