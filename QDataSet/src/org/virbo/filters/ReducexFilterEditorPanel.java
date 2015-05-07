@@ -6,9 +6,14 @@
 
 package org.virbo.filters;
 
+import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.datum.Datum;
+import org.das2.datum.DatumUtil;
 import org.das2.datum.Units;
 import static org.das2.datum.Units.getAllUnits;
 import org.virbo.dataset.QDataSet;
@@ -85,11 +90,29 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|reducex\\('(\\d+)\\s(\\w+)'\\)");
+        Pattern p= Pattern.compile("\\|reducex\\('(.*)'\\)");
         Matcher m= p.matcher(filter);
         if ( m.matches() ) {
-            scalarTF.setText(m.group(1));
-            unitsCB.setSelectedItem(m.group(2));
+            try {
+                Datum d= DatumUtil.parse(m.group(1));
+                double dv= d.doubleValue(d.getUnits());
+                if ( dv==(int)dv ) {
+                    scalarTF.setText(String.valueOf((int)dv)); // this will often be the case.
+                } else {
+                    scalarTF.setText(String.valueOf(dv));
+                }
+                unitsCB.setSelectedItem(d.getUnits().toString());
+            } catch (ParseException ex) {
+                Pattern p2= Pattern.compile("\\|reducex\\('?(\\d+)\\s*(\\S+)'?\\)");
+                Matcher m2= p2.matcher(filter);
+                if ( m2.matches() ) {
+                    scalarTF.setText(m.group(1));
+                    unitsCB.setSelectedItem(m.group(2));
+                } else {
+                    scalarTF.setText("1");
+                    unitsCB.setSelectedItem("hr");
+                }
+            }
         } else {
             scalarTF.setText("1");
             unitsCB.setSelectedItem("hr");
@@ -98,7 +121,7 @@ public class ReducexFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public String getFilter() {
-        return "|reducex('" + scalarTF.getText() + " " + unitsCB.getSelectedItem() + "')";
+        return "|reducex('" + scalarTF.getText() + "" + unitsCB.getSelectedItem() + "')";
     }
 
     @Override
