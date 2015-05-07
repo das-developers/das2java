@@ -88,6 +88,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.locks.Lock;
@@ -168,9 +169,10 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         return currentCanvas;
     }
 
-    private List<Painter> topDecorators= new LinkedList<Painter>();
-    private List<Painter> bottomDecorators= new LinkedList<Painter>();
-
+    private final List<Painter> topDecorators= Collections.synchronizedList(new LinkedList<Painter>());
+    private final List<Painter> bottomDecorators= Collections.synchronizedList(new LinkedList<Painter>());
+    private final Painter[] emptyPainterArray= new Painter[0]; // so we can call atomic copy.
+    
     /**
      * Java6 has paintingForPrint, use this for now.
      */
@@ -692,7 +694,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         }
         g.setColor(getForeground());
 
-        for ( Painter p : bottomDecorators ) {
+        Painter[] decor;
+        decor= bottomDecorators.toArray(emptyPainterArray);
+        for ( Painter p : decor ) {
             try {
                 Graphics2D g2= (Graphics2D) g.create(); // create a graphics object in case they reset colors, etc.
                 p.paint(g2);
@@ -2105,7 +2109,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             if (dragRenderer != null) {
                 dragRenderer.renderDrag(g2, p1, p2);
             }
-            for ( Painter p : getCanvas().topDecorators ) {
+            Painter[] decor;
+            decor= getCanvas().topDecorators.toArray(getCanvas().emptyPainterArray);
+            for ( Painter p : decor ) {
                 try {
                     long t0= System.currentTimeMillis();
                     Graphics2D g22= (Graphics2D) g2.create(); // create a graphics object in case they reset colors, etc.
