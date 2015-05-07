@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
-import org.das2.datum.UnitsUtil;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasCanvasComponent;
 import java.awt.Cursor;
@@ -20,11 +19,12 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.SwingUtilities;
-import org.das2.graph.DasDevicePosition;
 
 /**
  * Provide navigation similar to Google Maps, where drag events result a pan on the axes, and mouse wheel events
  * are zoom in and zoom out.  This is typically attached to the middle mouse button.
+ * 
+ * @see BoxZoomMouseModule
  * 
  * @author jbf
  */

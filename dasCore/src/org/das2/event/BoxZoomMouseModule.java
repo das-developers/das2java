@@ -18,11 +18,14 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.DatumRangeUtil;
 import static org.das2.event.MouseModule.logger;
-import org.das2.graph.DasDevicePosition;
 
 /**
- *
- * @author Jeremy
+ * Provide a box zoom where drag to draw a box that will be the new range, and mouse wheel events
+ * are zoom in and zoom out.  This is typically attached to the left mouse button.
+ * 
+ * @see ZoomPanMouseModule
+ * 
+ * @author jbf
  */
 public class BoxZoomMouseModule extends BoxRangeSelectorMouseModule {
     
