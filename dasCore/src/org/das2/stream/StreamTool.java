@@ -658,7 +658,9 @@ public class StreamTool {
             }
             return map;
         } catch (ParseException pe) {
-            StreamException se = new StreamException(pe.getMessage());
+            String msg= pe.getMessage();
+            if (msg==null ) msg=pe.toString();
+            StreamException se = new StreamException(msg);
             se.initCause(pe);
             throw se;
         }
