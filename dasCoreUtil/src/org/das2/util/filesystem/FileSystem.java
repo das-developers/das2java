@@ -55,6 +55,11 @@ public abstract class FileSystem  {
     URI root;
     protected static final Logger logger= org.das2.util.LoggerManager.getLogger( "das2.filesystem" );
     
+    /**
+     * this logger is for opening connections to remote sites.
+     */
+    protected static final Logger loggerUrl= org.das2.util.LoggerManager.getLogger( "das2.filesystem.url" );
+    
     public static class FileSystemOfflineException extends IOException {
         public FileSystemOfflineException() {
             super();
