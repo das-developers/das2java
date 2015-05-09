@@ -56,7 +56,7 @@ public class ExpensiveOpCache {
             result= results.get(key);
         }
         long t0= System.currentTimeMillis();
-        long dt= t!=null ? t0 - t.longValue() : 99999;
+        long dt= t!=null ? t0 - t : 99999;
         if ( t==null ) {
             logger.log(Level.FINE, "no cache entry for: {0}", new Object[]{ key });
             result= op.doOp(key);
