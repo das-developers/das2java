@@ -273,7 +273,7 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
      *
      * @param filename the filename with in the filesystem.
      * @param f the File which will be the local copy.
-     * @param mon a monitor for the download.  If a MutatorLock is returned, then
+     * @param monitor a monitor for the download.  If a MutatorLock is returned, then
      *    the monitor is not touched, but other threads may use it to keep track
      *    of the download progress.
      * @throws FileNotFoundException if the file wasn't found after another thread loaded the file.

@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import static org.das2.util.filesystem.HttpFileSystem.logger;
 
 /**
  * uses HTTP, and doesn't download resources to cache
@@ -24,6 +26,7 @@ public class AppletHttpProtocol implements WebProtocol {
         HttpURLConnection connect = (HttpURLConnection) fo.wfs.getURL(fo.pathname).openConnection();
         connect.connect();
         int len = connect.getContentLength();
+        FileSystem.loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { connect.getURL() } );
         DasProgressMonitorInputStream in = new DasProgressMonitorInputStream(connect.getInputStream(), mon);
         if (len != -1)
             in.setStreamLength(len);
@@ -35,6 +38,8 @@ public class AppletHttpProtocol implements WebProtocol {
         boolean exists;
 
         URL ur = new URL(fo.wfs.getRootURL(), realName);
+        
+        FileSystem.loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { ur } );
         HttpURLConnection connect = (HttpURLConnection) ur.openConnection();
         connect.setRequestMethod("HEAD");
         HttpURLConnection.setFollowRedirects(false);
@@ -48,6 +53,7 @@ public class AppletHttpProtocol implements WebProtocol {
             }
             connect.disconnect();
             ur = new URL(fo.wfs.getRootURL(), realName);
+            FileSystem.loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { ur } );
             connect = (HttpURLConnection) ur.openConnection();
             connect.setRequestMethod("HEAD");
             connect.connect();

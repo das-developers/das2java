@@ -41,6 +41,11 @@ import org.das2.util.LoggerManager;
 public class HtmlUtil {
 
     private final static Logger logger= LoggerManager.getLogger( "das2.filesystem" );
+    /**
+     * this logger is for opening connections to remote sites.
+     */
+    protected static final Logger loggerUrl= org.das2.util.LoggerManager.getLogger( "das2.url" );
+    
     public static boolean isDirectory( URL url ) {
         String file= url.getFile();
         return file.charAt(file.length()-1) != '/';
@@ -54,6 +59,7 @@ public class HtmlUtil {
      * This was refactored to support caching of listings by simply writing the content to disk.
      *
      * @param url
+     * @param urlStream
      * @return list of URIs referred to in the page.
      * @throws IOException
      * @throws CancelledOperationException
@@ -96,7 +102,7 @@ public class HtmlUtil {
         }
         urlStream.close();
 
-        logger.log(Level.FINE, "read listing data in {0} millis", (System.currentTimeMillis() - t0));
+        logger.log(Level.FINER, "read listing data in {0} millis", (System.currentTimeMillis() - t0));
         String content= contentBuffer.toString();
 
         String hrefRegex= "(?i)href\\s*=\\s*([\"'])(.+?)\\1";
@@ -168,7 +174,7 @@ public class HtmlUtil {
 
         //int contentLength=10000;
         
-        logger.log(Level.FINE, "connected in {0} millis", (System.currentTimeMillis() - t0));
+        logger.log(Level.FINER, "connected in {0} millis", (System.currentTimeMillis() - t0));
         if ( userInfo != null) {
             String encode = Base64.encodeBytes( userInfo.getBytes());
             urlConnection.setRequestProperty("Authorization", "Basic " + encode);
@@ -176,6 +182,8 @@ public class HtmlUtil {
 
         //HERE is where we should support offline use.
         InputStream urlStream;
+        
+        loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { urlConnection.getURL() } );
         urlStream= urlConnection.getInputStream();
         
         return getDirectoryListing( url, urlStream );

@@ -41,10 +41,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -119,7 +117,7 @@ public class HttpFileSystem extends WebFileSystem {
             if ( parentURI!=null ) {
                 HttpFileSystem parent= (HttpFileSystem) peek( parentURI );
                 if ( parent!=null && parent.isOffline() ) {
-                    logger.fine("parent is offline, do not check...");
+                    logger.finer("parent is offline, do not check...");
                     doCheck= false;
                 }
             }
@@ -141,7 +139,7 @@ public class HttpFileSystem extends WebFileSystem {
                 try {
                     userInfo = KeyChain.getDefault().getUserInfo(root);
                 } catch (CancelledOperationException ex) {
-                    logger.log( Level.FINE, "user cancelled credentials for {0}", rooturi);
+                    logger.log( Level.FINER, "user cancelled credentials for {0}", rooturi);
                     throw new FileSystemOfflineException("user cancelled credentials for "+rooturi );
                 }
                 if ( userInfo != null) {
@@ -152,12 +150,12 @@ public class HttpFileSystem extends WebFileSystem {
                 boolean connectFail= true;
 
                 try {
-                    logger.log( Level.FINE, "urlc={0}", urlc );
+                    logger.log( Level.FINER, "urlc={0}", urlc );
                     if ( userInfo!=null && !userInfo.contains(":") ) {
                         logger.log( Level.INFO, "urlc={0}", urlc );
                         logger.log( Level.INFO, "userInfo does not appear to contain password: {0}", userInfo );
                     } else {
-                        logger.log( Level.FINE, "userInfo.length={0}", ( userInfo==null ? -1 : userInfo.length() ));
+                        logger.log( Level.FINER, "userInfo.length={0}", ( userInfo==null ? -1 : userInfo.length() ));
                     }
                     urlc.connect();
                     logger.log( Level.FINER, "made connection, now consume rest of stream: {0}", urlc );
@@ -276,14 +274,14 @@ public class HttpFileSystem extends WebFileSystem {
             }
         }
         if ( partFile.exists() ) {
-            logger.fine("timeout waiting for partFile to be deleted");
+            logger.finer("timeout waiting for partFile to be deleted");
             return false;
         } else {
             if ( f.exists() ) {
-                logger.fine("successfully waited for external download to complete");
+                logger.finer("successfully waited for external download to complete");
                 return true;
             } else {
-                logger.fine("part file removed but complete file is not found");
+                logger.finer("part file removed but complete file is not found");
                 return false;
             }
         }
@@ -308,11 +306,12 @@ public class HttpFileSystem extends WebFileSystem {
         
         filename = toCanonicalFilename(filename);
                 
-        logger.log(Level.FINE, "downloadFile {0}, using temp file {1}", new Object[] { filename, partFile } );
+        logger.log(Level.FINER, "downloadFile {0}, using temp file {1}", new Object[] { filename, partFile } );
 
         try {
             URL remoteURL = new URL(root.toString() + filename.substring(1) );
 
+            loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { remoteURL } );
             URLConnection urlc = remoteURL.openConnection();
             urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
 
@@ -332,11 +331,13 @@ public class HttpFileSystem extends WebFileSystem {
             
             InputStream in;
             try {
+                loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { urlc.getURL() } );
                 in= urlc.getInputStream();
                 
             } catch ( FileNotFoundException ex ) {
                 remoteURL= new URL(root.toString() + filename.substring(1) + ".gz" );
 
+                loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { remoteURL } );
                 urlc = remoteURL.openConnection();
                 urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
                  
@@ -345,6 +346,7 @@ public class HttpFileSystem extends WebFileSystem {
                     urlc.setRequestProperty("Authorization", "Basic " + encode);
                 }
                 try {
+                    loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { urlc.getURL() } );
                     in= new GZIPInputStream( urlc.getInputStream() );
                 } catch ( FileNotFoundException ex2 ) {
                     throw ex;
@@ -370,11 +372,11 @@ public class HttpFileSystem extends WebFileSystem {
             monitor.setTaskSize(urlc.getContentLength());
 
             if (!f.getParentFile().exists()) {
-                logger.log(Level.FINE, "make dirs {0}", f.getParentFile());
+                logger.log(Level.FINER, "make dirs {0}", f.getParentFile());
                 FileSystemUtil.maybeMkdirs( f.getParentFile() );
             }
             if (partFile.exists()) {
-                logger.log(Level.FINE, "partFile exists {0}", partFile);
+                logger.log(Level.FINER, "partFile exists {0}", partFile);
                 long ageMillis= System.currentTimeMillis() - partFile.lastModified(); // TODO: this is where OS-level locking would be nice...
                 if ( ageMillis<FileSystemSettings.allowableExternalIdleMs ) { // if it's been modified less than sixty seconds ago, then wait to see if it goes away, then check again.
                     if ( waitDownloadExternal( f, partFile, monitor ) ) {
@@ -398,7 +400,7 @@ public class HttpFileSystem extends WebFileSystem {
                 //InputStream in;
                 //in = urlc.getInputStream();
 
-                logger.log(Level.FINE, "transferring bytes of {0}", filename);
+                logger.log(Level.FINER, "transferring bytes of {0}", filename);
                 FileOutputStream out = new FileOutputStream(partFile);
                 monitor.setLabel("downloading file");
                 monitor.started();
@@ -426,16 +428,16 @@ public class HttpFileSystem extends WebFileSystem {
                     if ( f.exists() ) {
                         if ( f.length()==partFile.length() ) {
                             if ( OsUtil.contentEquals(f, partFile ) ) {
-                                logger.fine("another thread must have downloaded file.");
+                                logger.finer("another thread must have downloaded file.");
                                 if ( !partFile.delete() ) {
                                     throw new IllegalArgumentException("unable to delete "+partFile );
                                 }
                                 return;
                             } else {
-                                logger.fine("another thread must have downloaded different file.");
+                                logger.finer("another thread must have downloaded different file.");
                             }
                         }
-                        logger.log(Level.FINE, "deleting old file {0}", f);
+                        logger.log(Level.FINER, "deleting old file {0}", f);
                         if ( ! f.delete() ) {
                             throw new IllegalArgumentException("unable to delete "+f );
                         }
@@ -447,7 +449,7 @@ public class HttpFileSystem extends WebFileSystem {
                 } catch (IOException e) {
                     out.close();
                     in.close();
-                    logger.log( Level.FINE, "deleting partial download file {0}", partFile);
+                    logger.log( Level.FINER, "deleting partial download file {0}", partFile);
                     if ( partFile.exists() && !partFile.delete() ) {
                         throw new IllegalArgumentException("unable to delete "+partFile );
                     }
@@ -616,7 +618,7 @@ public class HttpFileSystem extends WebFileSystem {
 
         Map<String,DirectoryEntry> result;
         if ( isListingCached(directory) ) {
-            logger.log(Level.FINE, "using cached listing for {0}", directory);
+            logger.log(Level.FINER, "using cached listing for {0}", directory);
 
             File listing= listingFile(directory);
             
@@ -653,7 +655,7 @@ public class HttpFileSystem extends WebFileSystem {
 
         if ( this.isOffline() ) {
             File f= new File(localRoot, directory).getCanonicalFile();
-            logger.log(Level.FINE, "this filesystem is offline, using local listing: {0}", f);
+            logger.log(Level.FINER, "this filesystem is offline, using local listing: {0}", f);
 
             if ( !f.exists() ) throw new FileSystemOfflineException("unable to list "+f+" when offline");
             File[] listing = f.listFiles();
@@ -680,7 +682,7 @@ public class HttpFileSystem extends WebFileSystem {
 
 
         while ( !successOrCancel ) {
-            logger.log(Level.FINE, "list {0}", directory);
+            logger.log(Level.FINER, "list {0}", directory);
             URL[] list;
             try {
                 File listing= listingFile( directory );
@@ -795,7 +797,7 @@ public class HttpFileSystem extends WebFileSystem {
             //logger.warning("listDirectory called on event thread!");
         }
         
-        logger.log(Level.FINE, "listDirectory({0},{1})", new Object[]{directory, regex});
+        logger.log(Level.FINER, "listDirectory({0},{1})", new Object[]{directory, regex});
         directory = toCanonicalFilename(directory);
         if (!isDirectory(directory)) {
             throw new IllegalArgumentException("is not a directory: " + directory);

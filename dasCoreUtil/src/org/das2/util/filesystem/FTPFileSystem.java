@@ -38,6 +38,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * This original FtpFileSystem implementation is based on Java's FTP client.  Note, Autoplot uses a third-party library because
@@ -148,6 +149,7 @@ public class FTPFileSystem extends WebFileSystem {
             int i= urlc.getContentLength();
             monitor.setTaskSize( i );
             out= new FileOutputStream( partFile );
+            loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { urlc.getURL() } );
             is = urlc.getInputStream(); // To download
             monitor.started();
             copyStream(is, out, monitor );
