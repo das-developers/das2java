@@ -309,8 +309,8 @@ public abstract class WebFileSystem extends FileSystem {
     private class LastAccessTime implements ExpensiveOpCache.Op {
 
         public Object doOp(String key) throws IOException {
-            logger.fine("doing HEAD request to get timestamp");
             URL url = getURL(key);
+            logger.log( Level.FINE, "HEAD to get timestamp: {0}",url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD");
             connection.connect();
@@ -465,7 +465,7 @@ public abstract class WebFileSystem extends FileSystem {
         synchronized (downloads) {
             ProgressMonitor mon = (ProgressMonitor) downloads.get(filename);
             if (mon != null) { // the webfilesystem is already loading this file, so wait.
-                logger.log(Level.FINE, "another thread is downloading {0}, waiting...", filename);
+                logger.log(Level.FINER, "another thread is downloading {0}, waiting...", filename);
                 waitForDownload( monitor, filename );  //TODO: this seems strange, that we would have this in a synchronized block.
                 if (f.exists()) {
                     return null;
@@ -477,7 +477,7 @@ public abstract class WebFileSystem extends FileSystem {
                     }
                 }
             } else {
-                logger.log(Level.FINE, "this thread will download {0}.", filename);
+                logger.log(Level.FINER, "this thread will download {0}.", filename);
                 downloads.put(filename, monitor);
                 monitor.started();  // this is necessary for the other monitors
                 return new LocalReentrantLock(filename);
@@ -609,7 +609,7 @@ public abstract class WebFileSystem extends FileSystem {
             DirectoryEntry [] result= listings.get(directory);
             return result;
         } else {
-            logger.log(Level.FINE, "remove old directory listing for {0}", directory);
+            logger.log(Level.FINER, "remove old directory listing for {0}", directory);
             listings.remove(directory);
             listingFreshness.remove(directory);
         }
