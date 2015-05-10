@@ -160,9 +160,10 @@ public abstract class FileObject {
     
     /**
      * returns true if the file is locally available, meaning clients can 
-     * call getFile() and the readble File reference will be available in
+     * call getFile() and the readable File reference will be available in
      * interactive time.  Note that isLocal does not imply exists().  Also,
      * This may result in side effects such as a website hit.
+     * @return true if the file is locally available and fresh
      */
     public abstract boolean isLocal();
     
