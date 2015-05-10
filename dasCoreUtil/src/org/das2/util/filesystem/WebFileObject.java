@@ -165,14 +165,14 @@ public class WebFileObject extends FileObject {
             try {
                 maybeLoadMetadata();
             } catch ( IOException ex ) {
-                logger.log(Level.INFO, "unable to load metadata: {0}", ex);
+                logger.log(Level.FINE, "unable to load metadata: {0}", ex);
                 modifiedDate= new Date( localFile.lastModified() );
             }
             if ( metadata!=null && metadata.containsKey("Last-Modified") ) {
                 long date= Date.parse( metadata.get("Last-Modified") );
                 modifiedDate= new Date( date );
             } else {
-                logger.info("metadata doesn't contain Last-Modified, using localFile" );
+                logger.fine("metadata doesn't contain Last-Modified, using localFile" );
                 modifiedDate= new Date( localFile.lastModified() );
             }
         }
@@ -192,7 +192,7 @@ public class WebFileObject extends FileObject {
             try {
                 maybeLoadMetadata();
             } catch ( IOException ex ) {
-                logger.log(Level.INFO, "unable to load metadata: {0}", ex);
+                logger.log(Level.FINE, "unable to load metadata: {0}", ex);
                 size= localFile.length();
             }
             if ( metadata.containsKey("Content-Length") ) {
@@ -281,7 +281,7 @@ public class WebFileObject extends FileObject {
                     return "true".equals( metadata.get( WebProtocol.META_EXIST ) );
                 } else {
                     // TODO: use HTTP HEAD, etc
-                    logger.info("This implementation of WebFileObject.exists() is not optimal");
+                    logger.fine("This implementation of WebFileObject.exists() is not optimal");
                     File partFile = new File(localFile.toString() + ".part");
                     wfs.downloadFile(pathname, localFile, partFile, new NullProgressMonitor());
                     return localFile.exists();
@@ -470,7 +470,7 @@ public class WebFileObject extends FileObject {
                 wfs.downloadFile(pathname, localFile, partFile, monitor.getSubtaskMonitor("download file"));
 
                 if ( !localFile.setLastModified(remoteDate.getTime()) ) {
-                    logger.log(Level.INFO, "unable to modify date of {0}", localFile);
+                    logger.log(Level.FINE, "unable to modify date of {0}", localFile);
                 }
 
                 logger.log(Level.FINE, "downloaded local file has date {0}", new Date(localFile.lastModified()));
@@ -503,7 +503,9 @@ public class WebFileObject extends FileObject {
      * call getFile() and the readable File reference will be available in
      * interactive time.  For FileObjects from HttpFileSystem, a HEAD request
      * is made to ensure that the local file is as new as the website one (when offline=false).
+     * @return true if the file is local and can be used without web access.
      */
+    @Override
     public boolean isLocal() {
         if ( wfs.isAppletMode() ) return false;
 
@@ -526,7 +528,7 @@ public class WebFileObject extends FileObject {
                         setLastModified( new Date(remoteDate.modified) );
                         setSize( remoteDate.size );
                         if ( remoteDate.modified > localFileLastModified ) {
-                            logger.log(Level.INFO, "remote file is newer than local copy of {0}, download.", this.getNameExt());
+                            logger.log(Level.FINE, "remote file is newer than local copy of {0}, download.", this.getNameExt());
                             download = true;
                         } else if ( remoteDate.size!= localFile.length() ) {
                             download = true;
