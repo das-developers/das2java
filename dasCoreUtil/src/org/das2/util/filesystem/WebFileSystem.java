@@ -54,7 +54,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.das2.util.FileUtil;
-import org.das2.util.OsUtil;
 
 /**
  * Base class for HTTP and FTP-based filesystems.  A local cache is kept of
@@ -67,9 +66,9 @@ public abstract class WebFileSystem extends FileSystem {
     protected static final Logger logger= org.das2.util.LoggerManager.getLogger( "das2.filesystem.wfs" );
 
     /**
-     * we keep a cached listing in on disk.  This is backed by the website.
+     * we keep a cached listing in on disk.  This is backed by the website. 
      */
-    public static final int LISTING_TIMEOUT_MS = 60000;
+    public static final int LISTING_TIMEOUT_MS = 10000;
 
     /**
      * we keep a cached listing in memory for performance.  This is backed by the .listing file.
@@ -308,9 +307,10 @@ public abstract class WebFileSystem extends FileSystem {
 
     private class LastAccessTime implements ExpensiveOpCache.Op {
 
+        @Override
         public Object doOp(String key) throws IOException {
             URL url = getURL(key);
-            logger.log( Level.FINE, "HEAD to get timestamp: {0}",url);
+            loggerUrl.log( Level.FINE, "HEAD to get timestamp: {0}",url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD");
             connection.connect();
@@ -329,6 +329,7 @@ public abstract class WebFileSystem extends FileSystem {
      * assumes that listDirectory will be keeping things up-to-date.
      */
     private class ListingsLastAccessTime implements ExpensiveOpCache.Op {
+        @Override
         public Object doOp(String key) throws IOException {
             File localFile= new File( getLocalRoot(), key );
             String name= localFile.getName(); // remove the path information
@@ -400,11 +401,6 @@ public abstract class WebFileSystem extends FileSystem {
             if (monitor.isCancelled()) {
                 downloadMonitor.cancel();
             }
-            
-            if ( downloadMonitor.isFinished() ) {
-                logger.warning("watched downloadMonitor is finished but is not being unlocked");
-                monitor.setProgressMessage("file is downloaded, just a moment");
-            }
 
             if ( !monitor.isCancelled() ) {  //TODO: syncronized block or something
                 // echo what the download monitor is reporting.
@@ -418,6 +414,10 @@ public abstract class WebFileSystem extends FileSystem {
             }
             downloadMonitor = (ProgressMonitor) downloads.get(filename);
             
+            if ( downloadMonitor!=null && downloadMonitor.isFinished() ) {
+                logger.warning("watched downloadMonitor is finished but is not being unlocked");
+                monitor.setProgressMessage("file is downloaded, just a moment");
+            }            
         }
         
         monitor.finished();
@@ -581,9 +581,14 @@ public abstract class WebFileSystem extends FileSystem {
         File f= new File(localRoot, directory);
         if ( !f.exists() ) return false;
         File listing = listingFile( directory );
-        if ( listing.exists() && ( System.currentTimeMillis() - listing.lastModified() ) < LISTING_TIMEOUT_MS ) {
-            logger.fine(String.format( "listing date is %5.2f seconds old", (( System.currentTimeMillis() - listing.lastModified() ) /1000.) ));
-            return true;
+        if ( listing.exists() ) {
+            long ageMs= ( System.currentTimeMillis() - listing.lastModified() );
+            if ( ageMs<LISTING_TIMEOUT_MS ) {
+                logger.fine(String.format( "listing date is %5.2f seconds old", (( System.currentTimeMillis() - listing.lastModified() ) /1000.) ));
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -595,7 +600,7 @@ public abstract class WebFileSystem extends FileSystem {
     }
 
     /**
-     * list the directory using the ram memory cache.  MEMORY_LISTING_TIMEOUT_MS=60s limits the lifespan
+     * list the directory using the ram memory cache.  MEMORY_LISTING_TIMEOUT_MS=4s limits the lifespan
      * of a cache entry, and this is really to avoid expensive listings of the same resource when searches are
      * done.
      * @param directory the directory name within the filesystem.
@@ -756,37 +761,17 @@ public abstract class WebFileSystem extends FileSystem {
         return filename;
     }
 
+    /**
+     * Return the handle for this file.  This is not the file itself, and 
+     * accessing this object does not necessarily download the resource.  This will be a 
+     * container for file metadata, in addition to providing access to the data
+     * file itself.
+     * @param filename the name of the file within the filesystem.
+     * @return a FileObject for the file
+     */
+    @Override
     public FileObject getFileObject(String filename) {
-        String path= toCanonicalFilename(filename);
-        int i= path.lastIndexOf("/");
-
-        String dir= path.substring(0, i+1);
-
-        try {
-            listDirectory(dir); // load the listing into memory to get file object
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, ex.getMessage(), ex);
-        }
-
-        // we should be able to get the listing that we just did from memory.
-        DirectoryEntry[] des= listDirectoryFromMemory(dir);
-        DirectoryEntry result= null;
-
-        if ( des!=null ) {
-            String fname= path.substring(i+1);
-            for ( i=0; i<des.length; i++ ) {
-                if ( fname.equals(des[i].name) ) {
-                    result= des[i];
-                }
-            }
-        }
-
-        if ( result==null ) {
-            // this won't exist.
-            return new WebFileObject( this, filename, new Date( Long.MAX_VALUE ) );
-        } else {
-            return new WebFileObject( this, filename, new Date( result.modified ) );  // note result.modified may be Long.MAX_VALUE, indicating need to load.
-        }
+        return new WebFileObject( this, filename, new Date( Long.MAX_VALUE ) );  // note result.modified may be Long.MAX_VALUE, indicating need to load.
     }
 
     /**
