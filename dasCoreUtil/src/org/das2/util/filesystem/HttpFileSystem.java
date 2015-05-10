@@ -367,6 +367,8 @@ public class HttpFileSystem extends WebFileSystem {
             List<String> sd= urlc.getHeaderFields().get("Last-Modified");
             if ( sd!=null && sd.size()>0 ) {
                 d= new Date( sd.get(sd.size()-1) );
+            } else {
+                d= new Date();
             }
             
             monitor.setTaskSize(urlc.getContentLength());
@@ -418,13 +420,13 @@ public class HttpFileSystem extends WebFileSystem {
                     monitor.finished();
                     out.close();
                     in.close();                    
-                    if ( d!=null ) {
-                        try {
-                            partFile.setLastModified(d.getTime()+10); // add 10 secs because of bad experiences with Windows filesystems.  Also this is probably a good idea in case local clock is not set properly.
-                        } catch ( Exception ex ) {
-                            logger.log( Level.SEVERE, "unable to setLastModified", ex );
-                        }
+                    
+                    try {
+                        partFile.setLastModified(d.getTime()+HTTP_CHECK_TIMESTAMP_LIMIT_MS);
+                    } catch ( Exception ex ) {
+                        logger.log( Level.SEVERE, "unable to setLastModified", ex );
                     }
+
                     if ( f.exists() ) {
                         if ( f.length()==partFile.length() ) {
                             if ( OsUtil.contentEquals(f, partFile ) ) {
@@ -580,6 +582,7 @@ public class HttpFileSystem extends WebFileSystem {
     /**
      * list the directory, using the cached entry from listDirectoryFromMemory, or
      * by HtmlUtil.getDirectoryListing.  If there is a ro_cache, then add extra entries from here as well.
+     * Note the following extentions are hidden: .css, .php, .jnlp, .part.
      * @param directory name within the filesystem
      * @return names within the directory
      * @throws IOException
