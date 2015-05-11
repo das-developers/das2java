@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import org.das2.util.Base64;
 import org.das2.util.filesystem.FileSystem.DirectoryEntry;
 import org.das2.util.filesystem.FileSystem.FileSystemOfflineException;
+import static org.das2.util.filesystem.FileSystem.loggerUrl;
 import org.das2.util.monitor.CancelledOperationException;
 
 /**
@@ -391,6 +392,7 @@ public class WebFileObject extends FileObject {
             
         } else if (wfs instanceof HttpFileSystem && !wfs.isOffline() ) {
             URL url = wfs.getURL(this.getNameExt());
+            loggerUrl.log( Level.FINE, "HEAD to get timestamp: {0}",url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD");
 
