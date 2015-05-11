@@ -42,6 +42,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import org.das2.util.Base64;
 
 /**
  * class that contains the credentials for websites.  This is first
@@ -191,7 +192,7 @@ public class KeyChain {
     /**
      * get the user credentials, maybe throwing CancelledOperationException if the
      * user hits cancel.
-     * @param url
+     * @param uri
      * @return
      * @throws CancelledOperationException
      */
@@ -207,6 +208,28 @@ public class KeyChain {
         String userInfo= url.getUserInfo();
         if ( userInfo==null ) return null;
         return getUserInfo( url, userInfo );
+    }
+    
+    /**
+     * return the user info but base-64 encoded.  This is put in so that
+     * a future version of the software can cache these as well.  This is
+     * intended to be inserted like so:
+     * <code>
+     * connection= theUrl.getConnection();
+     * String encode= KeyChain.getDefault().getUserInfoBase64Encoded( theUrl );
+     * if ( encode!=null ) connection.setRequestProperty("Authorization", "Basic " + encode);
+     * </code>
+     * @param url the URL which may contain user info.
+     * @return the base-64 encoded credentials.
+     * @throws CancelledOperationException 
+     */
+    public String getUserInfoBase64Encoded( URL url ) throws CancelledOperationException {
+        String userInfo= getUserInfo(url);
+        if ( userInfo!=null ) {
+            return Base64.encodeBytes( userInfo.getBytes());
+        } else {
+            return null;
+        }
     }
 
     public void setParentGUI( Component c ) {
@@ -241,6 +264,16 @@ public class KeyChain {
      * get the user credentials, maybe throwing CancelledOperationException if the
      * user hits cancel.  If the password is "pass" or "password" then don't use
      * it, prompt for it instead.
+     * 
+     * The userInfo passed in can contain just "user" or the user account to log in with, then
+     * maybe a colon and "pass" or the password.  So examples include:<ul>
+     * <li> null, where null is returned and credentials are presumed to 
+     * <li> user, where both the username and password are needed.
+     * <li> user:pass where both are needed
+     * <li> joe:pass there the user joe is presumed and pass is needed
+     * <li> joe:JoPass1 where both the user and password are already specified, and this is returned.
+     * </ul>
+     * 
      * Note a %40 in the username is converted to @.
      * @param url
      * @param userInfo that is available separately.  (Java doesn't like user@usersHost:password@server)
