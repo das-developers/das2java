@@ -53,7 +53,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.das2.util.Base64;
 import org.das2.util.FileUtil;
+import org.das2.util.monitor.CancelledOperationException;
 
 /**
  * Base class for HTTP and FTP-based filesystems.  A local cache is kept of
@@ -312,6 +314,15 @@ public abstract class WebFileSystem extends FileSystem {
             URL url = getURL(key);
             loggerUrl.log( Level.FINE, "HEAD to get timestamp: {0}",url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            try {
+                String encode= KeyChain.getDefault().getUserInfoBase64Encoded(url);
+                if ( encode!=null ) {
+                    connection.setRequestProperty("Authorization", "Basic " + encode);
+                }
+            } catch (CancelledOperationException ex) {
+                logger.log(Level.INFO,"user cancelled auth dialog");
+                // this is what we would do before.
+            }
             connection.setRequestMethod("HEAD");
             connection.connect();
             DirectoryEntry result= new DirectoryEntry();
