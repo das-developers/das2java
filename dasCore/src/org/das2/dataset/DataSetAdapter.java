@@ -89,6 +89,8 @@ public class DataSetAdapter {
             properties.put( QDataSet.LABEL, source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_LABEL ) );
             Object o= source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC );
             if ( o!=null ) properties.put( QDataSet.MONOTONIC, o );
+            Datum xTagWidth= (Datum) source.getProperty( DataSet.PROPERTY_X_TAG_WIDTH );
+            if ( xTagWidth!=null ) properties.put( QDataSet.CADENCE, org.virbo.dataset.DataSetUtil.asDataSet(xTagWidth) );
         }
 
         public int rank() {
