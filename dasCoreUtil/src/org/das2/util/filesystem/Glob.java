@@ -112,6 +112,7 @@ public class Glob {
     
     /**
      * unglob the glob into an array of the matching FileObjects.
+     * See sftp://papco.org/home/jbf/ct/autoplot/script/demos/filesystem/unGlobDemo.jy
      * @param fs the filesystem
      * @param glob the glob, such as '/*.gif'
      * @return an array of FileObjects that match the glob.
