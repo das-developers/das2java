@@ -23,7 +23,6 @@
 
 package org.das2.util;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -52,7 +51,7 @@ import java.util.logging.Logger;
  * !K  reduce the font size. (Not in IDL's set.)
  * !!  the exclamation point (!)
  *   </pre>
- * For greek and math symbols, unicode characters should be
+ * For Greek and math symbols, Unicode characters should be
  * used like so: &amp;#9742; (&#9742 phone symbol), or symbols like <tt>&amp;Omega;</tt> and <tt>&amp;omega;</tt>
  * 
  * 
