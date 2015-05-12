@@ -112,13 +112,23 @@ public class Glob {
     
     /**
      * unglob the glob into an array of the matching FileObjects.
-     * @param glob
+     * @param fs the filesystem
+     * @param glob the glob, such as '/*.gif'
      * @return an array of FileObjects that match the glob.
+     * @throws java.io.IOException
      */
     public static FileObject[] unGlob( FileSystem fs, String glob ) throws IOException {
         return unGlob( fs, glob, false );
     }
     
+    /**
+     * unglob the glob into an array of the matching FileObjects.
+     * @param fs the filesystem
+     * @param glob the glob, which must start with /.
+     * @param directoriesOnly
+     * @return
+     * @throws IOException 
+     */
     private static FileObject[] unGlob( FileSystem fs, String glob, final boolean directoriesOnly ) throws IOException {
         if ( File.separatorChar=='\\' ) glob= glob.replaceAll( "\\\\", "/" );
         String parentGlob= getParentDirectory( glob );
@@ -141,10 +151,9 @@ public class Glob {
         final String regex= getRegex( glob );
         final Pattern absPattern= Pattern.compile(regex);
         List list= new ArrayList();
-        for ( int i=0; i<files.length; i++ ) {
-            FileObject[] files1= ((FileObject)files[i]).getChildren();
-            for ( int j=0; j<files1.length; j++ ) {
-                FileObject file= files1[j];
+        for (FileObject file1 : files) {
+            FileObject[] files1 = ((FileObject) file1).getChildren();
+            for (FileObject file : files1) {
                 String s= file.getNameExt();
                 if ( absPattern.matcher(s).matches() && ( !directoriesOnly || file.isFolder() ) ) {
                     list.add( file );
@@ -158,10 +167,12 @@ public class Glob {
         final Pattern pattern= getPattern(glob);
         FileFilter f;
         return new FileFilter() {
+            @Override
             public boolean accept(File pathname) {
                 if ( pathname.toString()==null ) return false;
                 return pattern.matcher( pathname.getName() ).matches( );
             }
+            @Override
             public String getDescription() {
                 return glob;
             }

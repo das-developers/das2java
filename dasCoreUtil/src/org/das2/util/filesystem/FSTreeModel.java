@@ -90,6 +90,7 @@ public class FSTreeModel extends DefaultTreeModel {
     }
 
     boolean stopTest= false;
+    
     private void listingImmediately( final Object listCachePendingFolder ) {
         logger.log(Level.FINE, "listingImmediatey({0})", new Object[]{ listCachePendingFolder } );
         try {
@@ -120,12 +121,13 @@ public class FSTreeModel extends DefaultTreeModel {
             stopTest= true;
             
             Runnable run= new Runnable() {
+                @Override
                 public void run() {
                     //fireTreeNodesChanged( listCachePath.get(listCachePath.size()-1), nodes );
                     logger.log(Level.FINE, "listingImmediately({0}) -> array[{1}]", new Object[]{ listCachePath.get(listCachePath.size()-1), nodes.length } );
                     
-                    for ( int i=0; i<rm.length; i++ ) {
-                        FSTreeModel.this.removeNodeFromParent(rm[i]);
+                    for (MutableTreeNode rm1 : rm) {
+                        FSTreeModel.this.removeNodeFromParent(rm1);
                     }
                     for ( int i=0; i<listCache1.length; i++ ) {
                         FSTreeModel.this.insertNodeInto( listCache1[i], (MutableTreeNode)listCachePendingFolder, i );
@@ -144,6 +146,7 @@ public class FSTreeModel extends DefaultTreeModel {
         } catch (final IOException ex) {
 
             Runnable run= new Runnable() {
+                @Override
                 public void run() {
 
                     logger.log(Level.SEVERE, null, ex );
@@ -159,6 +162,7 @@ public class FSTreeModel extends DefaultTreeModel {
         final FSTreeNode fst= (FSTreeNode)folder;
         fst.setPending(true);
         Runnable run= new Runnable() {
+            @Override
             public void run() {
                 listingImmediately(folder);
                 fst.setPending(false);

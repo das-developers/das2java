@@ -51,6 +51,7 @@ public class FTPFileSystem extends WebFileSystem {
         super( root, localRoot(root) );
     }
     
+    @Override
     public boolean isDirectory(String filename) {
         return filename.endsWith("/");
     }
@@ -115,6 +116,7 @@ public class FTPFileSystem extends WebFileSystem {
         return (String[])result.toArray(new String[result.size()]);
     }
     
+    @Override
     public String[] listDirectory(String directory) {
         directory= toCanonicalFolderName( directory );
         
@@ -137,6 +139,7 @@ public class FTPFileSystem extends WebFileSystem {
         }
     }
     
+    @Override
     protected void downloadFile(String filename, java.io.File targetFile, File partFile, ProgressMonitor monitor ) throws java.io.IOException {
         FileOutputStream out=null;
         InputStream is= null;

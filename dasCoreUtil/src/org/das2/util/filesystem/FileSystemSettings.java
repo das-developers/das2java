@@ -181,7 +181,7 @@ public class FileSystemSettings {
      */
     protected static final long allowableExternalIdleMs= 60000;
     
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);

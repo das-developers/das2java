@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.util.filesystem;
 
 import org.das2.util.DasProgressMonitorInputStream;
@@ -14,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import static org.das2.util.filesystem.HttpFileSystem.logger;
 
 /**
  * uses HTTP, and doesn't download resources to cache
@@ -22,6 +18,7 @@ import static org.das2.util.filesystem.HttpFileSystem.logger;
  */
 public class AppletHttpProtocol implements WebProtocol {
 
+    @Override
     public InputStream getInputStream(WebFileObject fo, org.das2.util.monitor.ProgressMonitor mon) throws IOException {
         HttpURLConnection connect = (HttpURLConnection) fo.wfs.getURL(fo.pathname).openConnection();
         connect.connect();
@@ -33,6 +30,7 @@ public class AppletHttpProtocol implements WebProtocol {
         return in;
     }
 
+    @Override
     public Map<String, String> getMetadata(WebFileObject fo) throws IOException {
         String realName = fo.pathname;
         boolean exists;

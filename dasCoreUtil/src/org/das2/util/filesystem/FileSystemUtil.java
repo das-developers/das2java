@@ -88,6 +88,7 @@ public class FileSystemUtil {
      * un-gzip the file.  This is similar to the unix gunzip command.
      * @param fz zipped input file
      * @param file unzipped destination file
+     * @throws java.io.IOException
      */
     public static void unzip( File fz, File file) throws IOException {
         GZIPInputStream in= null;
@@ -125,8 +126,8 @@ public class FileSystemUtil {
      * }
      * }
      * </pre>
-     * @param rurl
-     * @return
+     * @param ruri
+     * @return the URI of the parent, or null.
      */
     public static URI isCacheable(URI ruri) {
         if ( ruri.getQuery()==null && ruri.getPath().length()>1 && !ruri.getPath().endsWith("/") ) {
@@ -191,6 +192,5 @@ public class FileSystemUtil {
                 throw new IOException( "Unable to mkdirs "+file );
             }
         }
-        return;
     }
 }

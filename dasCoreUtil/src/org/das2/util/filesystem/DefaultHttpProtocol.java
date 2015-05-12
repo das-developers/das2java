@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.das2.util.filesystem;
 
 import java.io.File;
@@ -24,6 +21,7 @@ import org.das2.util.monitor.ProgressMonitor;
  */
 public class DefaultHttpProtocol implements WebProtocol {
 
+    @Override
     public InputStream getInputStream(WebFileObject fo, ProgressMonitor mon) throws IOException {
         if (fo.isFolder) {
             throw new IllegalArgumentException("is a folder");
@@ -32,6 +30,7 @@ public class DefaultHttpProtocol implements WebProtocol {
         return new FileInputStream(ff);
     }
 
+    @Override
     public Map<String, String> getMetadata(WebFileObject fo) throws IOException {
         if (!fo.wfs.getRootURL().getProtocol().equals("ftp")) {
             String realName = fo.pathname;

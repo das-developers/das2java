@@ -49,6 +49,7 @@ public abstract class FileObject {
     /**
      * returns objects within a folder.
      * @return an array of all FileObjects with the folder.
+     * @throws java.io.IOException
      */
     public abstract FileObject[] getChildren() throws IOException;
     

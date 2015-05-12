@@ -87,10 +87,12 @@ public abstract class FileSystem  {
     /**
      *
      * @param root
-     * @deprecated use create( URI root ) instead.
-     * @return
+     * @throws java.net.UnknownHostException
+     * @throws java.io.FileNotFoundException
+     * @return the FileSystem
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws IllegalArgumentException if the url cannot be converted to a URI.
+     * @deprecated use create( URI root ) instead.
      */
     public static FileSystem create(URL root) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         try {
@@ -139,6 +141,8 @@ public abstract class FileSystem  {
      * @param root
      * @param mon
      * @return
+     * @throws java.net.UnknownHostException
+     * @throws java.io.FileNotFoundException
      * @deprecated use create( URI root, ProgressMonitor mon ) instead.
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws IllegalArgumentException if the url cannot be converted to a URI.
@@ -155,7 +159,6 @@ public abstract class FileSystem  {
     /**
      * creates a FileSystem, removing and recreating it if it was in the cache.
      * @param root
-     * @param mon
      * @return
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
      * @throws UnknownHostException
@@ -174,6 +177,8 @@ public abstract class FileSystem  {
      * @param root
      * @return
      * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws java.net.UnknownHostException
+     * @throws java.io.FileNotFoundException
      * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
      * @throws IllegalArgumentException if the local root does not exist.
      */
@@ -230,6 +235,10 @@ public abstract class FileSystem  {
      *
      * @param root the URI, like URI("http://das2.org/") or URI("file:///tmp/")
      * @param mon monitor progress.  For most FS types this is instantaneous, but for zip this can take sub-interactive time.
+     * @return the FileSystem implementation
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws java.net.UnknownHostException
+     * @throws java.io.FileNotFoundException
      * @throws IllegalArgumentException if the URI must be converted to a URL, but cannot.
      * @throws IllegalArgumentException if the local root does not exist.
      */
@@ -410,6 +419,8 @@ public abstract class FileSystem  {
      * removed.  Note this is the name of the FileObject
      * within the FileSystem.  Folder names will not necessarily
      * be suffixed with '/'
+     * @param filename name 
+     * @return name with \ converted to /, etc.
      */
     protected static String toCanonicalFilename( String filename ) {
         filename= filename.replaceAll( "\\\\", "/" );
@@ -438,6 +449,8 @@ public abstract class FileSystem  {
 
     /**
      * return the FileObject that corresponds to the name.
+     * @param filename the file name within the filesystem
+     * @return the FileObject
      */
     abstract public FileObject getFileObject( String filename );
     
@@ -632,7 +645,7 @@ public abstract class FileSystem  {
         
         // let i2 be the end if the protocol and the beginning of the file.
         int i2= surl.indexOf("://")+3;
-        if ( surl.indexOf("://")==-1 && surl.startsWith("file:/" ) ) i2=5;
+        if ( i2==2 && surl.startsWith("file:/" ) ) i2=5; // if it didn't contain :// and ...
         int i3= surl.indexOf("/",i2+1);
         if ( i3==-1 ) i3= i2;
         String[] result= new String[6];
