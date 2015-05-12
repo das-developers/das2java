@@ -22,8 +22,6 @@
  */
 package org.das2.dataset;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Units;
 import org.das2.datum.Datum;
@@ -33,7 +31,6 @@ import org.das2.DasException;
 import org.das2.system.DasLogger;
 import java.util.logging.*;
 import org.das2.datum.UnitsConverter;
-import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -84,6 +81,7 @@ public class AverageTableRebinner implements DataSetRebinner {
      * @throws IllegalArgumentException
      * @throws DasException
      */
+    @Override
     public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY ) throws IllegalArgumentException, DasException {
         logger.finest("enter AverageTableRebinner.rebin");
 
@@ -173,7 +171,8 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
 
         if (interpolate) {
-            Datum xTagWidth = getXTagWidth(xds, zds);
+            Datum xTagWidth = getXTagWidth(xunits,ds);
+            
             if ( xTagWidth.value()<0 ) xTagWidth= xTagWidth.multiply(-1);
 
             RankZeroDataSet yTagWidth0;
@@ -227,6 +226,46 @@ public class AverageTableRebinner implements DataSetRebinner {
         return result;
     }
 
+    /**
+     * For legacy code reasons, we need to come up with one cadence for all
+     * data.  Recently the code would just look at the cadence of one of the modes,
+     * (the last it looks like), and would use that.  This will at least return
+     * the highest cadence of any of the modes.
+     *
+     * See  http://sourceforge.net/p/autoplot/bugs/1398/
+     * @param xunits the units of the xtags, or the offset units.
+     * @param tds the data.
+     * @return the cadence for the entire set.
+     */
+    private static Datum getXTagWidth( Units xunits, QDataSet tds ) {
+        xunits= xunits.getOffsetUnits();
+        QDataSet xds;
+        if ( tds.rank()==3 ) {
+            Datum cadence= xunits.createDatum( -1 * Double.MAX_VALUE );
+            for ( int i=0; i<tds.length(); i++ ) {
+                xds= (QDataSet) tds.slice(i).property(QDataSet.DEPEND_0);
+                if ( xds.length()>2 ) {
+                    QDataSet r= DataSetUtil.guessCadence( xds, null );
+                    Datum rd= DataSetUtil.asDatum(r);
+                    cadence= cadence.gt( rd ) ? cadence : rd;
+                }
+            }
+            if ( cadence.value()<0 ) {
+                return xunits.createDatum( Double.MAX_VALUE );
+            } else {
+                return cadence;
+            }
+        } else {
+            xds= (QDataSet) tds.property(QDataSet.DEPEND_0);
+            if ( xds.length()>2 ) {
+                QDataSet r= Ops.reduceMean( Ops.diff(xds), 0 );
+                return DataSetUtil.asDatum(r);
+            } else {
+                return xunits.createDatum( Double.MAX_VALUE );
+            }
+        }
+    }
+    
     /** return the cadence of the data.
      * @param xds the x tags of the data.
      * @param tds1 the data, where we look for fill values.
