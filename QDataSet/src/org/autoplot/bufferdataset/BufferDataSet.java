@@ -294,7 +294,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public static BufferDataSet createRank0( Object type ) {
         int typeLen= byteCount(type);
-        ByteBuffer buf= ByteBuffer.allocateDirect( typeLen );
+        ByteBuffer buf= checkedAllocateDirect( typeLen );
         int recLen= typeLen;
         return makeDataSet( 0, recLen, 0, 1, 1, 1, 1, buf, type );
     }
@@ -307,7 +307,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public static BufferDataSet createRank1( Object type, int len0 ) {
         int typeLen= byteCount(type);
-        ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 );
+        ByteBuffer buf= checkedAllocateDirect( typeLen * len0 );
         int recLen= typeLen;
         return makeDataSet( 1, recLen, 0, len0, 1, 1, 1, buf, type );
     }    
@@ -321,7 +321,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */    
     public static BufferDataSet createRank2( Object type, int len0, int len1 ) {
         int typeLen= byteCount(type);
-        ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 );
+        ByteBuffer buf= checkedAllocateDirect( typeLen * len0 * len1 );
         int recLen= typeLen * len1;
         return makeDataSet( 2, recLen, 0, len0, len1, 1, 1, buf, type );
     }
@@ -336,7 +336,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public static BufferDataSet createRank3( Object type, int len0, int len1, int len2 ) {
         int typeLen= byteCount(type);
-        ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 * len2 );
+        ByteBuffer buf= checkedAllocateDirect( typeLen * len0 * len1 * len2 );
         int recLen= typeLen * len1 * len2;
         return makeDataSet( 3, recLen, 0, len0, len1, len2, 1, buf, type );
     }
@@ -352,14 +352,14 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public static BufferDataSet createRank4( Object type, int len0, int len1, int len2, int len3 ) {
         int typeLen= byteCount(type);
-        ByteBuffer buf= ByteBuffer.allocateDirect( typeLen * len0 * len1 * len2 * len3 );
+        ByteBuffer buf= checkedAllocateDirect( typeLen * len0 * len1 * len2 * len3 );
         int recLen= typeLen * len1 * len2 * len3;
         return makeDataSet( 4, recLen, 0, len0, len1, len2, len3, buf, type );
     }
 
     private static BufferDataSet ddcopy(BufferDataSet ds) {
         
-        ByteBuffer newback= ByteBuffer.allocateDirect(ds.back.limit());
+        ByteBuffer newback= checkedAllocateDirect(ds.back.limit());
         newback.order(ds.back.order());
         ds.copyTo(newback);
         
@@ -425,6 +425,43 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         
         return trec > ds.length() + this.len0;
         
+    }
+    
+    private static long gcCounter= 0;
+    
+    /**
+     * There's a known bug with NIO where data outside of the heap is not released
+     * until the Java objects are garbage collected, which may not happen 
+     * soon enough, because they are small.  This catches the error and calls
+     * a System.gc if necessary.  This also keeps track of allocations and calls
+     * an explicit GC every 100MB allocated.
+     * 
+     * See https://sourceforge.net/p/autoplot/bugs/1395/, and
+     * http://stackoverflow.com/questions/1854398/how-to-garbage-collect-a-direct-buffer-java
+     * http://stackoverflow.com/questions/1744533/jna-bytebuffer-not-getting-freed-and-causing-c-heap-to-run-out-of-memory/1775542#1775542
+     * 
+     * @param capacity
+     * @return the ByteBuffer result of ByteBuffer.allocateDirect.
+     */
+    private static ByteBuffer checkedAllocateDirect( int capacity ) {
+        ByteBuffer result;
+        gcCounter+= capacity;
+        try {
+            result= ByteBuffer.allocateDirect( capacity );
+            return result;
+        } catch ( java.lang.OutOfMemoryError ex ) {
+            logger.log(Level.WARNING, "out of memory error handled: gcCounter={0}", gcCounter);
+            System.gc();
+            gcCounter=capacity;
+            try {
+                result= ByteBuffer.allocate( capacity );
+                return result;
+            } catch ( java.lang.OutOfMemoryError ex2 ) {
+                logger.warning("out of memory fall back to heap allocate");
+                result= ByteBuffer.allocate( capacity ); // fall back to allocate from heap
+                return result;
+            }
+        }
     }
     
     /**
@@ -516,7 +553,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         int myLength= byteCount(ths.type) * ths.len0 * ths.len1 * ths.len2 * ths.len3;
         int dsLength= byteCount(ds.type) * ds.len0 * ds.len1 * ds.len2 * ds.len3;
 
-        ByteBuffer newback= ByteBuffer.allocateDirect( myLength + dsLength );
+        ByteBuffer newback= checkedAllocateDirect( myLength + dsLength );
         newback.order( ths.back.order() );
         
         newback.put( ths.back );
@@ -790,7 +827,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             return;
         }
 
-        ByteBuffer newBack= ByteBuffer.allocateDirect( newSize );
+        ByteBuffer newBack= checkedAllocateDirect( newSize );
         newBack.order( lback.order() );
         newBack.put(lback);
         
@@ -984,7 +1021,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             logger.warning("dataset has been marked as immutable, this will soon throw an exception");
         }
         if ( back.isReadOnly() ) {
-            ByteBuffer wback= ByteBuffer.allocateDirect( back.capacity() );
+            ByteBuffer wback= checkedAllocateDirect( back.capacity() );
             wback.order( back.order() );
             wback.put(back);
             back= wback;
