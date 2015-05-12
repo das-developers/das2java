@@ -230,6 +230,10 @@ public class QubeDataSetIterator implements DataSetIterator {
             }
             return new IndexListIterator(list);
         }
+        
+        public QDataSet getList() {
+            return this.ds;
+        }
     }
 
     /**
@@ -632,6 +636,11 @@ public class QubeDataSetIterator implements DataSetIterator {
                 }
                 if ( bins!=null && it[idim].length()==bins.split(",").length ) { //TODO: verify this
                     result.putProperty( "BINS_"+i, bins );
+                }
+            } else if ( fit[idim] instanceof IndexListIteratorFactory && !isAllIndexLists ) {
+                IndexListIteratorFactory sssi= (IndexListIteratorFactory)fit[idim];
+                if ( dep!=null ) {
+                    result.putProperty( "DEPEND_"+i, DataSetOps.applyIndex( dep, 0, sssi.getList(), false ) );
                 }
             }
         }
