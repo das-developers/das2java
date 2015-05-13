@@ -3001,16 +3001,31 @@ public class Ops {
     public static QDataSet createEvent( String timeRange, int rgbcolor, String annotation ) {
         return createEvent( null, timeRange, rgbcolor, annotation );
     }
-    
+
     /**
      * tool for creating ad-hoc events datasets.
      * @param append null or a dataset to append the result.  This events dataset must have [starttime, endtime, RBG color, string] for each record.
      * @param timeRange a timerange like "2010-01-01" or "2010-01-01/2010-01-10" or "2010-01-01 through 2010-01-09"
-     * @param rgbcolor and RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue),
+     * @param rgbcolor an RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue),
      * @param annotation label for event, possibly including granny codes.
      * @return a rank 2 QDataSet with [[ startTime, duration, rgbColor, annotation  ]]
      */
     public static QDataSet createEvent( QDataSet append, String timeRange, int rgbcolor, String annotation ) {
+        
+        DatumRange dr= DatumRangeUtil.parseTimeRangeValid(timeRange);        
+        
+        return createEvent( append, dr, rgbcolor, annotation );
+    }
+    
+    /**
+     * tool for creating ad-hoc events datasets.  For example
+     * @param append null or a dataset to append the result.  This events dataset must have [starttime, endtime, RBG color, string] for each record.
+     * @param dr a datum range
+     * @param rgbcolor an RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue)
+     * @param annotation label for event, possibly including granny codes.
+     * @return a rank 2 QDataSet with [[ startTime, duration, rgbColor, annotation  ]]
+     */
+    public static QDataSet createEvent( QDataSet append, DatumRange dr, int rgbcolor, String annotation ) {
         
         Units tu;
         
@@ -3029,8 +3044,6 @@ public class Ops {
             evu= EnumerationUnits.create("createEvent");
             tu= Units.us2000;
         }
-        
-        DatumRange dr= DatumRangeUtil.parseTimeRangeValid(timeRange);        
         
         DataSetBuilder dsb= new DataSetBuilder(2,100,4);
         
@@ -3060,7 +3073,7 @@ public class Ops {
         
         ((MutablePropertyDataSet)append).putProperty(QDataSet.RENDER_TYPE,QDataSet.VALUE_RENDER_TYPE_EVENTS_BAR);
         return append;
-        
+
     }
     
     /**
