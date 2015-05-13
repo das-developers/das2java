@@ -7445,7 +7445,7 @@ public class Ops {
      * The last index will be the dependent variable, and the first indeces will
      * be the independent variables sorted by dimension.
      * @see org.virbo.dataset.DataSetOps#flattenRank2(org.virbo.dataset.QDataSet) 
-     * @see org.virbo.dataset.DataSetOps#grid(org.virbo.dataset.QDataSet) 
+     * @see #grid(org.virbo.dataset.QDataSet) 
      * @param ds the rank N dataset (note only Rank 2 is supported for now).
      * @return rank 2 dataset bundle
      */
@@ -7463,6 +7463,19 @@ public class Ops {
             throw new UnsupportedOperationException("only rank 0,1,and 2 supported");
         }
     }
+    
+    /**
+     * Opposite of the flatten function, takes rank 2 link (x,y,z) and 
+     * makes a table from it z(x,y). This presumes that the rank 1 X and
+     * Y data contain repeating elements for the rows and columns of the grid.
+     * @param ds rank 2 bundle of X,Y, and Z data.
+     * @return rank 2 table.
+     * @see #flatten(org.virbo.dataset.QDataSet) 
+     */
+    public static QDataSet grid( QDataSet ds ) {
+        return DataSetOps.grid(ds);
+    }
+    
     /**
      * create a labels dataset for tagging rows of a dataset.  If the context
      * has been used already, including "default", then the EnumerationUnit
