@@ -51,7 +51,12 @@
                     <bookmark>
                         <title>Flatten</title>
                         <filter>|flatten()</filter>
-                        <description>Flattens a rank 2 dataset.  The result is a n,3 dataset of [x,y,z]. </description>
+                        <description>Flattens a rank 2 table  The result is a n,3 bundle dataset of [x,y,z]. </description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Grid</title>
+                        <filter>|grid()</filter>
+                        <description>Grid a rank 2 bundle.  The result is a rank 2 dataset of X[i],Y[j]->Z[i,j]. </description>
                     </bookmark>
                     <bookmark>
                         <title>Histogram</title>
