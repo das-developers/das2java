@@ -928,7 +928,6 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     public void about() {
         System.err.println("== "+this.toString() + "==");
         System.err.println("back is array of "+ this.getBack().getClass().getComponentType() );
-        System.err.println(""+ this.)
         //QDataSet extent= Ops.extent(this);  // this is occasionally very slow. TODO: investigate
         //System.err.println("extent="+extent);
     }
