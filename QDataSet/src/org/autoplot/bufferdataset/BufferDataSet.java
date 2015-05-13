@@ -458,7 +458,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     private static int allocateDirect= -1;
     
-    private static int shouldAllocateDirect() {
+    public static int shouldAllocateDirect() {
         int result;    
         String s= System.getProperty("sun.arch.data.model");
         if ( s==null ) { // GNU 1.5? 
