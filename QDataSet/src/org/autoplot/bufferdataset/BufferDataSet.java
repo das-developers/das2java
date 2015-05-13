@@ -15,9 +15,13 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
 import org.das2.util.LoggerManager;
 import org.virbo.dataset.AbstractDataSet;
+import org.virbo.dataset.BDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
+import org.virbo.dataset.FDataSet;
+import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
@@ -372,7 +376,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     }
     
     /**
-     * return a copy of the data.  If the data is a BufferDataSet, then a BufferDataSet
+     * return a copy of the data.  If the data is a BufferDataSet, then a new BufferDataSet
      * is used for the copy.  
      * 
      * Note this does not consider isMutable.  If the dataset is not mutable, then the
@@ -386,9 +390,29 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if ( ds instanceof BufferDataSet ) {
             return ddcopy( (BufferDataSet)ds );
         } else {
-            return copy( DOUBLE, ds ); // strange type does legacy behavior.
+            return copy( guessBackingStore(ds), ds ); // strange type does legacy behavior.
         }
     }
+    
+    /**
+     * guess the type of the backing store, returning double.class
+     * if it cannot be determined.
+     * @param ds the dataset
+     * @return the backing store class, one of double.class, float.class, etc.
+     */
+    public static Object guessBackingStore( QDataSet ds ) {
+        if ( ds instanceof BDataSet || ds instanceof ByteDataSet ) {
+            return BYTE;
+        } else if ( ds instanceof SDataSet || ds instanceof ShortDataSet ) {
+            return SHORT;
+        } else if ( ds instanceof IDataSet || ds instanceof IntDataSet ) {
+            return INT;
+        } else if ( ds instanceof FDataSet || ds instanceof FloatDataSet ) {
+            return FLOAT;
+        } else {
+            return DOUBLE;
+        }
+    }    
     
     /**
      * Copy the dataset to an BufferDataSet only if the dataset is not already an BufferDataSet.
@@ -430,11 +454,39 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     private static long gcCounter= 0;
     
     /**
+     * -1 means check, 0 means no, 1 means yes.
+     */
+    private static int allocateDirect= -1;
+    
+    private static int shouldAllocateDirect() {
+        int result;    
+        String s= System.getProperty("sun.arch.data.model");
+        if ( s==null ) { // GNU 1.5? 
+            s= System.getProperty("os.arch");
+            if ( s.contains("64") ) {
+                result= 1;
+            } else {
+                result= 0;
+            }
+        } else {
+            if ( s.equals("32") ) {
+                result= 0;
+            } else {
+                result= 1;
+            }
+        }       
+        return result;
+    }
+    
+    /**
      * There's a known bug with NIO where data outside of the heap is not released
      * until the Java objects are garbage collected, which may not happen 
      * soon enough, because they are small.  This catches the error and calls
      * a System.gc if necessary.  This also keeps track of allocations and calls
      * an explicit GC every 100MB allocated.
+     * 
+     * This may fall back to allocating data within the heap, for example when
+     * a 32 bit JVM is used. 
      * 
      * See https://sourceforge.net/p/autoplot/bugs/1395/, and
      * http://stackoverflow.com/questions/1854398/how-to-garbage-collect-a-direct-buffer-java
@@ -444,6 +496,15 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * @return the ByteBuffer result of ByteBuffer.allocateDirect.
      */
     private static ByteBuffer checkedAllocateDirect( int capacity ) {
+        
+        if ( allocateDirect==-1 ) { // see http://stackoverflow.com/questions/807263/how-do-i-detect-which-kind-of-jre-is-installed-32bit-vs-64bit
+            allocateDirect= shouldAllocateDirect();
+        }
+        
+        if ( allocateDirect==0 ) {
+            return ByteBuffer.allocate(capacity);
+        }
+        
         ByteBuffer result;
         gcCounter+= capacity;
         try {
