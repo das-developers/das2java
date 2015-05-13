@@ -7403,6 +7403,15 @@ public class Ops {
     public static QDataSet append( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1==null ) {
             return ds2;
+        } if ( ds1 instanceof BufferDataSet && ds2 instanceof BufferDataSet ) {
+            Object c1= ((BufferDataSet)ds1).getType();
+            Object c2= ((BufferDataSet)ds2).getType();
+            if ( c1==c2 ) {
+                return BufferDataSet.append( (BufferDataSet)ds1, (BufferDataSet)ds2 );
+            } else {
+                Class c= double.class;
+                return ArrayDataSet.append( ArrayDataSet.maybeCopy(c,ds1), ArrayDataSet.maybeCopy(c,ds2) );
+            }
         } else {
             // use append to combine the two datasets.  Note append copies the data.
             Class c1= double.class;
