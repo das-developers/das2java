@@ -764,6 +764,36 @@ public class DataSetOps {
             throw new IllegalArgumentException("both DEPEND_0 and DEPEND_1 have rank>1");
         }
 
+        for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
+            String prop= "PLANE_"+i;
+            QDataSet plane= (QDataSet) props.get( prop );
+            if ( plane!=null ) {
+                if ( plane.rank()<1 ) {
+                    result.put( prop, plane );
+                } else {
+                    result.put( prop, plane.slice(index) );
+                }
+            } else {
+                break;
+            }
+        }
+
+        String[] p= DataSetUtil.correlativeProperties(); // DELTA_PLUS, BIN_MINUS, etc.
+        for (String p1 : p) {
+            QDataSet delta = (QDataSet) props.get(p1);
+            if (delta!=null && delta.rank()>0) {
+                result.put(p1, delta.slice(index));
+            }
+        }
+
+        String[] dimprops= DataSetUtil.dimensionProperties(); // TITLE, UNITS, etc.
+        for (String s : dimprops ) {
+            Object o = props.get(s);
+            if (o!=null) {
+                result.put(s, o);
+            }
+        }
+        
         if ( props.containsKey(QDataSet.CONTEXT_0) ) {
             for ( int i=0; i<QDataSet.MAX_RANK; i++ ) {
                 QDataSet con= (QDataSet) props.get("CONTEXT_"+i);
@@ -842,35 +872,6 @@ public class DataSetOps {
 
         //TODO: verify that we needn't put null in for JOIN_0.
 
-        for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
-            String prop= "PLANE_"+i;
-            QDataSet plane= (QDataSet) props.get( prop );
-            if ( plane!=null ) {
-                if ( plane.rank()<1 ) {
-                    result.put( prop, plane );
-                } else {
-                    result.put( prop, plane.slice(index) );
-                }
-            } else {
-                break;
-            }
-        }
-
-        String[] p= DataSetUtil.correlativeProperties();
-        for (String p1 : p) {
-            QDataSet delta = (QDataSet) props.get(p1);
-            if (delta!=null && delta.rank()>0) {
-                result.put(p1, delta.slice(index));
-            }
-        }
-
-        String[] ss= DataSetUtil.dimensionProperties();
-        for (String s : ss) {
-            Object o = props.get(s);
-            if (o!=null) {
-                result.put(s, o);
-            }
-        }
         return result;
     }
 

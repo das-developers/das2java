@@ -428,7 +428,12 @@ public class DataSetUtil {
     public static Map<String, Object> sliceProperties( QDataSet ds, int index, Map<String,Object> result ) {
         if ( result==null ) result= new LinkedHashMap();
 
-        String[] names = _dimensionProperties;
+        if ( ds.property(QDataSet.BUNDLE_0 )!=null ) {
+            logger.fine("sliceProperties is not allowed when BUNDLE_0 is set");
+            return result;
+        }
+        
+        String[] names = _dimensionProperties; // no need to copy when we call dimensionProperties()
 
         for (int i = 0; i < names.length; i++) {
             Object val= ds.property(names[i],index);
