@@ -420,6 +420,9 @@ public class DataSetUtil {
      * return properties attached to the slice at index.  Note the slice
      * implementations use this, and this only returns properties from
      * dimensionProperties().
+     * 
+     * http://autoplot.org//QDataSet#20150514
+     * 
      * @param ds the dataset to slice.
      * @param index index to slice at.
      * @param result a map to insert the new properties, or null if a new one should be created.
@@ -434,11 +437,10 @@ public class DataSetUtil {
         }
         
         String[] names = _dimensionProperties; // no need to copy when we call dimensionProperties()
-
-        for (int i = 0; i < names.length; i++) {
-            Object val= ds.property(names[i],index);
-            if ( val != null) {
-                result.put( names[i], val );
+        for (String name : names) {
+            Object val = ds.property(name, index);
+            if (val != null) {
+                result.put(name, val);
             }
         }
 
