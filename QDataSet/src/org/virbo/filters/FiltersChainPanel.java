@@ -341,8 +341,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     
     /**
      * return the panel with the add and remove icons.
-     * @param fi
-     * @return 
+     * @param fi the position 
+     * @return one panel  ( +  panel GUI  - )
      */
     private JPanel onePanel( final int fi ) {
         logger.entering( CLASS_NAME, "onePanel", fi );
@@ -463,7 +463,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         editors.clear();
         
         JPanel content= new JPanel();
-        this.setPreferredSize( new Dimension( 300, 300 ) );
+        this.setPreferredSize( new Dimension( 480, 300 ) );
 
         BoxLayout lo= new BoxLayout( content, BoxLayout.Y_AXIS );
         content.setLayout( lo );
