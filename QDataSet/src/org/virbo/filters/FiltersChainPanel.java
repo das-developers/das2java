@@ -463,7 +463,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         editors.clear();
         
         JPanel content= new JPanel();
-        this.setPreferredSize( new Dimension( 480, 300 ) );
+        this.setPreferredSize( new Dimension( 500, 300 ) );
 
         BoxLayout lo= new BoxLayout( content, BoxLayout.Y_AXIS );
         content.setLayout( lo );
