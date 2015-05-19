@@ -5097,6 +5097,7 @@ public class Ops {
 
 
                     if ( d0>=minD && d0<=maxD) {
+                        ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, null ); // save space wasted by redundant freq tags.
                         result.join(vds);
                         if ( dep0b!=null ) {
                             dep0b.putValue(-1, d0 );
