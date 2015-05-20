@@ -412,7 +412,7 @@ public class WebFileObject extends FileObject {
 
             try {
                 connection.connect();
-                remoteDate = new Date(connection.getLastModified());
+                remoteDate = new Date(connection.getLastModified()); // here bug 1393 w/webstart https://sourceforge.net/p/autoplot/bugs/1393/
                 int contentLength= connection.getContentLength();
                 if ( contentLength>-1 ) remoteLength= contentLength;
                 
