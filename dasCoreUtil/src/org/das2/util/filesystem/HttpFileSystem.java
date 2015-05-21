@@ -315,8 +315,8 @@ public class HttpFileSystem extends WebFileSystem {
             URLConnection urlc = remoteURL.openConnection();
             urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
 
-            //TODO: consider setting the following:
-            //urlc.setUseCaches(false);
+            //bug http://sourceforge.net/p/autoplot/bugs/1393/ shows where this is necessary.
+            urlc.setUseCaches(false);
             
             String userInfo;
             try {
