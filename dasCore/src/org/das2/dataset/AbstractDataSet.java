@@ -34,7 +34,7 @@ import java.util.*;
  */
 public abstract class AbstractDataSet implements DataSet {
     
-    private Map properties;
+    private Map<String,Object> properties;
     
     private double[] xTags;
     

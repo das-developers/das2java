@@ -9,8 +9,12 @@
 
 package org.das2.dataset;
 
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
@@ -26,44 +30,126 @@ import org.virbo.dsops.Ops;
 public class DataSetAdapter {
     
     public static final String PROPERTY_SOURCE= "adapterSource";
+	 
+	 ///////////////////////////////////////////////////////////////////////////////////
+	 // Helper for conversion such as %{xCacheRange} -> %{USER_PROPERTIES.xCacheRange}
+	 
+	 protected static Map<String,Object> adaptSubstitutions(Map<String,Object> das2props)
+	 {	 
+		 // Defines a pattern with three subgroups
+		 Pattern ptrn = Pattern.compile("(%\\{)(\\S.*)(\\})");
+		 
+		 for(Map.Entry<String,Object> e: das2props.entrySet()){
+			 Object o = e.getValue();
+			 if(! (o instanceof String)) continue;
+			 String s = (String)o;
+			 Matcher m = ptrn.matcher(s);
+			 while(m.find()){
+				 // Group indices are not as expected, 0 = entire match, 1 = 1st group, etc.
+				 if(! m.group(2).contains("USER_PROPERTIES")){
+					s = String.format("%sUSER_PROPERTIES.%s%s", s.substring(0, m.end(1)),
+						                s.substring(m.start(2), m.end(2)), 
+											 s.substring(m.start(3), s.length()) );
+					m = ptrn.matcher(s);
+				 }
+			 }
+			 e.setValue(s);
+		 }
+		 return das2props;
+	 }
+  
+	/** Created a new QDataSet given a Das2 DataSet 
+	 * 
+	 * This function and createLegacyDataSet() are inverses, though a round trip
+	 * conversion is not guaranteed to preserve all properties
+	 * 
+	 * @param ds A Das2 Dataset
+	 * @return A new QDataSet
+	 */
+	public static AbstractDataSet create(DataSet ds){
+		if(ds == null){
+			throw new NullPointerException("dataset is null");
+		}
+
+		// X-Y Datasets
+		if(ds instanceof VectorDataSet){
+
+			if(ds.getPlaneIds().length <= 1){
+				//Handle x single y as a simple vector
+				return new Vector((VectorDataSet) ds);
+			}
+			else{
+				//Handle x multi y as a bundle
+				VectorDataSet vds = (VectorDataSet) ds;
+				AbstractDataSet bds = (AbstractDataSet) Ops.bundle(null, new Vector(vds));
+				String[] planes = ds.getPlaneIds();
+				Units unitsY = null;
+				boolean bCommonYUnits = false;
+				for(int i = 1; i < planes.length; i++){
+					// Arg, everything we want to get at is hidden behind 7 levels of
+					// interfaces.  As a bonus, class names repeat in different packages from
+					// the same dev group.
+					org.das2.dataset.AbstractDataSet.ViewDataSet view = 
+						(org.das2.dataset.AbstractDataSet.ViewDataSet) vds.getPlanarView(planes[i]);
+					if(unitsY == null)
+						unitsY = view.getYUnits();
+					else
+						bCommonYUnits = (unitsY == view.getYUnits());
+					
+					Vector v = new Vector((VectorDataSet) vds.getPlanarView(planes[i]), planes[i]);
+					v.putProperty(QDataSet.NAME, planes[i]);
+					Ops.bundle(bds, v);
+				}
+				
+				// Convert Das2 property substitutions to USER_PROPERTIES substitutions
+				Map<String, Object> dasProps = adaptSubstitutions(vds.getProperties());
+				bds.putProperty(QDataSet.USER_PROPERTIES, dasProps);
+				
+				bds.putProperty(QDataSet.DEPEND_0, new XTagsDataSet(vds));
+				bds.putProperty(QDataSet.TITLE, dasProps.get(DataSet.PROPERTY_TITLE));
+				
+				// If all Y elements of the bundle have the same units, put those units
+				// on the Y axis, that way something identifies Y.
+				if(bCommonYUnits){ 
+					bds.putProperty(QDataSet.UNITS, unitsY);
+					bds.putProperty(QDataSet.LABEL, unitsY.toString());
+				}
+				
+				return DDataSet.copy(bds);
+			}
+		}
+
+		// X-YScan Datasets
+		if(ds instanceof TableDataSet){
+			TableDataSet tds = (TableDataSet) ds;
+			if(tds.tableCount() <= 1){
+				return new SimpleTable(tds);
+			}
+			else{
+				if(tds instanceof DefaultTableDataSet && tds.tableCount() > tds.getXLength() / 2){
+					return ((DefaultTableDataSet) tds).toQDataSet();
+				}
+				else{
+					return new MultipleTable(tds);
+				}
+			}
+		}
+
+		throw new IllegalArgumentException("unsupported dataset type: " + ds.getClass().getName());
+	}
     
-    public static AbstractDataSet create( org.das2.dataset.DataSet ds ) {
-        // Handle x multi y as a bundle
-        if ( ( ds instanceof VectorDataSet ) && ds.getPlaneIds().length>1 ) {
-            VectorDataSet vds= (VectorDataSet)ds;
-            AbstractDataSet bds= (AbstractDataSet) Ops.bundle( null, new Vector(vds) );
-            String[] planes= ds.getPlaneIds();
-            for ( int i=1; i<planes.length; i++ ) {
-                Vector v= new Vector((VectorDataSet)vds.getPlanarView(planes[i]));
-                v.putProperty( QDataSet.NAME, planes[i] );
-                Ops.bundle( bds, v );
-            }
-            bds.putProperty( QDataSet.DEPEND_0, new XTagsDataSet(vds) );
-				bds.putProperty( QDataSet.TITLE, ds.getProperty(org.das2.dataset.DataSet.PROPERTY_TITLE));
-            return DDataSet.copy(bds);
-        } else if ( ds instanceof VectorDataSet ) {
-            return new Vector((VectorDataSet) ds);
-        // Todo: Use bundle here as well?  Not sure how multi yscan items should be
-        //       handled by default.  -cwp
-        } else if ( ds instanceof TableDataSet ) {
-            TableDataSet tds= (TableDataSet) ds;
-            if ( tds.tableCount()<=1 ) {
-                return new SimpleTable(tds);
-            } else {
-                if ( tds instanceof DefaultTableDataSet && tds.tableCount()>tds.getXLength()/2 ) {
-                    return ((DefaultTableDataSet)tds).toQDataSet();
-                } else {                
-                    return new MultipleTable(tds);
-                }
-            }
-        } else if ( ds==null ) {
-            throw new NullPointerException("dataset is null");
-        } else {
-            throw new IllegalArgumentException("unsupported dataset type: "+ds.getClass().getName() );
-        }
-    }
-    
-    public static org.das2.dataset.DataSet createLegacyDataSet( org.virbo.dataset.QDataSet ds ) {
+	/** Created a new Das2 DataSet given a QDataSet 
+	 * 
+	 * This function and create() are inverses, though a round trip conversion is not
+	 * guaranteed to preserve all properties.  Note that not all QDataSets can be
+	 * represented as Das2 DataSets.  If the given QDataSet has no Das2 analog, an
+	 * IllegalArgumentException is thrown.
+	 * 
+	 * @param ds A QDataSet
+	 * @return A new Das2 DataSet
+	 */
+    public static DataSet createLegacyDataSet( org.virbo.dataset.QDataSet ds ) 
+	 {
         if ( ds.rank()==1 ) {
             return VectorDataSetAdapter.create(ds);
         } else if ( SemanticOps.isBundle(ds) ) {
@@ -76,23 +162,27 @@ public class DataSetAdapter {
             throw new IllegalArgumentException("unsupported rank: "+ds.rank() );
         }
     }
-
+    
+	 ///////////////////////////////////////////////////////////////////////////////////
+	 // Helper dataset holds DEPEND_0 for MultipleTable QDataSets
+	 
     static class MultiTableXTagsDataSet extends AbstractDataSet {
-        org.das2.dataset.DataSet source;
+        DataSet source;
         int offset;
         int length;
-        MultiTableXTagsDataSet( org.das2.dataset.DataSet source, int offset, int length ) {
+        MultiTableXTagsDataSet(DataSet source, int offset, int length ) {
             this.source= source;
             this.offset= offset;
             this.length= length;
             properties.put( QDataSet.UNITS, source.getXUnits() );
-            properties.put( QDataSet.LABEL, source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_LABEL ) );
-            Object o= source.getProperty( org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC );
+            properties.put( QDataSet.LABEL, source.getProperty( DataSet.PROPERTY_X_LABEL ) );
+            Object o= source.getProperty( DataSet.PROPERTY_X_MONOTONIC );
             if ( o!=null ) properties.put( QDataSet.MONOTONIC, o );
             Datum xTagWidth= (Datum) source.getProperty( DataSet.PROPERTY_X_TAG_WIDTH );
             if ( xTagWidth!=null ) properties.put( QDataSet.CADENCE, org.virbo.dataset.DataSetUtil.asDataSet(xTagWidth) );
         }
 
+		  @Override
         public int rank() {
             return 1;
         }
@@ -106,8 +196,11 @@ public class DataSetAdapter {
         public int length() {
             return length;
         }
-
     }
+	 
+	 ///////////////////////////////////////////////////////////////////////////////////
+	 // Helper dataset, holds DEPEND_0 for Vector & SimpleTable QDataSets
+	 
     static class XTagsDataSet extends AbstractDataSet {
         org.das2.dataset.DataSet source;
         XTagsDataSet( org.das2.dataset.DataSet source ) {
@@ -124,6 +217,7 @@ public class DataSetAdapter {
             if ( o!=null ) properties.put( QDataSet.MONOTONIC, o );
         }
         
+		  @Override
         public int rank() {
             return 1;
         }
@@ -140,52 +234,76 @@ public class DataSetAdapter {
         
     }
     
+	 ///////////////////////////////////////////////////////////////////////////////////
+	 // Top Level QDataSet for X vs Y data
+	 
     static class Vector extends AbstractDataSet {
         VectorDataSet source;
         
-        Vector( VectorDataSet source ) {
+		  // Time for more ugly hacks:  TODO: Convert straight to QDataSet and get
+		  //                                  rid of stupid crap like this.
+		  Vector( VectorDataSet source ) {
+			  this(source, null);
+		  }
+		  
+		  private static Object hack(Map<String, Object> m, String k, String id)
+		  {
+			  if(id == null)
+				  return m.get(k);
+			  else
+				  return m.get(id + "." +k);
+		  }
+		  
+		  // This constructor takes a plane ID so that property values can be gathered.
+		  // It's a dump hack to get around:
+		  //   1. Das2 DataSet objects are immutable
+		  //   2. We are not converting straght to QDataSet
+        Vector( VectorDataSet source, String sPlaneID ) {
             super();
             this.source= source;
-            properties.put( QDataSet.TITLE, source.getProperty( DataSet.PROPERTY_TITLE ) );
+				
+				//Throw everything including the well-known stuff into user properties
+				Map<String,Object> dasProps = adaptSubstitutions(source.getProperties());
+				properties.put( QDataSet.USER_PROPERTIES, dasProps);
+				
+            properties.put( QDataSet.TITLE, hack(dasProps, DataSet.PROPERTY_TITLE, sPlaneID) );
             properties.put( QDataSet.UNITS, source.getYUnits() );
-            properties.put( QDataSet.LABEL, source.getProperty( DataSet.PROPERTY_Y_LABEL ) );
+            properties.put( QDataSet.LABEL, hack(dasProps, DataSet.PROPERTY_Y_LABEL, sPlaneID) );
             properties.put( QDataSet.DEPEND_0, new XTagsDataSet( source ) );
             properties.put( PROPERTY_SOURCE, source );
 				
 				//New properties after 2014-05-28 Das2 Dev meeting
-				Datum d = (Datum) source.getProperty( DataSet.PROPERTY_Y_VALID_MIN);
+				Datum d = (Datum)	hack(dasProps, DataSet.PROPERTY_Y_VALID_MIN, sPlaneID);
 				if (d != null){
 					double val = d.doubleValue(source.getYUnits());
 					properties.put( QDataSet.VALID_MIN, val);
 				}
-				d = (Datum) source.getProperty( DataSet.PROPERTY_Y_VALID_MAX);
+				d = (Datum) hack(dasProps, DataSet.PROPERTY_Y_VALID_MAX, sPlaneID);
 				if (d != null){
 					double val = d.doubleValue(source.getYUnits());
 					properties.put( QDataSet.VALID_MAX, val);
 				}
 				
-				properties.put( QDataSet.FILL_VALUE, source.getProperty(DataSet.PROPERTY_Y_FILL));
-				properties.put( QDataSet.SCALE_TYPE, source.getProperty(DataSet.PROPERTY_Y_SCALETYPE));
-				properties.put( QDataSet.MONOTONIC, source.getProperty(DataSet.PROPERTY_Y_MONOTONIC));
+				properties.put( QDataSet.FILL_VALUE, hack(dasProps, DataSet.PROPERTY_Y_FILL, sPlaneID));
+				properties.put( QDataSet.SCALE_TYPE, hack(dasProps, DataSet.PROPERTY_Y_SCALETYPE, sPlaneID));
+				properties.put( QDataSet.MONOTONIC, hack(dasProps, DataSet.PROPERTY_Y_MONOTONIC, sPlaneID));
 				
 				//Add this in after next autoplot update
-				//properties.put( QDataSet.DESCRIPTION, source.getProperty(DataSet.PROPERTY_Y_SUMMARY));
+				properties.put( QDataSet.DESCRIPTION, hack(dasProps, DataSet.PROPERTY_Y_SUMMARY, sPlaneID));
 				
 				//Let Das2 Streams set a Y-Axis range
-				DatumRange yRng = (DatumRange) source.getProperty(DataSet.PROPERTY_Y_RANGE);
+				DatumRange yRng = (DatumRange) hack(dasProps, DataSet.PROPERTY_Y_RANGE, sPlaneID);
 				if(yRng != null){
 					properties.put( QDataSet.TYPICAL_MIN, yRng.min().value());
 					properties.put( QDataSet.TYPICAL_MAX, yRng.max().value());
 				}
 				
-				d = (Datum) source.getProperty(DataSet.PROPERTY_Y_TAG_WIDTH);
+				d = (Datum) hack(dasProps, DataSet.PROPERTY_Y_TAG_WIDTH, sPlaneID);
 				if(d != null)
 					properties.put( QDataSet.CADENCE, DRank0DataSet.create(d));
-				
-				//Throw everything including the well-known stuff into user properties
-				properties.put( QDataSet.USER_PROPERTIES, source.getProperties());
         }
         
+		  @Override
         public int rank() {
             return 1;
         }
@@ -201,7 +319,10 @@ public class DataSetAdapter {
         }
         
     }
-    
+	  
+	 ///////////////////////////////////////////////////////////////////////////////////
+	 // Helper Dataset, holds DEPEND_1 for SimpleTable QDataSets
+	 
     static class YTagsDataSet extends AbstractDataSet {
         TableDataSet source;
         int table;
@@ -223,6 +344,7 @@ public class DataSetAdapter {
 				}
 
         }
+		  @Override
         public int rank() {
             return 1;
         }
@@ -238,6 +360,9 @@ public class DataSetAdapter {
         }
     }
     
+	 ///////////////////////////////////////////////////////////////////////////////////
+	 // Toplevel QDataSet for X,Y,Z "grid" data
+	 
     static class SimpleTable extends AbstractDataSet {
         TableDataSet source;
         
@@ -247,9 +372,15 @@ public class DataSetAdapter {
 					throw new IllegalArgumentException("only simple tables are supported" );
             
             this.source= source;
+				
+				Map<String,Object> dasProps = adaptSubstitutions(source.getProperties());
+				
+				// Save properterties with value substitution strings in Autoplot Stlye
+				properties.put( QDataSet.USER_PROPERTIES, dasProps);
+				
             properties.put( QDataSet.UNITS, source.getZUnits() );
-            properties.put( QDataSet.LABEL, source.getProperty( DataSet.PROPERTY_Z_LABEL ) );
-            properties.put( QDataSet.TITLE, source.getProperty( DataSet.PROPERTY_TITLE ) );
+            properties.put( QDataSet.LABEL, dasProps.get( DataSet.PROPERTY_Z_LABEL ) );
+            properties.put( QDataSet.TITLE, dasProps.get( DataSet.PROPERTY_TITLE ) );
             QDataSet xtags= new XTagsDataSet( source );
             properties.put( QDataSet.DEPEND_0, xtags );
             QDataSet ytags= new YTagsDataSet( source, 0 );
@@ -258,24 +389,20 @@ public class DataSetAdapter {
             properties.put( PROPERTY_SOURCE, source );
 				
 				//Let Das2 Streams set a Z-Axis range
-				DatumRange zRng = (DatumRange) source.getProperty(DataSet.PROPERTY_Z_RANGE);
+				DatumRange zRng = (DatumRange) dasProps.get(DataSet.PROPERTY_Z_RANGE);
 				if(zRng != null){
 					properties.put( QDataSet.TYPICAL_MIN, zRng.min().value());
 					properties.put( QDataSet.TYPICAL_MAX, zRng.max().value());
 				}
-				properties.put( QDataSet.RENDER_TYPE, source.getProperty(DataSet.PROPERTY_RENDERER));
-				properties.put( QDataSet.MONOTONIC, source.getProperty(DataSet.PROPERTY_X_MONOTONIC));
-				properties.put( QDataSet.FILL_VALUE, source.getProperty(DataSet.PROPERTY_Z_FILL));
+				properties.put( QDataSet.RENDER_TYPE, dasProps.get(DataSet.PROPERTY_RENDERER));
+				properties.put( QDataSet.MONOTONIC, dasProps.get(DataSet.PROPERTY_X_MONOTONIC));
+				properties.put( QDataSet.FILL_VALUE, dasProps.get(DataSet.PROPERTY_Z_FILL));
 				
-				properties.put(QDataSet.VALID_MIN, source.getProperty(DataSet.PROPERTY_Z_VALID_MIN));
-				properties.put(QDataSet.VALID_MIN, source.getProperty(DataSet.PROPERTY_Z_VALID_MAX));
-				
-				// Just throw the rest of this jaz into user_properties so that I can at least
-				// see it.
-				properties.put( QDataSet.USER_PROPERTIES, source.getProperties());
-				
+				properties.put(QDataSet.VALID_MIN, dasProps.get(DataSet.PROPERTY_Z_VALID_MIN));
+				properties.put(QDataSet.VALID_MIN, dasProps.get(DataSet.PROPERTY_Z_VALID_MAX));
         }
         
+		  @Override
         public int rank() {
             return 2;
         }
@@ -297,6 +424,9 @@ public class DataSetAdapter {
         
     }
 
+	 ///////////////////////////////////////////////////////////////////////////////////
+	 // Toplevel QDataSet for multiple sets of Z data on an X,Y "grid"
+	 
     static class MultipleTable extends AbstractDataSet {
         TableDataSet source;
 
@@ -304,14 +434,19 @@ public class DataSetAdapter {
             super();
 
             this.source= source;
+				
+				Map<String,Object> dasProps = adaptSubstitutions(source.getProperties());
+				
+				// Save properterties with value substitution strings in Autoplot Stlye
+				properties.put( QDataSet.USER_PROPERTIES, dasProps);
+				
             properties.put( QDataSet.JOIN_0, DDataSet.create( new int[0] ) );
             properties.put( QDataSet.UNITS, source.getZUnits() );
             properties.put( PROPERTY_SOURCE, source );
-            properties.put( QDataSet.TITLE, source.getProperty( DataSet.PROPERTY_TITLE ) );
-				//cwp
-				//properties.put( QDataSet.FILL_VALUE, source.getProperty( source.p))
+            properties.put( QDataSet.TITLE, dasProps.get( DataSet.PROPERTY_TITLE ) );
         }
 
+		  @Override
         public int rank() {
             return 3;
         }
@@ -355,6 +490,5 @@ public class DataSetAdapter {
                 return super.property(name, i);
             }
         }
-
     }
 }
