@@ -185,12 +185,99 @@ public class FileSystemUtil {
     public static void maybeMkdirs( File file ) throws IOException {
         if ( file.exists() ) return;
         if ( !file.mkdirs() ) {
-            if ( file.exists() ) {
-                return; // somebody else made the file.
+            if ( !file.exists() ) {
+                // somebody else made the file.
             } else {
                 logger.log( Level.SEVERE, "Unable to mkdirs {0}", file); // print it in case the IOException is misinterpretted.
                 throw new IOException( "Unable to mkdirs "+file );
             }
         }
     }
+    
+    /**
+     * convert " " to "%20", etc, by looking for and encoding illegal characters.
+     * We can't just aggressively convert...
+     * @param surl 
+     * @return
+     */
+    private static String uriEncode(String surl) {
+
+        surl = surl.replaceAll(" ", "%20" );
+        //surl = surl.replaceAll("#", "%23" );
+        surl = surl.replaceAll("%", "%25" ); // see above
+        //surl = surl.replaceAll("&", "%26" );
+        //surl = surl.replaceAll("\\+", "%2B" );
+        //surl = surl.replaceAll("/", "%2F" );
+        //surl = surl.replaceAll(":", "%3A" );
+        //surl = surl.replaceAll(";", "%3B" );
+        surl = surl.replaceAll("<", "%3C");
+        surl = surl.replaceAll(">", "%3E");
+        //surl = surl.replaceAll("\\?", "%3F" );
+        surl = surl.replaceAll("\\[", "%5B"); // Windows appends these in temporary downloadf rte_1495358356
+        surl = surl.replaceAll("\\]", "%5D");
+
+        return surl;
+    }
+
+    /**
+     * convert "%20" to " ", etc, by using URLDecoder and catching the UnsupportedEncodingException that will never occur.
+     * @param s
+     * @return
+     */
+    private static String uriDecode(String s) {
+        String surl= s;
+//        if ( surl.contains("+") && !surl.contains("%20") ) { // legacy
+//            surl = surl.replaceAll("+", " " );
+//        }
+        surl = surl.replaceAll("%20", " " );
+        //surl = surl.replaceAll("%23", "#" );
+        surl = surl.replaceAll("%25", "%" );
+        //surl = surl.replaceAll("%26", "&" );
+        //surl = surl.replaceAll("%2B", "+" );
+        //surl = surl.replaceAll("%2F", "/" );
+        //surl = surl.replaceAll("%3A", ":" );
+        //surl = surl.replaceAll("%3B", ";" );
+        surl = surl.replaceAll("%3C", "<" );
+        surl = surl.replaceAll("%3E", ">" );
+        //surl = surl.replaceAll("%3F", "?" );
+        surl = surl.replaceAll("%5B", "\\[" ); // Windows appends these in temporary downloadf rte_1495358356
+        surl = surl.replaceAll("%5D", "\\]" );
+
+        return surl;
+    }    
+    
+    /**
+     * canonical method for converting URI to human-readable string, containing
+     * spaces and other illegal characters.  Note pluses in the query part
+     * are interpreted as spaces.
+     * This was borrowed from Autoplot's URISplit code.
+     * @param uri URI like URI("file:/home/jbf/ct/autoplot/bugs/1830227625/%5BajbTest%5D/")
+     * @return string representation of a path like file:/home/jbf/ct/autoplot/bugs/1830227625/[ajbTest]/
+     */
+    public static String fromUri( URI uri ) {
+        String surl= uri.toASCIIString();
+        int i= surl.indexOf("?");
+        String query= i==-1 ? "" : surl.substring(i);
+        if ( i!=-1 ) {
+            return uriDecode(surl.substring(0,i)) + query;
+        } else {
+            return uriDecode(surl);
+        }
+        
+    }
+    
+    /**
+     * encode the string as a URI.  The following characters are encoded:
+     * " " % &lt; &gt; [ ]
+     * @param s string representation of a path like file:/home/jbf/ct/autoplot/bugs/1830227625/[ajbTest]/
+     * @return URI like URI("file:/home/jbf/ct/autoplot/bugs/1830227625/%5BajbTest%5D/")
+     */
+    public static URI toUri( String s ) {
+        try {
+            return new URI( uriEncode(s) );
+        } catch (URISyntaxException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
 }
