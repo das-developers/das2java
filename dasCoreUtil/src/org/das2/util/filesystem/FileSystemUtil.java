@@ -202,9 +202,9 @@ public class FileSystemUtil {
      */
     private static String uriEncode(String surl) {
 
-        surl = surl.replaceAll(" ", "%20" );
         //surl = surl.replaceAll("#", "%23" );
         surl = surl.replaceAll("%", "%25" ); // see above
+        surl = surl.replaceAll(" ", "%20" );
         //surl = surl.replaceAll("&", "%26" );
         //surl = surl.replaceAll("\\+", "%2B" );
         //surl = surl.replaceAll("/", "%2F" );
@@ -231,7 +231,6 @@ public class FileSystemUtil {
 //        }
         surl = surl.replaceAll("%20", " " );
         //surl = surl.replaceAll("%23", "#" );
-        surl = surl.replaceAll("%25", "%" );
         //surl = surl.replaceAll("%26", "&" );
         //surl = surl.replaceAll("%2B", "+" );
         //surl = surl.replaceAll("%2F", "/" );
@@ -242,6 +241,7 @@ public class FileSystemUtil {
         //surl = surl.replaceAll("%3F", "?" );
         surl = surl.replaceAll("%5B", "\\[" ); // Windows appends these in temporary downloadf rte_1495358356
         surl = surl.replaceAll("%5D", "\\]" );
+        surl = surl.replaceAll("%25", "%" );
 
         return surl;
     }    
