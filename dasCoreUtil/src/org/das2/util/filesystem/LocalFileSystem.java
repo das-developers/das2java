@@ -48,14 +48,8 @@ public class LocalFileSystem extends FileSystem {
         if ( !("file".equals(root.getScheme()) ) ) {
             throw new IllegalArgumentException("protocol not file: "+root);
         }
-        String surl= root.toString();
-        if ( surl.contains("%20") ) {
-            try {
-                surl = URLDecoder.decode(surl, "US-ASCII");
-            } catch (UnsupportedEncodingException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
+        String surl= root.getPath();
+
         if ( !surl.endsWith("/") ) surl+="/";
         if ( surl.startsWith("file://") && !surl.startsWith("file:///") ) {
             throw new URIException("Local file URLs should start with file:/ or file:///, but not file:// "+surl);
