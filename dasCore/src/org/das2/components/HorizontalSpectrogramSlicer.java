@@ -417,7 +417,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
             
         } else {
             iy= org.virbo.dataset.DataSetUtil.closestIndex( yds, yValue );
-            yy= DataSetUtil.asDatum(yds.slice(iy));
+            yy= DataSetUtil.asDatum(yds.slice(iy));  //TODO: https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=455
             sliceDataSet= DataSetOps.slice1( tds1, iy );
             
         }
@@ -434,9 +434,11 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
             formatter = xValue.getFormatter();
         }
         
+        DatumFormatter yformatter= yy.getFormatter();
+        
         String title= parentPlot.getTitle().trim();
         if ( title.length()>0 ) title= title+"!c";
-        myPlot.setTitle( title +  "x: " + formatter.format(xValue)  + " y: " + yy );
+        myPlot.setTitle( title +  "x: " + formatter.format(xValue)  + " y: " + yformatter.format(yy) );
         ySlice= yy;
             
         if ( !myPlot.getXAxis().getLabel().equals( sourceXAxis.getLabel() ) ) {
