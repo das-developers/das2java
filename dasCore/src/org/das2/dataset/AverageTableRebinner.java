@@ -247,7 +247,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 if ( xds==null ) {
                     return xunits.createDatum(1);
                 } else if ( xds.length()>2 ) {
-                    QDataSet r= DataSetUtil.guessCadence( xds, null );
+                    QDataSet r= DataSetUtil.guessCadenceNew( xds, null );
                     Datum rd= DataSetUtil.asDatum(r);
                     cadence= cadence.gt( rd ) ? cadence : rd;
                 }
