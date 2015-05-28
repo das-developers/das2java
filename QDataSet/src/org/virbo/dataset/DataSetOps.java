@@ -2261,6 +2261,7 @@ public class DataSetOps {
                     
                 } else if ( cmd.equals("|setDepend1Cadence" ) ) {
                     String arg= getStringArg( s.next() );
+                    Map<String,Object> props= DataSetUtil.getDimensionProperties( fillDs,null );
                     fillDs= Ops.copy(fillDs);
                     QDataSet dep1= (QDataSet) fillDs.property(QDataSet.DEPEND_1);
                     if ( dep1!=null ) {
@@ -2277,6 +2278,7 @@ public class DataSetOps {
                         MutablePropertyDataSet mdep0= Ops.putProperty( dep1, QDataSet.CADENCE, DataSetUtil.asDataSet( news ) );
                         fillDs= Ops.putProperty( fillDs, QDataSet.DEPEND_1, mdep0 );
                     } 
+                    DataSetUtil.putProperties( props,(MutablePropertyDataSet)fillDs );
                 } else if ( cmd.equals("|getProperty") ) {
                     String arg= getStringArg( s.next() );
                     if ( arg.startsWith("QDataSet.") ) {
