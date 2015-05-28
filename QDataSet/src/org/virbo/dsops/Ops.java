@@ -8429,7 +8429,14 @@ public class Ops {
         return dimensionCount( dataset(dss) );
     }
 
-    
+    /**
+     * Experiment with multi-threaded FFTPower function.  This breaks up the task into four independent tasks
+     * that can be run in parallel.
+     * @param ds rank 2 dataset ds(N,M) with M&gt;len
+     * @param len the number of elements to have in each fft.
+     * @param mon a ProgressMonitor for the process
+     * @return rank 2 FFT spectrum
+     */
     public static QDataSet fftPowerMultiThread(final QDataSet ds, final int len, final ProgressMonitor mon ) {
         
         final ArrayList<ProgressMonitor> mons = new ArrayList<ProgressMonitor>();
@@ -8513,7 +8520,7 @@ public class Ops {
         
         
     }
-        
+       
     /**
      * closest double to &pi; or TAU/2
      * @see Math#PI
