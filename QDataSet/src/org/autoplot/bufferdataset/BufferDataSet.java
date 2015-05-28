@@ -458,6 +458,12 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     private static int allocateDirect= -1;
     
+    /**
+     * return 1 if direct allocate should be used 0 if not.  (The
+     * internal variable has a -1 initial state, which is why this is
+     * not boolean.)
+     * @return 1 or 0 if direct allocations should not be made.
+     */
     public static int shouldAllocateDirect() {
         int result;    
         String s= System.getProperty("sun.arch.data.model");
