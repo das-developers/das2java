@@ -2237,21 +2237,28 @@ public class DataSetOps {
                     String arg= getStringArg( s.next() );
                     QDataSet dep0= (QDataSet) fillDs.property(QDataSet.DEPEND_0);
                     if ( dep0!=null ) {
+                        Map<String,Object> props= DataSetUtil.getDimensionProperties( fillDs,null );
                         Units dep0units= SemanticOps.getUnits(dep0);
                         MutablePropertyDataSet mdep0= Ops.putProperty( dep0, QDataSet.CADENCE, DataSetUtil.asDataSet( dep0units.getOffsetUnits().parse(arg) ) );
                         fillDs= Ops.putProperty( fillDs, QDataSet.DEPEND_0, mdep0 );
+                        DataSetUtil.putProperties( props,(MutablePropertyDataSet)fillDs );
                     } else if ( SemanticOps.isJoin(fillDs) ) {
                         JoinDataSet n= new JoinDataSet(fillDs.rank());
+                        Map<String,Object> props= DataSetUtil.getDimensionProperties( fillDs,null );
                         for ( int ii=0; ii<fillDs.length(); ii++ ) {
                             QDataSet fillDs1= fillDs.slice(ii);
+                            Map<String,Object> props1= DataSetUtil.getDimensionProperties( fillDs1,null );
                             dep0= (QDataSet) fillDs1.property(QDataSet.DEPEND_0);
                             Units dep0units= SemanticOps.getUnits(dep0);
                             MutablePropertyDataSet mdep0= Ops.putProperty( dep0, QDataSet.CADENCE, DataSetUtil.asDataSet( dep0units.getOffsetUnits().parse(arg) ) );
                             fillDs1= Ops.putProperty( fillDs1, QDataSet.DEPEND_0, mdep0 );
+                            DataSetUtil.putProperties( props1,(MutablePropertyDataSet)fillDs1 );
                             n.join(fillDs1);
                         }
                         fillDs= n;
+                        DataSetUtil.putProperties( props,(MutablePropertyDataSet)fillDs );
                     }
+                    
                 } else if ( cmd.equals("|setDepend1Cadence" ) ) {
                     String arg= getStringArg( s.next() );
                     fillDs= Ops.copy(fillDs);
