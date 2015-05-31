@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.virbo.filters;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -19,7 +15,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
@@ -29,7 +24,6 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -37,7 +31,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -443,7 +436,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         }
         
         if ( filter==null ) filter= ""; // autoplot-test100 Automatic GUI testing hits this, presumably intermediate state.
-                
+         
         //if ( filter.equals( this.getFilter() ) ) { // the problem is that bindings will call this without setInput.
         //    logger.finer("no need to update...");
         //    return;
