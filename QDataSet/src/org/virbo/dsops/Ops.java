@@ -3838,6 +3838,81 @@ public class Ops {
     }
     
     /**
+     * coerce Java objects like arrays and strings into a DatumRange.
+     * This is introduced to mirror the useful Jython dataset command.  This is a nasty business that
+     * is surely going to cause all sorts of problems, so we should do it all in one place.
+     * See http://jfaden.net:8080/hudson/job/autoplot-test029/
+     * This supports:<ul>
+     *   <li>2-element rank 1 QDataSet
+     *   <li>Strings like ("5 to 15 s" or "2014-01-01")
+     *   <li>2-element arrays and lists
+     * </ul>
+     * @param arg0 null, QDataSet, String, array or List.
+     * @throws IllegalArgumentException if the argument cannot be parsed or converted.
+     * @return DatumRange
+     */
+    public static DatumRange datumRange( Object arg0 ) {
+        if ( arg0==null ) {  // there was a similar test in the Python code.
+            return null;
+        } else if ( arg0 instanceof QDataSet ) {
+            return DataSetUtil.asDatumRange((QDataSet)arg0);
+        } else if ( arg0 instanceof DatumRange ) {
+            return (DatumRange)arg0;
+        } else if ( arg0 instanceof String ) {
+            String sarg= (String)arg0;
+            try {
+                return DatumRangeUtil.parseDatumRange(sarg);
+            } catch ( ParseException ex ) {
+                throw new IllegalArgumentException( "unable to parse string as DatumRange: "+sarg );
+            }
+        } else if ( arg0 instanceof List ) {
+            List p= (List)arg0;
+            double[] j= new double[ p.size() ];
+            if ( j.length!=2 ) throw new IllegalArgumentException("list should have two elements when creating DatumRange: "+arg0 );
+            Units u= null;
+            for ( int i=0; i<p.size(); i++ ) {
+                Object n= p.get(i);
+                Datum d= datum(n);
+                if ( u==null ) {
+                    u= d.getUnits();
+                } else {
+                    if ( d.getUnits()!=u ) {
+                        throw new IllegalArgumentException( "units cannot change when creating DatumRange:"+arg0 );
+                    }
+                }
+                j[i]= d.doubleValue(u);
+            }
+            return DatumRange.newDatumRange( j[0], j[1], u );
+
+        } else if ( arg0.getClass().isArray() ) { 
+            double[] j= new double[ Array.getLength(arg0) ];
+            Units u= null;
+            if ( j.length!=2 ) throw new IllegalArgumentException("array should have two elements when creating DatumRange: "+arg0 );
+            for ( int i=0; i<j.length; i++ ) {
+                Object n= Array.get(arg0,i);
+                Datum d= datum(n);
+                if ( u==null ) {
+                    u= d.getUnits();
+                } else {
+                    if ( d.getUnits()!=u ) {
+                        throw new IllegalArgumentException( "units cannot change when creating DatumRange:"+arg0 );
+                    }
+                }
+                j[i]= d.doubleValue(u);
+            }
+            return DatumRange.newDatumRange( j[0], j[1], u );
+            
+        } else {
+            String sarg0= String.valueOf( arg0 );
+            if ( sarg0.startsWith("<") && sarg0.endsWith(">") ) {
+                throw new IllegalArgumentException("Ops.dataset is unable to coerce \""+ sarg0.substring(1,sarg0.length()-1) + "\" to QDataSet");                
+            } else {
+                throw new IllegalArgumentException("Ops.dataset is unable to coerce "+arg0+" to QDataSet");
+            }
+        }
+    }
+    
+    /**
      * convert the data to radians by multiplying each element by PI/180.
      * This does not check the units of the data, but a future version might.
      * @param ds
