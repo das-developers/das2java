@@ -3601,7 +3601,7 @@ public class Ops {
                 return Math.atan2(y, x);
             }
         });
-        result.putProperty(QDataSet.LABEL, maybeLabelBinaryOp(dsy,dsx, "cosh" ) );
+        result.putProperty(QDataSet.LABEL, maybeLabelBinaryOp(dsy,dsx, "atan2" ) );
         return result;
     }
     
