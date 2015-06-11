@@ -1478,7 +1478,9 @@ public class DatumRangeUtil {
             if ( ss.length==1 ) {
                 ss= str.split("\u2013");
             }
-            if ( ss.length != 2 ) {
+            if ( ss.length==1 ) {
+                return parseTimeRange(ss[0]);
+            } else if ( ss.length != 2 ) {
                 throw new ParseException("failed to parse: "+str,0);
             }
             
