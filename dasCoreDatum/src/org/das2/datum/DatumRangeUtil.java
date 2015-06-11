@@ -68,16 +68,17 @@ public class DatumRangeUtil {
         }
     }
 
-    private static Datum MIN_TIME= TimeUtil.createTimeDatum( 1000, 1, 1, 0, 0, 0, 0 ); // I know these are found elsewhere in the code, but I can't find it.
-    private static Datum MAX_TIME= TimeUtil.createTimeDatum( 3000, 1, 1, 0, 0, 0, 0 );
+    private static final Datum MIN_TIME= TimeUtil.createTimeDatum( 1000, 1, 1, 0, 0, 0, 0 ); // I know these are found elsewhere in the code, but I can't find it.
+    private static final Datum MAX_TIME= TimeUtil.createTimeDatum( 3000, 1, 1, 0, 0, 0, 0 );
 
     /**
      * put limits on the typical use when looking at data:
      *   * both min and max are finite numbers
      *   * time range is between year 1000 and year 3000.
      *   * log ranges span no more than 1e100 cycles.
-     * @param newDatumRange
-     * @return
+     * @param dr the DatumRange, which can contain infinite values that would make is inacceptable.
+     * @param log if true, then only allow 1e100 cycles.
+     * @return true if the range is valid.
      */
     public static boolean isAcceptable(DatumRange dr, boolean log ) {
         if ( Double.isInfinite( dr.min().doubleValue( dr.getUnits() ) ) ||
@@ -195,9 +196,10 @@ public class DatumRangeUtil {
      * in the context of 2010-002T00:00/02:00.  This does not support 2-digit years, which
      * were removed in ISO 8601:2004.
      * 
-     * @param str
-     * @param context
-     * @return 
+     * @param str the ISO8601 string
+     * @param result the datum, decomposed into [year,month,day,hour,minute,second,nano]
+     * @param lsd -1 or the current position ???
+     * @return the lsd least significant digit
      */
     public static int parseISO8601Datum( String str, int[] result, int lsd ) {
         StringTokenizer st= new StringTokenizer( str, "-T:.Z", true );
@@ -316,7 +318,7 @@ public class DatumRangeUtil {
      * "2012-03-27T12:22:36"
      * (and some others) TODO: enumerate and test.
      * TODO: this should use parseISO8601Datum.
-     * @param stringIn iso8601 string.
+     * @param str iso8601 string.
      * @return null or int[7]: [ Y, m, d, H, M, S, nano ]
      */
     public static int[] parseISO8601 ( String str ) {
@@ -454,6 +456,7 @@ public class DatumRangeUtil {
      * http://en.wikipedia.org/wiki/ISO_8601#Time_intervals
      * @param stringIn
      * @return null or a DatumRange
+     * @throws java.text.ParseException
      */
     public static DatumRange parseISO8601Range( String stringIn ) throws ParseException {
 
@@ -571,7 +574,7 @@ public class DatumRangeUtil {
         
         boolean beforeTo;
         
-        private Pattern yyyymmddPattern= Pattern.compile("((\\d{4})(\\d{2})(\\d{2}))( |to|t|-|$)");
+        private final Pattern yyyymmddPattern= Pattern.compile("((\\d{4})(\\d{2})(\\d{2}))( |to|t|-|$)");
         
         /* groups= group numbers: { year, month, day, delim } (0 is all) */
         private boolean tryPattern( Pattern regex, String string, int[] groups, DateDescriptor dateDescriptor ) throws ParseException {
@@ -1117,10 +1120,10 @@ public class DatumRangeUtil {
      * <li> 1972/2002  ISO8601 time ranges
      * <li> 1972 to 2002  legacy das2 colloquial time ranges.
      * 
+     * @param string
+     * @return the range interpreted.
      * @throws ParseException when the string cannot be parsed.
      * @throws IllegalArgumentException when an orbits file cannot be read
-     * @param s
-     * @return
      */
     public static DatumRange parseTimeRange( String string ) throws ParseException {
         if ( string.startsWith("orbit:") ) { // experiment with orbits  orbit:crres:591
@@ -1217,8 +1220,8 @@ public class DatumRangeUtil {
         timeString= ""+ts.hour+":";
         
         Datum[] times= new Datum[] { time, time2 };
-        for ( int i=0;i<times.length;i++ ) {
-            int[] arr= TimeUtil.toTimeArray(times[i]);
+        for (Datum t : times) {
+            int[] arr = TimeUtil.toTimeArray(t);
             int idigit;
             for ( idigit=7; idigit>3; idigit-- ) {
                 if ( arr[idigit]>0 ) break;
@@ -1372,6 +1375,7 @@ public class DatumRangeUtil {
      *
      * @param bounds range to be covered.
      * @param element range defining the width and phase of each list DatumRange.
+     * @return the ranges covering the range.
      *
      */
     public static List<DatumRange> generateList( DatumRange bounds, DatumRange element ) {
@@ -1658,7 +1662,7 @@ public class DatumRangeUtil {
      * return the elements of src that intersect with elements of the list contains.
      * Both src and dst should be sorted lists that do not contain overlaps.
      * @param bounds sorted list of non-overlapping ranges.
-     * @param contains sorted list of non-overlapping ranges.  If remove is true, then
+     * @param elements sorted list of non-overlapping ranges.  If remove is true, then
      *   the elements intersecting are removed and the result will contain non-overlapping elements.
      * @param remove if true, remove intersecting elements from the elements list, leaving the elements that
      *   did not intersect with any of the ranges in bounds.
@@ -1676,7 +1680,7 @@ public class DatumRangeUtil {
 
         DatumRange lastAdded= null;
 
-        DatumRange bounds1 = bounds.get(is);
+        DatumRange bounds1;
         int i=0;
         while ( i<elements.size() ) {
             while ( is<ns && bounds.get(is).max().le( elements.get(i).min() ) ) is++;
@@ -1704,6 +1708,9 @@ public class DatumRangeUtil {
 
     /**
      * Like DatumRange.contains, but includes the end point.  Often this allows for simpler code.
+     * @param context the datum range.
+     * @param datum the data point
+     * @return true if the range contains the datum.
      * @see DatumRange.contains.
      */
     public static boolean sloppyContains(DatumRange context, Datum datum) {
