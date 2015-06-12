@@ -3775,7 +3775,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return attached axis.
      */
     public DasAxis createAttachedAxis() {
-        return new DasAxis(this.dataRange, this.getOrientation());
+        DasAxis result= new DasAxis(this.dataRange, this.getOrientation());
+        result.setScanRange( this.getScanRange() );
+        return result;
     }
 
     /**
@@ -3785,7 +3787,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @return attached axis.
      */
     public DasAxis createAttachedAxis(int orientation) {
-        return new DasAxis(this.dataRange, orientation);
+        DasAxis result= new DasAxis(this.dataRange, orientation);
+        result.setScanRange( this.getScanRange() );
+        return result;
     }
 
     /**
