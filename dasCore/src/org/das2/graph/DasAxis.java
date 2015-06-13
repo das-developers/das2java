@@ -3806,7 +3806,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * scan to the previous day.
      */
     public void scanPrevious() {
-        setDatumRange( getDatumRange().previous() );
+        DatumRange dr= getDatumRange();
+        if ( dataRange.isLog() ) {
+            dr= DatumRangeUtil.rescaleLog( dr, -1., 0 );
+        } else {
+            dr= dr.previous();
+        }
+        setDatumRange( dr );
     }
 
     /**
@@ -3814,7 +3820,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * scan to the next day.
      */
     public void scanNext() {
-        setDatumRange( getDatumRange().next() );
+        DatumRange dr= getDatumRange();
+        if ( dataRange.isLog() ) {
+            dr= DatumRangeUtil.rescaleLog( dr, 1., 2. );
+        } else {
+            dr= getDatumRange().next();
+        }
+        setDatumRange( dr );
     }
 
     /** 
