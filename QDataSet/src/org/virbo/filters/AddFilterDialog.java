@@ -382,7 +382,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
 
         jScrollPane1.setViewportView(jTree1);
 
-        jTabbedPane1.addTab("Category", jScrollPane1);
+        jTabbedPane1.addTab("By Category", jScrollPane1);
 
         jList1.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -402,7 +402,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
             .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Alpha", jPanel1);
+        jTabbedPane1.addTab("Alphabetical", jPanel1);
 
         jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getSize()-2f));
 
