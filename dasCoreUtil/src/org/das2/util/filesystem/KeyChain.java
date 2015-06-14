@@ -247,6 +247,7 @@ public class KeyChain {
             c.connect();
             String s= c.getHeaderField("WWW-Authenticate");
             if ( s==null ) {
+                logger.fine("WWW-Authenticate is not provided.");
                 return null;
             } else {
                 int i= s.indexOf("\"");
