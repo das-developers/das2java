@@ -246,16 +246,20 @@ public class KeyChain {
             URLConnection c= url.openConnection();
             c.connect();
             String s= c.getHeaderField("WWW-Authenticate");
-            int i= s.indexOf("\"");
-            if ( i>-1 ) {
-                s= s.substring(i);
+            if ( s==null ) {
+                return null;
+            } else {
+                int i= s.indexOf("\"");
+                if ( i>-1 ) {
+                    s= s.substring(i);
+                }
+                return s;
             }
             //BufferedReader in= new BufferedReader( new InputStreamReader( c.getInputStream() ) );
             //String line= "";
             //while ( line!=null ) line= in.readLine(); // eat the rest of the stream, because this is important.
-            return s;
         } catch (IOException ex) {
-            Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
         return null;
     }
