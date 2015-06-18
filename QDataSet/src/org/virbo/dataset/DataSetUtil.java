@@ -2903,7 +2903,7 @@ public class DataSetUtil {
                 result = 0; //insertion point is 0
             } else if (result < 0) {
                 result= ~result; // usually this is the case
-                if ( result >= ds.length()-1 ) {
+                if ( result > ds.length()-1 ) {
                     result= ds.length()-1;
                 } else {
                     double x= ddatum;
