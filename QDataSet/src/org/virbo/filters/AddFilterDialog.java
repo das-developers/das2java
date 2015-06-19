@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -87,6 +88,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
                 Bookmark b= (Bookmark) jList1.getSelectedValue();
                 jLabel1.setText( b.description );
                 jLabel2.setText( b.filter );
+                setSelectedValue(b);
             }
         } );
         this.jList1.setSelectedIndex( selectedIndex );
@@ -101,6 +103,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
                     Bookmark b = (Bookmark) tn.getUserObject();
                     jLabel1.setText( b.description );
                     jLabel2.setText( b.filter );
+                    setSelectedValue( b );
                 }
             }
         });
@@ -108,6 +111,38 @@ public class AddFilterDialog extends javax.swing.JPanel {
         Bookmark b= (Bookmark)this.jList1.getSelectedValue(); 
         ensureFolderOpen( 0, this.root, b );
 
+    }
+    
+    private TreePath find( DefaultMutableTreeNode root, String s ) {
+        @SuppressWarnings("unchecked")
+        Enumeration<DefaultMutableTreeNode> e = root.depthFirstEnumeration();
+        while (e.hasMoreElements()) {
+            DefaultMutableTreeNode node = e.nextElement();
+            if (node.toString().equalsIgnoreCase(s)) {
+                return new TreePath(node.getPath());
+            }
+        }
+        return null;
+    }    
+    
+    private void setSelectedValue( Bookmark selected ) {
+        jList1.setSelectedValue( selected, true );
+        TreePath tp=find( (DefaultMutableTreeNode)this.jTree1.getModel().getRoot(), selected.title );
+        this.jTree1.getSelectionModel().setSelectionPath(tp);
+        this.jTree1.scrollPathToVisible(tp);
+    }
+    
+    private void setSelectedValue( String value ) {
+        ListModel lm= jList1.getModel();
+        Object selected= null;
+        for ( int i=0; i<lm.getSize(); i++ ) {
+            if ( ((Bookmark)lm.getElementAt(i)).title.equals( value ) ) {
+                selected= lm.getElementAt(i);
+            }
+        }
+        if ( selected!=null ) {
+            jList1.setSelectedValue( selected, true );
+        }
     }
     
     /**
