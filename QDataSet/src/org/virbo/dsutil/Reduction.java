@@ -302,7 +302,7 @@ public class Reduction {
         MutablePropertyDataSet result= ybuilder.getDataSet();
         MutablePropertyDataSet xds= xbuilder.getDataSet();
 
-        Map<String,Object> xprops= DataSetUtil.getProperties(x);
+        Map<String,Object> xprops= DataSetUtil.getDimensionProperties(x,null);
         if ( xprops.containsKey( QDataSet.CADENCE ) ) xprops.put( QDataSet.CADENCE, xLimit );
         if ( xprops.containsKey( QDataSet.CACHE_TAG ) ) xprops.put( QDataSet.CACHE_TAG, null );
         DataSetUtil.putProperties( xprops, xds );
