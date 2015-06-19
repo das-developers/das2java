@@ -130,6 +130,8 @@ public class Reduction {
      *
      * xLimit is a rank 0 dataset.
      *
+     * 2015-06-18: xcadence and bins are now regular.
+     * 
      * Because of high-resolution magnetometer data, this is extended to support this data type.
      * 
      * @param ds rank 1 or rank 2 dataset.  Must have DEPEND_0 (presently) and be a qube.  If this is null, then the result is null.
@@ -247,7 +249,8 @@ public class Reduction {
 
                     if ( nx>0 ) {
                         boolean nv= nn0[j]==0;
-                        ax0 = sx0 / nx;
+                        //ax0 = sx0 / nx;
+                        ax0 = x0 + dxLimit/2;
                         ay0[j] = nv ? fill : sy0[j] / nn0[j];
                         if (j==0 ) xbuilder.putValue( points, ax0 );
                         ybuilder.putValue( points, j, ay0[j] );
@@ -284,7 +287,8 @@ public class Reduction {
         if ( nx>0 ) {
             for ( int j=0; j<ny; j++ ) {
                 boolean nv= nn0[j]==0;
-                ax0 = sx0 / nx;
+                //ax0 = sx0 / nx;
+                ax0 = x0 + dxLimit/2;
                 ay0[j] = nv ? fill : sy0[j] / nn0[j];
                 if ( j==0 ) xbuilder.putValue( points, ax0 );
                 ybuilder.putValue( points, j, ay0[j] );
@@ -315,7 +319,7 @@ public class Reduction {
         result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminbuilder.getDataSet() ) );
         result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), result ) );
 
-        System.err.println( String.format( "time to reducex(%d records -> %d records) (ms): %d", ds.length(), result.length(), System.currentTimeMillis()-t0) );
+        //System.err.println( String.format( "time to reducex(%d records -> %d records) (ms): %d", ds.length(), result.length(), System.currentTimeMillis()-t0) );
 
         return result;
 
