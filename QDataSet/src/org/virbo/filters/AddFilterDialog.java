@@ -29,7 +29,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -88,7 +87,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
                 Bookmark b= (Bookmark) jList1.getSelectedValue();
                 jLabel1.setText( b.description );
                 jLabel2.setText( b.filter );
-                setSelectedValue(b);
+                setSelectedValue( b );
             }
         } );
         this.jList1.setSelectedIndex( selectedIndex );
@@ -113,6 +112,12 @@ public class AddFilterDialog extends javax.swing.JPanel {
 
     }
     
+    /**
+     * Thanks http://stackoverflow.com/questions/8210630/how-to-search-a-particular-node-in-jtree-and-make-that-node-expanded
+     * @param root the root of the tree
+     * @param s the label to search for.
+     * @return the path.
+     */
     private TreePath find( DefaultMutableTreeNode root, String s ) {
         @SuppressWarnings("unchecked")
         Enumeration<DefaultMutableTreeNode> e = root.depthFirstEnumeration();
