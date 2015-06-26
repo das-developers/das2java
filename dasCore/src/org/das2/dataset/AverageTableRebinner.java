@@ -262,8 +262,9 @@ public class AverageTableRebinner implements DataSetRebinner {
             if ( xds==null ) {
                 return xunits.createDatum(1);
             } else if ( xds.length()>2 ) {
-                QDataSet r= Ops.reduceMean( Ops.diff(xds), 0 );
-                return DataSetUtil.asDatum(r);
+                QDataSet r= DataSetUtil.guessCadenceNew( xds, null );
+                Datum rd= DataSetUtil.asDatum(r);
+                return rd;
             } else {
                 return xunits.createDatum( Double.MAX_VALUE );
             }
