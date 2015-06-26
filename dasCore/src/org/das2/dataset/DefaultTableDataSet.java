@@ -358,20 +358,20 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
                 DDataSet table1= DDataSet.wrap(back,new int[] {indeces.size(),m.length} );
                 DDataSet xTagsDs= DDataSet.wrap(xTags);
                 xTagsDs.putProperty( QDataSet.UNITS, getXUnits() );
-                xTagsDs.putProperty( QDataSet.LABEL, getProperty( PROPERTY_X_LABEL ) );
-                xTagsDs.putProperty( QDataSet.MONOTONIC, getProperty( PROPERTY_X_MONOTONIC ) );
+                xTagsDs.putProperty( QDataSet.LABEL, dasProps.get( PROPERTY_X_LABEL ) );
+                xTagsDs.putProperty( QDataSet.MONOTONIC, dasProps.get( PROPERTY_X_MONOTONIC ) );
                 table1.putProperty( QDataSet.DEPEND_0, xTagsDs );
                 DDataSet yTagsDs=  DDataSet.wrap(yTags[itable]);
                 yTagsDs.putProperty( QDataSet.UNITS, getYUnits() );
-                yTagsDs.putProperty( QDataSet.LABEL, getProperty( PROPERTY_Y_LABEL ) );
+                yTagsDs.putProperty( QDataSet.LABEL, dasProps.get( PROPERTY_Y_LABEL ) );
                 table1.putProperty( QDataSet.DEPEND_1,yTagsDs);
                 result.join(table1);
                 doneModes.add(m);
             }
         }
         result.putProperty( QDataSet.UNITS, getZUnits() );
-        result.putProperty( QDataSet.LABEL, getProperty( PROPERTY_Z_LABEL ) );
-        result.putProperty( QDataSet.TITLE, getProperty( PROPERTY_TITLE ) );
+        result.putProperty( QDataSet.LABEL, dasProps.get( PROPERTY_Z_LABEL ) );
+        result.putProperty( QDataSet.TITLE, dasProps.get( PROPERTY_TITLE ) );
         return result;
     }
 
