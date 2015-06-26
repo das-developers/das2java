@@ -33,6 +33,7 @@ import java.io.PrintStream;
 import java.util.*;
 import java.text.MessageFormat;
 import java.util.logging.Logger;
+import static org.das2.dataset.DataSetAdapter.adaptSubstitutions;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
@@ -299,9 +300,17 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     /**
      * this is a highly-interleaved table, and if we sort it out and create a 
      * optimal QDataSet, it's better.
+     * @return a QDataSet version of the data
      */
     public org.virbo.dataset.AbstractDataSet toQDataSet( ) {
+  
         JoinDataSet result= new JoinDataSet(3);
+        
+        Map<String,Object> dasProps = adaptSubstitutions(getProperties());
+				
+	// Save properterties with value substitution strings in Autoplot Stlye
+	result.putProperty( QDataSet.USER_PROPERTIES, dasProps );
+
         Set<double[]> doneModes= new HashSet<double[]>();
         int itable=-1;
         for ( int i=0; i<getXLength(); i++ ) {
