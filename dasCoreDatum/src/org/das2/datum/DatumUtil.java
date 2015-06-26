@@ -520,7 +520,7 @@ public final class DatumUtil {
         
         Units[] conversions = dunits.getConvertableUnits();
         
-        double bestScore = 1;
+        double bestScore = 0.2;
         Datum bestDatum = d;
         for (int i = 0; i < conversions.length; i++) {
             Datum dd = d.convertTo(conversions[i]);
