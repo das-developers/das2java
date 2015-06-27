@@ -205,7 +205,7 @@ public class Ops {
         boolean resultIsQube= Boolean.TRUE.equals( m1.get(QDataSet.QUBE) ) || Boolean.TRUE.equals( m2.get(QDataSet.QUBE) );
         if ( m1.size()==1 ) m1.remove( QDataSet.QUBE ); // kludge: CoerceUtil.coerce would copy over a QUBE property, so just remove this.
         if ( m2.size()==1 ) m2.remove( QDataSet.QUBE );
-        if ( m2.isEmpty() && !m1.isEmpty() ) {
+        if ( ( m2.isEmpty() && !m1.isEmpty() ) || ds2.rank()==0 ) {
             m2.put( QDataSet.DEPEND_0, m1.get(QDataSet.DEPEND_0 ) );
             m2.put( QDataSet.DEPEND_1, m1.get(QDataSet.DEPEND_1 ) );
             m2.put( QDataSet.DEPEND_2, m1.get(QDataSet.DEPEND_2 ) );
@@ -213,7 +213,7 @@ public class Ops {
             m2.put( QDataSet.BINS_0,   m1.get(QDataSet.BINS_0 ) );
             m2.put( QDataSet.BINS_1,   m1.get(QDataSet.BINS_1 ) );
         }
-        if ( m1.isEmpty() && !m2.isEmpty() ) {
+        if ( ( m1.isEmpty() && !m2.isEmpty() ) || ds1.rank()==0 ) {
             m1.put( QDataSet.DEPEND_0, m2.get(QDataSet.DEPEND_0 ) );
             m1.put( QDataSet.DEPEND_1, m2.get(QDataSet.DEPEND_1 ) );
             m1.put( QDataSet.DEPEND_2, m2.get(QDataSet.DEPEND_2 ) );
