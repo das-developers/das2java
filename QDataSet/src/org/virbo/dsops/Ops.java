@@ -942,9 +942,10 @@ public class Ops {
     }
     
     /**
-     * element-wise sqrt.
-     * @param ds
-     * @return
+     * element-wise sqrt.  See Ops.pow to square a number.
+     * @param ds the dataset
+     * @return the square root of the dataset, which will contain NaN where the data is negative.
+     * @see #pow(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet sqrt(QDataSet ds) {
         //MutablePropertyDataSet result= (MutablePropertyDataSet) pow(ds, 0.5);
@@ -1162,7 +1163,7 @@ public class Ops {
     
 
     /**
-     * element-wise pow (** in FORTRAN, ^ in IDL) of two datasets with the same
+     * element-wise pow (** in FORTRAN, ^ in IDL) of two datasets with the compatible
      * geometry.
      * @param ds1 the base
      * @param pow the exponent
