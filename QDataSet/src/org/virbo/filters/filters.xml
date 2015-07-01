@@ -182,6 +182,16 @@
                                 <description>Takes the dataset, ds, to the given exponent [exp10() = pow(10,ds)]</description>
                             </bookmark>
                             <bookmark>
+                                <title>Sqrt</title>
+                                <filter>|sqrt()</filter>
+                                <description>Takes the square root</description>
+                            </bookmark>
+                            <bookmark>
+                                <title>Pow</title>
+                                <filter>|pow(2)</filter>
+                                <description>Takes the power(ds,n)</description>
+                            </bookmark>
+                            <bookmark>
                                 <title>Log Base 10</title>
                                 <filter>|log10()</filter>
                                 <description>Takes the base-10 log of the data</description>
