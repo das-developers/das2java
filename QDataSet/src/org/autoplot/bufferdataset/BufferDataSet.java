@@ -461,22 +461,33 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     /**
      * return 1 if direct allocate should be used 0 if not.  (The
      * internal variable has a -1 initial state, which is why this is
-     * not boolean.)
+     * not boolean.)  This looks for 32bit Javas, and if more than 1/2 Gig is 
+     * being used then it will allocate direct.
      * @return 1 or 0 if direct allocations should not be made.
      */
     public static int shouldAllocateDirect() {
         int result;    
         String s= System.getProperty("sun.arch.data.model");
+        long maxMemoryBytes= Runtime.getRuntime().maxMemory();
+        boolean moreThanHalfOfGig= maxMemoryBytes > 500000000;
         if ( s==null ) { // GNU 1.5? 
             s= System.getProperty("os.arch");
             if ( s.contains("64") ) {
                 result= 1;
             } else {
-                result= 0;
+                if ( moreThanHalfOfGig ) {
+                    result= 0;
+                } else {
+                    result= 1;
+                }
             }
         } else {
             if ( s.equals("32") ) {
-                result= 0;
+                if ( moreThanHalfOfGig ) {
+                    result= 0;
+                } else {
+                    result= 1;
+                }
             } else {
                 result= 1;
             }
