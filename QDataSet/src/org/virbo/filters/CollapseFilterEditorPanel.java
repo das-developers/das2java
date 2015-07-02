@@ -85,7 +85,9 @@ public class CollapseFilterEditorPanel extends javax.swing.JPanel implements Fil
     @Override
     public void setInput(QDataSet ds) {
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
+        int index= dimensionCB.getSelectedIndex();
         dimensionCB.setModel(new DefaultComboBoxModel(depNames1));
+        dimensionCB.setSelectedIndex(index);
     }
 
     @Override
