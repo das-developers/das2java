@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
+import org.das2.util.monitor.ProgressMonitor;
 
 /**
  * DataSetIterator implementation that can be used for all dataset (not just qubes).  
@@ -305,6 +306,8 @@ public class QubeDataSetIterator implements DataSetIterator {
     private int[] qube;
     private QDataSet ds;
     private boolean allnext = true;  // we'll have to do a borrow to get started.
+    
+    private ProgressMonitor monitor;
 
     /**
      * dataset iterator to help in implementing the complex indexing
@@ -349,6 +352,12 @@ public class QubeDataSetIterator implements DataSetIterator {
         this.ds = ds;
         this.fit = fits;
         initialize();
+    }
+    
+    public void setMonitor( ProgressMonitor mon ) {
+        this.monitor= mon;
+        this.monitor.setTaskSize( this.dimLength(0) );
+        this.monitor.started();
     }
 
     /**
@@ -453,12 +462,23 @@ public class QubeDataSetIterator implements DataSetIterator {
     @Override
     public boolean hasNext() {
         if (rank == 0) {
-            return this.allnext;
+            if ( this.allnext ) {
+                return true;
+            } else {
+                if ( monitor!=null ) monitor.finished();
+                return false;
+            }
         } else {
-            if ( it[0].length()==0 ) return false; // check for empty datasets.
+            if ( it[0].length()==0 ) {
+                if ( monitor!=null ) monitor.finished();
+                return false;
+            } // check for empty datasets.
             if ( qube!=null ) {
                 for ( int i=1; i<rank; i++ ) {
-                    if ( it[i].length()==0 ) return false; // this is true only for Qubes.
+                    if ( it[i].length()==0 ) {
+                        if ( monitor!=null ) monitor.finished();
+                        return false;
+                    } // this is true only for Qubes.
                 }
             }
             int i = rank - 1;
@@ -473,6 +493,7 @@ public class QubeDataSetIterator implements DataSetIterator {
                     }
                 }
             }
+            if ( monitor!=null ) monitor.finished();
             return false;
         }
     }
@@ -487,7 +508,10 @@ public class QubeDataSetIterator implements DataSetIterator {
 
         if (this.allnext) {
             for (int i = 0; i < (rank - 1); i++) {
-                if ( !( isAllIndexLists && ( it[i] instanceof IndexListIterator ) ) ) it[i].nextIndex();
+                if ( !( isAllIndexLists && ( it[i] instanceof IndexListIterator ) ) ) {
+                    it[i].nextIndex();
+                    if ( i==0 && monitor!=null ) monitor.setTaskProgress(it[0].index());
+                }
             }
             allnext = false;
             if (rank == 0) {
@@ -502,6 +526,7 @@ public class QubeDataSetIterator implements DataSetIterator {
             if ( it[i] instanceof IndexListIterator ) { // all index lists need to be incremented together.
                 for ( int k=0; k<i; k++ ) {
                     if ( isAllIndexLists && ( it[k] instanceof IndexListIterator ) ) {
+                        if ( k==0 && monitor!=null ) monitor.setTaskProgress(it[0].index());
                         it[k].nextIndex();
                     }
                 }
@@ -511,6 +536,9 @@ public class QubeDataSetIterator implements DataSetIterator {
                 for (int j = i - 1; j >= 0; j--) {
                     if (it[j].hasNext()) {
                         it[j].nextIndex();
+                        if ( j==0 && monitor!=null ) {
+                            monitor.setTaskProgress(it[0].index());
+                        }
                         if ( it[j] instanceof IndexListIterator ) { // all index lists need to be incremented together.
                             for ( int k=0; k<j; k++ ) {
                                 if ( isAllIndexLists && ( it[k] instanceof IndexListIterator ) ) {
