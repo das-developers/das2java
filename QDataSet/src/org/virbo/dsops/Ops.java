@@ -35,9 +35,11 @@ import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.math.filter.Butterworth;
 import org.das2.util.LoggerManager;
+import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
+import org.das2.util.monitor.UncheckedCancelledOperationException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.virbo.dataset.AbstractDataSet;
@@ -577,10 +579,26 @@ public class Ops {
      * @return the unweighted total of the dataset, or -1e31 if fill was encountered.
      */
     public static double total(QDataSet ds) {
+        return total(ds,new NullProgressMonitor());
+    }
+    
+    /**
+     * return the total of all the elements in the dataset, returning a rank
+     * 0 dataset.  If there are invalid measurements, then fill is returned.
+     * Does not support BINS or BUNDLE dimensions.
+     *
+     * @param ds
+     * @param mon progress monitor
+     * @return the unweighted total of the dataset, or -1e31 if fill was encountered.
+     */
+    public static double total(QDataSet ds,ProgressMonitor mon) {
         double s = 0;
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds);
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
+        
+        it1.setMonitor(mon);
+        
         while (it1.hasNext()) {
             it1.next();
             double w= it1.getValue(wds);
@@ -634,8 +652,8 @@ public class Ops {
      * @param AverageOp operation to combine measurements, such as max or mean.
      * @return
      */
-    private static QDataSet averageGen(QDataSet ds, int dim, AverageOp op) {
-        if ( ds==null ) throw new NullPointerException("ds reference is null");
+    private static QDataSet averageGen(QDataSet ds, int dim, AverageOp op, ProgressMonitor mon ) {
+        if ( ds==null ) throw new NullPointerException("ds reference is null");        
         int[] qube = DataSetUtil.qubeDims(ds);
         if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube");
         if ( dim>=ds.rank() )
@@ -646,6 +664,9 @@ public class Ops {
         DDataSet result = DDataSet.create(newQube);
         DDataSet wresult= DDataSet.create(newQube);
         QubeDataSetIterator it1 = new QubeDataSetIterator(result);
+        
+        it1.setMonitor(mon);
+        
         double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
         double[] store = new double[2];
         while (it1.hasNext()) {
@@ -691,6 +712,19 @@ public class Ops {
      * @return
      */
     public static QDataSet total(QDataSet ds, int dim) {
+        return total(ds,dim,new NullProgressMonitor());
+    }   
+    
+    /**
+     * reduce the dataset's rank by totaling all the elements along a dimension.
+     * Only QUBEs are supported presently.
+     * 
+     * @param ds rank N qube dataset.  N=1,2,3,4
+     * @param dim zero-based index number.
+     * @param mon progress monitor.
+     * @return the rank N-1 qube dataset.
+     */
+    public static QDataSet total(QDataSet ds, int dim, ProgressMonitor mon) {
         int[] qube = DataSetUtil.qubeDims(ds);
         if ( qube==null ) throw new IllegalArgumentException("argument does not appear to be qube");
         int[] newQube = DataSetOps.removeElement(qube, dim);
@@ -701,13 +735,16 @@ public class Ops {
         
         if ( ds.rank()==2 && dim==1 ) {
             int jlen= ds.length(0);
+            mon.setTaskSize(result.length());
+            mon.started();
             for ( int i=0; i<result.length(); i++ ) {
+                mon.setTaskProgress(i);
                 boolean isfill=false;
                 for ( int j=0; j<jlen; j++ ) {
                     if ( wds.value(i,j)==0 ) {
                         isfill= true;
                     } else {
-                        result.accumValue( i, ds.value(i,j) );
+                        result.addValue( i, ds.value(i,j) );
                     }
                 }
                 if ( isfill ) {
@@ -718,6 +755,7 @@ public class Ops {
             }
         } else {
             QubeDataSetIterator it1 = new QubeDataSetIterator(result);
+            it1.setMonitor(mon);
             while (it1.hasNext()) {
                 it1.next();
                 int n = ds.length(dim);
@@ -774,7 +812,7 @@ public class Ops {
             public void normalize(double[] accum) {
                 // nothing to do
             }
-        });
+        }, new NullProgressMonitor() );
     }
 
     /**
@@ -803,7 +841,7 @@ public class Ops {
             public void normalize(double[] accum) {
                 // nothing to do
             }
-        });
+        }, new NullProgressMonitor() );
     }
 
     /**
@@ -813,9 +851,23 @@ public class Ops {
      * 
      * @param ds rank N qube dataset.
      * @param dim zero-based index number.
-     * @return
+     * @return rank N-1 qube dataset.
      */
     public static QDataSet reduceMean(QDataSet ds, int dim) {
+        return reduceMean( ds, dim, new NullProgressMonitor() );
+    }
+    
+    /**
+     * reduce the dataset's rank by reporting the max of all the elements along a dimension.
+     * Only QUBEs are supported presently.  Note this does not contain code that would remove
+     * large offsets from zero when making the average, so the number of points is limited.
+     * 
+     * @param ds rank N qube dataset.
+     * @param dim zero-based index number.
+     * @param mon progress monitor.
+     * @return rank N-1 qube datas
+     */
+    public static QDataSet reduceMean(QDataSet ds, int dim, ProgressMonitor mon ) {
         return averageGen(ds, dim, new AverageOp() {
             @Override
             public void accum(double d1, double w1, double[] accum) {
@@ -835,9 +887,9 @@ public class Ops {
                     accum[0] /= accum[1];
                 }
             }
-        });
+        }, mon );
     }
-
+    
     /**
      * this is introduced to mimic the in-line function which reduces the dimensionality by averaging over the zeroth dimension.
      *   collapse0( ds[30,20] ) &rarr; ds[20]
@@ -5184,7 +5236,7 @@ public class Ops {
                     }
 
                     mon.setTaskProgress(i*len1+j);
-
+                    if ( mon.isCancelled() ) throw new UncheckedCancelledOperationException("fftPower was cancelled"); 
                 }
                 
             }
