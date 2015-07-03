@@ -42,6 +42,14 @@ package org.das2.util.monitor;
  * <code>setTaskProgress(int)</code> is called before <code>started()</code> or
  * after <code>finished()</code> is called.  Note if isCancelled is not called
  * by the process, then the cancel button will become disabled.
+ *
+ * <p>TODO: consider allowing the client to specify that an unchecked exception is 
+ * allowed, and he can then catch the exception.  
+ * 1. The caller knows that the service provider's work can be ignored, and this would work.
+ * 2. The service provider knows that the service must be cleaned up with a try/finally block.
+ * Should CancelledOperationException be a an unchecked exception?
+ * See https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=457
+ * </p>
  * 
  * <p>A client codes receiving a monitor must do one of two things.
  * It should either call setTaskSize(long), started(), setTaskProgress(long) zero or more times, then
@@ -62,7 +70,7 @@ public interface ProgressMonitor {
     void setTaskSize(long taskSize);
     
     /** Notifies the ProgressMonitor of a change in the progress
-     * of the task.
+     * of the task.  
      * @param position the current task position
      * @throws IllegalArgumentException if {@link #isCancelled()} returns true or,
      * possibly if started() has not been called or
