@@ -45,8 +45,8 @@ import org.virbo.dsutil.Reduction;
  */
 public class DataSetOps {
 
-    private static final Logger logger= LoggerManager.getLogger("qdataset");
-
+    private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
+    
     /**
      * absolute length limit for plots.  This is used to limit the elements used in autoranging, etc.
      */
@@ -1905,6 +1905,8 @@ public class DataSetOps {
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
 
+        long t0= System.currentTimeMillis();
+        
         String cmd="";
         try {
             mon.started();
@@ -2037,7 +2039,8 @@ public class DataSetOps {
                             throw new IllegalArgumentException("trim is only allowed with collapse0");
                         }
                     }
-                    fillDs= Ops.reduceMean(fillDs,dim);
+                    fillDs= Ops.reduceMean(fillDs,dim, mon.getSubtaskMonitor("performing collapse") );
+                    
                 } else if ( cmd.startsWith("|total") && cmd.length()>6 ) {
                     int dim= cmd.charAt(6)-'0';
                     if ( s.hasNextInt() ) {
@@ -2051,7 +2054,8 @@ public class DataSetOps {
                             throw new IllegalArgumentException("trim is only allowed with total0");
                         }
                     }
-                    fillDs= Ops.total(fillDs,dim);
+                    fillDs= Ops.total(fillDs,dim, mon.getSubtaskMonitor("performing total") );
+                    
                 } else if ( cmd.equals("|autoHistogram") ) {
                     fillDs= Ops.autoHistogram(fillDs);
                 } else if ( cmd.equals("|histogram") ) { // 0=auto, 1=binsize
@@ -2320,6 +2324,9 @@ public class DataSetOps {
                 } else {
                     if ( !cmd.equals("") ) throw new ParseException( c + " (command not recognized: \""+cmd +"\")", i );
                 }
+                
+                long t= System.currentTimeMillis() - t0;
+                logger.log(Level.FINER, "sprocess {0}: {1}ms", new Object[]{cmd, t});
             }
         } catch ( InputMismatchException ex ) {
             ex.printStackTrace();
