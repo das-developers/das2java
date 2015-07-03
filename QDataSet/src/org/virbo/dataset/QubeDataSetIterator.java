@@ -353,7 +353,14 @@ public class QubeDataSetIterator implements DataSetIterator {
         this.fit = fits;
         initialize();
     }
-    
+
+    /**
+     * convenient method for monitoring long processes, this allows
+     * clients to let the iterator manage the monitor.  setTaskSize, 
+     * started, setTaskProgress, and finished are called automatically.  
+     * The monitor will reflect the zeroth index.
+     * @param mon the monitor, or null.
+     */
     public void setMonitor( ProgressMonitor mon ) {
         this.monitor= mon;
         this.monitor.setTaskSize( this.dimLength(0) );
