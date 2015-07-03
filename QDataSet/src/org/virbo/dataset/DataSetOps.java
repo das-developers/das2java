@@ -1881,10 +1881,14 @@ public class DataSetOps {
     }
 
     /**
-     * see http://www.papco.org/wiki/index.php/DataReductionSpecs.  There's a big problem here:
+     * sprocess implements the poorly-named filters string / process string of Autoplot, allowing
+     * clients to "pipe" data through a chain of operations.  For example, the filters string 
+     * "|slice0(9)|histogram()" will slice on the ninth index and then take a histogram of that
+     * result.  See http://www.papco.org/wiki/index.php/DataReductionSpecs (TODO: wiki page was lost,
+     * which could probably be recovered.)  There's a big problem here:
      * if the command is not recognized, then it is ignored.  We should probably change this,
      * but the change should be at a major version change in case it breaks things.
-     * @param c process string like "bgsmx|slice0(9)|histogram()"
+     * @param c process string like "slice0(9)|histogram()"
      * @param fillDs The dataset loaded from the data source controller, with initial filters (like fill) applied.
      * @param mon monitor for the processing.
      * @throws ParseException when the string cannot be parsed
@@ -1912,7 +1916,7 @@ public class DataSetOps {
             mon.started();
             while ( s.hasNext() ) {
                 cmd= s.next();
-                cmd= cmd.replaceAll( "\\|\\s*", "|" ); // https://sourceforge.net/tracker/?func=detail&aid=3586477&group_id=199733&atid=970685
+                cmd= cmd.replaceAll( "\\|\\s*", "|" ); // https://sourceforge.net/p/autoplot/feature-requests/288/
                 i= c.indexOf(cmd,i);
                 logger.log(Level.FINER, "  cmd \"{0}\"", cmd );
 
