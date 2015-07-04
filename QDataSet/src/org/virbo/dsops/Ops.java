@@ -723,8 +723,9 @@ public class Ops {
      * @param dim zero-based index number.
      * @param mon progress monitor.
      * @return the rank N-1 qube dataset.
+     * @throws UncheckedCancelledOperationException
      */
-    public static QDataSet total(QDataSet ds, int dim, ProgressMonitor mon) {
+    public static QDataSet total(QDataSet ds, int dim, ProgressMonitor mon) throws UncheckedCancelledOperationException {
         int[] qube = DataSetUtil.qubeDims(ds);
         if ( qube==null ) throw new IllegalArgumentException("argument does not appear to be qube");
         int[] newQube = DataSetOps.removeElement(qube, dim);
@@ -757,6 +758,7 @@ public class Ops {
             QubeDataSetIterator it1 = new QubeDataSetIterator(result);
             it1.setMonitor(mon);
             while (it1.hasNext()) {
+                if ( mon.isCancelled() ) throw new UncheckedCancelledOperationException("total cancelled");
                 it1.next();
                 int n = ds.length(dim);
                 double s = 0;
