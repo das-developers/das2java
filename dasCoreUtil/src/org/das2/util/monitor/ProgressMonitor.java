@@ -140,14 +140,20 @@ public interface ProgressMonitor {
     
     /** 
      * Returns <code>true</code> if the operation being tracked
-     * should be cancelled.
+     * should be cancelled.  For example, the human operator has pressed
+     * the cancel button indicating that the process should be stopped.  Note
+     * that if the process is not checking the cancel status, the cancel button
+     * should be disabled.
+     * 
      * @return <code>true</code> if the operation being tracked
      * should be cancelled.
      */
     boolean isCancelled();
     
     /**
-     * return true if the process appears to support cancel.
+     * return true if the process appears to support cancel.  Many
+     * processes use a monitor to provide status feedback, but do not check
+     * if the human operator has pressed cancel.
      * @return 
      */
     boolean canBeCancelled();
