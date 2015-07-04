@@ -758,7 +758,7 @@ public class Ops {
             QubeDataSetIterator it1 = new QubeDataSetIterator(result);
             it1.setMonitor(mon);
             while (it1.hasNext()) {
-                if ( mon.isCancelled() ) throw new UncheckedCancelledOperationException("total cancelled");
+                if ( mon.isCancelled() ) throw new UncheckedCancelledOperationException("total cancelled"); 
                 it1.next();
                 int n = ds.length(dim);
                 double s = 0;
