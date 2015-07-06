@@ -2142,6 +2142,27 @@ public class DataSetOps {
                             fillDs= Ops.fftPowerMultiThread(fillDs,len, mon.getSubtaskMonitor("fftPower"));
                         }
                     } 
+
+                } else if ( cmd.startsWith("|fft" ) ) {
+                    if ( fillDs.length()>0 ) {
+                        if ( s.hasNextInt() ) {
+                            int len= s.nextInt();
+                            if ( s.hasNextInt() ) {
+                                int step= s.nextInt();
+                                String window= getStringArg( s.next() );
+                                if ( window.length()==0 ) window= "Unity";
+                                FFTFilterType ff= Ops.FFTFilterType.valueOf(window);
+                                QDataSet wqds= Ops.windowFunction( ff, len );
+                                fillDs= Ops.fft( fillDs, wqds, step, mon.getSubtaskMonitor("fft"));
+                            } else {
+                                fillDs= Ops.fft( fillDs, Ops.ones(len), 1, mon.getSubtaskMonitor("fft"));
+                            }
+                        } else {
+                            fillDs= Ops.fft(fillDs);
+                        }
+                    } else {
+                        fillDs= Ops.fft(fillDs); //TODO: this doesn't seem right.
+                    }
                 } else if ( cmd.equals("|hanning") ) {
                     if ( fillDs.length()>0 ) {
                         if ( s.hasNextInt() ) {
