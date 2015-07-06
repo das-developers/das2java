@@ -9,7 +9,7 @@
                 <title>Fourier Filtering</title>
                 <bookmark-list>
                     <bookmark>
-                        <title>FFT with sliding window </title>
+                        <title>FFT Power Spectrum with sliding window </title>
                         <filter>|fftPower(512,2,'Hanning')</filter>
                         <description>Initializes the FFTPower filter</description>
                     </bookmark>
@@ -18,6 +18,16 @@
                         <filter>|hanning(128)</filter>
                         <description>Runs a Hanning window before taking the fft</description>
                     </bookmark>
+                    <bookmark>
+                        <title>FFT</title>
+                        <filter>|fft()</filter>
+                        <description>Returns real and imaginary components of Fourier transform</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>FFT and magnitude</title>
+                        <filter>|fft()|magnitude()</filter>
+                        <description>Returns real and imaginary components of Fourier transform, then take magnitude</description>
+                    </bookmark>                    
                 </bookmark-list>
             </bookmark-folder>
             <bookmark-folder>
