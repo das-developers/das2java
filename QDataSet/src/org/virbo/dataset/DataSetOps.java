@@ -2455,7 +2455,7 @@ public class DataSetOps {
      *   <li>rank 2 waveform: r.slice(0) x bounds, r.slice(1) y bounds
      *   <li>rank 2 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
      *   <li>rank 3 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
-     * </li>
+     * </ul>
      * This does not take DELTA_PLUS and DELTA_MINUS into account.
      * @param ds a rank 1,2, or 3 dataset.
      * @return a bounding qube of the independent dimensions 
@@ -2508,7 +2508,7 @@ public class DataSetOps {
      *   <li>rank 2 waveform: r.slice(0) x bounds, r.slice(1) y bounds
      *   <li>rank 2 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
      *   <li>rank 3 table:r.slice(0) x bounds  r.slice(1)  DEPEND_0 bounds.
-     * </li>
+     * </ul>
      * @param ds rank 1,2, or 3 dataset.
      * @return a bounding qube of the independent dimensions 
      */
