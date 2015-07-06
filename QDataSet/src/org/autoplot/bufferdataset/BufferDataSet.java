@@ -459,7 +459,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     private static int allocateDirect= -1;
     
     /**
-     * return 1 if direct allocate should be used 0 if not.  (The
+     * return 1 if direct allocate should be used, 0 if not.  (The
      * internal variable has a -1 initial state, which is why this is
      * not boolean.)  This looks for 32bit Javas, and if more than 1/2 Gig is 
      * being used then it will allocate direct.
