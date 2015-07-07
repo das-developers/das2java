@@ -322,7 +322,13 @@ public final class DatumUtil {
     
     public static DatumFormatter bestTimeFormatter(Datum minimum, Datum maximum, int nsteps) {
         double secondsPerStep = maximum.subtract(minimum).doubleValue(Units.seconds) / ( nsteps );
-        if (secondsPerStep < 1.) {
+        if (secondsPerStep < 1e-6) {
+            return TimeDatumFormatter.NANOSECONDS;
+        }
+        else if (secondsPerStep < 1e-3) {
+            return TimeDatumFormatter.MICROSECONDS;
+        }
+        else if (secondsPerStep < 1.) {
             return TimeDatumFormatter.MILLISECONDS;
         }
         else if (secondsPerStep < 60.) {
