@@ -2,6 +2,7 @@
 package org.virbo.filters;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -79,6 +80,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     }
 
     List<FilterEditorPanel> editors= new LinkedList();
+    
+    /**
+     * these are the results after each filter. 
+     */
+    List<QDataSet> results= new LinkedList();
 
     
     /**
@@ -543,29 +549,14 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         timer.tickle(filter); 
     }
     
+    
     /**
-     * the filter must be set before this is called.  This will set droplist labels, etc.
-     * @param ds the dataset, or null.
+     * This should not be called on the event thread.
+     * @param ds the input dataset
+     * @param filter
+     * @param index 
      */
-    @Override
-    public void setInput( QDataSet ds) {
-        logger.entering( CLASS_NAME, "setInput", ds );
-        
-        if ( this.inputDs==ds ) {
-            logger.fine("already set input...");
-            return;
-        } 
-
-        if ( !SwingUtilities.isEventDispatchThread() ) {
-            logger.warning("not event thread");
-        }
-        
-        
-        this.inputDs= ds;
-        
-        String filter= getFilter();
-        logger.log(Level.FINE, "filter: {0}", filter);
-        
+    private void setInput(QDataSet ds, String filter ) {
         String[] ss= filter.split("\\|");
         int i=0;
         int iss= 0;
@@ -573,10 +564,18 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             s= s.trim();
             iss++;
             if ( s.length()>0 ) {
-                FilterEditorPanel p = editors.get(i);
+                final FilterEditorPanel p = editors.get(i);
                 if ( ds!=null ) {
                     
-                    p.setInput(ds);
+                    final QDataSet fds= ds;
+                    Runnable run= new Runnable() {
+                        @Override
+                        public void run() {
+                            p.setInput(fds);
+                            p.getPanel().setBackground(Color.green);
+                        }
+                    };
+                    SwingUtilities.invokeLater(run);
                     
                     if ( iss<ss.length ) {
                         try {
@@ -600,6 +599,47 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             }
         }
         this.repaint();
+        
+    }
+    
+    
+    /**
+     * the filter must be set before this is called.  This will set 
+     * droplist labels, etc.  This should be called from the event thread.
+     * @param ds the dataset, or null.
+     */
+    @Override
+    public void setInput( final QDataSet ds) {
+        logger.entering( CLASS_NAME, "setInput", ds );
+        
+        if ( this.inputDs==ds ) {
+            logger.fine("already set input...");
+            return;
+        } 
+
+        if ( !SwingUtilities.isEventDispatchThread() ) {
+            logger.warning("not event thread");
+        }
+        
+        
+        this.inputDs= ds;
+        
+        final String filter= getFilter();
+        logger.log(Level.FINE, "filter: {0}", filter);
+        
+        for (FilterEditorPanel p : editors) {
+            p.getPanel().setBackground(Color.red);
+        }
+        
+        Runnable run= new Runnable() { 
+            @Override
+            public void run() {
+                setInput( ds, filter );
+            }
+        };
+        
+        new Thread( run, "setInput" ).start();
+        
         //this.revalidate();        
     }
 
