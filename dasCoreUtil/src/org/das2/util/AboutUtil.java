@@ -53,8 +53,8 @@ public class AboutUtil {
 
         try {
             List<String> bis = getBuildInfos();
-            for (int i = 0; i < bis.size(); i++) {
-                aboutContent.append( "<br> " ).append( bis.get(i) ).append("\n");
+            for (String bi : bis) {
+                aboutContent.append( "<br> " ).append(bi).append("\n");
             }
         } catch (IOException ex) {
             logger.log( Level.WARNING, ex.getMessage(), ex );
@@ -68,6 +68,7 @@ public class AboutUtil {
     /**
      * searches class path for META-INF/build.txt, returns nice strings
      * @return one line per jar
+     * @throws IOException when META-INF/build.txt cannot be loaded.
      */
     public static List<String> getBuildInfos() throws IOException {
         ClassLoader loader= AboutUtil.class.getClassLoader();
