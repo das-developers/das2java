@@ -772,7 +772,7 @@ public class Ops {
                 }
                 while (it0.hasNext()) {
                     it0.next();
-                    double w1 = it0.getValue(wds);
+                    double w1 = it0.getValue(wds) > 0 ? 1 : 0.;
                     s += w1 * it0.getValue(ds);
                     w += w1;
                 }
