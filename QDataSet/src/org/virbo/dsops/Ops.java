@@ -2268,6 +2268,24 @@ public class Ops {
     }
 
     /**
+     * returns rank 4 dataset with filled with value.
+     * @param val fill the dataset with this value.
+     * @param len0
+     * @param len1
+     * @param len2
+     * @param len3
+     * @return 
+     */
+    public static WritableDataSet replicate(double val, int len0, int len1, int len2, int len3 ) {
+        int size = len0 * len1 * len2 * len3;
+        double[] back = new double[size];
+        for (int i = 0; i < size; i++) {
+            back[i] = val;
+        }
+        return DDataSet.wrap(back, 4, len0, len1, len2, len3 );
+    }
+
+    /**
      * returns rank 1 dataset with value
      * @param val fill the dataset with this value.
      * @param len0
@@ -2419,6 +2437,17 @@ public class Ops {
         return replicate(1.0, len0, len1, len2);
     }
 
+    /**
+     * return new dataset filled with ones.
+     * @param len0 the length of the first index.
+     * @param len1 the length of the second index.
+     * @param len2 the length of the third index.
+     * @return dataset filled with ones.
+     */
+    public static QDataSet ones(int len0, int len1, int len2, int len3 ) {
+        return replicate(1.0, len0, len1, len2, len3 );
+    }
+    
     /**
      * concatenates the two datasets together, appending the datasets on the zeroth dimension.
      * The two datasets must be QUBES have similar geometry on the higher dimensions.
