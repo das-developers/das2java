@@ -45,16 +45,16 @@ public class AboutUtil {
         StringBuilder aboutContent = new StringBuilder("<html>" +
                 //"<img src='images/dasSplash.gif'><br>" +
                 "release version: " + dasVersion +
-                "<br>build time: " + buildTime +
-                "<br>java version: " + javaVersion +
-                "<br>max memory (Mb): " + mem +
-                "<br>arch: " + arch +
-                "<br><br>");
+                "\n<br>build time: " + buildTime +
+                "\n<br>java version: " + javaVersion +
+                "\n<br>max memory (Mb): " + mem +
+                "\n<br>arch: " + arch +
+                "\n<br><br>\n");
 
         try {
             List<String> bis = getBuildInfos();
             for (int i = 0; i < bis.size(); i++) {
-                aboutContent.append( "<br> " ).append( bis.get(i) );
+                aboutContent.append( "<br> " ).append( bis.get(i) ).append("\n");
             }
         } catch (IOException ex) {
             logger.log( Level.WARNING, ex.getMessage(), ex );
