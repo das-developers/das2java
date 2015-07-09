@@ -3078,6 +3078,25 @@ public class Ops {
         QDataSet modt= lt( modp( t, DataSetUtil.asDataSet(TAU) ), PI );
         return link( t, modt );
     }
+    
+    /**
+     * provide explicit method for appending two events scheme datasets.  This will probably be 
+     * deprecated, and this was added at 17:30 for a particular need.
+     * @param ev1
+     * @param ev2
+     * @return 
+     */
+    public static QDataSet appendEvents( QDataSet ev1, QDataSet ev2 ) {
+        QDataSet result= ev1;
+        for ( int i=0; i<ev2.length(); i++ ) {
+            String sval=  ev2.slice(i).slice(3).toString();
+            int k= sval.indexOf("=");
+            sval= sval.substring(k+1);
+            result= createEvent( result, DataSetUtil.asDatumRange( ev2.slice(i).trim(0,2) ),(int) ev2.value(i,2), sval );
+        }
+        return result;
+    }
+    
     /**
      * tool for creating ad-hoc events datasets.
      * @param timeRange a timerange like "2010-01-01" or "2010-01-01/2010-01-10" or "2010-01-01 through 2010-01-09"
@@ -3085,7 +3104,6 @@ public class Ops {
      * @param annotation label for event, possibly including granny codes.
      * @return a rank 2 QDataSet with [[ startTime, duration, rgbColor, annotation  ]]
      */
-
     public static QDataSet createEvent( String timeRange, int rgbcolor, String annotation ) {
         return createEvent( null, timeRange, rgbcolor, annotation );
     }
