@@ -63,12 +63,16 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     private static final Logger logger= LoggerManager.getLogger("qdataset.filters");
     private static final String CLASS_NAME = FiltersChainPanel.class.getName();
     
+    private final Color backgroundColor;
+    
     /**
      * Creates new form FiltersChainPanel
      */
     public FiltersChainPanel() {
         logger.entering( CLASS_NAME, "<init>" );
         initComponents();
+        backgroundColor= this.getBackground();
+        
         setLayout( new BoxLayout( this, BoxLayout.Y_AXIS ));
         timer= new TickleTimer( 50, new PropertyChangeListener() {
             @Override
@@ -577,7 +581,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                         @Override
                         public void run() {
                             p.setInput(fds);
-                            p.getPanel().setBackground(Color.green);
+                            p.getPanel().setBackground(backgroundColor);
                         }
                     };
                     SwingUtilities.invokeLater(run);
@@ -634,7 +638,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         logger.log(Level.FINE, "filter: {0}", filter);
         
         for (FilterEditorPanel p : editors) {
-            p.getPanel().setBackground(Color.red);
+            p.getPanel().setBackground(Color.GRAY);
         }
         
         final List<FilterEditorPanel> leditors= new ArrayList(editors);
