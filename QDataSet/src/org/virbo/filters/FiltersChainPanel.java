@@ -222,8 +222,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         Runnable run= new Runnable() {
             @Override
             public void run() {
+                List<FilterEditorPanel> leditors= new ArrayList(editors);
                 int ifilter= 0;
-                for ( FilterEditorPanel p: editors ) {
+                for ( FilterEditorPanel p: leditors ) {
                     if ( ifilter==0 && p instanceof UnbundleFilterEditorPanel && implicitUnbundle ) {
                         b.append( ((UnbundleFilterEditorPanel)p).getComponent() );
                     } else {
@@ -251,7 +252,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         FilterEditorPanel p= editors.remove(fi);
         removeFocusListeners(p.getPanel());
         setFilter( getFilter() );
-        updateSoon( inputDs, getFilter() );
+        updateSoon( getFilter() );
     }
     
     private final FocusListener lostFocusListener= new FocusListener() {
@@ -265,7 +266,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         public void focusLost(FocusEvent e) {
             logger.log(Level.FINE, "focusLost {0}", e.getComponent().getName() );
             if ( !getFilter().equals(currentFilter) ) {
-                updateSoon(inputDs, null );
+                updateSoon( null );
             } else {
                 logger.log( Level.FINER, "... already up to date");
             }
@@ -278,7 +279,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         @Override
         public void actionPerformed(ActionEvent e) {
             logger.log(Level.FINE, "requestUpdateFrom {0}", e.getSource());
-            updateSoon(inputDs, null );
+            updateSoon( null );
         }
     };
     
@@ -286,7 +287,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     private final ChangeListener requestChangeListener= new ChangeListener() {
         @Override
         public void stateChanged(ChangeEvent e) {
-            updateSoon(inputDs, null );
+            updateSoon( null );
         }
     };
         
@@ -304,7 +305,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             QDataSet inputDs1= this.inputDs;
             setInput(null);
             setInput(inputDs1);
-            updateSoon(inputDs1, filter );
+            updateSoon( filter );
         }
     }
      
@@ -541,9 +542,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     }
     /**
      * set the input dataset for each filter.
-     * TODO: This does data processing on the event thread and will surely cause problems.
      */
-    private void updateSoon( final QDataSet inputDs, final String filter) {
+    private void updateSoon( final String filter) {
         logger.entering( CLASS_NAME, "updateSoon", filter);
         //this.inputDs= null;
         timer.tickle(filter); 
@@ -556,7 +556,12 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
      * @param filter
      * @param index 
      */
-    private void setInput(QDataSet ds, String filter ) {
+    private void setInput( QDataSet ds, String filter, List<FilterEditorPanel> leditors ) {
+        
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            logger.warning("must NOT be called from event thread");
+        }
+        
         String[] ss= filter.split("\\|");
         int i=0;
         int iss= 0;
@@ -564,7 +569,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             s= s.trim();
             iss++;
             if ( s.length()>0 ) {
-                final FilterEditorPanel p = editors.get(i);
+                final FilterEditorPanel p = leditors.get(i);
                 if ( ds!=null ) {
                     
                     final QDataSet fds= ds;
@@ -576,6 +581,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                         }
                     };
                     SwingUtilities.invokeLater(run);
+                    //run.run();
                     
                     if ( iss<ss.length ) {
                         try {
@@ -591,7 +597,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                     p.getPanel().addPropertyChangeListener("filter",new PropertyChangeListener() {
                         @Override
                         public void propertyChange(PropertyChangeEvent evt) {
-                            updateSoon(inputDs, (String)evt.getNewValue() );
+                            updateSoon( (String)evt.getNewValue() );
                         }
                     });
                 }
@@ -631,14 +637,17 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             p.getPanel().setBackground(Color.red);
         }
         
+        final List<FilterEditorPanel> leditors= new ArrayList(editors);
+        
         Runnable run= new Runnable() { 
             @Override
             public void run() {
-                setInput( ds, filter );
+                setInput( ds, filter, leditors );
             }
         };
         
         new Thread( run, "setInput" ).start();
+        //run.run();
         
         //this.revalidate();        
     }
