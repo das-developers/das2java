@@ -89,7 +89,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
      * these are the results after each filter. 
      */
     List<QDataSet> results= new LinkedList();
-
+    
+    /**
+     * these are the filters used to get to each result.
+     */
+    List<String> resultFilters= new LinkedList();
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -500,8 +504,24 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         }
         ss= Arrays.copyOfRange( ss, 1, ss.length );
         
+//        while ( resultFilters.size()<ss.length ) { // TODO: s.length()==0
+//            resultFilters.add("");
+//            results.add(null);
+//        }
+//        
+//        while( resultFilters.size()>ss.length ) {
+//            resultFilters.remove(ss.length);
+//            results.remove(ss.length);
+//        }
+//        
+//        boolean dirty= false; // keep track of which results we can recycle.
         for (String s : ss) {
             if ( s.length()>0 ) {
+//                if ( !resultFilters.get(i).equals(s) ) {
+//                    dirty= true;
+//                }
+//                if ( dirty ) results.set(i,null);
+//                
                 FilterEditorPanel p = getEditorFor(s, recycle.get(editors.size()) );
                 editors.add(p);
                 JPanel ll= onePanel(i);
@@ -590,6 +610,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                     if ( iss<ss.length ) {
                         try {
                             ds= DataSetOps.sprocess( "|"+s, ds, new NullProgressMonitor() );
+                            //resultFilters.set( i, s );
+                            //results.set( i, ds );
+
                         } catch ( Exception ex ) {
                             ds= null;
                         }
@@ -705,10 +728,10 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         //QDataSet ds= getDataSet( "rank1TimeSeries" );
         final QDataSet ds= getExampleDataSet( "qube" );
         
-        //ff.setFilter("|slice0(2)|cos()|collapse1()|butterworth(2,500,750,True)"); //butterworth(2,500,550,True)");
+        ff.setFilter("|slice0(2)|cos()|collapse1()|butterworth(2,500,750,True)"); //butterworth(2,500,550,True)");
         //ff.setFilter("|butterworth(2,500,550,True)"
         //ff.setFilter("|unbundle('bx1')");
-        ff.setFilter("|setDepend0Cadence(50s)");
+        //ff.setFilter("|setDepend0Cadence(50s)");
         ff.setInput(ds);
         
         final JTextField tf= new JTextField();
