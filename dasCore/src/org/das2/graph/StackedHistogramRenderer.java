@@ -73,9 +73,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     private DasAxis zAxis= null;
     private RowRowConnector zAxisConnector= null;
     private DasRow littleRow=null;
-    
-    private RebinDescriptor xBins= null;
-    
+        
     private PeaksIndicator peaksIndicator;
     
     /** Holds value of property sliceRebinnedData. */
@@ -104,14 +102,17 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         public static final PeaksIndicator BlackPeaks= new PeaksIndicator("Black Peaks");
         public static final PeaksIndicator MaxLines= new PeaksIndicator("Lines");
         
+        @Override
         public String getListLabel() {
             return this.id;
         }
         
+        @Override
         public javax.swing.Icon getListIcon() {
             return null;
         }
 
+        @Override
         public void drawListIcon( Graphics2D g, int x, int y ) {
             ImageIcon i= (ImageIcon) getListIcon();
             g.drawImage(i.getImage(), x, y, null);
@@ -120,6 +121,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }
     
     protected class RebinListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             update();
         }
@@ -222,6 +224,9 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     }
     
     /**
+     * This sets the yAxis and adds itself to the axis property change listener.
+     * TODO: why must this Renderer be special and have a separate set y axis?
+     * @param yAxis the new yAxis
      * @throws IllegalArgumentException if the yAxis is not an instanceof DasLabelAxis
      */
     public void setYAxis(DasAxis yAxis) {
@@ -415,7 +420,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             }
 
             try {
-                QDataSet result= null;
+                QDataSet result;
                 if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
                     logger.log(Level.FINE, "using rebinner {0}", highResRebinner);
                     result= highResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
@@ -425,7 +430,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                 }
                 
                 return result;
-            } catch ( Exception e ) {
+            } catch ( IllegalArgumentException | DasException e ) {
                 throw new DasException(e);
             }
         }
