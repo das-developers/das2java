@@ -84,8 +84,9 @@ public class AsciiParser {
      */
     Units[] units;
 
-    /** either the unit or depend 1 value associated with the column 
-     * e.g. Density(cc**-3)  or  flux_C4(6.4)
+    /** either the unit or depend 1 value associated with the column,
+     * e.g. Density(cc**-3)  or  flux_C4(6.4).
+     * @see #units
      */
     String[] fieldUnits;
 
@@ -1778,6 +1779,16 @@ public class AsciiParser {
         }
     }
 
+    /**
+     * return the number of fields in each record.  Note the RecordParsers
+     * also have a fieldCount, which should be equal to this.  This allows them
+     * to be independent of the parser.
+     * @return 
+     */
+    public int getFieldCount() {
+        return fieldCount;
+    }
+    
     /**
      * return the name of each field.  field0, field1, ... are the default names when
      * names are not discovered in the table.  Changing the array will not affect
