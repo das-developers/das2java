@@ -245,11 +245,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     public void updatePlotImage( DasAxis xAxis, DasAxis yAxis_1, ProgressMonitor monitor ) throws DasException {
         super.updatePlotImage( xAxis, yAxis_1, monitor );
         final Color BAR_COLOR= Color.BLACK;
-        
-        Component parent1= getParent();
-        Cursor cursor0= parent1.getCursor();
-        parent1.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        
+                
         DasColumn column= xAxis.getColumn();
         DasRow row= yAxis_1.getRow();
         
@@ -382,8 +378,6 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         
         g.dispose();
         this.plotImage = plotImage1;
-        parent1.setCursor(cursor0);
-        getParent().repaint();
         
         if ( sliceRebinnedData ) super.ds= data;
         
