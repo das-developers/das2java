@@ -424,7 +424,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                 }
                 
                 return result;
-            } catch ( IllegalArgumentException | DasException e ) {
+            } catch ( Exception e ) {
                 throw new DasException(e);
             }
         }
