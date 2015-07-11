@@ -168,8 +168,10 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         zAxisConnector.setVisible(false);
         canvas.add(zAxisConnector);
         
-        yAxis.setFloppyItemSpacing(true);
-        yAxis.setOutsidePadding(1);
+        if ( yAxis!=null ) {
+            yAxis.setFloppyItemSpacing(true);
+            yAxis.setOutsidePadding(1);
+        }
         
         this.peaksIndicator= PeaksIndicator.MaxLines;
         
@@ -249,7 +251,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         parent1.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         
         DasColumn column= xAxis.getColumn();
-        DasRow row= yAxis.getRow();
+        DasRow row= yAxis_1.getRow();
         
         int w= column.getWidth();
         int h= row.getHeight();
@@ -272,7 +274,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         RebinDescriptor xbins= new RebinDescriptor(xAxis.getDataMinimum(), xAxis.getDataMaximum(), (int)(Math.abs(column.getWidth())/1)+1, (xAxis.isLog()));
         
         imageXRange= xAxis.getDatumRange();
-        imageYRange= yAxis.getDatumRange();
+        imageYRange= yAxis_1.getDatumRange();
         
         int xDMax= column.getDMaximum();
         int xDMin= column.getDMinimum();
@@ -296,14 +298,8 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         QDataSet peaks= (QDataSet) data.property(QDataSet.BIN_PLUS); // can be null for NN.
         QDataSet weights= SemanticOps.weightsDataSet(data);
         
-        DasLabelAxis yAxis1;
-        if ( !( yAxis_1 instanceof DasLabelAxis ) ) {
-            logger.warning("yaxis must be a DasLabelAxis");
-            return;
-        } else {
-            yAxis1= (DasLabelAxis)yAxis_1;
-        }
-        
+        DasAxis yAxis1= yAxis_1;
+
         int zmid= zAxis.getRow().getDMiddle();
         boolean haveLittleRow= false;
 
@@ -311,24 +307,28 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         Units yunits= SemanticOps.getUnits(yds);
         Units zunits= SemanticOps.getUnits(data);
 
+        int[] yBases= new int[ data.length(0) ];
+        for ( int j=0; j<data.length(0); j++ ) {
+            if ( yAxis1 instanceof DasLabelAxis ) {
+                yBases[j]= ((DasLabelAxis)yAxis1).getItemMax(yunits.createDatum(yds.value(j)));
+            } else {
+                yBases[j]= (int)yAxis1.transform( yunits.createDatum(yds.value(j)) );
+            }
+        }
+        int yRowHeight= yBases[0]- yBases[1];
+        
         for (int j = 0; j < data.length(0); j++) {
             
             int yBase;
             //Line2D.Float lBase;
             
-            if ( j==(data.length(0)-1) ) {   /* Draw top grey line */
-                yBase= yAxis1.getItemMin(yunits.createDatum(yds.value(j)));
-                g.setColor(GREY_PEAKS_COLOR);
-                g.drawLine(xDMin, yBase, xDMax, yBase );
-                g.setColor(BAR_COLOR);
-            }
+            yBase= yBases[j];
             
-            yBase= yAxis1.getItemMax(yunits.createDatum(yds.value(j)));
             g.setColor(Color.lightGray);
             g.drawLine(xDMin, yBase, xDMax, yBase );
             g.setColor(BAR_COLOR);
             
-            int yBase1= yAxis1.getItemMin(yunits.createDatum(yds.value(j)));
+            int yBase1= yBase - yRowHeight;
             
             if ( !haveLittleRow && yBase1 <= zmid  ) {
                 littleRow.setDPosition(yBase1,yBase);
