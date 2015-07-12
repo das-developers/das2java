@@ -2700,8 +2700,9 @@ public class DasPlot extends DasCanvasComponent {
      * reset the paint counter.
      */
     public void resetPaintCount() {
+        Renderer[] lrenderers= getRenderers();
         this.paintComponentCount= 0;
-        for ( Renderer r: renderers ) {
+        for ( Renderer r: lrenderers ) {
             r.resetCounters();
         }
     }
