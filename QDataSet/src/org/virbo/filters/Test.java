@@ -7,6 +7,7 @@
 package org.virbo.filters;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsops.Ops;
 
@@ -24,8 +25,14 @@ public class Test {
     }
     
     public static void testSlice() throws Exception {
-        FilterEditorPanel p= new SliceFilterEditorPanel();
-        p.setFilter("|slice1(50)");
+        final FilterEditorPanel p= new SliceFilterEditorPanel();
+        Runnable run= new Runnable() {
+            public void run() {
+                p.setFilter("|slice1(50)");
+            }
+        };
+        SwingUtilities.invokeAndWait(run);
+        
         QDataSet ds= Ops.ripples(30,4,5,6);
         QDataSet dep0= Ops.linspace(50.,100.,30);
         dep0= Ops.putProperty( dep0, QDataSet.NAME, "time" );
