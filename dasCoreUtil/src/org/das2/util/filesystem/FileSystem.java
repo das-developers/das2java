@@ -276,7 +276,7 @@ public abstract class FileSystem  {
             try {
                 synchronized ( waitObject ) {
                     logger.log(Level.FINE, "waiting for {0} {1}", new Object[]{waitObject, root});
-                    waitObject.wait();
+                    waitObject.wait();  //TODO: I witnessed a bug where this was stuck and there were no objects in blocks.
                     logger.log(Level.FINE, "done waiting for {0}", root);
                 }
             } catch (InterruptedException ex) {
