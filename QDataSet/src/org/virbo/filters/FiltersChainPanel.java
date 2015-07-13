@@ -301,7 +301,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
     private void addFilterNew( int idx ) {
         AddFilterDialog afd= new AddFilterDialog();
-        int r= JOptionPane.showConfirmDialog( this, afd, "Add Filter", JOptionPane.OK_CANCEL_OPTION );
+        int r= JOptionPane.showConfirmDialog( this, afd, "Add Operation", JOptionPane.OK_CANCEL_OPTION );
         if ( r==JOptionPane.OK_OPTION ) {
             String ss= afd.getValue();
             FilterEditorPanel filter1= getEditorFor(ss, null);
