@@ -49,7 +49,7 @@ public class AboutUtil {
                 "\n<br>java version: " + javaVersion +
                 "\n<br>max memory (Mb): " + mem +
                 "\n<br>arch: " + arch +
-                "\n<br><br>\n");
+                "\n<br>\n");
 
         try {
             List<String> bis = getBuildInfos();
