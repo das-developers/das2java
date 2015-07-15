@@ -223,8 +223,11 @@ public class PropertyEditor extends JComponent {
                 PropertyEditor p;
                 TreeTableModel model = (TreeTableModel) table.getModel();
                 PropertyTreeNodeInterface node = (PropertyTreeNodeInterface) model.getNodeForRow(focusRow);
-                int[] selected = table.getSelectedRows();                
-                if (selected.length == 1) {
+                int[] selected = table.getSelectedRows(); 
+                if ( selected.length==0 ) {
+                    JOptionPane.showMessageDialog( table, "No items selected" );
+                    return;
+                } else if (selected.length == 1) {
                     p = new PropertyEditor(node.getValue());
                 } else {
                     int ileader= table.getSelectedRow();
@@ -390,7 +393,7 @@ public class PropertyEditor extends JComponent {
             if ( this.bean==null ) {
                 dialog.setTitle("Property Editor");
             } else {
-                dialog.setTitle("Property Editor, "+this.bean );
+                dialog.setTitle("Property Editor for "+this.bean );
             }
 
             dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
