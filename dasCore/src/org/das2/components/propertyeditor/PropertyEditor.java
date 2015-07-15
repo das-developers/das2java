@@ -387,6 +387,12 @@ public class PropertyEditor extends JComponent {
                 dialog = new JDialog();
             }
 
+            if ( this.bean==null ) {
+                dialog.setTitle("Property Editor");
+            } else {
+                dialog.setTitle("Property Editor, "+this.bean );
+            }
+
             dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
             dialog.addWindowListener(new WindowAdapter() {
 
