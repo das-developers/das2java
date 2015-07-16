@@ -284,10 +284,21 @@ public class SeriesRenderer extends Renderer {
             }
 
             if (colorByDataSet != null) {
-                for (int i = 0; i < count; i++) {
-                    if ( colors[i]>=0 ) {
-                        graphics.setColor(ccolors[colors[i]]);
-                        psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                boolean rgbColor= Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
+                if ( rgbColor ) {
+                    for (int i = 0; i < count; i++) {
+                        if ( colors[i]>=0 ) {
+                            graphics.setColor( new Color(colors[i]) );
+                            psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                        }
+                    }
+                    
+                } else {
+                    for (int i = 0; i < count; i++) {
+                        if ( colors[i]>=0 ) {
+                            graphics.setColor(ccolors[colors[i]]);
+                            psym.draw(graphics, dpsymsPath[i * 2], dpsymsPath[i * 2 + 1], fsymSize, fillStyle);
+                        }
                     }
                 }
 
@@ -323,7 +334,11 @@ public class SeriesRenderer extends Renderer {
             }
             DasPlot lparent= getParent();
             if ( lparent==null ) return 0;
-            if (stampPsyms && !lparent.getCanvas().isPrintingThread()) {
+            
+            QDataSet colorByDataSet = colorByDataSet(ds);
+            boolean rgbColor= colorByDataSet!=null && Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
+            
+            if ( stampPsyms && !rgbColor && !lparent.getCanvas().isPrintingThread()) {
                 i = renderStamp(graphics, xAxis, yAxis, vds, mon);
             } else {
                 i = renderDraw(graphics, xAxis, yAxis, vds, mon);
