@@ -274,8 +274,10 @@ public class SeriesRenderer extends Renderer {
 
             graphics.setStroke(new BasicStroke((float) lineWidth));
 
+            boolean rgbColor= false;
             Color[] ccolors = null;
-            if (colorByDataSet != null) {
+            if ( colorByDataSet != null ) {
+                rgbColor= Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
                 IndexColorModel icm = colorBar.getIndexColorModel();
                 ccolors = new Color[icm.getMapSize()];
                 for (int j = 0; j < icm.getMapSize(); j++) {
@@ -284,7 +286,6 @@ public class SeriesRenderer extends Renderer {
             }
 
             if (colorByDataSet != null) {
-                boolean rgbColor= Units.rgbColor.equals( colorByDataSet.property(QDataSet.UNITS) );
                 if ( rgbColor ) {
                     for (int i = 0; i < count; i++) {
                         if ( colors[i]>=0 ) {
@@ -412,6 +413,7 @@ public class SeriesRenderer extends Renderer {
                 window= new Rectangle( window.x- buffer, window.y-buffer, window.width + 2*buffer, window.height + 2 * buffer );
             }
 
+            boolean rgbColor= colorByDataSet1!=null && Units.rgbColor.equals( colorByDataSet1.property(QDataSet.UNITS) );
             int i = 0;
             for (; index < lastIndex; index++) {
                 x = xds.value(index);
@@ -432,13 +434,24 @@ public class SeriesRenderer extends Renderer {
                         try {
                             if ( wdsz.value(index)>0 ) {
                                 haveValidColor= true;
-                                colors[i] = fcolorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
+                                if ( rgbColor ) {
+                                    colors[i] = (int)colorByDataSet1.value(index);
+                                } else {
+                                    colors[i] = fcolorBar.indexColorTransform( colorByDataSet1.value(index), cunits);
+                                }
                             } else {
                                 colors[i] = -1;
                             }
                         } catch ( NullPointerException ex ) {
                             //System.err.println("here391");
                             logger.log( Level.WARNING, ex.getMessage(), ex );
+                        }
+                    } else if ( wdsz!=null && rgbColor ) {
+                        if ( wdsz.value(index)>0 ) {
+                            haveValidColor= true;
+                            colors[i] = (int)colorByDataSet1.value(index);
+                        } else {
+                            colors[i] = -1;
                         }
                     }
                     i++;
