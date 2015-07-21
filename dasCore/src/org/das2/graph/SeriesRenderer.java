@@ -223,6 +223,9 @@ public class SeriesRenderer extends Renderer {
             DasPlot lparent= getParent();
             if ( lparent==null ) return 0;
 
+            long t0= System.currentTimeMillis();
+            logger.log( Level.FINE, "enter PsymRenderElement.renderStamp" );
+            
             QDataSet colorByDataSet=null;
             if ( colorByDataSetId != null && !colorByDataSetId.equals("")) {
                 colorByDataSet = colorByDataSet( ds );
@@ -245,6 +248,7 @@ public class SeriesRenderer extends Renderer {
                 }
             }
 
+            logger.log(Level.FINE, "done PsymRenderElement.renderStamp ({0}ms)", ( System.currentTimeMillis()-t0  ) );
             return count;
 
         }
@@ -258,6 +262,9 @@ public class SeriesRenderer extends Renderer {
          */
         private int renderDraw(Graphics2D graphics, DasAxis xAxis, DasAxis yAxis, QDataSet dataSet, ProgressMonitor mon) {
 
+            logger.log( Level.FINE, "enter PsymRenderElement.renderDraw" );
+            long t0= System.currentTimeMillis();
+            
             float fsymSize = symSize;
 
             QDataSet colorByDataSet=null;
@@ -314,6 +321,8 @@ public class SeriesRenderer extends Renderer {
                 }
             }
 
+            logger.log(Level.FINE, "done PsymRenderElement.renderDraw ({0}ms)", ( System.currentTimeMillis()-t0  ) );
+            
             return count;
 
         }
@@ -643,6 +652,7 @@ public class SeriesRenderer extends Renderer {
    
         @Override
         public int render(Graphics2D g, DasAxis xAxis, DasAxis yAxis, QDataSet vds, ProgressMonitor mon) {
+            long t0= System.currentTimeMillis();
             logger.log(Level.FINE, "enter connector render" );
             if ( vds.rank()!=1 && !SemanticOps.isRank2Waveform(vds) ) {
                 renderException( g, xAxis, yAxis, new IllegalArgumentException("dataset is not rank 1"));
@@ -653,6 +663,7 @@ public class SeriesRenderer extends Renderer {
             }
             //dumpPath();
             psymConnector.draw(g, lpath1, (float)lineWidth);
+            logger.log(Level.FINE, "done connector render ({0}ms)", ( System.currentTimeMillis()-t0  ) );
             return 0;
         }
 
@@ -857,7 +868,7 @@ public class SeriesRenderer extends Renderer {
                 }
             }
             
-            logger.fine( String.format("time to create general path (ms): "+ ( System.currentTimeMillis()-t0  ) ) );
+            logger.log(Level.FINE, "done create general path ({0}ms)", ( System.currentTimeMillis()-t0  ));
             
             if (!histogram && simplifyPaths && colorByDataSetId.length()==0 ) {
                 //j   System.err.println( "input: " );
@@ -872,6 +883,7 @@ public class SeriesRenderer extends Renderer {
 
             //dumpPath( getParent().getCanvas().getWidth(), getParent().getCanvas().getHeight(), path1 );  // dumps jython script showing problem.
             //GraphUtil.describe( path1, true );
+            logger.log(Level.FINE, "done connector update ({0}ms)", ( System.currentTimeMillis()-t0  ));
         }
 
         @Override
@@ -1516,7 +1528,7 @@ public class SeriesRenderer extends Renderer {
 
         setRenderPointsPerMillisecond(dppms);
 
-        logger.log(Level.FINER, "render: {0}ms total:{1} fps:{2} pts/ms:{3}", new Object[]{renderTime, milli - lastUpdateMillis, 1000. / (milli - lastUpdateMillis), dppms});
+        logger.log(Level.FINE, "render: {0}ms total:{1} fps:{2} pts/ms:{3}", new Object[]{renderTime, milli - lastUpdateMillis, 1000. / (milli - lastUpdateMillis), dppms});
         lastUpdateMillis = milli;
 
         int ldataSetSizeLimit= getDataSetSizeLimit();
@@ -1576,7 +1588,7 @@ public class SeriesRenderer extends Renderer {
             return vds;
         }
         QDataSet hds= Reduction.histogram2D( vds, mxxx, myyy );
-        logger.log( Level.FINEST, "histogram2D: {0}", ( System.currentTimeMillis()-tt0 ));
+        logger.log( Level.FINEST, "done histogram2D ({0}ms)", ( System.currentTimeMillis()-tt0 ));
         DataSetBuilder buildx= new DataSetBuilder(1,100);
         DataSetBuilder buildy= new DataSetBuilder(1,100);
         for ( int ii=0; ii<hds.length(); ii++ ) {                
@@ -1718,15 +1730,15 @@ public class SeriesRenderer extends Renderer {
 
                     updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
 
-                    logger.log( Level.FINE, "data reduced to {0} {1}", new Object[] { vds, Ops.extent(xds) } );
-                    logger.log(Level.FINE, "reduceDataSet complete {0}", System.currentTimeMillis()-t0 );                
+                    logger.log( Level.FINER, "data reduced to {0} {1}", new Object[] { vds, Ops.extent(xds) } );
+                    logger.log( Level.FINER, "reduceDataSet complete ({0}ms)", System.currentTimeMillis()-t0 );                
                 } else {
-                    logger.log(Level.FINE, "data not reduced");
+                    logger.log( Level.FINER, "data not reduced");
                 }
 
                 if (fillToReference) {
                     fillElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("fillElement.update"));
-                    logger.log(Level.FINE, "fillElement.update complete {0}", System.currentTimeMillis()-t0 );
+                    logger.log( Level.FINER, "fillElement.update complete ({0}ms)", System.currentTimeMillis()-t0 );
                 }
 
             } else if (tds != null) {
@@ -1751,13 +1763,13 @@ public class SeriesRenderer extends Renderer {
                     updateFirstLast(xAxis, yAxis, xds, vds );  // we need to reset firstIndex, lastIndex
                     LoggerManager.markTime("updateFirstLast again");
                 }
-                logger.log(Level.FINE, "renderWaveform updateFirstLast complete {0}", System.currentTimeMillis()-t0 );
+                logger.log(Level.FINER, "renderWaveform updateFirstLast complete ({0}ms)", System.currentTimeMillis()-t0 );
 
             } else {
                 System.err.println("both tds and vds are null");
             }
 
-            logger.log( Level.FINE, "updatePlotImage uses subset from firstIndex, lastIndex: {0}, {1} ({2} points})", new Object[]{ firstIndex, lastIndex, lastIndex-firstIndex } );
+            logger.log( Level.FINER, "updatePlotImage uses subset from firstIndex, lastIndex: {0}, {1} ({2} points})", new Object[]{ firstIndex, lastIndex, lastIndex-firstIndex } );
             
             if (psymConnector != PsymConnector.NONE) {
                 try {
@@ -1774,7 +1786,7 @@ public class SeriesRenderer extends Renderer {
                 } else {
                     psymsElement.update(xAxis, yAxis, vds, monitor.getSubtaskMonitor("psymsElement.update"));
                 }
-                logger.log(Level.FINE, "psymsElement.update complete {0}", System.currentTimeMillis()-t0 );            
+                logger.log(Level.FINER, "psymsElement.update complete ({0}ms)", System.currentTimeMillis()-t0 );            
             } catch ( InconvertibleUnitsException ex ) {
                 return;
             }
@@ -1786,12 +1798,10 @@ public class SeriesRenderer extends Renderer {
                 selectionArea= calcSelectionArea( xAxis, yAxis, xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );        
             }
             
-            logger.log(Level.FINE, "calcSelectionArea complete {0}", System.currentTimeMillis()-t0);  
+            logger.log(Level.FINER, "calcSelectionArea complete ({0}ms)", System.currentTimeMillis()-t0);  
             //if (getParent() != null) {
             //    getParent().repaint();
             //}
-
-            logger.log(Level.FINE, "done updatePlotImage in {0} ms", (System.currentTimeMillis() - t0));
 
         } finally {
             monitor.finished();
@@ -1801,6 +1811,8 @@ public class SeriesRenderer extends Renderer {
         long renderTime = (milli - t0);
         double dppms = (lastIndex - firstIndex) / (double) renderTime;
 
+        logger.log(Level.FINE, "done updatePlotImage ({0}ms)", renderTime );
+        
         setUpdatesPointsPerMillisecond(dppms);
     }
 
@@ -1878,7 +1890,7 @@ public class SeriesRenderer extends Renderer {
             return SelectionUtil.NULL; // transient state, hopefully...
 
         } finally {
-            logger.fine( String.format( "time to calcSelectionArea: %6.3f\n", ((System.currentTimeMillis()-t0)/1000.)) );
+            logger.log(Level.FINE, "done calcSelectionArea ({0}ms)", System.currentTimeMillis()-t0 );
         }
 
         
