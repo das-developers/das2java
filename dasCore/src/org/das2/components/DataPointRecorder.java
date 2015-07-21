@@ -1347,7 +1347,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         } else if ( value instanceof String ) {
                             unitsArray[index]= EnumerationUnits.create("default"); //TODO:  we already checked for this.
                         } else {
-                            throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet");
+                            throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet, not " + value);
                         }
                     }
                     index++;
