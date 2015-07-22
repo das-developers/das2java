@@ -1456,7 +1456,7 @@ public class SeriesRenderer extends Renderer {
 
         int messageCount= 0;
 
-        logger.log(Level.FINER, "rendering points: {0}  {1}", new Object[]{lastIndex, firstIndex});
+        logger.log(Level.FINER, "rendering points: ds[{0}:{1}]", new Object[]{firstIndex,lastIndex});
         if ( lastIndex == -1 ) {
             if ( messageCount++==0) {
                 lparent.postMessage(SeriesRenderer.this, "need to update first/last", DasPlot.INFO, null, null);
