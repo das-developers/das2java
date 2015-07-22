@@ -56,7 +56,7 @@ public final class TimeUtil {
      * before these times.
      * @param YY  Gregorian year
      * @param MM  Gregorian month
-     * @param day Gregorian day
+     * @param DD Gregorian day
      * @return 
      */
     public static int julianDayIMCCE( int YY, int MM, int DD ) {
@@ -84,6 +84,7 @@ public final class TimeUtil {
      * @param year calendar year greater than 1582.
      * @param month 
      * @param day day of month. For day of year, use month=1 and doy for day.
+     * @return the Julian day
      */
     public static int julianDay( int year, int month, int day ) {
         if ( year<=1582 ) {
@@ -95,6 +96,13 @@ public final class TimeUtil {
         return jd;
     }
     
+    /**
+     * return the day of year for the month and day, for the given year
+     * @param month the month, january=1, february=2, etc.
+     * @param day day of month
+     * @param year four-digit year
+     * @return the day of year
+     */
     public static int dayOfYear( int month, int day, int year ) {
         return day + dayOffset[isLeapYear(year)?1:0][month];
     }
@@ -239,6 +247,11 @@ public final class TimeUtil {
     public static final TimeDigit TD_MICRO = new TimeDigit( 8, "MICROSECONDS", 1000 );
     public static final TimeDigit TD_NANO = new TimeDigit( 9, "NANOSECONDS", 1000 );
     
+    /**
+     * return the number of seconds elapsed since the last midnight.
+     * @param datum
+     * @return 
+     */
     public static double getSecondsSinceMidnight(Datum datum) {
         double xx= datum.doubleValue(Units.t2000);
         if (xx<0) {
@@ -253,6 +266,11 @@ public final class TimeUtil {
         }
     }
     
+    /**
+     * return the number of microseconds elapsed since the last midnight.
+     * @param datum
+     * @return 
+     */
     public static double getMicroSecondsSinceMidnight(Datum datum) {
         double xx= datum.doubleValue( Units.us2000 );
         if (xx<0) {
@@ -596,7 +614,10 @@ public final class TimeUtil {
     
     /**
      * Normalize the TimeStruct by decrementing higher digits.
-     * @throws IllegalArgumentException if t.day<0 or t.month<1
+     * @throws IllegalArgumentException if t.day&lt;0 or t.month&lt;1
+     * @param t the time.
+     * @return the normalized TimeStruct
+     * @see #normalize(org.das2.datum.TimeUtil.TimeStruct) 
      */
     public static TimeStruct borrow(TimeStruct t) {
         TimeStruct result= t;
@@ -646,6 +667,7 @@ public final class TimeUtil {
      * This will only carry one to the next higher place, so 70 seconds is handled but not 130.
      * @param t
      * @return
+     * @see #borrow(org.das2.datum.TimeUtil.TimeStruct) 
      */
     public static TimeStruct normalize( TimeStruct t ) {
         if ( t.doy>0 && t.day==0 ) {
@@ -661,6 +683,13 @@ public final class TimeUtil {
         return carry(borrow(t));
     }
     
+    /**
+     * return the next boundary
+     * @param td the boundary, e.g. TimeUtil.TD_HALF_YEAR
+     * @param count the number of boundaries 
+     * @param datum the starting point.
+     * @return the boundary
+     */
     public static Datum next( TimeDigit td, int count, Datum datum ) {
         if ( td==TD_NANO ) throw new IllegalArgumentException("not supported nanos");
         TimeStruct array= toTimeStruct(datum);
@@ -709,11 +738,11 @@ public final class TimeUtil {
     }
 
     /**
-     * introduced as a way to incread the efficiency of the time axis tick calculation, this wasn't
+     * introduced as a way to increase the efficiency of the time axis tick calculation, this wasn't
      * used because datums need to be created anyway.  So this is private for now.
-     * @param step
-     * @param array
-     * @return
+     * @param step, e.g. SECOND, MONTH, QUARTER, YEAR
+     * @param array the decomposed time.
+     * @return the next boundary.
      */
     private static TimeStruct next( int step, TimeStruct array ) {
         switch (step) {
@@ -762,13 +791,52 @@ public final class TimeUtil {
         return array;
     }
     
+    /**
+     * step to the next ordinal.  If the datum is already at an ordinal
+     * boundary, then step to the next by one ordinal.
+     * @param step the ordinal location, such as TimeUtil.DAY or TimeUtil.HALF_YEAR
+     * @param datum the location.
+     * @return the next boundary location.
+     */
     public static Datum next( int step, Datum datum ) {
         if ( step==NANO ) throw new IllegalArgumentException("not supported nanos");
         return toDatum( next( step, toTimeStruct(datum) ) );
     }
     
     /**
-     * @deprecated.  User next(MONTH,datum) instead
+     * return the next ordinal boundary if we aren't at one already.
+     * @param step the ordinal location, such as TimeUtil.DAY or TimeUtil.HALF_YEAR
+     * @param datum the location.
+     * @return the next ordinal boundary if we aren't at one already.
+     */
+    public static Datum ceil( int step, Datum datum ) {
+        Datum next= next( step, datum );
+        Datum t1= prev( step, next );
+        if ( t1.equals(datum) ) {
+            return datum;
+        } else {
+            return next;
+        }
+    }
+
+    /**
+     * return the previous ordinal boundary if we aren't at one already.
+     * @param step the ordinal location, such as TimeUtil.DAY or TimeUtil.HALF_YEAR
+     * @param datum the location.
+     * @return the previous ordinal boundary if we aren't at one already.
+     */
+    public static Datum floor( int step, Datum datum ) {
+        Datum prev= prev( step, datum );
+        Datum t1= next( step, prev );
+        if ( t1.equals(datum) ) {
+            return datum;
+        } else {
+            return prev;
+        }
+    }
+    
+    /**
+     * @deprecated.  Use next(MONTH,datum) instead
      */
     public static Datum nextMonth(Datum datum) {
         return next(MONTH,datum);
@@ -787,9 +855,9 @@ public final class TimeUtil {
     /**
      * step down the previous ordinal.  If the datum is already at an ordinal
      * boundary, then step down by one ordinal.
-     * @param step
-     * @param datum
-     * @return
+     * @param step the ordinal location, such as TimeUtil.DAY or TimeUtil.HALF_YEAR
+     * @param datum the location.
+     * @return the prev boundary location.
      */
     public static Datum prev( int step, Datum datum ) {
         
@@ -829,12 +897,17 @@ public final class TimeUtil {
         
     }
     
+    /**
+     * return the current time as a Datum.
+     * @return the current time as a Datum.
+     */
     public static Datum now() {
         double us2000= ( System.currentTimeMillis() - 946684800e3 ) * 1000;
         return Units.us2000.createDatum(us2000);
     }
     
     /**
+     * convert the month components to a double in the given units.
      * @param year the year 
      * @param month the month
      * @param day the day of month, unless month==0, then day is day of year.
@@ -842,7 +915,7 @@ public final class TimeUtil {
      * @param minute additional minutes
      * @param second additional seconds
      * @param units the Units in which to return the result.
-     * @return a double in the context of units.
+     * @return a double in the given units.
      */
     public static double convert(int year, int month, int day, int hour, int minute, double second, TimeLocationUnits units) {
         // if month==0, then day is doy (day of year).
