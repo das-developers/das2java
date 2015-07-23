@@ -151,25 +151,22 @@ public class StreamProducer implements StreamHandler {
             writer.flush();
             byte[] header = out.toByteArray();
             int length = header.length;
+            if ( length>999999 ) {
+                throw new IllegalArgumentException("packet header is longer than can be formatted to a packet header (longer than 999999 bytes).");
+            }
             if (bigBuffer.remaining() < (length + 10)) {
                 flush();
             }
             if (bigBuffer.capacity() < (length + 10)) {
                 resizeBuffer(length + (length / 2) + 15);
-                System.err.println("length: " + length);
             }
             six[0] = '[';
             six[1] = (byte)id.charAt(0);
             six[2] = (byte)id.charAt(1);
             six[3] = ']';
             bigBuffer.put(six, 0, 4);
-            six[0] = (byte)Character.forDigit((length / 100000) % 10, 10);
-            six[1] = (byte)Character.forDigit((length / 10000) % 10, 10);
-            six[2] = (byte)Character.forDigit((length / 1000) % 10, 10);
-            six[3] = (byte)Character.forDigit((length / 100) % 10, 10);
-            six[4] = (byte)Character.forDigit((length / 10) % 10, 10);
-            six[5] = (byte)Character.forDigit(length % 10, 10);
-            bigBuffer.put(six);
+            byte[] ssix= String.format( "%06d",length).getBytes("US-ASCII");
+            bigBuffer.put(ssix);
             bigBuffer.put(header);
             bigBuffer.flip();
             stream.write(bigBuffer);
@@ -182,7 +179,6 @@ public class StreamProducer implements StreamHandler {
     
     public void resizeBuffer(int size) throws StreamException {
         flush();
-        System.err.println("resizeBuffer(" + size + ")");
         bigBuffer = ByteBuffer.allocate(size);
     }
     
