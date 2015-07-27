@@ -34,6 +34,7 @@ import org.das2.datum.DatumUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.math.filter.Butterworth;
+import org.das2.util.ClassMap;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.CancelledOperationException;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -4181,11 +4182,11 @@ public class Ops {
                 }
             }
             if (ds.rank() == 2) {
-                builder.putProperty(QDataSet.DEPEND_1, labels(new String[]{"dim0", "dim1"}));
+                builder.putProperty(QDataSet.DEPEND_1, labelsDataset(new String[]{"dim0", "dim1"}));
             } else if (ds.rank() == 3) {
-                builder.putProperty(QDataSet.DEPEND_1, labels(new String[]{"dim0", "dim1", "dim2"}));
+                builder.putProperty(QDataSet.DEPEND_1, labelsDataset(new String[]{"dim0", "dim1", "dim2"}));
             } else if (ds.rank() == 4) {
-                builder.putProperty(QDataSet.DEPEND_1, labels(new String[]{"dim0", "dim1", "dim2", "dim4"}));
+                builder.putProperty(QDataSet.DEPEND_1, labelsDataset(new String[]{"dim0", "dim1", "dim2", "dim4"}));
             }
         }
 
@@ -7691,6 +7692,8 @@ public class Ops {
      * @param labels
      * @param context the namespace for the labels, to provide control over String&rarr;int mapping.
      * @return rank 1 QDataSet
+     * @deprecated use labelsDataSet
+     * @see #labelsDataset(java.lang.String[]) 
      */
     public static QDataSet labels(String[] labels, String context) {
         EnumerationUnits u;
@@ -7719,9 +7722,151 @@ public class Ops {
      * <tt>dep1= labels( ["red","greed","blue"] )</tt>
      * @param labels
      * @return rank 1 QDataSet
+     * @deprecated use labelsDataSet
+     * @see #labelsDataset(java.lang.String[]) 
      */
     public static QDataSet labels(String[] labels) {
         return labels(labels, "default");
+    }
+    
+    /**
+     * create a labels dataset for tagging rows of a dataset.  If the context
+     * has been used already, including "default", then the EnumerationUnit
+     * for the data will be preserved.  labels(["red","green","blue"],"default")
+     * will always return an equivalent (and comparable) result during a session.
+     *
+     * Example:
+     * <tt>dep1= labels( ["X","Y","Z"], "GSM" )</tt>
+     * @param labels
+     * @param context the namespace for the labels, to provide control over String&rarr;int mapping.
+     * @return rank 1 QDataSet
+     */
+    public static QDataSet labelsDataset(String[] labels, String context) {
+        EnumerationUnits u;
+        try {
+            Units uu= Units.getByName(context);
+            if ( uu!=null && uu instanceof EnumerationUnits ) {
+                u= (EnumerationUnits)uu;
+            } else {
+                u = new EnumerationUnits(context);
+            }
+        } catch ( IllegalArgumentException ex ) {
+            u = new EnumerationUnits(context);
+        }
+        SDataSet result = SDataSet.createRank1(labels.length);
+        for (int i = 0; i < labels.length; i++) {
+            Datum d = u.createDatum(labels[i]);
+            result.putValue(i, d.doubleValue(u));
+        }
+        result.putProperty(QDataSet.UNITS, u);
+        return result;
+    }
+    
+    /**
+     * create a labels dataset for tagging rows of a dataset.
+     * Example:
+     * <tt>dep1= labels( ["red","greed","blue"] )</tt>
+     * @param labels
+     * @return rank 1 QDataSet
+     */    
+    public static QDataSet labelsDataset(String[] labels) {
+        return labelsDataset( labels, "default" );
+    }
+
+    /**
+     * create a dataset of RGB colors.  The output is
+     * int(red)*256*256 + int(green)*256 + int(blue)
+     * with the units of Units.rgbColor
+     * @param red the red component, from 0 to 255
+     * @param green the green component, from 0 to 255
+     * @param blue the blue component, from 0 to 255
+     * @return the rgb encoded colors.
+     */
+    public static QDataSet rgbColorDataset( QDataSet red, QDataSet green, QDataSet blue ) {
+        QDataSet[] operands= new QDataSet[2];
+        CoerceUtil.coerce( red, green, false, operands );
+        red= operands[0];
+        green= operands[1];
+        CoerceUtil.coerce( green, blue, false, operands );
+        blue= operands[1];
+
+        int[] qube= DataSetUtil.qubeDims(blue);
+        IDataSet z= IDataSet.create(qube);
+        
+        QubeDataSetIterator iter= new QubeDataSetIterator(z);
+        while ( iter.hasNext() ) {
+            iter.next();
+            int r1= (int) iter.getValue(red);
+            int g1= (int) iter.getValue(green);
+            int b1= (int) iter.getValue(blue);
+            iter.putValue( z, r1*256*256 + g1 * 256 + b1 );
+        }
+        z.putProperty( QDataSet.UNITS, Units.rgbColor );
+        return z;
+    }
+
+    /**
+     * returns the number of elements in each index.  E.g:
+     *<blockquote><pre>
+     * ds= zeros(3,4)
+     * print size(ds) # returns "3,4"
+     * </pre></blockquote>
+     * 
+     * @param ds a qube dataset.
+     * @return the number of elements in each index.
+     * @throws IllegalArgumentException if the dataset is not a qube.
+     */
+    public static int[] size( QDataSet ds ) {
+        if ( ds.rank()>1 && ds.length()>1 ) {
+            if ( ds.length(0)!=ds.length(ds.length()-1) ) {
+                throw new IllegalArgumentException("dataset is not a qube, so the length of each record differs.");
+            }
+        }
+        return DataSetUtil.qubeDims(ds);
+    }
+
+    /**
+     * return the color encoded as one of:<ul>
+     * <li>"red" or "RED"
+     * <li>#FF0000
+     * <li>255,0,0 or 1.0,0,0
+     * </ul>
+     *
+     * @param sval the string representation
+     * @return the color
+     * @throws IllegalArgumentException if the color cannot be parsed.
+     */
+    public static Color colorFromString(String sval) {
+        Color c;
+        try {
+            if (sval.contains(",")) {
+                String[] ss = sval.split(",", -2);
+                if (ss.length == 3) {
+                    if (sval.contains(".")) {
+                        float rr = Float.parseFloat(ss[0].trim());
+                        float gg = Float.parseFloat(ss[1].trim());
+                        float bb = Float.parseFloat(ss[2].trim());
+                        c = new Color(rr, gg, bb, 1.0f);
+                    } else {
+                        int rr = Integer.parseInt(ss[0].trim());
+                        int gg = Integer.parseInt(ss[1].trim());
+                        int bb = Integer.parseInt(ss[2].trim());
+                        c = new Color(rr, gg, bb, 255);
+                    }
+
+                } else {
+                    throw new IllegalArgumentException("color identified in string should be name like 'red' or r,g,b triple like '255,0,0'");
+                }
+            } else {
+                c = Color.decode(sval);
+            }
+        } catch (NumberFormatException ex) {
+            c = (Color) ClassMap.getEnumElement(Color.class, sval);
+            if ( c==null ) {
+                throw new IllegalArgumentException("color identified in string should be name like 'red' or r,g,b triple like '255,0,0'");
+            }
+        }
+        return c;
     }
 
     /**
@@ -7732,6 +7877,7 @@ public class Ops {
      * @param result
      */
     private static void sliceProperties(int removeDim, QDataSet ds, MutablePropertyDataSet result) {
+        size(ds);
         for (int i = 0; i < result.rank(); i++) {
             if (i >= removeDim) {
                 result.putProperty("DEPEND_" + i, ds.property("DEPEND_" + (i + 1)));

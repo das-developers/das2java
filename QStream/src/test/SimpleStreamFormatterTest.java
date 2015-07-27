@@ -43,7 +43,7 @@ public class SimpleStreamFormatterTest {
     }
 
     private static QDataSet test1_5() throws ParseException, StreamException, IOException {
-        QDataSet ds= Ops.labels(new String[]{"B-GSM,X", "B-GSM,Y", "B-GSM,Z"});
+        QDataSet ds= Ops.labelsDataset(new String[]{"B-GSM,X", "B-GSM,Y", "B-GSM,Z"});
         SimpleStreamFormatter format = new SimpleStreamFormatter();
 
         format.format( ds, new FileOutputStream("test1_5.qds"), true );
@@ -57,7 +57,7 @@ public class SimpleStreamFormatterTest {
         ds.putProperty(QDataSet.DEPEND_0, tags);
         ds.putProperty(QDataSet.NAME,"B_GSM");
         
-        MutablePropertyDataSet labels= (MutablePropertyDataSet) Ops.labels(new String[]{"B-GSM-X", "B-GSM-Y", "B-GSM-Z"});
+        MutablePropertyDataSet labels= (MutablePropertyDataSet) Ops.labelsDataset(new String[]{"B-GSM-X", "B-GSM-Y", "B-GSM-Z"});
         labels.putProperty(QDataSet.NAME, "dimLabels");
         ds.putProperty(QDataSet.DEPEND_1,labels );
         
@@ -91,7 +91,7 @@ public class SimpleStreamFormatterTest {
         ds.putProperty(QDataSet.NAME,"B_GSM");
         
         
-        MutablePropertyDataSet labels= (MutablePropertyDataSet) Ops.labels(new String[]{"B-GSM-X", "B-GSM-Y", "B-GSM-Z"});
+        MutablePropertyDataSet labels= (MutablePropertyDataSet) Ops.labelsDataset(new String[]{"B-GSM-X", "B-GSM-Y", "B-GSM-Z"});
         labels.putProperty(QDataSet.NAME, "dimLabels");
         ds.putProperty(QDataSet.DEPEND_1,labels );
         
