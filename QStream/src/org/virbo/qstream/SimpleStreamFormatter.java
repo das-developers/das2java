@@ -806,18 +806,19 @@ public class SimpleStreamFormatter {
 
     /**
      * serialize the dataset to the output stream.  Presently most datasets can
-     * be serialized:
-     *   * rank 0
-     *   * rank 1
-     *   * rank 2 qubes
-     *   * array of rank 2 qubes
-     *   * rank 3 qubes
-     *   * bundle datasets.
+     * be serialized:<ul>
+     * <li> rank 0
+     * <li> rank 1
+     * <li> rank 2 qubes
+     * <li> array of rank 2 qubes
+     * <li> rank 3 qubes
+     * <li> bundle datasets.
+     * </ul>
      * The design goal is that all datasets can be serialized using this formatter,
      * however some schemas (e.g. high-rank non-qubes) will be inefficient.
      *
      * @param ds the dataset to serialize.
-     * @param osout
+     * @param osout the output stream, which will not be closed here.
      * @param asciiTypes use ascii format types so that the stream is completely ascii.
      * @throws StreamException
      * @throws IOException

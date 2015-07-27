@@ -5243,9 +5243,9 @@ public class Ops {
                     }
                     if ( hasFill ) continue;
 
-                    if ( windowNonUnity ) {
-                        wave= Ops.multiply(wave,window); 
-                    }
+                    //if ( windowNonUnity ) {
+                    //    wave= Ops.multiply(wave,window); 
+                    //}
 
                     
                     QDataSet vds= FFTUtil.fftPower( fft, wave, window, powxtags );

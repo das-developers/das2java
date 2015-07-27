@@ -151,6 +151,11 @@ public class StreamDescriptor implements Descriptor {
 
         String packetTag = String.format("[%02d]", descriptorId(pd));
         out.write(ByteBuffer.wrap(packetTag.getBytes()));
+        
+        if ( pdout.size()>999999 ) {
+            throw new IllegalArgumentException("packet header is longer than can be formatted to a packet header (longer than 999999 bytes).");
+        }
+        
         out.write(ByteBuffer.wrap(String.format("%06d", pdout.size()).getBytes()));
         out.write(ByteBuffer.wrap(pdout.toByteArray()));
 

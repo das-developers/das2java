@@ -27,6 +27,7 @@ import java.util.regex.*;
 import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeParser;
+import org.das2.datum.TimeUtil;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -354,9 +355,19 @@ public class AsciiParser {
                     p.showException= false;
                     parseCount= p.tryParseRecord(line, iline, null) ? 1 : 0;
                     for ( int i=0; i<lines.size(); i++ ) {
-                            if ( p.tryParseRecord(lines.get(i), 0, null) ) {
-                                    parseCount++;
+                        if ( p.tryParseRecord(lines.get(i), 0, null) ) {
+                                parseCount++;
+                        } else if ( iline==2 ) {
+                            String[] ff= p.fields(line);
+                            for ( int j=0; j<ff.length; j++ ) {
+                                if ( TimeParser.isIso8601String(ff[j]) ) {
+                                    setUnits(j,Units.us2000);
+                                }
                             }
+                            if ( p.tryParseRecord(lines.get(i), 0, null) ) {
+                                parseCount++; 
+                            }
+                        }
                     }
                 }
             }
@@ -370,7 +381,9 @@ public class AsciiParser {
                     break;
                 }
             }
-                            
+                      
+            if ( line==null ) return null;
+            
             // check for ISO8601 times.
             String[] fields= new String[result.fieldCount];
             if ( result.splitRecord(line, fields ) ) {
@@ -1307,6 +1320,7 @@ public class AsciiParser {
             this.showException= s;
         }
         
+        @Override
         public boolean tryParseRecord(String line, int irec, DataSetBuilder builder) {
             int j;
             int okayCount = 0;

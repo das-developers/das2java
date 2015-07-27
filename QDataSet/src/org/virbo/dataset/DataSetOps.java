@@ -200,6 +200,7 @@ public class DataSetOps {
         DataSetBuilder builder= new DataSetBuilder( 1, 100 );
         DataSetBuilder xbuilder= new DataSetBuilder( 1, 100 );
         DataSetBuilder ybuilder= new DataSetBuilder( 1, 100 );
+        boolean dep1rank2= dep1!=null && dep1.rank()==2;
         for ( int i=0; i<ds.length(); i++ ) {
             for ( int j=0; j<ds.length(i); j++ ) {
                 if (dep0!=null) {
@@ -207,7 +208,7 @@ public class DataSetOps {
                     xbuilder.nextRecord();
                 }
                 if (dep1!=null) {
-                    ybuilder.putValue(-1, dep1.value(j) );
+                    ybuilder.putValue(-1, dep1rank2 ? dep1.value(i,j) : dep1.value(j) );
                     ybuilder.nextRecord();
                 }
                 builder.putValue(-1, ds.value(i,j) );

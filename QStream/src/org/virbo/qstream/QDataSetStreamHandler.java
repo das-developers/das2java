@@ -413,8 +413,9 @@ public class QDataSetStreamHandler implements StreamHandler {
         for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             Object o = result.property("DEPEND_" + i);
             if (o != null && o instanceof String) {
+                String s = (String) o;
                 logger.log(Level.WARNING, "QDataSetStreamHandler: still strings in DEPEND_{0}", i);
-                result.putProperty("DEPEND_" + i, getDataSetInternal((String) o));
+                result.putProperty("DEPEND_" + i, getDataSetInternal(s));
             }
         }
         for (int i = 0; i < QDataSet.MAX_RANK; i++) {
@@ -425,19 +426,34 @@ public class QDataSetStreamHandler implements StreamHandler {
             }
         }
         for (int i = 0; i < QDataSet.MAX_PLANE_COUNT; i++) {
-            String s = (String) result.property("PLANE_" + i);
+            String propertyName= "PLANE_" + i;
+            String s = (String) result.property(propertyName);
             if (s != null) {
-                result.putProperty("PLANE_" + i, getDataSetInternal(s));
+                result.putProperty( propertyName, getDataSetInternal(s));
             } else {
                 break;
             }
         }
         for (int i = 0; i < 2; i++) {
-            String pname = i == 0 ? "DELTA_MINUS" : "DELTA_PLUS";
-            String s = (String) result.property(pname);
+            String propertyName = i == 0 ? "DELTA_MINUS" : "DELTA_PLUS";
+            String s = (String) result.property(propertyName);
             if (s != null) {
-                result.putProperty(pname, getDataSetInternal(s));
+                result.putProperty(propertyName, getDataSetInternal(s));
             }
+        }
+        for (int i = 0; i < 2; i++) {
+            String propertyName = i == 0 ? "BIN_MINUS" : "BIN_PLUS";
+            String s = (String) result.property(propertyName);
+            if (s != null) {
+                result.putProperty(propertyName, getDataSetInternal(s));
+            }
+        }        
+        {
+            String propertyName = "WEIGHTS";
+            String s = (String) result.property(propertyName);
+            if (s != null) {
+                result.putProperty(propertyName, getDataSetInternal(s));
+            } 
         }
         return result;
     }
@@ -526,6 +542,9 @@ public class QDataSetStreamHandler implements StreamHandler {
      */
     public QDataSet getDataSet(String name) {
         QDataSet result= getDataSetInternal(name);
+        if ( result==null ) {
+            throw new IllegalArgumentException("No such dataset \"" + name + "\"");
+        }
         Integer rank= ranks.get(name);
         if ( rank!=result.rank() && isFlattenableJoin(result) ) {
             logger.log(Level.FINE, "flattening join for {0}: {1}", new Object[]{name, result});
@@ -548,7 +567,7 @@ public class QDataSetStreamHandler implements StreamHandler {
      * return the dataset from the stream
      *
      * @param name the name of the dataset to retrieve.
-     * @return the dataset
+     * @return the dataset or null if no such dataset exists.
      */
     private QDataSet getDataSetInternal(String name) {
         logger.log(Level.FINE, "getDataSet({0})", name);
@@ -557,7 +576,8 @@ public class QDataSetStreamHandler implements StreamHandler {
         JoinDataSet join = joinDataSets.get(name);
 
         if (builder == null && sbds == null) {
-            throw new IllegalArgumentException("No such dataset \"" + name + "\"");
+            logger.log(Level.INFO, "no such dataset: {0}", name);
+            return null;
         }
 
         MutablePropertyDataSet result;
