@@ -5268,7 +5268,7 @@ public class Ops {
                         continue;
                     }
                     
-                    if ( currentDeltaTime!=lastDeltaTime ) {
+                    if ( Math.abs( lastDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.0001 ) {
                         QDataSet powxtags1= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(istart,istart+len));
                         QDataSet ytags= (QDataSet) result.property(QDataSet.DEPEND_1);
                         if ( ytags instanceof CdfSparseDataSet ) {
