@@ -47,6 +47,7 @@ import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.demos.RipplesDataSet;
 import org.virbo.dataset.BundleDataSet;
+import org.virbo.dataset.CdfSparseDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DDataSet;
@@ -5199,8 +5200,16 @@ public class Ops {
             }
             if ( translation!=null ) logger.fine("translation will be applied");
 
-            QDataSet powxtags= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(0,len));
+            double currentDeltaTime;
+            if ( dep1.rank()==1 ) {
+                currentDeltaTime= dep1.value(1) - dep1.value(0);
+            } else {
+                currentDeltaTime= dep1.value(0,1) - dep1.value(0,0);
+            }
+            double lastDeltaTime= currentDeltaTime;
             
+            QDataSet powxtags= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(0,len));
+                        
             double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
             if ( dep1.rank()==1 ) {
                 QDataSet ytags= powxtags;
@@ -5219,7 +5228,7 @@ public class Ops {
             mon.setProgressMessage("performing fftPower");
 
             boolean isMono= dep0==null ? true : DataSetUtil.isMonotonic(dep0);
-
+            
             for ( int i=0; i<ds.length(); i++ ) {
                 QDataSet slicei= ds.slice(i); //TODO: for DDataSet, this copies the backing array.  This shouldn't happen in DDataSet.slice, but it does...
                 QDataSet dep0i= (QDataSet) slicei.property(QDataSet.DEPEND_0);
@@ -5233,9 +5242,12 @@ public class Ops {
                 }
                 
                 for ( int j=0; j<len1; j++ ) {
+                    
+                    int istart= j*step;
                     GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
-                    QDataSet wave= slicei.trim( j*step,j*step+len );
+                    QDataSet wave= slicei.trim( istart,istart+len );
                     QDataSet weig= DataSetUtil.weightsDataSet(wave);
+                    
                     boolean hasFill= false;
                     for ( int k=0; k<weig.length(); k++ ) {
                         if ( weig.value(k)==0 ) {
@@ -5243,6 +5255,35 @@ public class Ops {
                         }
                     }
                     if ( hasFill ) continue;
+
+                    double switchCadenceCheck;
+                    if ( dep1.rank()==1 ) {
+                        currentDeltaTime= dep1.value(istart+1) - dep1.value(istart);
+                        switchCadenceCheck=  dep1.value(istart+len-1) - dep1.value(istart+len-2);
+                    } else {
+                        currentDeltaTime= dep1.value(i,istart+1) - dep1.value(i,istart);
+                        switchCadenceCheck=  dep1.value(i,istart+len-1) - dep1.value(i,istart+len-2);
+                    }
+                    if ( Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime > 0.0001 ) {
+                        continue;
+                    }
+                    
+                    if ( currentDeltaTime!=lastDeltaTime ) {
+                        QDataSet powxtags1= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(istart,istart+len));
+                        QDataSet ytags= (QDataSet) result.property(QDataSet.DEPEND_1);
+                        if ( ytags instanceof CdfSparseDataSet ) {
+                            ((CdfSparseDataSet)ytags).putValues( result.length(), powxtags1 );
+                        } else {
+                            CdfSparseDataSet newYtags= new CdfSparseDataSet(2,ds.length()*len1);
+                            newYtags.putValues(0,ytags);
+                            newYtags.putValues(result.length(),powxtags1);
+                            ytags= newYtags;
+                            result.putProperty( QDataSet.DEPEND_1, ytags );
+                        }
+                        powxtags= powxtags1;
+                        lastDeltaTime= currentDeltaTime;
+                        
+                    }
 
                     //if ( windowNonUnity ) {
                     //    wave= Ops.multiply(wave,window); 
