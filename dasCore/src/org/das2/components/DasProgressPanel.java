@@ -56,6 +56,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.das2.graph.DasCanvas;
+import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.SubTaskMonitor;
 
 /**
@@ -132,12 +133,20 @@ public class DasProgressPanel implements ProgressMonitor {
     @Override
     public ProgressMonitor getSubtaskMonitor(int start, int end, String label) {
         if ( label!=null ) setProgressMessage(label);
+        if ( this.isFinished() ) {
+            logger.info("getSubtaskMonitor called after finished");
+            return new NullProgressMonitor();
+        }
         return SubTaskMonitor.create( this, start, end, cancelCheckFailures < 2 );
     }
     
     @Override
     public ProgressMonitor getSubtaskMonitor( String label ) {
         if ( label!=null ) setProgressMessage(label);
+        if ( this.isFinished() ) {
+            logger.info("getSubtaskMonitor called after finished");
+            return new NullProgressMonitor();
+        }
         return SubTaskMonitor.create( this, cancelCheckFailures < 2 );
     }
 
@@ -428,7 +437,7 @@ public class DasProgressPanel implements ProgressMonitor {
                 if (jframe == null) {
                     setVisible(false);
                 } else {
-                    jframe.dispose();
+                    jframe.setVisible(false);
                 }
 
             }
