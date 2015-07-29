@@ -3430,6 +3430,8 @@ public class Ops {
     /**
      * Copy the dataset to an ArrayDataSet only if the dataset is not already an ArrayDataSet
      * or BufferDataSet.
+     * Note this does not consider the mutability of the data.  If the dataset is not mutable, then the
+     * original data could be returned (probably).
      * @param ads0 a dataset.
      * @return an ArrayDataSet or BufferDataSet
      */    
@@ -4215,6 +4217,21 @@ public class Ops {
      */
     public static QDataSet within( QDataSet ds, QDataSet bounds ) {
         return and( ge( ds, bounds.slice(0) ), lt( ds, bounds.slice(1) ) );
+    }
+    
+    /**
+     * return non-zero where the data in ds are outside of the bounds.  In Jython,
+     *<blockquote><pre>
+     *print without( [0,1,2,3,4], '2 to 4' ) --> [ 1,1,0,0,1 ]
+     *print without( ttag, 'orbit:rbspa-pp:172' )
+     *</pre></blockquote>
+     * 
+     * @param ds rank N dataset where N &gt; 0
+     * @param bounds a rank 1 bounding box.  
+     * @return rank N dataset containing non-zero where the condition is true.
+     */
+    public static QDataSet without( QDataSet ds, QDataSet bounds ) {
+        return or( lt( ds, bounds.slice(0) ), ge( ds, bounds.slice(1) ) );
     }
     
     /**
