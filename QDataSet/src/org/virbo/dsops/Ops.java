@@ -164,6 +164,15 @@ public class Ops {
     }
 
     /**
+     * these are properties that are propagated through operations.
+     */
+    private static final String[] _dependProperties= new String[] {
+                    QDataSet.DEPEND_0, QDataSet.DEPEND_1, QDataSet.DEPEND_2, QDataSet.DEPEND_3, 
+                    QDataSet.BINS_0, QDataSet.BINS_1, 
+    };
+         
+    
+    /**
      * apply the binary operator element-for-element of the two datasets, minding
      * dataset geometry, fill values, etc.  The two datasets are coerced to
      * compatible geometry, if possible (e.g.Temperature[Time]+2deg), using 
@@ -204,8 +213,9 @@ public class Ops {
             it1.putValue(result, w==0 ? fill : op.op(d1, d2));
         }
 
-        Map<String, Object> m1 = DataSetUtil.getProperties(operands[0]);
-        Map<String, Object> m2 = DataSetUtil.getProperties(operands[1]);
+        Map<String, Object> m1 = DataSetUtil.getProperties( operands[0], _dependProperties, null );
+        Map<String, Object> m2 = DataSetUtil.getProperties( operands[1], _dependProperties, null );
+
         boolean resultIsQube= Boolean.TRUE.equals( m1.get(QDataSet.QUBE) ) || Boolean.TRUE.equals( m2.get(QDataSet.QUBE) );
         if ( m1.size()==1 ) m1.remove( QDataSet.QUBE ); // kludge: CoerceUtil.coerce would copy over a QUBE property, so just remove this.
         if ( m2.size()==1 ) m2.remove( QDataSet.QUBE );
