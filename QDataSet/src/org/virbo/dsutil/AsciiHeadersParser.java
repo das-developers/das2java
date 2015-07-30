@@ -317,6 +317,10 @@ public class AsciiHeadersParser {
                 }
 
                 if ( elementNames!=null ) { //TODO: eliminate repeated code.
+                        for ( int i=0; i<elementNames.length; i++ ) {
+                            if ( elementNames[i]==null ) throw new IllegalArgumentException("rich ascii JSON header contains error");
+                        }
+                
                         String lookFor= elementNames[0]; //Note ELEMENT_NAMES must correspond to adjacent columns.
                         int icol= -1;
                         int count= 0;
@@ -541,8 +545,11 @@ public class AsciiHeadersParser {
      * JSON parser itself is pretty loose, for example allowing 1-word strings to
      * go without quotes delimiters.
      *
-     * @param header
-     * @return
+     * @param header the JSON header
+     * @param columns identifiers for each column
+     * @param columnLabels labels for each column
+     * @return the BundleDescriptor
+     * @throws java.text.ParseException
      */
     public static BundleDescriptor parseMetadata( String header, String[] columns, String[] columnLabels ) throws ParseException {
         try {
