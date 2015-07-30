@@ -301,7 +301,7 @@ public class DataSetUtil {
         QDataSet.NAME, QDataSet.LABEL, QDataSet.TITLE,
         QDataSet.USER_PROPERTIES, QDataSet.NOTES,
     };
-
+   
     /**
      * return the list of properties that pertain to the dimension that dataset
      * values exist.  These are the properties that survive through most operations.
@@ -504,7 +504,7 @@ public class DataSetUtil {
     /**
      * return just the properties attached to the dataset, like 
      * UNITS and SCALE_TYPE, and not like DEPEND_x, etc.
-     * @see dimensionProperties()
+     * @see #dimensionProperties()
      * @param ds the dataset
      * @param def default values or null.
      * @return a map of all the properties.
@@ -512,7 +512,7 @@ public class DataSetUtil {
     public static Map<String,Object> getDimensionProperties( QDataSet ds, Map<String,Object> def ) {
         return getProperties( ds, _dimensionProperties, def );
     }
-
+    
     /**
      * return the properties listed, using the defaults if provided.
      * See dimensionProperties(), globalProperties().
