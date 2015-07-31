@@ -948,7 +948,7 @@ public class FileStorageModel {
      * @return an integer indicating the split index, so that surl.substring(0,i) returns the slash.
      */
     public static int splitIndex(String surl) { 
-        String regex= "([\\$\\%][yY\\(\\{])";
+        String regex= "([\\$\\%][yYx\\(\\{])";
         Matcher m= Pattern.compile(regex).matcher(surl);
         if ( m.find() ) {
             int i= m.start();
@@ -958,7 +958,7 @@ public class FileStorageModel {
             return -1;
         }
     }
-
+    
     /**
      * creates a FileStorageModel for the given template, which uses:
      * <pre>%Y-%m-%dT%H:%M:%S.%{milli}Z";
