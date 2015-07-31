@@ -662,8 +662,18 @@ public class TimeParser {
         logger.log(Level.FINE, "new TimeParser({0},...)", formatString);
         
         startTime = new TimeUtil.TimeStruct();
+        startTime.year= 1000;
+        startTime.month= 1;
+        startTime.day= 1;
+        startTime.doy= 1;
         startTime.isLocation= true;
+        
         stopTime = new TimeUtil.TimeStruct();
+        stopTime.isLocation= true;
+        stopTime.year= 9000;
+        stopTime.month= 1;
+        stopTime.day= 1;
+        stopTime.doy= 1;
         stopTime.isLocation= true;
 
         this.fieldHandlers = fieldHandlers;
@@ -733,13 +743,14 @@ public class TimeParser {
         int lsdMult= 1;
 //TODO: We want to add $Y_1XX/$j/WAV_$Y$jT$(H,span=5)$M$S_REC_V01.PKT
         context= new TimeStruct();
-        context.year = 0;
-        context.month = 1;
-        context.day = 1;
-        context.hour = 0;
-        context.minute = 0;
-        context.seconds = 0;
-        context.micros = 0;
+        copyTime( startTime, context );
+        //context.year = 0;
+        //context.month = 1;
+        //context.day = 1;
+        //context.hour = 0;
+        //context.minute = 0;
+        //context.seconds = 0;
+        //context.micros = 0;
         
         for (int i = 1; i < ndigits; i++) {
             if (pos != -1) {
@@ -912,6 +923,9 @@ public class TimeParser {
                 break;
             case 7:
                 timeWidth.micros = lsdMult;
+                break;
+            case -1:
+                timeWidth.year= 8000;
                 break;
             case 100: /* do nothing */ break;  //TODO: handler needs to report it's lsd, if it affects.
         }
