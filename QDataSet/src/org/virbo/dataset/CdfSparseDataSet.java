@@ -101,6 +101,15 @@ public class CdfSparseDataSet extends AbstractDataSet {
         return dss.length-1;
     }
     
+    /**
+     * allow clients to reset the length.
+     * @param length 
+     */
+    public void setLength( int length ) {
+        if ( isImmutable() ) throw new IllegalArgumentException("dataset has been made immutable");
+        this.length= length;
+    }
+    
     @Override
     public int length() {
         return this.length;
