@@ -1598,6 +1598,7 @@ public class DatumRangeUtil {
      * @param dr a datum range with non-zero width.
      * @param d a datum to normalize with respect to the range.
      * @return a double indicating the normalized datum.
+     * @see #rescale(org.das2.datum.DatumRange, double, double) 
      */
     public static double normalize( DatumRange dr, Datum d ) {
         Units u= dr.getUnits();
