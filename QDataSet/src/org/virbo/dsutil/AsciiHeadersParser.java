@@ -564,6 +564,8 @@ public class AsciiHeadersParser {
 
         } catch (JSONException ex) {
             throw new ParseException( ex.toString(), 0 );
+        } catch (IllegalArgumentException ex ) {
+            throw new ParseException( ex.toString(), 0 );
         }
     }
 
