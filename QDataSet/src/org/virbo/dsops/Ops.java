@@ -5365,7 +5365,7 @@ public class Ops {
             mon.finished();
             
             QDataSet dep1_= (QDataSet) result.property(QDataSet.DEPEND_1);
-            if ( dep1_.rank()==2 || dep1_.length()!=result.length() ) {
+            if ( dep1_.rank()==2 && dep1_.length()!=result.length() ) {
                 ((CdfSparseDataSet)dep1_).setLength(result.length()); // seems cheesy but it's true!
             }
             if ( dep0!=null && dep0b!=null ) {
