@@ -276,12 +276,12 @@ public class SimpleStreamFormatter {
     }
 
     /**
-     * 
-     * @param document
-     * @param pd
-     * @param ds
-     * @param streamRank
-     * @return
+     * Format the individual QDataSet which makes a "plane" of the packet.
+     * @param document the stream header document.
+     * @param pd the packet descriptor, which contains the valuesInDescriptor flag.
+     * @param ds the dataset
+     * @param streamRank the rank of the stream.
+     * @return the plane descriptor.
      */
     private PlaneDescriptor doPlaneDescriptor(Document document, PacketDescriptor pd,
             QDataSet ds, int streamRank) {
@@ -740,6 +740,8 @@ public class SimpleStreamFormatter {
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep0 != null) {
+            // sometimes dep0 itsself will have a depend_0.  We don't include this dataset.
+            if ( dep0.property(QDataSet.DEPEND_0)!=null ) dep0= Ops.putProperty( dep0, QDataSet.DEPEND_0, null ); 
             PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, dep0, streamRank);
             packetDescriptor.addPlane(planeDescriptor);
             packetElement.appendChild(planeDescriptor.getDomElement());
