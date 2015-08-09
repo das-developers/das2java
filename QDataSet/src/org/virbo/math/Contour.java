@@ -186,12 +186,21 @@ public class Contour {
             } else {
                 idx++ ;
             }
-            
+                                    
             dsbuilder.putValue(-1,3,idx);
             dsbuilder.putValue(-1,2,cval);
             dsbuilder.putValue(-1,0,getXValue(xy[0]));
             dsbuilder.putValue(-1,1,getYValue(xy[1]));
             dsbuilder.nextRecord();
+
+            if ( iflag==4 ) { // introduce break, so the scientist can easily pull out components.
+                dsbuilder.putValue(-1,3,idx);
+                dsbuilder.putValue(-1,2,dsbuilder.getFillValue());
+                dsbuilder.putValue(-1,0,dsbuilder.getFillValue());
+                dsbuilder.putValue(-1,1,dsbuilder.getFillValue());
+                dsbuilder.nextRecord();
+
+            }
             
             idx++;
             
