@@ -815,7 +815,14 @@ public class SeriesRenderer extends Renderer {
                         } else {
                             if ( visible ) {
                                 if ( !visible0 ) {
-                                    newPath.moveTo(fx,fy);
+                                    if ( ignoreCadence || step<0 ) {
+                                        //!!!! let's kludge this in on a weekend and see what happens...                                          
+                                        // the challenge with all this is that every other point can be invalid, and then these are not interpretted as data breaks.  
+                                        // See file:///home/jbf/ct/hudson/data.backup/cdf/virbo/poes_n17_20041228.cdf?P1_90[0:300]
+                                        newPath.moveTo(fx,fy);
+                                    } else {
+                                        newPath.moveTo(fx0,fy0);
+                                    }
                                 }
                                 newPath.lineTo(fx, fy); // this is the typical path
                             }
@@ -855,7 +862,7 @@ public class SeriesRenderer extends Renderer {
                         } else {
                             newPath.moveTo(fx0, fy0); // place holder
                         }
-                        visible0 = false;
+                        visible0 = false; 
                     }
 
                 }
