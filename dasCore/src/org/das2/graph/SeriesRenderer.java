@@ -815,7 +815,7 @@ public class SeriesRenderer extends Renderer {
                         } else {
                             if ( visible ) {
                                 if ( !visible0 ) {
-                                    newPath.moveTo(fx0,fy0);
+                                    newPath.moveTo(fx,fy);
                                 }
                                 newPath.lineTo(fx, fy); // this is the typical path
                             }
@@ -855,6 +855,7 @@ public class SeriesRenderer extends Renderer {
                         } else {
                             newPath.moveTo(fx0, fy0); // place holder
                         }
+                        visible0 = false;
                     }
 
                 }
