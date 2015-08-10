@@ -26,7 +26,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -39,11 +38,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
-import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
-import javax.swing.text.JTextComponent;
 
 /**
  * Central place that keeps track of loggers.  Note that both org.das.datum 
@@ -110,13 +107,14 @@ public final class LoggerManager {
      * if enableTimers is true, then resetTimer and markTime have 
      * an effect.  Each thread can have a timer to measure the execution 
      * time for a process.
+     * @param enableTimers true to enable timers
      */
     public static void setEnableTimers(boolean enableTimers) {
         disableTimers = !enableTimers;
     }
 
     // clean up code that times things by keeping track of timer...
-    private static Map<Thread,Long> timers= new WeakHashMap<Thread, Long>();
+    private static final Map<Thread,Long> timers= new WeakHashMap<Thread, Long>();
     
     /**
      * reset the timer.  The lifecycle is like so:
@@ -157,7 +155,6 @@ public final class LoggerManager {
     
     /**
      * mark the time using the thread name.
-     * @param message 
      */
     public static void markTime() {
         if ( disableTimers ) return;
