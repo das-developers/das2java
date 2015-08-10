@@ -138,6 +138,8 @@ public class FileUtil {
     /**
      * find a files with the given name within the given root, just as "find . -name name -print \;" would.
      * TODO: check links.  For example, find( "/usr/share/fonts/truetype", "FreeMono.ttf" )
+     * @param root the root to start
+     * @param name name to look for.
      * @throws IllegalArgumentException if the root does not exist.
      * @return the File found, or null if it does not exist.
      */
@@ -152,13 +154,13 @@ public class FileUtil {
             throw new IllegalArgumentException("unable to read root: "+root);
         }
         File[] children = root.listFiles(); // root is known to exist
-        for (int i = 0; i < children.length; i++) {
-            if (children[i].isDirectory()) {
-                File f= find(children[i],name);
+        for (File children1 : children) {
+            if (children1.isDirectory()) {
+                File f = find(children1, name);
                 if ( f!=null ) return f;
             } else {
-                if ( children[i].getName().equals(name) ) {
-                    return children[i];
+                if (children1.getName().equals(name)) {
+                    return children1;
                 }
             }
         }
@@ -169,6 +171,8 @@ public class FileUtil {
      * find a files with the given name within one of the given roots.
      * TODO: check links.  For example, find( "/usr/share/fonts/truetype", "FreeMono.ttf" )
      * This allows root folders that do not exist.
+     * @param roots array of roots to start search.
+     * @param name name to look for.
      * @return the File found, or null if it does not exist.
      */
     public static File find(File[] roots,String name) {
@@ -200,12 +204,12 @@ public class FileUtil {
         if (!root.canRead()) return Collections.emptyList();
         if ( matches==null ) matches= new ArrayList();
         File[] children = root.listFiles(); // root is known to exist.
-        for (int i = 0; i < children.length; i++) {
-            if (children[i].isDirectory()) {
-                listRecursively(children[i],name,matches);
+        for (File children1 : children) {
+            if (children1.isDirectory()) {
+                listRecursively(children1, name, matches);
             } else {
-                if ( name.matcher( children[i].getName() ).matches() ) {
-                    matches.add(children[i]);
+                if (name.matcher(children1.getName()).matches()) {
+                    matches.add(children1);
                 }
             }
         }
@@ -260,17 +264,21 @@ public class FileUtil {
         }
         FileChannel ic = new FileInputStream(src).getChannel();
         FileChannel oc = new FileOutputStream(dst).getChannel();
-        ic.transferTo(0, ic.size(), oc);
-        ic.close();
-        oc.close();
+        try {
+            ic.transferTo(0, ic.size(), oc);
+        } finally {
+            ic.close();
+            oc.close();
+        }
     }
     
     /**
      * return the first four bytes of the file as a string.  Some magic
      * numbers we care about:
      *  <li> '\x89HDF'  HDF (and new NetCDF) files
-     * @param file
+     * @param src
      * @return a four byte string
+     * @throws java.io.FileNotFoundException
      * @throws IllegalArgumentException if the file is less than four bytes.
      */
     public static String getMagic(File src) throws FileNotFoundException, IOException {
