@@ -130,7 +130,11 @@ public class SeriesRenderer extends Renderer {
     ErrorBarRenderElement errorElement = new ErrorBarRenderElement();
     PsymConnectorRenderElement psymConnectorElement = new PsymConnectorRenderElement();
     PsymRenderElement psymsElement = new PsymRenderElement();
-    Shape selectionArea;
+    
+    /**
+     * the selectionArea, which can be null.
+     */
+    Shape selectionArea; 
 
     boolean haveValidColor= true;
 
@@ -1634,7 +1638,7 @@ public class SeriesRenderer extends Renderer {
         super.incrementUpdateCount();
 
         QDataSet dataSet = getDataSet();
-        selectionArea= null;
+        selectionArea= SelectionUtil.NULL;
 
         if (dataSet == null ) {
             logger.fine("dataset was null");
@@ -1803,7 +1807,13 @@ public class SeriesRenderer extends Renderer {
                 if ( vds.rank()!=1 ) {
                     return; // transitional case.
                 }
-                selectionArea= calcSelectionArea( xAxis, yAxis, xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );        
+                if ( firstIndex==0 && lastIndex==xds.length() ) {
+                    selectionArea= calcSelectionArea( xAxis, yAxis, xds, vds );
+                } else if ( firstIndex==-1 && lastIndex==-1 ) {
+                    selectionArea= SelectionUtil.NULL;
+                } else {
+                    selectionArea= calcSelectionArea( xAxis, yAxis, xds.trim(firstIndex,lastIndex), vds.trim(firstIndex,lastIndex) );        
+                }
             }
             
             logger.log(Level.FINER, "calcSelectionArea complete ({0}ms)", System.currentTimeMillis()-t0);  
