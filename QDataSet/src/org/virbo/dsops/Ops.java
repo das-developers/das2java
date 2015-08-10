@@ -5304,6 +5304,7 @@ public class Ops {
                             CdfSparseDataSet newYtags= new CdfSparseDataSet(2,ds.length()*len1);
                             newYtags.putValues(0,ytags);
                             newYtags.putValues(result.length(),powxtags1);
+                            newYtags.putProperty(QDataSet.UNITS,powxtags1.property(QDataSet.UNITS));
                             ytags= newYtags;
                             result.putProperty( QDataSet.DEPEND_1, ytags );
                         }
