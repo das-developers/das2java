@@ -404,10 +404,15 @@ public class SimpleStreamFormatter {
                     if ( name.equals( "BIN_PLUS" ) || name.equals("BIN_MINUS") ) {
                         logger.info("dropping BIN_PLUS or BIN_MINUS because it's not supported");
                     } else {
-                        prop = document.createElement("property");
+                        String n = names.get(qds); // nameFor would allocate name.  The data must have been serialized or in the process at this point.
+                        if ( n==null ) {
+                            logger.log(Level.INFO, "name cannot be resolved for data: {0}", qds);
+                        } else {
+                            prop = document.createElement("property");
                         prop.setAttribute("name", name);            
-                        prop.setAttribute("type", "qdataset");
-                        prop.setAttribute("value", nameFor((QDataSet) value));
+                            prop.setAttribute("type", "qdataset");
+                            prop.setAttribute("value", n );
+                        }
                     }
                 }
 
