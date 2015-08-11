@@ -133,6 +133,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                 case 3:
                     result = new DataSetBuilder(rank, qube[0], qube[1], qube[2]);
                     break;
+                case 4:
+                    result = new DataSetBuilder(rank, qube[0], qube[1], qube[2], qube[3] );
+                    break;
                 default:
                     throw new IllegalArgumentException("rank limit");
             }
@@ -147,6 +150,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                 case 3:
                     result = new DataSetBuilder(rank, 100, qube[0], qube[1]);
                     break;
+                case 4:
+                    result = new DataSetBuilder(rank, 100, qube[0], qube[1], qube[2] );
+                    break;
+                    
                 default:
                     throw new IllegalArgumentException("rank limit");
             }
@@ -158,6 +165,10 @@ public class QDataSetStreamHandler implements StreamHandler {
                 case 3:
                     result = new DataSetBuilder(rank - 1, 100, qube[0]);
                     break;
+                case 4:
+                    result = new DataSetBuilder(rank - 1, 100, qube[0], qube[1] );
+                    break;
+                    
                 default:
                     throw new IllegalArgumentException("rank limit");
             }
