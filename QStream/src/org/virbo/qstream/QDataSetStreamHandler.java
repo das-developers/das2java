@@ -409,7 +409,9 @@ public class QDataSetStreamHandler implements StreamHandler {
                     continue;
                 }
                 QDataSet dep0ds = getDataSetInternal(s);
-                if (dep0ds.rank() == 1) {
+                if ( dep0ds==null ) {
+                    logger.warning("unable to resolve property DEPENDNAME_"+i+"=\""+s+"\"");
+                } else if (dep0ds.rank() == 1) {
                     result.putProperty("DEPEND_" + i, dep0ds);
                 } else if (i > 0 && dep0ds.rank() == 2) {
                     result.putProperty("DEPEND_" + i, dep0ds);
