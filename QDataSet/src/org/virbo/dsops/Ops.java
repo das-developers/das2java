@@ -4272,6 +4272,9 @@ public class Ops {
      * 
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @return the element indeces.
+     * @see #sort(java.lang.Object) 
+     * @see #uniq(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #uniqValues(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet uniq( QDataSet ds ) {
         return uniq( ds, null );
@@ -4317,8 +4320,8 @@ public class Ops {
      * "sort" and should be a rank 1 list of indeces that sort the data.
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @param sort null, or the rank 1 dataset of indeces
-     * @return 
-     * @see #uniqValues which returns the values.
+     * @return the indeces of the unique elements.
+     * @see #uniqValues uniqValues which returns the values.
      */
     public static QDataSet uniq( QDataSet ds, QDataSet sort ) {
         if ( ds.rank()>1 ) throw new IllegalArgumentException("ds.rank()>1" );
@@ -4386,7 +4389,8 @@ public class Ops {
      * @see #uniq which returns the indeces.
      * @param ds rank 1 dataset, sorted, or mostly sorted.
      * @param sort null, or the rank 1 dataset of indeces
-     * @return
+     * @return the subset of the data which is uniq.
+     * @see #uniq(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet uniqValues( QDataSet ds, QDataSet sort  ) {
         QDataSet idx= uniq( ds, sort );
