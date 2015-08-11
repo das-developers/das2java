@@ -3,8 +3,6 @@
  *
  * Created on May 25, 2007, 7:04 AM
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.virbo.dsutil;
@@ -14,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
@@ -41,7 +40,7 @@ public class DataSetBuilder {
     ArrayList<DDataSet> finished;
     DDataSet current;
     int recCount;
-    int dim1, dim2;
+    int dim1, dim2, dim3;
     int recElements; // number of elements per record
     int index;
     int offset;
@@ -108,6 +107,27 @@ public class DataSetBuilder {
     }
 
     /**
+     * Create a new builder for a rank 3 dataset.
+     * guessRecCount is the guess of dim0 size.  Bad guesses will simply result in an extra array copy.
+     * @param rank must be 3.
+     * @param guessRecCount initial allocation for the first dimension.
+     * @param dim1 fixed size of the second index.
+     * @param dim2 fixed size of the third index.
+     * @param dim3 fixed size of the fourth index.
+     */
+    public DataSetBuilder( int rank, int guessRecCount, int dim1, int dim2, int dim3 ) {
+        this.rank= rank;
+        this.recCount= guessRecCount;
+        this.dim1= dim1;
+        this.dim2= dim2;
+        this.dim3= dim3;
+        this.recElements= dim1 * dim2 * dim3;
+        newCurrent();
+        index=0;
+        properties= new HashMap<String,Object>();
+    }
+    
+    /**
      * check the stream index specified.  If it's -1, that indicates that the builder
      * should keep track of the index and nextRecord() will be used to explicitly
      * increment the index.  If it is not -1, then it must either be equal to the
@@ -129,12 +149,15 @@ public class DataSetBuilder {
     }
     
     private void newCurrent() {
+        logger.log(Level.FINE, "creating rank {0} receiver for next {1} records", new Object[] { rank, recCount } );
         if ( rank==1 ) {
             current= DDataSet.createRank1( recCount );
         } else if ( rank==2 ) {
             current= DDataSet.createRank2( recCount, dim1 );
         } else if ( rank==3 ) {
             current= DDataSet.createRank3( recCount, dim1, dim2 );
+        } else if ( rank==4 ) {
+            current= DDataSet.createRank4( recCount, dim1, dim2, dim3 );
         }
     }
 
@@ -193,6 +216,19 @@ public class DataSetBuilder {
     /**
      * insert a value into the builder.
      * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param index1 the second index
+     * @param index2 the third index
+     * @param index3 the third index
+     * @param d the value to insert.
+     */
+    public void putValue( int index0, int index1, int index2, int index3, double d ) {
+        checkStreamIndex(index0);
+        current.putValue( this.index, index1, index2, index3, d );
+    }
+    
+    /**
+     * insert a value into the builder.
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
      * @param d the value to insert.
      */
     public void putValue( int index0, Datum d ) {
@@ -227,7 +263,21 @@ public class DataSetBuilder {
         if ( u==null ) u= d.getUnits();
         current.putValue( this.index, index1, index2, d.doubleValue(u) );
     }    
-    
+
+    /**
+     * insert a value into the builder.
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param index1 the second index
+     * @param index2 the third index
+     * @param index3 the fourth index
+     * @param d the value to insert.
+     */
+    public void putValue( int index0, int index1, int index2, int index3, Datum d ) {
+        checkStreamIndex(index0);
+        if ( u==null ) u= d.getUnits();
+        current.putValue( this.index, index1, index2, index3, d.doubleValue(u) );
+    }    
+        
     /**
      * insert a value into the builder.  Note these do Units checking and are therefore less efficient
      * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
@@ -293,6 +343,28 @@ public class DataSetBuilder {
             v= lu.convertDoubleTo( u, v );
         }
         current.putValue( this.index, index1, index2, v );
+    }
+
+    /**
+     * insert a value into the builder.  Note these do Units checking and are therefore less efficient
+     * @param index0 The index to insert the data, or if -1, ignore and nextRecord() should be used.
+     * @param index1 the second index
+     * @param index2 the third index
+     * @param index3 the fourth index
+     * @param d the value to insert.
+     */
+    public void putValue( int index0, int index1, int index2, int index3, QDataSet d ) {
+        checkStreamIndex(index0);
+        if ( u==null ) {
+            u= SemanticOps.getUnits(d);
+        } 
+        if ( d.rank()!=0 ) throw new IllegalArgumentException("data must be rank 0");
+        double v= d.value();
+        Units lu= SemanticOps.getUnits(d);
+        if ( lu!=u ) {
+            v= lu.convertDoubleTo( u, v );
+        }
+        current.putValue( this.index, index1, index2, index3, v );
     }
     
     /**
@@ -422,6 +494,7 @@ public class DataSetBuilder {
             case 1: result= DDataSet.createRank1(length); break;
             case 2: result= DDataSet.createRank2(length,dim1); break;
             case 3: result= DDataSet.createRank3(length,dim1,dim2); break;
+            case 4: result= DDataSet.createRank4(length,dim1,dim2,dim3); break;
             default: throw new RuntimeException("bad rank");
         }
         
