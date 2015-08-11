@@ -52,11 +52,10 @@ public class Reduction {
     }
 
     /**
-     * See org.qstream.filter.MinMaxReduceFilter.  
-     * This is basically a copy of that code.
      * @param ds a rank1 or rank2 waveform dataset.
      * @param xLimit the target resolution, result will be finer than this, if possible.
      * @return either the original dataset when there is no reduction to be done, or a series data set with bins (deltas for now).
+     * @see org.qstream.filter.MinMaxReduceFilter.  This is basically a copy of that code.
      */
     private static QDataSet reducexWaveform( QDataSet ds, QDataSet xLimit ) {
         DataSetBuilder xbuilder;
@@ -191,7 +190,7 @@ public class Reduction {
         for ( int j=0; j<ny; j++ ) miny0[j]= Double.POSITIVE_INFINITY;
         double[] maxy0 = new double[ny];
         for ( int j=0; j<ny; j++ ) maxy0[j]= Double.NEGATIVE_INFINITY;
-        double ax0 = 0;
+        double ax0;
         double[] ay0 = new double[ny];
 
         UnitsConverter uc;
@@ -204,7 +203,7 @@ public class Reduction {
         }
 
         int points = 0;
-        int inCount = 0;
+        //int inCount = 0;
 
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
 
@@ -213,7 +212,7 @@ public class Reduction {
         double fill= Double.NaN;
 
         while ( i<x.length() ) {
-            inCount++;
+            //inCount++;
 
             double xx= x.value(i);
             QDataSet yy= ds.slice(i);
