@@ -2,9 +2,12 @@
 package org.virbo.dsutil;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsConverter;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
@@ -20,6 +23,8 @@ import org.virbo.dsops.Ops;
  * @author jbf
  */
 public class Reduction {
+    
+    private static final Logger logger= LoggerManager.getLogger("qdataset.ops.reduction");
     
     /**
      * return a converter for differences.  If dstUnits are specified,
@@ -319,6 +324,8 @@ public class Reduction {
         result.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( result, yminbuilder.getDataSet() ) );
         result.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), result ) );
 
+        logger.log( Level.FINE, "time to reducex({0} records -> {1} records) (ms): {2}", new Object[] { ds.length(), result.length(), System.currentTimeMillis()-t0 } );
+        
         //System.err.println( String.format( "time to reducex(%d records -> %d records) (ms): %d", ds.length(), result.length(), System.currentTimeMillis()-t0) );
 
         return result;
@@ -487,7 +494,7 @@ public class Reduction {
         yds.putProperty( QDataSet.DELTA_MINUS, Ops.subtract( yds, yminbuilder.getDataSet() ) );
         yds.putProperty( QDataSet.DELTA_PLUS, Ops.subtract( ymaxbuilder.getDataSet(), yds ) );
 
-        System.err.println( String.format( "time to reduce2D(%d points) (ms): %d", ds.length(), System.currentTimeMillis()-t0) );
+        logger.log( Level.FINE, "time to reduce2D({0} records -> {1} records) (ms): {2}", new Object[] { ds.length(), yds.length(), System.currentTimeMillis()-t0 } );
 
         return yds;
 
