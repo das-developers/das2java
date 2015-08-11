@@ -445,15 +445,20 @@ public final class DDataSet extends ArrayDataSet {
      * copy elements of src DDataSet into dest DDataSet, with System.arraycopy.
      * src and dst must have the same geometry, except for dim 0.  Allows for
      * aliasing when higher dimension element count matches.
-     * @param len number of records to copy.
+     * @param src source dataset
+     * @param srcpos source dataset first dimension index.
+     * @param dest destination dataset
+     * @param nrec number of records to copy.  Note this is different than the other copyElements!
+     * @param destpos destination dataset first dimension index.
      * @throws IllegalArgumentException if the higher rank geometry doesn't match
      * @throws IndexOutOfBoundsException
+     * @see #copyElements(org.virbo.dataset.DDataSet, int, org.virbo.dataset.DDataSet, int, int, boolean) 
      */
-    public static void copyElements(DDataSet src, int srcpos, DDataSet dest, int destpos, int len) {
+    public static void copyElements(DDataSet src, int srcpos, DDataSet dest, int destpos, int nrec ) {
         if ( src.len1 != dest.len1 || src.len2 != dest.len2 ) {
             throw new IllegalArgumentException("src and dest geometry don't match");
         }
-        copyElements( src, srcpos, dest, destpos, len * src.len1 * src.len2, false); 
+        copyElements( src, srcpos, dest, destpos, nrec * src.len1 * src.len2 * src.len3, false); 
     }    
     
     /**
@@ -470,12 +475,15 @@ public final class DDataSet extends ArrayDataSet {
      * @throws IndexOutOfBoundsException
      */
     public static void copyElements( DDataSet src, int srcpos, DDataSet dest, int destpos, int len, boolean checkAlias ) {
-        if ( checkAlias && ( src.len1*src.len2 != dest.len1*dest.len2 ) ) {
+        if ( checkAlias && ( src.len1*src.len2*src.len3 != dest.len1*dest.len2*dest.len3 ) ) {
             throw new IllegalArgumentException("src and dest geometry don't match");
         }
-        int srcpos1 = srcpos * src.len1 * src.len2;
-        int destpos1 = destpos * dest.len1 * dest.len2;
+        int srcpos1 = srcpos * src.len1 * src.len2 * src.len3;
+        int destpos1 = destpos * dest.len1 * dest.len2 * dest.len3;
         int len1 = len;
+        if ( dest.rank==4 ) {
+            System.err.println("here16 "+destpos1+" "+len1);
+        }
         System.arraycopy( src.back, srcpos1, dest.back, destpos1, len1 );
     }
 
