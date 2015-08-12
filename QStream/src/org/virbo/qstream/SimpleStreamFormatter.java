@@ -903,9 +903,6 @@ public class SimpleStreamFormatter {
                 if ( isJoin(packetDs) ) {
                     throw new IllegalArgumentException("join of join not supported");
                 }
-                mainPd = doPacketDescriptor(sd, packetDs, true, false, streamRank, joinDataSet );
-
-                sd.addDescriptor(mainPd);
 
                 // check for DEPEND_1 and DEPEND_2 datasets that need to be sent out first.
                 for (int i = 1; i < QDataSet.MAX_RANK; i++) {
@@ -990,6 +987,10 @@ public class SimpleStreamFormatter {
                         retire.add(pd);
                     }
                 }
+
+                mainPd = doPacketDescriptor(sd, packetDs, true, false, streamRank, joinDataSet );
+
+                sd.addDescriptor(mainPd);
 
                 sd.send(mainPd, out);
 
