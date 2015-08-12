@@ -410,7 +410,9 @@ public class DataSetAdapter {
             properties.put(QDataSet.FILL_VALUE, dasProps.get(DataSet.PROPERTY_Z_FILL));
 
             properties.put(QDataSet.VALID_MIN, dasProps.get(DataSet.PROPERTY_Z_VALID_MIN));
-            properties.put(QDataSet.VALID_MIN, dasProps.get(DataSet.PROPERTY_Z_VALID_MAX));
+            properties.put(QDataSet.VALID_MAX, dasProps.get(DataSet.PROPERTY_Z_VALID_MAX));
+				properties.put(QDataSet.SCALE_TYPE, dasProps.get(DataSet.PROPERTY_Z_SCALETYPE));
+				properties.put(QDataSet.LABEL, dasProps.get(DataSet.PROPERTY_Z_LABEL));
         }
 
         @Override
@@ -455,6 +457,21 @@ public class DataSetAdapter {
             properties.put(QDataSet.UNITS, source.getZUnits());
             properties.put(PROPERTY_SOURCE, source);
             properties.put(QDataSet.TITLE, dasProps.get(DataSet.PROPERTY_TITLE));
+				
+				//Let Das2 Streams set Z-Axis properties
+            DatumRange zRng = (DatumRange) dasProps.get(DataSet.PROPERTY_Z_RANGE);
+            if (zRng != null) {
+                properties.put(QDataSet.TYPICAL_MIN, zRng.min().value());
+                properties.put(QDataSet.TYPICAL_MAX, zRng.max().value());
+            }
+            properties.put(QDataSet.RENDER_TYPE, dasProps.get(DataSet.PROPERTY_RENDERER));
+            properties.put(QDataSet.MONOTONIC, dasProps.get(DataSet.PROPERTY_X_MONOTONIC));
+            properties.put(QDataSet.FILL_VALUE, dasProps.get(DataSet.PROPERTY_Z_FILL));
+
+            properties.put(QDataSet.VALID_MIN, dasProps.get(DataSet.PROPERTY_Z_VALID_MIN));
+            properties.put(QDataSet.VALID_MAX, dasProps.get(DataSet.PROPERTY_Z_VALID_MAX));
+				properties.put(QDataSet.SCALE_TYPE, dasProps.get(DataSet.PROPERTY_Z_SCALETYPE));
+				properties.put(QDataSet.LABEL, dasProps.get(DataSet.PROPERTY_Z_LABEL));
         }
 
         @Override
