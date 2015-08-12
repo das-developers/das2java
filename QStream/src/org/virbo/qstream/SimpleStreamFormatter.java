@@ -311,6 +311,8 @@ public class SimpleStreamFormatter {
                     props.setAttribute("index", String.valueOf(i) );
                     qdatasetElement.appendChild(props);
                 }
+            } else {
+                nameFor(bds);
             }
         } else if ( isJoin(ds) ) {
             Element values=  document.createElement("values");
@@ -407,9 +409,13 @@ public class SimpleStreamFormatter {
                         String n = names.get(qds); // nameFor would allocate name.  The data must have been serialized or in the process at this point.
                         if ( n==null ) {
                             logger.log(Level.INFO, "name cannot be resolved for data: {0}", qds);
+                            prop = document.createElement("property");
+                            prop.setAttribute("name", name);            
+                            prop.setAttribute("type", "qdataset");
+                            prop.setAttribute("value", sliceName );
                         } else {
                             prop = document.createElement("property");
-                        prop.setAttribute("name", name);            
+                            prop.setAttribute("name", name);            
                             prop.setAttribute("type", "qdataset");
                             prop.setAttribute("value", n );
                         }
@@ -904,6 +910,10 @@ public class SimpleStreamFormatter {
                     throw new IllegalArgumentException("join of join not supported");
                 }
 
+                mainPd = doPacketDescriptor(sd, packetDs, true, false, streamRank, joinDataSet );
+
+                sd.addDescriptor(mainPd);
+                
                 // check for DEPEND_1 and DEPEND_2 datasets that need to be sent out first.
                 for (int i = 1; i < QDataSet.MAX_RANK; i++) {
                     QDataSet depi = (QDataSet) packetDs.property("DEPEND_" + i);
@@ -987,10 +997,6 @@ public class SimpleStreamFormatter {
                         retire.add(pd);
                     }
                 }
-
-                mainPd = doPacketDescriptor(sd, packetDs, true, false, streamRank, joinDataSet );
-
-                sd.addDescriptor(mainPd);
 
                 sd.send(mainPd, out);
 
