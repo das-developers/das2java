@@ -27,6 +27,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.DatumVector;
+import org.das2.datum.EnumerationUnits;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
@@ -2252,6 +2253,15 @@ public class DataSetUtil {
             }
         }
 
+        if ( UnitsUtil.isNominalMeasurement( SemanticOps.getUnits(ds)) ) {
+            EnumerationUnits eu= (EnumerationUnits) SemanticOps.getUnits(ds);
+            if ( eu.hasFillDatum() ) {
+                return Ops.ne( ds, eu.getFillDatum() );
+            } else {
+                return new WeightsDataSet.Finite(ds);
+            }
+        }
+        
         Number ofill;
         QDataSet result = (QDataSet) o;
         if ( result!=null ) {
