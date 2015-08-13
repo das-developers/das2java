@@ -311,8 +311,6 @@ public class SimpleStreamFormatter {
                     props.setAttribute("index", String.valueOf(i) );
                     qdatasetElement.appendChild(props);
                 }
-            } else {
-                nameFor(bds);
             }
         } else if ( isJoin(ds) ) {
             Element values=  document.createElement("values");
@@ -406,19 +404,10 @@ public class SimpleStreamFormatter {
                     if ( name.equals( "BIN_PLUS" ) || name.equals("BIN_MINUS") ) {
                         logger.info("dropping BIN_PLUS or BIN_MINUS because it's not supported");
                     } else {
-                        String n = names.get(qds); // nameFor would allocate name.  The data must have been serialized or in the process at this point.
-                        if ( n==null ) {
-                            logger.log(Level.INFO, "name cannot be resolved for data: {0}", qds);
                             prop = document.createElement("property");
                             prop.setAttribute("name", name);            
                             prop.setAttribute("type", "qdataset");
-                            prop.setAttribute("value", sliceName );
-                        } else {
-                            prop = document.createElement("property");
-                            prop.setAttribute("name", name);            
-                            prop.setAttribute("type", "qdataset");
-                            prop.setAttribute("value", n );
-                        }
+                            prop.setAttribute("value", nameFor((QDataSet) value));
                     }
                 }
 
@@ -751,8 +740,6 @@ public class SimpleStreamFormatter {
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep0 != null) {
-            // sometimes dep0 itsself will have a depend_0.  We don't include this dataset.
-            if ( dep0.property(QDataSet.DEPEND_0)!=null ) dep0= Ops.putProperty( dep0, QDataSet.DEPEND_0, null ); 
             PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, dep0, streamRank);
             packetDescriptor.addPlane(planeDescriptor);
             packetElement.appendChild(planeDescriptor.getDomElement());
