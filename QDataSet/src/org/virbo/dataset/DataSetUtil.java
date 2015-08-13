@@ -2256,7 +2256,12 @@ public class DataSetUtil {
         if ( UnitsUtil.isNominalMeasurement( SemanticOps.getUnits(ds)) ) {
             EnumerationUnits eu= (EnumerationUnits) SemanticOps.getUnits(ds);
             if ( eu.hasFillDatum() ) {
-                return Ops.ne( ds, eu.getFillDatum() );
+                if ( ds.property(QDataSet.FILL_VALUE)==null ) {
+                    QDataSet ds1= Ops.putProperty( ds, QDataSet.FILL_VALUE, eu.getFillDatum().doubleValue(eu) );
+                    return new WeightsDataSet.FillFinite(ds1);
+                } else {
+                    return new WeightsDataSet.FillFinite(ds); // DANGER: the enumeration datum fill is now ignored.
+                }
             } else {
                 return new WeightsDataSet.Finite(ds);
             }
