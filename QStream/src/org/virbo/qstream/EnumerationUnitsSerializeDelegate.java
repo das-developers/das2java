@@ -7,6 +7,8 @@ package org.virbo.qstream;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
@@ -18,7 +20,8 @@ import org.das2.datum.Units;
  * @author jbf
  */
 public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
-
+    protected static final Logger logger= Logger.getLogger("qstream");
+    
     @Override
     public String format(Object o) {
         EnumerationUnits eu= (EnumerationUnits)o;
@@ -56,9 +59,17 @@ public class EnumerationUnitsSerializeDelegate implements SerializeDelegate {
             for ( String nv: ss ) {
                 if ( nv.trim().length()>0 ) {
                     int idx= nv.indexOf(":");
-                    int ival= Integer.parseInt(nv.substring(0,idx));
-                    String sval= nv.substring(idx+1);
-                    u.createDatum(ival,sval);
+                    if ( idx>-1 ) {
+                        try {
+                            int ival= Integer.parseInt(nv.substring(0,idx));
+                            String sval= nv.substring(idx+1);
+                            u.createDatum(ival,sval);
+                        } catch ( NumberFormatException ex ) {
+                            logger.log(Level.WARNING, "NumberFormatException caught: {0}", nv);
+                        }
+                    } else {
+                        logger.log(Level.WARNING, "Bad index caught: {0}", nv);
+                    }
                 }
             }
             return u;
