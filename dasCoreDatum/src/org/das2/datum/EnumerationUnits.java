@@ -138,6 +138,14 @@ public class EnumerationUnits extends Units {
     }
 
     /**
+     * true if fill has been defined, which is the empty string or all spaces.
+     * @return true if fill has been defined.
+     */
+    public boolean hasFillDatum() {
+        return objects.containsKey("");
+    }
+    
+    /**
      * return the Datum that represents this object, or create a Datum for 
      * the object.  The object should be a String, but to support legacy applications
      * it is an object 
@@ -147,6 +155,9 @@ public class EnumerationUnits extends Units {
     public Datum createDatum(Object object) {
         if ( object instanceof String ) {
             object= ((String)object).trim();
+            if ( object.toString().length()==0 ) {
+                System.err.println("here length 0 ");
+            }
         }
         if (objects.containsKey(object)) {
             return objects.get(object);
