@@ -37,12 +37,8 @@ public abstract class WeightsDataSet implements QDataSet {
         if (validMin == null) validMin = Double.NEGATIVE_INFINITY;
         Number validMax = (Number) ds.property(QDataSet.VALID_MAX);
         if (validMax == null) validMax = Double.POSITIVE_INFINITY;
-        Units u = (Units) ds.property(QDataSet.UNITS);
-        if (u == null) {
-            u = Units.dimensionless;
-        }
         Number ofill = (Number) ds.property(QDataSet.FILL_VALUE);
-        fill = (ofill == null ? u.getFillDouble() : ofill.doubleValue());
+        fill = (ofill == null ? Double.NaN : ofill.doubleValue());
         //ffill= (double)(float)fill;  There was old code that checked for floats that had been converted to doubles.
         vmin = validMin.doubleValue();
         vmax = validMax.doubleValue();
