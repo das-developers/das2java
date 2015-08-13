@@ -461,6 +461,7 @@ public class SimpleStreamFormatter {
         
         if (packetDescriptor.isStream()) {
             if (ds.rank() > 1) {
+                assert qubeDims!=null;
                 values.setAttribute("length", Util.encodeArray(qubeDims, 1, qubeDims.length - 1)); // must be a qube for stream.
             } else {
                 values.setAttribute("length", "");
