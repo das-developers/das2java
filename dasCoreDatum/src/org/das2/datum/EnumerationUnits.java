@@ -155,9 +155,6 @@ public class EnumerationUnits extends Units {
     public Datum createDatum(Object object) {
         if ( object instanceof String ) {
             object= ((String)object).trim();
-            if ( object.toString().length()==0 ) {
-                System.err.println("here length 0 ");
-            }
         }
         if (objects.containsKey(object)) {
             return objects.get(object);
