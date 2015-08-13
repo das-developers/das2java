@@ -470,9 +470,16 @@ public class SimpleStreamFormatter {
                 values.setAttribute("length", Util.encodeArray(qubeDims, 0, qubeDims.length));
             }
             if (packetDescriptor.isValuesInDescriptor()) {
+                Units u= (Units) ds.property(QDataSet.UNITS);
                 StringBuilder s = new StringBuilder("");
-                for (int i = 0; i < ds.length(); i++) {
-                    s.append( "," ).append( ds.value(i) );
+                if ( u!=null && u instanceof EnumerationUnits ) {
+                    for (int i = 0; i < ds.length(); i++) {
+                        s.append( "," ).append( (int)ds.value(i) );
+                    }
+                } else {
+                    for (int i = 0; i < ds.length(); i++) {
+                        s.append( "," ).append( ds.value(i) );
+                    }
                 }
                 values.setAttribute("values", ds.length() == 0 ? "" : s.substring(1));
                 if ( ds.length()==0 ) {
