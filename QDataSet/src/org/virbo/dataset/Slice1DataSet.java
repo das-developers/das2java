@@ -54,6 +54,7 @@ public class Slice1DataSet extends AbstractDataSet {
         Units dep1units= dep1==null ? null : (Units) dep1.property(QDataSet.UNITS);//TODO stupid hurry, need to drive Sarah to work
         if ( dep1!=null && dep1.rank()==1 && ( dep1units instanceof EnumerationUnits ) ) { // check for legacy bundle where DEPEND_1 is labels.
             label= String.valueOf(dep1units.createDatum(dep1.value(index)));
+            addContext= false;
         }
 
 
