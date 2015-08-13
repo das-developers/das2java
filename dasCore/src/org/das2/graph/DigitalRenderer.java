@@ -60,9 +60,6 @@ public class DigitalRenderer extends Renderer {
 
             QDataSet xrange= doRange( xds );
             QDataSet yrange= doRange( yds );
-            if ( UnitsUtil.isOrdinalMeasurement( SemanticOps.getUnits( (QDataSet) yrange ) ) ) {
-                yrange= DataSetUtil.asDataSet( DatumRangeUtil.newDimensionless(0,10) );
-            }
 
             JoinDataSet bds= new JoinDataSet(2);
             bds.join(xrange);
@@ -74,6 +71,9 @@ public class DigitalRenderer extends Renderer {
     }
 
     private static QDataSet doRange( QDataSet xds ) {
+        if ( UnitsUtil.isNominalMeasurement( SemanticOps.getUnits(xds) ) ) {
+            return DataSetUtil.asDataSet( DatumRangeUtil.newDimensionless(0,10) );
+        }
         QDataSet xrange= Ops.extent(xds);
         if ( xrange.value(1)==xrange.value(0) ) {
             if ( !"log".equals( xrange.property(QDataSet.SCALE_TYPE)) ) {
@@ -203,6 +203,12 @@ public class DigitalRenderer extends Renderer {
         int ixmin;
 
         if ( dataSet==null ) return;
+        
+        if ( !UnitsUtil.isIntervalOrRatioMeasurement( SemanticOps.getUnits(dataSet) ) ) {
+            firstIndex=0;
+            lastIndex= Math.min( dataSet.length(), this.dataSetSizeLimit );
+            return;
+        }
         
         QDataSet wds;
         if ( dataSet.rank()==0 ) {
