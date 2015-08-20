@@ -278,6 +278,15 @@ public class DataSetAdapter {
             properties.put(QDataSet.DEPEND_0, new XTagsDataSet(source));
             properties.put(PROPERTY_SOURCE, source);
 
+            // http://www.sarahandjeremy.net/~jbf/1wire/data/2007/0B000800408DD710.20071201.d2s uses property "valid_range"
+            DatumRange yValid= (DatumRange)hack( dasProps, "valid_range", sPlaneID );
+            if ( yValid!=null ) {
+                double val = yValid.min().doubleValue(source.getYUnits());
+                properties.put( QDataSet.VALID_MIN, val );
+                val = yValid.max().doubleValue(source.getYUnits());
+                properties.put( QDataSet.VALID_MAX, val );
+            }
+            
             //New properties after 2014-05-28 Das2 Dev meeting
             Datum d = (Datum) hack(dasProps, DataSet.PROPERTY_Y_VALID_MIN, sPlaneID);
             if (d != null) {
