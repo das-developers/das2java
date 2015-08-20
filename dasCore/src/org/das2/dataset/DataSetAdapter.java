@@ -8,12 +8,17 @@
  */
 package org.das2.dataset;
 
+import java.text.ParseException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.Units;
+import org.das2.system.DasLogger;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DRank0DataSet;
@@ -28,6 +33,8 @@ import org.virbo.dsops.Ops;
  */
 public class DataSetAdapter {
 
+    private static final Logger logger = DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
+    
     public static final String PROPERTY_SOURCE = "adapterSource";
 
 	 ///////////////////////////////////////////////////////////////////////////////////
@@ -279,12 +286,17 @@ public class DataSetAdapter {
             properties.put(PROPERTY_SOURCE, source);
 
             // http://www.sarahandjeremy.net/~jbf/1wire/data/2007/0B000800408DD710.20071201.d2s uses property "valid_range"
-            DatumRange yValid= (DatumRange)hack( dasProps, "valid_range", sPlaneID );
-            if ( yValid!=null ) {
-                double val = yValid.min().doubleValue(source.getYUnits());
-                properties.put( QDataSet.VALID_MIN, val );
-                val = yValid.max().doubleValue(source.getYUnits());
-                properties.put( QDataSet.VALID_MAX, val );
+            String syValid= (String)dasProps.get("valid_range");
+            if ( syValid!=null ) {
+                try {
+                    DatumRange yValid= DatumRangeUtil.parseDatumRange( syValid, source.getYUnits() );
+                    double val = yValid.min().doubleValue(source.getYUnits());
+                    properties.put( QDataSet.VALID_MIN, val );
+                    val = yValid.max().doubleValue(source.getYUnits());
+                    properties.put( QDataSet.VALID_MAX, val );
+                } catch (ParseException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
             }
             
             //New properties after 2014-05-28 Das2 Dev meeting
