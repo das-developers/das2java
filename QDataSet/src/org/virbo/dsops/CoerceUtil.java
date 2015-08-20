@@ -206,6 +206,10 @@ public class CoerceUtil {
      */
     public static QDataSet increaseRank1(final QDataSet ds, final QDataSet ds2) {
 
+        if ( ds.length()!=ds2.length() ) {
+            throw new IllegalArgumentException("datasets must have the same length(): "+ ds + " "+ds2 );
+        }
+        
         return new QDataSet() {
 
             public int rank() {
@@ -288,6 +292,14 @@ public class CoerceUtil {
      */
     public static QDataSet increaseRank2(final QDataSet ds, final QDataSet ds2) {
 
+        if ( ds.length()!=ds2.length() ) {
+            throw new IllegalArgumentException("datasets must have the same length(): "+ ds + " "+ds2 );
+        }
+        
+        if ( ds.length(0)!=ds2.length(0) ) {
+            throw new IllegalArgumentException("datasets must have the same length(0): "+ ds + " "+ds2 );
+        }
+        
         return new QDataSet() {
 
             public int rank() {
