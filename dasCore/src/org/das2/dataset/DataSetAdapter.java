@@ -92,7 +92,7 @@ public class DataSetAdapter {
                 Units unitsY = null;
                 boolean bCommonYUnits = false;
                 for (int i = 1; i < planes.length; i++) {
-					// Arg, everything we want to get at is hidden behind 7 levels of
+					     // Arg, everything we want to get at is hidden behind 7 levels of
                     // interfaces.  As a bonus, class names repeat in different packages from
                     // the same dev group.
                     org.das2.dataset.AbstractDataSet.ViewDataSet view
@@ -115,12 +115,21 @@ public class DataSetAdapter {
                 bds.putProperty(QDataSet.DEPEND_0, new XTagsDataSet(vds));
                 bds.putProperty(QDataSet.TITLE, dasProps.get(DataSet.PROPERTY_TITLE));
 
-				// If all Y elements of the bundle have the same units, put those units
+				    // If all Y elements of the bundle have the same units, put those units
                 // on the Y axis, that way something identifies Y.
                 if (bCommonYUnits) {
                     bds.putProperty(QDataSet.UNITS, unitsY);
                     bds.putProperty(QDataSet.LABEL, unitsY.toString());
                 }
+					 
+					 // Copy more properties into the overall bundle dataset, wow this really
+					 // needs to be refactored.
+					 bds.putProperty(QDataSet.SCALE_TYPE, vds.getProperty(DataSet.PROPERTY_Y_SCALETYPE));
+					 DatumRange yRng = (DatumRange) vds.getProperty(DataSet.PROPERTY_Y_RANGE);
+					 if (yRng != null) {
+						 bds.putProperty(QDataSet.TYPICAL_MIN, yRng.min().value());
+						 bds.putProperty(QDataSet.TYPICAL_MAX, yRng.max().value());
+					 }
 
                 return DDataSet.copy(bds);
             }
