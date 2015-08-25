@@ -113,9 +113,6 @@ public class LeapSecondsConverter extends UnitsConverter {
         }
 
         for ( int i=0; i<withoutLeapSeconds.size()-1; i++ ) {
-            if ( i==26 ) {
-                System.err.println("here 26");
-            }
             if ( withoutLeapSeconds.get(i) <= us2000 && ( i==withoutLeapSeconds.size()-1 || us2000 < withoutLeapSeconds.get(i+1) ) ) {
                 us2000_st= withoutLeapSeconds.get(i);
                 us2000_en= withoutLeapSeconds.get(i+1);
