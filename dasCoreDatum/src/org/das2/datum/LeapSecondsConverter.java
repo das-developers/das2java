@@ -73,7 +73,7 @@ public class LeapSecondsConverter extends UnitsConverter {
                 int iday = Integer.parseInt(ss[2]);
                 int ileap = (int) (Double.parseDouble(ss[3])); // I thought these could only be whole numbers
                 double us2000 = TimeUtil.createTimeDatum(iyear, imonth, iday, 0, 0, 0, 0).doubleValue(Units.us2000);
-                leapSeconds.add( ((long) us2000) * 1000L - 43200000000000L + (long) ( ileap-32 ) * 1000000000 );
+                leapSeconds.add( ((long) us2000) * 1000L - 43200000000000L + (long) ( ileap+32 ) * 1000000000 );
                 withoutLeapSeconds.add( us2000 );
             }
             leapSeconds.add( Long.MAX_VALUE );
@@ -113,6 +113,9 @@ public class LeapSecondsConverter extends UnitsConverter {
         }
 
         for ( int i=0; i<withoutLeapSeconds.size()-1; i++ ) {
+            if ( i==26 ) {
+                System.err.println("here 26");
+            }
             if ( withoutLeapSeconds.get(i) <= us2000 && ( i==withoutLeapSeconds.size()-1 || us2000 < withoutLeapSeconds.get(i+1) ) ) {
                 us2000_st= withoutLeapSeconds.get(i);
                 us2000_en= withoutLeapSeconds.get(i+1);
@@ -133,6 +136,8 @@ public class LeapSecondsConverter extends UnitsConverter {
      */
     public synchronized static int getLeapSecondCountForTT2000( long tt2000 ) throws IOException {
 
+        System.err.println( "since 2015-06-30T23:58:00 (sec): " + ( ( tt2000 - 488980747184000000L ) / 1e9 ) );
+        
         if ( System.currentTimeMillis()-lastUpdateMillis > 86400000 ) {
             updateLeapSeconds();
         }
@@ -147,6 +152,9 @@ public class LeapSecondsConverter extends UnitsConverter {
                 tt2000_st= leapSeconds.get(i);
                 tt2000_en= leapSeconds.get(i+1);
                 tt2000_c= i+10;
+                
+                System.err.println( "since 2015-06-30T23:58:00 (sec): " + ( ( tt2000 - 488980747184000000L ) / 1e9 ) + " result: "+tt2000_c );
+                
                 return i+10;
             }
         }
