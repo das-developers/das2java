@@ -904,7 +904,7 @@ public class DataSetUtil {
 
             // stop is stopping condition tolerance.
             double stop= ( d.property(QDataSet.DELTA_MINUS)!=null ) ?  ((QDataSet)d.property(QDataSet.DELTA_MINUS)).value() : 0.0;
-            stop= Math.max( stop, DataSetUtil.value( (RankZeroDataSet)limit, (Units)peaks.property(QDataSet.UNITS) ));
+            stop= Math.max( stop, DataSetUtil.asDatum(limit).doubleValue( SemanticOps.getUnits( peaks ) ) );
             double top= d.value() - stop;
 
             int nonZeroPeakIndex= ( peaks.value(0) - stop < 0.0 ) ? 1 : 0;
