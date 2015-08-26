@@ -5231,11 +5231,11 @@ public class Ops {
             }
             if ( translation!=null ) logger.fine("translation will be applied");
 
-            double currentDeltaTime;
+            double currentDeltaTime; // ten times the spacing.
             if ( dep1.rank()==1 ) {
-                currentDeltaTime= dep1.value(1) - dep1.value(0);
+                currentDeltaTime= dep1.value(10) - dep1.value(0);
             } else {
-                currentDeltaTime= dep1.value(0,1) - dep1.value(0,0);
+                currentDeltaTime= dep1.value(0,10) - dep1.value(0,0);
             }
             double lastDeltaTime= currentDeltaTime;
             
@@ -5287,19 +5287,19 @@ public class Ops {
                     }
                     if ( hasFill ) continue;
 
-                    double switchCadenceCheck;
+                    double switchCadenceCheck; // the cadence at the end of the interval.
                     if ( dep1.rank()==1 ) {
-                        currentDeltaTime= dep1.value(istart+1) - dep1.value(istart);
-                        switchCadenceCheck=  dep1.value(istart+len-1) - dep1.value(istart+len-2);
+                        currentDeltaTime= dep1.value(istart+10) - dep1.value(istart);
+                        switchCadenceCheck=  dep1.value(istart+len-1) - dep1.value(istart+len-11);
                     } else {
-                        currentDeltaTime= dep1.value(i,istart+1) - dep1.value(i,istart);
-                        switchCadenceCheck=  dep1.value(i,istart+len-1) - dep1.value(i,istart+len-2);
+                        currentDeltaTime= dep1.value(i,istart+10) - dep1.value(i,istart);
+                        switchCadenceCheck=  dep1.value(i,istart+len-1) - dep1.value(i,istart+len-11);
                     }
-                    if ( Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime > 0.0001 ) {
+                    if ( Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
                         continue;
                     }
                     
-                    if ( Math.abs( lastDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.0001 ) {
+                    if ( Math.abs( lastDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
                         QDataSet powxtags1= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(istart,istart+len));
                         QDataSet ytags= (QDataSet) result.property(QDataSet.DEPEND_1);
                         if ( ytags instanceof CdfSparseDataSet ) {
