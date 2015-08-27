@@ -801,6 +801,9 @@ public class HttpFileSystem extends WebFileSystem {
         }
         
         logger.log(Level.FINER, "listDirectory({0},{1})", new Object[]{directory, regex});
+
+        if ( regex.endsWith("/") ) regex= regex.substring(0,regex.length()-1);
+
         directory = toCanonicalFilename(directory);
         if (!isDirectory(directory)) {
             throw new IllegalArgumentException("is not a directory: " + directory);
@@ -810,8 +813,9 @@ public class HttpFileSystem extends WebFileSystem {
         Pattern pattern = Pattern.compile(regex);
         ArrayList result = new ArrayList();
         for (String s : listing) {
-            if ( s.charAt(s.length()-1)=='/' ) s= s.substring(0,s.length()-1);
-            if (pattern.matcher(s).matches()) {
+            String c= s;
+            if ( s.charAt(s.length()-1)=='/' ) c= s.substring(0,s.length()-1);
+            if (pattern.matcher(c).matches()) {
                 result.add(s);
             }
         }
