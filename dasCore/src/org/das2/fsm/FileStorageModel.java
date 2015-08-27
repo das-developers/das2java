@@ -948,7 +948,7 @@ public class FileStorageModel {
      * @return an integer indicating the split index, so that surl.substring(0,i) returns the slash.
      */
     public static int splitIndex(String surl) { 
-        String regex= "([\\$\\%][yYx\\(\\{])";
+        String regex= "([\\$\\%][yYxv\\(\\{])";
         Matcher m= Pattern.compile(regex).matcher(surl);
         if ( m.find() ) {
             int i= m.start();
