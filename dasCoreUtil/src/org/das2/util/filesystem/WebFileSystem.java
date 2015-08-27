@@ -53,7 +53,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.das2.util.Base64;
 import org.das2.util.FileUtil;
 import org.das2.util.monitor.CancelledOperationException;
 
@@ -168,7 +167,7 @@ public abstract class WebFileSystem extends FileSystem {
     }
 
 
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
@@ -276,7 +275,10 @@ public abstract class WebFileSystem extends FileSystem {
         return remoteList;
     }
 
-    /** Creates a new instance of WebFileSystem */
+    /** Creates a new instance of WebFileSystem
+     * @param root the remote URI.
+     * @param localRoot local directory used to store local copies of the data.
+     */
     protected WebFileSystem(URI root, File localRoot) {
         super(root);
         this.localRoot = localRoot;
@@ -670,6 +672,7 @@ public abstract class WebFileSystem extends FileSystem {
      * @return
      * @throws IOException
      */
+    @Override
     abstract public boolean isDirectory(String filename) throws IOException;
 
     /**
@@ -678,8 +681,10 @@ public abstract class WebFileSystem extends FileSystem {
      * @return
      * @throws IOException
      */
+    @Override
     abstract public String[] listDirectory(String directory) throws IOException;
 
+    @Override
     public String[] listDirectory(String directory, String regex) throws IOException {
         String[] names = listDirectory(directory);
         Pattern pattern = Pattern.compile(regex);
@@ -807,6 +812,10 @@ public abstract class WebFileSystem extends FileSystem {
     /**
      * copies data from in to out, sending the number of bytesTransferred to the monitor.
      * NOTE: monitor.finished is not called, breaking monitor rules.
+     * @param is the input stream
+     * @param out the output stream
+     * @param monitor monitor for the task.  Note this violates the monitor policy, and only calls setTaskProgress.  Use with care!
+     * @throws java.io.IOException
      */
     protected void copyStream(InputStream is, OutputStream out, ProgressMonitor monitor) throws IOException {
         byte[] buffer = new byte[2048];
