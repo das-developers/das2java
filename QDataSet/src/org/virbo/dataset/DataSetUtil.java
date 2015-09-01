@@ -675,8 +675,13 @@ public class DataSetUtil {
             throw new IllegalArgumentException( "null dataset" );
         }
         Units u= (Units)ds.property(QDataSet.UNITS);
-        if ( u==null ) u= Units.dimensionless;
-
+        if ( u==null ) {
+            if ( ds.property(QDataSet.JOIN_0)!=null ) {
+                u= (Units)ds.property(QDataSet.UNITS,0);
+            }
+            if ( u==null) u= Units.dimensionless;
+        }
+        
         String name = (String) ds.property(QDataSet.NAME);
         if (name == null) {
             name = "dataset";
@@ -791,7 +796,6 @@ public class DataSetUtil {
         if ( ds.property(QDataSet.BUNDLE_1)!=null && depNames[0].length()==0 ) {
             depNames[1]= "BUNDLE_1=";    // TODO: consider  ds[time=1440,density,b_gsm=5] vs ds[time=1440,BUNDLE_1=5]
         }
-
 
         int[] qubeDims;
         if ( DataSetUtil.isQube(ds) ) {
