@@ -670,12 +670,12 @@ public class DataSetUtil {
 
         String name = (String) ds.property(QDataSet.NAME);
         if (name == null) {
-            name = "dataSet";
+            name = "dataset";
         }
 
         if ( ds.rank()==0 ) {
             try {
-                if ( name.equals("dataSet") ) {
+                if ( name.equals("dataset") ) {
                     Datum d= DataSetUtil.asDatum(ds);
                     return String.valueOf( d );
                 } else {
