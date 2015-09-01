@@ -143,10 +143,6 @@ public class HttpFileSystem extends WebFileSystem {
             
             if ( doCheck && !FileSystem.settings().isOffline() ) {
                 
-                if ( root.toString().contains("https://lasp.colorado.edu/mms/") ) {
-                    //cookie= ""; // see email to jeremy-faden@uiowa.edu at 2015-09-01T12:50 CDT for cookie
-                }
-                
                 // verify URL is valid and accessible
                 HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
                 
@@ -162,11 +158,13 @@ public class HttpFileSystem extends WebFileSystem {
                     logger.log( Level.FINER, "user cancelled credentials for {0}", rooturi);
                     throw new FileSystemOfflineException("user cancelled credentials for "+rooturi );
                 }
+                
                 if ( userInfo != null) {
                     String encode = Base64.encodeBytes( userInfo.getBytes());
                     urlc.setRequestProperty("Authorization", "Basic " + encode);
                 }
 
+                cookie= KeyChain.getDefault().getCookie(root);
                 if ( cookie!=null ) {
                     urlc.setRequestProperty("Cookie",cookie);
                 }
