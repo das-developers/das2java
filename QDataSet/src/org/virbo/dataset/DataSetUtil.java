@@ -654,12 +654,21 @@ public class DataSetUtil {
      * result of this is for human-consumption!
      *
      */
-    /*public static <T> getProperty( QDataSet ds, String propertyName, Class<T> clazz, Object<T> defaultValue ) {
-    T p = ds.property( propertyName );
-    if ( p==null ) p= defaultValue;
-    return p;
-    ArrayList o;
-    }*/
+    //public static <T> getProperty( QDataSet ds, String propertyName, Class<T> clazz, Object<T> defaultValue ) {
+    //T p = ds.property( propertyName );
+    //if ( p==null ) p= defaultValue;
+    //return p;
+    //ArrayList o;
+    //}*/
+    
+    /**
+     * provide a string representation of the dataset.  This is intended for
+     * human consumption, but does follow rules outlined in 
+     * http://autoplot.org//developer.datasetToString
+     * 
+     * @param ds any dataset.
+     * @return a short, human-readable representation of the dataset.
+     */
     public static String toString(QDataSet ds) {
 
         if ( ds==null ) {
