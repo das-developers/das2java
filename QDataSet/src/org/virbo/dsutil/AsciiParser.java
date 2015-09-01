@@ -513,20 +513,13 @@ public class AsciiParser {
      * 
      */
     final public RecordParser setRegexParser(String[] fieldNames) {
-        this.fieldCount = fieldNames.length;
+        initializeByFieldCount(fieldNames.length);
         this.fieldNames = Arrays.copyOf( fieldNames, fieldNames.length );
-        this.units = new Units[fieldCount];
-        for (int i = 0; i < fieldCount; i++) {
-            units[i] = Units.dimensionless;
-        }
+
         StringBuilder regexBuf = new StringBuilder();
         regexBuf.append("\\s*");
         for (int i = 0; i < fieldCount - 1; i++) {
             regexBuf.append("(" + decimalRegex + ")[\\s+,+]\\s*");
-        }
-        fieldParsers= new FieldParser[fieldCount];
-        for (int i = 0; i< fieldCount; i++ ) {
-            fieldParsers[i] = DOUBLE_PARSER;
         }
 
         regexBuf.append("(" + decimalRegex + ")\\s*");
@@ -581,8 +574,9 @@ public class AsciiParser {
         String[] ss = line.split(delim);
         columnOffsets = new int[ss.length];
         columnWidths = new int[ss.length - 1];
-        fieldCount= ss.length;
-        fieldParsers = new FieldParser[ss.length - 1];
+        
+        initializeByFieldCount(ss.length);
+        initializeUnitsByGuessing(ss);
 
         boolean rightJustified = false;
         if (ss[0].trim().length() == 0) {
@@ -608,20 +602,9 @@ public class AsciiParser {
             }
         }
 
-
-        fieldNames = new String[fieldCount];
-        for (int i = 1; i < ss.length; i++) {
-            fieldParsers[i - 1] = DOUBLE_PARSER;
-            fieldNames[i - 1] = "field" + (i - 1);
-        }
-
         int[] co = new int[columnWidths.length];
         System.arraycopy(columnOffsets, 0, co, 0, columnWidths.length);
 
-        this.units = new Units[fieldCount];
-        for (int i = 0; i < fieldCount; i++) {
-            units[i] = Units.dimensionless;
-        }
         FixedColumnsParser p = new FixedColumnsParser(co, columnWidths);
         this.recordParser = p;
 
@@ -1201,19 +1184,13 @@ public class AsciiParser {
 
         String[] ss = split(line.trim(), fieldSep);
 
-        fieldCount = ss.length;
-        fieldParsers = new FieldParser[fieldCount];
-
-        this.units = new Units[fieldCount];
-        fieldNames = new String[fieldCount];
+        initializeByFieldCount(ss.length);
+        initializeUnitsByGuessing(ss);
         
-        fieldLabels= new String[fieldCount];
-        fieldUnits= new String[fieldCount];
-
+        fieldParsers = new FieldParser[fieldCount];
+        
         boolean isColumnHeaders = true;
         for (int i = 0; i < ss.length; i++) {
-            units[i] = Units.dimensionless;
-            fieldParsers[i] = DOUBLE_PARSER;
             Matcher m;
             if ((m = COLUMN_ID_HEADER_PATTERN.matcher(ss[i])).matches()) {
                 String n= m.group(1).trim();
@@ -1609,6 +1586,46 @@ public class AsciiParser {
         return rp;
     }
 
+    /**
+     * This initializes the parser, setting:
+     * <li>fieldCount
+     * <li>fieldNames to "field"+i
+     * <li>fieldParsers to DOUBLE_PARSER
+     * <li>units to Units.dimensionless.
+     * @param count 
+     */
+    private void initializeByFieldCount( int count ) {
+        fieldCount= count;
+        fieldNames = new String[fieldCount];
+        fieldParsers = new FieldParser[fieldCount];
+        for (int i = 0; i < fieldCount; i++) {
+            fieldParsers[i] = DOUBLE_PARSER;
+            fieldNames[i] = "field" + (i);
+        }
+        units = new Units[fieldCount]; //this is the one place where units array is initialized
+        fieldUnits= new String[fieldCount];
+        for (int i = 0; i < fieldCount; i++) {
+            units[i] = Units.dimensionless;
+            fieldUnits[i] = "";
+        }
+    }
+    
+    /**
+     * initialize the units by guessing at each field.  This will
+     * only switch between dimensionless and UTC times.
+     * @param ss the fields.
+     */
+    private void initializeUnitsByGuessing( String[] ss ) {
+        for (int i = 0; i < ss.length; i++) {
+            if ( isIso8601Time(ss[i].trim()) ) {
+                units[i]= Units.t2000;
+                fieldParsers[i]= UNITS_PARSER;
+            } else {
+                units[i] = Units.dimensionless;
+                fieldParsers[i] = DOUBLE_PARSER;
+            }        
+        }
+    }
 
     public final class RegexParser implements RecordParser {
 
@@ -1617,19 +1634,7 @@ public class AsciiParser {
 
         protected RegexParser(String regex) {
             recordPattern = Pattern.compile(regex);
-            this.fieldCount = recordPattern.matcher("").groupCount();
-            fieldNames = new String[fieldCount];
-            fieldParsers = new FieldParser[fieldCount];
-            for (int i = 0; i < fieldCount; i++) {
-                fieldParsers[i] = DOUBLE_PARSER;
-                fieldNames[i] = "field" + (i);
-            }
-            units = new Units[fieldCount]; //TODO: why is there all this repeated code?
-            fieldUnits= new String[fieldCount];
-            for (int i = 0; i < fieldCount; i++) {
-                units[i] = Units.dimensionless;
-                fieldUnits[i] = "";
-            }
+            initializeByFieldCount(recordPattern.matcher("").groupCount());
         }
 
         public int fieldCount() {
@@ -1703,13 +1708,8 @@ public class AsciiParser {
     public FixedColumnsParser setFixedColumnsParser(int[] columnOffsets, int[] columnWidths, FieldParser[] parsers) {
         FixedColumnsParser result = new FixedColumnsParser(columnOffsets, columnWidths);
         this.recordParser = result;
+        initializeByFieldCount(parsers.length);
         this.fieldParsers = Arrays.copyOf( parsers, parsers.length );
-        this.fieldNames= new String[ result.fieldCount ];
-        this.units= new Units[ result.fieldCount ];
-        for ( int i=0; i<result.fieldCount; i++ ) {
-            this.fieldNames[i]= "field"+i;
-            this.units[i]= Units.dimensionless;
-        }
         return result;
     }
 
