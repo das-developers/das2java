@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -43,6 +44,7 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -83,10 +85,20 @@ public class HttpFileSystem extends WebFileSystem {
     private HttpFileSystem(URI root, File localRoot) {
         super(root, localRoot);
     }
-
+    
+    private String cookie=null;
+    
+    /**
+     * return the cookie needed.
+     * @return 
+     */
+    protected String getCookie() {
+        return this.cookie;
+    }
+    
     public static HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         try {
-
+            
             String auth= rooturi.getAuthority();
             if ( auth==null ) {
                 throw new MalformedURLException("URL does not contain authority, check for ///");
@@ -127,9 +139,17 @@ public class HttpFileSystem extends WebFileSystem {
             String offlineMessage= "";
             int offlineResponseCode= 0;
             
+            String cookie= null;
+            
             if ( doCheck && !FileSystem.settings().isOffline() ) {
+                
+                if ( root.toString().contains("https://lasp.colorado.edu/mms/") ) {
+                    //cookie= ""; // see email to jeremy-faden@uiowa.edu at 2015-09-01T12:50 CDT for cookie
+                }
+                
                 // verify URL is valid and accessible
                 HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
+                
                 urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
 
                 //urlc.setRequestMethod("HEAD"); // Causes problems with the LANL firewall.
@@ -147,6 +167,10 @@ public class HttpFileSystem extends WebFileSystem {
                     urlc.setRequestProperty("Authorization", "Basic " + encode);
                 }
 
+                if ( cookie!=null ) {
+                    urlc.setRequestProperty("Cookie",cookie);
+                }
+                
                 boolean connectFail= true;
 
                 try {
@@ -235,6 +259,7 @@ public class HttpFileSystem extends WebFileSystem {
             result.offline = offline;
             result.offlineMessage= offlineMessage;
             result.offlineResponseCode= offlineResponseCode;
+            result.cookie= cookie;
 
             return result;
 
@@ -327,6 +352,10 @@ public class HttpFileSystem extends WebFileSystem {
             if ( userInfo != null) {
                 String encode = Base64.encodeBytes(userInfo.getBytes());
                 urlc.setRequestProperty("Authorization", "Basic " + encode);
+            }
+            
+            if ( cookie!=null ) {
+                urlc.addRequestProperty("Cookie", cookie );
             }
             
             InputStream in;
