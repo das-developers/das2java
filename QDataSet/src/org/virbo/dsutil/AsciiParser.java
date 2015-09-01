@@ -1187,6 +1187,9 @@ public class AsciiParser {
         initializeByFieldCount(ss.length);
         initializeUnitsByGuessing(ss);
         
+        fieldLabels= new String[fieldCount];
+        fieldUnits= new String[fieldCount];
+        
         boolean isColumnHeaders = true;
         for (int i = 0; i < ss.length; i++) {
             Matcher m;
