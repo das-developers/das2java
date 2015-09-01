@@ -409,6 +409,10 @@ public class WebFileObject extends FileObject {
                 connection.setRequestProperty("Authorization", "Basic " + encode);
             }
 
+            String cookie= ((HttpFileSystem)wfs).getCookie();
+            if ( cookie!=null ) {
+                connection.setRequestProperty("Cookie", cookie );
+            }
 
             try {
                 connection.connect();
