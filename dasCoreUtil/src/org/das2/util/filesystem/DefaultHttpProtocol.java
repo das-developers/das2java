@@ -40,6 +40,13 @@ public class DefaultHttpProtocol implements WebProtocol {
             HttpURLConnection connect = (HttpURLConnection) ur.openConnection();
             connect.setRequestMethod("HEAD");
             HttpURLConnection.setFollowRedirects(false);
+            
+            if ( fo.wfs instanceof HttpFileSystem ) {
+                HttpFileSystem hfs= ((HttpFileSystem)fo.wfs);
+                if ( hfs.getCookie()!=null ) {
+                    connect.setRequestProperty("Cookie", hfs.getCookie());
+                }
+            }
             connect.connect();
             HttpURLConnection.setFollowRedirects(true);
             // check for rename, which means we'll do another request
