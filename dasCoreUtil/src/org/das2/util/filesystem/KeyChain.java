@@ -19,13 +19,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import org.das2.util.monitor.CancelledOperationException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -137,14 +140,17 @@ public class KeyChain {
         PrintWriter w=null;
         final ByteArrayOutputStream out= new ByteArrayOutputStream();
         
-        w= new PrintWriter( out );
-        w.println("# keys file produced on "+ new java.util.Date() );
-        w.println("# "+keysFile );
-        for ( Entry<String,String> key : keys.entrySet() ) {
-            w.println( key.getKey() + "\t" + key.getValue() );
+        try {
+            w= new PrintWriter( out );
+            w.println("# keys file produced on "+ new java.util.Date() );
+            w.println("# "+keysFile );
+            for ( Entry<String,String> key : keys.entrySet() ) {
+                w.println( key.getKey() + "\t" + key.getValue() );
+            }
+        } finally {
+            if ( w!=null ) w.close();
         }
-        w.close();
-
+        
         if ( toFile ) {
             FileOutputStream fout=null;
             try {
@@ -181,8 +187,15 @@ public class KeyChain {
         
     }
 
-
+    /**
+     * map from URL, without trailing slash, to key.
+     */
     private Map<String,String> keys= new HashMap<String,String>();
+    
+    /**
+     * map from URL, without trailing slash, to cookie.
+     */
+    private Map<String,String> cookies= new HashMap<String,String>();
 
     /**
      * parent component for password dialog.
@@ -321,7 +334,7 @@ public class KeyChain {
             if ( !FileSystemSettings.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
                 JPanel panel= new JPanel();
                 panel.setLayout( new BoxLayout(panel, BoxLayout.Y_AXIS ) );
-                if ( n!=null && n.length()>0 ) { 
+                if ( n.length()>0 ) { 
                     String s= ( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getFile();
                     panel.add( new JLabel( "<html>Enter Login details to access<br>"+n+" on<br>"+s ));
                 } else {
@@ -426,6 +439,60 @@ public class KeyChain {
     public static void main( String[]args ) throws MalformedURLException, CancelledOperationException {
         KeyChain.getDefault().getUserInfo( new URL( "http://junomwg@www-pw.physics.uiowa.edu/juno/mwg/" ) );
         KeyChain.getDefault().getUserInfo( new URL( "ftp://jbf@localhost/" ) );
+    }
+
+    /**
+     * Some servers want cookies to handle the authentication.  This checks for
+     * "https://lasp.colorado.edu/mms/sdc/about/browse/" and handles logins for
+     * this server.
+     * @param url
+     * @return null or the cookie to include in the request header.
+     */
+    protected String getCookie(URL url) {
+        String cookie= null;
+        if ( url.toString().contains("https://lasp.colorado.edu/mms/sdc/about/browse/") ) {
+            String hash= "https://lasp.colorado.edu/mms/sdc/about/browse";
+            cookie= cookies.get(hash);
+            if ( cookie==null ) {
+                try {
+                    URL urlr= new URL( "https://lasp-login.colorado.edu/idp/Authn/UserPassword" );
+                    HttpURLConnection conn= (HttpURLConnection) urlr.openConnection();
+                    conn.connect();
+                    String cookie0= conn.getHeaderField("Set-Cookie");
+                    conn.disconnect();
+
+                    String user= getUserInfo( new URL("https://lasp.colorado.edu/mms/sdc/about/browse"), "user:" );
+                     
+                    conn= (HttpURLConnection) urlr.openConnection();
+                    conn.setDoOutput(true);
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded" );
+                    int i= user.indexOf(":");
+                    String username= user.substring(0,i);
+                    String password= user.substring(i+1);
+                    String encodedData =  "j_username="+URLEncoder.encode(username,"US-ASCII")+"&j_password="+URLEncoder.encode(password,"US-ASCII"); 
+                    conn.setRequestProperty( "Referer", "https://lasp-login.colorado.edu/Authn/UserPassword" );
+                    conn.setRequestProperty( "Content-Length", String.valueOf(encodedData.length()));
+                    conn.setRequestProperty( "Cookie", cookie0 );
+                    conn.connect();
+                    OutputStream os = conn.getOutputStream();
+                    os.write(encodedData.getBytes("US-ASCII"));
+                    os.close();
+                    String cookie1= conn.getHeaderField("Set-Cookie");
+                    os.close();
+                    cookie= cookie1;
+                } catch (MalformedURLException ex) {
+                    Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (CancelledOperationException ex) {
+                    Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(KeyChain.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            //cookie= ""; // see email to jeremy-faden@uiowa.edu at 2015-09-01T12:50 CDT for cookie
+            //cookie= "_shibsession_64656661756c7468747470733a2f2f646d7a2d73686962322e6c6173702e636f6c6f7261646f2e6564752f73686962626f6c657468=_76cd22bfba4f8da6a96910259901710b"; 
+        }
+        return cookie;
     }
 
 }
