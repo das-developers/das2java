@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsUtil;
 import static org.das2.graph.Renderer.encodeBooleanControl;
 import org.das2.util.GrannyTextRenderer;
 import org.virbo.dataset.DDataSet;
@@ -106,15 +107,21 @@ public class EventsRenderer extends Renderer {
             xrange=  DDataSet.wrap( new double[] {0,1}, u0 );
 
         } else {
-            //TODO: probably the day/days containing would be better
-            xrange= Ops.extent(xmins);
-            if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
-                xmaxs= Ops.add( xmins, xmaxs );
-                xrange= Ops.extent(xmaxs,xrange);
+            if ( UnitsUtil.isIntervalOrRatioMeasurement(u1) ) {
+                //TODO: probably the day/days containing would be better
+                xrange= Ops.extent(xmins);
+                if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
+                    xmaxs= Ops.add( xmins, xmaxs );
+                    xrange= Ops.extent(xmaxs,xrange);
+                } else {
+                    xrange= Ops.extent(xmaxs,xrange);
+                }
             } else {
-                xrange= Ops.extent(xmaxs,xrange);
+                xrange= DDataSet.createRank1(2);
+                ((DDataSet)xrange).putValue(0,0);
+                ((DDataSet)xrange).putValue(1,10);
             }
-
+            
             if ( xrange.value(0)<xrange.value(1) ) {
                 xrange= Ops.rescaleRangeLogLin(xrange, -0.1, 1.1 );
             } else {
