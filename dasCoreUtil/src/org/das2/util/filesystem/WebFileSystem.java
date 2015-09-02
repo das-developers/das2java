@@ -838,20 +838,11 @@ public abstract class WebFileSystem extends FileSystem {
      * http://docs.oracle.com/javase/1.5.0/docs/guide/net/http-keepalive.html suggests that you "do not abandon connection"
      * @param err
      * @throws IOException 
+     * @deprecated see HtmlUtil.consumeStream.
+     * @see HtmlUtil#consumeStream(java.io.InputStream) 
      */
-    protected static void consumeStream( InputStream err ) throws IOException {
-        byte[] buf= new byte[2048];
-        try {
-            if ( err!=null ) {
-                int ret = 0;
-                while ((ret = err.read(buf)) > 0) {
-                   // empty out the error stream.
-                }
-
-            }
-        } finally {
-            if ( err!=null ) err.close();
-        }
+    public static void consumeStream( InputStream err ) throws IOException {
+        HtmlUtil.consumeStream(err);
     }
     
     @Override
