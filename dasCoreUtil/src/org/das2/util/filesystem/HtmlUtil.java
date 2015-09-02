@@ -52,6 +52,27 @@ public class HtmlUtil {
     }
 
     /**
+     * nice clients consume both the stderr and stdout coming from websites.
+     * This reads everything off of the stream and closes it.
+     * http://docs.oracle.com/javase/1.5.0/docs/guide/net/http-keepalive.html suggests that you "do not abandon connection"
+     * @param err the input stream
+     * @throws IOException 
+     */
+    public static void consumeStream( InputStream err ) throws IOException {
+        byte[] buf= new byte[2048];
+        try {
+            if ( err!=null ) {
+                int ret = 0;
+                while ((ret = err.read(buf)) > 0) {
+                   // empty out the error stream.
+                }
+            }
+        } finally {
+            if ( err!=null ) err.close();
+        }
+    }
+    
+    /**
      * Get the listing of the web directory, returning links that are "under" the given URL.
      * Note this does not handle off-line modes where we need to log into
      * a website first, as is often the case for a hotel.

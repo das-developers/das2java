@@ -34,7 +34,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
-import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -44,7 +43,6 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -61,7 +59,6 @@ import java.util.zip.GZIPInputStream;
 import javax.swing.SwingUtilities;
 import org.das2.util.OsUtil;
 import static org.das2.util.filesystem.FileSystem.toCanonicalFilename;
-import static org.das2.util.filesystem.WebFileSystem.consumeStream;
 import org.das2.util.monitor.NullProgressMonitor;
 
 /**
@@ -181,7 +178,7 @@ public class HttpFileSystem extends WebFileSystem {
                     }
                     urlc.connect();
                     logger.log( Level.FINER, "made connection, now consume rest of stream: {0}", urlc );
-                    consumeStream( urlc.getInputStream() );
+                    HtmlUtil.consumeStream( urlc.getInputStream() );
                     logger.log( Level.FINER, "done consuming and initial connection is complete: {0}" );
                     connectFail= false;
                 } catch ( IOException ex ) {
@@ -199,7 +196,7 @@ public class HttpFileSystem extends WebFileSystem {
                         connectFail= false;
                     } else if ( code==404 ) {
                         logger.log( Level.SEVERE, String.format( "%d: folder not found: %s\n%s", code, root, msg ), ex );
-                        consumeStream( urlc.getErrorStream() );
+                        HtmlUtil.consumeStream( urlc.getErrorStream() );
                         throw (FileNotFoundException)ex;
                     } else {
                         // Note this may still be code 403.  We still enter the same branch for now, because the user might be on a network that isn't permitted now.
@@ -209,7 +206,7 @@ public class HttpFileSystem extends WebFileSystem {
                         } else {
                             throw new FileSystemOfflineException("" + code + ": " + msg );
                         }
-                        consumeStream( urlc.getErrorStream() );
+                        HtmlUtil.consumeStream( urlc.getErrorStream() );
                     }
                     offlineMessage= msg;
                     offlineResponseCode= code;
