@@ -10,15 +10,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
@@ -442,6 +438,22 @@ public class KeyChain {
     }
 
     /**
+     * Add a cookie for the URL.  This was added as a work-around to provide
+     * access to the MMS data server at LASP.
+     * @param url
+     * @param cookie 
+     */
+    public void addCookie( String url, String cookie ) {
+        if ( url.endsWith("/") ) {
+            url= url.substring(0,url.length()-1);
+        }
+        if ( !url.equals("https://lasp.colorado.edu/mms/sdc/about/browse") ) {
+            System.err.println("Warning: This is only works for https://lasp.colorado.edu/mms/sdc/about/browse");
+        }
+        cookies.put( url, cookie );
+    }
+    
+    /**
      * Some servers want cookies to handle the authentication.  This checks for
      * "https://lasp.colorado.edu/mms/sdc/about/browse/" and handles logins for
      * this server.
@@ -451,13 +463,23 @@ public class KeyChain {
     protected String getCookie(URL url) {
         String cookie= null;
         if ( url.toString().contains("https://lasp.colorado.edu/mms/sdc/about/browse/") ) {
-            String hash= "https://lasp.colorado.edu/mms/sdc/about/browse";
+            String hash=             "https://lasp.colorado.edu/mms/sdc/about/browse";
             cookie= cookies.get(hash);
             if ( cookie==null ) {
                 try {
+                    
+                    System.err.println( "See http://stackoverflow.com/questions/9619030/resolving-javax-net-ssl-sslhandshakeexception-sun-security-validator-validatore");
+                    System.err.println( "jsse.enableSNIExtension="+ System.getProperty("jsse.enableSNIExtension") );
+                    
                     URL urlr= new URL( "https://lasp-login.colorado.edu/idp/Authn/UserPassword" );
                     HttpURLConnection conn= (HttpURLConnection) urlr.openConnection();
+                    
+                    conn.setDoOutput(true);
                     conn.connect();
+                    
+                    HtmlUtil.consumeStream(conn.getErrorStream());
+                    HtmlUtil.consumeStream(conn.getInputStream());
+                    
                     String cookie0= conn.getHeaderField("Set-Cookie");
                     conn.disconnect();
 
