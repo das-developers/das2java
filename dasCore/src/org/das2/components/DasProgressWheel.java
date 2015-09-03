@@ -14,6 +14,8 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.GeneralPath;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -22,6 +24,7 @@ import javax.swing.Timer;
 import org.das2.DasApplication;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.AbstractProgressMonitor;
+//import org.das2.util.monitor.ProgressMonitor;
 
 /**
  * Small 16x16 pixel progress wheel, designed intentionally for loading TCAs with X axis.
@@ -29,10 +32,17 @@ import org.das2.util.monitor.AbstractProgressMonitor;
  */
 public class DasProgressWheel extends AbstractProgressMonitor {
 
+    //Used to keep track of who is starting but not finishing.
+    //private static final Map<ProgressMonitor,StackTraceElement[]> mons= new HashMap();
+    
     private static final Logger logger= LoggerManager.getLogger("das2.graphics.progress");
     private static final int SIZE= 16;
     private static final int HIDE_MS= 300;
 
+    public DasProgressWheel() {
+        //mons.put( this, Thread.currentThread().getStackTrace() );
+    }
+    
     class MyPanel extends JComponent {
 
         @Override
@@ -104,18 +114,21 @@ public class DasProgressWheel extends AbstractProgressMonitor {
     @Override
     public void finished() {
         super.finished();
-        if ( timer==null ) {
-            return;
+        if ( timer!=null ) {
+            timer.stop();
         }
-        timer.stop();
         Runnable run= new Runnable() {
             @Override
             public void run() {
-                thePanel.setVisible(false);
-                theParent.remove(thePanel);
+                if ( thePanel!=null ) thePanel.setVisible(false);
+                if ( theParent!=null ) {
+                    theParent.remove(thePanel);
+                    theParent.repaint(); 
+                }
             }
         };
         SwingUtilities.invokeLater(run);
+        //mons.remove( this );
     }
 
     @Override
