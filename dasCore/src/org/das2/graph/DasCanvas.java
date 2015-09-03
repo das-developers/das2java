@@ -1690,6 +1690,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param width the specified width.
      */
     public void setPreferredWidth(int width) {
+        logger.log(Level.FINE, "setPreferredWidth({0})", width);
         Dimension pref = getPreferredSize();
         pref.width = width;
         setPreferredSize(pref);
@@ -1701,6 +1702,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
      * @param height the specified height
      */
     public void setPreferredHeight(int height) {
+        logger.log(Level.FINE, "setPreferredHeight({0})", height);
         Dimension pref = getPreferredSize();
         pref.height = height;
         setPreferredSize(pref);
