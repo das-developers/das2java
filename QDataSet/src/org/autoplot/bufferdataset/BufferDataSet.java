@@ -175,7 +175,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if ( reclen < nperRec * byteCount(type) ) {
             throw new IllegalArgumentException("reclen " + reclen + " is smaller than length of " + nperRec +" type "+type);
         } 
-        if ( reclen * len0 > buf.limit() ) {
+        if ( (long)(reclen) * len0 > buf.limit() ) {
             throw new IllegalArgumentException( String.format( "buffer length (%d bytes) is too small to contain data (%d %d-byte records)", buf.limit(), len0, reclen ) );
         }
         if ( type.equals(DOUBLE) ) {
@@ -311,6 +311,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public static BufferDataSet createRank1( Object type, int len0 ) {
         int typeLen= byteCount(type);
+        if ( (long)typeLen * len0 > Integer.MAX_VALUE ) {
+            throw new IllegalArgumentException("request is too large to allocate (>2147483647)");
+        }
         ByteBuffer buf= checkedAllocateDirect( typeLen * len0 );
         int recLen= typeLen;
         return makeDataSet( 1, recLen, 0, len0, 1, 1, 1, buf, type );
@@ -325,6 +328,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */    
     public static BufferDataSet createRank2( Object type, int len0, int len1 ) {
         int typeLen= byteCount(type);
+        if ( (long)typeLen * len0 * len1 > Integer.MAX_VALUE ) {
+            throw new IllegalArgumentException("request is too large to allocate (>2147483647)");
+        }
         ByteBuffer buf= checkedAllocateDirect( typeLen * len0 * len1 );
         int recLen= typeLen * len1;
         return makeDataSet( 2, recLen, 0, len0, len1, 1, 1, buf, type );
@@ -340,6 +346,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public static BufferDataSet createRank3( Object type, int len0, int len1, int len2 ) {
         int typeLen= byteCount(type);
+        if ( (long)typeLen * len0 * len1 * len2 > Integer.MAX_VALUE ) {
+            throw new IllegalArgumentException("request is too large to allocate (>2147483647)");
+        }
         ByteBuffer buf= checkedAllocateDirect( typeLen * len0 * len1 * len2 );
         int recLen= typeLen * len1 * len2;
         return makeDataSet( 3, recLen, 0, len0, len1, len2, 1, buf, type );
@@ -356,6 +365,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public static BufferDataSet createRank4( Object type, int len0, int len1, int len2, int len3 ) {
         int typeLen= byteCount(type);
+        if ( (long)typeLen * len0 * len1 * len2 * len3 > Integer.MAX_VALUE ) {
+            throw new IllegalArgumentException("request is too large to allocate (>2147483647)");
+        }
         ByteBuffer buf= checkedAllocateDirect( typeLen * len0 * len1 * len2 * len3 );
         int recLen= typeLen * len1 * len2 * len3;
         return makeDataSet( 4, recLen, 0, len0, len1, len2, len3, buf, type );
@@ -459,11 +471,14 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     private static int allocateDirect= -1;
     
     /**
-     * return 1 if direct allocate should be used, 0 if not.  (The
-     * internal variable has a -1 initial state, which is why this is
+     * return 1 if direct allocate should be used, 0 if not.  
+     * Direct allocations are memory allocations within the JVM memory.
+     * (The internal variable has a -1 initial state, which is why this is
      * not boolean.)  This looks for 32bit Javas, and if more than 1/2 Gig is 
-     * being used then it will allocate direct.
+     * being used then it will allocate direct.  This is because 32bit Javas
+     * cannot access any memory outside of 1Gig.
      * @return 1 or 0 if direct allocations should not be made.
+     * @see https://sourceforge.net/p/autoplot/bugs/1395/
      */
     public static int shouldAllocateDirect() {
         int result;    
