@@ -466,19 +466,21 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     private static long gcCounter= 0;
     
     /**
-     * -1 means check, 0 means no, 1 means yes.
+     * -1 means check; 0 means no; 1 means yes, do allocate outside of the JVM memory.
      */
     private static int allocateDirect= -1;
     
     /**
      * return 1 if direct allocate should be used, 0 if not.  
-     * Direct allocations are memory allocations within the JVM memory.
+     * Direct allocations are memory allocations outside of the JVM heap memory.
      * (The internal variable has a -1 initial state, which is why this is
      * not boolean.)  This looks for 32bit Javas, and if more than 1/2 Gig is 
      * being used then it will allocate direct.  This is because 32bit Javas
      * cannot access any memory outside of 1Gig.
      * @return 1 or 0 if direct allocations should not be made.
      * @see https://sourceforge.net/p/autoplot/bugs/1395/
+     * @see http://stackoverflow.com/questions/807263/how-do-i-detect-which-kind-of-jre-is-installed-32bit-vs-64bit
+     * @see http://stackoverflow.com/questions/3651737/why-the-odd-performance-curve-differential-between-bytebuffer-allocate-and-byt "How ByteBuffer works and why Direct (Byte)Buffers are the only truly useful now"
      */
     public static int shouldAllocateDirect() {
         int result;    
@@ -489,7 +491,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             s= System.getProperty("os.arch");
             if ( s.contains("64") ) {
                 result= 1;
-            } else {
+            } else { // 32bit
                 if ( moreThanHalfOfGig ) {
                     result= 0;
                 } else {
@@ -529,7 +531,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     private static ByteBuffer checkedAllocateDirect( int capacity ) {
         
-        if ( allocateDirect==-1 ) { // see http://stackoverflow.com/questions/807263/how-do-i-detect-which-kind-of-jre-is-installed-32bit-vs-64bit
+        if ( allocateDirect==-1 ) { 
             allocateDirect= shouldAllocateDirect();
         }
         
