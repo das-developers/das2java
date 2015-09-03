@@ -153,15 +153,23 @@ public class LeafTrimDataSet extends AbstractDataSet {
      */
     @Override
     public QDataSet slice(int i) {
-        LeafTrimDataSet result= new LeafTrimDataSet( ds.slice(i), this.start, this.end );
-        DataSetUtil.copyDimensionProperties( this, result );
-        return result;
+        if ( this.rank()==1 ) {
+            return ds.slice( i + start );
+        } else {
+            LeafTrimDataSet result= new LeafTrimDataSet( ds.slice(i), this.start, this.end );
+            DataSetUtil.copyDimensionProperties( this, result );
+            return result;
+        }
     }
 
     @Override
     public QDataSet trim(int start, int end) {
-        LeafTrimDataSet result= new  LeafTrimDataSet( ds.trim(start, end), this.start, this.end );
-        DataSetUtil.copyDimensionProperties( this, result );
-        return result;
+        if ( this.rank()==1 ) {
+            return ds.trim( this.start+start, this.start+end );
+        } else {
+            LeafTrimDataSet result= new  LeafTrimDataSet( ds.trim(start, end), this.start, this.end );
+            DataSetUtil.copyDimensionProperties( this, result );
+            return result;
+        }
     }
 }
