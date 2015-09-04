@@ -2,9 +2,6 @@
  * TagGenDataSet.java
  *
  * Created on April 24, 2007, 11:47 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.virbo.dataset;
@@ -23,7 +20,6 @@ import org.das2.datum.Units;
 public class TagGenDataSet extends AbstractRank1DataSet {
     
     double scale, offset;
-    Units units;
 
     public TagGenDataSet( int length, double scale, double offset ) {
         this( length, scale, offset, null );
@@ -36,14 +32,13 @@ public class TagGenDataSet extends AbstractRank1DataSet {
         if ( units!=null ) {
             putProperty( QDataSet.CADENCE, DRank0DataSet.create( scale, units.getOffsetUnits() ) );
             putProperty( QDataSet.UNITS, units );
-            this.units= units;
         } else {
-            this.units= Units.dimensionless;
+            putProperty( QDataSet.UNITS, Units.dimensionless );
             putProperty( QDataSet.CADENCE, DRank0DataSet.create( scale, Units.dimensionless ) );
             if ( scale>0 ) putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
         }
     }
-
+    
     @Override
     public double value(int i) {
         return i * scale + offset; //TODO: check numerical stability, this is an extrapolation.
@@ -56,7 +51,9 @@ public class TagGenDataSet extends AbstractRank1DataSet {
 
     @Override
     public QDataSet slice(int i) {
-        return DRank0DataSet.create( i * scale + offset, units );
+        Units u= (Units) property(QDataSet.UNITS);
+        if ( u==null ) u=Units.dimensionless;
+        return DRank0DataSet.create( i * scale + offset, u );
     }
     
 }
