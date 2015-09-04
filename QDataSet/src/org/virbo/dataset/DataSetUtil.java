@@ -50,8 +50,10 @@ import org.virbo.dsutil.LinFit;
  */
 public class DataSetUtil {
 
-    private static final Logger logger= LoggerManager.getLogger("qdataset");
+    private static final Logger logger= LoggerManager.getLogger("qdataset.ops");
 
+    private static final String LOGGING_SOURCE_CLASS= "org.virbo.dataset.DataSetUtil";
+    
     /**
      * creates a dataset of integers 0,1,2,...,n-1.
      * @param n the bound
@@ -1172,7 +1174,9 @@ public class DataSetUtil {
      */
     public static RankZeroDataSet guessCadenceNew( QDataSet xds, QDataSet yds) {
         
-        Logger logger= LoggerManager.getLogger("qdataset.guesscadence");
+        Logger logger= LoggerManager.getLogger("qdataset.ops.guesscadence");
+        
+        logger.entering(LOGGING_SOURCE_CLASS,"guessCadenceNew");
         
         Object o= xds.property( QDataSet.CADENCE );
         Units u= SemanticOps.getUnits(xds);
@@ -1187,6 +1191,7 @@ public class DataSetUtil {
                     if ( q instanceof RankZeroDataSet ) {
                         return (RankZeroDataSet) q;
                     } else {
+                        logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
                         return DRank0DataSet.create(q.value(),qu);
                     }
                 
@@ -1195,6 +1200,7 @@ public class DataSetUtil {
                         logger.log( Level.SEVERE, "averaging CADENCE rank 0: {0}", q);
                         q= Ops.reduceMax( q, 0 );
                     }
+                    logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
                     return DRank0DataSet.create( DataSetUtil.asDatum(q) );
                 }
             } else {
@@ -1214,7 +1220,10 @@ public class DataSetUtil {
             yds = DataSetUtil.replicateDataSet(xds.length(), 1.0);
         }
 
-        if ( xds.length()<2 ) return null;
+        if ( xds.length()<2 ) {
+            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
+            return null;
+        }
 
         if ( xds.rank()==2 && xds.property(QDataSet.BINS_1)!=null ) {
             xds= DataSetOps.slice1( xds, 0 );
@@ -1262,8 +1271,14 @@ public class DataSetUtil {
         }
         
         // don't allow datasets with fill in x to be considered.  
-        if ( xHasFill && monoMag==0 ) return null;
-        if ( monoMag==0 ) return null;
+        if ( xHasFill && monoMag==0 ) {
+            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");
+            return null;
+        }
+        if ( monoMag==0 ) {
+            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
+            return null;
+        }
         
         double everIncreasing= 0.;
         if ( xds.length()<100 && xds.rank()==1 ) {
@@ -1346,6 +1361,7 @@ public class DataSetUtil {
         long total= (Long)( ((Map<String,Object>)hist.property( QDataSet.USER_PROPERTIES )).get(AutoHistogram.USER_PROP_TOTAL) );
 
         if ( total==0 ) {
+            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");
             return null;
         }
         
@@ -1532,7 +1548,10 @@ public class DataSetUtil {
                 }
             }
             logger.log(Level.FINE, "guessCadence({0})->null because of log,skip,not bigSkip", new Object[]{xds});
-            if ( bigSkip==0 && skip>0 ) return null;
+            if ( bigSkip==0 && skip>0 ) {
+                logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew"); 
+                return null;
+            }
         }
 
         if ( log ) {
@@ -1540,11 +1559,13 @@ public class DataSetUtil {
             result.putProperty( QDataSet.UNITS, Units.logERatio );
             result.putProperty( QDataSet.SCALE_TYPE, "log" );
             logger.log(Level.FINE, "guessCadence({0})->{1} (log)", new Object[]{xds, result});
+            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");
             return (RankZeroDataSet)result;
         } else {
             MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
             result.putProperty( QDataSet.UNITS, xunits.getOffsetUnits() );
             logger.log(Level.FINE, "guessCadence({0})->{1} (linear)", new Object[]{xds, result});
+            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
             return (RankZeroDataSet)result;
         }
     }
@@ -2872,6 +2893,7 @@ public class DataSetUtil {
      * @throws IllegalArgumentException if the dataset is all fill.
      */
     public static int closestIndex( QDataSet ds, Datum datum ) {
+        logger.entering( LOGGING_SOURCE_CLASS, "closestIndex" );
         if ( ds.rank()!=1 ) {
             if ( ds.rank()==2 && SemanticOps.isBins(ds) ) {
                 ds= Ops.reduceMean(ds,1);
@@ -2886,6 +2908,21 @@ public class DataSetUtil {
         boolean handleFill= false;
         QDataSet wds= Ops.valid(ds);
         QDataSet r;
+        
+        boolean mono= isMonotonic(ds);
+                
+        if ( mono ) { // take a millisecond to check for this oft-occurring case.
+            if ( wds.value(0)>0. && datum.le( asDatum(ds.slice(0)) ) ) {
+                logger.exiting( LOGGING_SOURCE_CLASS, "closestIndex" );
+                return 0;
+            }
+            int n= ds.length()-1;
+            if ( wds.value(n)>0. && datum.ge( asDatum(ds.slice(n)) ) ) {
+                logger.exiting( LOGGING_SOURCE_CLASS, "closestIndex" );
+                return n;
+            }
+        }
+        
         if ( wds instanceof ConstantDataSet && wds.value(0)==1 ) { // optimize
             //r= Ops.findgen(ds.length());
             r= null;
@@ -2921,6 +2958,7 @@ public class DataSetUtil {
                 assert r!=null;
                 closest= (int)r.value(closest);
             }
+            logger.exiting( LOGGING_SOURCE_CLASS, "closestIndex" );
             return closest;
 
         } else {
@@ -2944,6 +2982,7 @@ public class DataSetUtil {
                 assert r!=null;
                 result= (int)r.value(result);
             }
+            logger.exiting( LOGGING_SOURCE_CLASS, "closestIndex" );
             return result;
 
         }
