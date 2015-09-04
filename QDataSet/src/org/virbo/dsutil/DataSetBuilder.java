@@ -33,7 +33,7 @@ import org.virbo.dsops.Ops;
  */
 public class DataSetBuilder { 
     
-    private static final Logger logger= LoggerManager.getLogger("qdataset.util");
+    private static final Logger logger= LoggerManager.getLogger("qdataset.util.dsb");
             
     int rank;
     
