@@ -65,8 +65,15 @@ public class ImageVectorDataSetRenderer extends Renderer {
     Rectangle plotImageBounds;
     DatumRange imageXRange;
     private Color color = Color.BLACK;
-    private int ixstepLimitSq=1000000;  /** pixels, limit of x increment before line break */
+    
+    /** pixels, limit of x increment before line break */
+    private int ixstepLimitSq=1000000; 
 
+    /**
+     * cache the data cadence, which is expensive to calculate.
+     */
+    private Datum xcadence;
+    
     /**
      * pixels, limit of x increment before line break
      */
@@ -140,6 +147,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
         return xrange;
     }
 
+    @Override
+    public void setDataSet(QDataSet ds) {
+        this.xcadence= null;
+        super.setDataSet(ds); 
+    }
+    
     private static QDataSet fastRank2Range( QDataSet ds ) {
         double min= Double.POSITIVE_INFINITY;
         double max= Double.NEGATIVE_INFINITY;
@@ -705,6 +718,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         super.updatePlotImage(xAxis, yAxis, monitor);
 
         QDataSet ds1 = getDataSet();
+        Datum xcad= xcadence;
         if (ds1 == null) {
             return;
         }
@@ -749,13 +763,18 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 ixstepLimitSq= 100000000;
             } else {
                 RankZeroDataSet d;
-                if ( SemanticOps.isRank2Waveform(ds1) ) {
-                    d= DataSetUtil.guessCadenceNew( (QDataSet) ds1.property(QDataSet.DEPEND_1), null );
+                if ( xcad!=null ) {
+                    d= DataSetUtil.asDataSet(xcad);
                 } else {
-                    d= DataSetUtil.guessCadenceNew(xds,ds1);
+                    if ( SemanticOps.isRank2Waveform(ds1) ) {
+                        d= DataSetUtil.guessCadenceNew( (QDataSet) ds1.property(QDataSet.DEPEND_1), null );
+                    } else {
+                        d= DataSetUtil.guessCadenceNew(xds,ds1);
+                    }
+                    xcadence= DataSetUtil.asDatum(d);
                 }
                 if ( d!=null ) {
-                    Datum sw = DataSetUtil.asDatum( d ); //TODO! check ratiometric
+                    Datum sw = DataSetUtil.asDatum( d ); 
                     Datum xmax= xAxis.getDataMaximum();
                     int ixstepLimit;
                     if ( UnitsUtil.isRatiometric(sw.getUnits())) {
