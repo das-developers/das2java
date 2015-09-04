@@ -198,8 +198,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
     public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
         long t0= System.currentTimeMillis();
-
-        logger.fine("entering ImageVectorDataSetRenderer.render");
         
         DasPlot parent= getParent();
         
@@ -207,6 +205,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
             parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             return;
         }
+
+        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "render");
 
         QDataSet xds = SemanticOps.xtagsDataSet(ds);
         
@@ -264,6 +264,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
 
         logger.log(Level.FINE, "done ImageVectorDataSetRenderer.render {0} ms", ( System.currentTimeMillis()-t0 ));
+        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "render");
 
     }
 
@@ -695,14 +696,12 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
     @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, org.das2.util.monitor.ProgressMonitor monitor) throws DasException {
-
-        //System.err.println("enter updatePlotImage");
+        
+        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "updatePlotImage" );
         long t0= System.currentTimeMillis();
 
         super.incrementUpdateCount();
 
-        logger.fine("entering ImageVectorDataSetRenderer.updatePlotImage");
-        
         super.updatePlotImage(xAxis, yAxis, monitor);
 
         QDataSet ds1 = getDataSet();
@@ -727,6 +726,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         //plotImageBounds = parent.getCacheImageBounds();
         if ( plotImageBounds==null ) {
             //transient state in parent component.  TODO: fix these
+            logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "updatePlotImage" );
             return;
         }
 
@@ -741,7 +741,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 firstIndex = DataSetUtil.getPreviousIndex(xds, visibleRange.min());
                 lastIndex = DataSetUtil.getNextIndex(xds, visibleRange.max()) ;
             } catch ( InconvertibleUnitsException ex ) {
-                parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null );                
+                parent.postMessage(this, "inconvertible xaxis units", DasPlot.INFO, null, null );        
+                logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "updatePlotImage" );
                 return;
             }
             if ( xAxis.isLog() ) {
@@ -795,6 +796,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         }
 
         logger.log(Level.FINE, "done updatePlotImage {0} ms", ( System.currentTimeMillis()-t0 ));
+        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "updatePlotImage" );
 
     }
 
