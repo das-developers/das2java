@@ -808,9 +808,10 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
      * render the dataset.
      */
     protected void updateImmediately() {
-        logger.finer("entering Renderer.updateImmediately");
+        logger.entering( "org.das.graph.Renderer", "updateImmediately");
         DasPlot lparent= parent;
         if (lparent == null || !lparent.isDisplayable()) {
+            logger.exiting("org.das.graph.Renderer", "updateImmediately");
             return;
         }
 
@@ -819,6 +820,8 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             loader.update();
         }
 
+        logger.exiting("org.das.graph.Renderer", "updateImmediately");
+        
         // The parent has already used an AffineTransform to preview the image, but
         // we might as well re-render using the dataset we have.
      //   refresh();
