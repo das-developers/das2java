@@ -318,6 +318,13 @@ public final class TimeUtil {
         }
     }
 
+    /**
+     * convert to Datum without regard to the type of unit used to represent time.
+     * This will use the canonical Units.us2000, which does not represent leap 
+     * seconds.  Note this may change.
+     * @param d the decomposed time.
+     * @return the Datum.
+     */
     public static Datum toDatum( TimeStruct d ) {
         int year = (int)d.year;
         int month = (int)d.month;
@@ -331,9 +338,9 @@ public final class TimeUtil {
     
     /**
      * convert to a Datum with the given units.
-     * @param d
-     * @param u
-     * @return 
+     * @param d the decomposed time
+     * @param u the target units.
+     * @return the Datum in the units specified.
      */
     public static Datum toDatum( TimeStruct d, Units u ) {
         int year = (int)d.year;
@@ -342,7 +349,13 @@ public final class TimeUtil {
         int jd = 367 * year - 7 * (year + (month + 9) / 12) / 4 -
                 3 * ((year + (month - 9) / 7) / 100 + 1) / 4 +
                 275 * month / 9 + day + 1721029;
-        if ( u!=Units.us2000 ) { // TODO: sub-optimal implementation...
+        if ( u==Units.cdfTT2000 ) {
+            double us2000= ( jd - 2451545 ) * 86400e6; 
+            double tt2000= Units.us2000.convertDoubleTo( Units.cdfTT2000, us2000 );
+            Units.cdfTT2000.createDatum(tt2000);
+            Datum rtt2000= Datum.create( d.hour * 3600.0e9 + d.minute * 60e9 + d.seconds * 1e9 + d.millis * 1e6 + d.micros*1e3 + tt2000, Units.cdfTT2000  );
+            return rtt2000;
+        } else if ( u!=Units.us2000 ) { // TODO: sub-optimal implementation...
             double us2000= ( jd - 2451545 ) * 86400e6; 
             Datum rus2000= Datum.create( d.hour * 3600.0e6 + d.minute * 60e6 + d.seconds * 1e6 + d.millis * 1000 + d.micros + us2000, Units.us2000  );
             return rus2000.convertTo(u);
@@ -382,6 +395,7 @@ public final class TimeUtil {
         result.year= Y;
         result.month= M;
         result.day= D;
+        result.isLocation= true;
         return result;
     }
 
@@ -394,6 +408,10 @@ public final class TimeUtil {
     public static TimeStruct toTimeStruct( Datum datum ) {
         Units u= datum.getUnits();
         double d= datum.doubleValue(u);
+        
+        // 4.88980868184E17 is 2015-07-01T00:00Z in cdfTT2000.
+        System.err.println( "d-4.88980868184E17="+(d-4.88980868184E17));
+        
         int mjd1958= (int)datum.doubleValue( Units.mj1958 );
         if ( mjd1958 < -714781 ) { // year 0001
             throw new IllegalArgumentException( "invalid time: mjd1958="+mjd1958 );
@@ -403,6 +421,11 @@ public final class TimeUtil {
         }
         double midnight= Units.mj1958.convertDoubleTo( u, mjd1958 );
         double sinceMidnight= d-midnight;
+        
+        if ( u==Units.cdfTT2000 && sinceMidnight<0.0 ) {
+            mjd1958= mjd1958-1;
+            sinceMidnight= sinceMidnight+86401e9;
+        }
 
         int jd= 2436205 + mjd1958;
         double nanoseconds= u.getOffsetUnits().convertDoubleTo( Units.nanoseconds, sinceMidnight );
@@ -416,7 +439,7 @@ public final class TimeUtil {
             nanoseconds += 86400e9; // no leap
         }
 
-        if ( nanoseconds>=86400e9 ) {
+        if ( nanoseconds>=86400e9 && u!=Units.cdfTT2000 ) {
             jd= jd+1;
             nanoseconds -= 86400e9; // no leap
         }
@@ -424,7 +447,9 @@ public final class TimeUtil {
         TimeStruct result= julianToGregorian( jd );
 
         int hour = (int)(nanoseconds/3600.0e9);
+        if ( hour>23 ) hour= 23;
         int minute = (int)((nanoseconds - hour*3600.0e9)/60.0e9);
+        if ( minute>59 ) minute= 59;
         double justNanoSeconds = nanoseconds - hour*3600.0e9 - minute*60.0e9;
 
         result.doy = dayOfYear(result.month, result.day, result.year);
@@ -432,6 +457,8 @@ public final class TimeUtil {
         result.minute= minute;
         result.seconds= justNanoSeconds / 1e9;
 
+        result.isLocation= true;
+        
         return result;
     }
 
@@ -583,11 +610,12 @@ public final class TimeUtil {
      * Normalize the TimeStruct by incrementing higher digits.  For
      * example, 2002-01-01T24:00 -->  2002-01-02T00:00.
      * This will only carry one to the next higher place, so 70 seconds is handled but not 130.
+     * 2015-09-08: this now supports leap seconds.
      */
     public static TimeStruct carry(TimeStruct t) {
         TimeStruct result= t;
         
-        if (result.seconds>=60) {
+        if (result.seconds>=60 && ( result.hour<23 || result.minute<59 ) ) {
             result.seconds-=60;
             result.minute++;
         }
