@@ -124,13 +124,17 @@ public class TimeDatumFormatter extends DatumFormatter {
         }
     }
     
-    private String formatString;
+    private final String formatString;
     
-    private MessageFormat format;
+    private final MessageFormat format;
     
     private int[] scaleSeconds;
     
-    /** Creates a new instance of TimeDatumFormatter */
+    /** 
+     * Creates a new instance of TimeDatumFormatter
+     * @param formatString
+     * @throws java.text.ParseException
+     */
     public TimeDatumFormatter(String formatString) throws ParseException {
         this.formatString = formatString;
         if ( formatString.contains( "%" ) ) {
@@ -146,7 +150,8 @@ public class TimeDatumFormatter extends DatumFormatter {
      * outside of any context.
      * @param scale the length we wish to represent, such as TimeUtil.HOUR
      * @param context the context for the formatter, or null if the formatted string
-     *   will be interpretted outside of any context.
+     *   will be interpreted outside of any context.
+     * @return the formatter.
      * @throws IllegalArgumentException if the scale is TimeUtil.NANOS or is not found in TimeUtil.
      */
     public static TimeDatumFormatter formatterForScale( int scale, DatumRange context ) {
@@ -188,6 +193,7 @@ public class TimeDatumFormatter extends DatumFormatter {
         return formatString;
     }
     
+    @Override
     public String format(Datum datum) {
         if ( datum.isFill() ) return "fill";
         int mjd1958= (int)datum.doubleValue( Units.mj1958 );
@@ -213,7 +219,7 @@ public class TimeDatumFormatter extends DatumFormatter {
      * @return
      * @throws ParseException 
      */
-    protected String parseTimeFormatString(String input) throws ParseException {
+    protected final String parseTimeFormatString(String input) throws ParseException {
         final String formatPattern = "(([yMDdHmsS])\\2*)";
         final String delimiterPattern = "([-/:.,_ \t]+)";
         final String literalPattern = "('(?:[^']|'')*')";
@@ -221,7 +227,7 @@ public class TimeDatumFormatter extends DatumFormatter {
                 formatPattern + "|" + delimiterPattern + "|" + literalPattern
                 );
         int from = 0;
-        StringBuffer frmtString = new StringBuffer();
+        StringBuilder frmtString = new StringBuilder();
         Matcher matcher = token.matcher(input);
         while (matcher.find(from)) {
             int start = matcher.start();
@@ -230,7 +236,7 @@ public class TimeDatumFormatter extends DatumFormatter {
                 java.util.Arrays.fill(dots, from, start, '.');
                 dots[from] = '^';
                 dots[start] = '^';
-                StringBuffer errorString = new StringBuffer("Unrecognized sub-pattern\n");
+                StringBuilder errorString = new StringBuilder("Unrecognized sub-pattern\n");
                 errorString.append(input).append("\n");
                 errorString.append(dots);
                 throw new ParseException(errorString.toString(), from);
@@ -283,13 +289,13 @@ public class TimeDatumFormatter extends DatumFormatter {
     
     /**
      * create the message format, based on %Y, %m, %d format specification
-     * of the unix date command.
-     * @param format
+     * of the UNIX date command.
+     * @param format the format spec, such as %Y%m%dT%H%M
      * @return a SimpleDateFormat string.
      * @throws java.text.ParseException
      */
-    protected String parseTimeFormatStringPercent(String format) throws ParseException {
-        StringBuffer frmtString= new StringBuffer();
+    protected final String parseTimeFormatStringPercent(String format) throws ParseException {
+        StringBuilder frmtString= new StringBuilder();
         String[] ss= format.split("%");
         frmtString.append(ss[0]);
         int offset= ss[0].length();
@@ -331,7 +337,7 @@ public class TimeDatumFormatter extends DatumFormatter {
         return frmtString.toString();
     }
     
-    private static void appendSubFormat(StringBuffer buffer, int fieldIndex,int count) {
+    private static void appendSubFormat(StringBuilder buffer, int fieldIndex,int count) {
         buffer.append("{").append(fieldIndex).append(",number,");
         for (int i = 0; i < count; i++) {
             buffer.append('0');
@@ -356,6 +362,7 @@ public class TimeDatumFormatter extends DatumFormatter {
      * remainder in lower sig digits.
      *
      * Note: TimeUtil.TimeStruct ts is modified.
+     * @return [ year, month, dayOfMonth, dayOfYear, hour, minute, seconds, ... ]
      */
     private Number[] timeStructToArray(TimeUtil.TimeStruct ts) {
         int secondsFieldCount = scaleSeconds == null ? 0 : scaleSeconds.length;
