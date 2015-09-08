@@ -215,7 +215,7 @@ public final class TimeUtil {
         int ordinal; // YEAR, MONTH, etc.
         String label;
         int divisions; // approximate
-        private static TimeDigit[] digits= new TimeDigit[10];
+        private static final TimeDigit[] digits= new TimeDigit[10];
         @Override
         public String toString(){
             return label;
@@ -611,6 +611,8 @@ public final class TimeUtil {
      * example, 2002-01-01T24:00 -->  2002-01-02T00:00.
      * This will only carry one to the next higher place, so 70 seconds is handled but not 130.
      * 2015-09-08: this now supports leap seconds.
+     * @param t a time structure
+     * @return a time structure where extra minutes are moved into hours, etc.
      */
     public static TimeStruct carry(TimeStruct t) {
         TimeStruct result= t;
@@ -864,12 +866,20 @@ public final class TimeUtil {
     }
     
     /**
+     * step to the next month.
+     * @param datum
+     * @return the next month.
      * @deprecated.  Use next(MONTH,datum) instead
      */
     public static Datum nextMonth(Datum datum) {
         return next(MONTH,datum);
     }
 
+    /**
+     * decrement by 7 days.
+     * @param datum 
+     * @return the datum
+     */
     public static Datum prevWeek( Datum datum ) {
         TimeStruct t= toTimeStruct(datum);
         t.day= t.day-7;
@@ -1027,12 +1037,7 @@ public final class TimeUtil {
             "january", "febuary", "march", "april", "may", "june",
             "july", "august", "september", "october", "november", "december"
         };
-        final String[] mons = {
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-        };
-        
-        
+                
         String delimiters;
         int end_of_date;
         //GregorianCalendar curdate;
@@ -1383,14 +1388,12 @@ public final class TimeUtil {
             for ( int j=0; j<10000; j++ ) {
                 Datum d= u.createDatum(j);
                 String s= d.toString();
-                ts= null;
                 ts= toTimeStruct(d);
                 Datum d1= TimeUtil.toDatum(ts);
                 if ( !d1.equals(d) ) {
                     if ( d1.subtract(d).doubleValue(Units.microseconds)< 0.000001 ) continue;
                     System.err.println( d1.subtract(d) ); //logger okay
                     System.err.println( ""+i+" "+j+": " +d + " "+d1 +" "+ ts ); //logger okay
-                    ts= toTimeStruct(d);
                 }
             }
         }
