@@ -409,9 +409,6 @@ public final class TimeUtil {
         Units u= datum.getUnits();
         double d= datum.doubleValue(u);
         
-        // 4.88980868184E17 is 2015-07-01T00:00Z in cdfTT2000.
-        System.err.println( "d-4.88980868184E17="+(d-4.88980868184E17));
-        
         int mjd1958= (int)datum.doubleValue( Units.mj1958 );
         if ( mjd1958 < -714781 ) { // year 0001
             throw new IllegalArgumentException( "invalid time: mjd1958="+mjd1958 );
