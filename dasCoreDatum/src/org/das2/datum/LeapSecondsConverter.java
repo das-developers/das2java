@@ -133,7 +133,7 @@ public class LeapSecondsConverter extends UnitsConverter {
      */
     public synchronized static int getLeapSecondCountForTT2000( long tt2000 ) throws IOException {
 
-        System.err.println( "since 2015-06-30T23:58:00 (sec): " + ( ( tt2000 - 488980747184000000L ) / 1e9 ) );
+        //System.err.println( "since 2015-06-30T23:58:00 (sec): " + ( ( tt2000 - 488980747184000000L ) / 1e9 ) );
         
         if ( System.currentTimeMillis()-lastUpdateMillis > 86400000 ) {
             updateLeapSeconds();
@@ -150,7 +150,7 @@ public class LeapSecondsConverter extends UnitsConverter {
                 tt2000_en= leapSeconds.get(i+1);
                 tt2000_c= i+10;
                 
-                System.err.println( "since 2015-06-30T23:58:00 (sec): " + ( ( tt2000 - 488980747184000000L ) / 1e9 ) + " result: "+tt2000_c );
+                //System.err.println( "since 2015-06-30T23:58:00 (sec): " + ( ( tt2000 - 488980747184000000L ) / 1e9 ) + " result: "+tt2000_c );
                 
                 return i+10;
             }
