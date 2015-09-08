@@ -2669,6 +2669,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         leftEdge = x;
         rightEdge = leftEdge + width;
 
+        if ( !SemanticOps.getUnits(dep0).isConvertibleTo(value.getUnits() ) ) {
+            return;
+        }
+            
         index = org.virbo.dataset.DataSetUtil.closestIndex( dep0, value);
         if ( index < 0 || index >= ltcaData.length() ) {
             return;
