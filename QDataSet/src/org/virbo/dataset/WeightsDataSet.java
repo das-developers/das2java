@@ -68,7 +68,7 @@ public abstract class WeightsDataSet implements QDataSet {
     public abstract double value(int i0, int i1, int i2, int i3);
 
     public Object property(String name) {
-        if ( name.equals(QDataSet.FILL_VALUE) ) return fill;
+        //if ( name.equals(QDataSet.FILL_VALUE) ) return fill;
         if ( name.equals(QDataSet.NAME ) ) return dsname;
         return null;
 
