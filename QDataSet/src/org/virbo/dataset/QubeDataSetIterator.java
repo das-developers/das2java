@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.LoggerManager;
 import org.das2.util.monitor.ProgressMonitor;
+import org.virbo.dsops.Ops;
 
 /**
  * DataSetIterator implementation that can be used for all dataset (not just qubes).  
@@ -173,6 +174,9 @@ public class QubeDataSetIterator implements DataSetIterator {
         int index;
 
         public IndexListIterator(QDataSet ds) {
+            if ( ds.rank()==0 ) {
+                ds= Ops.join(null,ds);
+            }
             this.ds = ds;
             if ( ds.rank()!=1 ) {
                 throw new IllegalArgumentException("list of indeces dataset must be rank 1");
@@ -217,6 +221,9 @@ public class QubeDataSetIterator implements DataSetIterator {
         QDataSet ds;
 
         public IndexListIteratorFactory(QDataSet ds) {
+            if ( ds.rank()==0 ) {
+                ds= Ops.join(null,ds);
+            }
             this.ds = ds;
             if ( ds.rank()!=1 ) {
                 throw new IllegalArgumentException("list of indeces dataset must be rank 1");
