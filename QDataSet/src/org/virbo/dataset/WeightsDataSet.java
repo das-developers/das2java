@@ -4,8 +4,6 @@
  */
 package org.virbo.dataset;
 
-import org.das2.datum.Units;
-
 /**
  * Provide consistent valid logic to operators by providing a QDataSet
  * with 1.0 where the data is valid, and 0.0 where the data is invalid.
@@ -14,7 +12,7 @@ import org.das2.datum.Units;
  * Note, when FILL_VALUE is not specified, -1e31 is used.  This is to
  * support legacy logic.
  * 
- * For convenience, the property FILL_VALUE is set to the fill value used.
+ * The property FILL_VALUE is no longer set to the fill value used.  https://sourceforge.net/p/autoplot/bugs/1458/
  * 
  * 
  * @author jbf
@@ -68,7 +66,7 @@ public abstract class WeightsDataSet implements QDataSet {
     public abstract double value(int i0, int i1, int i2, int i3);
 
     public Object property(String name) {
-        //if ( name.equals(QDataSet.FILL_VALUE) ) return fill;
+        //if ( name.equals(QDataSet.FILL_VALUE) ) return fill; // https://sourceforge.net/p/autoplot/bugs/1458/
         if ( name.equals(QDataSet.NAME ) ) return dsname;
         return null;
 
