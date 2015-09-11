@@ -7426,6 +7426,33 @@ public class Ops {
         return Ops.pow(stddev(ds),2);
     }
     
+    /**
+     * fill in the missing values by copying nearest data points.  All data
+     * in the result will be copies of elements found in the result, but no
+     * regard is given to how far a point is shifted.  This was
+     * motivated by supporting fill in median.
+     * @param ds
+     * @return dataset that does not contain fill.
+     */
+    public static QDataSet neighborFill( QDataSet ds ) {
+        QDataSet w= Ops.copy( Ops.valid(ds) );
+        WritableDataSet wds=null;
+        while ( Ops.reduceMin( w, 0 ).value()==0 ) {
+            wds= copy(ds);
+            for ( int i=1; i<ds.length(); i++ ) {
+                if ( w.value(i)==0 && w.value(i-1)>0 ) {
+                    wds.putValue(i,w.value(i-1));
+                }
+            }
+            for ( int i=ds.length()-2; i>=0; i-- ) {
+                if ( w.value(i)==0 && w.value(i+1)>0 ) {
+                    wds.putValue(i,w.value(i+1));
+                }                
+            }
+            w= Ops.valid(wds);
+        }
+        return wds==null ? ds : wds;
+    }
        
     /**
      * 1-D median filter with a boxcar of the given size.  This is 
