@@ -17,6 +17,7 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.IDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dsops.Ops;
 
 /**
@@ -313,7 +314,7 @@ public class BinAverage {
         DDataSet result = sums;
         //DDataSet resultVar= sums2;
 
-        Number fill= ((Number) wds.property(QDataSet.FILL_VALUE));
+        Number fill= ((Number) wds.property( WeightsDataSet.PROP_SUGGEST_FILL ) );
         if ( fill==null ) fill= -1e31;
 
         for (int i = 0; i < nn; i++) {
@@ -351,7 +352,7 @@ public class BinAverage {
 
         int binSize0= ds.length() / n0;
         
-        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
+        double fill = ((Number) wds.property( WeightsDataSet.PROP_SUGGEST_FILL )).doubleValue();
 
         for (int i0 = 0; i0 < n0; i0++) {
             int j0 = i0 * binSize0;
@@ -392,7 +393,7 @@ public class BinAverage {
 
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
 
-        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
+        double fill = ((Number) wds.property( WeightsDataSet.PROP_SUGGEST_FILL )).doubleValue();
 
         int binSize0= ds.length() / n0;
         int binSize1= ds.length(0) / n1;

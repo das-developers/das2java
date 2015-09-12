@@ -2269,7 +2269,8 @@ public class DataSetUtil {
      * Note, when FILL_VALUE is not specified, -1e31 is used.  This is to
      * support legacy logic.
      * 
-     * For convenience, the property FILL_VALUE is set to the fill value used.  
+     * For convenience, the property SUGGEST_FILL is set to the fill value used. 
+     * 
      * @param ds the dataset 
      * @return a dataset with the same geometry with zero or positive weights.
      */

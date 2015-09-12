@@ -68,6 +68,7 @@ import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.DataSetAnnotations;
 import org.virbo.dataset.SortDataSet;
 import org.virbo.dataset.SparseDataSet;
+import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
 import org.virbo.dsutil.AutoHistogram;
@@ -607,7 +608,7 @@ public class Ops {
         double s = 0;
         QubeDataSetIterator it1 = new QubeDataSetIterator(ds);
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
-        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
+        double fill = ((Number) wds.property(WeightsDataSet.PROP_SUGGEST_FILL)).doubleValue();
         
         it1.setMonitor(mon);
         
@@ -679,7 +680,7 @@ public class Ops {
         
         it1.setMonitor(mon);
         
-        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
+        double fill = ((Number) wds.property( WeightsDataSet.PROP_SUGGEST_FILL )).doubleValue();
         double[] store = new double[2];
         while (it1.hasNext()) {
             it1.next();
@@ -748,7 +749,7 @@ public class Ops {
         QDataSet wds = DataSetUtil.weightsDataSet(ds);
         DDataSet result= DDataSet.create(newQube);
         DDataSet weights= DDataSet.create(newQube);
-        double fill = ((Number) wds.property(QDataSet.FILL_VALUE)).doubleValue();
+        double fill = ((Number) wds.property(WeightsDataSet.PROP_SUGGEST_FILL)).doubleValue();
         
         if ( ds.rank()==2 && dim==1 ) {
             int jlen= ds.length(0);
@@ -5753,7 +5754,7 @@ public class Ops {
         }
 
         double [] result;
-        Number dfill= ((Number)wds.property(QDataSet.FILL_VALUE));
+        Number dfill= ((Number)wds.property(WeightsDataSet.PROP_SUGGEST_FILL));
         double fill= dfill!=null ? dfill.doubleValue() : -1e31;
 
         if ( range==null ) {
@@ -5871,7 +5872,7 @@ public class Ops {
         }
 
         double [] result;
-        Number dfill= ((Number)wds.property(QDataSet.FILL_VALUE));
+        Number dfill= ((Number)wds.property(WeightsDataSet.PROP_SUGGEST_FILL));
         double fill= dfill!=null ? dfill.doubleValue() : -1e31;
 
         if ( range==null ) {

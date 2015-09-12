@@ -13,15 +13,22 @@ package org.virbo.dataset;
  * support legacy logic.
  * 
  * The property FILL_VALUE is no longer set to the fill value used.  https://sourceforge.net/p/autoplot/bugs/1458/
- * 
+ * SUGGEST_FILL will be set in the properties.
  * 
  * @author jbf
  */
 public abstract class WeightsDataSet implements QDataSet {
 
     final double fill;
+    double reportFill; // since numbers between zero and one cannot be used as fill this is reported.
     final double vmin;
     final double vmax;
+    
+    /**
+     * the fill value from the original dataset.
+     */
+    public static final String PROP_SUGGEST_FILL = "SUGGEST_FILL";
+
     /**
      * if false, then check can be skipped.
      */
@@ -37,6 +44,10 @@ public abstract class WeightsDataSet implements QDataSet {
         if (validMax == null) validMax = Double.POSITIVE_INFINITY;
         Number ofill = (Number) ds.property(QDataSet.FILL_VALUE);
         fill = (ofill == null ? Double.NaN : ofill.doubleValue());
+        reportFill= fill;
+        if ( Double.isFinite(reportFill) && ( reportFill==0.0 || reportFill==1.0 ) ) {
+            reportFill= 127;
+        }
         //ffill= (double)(float)fill;  There was old code that checked for floats that had been converted to doubles.
         vmin = validMin.doubleValue();
         vmax = validMax.doubleValue();
@@ -66,8 +77,9 @@ public abstract class WeightsDataSet implements QDataSet {
     public abstract double value(int i0, int i1, int i2, int i3);
 
     public Object property(String name) {
-        //if ( name.equals(QDataSet.FILL_VALUE) ) return fill; // https://sourceforge.net/p/autoplot/bugs/1458/
+        if ( name.equals(QDataSet.FILL_VALUE) ) return reportFill; // https://sourceforge.net/p/autoplot/bugs/1458/
         if ( name.equals(QDataSet.NAME ) ) return dsname;
+        if ( name.equals(PROP_SUGGEST_FILL) ) return fill;
         return null;
 
     }
