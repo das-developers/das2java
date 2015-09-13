@@ -2257,7 +2257,7 @@ public class DataSetUtil {
         }
         assert result!=null;
         ((MutablePropertyDataSet)result).putProperty( QDataSet.FILL_VALUE, -1e38 ); // codes like total assume this property exists.
-        
+        ((MutablePropertyDataSet)result).putProperty( WeightsDataSet.PROP_SUGGEST_FILL, -1e38 ); // codes like total assume this property exists.
         return result;
     }
     
@@ -2309,8 +2309,11 @@ public class DataSetUtil {
             if ( ofill==null ) {
                 MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable( result );
                 mpds.putProperty( QDataSet.FILL_VALUE, QDataSet.DEFAULT_FILL_VALUE );
+                mpds.putProperty( WeightsDataSet.PROP_SUGGEST_FILL, QDataSet.DEFAULT_FILL_VALUE );
                 return mpds;
             } else {
+                MutablePropertyDataSet mresult= DataSetOps.makePropertiesMutable(result);
+                mresult.putProperty( WeightsDataSet.PROP_SUGGEST_FILL, ofill );
                 return result;
             }
         }
