@@ -45,7 +45,7 @@ public abstract class WeightsDataSet implements QDataSet {
         Number ofill = (Number) ds.property(QDataSet.FILL_VALUE);
         fill = (ofill == null ? Double.NaN : ofill.doubleValue());
         reportFill= fill;
-        if ( Double.isFinite(reportFill) && ( reportFill==0.0 || reportFill==1.0 ) ) {
+        if ( reportFill==0.0 || reportFill==1.0 ) { 
             reportFill= 127;
         }
         //ffill= (double)(float)fill;  There was old code that checked for floats that had been converted to doubles.
