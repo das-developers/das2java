@@ -25,7 +25,12 @@ public abstract class WeightsDataSet implements QDataSet {
     final double vmax;
     
     /**
-     * the fill value from the original dataset.
+     * the fill value from the original dataset.  
+     * TODO: We really need a justification of this.  I suspect this was because
+     * you wouldn't know what values would "fit" into the result, for example,
+     * you don't want to suggest 1e38 if IDataSet is the implementation.  However,
+     * I think the fill value used really depends on a number of things and
+     * it's difficult to preserve the value safely.
      */
     public static final String PROP_SUGGEST_FILL = "SUGGEST_FILL";
 
