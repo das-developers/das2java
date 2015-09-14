@@ -4919,10 +4919,13 @@ public class Ops {
                         c= null;
                     }
                 }
+            } else {
+                dep0units= SemanticOps.getUnits(dep0ds);
             }
             
             if ( c==null && dep0ds!=null ) {
                 c= dep0ds.slice(0);
+                cunits= dep0units;
             }
 
             JoinDataSet dep0;
@@ -4931,7 +4934,7 @@ public class Ops {
                 dep0= new JoinDataSet(c);
                 dep0.putProperty( QDataSet.UNITS, cunits );
                 jds.putProperty( QDataSet.DEPEND_0, dep0 );
-                if ( dep0units!=null && dep0units.getOffsetUnits().isConvertibleTo(cunits) ) {
+                if ( dep0units!=null && ( dep0units.isConvertibleTo(cunits) || dep0units.getOffsetUnits().isConvertibleTo(cunits) ) ) {
                     jds.putProperty( QDataSet.DEPEND_1, Ops.subtract( dep0ds, c ) );
                 } else {
                     jds.putProperty( QDataSet.DEPEND_1, dep0ds );
