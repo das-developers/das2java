@@ -4908,11 +4908,13 @@ public class Ops {
         if ( ds.rank()==1 ) { // wrap to make rank 2
             QDataSet c= (QDataSet) ds.property( QDataSet.CONTEXT_0 );
             QDataSet dep0ds= (QDataSet) ds.property( QDataSet.DEPEND_0 );
-
+            
+            Units cunits= null;
+            Units dep0units= null;
             if ( c!=null ) {
-                Units cunits= SemanticOps.getUnits(c);
+                cunits= SemanticOps.getUnits(c);
                 if ( dep0ds!=null ) {
-                    Units dep0units= SemanticOps.getUnits(dep0ds);
+                    dep0units= SemanticOps.getUnits(dep0ds);
                     if ( !cunits.getOffsetUnits().isConvertibleTo(dep0units.getOffsetUnits()) ) {
                         c= null;
                     }
@@ -4924,15 +4926,15 @@ public class Ops {
             }
 
             JoinDataSet dep0;
-            Units dep0u;
             JoinDataSet jds= new JoinDataSet(ds);
             if ( c!=null && c.rank()==0 ) {
-                dep0u= (Units) c.property(QDataSet.UNITS);
                 dep0= new JoinDataSet(c);
-                if ( dep0u!=null ) {
-                    dep0.putProperty( QDataSet.UNITS, dep0u );
-                    jds.putProperty( QDataSet.DEPEND_0, dep0 );
+                dep0.putProperty( QDataSet.UNITS, cunits );
+                jds.putProperty( QDataSet.DEPEND_0, dep0 );
+                if ( dep0units!=null && dep0units.getOffsetUnits().isConvertibleTo(cunits) ) {
                     jds.putProperty( QDataSet.DEPEND_1, Ops.subtract( dep0ds, c ) );
+                } else {
+                    jds.putProperty( QDataSet.DEPEND_1, dep0ds );
                 }
             }
 
