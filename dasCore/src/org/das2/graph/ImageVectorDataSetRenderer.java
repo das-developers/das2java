@@ -215,8 +215,17 @@ public class ImageVectorDataSetRenderer extends Renderer {
         DasPlot parent= getParent();
         
         if ( ds==null ) {
-            parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
-            return;
+            if (lastException != null) {
+                if (lastException instanceof NoDataInIntervalException) {
+                    parent.postMessage(this, "no data in interval:!c" + lastException.getMessage(), DasPlot.WARNING, null, null);
+                } else {
+                    parent.postException(this, lastException);
+                }
+                return;
+            } else {
+                parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+                return;
+            }
         }
 
         logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "render");
