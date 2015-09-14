@@ -1013,6 +1013,22 @@ public class Ops {
     }
     
     /**
+     * trim on the first (not zeroth) dimension.  This is to help with 
+     * unbundling the timeranges from an events dataset. 
+     */
+    public static QDataSet trim1( QDataSet ds, int st, int en ) {
+        if ( ds.rank()==2 ) {
+            QDataSet bundle1= (QDataSet) ds.property(QDataSet.BUNDLE_1);
+            bundle1= bundle1.trim(st,en);
+            ds= DataSetOps.leafTrim( ds, st, en );
+            ds= putProperty( ds, QDataSet.BUNDLE_1, bundle1 );
+            return ds;
+        } else {
+            throw new IllegalArgumentException("unsupported");
+        }
+    }
+    
+    /**
      * element-wise sqrt.  See Ops.pow to square a number.
      * @param ds the dataset
      * @return the square root of the dataset, which will contain NaN where the data is negative.
