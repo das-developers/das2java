@@ -8258,6 +8258,28 @@ public class Ops {
     }
     
     /**
+     * convenient method for getting the times from an events dataset, this
+     * unbundles the startTimes at i and the stopTimes at i+1 to a bins dataset.
+     * @param ds the bundle.
+     * @param i the index, 0 for a canonical events dataset.
+     * @return rank 2 bins dataset.
+     */
+    public static QDataSet unbundleBins( QDataSet ds, int i ) {
+        if ( true ) {
+            throw new IllegalArgumentException("test me!");
+        }
+        if ( ds.rank()==2 ) {
+            QDataSet result= DataSetOps.leafTrim( ds, i, i+2 );
+            return result;
+        } else if ( ds.rank()==1 ) {
+            QDataSet result= DataSetOps.leafTrim( ds, i, i+2 );
+            return result;
+        } else {
+            throw new IllegalArgumentException("rank exception, must be rank 1 or rank 2");
+        }
+    }
+    
+    /**
      * return true if DEPEND_1 is set and its units are EnumerationUnits.  This
      * was the pre-bundle way of representing a bundle of datasets.  It might
      * be supported indefinitely, because it has some nice rules about the data.
