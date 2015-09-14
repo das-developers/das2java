@@ -4225,9 +4225,23 @@ public class Ops {
      * @param ds rank N dataset where N &gt; 0
      * @param bounds a rank 1 bounding box.  
      * @return rank N dataset containing non-zero where the condition is true.
+     * @see #without(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #binsWithin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet within( QDataSet ds, QDataSet bounds ) {
         return and( ge( ds, bounds.slice(0) ), lt( ds, bounds.slice(1) ) );
+    }
+    
+    /**
+     * return non-zero where the bins of ds are within the bounds.  
+     * 
+     * @param ds rank 2 bins dataset 
+     * @param bounds a rank 1 bounding box.  
+     * @return rank 1 dataset containing non-zero where the condition is true.
+     * @see #within(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
+    public static QDataSet binsWithin( QDataSet ds, QDataSet bounds ) {
+        return and( ge( slice1(ds,1), bounds.slice(0) ), lt( slice1(ds,0), bounds.slice(1) ) );
     }
     
     /**
@@ -4240,11 +4254,23 @@ public class Ops {
      * @param ds rank N dataset where N &gt; 0
      * @param bounds a rank 1 bounding box.  
      * @return rank N dataset containing non-zero where the condition is true.
+     * @see #within(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet without( QDataSet ds, QDataSet bounds ) {
         return or( lt( ds, bounds.slice(0) ), ge( ds, bounds.slice(1) ) );
     }
-    
+
+    /**
+     * return non-zero where the bins of ds are outside of the bounds.
+     * @param ds rank 2 bins dataset
+     * @param bounds a rank 1 bounding box.  
+     * @return rank 1 dataset containing non-zero where the condition is true.
+     * @see #binsWithin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
+    public static QDataSet binsWithout( QDataSet ds, QDataSet bounds ) {
+        return or( lt( slice1(ds,0), bounds.slice(0) ), ge( slice1(ds,1), bounds.slice(1) ) );            
+    }
+        
     /**
      * returns a rank 1 dataset of indeces that sort the rank 1 dataset ds.
      * This is not the dataset sorted.  For example:
