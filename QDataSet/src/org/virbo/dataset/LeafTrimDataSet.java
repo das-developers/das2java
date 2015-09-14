@@ -61,6 +61,7 @@ public class LeafTrimDataSet extends AbstractDataSet {
         String bundleNName = "BUNDLE_" + (ds.rank() - 1);
         QDataSet bds = (QDataSet) ds.property(bundleNName);
         if ( bds != null) {
+            //TODO: check this--I don't think it's right.
             bds = new LeafTrimDataSet(bds, start, end);
             properties.put( bundleNName, bds );
         }
