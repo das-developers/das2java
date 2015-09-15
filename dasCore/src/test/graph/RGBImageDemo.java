@@ -33,7 +33,7 @@ public class RGBImageDemo extends PlotDemo {
                 rgb.putValue( i, j, 2, j%5==0 ? 255 : 0 );
             }
         }
-        rgb.putProperty( QDataSet.DEPEND_2, Ops.labels( new String[] { "b", "g", "r" } ) );
+        rgb.putProperty( QDataSet.DEPEND_2, Ops.labelsDataset(new String[] { "b", "g", "r" } ) );
         r.setDataSet( rgb );
         //r.setDataSet( Ops.multiply( DataSetUtil.asDataSet(255), Ops.rand(300,300) ) );
         plot.getXAxis().setDatumRange( DatumRange.newDatumRange(0,20,Units.dimensionless) );
