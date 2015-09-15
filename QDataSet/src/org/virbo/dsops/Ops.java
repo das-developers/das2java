@@ -8260,19 +8260,59 @@ public class Ops {
     /**
      * convenient method for getting the times from an events dataset, this
      * unbundles the startTimes at i and the stopTimes at i+1 to a bins dataset.
+     * The second column can be durations as well.
      * @param ds the bundle.
      * @param i the index, 0 for a canonical events dataset.
      * @return rank 2 bins dataset.
      */
     public static QDataSet unbundleBins( QDataSet ds, int i ) {
-        if ( true ) {
-            throw new IllegalArgumentException("test me!");
-        }
         if ( ds.rank()==2 ) {
-            QDataSet result= DataSetOps.leafTrim( ds, i, i+2 );
+            MutablePropertyDataSet result= DataSetOps.leafTrim( ds, i, i+2 );
+            QDataSet bds= (QDataSet) result.property(QDataSet.BUNDLE_1);
+            if ( bds!=null ) {
+                Units u1= (Units) bds.property(QDataSet.UNITS,0);
+                Units u2= (Units) bds.property(QDataSet.UNITS,1);
+                if ( u1==u2 ) {
+                    result= copy(result);
+                    result.putProperty( QDataSet.BUNDLE_1, null );
+                    result.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+                    result.putProperty( QDataSet.UNITS, u1 );
+                } else if ( u2.isConvertibleTo(u1.getOffsetUnits() ) ) {
+                    result= copy( result );
+                    UnitsConverter uc= u2.getConverter( u1.getOffsetUnits() );
+                    for ( int i1=0; i1<result.length(); i1++ ) {
+                        ((WritableDataSet)result).putValue( i1, 1, 
+                                result.value(i1,0) + uc.convert(result.value(i1,1))); 
+                    }
+                    result.putProperty( QDataSet.BUNDLE_1, null );
+                    result.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+                    result.putProperty( QDataSet.UNITS, u1 );
+                }
+            }
             return result;
         } else if ( ds.rank()==1 ) {
-            QDataSet result= DataSetOps.leafTrim( ds, i, i+2 );
+            MutablePropertyDataSet result= DataSetOps.leafTrim( ds, i, i+2 );
+            QDataSet bds= (QDataSet) result.property(QDataSet.BUNDLE_0);
+            if ( bds!=null ) {
+                Units u1= (Units) bds.property(QDataSet.UNITS,0);
+                Units u2= (Units) bds.property(QDataSet.UNITS,1);
+                if ( u1==u2 ) {
+                    result= copy(result);
+                    result.putProperty( QDataSet.BUNDLE_0, null );
+                    result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
+                    result.putProperty( QDataSet.UNITS, u1 );
+                } else if ( u2.isConvertibleTo(u1.getOffsetUnits() ) ) {
+                    result= copy( result );
+                    UnitsConverter uc= u2.getConverter( u1.getOffsetUnits() );
+                    for ( int i1=0; i1<result.length(); i1++ ) {
+                        ((WritableDataSet)result).putValue( i1, 1, 
+                                result.value(i1,0) + uc.convert(result.value(i1,1))); 
+                    }
+                    result.putProperty( QDataSet.BUNDLE_0, null );
+                    result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
+                    result.putProperty( QDataSet.UNITS, u1 );
+                }
+            }
             return result;
         } else {
             throw new IllegalArgumentException("rank exception, must be rank 1 or rank 2");
