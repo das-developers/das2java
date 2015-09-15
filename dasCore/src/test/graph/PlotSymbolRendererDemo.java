@@ -82,7 +82,7 @@ public class PlotSymbolRendererDemo {
             }
         }
 
-        vbd.putProperty( QDataSet.DEPEND_1, Ops.labels( new String[] { "x", "y", "color" } ) );
+        vbd.putProperty( QDataSet.DEPEND_1, Ops.labelsDataset(new String[] { "x", "y", "color" } ) );
 
         MutablePropertyDataSet vds = vbd.getDataSet();
         
