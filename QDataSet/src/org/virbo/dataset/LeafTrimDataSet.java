@@ -4,6 +4,8 @@
  */
 package org.virbo.dataset;
 
+import java.util.Map;
+
 /**
  * pull out a subset of the dataset by reducing the number of columns in the
  * last dimension.  This does not reduce rank.  This assumes the dataset has no
@@ -55,14 +57,18 @@ public class LeafTrimDataSet extends AbstractDataSet {
         String depNName = "DEPEND_" + (ds.rank() - 1);
         QDataSet depN = (QDataSet) ds.property(depNName);
         if (depN != null) {
-            depN = new LeafTrimDataSet(depN, start, end);
-            properties.put(depNName, depN);
+            if ( depN.rank()==2 ) {
+                depN = new LeafTrimDataSet(depN, start, end);
+                properties.put(depNName, depN);
+            } else {
+                depN= depN.trim(start, end);
+                properties.put(depNName, depN);
+            }
         }
         String bundleNName = "BUNDLE_" + (ds.rank() - 1);
         QDataSet bds = (QDataSet) ds.property(bundleNName);
         if ( bds != null) {
-            //TODO: check this--I don't think it's right.
-            bds = new LeafTrimDataSet(bds, start, end);
+            bds = bds.trim( start, end );
             properties.put( bundleNName, bds );
         }
         for ( int i=0; i<ds.rank()-1; i++ ) {
@@ -159,6 +165,8 @@ public class LeafTrimDataSet extends AbstractDataSet {
         } else {
             LeafTrimDataSet result= new LeafTrimDataSet( ds.slice(i), this.start, this.end );
             DataSetUtil.copyDimensionProperties( this, result );
+            Map<String,Object> ps= DataSetUtil.sliceProperties( ds, i, null );
+            DataSetUtil.putProperties( ps, result );
             return result;
         }
     }
