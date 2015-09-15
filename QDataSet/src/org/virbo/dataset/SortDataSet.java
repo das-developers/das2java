@@ -165,7 +165,11 @@ public class SortDataSet extends AbstractDataSet {
         if ( properties.containsKey(name) ) {
             return properties.get(name);
         } else {
-            return source.property(name);
+            if ( DataSetUtil.isDimensionProperty(name) ) {
+                return source.property(name);
+            } else {
+                return null;
+            }
         }
     }
 
@@ -174,7 +178,11 @@ public class SortDataSet extends AbstractDataSet {
         if ( properties.containsKey(name) ) {
             return properties.get(name);
         } else {
-            return source.property(name,(int)sort.value(i));
+            if ( DataSetUtil.isDimensionProperty(name) ) {
+                return source.property(name,(int)sort.value(i));
+            } else {
+                return null;
+            }
         }
     }
 
