@@ -273,6 +273,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         this.back= back;
         this.rank = rank;
         this.reclen= reclen;
+        if ( recoffs==182112 ) {
+            System.err.println("here182112");
+        }
         this.recoffset= recoffs;
         this.len0 = len0;
         this.len1 = len1;
@@ -380,6 +383,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         ds.copyTo(newback);
         
         newback.flip();
+        newback.limit( newback.capacity() );
         
         BufferDataSet result = BufferDataSet.makeDataSet( ds.rank, ds.reclen, ds.recoffset, ds.len0, ds.len1, ds.len2, ds.len3, newback, ds.type );
         result.properties.putAll( Ops.copyProperties(ds) );
