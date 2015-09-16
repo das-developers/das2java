@@ -494,7 +494,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         if (lparent==null ) return;
         
         final QDataSet fds= this.ds; // make a local copy for thread safety.
-
+        
+        QDataSet bounds=null;
+        
         logger.log(Level.FINE, "SpectrogramRenderer is rendering dataset {0} on {1}", new Object[] {  fds, Thread.currentThread().getName() } );
         
         byte[] lraster= this.raster;  // make a local copy for thread safety.
@@ -675,7 +677,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         //t0 = System.currentTimeMillis();
 
-                        QDataSet bounds= bounds(fds);
+                        bounds= bounds(fds);
 
                         Datum start = Datum.create(  bounds.value(0,0), xunits );
                         Datum end = Datum.create( bounds.value(0,1), xunits );
@@ -762,7 +764,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     Rectangle rr= DasDevicePosition.toRectangle( lparent.getRow(), lparent.getColumn() );
 
                     if ( fds!=null ) {
-                        QDataSet bounds= bounds(fds);
+                        if ( bounds==null ) bounds= bounds(fds);
                         DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true );
                         DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
                         if ( xunits!=null && !xunits.isConvertibleTo(xAxis.getUnits()) ) {
