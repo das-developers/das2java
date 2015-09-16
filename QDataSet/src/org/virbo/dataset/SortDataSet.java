@@ -126,6 +126,8 @@ public class SortDataSet extends AbstractDataSet {
             properties.put( QDataSet.DELTA_MINUS, new SortDataSet( ds, sort ) );
         }
         
+        properties.put( QDataSet.CACHE_TAG, null ); // note this null needs to hide the CACHE_TAG in the source.
+        
         DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(source,null), this );
 
     }
@@ -157,6 +159,7 @@ public class SortDataSet extends AbstractDataSet {
     /**
      * TODO: this is dangerous code, because as new properties are added to QDataSet, 
      * they may not be handled properly here. (e.g. BIN_PLUS).
+     * Note the properties are intended to mask the things that have changed!
      * @param name
      * @return 
      */
@@ -165,11 +168,7 @@ public class SortDataSet extends AbstractDataSet {
         if ( properties.containsKey(name) ) {
             return properties.get(name);
         } else {
-            if ( DataSetUtil.isDimensionProperty(name) ) {
-                return source.property(name);
-            } else {
-                return null;
-            }
+            return source.property(name);
         }
     }
 
@@ -178,11 +177,7 @@ public class SortDataSet extends AbstractDataSet {
         if ( properties.containsKey(name) ) {
             return properties.get(name);
         } else {
-            if ( DataSetUtil.isDimensionProperty(name) ) {
-                return source.property(name,(int)sort.value(i));
-            } else {
-                return null;
-            }
+            return source.property(name,(int)sort.value(i));
         }
     }
 
