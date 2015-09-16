@@ -1371,6 +1371,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             //QDataSet result= Ops.bundle(null,Ops.replicate( Ops.dataset(eu.createDatum("err")), dep0.length() ));
             //this.tcaData= Ops.link( dep0, result );
             logger.log(Level.WARNING, "exception occured while reading tca", ex );
+            ex.printStackTrace();
             this.tcaData= null;
             //update();
         }
