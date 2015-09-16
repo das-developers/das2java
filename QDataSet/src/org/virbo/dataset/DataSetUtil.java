@@ -2806,7 +2806,7 @@ public class DataSetUtil {
                     }
                 } else {
                     
-                    QDataSet extent= Ops.extentSimple(cds,DataSetUtil.weightsDataSet(cds),null);
+                    QDataSet extent= Ops.extentSimple(cds,null,null);
                     if ( extent.value(1)==extent.value(0) ) {
                         result.append( DataSetUtil.format(cds.slice(0),false) );  // for CLUSTER/PEACE this happens where rank 1 context is all the same value
                     } else {
