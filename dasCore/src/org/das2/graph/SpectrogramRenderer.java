@@ -250,7 +250,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     @Override
     public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         long t0= System.currentTimeMillis();
-        logger.fine("entering SpectrogramRenderer.render");
+
+        logger.entering( "org.das2.graph.SpectrogramRenderer", "render" );
+        
         Graphics2D g2 = (Graphics2D) g;
 
         DasPlot parent= getParent();
@@ -275,6 +277,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         if ( !SemanticOps.isTableDataSet( zds ) ) {
                             if ( !SemanticOps.isBundle( zds ) ) {
                                 parent.postMessage(this, "expected table dataset, got "+zds, DasPlot.INFO, null, null );
+                                logger.exiting( "org.das2.graph.SpectrogramRenderer", "render" );
                                 return;
                             }
                         }
@@ -377,7 +380,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
             }
         }
-        logger.log( Level.FINE, "done SpectrogramRenderer.render in {0} millis", ( System.currentTimeMillis()-t0) );
+        logger.exiting( "org.das2.graph.SpectrogramRenderer", "render" );
+        //logger.log( Level.FINE, "done SpectrogramRenderer.render in {0} millis", ( System.currentTimeMillis()-t0) );
     }
     
     int count = 0;
@@ -481,9 +485,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
     @Override
     public synchronized void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
-        long t0= System.currentTimeMillis();
-        logger.fine("entering SpectrogramRenderer.updatePlotImage");
-        
+
+        logger.entering( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
         super.incrementUpdateCount();
         
         DasPlot lparent= getParent();
@@ -547,6 +550,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         if ( plotImageBounds2==null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
                             logger.finest("canvas not useable!!!");
+                            logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                             return;
                         }
 
@@ -557,7 +561,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             rebinDataSet = null;
                             imageXRange = null;
                             imageYRange = null;
-                            lparent.repaint();
+                            lparent.repaint();        
+                            logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                             return;
 
                         }
@@ -570,6 +575,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             imageXRange = null;
                             imageYRange = null;
                             lparent.repaint();
+                            logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                             return;
                         }
 
@@ -596,6 +602,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 logger.finer("dataset units are incompatable with x axis.");
                                 plotImage = null;
                                 plotImageBounds= null;
+                                logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                                 return;
                             }
                         }
@@ -608,6 +615,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 logger.finer("dataset units are incompatable with y axis.");
                                 plotImage = null;
                                 plotImageBounds= null;
+                                logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                                 return;
                             }
                         }
@@ -620,6 +628,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 logger.finer("dataset is not TableDataSet.");
                                 plotImage = null;
                                 plotImageBounds= null;
+                                logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                                 return;
                             }
                         }
@@ -701,6 +710,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             plotImageBounds= null;
                             lastException= ex;
                             lparent.postException( this,ex );
+                            logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                             return;
                         }
                         //System.err.println( "rebin (ms): " + ( System.currentTimeMillis()-t0) );
@@ -717,6 +727,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             validCount= transformSimpleTableDataSet(rebinDataSet, lcolorBar, false, lraster );
                         } catch ( InconvertibleUnitsException ex ) {
                             System.err.println("zunits="+ SemanticOps.getUnits(fds)+"  colorbar="+lcolorBar.getUnits() );
+                            logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                             return;
                         }
                         //System.err.println( "transformSimpleTable (ms): " + ( System.currentTimeMillis()-t0) );
@@ -736,7 +747,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             try {
                                 r.setDataElements(0, 0, rasterWidth, rasterHeight, lraster);
                             } catch (Exception e) {
-                               logger.log( Level.WARNING, e.getMessage(), e );
+                                logger.log( Level.WARNING, e.getMessage(), e );
                             }
                         } else {
                             System.err.println("avoided raster ArrayIndex... track this down sometime...");
@@ -787,7 +798,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             plotImage= null;
             lparent.postException( this,ex );
         } finally {
-            logger.log(Level.FINE, "done SpectrogramRenderer.updatePlotImage in {0} millis", (System.currentTimeMillis()-t0));
+            logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
             lparent.repaint();
         }
     }
