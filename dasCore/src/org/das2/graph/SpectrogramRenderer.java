@@ -668,16 +668,17 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         imageXRange = xAxis.getDatumRange();
                         imageYRange = yAxis.getDatumRange();
 
-                        logger.log(Level.FINE, "rebinning to pixel resolution: {0}  {1}", new Object[]{xRebinDescriptor, yRebinDescriptor});
-                        logger.log(Level.FINE, "rebinning to pixel resolution: {0}", plotImageBounds2);
-
                         DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
 
                         //long t0;
 
                         //t0 = System.currentTimeMillis();
 
+                        logger.log( Level.FINE, "get the bounding box" );
                         bounds= bounds(fds);
+
+                        logger.log(Level.FINE, "rebinning to pixel resolution: {0}  {1}", new Object[]{xRebinDescriptor, yRebinDescriptor});
+                        logger.log(Level.FINE, "rebinning to pixel resolution: {0}", plotImageBounds2);
 
                         Datum start = Datum.create(  bounds.value(0,0), xunits );
                         Datum end = Datum.create( bounds.value(0,1), xunits );
@@ -720,7 +721,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         ymemento = lymemento;
                         cmemento = lcmemento;
 
-                        logger.log(Level.FINE, "rebinning to pixel resolution: {0}  {1}", new Object[]{xmemento, ymemento});
+                        logger.log(Level.FINE, "done rebinning to pixel resolution: {0}  {1}", new Object[]{xmemento, ymemento});
 
                         lraster = makePixMap( rebinDataSet, lraster );
 
