@@ -1,25 +1,4 @@
-/* File: TableAverageRebinner.java
- * Copyright (C) 2002-2003 The University of Iowa
- *
- * Created on November 5, 2003, 10:31 AM
- *      by Edward West <eew@space.physics.uiowa.edu>
- *
- * This file is part of the das2 library.
- *
- * das2 is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+
 package org.das2.dataset;
 
 import java.util.WeakHashMap;
@@ -49,7 +28,6 @@ public class LanlNNRebinner implements DataSetRebinner {
 
     private static final Logger logger = DasLogger.getLogger(DasLogger.DATA_OPERATIONS_LOG);
 
-    /** Creates a new instance of TableAverageRebinner */
     public LanlNNRebinner() {
     }
 
@@ -84,8 +62,9 @@ public class LanlNNRebinner implements DataSetRebinner {
      * @throws IllegalArgumentException
      * @throws DasException
      */
+    @Override
     public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY ) throws IllegalArgumentException, DasException {
-        logger.finest("enter LanlNNRebinner.rebin");
+        logger.entering("org.das2.dataset.LanlNNRebinner", "rebin");
 
         if (ds == null) {
             throw new NullPointerException("null data set");
@@ -306,11 +285,13 @@ public class LanlNNRebinner implements DataSetRebinner {
         MutablePropertyDataSet mds= (MutablePropertyDataSet) Ops.divide( S, N );
         RebinDescriptor.putDepDataSet( ds, mds, ddX, ddY );
         
+        logger.exiting("org.das2.dataset.LanlNNRebinner", "rebin");
+        
         return mds;
 
     }
 
-    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    private final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     public void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
