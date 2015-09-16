@@ -5793,13 +5793,15 @@ public class Ops {
      * @see #extent(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet extentSimple( QDataSet ds, QDataSet wds, QDataSet range  ) {
-
+        
+        logger.entering( Ops.class.getCanonicalName(), "extentSimple" );
+        
         int count=0;
         
         if ( wds==null ) {
             wds= DataSetUtil.weightsDataSet(ds);
         }
-
+        
         double [] result;
         Number dfill= ((Number)wds.property(WeightsDataSet.PROP_SUGGEST_FILL));
         double fill= dfill!=null ? dfill.doubleValue() : -1e31;
@@ -5880,9 +5882,12 @@ public class Ops {
         qresult.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS ) );
         if ( result[0]==fill ) qresult.putProperty( QDataSet.FILL_VALUE, fill);
         
+        logger.exiting( Ops.class.getCanonicalName(), "extentSimple" );
+        
         return qresult;
         
     }
+    
     /**
      * returns a two element, rank 1 dataset containing the extent (min to max) of the data, allowing an external
      * evaluation of the weightsDataSet.  If no valid data is found then [fill,fill] is returned.
