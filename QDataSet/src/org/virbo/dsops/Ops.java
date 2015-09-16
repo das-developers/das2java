@@ -5816,6 +5816,15 @@ public class Ops {
         boolean monoCheck; // true if the data appears to be monotonic decreasing or increasing.
         int ifirst,ilast;
 
+        QDataSet min= ds;
+        QDataSet max= ds;
+        if ( ds.rank()==2 && SemanticOps.isBins(ds) ) {
+            min= Ops.slice1(ds,0);
+            max= Ops.slice1(ds,1);
+            ds= min;
+            wds= Ops.slice1(wds,0);
+        }
+        
         if ( ds.rank()>0 ) {
             // find the first and last valid points.
             ifirst=0;
@@ -5863,8 +5872,8 @@ public class Ops {
                 it.next();
                 if (it.getValue(wds) > 0.) {
                     count++;
-                    result[0] = Math.min(result[0], it.getValue(ds));
-                    result[1] = Math.max(result[1], it.getValue(ds));
+                    result[0] = Math.min(result[0], it.getValue(min));
+                    result[1] = Math.max(result[1], it.getValue(max));
                 } else {
 
                 }
