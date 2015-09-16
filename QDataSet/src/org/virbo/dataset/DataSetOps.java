@@ -2483,6 +2483,7 @@ public class DataSetOps {
      * @return a bounding qube of the independent dimensions 
      */
     public static QDataSet dependBoundsSimple( QDataSet ds ) {
+        logger.entering( "org.virbo.dataset.DataSetOps", "dependBoundsSimple" );
         QDataSet xrange;
         QDataSet yrange;
 
@@ -2519,6 +2520,7 @@ public class DataSetOps {
         QDataSet result= makePropertiesMutable( Ops.join( xrange, yrange ) );
         ((MutablePropertyDataSet)result).putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
 
+        logger.exiting( "org.virbo.dataset.DataSetOps", "dependBoundsSimple" );
         return result;
         
     }
@@ -2535,6 +2537,7 @@ public class DataSetOps {
      * @return a bounding qube of the independent dimensions 
      */
     public static QDataSet dependBounds( QDataSet ds ) {
+        logger.entering( "org.virbo.dataset.DataSetOps", "dependBounds" );
         QDataSet xrange;
         QDataSet yrange;
 
@@ -2570,7 +2573,7 @@ public class DataSetOps {
 
         QDataSet result= makePropertiesMutable( Ops.join( xrange, yrange ) );
         ((MutablePropertyDataSet)result).putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
-
+        logger.exiting( "org.virbo.dataset.DataSetOps", "dependBounds" );
         return result;
     }
 
