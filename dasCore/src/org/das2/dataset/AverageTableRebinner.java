@@ -83,8 +83,7 @@ public class AverageTableRebinner implements DataSetRebinner {
      */
     @Override
     public QDataSet rebin( QDataSet ds, RebinDescriptor ddX, RebinDescriptor ddY ) throws IllegalArgumentException, DasException {
-        logger.finest("enter AverageTableRebinner.rebin");
-
+        logger.entering( "org.das2.dataset.AverageTableRebinner", "rebin" );
         if (ds == null) {
             throw new NullPointerException("null data set");
         }
@@ -222,7 +221,8 @@ public class AverageTableRebinner implements DataSetRebinner {
         RebinDescriptor.putDepDataSet( ds, result, ddX, ddY );
         result.putProperty( QDataSet.WEIGHTS, weightResult );
 
-        logger.finest("done, AverageTableRebinner.rebin");
+        logger.exiting( "org.das2.dataset.AverageTableRebinner", "rebin" );
+        
         return result;
     }
 
