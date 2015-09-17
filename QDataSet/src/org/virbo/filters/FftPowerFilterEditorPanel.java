@@ -45,7 +45,7 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
 
         jLabel3.setText("Window: ");
 
-        slideCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "No Overlap", "1/2 Overlap", "3/4 Overlap" }));
+        slideCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "No Overlap", "1/2 Overlap", "2/3 Overlap", "3/4 Overlap", "7/8 Overlap" }));
         slideCB.setMinimumSize(new java.awt.Dimension(125, 27));
         slideCB.setPreferredSize(new java.awt.Dimension(125, 27));
 
@@ -109,14 +109,15 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
             sizeTF.setText( m.group(1) );
             if (m.group(2).equals("1")) {
                 slideCB.setSelectedIndex(0);
-            }
-            else if (m.group(2).equals("2")) {
+            } else if (m.group(2).equals("2")) {
                 slideCB.setSelectedIndex(1);
-            }
-            else if (m.group(2).equals("4")) {
+            } else if (m.group(2).equals("3")) {
                 slideCB.setSelectedIndex(2);
-            }
-            else {
+            } else if (m.group(2).equals("4")) {
+                slideCB.setSelectedIndex(3);
+            } else if (m.group(2).equals("8")) {
+                slideCB.setSelectedIndex(4);
+            } else {
                 slideCB.setSelectedIndex(0);
             }
             windowCB.setSelectedItem( m.group(3) );
@@ -133,12 +134,14 @@ public class FftPowerFilterEditorPanel extends AbstractFilterEditorPanel {
     public String getFilter() {
         if (slideCB.getSelectedItem().equals("No Overlap"))  {
             slide = "1";
-        }
-        else if (slideCB.getSelectedItem().equals("1/2 Overlap")) {
+        } else if (slideCB.getSelectedItem().equals("1/2 Overlap")) {
             slide = "2";
-        }
-        else if (slideCB.getSelectedItem().equals("3/4 Overlap")) {
+        } else if (slideCB.getSelectedItem().equals("2/3 Overlap")) {
+            slide = "3";
+        } else if (slideCB.getSelectedItem().equals("3/4 Overlap")) {
             slide = "4";
+        } else if (slideCB.getSelectedItem().equals("7/8 Overlap")) {
+            slide = "8";
         }
         String window= (String)windowCB.getSelectedItem();
         if ( window.startsWith("Hanning") ) window= "Hanning"; // This is because of (Hann) in parenthesis.

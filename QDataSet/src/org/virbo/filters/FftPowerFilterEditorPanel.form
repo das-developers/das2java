@@ -75,10 +75,12 @@
     <Component class="javax.swing.JComboBox" name="slideCB">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="3">
+          <StringArray count="5">
             <StringItem index="0" value="No Overlap"/>
             <StringItem index="1" value="1/2 Overlap"/>
-            <StringItem index="2" value="3/4 Overlap"/>
+            <StringItem index="2" value="2/3 Overlap"/>
+            <StringItem index="3" value="3/4 Overlap"/>
+            <StringItem index="4" value="7/8 Overlap"/>
           </StringArray>
         </Property>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
