@@ -29,7 +29,7 @@ import org.virbo.dsops.Ops;
  * 
  * @author jbf
  */
-public class QubeDataSetIterator implements DataSetIterator {
+public final class QubeDataSetIterator implements DataSetIterator {
 
     private static final Logger logger= LoggerManager.getLogger("qdataset");
     
