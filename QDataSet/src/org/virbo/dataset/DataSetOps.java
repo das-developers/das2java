@@ -1835,6 +1835,7 @@ public class DataSetOps {
                         }
                     }
                     if ( !found ) {
+                        System.err.println("here1838");
                         throw new IllegalArgumentException("component not found: "+comp );
                     }
                 }
@@ -2366,7 +2367,11 @@ public class DataSetOps {
             }
             throw ex2;
         } finally {
-            mon.finished();
+            if ( mon.isFinished() ) {
+                System.err.println("monitor was already finished, fix this...");
+            } else {
+                mon.finished();
+            }
         }
         logger.log(Level.FINE, "{0}->sprocess(\"{1}\")->{2}", new Object[] { ds0, c, fillDs } );
         return fillDs;
