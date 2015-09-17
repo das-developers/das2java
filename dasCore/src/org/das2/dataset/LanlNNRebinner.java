@@ -230,6 +230,12 @@ public class LanlNNRebinner implements DataSetRebinner {
                     }
                 }
             } else {
+                QDataSet yds0_1=null;
+                QDataSet yds1_1=null;
+                if ( rank2y==false ) {
+                    yds0_1= yds0;
+                    yds1_1= yds1;
+                }
                 for ( int i=0; i<xds0.length(); i++) {
                     double x0= xds0.value(i);
                     double x1= xds1.value(i);
@@ -245,15 +251,16 @@ public class LanlNNRebinner implements DataSetRebinner {
 
                     int sx0= Math.max( 0, px0 );
                     int sx1= Math.min( nx-1, px1 );
+                    if ( rank2y ) {
+                        yds0_1= yds0.slice(i);
+                        yds1_1= yds1.slice(i);
+                    }
+                    assert yds0_1!=null;
+                    assert yds1_1!=null;
                     for ( int j=0; j<nYData; j++ ) {
                         double z= tds1.value( i,j );
-                        if ( rank2y ) {
-                            y0= yds0.value(i,j);
-                            y1= yds1.value(i,j);
-                        } else {
-                            y0= yds0.value(j);
-                            y1= yds1.value(j);
-                        }
+                        y0= yds0_1.value(j);
+                        y1= yds1_1.value(j);
                         int py0,py1;
                         if ( ddY.start>ddY.end ) { // flipped
                             py0= ddY.whichBin( y1, yunits );
