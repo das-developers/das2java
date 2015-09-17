@@ -2493,12 +2493,12 @@ public class DataSetOps {
         QDataSet yrange;
 
         if ( ds.rank()==1 ) {
-            xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null, null );
-            yrange= Ops.extentSimple( ds, null, null );
+            xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null );
+            yrange= Ops.extentSimple( ds, null );
         } else if( ds.rank() == 2 ) {
             if ( SemanticOps.isRank2Waveform(ds) ) {
-                xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null, null );
-                yrange= Ops.extentSimple( ds, null, null );
+                xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null );
+                yrange= Ops.extentSimple( ds, null );
             //} else if ( SemanticOps.isBundle(ds) ) { //bug: spectrogram rend of rbspb_pre_ect-mageisM75-sp-L1_20120908_v1.0.0.cdf?Count_Rate_SpinSetAvg
             //    xrange= Ops.extent( SemanticOps.xtagsDataSet(ds) );
             //    yrange= null;
@@ -2506,17 +2506,17 @@ public class DataSetOps {
             //        yrange= Ops.extent( DataSetOps.unbundle( ds, i ), yrange );
             //    }
             } else {
-                xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null, null );
-                yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds), null, null );
+                xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds), null );
+                yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds), null );
             }
         } else if ( ds.rank()==3 ) {
             QDataSet ds1= ds.slice(0);
-            xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds1), null, null );
-            yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds1), null, null );
+            xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds1), null );
+            yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds1), null );
             for ( int i=1; i<ds.length(); i++ ) {
                 ds1= ds.slice(i);
-                xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds1), null, xrange );
-                yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds1), null, yrange );
+                xrange= Ops.extentSimple( SemanticOps.xtagsDataSet(ds1), xrange );
+                yrange= Ops.extentSimple( SemanticOps.ytagsDataSet(ds1), yrange );
             }
         } else {
             throw new IllegalArgumentException("bad rank");
