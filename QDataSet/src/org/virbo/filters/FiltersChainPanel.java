@@ -609,7 +609,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                     
                     if ( iss<ss.length ) {
                         try {
-                            ds= DataSetOps.sprocess( "|"+s, ds, new NullProgressMonitor() );
+                            if ( iss==1 && implicitUnbundle ) {
+                                ds= DataSetOps.sprocess( "|unbundle("+s+")", ds, new NullProgressMonitor() );
+                            } else {
+                                ds= DataSetOps.sprocess( "|"+s, ds, new NullProgressMonitor() );
+                            }
                             //resultFilters.set( i, s );
                             //results.set( i, ds );
 
