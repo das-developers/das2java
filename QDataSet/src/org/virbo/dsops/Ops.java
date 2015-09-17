@@ -6026,6 +6026,10 @@ public class Ops {
         
     }
 
+    public static QDataSet extent445( QDataSet ds ) {
+        return extentSimple(ds,null);
+    }
+    
     /**
      * This is introduced to study effect of 
      * https://sourceforge.net/p/autoplot/feature-requests/445/
@@ -6042,10 +6046,11 @@ public class Ops {
      * 
      * This is likely showing that DataSetIterator is slow...
      * 
-     * @param ds
+     * @param ds the dataset
+     * @param range null, or rank 1 bins dataset
      * @return 
      */
-    public static QDataSet extent445( QDataSet ds ) {
+    public static QDataSet extentSimple( QDataSet ds, QDataSet range ) {
         
         logger.entering( Ops.class.getCanonicalName(), "extent445" );
         
@@ -6067,7 +6072,13 @@ public class Ops {
         double filldn= fill < 0 ? fill * 1.0001 : fill / 1.0001;
         int count=0;
         
-        double[] result = new double[]{Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        double[] result;
+        if ( range==null ) {
+            result= new double[]{Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        } else {
+            result= new double[]{ range.value(0), range.value(1) };
+        }
+        
         if ( ds.rank()==1 ) {
             int n= ds.length();
             for ( int i=0; i<n; i++ ) {
