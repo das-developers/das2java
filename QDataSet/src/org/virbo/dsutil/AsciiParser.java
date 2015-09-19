@@ -133,7 +133,10 @@ public class AsciiParser {
 
     private static final int HEADER_LENGTH_LIMIT=1000;
 
-    private static final Units DEFAULT_TIME_UNIT= Units.t2000;
+    /**
+     * Convenient unit for parsing UTC times.
+     */
+    public static final Units UNIT_UTC= Units.t2000;
 
     StringBuffer headerBuffer = new StringBuffer();
 
@@ -361,7 +364,7 @@ public class AsciiParser {
                             String[] ff= p.fields(line);
                             for ( int j=0; j<ff.length; j++ ) {
                                 if ( TimeParser.isIso8601String(ff[j]) ) {
-                                    setUnits(j,DEFAULT_TIME_UNIT);
+                                    setUnits(j,UNIT_UTC);
                                 }
                             }
                             if (p.tryParseRecord(line1, 0, null)) {
