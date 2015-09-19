@@ -134,6 +134,7 @@ public class AsciiParser {
 
     private static final int HEADER_LENGTH_LIMIT=1000;
 
+    private static final Units DEFAULT_TIME_UNIT= Units.t2000;
 
     StringBuffer headerBuffer = new StringBuffer();
 
@@ -361,7 +362,7 @@ public class AsciiParser {
                             String[] ff= p.fields(line);
                             for ( int j=0; j<ff.length; j++ ) {
                                 if ( TimeParser.isIso8601String(ff[j]) ) {
-                                    setUnits(j,Units.cdfTT2000);
+                                    setUnits(j,Units.t2000);
                                 }
                             }
                             if ( p.tryParseRecord(lines.get(i), 0, null) ) {
@@ -1619,7 +1620,7 @@ public class AsciiParser {
     private void initializeUnitsByGuessing( String[] ss ) {
         for (int i = 0; i < ss.length; i++) {
             if ( isIso8601Time(ss[i].trim()) ) {
-                units[i]= Units.cdfTT2000;
+                units[i]= Units.t2000;
                 fieldParsers[i]= UNITS_PARSER;
             } else {
                 units[i] = Units.dimensionless;
