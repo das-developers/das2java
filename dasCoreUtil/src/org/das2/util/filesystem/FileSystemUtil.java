@@ -185,7 +185,7 @@ public class FileSystemUtil {
     public static void maybeMkdirs( File file ) throws IOException {
         if ( file.exists() ) return;
         if ( !file.mkdirs() ) {
-            if ( !file.exists() ) {
+            if ( file.exists() ) {
                 // somebody else made the file.
             } else {
                 logger.log( Level.SEVERE, "Unable to mkdirs {0}", file); // print it in case the IOException is misinterpretted.
