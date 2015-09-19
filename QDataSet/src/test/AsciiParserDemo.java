@@ -23,7 +23,7 @@ import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsutil.AsciiParser;
 
 /**
- *
+ * Demonstration of the ascii parser.
  * @author jbf
  */
 public class AsciiParserDemo {
@@ -49,7 +49,7 @@ public class AsciiParserDemo {
 
     private static void test1() throws IOException, MalformedURLException {
         AsciiParser parser = new AsciiParser();
-        URL testFile = new URL("file:///N:/data/examples/asciitable/omni2_1965.dat");
+        URL testFile = new URL("/tmp/omni2_1965.dat");
         parser.setDelimParser(new InputStreamReader(testFile.openStream()), "\\s+");
 
         WritableDataSet ds = parser.readStream(new InputStreamReader(testFile.openStream()), new NullProgressMonitor());
