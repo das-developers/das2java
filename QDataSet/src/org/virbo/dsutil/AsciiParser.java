@@ -27,7 +27,6 @@ import java.util.regex.*;
 import org.das2.datum.Datum;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeParser;
-import org.das2.datum.TimeUtil;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -169,11 +168,7 @@ public class AsciiParser {
                 for ( int i=4; i<s.length(); i++ ) {
                     if ( Character.isDigit( s.charAt(i) ) ) charCount++;
                 }
-                if ( charCount>10 ) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return charCount>10;
             } else {
                 return false;
             }
@@ -189,13 +184,15 @@ public class AsciiParser {
      * 
      * @param filename
      * @return the first line after skip lines and comment lines.
+     * @throws java.io.IOException
      */
     public String readFirstRecord(String filename) throws IOException {
         return readFirstRecord(new BufferedReader(new FileReader(filename)));
     }
 
     /**
-     * return the first line of the freshly opened file.
+     * return the first line of the freshly opened file.  The reader
+     * is closed.
      * @param reader
      * @return
      * @throws java.io.IOException
@@ -263,6 +260,7 @@ public class AsciiParser {
      * @param filename
      * @param recParser
      * @return
+     * @throws java.io.IOException
      */
     public int guessSkipLines( String filename, RecordParser recParser ) throws IOException {
         BufferedReader reader = null;
@@ -311,6 +309,7 @@ public class AsciiParser {
      * DelimParser and set skipLines.  DelimParser header field is set as well.
      * @param filename
      * @return the record parser to use, or null if no records are found.
+     * @throws java.io.IOException
      */
     public DelimParser guessSkipAndDelimParser( String filename ) throws IOException {
         BufferedReader reader = null;
@@ -355,17 +354,17 @@ public class AsciiParser {
                     p= guessDelimParser(line);
                     p.showException= false;
                     parseCount= p.tryParseRecord(line, iline, null) ? 1 : 0;
-                    for ( int i=0; i<lines.size(); i++ ) {
-                        if ( p.tryParseRecord(lines.get(i), 0, null) ) {
-                                parseCount++;
-                        } else if ( iline==2 ) {
+                    for (String line1 : lines) {
+                        if (p.tryParseRecord(line1, 0, null)) {
+                            parseCount++;
+                        } else if (iline==2) {
                             String[] ff= p.fields(line);
                             for ( int j=0; j<ff.length; j++ ) {
                                 if ( TimeParser.isIso8601String(ff[j]) ) {
-                                    setUnits(j,Units.t2000);
+                                    setUnits(j,DEFAULT_TIME_UNIT);
                                 }
                             }
-                            if ( p.tryParseRecord(lines.get(i), 0, null) ) {
+                            if (p.tryParseRecord(line1, 0, null)) {
                                 parseCount++; 
                             }
                         }
@@ -375,10 +374,10 @@ public class AsciiParser {
             
             result= p;
 
-            for ( int i=0; i<lines.size(); i++ ) {
-                if ( p.fieldCount(lines.get(i))==p.fieldCount() ) {
-                    line= lines.get(i);
-                    result= createDelimParser( lines.get(i), p.getDelim() ); // set column names
+            for (String line1 : lines) {
+                if (p.fieldCount(line1) == p.fieldCount()) {
+                    line = line1;
+                    result = createDelimParser(line1, p.getDelim()); // set column names
                     break;
                 }
             }
@@ -422,7 +421,7 @@ public class AsciiParser {
                         if ( n!=null ) fieldLabels[j]= n;
                     }
                 } else {
-                    System.err.println( String.format( "rich header buffer not the same length as the dataset (%d!=%d)", Integer.valueOf(bundleDescriptor.length()), Integer.valueOf(fieldNames.length) ) );
+                    System.err.println( String.format("rich header buffer not the same length as the dataset (%d!=%d)", bundleDescriptor.length(), fieldNames.length) );
                 }
             } catch (ParseException ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
@@ -511,9 +510,10 @@ public class AsciiParser {
 
     /**
      * The regex parser is a slow parser, but gives precise control.
-     * 
+     * @param fieldNames
+     * @return the parser for each record.
      */
-    final public RecordParser setRegexParser(String[] fieldNames) {
+    public final RecordParser setRegexParser(String[] fieldNames) {
         initializeByFieldCount(fieldNames.length);
         this.fieldNames = Arrays.copyOf( fieldNames, fieldNames.length );
 
@@ -618,6 +618,9 @@ public class AsciiParser {
      * return the field count that would result in the largest number of records parsed.  The
      * entire file is scanned, and for each line the number of decimal fields is counted.  At the end
      * of the scan, the fieldCount with the highest record count is returned.
+     * @param filename the file name, a local file opened with a FileReader
+     * @return the apparent field count.
+     * @throws java.io.FileNotFoundException
      */
     public static int guessFieldCount(String filename) throws FileNotFoundException, IOException {
 
@@ -666,6 +669,11 @@ public class AsciiParser {
         return imax;
     }
 
+    /**
+     * set the special parser for a field.
+     * @param field the field number, 0 is the first column.
+     * @param fp the parser
+     */
     public void setFieldParser(int field, FieldParser fp) {
         FieldParser oldFp = this.fieldParsers[field];
         this.fieldParsers[field] = fp;
@@ -677,6 +685,8 @@ public class AsciiParser {
 
     /**
      * creates a parser with @param fieldCount fields, named "field0,...,fieldN"
+     * @param fieldCount the number of fields
+     * @return the file parser
      */
     public static AsciiParser newParser(int fieldCount) {
         String[] fieldNames = new String[fieldCount];
@@ -688,6 +698,8 @@ public class AsciiParser {
 
     /**
      * creates a parser with the named fields.
+     * @param fieldNames the names for each field
+     * @return the file parser
      */
     public static AsciiParser newParser(String[] fieldNames) {
         return new AsciiParser(fieldNames);
@@ -697,6 +709,7 @@ public class AsciiParser {
      * skip a number of lines before trying to parse anything.  This can be
      * set to point at the first valid line, and the RecordParser will be 
      * configured using that line.
+     * @param skipLines
      */
     public void setSkipLines(int skipLines) {
         this.skipLines = skipLines;
@@ -705,6 +718,7 @@ public class AsciiParser {
     /**
      * limit the number of records read.  parsing will stop once this number of
      * records is read.  This is Integer.MAX_VALUE by default.
+     * @param recordCountLimit
      */
     public void setRecordCountLimit(int recordCountLimit) {
         this.recordCountLimit = recordCountLimit;
@@ -712,7 +726,10 @@ public class AsciiParser {
 
     /**
      * specify the Pattern used to recognize properties.  Note property
-     * values are not parsed, they are provided as Strings.
+     * values are not parsed, they are provided as Strings.  This is a regular
+     * expression with two groups for the property name and value.
+     * For example, (.+)=(.+)
+     * @param propertyPattern regular expression Pattern with two groups.
      */
     public void setPropertyPattern(Pattern propertyPattern) {
         this.propertyPattern = propertyPattern;
@@ -721,7 +738,7 @@ public class AsciiParser {
     /**
      * Records starting with this are not processed as data, for example "#".
      * This is initially "#".  Setting this to null disables this check.
-     * @param comment
+     * @param comment the prefix
      */
     public void setCommentPrefix(String comment) {
         this.commentPrefix = comment;
@@ -729,10 +746,20 @@ public class AsciiParser {
     protected String headerDelimiter = null;
     public static final String PROP_HEADERDELIMITER = "headerDelimiter";
 
+    /**
+     * get the header delimiter
+     * @return the header delimiter.
+     */
     public String getHeaderDelimiter() {
         return headerDelimiter;
     }
 
+    /**
+     * set the delimiter which explicitly separates header from the data.
+     * For example "-------" could be used.  Normally the parser just looks at
+     * the number of fields and this is sufficient.
+     * @param headerDelimiter 
+     */
     public void setHeaderDelimiter(String headerDelimiter) {
         String oldHeaderDelimiter = this.headerDelimiter;
         this.headerDelimiter = headerDelimiter;
@@ -741,6 +768,10 @@ public class AsciiParser {
 
     /**
      * Parse the stream using the current settings.
+     * @param in the input stream
+     * @param mon
+     * @return 
+     * @throws java.io.IOException
      */
     public WritableDataSet readStream(Reader in, ProgressMonitor mon) throws IOException {
         return readStream(in, null, mon);
@@ -748,11 +779,11 @@ public class AsciiParser {
 
     /**
      * read in the stream, including the first record if non-null.
-     * @param in
+     * @param in the stream, which is not closed.
      * @param firstRecord, if non-null, parse this record first.  This allows information to be extracted about the
      * records, then fed into this loop.
-     * @param mon
-     * @return
+     * @param mon a monitor
+     * @return the dataset.
      * @throws java.io.IOException
      */
     public WritableDataSet readStream(Reader in, String firstRecord, ProgressMonitor mon) throws IOException {
@@ -994,6 +1025,7 @@ public class AsciiParser {
     Datum dwhereValue= null;
     
     private Comparator whereComp= new Comparator() {
+        @Override
         public int compare(Object o1, Object o2) {
             if ( o1.equals(o2) ) {
                 return 0;
@@ -1070,25 +1102,32 @@ public class AsciiParser {
         /**
          * returns true if the line appears to be a record.  If it is a record,
          * then the record is inserted into the builder.
+         * @param line the line from the file.
+         * @param irec the record number
+         * @param builder the builder into which the data is inserted.
+         * @return true if the line appeared to be a record.
          */
         boolean tryParseRecord(String line, int irec, DataSetBuilder builder);
 
         /**
-         * indicate the number of fields this RecordParser is expecting on each
-         * line.
+         * indicate the number of fields this RecordParser is 
+         * expecting on each line.
+         * @return the field count.
          */
         int fieldCount();
 
         /**
          * return the number of fields in this line.  All records will have this
          * number of fields.  This is used for discovery and to configure the parser.
+         * @param line the line from the file, to attempt parsing.
+         * @return the number of fields found.
          */
         int fieldCount(String line);
 
         /**
          * attempts to extract fields from the record, returning true if
          * the record could be split.
-         * @param line
+         * @param line the line from the file.
          * @param fields array to store the fields.  fieldCount() should be used
          * to determine the length of the array.
          * @return true if the line is a record that can be split into fields.
@@ -1096,13 +1135,26 @@ public class AsciiParser {
         boolean splitRecord( String line, String[] fields );
     }
 
+    /**
+     * A FieldParser takes character data and returns a number representing
+     * the data.  The units of the field are often used with this when parsing.
+     */
     public static interface FieldParser {
+        /**
+         * parse the field into a double representing
+         * @param field the field
+         * @param columnIndex the column index.
+         * @return the double representing
+         * @throws ParseException 
+         */
         double parseField(String field, int columnIndex) throws ParseException;
     }
+    
     /**
-     * parses the field using Double.parseDouble, java's double parser.
+     * parses the field using Double.parseDouble, Java's double parser.
      */
     public static final FieldParser DOUBLE_PARSER = new FieldParser() {
+        @Override
         public final double parseField(String field, int columnIndex) {
             if ( field.length()==1 ) {
                 double d= field.charAt(0)-'0';  // bugfix '+' caused exception http://www.dartmouth.edu/~rdenton/Data/DentonTakahashiGOES1980-1991MassDensityWithHeader.txt?skipLines=91&depend0=FractionlYear&column=AE
@@ -1111,11 +1163,17 @@ public class AsciiParser {
                 return Double.parseDouble(field);
             }
         }
+        @Override
+        public String toString() {
+            return "doubleParser";
+        }            
     };
+    
     /**
      * delegates to the unit object set for this field to parse the data.
      */
     public final FieldParser UNITS_PARSER = new FieldParser() {
+        @Override
         public final double parseField(String field, int columnIndex) throws ParseException {
             Units u = AsciiParser.this.units[columnIndex];
             if ( u instanceof EnumerationUnits ) {
@@ -1136,6 +1194,7 @@ public class AsciiParser {
      * uses the EnumerationUnits for the field to create a Datum.
      */
     public final FieldParser ENUMERATION_PARSER = new FieldParser() {
+        @Override
         public final double parseField(String field, int columnIndex) throws ParseException {
             EnumerationUnits u = (EnumerationUnits)AsciiParser.this.units[columnIndex];
             field= field.trim();
@@ -1152,7 +1211,7 @@ public class AsciiParser {
     };
 
     /**
-     * hide the nuances of java's split function.  When the string endswith the
+     * hide the nuances of Java's split function.  When the string endswith the
      * regex, add an empty field.  Also, trim the string so leading and trailing
      * whitespace is not treated as a delimiter.
      * @param string
@@ -1346,10 +1405,12 @@ public class AsciiParser {
             return ( failCount < tryCount ) && ( okayCount > 1 || failCount < 3 );
         }
 
+        @Override
         public int fieldCount() {
             return fieldCount;
         }
 
+        @Override
         public int fieldCount(String line) {
             return fields(line).length;
         }
@@ -1380,6 +1441,7 @@ public class AsciiParser {
             return ss;
         }
 
+        @Override
         public boolean splitRecord(String input, String[] fields) {
 
             int index = 0;
@@ -1511,7 +1573,7 @@ public class AsciiParser {
      * </ul>
      * @param format
      * @return
-     * @see TimeParser
+     * @see org.das2.datum.TimeParser
      */
     public RegexParser getRegexParserForFormat(String format) {
         String[] ss= format.split("%");
@@ -1527,8 +1589,8 @@ public class AsciiParser {
         }
         
         int count= 0;
-        for ( int i=0; i<ss.length; i++ ) {
-            if ( !ss[i].toLowerCase().endsWith("x") ) {
+        for (String s : ss) {
+            if (!s.toLowerCase().endsWith("x")) {
                 count++;
             }
         }
@@ -1629,6 +1691,9 @@ public class AsciiParser {
         }
     }
 
+    /**
+     * parser uses a regular expression to match each record.
+     */
     public final class RegexParser implements RecordParser {
 
         Pattern recordPattern;
@@ -1639,10 +1704,12 @@ public class AsciiParser {
             initializeByFieldCount(recordPattern.matcher("").groupCount());
         }
 
+        @Override
         public int fieldCount() {
             return fieldCount;
         }
 
+        @Override
         public final boolean tryParseRecord(String line, int irec, DataSetBuilder builder) {
             Matcher m;
             if (recordPattern != null && (m = recordPattern.matcher(line)).matches()) {
@@ -1657,11 +1724,8 @@ public class AsciiParser {
                         } catch (NumberFormatException e) {
                         }
                     }
-                    if (!allInvalid) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return !allInvalid;
+                    
                 } catch (ParseException ex) {
                     return false;
                 }
@@ -1674,10 +1738,17 @@ public class AsciiParser {
         /**
          * return what this would be if spitting by whitespace.
          */
+        @Override
         public int fieldCount(String line) {
             return line.split("\\s*").length;
         }
 
+        /**
+         * show the fields found in the line.  This assumes the line 
+         * will match.
+         * @param line
+         * @return the groups.
+         */
         public String[] fields(String line) {
             Matcher m;
             m = recordPattern.matcher(line);
@@ -1688,6 +1759,7 @@ public class AsciiParser {
             return fields;
         }
 
+        @Override
         public boolean splitRecord( String line, String[] fields ) {
             Matcher m;
             m = recordPattern.matcher(line);
@@ -1707,6 +1779,13 @@ public class AsciiParser {
         }
     }
 
+    /**
+     * set the record parser to be a fixed columns parser
+     * @param columnOffsets the start of each column
+     * @param columnWidths the width of each column
+     * @param parsers the parser for each column.
+     * @return the FixedColumnsParser
+     */
     public FixedColumnsParser setFixedColumnsParser(int[] columnOffsets, int[] columnWidths, FieldParser[] parsers) {
         FixedColumnsParser result = new FixedColumnsParser(columnOffsets, columnWidths);
         this.recordParser = result;
@@ -1715,11 +1794,14 @@ public class AsciiParser {
         return result;
     }
 
+    /**
+     * Record parser looks at fixed column positions for each record.
+     */
     public final class FixedColumnsParser implements RecordParser {
 
         int[] columnOffsets;
         int[] columnWidths;
-        private int fieldCount;
+        private final int fieldCount;
 
         public FixedColumnsParser(int[] columnOffsets, int[] columnWidths) {
             this.columnOffsets = Arrays.copyOf( columnOffsets, columnOffsets.length );
@@ -1727,10 +1809,12 @@ public class AsciiParser {
             this.fieldCount = columnOffsets.length;
         }
 
+        @Override
         public int fieldCount() {
             return fieldCount;
         }
 
+        @Override
         public final boolean tryParseRecord(String line, int irec, DataSetBuilder builder) {
             boolean[] fails = new boolean[fieldCount];
             int okayCount = 0;
@@ -1771,6 +1855,7 @@ public class AsciiParser {
             
         }
 
+        @Override
         public int fieldCount(String line) {
             return line.split("\\s*").length;
         }
@@ -1783,6 +1868,7 @@ public class AsciiParser {
             return result;
         }
 
+        @Override
         public boolean splitRecord(String line, String[] fields) {
             if ( line.length() >= columnOffsets[fieldCount-1] + columnWidths[fieldCount-1] ) {
                 for (int i = 0; i < fieldCount; i++) {
@@ -1844,7 +1930,10 @@ public class AsciiParser {
 
     /**
      * Parse the file using the current settings.
+     * @param filename the file to read
+     * @param mon a monitor
      * @return a rank 2 dataset.
+     * @throws java.io.IOException
      */
     public WritableDataSet readFile(String filename, ProgressMonitor mon) throws IOException {
         long size = new File(filename).length();
@@ -1859,14 +1948,20 @@ public class AsciiParser {
         }
     }
 
-    public static void printAndResetMain( DelimParser dp, String parse, String[] fields) {
-        System.err.println(""+parse);
-        dp.splitRecord( parse, fields );
-        for ( int i=0; i<fields.length; i++ ) {
-            System.err.println( String.format( "%3d %s", i, fields[i]  ) );
-            fields[i]= null;
-        }
-    }
+//    /**
+//     * This was probably used for debugging
+//     * @param dp
+//     * @param parse
+//     * @param fields 
+//     */
+//    public static void printAndResetMain( DelimParser dp, String parse, String[] fields) {
+//        System.err.println(""+parse);
+//        dp.splitRecord( parse, fields );
+//        for ( int i=0; i<fields.length; i++ ) {
+//            System.err.println( String.format( "%3d %s", i, fields[i]  ) );
+//            fields[i]= null;
+//        }
+//    }
 
 //    public static void main(String[] args) throws Exception {
 //
@@ -1920,13 +2015,18 @@ public class AsciiParser {
 //
 //    }
 
-    /** Creates a new instance of AsciiParser */
+    /** 
+     * Creates a new instance.  This is created and then 
+     * configured before any files can be parsed.
+     */
     public AsciiParser() {
     }
+    
     /**
      * Holds value of property keepFileHeader.
      */
     private boolean keepFileHeader;
+    
     /**
      * Utility field used by bound properties.
      */
@@ -1997,7 +2097,7 @@ public class AsciiParser {
      */
     public Units getUnits(int index) {
         if ( this.units[index]==Units.dimensionless && this.fieldUnits[index]!=null && this.fieldUnits[index].length()>0 ) {
-            return SemanticOps.lookupUnits( this.fieldUnits[index] );
+            return Units.lookupUnits( this.fieldUnits[index] );
         } else {
             return this.units[index];
         }
@@ -2052,13 +2152,15 @@ public class AsciiParser {
 
         return icol;
     }
+    
     /**
      * Holds value of property fillValue.
      */
     private double fillValue = -1e31;
 
     /**
-     * Getter for property fillValue.
+     * return the fillValue.  numbers that parse to this value are considered 
+     * to be fill. Note validMin and validMax may be used as well.
      * @return Value of property fillValue.
      */
     public double getFillValue() {
@@ -2072,15 +2174,26 @@ public class AsciiParser {
     public void setFillValue(double fillValue) {
         double oldFillValue = this.fillValue;
         this.fillValue = fillValue;
-        propertyChangeSupport.firePropertyChange("fillValue", new Double(oldFillValue), new Double(fillValue));
+        propertyChangeSupport.firePropertyChange("fillValue", oldFillValue, fillValue);
     }
+    
     protected double validMin = Double.NEGATIVE_INFINITY;
+    
     public static final String PROP_VALIDMIN = "validMin";
 
+    /**
+     * get the minimum valid value for any field.
+     * @return validMin
+     */
     public double getValidMin() {
         return validMin;
     }
 
+    /**
+     * set the minimum valid value for any field.  Values less than 
+     * this are to be considered invalid.
+     * @param validMin 
+     */
     public void setValidMin(double validMin) {
         double oldValidMin = this.validMin;
         this.validMin = validMin;
@@ -2089,10 +2202,19 @@ public class AsciiParser {
     protected double validMax = Double.POSITIVE_INFINITY;
     public static final String PROP_VALIDMAX = "validMax";
 
+    /**
+     * get the maximum value for any field.
+     * @return the validMax
+     */
     public double getValidMax() {
         return validMax;
     }
 
+    /**
+     * set the maximum value for any field.  Values above this are to be
+     * considered invalid.
+     * @param validMax 
+     */
     public void setValidMax(double validMax) {
         double oldValidMax = this.validMax;
         this.validMax = validMax;
