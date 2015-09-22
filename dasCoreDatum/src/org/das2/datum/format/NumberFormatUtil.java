@@ -25,6 +25,7 @@ public class NumberFormatUtil {
      * handles the localization problem (bug 0000294) by always returning a DecimalFormat
      * for Locale.US. (Sorry, rest of world.)
      *
+     * @return the format
      * @throws ClassCastException if for some reason, NumberFormat.getInstance doesn't return DecimalFormat.
      */
     public static DecimalFormat getDecimalFormat( ) {
@@ -36,6 +37,8 @@ public class NumberFormatUtil {
     /**
      * handles the localization problem (bug 0000294) by always returning a DecimalFormat
      * for Locale.US. (Sorry, rest of world.)
+     * @param spec e.g. 1E0
+     * @return the format
      * @throws ClassCastException if for some reason, NumberFormat.getInstance doesn't return DecimalFormat.
      */
     public static DecimalFormat getDecimalFormat( String spec ) {
