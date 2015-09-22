@@ -51,6 +51,7 @@ public class DefaultDatumFormatter extends DatumFormatter {
         }
     }
 
+    @Override
     public String format(Datum datum) {
         if ( datum.isFill() ) {
             return "fill";
@@ -78,9 +79,9 @@ public class DefaultDatumFormatter extends DatumFormatter {
     @Override
     public String grannyFormat(Datum datum, Units units) {
         String formt = format(datum, units);
-        if (formt.indexOf("E") != -1) {
+        if (formt.contains("E")) {
             int iE = formt.indexOf("E");
-            StringBuffer granny = new StringBuffer(formt.length() + 4);
+            StringBuilder granny = new StringBuilder(formt.length() + 4);
             String mant = formt.substring(0, iE);
             if (Double.parseDouble(mant) != 1.0) {
                 granny.append(mant).append("\u00d7");
@@ -99,9 +100,8 @@ public class DefaultDatumFormatter extends DatumFormatter {
             result[i] = format(datums.get(i), units);
         }
         boolean hasMant = false;
-        for (int i = 0; i < result.length; i++) {
-            String res1 = result[i];
-            if (res1.indexOf("E") != -1) {
+        for (String res1 : result) {
+            if (res1.contains("E")) {
                 int iE = res1.indexOf("E");
                 String mant = res1.substring(0, iE);
                 if (Double.parseDouble(mant) != 1.0) {
@@ -111,9 +111,9 @@ public class DefaultDatumFormatter extends DatumFormatter {
         }
         for (int i = 0; i < result.length; i++) {
             String res1 = result[i];
-            if (res1.indexOf("E") != -1) {
+            if (res1.contains("E")) {
                 int iE = res1.indexOf("E");
-                StringBuffer granny = new StringBuffer(res1.length() + 4);
+                StringBuilder granny = new StringBuilder(res1.length() + 4);
                 String mant = res1.substring(0, iE);
 
                 if (hasMant) {
@@ -128,10 +128,12 @@ public class DefaultDatumFormatter extends DatumFormatter {
         return result;
     }
 
+    @Override
     public String grannyFormat(Datum datum) {
         return grannyFormat(datum, datum.getUnits()) + " " + datum.getUnits();
     }
 
+    @Override
     public String toString() {
         return formatString;
     }
