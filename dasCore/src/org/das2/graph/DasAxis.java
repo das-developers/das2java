@@ -67,9 +67,7 @@ import org.das2.components.DasProgressWheel;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.DomainDivider;
 import org.das2.datum.DomainDividerUtil;
-import org.das2.datum.EnumerationUnits;
 import org.das2.datum.OrbitDatumRange;
-import org.das2.datum.TimeUtil;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.system.RequestProcessor;
@@ -78,11 +76,9 @@ import org.das2.util.TickleTimer;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QFunction;
 import org.virbo.dataset.SemanticOps;
-import org.virbo.dsops.Ops;
 
 /** 
  * One dimensional axis component that transforms data to device space and back, 
@@ -268,7 +264,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     
     public static final String PROPERTY_DATUMRANGE = "datumRange";
     /* DEBUGGING INSTANCE MEMBERS */
-    private static final boolean DEBUG_GRAPHICS = false;
+    private static final boolean DEBUG_GRAPHICS = true;
     private static final Color[] DEBUG_COLORS;
 
     int tickLen= 0; // this is reset after sizing.
@@ -3029,7 +3025,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             dmin= getRow().getDMinimum();
             dmax= getRow().getDMaximum();
         }
-
+        
+        int descent=labelFont.getSize(); // TODO: if we had the graphics, we could get this perfectly, but it doesn't hurt to have extra pixels.
+        int leading=labelFont.getSize();
+        
         DatumVector ticks = ltickV.tickV;
         for (int i = 0; i < labels.length; i++) {
             Datum d = ticks.get(i);
@@ -3046,10 +3045,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int zeroOrPosTickLen= Math.max(0,tickLen);
                 if (isHorizontal()) {
                     if (getOrientation() == BOTTOM) {
-                        rmin.translate((int) (dmin - flw / 2), getRow().bottom() + space + zeroOrPosTickLen + labelFont.getSize());
+                        rmin.translate((int) (dmin - flw / 2) - leading, getRow().bottom() + space + zeroOrPosTickLen + labelFont.getSize() + descent );
                         rmax.translate((int) (dmax - flw / 2), getRow().bottom() + space + zeroOrPosTickLen + labelFont.getSize());
                     } else {
-                        rmin.translate((int) (dmin - flw / 2), getRow().top() - space - zeroOrPosTickLen - (int) rmin.getHeight());
+                        rmin.translate((int) (dmin - flw / 2) - leading, getRow().top() - space - zeroOrPosTickLen - (int) rmin.getHeight());
                         rmax.translate((int) (dmax - flw / 2), getRow().top() - space - zeroOrPosTickLen - (int) rmax.getHeight());
                     }
                     if ( bounds==null ) bounds= rmin;
@@ -3057,10 +3056,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     bounds.add(rmax);
                 } else {
                     if (getOrientation() == LEFT) {
-                        rmin.translate(-(int) rmin.getWidth() - space - zeroOrPosTickLen + getColumn().left(),
+                        rmin.translate(-(int) rmin.getWidth() - space - zeroOrPosTickLen + getColumn().left() - leading,
                                 (int) (dmin + getEmSize() / 2));
                         rmax.translate(-(int) rmax.getWidth() - space - zeroOrPosTickLen + getColumn().left(),
-                                (int) (dmax + getEmSize() / 2));
+                                (int) (dmax + getEmSize() / 2) + descent );
                     } else {
                         rmin.translate( space + zeroOrPosTickLen + getColumn().right(), (int) (dmin + getEmSize() / 2));
                         rmax.translate( space + zeroOrPosTickLen + getColumn().right(), (int) (dmax + getEmSize() / 2));
