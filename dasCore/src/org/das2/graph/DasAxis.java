@@ -3026,8 +3026,9 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             dmax= getRow().getDMaximum();
         }
         
-        int descent=labelFont.getSize(); // TODO: if we had the graphics, we could get this perfectly, but it doesn't hurt to have extra pixels.
-        int leading=labelFont.getSize();
+        // these cannot be set to positive because it pushes the titles out.  This needs to be done with care and it's 5:15pm on release day!
+        int descent=0; // TODO: if we had the graphics, we could get this perfectly, but it doesn't hurt to have extra pixels.
+        int leading=0;
         
         DatumVector ticks = ltickV.tickV;
         for (int i = 0; i < labels.length; i++) {
