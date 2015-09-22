@@ -3026,7 +3026,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             dmax= getRow().getDMaximum();
         }
         
-        // these cannot be set to positive because it pushes the titles out.  This needs to be done with care and it's 5:15pm on release day!
+        // these cannot be set to positive because it pushes the titles out.  This needs to be done with care and it's 5:15pm on release day!  DEBUG_GRAPHICS needs to be an environment variable, or just a switch.
         int descent=0; // TODO: if we had the graphics, we could get this perfectly, but it doesn't hurt to have extra pixels.
         int leading=0;
         
