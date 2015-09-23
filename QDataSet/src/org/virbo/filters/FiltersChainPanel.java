@@ -213,6 +213,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new GetPropertyEditorPanel();
         } else if ( f.matches("\\|putProperty\\((.*)\\)") ) {
             result= new PutPropertyFilterEditorPanel();
+        } else if ( f.matches("\\|trim\\(((\\d+)\\,(\\d+).+)\\)")){
+            result= new TrimFilterEditorPanel();
         } else {
             result= new AnyFilterEditorPanel();
         }
