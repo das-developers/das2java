@@ -61,6 +61,7 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
         }
     }
 
+    //test for subversion commit
     @Override
     public String getFilter() {
         String upperBoundPoint = upperBound.getText().replaceAll("\\s","");
