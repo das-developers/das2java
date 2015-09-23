@@ -65,7 +65,7 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
     public String getFilter() {
         String upperBoundPoint = upperBound.getText().replaceAll("\\s","");
         String lowerBoundPoint = lowerBound.getText().replaceAll("\\s","");
-        return "|trim(" + lowerBoundPoint + " " + upperBoundPoint +  ")";
+        return "|trim(" + lowerBoundPoint + "," + upperBoundPoint +  ")";
     }
 
     /**
