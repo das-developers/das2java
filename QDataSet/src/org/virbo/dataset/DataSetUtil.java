@@ -1829,6 +1829,23 @@ public class DataSetUtil {
             default: throw new IllegalArgumentException("qube is too long");
         }
     }
+    
+    /**
+     * return string representation of the dimensions of the qube dimensions.
+     * For example [2,4] is represented as "[2,4]"
+     * @param qube an array of integers, 4 elements or fewer.
+     * @return the formatted string representation
+     */
+    public static String toString( int[] qube ) {
+        switch ( qube.length ) {
+            case 0: return "[]";
+            case 1: return "["+qube[0]+"]";
+            case 2: return "["+qube[0]+","+qube[1]+"]";
+            case 3: return "["+qube[0]+","+qube[1]+","+qube[2]+"]";
+            case 4: return "["+qube[0]+","+qube[1]+","+qube[2]+","+qube[3]+"]";
+            default: throw new IllegalArgumentException("qube is too long");
+        }
+    }
 
     /**
      * add QUBE property to dataset, maybe verifying that it is a qube.  This is
