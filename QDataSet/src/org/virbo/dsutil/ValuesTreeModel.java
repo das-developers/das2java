@@ -131,6 +131,14 @@ public class ValuesTreeModel extends DefaultTreeModel {
         }
     }
 
+    /**
+     * return a tree node for the values of a dataset.
+     * @param prefix prefix added to the each node, e.g. "value("
+     * @param aroot the parent to which the nodes are added.
+     * @param ds the dataset to represent.
+     * @param sizeLimit the number of nodes to represent, e.g. 20, and ellipses (...) will represent the values not shown.
+     * @return the node (aroot) is returned.
+     */
     public static MutableTreeNode valuesTreeNode( String prefix, MutableTreeNode aroot, QDataSet ds, int sizeLimit ) {
         QDataSet wds= DataSetUtil.weightsDataSet(ds);
 

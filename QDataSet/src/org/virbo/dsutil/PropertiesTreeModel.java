@@ -35,9 +35,10 @@ public class PropertiesTreeModel extends DefaultTreeModel {
     }
     
     /**
-     * This is really for human consumption and may change.
+     * TreeModel representing the dataset.  This is really for human consumption and may change.
      * @param prefix String to prefix the root label.
      * @param ds the dataset source of the metadata.
+     * @param valuesSizeLimit the number of values in a dataset to represent, e.g. 20, and ellipses (...) will represent the values not shown.
      */
     public PropertiesTreeModel( String prefix, QDataSet ds ,int valuesSizeLimit) {
         
