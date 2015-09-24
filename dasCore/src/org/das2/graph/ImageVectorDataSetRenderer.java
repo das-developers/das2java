@@ -780,7 +780,11 @@ public class ImageVectorDataSetRenderer extends Renderer {
                     } else {
                         d= DataSetUtil.guessCadenceNew(xds,ds1);
                     }
-                    xcadence= DataSetUtil.asDatum(d);
+                    if ( d==null ) {
+                        xcadence= null;
+                    } else {
+                        xcadence= DataSetUtil.asDatum(d);
+                    }
                 }
                 if ( d!=null ) {
                     Datum sw = DataSetUtil.asDatum( d ); 
