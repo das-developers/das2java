@@ -123,14 +123,18 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
     
     
     public Datum readDatum(ByteBuffer input) {
+        int p= input.position();
         try {
             return Datum.create(transferType.read(input), units);
         } catch ( NullPointerException ex ) {
             System.err.println("** Strange null pointer exception that shows up in hudson test: http://sarahandjeremy.net:8080/hudson/job/autoplot-test140/");
-            ex.printStackTrace();
             System.err.println("transferType: "+transferType);
             System.err.println("input: "+input);
             System.err.println("first four: "+(int)input.get(0)+" "+(int)input.get(1)+" "+(int)input.get(2)+" "+(int)input.get(3) );
+            System.err.println("pointer pos: "+p);
+            System.err.println("pointer four: "+(int)input.get(p+0)+" "+(int)input.get(p+1)+" "+(int)input.get(p+2)+" "+(int)input.get(p+3) );
+            System.err.println("units: "+units);
+            ex.printStackTrace();            
             throw ex;
         }
     }
