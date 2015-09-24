@@ -121,6 +121,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private static final String SCAN_PREVIOUS_LABEL = "<< step";
     private static final String SCAN_NEXT_LABEL = "step >>";
 
+    // these cannot be set to positive because it pushes the titles out.  This needs to be done with care and it's 5:15pm on release day!  DEBUG_GRAPHICS needs to be an environment variable, or just a switch.
+    int downPad=4; // TODO: if we had the graphics, we could get this perfectly, but it doesn't hurt to have extra pixels.
+    int leftPad=3;
+    int upPad=0;
+    int rightPad=0;
+    
     /* GENERAL AXIS INSTANCE MEMBERS */
     protected DataRange dataRange;
 
@@ -3025,11 +3031,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             dmin= getRow().getDMinimum();
             dmax= getRow().getDMaximum();
         }
-        
-        // these cannot be set to positive because it pushes the titles out.  This needs to be done with care and it's 5:15pm on release day!  DEBUG_GRAPHICS needs to be an environment variable, or just a switch.
-        int descent=0; // TODO: if we had the graphics, we could get this perfectly, but it doesn't hurt to have extra pixels.
-        int leading=0;
-        
+                
         DatumVector ticks = ltickV.tickV;
         for (int i = 0; i < labels.length; i++) {
             Datum d = ticks.get(i);
@@ -3046,10 +3048,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 int zeroOrPosTickLen= Math.max(0,tickLen);
                 if (isHorizontal()) {
                     if (getOrientation() == BOTTOM) {
-                        rmin.translate((int) (dmin - flw / 2) - leading, getRow().bottom() + space + zeroOrPosTickLen + labelFont.getSize() + descent );
+                        rmin.translate((int) (dmin - flw / 2), getRow().bottom() + space + zeroOrPosTickLen + labelFont.getSize());
                         rmax.translate((int) (dmax - flw / 2), getRow().bottom() + space + zeroOrPosTickLen + labelFont.getSize());
                     } else {
-                        rmin.translate((int) (dmin - flw / 2) - leading, getRow().top() - space - zeroOrPosTickLen - (int) rmin.getHeight());
+                        rmin.translate((int) (dmin - flw / 2), getRow().top() - space - zeroOrPosTickLen - (int) rmin.getHeight());
                         rmax.translate((int) (dmax - flw / 2), getRow().top() - space - zeroOrPosTickLen - (int) rmax.getHeight());
                     }
                     if ( bounds==null ) bounds= rmin;
@@ -3057,10 +3059,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                     bounds.add(rmax);
                 } else {
                     if (getOrientation() == LEFT) {
-                        rmin.translate(-(int) rmin.getWidth() - space - zeroOrPosTickLen + getColumn().left() - leading,
+                        rmin.translate(-(int) rmin.getWidth() - space - zeroOrPosTickLen + getColumn().left(),
                                 (int) (dmin + getEmSize() / 2));
                         rmax.translate(-(int) rmax.getWidth() - space - zeroOrPosTickLen + getColumn().left(),
-                                (int) (dmax + getEmSize() / 2) + descent );
+                                (int) (dmax + getEmSize() / 2) );
                     } else {
                         rmin.translate( space + zeroOrPosTickLen + getColumn().right(), (int) (dmin + getEmSize() / 2));
                         rmax.translate( space + zeroOrPosTickLen + getColumn().right(), (int) (dmax + getEmSize() / 2));
@@ -3147,7 +3149,11 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
         if ( bounds.x < -999 ) {
             logger.log(Level.FINE, "suspecious bounds calculated: {0}", bounds);
+        } else {
+            bounds.add( bounds.x-this.leftPad, bounds.y-this.upPad );
+            bounds.add(bounds.x+bounds.width+this.rightPad, bounds.y+bounds.height+this.downPad );
         }
+
         return bounds;
     }
 
