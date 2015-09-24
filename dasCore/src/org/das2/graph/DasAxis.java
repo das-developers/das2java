@@ -122,8 +122,8 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
     private static final String SCAN_NEXT_LABEL = "step >>";
 
     // these cannot be set to positive because it pushes the titles out.  This needs to be done with care and it's 5:15pm on release day!  DEBUG_GRAPHICS needs to be an environment variable, or just a switch.
-    int downPad=4; // TODO: if we had the graphics, we could get this perfectly, but it doesn't hurt to have extra pixels.
-    int leftPad=3;
+    int downPad=0; // TODO: if we had the graphics, we could get this perfectly, but it doesn't hurt to have extra pixels.
+    int leftPad=0;
     int upPad=0;
     int rightPad=0;
     
