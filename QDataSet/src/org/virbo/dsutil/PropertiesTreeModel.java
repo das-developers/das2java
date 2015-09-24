@@ -130,7 +130,7 @@ public class PropertiesTreeModel extends DefaultTreeModel {
             for ( Object o : values.entrySet() ) {
                 Entry val= (Entry)o;
                 Object value= val.getValue();
-                if ( value.getClass().isArray() ) {
+                if ( value!=null && value.getClass().isArray() ) {
                     value.getClass().getComponentType();
                     List list= new ArrayList();
                     int nn= Math.min( Array.getLength(value), 5 );
