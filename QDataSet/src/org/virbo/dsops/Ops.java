@@ -1855,7 +1855,7 @@ public class Ops {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             @Override
             public double op(double d1, double d2) {
-                return (int)d1 & (int)d2;
+                return (long)d1 & (long)d2;
             }
         });
     }
@@ -1875,7 +1875,7 @@ public class Ops {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             @Override
             public double op(double d1, double d2) {
-                return (int)d1 | (int)d2;
+                return (long)d1 | (long)d2;
             }
         });
     }
@@ -1897,7 +1897,7 @@ public class Ops {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
             @Override
             public double op(double d1, double d2) {
-                return (int)d1 ^ (int)d2;
+                return (long)d1 ^ (long)d2;
             }
         });
     }
