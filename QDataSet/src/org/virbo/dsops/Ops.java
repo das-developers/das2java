@@ -1807,6 +1807,7 @@ public class Ops {
      * @param ds1
      * @param ds2
      * @return
+     * @see #bitwiseOr(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet or(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
@@ -1827,6 +1828,7 @@ public class Ops {
      * @param ds1
      * @param ds2
      * @return
+     * @see #bitwiseAnd(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet and(QDataSet ds1, QDataSet ds2) {
         return applyBinaryOp(ds1, ds2, new BinaryOp() {
@@ -1843,9 +1845,72 @@ public class Ops {
         
 
     /**
+     * bitwise AND operator treats the data as (32-bit) integers, and 
+     * returns the bit-wise AND.
+     * @param ds1 
+     * @param ds2
+     * @return bit-wise AND.
+     */
+    public static QDataSet bitwiseAnd( QDataSet ds1, QDataSet ds2 ) {
+        return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
+            public double op(double d1, double d2) {
+                return (int)d1 & (int)d2;
+            }
+        });
+    }
+    
+    public static QDataSet bitwiseAnd( Object ds1, Object ds2 ) {
+        return bitwiseAnd( dataset(ds1), dataset(ds2) );
+    }    
+    
+    /**
+     * bitwise OR operator treats the data as (32-bit) integers, and 
+     * returns the bit-wise OR.
+     * @param ds1 
+     * @param ds2
+     * @return bit-wise OR.
+     */
+    public static QDataSet bitwiseOr( QDataSet ds1, QDataSet ds2 ) {
+        return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
+            public double op(double d1, double d2) {
+                return (int)d1 | (int)d2;
+            }
+        });
+    }
+    
+    public static QDataSet bitwiseOr( Object ds1, Object ds2 ) {
+        return bitwiseOr( dataset(ds1), dataset(ds2) );
+    }
+    
+    /**
+     * bitwise XOR (exclusive or) operator treats the data as (32-bit) integers, and 
+     * returns the bit-wise XOR.  Note there is no bitwise not, and this is because
+     * there are no shorts, bytes.  So to implement bitwise not for a 16 bit number
+     * you would have bitwiseXor( ds, dataset(2**16-1) ).
+     * @param ds1 
+     * @param ds2
+     * @return bit-wise XOR.
+     */
+    public static QDataSet bitwiseXor( QDataSet ds1, QDataSet ds2 ) {
+        return applyBinaryOp(ds1, ds2, new BinaryOp() {
+            @Override
+            public double op(double d1, double d2) {
+                return (int)d1 ^ (int)d2;
+            }
+        });
+    }
+    
+    public static QDataSet bitwiseXor( Object ds1, Object ds2 ) {
+        return bitwiseXor( dataset(ds1), dataset(ds2) );
+    }
+    
+    /**
      * element-wise logical not function.  non-zero is true, zero is false.
      * @param ds1
      * @return
+     * @see #bitwiseXor(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet not(QDataSet ds1) {
         return applyUnaryOp(ds1, new UnaryOp() {
