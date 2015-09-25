@@ -1744,15 +1744,12 @@ public class TimeParser {
     }
     
     /**
-     * The TimeParser can be used to format times as well.  Note the 
-     * end is ignored.  
-     * @param start
-     * @param end currently ignored, and may be used in the future.  This may be null.
+     * The TimeParser can be used to format times as well.  
+     * @param start beginning of the interval
+     * @param stop null if not needed or implicit.
      * @return formatted string.
      */
-    public String format(Datum start, Datum end) {
-
-        if ( end==null ) end= start;
+    public String format(Datum start, Datum stop) {
 
         StringBuilder result = new StringBuilder(100);
 
@@ -1760,7 +1757,13 @@ public class TimeParser {
         int len;
 
         TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
-
+        TimeUtil.TimeStruct stopTimel;
+        if ( stop==null ) {
+            stopTimel= TimeUtil.add( timel, timeWidth );
+        } else {
+            stopTimel= TimeUtil.toTimeStruct(stop);
+        }
+        
         double dextraMillis= 1000 * ( timel.seconds - (int) timel.seconds );
         int extraMillis= (int)Math.floor( dextraMillis );
         timel.seconds= (int)timel.seconds;
@@ -1774,7 +1777,7 @@ public class TimeParser {
 
         for (int idigit = 1; idigit < ndigits; idigit++) {
             if ( idigit==stopTimeDigit ) {
-                timel= TimeUtil.toTimeStruct(end);
+                timel= stopTimel;
             }
             
             result.insert(offs, this.delims[idigit - 1]);
@@ -1867,7 +1870,7 @@ public class TimeParser {
                     offs+= ins.length();
                 } else {
                     FieldHandler fh1= fieldHandlers.get(fc[idigit]);
-                    TimeUtil.TimeStruct timeEnd = TimeUtil.toTimeStruct(end);
+                    TimeUtil.TimeStruct timeEnd = TimeUtil.toTimeStruct(stop);
                     String ins= fh1.format( timel, TimeUtil.subtract(timeEnd, timel), len, null );
                     if ( len>-1 && ins.length()!=len ) {
                         throw new IllegalArgumentException("length of fh is incorrect, should be "+len+", got \""+ins+"\"");
