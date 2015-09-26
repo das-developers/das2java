@@ -1870,7 +1870,7 @@ public class TimeParser {
                     offs+= ins.length();
                 } else {
                     FieldHandler fh1= fieldHandlers.get(fc[idigit]);
-                    TimeUtil.TimeStruct timeEnd = TimeUtil.toTimeStruct(stop);
+                    TimeUtil.TimeStruct timeEnd = stopTimel;
                     String ins= fh1.format( timel, TimeUtil.subtract(timeEnd, timel), len, null );
                     if ( len>-1 && ins.length()!=len ) {
                         throw new IllegalArgumentException("length of fh is incorrect, should be "+len+", got \""+ins+"\"");
