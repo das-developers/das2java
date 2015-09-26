@@ -5387,6 +5387,8 @@ public class Ops {
                 
                 for ( int j=0; j<len1; j++ ) {
                     
+                    mon.setTaskProgress(i*len1+j);
+                    
                     int istart= j*step;
                     GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
                     QDataSet wave= slicei.trim( istart,istart+len );
@@ -5475,7 +5477,6 @@ public class Ops {
                         System.err.println("dropping record with invalid timetag: "+d0 ); //TODO: consider setting VALID_MIN, VALID_MAX instead...
                     }
 
-                    mon.setTaskProgress(i*len1+j);
                     if ( mon.isCancelled() ) throw new UncheckedCancelledOperationException("fftPower was cancelled"); 
                 }
                 
