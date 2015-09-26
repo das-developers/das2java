@@ -662,7 +662,7 @@ public class TimeParser {
         logger.log(Level.FINE, "new TimeParser({0},...)", formatString);
         
         startTime = new TimeUtil.TimeStruct();
-        startTime.year= 1000;
+        startTime.year= MIN_VALID_YEAR;
         startTime.month= 1;
         startTime.day= 1;
         startTime.doy= 1;
@@ -670,7 +670,7 @@ public class TimeParser {
         
         stopTime = new TimeUtil.TimeStruct();
         stopTime.isLocation= true;
-        stopTime.year= 9000;
+        stopTime.year= MAX_VALID_YEAR;
         stopTime.month= 1;
         stopTime.day= 1;
         stopTime.doy= 1;
@@ -947,6 +947,16 @@ public class TimeParser {
         this.delims = delim;
         this.regex = regex1.toString();
     }
+    
+    /**
+     * the last date represented is 9000/01/01
+     */
+    private static final int MAX_VALID_YEAR = 9000;
+    
+    /**
+     * the earliest date represented is 1000/01/01
+     */
+    private static final int MIN_VALID_YEAR = 1000;
 
     /**
      * Provide standard means of indicating this appears to be a spec by
@@ -1759,7 +1769,11 @@ public class TimeParser {
         TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
         TimeUtil.TimeStruct stopTimel;
         if ( stop==null ) {
-            stopTimel= TimeUtil.add( timel, timeWidth );
+            if ( timeWidth.year==MAX_VALID_YEAR-MIN_VALID_YEAR ) {
+                stopTimel= timel;
+            } else {
+                stopTimel= TimeUtil.add( timel, timeWidth );
+            }
         } else {
             stopTimel= TimeUtil.toTimeStruct(stop);
         }
