@@ -354,7 +354,7 @@ public class TimeParser {
         public String configure(Map<String, String> args) {
             String names= args.get("names");
             if ( names==null ) names= args.get("values");
-            if ( names==null ) return "names must be specified for hrinterval";
+            if ( names==null ) return "values must be specified for hrinterval";
             String[] names1= names.split("\\|");
             mult= 24 / names1.length;
             if ( 24 - mult*names1.length != 0 ) {
@@ -393,9 +393,9 @@ public class TimeParser {
 
         @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
-            String v= revvalues.get(startTime.hour);
+            String v= revvalues.get(startTime.hour/mult);
             if ( v==null ) throw new IllegalArgumentException("unable to identify enum for hour "+startTime.hour);
-            return revvalues.get(startTime.hour);
+            return v;
         }
         
     }
