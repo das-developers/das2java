@@ -12,6 +12,7 @@ import org.das2.datum.TimeUtil.TimeStruct;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -92,10 +93,10 @@ public class TimeParser {
     private int[] offsets;
     private int[] lengths;
     private int[] shift;  // any shifts to apply to each digit (used typically to make end time inclusive).
-    private String[] delims;
+    private final String[] delims;
     private String[] fc;
     private String[] qualifiers;
-    private String regex;
+    private final String regex;
     //private String formatString;
     private int stopTimeDigit=AFTERSTOP_INIT;  // if after stop, then timeWidth is being set.
     
@@ -159,14 +160,18 @@ public class TimeParser {
      * <pre>tp= TimeParser.create(sagg,"v", TimeParser.IGNORE_FIELD_HANDLER );</pre>
      */
     public static final FieldHandler IGNORE_FIELD_HANDLER= new TimeParser.FieldHandler() {
+        @Override
         public String configure(Map<String, String> args) {
             return null;
         }
+        @Override
         public String getRegex() {
             return null;
         }
+        @Override
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
         }
+        @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
             return null;
         }
@@ -345,6 +350,7 @@ public class TimeParser {
         Map<Integer,String> revvalues;
         int mult; // multiply by this to get the start hour
         
+        @Override
         public String configure(Map<String, String> args) {
             String names= args.get("names");
             if ( names==null ) names= args.get("values");
@@ -363,6 +369,7 @@ public class TimeParser {
             return null;
         }
 
+        @Override
         public String getRegex() {
             Iterator<String> vv= values.keySet().iterator();            
             StringBuilder r= new StringBuilder(vv.next());
@@ -372,6 +379,7 @@ public class TimeParser {
             return r.toString();
         }
 
+        @Override
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
             Integer ii= values.get(fieldContent);
             if ( ii==null ) throw new ParseException( "expected one of "+getRegex(),0 );
@@ -383,6 +391,7 @@ public class TimeParser {
             timeWidth.day= 0;
         }
 
+        @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
             String v= revvalues.get(startTime.hour);
             if ( v==null ) throw new IllegalArgumentException("unable to identify enum for hour "+startTime.hour);
@@ -402,6 +411,7 @@ public class TimeParser {
         int julday;
         int[] period;
         
+        @Override
         public String configure( Map<String, String> args ) {
             String s= args.get("start");
             if ( s==null ) return "periodic field needs start";
@@ -431,10 +441,12 @@ public class TimeParser {
             return null;
         }
 
+        @Override
         public String getRegex() {
             return "[0-9]+";
         }
 
+        @Override
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
             int i= Integer.parseInt(fieldContent);
             int addOffset= i-offset;
@@ -490,13 +502,12 @@ public class TimeParser {
         LinkedHashSet<String> values;
         String id;
         
+        @Override
         public String configure( Map<String, String> args ) {
             values= new LinkedHashSet();
             String svalues= args.get("values");
             String[] ss= svalues.split("|");
-            for ( String s: ss ) {
-                values.add(s);
-            }
+            values.addAll(Arrays.asList(ss));
             
             String s= args.get("id");
             if ( s!=null ) id= s; else id="unindentifiedEnum";
@@ -504,6 +515,7 @@ public class TimeParser {
             return null;
         }
 
+        @Override
         public String getRegex() {
             Iterator<String> it= values.iterator();
             StringBuilder b= new StringBuilder("[").append(it.next());
@@ -514,6 +526,7 @@ public class TimeParser {
             return b.toString();
         }
 
+        @Override
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
             if ( !values.contains(fieldContent) ) {
                 throw new ParseException("value is not in enum: "+fieldContent,0);
@@ -521,6 +534,7 @@ public class TimeParser {
             extra.put( id, fieldContent );
         }
 
+        @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
             String v= extra.get(id);
             if ( v==null ) {
@@ -539,17 +553,21 @@ public class TimeParser {
      */
     public static class IgnoreFieldHandler implements FieldHandler {
 
+        @Override
         public String configure(Map<String, String> args) {
             return null;
         }
 
+        @Override
         public String getRegex() {
             return ".*";
         }
 
+        @Override
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
         }
 
+        @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
             return "";
         }
@@ -789,12 +807,12 @@ public class TimeParser {
                     Map<String,String> argv= new HashMap();
                     if ( args!=null ) {
                         String[] ss2= args.split(";",-2);
-                        for ( int i2=0; i2<ss2.length; i2++ ) {
-                            int i3= ss2[i2].indexOf("=");
-                            if ( i3==-1 ) {
-                                argv.put(ss2[i2].trim(),"");
+                        for (String ss21 : ss2) {
+                            int i3 = ss21.indexOf("=");
+                            if (i3==-1) {
+                                argv.put(ss21.trim(), "");
                             } else {
-                                argv.put(ss2[i2].substring(0,i3).trim(),ss2[i2].substring(i3+1).trim());
+                                argv.put(ss21.substring(0, i3).trim(), ss21.substring(i3+1).trim());
                             }
                         }
                     }
@@ -1030,6 +1048,8 @@ public class TimeParser {
      *
      *  </pre>
      *
+     * @param formatString the format string.
+     * @return the time parser.
      */
     public static TimeParser create(String formatString) {
         HashMap map= new HashMap();
@@ -1578,6 +1598,7 @@ public class TimeParser {
      * </code>
      * @param digitNumber, the digit to set (starting with 0).
      * @param digit, value to set the digit.
+     * @return the time parser with the digit set.
      * @throws IllegalArgumentException if the digit has a custom field handler
      * @throws IllegalArgumentException if the digit does not exist.
      */
