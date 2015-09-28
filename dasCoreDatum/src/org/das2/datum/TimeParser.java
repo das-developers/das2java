@@ -469,8 +469,14 @@ public class TimeParser {
             if ( period[1]!=0 || period[3]!=0 || period[4]!=0 || period[5]!=0 || period[6]!=0) {
                 throw new IllegalArgumentException("under implemented, only integer number of days supported for formatting.");
             }
-            int deltad= ( jd - this.julday + offset ) / period[2];
-            return String.format("%d",deltad);
+            int deltad= ( jd - this.julday ) / period[2] + offset;
+            String result= String.format("%d",deltad);
+            if ( length>16 ) {
+                throw new IllegalArgumentException("length>16 not supported");
+            } else if ( length>-1 ) {
+                result= "_________________".substring(0,length-result.length()) + result;
+            }
+            return result;
         }
         
         
