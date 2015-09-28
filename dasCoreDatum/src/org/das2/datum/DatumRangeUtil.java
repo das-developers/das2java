@@ -566,7 +566,7 @@ public class DatumRangeUtil {
         static final int SECOND=5;
         static final int NANO=6;
         
-        String delimRegEx= "\\s|-|/|\\.|:|to|through|span|T|Z|\u2013|,";
+        String delimRegEx= "\\s|-|/|\\.|:|to|through|span|UTC|T|Z|\u2013|,";
         Pattern delimPattern= Pattern.compile( delimRegEx );
         int[] ts1= new int[] { -1, -1, -1, -1, -1, -1, -1 };
         int[] ts2= new int[] { -1, -1, -1, -1, -1, -1, -1 };
@@ -749,7 +749,7 @@ public class DatumRangeUtil {
             if ( stringIn.contains("/PT") ) {  // 2013-002/PT1D gave confusing error.
                 throw new ParseException( "appears to be malformed ISO8601 string: "+stringIn, 0 );
             }
-
+            
             this.string= stringIn+" ";
             this.ipos= 0;
 
@@ -785,6 +785,11 @@ public class DatumRangeUtil {
             DateDescriptor dateDescriptor= new DateDescriptor();
             
             String newString= normalizeTo(string);
+            
+            if ( newString.endsWith("UTC") ) { // 2006-01-05T07:16:45 to 2006-01-05T07:17:15 UTC
+                newString= newString.substring(0,newString.length()-3);
+            }
+            
             string= newString;
             
             ipos=0;
