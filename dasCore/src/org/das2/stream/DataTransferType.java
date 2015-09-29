@@ -102,6 +102,7 @@ public class DataTransferType {
             this.units= units;
         }
         
+        @Override
         public double read(final java.nio.ByteBuffer buffer) {
             try {
                 byte[] bytes = new byte[sizeBytes];
@@ -116,6 +117,7 @@ public class DataTransferType {
             }
         }
         
+        @Override
         public void write(double d, java.nio.ByteBuffer buffer) {
             try {
                 String s = formatter.format(units.createDatum(d));
@@ -129,10 +131,15 @@ public class DataTransferType {
         }
     }
     
+    @Override
     public String toString() {
         return name;
     }
     
+    /**
+     * return the size of the item in bytes.
+     * @return the size of the item in bytes.
+     */
     public int getSizeBytes() {
         return sizeBytes;
     }
@@ -161,6 +168,7 @@ public class DataTransferType {
     
     /**
      * If type terminates a line, then use \n to delineate
+     * @return true if ascii
      */
     public boolean isAscii() {
         return ascii;
@@ -169,6 +177,11 @@ public class DataTransferType {
     private static final java.nio.ByteOrder BIG_ENDIAN = java.nio.ByteOrder.BIG_ENDIAN;
     private static final java.nio.ByteOrder LITTLE_ENDIAN = java.nio.ByteOrder.LITTLE_ENDIAN;
     
+    /**
+     * read the next value from the buffer and return the double representation.
+     * @param buffer the buffer positioned at the next item.
+     * @return the double representing.
+     */
     public double read(final java.nio.ByteBuffer buffer) {
         final java.nio.ByteOrder bo = buffer.order();
         try {
@@ -209,6 +222,12 @@ public class DataTransferType {
         }
     }
     
+    /**
+     * write the next value, represented as a double and interpreted with Units,
+     * to the buffer.
+     * @param d the double representing.
+     * @param buffer the buffer positioned at the next item.
+     */    
     public void write(double d, java.nio.ByteBuffer buffer) {
         final java.nio.ByteOrder bo = buffer.order();
         try {
@@ -258,7 +277,7 @@ public class DataTransferType {
         if (length < 9) {
             return "0.#";
         } else {
-            StringBuffer buffer = new StringBuffer(length);
+            StringBuilder buffer = new StringBuilder(length);
             buffer.append("+0.");
             for (int i = 0; i < length - 7; i++) {
                 buffer.append('0');
