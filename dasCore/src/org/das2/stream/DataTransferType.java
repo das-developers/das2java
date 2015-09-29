@@ -83,9 +83,9 @@ public class DataTransferType {
     }
     
     static class Time extends DataTransferType {
-        Units units;
-        TimeDatumFormatter formatter;
-        int sizeBytes;
+        private Units units;
+        private final TimeDatumFormatter formatter;
+        private final int sizeBytes;
         
         Time( int size ) {
             super( "time"+size, I_TIME, size, true );
@@ -96,6 +96,10 @@ public class DataTransferType {
         
         public Units getUnits() {
             return units;
+        }
+        
+        public void resetUnits( Units units ) {
+            this.units= units;
         }
         
         public double read(final java.nio.ByteBuffer buffer) {
