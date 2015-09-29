@@ -140,17 +140,23 @@ public class DasAnnotation extends DasCanvasComponent {
     }
 
     /**
+     * handle for the property text
+     */
+    public static final String PROP_TEXT = "text";
+    
+    /**
      * Set the text, which can be Granny Text.
      * @param string the text
      * @see GrannyTextRenderer
      */
     public void setText(String string) {
+        String oldValue= this.templateString;
         this.templateString = string;
         if ( this.getGraphics()!=null ) {
             gtr.setString( this.getGraphics(), getString() );
             calcBounds();
         }
-
+        firePropertyChange( PROP_TEXT, oldValue, string );
         repaint();
 
     }
@@ -347,11 +353,17 @@ public class DasAnnotation extends DasCanvasComponent {
     }
 
     /**
+     * the font size in pixels.
+     */
+    public static String PROP_FONT_SIZE= "fontSize";
+    
+    /**
      * override the canvas font size.  If zero, then use the canvas size, 
      * otherwise, use this size.
      * @param fontSize New value of property fontSize.
      */
     public void setFontSize(float fontSize) {
+        float oldsize= this.fontSize;
         this.fontSize= fontSize;
         Font f = getFont();
         if (f == null) {
@@ -366,6 +378,7 @@ public class DasAnnotation extends DasCanvasComponent {
         setBounds(calcBounds());
         repaint();
 
+        firePropertyChange( PROP_FONT_SIZE, oldsize, fontSize );
     }
 
     /**
