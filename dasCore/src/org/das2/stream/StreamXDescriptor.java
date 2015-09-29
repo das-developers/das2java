@@ -113,7 +113,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         this.transferType = transferType;
         if ( transferType instanceof DataTransferType.Time ) {
             if ( units==null ) throw new IllegalArgumentException("please set the units first!!!");
-            ((DataTransferType.Time)transferType).units= units;
+            ((DataTransferType.Time)transferType).resetUnits( units );
         }
     }
     
