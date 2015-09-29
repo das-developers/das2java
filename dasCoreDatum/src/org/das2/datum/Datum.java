@@ -618,6 +618,9 @@ public class Datum implements Comparable, Serializable {
      * @return a Datum with the given units and value.
      */
     public static Datum create( double value, Units units ) {
+        if ( units==null ) {
+            throw new NullPointerException("Units are null");
+        }
         return units.createDatum( value );
     }
     
