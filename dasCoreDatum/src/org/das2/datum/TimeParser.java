@@ -86,6 +86,8 @@ public class TimeParser {
      */
     private Map<String,FieldHandler> fieldHandlers;
     
+    private Map<String,FieldHandler> fieldHandlersById;
+    
     /**
      * positions of each digit, within the string to be parsed.  If position is -1, then we need to
      * compute it along the way.
@@ -476,6 +478,7 @@ public class TimeParser {
             startTime.millis= t[6];
         }
 
+        @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
             int jd= TimeUtil.julianDay( startTime.year, startTime.month, startTime.day );
             if ( period[1]!=0 || period[3]!=0 || period[4]!=0 || period[5]!=0 || period[6]!=0) {
@@ -506,7 +509,7 @@ public class TimeParser {
         public String configure( Map<String, String> args ) {
             values= new LinkedHashSet();
             String svalues= args.get("values");
-            String[] ss= svalues.split("|");
+            String[] ss= svalues.split("\\|",-2);
             values.addAll(Arrays.asList(ss));
             
             String s= args.get("id");
@@ -545,6 +548,18 @@ public class TimeParser {
             } else {
                 throw new IllegalArgumentException(  id + " value is not within enum: "+values );
             }
+        }
+        
+        /**
+         * return the possible values.
+         * @return the possible values.
+         */
+        public String[] getValues() {
+            return this.values.toArray( new String[this.values.size()] );
+        }
+        
+        public String getId() {
+            return this.id;
         }
     }
     
@@ -657,7 +672,7 @@ public class TimeParser {
     /**
      * create a new TimeParser.  
      * @param formatString
-     * @param fieldHandlers a map of special handlers
+     * @param fieldHandlers a map of code to special handlers
      */
     private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers) {
 
@@ -701,6 +716,8 @@ public class TimeParser {
         stopTime.isLocation= true;
 
         this.fieldHandlers = fieldHandlers;
+        
+        this.fieldHandlersById= new HashMap();
 
         formatString= makeCanonical(formatString);
         //this.formatString = formatString;
@@ -819,6 +836,11 @@ public class TimeParser {
                     String errm= fh.configure(argv);
                     if ( errm!=null ) {
                         throw new IllegalArgumentException(errm);
+                    }
+                    
+                    String id= argv.get("id");
+                    if ( id!=null ) {
+                        fieldHandlersById.put( id,fh );
                     }
 
                 }
@@ -1787,6 +1809,17 @@ public class TimeParser {
      * @return formatted string.
      */
     public String format(Datum start, Datum stop) {
+        return format(start,stop,null);
+    }
+    
+    /**
+     * The TimeParser can be used to format times as well.  
+     * @param start beginning of the interval
+     * @param stop null if not needed or implicit.
+     * @param extra null or a map of additional identifiers, see enum and x.
+     * @return formatted string.
+     */
+    public String format(Datum start, Datum stop, Map<String,String> extra ) {
 
         StringBuilder result = new StringBuilder(100);
 
@@ -1912,7 +1945,7 @@ public class TimeParser {
                 } else {
                     FieldHandler fh1= fieldHandlers.get(fc[idigit]);
                     TimeUtil.TimeStruct timeEnd = stopTimel;
-                    String ins= fh1.format( timel, TimeUtil.subtract(timeEnd, timel), len, null );
+                    String ins= fh1.format( timel, TimeUtil.subtract(timeEnd, timel), len, extra );
                     if ( len>-1 && ins.length()!=len ) {
                         throw new IllegalArgumentException("length of fh is incorrect, should be "+len+", got \""+ins+"\"");
                     }
@@ -1930,7 +1963,32 @@ public class TimeParser {
         result.insert(offs, this.delims[ndigits - 1]);
         return result.toString().trim();
     }
-
+    
+    /**
+     * return the field handler for the id.  For example, enum
+     * returns the field handler handling enumerations.  Note there 
+     * is currently only one field handler for each type, so for example
+     * two enumerations are not allowed.
+     * 
+     * @param code
+     * @return the field handler.
+     */    
+    public FieldHandler getFieldHandlerByCode( String code ) {
+        return fieldHandlers.get(code);
+    }
+    /**
+     * return the field handler for the id.  For example, enum
+     * returns the field handler handling enumerations.  Note there 
+     * is currently only one field handler for each type, so for example
+     * two enumerations are not allowed.
+     * 
+     * @param id the field handler id
+     * @return the field handler.
+     */    
+    public FieldHandler getFieldHandlerById( String id ) {
+        return fieldHandlersById.get(id);
+    }
+    
     @Override
     public String toString() {
         StringBuilder result= new StringBuilder();
