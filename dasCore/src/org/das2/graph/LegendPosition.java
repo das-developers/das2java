@@ -7,11 +7,6 @@ import java.awt.image.BufferedImage;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.components.propertyeditor.Enumeration;
-import static org.das2.graph.AnchorPosition.NE;
-import static org.das2.graph.AnchorPosition.NW;
-import static org.das2.graph.AnchorPosition.OutsideNE;
-import static org.das2.graph.AnchorPosition.SE;
-import static org.das2.graph.AnchorPosition.SW;
 
 /**
  * enumeration of legend positions
