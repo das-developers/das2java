@@ -91,9 +91,13 @@ public class GrannyTextRenderer {
 
     private void maybeInitBounds() {
         if (bounds == null) {
-            bounds = new Rectangle((Rectangle)lineBounds.get(0));
-            for (int i = 1; i < lineBounds.size(); i++) {
-                bounds.add((Rectangle)lineBounds.get(i));
+            if ( lineBounds.size()>0 ) {
+                bounds = new Rectangle((Rectangle)lineBounds.get(0));
+                for (int i = 1; i < lineBounds.size(); i++) {
+                    bounds.add((Rectangle)lineBounds.get(i));
+                }
+            } else {
+                bounds = new Rectangle( 0,-12,12,12 );
             }
         }
     }
