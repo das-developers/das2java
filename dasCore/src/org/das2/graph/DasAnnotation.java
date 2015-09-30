@@ -220,7 +220,7 @@ public class DasAnnotation extends DasCanvasComponent {
     @Override
     public void paintComponent(Graphics g1) {
 
-        Graphics2D g = (Graphics2D) g1.create(); //SVG bug
+        Graphics2D g = (Graphics2D) g1.create(); 
         
         g.translate( getColumn().getDMinimum()-getX(), getRow().getDMinimum()-getY() );
 
@@ -236,12 +236,28 @@ public class DasAnnotation extends DasCanvasComponent {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         gtr.setString( g, getString() );
-        Rectangle r = gtr.getBounds();
+        Rectangle r;
         
-        r.x = em;
-        r.y = em;
+        r= gtr.getBounds();
+        
+        if ( anchorPosition==AnchorPosition.NW ) {
+            r.x = em;
+            r.y = em;    
+        } else if ( anchorPosition==AnchorPosition.NE ) {
+            r.x = getColumn().getDMaximum() - em - r.width;
+            r.y = em;    
+        } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
+            r.x = getColumn().getDMaximum() + em;
+            r.y = em;    
+        } else if ( anchorPosition==AnchorPosition.SW ) {
+            r.x = em;
+            r.y = getRow().getDMaximum()-em-r.height;    
+        } else if ( anchorPosition==AnchorPosition.SE ) {
+            r.x = getColumn().getDMaximum() - em - r.width;
+            r.y = getRow().getDMaximum()-em-r.height;
+        }
 
-        r = new Rectangle(r.x - em + 1, r.y - em + 1, r.width + 2 * em - 1, r.height + 2 * em - 1);
+        //r = new Rectangle(r.x - em + 1, r.y - em + 1, r.width + 2 * em - 1, r.height + 2 * em - 1);
         
         //r.translate( em, em + (int) gtr.getAscent());
         g.setColor(back);
@@ -254,7 +270,7 @@ public class DasAnnotation extends DasCanvasComponent {
 
         g.setColor(fore);
         
-        gtr.draw(g, em, em + (float) gtr.getAscent());
+        gtr.draw(g, r.x, r.y + (float) gtr.getAscent() );
 
         if (pointAt != null) {
             double em2 = getCanvas().getFont().getSize();
@@ -382,12 +398,6 @@ public class DasAnnotation extends DasCanvasComponent {
         firePropertyChange( PROP_FONT_SIZE, oldsize, fontSize );
     }
 
-    /**
-     * Border types.
-     */
-    public enum BorderType {
-        NONE, RECTANGLE, ROUNDED_RECTANGLE
-    }
     
     /**
      * the current border type.
@@ -419,6 +429,20 @@ public class DasAnnotation extends DasCanvasComponent {
         firePropertyChange(PROP_BORDERTYPE, oldborderType, newborderType);
     }
     
+    private AnchorPosition anchorPosition = AnchorPosition.NW;
+
+    public static final String PROP_ANCHORPOSITION = "anchorPosition";
+
+    public AnchorPosition getAnchorPosition() {
+        return anchorPosition;
+    }
+
+    public void setAnchorPosition(AnchorPosition anchorPosition) {
+        AnchorPosition oldAnchorPosition = this.anchorPosition;
+        this.anchorPosition = anchorPosition;
+        firePropertyChange(PROP_ANCHORPOSITION, oldAnchorPosition, anchorPosition);
+    }
+
     private Arrow.HeadStyle arrowStyle = Arrow.HeadStyle.DRAFTING;
 
     public static final String PROP_ARROWSTYLE = "arrowStyle";
