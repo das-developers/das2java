@@ -174,18 +174,18 @@ public class DasAnnotation extends DasCanvasComponent {
     public void resize() {
         super.resize();
         if ( this.getGraphics()!=null ) {
-            this.gtr.setString(this.getGraphics(), getString() );
+            Graphics g= this.getGraphics();
+            if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
+            this.gtr.setString( g, getString() );
             Rectangle r= calcBounds();
+            r.add( r.x+r.width+1, r.y+r.height+1 );
             setBounds(r);
         }
     }
 
     @Override
     public Shape getActiveRegion() {
-        Rectangle r = gtr.getBounds();
-        int em = (int) getEmSize() / 2;
-        r = new Rectangle(r.x, r.y + (int) gtr.getAscent(), r.width + 2 * em + 3, r.height + 2 * em + 3);
-        r.translate(getColumn().getDMinimum(), getRow().getDMinimum());
+        Rectangle r = getAnnotationBubbleBounds();
         return r;
     }
 
@@ -201,18 +201,16 @@ public class DasAnnotation extends DasCanvasComponent {
 	return false;
     }
 
-    
+    /**
+     * calculate the bounds in the canvas coordinate system.
+     * @return 
+     */
     private Rectangle calcBounds() {
         Rectangle r = (Rectangle)getActiveRegion();
-        int em = (int) getEmSize() / 2;
         if (pointAt != null) {
             Point head = pointAt.getPoint();
             r.add(head);
         }
-        r.x-= em;
-        r.y-= em;
-        r.width+= em*2;
-        r.height+= em*2;
         
         return r;
     }
@@ -222,7 +220,7 @@ public class DasAnnotation extends DasCanvasComponent {
 
         Graphics2D g = (Graphics2D) g1.create(); 
         
-        g.translate( getColumn().getDMinimum()-getX(), getRow().getDMinimum()-getY() );
+        g.translate( -getX(), -getY() );
 
         Color fore = g.getColor();
 
@@ -238,25 +236,8 @@ public class DasAnnotation extends DasCanvasComponent {
         gtr.setString( g, getString() );
         Rectangle r;
         
-        r= gtr.getBounds();
+        r= getAnnotationBubbleBounds();
         
-        if ( anchorPosition==AnchorPosition.NW ) {
-            r.x = em;
-            r.y = em;    
-        } else if ( anchorPosition==AnchorPosition.NE ) {
-            r.x = getColumn().getDMaximum() - em - r.width;
-            r.y = em;    
-        } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
-            r.x = getColumn().getDMaximum() + em;
-            r.y = em;    
-        } else if ( anchorPosition==AnchorPosition.SW ) {
-            r.x = em;
-            r.y = getRow().getDMaximum()-em-r.height;    
-        } else if ( anchorPosition==AnchorPosition.SE ) {
-            r.x = getColumn().getDMaximum() - em - r.width;
-            r.y = getRow().getDMaximum()-em-r.height;
-        }
-
         //r = new Rectangle(r.x - em + 1, r.y - em + 1, r.width + 2 * em - 1, r.height + 2 * em - 1);
         
         //r.translate( em, em + (int) gtr.getAscent());
@@ -270,7 +251,7 @@ public class DasAnnotation extends DasCanvasComponent {
 
         g.setColor(fore);
         
-        gtr.draw(g, r.x, r.y + (float) gtr.getAscent() );
+        gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
 
         if (pointAt != null) {
             double em2 = getCanvas().getFont().getSize();
@@ -312,6 +293,40 @@ public class DasAnnotation extends DasCanvasComponent {
         
         getDasMouseInputAdapter().paint(g1);
 
+    }
+
+    /**
+     * return the bounds in the canvas coordinate frame.
+     * @return the bounds in the canvas coordinate frame.
+     */
+    private Rectangle getAnnotationBubbleBounds() {
+        int em = (int) getEmSize() / 2;
+        
+        Rectangle r;
+        r= gtr.getBounds();
+        if ( anchorPosition==AnchorPosition.NW ) {
+            r.x = getColumn().getDMinimum() + em;
+            r.y = getRow().getDMinimum() + em;
+        } else if ( anchorPosition==AnchorPosition.NE ) {
+            r.x = getColumn().getDMaximum() - em - r.width;
+            r.y = getRow().getDMinimum() +em;
+        } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
+            r.x = getColumn().getDMaximum() + em;
+            r.y = getRow().getDMinimum() +em;
+        } else if ( anchorPosition==AnchorPosition.SW ) {
+            r.x = getColumn().getDMinimum() + em;
+            r.y = getRow().getDMaximum()-em-r.height;
+        } else if ( anchorPosition==AnchorPosition.SE ) {
+            r.x = getColumn().getDMaximum() - em - r.width;
+            r.y = getRow().getDMaximum()-em-r.height;
+        }
+        
+        r.x-= em;
+        r.y-= em;
+        r.width+= em*2;
+        r.height+= em*2;
+        
+        return r;
     }
 
     /**
