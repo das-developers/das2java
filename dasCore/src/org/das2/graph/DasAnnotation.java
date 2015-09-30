@@ -223,10 +223,15 @@ public class DasAnnotation extends DasCanvasComponent {
         g.translate( -getX(), -getY() );
 
         Color fore = g.getColor();
+        if ( fore.getAlpha()==0 ) {
+            fore= getCanvas().getForeground();
+        }
+        
+        Color back= this.getBackground();
+        if ( back.getAlpha()==0 ) { // completely transparent means just use canvas color.
+            back= getCanvas().getBackground();
+        }
 
-        Color canvasColor = getCanvas().getBackground();
-        Color back = new Color(canvasColor.getRed(), canvasColor.getGreen(), canvasColor.getBlue(),
-                80 * 255 / 100);
         if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
 
         int em = (int) getEmSize() / 2;
