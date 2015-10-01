@@ -243,6 +243,10 @@ public class DasAnnotation extends DasCanvasComponent {
         
         r= getAnnotationBubbleBounds();
         
+        if ( anchorPosition==AnchorPosition.N || anchorPosition==AnchorPosition.OutsideN ) {
+            gtr.setAlignment( GrannyTextRenderer.CENTER_ALIGNMENT );
+        }
+        
         //r = new Rectangle(r.x - em + 1, r.y - em + 1, r.width + 2 * em - 1, r.height + 2 * em - 1);
         
         //r.translate( em, em + (int) gtr.getAscent());
@@ -313,6 +317,12 @@ public class DasAnnotation extends DasCanvasComponent {
         if ( anchorPosition==AnchorPosition.NW ) {
             r.x = getColumn().getDMinimum() + em;
             r.y = getRow().getDMinimum() + em;
+        } else if ( anchorPosition==AnchorPosition.N ) {
+            r.x = getColumn().getDMinimum() + getColumn().getWidth()/2 - (int)( r.getWidth() / 2 );
+            r.y = getRow().getDMinimum() +em;
+        } else if ( anchorPosition==AnchorPosition.OutsideN ) {
+            r.x = getColumn().getDMinimum() + getColumn().getWidth()/2 - (int)( r.getWidth() / 2 );
+            r.y = getRow().getDMinimum() - (int)r.getHeight() - em;
         } else if ( anchorPosition==AnchorPosition.NE ) {
             r.x = getColumn().getDMaximum() - em - r.width;
             r.y = getRow().getDMinimum() +em;
