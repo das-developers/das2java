@@ -255,21 +255,20 @@ public class DasAnnotation extends DasCanvasComponent {
         }
 
         g.setColor(fore);
-        
+
         gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
 
         if (pointAt != null) {
-            double em2 = getCanvas().getFont().getSize();
-            g.setStroke(new BasicStroke((float) (em2 / 8)));
+            double em2 = g.getFont().getSize();
+            //g.setStroke(new BasicStroke((float) (em2 / 8)));
             //g.drawLine( r.x, r.y+r.height, r.x+r.width, r.y+r.height );
 
             Point head = pointAt.getPoint();
-            head.translate(-getColumn().getDMinimum(), -getRow().getDMinimum());
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setClip(null);
             //Arrow.paintArrow(g2, head, tail, em2);
             
-            Point2D tail2d= new Point2D.Double( r.x + r.width/2, r.y + r.y + r.height/2 );
+            Point2D tail2d= new Point2D.Double( r.x + r.width/2, r.y + r.height/2 );
             Point2D head2d= new Point2D.Double( head.x, head.y );
             Rectangle2D rect2d= new Rectangle2D.Double(r.x, r.y, r.width, r.height );
             Point2D p2d= GraphUtil.lineRectangleIntersection( tail2d, head2d, rect2d );
