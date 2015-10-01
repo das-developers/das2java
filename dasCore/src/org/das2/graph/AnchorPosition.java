@@ -17,8 +17,10 @@ public enum AnchorPosition implements Enumeration {
     NE, 
     SW,
     SE,
-    OutsideNE;
-
+    N,          // centered middle
+    OutsideN,   // titles...
+    OutsideNE; // right-side label.
+    
     @Override
     public Icon getListIcon() {
         BufferedImage im= new BufferedImage(16,16,BufferedImage.TYPE_INT_RGB);
@@ -37,6 +39,8 @@ public enum AnchorPosition implements Enumeration {
             g.fillRect(7,7,5,5);
         } else if ( this==OutsideNE ) {
             g.fillRect(12,2,5,5);
+        } else {
+            g.drawString("?", 0, 14);
         }
         return new ImageIcon(im);
     }
