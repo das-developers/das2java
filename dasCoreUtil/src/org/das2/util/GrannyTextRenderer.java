@@ -36,7 +36,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Renders Grandle and Nystrom strings, like "E=mc!e2"  This supports sequences
+ * Utility class for rendering "Granny" strings, which use the codes
+ * identified by Grandle and Nystrom in their 1980 paper to provide 
+ * rich formatting such as new lines and superscripts.
+ * These are strings like "E=mc!e2" where the !e indicates the pen should be 
+ * moved to the exponent position before drawing.  This supports sequences
  * including:<pre>
  * !A  shift up one half line
  * !B  shift down one half line  (e.g.  !A3!n-!B4!n is 3/4).
