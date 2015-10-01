@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.util;
 
@@ -14,6 +10,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -424,7 +421,29 @@ public final class LoggerManager {
         long t1= System.currentTimeMillis();
         getLogger("gui").log( Level.FINE, "handled \"{0}\" in (ms): {1}", new Object[]{ "focusEvent", t1-lastEventTime });
     }
+    
+    /**
+     * log property change events.  (I realized I spend a lot of time debugging walking 
+     * through the property change fire event code, and I should just add a 
+     * log message to all propertyChange codes.)
+     * @param e 
+     */
+    public static void logPropertyChangeEvent( PropertyChangeEvent e ) {
+        getLogger("gui").log(Level.FINE, "PropertyChange {0}={1}", new Object[]{e.getPropertyName(), e.getNewValue()});
+    }
             
+    /**
+     * log property change events.  (I realized I spend a lot of time debugging walking 
+     * through the property change fire event code, and I should just add a 
+     * log message to all propertyChange codes.)
+     * @param e 
+     * @param source comment on the source
+     */
+    public static void logPropertyChangeEvent( PropertyChangeEvent e, String source ) {
+        getLogger("gui").log(Level.FINE, "PropertyChange {0}={1} {2}", new Object[]{e.getPropertyName(), e.getNewValue(), source});
+    }
+            
+    
     public static void main( String[] args ) {
         Logger l= LoggerManager.getLogger("test");
         Exception e= new java.lang.Exception("this is the problem") ;
