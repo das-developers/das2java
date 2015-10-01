@@ -222,22 +222,16 @@ public class DasAnnotation extends DasCanvasComponent {
         
         g.translate( -getX(), -getY() );
 
-        Color ltextColor= textColor;
+        Color fore = getCanvas().getForeground();
+        Color ltextColor= fore;
+        Color back= getCanvas().getBackground();
+        
+        if ( isOverrideColors() ) {
+            fore= getForeground();
+            ltextColor= textColor;
+            back= getBackground();
+        }
                 
-        Color fore = g.getColor();
-        if ( fore.getAlpha()==0 ) {
-            fore= getCanvas().getForeground();
-        }
-        
-        if ( ltextColor.getAlpha()==0 ) {
-            ltextColor= fore;
-        }
-        
-        Color back= this.getBackground();
-        if ( back.getAlpha()==0 ) { // completely transparent means just use canvas color.
-            back= getCanvas().getBackground();
-        }
-
         if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
 
         int em = (int) getEmSize() / 2;
@@ -491,6 +485,24 @@ public class DasAnnotation extends DasCanvasComponent {
         this.arrowStyle = newarrowStyle;
         repaint();
         firePropertyChange(PROP_ARROWSTYLE, oldarrowStyle, newarrowStyle);
+    }
+
+    private boolean overrideColors = false;
+
+    public static final String PROP_OVERRIDECOLORS = "overrideColors";
+
+    public boolean isOverrideColors() {
+        return overrideColors;
+    }
+
+    /**
+     * true will use the colors specified, otherwise the canvas colors are used.
+     * @param overrideColors 
+     */
+    public void setOverrideColors(boolean overrideColors) {
+        boolean oldOverrideColors = this.overrideColors;
+        this.overrideColors = overrideColors;
+        firePropertyChange(PROP_OVERRIDECOLORS, oldOverrideColors, overrideColors);
     }
 
     private Color textColor = new Color(0, 0, 0, 0);
