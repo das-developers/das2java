@@ -222,9 +222,15 @@ public class DasAnnotation extends DasCanvasComponent {
         
         g.translate( -getX(), -getY() );
 
+        Color ltextColor= textColor;
+                
         Color fore = g.getColor();
         if ( fore.getAlpha()==0 ) {
             fore= getCanvas().getForeground();
+        }
+        
+        if ( ltextColor.getAlpha()==0 ) {
+            ltextColor= fore;
         }
         
         Color back= this.getBackground();
@@ -254,10 +260,12 @@ public class DasAnnotation extends DasCanvasComponent {
             g.fillRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
         }
 
-        g.setColor(fore);
+        g.setColor(ltextColor);
 
         gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
 
+        g.setColor(fore);
+        
         if (pointAt != null) {
             double em2 = g.getFont().getSize();
             //g.setStroke(new BasicStroke((float) (em2 / 8)));
@@ -485,5 +493,24 @@ public class DasAnnotation extends DasCanvasComponent {
         firePropertyChange(PROP_ARROWSTYLE, oldarrowStyle, newarrowStyle);
     }
 
+    private Color textColor = new Color(0, 0, 0, 0);
+
+    public static final String PROP_TEXTCOLOR = "textColor";
+
+    public Color getTextColor() {
+        return textColor;
+    }
+
+    /**
+     * the color of the text, or if transparent then the border
+     * color should be used.
+     *
+     * @param textColor 
+     */
+    public void setTextColor(Color textColor) {
+        Color oldTextColor = this.textColor;
+        this.textColor = textColor;
+        firePropertyChange(PROP_TEXTCOLOR, oldTextColor, textColor);
+    }
     
 }
