@@ -24,13 +24,11 @@ package org.das2.stream;
 
 import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
-import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import org.virbo.dataset.SemanticOps;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -66,9 +64,11 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         }
         if ( type instanceof DataTransferType.Time ) {
             units= ((DataTransferType.Time)type).getUnits();
+            if ( units==null ) throw new NullPointerException("units set to null");
         } else {
             String unitsString = element.getAttribute("units");
             units = Units.lookupUnits(unitsString);
+            if ( units==null ) throw new NullPointerException("units set to null");
         }
            
         String baseString = element.getAttribute("base");
@@ -96,6 +96,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         this.base = base;
     }
     
+    @Override
     public int getSizeBytes() {
         return transferType.getSizeBytes();
     }
@@ -107,6 +108,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
     /* Units must be set now!!! */
     public void setUnits(Units units) {
         this.units = units;
+        if ( units==null ) throw new NullPointerException("units set to null");
     }
     
     public void setDataTransferType(DataTransferType transferType) {
@@ -139,6 +141,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         }
     }
     
+    @Override
     public DatumVector read(ByteBuffer input) {
         return DatumVector.newDatumVector(new double[]{transferType.read(input)}, units);
     }
@@ -147,10 +150,12 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         transferType.write(datum.doubleValue(units), output);
     }
     
+    @Override
     public void write(DatumVector input, ByteBuffer output) {
         transferType.write(input.doubleValue(0, units), output);
     }
     
+    @Override
     public Element getDOMElement(Document document) {
         Element element = document.createElement("x");
         if (base != null) {
@@ -161,6 +166,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
         return element;
     }
     
+    @Override
     public Object clone() {
         try {
             return super.clone();
@@ -172,10 +178,12 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
 
     Map properties= new HashMap();
     
+    @Override
     public Object getProperty(String name) {
         return properties.get(name);
     }
 
+    @Override
     public Map getProperties() {
         return new HashMap(properties);
     }
