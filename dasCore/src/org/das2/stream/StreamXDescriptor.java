@@ -27,8 +27,11 @@ import org.das2.datum.DatumVector;
 import org.das2.datum.TimeUtil;
 import org.das2.datum.Units;
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -63,7 +66,13 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
             throw new RuntimeException("Illegal transfer type: " + typeStr);
         }
         if ( type instanceof DataTransferType.Time ) {
-            units= ((DataTransferType.Time)type).getUnits();
+            String unitsString = element.getAttribute("units");
+            try {
+                units = Units.lookupTimeUnits(unitsString);
+            } catch (ParseException ex) {
+                throw new IllegalArgumentException(ex);
+            }
+            //units= ((DataTransferType.Time)type).getUnits();
             if ( units==null ) throw new NullPointerException("units set to null");
         } else {
             String unitsString = element.getAttribute("units");
