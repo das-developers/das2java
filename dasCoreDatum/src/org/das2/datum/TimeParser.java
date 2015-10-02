@@ -1839,7 +1839,7 @@ public class TimeParser {
      * @return formatted string.
      */
     public String format(Datum start, Datum stop) {
-        return format(start,stop,null);
+        return format(start,stop,new HashMap());
     }
     
     /**
