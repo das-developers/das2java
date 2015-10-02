@@ -890,15 +890,30 @@ public class TimeParser {
                         else if ( name.equals("delta") ) span= Integer.parseInt(val); // see http://tsds.org/uri_templates
                         else if ( name.equals("resolution") ) span= Integer.parseInt(val);
                         else if ( name.equals("period" ) ) {
-                            char code= val.charAt(val.length()-1);
-                            if ( code=='Y' ) { lsd=0; }
-                            else if ( code=='m' ) { lsd=1; }
-                            else if ( code=='d' ) { lsd=2; }
-                            else if ( code=='j' ) { lsd=2; }
-                            else if ( code=='H' ) { lsd=3; }
-                            else if ( code=='M' ) { lsd=4; }
-                            else if ( code=='S' ) { lsd=5; }
-                            lsdMult= Integer.parseInt(val.substring(0,val.length()-1) );
+                            if ( val.startsWith("P") ) {
+                                try {
+                                    int[] r= DatumRangeUtil.parseISO8601Duration(val);
+                                    for ( int j=0; j<6; j++ ) {
+                                        if (r[j]>0 ) {
+                                            lsd= j;
+                                            lsdMult= r[j];
+                                            break;
+                                        }
+                                    }
+                                } catch (ParseException ex) {
+                                    Logger.getLogger(TimeParser.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            } else {
+                                char code= val.charAt(val.length()-1);
+                                if ( code=='Y' ) { lsd=0; }
+                                else if ( code=='m' ) { lsd=1; }
+                                else if ( code=='d' ) { lsd=2; }
+                                else if ( code=='j' ) { lsd=2; }
+                                else if ( code=='H' ) { lsd=3; }
+                                else if ( code=='M' ) { lsd=4; }
+                                else if ( code=='S' ) { lsd=5; }
+                                lsdMult= Integer.parseInt(val.substring(0,val.length()-1) );
+                            }
                         }
                         else if ( name.equals("id") ) ; //TODO: orbit plug in handler...
                         else if ( name.equals("places") ) ; //TODO: this all needs to be redone...
