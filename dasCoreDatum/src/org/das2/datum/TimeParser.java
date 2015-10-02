@@ -428,7 +428,9 @@ public class TimeParser {
             s= args.get("period");
             if ( s==null ) return "periodic field needs period";
             if ( !s.startsWith("P") ) {
-                if ( s.endsWith("d")  ) {
+                if ( s.endsWith("D") ) {
+                    throw new IllegalArgumentException("periodic unit for day is d, not D");
+                } if ( s.endsWith("d")  ) {
                     s= "P"+s.toUpperCase(); // TODO: this only supports d,H,M,S
                 } else {
                     s= "PT" + s.toUpperCase(); 
@@ -889,6 +891,7 @@ public class TimeParser {
                         else if ( name.equals("resolution") ) span= Integer.parseInt(val);
                         else if ( name.equals("id") ) ; //TODO: orbit plug in handler...
                         else if ( name.equals("places") ) ; //TODO: this all needs to be redone...
+                        else if ( name.equals("phasestart") )  ; //TODO: this all needs to be redone...
                         else if ( name.equals("shift") ) {
                             shift[i]= Integer.parseInt(val);
                         }
