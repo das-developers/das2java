@@ -486,7 +486,7 @@ public class TimeParser {
             if ( period[1]!=0 || period[3]!=0 || period[4]!=0 || period[5]!=0 || period[6]!=0) {
                 throw new IllegalArgumentException("under implemented, only integer number of days supported for formatting.");
             }
-            int deltad= ( jd - this.julday ) / period[2] + offset;
+            int deltad= (int)( Math.floor( ( jd - this.julday ) / (float)period[2] ) ) + offset;
             String result= String.format("%d",deltad);
             if ( length>16 ) {
                 throw new IllegalArgumentException("length>16 not supported");
@@ -889,6 +889,17 @@ public class TimeParser {
                         else if ( name.equals("span") ) span= Integer.parseInt(val);
                         else if ( name.equals("delta") ) span= Integer.parseInt(val); // see http://tsds.org/uri_templates
                         else if ( name.equals("resolution") ) span= Integer.parseInt(val);
+                        else if ( name.equals("period" ) ) {
+                            char code= val.charAt(val.length()-1);
+                            if ( code=='Y' ) { lsd=0; }
+                            else if ( code=='m' ) { lsd=1; }
+                            else if ( code=='d' ) { lsd=2; }
+                            else if ( code=='j' ) { lsd=2; }
+                            else if ( code=='H' ) { lsd=3; }
+                            else if ( code=='M' ) { lsd=4; }
+                            else if ( code=='S' ) { lsd=5; }
+                            lsdMult= Integer.parseInt(val.substring(0,val.length()-1) );
+                        }
                         else if ( name.equals("id") ) ; //TODO: orbit plug in handler...
                         else if ( name.equals("places") ) ; //TODO: this all needs to be redone...
                         else if ( name.equals("phasestart") )  ; //TODO: this all needs to be redone...
@@ -1183,6 +1194,7 @@ public class TimeParser {
         dst.minute = src.minute;
         dst.seconds = src.seconds;
         dst.micros = src.micros;
+        dst.isLocation= src.isLocation;
     }
     
     /**
@@ -1830,6 +1842,10 @@ public class TimeParser {
         int len;
 
         TimeUtil.TimeStruct timel = TimeUtil.toTimeStruct(start);
+        TimeUtil.TimeStruct timeWidthl= new TimeUtil.TimeStruct();
+        copyTime( timeWidth, timeWidthl ); // make a local copy in case future versions allow variable time widths.
+        extra= new HashMap(extra);
+        
         TimeUtil.TimeStruct stopTimel;
         if ( stop==null ) {
             if ( timeWidth.year==MAX_VALID_YEAR-MIN_VALID_YEAR ) {
@@ -1949,6 +1965,19 @@ public class TimeParser {
                     FieldHandler fh1= fieldHandlers.get(fc[idigit]);
                     TimeUtil.TimeStruct timeEnd = stopTimel;
                     String ins= fh1.format( timel, TimeUtil.subtract(timeEnd, timel), len, extra );
+                    TimeUtil.TimeStruct startTimeTest= new TimeUtil.TimeStruct();
+                    copyTime( timel, startTimeTest );
+                    TimeUtil.TimeStruct timeWidthTest= new TimeUtil.TimeStruct();
+                    copyTime( timeWidthl, timeWidthTest );
+                    try {
+                        fh1.parse( ins, startTimeTest, timeWidthTest, extra );
+                        copyTime( startTimeTest, timel );
+                        copyTime( timeWidthTest, timeWidthl );
+                        copyTime( TimeUtil.add( timel, timeWidthl ), stopTimel );
+                        
+                    } catch (ParseException ex) {
+                        Logger.getLogger(TimeParser.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     if ( len>-1 && ins.length()!=len ) {
                         throw new IllegalArgumentException("length of fh is incorrect, should be "+len+", got \""+ins+"\"");
                     }
