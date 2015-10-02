@@ -27,7 +27,6 @@ import org.das2.datum.DatumVector;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
-import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.MutablePropertyDataSet;
@@ -35,7 +34,9 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
 /**
- *
+ * The RebinDescriptor will quickly look up which 1-D bin a Datum is
+ * in.  This is not thread-safe, and must be used by only one thread during its
+ * lifetime.
  * @author  jbf
  */
 public class RebinDescriptor {
@@ -78,9 +79,16 @@ public class RebinDescriptor {
         return nBin;
     }
     
+    private UnitsConverter uc;  // cache UnitsConverter
+    private Units inUnits=null; // cache units.
+    
     public int whichBin( double x, Units units ) {
-        if ( units!=this.units ) {
-            x= Units.getConverter(units,this.units).convert(x);
+        if ( units!=this.units ) { 
+            if ( uc==null || units!=inUnits ) {  // small optimization doesn't seem to have a large effect.
+                uc= Units.getConverter(units,this.units);
+                inUnits= units;
+            }
+            x= uc.convert(x);
         }
         int result=0;
         if (isLog) x= Math.log(x);
@@ -116,9 +124,9 @@ public class RebinDescriptor {
     }
     
     public double binCenter(int ibin,Units units) {
-        UnitsConverter uc= this.units.getConverter(units);
+        UnitsConverter cu= this.units.getConverter(units);
         double result= start+((ibin+0.5)/(double)(nBin)*(end-start));
-        if ( isLog ) return uc.convert( Math.exp(result) ); else return uc.convert( result );
+        if ( isLog ) return cu.convert( Math.exp(result) ); else return cu.convert( result );
     }
     
     public Datum binCenter(int ibin) {
@@ -129,6 +137,12 @@ public class RebinDescriptor {
         return Datum.create( binStart( ibin, units ), units );
     }
     
+    /**
+     * return the smaller boundary of the bin.
+     * @param ibin the bin number
+     * @param units the units for the result.
+     * @return the smaller boundary of the bin in the desired units.
+     */
     public double binStart( int ibin, Units units ) {
         if ( this.outOfBoundsAction!=RebinDescriptor.EXTRAPOLATE ) {
             if ( ibin<0 || ibin >= numberOfBins() ) {
@@ -136,11 +150,11 @@ public class RebinDescriptor {
             }
         }
         double result= start+((ibin)/(double)(nBin)*(end-start));
-        UnitsConverter uc= this.units.getConverter(units);
+        UnitsConverter cu= this.units.getConverter(units);
         if ( isLog ) {
-            return uc.convert(Math.exp(result));
+            return cu.convert(Math.exp(result));
         } else {
-            return uc.convert(result);
+            return cu.convert(result);
         }
     }
     
@@ -148,6 +162,12 @@ public class RebinDescriptor {
         return Datum.create( binStop( ibin, units ), units );
     }
     
+    /**
+     * return the bigger boundary of the bin.
+     * @param ibin the bin number
+     * @param units the units for the result.
+     * @return the bigger boundary of the bin in the desired units.
+     */    
     public double binStop( int ibin, Units units ) {
         if ( this.outOfBoundsAction!=RebinDescriptor.EXTRAPOLATE ) {
             if ( ibin<0 || ibin >= numberOfBins() ) {
@@ -155,14 +175,18 @@ public class RebinDescriptor {
             }
         }
         double result= start+((ibin+1)/(double)(nBin)*(end-start));
-        UnitsConverter uc= this.units.getConverter(units);
+        UnitsConverter cu= this.units.getConverter(units);
         if ( isLog ) {
-            return uc.convert(Math.exp(result));
+            return cu.convert(Math.exp(result));
         } else {
-            return uc.convert(result);
+            return cu.convert(result);
         }
     }
     
+    /**
+     * return the bin starts of all bins, in units of <tt>getUnits()</tt>
+     * @return the bin starts of all bins
+     */
     public double[] binStarts() {
         double [] result= new double[nBin];
         for (int i=0; i<nBin; i++) {
@@ -174,6 +198,10 @@ public class RebinDescriptor {
         return result;
     }
     
+    /**
+     * return the bin stops of all bins, in units of <tt>getUnits()</tt>
+     * @return the bin stops of all bins
+     */    
     public double[] binStops() {
         double [] result= new double[nBin];
         for (int i=0; i<nBin; i++) {
