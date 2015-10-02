@@ -236,6 +236,9 @@ public class LanlNNRebinner implements DataSetRebinner {
                     yds0_1= yds0;
                     yds1_1= yds1;
                 }
+                int[] py0s= new int[nYData];
+                int[] py1s= new int[nYData];
+                double[] wys= new double[nYData];
                 for ( int i=0; i<xds0.length(); i++) {
                     double x0= xds0.value(i);
                     double x1= xds1.value(i);
@@ -258,21 +261,28 @@ public class LanlNNRebinner implements DataSetRebinner {
                     assert yds0_1!=null;
                     assert yds1_1!=null;
                     for ( int j=0; j<nYData; j++ ) {
-                        double z= tds1.value( i,j );
-                        y0= yds0_1.value(j);
-                        y1= yds1_1.value(j);
-                        int py0,py1;
-                        if ( ddY.start>ddY.end ) { // flipped
-                            py0= ddY.whichBin( y1, yunits );
-                            py1= ddY.whichBin( y0, yunits );
-                        } else {
-                            py0= ddY.whichBin( y0, yunits );
-                            py1= ddY.whichBin( y1, yunits );
+                        if ( i==0 || rank2y ) {
+                            y0= yds0_1.value(j);
+                            y1= yds1_1.value(j);
+                            int py0,py1;
+                            if ( ddY.start>ddY.end ) { // flipped
+                                py0= ddY.whichBin( y1, yunits );
+                                py1= ddY.whichBin( y0, yunits );
+                            } else {
+                                py0= ddY.whichBin( y0, yunits );
+                                py1= ddY.whichBin( y1, yunits );
+                            }
+                            py0s[j]= py0;
+                            py1s[j]= py1;
+                            double wy= 1./((py1-py0+1)); // favor short bins                        
+                            wys[j]= wy;
                         }
-                        double wy= 1./((py1-py0+1)); // favor short bins
-                        double w= wx*wy*weights.value(i,j);
-                        int sy0= Math.max( 0, py0 );
-                        int sy1= Math.min( ny-1, py1 );
+                    }
+                    for ( int j=0; j<nYData; j++ ) {
+                        double z= tds1.value( i,j );
+                        double w= wx*wys[j]*weights.value(i,j);
+                        int sy0= Math.max( 0, py0s[j] );
+                        int sy1= Math.min( ny-1, py1s[j] );
                         for ( int k=sx0; k<=sx1; k++ ) {
                             for ( int l=sy0; l<=sy1; l++ ) {
                                 if ( w>N.value(k,l) ) {
