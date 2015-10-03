@@ -139,9 +139,6 @@ public class DasAnnotation extends DasCanvasComponent {
         };
     }
 
-    /**
-     * handle for the property text
-     */
     public static final String PROP_TEXT = "text";
     
     /**
@@ -402,7 +399,7 @@ public class DasAnnotation extends DasCanvasComponent {
     /**
      * the font size in pixels.
      */
-    public static String PROP_FONT_SIZE= "fontSize";
+    public static final String PROP_FONT_SIZE= "fontSize";
     
     /**
      * override the canvas font size.  If zero, then use the canvas size, 
@@ -435,9 +432,6 @@ public class DasAnnotation extends DasCanvasComponent {
      */
     private BorderType borderType = BorderType.NONE;
     
-    /**
-     * handle for the property borderType
-     */
     public static final String PROP_BORDERTYPE = "borderType";
 
     /**
@@ -449,7 +443,7 @@ public class DasAnnotation extends DasCanvasComponent {
     }
 
     /**
-     * set the border type
+     * set the border type to NONE, rounded rectangle, etc.
      * @param newborderType the border type
      */
     public void setBorderType(BorderType newborderType) {
@@ -468,6 +462,10 @@ public class DasAnnotation extends DasCanvasComponent {
         return anchorPosition;
     }
 
+    /**
+     * set the location within the box where the annotation will be drawn.
+     * @param anchorPosition 
+     */
     public void setAnchorPosition(AnchorPosition anchorPosition) {
         AnchorPosition oldAnchorPosition = this.anchorPosition;
         this.anchorPosition = anchorPosition;
@@ -487,7 +485,7 @@ public class DasAnnotation extends DasCanvasComponent {
     }
 
     /**
-     * set the arrow style 
+     * set the arrow style to BIG,SMALL,DRAFTING.
      * @param newarrowStyle the arrow style
      */
     public void setArrowStyle( Arrow.HeadStyle newarrowStyle) {
