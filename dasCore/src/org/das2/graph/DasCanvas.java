@@ -2100,8 +2100,12 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             if (accepting && target != null) {
                 paintDnDTarget(g2);
             }
-            if (dragRenderer != null) {
-                dragRenderer.renderDrag(g2, p1, p2);
+            if (dragRenderer != null  )  {
+                if ( p1!=null && p2!=null ) {
+                    dragRenderer.renderDrag(g2, p1, p2);
+                } else {
+                    logger.info("NullPointerException avoided, why is p1 or p2 null?");
+                }
             }
             Painter[] decor;
             decor= getCanvas().topDecorators.toArray(getCanvas().emptyPainterArray);
