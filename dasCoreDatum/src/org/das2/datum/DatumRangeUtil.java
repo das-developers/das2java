@@ -742,6 +742,20 @@ public class DatumRangeUtil {
             return result;
         }
         
+        /**
+         * Read the time range from the string.  This looks for 
+         * ISO8601 time ranges first, then tries more colloquial methods
+         * for representing the strings.
+         * Example inputs:<ul>
+         * <li>2014-05-06T00:00/24:00    (an ISO8601 range)
+         * <li>2014-05-06 00:00 to 24:00
+         * <li>2014-05-06 
+         * </ul>
+         * For examples, see http://jfaden.net:8080/hudson/job/autoplot-test026/lastSuccessfulBuild/artifact/Test026.java
+         * @param stringIn
+         * @return the parsed DatumRange 
+         * @throws ParseException when a time range cannot be inferred.
+         */
         public DatumRange parse( String stringIn ) throws ParseException {
             
             DatumRange check= parseISO8601Range( stringIn );
