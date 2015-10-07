@@ -619,6 +619,7 @@ public class FileStorageModel {
             }
         } );
 
+        logger.log( Level.FINE, "getNamesFor {0} -> {1}", new Object[] { this.root, list.size() } );
         monitor.finished();
         return (String[])list.toArray(new String[list.size()]);
     }
@@ -1037,6 +1038,7 @@ public class FileStorageModel {
 
         String f="v";
         versioningType= VersioningType.none;
+        
         TimeParser.FieldHandler vh= new TimeParser.FieldHandler() {
             public String configure( Map<String,String> args ) {
                 String sep= args.get( "sep" );
@@ -1084,9 +1086,7 @@ public class FileStorageModel {
                 }
                 return null;
             }
-            /**
-             * this contains a dangerous kludge for $v.$v.$v.
-             */
+
             public void parse( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) {
                 String v= extra.get("v");
                 if ( v!=null ) {
