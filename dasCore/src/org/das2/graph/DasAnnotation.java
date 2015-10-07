@@ -18,6 +18,8 @@ import java.awt.geom.Rectangle2D;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import org.das2.datum.DatumRange;
+import org.das2.datum.Units;
 
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
@@ -176,6 +178,8 @@ public class DasAnnotation extends DasCanvasComponent {
             this.gtr.setString( g, getString() );
             Rectangle r= calcBounds();
             r.add( r.x+r.width+1, r.y+r.height+1 );
+            
+            
             setBounds(r);
         }
     }
@@ -207,6 +211,18 @@ public class DasAnnotation extends DasCanvasComponent {
         if (pointAt != null) {
             Point head = pointAt.getPoint();
             r.add(head);
+        }
+        if ( anchorBorderType!=BorderType.NONE ) {
+            Rectangle anchorRect= new Rectangle();
+            if ( plot!=null && xrange!=null && yrange!=null ) {
+                anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
+                anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
+                anchorRect.width= (int)(plot.getXAxis().transform(xrange.min())) - anchorRect.x;
+                anchorRect.height= (int)(plot.getYAxis().transform(yrange.min())) - anchorRect.y;
+            } else {
+                anchorRect= DasDevicePosition.toRectangle( getRow(), getColumn() );
+            }
+            r.add(anchorRect);
         }
         
         return r;
@@ -279,7 +295,7 @@ public class DasAnnotation extends DasCanvasComponent {
             Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
             g2.dispose();
         }
-
+        
         if (borderType != BorderType.NONE) {
             if (borderType == BorderType.RECTANGLE) {
                 g.draw(r);
@@ -289,6 +305,23 @@ public class DasAnnotation extends DasCanvasComponent {
 
         }
 
+        if ( anchorBorderType!=BorderType.NONE ) {
+            Rectangle anchorRect= new Rectangle();
+            if ( plot!=null && xrange!=null && yrange!=null ) {
+                anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
+                anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
+                anchorRect.width= (int)(plot.getXAxis().transform(xrange.min())) - anchorRect.x;
+                anchorRect.height= (int)(plot.getYAxis().transform(yrange.min())) - anchorRect.y;
+            } else {
+                anchorRect= DasDevicePosition.toRectangle( getRow(), getColumn() );
+            }
+            if ( anchorBorderType== BorderType.RECTANGLE ) {
+                g.draw(anchorRect);
+            } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
+                g.drawRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, em * 2, em * 2);
+            }
+        }
+        
         /*r= DasColumn.toRectangle( getRow(), getColumn() );
         r.translate( -getX(), -getY() );
         r.width--;
@@ -470,6 +503,54 @@ public class DasAnnotation extends DasCanvasComponent {
         AnchorPosition oldAnchorPosition = this.anchorPosition;
         this.anchorPosition = anchorPosition;
         firePropertyChange(PROP_ANCHORPOSITION, oldAnchorPosition, anchorPosition);
+    }
+    
+    private DasPlot plot;
+    
+    public void setPlot( DasPlot p ) {
+        this.plot= p;
+    }
+    
+    private DatumRange xrange= DatumRange.newDatumRange(0,10,Units.dimensionless);
+
+    public static final String PROP_XRANGE = "xrange";
+
+    public DatumRange getXrange() {
+        return xrange;
+    }
+
+    public void setXrange(DatumRange xrange) {
+        DatumRange oldXrange = this.xrange;
+        this.xrange = xrange;
+        firePropertyChange(PROP_XRANGE, oldXrange, xrange);
+    }
+
+    private DatumRange yrange= DatumRange.newDatumRange(0,10,Units.dimensionless);;
+
+    public static final String PROP_YRANGE = "yrange";
+
+    public DatumRange getYrange() {
+        return yrange;
+    }
+
+    public void setYrange(DatumRange yrange) {
+        DatumRange oldYrange = this.yrange;
+        this.yrange = yrange;
+        firePropertyChange(PROP_YRANGE, oldYrange, yrange);
+    }
+
+    private BorderType anchorBorderType = BorderType.NONE;
+
+    public static final String PROP_ANCHORBORDERTYPE = "anchorBorderType";
+
+    public BorderType getAnchorBorderType() {
+        return anchorBorderType;
+    }
+
+    public void setAnchorBorderType(BorderType anchorBorderType) {
+        BorderType oldAnchorBorderType = this.anchorBorderType;
+        this.anchorBorderType = anchorBorderType;
+        firePropertyChange(PROP_ANCHORBORDERTYPE, oldAnchorBorderType, anchorBorderType);
     }
 
     private Arrow.HeadStyle arrowStyle = Arrow.HeadStyle.DRAFTING;
