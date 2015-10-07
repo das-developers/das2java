@@ -519,6 +519,13 @@ public class TimeParser {
             values= new LinkedHashSet();
             String svalues= args.get("values");
             String[] ss= svalues.split(",",-2);
+            if ( ss.length==1 ) {
+                String[] ss2= svalues.split("|",-2); // support legacy URIs.
+                if ( ss2.length>1 ) {
+                    logger.fine("supporting legacy value containing pipes for values");
+                    ss= ss2;
+                }
+            }
             values.addAll(Arrays.asList(ss));
             
             String s= args.get("id");
