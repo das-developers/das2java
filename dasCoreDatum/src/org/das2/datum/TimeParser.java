@@ -125,17 +125,17 @@ public class TimeParser {
         /**
          * return a regular expression that matches valid field entries.  ".*" can be used to match anything, but this limits use.
          * TODO: where is this used?  I added it because it's easy and I saw a TODO to add it.
-         * @return a regular expression matching valid entries.
+         * @return null to match anything, or a regular expression matching valid entries.
          */
         public String getRegex();
 
         /**
          * parse the field to interpret as a time range.
-         * @param fieldContent
-         * @param startTime
-         * @param timeWidth
+         * @param fieldContent the field to parse, for example "2014" for $Y
+         * @param startTime the current startTime
+         * @param timeWidth the current timeWidth
          * @param extra extra data, such as version numbers, are passed out here.
-         * @throws ParseException
+         * @throws ParseException when the field is not consistent with the spec.
          */
         public void parse( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) throws ParseException;
         
@@ -162,17 +162,22 @@ public class TimeParser {
      * <pre>tp= TimeParser.create(sagg,"v", TimeParser.IGNORE_FIELD_HANDLER );</pre>
      */
     public static final FieldHandler IGNORE_FIELD_HANDLER= new TimeParser.FieldHandler() {
+        String regex;
+        
         @Override
         public String configure(Map<String, String> args) {
+            regex= args.get("regex");
             return null;
         }
         @Override
         public String getRegex() {
-            return null;
+            return regex; // which can be null.
         }
+        
         @Override
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
         }
+        
         @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
             return null;
@@ -305,7 +310,7 @@ public class TimeParser {
     }
 
     /**
-     * $(subsec,places=6)  "36" -> "36 microseconds"
+     * $(subsec;places=6)  "36" -> "36 microseconds"
      */
     public static class SubsecFieldHandler implements TimeParser.FieldHandler {
 
@@ -323,7 +328,9 @@ public class TimeParser {
 
         @Override
         public String getRegex() {
-            return "[0-9]*";
+            StringBuilder b= new StringBuilder();
+            for ( int i=0; i<places; i++ ) b.append("[0-9]");
+            return b.toString();
         }
 
         @Override
@@ -344,7 +351,7 @@ public class TimeParser {
     }
     
     /**
-     * $(hrinterval,names=a|b|c|d)  "b" -> "06:00/12:00"
+     * $(hrinterval;names=a,b,c,d)  "b" -> "06:00/12:00"
      */
     public static class HrintervalFieldHandler implements TimeParser.FieldHandler {
 
@@ -354,19 +361,19 @@ public class TimeParser {
         
         @Override
         public String configure(Map<String, String> args) {
-            String names= args.get("names");
-            if ( names==null ) names= args.get("values");
-            if ( names==null ) return "values must be specified for hrinterval";
-            String[] names1= names.split("\\|");
-            mult= 24 / names1.length;
-            if ( 24 - mult*names1.length != 0 ) {
+            String vs= args.get("values");
+            if ( vs==null ) vs= args.get("names"); // some legacy thing
+            if ( vs==null ) return "values must be specified for hrinterval";
+            String[] values1= vs.split(",",-2);
+            mult= 24 / values1.length;
+            if ( 24 - mult*values1.length != 0 ) {
                 throw new IllegalArgumentException("only 1,2,3,4,6,8 or 12 intervals");
             }
             values= new HashMap();
             revvalues= new HashMap();
-            for ( int i=0; i<names1.length; i++ ) {
-                values.put( names1[i], i );
-                revvalues.put( i, names1[i] );
+            for ( int i=0; i<values1.length; i++ ) {
+                values.put( values1[i], i );
+                revvalues.put( i, values1[i] );
             }
             return null;
         }
@@ -500,7 +507,7 @@ public class TimeParser {
     }
 
     /**
-     * "$Y$m$d-$(enum,values=a|b|c|d)", "20130202-a", "2013-02-02/2013-02-03" 
+     * "$Y$m$d-$(enum;values=a,b,c,d)", "20130202-a", "2013-02-02/2013-02-03" 
      */
     public static class EnumFieldHandler implements TimeParser.FieldHandler {
 
@@ -511,7 +518,7 @@ public class TimeParser {
         public String configure( Map<String, String> args ) {
             values= new LinkedHashSet();
             String svalues= args.get("values");
-            String[] ss= svalues.split("\\|",-2);
+            String[] ss= svalues.split(",",-2);
             values.addAll(Arrays.asList(ss));
             
             String s= args.get("id");
@@ -570,14 +577,17 @@ public class TimeParser {
      */
     public static class IgnoreFieldHandler implements FieldHandler {
 
+        String regex;
+        
         @Override
         public String configure(Map<String, String> args) {
+            regex= args.get("regex");
             return null;
         }
 
         @Override
         public String getRegex() {
-            return ".*";
+            return regex;
         }
 
         @Override
@@ -597,7 +607,7 @@ public class TimeParser {
      * compact place.  Asterisk (*) is replaced with $x.
      * Note, commas may still appear in qualifier lists, and 
      * makeQualifiersCanonical will be called to remove them.
-     * @param formatString like %{Y,m=02}*.dat
+     * @param formatString like %{Y,m=02}*.dat or $(Y;m=02)$x.dat
      * @return formatString containing canonical spec, $() and $x instead of *, like $(Y,m=02)$x.dat
      */
     private static String makeCanonical( String formatString ) {
