@@ -15,10 +15,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.text.ParseException;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.das2.datum.DatumRange;
+import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 
 /**
@@ -31,6 +34,8 @@ import org.das2.datum.Units;
  */
 public class DasAnnotation extends DasCanvasComponent {
 
+    private static final Logger logger= LoggerManager.getLogger("das.graph.annotation");
+    
     String templateString;
     GrannyTextRenderer gtr;
 
@@ -359,35 +364,54 @@ public class DasAnnotation extends DasCanvasComponent {
                         
         Rectangle r;
         r= gtr.getBounds();
+
+        int xoffset=0;
+        int yoffset=0;
         
+        if ( anchorOffset.length()>0 ) {
+            String[] ss= anchorOffset.split(",");
+            if ( ss.length==2 ) {
+                try {
+                    double[] dd= DasDevicePosition.parseLayoutStr(ss[0]);
+                    xoffset= (int)( getCanvas().getWidth() * dd[0] + em * dd[1] + dd[2] );
+                    dd= DasDevicePosition.parseLayoutStr(ss[1]);
+                    yoffset= (int)( getCanvas().getHeight() * dd[0] + em * dd[1] + dd[2] );
+                } catch ( ParseException ex ) {
+                    logger.warning("anchorOffset parse");
+                }
+            } else {
+                logger.warning("anchorOffset");
+            }
+        }
+
         if ( anchorPosition==AnchorPosition.NW ) {
-            r.x = anchor.x + em;
-            r.y = anchor.y + em;
+            r.x = anchor.x + em + xoffset ;
+            r.y = anchor.y + em + yoffset ;
         } else if ( anchorPosition==AnchorPosition.N ) {
-            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 );
-            r.y = anchor.y + em;
+            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+            r.y = anchor.y + em + yoffset ;
         } else if ( anchorPosition==AnchorPosition.OutsideN ) {
-            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 );
-            r.y = anchor.y - (int)r.getHeight() - em;
+            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+            r.y = anchor.y - (int)r.getHeight() - em - yoffset ;
         } else if ( anchorPosition==AnchorPosition.NE ) {
-            r.x = anchor.x + anchor.width - em - r.width;
-            r.y = anchor.y +em;
+            r.x = anchor.x + anchor.width - em - r.width - xoffset;
+            r.y = anchor.y + em + yoffset ;
         } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
-            r.x = anchor.x + anchor.width + em;
-            r.y = anchor.y +em;
+            r.x = anchor.x + anchor.width + em + xoffset;
+            r.y = anchor.y + em + yoffset;
         } else if ( anchorPosition==AnchorPosition.SW ) {
-            r.x = anchor.x + em;
-            r.y = anchor.y + anchor.height - em - r.height;
+            r.x = anchor.x + em + xoffset;
+            r.y = anchor.y + anchor.height - em - r.height - yoffset;
         } else if ( anchorPosition==AnchorPosition.SE ) {
-            r.x = anchor.x + anchor.width - em - r.width;
-            r.y = anchor.y + anchor.height - em - r.height;
+            r.x = anchor.x + anchor.width - em - r.width - xoffset;
+            r.y = anchor.y + anchor.height - em - r.height - yoffset;
         }
         
         r.x-= em;
         r.y-= em;
         r.width+= em*2;
         r.height+= em*2;
-        
+               
         return r;
     }
 
@@ -643,5 +667,27 @@ public class DasAnnotation extends DasCanvasComponent {
         this.textColor = textColor;
         firePropertyChange(PROP_TEXTCOLOR, oldTextColor, textColor);
     }
+    
+    private String anchorOffset;
+
+    public static final String PROP_ANCHOROFFSET = "anchorOffset";
+
+    public String getAnchorOffset() {
+        return anchorOffset;
+    }
+
+    /**
+     * the offset in x and y for the text bubble from the anchor.  For
+     * example, "4em,4em" will place a OutsideNE label 4ems up and 4ems over 
+     * from the default.
+     * 
+     * @param anchorOffset 
+     */
+    public void setAnchorOffset(String anchorOffset) {
+        String oldAnchorOffset = this.anchorOffset;
+        this.anchorOffset = anchorOffset;
+        firePropertyChange(PROP_ANCHOROFFSET, oldAnchorOffset, anchorOffset);
+    }
+
     
 }
