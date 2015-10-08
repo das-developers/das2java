@@ -785,7 +785,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             result.resizeLeft = xLeftSide;
         } else if (result == MouseMode.move) {
             result.moveStart = e.getPoint();
-            result.moveStart.translate(-parent.getX(), -parent.getY());
+            result.moveStart.translate( parent.getX(), parent.getY());
         }
 
         if (result != mouseMode) {
