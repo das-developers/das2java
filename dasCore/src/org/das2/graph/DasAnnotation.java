@@ -213,15 +213,7 @@ public class DasAnnotation extends DasCanvasComponent {
             r.add(head);
         }
         if ( anchorBorderType!=BorderType.NONE ) {
-            Rectangle anchorRect= new Rectangle();
-            if ( plot!=null && xrange!=null && yrange!=null ) {
-                anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
-                anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
-                anchorRect.width= (int)(plot.getXAxis().transform(xrange.min())) - anchorRect.x;
-                anchorRect.height= (int)(plot.getYAxis().transform(yrange.min())) - anchorRect.y;
-            } else {
-                anchorRect= DasDevicePosition.toRectangle( getRow(), getColumn() );
-            }
+            Rectangle anchorRect= getAnchorBounds();
             r.add(anchorRect);
         }
         
@@ -302,19 +294,10 @@ public class DasAnnotation extends DasCanvasComponent {
             } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
                 g.drawRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
             }
-
         }
 
         if ( anchorBorderType!=BorderType.NONE ) {
-            Rectangle anchorRect= new Rectangle();
-            if ( plot!=null && xrange!=null && yrange!=null ) {
-                anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
-                anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
-                anchorRect.width= (int)(plot.getXAxis().transform(xrange.min())) - anchorRect.x;
-                anchorRect.height= (int)(plot.getYAxis().transform(yrange.min())) - anchorRect.y;
-            } else {
-                anchorRect= DasDevicePosition.toRectangle( getRow(), getColumn() );
-            }
+            Rectangle anchorRect= getAnchorBounds();
             if ( anchorBorderType== BorderType.RECTANGLE ) {
                 g.draw(anchorRect);
             } else if ( anchorBorderType==BorderType.ROUNDED_RECTANGLE ) {
@@ -335,6 +318,36 @@ public class DasAnnotation extends DasCanvasComponent {
 
     }
 
+    /**
+     * return the bounds of that thing we are anchored to.
+     * @return 
+     */
+    private Rectangle getAnchorBounds() {
+        Rectangle anchorRect= new Rectangle();
+        if ( plot!=null && xrange!=null && yrange!=null ) {
+            anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
+            anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
+            int x1= (int)(plot.getXAxis().transform(xrange.max()));
+            int y1= (int)(plot.getYAxis().transform(yrange.max()));
+            if ( x1<anchorRect.x ) {
+                int t= anchorRect.x;
+                anchorRect.x= x1;
+                x1= t;
+            }
+            if ( y1<anchorRect.y ) {
+                int t= anchorRect.y;
+                anchorRect.y= y1;
+                y1= t;
+            }
+            anchorRect.width= x1- anchorRect.x;
+            anchorRect.height= y1- anchorRect.y;
+            
+        } else {
+            anchorRect= DasDevicePosition.toRectangle( getRow(), getColumn() );
+        }
+        return anchorRect;
+    }
+    
     /**
      * return the bounds in the canvas coordinate frame.
      * @return the bounds in the canvas coordinate frame.
@@ -553,6 +566,20 @@ public class DasAnnotation extends DasCanvasComponent {
         firePropertyChange(PROP_ANCHORBORDERTYPE, oldAnchorBorderType, anchorBorderType);
     }
 
+    private AnchorType anchorType = AnchorType.CANVAS;
+
+    public static final String PROP_ANCHORTYPE = "anchorType";
+
+    public AnchorType getAnchorType() {
+        return anchorType;
+    }
+
+    public void setAnchorType(AnchorType anchorType) {
+        AnchorType oldAnchorType = this.anchorType;
+        this.anchorType = anchorType;
+        firePropertyChange(PROP_ANCHORTYPE, oldAnchorType, anchorType);
+    }
+    
     private Arrow.HeadStyle arrowStyle = Arrow.HeadStyle.DRAFTING;
 
     public static final String PROP_ARROWSTYLE = "arrowStyle";
