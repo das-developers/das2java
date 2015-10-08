@@ -63,7 +63,7 @@ public class FileStorageModel {
     private boolean allowGz= true;  // if true, the getFile can use a .gz version to retrieve a file.
 
     List<String> oldVersions= new ArrayList();
-    
+
     /**
      * Versioning types 
      */
@@ -267,6 +267,15 @@ public class FileStorageModel {
         return result;
     }
 
+    /**
+     * set the datum range giving context to the files.  For example,
+     * filenames are just $H$M$S.dat, and the context is "Jan 17th, 2015"
+     * @param trdr the context
+     */
+    public void setContext( DatumRange trdr ) {
+        timeParser.setContext(trdr);
+    }
+    
     /**
      * extract time range for file or directory from its name.
      * The least significant time digit is considered to be the implicitTimeWidth,
@@ -887,8 +896,11 @@ public class FileStorageModel {
     /**
      * Autoplot introduced the dollar sign instead of the percent, because $ is
      * more URI-friendly.  Switch to this if it looks appropriate.
-     * @param template
-     * @return
+     * 
+     * NOTE: this does not correct commas in the qualifiers section.  TODO: fix this!
+     * 
+     * @param template, e.g "/%Y/%m%d.dat"
+     * @return "$Y/$m$d.dat"
      */
     protected static String makeCanonical( String template ) {
         String result;
@@ -899,7 +911,10 @@ public class FileStorageModel {
         }
         int i=result.indexOf("/");
         if ( i>-1 && result.indexOf("%")>i ) {
-            System.err.println("static folder in template not allowed: "+ result.substring(0,i) );
+            System.err.println("each folder of template must have fields marked by $ or %: "+ result.substring(0,i) );
+        }
+        if ( result.startsWith("/") ) {
+            result= result.substring(1);
         }
         return result;
     }
@@ -1035,6 +1050,10 @@ public class FileStorageModel {
         this.root= root;
         this.parent= parent;
         this.template= template.replaceAll("\\+", "\\\\+");
+        
+        if ( template.startsWith("/") ) { // clean up double slashes immediately.  (/home/jbf//data/)
+            template= template.substring(1);
+        }
 
         String f="v";
         versioningType= VersioningType.none;
