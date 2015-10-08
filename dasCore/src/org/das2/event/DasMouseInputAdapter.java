@@ -658,11 +658,15 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL) {
             int xLeft = parent.getColumn().getDMinimum();
             int xRight = parent.getColumn().getDMaximum();
-            int xMid= ( xLeft + xRight ) / 2;
+            int xMid;
             int yTop = parent.getRow().getDMinimum();
             int yBottom = parent.getRow().getDMaximum();
-            int yMid= (  yTop + yBottom ) / 2;
+            int yMid;
 
+            Rectangle r= parent.getBounds();
+            xMid= r.x + r.width/2;
+            yMid= r.y + r.height/2;
+            
             Graphics2D gg = (Graphics2D) g.create();
 
             gg.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -691,17 +695,14 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
             gg.drawRect(xMid - ss/2, yBottom - ss, ss, ss );
             gg.drawRect(xLeft , yMid - ss/2, ss, ss );
 
-            int xmid = (xLeft + xRight) / 2;
-            int ymid = (yTop + yBottom) / 2;
-
             int rr = 4;
             g.setColor(new Color(255, 255, 255, 100));
-            gg.fillOval(xmid - rr - 1, ymid - rr - 1, rr * 2 + 3, rr * 2 + 3);
+            gg.fillOval(xMid - rr - 1, yMid - rr - 1, rr * 2 + 3, rr * 2 + 3);
 
             gg.setColor(new Color(0, 0, 0, 255));
 
-            gg.drawOval(xmid - rr, ymid - rr, rr * 2, rr * 2);
-            gg.fillOval(xmid - 1, ymid - 1, 3, 3);
+            gg.drawOval(xMid - rr, yMid - rr, rr * 2, rr * 2);
+            gg.fillOval(xMid - 1, yMid - 1, 3, 3);
 
             gg.dispose();
         }
