@@ -324,7 +324,7 @@ public class DasAnnotation extends DasCanvasComponent {
      */
     private Rectangle getAnchorBounds() {
         Rectangle anchorRect= new Rectangle();
-        if ( plot!=null && xrange!=null && yrange!=null ) {
+        if ( anchorType==AnchorType.DATA && plot!=null && xrange!=null && yrange!=null ) {
             anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
             anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
             int x1= (int)(plot.getXAxis().transform(xrange.max()));
@@ -355,29 +355,32 @@ public class DasAnnotation extends DasCanvasComponent {
     private Rectangle getAnnotationBubbleBounds() {
         int em = (int) getEmSize() / 2;
         
+        Rectangle anchor= getAnchorBounds();
+                        
         Rectangle r;
         r= gtr.getBounds();
+        
         if ( anchorPosition==AnchorPosition.NW ) {
-            r.x = getColumn().getDMinimum() + em;
-            r.y = getRow().getDMinimum() + em;
+            r.x = anchor.x + em;
+            r.y = anchor.y + em;
         } else if ( anchorPosition==AnchorPosition.N ) {
-            r.x = getColumn().getDMinimum() + getColumn().getWidth()/2 - (int)( r.getWidth() / 2 );
-            r.y = getRow().getDMinimum() +em;
+            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 );
+            r.y = anchor.y + em;
         } else if ( anchorPosition==AnchorPosition.OutsideN ) {
-            r.x = getColumn().getDMinimum() + getColumn().getWidth()/2 - (int)( r.getWidth() / 2 );
-            r.y = getRow().getDMinimum() - (int)r.getHeight() - em;
+            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 );
+            r.y = anchor.y - (int)r.getHeight() - em;
         } else if ( anchorPosition==AnchorPosition.NE ) {
-            r.x = getColumn().getDMaximum() - em - r.width;
-            r.y = getRow().getDMinimum() +em;
+            r.x = anchor.x + anchor.width - em - r.width;
+            r.y = anchor.y +em;
         } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
-            r.x = getColumn().getDMaximum() + em;
-            r.y = getRow().getDMinimum() +em;
+            r.x = anchor.x + anchor.width + em;
+            r.y = anchor.y +em;
         } else if ( anchorPosition==AnchorPosition.SW ) {
-            r.x = getColumn().getDMinimum() + em;
-            r.y = getRow().getDMaximum()-em-r.height;
+            r.x = anchor.x + em;
+            r.y = anchor.y + anchor.height - em - r.height;
         } else if ( anchorPosition==AnchorPosition.SE ) {
-            r.x = getColumn().getDMaximum() - em - r.width;
-            r.y = getRow().getDMaximum()-em-r.height;
+            r.x = anchor.x + anchor.width - em - r.width;
+            r.y = anchor.y + anchor.height - em - r.height;
         }
         
         r.x-= em;
