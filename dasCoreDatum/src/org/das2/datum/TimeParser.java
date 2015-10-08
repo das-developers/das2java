@@ -1719,6 +1719,17 @@ public class TimeParser {
     }
 
     /**
+     * explicitly set the context for time parsing.  For example,
+     * filenames are just $H$M$S.dat, and the context is "Jan 17th, 2015"
+     * Note that the context is stored internally as just a start time, so
+     * spans (e.g. 3-day) are not supported.
+     * @param tr the range
+     */
+    public void setContext( DatumRange tr ) {
+        this.context= TimeUtil.toTimeStruct(tr.min());
+    }
+    
+    /**
      * return the parsed time in the given units. Here Autoplot
      * Jython code shows how this is used:
      * <code>
