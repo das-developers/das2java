@@ -82,6 +82,7 @@ public class BeansUtil {
             registerEditor(org.das2.graph.SpectrogramRenderer.RebinnerEnum.class, EnumerationEditor.class );
             registerEditor(org.das2.graph.LegendPosition.class, EnumerationEditor.class );
             registerEditor(org.das2.graph.AnchorPosition.class, EnumerationEditor.class );
+            registerEditor(org.das2.graph.AnchorType.class,EnumerationEditor.class );
             registerEditor(org.das2.graph.BorderType.class,EnumerationEditor.class );
             registerEditor(java.util.logging.Level.class, EnumerationEditor.class );
             
