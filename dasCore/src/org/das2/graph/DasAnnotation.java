@@ -562,6 +562,8 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setXrange(DatumRange xrange) {
         DatumRange oldXrange = this.xrange;
         this.xrange = xrange;
+        resize();
+        repaint();
         firePropertyChange(PROP_XRANGE, oldXrange, xrange);
     }
 
@@ -576,6 +578,8 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setYrange(DatumRange yrange) {
         DatumRange oldYrange = this.yrange;
         this.yrange = yrange;
+        resize();
+        repaint();        
         firePropertyChange(PROP_YRANGE, oldYrange, yrange);
     }
 
@@ -665,6 +669,7 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setTextColor(Color textColor) {
         Color oldTextColor = this.textColor;
         this.textColor = textColor;
+        repaint();
         firePropertyChange(PROP_TEXTCOLOR, oldTextColor, textColor);
     }
     
@@ -686,6 +691,8 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setAnchorOffset(String anchorOffset) {
         String oldAnchorOffset = this.anchorOffset;
         this.anchorOffset = anchorOffset;
+        resize();
+        repaint();
         firePropertyChange(PROP_ANCHOROFFSET, oldAnchorOffset, anchorOffset);
     }
 
