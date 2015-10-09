@@ -71,9 +71,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      */
     private ArrayList active = null;
     private boolean pinned = false;
-    private ArrayList modules;
-    private HashMap primaryActionButtonMap;
-    private HashMap secondaryActionButtonMap;
+    private final ArrayList modules;
+    private final HashMap primaryActionButtonMap;
+    private final HashMap secondaryActionButtonMap;
     protected JPopupMenu primaryPopup;
     protected JPopupMenu secondaryPopup;
     private JPanel pngFileNamePanel;
@@ -99,7 +99,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     protected DasCanvasComponent parent = null;
     private Point dSelectionStart;  // in DasCanvas device frame
     private Point dSelectionEnd; // in DasCanvas device frame
-    private MousePointSelectionEvent mousePointSelection;
+    private final MousePointSelectionEvent mousePointSelection;
     private int xOffset; // parent to canvas offset
     private int yOffset; // parent to canvas offset
     private int button = 0; // current depressed button
@@ -157,7 +157,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         public void setMessage( String message );
     }
     
-    /** Creates a new instance of dasMouseInputAdapter */
+    /** 
+     * Create a DasMouseInputAdapter to handle mouse events for the component.
+     * @param parent the component.
+     */
     public DasMouseInputAdapter(DasCanvasComponent parent) {
 
         this.parent = parent;
@@ -186,6 +189,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
         dirtyBoundsList = new Rectangle[0];
         this.feedback= new Feedback() {
+            @Override
             public void setMessage(String message) {
                 // do nothing by default.
             }
@@ -229,6 +233,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     /**
      * add a mouse module to the list of available modules.  If a module with the same
      * label exists already, it will be replaced.
+     * @param module the module
      */
     public synchronized void addMouseModule(MouseModule module) {
 
@@ -300,6 +305,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      */
     public void cancel() {
         Runnable run= new Runnable() {
+            @Override
             public void run() {
                 active = null;
                 getGlassPane().setDragRenderer(null, null, null);
@@ -334,8 +340,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     if (active == null) {
                         return;
                     }
-                    for (int i = 0; i < active.size(); i++) {
-                        ((MouseModule) active.get(i)).keyPressed(ev);
+                    for (Object active1 : active) {
+                        ((MouseModule) active1).keyPressed(ev);
                     }
                 }
             }
@@ -348,8 +354,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 if (active == null) {
                     return;
                 }
-                for (int i = 0; i < active.size(); i++) {
-                    ((MouseModule) active.get(i)).keyReleased(ev);
+                for (Object active1 : active) {
+                    ((MouseModule) active1).keyReleased(ev);
                 }
             }
             @Override
@@ -357,8 +363,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 if (active == null) {
                     return;
                 }
-                for (int i = 0; i < active.size(); i++) {
-                    ((MouseModule) active.get(i)).keyTyped(ev);
+                for (Object active1 : active) {
+                    ((MouseModule) active1).keyTyped(ev);
                 }
             }
         };
@@ -366,10 +372,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     public MouseModule getPrimaryModule() {
         ArrayList activ = new ArrayList();
-        for (int i = 0; i < modules.size(); i++) {
-            JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(modules.get(i));
+        for (Object module : modules) {
+            JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(module);
             if (j.isSelected()) {
-                activ.add(modules.get(i));
+                activ.add(module);
             }
         }
         return (MouseModule) activ.get(0); // at one time we allowed multiple modules at once.
@@ -377,10 +383,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     public MouseModule getSecondaryModule() {
         ArrayList activ = new ArrayList();
-        for (int i = 0; i < modules.size(); i++) {
-            JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(modules.get(i));
+        for (Object module : modules) {
+            JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(module);
             if (j.isSelected()) {
-                activ.add(modules.get(i));
+                activ.add(module);
             }
         }
         return (MouseModule) activ.get(0); // at one time we allowed multiple modules at once.
@@ -390,6 +396,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * set the primary module, the module receiving left-button events, to the
      * module provided.  If the module is not already loaded, implicitly addMouseModule
      * is called.
+     * @param module the module
      */
     public void setPrimaryModule(MouseModule module) {
         if (headless) {
@@ -422,6 +429,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * set the secondary module, the module receiving middle-button events, to the
      * module provided.  If the module is not already loaded, implicitly addMouseModule
      * is called.
+     * 
+     * @param module
      */
     public void setSecondaryModule(MouseModule module) {
         if (headless) {
@@ -465,9 +474,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         }
 
         Action[] componentActions = parent.getActions();
-        for (int iaction = 0; iaction < componentActions.length; iaction++) {
+        for (Action componentAction : componentActions) {
             JMenuItem item = new JMenuItem();
-            item.setAction(componentActions[iaction]);
+            item.setAction(componentAction);
             popup.add(item);
         }
         int numInsert = componentActions.length;
@@ -477,9 +486,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         popup.addSeparator();
                 
         Action[] canvasActions = DasCanvas.getActions();
-        for (int iaction = 0; iaction < canvasActions.length; iaction++) {
+        for (Action canvasAction : canvasActions) {
             JMenuItem item = new JMenuItem();
-            item.setAction(canvasActions[iaction]);
+            item.setAction(canvasAction);
             popup.add(item);
         }
 
@@ -488,7 +497,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     private ActionListener createPopupMenuListener() {
         return new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 //DasMouseInputAdapter outer = DasMouseInputAdapter.this; // useful for debugging
                 String command = e.getActionCommand();
@@ -549,8 +558,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     if (primarySelectedItem != null) {
                         primarySelectedItem.setSelected(false);
                     }
-                    for (int i = 0; i < modules.size(); i++) {
-                        JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(modules.get(i));
+                    for (Object module : modules) {
+                        JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(module);
                         if (j.isSelected()) {
                             primarySelectedItem = j;
                             break;
@@ -561,8 +570,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     if (secondarySelectedItem != null) {
                         secondarySelectedItem.setSelected(false);
                     }
-                    for (int i = 0; i < modules.size(); i++) {
-                        JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(modules.get(i));
+                    for (Object module : modules) {
+                        JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(module);
                         if (j.isSelected()) {
                             secondarySelectedItem = j;
                             break;
@@ -582,9 +591,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      */
     private void renderSelection() {
         try {
-
-            for (int i = 0; i < active.size(); i++) {
-                DragRenderer dr = ((MouseModule) active.get(i)).getDragRenderer();
+            for (Object active1 : active) {
+                DragRenderer dr = ((MouseModule) active1).getDragRenderer();
                 getGlassPane().setDragRenderer(dr, dSelectionStart, dSelectionEnd);
             }
         } catch (RuntimeException e) {
@@ -592,7 +600,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         }
     }
 
-    /* This attempts to redraw just the affected portions of parent.  Presently it
+    /**
+     * This attempts to redraw just the affected portions of parent.  Presently it
      * needs to call the parent's paintImmediately twice, because we don't know what
      * the dragRenderer's dirty bounds will be.
      */
@@ -604,16 +613,16 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     dd[i] = new Rectangle(dirtyBoundsList[i]);
                 }
             }
-            for (int i = 0; i < dd.length; i++) {
-                if (dd[i] != null) {
+            for (Rectangle dd1 : dd) {
+                if (dd1 != null) {
                     //parent.getCanvas().paintImmediately(dd[i]);
-                    parent.getCanvas().repaint(dd[i]);
+                    parent.getCanvas().repaint(dd1);
                 }
             }
-            for (int i = 0; i < dirtyBoundsList.length; i++) {
-                if (dirtyBoundsList[i] != null) {
+            for (Rectangle dirtyBoundsList1 : dirtyBoundsList) {
+                if (dirtyBoundsList1 != null) {
                     //parent.getCanvas().paintImmediately(dirtyBoundsList[i]);
-                    parent.getCanvas().repaint(dirtyBoundsList[i]);
+                    parent.getCanvas().repaint(dirtyBoundsList1);
                 }
             }
         } else {
@@ -802,11 +811,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         yOffset = l.y;
 
         boolean drawControlPoints0 = this.drawControlPoints;
-        if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK) {
-            drawControlPoints = true;
-        } else {
-            drawControlPoints = false;
-        }
+        
+        drawControlPoints = (e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK;
 
         if (drawControlPoints0 != drawControlPoints) {
             parent.repaint();
@@ -898,22 +904,23 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     active = new ArrayList();
 
                     if (button == MouseEvent.BUTTON1 || button == MouseEvent.BUTTON3) {
-                        for (int i = 0; i < modules.size(); i++) {
-                            JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(modules.get(i));
+                        for (Object module : modules) {
+                            JCheckBoxMenuItem j = (JCheckBoxMenuItem) primaryActionButtonMap.get(module);
                             if (j.isSelected()) {
-                                active.add(modules.get(i));
+                                active.add(module);
                             }
                         }
                     } else {
-                        for (int i = 0; i < modules.size(); i++) {
-                            JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(modules.get(i));
+                        for (Object module : modules) {
+                            JCheckBoxMenuItem j = (JCheckBoxMenuItem) secondaryActionButtonMap.get(module);
                             if (j.isSelected()) {
-                                active.add(modules.get(i));
+                                active.add(module);
                             }
                         }
                     }
 
                     Runnable run= new Runnable() {
+                        @Override
                         public void run() {
                             ArrayList lactive= active;
                             if ( lactive==null || lactive.isEmpty() ) return;
@@ -948,8 +955,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                     mouseMode = MouseMode.moduleDrag;
 
                     mousePointSelection.set(e.getX() + xOffset, e.getY() + yOffset);
-                    for (int i = 0; i < active.size(); i++) {
-                        MouseModule j = (MouseModule) active.get(i);
+                    for (Object active1 : active) {
+                        MouseModule j = (MouseModule) active1;
                         j.mousePressed(e);
                         if (j.dragRenderer.isPointSelection()) {
                             mouseDragged(e);
@@ -996,9 +1003,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 dSelectionEnd = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), parent.getCanvas());
 
                 mousePointSelection.set((int) dSelectionEnd.getX(), (int) dSelectionEnd.getY());
-                for (int i = 0; i < active.size(); i++) {
+                for (Object active1 : active) {
                     try {
-                        MouseModule j = (MouseModule) active.get(i);
+                        MouseModule j = (MouseModule) active1;
                         if (j.dragRenderer.isPointSelection()) {
                             logger.finest("mousePointSelected");
                             j.mousePointSelected(mousePointSelection);
@@ -1049,6 +1056,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         getGlassPane().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         logger.finest("mouseReleased");
         if (mouseMode == MouseMode.resize) {
@@ -1065,8 +1073,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         } else {
             if (e.getButton() == button) {
                 if (active != null) {
-                    for (int i = 0; i < active.size(); i++) {
-                        MouseModule j = (MouseModule) active.get(i);
+                    for (Object active1 : active) {
+                        MouseModule j = (MouseModule) active1;
                         try {
                             MouseDragEvent de =
                                     j.dragRenderer.getMouseDragEvent(parent, dSelectionStart, dSelectionEnd, e.isShiftDown());
@@ -1097,10 +1105,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     }
 
-    /**
-     * Getter for property mouseModules.
-     * @return Value of property mouseModules.
-     */
     public MouseModule getMouseModule(int i) {
         return (MouseModule) modules.get(i);
     }
@@ -1123,7 +1127,6 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         }
     }
 
-
     public String getSecondaryModuleByLabel() {
         MouseModule secondary1 = getPrimaryModule();
         return secondary1 == null ? "" : secondary1.getLabel();
@@ -1139,6 +1142,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     /**
      * //TODO: check this
      * Setter for property mouseModules.
+     * 
+     * @param i the index
      * @param mouseModule the new mouseModule to use.
      */
     public void setMouseModule(int i, MouseModule mouseModule) {
@@ -1186,7 +1191,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         if (index != -1) {
             primaryPopup.remove(index);
             numInserted--;
-            logger.finer("numInserted: "+numInserted);
+            logger.log(Level.FINER, "numInserted: {0}", numInserted);
         }
 
     }
@@ -1247,9 +1252,9 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     public MouseModule getModuleByLabel(java.lang.String label) {
         MouseModule result = null;
-        for (int i = 0; i < modules.size(); i++) {
-            if (label.equals(((MouseModule) modules.get(i)).getLabel())) {
-                result = (MouseModule) modules.get(i);
+        for (Object module : modules) {
+            if (label.equals(((MouseModule) module).getLabel())) {
+                result = (MouseModule) module;
             }
         }
         return result;
@@ -1300,6 +1305,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * the mouse wheel was turned so many units.  
      * Delegate this to the primary module, so that if it is set to "ZoomX"
      * then the mousewheel will be in just the X direction.
+     * @param e the mouse wheel event
      */
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
