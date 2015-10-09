@@ -15,6 +15,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -177,7 +179,7 @@ public class DasAnnotation extends DasCanvasComponent {
                     final Datum x = p.getXAxis().invTransform(head.x);
                     final Datum y = p.getYAxis().invTransform(head.y);
                     anno.setPointAt(new DatumPairPointDescriptor(p, x, y));
-                    setBounds(calcBounds());
+                    resize();
                 }
 
             }
@@ -196,7 +198,7 @@ public class DasAnnotation extends DasCanvasComponent {
         this.templateString = string;
         if ( this.getGraphics()!=null ) {
             gtr.setString( this.getGraphics(), getString() );
-            calcBounds();
+            resize();
         }
         firePropertyChange( PROP_TEXT, oldValue, string );
         repaint();
@@ -221,6 +223,11 @@ public class DasAnnotation extends DasCanvasComponent {
             this.gtr.setString( g, getString() );
             Rectangle r= calcBounds();
             r.add( r.x+r.width+1, r.y+r.height+1 );
+            if ( anchorType==AnchorType.CANVAS || plot==null ) {
+                r= r.intersection( new Rectangle(0,0,getCanvas().getWidth(),getCanvas().getHeight()) ); // clip at canvas boundaries
+            } else {
+                r= r.intersection( DasDevicePosition.toRectangle( plot.getRow(), plot.getColumn() ) ); // clip at plot boundaries
+            }
             setBounds(r);
         }
     }
@@ -562,7 +569,7 @@ public class DasAnnotation extends DasCanvasComponent {
         if ( g==null ) return;
         g.setFont(newFont);
         gtr.setString( g, getString() );
-        setBounds(calcBounds());
+        resize();
         repaint();
 
         firePropertyChange( PROP_FONT_SIZE, oldsize, fontSize );
@@ -616,7 +623,21 @@ public class DasAnnotation extends DasCanvasComponent {
     
     private DasPlot plot;
     
+    PropertyChangeListener plotListener= new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            logger.finer("plot change, resizing");
+            resize();
+        }
+    };
+            
     public void setPlot( DasPlot p ) {
+        if ( this.plot!=null ) {
+            this.plot.getXAxis().removePropertyChangeListener(plotListener);
+            this.plot.getYAxis().removePropertyChangeListener(plotListener);
+        }
+        p.getXAxis().addPropertyChangeListener(plotListener);
+        p.getYAxis().addPropertyChangeListener(plotListener);
         this.plot= p;
     }
     
