@@ -273,9 +273,6 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         this.back= back;
         this.rank = rank;
         this.reclen= reclen;
-        if ( recoffs==182112 ) {
-            System.err.println("here182112");
-        }
         this.recoffset= recoffs;
         this.len0 = len0;
         this.len1 = len1;
