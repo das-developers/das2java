@@ -176,8 +176,8 @@ public class DasAnnotation extends DasCanvasComponent {
 
     @Override
     public void resize() {
-        super.resize();
         if ( this.getGraphics()!=null ) {
+            super.resize();
             Graphics g= this.getGraphics();
             if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
             this.gtr.setString( g, getString() );
@@ -398,7 +398,7 @@ public class DasAnnotation extends DasCanvasComponent {
             r.y = anchor.y + em + yoffset ;
         } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
             r.x = anchor.x + anchor.width + em + xoffset;
-            r.y = anchor.y + em + yoffset;
+            r.y = anchor.y + em - yoffset;
         } else if ( anchorPosition==AnchorPosition.SW ) {
             r.x = anchor.x + em + xoffset;
             r.y = anchor.y + anchor.height - em - r.height - yoffset;
@@ -672,8 +672,8 @@ public class DasAnnotation extends DasCanvasComponent {
         repaint();
         firePropertyChange(PROP_TEXTCOLOR, oldTextColor, textColor);
     }
-    
-    private String anchorOffset;
+       
+    private String anchorOffset="";
 
     public static final String PROP_ANCHOROFFSET = "anchorOffset";
 
@@ -691,8 +691,6 @@ public class DasAnnotation extends DasCanvasComponent {
     public void setAnchorOffset(String anchorOffset) {
         String oldAnchorOffset = this.anchorOffset;
         this.anchorOffset = anchorOffset;
-        resize();
-        repaint();
         firePropertyChange(PROP_ANCHOROFFSET, oldAnchorOffset, anchorOffset);
     }
 
