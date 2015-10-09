@@ -17,9 +17,16 @@ public enum AnchorPosition implements Enumeration {
     NE, 
     SW,
     SE,
+    Center,
     N,          // centered middle
+    E,
+    W,
+    S,
+    OutsideE,
     OutsideN,   // titles...
-    OutsideNE; // right-side label.
+    OutsideNNW, // top-left label.
+    OutsideNNE,  // right-side label.
+    OutsideNE;  // right-side label.
     
     @Override
     public Icon getListIcon() {
@@ -36,9 +43,27 @@ public enum AnchorPosition implements Enumeration {
         } else if ( this==SW ) {
             g.fillRect(2,7,5,5);
         } else if ( this==SE ) {
-            g.fillRect(7,7,5,5);
+            g.fillRect(7,7,5,5);            
+        } else if ( this==Center ) {
+            g.fillRect(5,5,5,5);
+        } else if ( this==N ) {
+            g.fillRect(5,2,5,5);
+        } else if ( this==E ) {
+            g.fillRect(7,5,5,5);
+        } else if ( this==W ) {
+            g.fillRect(2,5,5,5);
+        } else if ( this==S ) {
+            g.fillRect(5,7,5,5);
+        } else if ( this==OutsideE ) {
+            g.fillRect(12,5,5,5);
+        } else if ( this==OutsideN ) {
+            g.fillRect(5,-3,5,5);
+        } else if ( this==OutsideNNW ) {
+            g.fillRect(2,-3,5,5);
+        } else if ( this==OutsideNNE ) {
+            g.fillRect(7,-3,6,5);
         } else if ( this==OutsideNE ) {
-            g.fillRect(12,2,5,5);
+            g.fillRect(12,2,5,5);            
         } else {
             g.drawString("?", 0, 14);
         }
