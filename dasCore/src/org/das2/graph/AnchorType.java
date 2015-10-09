@@ -10,5 +10,7 @@ package org.das2.graph;
  * @author jbf
  */
 public enum AnchorType {
-    CANVAS, DATA
+    CANVAS, // anchored by row and column
+    PLOT,   // anchored by datum ranges
+    DATA,   // anchored to the data (not implemented, same as PLOT for now).
 }
