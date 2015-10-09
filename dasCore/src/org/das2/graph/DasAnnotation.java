@@ -22,11 +22,16 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
+import org.das2.event.BoxRangeSelectorMouseModule;
+import org.das2.event.BoxRenderer;
+import org.das2.event.BoxSelectorMouseModule;
 
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
@@ -118,6 +123,40 @@ public class DasAnnotation extends DasCanvasComponent {
         
         this.getDasMouseInputAdapter().setPrimaryModule(mm);
 
+        MouseModule setXY= new MouseModule( this, new BoxRenderer(this), "Set X and Y Range" ) {
+            Point p0;
+            
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e); 
+                if ( plot!=null ) {
+                    p0= e.getPoint();
+                    p0= SwingUtilities.convertPoint( DasAnnotation.this, p0, plot.getCanvas() );
+                }
+            }
+            
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if ( getAnchorType()==AnchorType.CANVAS ) {
+                    super.mouseReleased(e);
+                } else {
+                    if ( plot!=null ) {
+                        Point p= e.getPoint();
+                        p= SwingUtilities.convertPoint( DasAnnotation.this, p, plot.getCanvas() );
+                        DatumRange xr= plot.getXAxis().invTransform(p0.x,p.x);
+                        xrange= xr;
+                        DatumRange yr= plot.getYAxis().invTransform(p0.y,p.y);
+                        yrange= yr;
+                        resize();
+                        repaint();
+                    } else {
+                        JOptionPane.showMessageDialog( parent, "Annotation is not attached to a plot.");
+                    }
+                }
+            }            
+        };
+        this.getDasMouseInputAdapter().addMouseModule(setXY);
+        
         arrowToMouseModule = createArrowToMouseModule(this);
         this.getDasMouseInputAdapter().setSecondaryModule(arrowToMouseModule);
     }
