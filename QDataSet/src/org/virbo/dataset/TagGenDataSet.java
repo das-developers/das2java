@@ -35,8 +35,8 @@ public class TagGenDataSet extends AbstractRank1DataSet {
         } else {
             putProperty( QDataSet.UNITS, Units.dimensionless );
             putProperty( QDataSet.CADENCE, DRank0DataSet.create( scale, Units.dimensionless ) );
-            if ( scale>0 ) putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
         }
+        if ( scale>0 ) putProperty( QDataSet.MONOTONIC, Boolean.TRUE );
     }
     
     @Override
