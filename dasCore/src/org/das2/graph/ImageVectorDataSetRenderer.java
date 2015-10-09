@@ -4,8 +4,7 @@
  * This renderer can handle vector data sets with tens of thousands of points
  * by histogramming the points and then creating a greyscale spectrogram of
  * the histogram.  The property "saturationHitCount" defines the number of pixel
- * hits that will make the pixel black.  In the future, this may be modified to
- * support color, alpha channel, and connected psyms.
+ * hits that will make the pixel black.  
  *
  * Created on April 14, 2005, 8:45 PM
  */
