@@ -82,7 +82,8 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
     JCheckBoxMenuItem primarySelectedItem;
     JCheckBoxMenuItem secondarySelectedItem;    // must be non-null, but may contain null elements
     Rectangle[] dirtyBoundsList;
-    private static final Logger logger = LoggerManager.getLogger(DasLogger.GUI_LOG.toString());
+    
+    private static final Logger logger = LoggerManager.getLogger( "das2.gui.dmia" );
     
     /**
      * number of additional inserted popup menu items to the primary menu.
@@ -849,7 +850,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     @Override
     public void mousePressed(MouseEvent e) {
-        logger.log(Level.FINER, "mousePressed {0}", mouseMode);
+        logger.log(Level.FINE, "mousePressed {0} on {1}", new Object[] { mouseMode, parent } );
         if (pinned) {
             active = null;
             refresh();
@@ -969,7 +970,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        logger.log(Level.FINEST, "mouseDragged in {0}", mouseMode);
+        logger.log(Level.FINE, "mouseDragged {0} on {1}", new Object[] { mouseMode, parent } );
         if (mouseMode == MouseMode.resize) {
             Point p = e.getPoint();
             p.translate(parent.getX(), parent.getY());
@@ -1058,7 +1059,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        logger.finest("mouseReleased");
+        logger.log(Level.FINE, "mouseReleased {0} on {1}", new Object[] { mouseMode, parent } );
         if (mouseMode == MouseMode.resize) {
             performResize(e);
             getGlassPane().setDragRenderer(null, null, null);
