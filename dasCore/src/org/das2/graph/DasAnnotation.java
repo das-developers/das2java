@@ -21,6 +21,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
 
@@ -75,7 +77,43 @@ public class DasAnnotation extends DasCanvasComponent {
 
         this.getDasMouseInputAdapter().addMenuItem(new JMenuItem(removeMeAction));
 
-        MouseModule mm = new MoveComponentMouseModule(this);
+        MouseModule mm = new MoveComponentMouseModule(this) {
+            Point p0;
+            
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e); 
+                p0= e.getPoint();
+            }
+            
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if ( getAnchorType()==AnchorType.CANVAS ) {
+                    super.mouseReleased(e);
+                } else {
+                    Point p= e.getPoint();
+                    int dx = p.x - p0.x;
+                    int dy = p.y - p0.y;
+                    try {
+                        double x0= plot.getXAxis().transform(xrange.min());
+                        double x1= plot.getXAxis().transform(xrange.max());
+                        xrange= plot.getXAxis().invTransform(x0+dx, x1+dx);
+                    } catch ( InconvertibleUnitsException ex ) {
+                        
+                    }
+                    try {
+                        double y0= plot.getYAxis().transform(yrange.min());
+                        double y1= plot.getYAxis().transform(yrange.max());
+                        yrange= plot.getYAxis().invTransform(y0+dy, y1+dy);
+                    } catch ( InconvertibleUnitsException ex ) {
+                        
+                    }
+                    resize();
+                    repaint();
+                }
+            }
+        };
+        
         this.getDasMouseInputAdapter().setPrimaryModule(mm);
 
         arrowToMouseModule = createArrowToMouseModule(this);
@@ -183,8 +221,6 @@ public class DasAnnotation extends DasCanvasComponent {
             this.gtr.setString( g, getString() );
             Rectangle r= calcBounds();
             r.add( r.x+r.width+1, r.y+r.height+1 );
-            
-            
             setBounds(r);
         }
     }
@@ -324,28 +360,40 @@ public class DasAnnotation extends DasCanvasComponent {
     }
 
     /**
-     * return the bounds of that thing we are anchored to.
-     * @return 
+     * return the bounds of that thing we are anchored to.  Note 
+     * AnchorType.DATA is treated the same as AnchorType.PLOT, but the thought
+     * is that it could look at the render's click 
+     * @return the bounds of that thing we are anchored to.
      */
     private Rectangle getAnchorBounds() {
         Rectangle anchorRect= new Rectangle();
-        if ( anchorType==AnchorType.DATA && plot!=null && xrange!=null && yrange!=null ) {
-            anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
-            anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
-            int x1= (int)(plot.getXAxis().transform(xrange.max()));
-            int y1= (int)(plot.getYAxis().transform(yrange.max()));
-            if ( x1<anchorRect.x ) {
-                int t= anchorRect.x;
-                anchorRect.x= x1;
-                x1= t;
+        if ( ( anchorType==AnchorType.PLOT || anchorType==AnchorType.DATA ) && plot!=null && xrange!=null && yrange!=null ) {
+            try {
+                anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
+                int x1= (int)(plot.getXAxis().transform(xrange.max()));
+                if ( x1<anchorRect.x ) {
+                    int t= anchorRect.x;
+                    anchorRect.x= x1;
+                    x1= t;
+                }
+                anchorRect.width= x1- anchorRect.x;
+            } catch ( InconvertibleUnitsException ex ) {
+                anchorRect.x= getColumn().getDMinimum();
+                anchorRect.width= getColumn().getWidth();
             }
-            if ( y1<anchorRect.y ) {
-                int t= anchorRect.y;
-                anchorRect.y= y1;
-                y1= t;
+            try {
+                anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
+                int y1= (int)(plot.getYAxis().transform(yrange.max()));
+                if ( y1<anchorRect.y ) {
+                    int t= anchorRect.y;
+                    anchorRect.y= y1;
+                    y1= t;
+                }
+                anchorRect.height= y1- anchorRect.y;
+            } catch ( InconvertibleUnitsException ex ) {
+                anchorRect.y= getRow().getDMinimum();
+                anchorRect.height= getRow().getHeight();
             }
-            anchorRect.width= x1- anchorRect.x;
-            anchorRect.height= y1- anchorRect.y;
             
         } else {
             anchorRect= DasDevicePosition.toRectangle( getRow(), getColumn() );
@@ -404,6 +452,27 @@ public class DasAnnotation extends DasCanvasComponent {
             r.y = anchor.y + anchor.height - em - r.height - yoffset;
         } else if ( anchorPosition==AnchorPosition.SE ) {
             r.x = anchor.x + anchor.width - em - r.width - xoffset;
+            r.y = anchor.y + anchor.height - em - r.height - yoffset;
+        } else if ( anchorPosition==AnchorPosition.OutsideNNW ) {
+            r.x = anchor.x + em + xoffset ;
+            r.y = anchor.y - (int)r.getHeight() - em - yoffset ;
+        } else if ( anchorPosition==AnchorPosition.OutsideNNE ) {
+            r.x = anchor.x + anchor.width - em - r.width - xoffset;
+            r.y = anchor.y - (int)r.getHeight() - em - yoffset ;
+        } else if ( anchorPosition==AnchorPosition.Center ) {
+            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
+            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) + yoffset;
+        } else if ( anchorPosition==AnchorPosition.W ) {
+            r.x = anchor.x + em + xoffset;
+            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) + yoffset;
+        } else if ( anchorPosition==AnchorPosition.E ) {
+            r.x = anchor.x + anchor.width - em - r.width - xoffset;
+            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) + yoffset;
+        } else if ( anchorPosition==AnchorPosition.OutsideE ) {
+            r.x = anchor.x + anchor.width + em + xoffset;
+            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) + yoffset;
+        } else if ( anchorPosition==AnchorPosition.S ) {
+            r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
             r.y = anchor.y + anchor.height - em - r.height - yoffset;
         }
         
