@@ -413,7 +413,8 @@ public class DasAnnotation extends DasCanvasComponent {
      * @return the bounds in the canvas coordinate frame.
      */
     private Rectangle getAnnotationBubbleBounds() {
-        int em = (int) getEmSize() / 2;
+
+        int em = (int) getEmSize();
         
         Rectangle anchor= getAnchorBounds();
                         
@@ -447,46 +448,46 @@ public class DasAnnotation extends DasCanvasComponent {
             r.y = anchor.y + em + yoffset ;
         } else if ( anchorPosition==AnchorPosition.OutsideN ) {
             r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
-            r.y = anchor.y - (int)r.getHeight() - em - yoffset ;
+            r.y = anchor.y - (int)r.getHeight() - yoffset ;
         } else if ( anchorPosition==AnchorPosition.NE ) {
-            r.x = anchor.x + anchor.width - em - r.width - xoffset;
+            r.x = anchor.x + anchor.width - r.width - xoffset;
             r.y = anchor.y + em + yoffset ;
         } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
             r.x = anchor.x + anchor.width + em + xoffset;
             r.y = anchor.y + em - yoffset;
         } else if ( anchorPosition==AnchorPosition.SW ) {
             r.x = anchor.x + em + xoffset;
-            r.y = anchor.y + anchor.height - em - r.height - yoffset;
+            r.y = anchor.y + anchor.height - r.height - yoffset;
         } else if ( anchorPosition==AnchorPosition.SE ) {
-            r.x = anchor.x + anchor.width - em - r.width - xoffset;
-            r.y = anchor.y + anchor.height - em - r.height - yoffset;
+            r.x = anchor.x + anchor.width - r.width - xoffset;
+            r.y = anchor.y + anchor.height - r.height - yoffset;
         } else if ( anchorPosition==AnchorPosition.OutsideNNW ) {
             r.x = anchor.x + em + xoffset ;
-            r.y = anchor.y - (int)r.getHeight() - em - yoffset ;
+            r.y = anchor.y - (int)r.getHeight() - yoffset ;
         } else if ( anchorPosition==AnchorPosition.OutsideNNE ) {
-            r.x = anchor.x + anchor.width - em - r.width - xoffset;
-            r.y = anchor.y - (int)r.getHeight() - em - yoffset ;
+            r.x = anchor.x + anchor.width - r.width - xoffset;
+            r.y = anchor.y - (int)r.getHeight() - yoffset ;
         } else if ( anchorPosition==AnchorPosition.Center ) {
             r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
-            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) + yoffset;
+            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
         } else if ( anchorPosition==AnchorPosition.W ) {
             r.x = anchor.x + em + xoffset;
-            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) + yoffset;
+            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
         } else if ( anchorPosition==AnchorPosition.E ) {
-            r.x = anchor.x + anchor.width - em - r.width - xoffset;
-            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) + yoffset;
+            r.x = anchor.x + anchor.width  - r.width - xoffset;
+            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
         } else if ( anchorPosition==AnchorPosition.OutsideE ) {
             r.x = anchor.x + anchor.width + em + xoffset;
-            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) + yoffset;
+            r.y = anchor.y + anchor.height/2 - (int)( r.getHeight() / 2 ) - yoffset;
         } else if ( anchorPosition==AnchorPosition.S ) {
             r.x = anchor.x + anchor.width/2 - (int)( r.getWidth() / 2 ) + xoffset ;
-            r.y = anchor.y + anchor.height - em - r.height - yoffset;
+            r.y = anchor.y + anchor.height - r.height - yoffset;
         }
         
         r.x-= em;
         r.y-= em;
-        r.width+= em*2;
-        r.height+= em*2;
+        r.width+= em;
+        r.height+= em;
                
         return r;
     }
