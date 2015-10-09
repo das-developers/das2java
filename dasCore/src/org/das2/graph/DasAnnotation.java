@@ -104,14 +104,14 @@ public class DasAnnotation extends DasCanvasComponent {
                     try {
                         double x0= plot.getXAxis().transform(xrange.min());
                         double x1= plot.getXAxis().transform(xrange.max());
-                        xrange= plot.getXAxis().invTransform(x0+dx, x1+dx);
+                        setXrange( plot.getXAxis().invTransform(x0+dx, x1+dx) );
                     } catch ( InconvertibleUnitsException ex ) {
                         
                     }
                     try {
                         double y0= plot.getYAxis().transform(yrange.min());
                         double y1= plot.getYAxis().transform(yrange.max());
-                        yrange= plot.getYAxis().invTransform(y0+dy, y1+dy);
+                        setYrange( plot.getYAxis().invTransform(y0+dy, y1+dy) );
                     } catch ( InconvertibleUnitsException ex ) {
                         
                     }
@@ -144,11 +144,9 @@ public class DasAnnotation extends DasCanvasComponent {
                         Point p= e.getPoint();
                         p= SwingUtilities.convertPoint( DasAnnotation.this, p, plot.getCanvas() );
                         DatumRange xr= plot.getXAxis().invTransform(p0.x,p.x);
-                        xrange= xr;
+                        setXrange( xr ); 
                         DatumRange yr= plot.getYAxis().invTransform(p0.y,p.y);
-                        yrange= yr;
-                        resize();
-                        repaint();
+                        setYrange( yr );
                     } else {
                         JOptionPane.showMessageDialog( parent, "Annotation is not attached to a plot.");
                     }
