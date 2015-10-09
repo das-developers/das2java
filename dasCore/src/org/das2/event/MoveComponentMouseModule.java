@@ -11,7 +11,6 @@ package org.das2.event;
 import org.das2.graph.DasCanvasComponent;
 import org.das2.graph.DasColumn;
 import org.das2.graph.DasRow;
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -89,7 +88,7 @@ public class MoveComponentMouseModule extends MouseModule {
             Graphics2D g = (Graphics2D) g1;
             
             g.setClip(null);
-            g.setColor(Color.BLACK);
+            g.setColor(c.getForeground());
             g.draw(bounds);
             return new Rectangle[] { enlarge(bounds.getBounds(), 1.2 ).getBounds()};
         }
