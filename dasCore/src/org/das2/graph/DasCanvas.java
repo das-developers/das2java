@@ -854,16 +854,17 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             //logger.fine("*** print graphics: " + g);
             //logger.fine("*** print graphics clip: " + g.getClip());
 
-            //for (int i = 0; i < getComponentCount(); i++) {
-              //  Component c = getComponent(i);
-                //if (c instanceof DasPlot) {
-                //    DasPlot p = (DasPlot) c;
-                //logger.fine("    DasPlot.isDirty()=" + p.isDirty());
-                //logger.fine("    DasPlot.getBounds()=" + p.getBounds());
-                //System.err.println("    DasPlot.isDirty()=" + p.isDirty());
-                //System.err.println("    DasPlot.getBounds()=" + p.getBounds());
-               // }
-            //}
+            if ( logger.isLoggable(Level.FINER) ) {
+                for (int i = 0; i < getComponentCount(); i++) {
+                    Component c = getComponent(i);
+                    if (c instanceof DasCanvasComponent) {
+                        DasCanvasComponent p = (DasCanvasComponent) c;
+                        logger.log(Level.FINER, "-- {0} --", p);
+                        logger.log(Level.FINER, "    DasPlot.isDirty()={0}", p.isDirty());
+                        logger.log(Level.FINER, "    DasPlot.getBounds()={0}", p.getBounds());
+                    }
+                }
+            }
             lpaintingForPrint= true;
 
             super.print(g);
