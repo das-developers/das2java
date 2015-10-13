@@ -776,7 +776,49 @@ public class DasAnnotation extends DasCanvasComponent {
         repaint();        
         firePropertyChange(PROP_YRANGE, oldYrange, yrange);
     }
+        private Datum pointAtX = Datum.create(0);
 
+    public static final String PROP_POINTATX = "pointAtX";
+
+    public Datum getPointAtX() {
+        return pointAtX;
+    }
+
+    public void setPointAtX(Datum pointAtX) {
+        Datum oldPointAtX = this.pointAtX;
+        this.pointAtX = pointAtX;
+        firePropertyChange(PROP_POINTATX, oldPointAtX, pointAtX);
+    }
+
+    private Datum pointAtY = Datum.create(0);
+
+    public static final String PROP_POINTATY = "pointAtY";
+
+    public Datum getPointAtY() {
+        return pointAtY;
+    }
+
+    public void setPointAtY(Datum pointAtY) {
+        Datum oldPointAtY = this.pointAtY;
+        this.pointAtY = pointAtY;
+        firePropertyChange(PROP_POINTATY, oldPointAtY, pointAtY);
+    }
+
+    private boolean showArrow = false;
+
+    public static final String PROP_SHOWARROW = "showArrow";
+
+    public boolean isShowArrow() {
+        return showArrow;
+    }
+
+    public void setShowArrow(boolean showArrow) {
+        boolean oldShowArrow = this.showArrow;
+        this.showArrow = showArrow;
+        firePropertyChange(PROP_SHOWARROW, oldShowArrow, showArrow);
+    }
+
+    
     private BorderType anchorBorderType = BorderType.NONE;
 
     public static final String PROP_ANCHORBORDERTYPE = "anchorBorderType";
