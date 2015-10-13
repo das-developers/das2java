@@ -1090,7 +1090,7 @@ public class FileStorageModel {
                 if ( lt!=null ) {
                     versionLt= lt;
                 }
-                if ( alpha!=null ) {  // netbeans suggestion is incorrect. alpha can be null.
+                if ( alpha!=null ) {  
                     if ( sep!=null ) {
                         return "alpha with split not supported";
                     } else {
