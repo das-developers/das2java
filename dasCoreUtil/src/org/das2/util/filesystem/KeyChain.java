@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -33,6 +34,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -119,6 +121,31 @@ public class KeyChain {
         }
     }
 
+    private void appendKeysFile( String url, String key ) throws IOException {
+        File keyFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
+        PrintWriter w= null;
+        try {
+            if ( keyFile.exists() ) {
+                if (  keyFile.canWrite() ) {
+                    w= new PrintWriter( new FileWriter(keyFile,true) );
+                } else {
+                    throw new IOException( "Unable to append to file: "+ keyFile );
+                }
+            } else {
+                try {
+                    w= new PrintWriter( new FileWriter(keyFile) );
+                } catch ( IOException ex ) {
+                    throw new IOException( "Unable to create file: "+ keyFile );
+                }
+            }
+            w.append( url ).append("\t").append(key).append("\n");
+
+        } finally {
+            if ( w!=null ) w.close();
+        }
+    }        
+    
+    
     /**
      * dump the loaded keys into the file new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" )
      */
@@ -347,12 +374,27 @@ public class KeyChain {
                 JPasswordField passTf= new JPasswordField();
                 if ( ss.length>1 && !( ss[1].equals("pass")||ss[1].equals("password")) ) passTf.setText(ss[1]);
                 panel.add( passTf );
+                
+                JCheckBox storeKeychain= new JCheckBox("store password in keychain.txt file");
+                storeKeychain.setToolTipText("<html>passwords can be stored in keychain.txt files in your cache, but beware of security implications and confusion this can cause.");
+
+                if ( System.getProperty("user.name").equals("jbf") ) {
+                    panel.add( storeKeychain );
+                }
+                
                 //int r= JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION );
                 int r= JOptionPane.showConfirmDialog( parent, panel, proto + " Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null);
                 if ( JOptionPane.OK_OPTION==r ) {
                     char[] pass= passTf.getPassword();
                     storedUserInfo= userTf.getText() + ":" + new String(pass);
                     keys.put( hash, storedUserInfo );
+                    if ( storeKeychain.isSelected() ) {
+                        try {
+                            appendKeysFile( hash, storedUserInfo );
+                        } catch (IOException ex) {
+                            logger.log( Level.WARNING, null, ex );
+                        }
+                    }
                     return storedUserInfo;
                 } else if ( JOptionPane.CANCEL_OPTION==r ) {
                     throw new CancelledOperationException();
