@@ -222,6 +222,7 @@ public abstract class FileSystem  {
     public synchronized static void reset() {
         instances.clear();
         blocks.clear();
+        KeyChain.getDefault().clearAll();
         if ( !FileUtil.deleteWithinFileTree( settings().getLocalCacheDir(), ".listing" ) ) {
             logger.log(Level.WARNING, "delete all .listing files within tree {0} failed.", settings().getLocalCacheDir());
         }
