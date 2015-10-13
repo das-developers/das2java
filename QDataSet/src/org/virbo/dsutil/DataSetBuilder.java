@@ -489,6 +489,11 @@ public class DataSetBuilder {
      */
     public DDataSet getDataSet() {
         DDataSet result;
+
+        //TODO: Consider:
+        //if ( (index+offset)==(length-1) ) { // the last record was never committed with "nextRecord"
+        //    length= index;
+        //}
         
         switch (rank ) {
             case 1: result= DDataSet.createRank1(length); break;
