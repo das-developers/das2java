@@ -25,8 +25,12 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.*;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.EnumerationUnits;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.TimeParser;
+import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -820,6 +824,8 @@ public class AsciiParser {
 
         boolean parsedMeta= false;
 
+        boolean acceptRecord= true; // true if the record meets where condition.
+        
         while (line != null) {
             bytesRead += line.length() + 1; // +1 is for end-of-line
             iline++;
@@ -872,7 +878,7 @@ public class AsciiParser {
 
                     // *** here's where we parse each record ***
                     if (recordParser.tryParseRecord(line, irec, builder)) {
-                        boolean acceptRecord= true;
+                        acceptRecord= true;
                         if ( whereParm!=null ) {
                             String[] fields= new String[recordParser.fieldCount()];
                             if ( recordParser.splitRecord(line,fields) ) {
@@ -910,7 +916,14 @@ public class AsciiParser {
 
         builder.putProperty(QDataSet.USER_PROPERTIES, new HashMap(builder.properties)); // put discovered properties into
 
-        return builder.getDataSet();
+        WritableDataSet result= builder.getDataSet();
+        
+        if ( acceptRecord==false ) {
+            result= (WritableDataSet)result.trim(0,result.length()-1);
+        }
+        
+        return result;
+        
     }
 
     public static boolean isRichHeader( String header ) {
@@ -1026,6 +1039,7 @@ public class AsciiParser {
     int whereSign= 0; // zero means don't allow gt or lt
     String whereValue= null;
     Datum dwhereValue= null;
+    DatumRange dwhereWithin= null;
     
     private Comparator whereComp= new Comparator() {
         @Override
@@ -1033,12 +1047,35 @@ public class AsciiParser {
             if ( o1.equals(o2) ) {
                 return 0;
             } else {
+                Datum d;
+                try {
+                    d= units[iwhereParm].parse((String)o1);
+                } catch ( ParseException ex ) {
+                    return 1-whereSign; // don't accept this value
+                }
                 if ( dwhereValue!=null ) {
                     try {
-                        return units[iwhereParm].parse((String)o1).compareTo(dwhereValue);
-                    } catch (ParseException ex) {
-                        return 1-whereSign; // don't accept this value
+                        return d.compareTo(dwhereValue);
+                    } catch ( InconvertibleUnitsException ex ) {
+                        if ( UnitsUtil.isRatioMeasurement(units[iwhereParm]) ) {
+                            dwhereValue= Datum.create( dwhereValue.value(),units[iwhereParm] );
+                            return d.compareTo(dwhereValue);
+                        } else {
+                            throw ex;
+                        }
                     }
+                } else if ( dwhereWithin!=null ) {
+                    try {
+                        return dwhereWithin.contains(d) ? 1 : -1;
+                    } catch ( InconvertibleUnitsException ex ) {
+                        if ( UnitsUtil.isRatioMeasurement(units[iwhereParm]) ) {
+                            dwhereWithin= DatumRange.newDatumRange( dwhereWithin.min().value(), dwhereWithin.max().value(), units[iwhereParm] );
+                            return dwhereWithin.contains(d) ? 1 : -1;
+                        } else {
+                            throw ex;
+                        }
+                    }
+                    
                 } else {
                     return 1-whereSign; // don't accept this value
                 }
@@ -1083,7 +1120,11 @@ public class AsciiParser {
         } else if ( op.equals("le") ) {
             this.whereSign= -1;
             this.whereEq= true;
-            this.whereNe= false;            
+            this.whereNe= false;  
+        } else if ( op.equals("within") ) {
+            this.whereSign= 1;
+            this.whereEq= true;
+            this.whereNe= false;     
         } else {
             throw new IllegalArgumentException("where constraint not supported: "+op);
         }
@@ -1091,9 +1132,15 @@ public class AsciiParser {
         this.dwhereValue= null;
         if ( UnitsUtil.isOrdinalMeasurement(units[iwhereParm]) ) {
             logger.log( Level.FINE, "column {0} is ordinal data", sparm);
+            // we just do string comparisons in this case.
         } else {
             try {
-                this.dwhereValue= units[iwhereParm].parse(this.whereValue);
+                if ( op.equals("within") ) {
+                    
+                    this.dwhereWithin= DatumRangeUtil.parseDatumRange( this.whereValue, units[iwhereParm] );
+                } else {
+                    this.dwhereValue= units[iwhereParm].parse( this.whereValue );
+                }
             } catch (ParseException ex) {
                 logger.log( Level.FINE, "sval is not parseable, assuming it is ordinal data");
             }
