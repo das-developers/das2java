@@ -122,20 +122,26 @@ public class KeyChain {
     }
 
     private void appendKeysFile( String url, String key ) throws IOException {
-        File keyFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
+        File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
         PrintWriter w= null;
         try {
-            if ( keyFile.exists() ) {
-                if (  keyFile.canWrite() ) {
-                    w= new PrintWriter( new FileWriter(keyFile,true) );
+            if ( keysFile.exists() ) {
+                if (  keysFile.canWrite() ) {
+                    w= new PrintWriter( new FileWriter(keysFile,true) );
                 } else {
-                    throw new IOException( "Unable to append to file: "+ keyFile );
+                    throw new IOException( "Unable to append to file: "+ keysFile );
                 }
             } else {
                 try {
-                    w= new PrintWriter( new FileWriter(keyFile) );
+                    w= new PrintWriter( new FileWriter(keysFile) );
+                    if ( !keysFile.setReadable(false) ) logger.warning("setReadable failure");
+                    if ( !keysFile.setReadable(false,false) ) logger.warning("setReadable failure");
+                    if ( !keysFile.setReadable(true,true) ) logger.warning("setReadable failure");
+                    if ( !keysFile.setWritable(false) ) logger.warning("setWritable failure");
+                    if ( !keysFile.setWritable(true,true) ) logger.warning("setWritable failure");                    
+                    
                 } catch ( IOException ex ) {
-                    throw new IOException( "Unable to create file: "+ keyFile );
+                    throw new IOException( "Unable to create file: "+ keysFile );
                 }
             }
             w.append( url ).append("\t").append(key).append("\n");
@@ -143,6 +149,9 @@ public class KeyChain {
         } finally {
             if ( w!=null ) w.close();
         }
+        
+
+        
     }        
     
     
