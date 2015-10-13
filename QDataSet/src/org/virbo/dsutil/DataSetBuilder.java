@@ -411,7 +411,11 @@ public class DataSetBuilder {
     }
     
     /**
-     * This must be called each time a record is complete.  
+     * This must be called each time a record is complete.  Note this
+     * currently advances to the next record and at this point the next record
+     * exists.  In other words, the last call to nextRecord is not required.
+     * This logic may change, so that any fields written would be dropped unless 
+     * nextRecord is called to commit the record.
      * When -1 is used for the indexes of the streaming dimension, then this
      * will increment the internal counter.
      * TODO: Check for unspecified entries.
