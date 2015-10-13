@@ -138,6 +138,7 @@ public class KeyChain {
                     if ( !keysFile.setReadable(false,false) ) logger.warning("setReadable failure");
                     if ( !keysFile.setReadable(true,true) ) logger.warning("setReadable failure");
                     if ( !keysFile.setWritable(false) ) logger.warning("setWritable failure");
+                    if ( !keysFile.setWritable(false,false) ) logger.warning("setWritable failure");
                     if ( !keysFile.setWritable(true,true) ) logger.warning("setWritable failure");                    
                     
                 } catch ( IOException ex ) {
@@ -195,6 +196,7 @@ public class KeyChain {
             if ( !keysFile.setReadable(false,false) ) logger.warning("setReadable failure");
             if ( !keysFile.setReadable(true,true) ) logger.warning("setReadable failure");
             if ( !keysFile.setWritable(false) ) logger.warning("setWritable failure");
+            if ( !keysFile.setWritable(false,false) ) logger.warning("setWritable failure");            
             if ( !keysFile.setWritable(true,true) ) logger.warning("setWritable failure");
         }
         
