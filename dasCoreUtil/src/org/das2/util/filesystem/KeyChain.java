@@ -369,6 +369,15 @@ public class KeyChain {
         return userInfo;
     }
 
+    /**
+     * clear all passwords.
+     */
+    public void clearAll() {
+        logger.fine("clear all cached passwords in the keychain, and reload all keychain.txt files.");
+        keys.clear();
+        loadInitial();
+    }
+    
     public void clearUserPassword(URI uri) {
         try {
             clearUserPassword(uri.toURL());
@@ -379,7 +388,7 @@ public class KeyChain {
     /**
      * remove the password from the list of known passwords.  This was introduced
      * because we needed to clear a bad password in FTP.
-     * @param uri
+     * @param url
      */
     public void clearUserPassword(URL url) {
 
