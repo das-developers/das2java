@@ -1464,6 +1464,10 @@ public class DatumRangeUtil {
             } catch ( ParseException e ) {
                 d2= units.parse( ss[1] );
             }
+            if ( ss[0].endsWith("+") ) {  // support 160+to+169
+                ss[0]= ss[0].substring(0,ss[0].length()-1);
+            }
+            
             Datum d1= d2.getUnits().parse( ss[0] );
             
             if ( d1.getUnits().isConvertibleTo(units) ) {
