@@ -539,10 +539,11 @@ public class Datum implements Comparable, Serializable {
     
     /**
      * compare the datum to the object.
-     * @return an int <0 if this comes before Datum a in this Datum's units space, 0 if they are equal, and >0 otherwise.
+     * @return an int &lt; 0 if this comes before Datum a in this Datum's units space, 0 if they are equal, and &gt; 0 otherwise.
      * @param a the Object to compare this datum to.
      * @throws IllegalArgumentException if a is not a Datum or is not convertible to this Datum's units.
      */
+    @Override
     public int compareTo( Object a ) throws IllegalArgumentException {
         if ( ! (a instanceof Datum) ) throw new IllegalArgumentException("comparable type mismatch");
         return compareTo((Datum)a);
@@ -550,8 +551,8 @@ public class Datum implements Comparable, Serializable {
     
     /**
      * compare this to another datum.
-     * @return an int <0 if this comes before Datum a in this Datum's units space,
-     * 0 if they are equal, and >0 otherwise.
+     * @return an int &lt; 0 if this comes before Datum a in this Datum's units space,
+     * 0 if they are equal, and &gt; 0 otherwise.
      * @param a the Datum to compare this datum to.
      * @throws IllegalArgumentException if a is not convertible to this Datum's
      * units.
