@@ -490,7 +490,7 @@ public class DataSetBuilder {
     public DDataSet getDataSet() {
         DDataSet result;
 
-        //TODO: Consider:
+        //TODO: Consider https://sourceforge.net/p/autoplot/bugs/1469/:
         //if ( (index+offset)==(length-1) ) { // the last record was never committed with "nextRecord"
         //    length= index;
         //}
