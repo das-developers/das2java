@@ -18,6 +18,7 @@ import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -96,25 +97,34 @@ public class DasAnnotation extends DasCanvasComponent {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if ( getAnchorType()==AnchorType.CANVAS ) {
-                    super.mouseReleased(e);
+                    Point p= e.getPoint();
+                    int dx = p.x - p0.x;
+                    int dy = p.y - p0.y;
+                    adjustAnchorOffset( dx, dy );
+                    resize();
+                    repaint();                    
                 } else {
                     Point p= e.getPoint();
                     int dx = p.x - p0.x;
                     int dy = p.y - p0.y;
-                    try {
-                        double x0= plot.getXAxis().transform(xrange.min());
-                        double x1= plot.getXAxis().transform(xrange.max());
-                        setXrange( plot.getXAxis().invTransform(x0+dx, x1+dx) );
-                    } catch ( InconvertibleUnitsException ex ) {
-                        
-                    }
-                    try {
-                        double y0= plot.getYAxis().transform(yrange.min());
-                        double y1= plot.getYAxis().transform(yrange.max());
-                        setYrange( plot.getYAxis().invTransform(y0+dy, y1+dy) );
-                    } catch ( InconvertibleUnitsException ex ) {
-                        
-                    }
+                    adjustAnchorOffset( dx, dy );
+//                    Point p= e.getPoint();
+//                    int dx = p.x - p0.x;
+//                    int dy = p.y - p0.y;
+//                    try {
+//                        double x0= plot.getXAxis().transform(xrange.min());
+//                        double x1= plot.getXAxis().transform(xrange.max());
+//                        setXrange( plot.getXAxis().invTransform(x0+dx, x1+dx) );
+//                    } catch ( InconvertibleUnitsException ex ) {
+//                        
+//                    }
+//                    try {
+//                        double y0= plot.getYAxis().transform(yrange.min());
+//                        double y1= plot.getYAxis().transform(yrange.max());
+//                        setYrange( plot.getYAxis().invTransform(y0+dy, y1+dy) );
+//                    } catch ( InconvertibleUnitsException ex ) {
+//                        
+//                    }
                     resize();
                     repaint();
                 }
@@ -159,6 +169,62 @@ public class DasAnnotation extends DasCanvasComponent {
         this.getDasMouseInputAdapter().setSecondaryModule(arrowToMouseModule);
     }
 
+    private void adjustAnchorOffset( int dx, int dy ) {
+        if ( anchorPosition==AnchorPosition.NW ) {
+        } else if ( anchorPosition==AnchorPosition.N ) {
+        } else if ( anchorPosition==AnchorPosition.OutsideN ) {
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.NE ) {
+            dx= -dx;
+        } else if ( anchorPosition==AnchorPosition.OutsideNE ) {
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.SW ) {
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.SE ) {
+            dx= -dx;
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.OutsideNNW ) {
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.OutsideNNE ) {
+            dx= -dx;
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.Center ) {
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.W ) {
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.E ) {
+            dx= -dx;
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.OutsideE ) {
+            dy= -dy;
+        } else if ( anchorPosition==AnchorPosition.S ) {
+            dy= -dy;
+        }
+
+        String anchorOffset= getAnchorOffset();
+        double em = getEmSize();
+        if ( anchorOffset.trim().length()==0 ) {
+            anchorOffset= String.format("%.2fem,%.2fem", dx/em, dy/em );
+            this.setAnchorOffset(anchorOffset);
+        } else {
+            try {
+                String[] ss= anchorOffset.split(",");
+                double[] dd;
+                dd= DasDevicePosition.parseLayoutStr(ss[0]);
+                dd[1]= dd[1] + dx/em;
+                ss[0]= DasDevicePosition.formatFormatStr(dd);
+                dd= DasDevicePosition.parseLayoutStr(ss[1]);
+                dd[1]= dd[1] + dy/em;
+                ss[1]= DasDevicePosition.formatFormatStr(dd);
+                anchorOffset= ss[0]+","+ss[1];
+                this.setAnchorOffset(anchorOffset);
+            } catch (ParseException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+
+    }
+    
     /**
      * create a PointDescriptor using and x and y Datum.
      */
