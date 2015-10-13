@@ -1122,7 +1122,7 @@ public class TimeParser {
     public static TimeParser create(String formatString) {
         HashMap map= new HashMap();
         map.put("o",new OrbitFieldHandler());
-        map.put("v",new IgnoreFieldHandler());
+        map.put("v",new IgnoreFieldHandler()); // note this is often replaced.
         return new TimeParser(formatString,map);
     }
 
