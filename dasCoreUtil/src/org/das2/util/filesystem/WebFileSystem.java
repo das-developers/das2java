@@ -134,7 +134,7 @@ public abstract class WebFileSystem extends FileSystem {
 
     /**
      * return the reason (if any provided) why the filesystem is offline,
-     * @return 
+     * @return the message for the response code
      */
     public String getOfflineMessage() {
         return offlineMessage;
@@ -144,6 +144,7 @@ public abstract class WebFileSystem extends FileSystem {
     
     /**
      * if non-zero, the response code (e.g. 403) why the filesystem is offline.
+     * @return the response code.
      */
     public int getOfflineResponseCode() {
         return offlineResponseCode;
@@ -529,6 +530,8 @@ public abstract class WebFileSystem extends FileSystem {
      * @param filename the name of the file, relative to the filesystem.
      * @param f the file to where the file is downloaded.
      * @param partfile the temporary file during download.
+     * @param monitor progress monitor
+     * @throws java.io.IOException
      */
     protected abstract void downloadFile(String filename, File f, File partfile, ProgressMonitor monitor) throws IOException;
 
@@ -539,6 +542,7 @@ public abstract class WebFileSystem extends FileSystem {
         return this.localRoot.getAbsolutePath();
     }
 
+    @Override
     public File getLocalRoot() {
         return this.localRoot;
     }
@@ -586,7 +590,8 @@ public abstract class WebFileSystem extends FileSystem {
     private final Map<String,Long> listingFreshness= new HashMap();
 
     /**
-     * return true if the listing file (.listing) is available in the cache, and is still fresh.
+     * return true if the listing file (.listing) is available in the 
+     * file system cache, and is still fresh.
      * @param directory
      * @return
      */
@@ -624,6 +629,7 @@ public abstract class WebFileSystem extends FileSystem {
         Long freshness= listingFreshness.get(directory);
         if ( freshness==null ) return null;
         if ( System.currentTimeMillis()-freshness < MEMORY_LISTING_TIMEOUT_MS ) {
+            logger.log(Level.FINER, "list directory from memory for {0}", directory);
             DirectoryEntry [] result= listings.get(directory);
             return result;
         } else {
@@ -639,6 +645,7 @@ public abstract class WebFileSystem extends FileSystem {
      * @param filename the particular file for which we need a listing.
      * @param force if true, then list if it isn't available.
      * @return null if the listing is not available, or if the element is not in the folder, the DirectoryEntry otherwise.
+     * @throws java.io.IOException when the directory is listed.
      */
     public DirectoryEntry maybeUpdateDirectoryEntry( String filename, boolean force ) throws IOException {
         // we should be able to get the listing that we just did from memory.
