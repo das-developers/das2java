@@ -9163,7 +9163,11 @@ public class Ops {
                 if ( !noImplicit ) dim+= 1; // implicity undeclared dimensions add one dimension
             }
             if ( ds.length()>0 ) {
-                ds= DataSetOps.slice0(ds, 0);
+                if ( ds.rank()>QDataSet.MAX_RANK ) {
+                    ds= ds.slice(0);
+                } else {
+                    ds= DataSetOps.slice0(ds, 0);
+                }
             } else {
                 return 1;
             }
