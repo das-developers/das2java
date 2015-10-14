@@ -305,8 +305,8 @@ public final class QubeDataSetIterator implements DataSetIterator {
         }
     }
     
-    private final DimensionIterator[] it = new DimensionIterator[ QDataSet.MAX_RANK ];
-    private DimensionIteratorFactory[] fit = new DimensionIteratorFactory[ QDataSet.MAX_RANK ];
+    private DimensionIterator[] it;
+    private DimensionIteratorFactory[] fit;
     private boolean isAllIndexLists;
 
     private int rank;
@@ -329,6 +329,9 @@ public final class QubeDataSetIterator implements DataSetIterator {
         if ( ! DataSetUtil.validate(ds,problems) ) {
             throw new IllegalArgumentException("data doesn't validate: "+problems );
         }
+        it= new DimensionIterator[ ds.rank() ];
+        fit= new DimensionIteratorFactory[ ds.rank() ];
+        
         if (Boolean.TRUE.equals(ds.property(QDataSet.QUBE))) {
             this.qube = DataSetUtil.qubeDims(ds);
             this.ds = ds;
@@ -358,6 +361,7 @@ public final class QubeDataSetIterator implements DataSetIterator {
         this.rank = ds.rank();
         this.ds = ds;
         this.fit = fits;
+        it= new DimensionIterator[ fits.length ];
         initialize();
     }
 
