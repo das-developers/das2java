@@ -764,9 +764,9 @@ public class DataSetUtil {
 
         String qubeStr = DataSetUtil.isQube(ds) ? "" : "*";
 
-        String[] depNames = new String[4];
+        String[] depNames = new String[ds.rank()];
 
-        for (int i = 0; i < QDataSet.MAX_RANK; i++) {
+        for (int i = 0; i < depNames.length; i++) {
             depNames[i] = "";
             Object dep0o= ds.property("DEPEND_" + i);
             if ( dep0o!=null ) {
@@ -1784,7 +1784,13 @@ public class DataSetUtil {
      */
     public static int[] qubeDims(QDataSet ds) {
         if (ds.rank() > 4) {
-            throw new IllegalArgumentException("rank limit");
+            int [] qube= new int[ds.rank()];
+            int rank=ds.rank();
+            for ( int i=0; i<rank; i++ ) {
+                qube[i]= ds.length();
+                ds= ds.slice(0);
+            }
+            return qube;
         } else if (ds.rank()==2 ) {  // rank 1 depend_1 implies qube.
             QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
             if ( dep1!=null && dep1.rank()==1 ) return new int[] { ds.length(), dep1.length() };
@@ -2151,7 +2157,11 @@ public class DataSetUtil {
                         problems.add(String.format("rank 2 DEPEND_1 length is %d while data length is %d.", dep1.length(), ds.length()));
                     }
                 }
-                validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy. Note we only check the first assuming QUBE.
+                if ( ds.rank()>QDataSet.MAX_RANK ) {
+                    validate( ds.slice(0), problems, dimOffset + 1); // we must use native.
+                } else {
+                    validate(DataSetOps.slice0(ds, 0), problems, dimOffset + 1); // don't use native, because it may copy. Note we only check the first assuming QUBE.
+                }
             }
         }
         if ( ds.property(QDataSet.JOIN_0)!=null ) {
