@@ -22,22 +22,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.border.TitledBorder;
 import org.virbo.dataset.QDataSet;
-import static org.virbo.dataset.QDataSet.MAX_RANK;
 import static org.virbo.filters.AbstractFilterEditorPanel.logger;
 
 /**
- *
+ * GUI for the slices operation.
  * @author jbf
  */
 public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implements FilterEditorPanel {
     
     static final long t0= System.currentTimeMillis();
     int[] qube= null;
-    JSpinner[] spinners= new JSpinner[MAX_RANK];
-    JCheckBox[] checkboxs= new JCheckBox[MAX_RANK];
-    int rank= MAX_RANK;
+    JSpinner[] spinners= new JSpinner[8];
+    JCheckBox[] checkboxs= new JCheckBox[8];
+    int rank= 8;
     
     public SlicesFilterEditorPanel() {
         setFilter("|slices(:)");
