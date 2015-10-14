@@ -37,10 +37,9 @@ public class MultiplyFilterEditorPanel extends AbstractFilterEditorPanel {
 
         setPreferredSize(new java.awt.Dimension(172, 100));
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/virbo/filters/Bundle"); // NOI18N
-        jLabel2.setText(bundle.getString("MultiplyFilterEditorPanel_x.jLabel2.text")); // NOI18N
+        jLabel2.setText("Multiply By:");
 
-        scalar.setText(bundle.getString("MultiplyFilterEditorPanel_x.jTextField2.text")); // NOI18N
+        scalar.setText("1.0");
         scalar.setPreferredSize(new java.awt.Dimension(75, 27));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

@@ -33,10 +33,9 @@ public class DivideFilterEditorPanel extends AbstractFilterEditorPanel implement
         jLabel2 = new javax.swing.JLabel();
         scalar = new javax.swing.JTextField();
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/virbo/filters/Bundle"); // NOI18N
-        jLabel2.setText(bundle.getString("DivideFilterEditorPanel_X.jLabel2.text")); // NOI18N
+        jLabel2.setText("Divide By:");
 
-        scalar.setText(bundle.getString("DivideFilterEditorPanel_X.jTextField1.text")); // NOI18N
+        scalar.setText("1.0");
         scalar.setMaximumSize(new java.awt.Dimension(75, 27));
         scalar.setMinimumSize(new java.awt.Dimension(75, 27));
         scalar.setPreferredSize(new java.awt.Dimension(75, 27));
