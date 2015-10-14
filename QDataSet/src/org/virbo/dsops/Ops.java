@@ -8253,9 +8253,9 @@ public class Ops {
 
     /**
      * slice each dimension in one call, so that chaining isn't required to slice multiple dimensions at once.
-     * @param ds
+     * @param ds the dataset
      * @param args varargs list of integers that are slice indeces, or "" or ":" to mean don't slice
-     * @return
+     * @return the dataset with slices performed.
      */
     public static QDataSet slices( QDataSet ds, Object ... args ) {
         int cdim=0; // to keep track of if we can use native slice
