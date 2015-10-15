@@ -1888,6 +1888,11 @@ public class SeriesRenderer extends Renderer {
                 return s;                
                 
             } else {
+                
+                if ( xds.length()!=ds2.length() ) {
+                    return SelectionUtil.NULL;
+                }
+                
                 QDataSet reduce = VectorUtil.reduce2D(
                     xds, ds2,
                     0,
