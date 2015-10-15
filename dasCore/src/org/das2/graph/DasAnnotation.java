@@ -53,7 +53,7 @@ public class DasAnnotation extends DasCanvasComponent {
      * point at this thing
      */
     private DasAnnotation.PointDescriptor pointAt;
-    private final MouseModule arrowToMouseModule;
+    //private final MouseModule arrowToMouseModule;
 
     /** 
      * Create the annotation
@@ -62,16 +62,6 @@ public class DasAnnotation extends DasCanvasComponent {
         super();
         this.gtr = new GrannyTextRenderer();
         this.templateString = string;
-
-        Action removeArrowAction = new AbstractAction("Remove Arrow") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showArrow = false;
-                repaint();
-            }
-        };
-
-        this.getDasMouseInputAdapter().addMenuItem(new JMenuItem(removeArrowAction));
 
         Action removeMeAction = new AbstractAction("remove") {
             @Override
@@ -165,7 +155,7 @@ public class DasAnnotation extends DasCanvasComponent {
         };
         this.getDasMouseInputAdapter().addMouseModule(setXY);
 
-        MouseModule pointAt= new MouseModule( this, new ArrowDragRenderer(), "Point At 2" ) {
+        MouseModule pointAt= new MouseModule( this, new ArrowDragRenderer(), "Point At" ) {
             Point p0;
             
             @Override
@@ -190,8 +180,8 @@ public class DasAnnotation extends DasCanvasComponent {
         };
         this.getDasMouseInputAdapter().addMouseModule(pointAt);
         
-        arrowToMouseModule = createArrowToMouseModule(this);
-        this.getDasMouseInputAdapter().addMouseModule(arrowToMouseModule);
+        //arrowToMouseModule = createArrowToMouseModule(this);
+        //this.getDasMouseInputAdapter().addMouseModule(arrowToMouseModule);
     }
 
     private void adjustAnchorOffset( int dx, int dy ) {
@@ -233,7 +223,7 @@ public class DasAnnotation extends DasCanvasComponent {
             this.setAnchorOffset(anchorOffset);
         } else {
             try {
-                String[] ss= anchorOffset.split(",");
+                String[] ss= anchorOffset.split(",",-2);
                 double[] dd;
                 dd= DasDevicePosition.parseLayoutStr(ss[0]);
                 dd[1]= dd[1] + dx/em;
@@ -450,9 +440,15 @@ public class DasAnnotation extends DasCanvasComponent {
             //g.setStroke(new BasicStroke((float) (em2 / 8)));
             //g.drawLine( r.x, r.y+r.height, r.x+r.width, r.y+r.height );
 
-            int headx= (int)plot.getXAxis().transform(pointAtX);
-            int heady= (int)plot.getYAxis().transform(pointAtY);
-                    
+            int headx= 0;
+            int heady= 0;
+            try {
+                headx= (int)plot.getXAxis().transform(pointAtX);
+                heady= (int)plot.getYAxis().transform(pointAtY);
+            } catch ( InconvertibleUnitsException ex ) {
+                
+            }   
+            
             Point head = new Point(headx,heady);
             
             Graphics2D g2 = (Graphics2D) g.create();
