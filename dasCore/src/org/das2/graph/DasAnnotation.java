@@ -63,10 +63,10 @@ public class DasAnnotation extends DasCanvasComponent {
         this.gtr = new GrannyTextRenderer();
         this.templateString = string;
 
-        Action removeArrowAction = new AbstractAction("remove arrow") {
+        Action removeArrowAction = new AbstractAction("Remove Arrow") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                pointAt = null;
+                showArrow = false;
                 repaint();
             }
         };
@@ -164,6 +164,30 @@ public class DasAnnotation extends DasCanvasComponent {
             }            
         };
         this.getDasMouseInputAdapter().addMouseModule(setXY);
+
+        MouseModule pointAt= new MouseModule( this, new BoxRenderer(this), "Point At 2" ) {
+            Point p0;
+            
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e); 
+                if ( plot!=null ) {
+                    p0= e.getPoint();
+                    p0= SwingUtilities.convertPoint( DasAnnotation.this, p0, plot.getCanvas() );
+                }
+            }
+            
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if ( plot!=null ) {
+                    Datum x= plot.getXAxis().invTransform(e.getX()+getX());
+                    Datum y= plot.getYAxis().invTransform(e.getY()+getY());
+                    setPointAtX(x);
+                    setPointAtY(y);
+                }
+            }            
+        };
+        this.getDasMouseInputAdapter().addMouseModule(pointAt);
         
         arrowToMouseModule = createArrowToMouseModule(this);
         this.getDasMouseInputAdapter().setSecondaryModule(arrowToMouseModule);
@@ -420,12 +444,16 @@ public class DasAnnotation extends DasCanvasComponent {
 
         g.setColor(fore);
         
-        if (pointAt != null) {
+        if (  showArrow ) {
             double em2 = g.getFont().getSize();
             //g.setStroke(new BasicStroke((float) (em2 / 8)));
             //g.drawLine( r.x, r.y+r.height, r.x+r.width, r.y+r.height );
 
-            Point head = pointAt.getPoint();
+            int headx= (int)plot.getXAxis().transform(pointAtX);
+            int heady= (int)plot.getYAxis().transform(pointAtY);
+                    
+            Point head = new Point(headx,heady);
+            
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setClip(null);
             //Arrow.paintArrow(g2, head, tail, em2);
