@@ -165,7 +165,7 @@ public class DasAnnotation extends DasCanvasComponent {
         };
         this.getDasMouseInputAdapter().addMouseModule(setXY);
 
-        MouseModule pointAt= new MouseModule( this, new BoxRenderer(this), "Point At 2" ) {
+        MouseModule pointAt= new MouseModule( this, new ArrowDragRenderer(), "Point At 2" ) {
             Point p0;
             
             @Override
@@ -184,13 +184,14 @@ public class DasAnnotation extends DasCanvasComponent {
                     Datum y= plot.getYAxis().invTransform(e.getY()+getY());
                     setPointAtX(x);
                     setPointAtY(y);
+                    setShowArrow(true);
                 }
             }            
         };
         this.getDasMouseInputAdapter().addMouseModule(pointAt);
         
         arrowToMouseModule = createArrowToMouseModule(this);
-        this.getDasMouseInputAdapter().setSecondaryModule(arrowToMouseModule);
+        this.getDasMouseInputAdapter().addMouseModule(arrowToMouseModule);
     }
 
     private void adjustAnchorOffset( int dx, int dy ) {
