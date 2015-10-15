@@ -275,14 +275,14 @@ public class Orbits {
      * Orbit numbers are typically just a number, but some missions like Cassini had letter names for orbits
      * as well.  This encapsulates the code to identify the canonical orbit from the string, by
      * removing trailing _'s and 0's.  
-     * @param o
+     * @param orbit
      * @return
      */
     public static String trimOrbit( String orbit ) {
         orbit= orbit.trim();
-        int i;
-        for ( i=0; i<orbit.length() && orbit.charAt(i)=='_'; i++ ) ; // pass
-        for ( ; i<orbit.length() && orbit.charAt(i)=='0'; i++ ) ; // pass
+        int i=0;
+        while ( i<orbit.length() && orbit.charAt(i)=='_' ) i++;
+        while ( i<orbit.length() && orbit.charAt(i)=='0' ) i++;
         if ( i==orbit.length() ) return "0"; // cassini?
         orbit= orbit.substring(i);
         return orbit;
@@ -356,7 +356,6 @@ public class Orbits {
      * @param sc the string identifier for the spacecraft, such as "rbspa-pp", or URL to orbit file.
      * @return the Orbits file which can be used to query orbits.
      * @throws IllegalArgumentException when the orbits file cannot be read
-     * @return
      */
     public static synchronized Orbits getOrbitsFor( String sc ) {
         Orbits orbits= missions.get(sc);
@@ -398,6 +397,7 @@ public class Orbits {
         char pad='_';
 
 
+        @Override
         public String configure(Map<String, String> args) {
             String id= args.get("id");
             if ( id==null ) {
@@ -415,10 +415,12 @@ public class Orbits {
             return null; // no errors
         }
 
+        @Override
         public String getRegex() {
             return ".*";
         }
 
+        @Override
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
 
             // identify leading fill characters
@@ -453,6 +455,7 @@ public class Orbits {
             return orbitDatumRange;
         }
 
+        @Override
         public String format( TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra ) throws IllegalArgumentException {
             
             DatumRange seek= new DatumRange( TimeUtil.toDatum(startTime),TimeUtil.toDatum(TimeUtil.add(startTime,timeWidth)) );
@@ -499,6 +502,7 @@ public class Orbits {
     public static void main( String[] args ) throws ParseException {
         Orbits o= getOrbitsFor( "cassini" );
         System.err.println(o.getDatumRange("120")); //logger okay
+        System.err.println(o.next("120") );
 
         {
             TimeParser tp= TimeParser.create( "$5(o,id=cassini)", "o", new OrbitFieldHandler() );
