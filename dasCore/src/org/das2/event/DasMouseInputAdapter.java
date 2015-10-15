@@ -1251,6 +1251,11 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         return r;
     }
 
+    /**
+     * remove the mouse module with the label.  
+     * @param label the label (case-sensitive)
+     * @return null if not found, or the module.
+     */
     public MouseModule getModuleByLabel(java.lang.String label) {
         MouseModule result = null;
         for (Object module : modules) {
@@ -1270,6 +1275,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         return this.hoverHighlite;
     }
 
+    /**
+     * glow the outline of the mouse area, for development.
+     * @param value 
+     */
     public void setHoverHighlite(boolean value) {
         this.hoverHighlite = value;
     }
