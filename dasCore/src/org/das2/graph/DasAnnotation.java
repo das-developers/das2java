@@ -432,12 +432,14 @@ public class DasAnnotation extends DasCanvasComponent {
 
             int headx= 0;
             int heady= 0;
-            try {
-                headx= (int)plot.getXAxis().transform(pointAtX);
-                heady= (int)plot.getYAxis().transform(pointAtY);
-            } catch ( InconvertibleUnitsException ex ) {
+            if ( plot!=null ) {
+                try {
+                    headx= (int)plot.getXAxis().transform(pointAtX);
+                    heady= (int)plot.getYAxis().transform(pointAtY);
+                } catch ( InconvertibleUnitsException ex ) {
                 
-            }   
+                }   
+            }
             
             Point head = new Point(headx,heady);
             
@@ -550,14 +552,20 @@ public class DasAnnotation extends DasCanvasComponent {
         if ( anchorOffset.length()>0 ) {
             String[] ss= anchorOffset.split(",");
             if ( ss.length==2 ) {
+                double[] dd;
                 try {
-                    double[] dd= DasDevicePosition.parseLayoutStr(ss[0]);
+                    dd= DasDevicePosition.parseLayoutStr(ss[0]);
                     xoffset= (int)( getCanvas().getWidth() * dd[0] + em * dd[1] + dd[2] );
                     dd= DasDevicePosition.parseLayoutStr(ss[1]);
                     yoffset= (int)( getCanvas().getHeight() * dd[0] + em * dd[1] + dd[2] );
+                } catch ( NumberFormatException ex ) {
+                    logger.log( Level.WARNING, null, ex );
+                    xoffset= 0;
+                    yoffset= 0;
                 } catch ( ParseException ex ) {
-                    logger.warning("anchorOffset parse");
-                }
+                    logger.log( Level.WARNING, null, ex );
+                    xoffset= 0;
+                    yoffset= 0;                }                
             } else {
                 logger.warning("anchorOffset");
             }
