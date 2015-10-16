@@ -174,6 +174,8 @@ public class DasAnnotation extends DasCanvasComponent {
                     Datum y= plot.getYAxis().invTransform(e.getY()+getY());
                     setPointAtX(x);
                     setPointAtY(y);
+                    setXrange( new DatumRange(x,x) );
+                    setYrange( new DatumRange(y,y) );
                     setShowArrow(true);
                 }
             }            
