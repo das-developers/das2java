@@ -120,6 +120,9 @@ public class HttpFileSystem extends WebFileSystem {
             }
 
             root= rooturi.toURL();
+            
+            logger.log(Level.FINER, "See https://www.draw.io/#G0B1Ywc5_Vexx1d3ctdGZxZDNkM3M" );
+            logger.log(Level.FINER, "URL Reference: {0}", root);
 
             boolean doCheck= true;
             URI parentURI= FileSystemUtil.getParentUri( rooturi );
@@ -138,7 +141,7 @@ public class HttpFileSystem extends WebFileSystem {
             
             String cookie= null;
             
-            if ( doCheck && !FileSystem.settings().isOffline() ) {
+            while ( doCheck && !FileSystem.settings().isOffline() ) {
                 
                 // verify URL is valid and accessible
                 HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
@@ -147,13 +150,14 @@ public class HttpFileSystem extends WebFileSystem {
 
                 //urlc.setRequestMethod("HEAD"); // Causes problems with the LANL firewall.
 
-                String userInfo= null;
+                String userInfo;  // null means that userInfo has not been attempted.
 
                 try {
+                    logger.log(Level.FINER, "Check keychain: ", root);
                     userInfo = KeyChain.getDefault().getUserInfo(root);
                 } catch (CancelledOperationException ex) {
                     logger.log( Level.FINER, "user cancelled credentials for {0}", rooturi);
-                    throw new FileSystemOfflineException("user cancelled credentials for "+rooturi );
+                    break;
                 }
                 
                 if ( userInfo != null) {
@@ -166,10 +170,8 @@ public class HttpFileSystem extends WebFileSystem {
                     urlc.setRequestProperty("Cookie",cookie);
                 }
                 
-                boolean connectFail= true;
-
                 try {
-                    logger.log( Level.FINER, "urlc={0}", urlc );
+                    logger.log( Level.FINER, "Verify Credentials {0}", urlc );
                     if ( userInfo!=null && !userInfo.contains(":") ) {
                         logger.log( Level.INFO, "urlc={0}", urlc );
                         logger.log( Level.INFO, "userInfo does not appear to contain password: {0}", userInfo );
@@ -180,8 +182,13 @@ public class HttpFileSystem extends WebFileSystem {
                     logger.log( Level.FINER, "made connection, now consume rest of stream: {0}", urlc );
                     HtmlUtil.consumeStream( urlc.getInputStream() );
                     logger.log( Level.FINER, "done consuming and initial connection is complete: {0}" );
-                    connectFail= false;
+                    offline= false;
+                    doCheck= false;
+                    logger.finer( "Verify Credentials exits with okay");
+                    
                 } catch ( IOException ex ) {
+                    
+                    logger.finer("Error with credentials");
                     int code= 0;
                     String msg;
                     try {
@@ -192,48 +199,61 @@ public class HttpFileSystem extends WebFileSystem {
                         logger.log(Level.SEVERE,ex2.getMessage(),ex2);
                         msg= ex2.getMessage();
                     }
-                    if ( code==401 ) {
-                        connectFail= false;
-                    } else if ( code==404 ) {
+                    
+                    HtmlUtil.consumeStream( urlc.getErrorStream() );
+                    
+                    if ( code==404 ) {
                         logger.log( Level.SEVERE, String.format( "%d: folder not found: %s\n%s", code, root, msg ), ex );
-                        HtmlUtil.consumeStream( urlc.getErrorStream() );
                         throw (FileNotFoundException)ex;
-                    } else {
+                        
+                    } else if ( code!=401 ) {
                         // Note this may still be code 403.  We still enter the same branch for now, because the user might be on a network that isn't permitted now.
                         logger.log( Level.SEVERE, String.format( "%d: failed to connect to %s\n%s", code, root, msg ), ex );
                         if ( FileSystem.settings().isAllowOffline() ) {
                             logger.info("remote filesystem is offline, allowing access to local cache.");
+                            break;
                         } else {
                             throw new FileSystemOfflineException("" + code + ": " + msg );
                         }
-                        HtmlUtil.consumeStream( urlc.getErrorStream() );
                     }
+                    
+                    if ( "true".equals( System.getProperty("java.awt.headless") ) && userInfo!=null ) { 
+                        logger.finer( "Headless mode means we have to give up");
+                        if ( FileSystem.settings().isAllowOffline() ) {
+                            logger.info("remote filesystem is offline, allowing access to local cache.");
+                            break;
+                        } else {
+                            throw new FileSystemOfflineException("" + code + ": " + msg );
+                        }
+                    }
+                    
                     offlineMessage= msg;
                     offlineResponseCode= code;
                 }
 
-                if ( !connectFail ) {
-                    if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode() != HttpURLConnection.HTTP_FORBIDDEN) {
-                        if ( urlc.getResponseCode()==HttpURLConnection.HTTP_UNAUTHORIZED ) {
-                            // might be nice to modify URL so that credentials are used.
-                            KeyChain.getDefault().clearUserPassword(root);
-                            if ( userInfo==null ) {
-                                String port=  root.getPort()==-1 ? "" : ( ":" +root.getPort() );
-                                URL rootAuth= new URL( root.getProtocol() + "://" + "user@" + root.getHost() + port + root.getFile() );
-                                try {
-                                    URI rootAuthUri= rootAuth.toURI();
-                                    return createHttpFileSystem( rootAuthUri );
-                                } catch ( URISyntaxException ex ) {
-                                    throw new RuntimeException(ex);
-                                }
+                if (urlc.getResponseCode() != HttpURLConnection.HTTP_OK && urlc.getResponseCode() != HttpURLConnection.HTTP_FORBIDDEN) {
+                    if ( urlc.getResponseCode()==HttpURLConnection.HTTP_UNAUTHORIZED ) {
+                        // might be nice to modify URL so that credentials are used.
+                        KeyChain.getDefault().clearUserPassword(root);
+                        if ( userInfo==null ) {
+                            String port=  root.getPort()==-1 ? "" : ( ":" +root.getPort() );
+                            URL rootAuth= new URL( root.getProtocol() + "://" + "user@" + root.getHost() + port + root.getFile() );
+                            try {
+                                URI rootAuthUri= rootAuth.toURI();
+                                rooturi= rootAuthUri;
+                                root= rooturi.toURL();
+
+                            } catch ( URISyntaxException ex ) {
+                                throw new RuntimeException(ex);
                             }
-                        } else {
-                            offline= false;
                         }
                     } else {
                         offline= false;
                     }
+                } else {
+                    offline= false;
                 }
+
             }
             
             File local;
