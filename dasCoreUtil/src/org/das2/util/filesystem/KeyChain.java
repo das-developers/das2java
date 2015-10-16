@@ -251,6 +251,12 @@ public class KeyChain {
         }
     }
 
+    /**
+     * return the user info (username:password) associated with this URL.
+     * @param url the URL
+     * @return null or the user info.
+     * @throws CancelledOperationException 
+     */
     public String getUserInfo( URL url ) throws CancelledOperationException {
         String userInfo= url.getUserInfo();
         if ( userInfo==null ) return null;
