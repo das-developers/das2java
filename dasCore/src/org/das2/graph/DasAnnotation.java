@@ -378,6 +378,11 @@ public class DasAnnotation extends DasCanvasComponent {
         
         g.translate( -getX(), -getY() );
 
+        if ( anchorType!=AnchorType.CANVAS && plot!=null ) {
+            Rectangle r= DasDevicePosition.toRectangle( plot.getRow(), plot.getColumn() );
+            g.setClip( r );
+        }
+        
         Color fore = getCanvas().getForeground();
         Color ltextColor= fore;
         Color back= getCanvas().getBackground();
@@ -437,7 +442,12 @@ public class DasAnnotation extends DasCanvasComponent {
             Point head = new Point(headx,heady);
             
             Graphics2D g2 = (Graphics2D) g.create();
-            g2.setClip(null);
+            
+            if ( anchorType==AnchorType.CANVAS ) {
+                g2.setClip(null);
+            } else {
+                g2.setClip( g.getClip() );
+            }
             //Arrow.paintArrow(g2, head, tail, em2);
             
             Point2D tail2d= new Point2D.Double( r.x + r.width/2, r.y + r.height/2 );
