@@ -26,13 +26,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.das2.datum.DatumRange;
-import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.LoggerManager;
 import org.das2.datum.Units;
-import org.das2.event.BoxRangeSelectorMouseModule;
 import org.das2.event.BoxRenderer;
-import org.das2.event.BoxSelectorMouseModule;
 
 /**
  * This makes a DasCanvasComponent for GrannyTextRenderer, and 
@@ -98,28 +95,12 @@ public class DasAnnotation extends DasCanvasComponent {
                     int dx = p.x - p0.x;
                     int dy = p.y - p0.y;
                     adjustAnchorOffset( dx, dy );
-//                    Point p= e.getPoint();
-//                    int dx = p.x - p0.x;
-//                    int dy = p.y - p0.y;
-//                    try {
-//                        double x0= plot.getXAxis().transform(xrange.min());
-//                        double x1= plot.getXAxis().transform(xrange.max());
-//                        setXrange( plot.getXAxis().invTransform(x0+dx, x1+dx) );
-//                    } catch ( InconvertibleUnitsException ex ) {
-//                        
-//                    }
-//                    try {
-//                        double y0= plot.getYAxis().transform(yrange.min());
-//                        double y1= plot.getYAxis().transform(yrange.max());
-//                        setYrange( plot.getYAxis().invTransform(y0+dy, y1+dy) );
-//                    } catch ( InconvertibleUnitsException ex ) {
-//                        
-//                    }
                     resize();
                     repaint();
                 }
             }
         };
+        mm.setLabel("Move Annotation");
         
         this.getDasMouseInputAdapter().setPrimaryModule(mm);
 
@@ -153,7 +134,7 @@ public class DasAnnotation extends DasCanvasComponent {
                 }
             }            
         };
-        this.getDasMouseInputAdapter().addMouseModule(setXY);
+        //this.getDasMouseInputAdapter().addMouseModule(setXY);
 
         MouseModule pointAt= new MouseModule( this, new ArrowDragRenderer(), "Point At" ) {
             Point p0;
@@ -174,8 +155,10 @@ public class DasAnnotation extends DasCanvasComponent {
                     Datum y= plot.getYAxis().invTransform(e.getY()+getY());
                     setPointAtX(x);
                     setPointAtY(y);
-                    setXrange( new DatumRange(x,x) );
-                    setYrange( new DatumRange(y,y) );
+                    if ( getAnchorType()==anchorType.CANVAS ) {
+                        setXrange( new DatumRange(x,x) );
+                        setYrange( new DatumRange(y,y) );
+                    }
                     setShowArrow(true);
                 }
             }            
@@ -738,6 +721,10 @@ public class DasAnnotation extends DasCanvasComponent {
 
     public static final String PROP_ANCHORPOSITION = "anchorPosition";
 
+    /**
+     * get the location within the box where the annotation will be drawn.
+     * @return anchorPosition 
+     */    
     public AnchorPosition getAnchorPosition() {
         return anchorPosition;
     }
