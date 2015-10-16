@@ -55,16 +55,14 @@ import org.das2.util.Base64;
  */
 public class KeyChain {
 
-    /**
-     * return the user info (user:password) for the given URI.
-     * @param uri
-     * @return
-     */
-
-    private static final Logger logger= org.das2.util.LoggerManager.getLogger("das2.filesystem");
+    private static final Logger logger= org.das2.util.LoggerManager.getLogger("das2.filesystem.keychain");
 
     private static KeyChain instance;
 
+    /**
+     * get the single instance of the class.
+     * @return the single instance of the class.
+     */
     public static synchronized KeyChain getDefault() {
         if ( instance==null ) {
             instance= new KeyChain();
@@ -121,6 +119,13 @@ public class KeyChain {
         }
     }
 
+    /**
+     * append to the keys file.
+     * @param url
+     * @param key
+     * @throws IOException 
+     * @see #writeKeysFile(java.lang.String, java.lang.String) 
+     */
     private void appendKeysFile( String url, String key ) throws IOException {
         File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
         PrintWriter w= null;
@@ -167,6 +172,15 @@ public class KeyChain {
         }
     }
     
+    /**
+     * format the keys file.  Since Java 5 didn't have a way to restrict 
+     * access to the file, this would simply display the keychain file contents
+     * and have the operator write the keychain file to disk.  The required
+     * Java7 is able to restict access to the file properly.
+     * @param toFile the file should be created.
+     * @throws IOException 
+     * @see #appendKeysFile(java.lang.String, java.lang.String) 
+     */
     public void writeKeysFile( boolean toFile ) throws IOException {
         File keysFile= new File( FileSystem.settings().getLocalCacheDir(), "keychain.txt" );
         
@@ -201,6 +215,7 @@ public class KeyChain {
         }
         
         JButton button= new JButton( new AbstractAction( "Show Passwords") {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 JTextArea ta= new JTextArea();
                 ta.setText( new String( out.toByteArray() ) );
@@ -224,12 +239,12 @@ public class KeyChain {
     /**
      * map from URL, without trailing slash, to key.
      */
-    private Map<String,String> keys= new HashMap<String,String>();
+    private final Map<String,String> keys= new HashMap<String,String>();
     
     /**
      * map from URL, without trailing slash, to cookie.
      */
-    private Map<String,String> cookies= new HashMap<String,String>();
+    private final Map<String,String> cookies= new HashMap<String,String>();
 
     /**
      * parent component for password dialog.
@@ -335,7 +350,7 @@ public class KeyChain {
      * Note a %40 in the username is converted to @.
      * @param url
      * @param userInfo that is available separately.  (Java doesn't like user@usersHost:password@server)
-     * @return
+     * @return the userinfo, like "us3r:passw0rd"
      * @throws CancelledOperationException
      */
     public String getUserInfo( URL url, String userInfo  ) throws CancelledOperationException {
