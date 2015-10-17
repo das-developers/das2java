@@ -13,13 +13,21 @@ import org.das2.event.MoveComponentMouseModule;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.RescaleOp;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -45,6 +53,7 @@ public class DasAnnotation extends DasCanvasComponent {
     
     String templateString;
     GrannyTextRenderer gtr;
+    BufferedImage img;
 
     /**
      * point at this thing
@@ -57,7 +66,18 @@ public class DasAnnotation extends DasCanvasComponent {
      * @param string the message, which may contain %p which will be replaced with a label. */
     public DasAnnotation(String string) {
         super();
-        this.gtr = new GrannyTextRenderer();
+        
+        if ( string.startsWith("http:" ) ) {
+            this.gtr= null;
+            try {
+                this.img= ImageIO.read( new URL(string) );
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, null, ex);
+                this.gtr = new GrannyTextRenderer();
+            }
+        } else {
+            this.gtr = new GrannyTextRenderer();
+        }
         this.templateString = string;
 
         Action removeMeAction = new AbstractAction("remove") {
@@ -201,14 +221,14 @@ public class DasAnnotation extends DasCanvasComponent {
             dy= -dy;
         }
 
-        String anchorOffset= getAnchorOffset();
+        String offset= getAnchorOffset();
         double em = getEmSize();
-        if ( anchorOffset.trim().length()==0 ) {
-            anchorOffset= String.format("%.2fem,%.2fem", dx/em, dy/em );
-            this.setAnchorOffset(anchorOffset);
+        if ( offset.trim().length()==0 ) {
+            offset= String.format("%.2fem,%.2fem", dx/em, dy/em );
+            this.setAnchorOffset(offset);
         } else {
             try {
-                String[] ss= anchorOffset.split(",",-2);
+                String[] ss= offset.split(",",-2);
                 double[] dd;
                 dd= DasDevicePosition.parseLayoutStr(ss[0]);
                 dd[1]= dd[1] + dx/em;
@@ -216,8 +236,8 @@ public class DasAnnotation extends DasCanvasComponent {
                 dd= DasDevicePosition.parseLayoutStr(ss[1]);
                 dd[1]= dd[1] + dy/em;
                 ss[1]= DasDevicePosition.formatFormatStr(dd);
-                anchorOffset= ss[0]+","+ss[1];
-                this.setAnchorOffset(anchorOffset);
+                offset= ss[0]+","+ss[1];
+                this.setAnchorOffset(offset);
             } catch (ParseException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
@@ -253,41 +273,41 @@ public class DasAnnotation extends DasCanvasComponent {
         }
     }
 
-    private MouseModule createArrowToMouseModule(final DasAnnotation anno) {
-        return new MouseModule(DasAnnotation.this, new ArrowDragRenderer(), "Point At") {
-
-            Point head;
-            Point tail;
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
-                tail= e.getPoint();
-                tail.translate(anno.getX(), anno.getY());
-                Rectangle r= DasAnnotation.this.getActiveRegion().getBounds();
-                if ( !r.contains(tail) ) {
-                    tail= null;
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                super.mouseReleased(e);
-                if ( tail==null ) return;
-                head = e.getPoint();
-                head.translate(anno.getX(), anno.getY());
-                DasCanvasComponent c = parent.getCanvas().getCanvasComponentAt(head.x, head.y);
-                if (c instanceof DasPlot) {
-                    final DasPlot p = (DasPlot) c;
-                    final Datum x = p.getXAxis().invTransform(head.x);
-                    final Datum y = p.getYAxis().invTransform(head.y);
-                    anno.setPointAt(new DatumPairPointDescriptor(p, x, y));
-                    resize();
-                }
-
-            }
-        };
-    }
+//    private MouseModule createArrowToMouseModule(final DasAnnotation anno) {
+//        return new MouseModule(DasAnnotation.this, new ArrowDragRenderer(), "Point At") {
+//
+//            Point head;
+//            Point tail;
+//
+//            @Override
+//            public void mousePressed(MouseEvent e) {
+//                super.mousePressed(e);
+//                tail= e.getPoint();
+//                tail.translate(anno.getX(), anno.getY());
+//                Rectangle r= DasAnnotation.this.getActiveRegion().getBounds();
+//                if ( !r.contains(tail) ) {
+//                    tail= null;
+//                }
+//            }
+//
+//            @Override
+//            public void mouseReleased(MouseEvent e) {
+//                super.mouseReleased(e);
+//                if ( tail==null ) return;
+//                head = e.getPoint();
+//                head.translate(anno.getX(), anno.getY());
+//                DasCanvasComponent c = parent.getCanvas().getCanvasComponentAt(head.x, head.y);
+//                if (c instanceof DasPlot) {
+//                    final DasPlot p = (DasPlot) c;
+//                    final Datum x = p.getXAxis().invTransform(head.x);
+//                    final Datum y = p.getYAxis().invTransform(head.y);
+//                    anno.setPointAt(new DatumPairPointDescriptor(p, x, y));
+//                    resize();
+//                }
+//
+//            }
+//        };
+//    }
 
     public static final String PROP_TEXT = "text";
     
@@ -300,7 +320,17 @@ public class DasAnnotation extends DasCanvasComponent {
         String oldValue= this.templateString;
         this.templateString = string;
         if ( this.getGraphics()!=null ) {
-            gtr.setString( this.getGraphics(), getString() );
+            if ( string.startsWith("http:") ) {
+                try {
+                    img= ImageIO.read(new URL(string));
+                    gtr= null;
+                } catch ( IOException ex ) {
+                    gtr= new GrannyTextRenderer();
+                    gtr.setString( this.getGraphics(), getString() );
+                }
+            } else {
+                gtr.setString( this.getGraphics(), getString() );
+            }
             resize();
         }
         firePropertyChange( PROP_TEXT, oldValue, string );
@@ -323,7 +353,10 @@ public class DasAnnotation extends DasCanvasComponent {
             super.resize();
             Graphics g= this.getGraphics();
             if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
-            this.gtr.setString( g, getString() );
+            if ( this.gtr!=null ) {
+                this.gtr.setString( g, getString() );
+            } else {
+            }
             Rectangle r= calcBounds();
             r.add( r.x+r.width+1, r.y+r.height+1 );
             if ( anchorType==AnchorType.CANVAS || plot==null ) {
@@ -399,13 +432,13 @@ public class DasAnnotation extends DasCanvasComponent {
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        gtr.setString( g, getString() );
+        if ( gtr!=null ) gtr.setString( g, getString() );
         Rectangle r;
         
         r= getAnnotationBubbleBounds();
         
         if ( anchorPosition==AnchorPosition.N || anchorPosition==AnchorPosition.OutsideN ) {
-            gtr.setAlignment( GrannyTextRenderer.CENTER_ALIGNMENT );
+            if ( gtr!=null ) gtr.setAlignment( GrannyTextRenderer.CENTER_ALIGNMENT );
         }
         
         //r = new Rectangle(r.x - em + 1, r.y - em + 1, r.width + 2 * em - 1, r.height + 2 * em - 1);
@@ -421,7 +454,11 @@ public class DasAnnotation extends DasCanvasComponent {
 
         g.setColor(ltextColor);
 
-        gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
+        if ( gtr!=null ) {
+            gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
+        } else {
+            g.drawImage( img, r.x+em, r.y+em, this );
+        }
 
         g.setColor(fore);
         
@@ -544,7 +581,11 @@ public class DasAnnotation extends DasCanvasComponent {
         Rectangle anchor= getAnchorBounds();
                         
         Rectangle r;
-        r= gtr.getBounds();
+        if ( gtr==null ) {
+            r= new Rectangle( 0, 0, img.getWidth(), img.getHeight() );
+        } else {
+            r= gtr.getBounds();
+        }
 
         int xoffset=0;
         int yoffset=0;
@@ -615,10 +656,17 @@ public class DasAnnotation extends DasCanvasComponent {
             r.y = anchor.y + anchor.height - r.height - yoffset;
         }
         
-        r.x-= em;
-        r.y-= em;
-        r.width+= em;
-        r.height+= em;
+        if ( gtr==null ) {
+            r.x-= em/2;
+            r.y-= em/2;
+            r.width+= em;
+            r.height+= em;            
+        } else {
+            r.x-= em;
+            r.y-= em;
+            r.width+= em;
+            r.height+= em;
+        }
                
         return r;
     }
@@ -661,7 +709,9 @@ public class DasAnnotation extends DasCanvasComponent {
     @Override
     protected void installComponent() {
         super.installComponent();
-        this.gtr.setString( this.getFont(), getString() );
+        if ( this.gtr!=null ) {
+            this.gtr.setString( this.getFont(), getString() );
+        }
     }
 
     /**
@@ -700,7 +750,7 @@ public class DasAnnotation extends DasCanvasComponent {
         Graphics g= this.getGraphics();
         if ( g==null ) return;
         g.setFont(newFont);
-        gtr.setString( g, getString() );
+        if ( gtr!=null ) gtr.setString( g, getString() );
         resize();
         repaint();
 
