@@ -76,7 +76,7 @@ public class TableDataSetAdapter implements TableDataSet {
             }
             if (!DataSetUtil.isMonotonic(xds)) {
                 QDataSet sort = DataSetOps.sort(xds);
-                RankZeroDataSet cadence= (RankZeroDataSet) xds.property(QDataSet.CADENCE);
+                QDataSet cadence= (QDataSet) xds.property(QDataSet.CADENCE);
                 z = DataSetOps.applyIndex(z, 0, sort, false);
                 xds = DataSetOps.applyIndex(xds, 0, sort, false);
                 if ( cadence!=null && cadence.value()<0 ) {
@@ -86,7 +86,7 @@ public class TableDataSetAdapter implements TableDataSet {
             }
             if ( yds.rank()==1 && !DataSetUtil.isMonotonic(yds)) {
                 QDataSet sort = DataSetOps.sort(yds);
-                RankZeroDataSet cadence= (RankZeroDataSet) yds.property(QDataSet.CADENCE);
+                QDataSet cadence= (QDataSet) yds.property(QDataSet.CADENCE);
                 z = DataSetOps.applyIndex(z, 1, sort, false);
                 yds = DataSetOps.applyIndex(yds, 0, sort, false);
                 if ( cadence!=null && cadence.value()<0 ) {
@@ -207,18 +207,18 @@ public class TableDataSetAdapter implements TableDataSet {
         this.z = z;
 
         Boolean xMono = (Boolean) x.property(QDataSet.MONOTONIC);
-        if (xMono != null && xMono.booleanValue()) {
+        if (xMono != null && xMono ) {
             properties.put(org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
         }
 
-        RankZeroDataSet cadence = (RankZeroDataSet) x.property(QDataSet.CADENCE);
+        QDataSet cadence = (QDataSet) x.property(QDataSet.CADENCE);
         if (cadence != null) {
             Datum dcadence;
             dcadence = DataSetUtil.asDatum(cadence);
             properties.put(org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, dcadence);
         }
 
-        cadence = (RankZeroDataSet) y.property(QDataSet.CADENCE);
+        cadence = (QDataSet) y.property(QDataSet.CADENCE);
         if (cadence != null) {
             Datum dcadence;
             dcadence = DataSetUtil.asDatum(cadence);

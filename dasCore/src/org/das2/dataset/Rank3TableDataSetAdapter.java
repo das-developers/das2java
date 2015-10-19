@@ -87,13 +87,13 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
             properties.put(org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
         }
         
-        RankZeroDataSet cadence= (RankZeroDataSet) x.property( QDataSet.CADENCE,0 );
+        QDataSet cadence= (QDataSet) x.property( QDataSet.CADENCE,0 );
         if ( cadence!=null ) {
             Datum dcadence= DataSetUtil.asDatum(cadence);
             properties.put( org.das2.dataset.DataSet.PROPERTY_X_TAG_WIDTH, dcadence );
         }
                 
-        cadence = (RankZeroDataSet) y.property(QDataSet.CADENCE,0);
+        cadence = (QDataSet) y.property(QDataSet.CADENCE,0);
         if ( cadence!=null ) {
             Datum dcadence= DataSetUtil.asDatum(cadence);
             properties.put( org.das2.dataset.DataSet.PROPERTY_Y_TAG_WIDTH, dcadence );
