@@ -390,7 +390,7 @@ public class SemanticOps {
      * @return
      */
     public static Datum guessXTagWidth( QDataSet ds, QDataSet yds ) {
-        RankZeroDataSet cadence= DataSetUtil.guessCadenceNew( ds, yds );
+        QDataSet cadence= DataSetUtil.guessCadenceNew( ds, yds );
         return cadence==null ? null : DataSetUtil.asDatum( cadence );
     }
 
