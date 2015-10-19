@@ -11,7 +11,10 @@ package org.virbo.dataset;
  * a scalar (and set of correlated scalars) with metadata.
  *
  * This is a marker interface, since it no longer adds any new methods to the
- * interface.
+ * interface.  TODO: this really needs to be studied, see 
+ * org.virbo.qstream.SimpleStreamFormatter.timeDigits(SimpleStreamFormatter.java:188)
+ * which would assume the data was a rank0 dataset, which it once was because
+ * it came from slice0. 
  * 
  * @author jbf
  */
