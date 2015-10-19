@@ -1832,7 +1832,11 @@ public class DataSetUtil {
             case 2: return qube[0]*qube[1];
             case 3: return qube[0]*qube[1]*qube[2];
             case 4: return qube[0]*qube[1]*qube[2]*qube[3];
-            default: throw new IllegalArgumentException("qube is too long");
+            default: {
+                int result= qube[0];
+                for ( int i=1; i<qube.length; i++ ) result*= qube[i];
+                return result;
+            }
         }
     }
     
