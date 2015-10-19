@@ -964,7 +964,9 @@ public class DataSetUtil {
     public static QDataSet gcd( QDataSet ds, QDataSet limit ) {
         QDataSet ds1= validPoints(ds);
         if ( ds1.length()==0 ) throw new IllegalArgumentException("no valid points");
+        //if ( ds1.length()==1 ) return  DataSetOps.slice0( ds, 0 );
         if ( ds1.length()==1 ) return ds.slice( 0 );
+        //QDataSet guess= DataSetOps.slice0( ds, 1 );
         QDataSet guess= ds.slice( 1 );
         return gcd( ds, guess, limit );
     }
