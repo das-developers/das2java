@@ -167,6 +167,13 @@ public interface QDataSet {
     public static int MAX_RANK=4;
     
     /**
+     * the highest rank supported by the library, without direct access 
+     * to datums.  Some codes may choose to use this when supporting high rank
+     * data is trivial.
+     */
+    public static int MAX_HIGH_RANK=8;
+    
+    /**
      * type Units indicating the units of the dataset in the enumeration of
      * org.das2.datum.Units, as in org.das2.datum.Units.km.  New unit types
      * can be introduced with Units.lookup.  For example,
