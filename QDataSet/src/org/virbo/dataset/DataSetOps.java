@@ -890,7 +890,7 @@ public class DataSetOps {
      * becomes DEPEND_0.
      * 
      * @param properties the properties to slice.
-     * @param sliceDimension the dimension to slice at (0,1,2...QDataSet.MAX_RANK)
+     * @param sliceDimension the dimension to slice at (0,1,2...QDataSet.MAX_HIGH_RANK)
      * @return the properties after the slice.
      */
     public static Map<String,Object> sliceProperties( Map<String,Object> properties, int sliceDimension ) {
@@ -900,19 +900,26 @@ public class DataSetOps {
             Object val= properties.get(s);
             if ( val!=null ) result.put( s, val );
         }
+        
+        if ( sliceDimension>=QDataSet.MAX_HIGH_RANK ) {
+            throw new IllegalArgumentException("sliceDimension > MAX_HIGH_RANK");
+        }
 
-        List<Object> deps = new ArrayList(QDataSet.MAX_RANK);
-        List<Object> bund = new ArrayList(QDataSet.MAX_RANK);
-        List<Object> bins = new ArrayList(QDataSet.MAX_RANK);
+        List<Object> deps = new ArrayList(QDataSet.MAX_HIGH_RANK);
+        List<Object> bund = new ArrayList(QDataSet.MAX_HIGH_RANK);
+        List<Object> bins = new ArrayList(QDataSet.MAX_HIGH_RANK);
+        
         for (int i = 0; i < QDataSet.MAX_RANK; i++) {
             deps.add(i, properties.get("DEPEND_" + i));
             bund.add(i, properties.get("BUNDLE_" + i));
             bins.add(i, properties.get("BINS_" + i));
         }
 
-        deps.remove(sliceDimension);
-        bund.remove(sliceDimension);
-        bins.remove(sliceDimension);
+        if ( sliceDimension<QDataSet.MAX_RANK ) {
+            deps.remove(sliceDimension);
+            bund.remove(sliceDimension);
+            bins.remove(sliceDimension);
+        }
 
         for (int i = 0; i < QDataSet.MAX_RANK-1; i++) {
             if ( deps.get(i)!=null ) result.put("DEPEND_" + i, deps.get(i));
