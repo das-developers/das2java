@@ -31,7 +31,6 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QubeDataSetIterator;
-import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.Slice0DataSet;
 import org.virbo.dsops.Ops;
@@ -182,10 +181,13 @@ public class SimpleStreamFormatter {
     private int timeDigits( QDataSet ds ) {
         Units u= SemanticOps.getUnits(ds);
         double micros;
+        
+        if ( ds.rank()!=0 ) throw new IllegalArgumentException("data should be rank 0");
+        
         if ( UnitsUtil.isTimeLocation(u) ) {
-            micros= TimeUtil.getMicroSecondsSinceMidnight( DataSetUtil.asDatum((RankZeroDataSet)ds) );
+            micros= TimeUtil.getMicroSecondsSinceMidnight( u.createDatum(ds.value()) );
         } else {
-            micros= DataSetUtil.value( (RankZeroDataSet)ds, Units.microseconds );
+            micros= u.convertDoubleTo( Units.microseconds,ds.value() );
         }
         
         if ( micros==0 || ( micros>=60e6 && micros%60e6 <0.1 ) ) {
