@@ -942,7 +942,7 @@ public class DataSetUtil {
             if ( lastNonZeroPeakIndex < nonZeroPeakIndex ) {
                 break;
             } else {
-                d= DataSetOps.slice0( peaks, nonZeroPeakIndex );
+                d= peaks.slice( nonZeroPeakIndex );
             }
 
         } while ( true );
@@ -964,8 +964,8 @@ public class DataSetUtil {
     public static QDataSet gcd( QDataSet ds, QDataSet limit ) {
         QDataSet ds1= validPoints(ds);
         if ( ds1.length()==0 ) throw new IllegalArgumentException("no valid points");
-        if ( ds1.length()==1 ) return DataSetOps.slice0( ds, 0 );
-        QDataSet guess= DataSetOps.slice0( ds, 1 );
+        if ( ds1.length()==1 ) return ds.slice( 0 );
+        QDataSet guess= ds.slice( 1 );
         return gcd( ds, guess, limit );
     }
 
@@ -1941,7 +1941,7 @@ public class DataSetUtil {
         if ( ds.property(QDataSet.BUNDLE_0)!=null ) {
             StringBuilder result= new StringBuilder(); // for documenting context.
             for ( int i=0; i<ds.length(); i++ ) {
-                QDataSet cds= DataSetOps.slice0(ds, i);
+                QDataSet cds= ds.slice(i);
                 result.append( DataSetUtil.format(cds) );
                 if ( i<ds.length()-1 ) result.append(", ");
             }
