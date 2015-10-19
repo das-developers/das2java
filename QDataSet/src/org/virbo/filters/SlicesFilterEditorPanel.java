@@ -157,6 +157,9 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
             if ( val>=max ) val= max;
             spinners[i].setModel( new SpinnerNumberModel( val, 0, max, 1 ) );
         }
+        for ( int i=0; i<rank-4; i++ ) {
+            checkboxs[i].setEnabled(false);
+        }
     }
     
 
