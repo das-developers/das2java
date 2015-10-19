@@ -152,7 +152,7 @@ public class ValuesTreeModel extends DefaultTreeModel {
         if ( depu==null ) depu= Units.dimensionless;
 
         if ( ds.rank()==0 ) {
-            String sval= DataSetUtil.asDatum((RankZeroDataSet)ds).toString();
+            String sval= DataSetUtil.asDatum(ds).toString();
             aroot.insert(  new DefaultMutableTreeNode( prefix+")="+sval), aroot.getChildCount() );
         } else if ( ds.rank()==1 ) {
             Units units= (Units) ds.property(QDataSet.UNITS);
