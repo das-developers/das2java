@@ -37,12 +37,12 @@ public class Rank0DataSetSerializeDelegate implements SerializeDelegate {
         if ( svalue.contains(" ") ) {
             throw new RuntimeException("formatted value contains string");
         }
-        StringBuffer sb= new StringBuffer( d.getFormatter().format( d, d.getUnits() ) );
+        StringBuilder sb= new StringBuilder( d.getFormatter().format( d, d.getUnits() ) );
         for ( Entry<String,Object> e: props.entrySet() ) {
             Object value= e.getValue();
             SerializeDelegate sd= SerializeRegistry.getDelegate(value.getClass());
-            if ( sd!=null && !(value instanceof RankZeroDataSet ) ) {
-                sb.append(" "+sd.typeId(value.getClass()) + ":" + e.getKey() + "=" + sd.format(value) );
+            if ( sd!=null && !(value instanceof RankZeroDataSet ) ) { // TODO: review this--why should it now be a rank 0 dataset?
+                sb.append(" ").append(sd.typeId(value.getClass())).append(":").append(e.getKey()).append("=").append(sd.format(value));
             }
         }
         return sb.toString(); // make sure time units are included with formatted time.
