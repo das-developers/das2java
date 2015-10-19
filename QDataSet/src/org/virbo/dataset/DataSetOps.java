@@ -95,7 +95,15 @@ public class DataSetOps {
 
     /**
      * slice on the first dimension.  Note the function ds.slice(index) was
-     * added later and will typically be more efficient.
+     * added later and will typically be more efficient.  
+     * 
+     * TODO: This actually needs a bit more study, because there are codes that
+     * talk about not using the native slice because it copies data and they just
+     * want metadata.  This probably is because Slice0DataSet doesn't check for 
+     * immutability, and really should be copying.  This needs to be fixed, 
+     * making sure the result of this call is immutable, and the native slice
+     * really should be more efficient, always.
+     * 
      * @param ds rank 1 or more dataset
      * @param index the index to slice at
      * @return rank 0 or more dataset.
@@ -1835,7 +1843,6 @@ public class DataSetOps {
                         }
                     }
                     if ( !found ) {
-                        System.err.println("here1838");
                         throw new IllegalArgumentException("component not found: "+comp );
                     }
                 }
