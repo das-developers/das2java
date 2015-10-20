@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -108,15 +109,19 @@ public class Orbits {
         URL sourceUrl=null;
 
         for ( URL url: urls ) {
+            URLConnection connect=null;
             try {
                 logger.log(Level.FINE, "Orbits trying to connect to {0}", url);
-                URLConnection connect= url.openConnection();
+                connect= url.openConnection();
                 connect.setConnectTimeout(5000);
                 in= connect.getInputStream();
                 logger.log(Level.FINE, "  got input stream from {0}", url);
                 sourceUrl= url;
                 break;
             } catch ( IOException ex ) {
+                if ( connect!=null && ( connect instanceof HttpURLConnection ) && ((HttpURLConnection)connect).getResponseCode()==401 ) {
+                    logger.info("HTTP connection needs credentials, which must be in the URL.");
+                }
                 logger.log( Level.FINE, ex.getMessage(), ex );
                 if ( exfirst==null ) exfirst= ex;
             }
