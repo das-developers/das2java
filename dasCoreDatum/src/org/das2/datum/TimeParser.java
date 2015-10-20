@@ -321,7 +321,8 @@ public class TimeParser {
         @Override
         public String configure(Map<String, String> args) {
             places= Integer.parseInt( args.get("places") );
-            factor= Math.pow( 10, (6-places) );
+            if ( places>6 ) throw new IllegalArgumentException("only six places allowed.");
+            factor= Math.pow( 10, (6-places) );          // magic number 6 comes from timeWidth.micros
             format= "%0"+places+"d";
             return null;
         }
@@ -337,15 +338,16 @@ public class TimeParser {
         public void parse(String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String, String> extra) throws ParseException {
             double value= Double.parseDouble(fieldContent);
             startTime.micros= (int)( value * factor ); //TODO: support nanos!
-            timeWidth.seconds= 0;
+            timeWidth.seconds= 0; //legacy TimeStruct supported double seconds.
             timeWidth.micros= (int)( 1*factor );
         }
 
         @Override
         public String format(TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra) throws IllegalArgumentException {
             return String.format( format, 
-                    (int) ( ( timeWidth.seconds-(int)timeWidth.seconds ) * ( 1000000/factor ) ) 
-                    +  (int) ( timeWidth.micros / factor ) );
+                    (int) ( ( startTime.seconds-(int)startTime.seconds ) * ( 1000000/factor ) ) //legacy TimeStruct supported double seconds.
+                    + (int) ( startTime.millis * 1000 / factor ) 
+                    + (int) ( startTime.micros / factor ) );
         }
         
     }
@@ -1871,6 +1873,21 @@ public class TimeParser {
     }
     
     /**
+     * move fractional part of timel.seconds into timel.millis and timel.micros
+     * components.
+     * @param timel the decomposed time. 
+     */
+    private void normalizeSeconds( TimeStruct timel ) {
+        double dextraMillis= ( 1000 * ( timel.seconds - (int) timel.seconds ) ) + 0.1e-6; // add fraction of millisecond to avoid roundoff error.
+        int extraMillis= (int)Math.floor( dextraMillis );
+        timel.seconds= (int)timel.seconds;
+
+        int extraMicros= (int)( 1000 * ( dextraMillis - extraMillis ) );
+        timel.millis+= extraMillis;
+        timel.micros+= extraMicros;
+    }
+    
+    /**
      * The TimeParser can be used to format times as well.  
      * @param start beginning of the interval
      * @param stop null if not needed or implicit.
@@ -1891,7 +1908,7 @@ public class TimeParser {
         
         TimeUtil.TimeStruct stopTimel;
         if ( stop==null ) {
-            if ( timeWidth.year==MAX_VALID_YEAR-MIN_VALID_YEAR ) {
+            if ( timeWidth.year==MAX_VALID_YEAR-MIN_VALID_YEAR ) { // orbits and other strange times
                 stopTimel= timel;
             } else {
                 stopTimel= TimeUtil.add( timel, timeWidth );
@@ -1899,12 +1916,8 @@ public class TimeParser {
         } else {
             stopTimel= TimeUtil.toTimeStruct(stop);
         }
-        
-        double dextraMillis= 1000 * ( timel.seconds - (int) timel.seconds );
-        int extraMillis= (int)Math.floor( dextraMillis );
-        timel.seconds= (int)timel.seconds;
-
-        double extraMicros= 1000 * ( dextraMillis - extraMillis );
+        normalizeSeconds(stopTimel);
+        normalizeSeconds(timel);
 
         NumberFormat[] nf = new NumberFormat[5];
         nf[2] = new DecimalFormat("00");
@@ -1966,10 +1979,10 @@ public class TimeParser {
                         digit = (int) timel.seconds;
                         break;
                     case 8:
-                        digit = timel.millis + extraMillis;
+                        digit = timel.millis;
                         break;
                     case 9:
-                        digit = timel.micros + (int) extraMicros;
+                        digit = timel.micros;
                         break;
                     default:
                         throw new RuntimeException("shouldn't get here");
