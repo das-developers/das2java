@@ -154,7 +154,7 @@ public final class TimeUtil {
         public String toString() {
             if ( isLocation ) {
                 int dayOfYear= dayOfYear( month, day, year );
-                return String.format( "%4d/%02d/%02d %02d:%02d:%06.3f (doy=%03d)", year,month,day,hour,minute,seconds,dayOfYear );
+                return String.format( "%4d/%02d/%02d %02d:%02d:%06.3f (doy=%03d)", year,month,day,hour,minute,seconds+millis/1000.+micros/1000000.,dayOfYear );
             } else {
                 int intSeconds= (int)seconds;
                 int nanos= (int)( 1000000000 * ( seconds - intSeconds ) );
@@ -472,7 +472,9 @@ public final class TimeUtil {
         result.hour= a.hour + b.hour;
         result.minute= a.minute + b.minute;
         result.seconds= a.seconds + b.seconds;
+        result.millis= a.millis + b.millis;
         result.micros= a.micros + b.micros;
+        result.isLocation= a.isLocation || b.isLocation;
         return result;
     }
     
@@ -485,6 +487,7 @@ public final class TimeUtil {
         result.hour= a.hour - b.hour;
         result.minute= a.minute - b.minute;
         result.seconds= a.seconds - b.seconds;
+        result.millis= a.millis - b.millis;
         result.micros= a.micros - b.micros;
         return result;
     }
