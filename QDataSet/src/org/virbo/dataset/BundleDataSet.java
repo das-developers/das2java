@@ -21,7 +21,8 @@ import java.util.List;
  * with updates to bundle dataset semantics.
  *
  * Modification History:
- *   2012-07-17: allow rank 2 datasets to be bundled.
+ *   2012-07-17: allow rank 2 datasets to be bundled.  TODO: really?  code doesn't look like it!
+ *   See https://sourceforge.net/p/autoplot/feature-requests/267/
  * @author jbf
  */
 public final class BundleDataSet extends AbstractDataSet {
