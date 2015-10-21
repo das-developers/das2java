@@ -47,6 +47,10 @@ public class RGBImageRenderer extends Renderer {
             return;
         }
         
+        if ( image==null ) {
+            getParent().postException( this, lastException );
+        }
+        
         BufferedImage im= image; // make local copy for thread safety
         if ( im==null ) return; // transitional state
 
@@ -110,7 +114,13 @@ public class RGBImageRenderer extends Renderer {
             image=null;
         } else {
             if ( image==null ) {
-                image= getImage(ds,xAxis,yAxis);
+                try {
+                    image= getImage(ds,xAxis,yAxis);
+                    setLastException(null);
+                } catch ( IllegalArgumentException ex ) {
+                    setLastException(ex);
+                    return;
+                }
             }
         }
         monitor.finished();
