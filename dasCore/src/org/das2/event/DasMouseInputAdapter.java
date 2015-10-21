@@ -1288,9 +1288,22 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
      * the mouse position can be obtained to get the context of the press.
      * The result point is in the parent's coordinate system.
      * @return the position of the mouse press.
+     * @see #getMousePressPositionOnCanvas() 
      */
     public Point getMousePressPosition() {
         return this.pressPosition;
+    }
+    
+    /**
+     * return the position of the last mouse press, in the canvas coordinate 
+     * frame.
+     * @return the position of the mouse press in the canvas coordinate frame.
+     * @see #getMousePressPosition() 
+     */
+    public Point getMousePressPositionOnCanvas() {
+        Point r= this.pressPosition.getLocation(); // get a copy
+        r.translate( this.parent.getX(), this.parent.getY() );
+        return r;
     }
 
     private void performMove(MouseEvent e) {
