@@ -8374,6 +8374,7 @@ public class Ops {
      * @param ds1 null, rank N-1 dataset, or a rank N bundle dataset.
      * @param ds2 rank N-1 dataset.
      * @return rank N bundle dataset
+     * @see #join(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet bundle( QDataSet ds1, QDataSet ds2 ) {
         if ( ds1==null && ds2==null ) {
@@ -8401,8 +8402,16 @@ public class Ops {
             return ds1;
         } else if ( ds1.rank()-1==ds2.rank() ) {
             BundleDataSet bds= new BundleDataSet(ds1.rank());
-            for ( int i=0; i<ds1.length(0); i++ ) {
-                bds.bundle( DataSetOps.unbundle(ds1,i) );
+            if ( ds1.rank()==2 ) {
+                for ( int i=0; i<ds1.length(0); i++ ) {
+                    bds.bundle( DataSetOps.unbundle(ds1,i) );
+                }
+            } else if ( ds1.rank()==3 ) {
+                for ( int i=0; i<ds1.length(0,0); i++ ) {
+                    bds.bundle( DataSetOps.unbundle(ds1,i) );
+                }
+            } else {
+                throw new IllegalArgumentException("ds1 rank must be 1 or 2");
             }
             bds.bundle( ds2 );
             return bds;
