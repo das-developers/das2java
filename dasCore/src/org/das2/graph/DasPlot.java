@@ -727,8 +727,8 @@ public class DasPlot extends DasCanvasComponent {
         return new AbstractAction("Renderer Properties") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Point p = getDasMouseInputAdapter().getMousePressPosition();
-                int i = findRendererAt(p.x + getX(), p.y + getY());
+                Point p = getDasMouseInputAdapter().getMousePressPositionOnCanvas();
+                int i = findRendererAt(p.x, p.y);
                 if (i > -1) {
                     Renderer rend = getRenderer(i);
                     PropertyEditor editor = new PropertyEditor(rend);
