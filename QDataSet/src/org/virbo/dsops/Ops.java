@@ -3351,9 +3351,7 @@ public class Ops {
         } else if ( vds.rank()==1 ) {
             QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
             if ( dep0==null ) {
-                xmins= vds;
-                xmaxs= vds;
-                msgs= vds;
+                throw new IllegalArgumentException("cannot make events data set from this rank 1 dataset with no timetags.");
             } else if ( dep0.rank() == 2  ) {
                 if ( SemanticOps.isBins(dep0) ) {
                     xmins= DataSetOps.slice1( dep0, 0 );
