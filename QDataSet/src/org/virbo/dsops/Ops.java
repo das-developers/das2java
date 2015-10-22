@@ -225,6 +225,7 @@ public class Ops {
             m2.put( QDataSet.DEPEND_1, m1.get(QDataSet.DEPEND_1 ) );
             m2.put( QDataSet.DEPEND_2, m1.get(QDataSet.DEPEND_2 ) );
             m2.put( QDataSet.DEPEND_3, m1.get(QDataSet.DEPEND_3 ) );
+            m2.put( QDataSet.CONTEXT_0, m1.get(QDataSet.CONTEXT_0) );
             m2.put( QDataSet.BINS_0,   m1.get(QDataSet.BINS_0 ) );
             m2.put( QDataSet.BINS_1,   m1.get(QDataSet.BINS_1 ) );
         }
@@ -233,6 +234,7 @@ public class Ops {
             m1.put( QDataSet.DEPEND_1, m2.get(QDataSet.DEPEND_1 ) );
             m1.put( QDataSet.DEPEND_2, m2.get(QDataSet.DEPEND_2 ) );
             m1.put( QDataSet.DEPEND_3, m2.get(QDataSet.DEPEND_3 ) );
+            m1.put( QDataSet.CONTEXT_0, m2.get(QDataSet.CONTEXT_0) );
             m1.put( QDataSet.BINS_0,   m2.get(QDataSet.BINS_0 ) );
             m1.put( QDataSet.BINS_1,   m2.get(QDataSet.BINS_1 ) );
         }
