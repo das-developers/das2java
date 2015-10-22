@@ -406,8 +406,14 @@ public class DasAnnotation extends DasCanvasComponent {
 
     @Override
     public void paintComponent(Graphics g1) {
-
+        
         Graphics2D g = (Graphics2D) g1.create(); 
+        
+        double em2 = g.getFont().getSize();
+        
+        Stroke stroke0= g.getStroke();
+        
+        g.setStroke(new BasicStroke((float) (em2 / 8), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
         
         g.translate( -getX(), -getY() );
 
@@ -463,9 +469,6 @@ public class DasAnnotation extends DasCanvasComponent {
         g.setColor(fore);
         
         if (  showArrow ) {
-            double em2 = g.getFont().getSize();
-            //g.setStroke(new BasicStroke((float) (em2 / 8)));
-            //g.drawLine( r.x, r.y+r.height, r.x+r.width, r.y+r.height );
 
             int headx= 0;
             int heady= 0;
@@ -487,6 +490,8 @@ public class DasAnnotation extends DasCanvasComponent {
             } else {
                 g2.setClip( g.getClip() );
             }
+            g2.setStroke( stroke0 );
+            
             //Arrow.paintArrow(g2, head, tail, em2);
             
             Point2D tail2d= new Point2D.Double( r.x + r.width/2, r.y + r.height/2 );
