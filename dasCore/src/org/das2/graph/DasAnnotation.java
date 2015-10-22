@@ -443,7 +443,10 @@ public class DasAnnotation extends DasCanvasComponent {
         
         r= getAnnotationBubbleBounds();
         
-        if ( anchorPosition==AnchorPosition.N || anchorPosition==AnchorPosition.OutsideN ) {
+        if ( anchorPosition==AnchorPosition.N 
+            || anchorPosition==AnchorPosition.OutsideN 
+            || anchorPosition==AnchorPosition.Center 
+            || anchorPosition==AnchorPosition.S  ) {
             if ( gtr!=null ) gtr.setAlignment( GrannyTextRenderer.CENTER_ALIGNMENT );
         }
         
@@ -468,7 +471,7 @@ public class DasAnnotation extends DasCanvasComponent {
 
         g.setColor(fore);
         
-        if (  showArrow ) {
+        if ( showArrow ) {
 
             int headx= 0;
             int heady= 0;
@@ -492,14 +495,14 @@ public class DasAnnotation extends DasCanvasComponent {
             }
             g2.setStroke( stroke0 );
             
-            //Arrow.paintArrow(g2, head, tail, em2);
-            
             Point2D tail2d= new Point2D.Double( r.x + r.width/2, r.y + r.height/2 );
             Point2D head2d= new Point2D.Double( head.x, head.y );
             Rectangle2D rect2d= new Rectangle2D.Double(r.x, r.y, r.width, r.height );
             Point2D p2d= GraphUtil.lineRectangleIntersection( tail2d, head2d, rect2d );
             Point p= p2d==null ? head : new Point( (int)p2d.getX(), (int)p2d.getY() );
+
             Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
+
             g2.dispose();
         }
         
@@ -520,13 +523,6 @@ public class DasAnnotation extends DasCanvasComponent {
             }
         }
         
-        /*r= DasColumn.toRectangle( getRow(), getColumn() );
-        r.translate( -getX(), -getY() );
-        r.width--;
-        r.height--;
-        ((Graphics2D)g1).draw( r );
-         */
-        
         g.dispose();
         
         getDasMouseInputAdapter().paint(g1);
@@ -542,31 +538,38 @@ public class DasAnnotation extends DasCanvasComponent {
     private Rectangle getAnchorBounds() {
         Rectangle anchorRect= new Rectangle();
         if ( ( anchorType==AnchorType.PLOT || anchorType==AnchorType.DATA ) && plot!=null && xrange!=null && yrange!=null ) {
-            try {
-                anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
-                int x1= (int)(plot.getXAxis().transform(xrange.max()));
-                if ( x1<anchorRect.x ) {
-                    int t= anchorRect.x;
-                    anchorRect.x= x1;
-                    x1= t;
+            if ( anchorBorderType==BorderType.NONE && showArrow ) { // this is really confusing, when you can't see the anchor.
+                anchorRect.x= (int)(plot.getXAxis().transform( pointAtX ) );
+                anchorRect.y= (int)(plot.getYAxis().transform( pointAtY ) );
+                anchorRect.width= 1;
+                anchorRect.height= 1;
+            } else {
+                try {
+                    anchorRect.x= (int)(plot.getXAxis().transform(xrange.min()));
+                    int x1= (int)(plot.getXAxis().transform(xrange.max()));
+                    if ( x1<anchorRect.x ) {
+                        int t= anchorRect.x;
+                        anchorRect.x= x1;
+                        x1= t;
+                    }
+                    anchorRect.width= x1- anchorRect.x;
+                } catch ( InconvertibleUnitsException ex ) {
+                    anchorRect.x= getColumn().getDMinimum();
+                    anchorRect.width= getColumn().getWidth();
                 }
-                anchorRect.width= x1- anchorRect.x;
-            } catch ( InconvertibleUnitsException ex ) {
-                anchorRect.x= getColumn().getDMinimum();
-                anchorRect.width= getColumn().getWidth();
-            }
-            try {
-                anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
-                int y1= (int)(plot.getYAxis().transform(yrange.max()));
-                if ( y1<anchorRect.y ) {
-                    int t= anchorRect.y;
-                    anchorRect.y= y1;
-                    y1= t;
+                try {
+                    anchorRect.y= (int)(plot.getYAxis().transform(yrange.min()));
+                    int y1= (int)(plot.getYAxis().transform(yrange.max()));
+                    if ( y1<anchorRect.y ) {
+                        int t= anchorRect.y;
+                        anchorRect.y= y1;
+                        y1= t;
+                    }
+                    anchorRect.height= y1- anchorRect.y;
+                } catch ( InconvertibleUnitsException ex ) {
+                    anchorRect.y= getRow().getDMinimum();
+                    anchorRect.height= getRow().getHeight();
                 }
-                anchorRect.height= y1- anchorRect.y;
-            } catch ( InconvertibleUnitsException ex ) {
-                anchorRect.y= getRow().getDMinimum();
-                anchorRect.height= getRow().getHeight();
             }
             
         } else {
