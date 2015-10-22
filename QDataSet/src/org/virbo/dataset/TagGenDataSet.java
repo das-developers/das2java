@@ -46,7 +46,9 @@ public class TagGenDataSet extends AbstractRank1DataSet {
 
     @Override
     public QDataSet trim(int start, int end) {
-        return new TagGenDataSet( end-start, scale, offset + start*scale );
+        TagGenDataSet result= new TagGenDataSet( end-start, scale, offset + start*scale );
+        DataSetUtil.copyDimensionProperties( this, result );
+        return result;
     }
 
     @Override
