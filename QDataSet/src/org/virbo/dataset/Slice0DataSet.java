@@ -4,6 +4,7 @@
  */
 package org.virbo.dataset;
 
+import java.util.Map;
 import java.util.logging.Logger;
 import org.das2.util.LoggerManager;
 
@@ -68,6 +69,12 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
             putProperty( QDataSet.BUNDLE_0, ds.property(QDataSet.BUNDLE_1 ) );
             putProperty( QDataSet.BUNDLE_1, null );
             putProperty( QDataSet.BINS_0, ds.property( QDataSet.BINS_1 ) );
+            
+            if ( ds.rank()==1 ) {
+                QDataSet bds= (QDataSet)ds.property( QDataSet.BUNDLE_0 );
+                Map<String,Object> o= DataSetUtil.sliceProperties( bds, index, null );
+                DataSetUtil.putProperties( o, this );
+            } 
             if ( ds.rank()>2 ) {
                 QDataSet dep =  (QDataSet) ds.property( QDataSet.DEPEND_2 );
                 if ( dep!=null && dep.rank()==2 ) {
