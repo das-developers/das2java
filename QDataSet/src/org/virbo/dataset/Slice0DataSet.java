@@ -72,8 +72,10 @@ public class Slice0DataSet extends AbstractDataSet implements RankZeroDataSet {
             
             if ( ds.rank()==1 ) {
                 QDataSet bds= (QDataSet)ds.property( QDataSet.BUNDLE_0 );
-                Map<String,Object> o= DataSetUtil.sliceProperties( bds, index, null );
-                DataSetUtil.putProperties( o, this ); 
+                if ( bds!=null ) {
+                    Map<String,Object> o= DataSetUtil.sliceProperties( bds, index, null );
+                    DataSetUtil.putProperties( o, this ); 
+                }
             } 
             if ( ds.rank()>2 ) {
                 QDataSet dep =  (QDataSet) ds.property( QDataSet.DEPEND_2 );
