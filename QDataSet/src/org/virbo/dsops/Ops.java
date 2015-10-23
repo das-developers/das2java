@@ -1652,12 +1652,13 @@ public class Ops {
     /**
      * if ds1 is enumeration, then check if o2 could be interpreted as 
      * such, otherwise return the existing interpretation.
-     * @param ds1 the context in which we interpret o2.
+     * @param ds1 null, or the context in which we interpret o2.
      * @param o2 the String, QDataSet, array, etc.
      * @param ds2 the fall-back when this is the correct interpretation.
      * @return 
      */
     private static QDataSet enumerationUnitsCheck( QDataSet ds1, Object o2, QDataSet ds2 ) {
+        if ( ds1==null ) return ds2;
         Units u= SemanticOps.getUnits(ds1);
         if ( u instanceof EnumerationUnits ) {
             return Ops.dataset( o2, u );
