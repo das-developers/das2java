@@ -3406,6 +3406,10 @@ public class Ops {
             xmaxs= Ops.add( xmins, xmaxs );
         }
 
+        if ( colors instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)colors).isImmutable() ) {
+            ((MutablePropertyDataSet)colors).putProperty( QDataSet.FORMAT, "0x%08x" );
+        }
+        
         QDataSet lds= Ops.bundle( xmins, xmaxs, colors, msgs );
         
         return lds;
