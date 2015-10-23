@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.das2.graph;
 
@@ -20,7 +16,6 @@ import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
-import org.virbo.dataset.examples.Schemes;
 import org.virbo.dsops.Ops;
 
 /**
@@ -38,11 +33,11 @@ public class RGBImageRenderer extends Renderer {
     
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
-        QDataSet ds= getDataSet();
+        QDataSet lds= getDataSet();
         QDataSet dep0;
         QDataSet dep1;
 
-        if ( ds==null || ds.length() == 0) {
+        if ( lds==null || lds.length() == 0) {
             getParent().postMessage( this, "null data set", Level.INFO, null, null );
             return;
         }
@@ -54,8 +49,8 @@ public class RGBImageRenderer extends Renderer {
         BufferedImage im= image; // make local copy for thread safety
         if ( im==null ) return; // transitional state
 
-        dep0= (QDataSet)ds.property(QDataSet.DEPEND_0);
-        dep1= (QDataSet)ds.property(QDataSet.DEPEND_1);
+        dep0= (QDataSet)lds.property(QDataSet.DEPEND_0);
+        dep1= (QDataSet)lds.property(QDataSet.DEPEND_1);
 
         if ( dep0==null ) dep0= Ops.dindgen(im.getWidth());
         if ( dep1==null ) dep1= Ops.dindgen(im.getHeight());
@@ -103,10 +98,10 @@ public class RGBImageRenderer extends Renderer {
         image= null;
     }
 
-    @Override
     /**
      * this actually can take a little while, I discovered when playing with the wave-at-cassini image.
      */
+    @Override
     public void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) throws DasException {
         monitor.started();
         monitor.setProgressMessage("creating image from RGB data");
@@ -131,8 +126,8 @@ public class RGBImageRenderer extends Renderer {
         // ds should be a rank 2 gray scale of Width x Height values, valued from 0-255,
         // or a rank 3 color image 3,W,H.
         int imageType = -19999;
-        int w = 0;
-        int h = 0;
+        int w;
+        int h;
 
         w = ds.length();
         h = ds.length(0);
@@ -209,17 +204,9 @@ public class RGBImageRenderer extends Renderer {
      */
     public static boolean acceptsData( QDataSet ds ) {
         if ( ds.rank()==2 ) {
-            if ( SemanticOps.isBundle(ds) ) {
-                return false;
-            } else {
-                return true;
-            }
+            return !SemanticOps.isBundle(ds);
         } else if ( ds.rank()==3 ) {
-            if ( ds.length(0,0)>2 && ds.length(0,0)<5 ) {
-                return true;
-            } else {
-                return false;
-            }
+            return ds.length(0,0)>2 && ds.length(0,0)<5;
         } else {
             return false;
         }
