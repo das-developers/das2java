@@ -4,6 +4,7 @@
  */
 package org.virbo.dataset;
 
+import java.util.Map;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
 
@@ -46,7 +47,7 @@ public class Slice1DataSet extends AbstractDataSet {
 
         QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
 
-        QDataSet bundle1= (QDataSet)ds.property(QDataSet.BUNDLE_1);
+        QDataSet bds= (QDataSet)ds.property(QDataSet.BUNDLE_1);
 //        if ( bundle1!=null && !unbundle ) {
 //            System.err.println("we're not going to do this correctly, use unbundle instead");
 //        }
@@ -59,10 +60,10 @@ public class Slice1DataSet extends AbstractDataSet {
 
 
         // add the CONTEXT_0 property.
-        if ( bundle1!=null && dep1==null ) {
+        if ( bds!=null && dep1==null ) {
             QDataSet context=null;
             if ( addContext ) {
-                context= DataSetOps.getContextForUnbundle( bundle1, index );
+                context= DataSetOps.getContextForUnbundle( bds, index );
             }
             if ( label!=null ) {
                 if ( addContext ) {
@@ -74,6 +75,10 @@ public class Slice1DataSet extends AbstractDataSet {
                 if ( addContext ) {
                     DataSetUtil.addContext( this, context );
                 }
+            }
+            if ( ds.rank()==2 ) { // it should
+                Map<String,Object> o= DataSetUtil.sliceProperties( bds, index, null );
+                DataSetUtil.putProperties( o, this ); 
             }
         } else if ( dep1!=null ) {
             if ( dep1.rank()==1 ) {
