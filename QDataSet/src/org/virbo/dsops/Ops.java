@@ -1649,8 +1649,37 @@ public class Ops {
         });
     }
 
+    /**
+     * if ds1 is enumeration, then check if o2 could be interpreted as 
+     * such, otherwise return the existing interpretation.
+     * @param ds1 the context in which we interpret o2.
+     * @param o2 the String, QDataSet, array, etc.
+     * @param ds2 the fall-back when this is the correct interpretation.
+     * @return 
+     */
+    private static QDataSet enumerationUnitsCheck( QDataSet ds1, Object o2, QDataSet ds2 ) {
+        Units u= SemanticOps.getUnits(ds1);
+        if ( u instanceof EnumerationUnits ) {
+            return Ops.dataset( o2, u );
+        } else {
+            return ds2;
+        }
+    }
+    
+    /**
+     * element-wise equality test, converting arguments as necessary to
+     * like units.  These datasets can be nominal data as well.
+     * 
+     * @param ds1
+     * @param ds2
+     * @return 
+     */
     public static QDataSet eq( Object ds1, Object ds2 ) {
-        return eq( dataset(ds1), dataset(ds2) );
+        QDataSet dds1= dataset(ds1);
+        QDataSet dds2= dataset(ds2);
+        dds2= enumerationUnitsCheck( dds1, ds2, dds2 );
+        dds1= enumerationUnitsCheck( dds2, ds1, dds1 );
+        return eq( dds1, dds2 );
     }
     
     /**
@@ -1669,9 +1698,21 @@ public class Ops {
             }
         });
     }
-
+    
+    /**
+     * element-wise equality test, converting arguments as necessary to
+     * like units.  These datasets can be nominal data as well.
+     * 
+     * @param ds1
+     * @param ds2
+     * @return 
+     */
     public static QDataSet ne( Object ds1, Object ds2 ) {
-        return ne( dataset(ds1), dataset(ds2) );
+        QDataSet dds1= dataset(ds1);
+        QDataSet dds2= dataset(ds2);
+        dds2= enumerationUnitsCheck( dds1, ds2, dds2 );
+        dds1= enumerationUnitsCheck( dds2, ds1, dds1 );
+        return ne( dds1, dds2 );
     }
     
     /**
@@ -3993,6 +4034,109 @@ public class Ops {
             int[] qube= new int[qqube.size()];
             for ( int i=0; i<qube.length; i++ ) qube[i]= qqube.get(i);
             return ArrayDataSet.wrap( arg0, qube, true );
+        } else {
+            String sarg0= String.valueOf( arg0 );
+            if ( sarg0.startsWith("<") && sarg0.endsWith(">") ) {
+                throw new IllegalArgumentException("Ops.dataset is unable to coerce \""+ sarg0.substring(1,sarg0.length()-1) + "\" to QDataSet");                
+            } else {
+                throw new IllegalArgumentException("Ops.dataset is unable to coerce "+arg0+" to QDataSet");
+            }
+        }
+        
+    }
+
+    /**
+     * coerce Java objects like arrays Lists and scalars into a QDataSet.  
+     * This is introduced to mirror the useful Jython dataset command.  This is a nasty business that
+     * is surely going to cause all sorts of problems, so we should do it all in one place.
+     * See http://jfaden.net:8080/hudson/job/autoplot-test029/
+     * This supports:<ul>
+     *   <li>int, float, double, etc to Rank 0 datasets
+     *   <li>List&lt;Number&gt; to Rank 1 datasets.
+     *   <li>Java arrays of Number to Rank 1-4 qubes datasets
+     *   <li>Strings to rank 0 datasets with units ("5 s" or "2014-01-01T00:00")
+     *   <li>Datums to rank 0 datasets
+     *   <li>DatumRanges to rank 1 bins
+     * </ul>
+     * @param arg0 null,QDataSet,Number,Datum,DatumRange,String,List,or array.
+     * @param u units providing context
+     * @throws IllegalArgumentException if the argument cannot be parsed or converted.
+     * @return QDataSet
+     */
+    public static QDataSet dataset( Object arg0, Units u ) {
+        if ( arg0==null ) {  // there was a similar test in the Python code.
+            return null;
+        } else if ( arg0 instanceof QDataSet ) {
+            return (QDataSet)arg0;
+        } else if ( arg0 instanceof Number ) {
+            return DataSetUtil.asDataSet( u.createDatum( ((Number)arg0).doubleValue() ) );
+        } else if ( arg0 instanceof Datum ) {
+            return DataSetUtil.asDataSet( (Datum)arg0 );
+        } else if ( arg0 instanceof DatumRange ) {
+            return DataSetUtil.asDataSet( (DatumRange)arg0 );
+        } else if ( arg0 instanceof String ) {
+            String sarg= (String)arg0;
+            try {
+               return DataSetUtil.asDataSet( u.parse(sarg) ); //TODO: someone is going to want lookupUnits that will allocate new units.
+            } catch (ParseException ex) {
+               try {
+                   return DataSetUtil.asDataSet(TimeUtil.create(sarg));
+               } catch ( ParseException ex2 ) {
+                   try {
+                      DatumRange dr= DatumRangeUtil.parseISO8601Range(sarg);
+                      if ( dr==null ) {
+                         throw new IllegalArgumentException( "unable to parse string: "+sarg ); // legacy.  It should throw ParseException now.
+                      } else {
+                         return DataSetUtil.asDataSet(dr);
+                      }
+                   } catch ( ParseException ex1 ) {
+                       throw new IllegalArgumentException( "unable to parse string: "+sarg, ex1 );
+                   }
+               }
+            }
+        } else if ( arg0 instanceof List ) {
+            List p= (List)arg0;
+            double[] j= new double[ p.size() ];
+            for ( int i=0; i<p.size(); i++ ) {
+                Object n= p.get(i);
+                if ( n instanceof Number ) {
+                    j[i]=((Number)n).doubleValue();
+                } else {
+                    try {
+                        j[i]= u.parse((String)n).doubleValue(u);
+                    } catch (ParseException ex) {
+                        throw new IllegalArgumentException(ex);
+                    }
+                }
+            }
+            QDataSet q= DDataSet.wrap( j, u );
+            return q;            
+        } else if ( arg0.getClass().isArray() ) { // convert Java array into QDataSet.  Assumes qube.
+            //return DataSetUtil.asDataSet(arg0); // I think this is probably a better implementation.
+            List<Integer> qqube= new ArrayList( );
+            qqube.add( Array.getLength(arg0) );
+            if ( qqube.get(0)>0 ) {
+                Object slice= Array.get(arg0, 0);
+                while ( slice.getClass().isArray() ) {
+                    qqube.add( Array.getLength(slice) );
+                    slice= Array.get( slice, 0 );
+                }
+            }
+            int[] qube= new int[qqube.size()];
+            for ( int i=0; i<qube.length; i++ ) qube[i]= qqube.get(i);
+            if ( arg0.getClass().getComponentType()==String.class ) {
+                double[] dd= new double[ Array.getLength(arg0) ];
+                for ( int i=0; i<dd.length; i++ ) {
+                    try {
+                        dd[i]= u.parse( (String)Array.get(arg0,i) ).doubleValue(u);
+                    } catch (ParseException ex) {
+                        throw new IllegalArgumentException(ex);
+                    }
+                }
+                return ArrayDataSet.wrap( dd, qube, true ).setUnits(u);
+            } else {
+                return ArrayDataSet.wrap( arg0, qube, true ).setUnits(u);
+            }
         } else {
             String sarg0= String.valueOf( arg0 );
             if ( sarg0.startsWith("<") && sarg0.endsWith(">") ) {

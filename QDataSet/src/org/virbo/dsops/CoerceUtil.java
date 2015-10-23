@@ -4,10 +4,12 @@
  */
 package org.virbo.dsops;
 
+import org.das2.datum.Units;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.Slice0DataSet;
 import org.virbo.dataset.TrimDataSet;
 import org.virbo.dataset.WritableDataSet;
