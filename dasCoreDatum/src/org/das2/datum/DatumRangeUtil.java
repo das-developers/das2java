@@ -1088,6 +1088,9 @@ public class DatumRangeUtil {
             if ( beforeTo ) isThroughNotTo= true;
             
             if ( isThroughNotTo ) {
+                if ( ts2lsd<0 ) {
+                    throw new ParseException("cannot interpret as time",ipos);
+                }
                 ts2[ts2lsd]++;
             }
             
