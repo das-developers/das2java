@@ -3471,6 +3471,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * position on the parent canvas.
      * @param datum a data value
      * @return Horizontal or vertical position on the canvas.
+     * @throws InconvertibleUnitsException 
      */
     public double transform(Datum datum) {
         return transform(datum.doubleValue(getUnits()), getUnits());
@@ -3501,6 +3502,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param data a data value
      * @param units the units of the given data value.
      * @return Horizontal or vertical position on the canvas.
+     * @throws InconvertibleUnitsException
      */
     public double transform(double data, Units units) {
         DasDevicePosition range;
@@ -3522,6 +3524,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param dmin the axis minimum.
      * @param dmax the axis maximum.
      * @return  Horizontal or vertical position on the canvas.
+     * @throws InconvertibleUnitsException
      */
     protected double transform(double data, Units units, int dmin, int dmax) {
         if (units != dataRange.getUnits()) {
@@ -3565,6 +3568,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * @param idata1 pixel position on the axis, in the canvas frame.
      * @param idata2 pixel position on the axis, in the canvas frame.
      * @return DatumRange implied by the two pixel positions.
+     * @throws InconvertibleUnitsException
      */
     public DatumRange invTransform( double idata1, double idata2 ) {
         Datum d1= invTransform(idata1);
@@ -3581,6 +3585,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * coordinates have 0,0 at the upper-left hand corner of the screen.
      * @param idata the pixel location on the axis, in the canvas frame.
      * @return the data location.
+     * @throws InconvertibleUnitsException
      */
     public Datum invTransform(double idata) {
         double data;
