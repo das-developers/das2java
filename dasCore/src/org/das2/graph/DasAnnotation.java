@@ -349,10 +349,11 @@ public class DasAnnotation extends DasCanvasComponent {
 
     @Override
     public void resize() {
-        if ( this.getGraphics()!=null ) {
+        Graphics g= this.getGraphics();
+        if ( g!=null ) {
             super.resize();
-            Graphics g= this.getGraphics();
-            if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
+            Font f= getFont();
+            if ( fontSize>0 && f!=null ) g.setFont( f.deriveFont(fontSize) );
             if ( this.gtr!=null ) {
                 this.gtr.setString( g, getString() );
             } else {
