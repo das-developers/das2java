@@ -540,8 +540,16 @@ public class DasAnnotation extends DasCanvasComponent {
         Rectangle anchorRect= new Rectangle();
         if ( ( anchorType==AnchorType.PLOT || anchorType==AnchorType.DATA ) && plot!=null && xrange!=null && yrange!=null ) {
             if ( anchorBorderType==BorderType.NONE && showArrow ) { // this is really confusing, when you can't see the anchor.
-                anchorRect.x= (int)(plot.getXAxis().transform( pointAtX ) );
-                anchorRect.y= (int)(plot.getYAxis().transform( pointAtY ) );
+                try {
+                    anchorRect.x= (int)(plot.getXAxis().transform( pointAtX ) );
+                } catch ( InconvertibleUnitsException ex ) {
+                    anchorRect.x= getColumn().getDMiddle();
+                }
+                try {
+                    anchorRect.y= (int)(plot.getYAxis().transform( pointAtY ) );
+                } catch ( InconvertibleUnitsException ex ) {
+                    anchorRect.y= getRow().getDMiddle();
+                }
                 anchorRect.width= 1;
                 anchorRect.height= 1;
             } else {
