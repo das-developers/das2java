@@ -124,37 +124,6 @@ public class DasAnnotation extends DasCanvasComponent {
         
         this.getDasMouseInputAdapter().setPrimaryModule(mm);
 
-//        MouseModule setXY= new MouseModule( this, new BoxRenderer(this), "Set X and Y Range" ) {
-//            Point p0;
-//            
-//            @Override
-//            public void mousePressed(MouseEvent e) {
-//                super.mousePressed(e); 
-//                if ( plot!=null ) {
-//                    p0= e.getPoint();
-//                    p0= SwingUtilities.convertPoint( DasAnnotation.this, p0, plot.getCanvas() );
-//                }
-//            }
-//            
-//            @Override
-//            public void mouseReleased(MouseEvent e) {
-//                if ( getAnchorType()==AnchorType.CANVAS ) {
-//                    super.mouseReleased(e);
-//                } else {
-//                    if ( plot!=null ) {
-//                        Point p= e.getPoint();
-//                        p= SwingUtilities.convertPoint( DasAnnotation.this, p, plot.getCanvas() );
-//                        DatumRange xr= plot.getXAxis().invTransform(p0.x,p.x);
-//                        setXrange( xr ); 
-//                        DatumRange yr= plot.getYAxis().invTransform(p0.y,p.y);
-//                        setYrange( yr );
-//                    } else {
-//                        JOptionPane.showMessageDialog( parent, "Annotation is not attached to a plot.");
-//                    }
-//                }
-//            }            
-//        };
-        //this.getDasMouseInputAdapter().addMouseModule(setXY);
 
         MouseModule pointAtMouseModule= new MouseModule( this, new ArrowDragRenderer(), "Point At" ) {
             Point p0;
@@ -184,9 +153,7 @@ public class DasAnnotation extends DasCanvasComponent {
             }            
         };
         this.getDasMouseInputAdapter().addMouseModule(pointAtMouseModule);
-        
-        //arrowToMouseModule = createArrowToMouseModule(this);
-        //this.getDasMouseInputAdapter().addMouseModule(arrowToMouseModule);
+
     }
 
     private void adjustAnchorOffset( int dx, int dy ) {
@@ -272,42 +239,6 @@ public class DasAnnotation extends DasCanvasComponent {
             return "" + x + "," + y;
         }
     }
-
-//    private MouseModule createArrowToMouseModule(final DasAnnotation anno) {
-//        return new MouseModule(DasAnnotation.this, new ArrowDragRenderer(), "Point At") {
-//
-//            Point head;
-//            Point tail;
-//
-//            @Override
-//            public void mousePressed(MouseEvent e) {
-//                super.mousePressed(e);
-//                tail= e.getPoint();
-//                tail.translate(anno.getX(), anno.getY());
-//                Rectangle r= DasAnnotation.this.getActiveRegion().getBounds();
-//                if ( !r.contains(tail) ) {
-//                    tail= null;
-//                }
-//            }
-//
-//            @Override
-//            public void mouseReleased(MouseEvent e) {
-//                super.mouseReleased(e);
-//                if ( tail==null ) return;
-//                head = e.getPoint();
-//                head.translate(anno.getX(), anno.getY());
-//                DasCanvasComponent c = parent.getCanvas().getCanvasComponentAt(head.x, head.y);
-//                if (c instanceof DasPlot) {
-//                    final DasPlot p = (DasPlot) c;
-//                    final Datum x = p.getXAxis().invTransform(head.x);
-//                    final Datum y = p.getYAxis().invTransform(head.y);
-//                    anno.setPointAt(new DatumPairPointDescriptor(p, x, y));
-//                    resize();
-//                }
-//
-//            }
-//        };
-//    }
 
     public static final String PROP_TEXT = "text";
     
