@@ -425,14 +425,18 @@ public class DasAnnotation extends DasCanvasComponent {
             } else {
                 g2.setClip( g.getClip() );
             }
-            g2.setStroke( stroke0 );
-            
             Point2D tail2d= new Point2D.Double( r.x + r.width/2, r.y + r.height/2 );
             Point2D head2d= new Point2D.Double( head.x, head.y );
             Rectangle2D rect2d= new Rectangle2D.Double(r.x, r.y, r.width, r.height );
             Point2D p2d= GraphUtil.lineRectangleIntersection( tail2d, head2d, rect2d );
             Point p= p2d==null ? head : new Point( (int)p2d.getX(), (int)p2d.getY() );
 
+            g2.setStroke( new BasicStroke( (float) (em2/4), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
+            g2.setColor( new Color( back.getRed(), back.getGreen(), back.getBlue(), 128 ) );
+            Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
+
+            g2.setStroke( stroke0 );            
+            g2.setColor( fore );
             Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
 
             g2.dispose();
