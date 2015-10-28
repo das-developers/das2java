@@ -1018,6 +1018,10 @@ public class Ops {
     /**
      * trim on the first (not zeroth) dimension.  This is to help with 
      * unbundling the timeranges from an events dataset. 
+     * @param ds the dataset, rank 2 or greater
+     * @param st the first index
+     * @param en the last index, exclusive.
+     * @return the trimmed dataset.
      */
     public static QDataSet trim1( QDataSet ds, int st, int en ) {
         if ( ds.rank()==2 ) {
@@ -2585,6 +2589,7 @@ public class Ops {
      * @param len0 the length of the first index.
      * @param len1 the length of the second index.
      * @param len2 the length of the third index.
+     * @param len3 the length of the fourth index.
      * @return dataset filled with ones.
      */
     public static QDataSet ones(int len0, int len1, int len2, int len3 ) {
