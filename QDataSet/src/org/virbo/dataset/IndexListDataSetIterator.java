@@ -19,6 +19,7 @@ public class IndexListDataSetIterator implements DataSetIterator {
     int index;
     
     public IndexListDataSetIterator( QDataSet indeces ) {
+        if ( indeces.rank()!=2 ) throw new IllegalArgumentException("indeces must be rank 2.");
         this.indeces= indeces;
         index= -1;
         if ( indeces.length()>0 ) {
