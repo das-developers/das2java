@@ -66,6 +66,7 @@ import org.virbo.dataset.SDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.TransposeRank2DataSet;
 import org.virbo.dataset.DataSetAnnotations;
+import org.virbo.dataset.IndexListDataSetIterator;
 import org.virbo.dataset.SortDataSet;
 import org.virbo.dataset.SparseDataSet;
 import org.virbo.dataset.WeightsDataSet;
@@ -4372,6 +4373,7 @@ public class Ops {
      * @param ds of any rank M, M&gt;0.
      * @return a rank 1 or rank 2 dataset with N by M elements, where N is the number
      * of non-zero elements found.
+     * @see #putValues(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet where(QDataSet ds) {
         
@@ -4923,7 +4925,60 @@ public class Ops {
         MutablePropertyDataSet wbds= putIndexedProperty( bds, name, index, value );
         MutablePropertyDataSet mds= putProperty( ds, bundleProp, wbds );
         return mds;
-    }    
+    }
+    
+    /**
+     * like putProperty, but this inserts values into the dataset.  If the dataset
+     * is not mutable, then this will make a copy of the data and return the copy.
+     * 
+     * @param ds the rank 1 or greater dataset
+     * @param indeces rank 1 indeces when ds is rank 1, or rank 2 [:,m] indeces for a rank m dataset.
+     * @param value null for fill, or the rank 0 value or rank 1 values to assign.
+     * @return the dataset with the indeces assigned new values.
+     * @see #where(org.virbo.dataset.QDataSet) 
+     */
+    public static WritableDataSet putValues( QDataSet ds, QDataSet indeces, QDataSet value ) {
+        WritableDataSet result;
+        if ( ds instanceof WritableDataSet ) {
+            WritableDataSet wds= (WritableDataSet)ds;
+            if ( wds.isImmutable() ) {
+                result= copy(wds);
+            } else {
+                result= wds;
+            }
+        } else {
+            result= copy(ds);
+        }
+        
+        double dvalue= Double.NaN;
+        UnitsConverter uc=null;
+        if ( value!=null ) {
+            uc= SemanticOps.getUnitsConverter(value,ds);
+            if ( value.rank()==0) {
+                dvalue= uc.convert( value.value() );
+            }
+        }
+            
+        if ( indeces.rank()==1 ) indeces= new BundleDataSet(indeces);
+        IndexListDataSetIterator iter= new IndexListDataSetIterator( indeces );
+        
+        if ( value==null || value.rank()==0 ) {
+            while ( iter.hasNext() ) {
+                iter.next();
+                iter.putValue( result, dvalue );
+            }
+        } else {
+            int i=0; 
+            while ( iter.hasNext() ) {
+                assert uc!=null;
+                iter.next();
+                dvalue= uc.convert( value.value(i) );
+                iter.putValue( result, dvalue );
+                i= i+1;
+            }
+        }
+        return result;
+    }
         
     /**
      * returns the reverse of the rank 1 dataset.
