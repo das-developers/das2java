@@ -19,7 +19,9 @@ public class IndexListDataSetIterator implements DataSetIterator {
     int index;
     
     public IndexListDataSetIterator( QDataSet indeces ) {
-        if ( indeces.rank()!=2 ) throw new IllegalArgumentException("indeces must be rank 2.");
+        if ( indeces.rank()==1 ) {
+            indeces= new BundleDataSet(indeces); // autoplot test020 uses this mode.
+        }
         this.indeces= indeces;
         index= -1;
         if ( indeces.length()>0 ) {
