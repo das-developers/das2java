@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.virbo.dataset;
 
@@ -18,6 +14,10 @@ public class IndexListDataSetIterator implements DataSetIterator {
     int dsrank; // source dataset rank
     int index;
     
+    /**
+     * Create the iterator
+     * @param indeces rank 2 indeces [npoints,rank] or just [npoints] for rank 1 data.
+     */
     public IndexListDataSetIterator( QDataSet indeces ) {
         if ( indeces.rank()==1 ) {
             indeces= new BundleDataSet(indeces); // autoplot test020 uses this mode.
