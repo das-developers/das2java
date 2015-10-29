@@ -4932,6 +4932,13 @@ public class Ops {
         return mds;
     }
     
+    public static WritableDataSet putValues( Object ds, Object indeces, Object values ) {
+        QDataSet qvalues= dataset(values);
+        QDataSet qindeces= dataset(indeces);
+        QDataSet qds= dataset(ds);
+        return putValues( qds, qindeces, qvalues );
+    }
+    
     /**
      * like putProperty, but this inserts values into the dataset.  If the dataset
      * is not mutable, then this will make a copy of the data and return the copy.
