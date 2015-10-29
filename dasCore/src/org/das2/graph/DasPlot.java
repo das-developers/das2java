@@ -1297,7 +1297,8 @@ public class DasPlot extends DasCanvasComponent {
         }
 
         graphics.setColor(getForeground());
-        graphics.drawRect(x - 1, y - 1, xSize + 1, ySize + 1);
+        
+        if ( plotVisible ) graphics.drawRect(x - 1, y - 1, xSize + 1, ySize + 1);
 
         if ( clip0!=null ) clip0.translate( getX(), getY() );
         graphics.setClip(clip0);
@@ -2461,16 +2462,20 @@ public class DasPlot extends DasCanvasComponent {
         this.yAxis.setVisible(visible);
     }
 
-    /**
-     * if true then the component is visible.
-     * @param visible  if true then the component is visible.
-     */
-    @Override
-    public void setVisible(boolean visible) {
-        //bugfix: https://sourceforge.net/tracker/index.php?func=detail&aid=3137434&group_id=199733&atid=970682
-        //visible properties must be independent, or bugs will happen.  See setAxisPlotVisible for old behavior.
-        super.setVisible(visible);
+    private boolean plotVisible = true;
+
+    public static final String PROP_PLOTVISIBLE = "plotVisible";
+
+    public boolean isPlotVisible() {
+        return plotVisible;
     }
+
+    public void setPlotVisible(boolean plotVisible) {
+        boolean oldPlotVisible = this.plotVisible;
+        this.plotVisible = plotVisible;
+        firePropertyChange(PROP_PLOTVISIBLE, oldPlotVisible, plotVisible);
+    }
+
 
     private boolean overSize = false;
     
