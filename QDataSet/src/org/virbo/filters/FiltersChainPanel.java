@@ -126,7 +126,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     private FilterEditorPanel getEditorFor(String f, FilterEditorPanel recyclable) {
         logger.entering( CLASS_NAME, "getEditorFor", f );
         if ( !f.startsWith("|") ) f= "|"+f;
-        
+        if ( !f.contains("(")&& !f.endsWith(")") ) {
+            f= f+"()";
+        }
         String srecyclable= recyclable==null ? null : recyclable.getFilter();
         int i= f.indexOf("(");
         if ( i==-1 ) i=f.length();
