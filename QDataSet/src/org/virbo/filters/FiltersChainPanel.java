@@ -129,6 +129,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
         String srecyclable= recyclable==null ? null : recyclable.getFilter();
         int i= f.indexOf("(");
+        if ( i==-1 ) i=f.length();
         if ( srecyclable!=null && srecyclable.startsWith(f.substring(0,i)) ) {
             assert recyclable!=null;
             logger.log(Level.FINE, "recycling to provide {0}", f);
