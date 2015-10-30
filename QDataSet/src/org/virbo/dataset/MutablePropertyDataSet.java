@@ -23,7 +23,7 @@ public interface MutablePropertyDataSet extends QDataSet {
      * assign the name value to the property.  
      * @param name property name like "UNITS" (Use QDataSet.UNITS)
      * @param value the property value.
-     * @see org.virbo.dsops.Ops#putProperty(org.virbo.dataset.QDataSet, java.lang.String, java.lang.Object) which properly checks mutability of the dataset.
+     * @see org.virbo.dsops.Ops#putProperty(org.virbo.dataset.QDataSet, java.lang.String, java.lang.Object) putProperty which properly checks mutability of the dataset
      * @see org.virbo.dataset.QDataSet#UNITS
      */
     void putProperty( String name, Object value );
