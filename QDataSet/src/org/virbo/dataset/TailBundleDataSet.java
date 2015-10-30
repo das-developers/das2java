@@ -43,7 +43,10 @@ public final class TailBundleDataSet extends AbstractDataSet {
     public TailBundleDataSet( int rank ) {
         this.rank= rank;
         datasets= new ArrayList<QDataSet>();
-        if ( rank==3 ) {
+        if ( rank==4 ) {
+            putProperty( QDataSet.BUNDLE_3, new BundleDescriptor() );
+            putProperty( QDataSet.QUBE, Boolean.TRUE );            
+        } else if ( rank==3 ) {
             putProperty( QDataSet.BUNDLE_2, new BundleDescriptor() );
             putProperty( QDataSet.QUBE, Boolean.TRUE );            
         } else if ( rank==2 ) {
