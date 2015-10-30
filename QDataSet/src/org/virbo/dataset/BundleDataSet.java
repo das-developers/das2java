@@ -71,11 +71,8 @@ public final class BundleDataSet extends AbstractDataSet {
     public BundleDataSet( int rank ) {
         this.rank= rank;
         datasets= new ArrayList<QDataSet>();
-        if ( rank==2 ) {
+        if ( rank>=2 ) {
             putProperty( QDataSet.BUNDLE_1, new BundleDescriptor() );
-            putProperty( QDataSet.QUBE, Boolean.TRUE );
-        } else if ( rank==3 ) {
-            putProperty( QDataSet.BUNDLE_2, new BundleDescriptor() );
             putProperty( QDataSet.QUBE, Boolean.TRUE );
         } else {
             putProperty( QDataSet.BUNDLE_0, new BundleDescriptor() );
@@ -204,11 +201,11 @@ public final class BundleDataSet extends AbstractDataSet {
     }
 
     @Override
-    public double value(int i0, int i1, int i2) {
+    public double value(int i0, int i1, int i2) { // experimental
         if ( this.rank!=3 ) {
             throw new IllegalArgumentException("rank 3 access on rank "+this.rank+" bundle dataset");
         }
-        return datasets.get(i2).value(i0,i1);
+        return datasets.get(i1).value(i0,i2);
     }
 
     @Override
@@ -216,7 +213,7 @@ public final class BundleDataSet extends AbstractDataSet {
         if ( this.rank!=4 ) {
             throw new IllegalArgumentException("rank 4 access on rank "+this.rank+" bundle dataset");
         }        
-        return datasets.get(i3).value(i0,i1,i2);
+        return datasets.get(i1).value(i0,i2,i3);
     }
 
     @Override
@@ -240,34 +237,22 @@ public final class BundleDataSet extends AbstractDataSet {
 
     @Override
     public int length() {
-        return this.rank>=2 ? len0 : datasets.size();
+        return this.rank==2 ? len0 : datasets.size();
     }
 
     @Override
     public int length(int i0) {
-        if ( this.rank()==2 ) {
-            return datasets.size();
-        } else {
-            return datasets.get(0).length(0);
-        }
+        return datasets.size();
     }
 
     @Override
-    public int length(int i0,int i1) { 
-        if ( this.rank()==3 ) {
-            return datasets.size();
-        } else {
-            return datasets.get(0).length(0,0);
-        }
+    public int length(int i0,int i1) { // experimental https://sourceforge.net/tracker/?func=detail&atid=970685&aid=3545095&group_id=199733
+        return datasets.get(i0).length(i1);
     }
 
     @Override
     public int length(int i0,int i1, int i2) {
-        if ( this.rank()==4 ) {
-            return datasets.size();
-        } else {
-            return datasets.get(0).length(0,0,0);
-        }
+        return datasets.get(i0).length(i1,i2);
     }
 
     @Override
@@ -281,12 +266,7 @@ public final class BundleDataSet extends AbstractDataSet {
                 dep0name = (String) dep0.property(QDataSet.NAME);
                 if ( dep0name==null ) dep0name=""; else dep0name=dep0name+"=";
             }
-            if ( rank==2 ) {
-                return "BundleDataSet["+dep0name + len0 + "," + datasets.size()+" datasets]";
-            } else {
-                String ss= DataSetUtil.toString( DataSetUtil.qubeDims(datasets.get(0) ) );
-                return "BundleDataSet["+ ss.substring(1,ss.length()-1) + "," + datasets.size()+" datasets]";
-            }
+            return "BundleDataSet["+dep0name + len0 + "," + datasets.size()+" datasets]";
         }
     }
 
