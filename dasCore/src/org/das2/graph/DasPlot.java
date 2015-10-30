@@ -677,11 +677,14 @@ public class DasPlot extends DasCanvasComponent {
         if (drawGridOver) {
             maybeDrawGrid(plotGraphics);
         }
-        if (renderers1.isEmpty()) {
-            postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
-            logger.fine("dasPlot has no renderers");
-        } else if (noneActive) {
-            postMessage(null, "(no active renderers)", DasPlot.INFO, null, null);
+        
+        if ( this.isPlotVisible() ) {
+            if (renderers1.isEmpty()) {
+                postMessage(null, "(no renderers)", DasPlot.INFO, null, null);
+                logger.fine("dasPlot has no renderers");
+            } else if (noneActive) {
+                postMessage(null, "(no active renderers)", DasPlot.INFO, null, null);
+            }
         }
     }
 
