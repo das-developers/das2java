@@ -2087,7 +2087,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
         g.translate(-getX(), -getY());
         g.setColor(getForeground());
-
+        
         /* Debugging code */
         /* The compiler will optimize it out if DEBUG_GRAPHICS == false */
         if (DEBUG_GRAPHICS) {
@@ -2754,7 +2754,38 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             logger.warning("2285: font was null, using sans-12");
             f= Font.decode("sans-12");
         }
+        
+        if ( getFontSize().length()>0 && !getFontSize().equals("1em") ) {
+            try {
+                double[] dd= DasDevicePosition.parseLayoutStr(getFontSize());
+                if ( dd[1]==1 && dd[2]==0 ) {
+                    // do nothing
+                } else {
+                    double parentSize= f.getSize2D();
+                    double newSize= dd[1]*parentSize + dd[2];
+                    f= f.deriveFont((float)newSize);    
+                    return f;
+                }
+            } catch (ParseException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+
         return f;
+    }
+    
+    private String fontSize = "1em";
+
+    public static final String PROP_FONTSIZE = "fontSize";
+
+    public String getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(String fontSize) {
+        String oldFontSize = this.fontSize;
+        this.fontSize = fontSize;
+        firePropertyChange(PROP_FONTSIZE, oldFontSize, fontSize);
     }
 
     /**
