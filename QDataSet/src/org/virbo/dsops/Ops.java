@@ -69,6 +69,7 @@ import org.virbo.dataset.DataSetAnnotations;
 import org.virbo.dataset.IndexListDataSetIterator;
 import org.virbo.dataset.SortDataSet;
 import org.virbo.dataset.SparseDataSet;
+import org.virbo.dataset.TailBundleDataSet;
 import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
@@ -8609,28 +8610,51 @@ public class Ops {
         } else if ( ds2==null ) {
             throw new NullPointerException("ds2 is null while ds1 ("+ds1+") is not null.");
         } else if ( ds1.rank() == ds2.rank() ) { // findbugs fails to realize that this must be okay.
-            BundleDataSet ds= new BundleDataSet( ds1.rank() + 1 );
-            ds.bundle(ds1);
-            ds.bundle(ds2);
-            return ds;
+            if ( ds1.rank()>1 ) {
+                TailBundleDataSet ds= new TailBundleDataSet( ds1.rank() + 1 );
+                ds.bundle(ds1);
+                ds.bundle(ds2);                
+                return ds;
+            } else {
+                BundleDataSet ds= new BundleDataSet( ds1.rank() + 1 );
+                ds.bundle(ds1);
+                ds.bundle(ds2);                
+                return ds;
+            }
         } else if ( ds1 instanceof BundleDataSet && ds1.rank()-1==ds2.rank() ) {
             ((BundleDataSet)ds1).bundle(ds2);
             return ds1;
         } else if ( ds1.rank()-1==ds2.rank() ) {
-            BundleDataSet bds= new BundleDataSet(ds1.rank());
-            if ( ds1.rank()==2 ) {
-                for ( int i=0; i<ds1.length(0); i++ ) {
-                    bds.bundle( DataSetOps.unbundle(ds1,i) );
-                }
-            } else if ( ds1.rank()==3 ) {
+            if ( ds1.rank()==3 ) {
+                TailBundleDataSet bds= new TailBundleDataSet(ds1.rank());
                 for ( int i=0; i<ds1.length(0,0); i++ ) {
                     bds.bundle( DataSetOps.unbundle(ds1,i) );
                 }
+                bds.bundle( ds2 );
+                return bds;
+            } else if ( ds1.rank()==4 ) {
+                TailBundleDataSet bds= new TailBundleDataSet(ds1.rank());
+                for ( int i=0; i<ds1.length(0,0,0); i++ ) {
+                    bds.bundle( DataSetOps.unbundle(ds1,i) );
+                }
+                bds.bundle( ds2 );
+                return bds;
             } else {
-                throw new IllegalArgumentException("ds1 rank must be 1 or 2");
+                BundleDataSet bds= new BundleDataSet(ds1.rank());
+                if ( ds1.rank()==2 ) {
+                    for ( int i=0; i<ds1.length(0); i++ ) {
+                        bds.bundle( DataSetOps.unbundle(ds1,i) );
+                    }
+                } else if ( ds1.rank()==3 ) {
+                    for ( int i=0; i<ds1.length(0,0); i++ ) {
+                        bds.bundle( DataSetOps.unbundle(ds1,i) );
+                    }
+                } else {
+                    throw new IllegalArgumentException("ds1 rank must be 1 or 2");
+                }
+                bds.bundle( ds2 );
+                return bds;
             }
-            bds.bundle( ds2 );
-            return bds;
         } else {
             throw new IllegalArgumentException("not supported yet");
         }
