@@ -66,6 +66,7 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.io.IOException;
 import java.nio.channels.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -1308,6 +1309,24 @@ public class DasPlot extends DasCanvasComponent {
             if ( plotTitle.contains("%{CONTEXT}") ) {
                 t= t.replace("%{CONTEXT}",this.context.toString());
             }
+            
+            if ( fontSize.length()>0 && !fontSize.equals("1em") ) {
+                try {
+                    double[] dd= DasDevicePosition.parseLayoutStr(getFontSize());
+                    if ( dd[1]==1 && dd[2]==0 ) {
+                        // do nothing
+                    } else {
+                        Font f= graphics.getFont();
+                        double parentSize= f.getSize2D();
+                        double newSize= dd[1]*parentSize + dd[2];
+                        f= f.deriveFont((float)newSize);    
+                        graphics.setFont(f);
+                    }
+                } catch (ParseException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setAlignment(GrannyTextRenderer.CENTER_ALIGNMENT); // funny I never noticed this was different.
             gtr.setString(graphics, t);
@@ -2249,6 +2268,20 @@ public class DasPlot extends DasCanvasComponent {
         this.legendRelativeFontSize= size;
         firePropertyChange( PROP_LEGENDRELATIVESIZESIZE, oldF, size );
         repaint();
+    }
+    
+    private String fontSize = "1em";
+
+    public static final String PROP_FONTSIZE = "fontSize";
+
+    public String getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(String fontSize) {
+        String oldFontSize = this.fontSize;
+        this.fontSize = fontSize;
+        firePropertyChange(PROP_FONTSIZE, oldFontSize, fontSize);
     }
     
     private boolean displayLegend = true;

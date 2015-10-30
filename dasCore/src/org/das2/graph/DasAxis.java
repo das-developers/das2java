@@ -2755,7 +2755,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             f= Font.decode("sans-12");
         }
         
-        if ( getFontSize().length()>0 && !getFontSize().equals("1em") ) {
+        if ( fontSize.length()>0 && !fontSize.equals("1em") ) {
             try {
                 double[] dd= DasDevicePosition.parseLayoutStr(getFontSize());
                 if ( dd[1]==1 && dd[2]==0 ) {
