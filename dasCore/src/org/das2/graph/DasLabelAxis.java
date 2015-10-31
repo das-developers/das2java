@@ -126,6 +126,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         }
     }
 
+
     @Override
     public Datum findTick(Datum xDatum, double direction, boolean minor) {
         // somehow tickv.minor is set to non-zero, and Axis.findTick gets messed up.
