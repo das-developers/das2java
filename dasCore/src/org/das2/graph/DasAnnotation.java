@@ -326,7 +326,19 @@ public class DasAnnotation extends DasCanvasComponent {
             Rectangle anchorRect= getAnchorBounds();
             r.add(anchorRect);
         }
-        
+        if ( showArrow ) {
+            int headx= 0;
+            int heady= 0;
+            if ( plot!=null ) {
+                try {
+                    headx= (int)plot.getXAxis().transform(pointAtX);
+                    heady= (int)plot.getYAxis().transform(pointAtY);
+                } catch ( InconvertibleUnitsException ex ) {
+                
+                }
+                r.add( new Rectangle( headx-3, heady-3, 7, 7 ) );
+            }
+        }
         return r;
     }
 
@@ -452,6 +464,14 @@ public class DasAnnotation extends DasCanvasComponent {
                 g.drawRoundRect(anchorRect.x, anchorRect.y, anchorRect.width, anchorRect.height, em * 2, em * 2);
             }
         }
+        
+        // this was useful for debugging.
+//        Graphics2D g0 = (Graphics2D) g.create(); 
+//        Rectangle clip= g0.getClipBounds();
+//        if ( clip!=null ) {
+//            g0.setColor(Color.ORANGE );
+//            g0.drawRoundRect( clip.x, clip.y, clip.width-1, clip.height-1, 5, 5 );
+//        }
         
         g.dispose();
         
