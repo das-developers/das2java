@@ -336,10 +336,10 @@ public class DasAnnotation extends DasCanvasComponent {
                 } catch ( InconvertibleUnitsException ex ) {
                 
                 }
-                r.add( new Rectangle( headx-3, heady-3, 7, 7 ) );
+                r.add( headx, heady );
             }
         }
-        return r;
+        return new Rectangle( r.x-3, r.y-3, r.width+7, r.height+7 );
     }
 
     @Override
