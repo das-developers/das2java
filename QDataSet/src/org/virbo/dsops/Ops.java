@@ -4372,7 +4372,8 @@ public class Ops {
      * the result is a zero-length array, as opposed to IDL which would return
      * a -1 scalar.
      * 
-     * Note fill values are not included in the list, so where(A).length + where(not A).length != where( A.or(not(A) ).length
+     * Note fill values are not included in the list, so it is not necessary that
+     * where(A).length + where(not A).length != where( A.or(not(A) ).length
      *
      * Note this is different from the SciPy where and similar to Matlab find.
      * 
@@ -4415,6 +4416,7 @@ public class Ops {
                 DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_INVALID_COUNT, 0);
                 DataSetAnnotations.getInstance().putAnnotation(ds,DataSetAnnotations.ANNOTATION_ZERO_COUNT, 0);
             }
+            builder.putProperty( QDataSet.VALID_MAX, ds.length() );
         } else {
             builder = new DataSetBuilder( 2, 100, ds.rank() );
             while (iter.hasNext()) {
@@ -4442,7 +4444,7 @@ public class Ops {
             }
         }
 
-        builder.putProperty(QDataSet.CADENCE, DataSetUtil.asDataSet(1.0) );
+        builder.putProperty( QDataSet.CADENCE, DataSetUtil.asDataSet(1.0) );
         builder.putProperty( QDataSet.FORMAT, "%d" );
 
         return builder.getDataSet();
@@ -4952,6 +4954,7 @@ public class Ops {
      * @see #removeValues(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static WritableDataSet putValues( QDataSet ds, QDataSet indeces, QDataSet value ) {
+        DataSetUtil.checkListOfIndeces(ds,indeces);
         WritableDataSet result;
         if ( ds instanceof WritableDataSet ) {
             WritableDataSet wds= (WritableDataSet)ds;
@@ -5002,11 +5005,12 @@ public class Ops {
      * @see #putValues(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      * @see #where(org.virbo.dataset.QDataSet) 
      */
-    public WritableDataSet removeValues( QDataSet ds, QDataSet indeces ) {
+    public static WritableDataSet removeValues( QDataSet ds, QDataSet indeces ) {
+        DataSetUtil.checkListOfIndeces(ds,indeces);
         return putValues( ds, indeces, null );
     }
     
-    public WritableDataSet removeValues( Object ds, Object indeces ) {
+    public static WritableDataSet removeValues( Object ds, Object indeces ) {
         return putValues( dataset(ds), dataset(indeces), null );
     }
         
