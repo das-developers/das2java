@@ -4949,6 +4949,7 @@ public class Ops {
      * @param value null for fill, or the rank 0 value or rank 1 values to assign.
      * @return the dataset with the indeces assigned new values.
      * @see #where(org.virbo.dataset.QDataSet) 
+     * @see #removeValues(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static WritableDataSet putValues( QDataSet ds, QDataSet indeces, QDataSet value ) {
         WritableDataSet result;
@@ -4991,6 +4992,22 @@ public class Ops {
             }
         }
         return result;
+    }
+    
+    /**
+     * put fill data for these indeces
+     * @param ds the rank 1 or greater dataset
+     * @param indeces rank 1 indeces when ds is rank 1, or rank 2 [:,m] indeces for a rank m dataset.
+     * @return the dataset with the data at the indeces made invalid.
+     * @see #putValues(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #where(org.virbo.dataset.QDataSet) 
+     */
+    public WritableDataSet removeValues( QDataSet ds, QDataSet indeces ) {
+        return putValues( ds, indeces, null );
+    }
+    
+    public WritableDataSet removeValues( Object ds, Object indeces ) {
+        return putValues( dataset(ds), dataset(indeces), null );
     }
         
     /**
