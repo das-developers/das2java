@@ -3198,5 +3198,28 @@ public class DataSetUtil {
         return SemanticOps.getComponentNames(ds);
     }
 
+    /**
+     * verify that the indeces really are indeces, and a warning may be printed
+     * if the indeces don't appear to match the array by
+     * looking at the MAX_VALUE property of the indeces.
+     * 
+     * @param ds the dataset. 
+     * @param indeces the indeces which refer to a subset of dataset.
+     */
+    public static void checkListOfIndeces(QDataSet ds, QDataSet indeces) {
+        Units u= (Units) indeces.property(QDataSet.UNITS);
+        if ( u!=null && u.isConvertibleTo(Units.dimensionless ) ) {
+            throw new IllegalArgumentException("indeces must not contain units");
+        }
+        if ( ds.rank()==1 ) {
+            Number len= (Number) indeces.property(QDataSet.VALID_MAX);
+            if ( len!=null ) {
+                if ( len.intValue()!=ds.length() ) {
+                    logger.warning("indeces appear to be from a dataset with different length");
+                }
+            }
+        }
+    }
+
 }
 
