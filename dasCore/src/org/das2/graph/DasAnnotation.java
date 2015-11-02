@@ -426,11 +426,11 @@ public class DasAnnotation extends DasCanvasComponent {
             
             Graphics2D g2 = (Graphics2D) g.create();
             
-            if ( anchorType==AnchorType.CANVAS ) {
-                g2.setClip(null);
-            } else {
-                g2.setClip( g.getClip() );
-            }
+//            if ( anchorType==AnchorType.CANVAS ) {
+//                g2.setClip(null);
+//            } else {
+//                g2.setClip( g.getClip() );
+//            }
             Point2D tail2d= new Point2D.Double( r.x + r.width/2, r.y + r.height/2 );
             Point2D head2d= new Point2D.Double( head.x, head.y );
             Rectangle2D rect2d= new Rectangle2D.Double(r.x, r.y, r.width, r.height );
