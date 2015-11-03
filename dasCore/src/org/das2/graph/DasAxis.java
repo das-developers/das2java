@@ -2369,13 +2369,13 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 Graphics2D g2 = (Graphics2D) g.create();
                 int titlePositionOffset = getTitlePositionOffset();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
+                g2.setFont(getLabelFont());
                 if ( dasPlot!=null ) gtr.setAlignment( dasPlot.getMultiLineTextAlignment() );
                 String axislabel1= resolveAxisLabel();
                 gtr.setString(g2, axislabel1);
                 int titleWidth = (int) gtr.getWidth();
                 int baseline;
                 int leftEdge;
-                g2.setFont(getLabelFont());
                 if ( debugBoundsBox ) { 
                     baseline = bottomPosition + titlePositionOffset;
                     g2.drawString( ">>"+axislabel1+"<<", clip.x, clip.y + g2.getFontMetrics().getHeight() );
@@ -2488,12 +2488,12 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 Graphics2D g2 = (Graphics2D) g.create();
                 int titlePositionOffset = getTitlePositionOffset();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
+                g2.setFont(getLabelFont());
                 if ( dasPlot!=null ) gtr.setAlignment(dasPlot.getMultiLineTextAlignment());
                 gtr.setString(g2, resolveAxisLabel() );
                 int titleWidth = (int) gtr.getWidth();
                 int baseline;
                 int leftEdge;
-                g2.setFont(getLabelFont());
                 if (leftLabel) {
                     g2.rotate(-Math.PI / 2.0);
                     leftEdge = -DMax + (DMax - DMin - titleWidth) / 2;
@@ -3053,6 +3053,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         GrannyTextRenderer gtr = new GrannyTextRenderer();
 
         Font labelFont = this.getLabelFont();
+        Font font= this.getFont();
 
         double dmin, dmax;
         if ( isHorizontal() ) {
@@ -3067,7 +3068,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         for (int i = 0; i < labels.length; i++) {
             Datum d = ticks.get(i);
             if (DatumRangeUtil.sloppyContains(dr, d)) {
-                gtr.setString(labelFont, labels[i]);
+                gtr.setString(font, labels[i]);
                 Rectangle rmin = gtr.getBounds();
                 Rectangle rmax = new Rectangle(rmin);  // same bound, but positioned at the axis max.
                 double flw = gtr.getLineOneWidth();
