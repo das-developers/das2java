@@ -669,7 +669,7 @@ public class Ops {
      * @param AverageOp operation to combine measurements, such as max or mean.
      * @return
      */
-    private static QDataSet averageGen(QDataSet ds, int dim, AverageOp op, ProgressMonitor mon ) {
+    private static QDataSet averageGen(QDataSet ds, int dim, AverageOp op, ProgressMonitor mon ) throws CancelledOperationException {
         if ( ds==null ) throw new NullPointerException("ds reference is null");        
         int[] qube = DataSetUtil.qubeDims(ds);
         if ( qube==null ) throw new IllegalArgumentException("dataset is not a qube");
@@ -687,6 +687,9 @@ public class Ops {
         double fill = ((Number) wds.property( WeightsDataSet.PROP_SUGGEST_FILL )).doubleValue();
         double[] store = new double[2];
         while (it1.hasNext()) {
+            if ( mon.isCancelled() ) {
+                throw new CancelledOperationException("User pressed cancel");
+            }
             it1.next();
             op.initStore(store);
 
@@ -818,24 +821,28 @@ public class Ops {
      * @return
      */
     public static QDataSet reduceMax(QDataSet ds, int dim) {
-        return averageGen(ds, dim, new AverageOp() {
-            @Override
-            public void accum(double d1, double w1, double[] accum) {
-                if (w1 > 0.0) {
-                    accum[0] = Math.max(d1, accum[0]);
-                    accum[1] = w1;
+        try {
+            return averageGen(ds, dim, new AverageOp() {
+                @Override
+                public void accum(double d1, double w1, double[] accum) {
+                    if (w1 > 0.0) {
+                        accum[0] = Math.max(d1, accum[0]);
+                        accum[1] = w1;
+                    }
                 }
-            }
-            @Override
-            public void initStore(double[] store) {
-                store[0] = Double.NEGATIVE_INFINITY;
-                store[1] = 0.;
-            }
-            @Override
-            public void normalize(double[] accum) {
-                // nothing to do
-            }
-        }, new NullProgressMonitor() );
+                @Override
+                public void initStore(double[] store) {
+                    store[0] = Double.NEGATIVE_INFINITY;
+                    store[1] = 0.;
+                }
+                @Override
+                public void normalize(double[] accum) {
+                    // nothing to do
+                }
+            }, new NullProgressMonitor() );
+        } catch ( CancelledOperationException ex ) {
+            throw new RuntimeException(ex);
+        }
     }
 
     /**
@@ -847,24 +854,28 @@ public class Ops {
      * @return
      */
     public static QDataSet reduceMin(QDataSet ds, int dim) {
-        return averageGen(ds, dim, new AverageOp() {
-            @Override
-            public void accum(double d1, double w1, double[] accum) {
-                if (w1 > 0.0) {
-                    accum[0] = Math.min(d1, accum[0]);
-                    accum[1] = w1;
+        try {
+            return averageGen(ds, dim, new AverageOp() {
+                @Override
+                public void accum(double d1, double w1, double[] accum) {
+                    if (w1 > 0.0) {
+                        accum[0] = Math.min(d1, accum[0]);
+                        accum[1] = w1;
+                    }
                 }
-            }
-            @Override
-            public void initStore(double[] store) {
-                store[0] = Double.POSITIVE_INFINITY;
-                store[1] = 0.;
-            }
-            @Override
-            public void normalize(double[] accum) {
-                // nothing to do
-            }
-        }, new NullProgressMonitor() );
+                @Override
+                public void initStore(double[] store) {
+                    store[0] = Double.POSITIVE_INFINITY;
+                    store[1] = 0.;
+                }
+                @Override
+                public void normalize(double[] accum) {
+                    // nothing to do
+                }
+            }, new NullProgressMonitor() );
+        } catch ( CancelledOperationException ex ) {
+            throw new RuntimeException(ex);
+        }        
     }
 
     /**
@@ -877,7 +888,11 @@ public class Ops {
      * @return rank N-1 qube dataset.
      */
     public static QDataSet reduceMean(QDataSet ds, int dim) {
-        return reduceMean( ds, dim, new NullProgressMonitor() );
+        try {
+            return reduceMean( ds, dim, new NullProgressMonitor() );
+        } catch (CancelledOperationException ex) {
+            throw new RuntimeException(ex);
+        }
     }
     
     /**
@@ -889,8 +904,9 @@ public class Ops {
      * @param dim zero-based index number.
      * @param mon progress monitor.
      * @return rank N-1 qube datas
+     * @throws org.das2.util.monitor.CancelledOperationException
      */
-    public static QDataSet reduceMean(QDataSet ds, int dim, ProgressMonitor mon ) {
+    public static QDataSet reduceMean(QDataSet ds, int dim, ProgressMonitor mon ) throws CancelledOperationException {
         return averageGen(ds, dim, new AverageOp() {
             @Override
             public void accum(double d1, double w1, double[] accum) {
