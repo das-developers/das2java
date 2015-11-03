@@ -132,6 +132,7 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
     public void setInput(QDataSet ds) {
         logger.log(Level.FINE, "setInput {0}", ds.toString() );
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
+        int rmCount= this.rank-ds.rank();
         this.rank= ds.rank();
         for ( int i=0; i<rank; i++ ) {
             QDataSet dep= (QDataSet) ds.property("DEPEND_"+i);
@@ -156,6 +157,9 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
             if ( val<0 ) val=0;
             if ( val>=max ) val= max;
             spinners[i].setModel( new SpinnerNumberModel( val, 0, max, 1 ) );
+        }
+        for ( int i=ds.rank(); i<ds.rank()+rmCount; i++ ) {
+            remove( i ); // DANGER: this assumes there are no other components preceding the guis.
         }
         for ( int i=0; i<rank-4; i++ ) {
             checkboxs[i].setEnabled(false);
