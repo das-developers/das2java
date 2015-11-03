@@ -216,7 +216,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new GetPropertyEditorPanel();
         } else if ( f.matches("\\|putProperty\\((.*)\\)") ) {
             result= new PutPropertyFilterEditorPanel();
-        } else if ( f.matches("\\|trim\\(((\\d+)\\,(\\d+).+)\\)")){
+        } else if ( f.matches("\\|trim\\(\\s*(\\d+)\\s*\\,\\s*(\\d+)\\s*\\)")){
             result= new TrimFilterEditorPanel();
         } else {
             result= new AnyFilterEditorPanel();
@@ -265,7 +265,17 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         FilterEditorPanel p= editors.remove(fi);
         removeFocusListeners(p.getPanel());
         setFilter( getFilter() );
+        resetFilterInput();
         updateSoon( getFilter() );
+    }
+    
+    /**
+     * force the filters to reset based on the new dataset.
+     */
+    private void resetFilterInput() {
+        QDataSet inputDs1= this.inputDs;
+        setInput(null);
+        setInput(inputDs1);        
     }
     
     private final FocusListener lostFocusListener= new FocusListener() {
@@ -315,9 +325,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             editors.add( idx, filter1 );
             String filter= getFilter();
             setFilter( filter );
-            QDataSet inputDs1= this.inputDs;
-            setInput(null);
-            setInput(inputDs1);
+            resetFilterInput();
             updateSoon( filter );
         }
     }
