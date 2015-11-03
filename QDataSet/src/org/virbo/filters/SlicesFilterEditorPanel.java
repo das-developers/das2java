@@ -91,7 +91,7 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
         return p1;
     }
 
-    public static void addMouseWheelListenerToSpinner( final JSpinner sliceIndexSpinner ) {
+    private static void addMouseWheelListenerToSpinner( final JSpinner sliceIndexSpinner ) {
             
         sliceIndexSpinner.addMouseWheelListener( new MouseWheelListener() { 
 
