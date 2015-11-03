@@ -810,7 +810,12 @@ public class DataSetUtil {
 
         int[] qubeDims;
         if ( DataSetUtil.isQube(ds) ) {
-            qubeDims= DataSetUtil.qubeDims(ds);
+            try {
+                qubeDims= DataSetUtil.qubeDims(ds);
+            } catch ( RuntimeException ex ) {
+                logger.log( Level.SEVERE, null, ex );
+                qubeDims= new int[] { 0,0,0,0,0,0,0,0,0 };
+            }
         } else {
             qubeDims= new int[ ds.rank() ];
             qubeDims[0]= ds.length();
