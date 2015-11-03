@@ -40,19 +40,19 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
     
     @Override
     public void setInput(QDataSet listSize){
-        upperBound.setText( String.valueOf( listSize.length() ) );
+        endLabel.setText( String.format( "Up to but not including (%d bins):",listSize.length() ) );
     }
     
     
     @Override
     public void setFilter(String filter) {
         
-        Pattern p= Pattern.compile("\\|trim\\(((\\d+)\\,(\\d+).+)\\)");
+        Pattern p= Pattern.compile("\\|trim\\(\\s*(\\d+)\\s*\\,\\s*(\\d+)\\s*\\)");
         Matcher m= p.matcher(filter);
         
         if ( m.matches() ) {
-            lowerBound.setText(m.group(2));
-            upperBound.setText( m.group(3) );
+            lowerBound.setText(m.group(1));
+            upperBound.setText( m.group(2) );
         }
         else {
             //String maxUpperBound=m.group(3);
@@ -78,19 +78,17 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        labelListSize = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        endLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         upperBound = new javax.swing.JTextField();
         lowerBound = new javax.swing.JTextField();
 
-        labelListSize.setText("Trim the data:");
+        endLabel.setText("Up to but not including:");
+        endLabel.setToolTipText("Negative indeces are allowed, so -1 refers to the last index.");
 
-        jLabel2.setText("Up to but not including:");
+        jLabel3.setText("Trim from index:");
 
-        jLabel3.setText("From index:");
-
-        upperBound.setText("0");
+        upperBound.setText("-1");
 
         lowerBound.setText("0");
 
@@ -98,41 +96,39 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelListSize, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
+                        .addComponent(endLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(upperBound, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addComponent(upperBound, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lowerBound, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(labelListSize, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(lowerBound, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(upperBound, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(endLabel)
+                    .addComponent(upperBound, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel endLabel;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel labelListSize;
     private javax.swing.JTextField lowerBound;
     private javax.swing.JTextField upperBound;
     // End of variables declaration//GEN-END:variables
