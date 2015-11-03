@@ -33,6 +33,8 @@ import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
+import org.qdataset.ReferenceCache;
+import org.qdataset.ReferenceCache.ReferenceCacheEntry;
 import org.virbo.dataset.examples.Schemes;
 import org.virbo.dsops.Ops;
 import org.virbo.dsops.Ops.FFTFilterType;
@@ -1923,10 +1925,20 @@ public class DataSetOps {
 
         logger.log(Level.FINE, "sprocess({0},{1})", new Object[] { c, fillDs } );
 
+        boolean sprocessCache= "true".equals( System.getProperty("referenceCaching2","false") );
+        
         if ( mon==null ) mon= new NullProgressMonitor();
         
         QDataSet ds0= fillDs;
+
+        String dsName= String.format( "%08d", fillDs.hashCode() );
         
+        if ( sprocessCache ) {
+            String dsNameFilt= String.format( "%s%s", dsName, c );
+            QDataSet result= ReferenceCache.getInstance().getDataSet(dsNameFilt);
+            if ( result!=null ) return result;
+        }
+                    
         int i=1;
         Scanner s= new Scanner( c );
         s.useDelimiter("[\\(\\),]");
@@ -1955,6 +1967,17 @@ public class DataSetOps {
                     System.err.println( "  the next command is "+ cmd );
                 }
 
+                ReferenceCacheEntry rcent=null;
+                
+                if ( sprocessCache ) {
+                    String dsNameFilt= String.format( "%s%s", dsName, c );
+                    rcent= ReferenceCache.getInstance().getDataSetOrLock(dsNameFilt, mon);
+                    if ( !rcent.shouldILoad( Thread.currentThread() ) ) { 
+                        fillDs= rcent.park( mon );
+                    }
+                }
+                
+                
                 if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
                     int[] dims= DataSetUtil.qubeDims(fillDs);
                     Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
@@ -2374,7 +2397,14 @@ public class DataSetOps {
                 
                 long t= System.currentTimeMillis() - t0;
                 logger.log(Level.FINER, "sprocess {0}: {1}ms", new Object[]{cmd, t});
-            }
+                
+                if ( sprocessCache ) {
+                    assert rcent!=null;
+                    rcent.finished( fillDs );
+                }                 
+                
+            } // while ( s.hasNext() )
+            
         } catch ( InputMismatchException ex ) {
             ex.printStackTrace();
             String msg= ex.getLocalizedMessage();
@@ -2393,6 +2423,7 @@ public class DataSetOps {
                 mon.finished();
             }
         }
+        
         logger.log(Level.FINE, "{0}->sprocess(\"{1}\")->{2}", new Object[] { ds0, c, fillDs } );
         return fillDs;
     }
