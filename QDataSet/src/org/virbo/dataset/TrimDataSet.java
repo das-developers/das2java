@@ -163,7 +163,7 @@ public class TrimDataSet extends AbstractDataSet {
 
     @Override
     public int length(int i0, int i1, int i2 ) {
-        return ds.length(offset + i0, i1);
+        return ds.length(offset + i0, i1, i2);
     }
     
     @Override
