@@ -38,8 +38,8 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
         return dataSize;
     }
     
+    @Override
     public void setInput(QDataSet listSize){
-        labelListSize.setText( "data size: " + listSize );
         upperBound.setText( String.valueOf( listSize.length() ) );
     }
     
