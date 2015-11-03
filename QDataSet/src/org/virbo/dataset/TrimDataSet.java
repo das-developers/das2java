@@ -17,6 +17,10 @@ public class TrimDataSet extends AbstractDataSet {
 
     public TrimDataSet(QDataSet ds, int start, int stop) {
 
+        if ( ds.rank()>4 ) {
+            throw new IllegalArgumentException("rank>4 not supported");
+        }
+        
      //TODO: uncomment and test this.
      //   if ( ds instanceof TrimDataSet ) {
      //       TrimDataSet trds= ((TrimDataSet)ds);
@@ -40,12 +44,36 @@ public class TrimDataSet extends AbstractDataSet {
         } else {
             if ( dep1!=null ) putProperty( QDataSet.DEPEND_1, dep1 );
         }
+
+        QDataSet dep2= (QDataSet) ds.property(QDataSet.DEPEND_2);
+        if ( dep2!=null && dep2.rank()==2 ) {
+            putProperty( QDataSet.DEPEND_2, new TrimDataSet( dep2, start, stop ) );
+        } else {
+            if ( dep2!=null ) putProperty( QDataSet.DEPEND_2, dep2 );
+        }
+        
+        QDataSet dep3= (QDataSet) ds.property(QDataSet.DEPEND_3);
+        if ( dep3!=null && dep3.rank()==2 ) {
+            putProperty( QDataSet.DEPEND_3, new TrimDataSet( dep3, start, stop ) );
+        } else {
+            if ( dep3!=null ) putProperty( QDataSet.DEPEND_3, dep3 );
+        }        
         
         QDataSet bds1= (QDataSet) ds.property(QDataSet.BUNDLE_1);
         if ( bds1!=null ) {
             putProperty( QDataSet.BUNDLE_1, bds1 );
         }
 
+        QDataSet bds2= (QDataSet) ds.property(QDataSet.BUNDLE_2);
+        if ( bds2!=null ) {
+            putProperty( QDataSet.BUNDLE_2, bds2 );
+        }
+
+        QDataSet bds3= (QDataSet) ds.property(QDataSet.BUNDLE_3);
+        if ( bds3!=null ) {
+            putProperty( QDataSet.BUNDLE_3, bds3 );
+        }
+        
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             String prop= "PLANE_"+i;
             QDataSet plane0= (QDataSet) ds.property( prop );
@@ -62,15 +90,16 @@ public class TrimDataSet extends AbstractDataSet {
 
         String[] p= DataSetUtil.correlativeProperties();
 
-        for ( int i=0; i<p.length; i++ ) {
-            QDataSet delta= (QDataSet) ds.property( p[i] );
-            if ( delta!=null && delta.rank()>0 ) {
-                putProperty( p[i], new TrimDataSet(delta,start,stop) );
+        for ( String p1 : p ) {
+            QDataSet delta = (QDataSet) ds.property(p1);
+            if (delta!=null && delta.rank()>0) {
+                putProperty(p1, new TrimDataSet(delta,start,stop));
             }
         }
         
     }
 
+    @Override
     public int rank() {
         return ds.rank();
     }
@@ -88,6 +117,11 @@ public class TrimDataSet extends AbstractDataSet {
     @Override
     public double value(int i0, int i1, int i2) {
         return ds.value(i0 + offset, i1, i2);
+    }
+
+    @Override
+    public double value(int i0, int i1, int i2, int i3 ) {
+        return ds.value(i0 + offset, i1, i2, i3 );
     }
 
     @Override
@@ -122,10 +156,16 @@ public class TrimDataSet extends AbstractDataSet {
         return ds.length(offset + i0);
     }
 
+    @Override
     public int length(int i0, int i1) {
         return ds.length(offset + i0, i1);
     }
 
+    @Override
+    public int length(int i0, int i1, int i2 ) {
+        return ds.length(offset + i0, i1);
+    }
+    
     @Override
     public QDataSet slice(int i) {
         return new Slice0DataSet( ds, offset + i );
