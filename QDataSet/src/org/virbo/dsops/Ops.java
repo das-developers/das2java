@@ -784,7 +784,6 @@ public class Ops {
             while (it1.hasNext()) {
                 if ( mon.isCancelled() ) throw new CancelledOperationException("total cancelled"); 
                 it1.next();
-                int n = ds.length(dim);
                 double s = 0;
                 double w = 0;
                 QubeDataSetIterator it0 = new QubeDataSetIterator(ds);
