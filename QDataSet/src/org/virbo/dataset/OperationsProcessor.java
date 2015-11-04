@@ -207,34 +207,38 @@ public class OperationsProcessor {
                         }
                     }
                 } else if ( cmd.equals("|reducex") ) {
-                    String dsName= String.format( "%08d", fillDs.hashCode() );
-
+                    
                     ReferenceCache.ReferenceCacheEntry rcent=null;
+                    boolean skip=false;
                     if ( sprocessCache ) {
+                        String dsName= String.format( "%08d", fillDs.hashCode() );
                         String dsNameFilt= String.format( "%s%s", dsName, cmd );
                         ProgressMonitor mon1= mon.getSubtaskMonitor("reducex");
                         rcent= ReferenceCache.getInstance().getDataSetOrLock( dsNameFilt, mon1 );
                         if ( !rcent.shouldILoad( Thread.currentThread() ) ) {
-                            System.err.println("Wow got it right away! " + dsNameFilt);
+                            logger.log(Level.FINER, "using cached data: {0}", dsNameFilt);
                             fillDs= rcent.park(mon1);
-                            break;
+                            skip= true;
                         }
                     }
                     String arg= getStringArg( s.next() );
-                    try {
-                        Datum r = DatumUtil.parse(arg);
-                        fillDs= Reduction.reducex( fillDs, DataSetUtil.asDataSet(r) );
-                        
-                        if ( sprocessCache ) {
-                            assert rcent!=null;
-                            rcent.finished( fillDs );
-                            //System.err.println("  Stor'n: " + fillDs + " in " + rcent.toString() );
-                        }    
-                    } catch (ParseException ex) {
-                        logger.log(Level.SEVERE, ex.getMessage(), ex);
-                        if ( sprocessCache ) {
-                            assert rcent!=null;
-                            rcent.exception(ex);
+                    
+                    if ( !skip ) {
+                        try {
+                            Datum r = DatumUtil.parse(arg);
+                            fillDs= Reduction.reducex( fillDs, DataSetUtil.asDataSet(r) );
+
+                            if ( sprocessCache ) {
+                                assert rcent!=null;
+                                rcent.finished( fillDs );
+                                //System.err.println("  Stor'n: " + fillDs + " in " + rcent.toString() );
+                            }    
+                        } catch (ParseException ex) {
+                            logger.log(Level.SEVERE, ex.getMessage(), ex);
+                            if ( sprocessCache ) {
+                                assert rcent!=null;
+                                rcent.exception(ex);
+                            }
                         }
                     }
 
