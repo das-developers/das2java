@@ -294,7 +294,7 @@ public class DasColorBar extends DasAxis {
          */
         public static final Type MATLAB_JET = new Type("matlab_jet");
       
-        //public static final Type BLUE_TO_ORANGE = new Type("blue_to_orange");
+        public static final Type BLUE_TO_ORANGE = new Type("blue_to_orange");
 
         /**
          * gray scale with white at the minimum (bottom) and black at the maximum.
@@ -339,6 +339,11 @@ public class DasColorBar extends DasAxis {
          * black to blue, introduced to show the blue component of RGB images
          */
         public static final Type BLACK_BLUE = new Type("black_blue");
+		  
+		  /**
+			* Violet -Yellow
+			*/
+		  public static final Type VIOLET_YELLOW = new Type("violet_yellow");
         
         private BufferedImage image;
         private int[] colorTable;
@@ -519,10 +524,12 @@ public class DasColorBar extends DasAxis {
                 initializeWhiteRed(size, bottom, top);
             } else if (this == BLACK_GREEN ) {
                 initializeWhiteGreen(size, bottom, top);
+            } else if (this == VIOLET_YELLOW ) {
+                initializeVioletYellow(size, bottom, top);
             } else if (this == BLACK_BLUE) {
                 initializeWhiteBlue(size, bottom, top);
-            //} else if (this == BLUE_TO_ORANGE ) {
-            //    initializeBlueToOrange(size, bottom, top);
+            } else if (this == BLUE_TO_ORANGE ) {
+                initializeBlueToOrange(size, bottom, top);
             }
         }
         
@@ -644,6 +651,15 @@ public class DasColorBar extends DasAxis {
             int [] blue= { 0, 255 };
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }   
+		  
+		  //Rob-Wilson JADE colorbar
+		  private void initializeVioletYellow( int size, int bottom, int top ) {
+            int [] index= {  0,  27,  64,  95, 127, 159, 183, 202, 225, 246, 255 };
+            int [] red=   { 68,  71,  59,  45,  34,  36,  71, 110, 174, 233, 253 };
+            int [] green= {  2,  36,  83, 111, 139, 171, 192, 206, 221, 229, 231 };
+            int [] blue=  { 86, 114, 139, 142, 141, 129, 110,  87,  46,  23,  37,};
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+        }   
 
         /**
          * from the string, identify the type.
@@ -673,10 +689,12 @@ public class DasColorBar extends DasAxis {
                 return BLACK_RED;
             } else if (s.equals("black_green")) {
                 return BLACK_GREEN;
+            } else if (s.equals("violet_yellow")) {
+                return VIOLET_YELLOW;
             } else if (s.equals("black_blue")) {
                 return BLACK_BLUE;
-            //} else if (s.equals("blue_to_orange")) {
-            //    return BLUE_TO_ORANGE;                
+            } else if (s.equals("blue_to_orange")) {
+                return BLUE_TO_ORANGE;                
             } else {
                 throw new IllegalArgumentException("invalid DasColorBar.Type string: " + s);
             }
