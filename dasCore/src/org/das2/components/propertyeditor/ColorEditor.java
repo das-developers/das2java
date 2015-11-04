@@ -51,10 +51,22 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
         colors.add(Color.ORANGE);
         colors.add( new Color(0,true) );
     }
-
+    
     private JColorChooser custom;
     private transient final PropertyEditorSupport editorSupport;
     private JComboBox choice;
+    
+    
+    /**
+     * allow clients to add additional colors.
+     * @param c
+     * @param name 
+     */
+    public static void addColor( Color c, String name ) {
+        if ( colors.contains(c) ) return;
+        colors.add(colors.size()-1,c); // before "none"
+        ColorCellRenderer.addName( c, name );
+    }
     
     /** Creates a new instance of ColorEditor */
     public ColorEditor() {
