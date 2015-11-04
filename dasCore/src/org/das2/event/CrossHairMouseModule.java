@@ -22,6 +22,12 @@
  */
 
 package org.das2.event;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasPlot;
 import org.das2.graph.Renderer;
@@ -118,5 +124,23 @@ public class CrossHairMouseModule extends MouseModule {
             }
         }
     }
+
+    @Override
+    public void keyTyped(KeyEvent keyEvent) {
+        if ( ( Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() & keyEvent.getModifiers() ) !=0 ) {
+            if ( keyEvent.getKeyChar()==KeyEvent.VK_C || keyEvent.getKeyChar()==3 ) { // 3 was observed on Linux/Centos6/Java
+                CrossHairRenderer r= (CrossHairRenderer) super.dragRenderer;
+                StringSelection stringSelection = new StringSelection( r.label.replaceAll("!c"," ") );
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents( stringSelection, new ClipboardOwner() {
+                    @Override
+                    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+                    }
+                });
+                
+            }
+        }
+    }
+    
     
 }
