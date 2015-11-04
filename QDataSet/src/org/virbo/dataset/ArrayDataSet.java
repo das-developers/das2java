@@ -552,6 +552,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
         ArrayDataSet result = ArrayDataSet.create(ds.rank, ds.len0, ds.len1, ds.len2, ds.len3, newback);
         result.properties.putAll( Ops.copyProperties(ds) ); // TODO: problems...
+        result.checkFill();
 
         return result;
     }
