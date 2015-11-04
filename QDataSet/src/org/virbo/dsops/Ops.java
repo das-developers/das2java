@@ -2967,6 +2967,28 @@ public class Ops {
 
 
     /**
+     * return a table of distances d[len0,len1] to the indeces c0,c1; in units of r0, r1.
+     * This is motivated by a need for more interesting datasets for testing.
+     * @param len0 the length of the dataset
+     * @param len1 the length of each row of the dataset
+     * @param c0 the center point 0
+     * @param c1 the center point 1
+     * @param r0 the units to normalize in the 0 direction
+     * @param r1 the units to normalize in the 1 direction
+     * @return rank 2 table 
+     */
+    public static QDataSet distance( int len0, int len1, double c0, double c1, double r0, double r1 ) {
+        DDataSet result= DDataSet.createRank2(len0, len1);
+        for ( int i=0; i<len0; i++ ) {
+            for ( int j=0; j<len1; j++ ) {
+                double r= Math.sqrt( Math.pow((i-c0)/r0,2) + Math.pow((j-c1)/r1,2) );
+                result.putValue( i, j, r );
+            }
+        }
+        return result;
+    }
+    
+    /**
      * rank 1 dataset for demos and testing.
      * @param len0 number of elements in the first index
      * @return rank 1 dataset for demos and testing.
