@@ -34,6 +34,8 @@ class ColorCellRenderer implements ListCellRenderer, TableCellRenderer, Icon {
         names.put(Color.BLUE, "blue");
         names.put(Color.CYAN, "cyan");
         names.put(Color.DARK_GRAY, "dark gray");
+        names.put(Color.GREEN.darker(),"dark green");
+        names.put(new Color(128, 128, 255), "purple" );
         names.put(Color.GRAY, "gray");
         names.put(Color.GREEN, "green");
         names.put(Color.LIGHT_GRAY, "light gray");
@@ -42,6 +44,10 @@ class ColorCellRenderer implements ListCellRenderer, TableCellRenderer, Icon {
         names.put(Color.PINK, "pink");
         names.put(Color.RED, "red");
         names.put(Color.YELLOW, "yellow");
+    }
+    
+    protected static void addName( Color c, String name ) {
+        names.put( c, name );
     }
     
     private JLabel label;
