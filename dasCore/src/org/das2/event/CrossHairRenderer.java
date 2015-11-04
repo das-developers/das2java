@@ -42,6 +42,7 @@ import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.EnumerationDatumFormatter;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dataset.examples.Schemes;
 
 /**
  *
@@ -106,6 +107,22 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         }
     }
 
+    private String getZComponentsString( QDataSet tds, Datum x, Datum y ) {
+        assert tds.rank()==3;
+        QDataSet xds= SemanticOps.xtagsDataSet(tds);
+        int i = DataSetUtil.closestIndex(xds, x);
+        QDataSet tds1= tds.slice(i);
+        QDataSet yds= SemanticOps.xtagsDataSet(tds1);
+        int j;
+        try {
+            j= DataSetUtil.closestIndex(yds, y);
+        } catch ( IllegalArgumentException ex ) {
+            return ex.getMessage();
+        }
+        QDataSet rgb= tds1.slice(j);
+        return DataSetUtil.toString(rgb);
+    }
+    
     private String getZString( QDataSet tds, Datum x, Datum y, int[] ij) {
         QDataSet xds= SemanticOps.xtagsDataSet(tds);
         int i = DataSetUtil.closestIndex(xds, x);
@@ -284,6 +301,8 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                     QDataSet yds;
                     if ( SemanticOps.isSimpleTableDataSet(ds) ) {
                         tds= (QDataSet) ds;
+                    } else if ( Schemes.isCompositeImage(ds) ) {
+                        tds= (QDataSet) ds;
                     } else {
                         tds= SemanticOps.getSimpleTableContaining( ds, x, y );
                         if ( tds==null ) tds= ds.slice(0);
@@ -301,6 +320,8 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
                     } else {
                         if ( tds==null ) {
                             zAsString= "N/A";
+                        } else if ( Schemes.isCompositeImage(ds) ) {
+                            zAsString = "!c" + getZComponentsString( tds, x, y );
                         } else {
                             zAsString = getZString(tds, x, y, null);
                         }
