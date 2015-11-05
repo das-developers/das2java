@@ -37,6 +37,7 @@ import org.das2.graph.Renderer;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.text.*;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.EnumerationDatumFormatter;
@@ -125,12 +126,21 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
     
     private String getZString( QDataSet tds, Datum x, Datum y, int[] ij) {
         QDataSet xds= SemanticOps.xtagsDataSet(tds);
-        int i = DataSetUtil.closestIndex(xds, x);
+        int i;
+        try {
+            i= DataSetUtil.closestIndex(xds, x);
+        } catch ( InconvertibleUnitsException ex ) {
+            Units u= SemanticOps.getUnits(xds);
+            i= DataSetUtil.closestIndex( xds, x.value(), u );
+        }
         QDataSet tds1= tds.slice(i);
         QDataSet yds= SemanticOps.xtagsDataSet(tds1);
         int j;
         try {
             j= DataSetUtil.closestIndex(yds, y);
+        } catch ( InconvertibleUnitsException ex ) {
+            Units u= SemanticOps.getUnits(yds);
+            j= DataSetUtil.closestIndex( yds, y.value(), u );
         } catch ( IllegalArgumentException ex ) {
             return ex.getMessage();
         }
