@@ -210,7 +210,7 @@ public class Histogram2dFilterEditorPanel extends AbstractFilterEditorPanel {
             }
         }
     }
-    protected static final String PROP_REGEX = "\\|histogram2d\\(((\\d),(\\d+)(,(.+),(.+))?)?\\)";
+    protected static final String PROP_REGEX = "\\|histogram2d\\(((\\d+),(\\d+)(,(.+),(.+))?)?\\)";
 
     @Override
     public String getFilter() {
