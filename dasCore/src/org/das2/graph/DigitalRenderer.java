@@ -555,11 +555,16 @@ public class DigitalRenderer extends Renderer {
 
         String form=this.format;
         String dsformat= (String) ds1.property(QDataSet.FORMAT);
+        boolean isInts= false;
+        
         if ( form.length()==0 && dsformat!=null ) {
             form= dsformat;
         }
         if ( form.length()==0 ) {
             form= "%.2f";
+        }
+        if ( form.endsWith("d") ) {
+            isInts= true;
         }
 
         Units xunits= SemanticOps.getUnits(xds);
@@ -590,7 +595,11 @@ public class DigitalRenderer extends Renderer {
                 Datum d = u.createDatum( zds.value(i) );
                 DatumFormatter df= d.getFormatter();
                 if ( df instanceof DefaultDatumFormatter ) {
-                    s = String.format( form, zds.value(i) );
+                    if ( isInts ) {
+                        s = String.format( form, (int)zds.value(i) );
+                    } else {
+                        s = String.format( form, zds.value(i) );
+                    }
                 } else {
                     s = d.getFormatter().format(d, u);
                 }
