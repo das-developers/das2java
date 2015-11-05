@@ -345,6 +345,8 @@ public class DigitalRenderer extends Renderer {
                 renderRank0( ds, g, xAxis, yAxis, mon);
             } else if ( ! SemanticOps.isTableDataSet(ds) ) {
                 renderRank1( ds, g, xAxis, yAxis, mon);
+            } else if ( ds.rank()!=2 ) {
+                parent.postMessage(this, "unable to render rank "+ds.rank()+" data", DasPlot.WARNING, null, null);
             } else {
                 renderRank2( ds, g, xAxis, yAxis, mon);
             }
