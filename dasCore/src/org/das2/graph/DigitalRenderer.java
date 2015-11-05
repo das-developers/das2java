@@ -12,6 +12,8 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.util.IllegalFormatConversionException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.das2.DasException;
 import org.virbo.dataset.DataSetUtil;
 import org.das2.datum.Datum;
@@ -22,6 +24,8 @@ import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DefaultDatumFormatter;
+import static org.das2.graph.Renderer.CONTROL_KEY_COLOR;
+import static org.das2.graph.Renderer.encodeColorControl;
 import org.das2.util.GrannyTextRenderer;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DDataSet;
@@ -98,6 +102,7 @@ public class DigitalRenderer extends Renderer {
         this.color = color;
         updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_COLOR, oldColor, color);
+        propertyChangeSupport.firePropertyChange(PROP_CONTROL, null, getControl() );
     }
 
     public enum Align {
@@ -116,6 +121,7 @@ public class DigitalRenderer extends Renderer {
         this.align = align;
         updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_ALIGN, oldAlign, align);
+        propertyChangeSupport.firePropertyChange(PROP_CONTROL, null, getControl() );
     }
 
     /**
@@ -139,6 +145,7 @@ public class DigitalRenderer extends Renderer {
         this.format = value;
         updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_FORMAT, oldValue, value );
+        propertyChangeSupport.firePropertyChange(PROP_CONTROL, null, getControl() );
     }
 
 
@@ -159,8 +166,32 @@ public class DigitalRenderer extends Renderer {
         this.size = size;
         updateCacheImage();
         propertyChangeSupport.firePropertyChange(PROP_FORMAT, oldValue, size );
+        propertyChangeSupport.firePropertyChange(PROP_CONTROL, null, getControl() );
     }
 
+    @Override
+    public void setControl(String s) {
+        super.setControl(s);
+        this.size= getDoubleControl( "size", this.size );
+        this.color= getColorControl( "color",  color );
+        this.format= getControl( "format", format );
+        try {
+            this.align= Align.valueOf( getControl("align","CENTER") );
+        } catch (IllegalArgumentException ex ){
+            this.align= Align.CENTER;
+        }
+    }
+    
+    @Override
+    public String getControl() {
+        Map<String,String> controls= new LinkedHashMap();
+        controls.put( "size", String.valueOf(this.size) );
+        controls.put( CONTROL_KEY_COLOR, encodeColorControl( color ) );
+        controls.put( "format", format );
+        controls.put( "align", align.toString() );
+        return Renderer.formatControl(controls);
+    }
+    
     Shape selectionArea;
 
     /**
