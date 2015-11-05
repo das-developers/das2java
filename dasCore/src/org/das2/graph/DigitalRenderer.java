@@ -169,6 +169,24 @@ public class DigitalRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_CONTROL, null, getControl() );
     }
 
+    private String fillLabel = "fill";
+
+    public static final String PROP_FILLLABEL = "fillLabel";
+
+    public String getFillLabel() {
+        return fillLabel;
+    }
+
+    /**
+     * the label printed where fill data (invalid data placeholder) is found.
+     * @param fillLabel the label such as "fill" or "" for nothing.
+     */
+    public void setFillLabel(String fillLabel) {
+        String oldFillLabel = this.fillLabel;
+        this.fillLabel = fillLabel;
+        propertyChangeSupport.firePropertyChange(PROP_FILLLABEL, oldFillLabel, fillLabel);
+    }
+
     @Override
     public void setControl(String s) {
         super.setControl(s);
@@ -368,7 +386,7 @@ public class DigitalRenderer extends Renderer {
             }
             Datum d=  DataSetUtil.asDatum(ds);
             if ( d.isFill() ) {
-                sb.append("fill (").append(ds.value()).append( ")");
+                sb.append(fillLabel).append(" (").append(ds.value()).append( ")");
             } else {
                 sb.append(d.toString());
             }
@@ -488,7 +506,7 @@ public class DigitalRenderer extends Renderer {
                 }
                 iy = (int) yAxis.transform(y) + ha;
             } else {
-                s = "fill";
+                s = fillLabel;
                 iy = (int) yAxis.getRow().getDMaximum();
             }
 
@@ -605,7 +623,7 @@ public class DigitalRenderer extends Renderer {
                 }
                 if (wa > 0.0) ix = ix - (int) (fm.stringWidth(s) * wa);
             } else {
-                s = "fill";
+                s = fillLabel;
             }
 
             gtr.setString(g, s);
