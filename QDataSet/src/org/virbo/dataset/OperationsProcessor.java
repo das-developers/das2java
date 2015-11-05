@@ -314,16 +314,17 @@ public class OperationsProcessor {
                     QDataSet x= SemanticOps.xtagsDataSet(ds0);
                     QDataSet y= SemanticOps.ytagsDataSet(ds0);
                     int [] bins= new int[] { 20, 20 };
+                    QDataSet xrange=null;
+                    QDataSet yrange=null;
                     if ( s.hasNextInt() ) {
                         bins[0]= s.nextInt();
                         bins[1]= s.nextInt();
+                        if ( s.hasNext() ) {
+                            xrange= Ops.dataset(Ops.datumRange(s.next()));
+                            yrange= Ops.dataset(Ops.datumRange(s.next()));
+                        }
                     }
-                    QDataSet xrange;
-                    QDataSet yrange;
-                    if ( s.hasNext() ) {
-                        xrange= Ops.dataset(Ops.datumRange(s.next()));
-                        yrange= Ops.dataset(Ops.datumRange(s.next()));
-                    } else {
+                    if ( xrange==null ) {
                         xrange= Ops.extent(x);
                         yrange= Ops.extent(y);
                     }

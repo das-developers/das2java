@@ -184,7 +184,7 @@ public class Histogram2dFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setFilter(String filter) {
-        Pattern p1= Pattern.compile("\\|histogram2d\\(((\\d),(\\d+)(,(\\S+),(\\S+))?)?\\)");
+        Pattern p1= Pattern.compile(PROP_REGEX);
         Matcher m= p1.matcher(filter);
         if ( m.matches() ) {
             jCheckBox1.setSelected(m.group(2)!=null);
@@ -199,14 +199,15 @@ public class Histogram2dFilterEditorPanel extends AbstractFilterEditorPanel {
             }
         }
     }
+    protected static final String PROP_REGEX = "\\|histogram2d\\(((\\d),(\\d+)(,(.+),(.+))?)?\\)";
 
     @Override
     public String getFilter() {
         StringBuilder b= new StringBuilder("|histogram2d(");
         if ( jCheckBox1.isSelected() ) {
-            b.append(binCountX.getValue().toString());
+            b.append(binCountX.getText());
             b.append(",");
-            b.append(binCountY.getValue().toString());
+            b.append(binCountY.getText());
         }
         if ( jCheckBox2.isSelected() ) {
             b.append(",");
