@@ -310,6 +310,24 @@ public class OperationsProcessor {
                     } else {
                         fillDs= Ops.autoHistogram(fillDs);
                     }
+                } else if ( cmd.equals("|histogram2d") ) {
+                    QDataSet x= SemanticOps.xtagsDataSet(ds0);
+                    QDataSet y= SemanticOps.ytagsDataSet(ds0);
+                    int [] bins= new int[] { 20, 20 };
+                    if ( s.hasNextInt() ) {
+                        bins[0]= s.nextInt();
+                        bins[1]= s.nextInt();
+                    }
+                    QDataSet xrange;
+                    QDataSet yrange;
+                    if ( s.hasNext() ) {
+                        xrange= Ops.dataset(Ops.datumRange(s.next()));
+                        yrange= Ops.dataset(Ops.datumRange(s.next()));
+                    } else {
+                        xrange= Ops.extent(x);
+                        yrange= Ops.extent(y);
+                    }
+                    fillDs= Ops.histogram2d( x, y, bins, xrange, yrange );
                 } else if ( cmd.equals("|extent") ) {
                     fillDs= Ops.extent(fillDs);
                 } else if ( cmd.equals("|logHistogram") ) {
