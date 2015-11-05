@@ -127,11 +127,11 @@ public class Histogram2dFilterEditorPanel extends AbstractFilterEditorPanel {
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel4)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(rangeY))
+                                        .addComponent(rangeY, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel3)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(rangeX, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                        .addComponent(rangeX)))))
                         .addGap(142, 142, 142))))
         );
         layout.setVerticalGroup(
