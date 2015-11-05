@@ -198,6 +198,7 @@ public class DigitalRenderer extends Renderer {
         } catch (IllegalArgumentException ex ){
             this.align= Align.CENTER;
         }
+        this.fillLabel= getControl( "fillLabel", fillLabel );
     }
     
     @Override
@@ -207,6 +208,7 @@ public class DigitalRenderer extends Renderer {
         controls.put( CONTROL_KEY_COLOR, encodeColorControl( color ) );
         controls.put( "format", format );
         controls.put( "align", align.toString() );
+        controls.put( "fillLabel", fillLabel );
         return Renderer.formatControl(controls);
     }
     
