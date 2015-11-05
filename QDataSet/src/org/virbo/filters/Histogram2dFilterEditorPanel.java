@@ -43,6 +43,11 @@ public class Histogram2dFilterEditorPanel extends AbstractFilterEditorPanel {
         rangeY = new javax.swing.JTextField();
 
         jCheckBox1.setText("Set Number of Bins Manually");
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
 
         jLabel1.setText("Bins in X:");
 
@@ -166,6 +171,12 @@ public class Histogram2dFilterEditorPanel extends AbstractFilterEditorPanel {
     private void binCountXActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_binCountXActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_binCountXActionPerformed
+
+    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+        if ( jCheckBox1.isSelected()==false ) {
+            jCheckBox2.setSelected(false);
+        }
+    }//GEN-LAST:event_jCheckBox1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
