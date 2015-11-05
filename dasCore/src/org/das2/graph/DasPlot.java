@@ -601,7 +601,7 @@ public class DasPlot extends DasCanvasComponent {
         TickVDescriptor xtickv= lxaxis.getTickV();
         TickVDescriptor ytickv= lyaxis.getTickV();
 
-        if (drawMinorGrid) {
+        if (drawMinorGrid && this.plotVisible ) {
             DatumVector xticks = null;
             DatumVector yticks = null;
             if ( xtickv!=null ) {
@@ -614,7 +614,7 @@ public class DasPlot extends DasCanvasComponent {
             drawGrid(plotGraphics, xticks, yticks);
         }
 
-        if (drawGrid) {
+        if (drawGrid && this.plotVisible ) {
             DatumVector xticks = null;
             DatumVector yticks = null;
             if ( xtickv!=null ) {
