@@ -209,8 +209,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     @Override
     public synchronized void render(java.awt.Graphics g1, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
 
-        long t0= System.currentTimeMillis();
-        
+        // logger.entering is just past this check.
         DasPlot parent= getParent();
         
         if ( ds==null ) {
@@ -284,7 +283,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
         }
 
-        logger.log(Level.FINE, "done ImageVectorDataSetRenderer.render {0} ms", ( System.currentTimeMillis()-t0 ));
         logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "render");
 
     }
@@ -299,8 +297,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
     private void renderPointsOfRank1(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
         int ny = plotImageBounds2.height;
         int nx = plotImageBounds2.width;
-
-        logger.log(Level.FINE, "create Image (renderPointsOfRank1): nx={0} ny={1}", new Object[]{nx, ny});
+        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank1");
 
         BufferedImage image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
@@ -308,7 +305,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         g.setColor(color);
-        g.setStroke(new BasicStroke(.15f / saturationHitCount));
+        g.setStroke( new BasicStroke( 1 ) );
 
         g.translate( -plotImageBounds2.x, -plotImageBounds2.y);
 
@@ -373,7 +370,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
         }
 
-        logger.fine("done");
+        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank1");
+        
         synchronized (this) {
             plotImage = image;
             selectionArea= null;
@@ -395,7 +393,8 @@ public class ImageVectorDataSetRenderer extends Renderer {
         int ny = plotImageBounds2.height;
         int nx = plotImageBounds2.width;
 
-        logger.log(Level.FINE, "create Image (ghostlyImageRank2): nx={0} ny={1}", new Object[]{nx, ny});
+        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank2Waveform");
+        
         BufferedImage image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -483,7 +482,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
         }
 
-        logger.fine("done");
+        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "renderPointsOfRank2Waveform");
         synchronized (this) {
             plotImage = image;
             selectionArea= null;
@@ -492,7 +491,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
     }
 
     private QDataSet histogram(RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds) {
-        logger.fine("histogram");
+        
+        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "histogram");
+
         ddx.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         ddy.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         FDataSet tds = FDataSet.createRank2( ddx.numberOfBins(), ddy.numberOfBins() );
@@ -543,6 +544,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
             int nj= isWaveform ? vds.length(i) : 1;
 
             if ( isWaveform ) {
+                assert xoffsets!=null;
                 int ix0= ddx.whichBin( xds.value(i) + xoffsets.value(0), xunits );
                 int ix1= ddx.whichBin( xds.value(i) + xoffsets.value(xoffsets.length()-1), xunits );
                 if ( ix0==-1 && i+1<n ) {
@@ -604,6 +606,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 }
             }
         }
+
+        logger.exiting("org.das2.graph.ImageVectorDataSetRenderer", "histogram");
+        
         return tds;
     }
 
@@ -616,6 +621,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
      * @param plotImageBounds2 the bounds.
      */
     private void renderHistogram(DasAxis xAxis, DasAxis yAxis, QDataSet ds, Rectangle plotImageBounds2) {
+        
+        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "renderHistogram" );
+       
         DatumRange xrange = GraphUtil.invTransformRange( xAxis, plotImageBounds2.x, plotImageBounds2.x + plotImageBounds2.width);
         DatumRange yrange = GraphUtil.invTransformRange( yAxis, plotImageBounds2.y + plotImageBounds2.height,plotImageBounds2.y);
 
@@ -713,6 +721,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
             plotImage= plotImage1;
         }
         imageXRange = xrange;
+
+        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "renderHistogram" );
+
     }
 
     @Override
