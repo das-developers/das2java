@@ -332,7 +332,6 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
         int state = STATE_MOVETO;
 
-        // TODO: data breaks
         int ix0 = 0, iy0 = 0;
         if (vds.length() > 0) {
             QDataSet wds = DataSetUtil.weightsDataSet(vds);
