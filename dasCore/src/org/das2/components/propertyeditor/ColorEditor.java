@@ -25,6 +25,7 @@ import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
+import org.das2.util.DesktopColorChooserPanel;
 
 /**
  *
@@ -116,6 +117,7 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
                 }
             } );
             custom.setColor( (Color)getValue() );
+            custom.addChooserPanel(new DesktopColorChooserPanel()); // TODO: this doesn't work on Linux!
     }
 
     public Component getCustomEditor() {
