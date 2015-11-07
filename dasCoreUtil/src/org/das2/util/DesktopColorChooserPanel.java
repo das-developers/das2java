@@ -128,7 +128,7 @@ public class DesktopColorChooserPanel extends AbstractColorChooserPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (b.isSelected()) {
-                    b.setText("Stop picking");
+                    b.setText("S to Select color, click here to Stop picking");
                     updating = true;
                 } else {
                     stopPicking();
