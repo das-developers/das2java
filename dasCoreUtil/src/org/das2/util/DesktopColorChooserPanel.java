@@ -11,6 +11,7 @@ import java.awt.Point;
 import java.awt.PointerInfo;
 import java.awt.Rectangle;
 import java.awt.Robot;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -101,14 +102,12 @@ public class DesktopColorChooserPanel extends AbstractColorChooserPanel {
     private final WindowFocusListener windowFocusListener = new WindowFocusListener() {
         @Override
         public void windowGainedFocus(WindowEvent e) {
-            System.err.println("focus gain");
             l.setText(MSG_GRABBING);
             l.setEnabled(true);
         }
 
         @Override
         public void windowLostFocus(WindowEvent e) {
-            System.err.println("focus lost");
             l.setText("Focus lost, click here to resume selection with keyboard.");
             l.setEnabled(false);
         }
@@ -153,7 +152,8 @@ public class DesktopColorChooserPanel extends AbstractColorChooserPanel {
         SwingUtilities.invokeLater( new Runnable() {
             @Override
             public void run() {
-                SwingUtilities.getWindowAncestor(b).addWindowFocusListener(windowFocusListener);
+                Window w= SwingUtilities.getWindowAncestor(b);
+                if ( w!=null ) w.addWindowFocusListener(windowFocusListener);
             }
         });
     }
