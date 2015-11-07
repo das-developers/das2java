@@ -23,6 +23,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 import org.das2.util.DesktopColorChooserPanel;
@@ -219,9 +220,8 @@ public class ColorEditor extends AbstractCellEditor implements java.beans.Proper
                 if ( custom==null ) {
                     initCustom();
                 }
-                Color c = JColorChooser.showDialog(choice, "Color Editor", (Color)getValue());
-                if (c != null) {
-                    setValue(c);
+                if ( JOptionPane.OK_OPTION==JOptionPane.showConfirmDialog( choice, custom, "Color Editor", JOptionPane.OK_CANCEL_OPTION  ) ) {
+                    setValue(custom.getColor());
                 }
             }
             else {
