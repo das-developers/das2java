@@ -494,31 +494,38 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
     }
 
+    /**
+     * Convolve the 3x3 kernel to the rank 2 matrix.  This is under-implemented (edges),
+     * and only works for a unity kernel because code is commented out.
+     * @param fds
+     * @param kernel
+     * @return 
+     */
     private QDataSet convolve33( QDataSet fds, QDataSet kernel ) {
         if ( kernel.length()!=3 || kernel.length(0)!=3 ) throw new IllegalArgumentException("kernel must be [3,3]");
         DDataSet result= DDataSet.create( DataSetUtil.qubeDims(fds) );
         //flatten kernel
-        double d0= kernel.value(0,0);
-        double d1= kernel.value(0,1);
-        double d2= kernel.value(0,2);
-        double d3= kernel.value(1,0);
-        double d4= kernel.value(1,1);
-        double d5= kernel.value(1,2);
-        double d6= kernel.value(2,0);
-        double d7= kernel.value(2,1);
-        double d8= kernel.value(2,2);
+//        double d0= kernel.value(0,0);
+//        double d1= kernel.value(0,1);
+//        double d2= kernel.value(0,2);
+//        double d3= kernel.value(1,0);
+//        double d4= kernel.value(1,1);
+//        double d5= kernel.value(1,2);
+//        double d6= kernel.value(2,0);
+//        double d7= kernel.value(2,1);
+//        double d8= kernel.value(2,2);
         for ( int i=1; i<fds.length()-1; i++ ) {
             for ( int j=1; j<fds.length(i)-1; j++ ) {
                 double r=0;
-                r+= fds.value( i-1, j-1 ) * d0;
-                r+= fds.value( i-1, j   ) * d1;
-                r+= fds.value( i-1, j+1 ) * d2;
-                r+= fds.value( i  , j-1 ) * d3;
-                r+= fds.value( i  , j   ) * d4;
-                r+= fds.value( i  , j+1 ) * d5;
-                r+= fds.value( i+1, j-1 ) * d6;
-                r+= fds.value( i+1, j   ) * d7;
-                r+= fds.value( i+1, j+1 ) * d8;
+                r+= fds.value( i-1, j-1 ); // * d0;
+                r+= fds.value( i-1, j   ); // * d1;
+                r+= fds.value( i-1, j+1 ); // * d2;
+                r+= fds.value( i  , j-1 ); // * d3;
+                r+= fds.value( i  , j   ); // * d4;
+                r+= fds.value( i  , j+1 ); // * d5;
+                r+= fds.value( i+1, j-1 ); // * d6;
+                r+= fds.value( i+1, j   ); // * d7;
+                r+= fds.value( i+1, j+1 ); // * d8;
                 result.putValue(i,j,r);
             }
         }
@@ -651,6 +658,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                         if (ix != -1 && iy != -1) {
                             double d = tds.value(ix, iy);
                             tds.putValue( ix, iy, d+1 );
+                            //tds.addValue( ix, iy, 1 );
                         }
                     }
                 }
