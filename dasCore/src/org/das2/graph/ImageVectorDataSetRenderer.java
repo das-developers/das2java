@@ -35,12 +35,14 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import static org.das2.graph.Renderer.logger;
+import org.das2.util.LoggerManager;
 import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
@@ -52,6 +54,7 @@ import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WeightsDataSet;
+import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 
 /**
@@ -60,6 +63,8 @@ import org.virbo.dsops.Ops;
  */
 public class ImageVectorDataSetRenderer extends Renderer {
 
+    protected static final Logger logger= LoggerManager.getLogger("das2.graphics.renderer.hugeScatter");
+    
     BufferedImage plotImage;
     Rectangle plotImageBounds;
     DatumRange imageXRange;
@@ -489,7 +494,51 @@ public class ImageVectorDataSetRenderer extends Renderer {
         
     }
 
-    private QDataSet histogram(RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds) {
+    private QDataSet convolve33( QDataSet fds, QDataSet kernel ) {
+        if ( kernel.length()!=3 || kernel.length(0)!=3 ) throw new IllegalArgumentException("kernel must be [3,3]");
+        DDataSet result= DDataSet.create( DataSetUtil.qubeDims(fds) );
+        //flatten kernel
+        double d0= kernel.value(0,0);
+        double d1= kernel.value(0,1);
+        double d2= kernel.value(0,2);
+        double d3= kernel.value(1,0);
+        double d4= kernel.value(1,1);
+        double d5= kernel.value(1,2);
+        double d6= kernel.value(2,0);
+        double d7= kernel.value(2,1);
+        double d8= kernel.value(2,2);
+        for ( int i=1; i<fds.length()-1; i++ ) {
+            for ( int j=1; j<fds.length(i)-1; j++ ) {
+                double r=0;
+                r+= fds.value( i-1, j-1 ) * d0;
+                r+= fds.value( i-1, j   ) * d1;
+                r+= fds.value( i-1, j+1 ) * d2;
+                r+= fds.value( i  , j-1 ) * d3;
+                r+= fds.value( i  , j   ) * d4;
+                r+= fds.value( i  , j+1 ) * d5;
+                r+= fds.value( i+1, j-1 ) * d6;
+                r+= fds.value( i+1, j   ) * d7;
+                r+= fds.value( i+1, j+1 ) * d8;
+                result.putValue(i,j,r);
+            }
+        }
+        return result;
+    }
+    
+    private void darkenHistogram( WritableDataSet fds ) {
+        logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "darkenHistogram");
+        QDataSet convolve= convolve33( fds, DDataSet.wrap( new double[] { 1,1,1,1,1,1,1,1,1 }, new int[] { 3,3 } ) );
+        for ( int i=0; i<fds.length(); i++ ) {
+            for ( int j=0; j<fds.length(i); j++ ) {
+                if ( convolve.value(i,j)<saturationHitCount && fds.value(i,j)>0 ) {
+                    fds.putValue( i,j,saturationHitCount );
+                }
+            }
+        }
+        logger.exiting( "org.das2.graph.ImageVectorDataSetRenderer", "darkenHistogram");
+    }
+    
+    private FDataSet histogram(RebinDescriptor ddx, RebinDescriptor ddy, QDataSet ds) {
         
         logger.entering( "org.das2.graph.ImageVectorDataSetRenderer", "histogram");
 
@@ -564,6 +613,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                                 if (ix != -1 && iy != -1) {
                                     double d = tds.value(ix, iy);
                                     tds.putValue( ix, iy, d+1 );
+                                    //tds.addValue( ix, iy, 1 ); this should be faster
                                 }
                             }
                         }
@@ -582,6 +632,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
                                 if (ix != -1 && iy != -1) {
                                     double d = tds.value(ix, iy);
                                     tds.putValue( ix, iy, d+1 );
+                                    //tds.addValue( ix, iy, 1 ); this should be faster
                                 }
                             }
                         }
@@ -639,7 +690,9 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 yAxis.isLog());
 
 
-        QDataSet newHist = histogram(ddx, ddy, ds);
+        WritableDataSet newHist = histogram(ddx, ddy, ds);
+        if ( true ) darkenHistogram( newHist );
+        
         if ( yAxis.isFlipped() && xAxis.isFlipped() ) {
             newHist= DataSetOps.applyIndex( newHist, 1, Ops.linspace( newHist.length(0)-1, 0, newHist.length(0) ), false );
             newHist= DataSetOps.applyIndex( newHist, 0, Ops.linspace( newHist.length()-1, 0, newHist.length() ), false );
