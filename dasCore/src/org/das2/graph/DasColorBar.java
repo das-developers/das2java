@@ -181,23 +181,25 @@ public class DasColorBar extends DasAxis {
             return;
         }
         
-        int x = getColumn().getDMinimum();
-        int y = getRow().getDMinimum();
-        int width = getColumn().getDMaximum() - x;
-        int height = getRow().getDMaximum() - y;
-        //if (image == null || image.getWidth() != width || image.getHeight() != height) {
-        if (isHorizontal()) {
-            image = type.getHorizontalScaledImage(width, height);
-        } else {
-            image = type.getVerticalScaledImage(width, height);
+        if ( showColorBar ) {
+            int x = getColumn().getDMinimum();
+            int y = getRow().getDMinimum();
+            int width = getColumn().getDMaximum() - x;
+            int height = getRow().getDMaximum() - y;
+            //if (image == null || image.getWidth() != width || image.getHeight() != height) {
+            if (isHorizontal()) {
+                image = type.getHorizontalScaledImage(width, height);
+            } else {
+                image = type.getVerticalScaledImage(width, height);
+            }
+            //}
+            g.translate(-getX(), -getY());
+            if (!isHorizontal()) {
+                y++;
+            }
+            g.drawImage(image, x, y, this);
+            g.translate(getX(), getY());
         }
-        //}
-        g.translate(-getX(), -getY());
-        if (!isHorizontal()) {
-            y++;
-        }
-        g.drawImage(image, x, y, this);
-        g.translate(getX(), getY());
         super.paintComponent(g);
     }
     
@@ -241,6 +243,26 @@ public class DasColorBar extends DasAxis {
         }
         return bounds;
     }
+
+    private boolean showColorBar = true;
+
+    public static final String PROP_SHOWCOLORBAR = "showColorBar";
+
+    public boolean isShowColorBar() {
+        return showColorBar;
+    }
+
+    /**
+     * when set to false, this is basically an ordinary axis.  Autoplot uses
+     * this to support StackedHistogram mode.
+     * @param showColorBar true if the colorbar should be drawn.
+     */
+    public void setShowColorBar(boolean showColorBar) {
+        boolean oldShowColorBar = this.showColorBar;
+        this.showColorBar = showColorBar;
+        firePropertyChange(PROP_SHOWCOLORBAR, oldShowColorBar, showColorBar);
+    }
+
     
     /**
      * TODO: Ed document me

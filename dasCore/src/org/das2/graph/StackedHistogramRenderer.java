@@ -129,15 +129,15 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     
     RebinListener rebinListener= new RebinListener();
     
-    public StackedHistogramRenderer( DasPlot parent, DataSetDescriptor dsd, DasAxis zAxis, DasAxis yAxis ) {
-        super();
-        
-        this.yAxis= yAxis;
+    public StackedHistogramRenderer( DasAxis zAxis ) {
         this.zAxis= zAxis;
-        
         zAxis.addPropertyChangeListener(rebinListener);
         
-        setDataSetDescriptor( dsd );
+    }
+    
+    public StackedHistogramRenderer( DasPlot parent, DataSetDescriptor dsd, DasAxis zAxis, DasAxis yAxis ) {
+        this( zAxis );        
+        this.yAxis= yAxis;
     }
     
     
@@ -167,6 +167,18 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         zAxisConnector= new RowRowConnector( canvas, littleRow, zAxis.getRow(), parent.getColumn(), zAxis.getColumn() );
         zAxisConnector.setVisible(false);
         canvas.add(zAxisConnector);
+        
+        if ( parent.getCanvas()!=zAxis.getParent() ) {
+            parent.getCanvas().add( zAxis, parent.getRow(), zAxis.getColumn() );
+        }
+                
+        if ( zAxis instanceof DasColorBar ) {
+            ((DasColorBar)zAxis).setShowColorBar( false );
+        }
+        
+        if ( yAxis==null ) {
+            this.yAxis= parent.getYAxis();
+        }
         
         if ( yAxis!=null && yAxis instanceof DasLabelAxis ) {
             DasLabelAxis dlAxis= (DasLabelAxis)yAxis;
@@ -198,6 +210,12 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     
     @Override
     protected void uninstallRenderer() {
+        DasCanvas c= getParent().getCanvas();
+        c.remove(zAxisConnector);
+        if ( zAxis instanceof DasColorBar ) {
+            ((DasColorBar)zAxis).setShowColorBar( true );
+        }
+        
     }
     
     
