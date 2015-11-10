@@ -4724,7 +4724,7 @@ public class Ops {
             }
         }
         
-        if ( value!=null && ( value.equals("Null") || value.equals("None") ) ) {
+        if ( value!=null && ( value.equals("null") || value.equals("None") || value.equals("Null") ) ) {
             if ( !"String".equals(DataSetUtil.getPropertyType(name)) ) {
                 if ( !( name.equals(QDataSet.TITLE) || name.equals(QDataSet.LABEL) ) ) {
                     value= null;
