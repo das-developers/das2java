@@ -1,13 +1,4 @@
-/*
- * ImageVectorDataSetRenderer.java
- *
- * This renderer can handle vector data sets with tens of thousands of points
- * by histogramming the points and then creating a greyscale spectrogram of
- * the histogram.  The property "saturationHitCount" defines the number of pixel
- * hits that will make the pixel black.  
- *
- * Created on April 14, 2005, 8:45 PM
- */
+
 package org.das2.graph;
 
 import java.awt.BasicStroke;
@@ -41,15 +32,12 @@ import org.das2.dataset.NoDataInIntervalException;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
-import static org.das2.graph.Renderer.logger;
 import org.das2.util.LoggerManager;
-import org.virbo.dataset.AbstractDataSet;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.FDataSet;
 import org.virbo.dataset.JoinDataSet;
-import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -58,7 +46,21 @@ import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 
 /**
+ * ImageVectorDataSetRenderer
  *
+ * This renderer can handle vector data sets with tens of thousands of points
+ * by histogramming the points and then creating a greyscale spectrogram of
+ * the histogram.  The property "saturationHitCount" defines the number of pixel
+ * hits that will make the pixel black.  
+ * 
+ * This has been modified a lot over the years:<ul>
+ * <li> connecting lines when the data is of timeseries, 
+ * <li> alternate modes are used when we zoom in closely,
+ * <li> support for QDataSets and waveform scheme data,
+ * <li> lone pixels are highlighted.
+ * </ul>
+ * 
+ * Created on April 14, 2005, 8:45 PM
  * @author Jeremy
  */
 public class ImageVectorDataSetRenderer extends Renderer {
