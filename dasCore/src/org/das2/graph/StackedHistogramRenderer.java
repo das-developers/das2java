@@ -69,7 +69,7 @@ import org.virbo.dataset.SemanticOps;
  */
 public class StackedHistogramRenderer extends org.das2.graph.Renderer implements TableDataSetConsumer, PropertyChangeListener, Displayable  {
     
-    private DasLabelAxis yAxis= null;
+    private DasAxis yAxis= null;
     private DasAxis zAxis= null;
     private RowRowConnector zAxisConnector= null;
     private DasRow littleRow=null;
@@ -129,7 +129,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     
     RebinListener rebinListener= new RebinListener();
     
-    public StackedHistogramRenderer( DasPlot parent, DataSetDescriptor dsd, DasAxis zAxis, DasLabelAxis yAxis ) {
+    public StackedHistogramRenderer( DasPlot parent, DataSetDescriptor dsd, DasAxis zAxis, DasAxis yAxis ) {
         super();
         
         this.yAxis= yAxis;
@@ -168,9 +168,10 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         zAxisConnector.setVisible(false);
         canvas.add(zAxisConnector);
         
-        if ( yAxis!=null ) {
-            yAxis.setFloppyItemSpacing(true);
-            yAxis.setOutsidePadding(1);
+        if ( yAxis!=null && yAxis instanceof DasLabelAxis ) {
+            DasLabelAxis dlAxis= (DasLabelAxis)yAxis;
+            dlAxis.setFloppyItemSpacing(true);
+            dlAxis.setOutsidePadding(1);
         }
         
         this.peaksIndicator= PeaksIndicator.MaxLines;
