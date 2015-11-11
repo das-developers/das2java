@@ -701,7 +701,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
 
 
         WritableDataSet newHist = histogram(ddx, ddy, ds);
-        if ( true ) darkenHistogram( newHist );
+        if ( false ) darkenHistogram( newHist );
         
         if ( yAxis.isFlipped() && xAxis.isFlipped() ) {
             newHist= DataSetOps.applyIndex( newHist, 1, Ops.linspace( newHist.length(0)-1, 0, newHist.length(0) ), false );
