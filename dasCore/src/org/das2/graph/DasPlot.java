@@ -306,6 +306,7 @@ public class DasPlot extends DasCanvasComponent {
     
     /**
      * returns the bounds of the legend, or null if there is no legend.
+     * TODO: merge with drawLegend, so there are not two similar codes.
      * @param graphics graphics context
      * @param msgx the location of the box
      * @param msgy the location of the box
@@ -323,11 +324,13 @@ public class DasPlot extends DasCanvasComponent {
         if ( llegendElements==null ) return null;
         if ( graphics==null ) return null;
 
+        String contextStr= this.context.toString();
         for (LegendElement le : llegendElements) {
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) { 
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
-                gtr.setString(graphics, String.valueOf(le.label).trim()); // protect from nulls, which seems to happen
+                String theLabel= String.valueOf(le.label).trim().replaceAll("%\\{CONTEXT\\}",contextStr);
+                gtr.setString(graphics, theLabel); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
                 maxIconWidth = Math.max(maxIconWidth, icon.getIconWidth());
                 if ( reluctantLegendIcons ) {
@@ -430,6 +433,7 @@ public class DasPlot extends DasCanvasComponent {
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
         }
 
+        String contextStr= this.context.toString();
         for (LegendElement le : llegendElements) {
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) {
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
@@ -438,7 +442,8 @@ public class DasPlot extends DasCanvasComponent {
                 }
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
                 gtr.setAlignment( GrannyTextRenderer.LEFT_ALIGNMENT );
-                gtr.setString(graphics, String.valueOf(le.label).trim()); // protect from nulls, which seems to happen
+                String theLabel= String.valueOf(le.label).trim().replaceAll("%\\{CONTEXT\\}",contextStr);
+                gtr.setString(graphics, theLabel); // protect from nulls, which seems to happen
                 mrect = gtr.getBounds();
                 mrect.translate(msgx, msgy + (int) gtr.getAscent());
                 int theheight= Math.max(mrect.height, icon.getIconHeight());
