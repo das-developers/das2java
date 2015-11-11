@@ -6586,7 +6586,8 @@ public class Ops {
      *plot( zz )
      *</pre></blockquote>
      * The result will be a rank 2 dataset with DEPEND_0 and DEPEND_1 indicating
-     * the bin locations.
+     * the bin locations.  If the xrange or yrange is dimensionless, then 
+     * use the units of x or y.
      * @param x the x values
      * @param y the y values
      * @param bins number of bins in x and y
@@ -6607,6 +6608,14 @@ public class Ops {
             ny=bins[1];            
         }
         
+        if ( SemanticOps.getUnits(xrange)==Units.dimensionless ) {
+            xrange= putProperty( xrange, QDataSet.UNITS, SemanticOps.getUnits(x) );
+        }
+
+        if ( SemanticOps.getUnits(yrange)==Units.dimensionless ) {
+            yrange= putProperty( yrange, QDataSet.UNITS, SemanticOps.getUnits(y) );
+        }
+            
         double minx= xrange.value(0);
         double miny= yrange.value(0);
         
