@@ -324,7 +324,7 @@ public class DasPlot extends DasCanvasComponent {
         if ( llegendElements==null ) return null;
         if ( graphics==null ) return null;
 
-        String contextStr= this.context.toString();
+        String contextStr= this.context==null ? "" : this.context.toString();
         for (LegendElement le : llegendElements) {
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) { 
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
@@ -433,7 +433,7 @@ public class DasPlot extends DasCanvasComponent {
             graphics.drawRoundRect(mrect.x - em / 4, mrect.y - em/4, mrect.width + em / 2, mrect.height + em/2, 5, 5);
         }
 
-        String contextStr= this.context.toString();
+        String contextStr= this.context==null ? "" : this.context.toString();
         for (LegendElement le : llegendElements) {
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) {
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
@@ -1315,7 +1315,8 @@ public class DasPlot extends DasCanvasComponent {
         if ( displayTitle && plotTitle != null && plotTitle.length() != 0) {
             String t= plotTitle;
             if ( plotTitle.contains("%{CONTEXT}") ) {
-                t= t.replace("%{CONTEXT}",this.context.toString());
+                String contextStr= this.context==null ? "" : this.context.toString();
+                t= t.replace("%{CONTEXT}",contextStr);
             }
             
             if ( fontSize.length()>0 && !fontSize.equals("1em") ) {
@@ -1761,7 +1762,7 @@ public class DasPlot extends DasCanvasComponent {
      * show the state of data during a range.  This may change to a QDataSet
      * to provide several context dimensions.
      */
-    DatumRange context= null;
+    private DatumRange context= null;
 
     /**
      * convenient place to put the plot context.  The context is used to
@@ -1779,7 +1780,8 @@ public class DasPlot extends DasCanvasComponent {
      * convenient place to put the plot context.  The context is used to
      * store the timerange when there is no axis for it, for example, to
      * show the state of data during a range.  This may change to a QDataSet
-     * to provide several context dimensions.
+     * to provide several context dimensions.  Note this may be null to support
+     * no context.
      * @param context the context
      * @see #getContext() 
      */
