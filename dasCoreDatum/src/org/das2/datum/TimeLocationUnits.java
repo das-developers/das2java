@@ -59,7 +59,12 @@ public class TimeLocationUnits extends LocationUnits {
         
     @Override
     public Datum parse(String s) throws java.text.ParseException {
-        return TimeUtil.toDatum(TimeUtil.parseTime(s),this);
+        //int [] rr= DatumRangeUtil.parseISO8601(s);
+        //if ( rr!=null ) {
+        //    return TimeUtil.toDatum(rr);
+        //} else {
+            return TimeUtil.toDatum(TimeUtil.parseTime(s),this);
+        //}
     }
     
     public String getTimeZone() {
