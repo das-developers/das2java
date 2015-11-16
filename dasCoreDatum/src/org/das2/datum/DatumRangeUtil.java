@@ -10,6 +10,7 @@ import java.text.*;
 import java.util.*;
 import java.util.logging.*;
 import java.util.regex.*;
+import org.das2.datum.TimeUtil.TimeStruct;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 
@@ -172,23 +173,26 @@ public class DatumRangeUtil {
     }
 
 
-    private static Pattern time1, time2, time3, time4, time5;
+    private static Pattern time1, time2, time3, time4, time5, time6;
     static {
         String d= "[-:]"; // delim
         String i4= "(\\d\\d\\d\\d)";
         String i3= "(\\d+)";
         String i2= "(\\d\\d)";
+        String tz= "((\\+|\\-)(\\d\\d)(:?(\\d\\d))?)"; // Note UTC allows U+2212 as well as dash.
 
         String iso8601time= i4 + d + i2 + d + i2 + "T" + i2 + d + i2 + "((" + d + i2 + "(\\." + i3 + ")?)?)Z?" ;  // "2012-03-27T12:22:36.786Z"
         String iso8601time2= i4 + i2 + i2 + "T" + i2 + i2 + "(" + i2 + ")?Z?" ;
         String iso8601time3= i4 + d + i3 + "T" + i2 + d + i2 + "(" + i2 + ")?Z?" ;
         String iso8601time4= i4 + d + i2 + d + i2 + "Z?" ;
         String iso8601time5= i4 + d + i3 + "Z?" ;
+        String iso8601time6= i4 + d + i2 + d + i2 + "T" + i2 + d + i2 + "((" + d + i2 + "(\\." + i3 + ")?)?)"+tz+"?" ;  // "2014-09-02T10:55:10-05:00"
         time1= Pattern.compile(iso8601time);
         time2= Pattern.compile(iso8601time2);
         time3= Pattern.compile(iso8601time3);
         time4= Pattern.compile(iso8601time4);
         time5= Pattern.compile(iso8601time5);
+        time6= Pattern.compile(iso8601time6);
     }
     
     /**
@@ -311,6 +315,77 @@ public class DatumRangeUtil {
     }
     
     /**
+     * Normalize all the components, so no component is 
+     * greater than its expected range or less than zero.
+     * 
+     * Note that leap seconds are not accounted for.  TODO: account for them.
+     * @param components int[7]: [ Y, m, d, H, M, S, nano ]
+     * @return the same array
+     */
+    public static int[] normalizeTimeComponents( int[] components ) {
+        while ( components[6]>=1000000000 ) {
+            components[5]+=1;
+            components[6]-= 1000000000;
+        }
+        while ( components[5]>=60 ) { // TODO: leap seconds
+            components[4]+= 1;
+            components[5]-= 60;
+        }
+        while ( components[5]<0 ) { // TODO: leap seconds
+            components[4]-= 1;
+            components[5]+= 60;
+        }
+        while ( components[4]>=60 ) {
+            components[3]+= 1;
+            components[4]-= 60;
+        }
+        while ( components[4]<0 ) {
+            components[3]-= 1;
+            components[4]+= 60;
+        }
+        while ( components[3]>=23 ) {
+            components[2]+= 1;
+            components[3]-= 24;
+        }
+        while ( components[3]<0 ) {
+            components[2]-= 1;
+            components[3]+= 24;
+        }
+        // Irregular month lengths make it impossible to do this nicely.  Either 
+        // months should be incremented or days should be incremented, but not
+        // both.  Note Day-of-Year will be normalized to Year,Month,Day here
+        // as well.  e.g. 2000/13/01 because we incremented the month.
+        if ( components[2]>28 ) {  
+            int daysInMonth= TimeUtil.daysInMonth( components[1], components[0] );
+            while ( components[2] > daysInMonth ) {
+                components[2]-= daysInMonth;
+                components[1]+= 1;
+                if ( components[1]>12 ) break;
+                daysInMonth= TimeUtil.daysInMonth( components[1], components[0] );
+            }
+        }
+        if ( components[2]==0 ) { // handle borrow when it is no more than one day.
+            components[1]=- 1;
+            if ( components[1]==0 ) {
+                components[1]= 12;
+                components[0]-= 1;
+            }
+            int daysInMonth= TimeUtil.daysInMonth( components[1], components[0] );
+            components[2]= daysInMonth;
+        }
+        while ( components[1]>12 ) {
+            components[0]+= 1;
+            components[1]-= 12;
+        }
+        if ( components[1]<0 ) { // handle borrow when it is no more than one year.
+            components[0]+= 1;
+            components[1]+= 12;
+        }
+        return components;
+        
+    }
+    
+    /**
      * Parser for ISO8601 formatted times.
      * returns null or int[7]: [ Y, m, d, H, M, S, nano ]
      * The code cannot parse any iso8601 string, but this code should.  Right now it parses:
@@ -347,6 +422,27 @@ public class DatumRangeUtil {
                         m= time5.matcher(str);
                         if ( m.matches() ) {
                             return new int[] { Integer.parseInt( m.group(1) ), 1, Integer.parseInt( m.group(2) ), 0, 0, 0, 0 };
+                        } else {
+                            m= time6.matcher(str);
+                            if ( m.matches() ) {
+                                String sf= m.group(10);
+                                if ( sf!=null && sf.length()>9 ) throw new IllegalArgumentException("too many digits in nanoseconds part");
+                                int nanos= sf==null ? 0 : ( Integer.parseInt(sf) * (int)Math.pow( 10, ( 9 - sf.length() ) ) );
+                                String plusMinus= m.group(12);
+                                String tzHours= m.group(13);
+                                String tzMinutes= m.group(15);
+                                int[] result;
+                                if ( plusMinus.charAt(0)=='+') {
+                                    result= new int[] { Integer.parseInt( m.group(1) ), Integer.parseInt( m.group(2) ), Integer.parseInt( m.group(3) ), 
+                                        getInt( m.group(4), 0 ) - getInt( tzHours,0 ), getInt( m.group(5), 0 )- getInt( tzMinutes, 0 ),
+                                        getInt( m.group(8), 0), nanos };
+                                } else {
+                                    result= new int[] { Integer.parseInt( m.group(1) ), Integer.parseInt( m.group(2) ), Integer.parseInt( m.group(3) ), 
+                                        getInt( m.group(4), 0 ) + getInt( tzHours,0 ), getInt( m.group(5), 0 ) + getInt( tzMinutes, 0 ),
+                                        getInt( m.group(8), 0) , nanos };
+                                }
+                                return normalizeTimeComponents(result);
+                            }
                         }
                     }
                 }
