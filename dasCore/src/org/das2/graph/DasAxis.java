@@ -3548,6 +3548,56 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         }
     }
 
+    /** 
+     * Transforms the rank 0 dataset a horizontal or vertical
+     * position on the parent canvas.  This was introduced to support when
+     * the rank 1 iterator would return QDataSets instead of doubles.
+     * @param data a data value
+     * @param units the units of the given data value.
+     * @return Horizontal or vertical position on the canvas.
+     * @throws InconvertibleUnitsException
+     */
+    public double transform( QDataSet data, Units units) {
+        DasDevicePosition range;
+        double d;
+        if ( units==data.property(QDataSet.UNITS) ) {
+            d= data.value();
+        } else if ( units==Units.dimensionless && data.property(QDataSet.UNITS)==null ) {
+            d= data.value(); 
+        } else {
+            UnitsConverter uc= SemanticOps.getUnits(data).getConverter(units);
+            d= uc.convert(data.value());
+        }
+        if (isHorizontal()) {
+            range = getColumn();
+            return transform(d, units, range.getDMinimum(), range.getDMaximum());
+        } else {
+            range = getRow();
+            return transform(d, units, range.getDMaximum(), range.getDMinimum());
+        }
+    }
+
+    /** 
+     * Transforms the rank 0 dataset a horizontal or vertical
+     * position on the parent canvas. 
+     * @param data a data value
+     * @return Horizontal or vertical position on the canvas.
+     * @throws InconvertibleUnitsException
+     */
+    public double transform( QDataSet data ) {
+        DasDevicePosition range;
+        double d=data.value();
+        Units units= (Units)data.property(QDataSet.UNITS);
+        if ( units==null ) units= Units.dimensionless;
+        if (isHorizontal()) {
+            range = getColumn();
+            return transform(d, units, range.getDMinimum(), range.getDMaximum());
+        } else {
+            range = getRow();
+            return transform(d, units, range.getDMaximum(), range.getDMinimum());
+        }
+    }    
+    
     /**
      * Transforms a double in the given units in data coordinates to a horizontal or vertical
      * position on the parent canvas.
