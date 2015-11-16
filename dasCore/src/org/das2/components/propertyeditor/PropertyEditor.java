@@ -376,6 +376,19 @@ public class PropertyEditor extends JComponent {
     }
 
     public void showDialog(Component c) {
+        getDialog(c);
+        if (c != null) {
+            dialog.setLocationRelativeTo(c);
+        }
+        dialog.setVisible(true);
+    }
+
+    /**
+     * allow clients to get at the dialog so it can be positioned.
+     * @param c parent, if initializing.
+     * @return the dialog.
+     */
+    public JDialog getDialog( Component c ) {
         if (dialog == null) {
             Container top=null;
             if ( c!=null ) {
@@ -388,8 +401,7 @@ public class PropertyEditor extends JComponent {
                 dialog = new JDialog((JDialog) top);
             } else {
                 dialog = new JDialog();
-            }
-
+            }     
             if ( this.bean==null ) {
                 dialog.setTitle("Property Editor");
             } else {
@@ -410,13 +422,15 @@ public class PropertyEditor extends JComponent {
             });
             dialog.setContentPane(this);
             dialog.pack();
+            
+        } else {
+            if ( c!=dialog.getParent()) {
+                logger.warning("properties dialog parent cannot change.");
+            }
         }
-        if (c != null) {
-            dialog.setLocationRelativeTo(c);
-        }
-        dialog.setVisible(true);
+        return dialog;
     }
-
+    
     /**
      * display the dialog, and use the given image for the icon.
      * @param c the parent focus
