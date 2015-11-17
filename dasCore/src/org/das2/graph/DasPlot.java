@@ -1967,6 +1967,28 @@ public class DasPlot extends DasCanvasComponent {
         invalidateCacheImage();
 
     }
+
+    /**
+     * since the plotVisible property can be false and the plot having 
+     * no renderers, we want the mouse events to pass on to elements below them.
+     * @param x the mouse x
+     * @param y the mouse y
+     * @return true if the plot "contains" this point.
+     */
+    @Override
+    public boolean contains(int x, int y) {
+        if ( this.plotVisible==false ) {
+            boolean contains= false;
+            for ( Renderer r : renderers ) {
+                if ( r.isActive() ) {
+                    contains= true;
+                }
+            }
+            return contains;
+        } else {
+            return super.contains(x, y); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
     
     /**
      * return true if the plot contains the renderer.
