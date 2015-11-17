@@ -304,6 +304,9 @@ public class DasPlot extends DasCanvasComponent {
         repaint();
     }
     
+    private static final Icon NULL_ICON= new ImageIcon(new BufferedImage(1,1,BufferedImage.TYPE_INT_ARGB) );    
+    
+    
     /**
      * returns the bounds of the legend, or null if there is no legend.
      * TODO: merge with drawLegend, so there are not two similar codes.
@@ -328,6 +331,7 @@ public class DasPlot extends DasCanvasComponent {
         for (LegendElement le : llegendElements) {
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) { 
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
+                if ( icon==null ) icon=NULL_ICON;
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
                 String theLabel= String.valueOf(le.label).trim().replaceAll("%\\{CONTEXT\\}",contextStr);
                 gtr.setString(graphics, theLabel); // protect from nulls, which seems to happen
@@ -404,11 +408,10 @@ public class DasPlot extends DasCanvasComponent {
         msgx = xAxis.getColumn().getDMiddle() + em;
         msgy = yAxis.getRow().getDMinimum() + em/2;
 
-        Icon nullIcon= new ImageIcon(new BufferedImage(1,1,BufferedImage.TYPE_INT_ARGB) );
-        
         int maxIconWidth= 0;
         for (LegendElement le : llegendElements) {
             Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
+            if ( icon==null ) icon=NULL_ICON;
             maxIconWidth = Math.max(maxIconWidth, icon.getIconWidth());
             if ( reluctantLegendIcons ) {
                 if ( llegendElements.size()==1 ) {
@@ -437,8 +440,9 @@ public class DasPlot extends DasCanvasComponent {
         for (LegendElement le : llegendElements) {
             if ( ( le.renderer!=null && le.renderer.isActive() ) || le.icon!=null || drawInactiveInLegend ) {
                 Icon icon= le.icon!=null ? le.icon : le.renderer.getListIcon();
+                if ( icon==null ) icon=NULL_ICON;
                 if ( llegendElements.size()==1 && reluctantLegendIcons ) {
-                    icon = nullIcon;
+                    icon = NULL_ICON;
                 }
                 GrannyTextRenderer gtr = new GrannyTextRenderer();
                 gtr.setAlignment( GrannyTextRenderer.LEFT_ALIGNMENT );
