@@ -71,6 +71,7 @@ public class DasAnnotation extends DasCanvasComponent {
             }
         } else {
             this.gtr = new GrannyTextRenderer();
+            this.gtr.setString( getFont(), "" );
         }
         this.templateString = string;
 
@@ -313,6 +314,18 @@ public class DasAnnotation extends DasCanvasComponent {
     }
 
     /**
+     * This item should only accept mouse events on the bubble
+     * @param x
+     * @param y
+     * @return 
+     */
+    @Override
+    public boolean contains(int x, int y) {
+        return acceptContext( x+getX(), y+getY() );
+    }
+    
+
+    /**
      * calculate the bounds in the canvas coordinate system.
      * @return 
      */
@@ -438,7 +451,9 @@ public class DasAnnotation extends DasCanvasComponent {
             Point p= p2d==null ? head : new Point( (int)p2d.getX(), (int)p2d.getY() );
 
             g2.setStroke( new BasicStroke( (float) (em2/4), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ) );
-            g2.setColor( new Color( back.getRed(), back.getGreen(), back.getBlue(), 128 ) );
+            
+            Color glowColor= getCanvas().getBackground();
+            g2.setColor( new Color( glowColor.getRed(), glowColor.getGreen(), glowColor.getBlue(), 128 ) );
             Arrow.paintArrow(g2, head, p, em2, this.arrowStyle );
 
             g2.setStroke( stroke0 );            
