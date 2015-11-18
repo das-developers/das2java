@@ -352,7 +352,8 @@ public class DasAnnotation extends DasCanvasComponent {
                 r.add( headx, heady );
             }
         }
-        return new Rectangle( r.x-3, r.y-3, r.width+7, r.height+7 );
+        int s= Math.max( getFont().getSize()/5, 3 );
+        return new Rectangle( r.x-s, r.y-s, r.width+s*2+1, r.height+s*2+1 );
     }
 
     @Override
