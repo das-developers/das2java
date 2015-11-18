@@ -401,27 +401,6 @@ public class DasAnnotation extends DasCanvasComponent {
             if ( gtr!=null ) gtr.setAlignment( GrannyTextRenderer.CENTER_ALIGNMENT );
         }
         
-        //r = new Rectangle(r.x - em + 1, r.y - em + 1, r.width + 2 * em - 1, r.height + 2 * em - 1);
-        
-        //r.translate( em, em + (int) gtr.getAscent());
-        g.setColor(back);
-
-        if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
-            g.fill(r);
-        } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
-            g.fillRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
-        }
-
-        g.setColor(ltextColor);
-
-        if ( gtr!=null ) {
-            gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
-        } else {
-            g.drawImage( img, r.x+em, r.y+em, this );
-        }
-
-        g.setColor(fore);
-        
         if ( showArrow ) {
 
             int headx= 0;
@@ -462,7 +441,25 @@ public class DasAnnotation extends DasCanvasComponent {
 
             g2.dispose();
         }
-        
+
+        g.setColor(back);
+
+        if (borderType == BorderType.RECTANGLE || borderType == BorderType.NONE) {
+            g.fill(r);
+        } else if (borderType == BorderType.ROUNDED_RECTANGLE) {
+            g.fillRoundRect(r.x, r.y, r.width, r.height, em * 2, em * 2);
+        }
+
+        g.setColor(ltextColor);
+
+        if ( gtr!=null ) {
+            gtr.draw(g, r.x+em, r.y + em + (float) gtr.getAscent() );
+        } else {
+            g.drawImage( img, r.x+em, r.y+em, this );
+        }
+
+        g.setColor(fore);
+                
         if (borderType != BorderType.NONE) {
             if (borderType == BorderType.RECTANGLE) {
                 g.draw(r);
