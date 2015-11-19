@@ -856,8 +856,7 @@ public class AverageTableRebinner implements DataSetRebinner {
             if (interpolateType == Interpolate.NearestNeighbor) {
 
                 for (int i = 0; i < nx; i++) {
-                    if ( i1[i] > -1 && i2[i] > -1 && (xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5 ) {
-
+                    if ( i1[i] > -1 && i2[i] > -1 && Math.abs(xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5 ) {
                         int idx;
                         if (i1[i] == -1) {
                             if (i2[i] == -1) {
@@ -880,7 +879,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 }
             } else {
                 for (int i = 0; i < nx; i++) {
-                    if (i1[i] > -1 && i2[i] > -1 && (xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5) {
+                    if (i1[i] > -1 && i2[i] > -1 && Math.abs(xTagMin[i2[i]] - xTagMax[i1[i]]) <= xSampleWidth * 1.5) {
                         a2 = ((xTags[i] - xTagMax[i1[i]]) / (xTagMin[i2[i]] - xTags[i1[i]]));
                         a1 = 1. - a2;
                         data[i][j] = data[i1[i]][j] * a1 + data[i2[i]][j] * a2;
