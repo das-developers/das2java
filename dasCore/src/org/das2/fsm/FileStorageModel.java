@@ -8,9 +8,11 @@ package org.das2.fsm;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Level;
@@ -73,6 +75,7 @@ public class FileStorageModel {
          * simple floating point numeric comparisons.
          */
         numeric( new Comparator() {       // 4.10 > 4.01
+                @Override
                 public int compare(Object o1, Object o2) {
                     Double d1= Double.parseDouble((String)o1);
                     Double d2= Double.parseDouble((String)o2);
@@ -83,6 +86,7 @@ public class FileStorageModel {
          * comparison by lexical sort v2013a>v2012b.
          */
         alphanumeric(new Comparator() {   // a001
+                @Override
                 public int compare(Object o1, Object o2) {
                     return ((String)o1).compareTo((String)o2);
                 }
@@ -91,6 +95,7 @@ public class FileStorageModel {
          * comparison of numbers split by decimal points and dashes, so 1.20 > 1.3.
          */
         numericSplit( new Comparator() {  // 4.3.23   // 1.1.3-01 for RBSP (rbspice lev-2 isrhelt)
+               @Override
                public int compare(Object o1, Object o2) {
                     String[] ss1= o1.toString().split("[\\.-]",-2);
                     String[] ss2= o2.toString().split("[\\.-]",-2);
@@ -158,6 +163,7 @@ public class FileStorageModel {
      * @param childRegex the parent must contain a file/folder matching childRegex
      * @param range hint at the range where we are looking.  
      * @return null if no file is found
+     * @throws java.io.IOException if the file cannot be downloaded.
      */
     public String getRepresentativeFile( ProgressMonitor monitor, String childRegex, DatumRange range ) throws IOException {
         String listRegex;
@@ -182,7 +188,11 @@ public class FileStorageModel {
                 try {
                     fileSystems[i]= FileSystem.create( root.getRootURI().resolve(names[i]), monitor.getSubtaskMonitor("create") ); // 3523492: allow the FS type to change; eg to zip.
                     //fileSystems[i]= root.createFileSystem( names[i] );
-                } catch ( Exception e ) {
+                } catch ( FileSystem.FileSystemOfflineException e ) {
+                    throw new RuntimeException(e);
+                } catch (UnknownHostException e) {
+                    throw new RuntimeException(e);
+                } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -621,6 +631,7 @@ public class FileStorageModel {
         }
 
         Collections.sort( list, new Comparator() {
+            @Override
             public int compare( Object o1, Object o2 ) {
                 DatumRange dr1= getRangeFor( (String)o1 );
                 DatumRange dr2= getRangeFor( (String)o2 );
@@ -636,8 +647,8 @@ public class FileStorageModel {
     public static CacheTag getCacheTagFor( FileStorageModel fsm, DatumRange range, String[] names ) {
         Datum min= range.min();
         Datum max= range.max();
-        for ( int i=0; i<names.length; i++ ) {
-            DatumRange r= fsm.getRangeFor( names[i] );
+        for (String name : names) {
+            DatumRange r = fsm.getRangeFor(name);
             min= min.gt(range.min()) ? r.min() : min;
             max= max.lt(range.max()) ? r.max() : max;
         }
@@ -706,6 +717,8 @@ public class FileStorageModel {
     }
     
     /**
+     * return true if the file came (or could come) from this FileStorageModel.
+     * @param file the file
      * @return true if the file came (or could come) from this FileStorageModel.
      */
     public boolean containsFile( File file ) {
@@ -725,6 +738,7 @@ public class FileStorageModel {
      * client, sometimes the client will need to recover the name of the corresponding FileObject, so
      * this maps the File back to the name.
      *
+     * @param file the file
      * @return the canonical name of the file.
      */
     public String getNameFor( File file ) {
@@ -763,6 +777,7 @@ public class FileStorageModel {
      * @param names array of names within the filesystem
      * @param monitor monitor for the downloads.
      * @return local files that can be opened.
+     * @throws java.io.IOException during the transfer
      */
     public File[] getFilesFor( String [] names, ProgressMonitor monitor ) throws IOException {
         File[] files= new File[names.length];
@@ -799,9 +814,9 @@ public class FileStorageModel {
         // remove nulls that come from bad references.
         ArrayList<File> result= new ArrayList(files.length);
         int i=0;
-        for ( int j=0; j<files.length; j++ ) {
-            if ( files[j]!=null ) {
-                result.add( files[j] );
+        for (File file : files) {
+            if (file != null) {
+                result.add(file);
                 i++;
             }
         }
@@ -811,8 +826,11 @@ public class FileStorageModel {
     
     /**
      * Download the files within the range.
-     * @return a list of files that can be opened.  
      * This might catch a bad link where getNamesFor does not.
+     * @param targetRange range limit, or null if no constraint used here.
+     * @param monitor the monitor
+     * @return a list of files that can be opened.  
+     * @throws java.io.IOException 
      */
     public File[] getFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
         String[] names= getNamesFor( targetRange );
@@ -822,9 +840,9 @@ public class FileStorageModel {
 
     /**
      * Get the files for the range, using versioning info ($v,etc).
-     * @param targetRange
-     * @param monitor
-     * @return
+     * @param targetRange range limit, or null if no constraint used here.
+     * @param monitor the monitor
+     * @return a list of files that can be opened.  
      * @throws IOException
      */
     public File[] getBestFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
@@ -886,7 +904,7 @@ public class FileStorageModel {
      * are no more wildcards. (/home/foo/$Y/$m-$d.dat has parent /home/foo/$Y
      * which has parent null.)
      * 
-     * @return
+     * @return parent or null.
      */
     public FileStorageModel getParent() {
         return this.parent;
@@ -1059,6 +1077,7 @@ public class FileStorageModel {
         versioningType= VersioningType.none;
         
         TimeParser.FieldHandler vh= new TimeParser.FieldHandler() {
+            @Override
             public String configure( Map<String,String> args ) {
                 String sep= args.get( "sep" );
                 if ( sep==null && args.containsKey("dotnotation")) {
@@ -1106,6 +1125,7 @@ public class FileStorageModel {
                 return null;
             }
 
+            @Override
             public void parse( String fieldContent, TimeStruct startTime, TimeStruct timeWidth, Map<String,String> extra ) {
                 String v= extra.get("v");
                 if ( v!=null ) {
@@ -1115,10 +1135,12 @@ public class FileStorageModel {
                 extra.put( "v", fieldContent );                    
             }
 
+            @Override
             public String getRegex() {
                 return ".*";
             }
 
+            @Override
             public String format( TimeStruct startTime, TimeStruct timeWidth, int length, Map<String, String> extra ) {
                 return extra.get("v"); //TODO: length
             }
