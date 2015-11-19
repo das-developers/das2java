@@ -434,7 +434,8 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
 
             try {
                 QDataSet result;
-                if ( x.binWidth() < xwidth.doubleValue(rdUnits) ) {
+                QDataSet binPlus= (QDataSet) ds.property(QDataSet.BIN_PLUS);
+                if ( binPlus==null && x.binWidth() < xwidth.doubleValue(rdUnits) ) {
                     logger.log(Level.FINE, "using rebinner {0}", highResRebinner);
                     result= highResRebinner.rebin( ds, x, y ); //Plasma Wave Group will have to update this
                 } else {
