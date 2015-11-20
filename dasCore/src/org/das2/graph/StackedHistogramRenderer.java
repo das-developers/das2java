@@ -131,8 +131,10 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     
     public StackedHistogramRenderer( DasAxis zAxis ) {
         this.zAxis= zAxis;
-        zAxis.addPropertyChangeListener(rebinListener);
-        
+        zAxis.addPropertyChangeListener("dataMinimum", rebinListener);
+        zAxis.addPropertyChangeListener("dataMaximum", rebinListener);
+        zAxis.addPropertyChangeListener("log", rebinListener);
+        zAxis.addPropertyChangeListener("flipped", rebinListener);    
     }
     
     public StackedHistogramRenderer( DasPlot parent, DataSetDescriptor dsd, DasAxis zAxis, DasAxis yAxis ) {
