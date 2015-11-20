@@ -124,7 +124,8 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
                 xTagWidthDouble= 0.;
             }
         } else {
-            xTagWidthDouble= xTagWidth.value();
+            Units u= SemanticOps.getUnits(xTagWidth);
+            xTagWidthDouble= u.convertDoubleTo( ddX.getUnits().getOffsetUnits(), xTagWidth.value() );
         }
         
         AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, AverageTableRebinner.Interpolate.Linear );
