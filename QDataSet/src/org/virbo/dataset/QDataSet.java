@@ -11,7 +11,7 @@ package org.virbo.dataset;
 
 /**
  * <p>QDataSets are less abstract and more flexible data model for das2.  das2's 
- * current data model was developed to deliver spectrogram time series data sets
+ * old data model was developed to deliver spectrogram time series data sets
  * where the dataset structure would change over time, and the interface is highly
  * optimized for that environment.  It's difficult to express many datasets in these
  * terms, so the simpler "quick" QDataSet was introduced.  </p>
@@ -19,13 +19,13 @@ package org.virbo.dataset;
  * <p>The QDataSet can be thought of as a fast java array that has name-value metadata
  * attached to it.  These arrays of data can have arbitrary rank, although currently
  * the interface limits rank to 0,1,2,3, and 4.  (Rank N is proposed but not
- * developed.)  Each dimension's length can vary, like java arrays, and datasets 
+ * developed.)  Each dimension's length can vary, like Java arrays, and datasets 
  * where the dimensions do not vary in length are colloquially called "Qubes."</p>
  *
  * <p>QDataSets can have other QDataSets as property values, for example the property
  * QDataSet.DEPEND_0 indicates that the values are dependent parameters of the "tags"
  * QDataSet found there.  This how how we get to the same abstraction level of 
- * the legacy das2 dataset.  </p>
+ * the legacy Das2 dataset.  </p>
  * 
  * <p>This is inspired by the CDF data model and PaPCo's dataset model.</p>
  *
