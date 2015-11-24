@@ -142,6 +142,13 @@ public interface DataSet {
 	 
 	 /** A brief description for the entire stream */
 	 final static String PROPERTY_SUMMARY="summary";
+	 
+	 /** The format for printing X, Y and Z items, see the Das 2.2.2 (or higher) ICD 
+	  * for a list of valid foramt strings
+	  */
+	 final static String PROPERTY_X_FORMAT="xFormat";
+	 final static String PROPERTY_Y_FORMAT="yFormat";
+	 final static String PROPERTY_Z_FORMAT="zFormat";
 
     /**
      * finally, this data model is done with the addition of title.

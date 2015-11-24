@@ -291,6 +291,7 @@ public class DataSetAdapter {
             properties.put(QDataSet.TITLE, hack(dasProps, DataSet.PROPERTY_TITLE, sPlaneID));
             properties.put(QDataSet.UNITS, source.getYUnits());
             properties.put(QDataSet.LABEL, hack(dasProps, DataSet.PROPERTY_Y_LABEL, sPlaneID));
+				properties.put(QDataSet.FORMAT, hack(dasProps, DataSet.PROPERTY_Y_FORMAT, sPlaneID));
             properties.put(QDataSet.DEPEND_0, new XTagsDataSet(source));
             properties.put(PROPERTY_SOURCE, source);
 
