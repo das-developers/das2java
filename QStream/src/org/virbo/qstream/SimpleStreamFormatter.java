@@ -403,14 +403,10 @@ public class SimpleStreamFormatter {
                         prop.setAttribute("value", r0d.format(value) );
                     }
                 } else {
-                    if ( name.equals( "BIN_PLUS" ) || name.equals("BIN_MINUS") ) {
-                        logger.info("dropping BIN_PLUS or BIN_MINUS because it's not supported");
-                    } else {
-                            prop = document.createElement("property");
-                            prop.setAttribute("name", name);            
-                            prop.setAttribute("type", "qdataset");
-                            prop.setAttribute("value", nameFor((QDataSet) value));
-                    }
+                    prop = document.createElement("property");
+                    prop.setAttribute("name", name);            
+                    prop.setAttribute("type", "qdataset");
+                    prop.setAttribute("value", nameFor((QDataSet) value));
                 }
 
             } else {
@@ -776,21 +772,26 @@ public class SimpleStreamFormatter {
             }
         }
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 4; i++) {
             QDataSet minmax;
             if ( i==0 ) {
                 minmax= (QDataSet) ds.property( "DELTA_MINUS" );
-            } else {
+            } else if ( i==1 ) {
                 minmax= (QDataSet) ds.property( "DELTA_PLUS" );
+            } else if ( i==2 ) {
+                minmax= (QDataSet) ds.property( "BIN_MINUS" );
+            } else if ( i==3 ) {
+                minmax= (QDataSet) ds.property( "BIN_PLUS" );
+            } else {
+                throw new IllegalArgumentException("implementation problem");
             }
             if ( minmax != null) {
                 PlaneDescriptor planeDescriptor = doPlaneDescriptor(document, packetDescriptor, minmax, streamRank);
                 packetDescriptor.addPlane(planeDescriptor);
                 packetElement.appendChild(planeDescriptor.getDomElement());
-            } else {
-                break;
             }
         }
+        
         if ( newBundle && SemanticOps.isBundle(ds) ) {
             for ( int i=0; i<ds.length(0); i++ ) {
                 QDataSet ds1= DataSetOps.unbundle(ds,i);
