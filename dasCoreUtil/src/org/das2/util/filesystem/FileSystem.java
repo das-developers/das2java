@@ -217,7 +217,6 @@ public abstract class FileSystem  {
 
     /**
      * remove all the cached FileSystem instances.
-     * NOTE: This does not remove local file listings! It should!
      */
     public synchronized static void reset() {
         instances.clear();
@@ -227,6 +226,20 @@ public abstract class FileSystem  {
             logger.log(Level.WARNING, "delete all .listing files within tree {0} failed.", settings().getLocalCacheDir());
         }
     }
+    
+    /**
+     * remove all the cached FileSystem instances.
+     * @param fs the filesystem
+     */
+    public synchronized static void reset( FileSystem fs ) {
+        instances.remove(fs.getRootURI());
+        blocks.remove(fs.getRootURI());
+        KeyChain.getDefault().clearUserPassword(fs.getRootURI());
+        if ( !FileUtil.deleteWithinFileTree( fs.getLocalRoot(), ".listing" ) ) {
+            logger.log(Level.WARNING, "delete all .listing files within tree {0} failed.", settings().getLocalCacheDir());
+        }
+    }
+    
 
     /**
      * Creates a FileSystem by parsing the URI and creating the correct FS type.
