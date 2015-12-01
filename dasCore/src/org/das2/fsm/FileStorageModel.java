@@ -979,7 +979,7 @@ public class FileStorageModel {
      * <p>Taken from Autoplot's AggregatingDataSourceFactory, where Autoplot just has a URI and needs to get a file list.
      * See also org/autoplot/pngwalk/WalkUtil.java splitIndex, which also allows wildcards like *.</p>
      * @param surl a string like http://autoplot.org/data/C1_CP_EDI_EGD__$Y$m$d_V$v.cef
-     * @return an integer indicating the split index, so that surl.substring(0,i) returns the slash.
+     * @return an integer indicating the split index, so that surl.substring(0,i) includes the slash.
      */
     public static int splitIndex(String surl) { 
         String regex= "([\\$\\%][yYxv\\(\\{])";
