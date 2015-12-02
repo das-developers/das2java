@@ -935,6 +935,8 @@ public class AsciiHeadersParser {
 
                      } else if ( prop.equals("UNITS") && ( sv.equals("UTC") || sv.equals("UT") ) ) {
                         bd.putProperty( prop, ids, Units.us2000 );
+                     } else if ( prop.equals("dtype") && ( sv.equals("UTC") || sv.equals("UT") ) ) {
+                        bd.putProperty( "UNITS", ids, Units.us2000 );
                      } else if ( prop.equals("ENUM") && sv instanceof JSONArray ) {
                         JSONArray joa= (JSONArray)sv;
                         EnumerationUnits uu= EnumerationUnits.create(name);
@@ -962,12 +964,12 @@ public class AsciiHeadersParser {
                             } else {
                                 logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
                             }
-                         } else if ( sv instanceof JSONObject ) {
+                        } else if ( sv instanceof JSONObject ) {
                             logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
                         } else {
                             Object v= coerceToType( prop, sv );
                             bd.putProperty( prop, ids, v );
-                         }
+                        }
                      }
                  }
              }
