@@ -49,6 +49,7 @@ public class AsciiHeadersParser {
     /**
      * property for dimension of the data defining rank and qube dims. For example,
      *   "[]" (default}
+     *   "[1]" scalar--alternate form, and [] is preferred.
      *   "[3]" (three element vector)
      *   "[20,30]" (qube of 60 elements).
      */
@@ -132,7 +133,7 @@ public class AsciiHeadersParser {
 
             String line = readNextLine( reader );
 
-            int iline = 1;
+            //int iline = 1;
             while (line != null) {
 
                 String trimLine = line.trim();
@@ -190,7 +191,7 @@ public class AsciiHeadersParser {
                 sb.append(line).append("\n");
 
                 line = nextLine;
-                iline++;
+                //iline++;
 
                 // If we had an opening brace, then the closing brace can finish off the JSON so additional comments are ignored.
                 if ( expectClosingBrace && braceLevel==0 ) {
@@ -294,6 +295,9 @@ public class AsciiHeadersParser {
                         idims= new int[ ((JSONArray)dims).length() ];
                         for ( int j=0;j<idims.length;j++ ) {
                             idims[j]= ((JSONArray)dims).getInt(j);
+                        }
+                        if ( idims.length==1 && idims[0]==1 && !jo1.has(PROP_ELEMENT_NAMES) ) { // Firebird file has 1-element arrays instead of scalars.
+                            idims= new int[0];
                         }
                     } else if ( dims instanceof Integer ) {
                         idims= new int[ 1 ];
@@ -871,35 +875,35 @@ public class AsciiHeadersParser {
      */
     private static void fillMetadata( BundleDescriptor bd, JSONObject jo ) throws JSONException {
 
-            Iterator it= jo.keys();
-            for ( ; it.hasNext(); ) {
-                 String key= (String) it.next();
-                 Object o= jo.get(key);
-                 if ( !( o instanceof JSONObject ) ) {
-                     logger.log(Level.WARNING, "expected JSONObject for value: {0}", key);
+        Iterator it= jo.keys();
+        for ( ; it.hasNext(); ) {
+             String key= (String) it.next();
+             Object o= jo.get(key);
+             if ( !( o instanceof JSONObject ) ) {
+                 logger.log(Level.WARNING, "expected JSONObject for value: {0}", key);
 
-                 } else {
-                     String name= Ops.safeName(key);
-                     int ids= bd.indexOf( name );
-                     if ( ids==-1 ) {
-                         JSONObject inlineObject= (JSONObject)o;
-                         if ( !inlineObject.has("VALUES") ) {
-                             // this is when ancillary metadata is in header, and is fine to ignore.
-                             logger.log(Level.FINE, "metadata found for key {0}, but values are not found in the ascii file columns", key);
-                             continue;
-                         } else {
-                             // inline dataset already has metadata.
-                             continue;
-                         }
+             } else {
+                 String name= Ops.safeName(key);
+                 int ids= bd.indexOf( name );
+                 if ( ids==-1 ) {
+                     JSONObject inlineObject= (JSONObject)o;
+                     if ( !inlineObject.has("VALUES") ) {
+                         // this is when ancillary metadata is in header, and is fine to ignore.
+                         logger.log(Level.FINE, "metadata found for key {0}, but values are not found in the ascii file columns", key);
+                         continue;
+                     } else {
+                         // inline dataset already has metadata.
+                         continue;
                      }
-                     JSONObject propsj= ((JSONObject)o);
-                     bd.putProperty( QDataSet.NAME, ids, name );
-                     Iterator props= propsj.keys();
-                     for ( ; props.hasNext(); ) {
-                         String prop= (String) props.next();
-                         Object sv= propsj.get(prop);
-                         if ( prop.equals( PROP_DIMENSION ) || prop.equals( "START_COLUMN") || prop.equals("ELEMENT_NAMES") || prop.equals("ELEMENT_LABELS") ) {
-                             if ( prop.equals("ELEMENT_NAMES") && sv instanceof JSONArray ) {
+                 }
+                 JSONObject propsj= ((JSONObject)o);
+                 bd.putProperty( QDataSet.NAME, ids, name );
+                 Iterator props= propsj.keys();
+                 for ( ; props.hasNext(); ) {
+                     String prop= (String) props.next();
+                     Object sv= propsj.get(prop);
+                     if ( prop.equals( PROP_DIMENSION ) || prop.equals( "START_COLUMN") || prop.equals("ELEMENT_NAMES") || prop.equals("ELEMENT_LABELS") ) {
+                         if ( prop.equals("ELEMENT_NAMES") && sv instanceof JSONArray ) {
 //                                 String[] ss= toStringArray( (JSONArray)sv );
 //                                 String[] labels= toStringArray( (JSONArray)sv );
 //                                 for ( int i=0; i<ss.length; i++ ) {
@@ -924,50 +928,50 @@ public class AsciiHeadersParser {
 //                                 } else {
 //                                    bd.putProperty( "DEPEND_1", ids, Ops.labels( ss ) );
 //                                 }
-                             }
-                             if ( bd.property( "RENDER_TYPE", ids )==null ) {
-                                bd.putProperty( "RENDER_TYPE", ids, "series" );
-                             }
+                         }
+                         if ( bd.property( "RENDER_TYPE", ids )==null ) {
+                            bd.putProperty( "RENDER_TYPE", ids, "series" );
+                         }
 
-                         } else if ( prop.equals("UNITS") && ( sv.equals("UTC") || sv.equals("UT") ) ) {
-                            bd.putProperty( prop, ids, Units.us2000 );
-                         } else if ( prop.equals("ENUM") && sv instanceof JSONArray ) {
-                            JSONArray joa= (JSONArray)sv;
-                            EnumerationUnits uu= EnumerationUnits.create(name);
-                            for ( int i=0; i<joa.length(); i++ ) {
-                                uu.createDatum( joa.getString(i) );
+                     } else if ( prop.equals("UNITS") && ( sv.equals("UTC") || sv.equals("UT") ) ) {
+                        bd.putProperty( prop, ids, Units.us2000 );
+                     } else if ( prop.equals("ENUM") && sv instanceof JSONArray ) {
+                        JSONArray joa= (JSONArray)sv;
+                        EnumerationUnits uu= EnumerationUnits.create(name);
+                        for ( int i=0; i<joa.length(); i++ ) {
+                            uu.createDatum( joa.getString(i) );
+                        }
+                        bd.putProperty( QDataSet.UNITS, ids, uu );
+                     } else if ( prop.equals( "LABEL" ) ) {
+                        if ( bd.length(ids)>0 ) {
+                            bd.putProperty( QDataSet.ELEMENT_LABEL, ids, sv );
+                        } else {
+                            bd.putProperty( QDataSet.LABEL, ids, sv );
+                        }
+                     } else {
+                        if ( sv instanceof JSONArray ) {
+                            JSONArray asv= (JSONArray)sv;
+                            Object item= asv.get(0);
+                            boolean homogenious= true;
+                            for ( int i=1; i<asv.length(); i++ ) {
+                                if ( !item.equals(asv.get(i)) ) homogenious= false;
                             }
-                            bd.putProperty( QDataSet.UNITS, ids, uu );
-                         } else if ( prop.equals( "LABEL" ) ) {
-                            if ( bd.length(ids)>0 ) {
-                                bd.putProperty( QDataSet.ELEMENT_LABEL, ids, sv );
-                            } else {
-                                bd.putProperty( QDataSet.LABEL, ids, sv );
-                            }
-                         } else {
-                            if ( sv instanceof JSONArray ) {
-                                JSONArray asv= (JSONArray)sv;
-                                Object item= asv.get(0);
-                                boolean homogenious= true;
-                                for ( int i=1; i<asv.length(); i++ ) {
-                                    if ( !item.equals(asv.get(i)) ) homogenious= false;
-                                }
-                                if ( homogenious ) {
-                                    Object v= coerceToType( prop, item );
-                                    bd.putProperty( prop, ids, v );
-                                } else {
-                                    logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
-                                }
-                             } else if ( sv instanceof JSONObject ) {
-                                logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
-                            } else {
-                                Object v= coerceToType( prop, sv );
+                            if ( homogenious ) {
+                                Object v= coerceToType( prop, item );
                                 bd.putProperty( prop, ids, v );
-                             }
+                            } else {
+                                logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
+                            }
+                         } else if ( sv instanceof JSONObject ) {
+                            logger.log(Level.WARNING, "invalid value for property {0}: {1}", new Object[]{prop, sv});
+                        } else {
+                            Object v= coerceToType( prop, sv );
+                            bd.putProperty( prop, ids, v );
                          }
                      }
                  }
-            }
+             }
+        }
     }
 
     private static void fillMetadata1( MutablePropertyDataSet bd, JSONObject jo ) throws JSONException {
