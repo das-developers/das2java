@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2008 The University of Iowa 
+/* Copyright (C) 2003-2015 The University of Iowa 
  *
  * This file is part of the Das2 <www.das2.org> utilities library.
  *
@@ -28,7 +28,6 @@ package org.das2.util.filesystem;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
@@ -54,18 +53,22 @@ public class SubFileSystem extends FileSystem {
         
     }
     
+    @Override
     public FileObject getFileObject(String filename) {
         return parent.getFileObject( dir + filename );
     }
     
+    @Override
     public boolean isDirectory(String filename) throws IOException {
         return parent.isDirectory( dir + filename );
     }
     
+    @Override
     public String[] listDirectory(String directory) throws IOException {
         return parent.listDirectory( dir + directory );
     }
     
+    @Override
     public String[] listDirectory(String directory, String regex) throws IOException {
         return parent.listDirectory( dir + directory, regex );
     }
