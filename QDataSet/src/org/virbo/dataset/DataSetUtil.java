@@ -426,6 +426,8 @@ public class DataSetUtil {
      * 
      * http://autoplot.org//QDataSet#20150514
      * 
+     * Note this does not look at BUNDLE_1 properties.  TODO: consider this.
+     * 
      * @param ds the dataset to slice.
      * @param index index to slice at.
      * @param result a map to insert the new properties, or null if a new one should be created.
