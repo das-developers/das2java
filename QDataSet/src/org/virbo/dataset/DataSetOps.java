@@ -1959,6 +1959,7 @@ public class DataSetOps {
      */
     public static boolean changesDimensions( String c0, String c1 ) {
         //if ( c.length()==0 && !c2.startsWith("|") ) return false;  //TODO: kludge to avoid true when adding component child.
+        if ( c0==null || c1==null ) return true;
         Scanner s0= new Scanner( c0 );
         s0.useDelimiter("[\\(\\),]");
         Scanner s1= new Scanner( c1 );
