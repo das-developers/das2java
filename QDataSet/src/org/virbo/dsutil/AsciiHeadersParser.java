@@ -319,6 +319,9 @@ public class AsciiHeadersParser {
                     Object olabels= jo1.get( PROP_ELEMENT_LABELS );
                     if ( olabels instanceof JSONArray ) {
                         labels= toStringArray((JSONArray)olabels);
+                    } else if ( olabels instanceof String && total==1 ) {
+                        logger.log(Level.FINE, "scalar for 1-element array for ELEMENT_LABELS in {0} is acceptable", jsonName);
+                        labels= new String[] { (String)olabels }; 
                     } else {
                         logger.log(Level.FINE, "unable to use ELEMENT_LABELS in {0}, should be array", jsonName);
                     }
@@ -328,6 +331,9 @@ public class AsciiHeadersParser {
                     Object oelements= jo1.get( PROP_ELEMENT_NAMES );
                     if ( oelements instanceof JSONArray ) {
                         elementNames= toStringArray((JSONArray)oelements);
+                    } else if ( oelements instanceof String && total==1 ) {
+                        logger.log(Level.FINE, "scalar for 1-element array for ELEMENT_NAMES in {0} is acceptable", jsonName);
+                        elementNames= new String[] { (String)oelements  }; 
                     } else {
                         logger.log(Level.FINE, "unable to use ELEMENT_NAMES in {0}, should be array", jsonName);
                     }
