@@ -2,9 +2,6 @@
  * LSpec.java
  *
  * Created on April 24, 2007, 11:06 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.virbo.dsutil;
@@ -15,7 +12,6 @@ import org.das2.datum.Datum;
 import org.das2.datum.Units;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
-import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -36,7 +32,22 @@ public class LSpec {
     /** Creates a new instance of LSpec */
     private LSpec() {
     }
+
+    /**
+     * just the inward sweeps
+     */
+    public static int DIR_INWARD= -1;
     
+    /**
+     * just the outward sweeps
+     */
+    public static int DIR_OUTWARD= 1;
+    
+    /**
+     * include both sweeps
+     */
+    public static int DIR_BOTH= 0;
+        
     /**
      * identify monotonically increasing or decreasing segments of the dataset.
      * @param lds the dataset which sweeps back and forth, such as LShell or MagLat (or a sine wave for testing).
@@ -145,7 +156,7 @@ public class LSpec {
         
         QDataSet wds= Ops.valid(zds);
         
-        int index= start;
+        int index;
         
         int dir= (int) Math.signum( lds.value(end) - lds.value( start ) );
         if ( dir > 0 ) index= start; else index= end;
@@ -206,6 +217,20 @@ public class LSpec {
     }
     
     /**
+     * alternate, convenient interface which where tlz is a bundle of buckshot data (T,L,Z)
+     * 
+     * @param tlz x,y,z (T,L,Z) bundle of Z values collected along inward and outward sweeps of L in time.
+     * @param lgrid desired uniform grid of L values.
+     * @param dir =1 increasing (outward) only, =-1 decreasing (inward) only, 0 both.  
+     * @return a rank 2 dataset, with one column per sweep, interpolated to <tt>lgrid</tt>
+     */
+    public static QDataSet rebin( QDataSet tlz, QDataSet lgrid, int dir ) {
+        QDataSet lds= Ops.link( Ops.slice1(tlz,0), Ops.slice1(tlz,1) );
+        QDataSet zds= Ops.slice1(tlz,2);
+        return rebin( lds, zds, lgrid, dir );
+    }
+    
+    /**
      * alternate algorithm following Brian Larson's algorithm that rebin the datasets to rank 2 dataset ( time, LShell ), by interpolating along sweeps.  This
      * dataset has the property "sweeps", which is a dataset that indexes the input datasets.
      * @param lds The L values corresponding to y axis position, which should be a function of time.
@@ -214,7 +239,7 @@ public class LSpec {
      * @param tspace rank 0 cadence, such as dataset('9 hr')
      * @param lgrid rank 1 data is the grid points, such as  linspace( 2.,8.,30 )
      * @param dir =1 increasing (outward) only, =-1 decreasing (inward) only, 0 both
-     * @return rank 2 dataset with
+     * @return a rank 2 dataset, with one column per sweep, interpolated to <tt>lgrid</tt>
      */
     public static QDataSet rebin( QDataSet tt, QDataSet lds, QDataSet zds, QDataSet tspace, QDataSet lgrid, int dir ) {
         final QDataSet sweeps= identifySweeps( lds, dir );
