@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.das2.datum.Datum;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
@@ -224,15 +223,15 @@ public class AsciiHeadersParser {
 
     private static void calcUserProperties( JSONObject jo, Map<String,Object> result ) throws JSONException {
         String[] names= JSONObject.getNames(jo);
-        for ( int i=0; i<names.length; i++ ) {
-            Object val= jo.get(names[i]);
-            if ( val instanceof JSONObject ) {
+        for (String name : names) {
+            Object val = jo.get(name);
+            if (val instanceof JSONObject) {
                 Map child= new HashMap();
                 calcUserProperties( (JSONObject)jo, child );
-            } else if ( val instanceof JSONArray ) {
-                result.put( names[i], ((JSONArray)val) ); //TODO: convert this
+            } else if (val instanceof JSONArray) {
+                result.put(name, (JSONArray)val); //TODO: convert this
             } else {
-                result.put( names[i], val );
+                result.put(name, val);
             }
         }
     }
@@ -331,8 +330,10 @@ public class AsciiHeadersParser {
                 }
 
                 if ( elementNames!=null ) { //TODO: eliminate repeated code.
-                        for ( int i=0; i<elementNames.length; i++ ) {
-                            if ( elementNames[i]==null ) throw new IllegalArgumentException("rich ascii JSON header contains error");
+                        for (String elementName : elementNames) {
+                            if (elementName == null) {
+                                throw new IllegalArgumentException("rich ascii JSON header contains error");
+                            }
                         }
                 
                         String lookFor= elementNames[0]; //Note ELEMENT_NAMES must correspond to adjacent columns.
@@ -473,8 +474,8 @@ public class AsciiHeadersParser {
                 }
 
             } catch ( JSONException ex ) {
-                ex.printStackTrace();
-                logger.log( Level.WARNING, "When handling {0}: {1}", new Object[]{jsonName, ex.toString()});
+                logger.log( Level.WARNING, "Exception encountered when handling {0}:", jsonName);
+                logger.log( Level.WARNING, ex.toString(), ex );
             }
         }
 
@@ -605,7 +606,7 @@ public class AsciiHeadersParser {
             if ( i==null ) {
                 return -1;
             } else {
-                return i.intValue();
+                return i;
             }
         }
 
@@ -664,6 +665,7 @@ public class AsciiHeadersParser {
             inlineDataSets.put( lookFor, dataSet );
         }
 
+        @Override
         public int rank() {
             return 2;
         }
@@ -869,16 +871,13 @@ public class AsciiHeadersParser {
      */
     private static void fillMetadata( BundleDescriptor bd, JSONObject jo ) throws JSONException {
 
-        if ( false ) {  //isTranspose(jo) ) {  //transpose will never be implemented.
-            throw new IllegalArgumentException("not implemented");
-        } else {
             Iterator it= jo.keys();
             for ( ; it.hasNext(); ) {
                  String key= (String) it.next();
                  Object o= jo.get(key);
                  if ( !( o instanceof JSONObject ) ) {
                      logger.log(Level.WARNING, "expected JSONObject for value: {0}", key);
-                     continue;
+
                  } else {
                      String name= Ops.safeName(key);
                      int ids= bd.indexOf( name );
@@ -929,7 +928,7 @@ public class AsciiHeadersParser {
                              if ( bd.property( "RENDER_TYPE", ids )==null ) {
                                 bd.putProperty( "RENDER_TYPE", ids, "series" );
                              }
-                            continue;
+
                          } else if ( prop.equals("UNITS") && ( sv.equals("UTC") || sv.equals("UT") ) ) {
                             bd.putProperty( prop, ids, Units.us2000 );
                          } else if ( prop.equals("ENUM") && sv instanceof JSONArray ) {
@@ -969,7 +968,6 @@ public class AsciiHeadersParser {
                      }
                  }
             }
-        }        
     }
 
     private static void fillMetadata1( MutablePropertyDataSet bd, JSONObject jo ) throws JSONException {
