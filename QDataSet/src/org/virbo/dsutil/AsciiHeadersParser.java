@@ -240,9 +240,9 @@ public class AsciiHeadersParser {
     /**
      * calculate the bundle descriptor, possibly folding together columns to create
      * high rank datasets.
-     * @param bd
-     * @param columns
-     * @param labels human-consumable labels for each column
+     * @param jp the JSON object describing
+     * @param columns column names.
+     * @param columnLabels human-consumable labels for each column
      */
     private static BundleDescriptor calcBundleDescriptor( JSONObject jo, String[] columns, String[] columnLabels ) {
 
@@ -263,7 +263,21 @@ public class AsciiHeadersParser {
             String name= Ops.safeName(jsonName);
             logger.log( Level.FINE, "processing name[{0}]={1}", new Object[]{ivar, jsonName});
             try {
-                JSONObject jo1= jo.getJSONObject(jsonName);
+                JSONObject jo1;
+                Object o= jo.get(jsonName);
+                
+                if ( o instanceof JSONObject ) {
+                    jo1= (JSONObject)o;
+                } else {
+                    Map<String,Object> val= (Map<String,Object>)bd.property(QDataSet.USER_PROPERTIES);
+                    if ( val==null ) {
+                        val= new HashMap();
+                        bd.putProperty(QDataSet.USER_PROPERTIES, val);
+                    }
+                    val.put( jsonName, o );
+                    continue;
+                }
+                
                 if ( jsonName.equals( QDataSet.USER_PROPERTIES ) ) {
                     Map<String,Object> val= new HashMap();
                     calcUserProperties( jo1,val );
