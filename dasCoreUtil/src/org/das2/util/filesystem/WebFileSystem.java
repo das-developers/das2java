@@ -536,6 +536,7 @@ public abstract class WebFileSystem extends FileSystem {
     protected abstract void downloadFile(String filename, File f, File partfile, ProgressMonitor monitor) throws IOException;
 
     /** Get the root of the local file cache
+     * @return the root of the local file cache
      * @deprecated use getLocalRoot().getAbsolutePath()
      */
     public String getLocalRootAbsPath() {
