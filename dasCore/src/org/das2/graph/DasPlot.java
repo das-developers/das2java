@@ -496,7 +496,7 @@ public class DasPlot extends DasCanvasComponent {
         int msgem = (int) Math.max(8, font0.getSize2D() / 2);
         graphics.setFont(font0.deriveFont((float) msgem));
         int em = (int) getEmSize();
-
+        
         boolean rightJustify= false;
         int msgx = xAxis.getColumn().getDMinimum() + em;
         int msgy = yAxis.getRow().getDMinimum() + em;
@@ -1077,6 +1077,27 @@ public class DasPlot extends DasCanvasComponent {
         }
     }
 
+    /**
+     * get the font to use after resizing.
+     * @param f0
+     * @return 
+     */
+    private Font getCanvasRenderFont( Font f0 ) {
+        try {
+            double[] dd= DasDevicePosition.parseLayoutStr(getFontSize());
+            if ( dd[1]==1 && dd[2]==0 ) {
+                return f0;
+            } else {
+                Font f= f0;
+                double parentSize= f.getSize2D();
+                double newSize= dd[1]*parentSize + dd[2];
+                f= f.deriveFont((float)newSize);
+                return f;
+            }
+        } catch (ParseException ex) {
+            return f0; // and let someone else deal with it!
+        }
+    }
 
     @Override
     protected synchronized void paintComponent(Graphics graphics0) {
@@ -1652,7 +1673,9 @@ public class DasPlot extends DasCanvasComponent {
 
             GrannyTextRenderer gtr = new GrannyTextRenderer();
             gtr.setAlignment(multiLineTextAlignment);
-            gtr.setString(getFont(), getTitle());
+            
+            Font f= getCanvasRenderFont(getFont());
+            gtr.setString( f, getTitle());
 
             titleHeight = (int) gtr.getHeight() + (int) gtr.getAscent() / 2;
 
