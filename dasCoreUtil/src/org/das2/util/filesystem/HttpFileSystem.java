@@ -407,7 +407,7 @@ public class HttpFileSystem extends WebFileSystem {
                 throw new IOException( hurlc.getResponseCode()+": "+ hurlc.getResponseMessage() + "\n"+remoteURL );
             }
 
-            Date d=null;
+            Date d;
             List<String> sd= urlc.getHeaderFields().get("Last-Modified");
             if ( sd!=null && sd.size()>0 ) {
                 d= new Date( sd.get(sd.size()-1) );
