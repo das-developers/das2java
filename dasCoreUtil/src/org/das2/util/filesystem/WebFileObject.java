@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2008 The University of Iowa 
+/* Copyright (C) 2003-2015 The University of Iowa 
  *
  * This file is part of the Das2 <www.das2.org> utilities library.
  *
@@ -22,7 +22,7 @@
  */
 package org.das2.util.filesystem;
 
-import java.awt.EventQueue;
+//import java.awt.EventQueue;
 import java.util.logging.Level;
 import org.das2.util.monitor.ProgressMonitor;
 import org.das2.util.monitor.NullProgressMonitor;
@@ -66,6 +66,7 @@ public class WebFileObject extends FileObject {
     boolean isFolderResolved = false;
     public int METADATA_FRESH_TIMEOUT_MS = 10000;
 
+    @Override
     public boolean canRead() {
         return true;
     }
@@ -96,6 +97,7 @@ public class WebFileObject extends FileObject {
         }
     }
     
+    @Override
     public FileObject[] getChildren() throws IOException {
         if (!isFolder) {
             throw new IllegalArgumentException(toString() + "is not a folder");
@@ -108,6 +110,7 @@ public class WebFileObject extends FileObject {
         return result;
     }
 
+    @Override
     public InputStream getInputStream(ProgressMonitor monitor) throws FileNotFoundException, IOException {
         if ( wfs.protocol !=null && !this.wfs.offline ) {
             logger.log(Level.FINE, "get inputstream from {0}", wfs.protocol);
@@ -120,7 +123,7 @@ public class WebFileObject extends FileObject {
         if ( this.modifiedDate.getTime()==0 ) {
             lastModified(); // trigger load of the modifiedDate
         }
-        if ( !localFile.exists() || ( this.modifiedDate.getTime()-localFile.lastModified() > 10 ) ) { //TODO: test me!
+        if ( !localFile.exists() || ( this.modifiedDate.getTime()-localFile.lastModified() > 10 ) && !this.wfs.isOffline() ) { //TODO: test me!
             File partFile = new File(localFile.toString() + ".part");
             wfs.downloadFile(pathname, localFile, partFile, monitor);
         }
@@ -132,14 +135,17 @@ public class WebFileObject extends FileObject {
      * 
      * @return a WebFileObject referencing the parent directory.
      */
+    @Override
     public FileObject getParent() {
         return new WebFileObject(wfs, wfs.getLocalName(localFile.getParentFile()), new Date(System.currentTimeMillis()));
     }
     
+    @Override
     public boolean isData() {
         return !this.isFolder;
     }
 
+    @Override
     public boolean isFolder() {
         if ( this.isFolderResolved ) {        
             return this.isFolder;
@@ -149,14 +155,17 @@ public class WebFileObject extends FileObject {
         }
     }
 
+    @Override
     public boolean isReadOnly() {
         return true;
     }
 
+    @Override
     public boolean isRoot() {
         return this.isRoot;
     }
 
+    @Override
     public java.util.Date lastModified() {
         if ( System.currentTimeMillis() - metaFresh > METADATA_FRESH_TIMEOUT_MS ) {
             metadata= null;
@@ -185,6 +194,7 @@ public class WebFileObject extends FileObject {
      * caches the size.
      * @return 
      */
+    @Override
     public long getSize() {
         if (isFolder) {
             throw new IllegalArgumentException("is a folder");
@@ -238,6 +248,7 @@ public class WebFileObject extends FileObject {
     /**
      * returns the File that corresponds to the remote file.  This may or may
      * not exist, depending on whether it's been downloaded yet.
+     * @return the file reference within the cache.
      */
     protected File getLocalFile() {
         return this.localFile;
@@ -267,6 +278,7 @@ public class WebFileObject extends FileObject {
         }
     }
 
+    @Override
     public boolean exists() {
         if ( wfs.getReadOnlyCache()!=null ) {
             File f= wfs.getReadOnlyCache();
@@ -336,6 +348,7 @@ public class WebFileObject extends FileObject {
         return "[" + wfs + "]" + getNameExt();
     }
 
+    @Override
     public String getNameExt() {
         return pathname;
     }
@@ -347,6 +360,7 @@ public class WebFileObject extends FileObject {
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      */
+    @Override
     public java.nio.channels.ReadableByteChannel getChannel(ProgressMonitor monitor) throws FileNotFoundException, IOException {
         InputStream in= getInputStream(monitor);
         return Channels.newChannel(in);
@@ -359,17 +373,18 @@ public class WebFileObject extends FileObject {
      * @throws FileNotFoundException
      * @throws IOException
      */
+    @Override
     public File getFile(ProgressMonitor monitor) throws FileNotFoundException, IOException {
         
         if ( wfs.isAppletMode() ) throw new SecurityException("getFile cannot be used with applets.");
 
         //bugfix http://sourceforge.net/tracker/?func=detail&aid=3155917&group_id=199733&atid=970682:
         // calling EventQueue.isDispatchThread() starts the event thread, causing problems when called from RSI's IDL.
-        if ( false ) {
-            if ( EventQueue.isDispatchThread() ) {
-                logger.log(Level.SEVERE, "download on event thread! {0}", this.getNameExt());
-            }
-        }
+//        if ( false ) {
+//            if ( EventQueue.isDispatchThread() ) {
+//                logger.log(Level.SEVERE, "download on event thread! {0}", this.getNameExt());
+//            }
+//        }
 
         boolean download = false;
 
@@ -537,11 +552,7 @@ public class WebFileObject extends FileObject {
                         if ( remoteDate.modified > localFileLastModified ) {
                             logger.log(Level.FINE, "remote file is newer than local copy of {0}, download.", this.getNameExt());
                             download = true;
-                        } else if ( remoteDate.size!= localFile.length() ) {
-                            download = true;
-                        } else {
-                            download = false;
-                        }
+                        } else download = remoteDate.size!= localFile.length();
                     }
                 } catch ( Exception ex ) {
                     logger.log( Level.WARNING, ex.getMessage(), ex );
