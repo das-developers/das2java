@@ -265,6 +265,7 @@ public interface QDataSet {
      * only contain invalid values at the beginning or end, and may contain repeated 
      * values.  Generally this will be used with tags datasets. TODO: can cadence 
      * be negative?
+     * TODO: consider adding boolean UNIQUE property.
      */
     public final static String MONOTONIC="MONOTONIC";
     
