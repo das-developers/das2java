@@ -152,6 +152,52 @@ public class DataSetUtil {
     }
     
     /**
+     * returns true if the dataset is monotonically increasing 
+     * and does not contain repeat values.
+     * If the dataset has the MONOTONIC property set to Boolean.TRUE, believe it.
+     * An empty dataset is not monotonic.
+     * The dataset may contain fill data, only the non-fill portions are considered.
+     * @param ds the rank 1 dataset with physical units.
+     * @return true when the dataset is monotonically increasing.
+     * @see org.virbo.dataset.QDataSet#MONOTONIC
+     * @see org.virbo.dataset.ArrayDataSet#monotonicSubset(org.virbo.dataset.ArrayDataSet) 
+     */
+    public static boolean isMonotonicAndIncreasing(QDataSet ds) {
+        if (ds.rank() != 1) { // TODO: support bins dataset rank 2 with BINS_1="min,max"
+            return false;
+        }
+
+        if (ds.length() == 0) {
+            return false;
+        }
+        
+        QDataSet wds= DataSetUtil.weightsDataSet(ds);
+        int i;
+
+        for ( i=0; i<ds.length() && wds.value(i)==0; i++ ) {
+            // find first valid point.
+        }
+
+        if ( i==ds.length() ) {
+            return false;
+        }
+
+        double last = ds.value(i);
+
+        for ( i = i+1; i < ds.length(); i++) {
+            double d = ds.value(i);
+            double w = wds.value(i);
+            if ( w==0 ) continue;
+            if ( d <= last  ) {
+                return false;
+            } 
+            last = d;
+        }
+        return true;
+    }
+    
+    
+    /**
      * perform a binary search for key within ds, constraining the search to between low and high.
      * @param ds a rank 1 monotonic dataset.
      * @param key the value to find.
