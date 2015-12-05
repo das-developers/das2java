@@ -8949,6 +8949,72 @@ public class Ops {
     }
     
     /**
+     * Return data where the DEPEND_0 tags are 
+     * monotonically increasing and non repeating. Instead of sorting the data, simply replace repeat records with
+     * a fill record.
+     * @param ds the dataset
+     * @return the dataset, sorted if necessary.
+     * TODO: It's surprising that monotonic doesn't imply non-repeating, and this really needs to be revisited.
+     */
+    public static QDataSet ensureMonotonicAndIncreasingWithFill( QDataSet ds ) {
+        if ( ds.length()==0 ) return ds;
+        if ( SemanticOps.isJoin(ds) ) {
+            QDataSet ds1= ds.slice(0);
+            QDataSet dep0= (QDataSet)ds1.property(QDataSet.DEPEND_0);
+            if (Boolean.TRUE.equals(dep0.property(QDataSet.MONOTONIC))) {
+                // avoid showing message when data is in fact monotonic.
+                return ds;
+            } else {
+                logger.warning("ensure monotonic does not support joins.");
+                return ds;
+            }
+        }
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dep0==null ) {
+            return ds;
+        }
+
+        logger.entering( "org.virbo.dataset.Ops","ensureMonotonicWithFill");
+        if ( DataSetUtil.isMonotonicAndIncreasing(dep0) ) {
+            return ds;
+        }
+        
+        QDataSet wds= DataSetUtil.weightsDataSet(dep0);
+        int i;
+
+        for ( i=0; i<dep0.length() && wds.value(i)==0; i++ ) {
+            // find first valid point.
+        }
+
+        if ( i==ds.length() ) {
+            return ds;
+        }
+
+        WritableDataSet mdep0= Ops.copy( dep0 );
+        double fill= ((Number)(wds.property( WeightsDataSet.PROP_SUGGEST_FILL ))).doubleValue();
+                        
+        double last = dep0.value(i);
+
+        for ( i = i+1; i < dep0.length(); i++) {
+            double d = dep0.value(i);
+            double w = wds.value(i);
+            if ( w==0 ) continue;
+            if ( d <= last  ) {
+                mdep0.putValue(i,fill);
+            } 
+            last = d;
+        }
+        
+        logger.exiting( "org.virbo.dataset.Ops","ensureMonotonicWithFill" );        
+        
+        MutablePropertyDataSet mpds= DataSetOps.makePropertiesMutable(ds);
+        mpds.putProperty( QDataSet.DEPEND_0, mdep0 );
+                
+        return mpds;
+        
+    }
+    
+    /**
      * link is the fundamental operator where we declare that one
      * dataset is dependent on another.  For example link(x,y) creates
      * a new dataset where y is the dependent variable of the independent
