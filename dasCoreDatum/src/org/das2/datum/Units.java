@@ -180,11 +180,13 @@ public abstract class Units {
     public static final Units centimeters = new NumberUnits("cm");
     public static final Units kiloMeters = new NumberUnits("km");
     public static final Units inches = new NumberUnits("inch");
+    public static final Units typographicPoints = new NumberUnits("points");
     static {
         meters.registerConverter(kiloMeters, UnitsConverter.KILO);
         meters.registerConverter(centimeters, UnitsConverter.CENTI );
         meters.registerConverter(millimeters, UnitsConverter.MILLI );
-        meters.registerConverter(inches, new UnitsConverter.ScaleOffset(0.0254,0.0) );
+        inches.registerConverter( meters, new UnitsConverter.ScaleOffset(0.0254,0.0) );
+        inches.registerConverter( typographicPoints, new UnitsConverter.ScaleOffset(72,0.0) );
     }
 
     /**** begin of LocationUnits.  These must be defined after the physical units to support Basis. ****/
