@@ -1556,7 +1556,11 @@ public class SeriesRenderer extends Renderer {
         if ( ( lastIndex_v - firstIndex_v < 2 ) && dataSet.length()>1 ) { //TODO: single point would be helpful for digitizing.
             if ( messageCount++==0) {
                 if ( lastIndex_v<2 ) {
-                    lparent.postMessage(this, "data starts after range", DasPlot.INFO, null, null);
+                    if ( firstValidIndex==lastValidIndex ) {
+                        lparent.postMessage(this, "dataset contains no plottable data", DasPlot.INFO, null, null);
+                    } else {
+                        lparent.postMessage(this, "data starts after range", DasPlot.INFO, null, null);
+                    }
                 } else if ( this.dslen - this.firstIndex_v < 2 ) {
                     lparent.postMessage(this, "data ends before range", DasPlot.INFO, null, null);
                 } else {
