@@ -1557,6 +1557,7 @@ public class SeriesRenderer extends Renderer {
             if ( messageCount++==0) {
                 if ( lastIndex_v<2 ) {
                     if ( firstValidIndex==lastValidIndex ) {
+                        //sftp://papco.org/home/jbf/ct/autoplot/data.backup/examples/d2s/dataOutOfRange.das2Stream
                         lparent.postMessage(this, "dataset contains no plottable data", DasPlot.INFO, null, null);
                     } else {
                         lparent.postMessage(this, "data starts after range", DasPlot.INFO, null, null);
