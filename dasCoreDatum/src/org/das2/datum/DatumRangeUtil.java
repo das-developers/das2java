@@ -1669,13 +1669,11 @@ public class DatumRangeUtil {
     }
 
     /**
-     * returns DatumRange relative to this, where 0 is the minimum, and 1 is the maximum.
+     * returns DatumRange relative to dr, where 0 is the minimum, and 1 is the maximum.
      * For example rescale(1,2) is scanNext, rescale(-0.5,1.5) is zoomOut.
      * @param dr a DatumRange with nonzero width.
-     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max, 0 is
-     * min-width.
-     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max, 0 is
-     * min-width.
+     * @param min the new min normalized with respect to this range.  0. is this range's min, 1 is this range's max
+     * @param max the new max with normalized wrt this range.  0. is this range's min, 1 is this range's max.
      * @return new DatumRange.
      */
     public static DatumRange rescale( DatumRange dr, double min, double max ) {
@@ -1688,6 +1686,24 @@ public class DatumRangeUtil {
             throw new RuntimeException("width is zero!");
         }
         return new DatumRange( dr.min().add( w.multiply(min) ), dr.min().add( w.multiply(max) ) );
+    }
+    
+    /**
+     * returns Datum relative to dr, where 0 is the minimum, and 1 is the maximum.
+     * @param dr a DatumRange with nonzero width.
+     * @param n the location normalized with respect to this range.  0. is the range's min, 1 is the range's max.
+     * @return the Datum
+     */
+    public static Datum rescale( DatumRange dr, double n ) {
+        Datum w= dr.width();
+        if ( !w.isFinite() ) {
+            throw new RuntimeException("width is not finite");
+        }
+        if ( w.doubleValue( w.getUnits() )==0. ) {
+            // condition that might cause an infinate loop!  For now let's check for this and throw RuntimeException.
+            throw new RuntimeException("width is zero!");
+        }
+        return dr.min().add( w.multiply(n) );
     }
     
     /**
