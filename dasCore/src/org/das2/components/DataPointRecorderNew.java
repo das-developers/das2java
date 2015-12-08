@@ -35,6 +35,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,6 +67,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -495,6 +497,8 @@ public class DataPointRecorderNew extends JPanel {
             mon.started();
             int linenum = 0;
             
+            final List<QDataSet> records= new ArrayList<>(1440);
+            
             for (String line = r.readLine(); line != null; line = r.readLine()) {
                 linenum++;
                 if (mon.isCancelled()) {
@@ -602,23 +606,43 @@ public class DataPointRecorderNew extends JPanel {
                     }
                     rec.putProperty( QDataSet.BUNDLE_0, bundleDescriptor1 );
 
-                    addDataPoint( rec );
+                    records.add(rec);
+                    
+                    //addDataPoint( rec );
 
                 } catch (ParseException e) {
                     throw new RuntimeException(e);
                 }
 
-
             }
 
             r.close();
 
-            saveFile= file;  // go ahead and set this in case client is going to do something with this.
-            updateStatus();
-            updateClients();
+            Runnable run= new Runnable() {
+                @Override
+                public void run() {
+                    for ( QDataSet rec: records ) {
+                        addDataPoint( rec );
+                    }
+                    updateStatus();
+                    updateClients();
+                    fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+                }
+            };
             
+            saveFile= file;  // go ahead and set this in case client is going to do something with this.
+
             prefs.put("components.DataPointRecorder.lastFileLoad", file.toString());
-            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+            
+            if ( SwingUtilities.isEventDispatchThread() ) {
+                run.run();
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(run);
+                } catch (InterruptedException | InvocationTargetException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
             
         } finally {
 
