@@ -137,9 +137,6 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
     public Datum readDatum(ByteBuffer input) {
         int p= input.position();
         try {
-            if ( units==Units.us2000 ) {
-                throw new RuntimeException("Here we are");
-            }
             return Datum.create(transferType.read(input), units);
         } catch ( NullPointerException ex ) {
             System.err.println("** Strange null pointer exception that shows up in hudson test: http://sarahandjeremy.net:8080/hudson/job/autoplot-test140/");
