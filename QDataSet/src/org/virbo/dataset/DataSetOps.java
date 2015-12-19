@@ -2,9 +2,6 @@
  * DataSetOps.java
  *
  * Created on January 29, 2007, 9:48 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 package org.virbo.dataset;
 
@@ -17,7 +14,6 @@ import org.das2.datum.Units;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.InputMismatchException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,24 +22,17 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 import org.autoplot.bufferdataset.BufferDataSet;
 import org.das2.datum.DatumRange;
-import org.das2.datum.DatumUtil;
 import org.das2.datum.EnumerationUnits;
-import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
 import org.das2.util.LoggerManager;
-import org.das2.util.StringTools;
-import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
-import org.qdataset.ReferenceCache;
-import org.qdataset.ReferenceCache.ReferenceCacheEntry;
 import org.virbo.dataset.examples.Schemes;
 import org.virbo.dsops.Ops;
-import org.virbo.dsops.Ops.FFTFilterType;
 import org.virbo.dsutil.DataSetBuilder;
-import org.virbo.dsutil.Reduction;
 
 /**
  * Useful operations for QDataSets, such as slice2, leafTrim.
+ * TODO: identify which functions appear here instead of Ops.java.
  * @author jbf
  */
 public class DataSetOps {
@@ -77,7 +66,8 @@ public class DataSetOps {
     }
 
     /**
-     * return a dataset that is writable.  If the dataset parameter is already writable, then the 
+     * return a dataset that is writable.  If the dataset parameter of this idempotent
+     * function is already writable, then the 
      * dataset is returned.  If the dataset is a WritableDataSet but the immutable flag is
      * set, then the a copy is returned.
      * @param dataset
