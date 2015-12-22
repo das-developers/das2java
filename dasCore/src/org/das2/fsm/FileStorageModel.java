@@ -667,6 +667,12 @@ public class FileStorageModel {
         return getFilesFor( targetRange, new NullProgressMonitor() );
     }
 
+    /**
+     * return the best files found for the range, without progress feedback.
+     * @param targetRange
+     * @return
+     * @throws IOException 
+     */
     public File[] getBestFilesFor( final DatumRange targetRange ) throws IOException {
         return getBestFilesFor( targetRange, new NullProgressMonitor() );
     }
@@ -773,6 +779,37 @@ public class FileStorageModel {
     }
 
     /**
+     * download the file for the given name within the filesystem.
+     * @param name the name within the filesystem.
+     * @return null or a local file which can be opened.
+     * @throws IOException 
+     */
+    public File getFileFor( String name ) throws IOException {
+        File[] ff= getFilesFor( new String[] { name }, new NullProgressMonitor() );
+        if ( ff.length>0 ) {
+            return ff[0];
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * download the file for the given name within the filesystem.
+     * @param name the name within the filesystem.
+     * @param monitor monitor for the download.
+     * @return null or a local file which can be opened.
+     * @throws IOException 
+     */
+    public File getFileFor( String name, ProgressMonitor monitor ) throws IOException {
+        File[] ff= getFilesFor( new String[] { name }, monitor );
+        if ( ff.length>0 ) {
+            return ff[0];
+        } else {
+            return null;
+        }
+    }
+    
+    /**
      * download the files for each of the given names within the filesystem.
      * @param names array of names within the filesystem
      * @param monitor monitor for the downloads.
@@ -837,7 +874,7 @@ public class FileStorageModel {
         File[] ff= getFilesFor( names, monitor );
         return ff;
     }
-
+    
     /**
      * Get the files for the range, using versioning info ($v,etc).
      * @param targetRange range limit, or null if no constraint used here.
@@ -846,6 +883,9 @@ public class FileStorageModel {
      * @throws IOException
      */
     public File[] getBestFilesFor( final DatumRange targetRange, ProgressMonitor monitor ) throws IOException {
+        
+        if ( monitor==null ) monitor= new NullProgressMonitor();
+        
         String[] names= getNamesFor( targetRange, true, monitor.getSubtaskMonitor("get names") );
         File[] files= new File[names.length];
 
