@@ -993,7 +993,7 @@ public class TimeParser {
         }
 
         timeWidth = new TimeStruct();
-        switch (lsd) {
+        switch (lsd) { // see https://sourceforge.net/p/autoplot/bugs/1506/
             case 0:
                 timeWidth.year = lsdMult;
                 break;
