@@ -1485,11 +1485,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * convenience method for manually setting the ticks so the user
      * needn't understand TickVDescriptor.  setTickV(null) should be 
      * used to reset the ticks.
-     * @param minorTicks the minor ticks, or none for the current minor ticks
-     * @param majorTicks the major ticks.
+     * @param minorTicks the minor ticks, or null (None) for the current minor ticks
+     * @param majorTicks the major ticks, or null (None) to automatic.
      * @see #setTickV(org.das2.graph.TickVDescriptor) 
      */
     public void setTickV( double[] minorTicks, double[] majorTicks ) {
+        if ( majorTicks==null ) {
+            setTickV(null);
+            return;
+        }
         if ( minorTicks==null ) {
             minorTicks= getTickV().getMinorTicks().toDoubleArray( getUnits() );
         }
