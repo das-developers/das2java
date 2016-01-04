@@ -93,6 +93,11 @@ public class TimeParser {
      * compute it along the way.
      */
     private int[] offsets;
+    /**
+     * length of each digit, or -1 if the field doesn't have a fixed length.  Note 
+     * for two digits to be adjacent, they must have fixed length ($Y$m is okay,
+     * but $Y$x is not).
+     */
     private int[] lengths;
     private int[] shift;  // any shifts to apply to each digit (used typically to make end time inclusive).
     private final String[] delims;
@@ -916,6 +921,7 @@ public class TimeParser {
                                         if (r[j]>0 ) {
                                             lsd= j;
                                             lsdMult= r[j];
+                                            logger.log(Level.FINER, "lsd is now {0}, width={1}", new Object[]{lsd, lsdMult});
                                             break;
                                         }
                                     }
@@ -932,6 +938,7 @@ public class TimeParser {
                                 else if ( code=='M' ) { lsd=4; }
                                 else if ( code=='S' ) { lsd=5; }
                                 lsdMult= Integer.parseInt(val.substring(0,val.length()-1) );
+                                logger.log(Level.FINER, "lsd is now {0}, width={1}", new Object[]{lsd, lsdMult});
                             }
                         }
                         else if ( name.equals("id") ) ; //TODO: orbit plug in handler...
@@ -973,12 +980,29 @@ public class TimeParser {
                         }
                     }
                 }
+            } else {
+                // http://sourceforge.net/p/autoplot/bugs/1506/
+                if ( fc[i].length()==1 ) {
+                    char code= fc[i].charAt(0);
+                    int thisLsd= -1;
+                    if ( code=='Y' ) { thisLsd=0; }
+                    else if ( code=='m' ) { thisLsd=1; }
+                    else if ( code=='d' ) { thisLsd=2; }
+                    else if ( code=='j' ) { thisLsd=2; }
+                    else if ( code=='H' ) { thisLsd=3; }
+                    else if ( code=='M' ) { thisLsd=4; }
+                    else if ( code=='S' ) { thisLsd=5; }
+                    if ( thisLsd==lsd ) {  // allow subsequent repeat fields to reset (T$y$(m,delta=4)/$x_T$y$m$d.DAT)
+                        lsdMult= 1;
+                    }
+                }
             }
 
             if (handler < 100) {
                 if ( precision[handler] > lsd && lsdMult==1 ) {  // omni2_h0_mrg1hr_$Y$(m,span=6)$d_v01.cdf.  Essentially we ignore the $d.
                     lsd = precision[handler];
                     lsdMult= span;
+                    logger.log(Level.FINER, "lsd is now {0}, width={1}", new Object[]{lsd, lsdMult});
                 }
             }
 
