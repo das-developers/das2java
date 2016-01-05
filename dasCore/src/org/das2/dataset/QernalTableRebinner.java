@@ -38,7 +38,9 @@ public class QernalTableRebinner implements DataSetRebinner {
         this.factory= factory;
     }
             
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException, org.das2.DasException {
+    public DataSet rebin(
+		 DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, Map override
+	 ) throws IllegalArgumentException, org.das2.DasException {
         logger.finest("enter QernalTableRebinner.rebin");
         
         if (ds == null) {
@@ -47,6 +49,10 @@ public class QernalTableRebinner implements DataSetRebinner {
         if (!(ds instanceof TableDataSet)) {
             throw new IllegalArgumentException("Data set must be an instanceof TableDataSet: " + ds.getClass().getName());
         }
+		  
+		  if(override != null) 
+			 throw new UnsupportedOperationException("This rebinner does not "+
+			 "yet know how to override dataset properties.");
         
         TableDataSet tds = (TableDataSet)ds;
         TableDataSet weights = (TableDataSet)ds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);

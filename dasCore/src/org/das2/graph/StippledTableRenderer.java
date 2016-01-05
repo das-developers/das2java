@@ -150,7 +150,9 @@ public class StippledTableRenderer extends Renderer {
                 
                 DataSetRebinner rebinner= new AverageTableRebinner();
                 
-                rebinData = (TableDataSet)rebinner.rebin(getDataSet(),xRebinDescriptor, yRebinDescriptor);
+                rebinData = (TableDataSet)rebinner.rebin(
+						 getDataSet(),xRebinDescriptor, yRebinDescriptor, null
+					 );
                 
                 //TableDataSet weights= (TableDataSet)rebinData.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
                 int itable=0;

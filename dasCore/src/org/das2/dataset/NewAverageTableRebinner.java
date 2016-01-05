@@ -66,11 +66,18 @@ public class NewAverageTableRebinner implements DataSetRebinner {
         ny= (ddY == null ? tds.getYLength(0) : ddY.numberOfBins());
     }
     
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException, DasException {
+	 @Override
+    public DataSet rebin(
+		 DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, Map override
+	 ) throws IllegalArgumentException, DasException {
         if ( ds!=this.tds ) throw new IllegalArgumentException("already set for another dataset");
         if ( ddX!=this.ddX ) throw new IllegalArgumentException("already set for another X rebin descriptor");        
         if ( ddY!=this.ddY ) throw new IllegalArgumentException("already set for another Y rebin descriptor");
         
+		  if(override != null) 
+			 throw new UnsupportedOperationException("This rebinner does not "+
+			 "yet know how to override dataset properties.");
+		  
         TableDataSet weights = (TableDataSet)tds.getPlanarView(DataSet.PROPERTY_PLANE_WEIGHTS);
         if (ddX != null && tds.getXLength() > 0) {
             double start = tds.getXTagDouble(0, ddX.getUnits());

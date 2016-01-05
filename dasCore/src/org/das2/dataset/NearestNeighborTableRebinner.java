@@ -23,6 +23,8 @@
 
 package org.das2.dataset;
 
+import java.util.Map;
+
 /**
  *
  * @author  Jeremy Faden
@@ -33,11 +35,15 @@ public class NearestNeighborTableRebinner implements DataSetRebinner {
     public NearestNeighborTableRebinner() {
     }
         
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
+	 @Override
+    public DataSet rebin(
+		 DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, Map override
+	 ) throws IllegalArgumentException {
         if (!(ds instanceof TableDataSet)) {
             throw new IllegalArgumentException();
         }
-        return new NearestNeighborTableDataSet((TableDataSet)ds, ddX, ddY );
+		  
+        return new NearestNeighborTableDataSet((TableDataSet)ds, ddX, ddY, override );
     }
     
 }

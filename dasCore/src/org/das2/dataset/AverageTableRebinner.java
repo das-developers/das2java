@@ -54,8 +54,15 @@ public class AverageTableRebinner implements DataSetRebinner {
     public AverageTableRebinner() {
     }
 
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException, DasException {
+	 @Override
+    public DataSet rebin(
+		 DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, Map override
+	 ) throws IllegalArgumentException, DasException {
         logger.finest("enter AverageTableRebinner.rebin");
+		  
+		  if(override != null) 
+			 throw new UnsupportedOperationException("This rebinner does not "+
+			 "yet know how to override dataset properties.");
 
         if (ds == null) {
             throw new NullPointerException("null data set");
@@ -417,7 +424,11 @@ public class AverageTableRebinner implements DataSetRebinner {
         }
     }
 
-    static void fillInterpolateX(final double[][] data, final double[][] weights, final double[] xTags, double[] xTagMin, double[] xTagMax, final double xSampleWidth, Interpolate interpolateType) {
+    static void fillInterpolateX(
+		 final double[][] data, final double[][] weights, final double[] xTags, 
+		 double[] xTagMin, double[] xTagMax, final double xSampleWidth, 
+		 Interpolate interpolateType
+	 ) {
 
         final int nx = xTags.length;
         final int ny = data[0].length;
@@ -467,7 +478,10 @@ public class AverageTableRebinner implements DataSetRebinner {
             if (interpolateType == Interpolate.NearestNeighbor) {
 
                 for (int i = 0; i < nx; i++) {
-                    if (Math.min(i1[i] == -1 ? Double.MAX_VALUE : (xTags[i] - xTagMin[i1[i]]), i2[i] == -1 ? Double.MAX_VALUE : (xTagMax[i2[i]] - xTags[i])) < xSampleWidth / 2) {
+                    if (Math.min(
+							  i1[i] == -1 ? Double.MAX_VALUE : (xTags[i] - xTagMin[i1[i]]), 
+							  i2[i] == -1 ? Double.MAX_VALUE : (xTagMax[i2[i]] - xTags[i])) < xSampleWidth / 2
+							  ) {
 
                         int idx = -1;
                         if (i1[i] == -1) {

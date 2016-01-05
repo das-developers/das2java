@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * This rebinner will bin average elements that fall on the same bin, and will enlarge cells that
@@ -166,8 +167,18 @@ public class AverageNoInterpolateTableRebinner implements DataSetRebinner {
         
         return result;
     }
+	 
+	 
     
-    public DataSet rebin(DataSet ds, RebinDescriptor ddx, RebinDescriptor ddy) throws IllegalArgumentException, DasException {
+	 @Override
+	 public DataSet rebin(
+		 DataSet ds, RebinDescriptor ddx, RebinDescriptor ddy, Map override
+	 ) throws IllegalArgumentException, DasException {
+		 
+		 if(override != null) 
+			 throw new UnsupportedOperationException("This rebinner does not "+
+			 "yet know how to override dataset properties.");
+		 
         logger= DasLogger.getLogger( DasLogger.DATA_OPERATIONS_LOG );
         logger.finest("enter AverageNoInterpolateTableRebinner.rebin");
         

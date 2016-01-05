@@ -13,7 +13,6 @@ import org.das2.dataset.AverageTableRebinner;
 import org.das2.dataset.ClippedTableDataSet;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.DataSetConsumer;
-import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.DataSetRebinner;
 import org.das2.dataset.DataSetUpdateEvent;
 import org.das2.dataset.DataSetUtil;
@@ -75,6 +74,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
         this.dataSetConsumer= consumer;
     }
     
+	 @Override
     protected void fireBoxSelectionListenerBoxSelected(BoxSelectionEvent event) {
         
         final DatumRange xrange0= xrange;
@@ -177,7 +177,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
         
         try {
             //TODO: why does rebin throw DasException?
-            tds= (TableDataSet)rebinner.rebin( tds, ddx, null );
+            tds= (TableDataSet)rebinner.rebin( tds, ddx, null, null );
         } catch ( NoDataInIntervalException e ) {
             throw e;
         } catch ( DasException e ) {
@@ -346,6 +346,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
         JFrame frame;
         
         Action prevAction= new AbstractAction("<< Prev") {
+				@Override
             public void actionPerformed( ActionEvent e ) {
                 Datum xnew= xValue.subtract( xResolution );
                 DataPointSelectionEvent evNew= new DataPointSelectionEvent( this, xnew, yValue );
@@ -354,6 +355,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
         } ;
         
         Action nextAction= new AbstractAction("Next >>") {
+				@Override
             public void actionPerformed( ActionEvent e ) {
                 Datum xnew= xValue.add( xResolution );
                 DataPointSelectionEvent evNew= new DataPointSelectionEvent( this, xnew, yValue );
@@ -406,6 +408,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
             DataPointSelectorMouseModule tweakSlicer=
                     new DataPointSelectorMouseModule( topPlot, levelRenderer,
                     new VerticalSliceSelectionRenderer(topPlot), "tweak cutoff" ) {
+					 @Override
                 public void keyPressed( KeyEvent event ) {
                     System.err.print(event);
                     if ( event.getKeyCode()==KeyEvent.VK_DOWN ) {
@@ -418,6 +421,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
             };
             tweakSlicer.setDragEvents(true); // only key events fire
             tweakSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
+					 @Override
                 public void dataPointSelected( DataPointSelectionEvent e ) {
                     Datum x= e.getX();
                     HashMap properties= new HashMap();
@@ -438,6 +442,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
                     new DataPointSelectorMouseModule( topPlot, levelRenderer,
                     new HorizontalSliceSelectionRenderer(topPlot), "peak S/N level" );
             levelSlicer.addDataPointSelectionListener( new DataPointSelectionListener() {
+					 @Override
                 public void dataPointSelected( DataPointSelectionEvent e ) {
                     Datum y= e.getY();
                     PeakDetectorMouseModule.this.setLevelMin( y );
@@ -453,6 +458,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
         }
         
         
+		  @Override
         public void dataPointSelected(org.das2.event.DataPointSelectionEvent event) {
             logger.fine("got DataPointSelectionEvent: "+event.getX() );
             this.lastSelectedPoint= event;
@@ -500,6 +506,7 @@ public class PeakDetectorMouseModule extends BoxSelectorMouseModule {
             PeakDasPlot( DasAxis x, DasAxis y ) {
                 super(x,y);
             }
+				@Override
             protected void drawContent(java.awt.Graphics2D g) {
                 super.drawContent(g);
                 

@@ -9,6 +9,8 @@ import java.util.*;
 public class NearestNeighborTableDataSet implements TableDataSet {
     
     TableDataSet source;
+	 
+	 Map m_override;  /* Have to keep track of your overrides for getProperty */
     
     int[] imap;
     
@@ -19,8 +21,10 @@ public class NearestNeighborTableDataSet implements TableDataSet {
     RebinDescriptor ddX;
     
     RebinDescriptor ddY;
-    
-    NearestNeighborTableDataSet( TableDataSet source, RebinDescriptor ddX, RebinDescriptor ddY ) {
+	     
+    NearestNeighborTableDataSet( 
+		 TableDataSet source, RebinDescriptor ddX, RebinDescriptor ddY, Map override
+	 ) {
         imap= new int[ddX.numberOfBins()];
         if ( ddY==null ) {
             if ( source.tableCount()>1 ) {
@@ -35,15 +39,28 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         this.ddX= ddX;
         this.ddY= ddY;
         this.source= source;
+		  
+		  if(override == null)
+				m_override = new HashMap<>();
+		  else
+			  m_override = override;
         
         if ( source.getXLength()==0 ) {
             for ( int i=0; i<imap.length; i++ ) imap[i]= -1;
             
         } else {
-            
-            Datum xTagWidth= (Datum)source.getProperty("xTagWidth");
-            Datum yTagWidth= (Datum)source.getProperty("yTagWidth");
-            if ( xTagWidth==null ) xTagWidth= DataSetUtil.guessXTagWidth(source);
+			  
+			  // Cascade getting the interpolation widths
+			  Datum xTagWidth = (Datum)m_override.get(DataSet.PROPERTY_X_TAG_WIDTH);
+			  if(xTagWidth == null)
+					xTagWidth= (Datum)source.getProperty(DataSet.PROPERTY_X_TAG_WIDTH);
+			  
+			  if ( xTagWidth==null ) xTagWidth= DataSetUtil.guessXTagWidth(source);
+			  
+			  Datum yTagWidth = (Datum)m_override.get(DataSet.PROPERTY_Y_TAG_WIDTH);
+			  if(yTagWidth == null)
+				  yTagWidth = (Datum)source.getProperty(DataSet.PROPERTY_Y_TAG_WIDTH);
+			  
             if ( yTagWidth==null ) yTagWidth= TableUtil.guessYTagWidth(source);
             
             DatumVector xx= ddX.binCentersDV();
@@ -94,6 +111,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
     }
     
+	 @Override
     public Datum getDatum(int i, int j) {
         if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
             return source.getDatum(imap[i], jmap[itableMap[i]][j]);
@@ -102,6 +120,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
     }
     
+	 @Override
     public double getDouble(int i, int j, Units units) {
         try {
             if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
@@ -115,6 +134,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
     }
     
+	 @Override
     public int getInt(int i, int j, Units units) {
         if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
             return source.getInt(imap[i], jmap[itableMap[i]][j],units);
@@ -123,55 +143,77 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
     }
     
+	 @Override
     public DataSet getPlanarView(String planeID) {
         TableDataSet ds = (TableDataSet)source.getPlanarView(planeID);
         if (ds != null) {
-            return new NearestNeighborTableDataSet(ds,ddX,ddY);
+            return new NearestNeighborTableDataSet(ds,ddX,ddY, null);
         } else {
             return null;
         }
     }
     
+	 @Override
     public String[] getPlaneIds() {
         return source.getPlaneIds();
     }
     
+	 @Override
     public Object getProperty(String name) {
-        return source.getProperty(name);
+		Object ret = m_override.get(name);
+		if(ret != null) return source.getProperty(name);
+		return ret;
     }
     
+	 @Override
     public Map getProperties() {
-        return source.getProperties();
+		 if(m_override.isEmpty()) return source.getProperties();
+		 
+		 // Fun, now we get to merge
+		 HashMap<Object, Object> mRet = new HashMap<>(m_override);
+		 Map srcProps = source.getProperties();
+		 for(Object key: srcProps.keySet()){
+			 mRet.put(key, srcProps.get(key));
+		 }
+		 return mRet;
     }
     
+	 @Override
     public int getXLength() {
         return imap.length;
     }
     
+	 @Override
     public VectorDataSet getXSlice(int i) {
         return new XSliceDataSet(this,i);
     }
     
+	 @Override
     public VectorDataSet getYSlice(int j, int table) {
         return new YSliceDataSet(this, j, table);
     }
     
+	 @Override
     public Datum getXTagDatum(int i) {
         return ddX.getUnits().createDatum(getXTagDouble(i,ddX.getUnits()));
     }
     
+	 @Override
     public double getXTagDouble(int i, Units units) {
         return ddX.binCenter(i,units);
     }
     
+	 @Override
     public int getXTagInt(int i, Units units) {
         return (int)getXTagDouble(i,units);
     }
     
+	 @Override
     public Units getXUnits() {
         return ddX.getUnits();
     }
     
+	 @Override
     public int getYLength(int table) {
         if ( ddY==null ) {
             return source.getYLength(table);
@@ -180,6 +222,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
     }
     
+	 @Override
     public Datum getYTagDatum(int table, int j) {
         if ( ddY==null ) {
             return source.getYTagDatum( table, j );
@@ -188,6 +231,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
     }
     
+	 @Override
     public double getYTagDouble(int table, int j, Units units) {
         if ( ddY==null ) {
             return source.getYTagDouble( table, j, units );
@@ -196,10 +240,12 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
     }
     
+	 @Override
     public int getYTagInt(int table, int j, Units units) {
         return (int)getYTagDouble( table, j, units);
     }
     
+	 @Override
     public Units getYUnits() {
         if ( ddY==null ) {
             return source.getYUnits();
@@ -208,30 +254,37 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         }
     }
     
+	 @Override
     public Units getZUnits() {
         return source.getZUnits();
     }
     
+	 @Override
     public int tableCount() {
         return 1;
     }
     
+	 @Override
     public int tableEnd(int table) {
         return ddX.numberOfBins();
     }
     
+	 @Override
     public int tableOfIndex(int i) {
         return 0;
     }
     
+	 @Override
     public int tableStart(int table) {
         return 0;
     }
     
+	 @Override
     public String toString() {
         return "NearestNeighborTableDataSet " + TableUtil.toString(this);
     }
     
+	 @Override
     public double[] getDoubleScan(int i, Units units) {
         int yLength = getYLength(tableOfIndex(i));
         double[] array = new double[yLength];
@@ -241,11 +294,13 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         return array;
     }
     
+	 @Override
     public DatumVector getScan(int i) {
         Units zUnits = getZUnits();
         return DatumVector.newDatumVector(getDoubleScan(i, zUnits), zUnits);
     }
     
+	 @Override
     public DatumVector getYTags(int table) {
         double[] tags = new double[getYLength(table)];
         Units yUnits = getYUnits();
@@ -255,6 +310,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         return DatumVector.newDatumVector(tags, yUnits);
     }
 
+	 @Override
     public Object getProperty(int table, String name) {
         return getProperty(name);
     }

@@ -23,8 +23,6 @@
 
 package org.das2.dataset;
 
-import org.das2.dataset.DataSet;
-
 /**
  *
  * @author  jbf

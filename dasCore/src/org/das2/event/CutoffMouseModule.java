@@ -9,8 +9,6 @@
 package org.das2.event;
 
 import java.text.ParseException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.dataset.AverageTableRebinner;
@@ -41,10 +39,8 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
 import java.util.regex.Matcher;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JFrame;
-import javax.swing.text.PlainDocument;
 
 /**
  *
@@ -164,7 +160,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
         
         try {
             //TODO: why does rebin throw DasException?
-            tds= (TableDataSet)rebinner.rebin( tds, ddx, null );
+            tds= (TableDataSet)rebinner.rebin( tds, ddx, null, null );
         } catch ( DasException e ) {
             throw new RuntimeException(e);
         }
@@ -456,7 +452,7 @@ public class CutoffMouseModule extends BoxSelectorMouseModule {
             RebinDescriptor ddx= getRebinDescriptor( range );
             
             try {
-                tds= (TableDataSet)rebinner.rebin( tds, ddx, null );
+                tds= (TableDataSet)rebinner.rebin( tds, ddx, null, null );
             } catch ( DasException e ) {
                 throw new RuntimeException(e);
             }

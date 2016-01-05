@@ -23,6 +23,7 @@
 
 package org.das2.dataset;
 
+import java.util.Map;
 import org.das2.datum.Units;
 
 /**
@@ -34,10 +35,19 @@ public class PeakTableRebinner implements DataSetRebinner {
     public PeakTableRebinner() {
     }
     
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
+	 
+	 @Override
+    public DataSet rebin(
+		 DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, Map override
+	) throws IllegalArgumentException {
         if (!(ds instanceof TableDataSet)) {
             throw new IllegalArgumentException();
         }
+		  
+		  if(override != null) 
+			 throw new UnsupportedOperationException("This rebinner does not "+
+			 "yet know how to override dataset properties.");
+		  
         TableDataSet tds = (TableDataSet)ds;
         long timer= System.currentTimeMillis();
         

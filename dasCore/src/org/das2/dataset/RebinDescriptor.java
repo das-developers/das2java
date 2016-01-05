@@ -28,7 +28,7 @@ import org.das2.datum.UnitsConverter;
 import org.das2.datum.Datum;
 import org.das2.datum.Units;
 
-/**
+/** Nice Documentation...
  *
  * @author  jbf
  */
@@ -155,6 +155,10 @@ public class RebinDescriptor {
         }
     }
     
+	 /** So what freaking units are the return value in???
+	  * Anyone? Buler?
+	  * @return a number in who knows what coordinate system
+	  */
     public double[] binStarts() {
         double [] result= new double[nBin];
         for (int i=0; i<nBin; i++) {
@@ -192,8 +196,11 @@ public class RebinDescriptor {
         return result;
     }
     
-    /* create new rebinDescriptor that includes ddY plus additional channels to include ymin to ymax */
-    public static RebinDescriptor createSubsumingRebinDescriptor( RebinDescriptor ddY, Datum ymin, Datum ymax ) {
+    /* create new rebinDescriptor that includes ddY plus additional channels to include 
+	    ymin to ymax */
+    public static RebinDescriptor createSubsumingRebinDescriptor( 
+		 RebinDescriptor ddY, Datum ymin, Datum ymax 
+	 ) {
         if ( ddY==null ) return null;
         RebinDescriptor dd= (RebinDescriptor)ddY.clone( RebinDescriptor.EXTRAPOLATE );
         Units units= ddY.getUnits();

@@ -74,6 +74,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
             showPopupImpl();
         } else {
             Runnable r = new Runnable() {
+					 @Override
                 public void run() {
                     showPopupImpl();
                 }
@@ -104,6 +105,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         BoxLayout buttonLayout = new BoxLayout(buttonPanel, BoxLayout.X_AXIS);
         JButton close = new JButton("Hide Window");
         close.addActionListener(new ActionListener() {
+				@Override
             public void actionPerformed(ActionEvent e) {
                 popupWindow.setVisible(false);
             }
@@ -133,6 +135,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         popupWindow.setLocation(parentLocation.x + parentPlot.getCanvas().getWidth(),parentLocation.y);
     }
     
+	 @Override
     protected void drawContent(Graphics2D g) {
         super.drawContent(g);
         /*int ix= (int)this.getXAxis().transform(yValue);
@@ -145,6 +148,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         g.drawLine(ix-3,iy1,ix,iy1-3);*/
     }
     
+	 @Override
     public void dataRangeSelected(DataRangeSelectionEvent e) {
         DataSet ds = e.getDataSet();
         if (ds==null || !(ds instanceof TableDataSet))
@@ -163,7 +167,7 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         ddX.setOutOfBoundsAction(RebinDescriptor.MINUSONE);
         AverageTableRebinner rebinner = new AverageTableRebinner();
         try {
-            TableDataSet rebinned = (TableDataSet)rebinner.rebin(xtys, ddX, null);
+            TableDataSet rebinned = (TableDataSet)rebinner.rebin(xtys, ddX, null, null);
             VectorDataSet ds1 = rebinned.getXSlice(0);
             renderer.setDataSet(ds1);
         } catch (DasException de) {
@@ -177,10 +181,12 @@ public class VerticalSpectrogramAverager extends DasPlot implements DataRangeSel
         }
     }
     
+	 @Override
     protected void uninstallComponent() {
         super.uninstallComponent();
     }
     
+	 @Override
     protected void installComponent() {
         super.installComponent();
         getCanvas().getGlassPane().setVisible(false);

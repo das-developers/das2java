@@ -41,7 +41,11 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
     public AveragePeakTableRebinner() {
     }        
     
-    public DataSet rebin(DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY) throws IllegalArgumentException {
+	 @Override
+    public DataSet rebin(
+		 DataSet ds, RebinDescriptor ddX, RebinDescriptor ddY, Map override
+	 ) throws IllegalArgumentException {
+		 
         if (!(ds instanceof TableDataSet)) {
             throw new IllegalArgumentException();
         }
@@ -101,13 +105,23 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
             }
         }
         
-        Datum xTagWidth= DataSetUtil.guessXTagWidth(ds);
+		  Datum xTagWidth = null;
+		  if(override != null && override.get(DataSet.PROPERTY_X_TAG_WIDTH) != null)
+			  xTagWidth = (Datum)override.get(DataSet.PROPERTY_X_TAG_WIDTH);
+        else
+			  xTagWidth = DataSetUtil.guessXTagWidth(ds);
         double xTagWidthDouble= xTagWidth.doubleValue(ddX.getUnits().getOffsetUnits());
-        AverageTableRebinner.fillInterpolateX(averageData, averageWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, AverageTableRebinner.Interpolate.Linear );
+        AverageTableRebinner.fillInterpolateX(
+			  averageData, averageWeights, xTags, xTagMin, xTagMax, xTagWidthDouble, 
+			  AverageTableRebinner.Interpolate.Linear 
+		  );
         
         if ( ddY!=null ) {
             Datum yTagWidth= (Datum)ds.getProperty( DataSet.PROPERTY_Y_TAG_WIDTH );
-            AverageTableRebinner.fillInterpolateY(averageData, averageWeights, ddY, yTagWidth, AverageTableRebinner.Interpolate.Linear );
+            AverageTableRebinner.fillInterpolateY(
+					averageData, averageWeights, ddY, yTagWidth, 
+					AverageTableRebinner.Interpolate.Linear 
+				);
         }
         
         if (peaks == null) {
@@ -123,9 +137,9 @@ public class AveragePeakTableRebinner implements DataSetRebinner {
         if ( ddY!=null ) properties.put( DataSet.PROPERTY_Y_TAG_WIDTH, ddY.binWidthDatum() );
           
         int[] tableOffsets = {0};
-        String[] planeIDs =     {"",               DataSet.PROPERTY_PLANE_PEAKS,          DataSet.PROPERTY_PLANE_WEIGHTS};
-        double[][][] zValues =  {averageData,      peakData,         averageWeights};
-        Units[] zUnits =        {tds.getZUnits(),  tds.getZUnits(),  Units.dimensionless};
+        String[] planeIDs =    {"",             DataSet.PROPERTY_PLANE_PEAKS, DataSet.PROPERTY_PLANE_WEIGHTS};
+        double[][][] zValues = {averageData,    peakData,       averageWeights};
+        Units[] zUnits =       {tds.getZUnits(),tds.getZUnits(),Units.dimensionless};
         
         return new DefaultTableDataSet(xTags, tds.getXUnits(), yTags, tds.getYUnits(), zValues, zUnits, planeIDs, tableOffsets, properties );
     }

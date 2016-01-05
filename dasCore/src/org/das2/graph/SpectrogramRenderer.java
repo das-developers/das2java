@@ -428,7 +428,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         t0 = System.currentTimeMillis();
 
-                        rebinDataSet = (TableDataSet) rebinner.rebin(this.ds, xRebinDescriptor, yRebinDescriptor);
+                        rebinDataSet = (TableDataSet) 
+									rebinner.rebin(this.ds, xRebinDescriptor, yRebinDescriptor, null);
 
                         xmemento = xAxis.getMemento();
                         ymemento = yAxis.getMemento();

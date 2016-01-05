@@ -239,7 +239,7 @@ public class ContoursRenderer extends Renderer implements Displayable {
             rebinner.setInterpolate(false);
 
             if (xRebinDescriptor != null || yRebinDescriptor != null) {
-                tds = (TableDataSet) rebinner.rebin(tds, xRebinDescriptor, yRebinDescriptor);
+                tds = (TableDataSet) rebinner.rebin(tds, xRebinDescriptor, yRebinDescriptor, null);
             }
         }
 

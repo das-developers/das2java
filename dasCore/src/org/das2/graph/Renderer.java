@@ -42,6 +42,9 @@ import java.awt.geom.*;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.util.logging.Logger;
 import org.w3c.dom.*;
@@ -77,6 +80,10 @@ public abstract class Renderer implements DataSetConsumer, Editable {
      * setDataSet and setException.
      */
     DataLoader loader;
+	 
+	 /** DataSet properties to override during the rendering process */
+	 HashMap<String, Object> override;
+	 
     /**
      * When a dataset cannot be loaded, the exception causing the failure
      * will be rendered instead.
@@ -88,16 +95,18 @@ public abstract class Renderer implements DataSetConsumer, Editable {
     private String PROPERTY_DATASET = "dataSet";
 
     protected Renderer(DataSetDescriptor dsd) {
+		  override = new HashMap<>();
         this.loader = new XAxisDataLoader(this, dsd);
     }
 
     protected Renderer(DataSet ds) {
+		  override = new HashMap<>();
         this.ds = ds;
         this.loader = null;
     }
 
     protected Renderer() {
-        this((DataSetDescriptor) null);
+       this((DataSetDescriptor) null);
     }
 
     public DasPlot getParent() {
@@ -164,6 +173,67 @@ public abstract class Renderer implements DataSetConsumer, Editable {
             this.dumpDataSet = dumpDataSet;
         }
     }
+	 
+	 /** Get a copy of this renderer's display override's.
+	  * 
+	  * @return The internal property override map wrapped as an unmodifiable map.
+	  */
+	 public Map getOverrideMap(){
+		 return Collections.unmodifiableMap(override);
+	 }
+	 
+	 /** Copy in a set of display overrides for this renderer
+	  * 
+	  * @param m An object,object map.  The keys should be property strings from 
+	  *          DataSet
+	  */
+	 public void setOverrideMap(Map m){
+		override = new HashMap<>(m);
+	 }
+	 
+	 /** Get and override property value without removing it
+	  * 
+	  * @param name a well know dataset property name.  These are provided
+	  *        in the DataSet class.
+	  * @return The value for the override, see the DataSet class to cast the returned
+	  *        value to the appropriate type.
+	  */
+	 public Object getOverride(String name){
+		 return override.get(name);
+	 }
+	 
+	 /** Set a dataset property to override during the rendering process
+	  * 
+	  * @param name a well know dataset property name.  These are provided
+	  *        in the DataSet class.
+	  * 
+	  * @return The value object for the property, or null if that property has not
+	  *        been overridden.  See docs for the DataSet class to cast the return type
+	  *        appropriately.
+	  */
+	 public void setOverride(String name, Object o){
+		 override.put(name, o);
+	 }
+	 
+	 /** Determine if a particular DataSet property will be overridden during display
+	  * processing
+	  * @param name A DataSet property string
+	  * @return true if overridden, false if the key name is not in the renderers internal
+	  *        override map
+	  */
+	 public boolean hasOverride(String name){
+		 return override.get(name) == null;
+	 }
+	 
+	 /** Remove an override
+	  * 
+	  * @param name A DataSet property string
+	  * @return The previous value held for the property override, or null the property in
+	  * question did not have an override value
+	  */
+	 public Object removeOverride(String name){
+		 return override.remove(name);
+	 }
 
     public void setLastException(Exception e) {
         this.lastException = e;

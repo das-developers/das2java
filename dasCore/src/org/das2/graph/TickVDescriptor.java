@@ -52,7 +52,7 @@ public class TickVDescriptor {
 
     /**
      * creates descriptor with two Lists containing Datums.
-     * java 1.5: List<Datum>
+     * java 1.5: List&lt;Datum&gt;
      */
     public static TickVDescriptor newTickVDescriptor(List majorTicks, List minorTicks) {
         if (majorTicks.size() == 0 && minorTicks.size() == 0) {

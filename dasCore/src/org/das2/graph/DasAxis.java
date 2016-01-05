@@ -84,7 +84,8 @@ import org.w3c.dom.Element;
  * and provides controls for nagivating the 1-D data space.
  * @author eew
  */
-public class DasAxis extends DasCanvasComponent implements DataRangeSelectionListener, TimeRangeSelectionListener, Cloneable {
+public class DasAxis extends DasCanvasComponent 
+    implements DataRangeSelectionListener, TimeRangeSelectionListener, Cloneable {
 
     public static final String PROP_LABEL = "label";
     public static final String PROP_Y_LABEL = "yLabel";
@@ -223,7 +224,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
         this(min, max, orientation, false);
     }
 
-    /** TODO
+    /** TODO Tell us if these are screen or data coordinates
      * @param min
      * @param max
      * @param orientation

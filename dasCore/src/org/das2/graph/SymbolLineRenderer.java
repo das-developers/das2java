@@ -28,7 +28,6 @@ import org.das2.dataset.DataSetDescriptor;
 import org.das2.dataset.VectorUtil;
 import org.das2.dataset.DataSet;
 import org.das2.dataset.VectorDataSet;
-import org.das2.dataset.DataSetUtil;
 import org.das2.datum.DatumRange;
 import org.das2.datum.Datum;
 import org.das2.system.DasLogger;
@@ -105,6 +104,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     }
     
     
+	 @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         renderCount++;
        // reportCount();
@@ -208,6 +208,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
     
     boolean updating=false;
     
+	 @Override
     public synchronized void updatePlotImage(DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor) {
         /*
          *This was an experiment to see if updates were being performed on multiple threads.
@@ -394,6 +395,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         refreshImage();
     }
     
+	 @Override
     protected void installRenderer() {
         if ( ! DasApplication.getDefaultApplication().isHeadless() ) {
             DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
@@ -402,6 +404,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         }
     }
     
+	 @Override
     protected void uninstallRenderer() {
     }
     
@@ -423,6 +426,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         return renderer;
     }
     
+	 @Override
     public Element getDOMElement(Document document) {
         
         Element element = document.createElement("lineplot");
@@ -461,10 +465,12 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         }
     }
     
+	 @Override
     public String getListLabel() {
         return String.valueOf( this.getDataSetDescriptor() );
     }
     
+	 @Override
     public javax.swing.Icon getListIcon() {
         Image i= new BufferedImage(15,10,BufferedImage.TYPE_INT_ARGB);
         Graphics2D g= (Graphics2D)i.getGraphics();
@@ -485,6 +491,7 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
         return new ImageIcon(i);
     }
 
+	 @Override
     public boolean acceptContext(int x, int y) {
         return path!=null && path.intersects( x-5, y-5, 10, 10 );
     }
