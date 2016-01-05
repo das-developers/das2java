@@ -22,11 +22,11 @@
  */
 package org.das2.stream;
 
-import org.das2.datum.DatumVector;
-import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import org.das2.datum.DatumVector;
+import org.das2.datum.Units;
 import org.das2.util.StreamTool;
 
 import org.w3c.dom.Document;
@@ -36,21 +36,20 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
-    
+
     private String name = "";
     private Units units = Units.dimensionless;
     private DataTransferType transferType = DataTransferType.SUN_REAL4;
-    
+
     public StreamMultiYDescriptor(Element element) throws StreamException 
 	 {
-        if ( element.getTagName().equals("y") ) {
+        if (element.getTagName().equals("y")) {
             processElement(element);
-        }
-        else {
+        } else {
             processLegacyElement(element);
         }
     }
-    
+
     private void processElement(Element element) throws StreamException {
 		 
 		//element.getAttribute returns empty string if attr is not specified
@@ -67,10 +66,10 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
          units = Units.getByName(unitsString);
       }
 		
-        NamedNodeMap attrs= element.getAttributes();
-        for ( int i=0; i<attrs.getLength(); i++ ) {
-            Node n= attrs.item(i);
-            properties.put( n.getNodeName(), n.getNodeValue() );
+        NamedNodeMap attrs = element.getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            Node n = attrs.item(i);
+            properties.put(n.getNodeName(), n.getNodeValue());
         }
 		  
 		  NodeList nl = element.getElementsByTagName("properties");
@@ -91,86 +90,85 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
 		  
     if (type != null) {
             transferType = type;
-        }
-        else {
+        } else {
             throw new RuntimeException("Illegal transfer type: " + typeStr);
         }
     }
-    
+
     private void processLegacyElement(Element element) {
-        if ( element.getAttribute("name") != null ) {
-            name= element.getAttribute("name");
+        if (element.getAttribute("name") != null) {
+            name = element.getAttribute("name");
         } else {
-            name= "";
+            name = "";
         }
         String typeStr = element.getAttribute("type");
         DataTransferType type = DataTransferType.getByName(typeStr);
         if (type != null) {
             transferType = type;
-        }
-        else {
+        } else {
             throw new RuntimeException("Illegal transfer type: " + typeStr);
         }
     }
-    
+
     public StreamMultiYDescriptor() {
     }
-    
+
     public Units getUnits() {
         return units;
     }
-    
+
     public void setUnits(Units units) {
         this.units = units;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
         return this.name;
     }
-    
+
     public int getSizeBytes() {
         return transferType.getSizeBytes();
     }
-    
+
     public void setDataTransferType(DataTransferType transferType) {
         this.transferType = transferType;
     }
-    
+
     public DataTransferType getDataTransferType() {
         return transferType;
     }
-    
+
     public DatumVector read(ByteBuffer input) {
         return DatumVector.newDatumVector(new double[]{transferType.read(input)}, units);
     }
-    
+
     public void write(DatumVector input, ByteBuffer output) {
         transferType.write(input.doubleValue(0, units), output);
     }
-    
+
     public Element getDOMElement(Document document) {
         Element element = document.createElement("y");
         element.setAttribute("units", units.toString());
         element.setAttribute("type", transferType.toString());
-        if ( !name.equals("") ) element.setAttribute( "name", name );
+        if (!name.equals("")) {
+            element.setAttribute("name", name);
+        }
         return element;
     }
-    
+
     public Object clone() {
         try {
             return super.clone();
-        }
-        catch (CloneNotSupportedException cnse) {
+        } catch (CloneNotSupportedException cnse) {
             throw new RuntimeException(cnse);
         }
-   }
+    }
 
-    Map properties= new HashMap();
-    
+    Map properties = new HashMap();
+
     public Object getProperty(String name) {
         return properties.get(name);
     }
@@ -179,6 +177,4 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         return new HashMap(properties);
     }
 
-    
 }
-

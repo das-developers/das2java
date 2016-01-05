@@ -87,6 +87,7 @@ import org.w3c.dom.Element;
 public class DasAxis extends DasCanvasComponent implements DataRangeSelectionListener, TimeRangeSelectionListener, Cloneable {
 
     public static final String PROP_LABEL = "label";
+    public static final String PROP_Y_LABEL = "yLabel";
     public static final String PROP_LOG = "log";
     public static final String PROP_OPPOSITE_AXIS_VISIBLE = "oppositeAxisVisible";
     public static final String PROP_BOUNDS = "bounds";
@@ -1378,8 +1379,15 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             int width, leftEdge;
 
             for (int i = 0; i < tcaData.length; i++) {
+				String label = (String) tcaData[i].getProperty(DataSet.PROPERTY_Y_LABEL);
+				if (label == null) {
+					label = (String) tcaData[i].getProperty("label");
+				}
+				if (label == null) {
+					label = "";
+				}
                 baseLine += lineHeight;
-                idlt.setString(g, (String) tcaData[i].getProperty(DataSet.PROPERTY_Y_LABEL));
+                idlt.setString(g, label);
                 width = (int) Math.floor(idlt.getWidth() + 0.5);
                 leftEdge = rightEdge - width;
                 idlt.draw(g, (float) leftEdge, (float) baseLine);
@@ -2055,7 +2063,14 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 idlt.setString(tickLabelFont, "SCET");
                 int tcaLabelWidth = (int) Math.floor(idlt.getWidth() + 0.5);
                 for (int i = 0; i < tcaData.length; i++) {
-                    idlt.setString(tickLabelFont, (String) tcaData[i].getProperty(DataSet.PROPERTY_Y_LABEL));
+					String label = (String)tcaData[i].getProperty(DataSet.PROPERTY_Y_LABEL);
+					if (label == null) {
+						label = (String)tcaData[i].getProperty("label");
+					}
+					if (label == null) {
+						label = "";
+					}
+                    idlt.setString(tickLabelFont, label);
                     int width = (int) Math.floor(idlt.getWidth() + 0.5);
                     tcaLabelWidth = Math.max(tcaLabelWidth, width);
                 }

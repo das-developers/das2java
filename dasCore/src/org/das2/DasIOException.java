@@ -43,6 +43,10 @@ public class DasIOException extends org.das2.DasException {
     public DasIOException(String msg) {
         super(msg);
     }
+
+	public DasIOException(String msg, Throwable t) {
+		super(msg,t);
+	}
     
     public DasIOException(java.io.IOException ex) {
         super( ex.getMessage() );
