@@ -592,9 +592,13 @@ public abstract class WebFileSystem extends FileSystem {
 
     /**
      * return true if the listing file (.listing) is available in the 
-     * file system cache, and is still fresh.
+     * file system cache, and is still fresh.  LISTING_TIMEOUT_MS controls
+     * the freshness, where files older than LISTING_TIMEOUT_MS milliseconds
+     * will not be used.  Note the timestamp on the file comes from the server
+     * providing the listing, so the age may be negative when clocks are not
+     * synchronized.
      * @param directory
-     * @return
+     * @return true if the listing is cached.
      */
     public synchronized boolean isListingCached( String directory ) {
         File f= new File(localRoot, directory);
@@ -603,7 +607,7 @@ public abstract class WebFileSystem extends FileSystem {
         if ( listing.exists() ) {
             long ageMs= ( System.currentTimeMillis() - listing.lastModified() );
             if ( ageMs<LISTING_TIMEOUT_MS ) {
-                logger.fine(String.format( "listing date is %5.2f seconds old", (( System.currentTimeMillis() - listing.lastModified() ) /1000.) ));
+                logger.log( Level.FINE, "listing date is {0} millisec old", ageMs );
                 return true;
             } else {
                 return false;
@@ -629,12 +633,13 @@ public abstract class WebFileSystem extends FileSystem {
         directory= toCanonicalFilename(directory);
         Long freshness= listingFreshness.get(directory);
         if ( freshness==null ) return null;
+        long ageMillis= System.currentTimeMillis()-freshness;
         if ( System.currentTimeMillis()-freshness < MEMORY_LISTING_TIMEOUT_MS ) {
             logger.log(Level.FINER, "list directory from memory for {0}", directory);
             DirectoryEntry [] result= listings.get(directory);
             return result;
         } else {
-            logger.log(Level.FINER, "remove old directory listing for {0}", directory);
+            logger.log(Level.FINER, "remove old ({0}ms) directory listing for {1}", new Object[] { ageMillis, directory } );
             listings.remove(directory);
             listingFreshness.remove(directory);
         }
