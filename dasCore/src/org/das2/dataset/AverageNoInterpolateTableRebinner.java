@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * This rebinner will bin average elements that fall on the same bin, and will enlarge cells that
