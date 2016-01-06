@@ -386,7 +386,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
                                 } else if ( peaksIndicator==PeaksIndicator.PeakLine ) {
                                     // do nothing
                                 } else if ( peaksIndicator==PeaksIndicator.GrayPeaks ) {
-                                    g.setColor(Color.lightGray.brighter());
+                                    g.setColor(Color.gray);
                                     g.drawLine(x0,yMax,x0,y0);
                                     g.setColor(BAR_COLOR);
                                 } else if ( peaksIndicator==PeaksIndicator.BlackPeaks ) {
