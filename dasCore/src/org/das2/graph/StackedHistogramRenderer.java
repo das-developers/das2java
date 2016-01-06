@@ -24,8 +24,6 @@
 package org.das2.graph;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -49,13 +47,13 @@ import org.das2.components.VerticalSpectrogramSlicer;
 import org.das2.event.HorizontalSlicerMouseModule;
 import org.das2.event.VerticalSlicerMouseModule;
 import org.das2.datum.Units;
-import org.das2.components.propertyeditor.Enumeration;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.das2.dataset.AveragePeakTableRebinner;
 import org.das2.dataset.AverageTableRebinner;
 import org.das2.datum.Datum;
@@ -75,7 +73,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     private RowRowConnector zAxisConnector= null;
     private DasRow littleRow=null;
         
-    private PeaksIndicator peaksIndicator;
+    private PeaksIndicator peaksIndicator= PeaksIndicator.GrayPeaks;
     
     /** Holds value of property sliceRebinnedData. */
     private boolean sliceRebinnedData;
@@ -84,42 +82,9 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     DatumRange imageXRange, imageYRange;
     
     final static Color GREY_PEAKS_COLOR= Color.lightGray.brighter();
-    
-    public static class PeaksIndicator implements Enumeration, Displayable {
-        
-        String id;
-        
-        PeaksIndicator(String id) {
-            this.id= id;
-        }
-        
-        @Override
-        public String toString() {
-            return this.id;
-        }
-        
-        public static final PeaksIndicator NoPeaks= new PeaksIndicator("None");
-        public static final PeaksIndicator GrayPeaks= new PeaksIndicator("Gray Peaks");
-        public static final PeaksIndicator BlackPeaks= new PeaksIndicator("Black Peaks");
-        public static final PeaksIndicator MaxDots= new PeaksIndicator("Dots");
-        public static final PeaksIndicator PeakLine= new PeaksIndicator("Line Peaks");
-        
-        @Override
-        public String getListLabel() {
-            return this.id;
-        }
-        
-        @Override
-        public javax.swing.Icon getListIcon() {
-            return null;
-        }
 
-        @Override
-        public void drawListIcon( Graphics2D g, int x, int y ) {
-            ImageIcon i= (ImageIcon) getListIcon();
-            g.drawImage(i.getImage(), x, y, null);
-        }
-        
+    public enum PeaksIndicator {
+        NoPeaks, GrayPeaks, BlackPeaks, MaxDots, PeakLine,
     }
     
     protected class RebinListener implements PropertyChangeListener {
@@ -144,6 +109,19 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
         this.yAxis= yAxis;
     }
     
+
+    @Override
+    public void setControl(String s) {
+        super.setControl(s);
+        this.peaksIndicator= PeaksIndicator.valueOf( getControl("peaksIndicator","GrayPeaks") );
+    }
+
+    @Override
+    public String getControl() {
+        Map<String,String> controls= new LinkedHashMap();
+        controls.put( "peaksIndicator", this.peaksIndicator.toString() );
+        return Renderer.formatControl(controls);
+    }    
     
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
