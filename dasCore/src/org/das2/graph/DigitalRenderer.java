@@ -106,7 +106,6 @@ public class DigitalRenderer extends Renderer {
     }
 
     public enum Align {
-
         SW, NW, NE, SE, CENTER,
     }
     protected Align align = Align.CENTER;
@@ -332,11 +331,7 @@ public class DigitalRenderer extends Renderer {
             }
         }
 
-        if (index < ixmax && pointsPlotted == dataSetSizeLimit) {
-            dataSetClipped = true;
-        } else {
-            dataSetClipped = false;
-        }
+        dataSetClipped = index < ixmax && pointsPlotted == dataSetSizeLimit;
 
         lastIndex = index;
 
@@ -656,13 +651,13 @@ public class DigitalRenderer extends Renderer {
         
         super.incrementUpdateCount();
         
-        QDataSet ds= getDataSet();
-        if ( ds==null ) return;
-        if ( ds.rank()==0 || ( getDataSet().rank()==1 && SemanticOps.isRank1Bundle(ds) ) ) {
+        QDataSet lds= getDataSet();
+        if ( lds==null ) return;
+        if ( lds.rank()==0 || ( getDataSet().rank()==1 && SemanticOps.isRank1Bundle(lds) ) ) {
             // nothin
         } else {
             try {
-                updateFirstLast( xAxis, yAxis, ds );
+                updateFirstLast( xAxis, yAxis, lds );
             } catch ( InconvertibleUnitsException ex ) {
                 // nothin
             }
