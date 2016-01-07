@@ -73,7 +73,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     private RowRowConnector zAxisConnector= null;
     private DasRow littleRow=null;
         
-    private PeaksIndicator peaksIndicator= PeaksIndicator.GrayPeaks;
+    private PeaksIndicator peaksIndicator= PeaksIndicator.MaxDots;
     
     /** Holds value of property sliceRebinnedData. */
     private boolean sliceRebinnedData;
@@ -113,7 +113,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     @Override
     public void setControl(String s) {
         super.setControl(s);
-        this.peaksIndicator= PeaksIndicator.valueOf( getControl("peaksIndicator","GrayPeaks") );
+        setPeaksIndicator( PeaksIndicator.valueOf( getControl("peaksIndicator","GrayPeaks") ) );
     }
 
     @Override
@@ -167,8 +167,6 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             dlAxis.setFloppyItemSpacing(true);
             dlAxis.setOutsidePadding(1);
         }
-        
-        this.peaksIndicator= PeaksIndicator.MaxDots;
         
         DasMouseInputAdapter mouseAdapter = parent.getDasMouseInputAdapter();
         
