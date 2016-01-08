@@ -119,6 +119,7 @@ public class DasProgressPanel implements ProgressMonitor {
     private DasCanvas parentCanvas;
     private Container removeFromComponent= null; // this is the parent we need to remove the monitor from when finished.
     private static int createComponentCount = 0;
+    private String currentThreadName= null;
 
     /**
      * string representing the units, such as "M" or "K"
@@ -573,7 +574,7 @@ public class DasProgressPanel implements ProgressMonitor {
         }
 
         if (progressMessageDirty) {
-            progressMessageLabel.setToolTipText( progressMessageString );
+            progressMessageLabel.setToolTipText( "<html><b>" + label + "</b><br>" + progressMessageString + "<br>on thread " + currentThreadName );
             String s= abbrevateStringEllipsis( progressMessageString, PROGRESS_MESSAGE_LEN_LIMIT);
             progressMessageLabel.setText(s);
             progressMessageDirty = false;
@@ -581,6 +582,7 @@ public class DasProgressPanel implements ProgressMonitor {
 
         if (labelDirty) {
             taskLabel.setText(label);
+            taskLabel.setToolTipText( "<html><b>" + label + "</b><br>" + progressMessageString + "<br>on thread " + currentThreadName );
             labelDirty = false;
         }
 
@@ -686,6 +688,7 @@ public class DasProgressPanel implements ProgressMonitor {
     public void started() {
         taskStartedTime = System.currentTimeMillis();
         running = true;
+        currentThreadName= Thread.currentThread().getName();
 
         if (hideInitiallyMilliSeconds > 0) {
             setVisible(false);
