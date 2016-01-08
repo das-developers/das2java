@@ -688,7 +688,7 @@ public class DasProgressPanel implements ProgressMonitor {
     public void started() {
         taskStartedTime = System.currentTimeMillis();
         running = true;
-        currentThreadName= Thread.currentThread().getName();
+        currentThreadName= Thread.currentThread().getName(); 
 
         if (hideInitiallyMilliSeconds > 0) {
             setVisible(false);
