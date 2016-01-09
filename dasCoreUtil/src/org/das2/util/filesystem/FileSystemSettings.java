@@ -75,6 +75,14 @@ public class FileSystemSettings {
         return 5000;
     }
 
+    /**
+     * return the read timeout in milliseconds.
+     * @return
+     */
+    public int getReadTimeoutMs() {
+        return 10000;
+    }
+    
     // NOTE WebFileSystem contains some settings as well!!
 
     public enum Persistence {
