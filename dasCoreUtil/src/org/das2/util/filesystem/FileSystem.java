@@ -206,8 +206,8 @@ public abstract class FileSystem  {
 
     /**
      * allow factories to peek, so they can see if there is a parent that is offline.
-     * @param root
-     * @return
+     * @param root the URI 
+     * @return null if not existing, or the filesystem for the URI.
      */
     public static FileSystem peek( URI root ) {
         root = toCanonicalFolderName(root);
