@@ -147,7 +147,7 @@ public class HttpFileSystem extends WebFileSystem {
                 HttpURLConnection urlc = (HttpURLConnection) root.openConnection();
                 
                 urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
-
+                urlc.setReadTimeout( FileSystem.settings().getReadTimeoutMs() );
                 //urlc.setRequestMethod("HEAD"); // Causes problems with the LANL firewall.
 
                 String userInfo;  // null means that userInfo has not been attempted.
@@ -354,7 +354,8 @@ public class HttpFileSystem extends WebFileSystem {
             loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { remoteURL } );
             URLConnection urlc = remoteURL.openConnection();
             urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
-
+            urlc.setReadTimeout( FileSystem.settings().getReadTimeoutMs() );
+            
             //bug http://sourceforge.net/p/autoplot/bugs/1393/ shows where this is necessary.
             urlc.setUseCaches(false);
             
@@ -384,6 +385,7 @@ public class HttpFileSystem extends WebFileSystem {
                 loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { remoteURL } );
                 urlc = remoteURL.openConnection();
                 urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
+                urlc.setReadTimeout( FileSystem.settings().getReadTimeoutMs() );
                  
                 if ( userInfo != null) {
                     String encode = Base64.encodeBytes(userInfo.getBytes());
