@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -25,6 +26,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.das2.util.LoggerManager;
+import static org.das2.util.filesystem.FileSystem.logger;
+import org.das2.util.monitor.NullProgressMonitor;
+import org.das2.util.monitor.ProgressMonitor;
 
 /**
  *
@@ -108,6 +112,30 @@ public class FileSystemUtil {
             } finally {
                 if ( out!=null ) out.close();
             }
+        }
+    }
+    
+    /**
+     * copies data from in to out, sending the number of bytesTransferred to the monitor.
+     * @param is the input stream, which will not be closed.
+     * @param out the output stream, which will not be closed.
+     * @param monitor a monitor, or null.
+     * @throws java.io.IOException
+     */
+    public static void copyStream( InputStream is, OutputStream out, ProgressMonitor monitor ) throws IOException {
+        if ( monitor==null ) monitor= new NullProgressMonitor();
+        byte[] buffer = new byte[2048];
+        int bytesRead = is.read(buffer, 0, 2048);
+        long totalBytesRead = bytesRead;
+        while (bytesRead > -1) {
+            if (monitor.isCancelled()) {
+                throw new InterruptedIOException();
+            }
+            monitor.setTaskProgress(totalBytesRead);
+            out.write(buffer, 0, bytesRead);
+            bytesRead = is.read(buffer, 0, 2048);
+            totalBytesRead += bytesRead;
+            logger.finest("transferring data");
         }
     }
 
