@@ -80,7 +80,7 @@ public class FileSystemSettings {
      * @return
      */
     public int getReadTimeoutMs() {
-        return 10000;
+        return 60000;
     }
     
     // NOTE WebFileSystem contains some settings as well!!
