@@ -44,6 +44,7 @@ import org.das2.datum.format.EnumerationDatumFormatter;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.examples.Schemes;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -112,10 +113,12 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
         assert tds.rank()==3;
         QDataSet xds= SemanticOps.xtagsDataSet(tds);
         int i = DataSetUtil.closestIndex(xds, x);
-        QDataSet tds1= tds.slice(i);
-        QDataSet yds= SemanticOps.xtagsDataSet(tds1);
+        QDataSet tds1= Ops.copy( tds.slice(i) );
+        QDataSet yds= (QDataSet) tds1.property(QDataSet.DEPEND_0);  // Can't use SemanticOps.xtagsDataSet, because it picks up "red" not the index.
+        if ( yds==null ) yds= Ops.indgen(tds1.length());
         int j;
         try {
+            yds= Ops.copy(yds);
             j= DataSetUtil.closestIndex(yds, y);
         } catch ( IllegalArgumentException ex ) {
             return ex.getMessage();
