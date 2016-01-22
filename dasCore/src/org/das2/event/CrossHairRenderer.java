@@ -143,7 +143,11 @@ public class CrossHairRenderer extends LabelDragRenderer implements DragRenderer
             j= DataSetUtil.closestIndex(yds, y);
         } catch ( InconvertibleUnitsException ex ) {
             Units u= SemanticOps.getUnits(yds);
-            j= DataSetUtil.closestIndex( yds, y.value(), u );
+            if ( UnitsUtil.isIntervalOrRatioMeasurement(u) ) {
+                j= DataSetUtil.closestIndex( yds, y.value(), u );
+            } else {
+                return "";
+            }
         } catch ( IllegalArgumentException ex ) {
             return ex.getMessage();
         }
