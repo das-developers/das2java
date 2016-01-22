@@ -2,7 +2,6 @@
 package org.virbo.dataset.examples;
 
 import java.text.ParseException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.Units;
@@ -10,6 +9,7 @@ import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.JoinDataSet;
+import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
@@ -451,5 +451,25 @@ public class Schemes {
      */
     public static boolean isRank1AlongTrajectory( QDataSet ds ) {
         return ds.rank()==1 && isTrajectory( (QDataSet) ds.property(QDataSet.DEPEND_0));
+    }
+
+    /**
+     * return true if the data is a rank 2 list of M bins.  The data
+     * will have rank=2 and the property BINS_1='min,max'
+     * @param dep
+     * @return true if the data is a rank 2 list of M bins
+     */
+    public static boolean isRank2Bins(QDataSet dep) {
+        return dep.rank()==2 && QDataSet.VALUE_BINS_MIN_MAX.equals( dep.property(QDataSet.BINS_1) );
+    }
+    
+    /**
+     * return a rank 2 dataset that is a list of bins.
+     * @return 
+     */
+    public static QDataSet rank2Bins() {
+        MutablePropertyDataSet result= Ops.maybeCopy( Ops.findgen( 20,2 ) );
+        result.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+        return result;
     }
 }
