@@ -9,8 +9,12 @@ import java.awt.image.BufferedImage;
 import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.das2.DasApplication;
 import org.das2.DasException;
 import org.das2.datum.Units;
+import org.das2.event.CrossHairMouseModule;
+import org.das2.event.DasMouseInputAdapter;
+import org.das2.event.MouseModule;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -98,6 +102,27 @@ public class RGBImageRenderer extends Renderer {
         image= null;
     }
 
+    @Override
+    protected void installRenderer() {
+        super.installRenderer(); //To change body of generated methods, choose Tools | Templates.
+        DasPlot parent= getParent();
+        if (!"true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
+            DasMouseInputAdapter mouseAdapter = parent.mouseAdapter;
+
+            MouseModule ch = new CrossHairMouseModule(parent, this, parent.getXAxis(), parent.getYAxis());
+            mouseAdapter.addMouseModule(ch);
+
+        }
+    }
+
+    @Override
+    protected void uninstallRenderer() {
+        //TODO: this leaves the mouse module, and it really should be removed.  SpectrogramRenderer too...
+        super.uninstallRenderer();
+    }
+
+    
+    
     /**
      * this actually can take a little while, I discovered when playing with the wave-at-cassini image.
      */
