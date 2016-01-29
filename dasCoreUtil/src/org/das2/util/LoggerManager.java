@@ -60,17 +60,20 @@ public final class LoggerManager {
         log.clear();
     }
     
+    private static final Level[] levels= new Level[] { Level.ALL, Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO, Level.WARNING, Level.SEVERE, Level.OFF };
+    
     private static class MyLogger extends Logger {
         private MyLogger( String id ) {
             super(id,null);
         }
         @Override
         public String toString() {
-//            Level l= this.getLevel();
-//            Logger levelParent= this.getParent();
-//            while ( l==null && levelParent!=null ) {
-//                l= levelParent.getLevel();
-//                levelParent= levelParent.getParent();
+//            Level l=null;
+//            for ( Level thel: levels ) {
+//                if ( this.isLoggable(thel) ) {
+//                    l= thel;
+//                    break;
+//                }
 //            }
             return this.getName(); // + " @ " + l;
         }
