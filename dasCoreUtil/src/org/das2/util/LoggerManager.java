@@ -51,17 +51,46 @@ public final class LoggerManager {
     private static final Map<String,Logger> log= new HashMap();
     private static final Set<Handler> extraHandlers= new HashSet();
 
+    private static boolean useMyLogger=false;
+    
+    public synchronized static void setUseMyLogger( boolean t ) {
+        useMyLogger= t;
+        loggers.clear();
+        extraHandlers.clear();
+        log.clear();
+    }
+    
+    private static class MyLogger extends Logger {
+        private MyLogger( String id ) {
+            super(id,null);
+        }
+        @Override
+        public String toString() {
+//            Level l= this.getLevel();
+//            Logger levelParent= this.getParent();
+//            while ( l==null && levelParent!=null ) {
+//                l= levelParent.getLevel();
+//                levelParent= levelParent.getParent();
+//            }
+            return this.getName(); // + " @ " + l;
+        }
+    }
+    
     /**
      * return the requested logger, but add it to the list of known loggers.
-     * @param id
-     * @return
+     * @param id the name
+     * @return the Logger
      */
     public synchronized static Logger getLogger( String id ) {
         Logger result= log.get(id);
         if ( result!=null ) {
             return result;
         } else {
-            result= Logger.getLogger(id);
+            if ( useMyLogger ) {
+                result= new MyLogger(id);
+            } else {
+                result= Logger.getLogger(id);
+            }
             log.put( id, result );
             for ( Handler h: extraHandlers ) {
                 result.addHandler(h);
