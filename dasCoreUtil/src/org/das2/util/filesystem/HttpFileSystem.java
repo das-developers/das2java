@@ -93,6 +93,15 @@ public class HttpFileSystem extends WebFileSystem {
         return this.cookie;
     }
     
+    /**
+     * Create a filesystem from the URI.  Note "user@" will be added to the 
+     * URI if credentials are needed and added automatically.
+     * @param rooturi
+     * @return the filesystem.
+     * @throws org.das2.util.filesystem.FileSystem.FileSystemOfflineException
+     * @throws UnknownHostException
+     * @throws FileNotFoundException 
+     */
     public static HttpFileSystem createHttpFileSystem(URI rooturi) throws FileSystemOfflineException, UnknownHostException, FileNotFoundException {
         try {
             
