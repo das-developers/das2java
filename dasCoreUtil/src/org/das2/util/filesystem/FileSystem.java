@@ -246,6 +246,7 @@ public abstract class FileSystem  {
      * Presently, file, http, and ftp are supported.  If the URI contains a folder
      * ending in .zip and a FileSystemFactory is registered as handling .zip, then
      * The zip file will be transferred and the zip file mounted.
+     * Note "user" is a special placeholder in http://user@das2.org.
      *
      * @param root the URI, like URI("http://das2.org/") or URI("file:///tmp/")
      * @param mon monitor progress.  For most FS types this is instantaneous, but for zip this can take sub-interactive time.
@@ -272,7 +273,19 @@ public abstract class FileSystem  {
         if ( result!=null ) {
             return result;
         }
-
+        
+        if ( "user".equals(root.getUserInfo()) ) { // HTTP filesystem will add this automatically, so check this as well.
+            try {
+                URI test= new URI( root.getScheme(), null, root.getHost(), root.getPort(), root.getPath(), root.getQuery(), root.getFragment() );
+                result= instances.get(test);
+                if ( result!=null ) {
+                    return result;
+                }
+            } catch (URISyntaxException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+        
         String waitObject;
         boolean ishouldwait= false;
         synchronized (blocks) {
@@ -340,7 +353,7 @@ public abstract class FileSystem  {
                 throw new FileSystemOfflineException(ex);
             } finally {
                 logger.log( Level.FINE,"created zip new filesystem {0}", root );
-                if ( result!=null ) instances.put(root, result);
+                if ( result!=null ) instances.put( root, result);
                 blocks.remove(root);
             }
         } else {
