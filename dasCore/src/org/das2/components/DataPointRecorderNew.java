@@ -379,7 +379,7 @@ public class DataPointRecorderNew extends JPanel {
     }
 
     /**
-     * 
+     * This should be called off the event thread.
      * @param file
      * @throws IOException 
      */
@@ -761,28 +761,47 @@ public class DataPointRecorderNew extends JPanel {
      * @return true if the file was saved, false if cancel
      */
     public boolean saveAs() {
-        JFileChooser jj = new JFileChooser();
-        jj.setFileFilter( new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                if ( pathname==null ) return false; //            rte_1178734273_20140402_133610_wsk, I think this happens on Windows.
-                if ( pathname.isDirectory() ) return true;
-                String fn= pathname.toString();
-                if ( fn==null ) return false; // rte_1178734275.  Bill is still seeing this strange error, which I believe happens on Windows.
-                return fn.endsWith(".dat") || fn.endsWith(".txt");
-            }
-            @Override
-            public String getDescription() {
-                return "Flat Ascii Tables";
-            }
-        });
-        String lastFileString = prefs.get("components.DataPointRecorder.lastFileSave", "");
-        if (lastFileString.length()>0) {
-            File lastFile= new File(lastFileString);
-            jj.setSelectedFile(lastFile);
-        }
+        final JFileChooser jj = new JFileChooser();
+        final Map<String,Integer> statusHolder= new HashMap<>();
+        Runnable run= new Runnable() {
+            public void run() {
+                jj.setFileFilter( new FileFilter() {
+                    @Override
+                    public boolean accept(File pathname) {
+                        if ( pathname==null ) return false; //            rte_1178734273_20140402_133610_wsk, I think this happens on Windows.
+                        if ( pathname.isDirectory() ) return true;
+                        String fn= pathname.toString();
+                        if ( fn==null ) return false; // rte_1178734275.  Bill is still seeing this strange error, which I believe happens on Windows.
+                        return fn.endsWith(".dat") || fn.endsWith(".txt");
+                    }
+                    @Override
+                    public String getDescription() {
+                        return "Flat Ascii Tables";
+                    }
+                });
+                String lastFileString = prefs.get("components.DataPointRecorder.lastFileSave", "");
+                if (lastFileString.length()>0) {
+                    File lastFile= new File(lastFileString);
+                    jj.setSelectedFile(lastFile);
+                }
 
-        int status = jj.showSaveDialog(DataPointRecorderNew.this);
+                statusHolder.put( "status", jj.showSaveDialog(DataPointRecorderNew.this) );
+                
+            }
+        };
+        
+        if ( SwingUtilities.isEventDispatchThread() ) {
+            run.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(run);
+            } catch (InterruptedException | InvocationTargetException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        int status= statusHolder.get("status") ;
+       
         if (status == JFileChooser.APPROVE_OPTION) {
             try {
                 File pathname= jj.getSelectedFile();
