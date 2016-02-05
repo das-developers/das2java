@@ -17,6 +17,10 @@ import org.virbo.dsops.Ops;
  */
 public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
 
+    public static String PROP_REGEX= "\\|trim\\(\\s*(\\S+)\\s*\\,\\s*(\\S+)\\s*\\)";
+
+    private boolean automaticSetting= true;
+            
     /**
      * Creates new form TrimTest
      */
@@ -40,24 +44,28 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
     
     @Override
     public void setInput(QDataSet listSize){
-        endLabel.setText( String.format( "Up to but not including (%d bins):",listSize.length() ) );
+        if ( automaticSetting ) { 
+            endLabel.setText( String.format( "Up to but not including (%d bins):",listSize.length() ) );
+        }
     }
     
     
     @Override
     public void setFilter(String filter) {
         
-        Pattern p= Pattern.compile("\\|trim\\(\\s*(\\d+)\\s*\\,\\s*(\\d+)\\s*\\)");
+        Pattern p= Pattern.compile( PROP_REGEX );
         Matcher m= p.matcher(filter);
         
         if ( m.matches() ) {
             lowerBound.setText(m.group(1));
             upperBound.setText( m.group(2) );
-        }
-        else {
+            automaticSetting= false;
+            
+        } else {
             //String maxUpperBound=m.group(3);
             lowerBound.setText( "0" );
             upperBound.setText( "10" );
+            automaticSetting= true;
         }
     }
 
@@ -86,7 +94,7 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
         endLabel.setText("Up to but not including:");
         endLabel.setToolTipText("Negative indeces are allowed, so -1 refers to the last index.");
 
-        jLabel3.setText("Trim from index:");
+        jLabel3.setText("Trim from (index or Datum):");
 
         upperBound.setText("-1");
 
@@ -101,13 +109,12 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(endLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(upperBound, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(40, 40, 40)
+                        .addComponent(upperBound, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lowerBound, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(lowerBound, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
