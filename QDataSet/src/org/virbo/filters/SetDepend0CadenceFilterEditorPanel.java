@@ -117,6 +117,8 @@ public class SetDepend0CadenceFilterEditorPanel extends AbstractFilterEditorPane
         return "|setDepend0Cadence('" + scalarTF.getText() + unitsCB.getSelectedItem() + "')";
     }
 
+    Units currentUnits= null;
+    
     @Override
     public void setInput(QDataSet ds) {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -127,8 +129,11 @@ public class SetDepend0CadenceFilterEditorPanel extends AbstractFilterEditorPane
         }
         if ( dep0!=null ) {
             Units u= SemanticOps.getUnits(dep0);
-            Units[] uu= u.getOffsetUnits().getConvertableUnits();
-            unitsCB.setModel( new DefaultComboBoxModel(uu) );
+            if ( u!=currentUnits ) {
+                Units[] uu= u.getOffsetUnits().getConvertableUnits();
+                unitsCB.setModel( new DefaultComboBoxModel(uu) );
+                currentUnits= u;
+            }
         } else {
             msgLabel.setText("<html><i>Dataset has no DEPEND_0");
         }
