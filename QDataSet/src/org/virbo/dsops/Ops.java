@@ -9076,7 +9076,7 @@ public class Ops {
             if ( xname==null ) xname="data0";
             if ( yname==null ) yname="data1";
             if ( zname==null ) zname="data2";
-            QDataSet result= bundle( bundle( x, y ), z );
+            QDataSet result= bundle( x, y, z );
             BundleDataSet.BundleDescriptor bds= (BundleDescriptor) result.property(QDataSet.BUNDLE_1);
             bds.putProperty( "CONTEXT_0", 2, xname+","+yname ); // note this is a string, not a QDataSet.  This is sloppy, but probably okay for now.
             bds.putProperty( QDataSet.NAME, 0, xname );
@@ -9098,10 +9098,10 @@ public class Ops {
 
         } else {
             ArrayDataSet zds = ArrayDataSet.copy(z);
-            if (x != null) {
+            if (x != null || zds.property(QDataSet.DEPEND_0)!=null ) {
                 zds.putProperty(QDataSet.DEPEND_0, x);
             }
-            if (y != null ) {
+            if (y != null || zds.property(QDataSet.DEPEND_1)!=null ) {
                 zds.putProperty(QDataSet.DEPEND_1, y);
             }
             List<String> problems= new ArrayList();
