@@ -921,10 +921,9 @@ public class TearoffTabbedPane extends JTabbedPane {
             return null;
         }
         final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
-        final JFrame newParent = new JFrame(td.title + " newParent");
+        final JFrame newParent = new JFrame(td.title);
         newParent.setIconImage( parent.getIconImage() );
         final WindowStateListener listener = new WindowStateListener() {
-
             public void windowStateChanged(WindowEvent e) {
                 newParent.setExtendedState(parent.getExtendedState());
             }
