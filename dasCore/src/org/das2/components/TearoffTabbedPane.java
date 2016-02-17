@@ -325,6 +325,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 if ( draggingFrame!=null ) {
                     draggingTearOff= getTabbedPane(draggingFrame);
                     if ( draggingTearOff!=null && TearoffTabbedPane.this.parentPane.contains( SwingUtilities.convertPoint( e.getComponent(), e.getPoint(), TearoffTabbedPane.this.parentPane ) ) ) {
+                        logger.fine( "docking into ...");
                         TearoffTabbedPane.this.parentPane.dock(draggingTearOff.getComponentAt(0));
                         TearoffTabbedPane.this.parentPane.setDropDecorate(false);
                         draggingFrame.dispose();
@@ -334,9 +335,9 @@ public class TearoffTabbedPane extends JTabbedPane {
                         }
                     }
                     TearoffTabbedPane oldChildParent= getTabbedPane(e.getComponent());
-                    if ( oldChildParent.getTabCount()==0 ) {
-                        SwingUtilities.getWindowAncestor(e.getComponent()).dispose();
-                    }
+                    if ( oldChildParent.getTabCount()==1 ) { // there's still a bug here if two are undocked.
+                        SwingUtilities.getWindowAncestor(oldChildParent).dispose();
+                    } 
 
                 }
                 if (dragStart != null && selectedTab != -1) {
@@ -358,7 +359,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     private MouseMotionListener getChildMouseMotionListener() {
         return new MouseMotionListener() {
-
+            
             public void mouseDragged(MouseEvent e) {
                 if (selectedTab == -1) {
                     return;
@@ -384,7 +385,9 @@ public class TearoffTabbedPane extends JTabbedPane {
                             TabDesc tabDesc= carry.parentPane.getTabDescByComponent(c);
                             tabDesc.babysitter= carry;
                             //TearoffTabbedPane.super.removeTabAt(selectedTab);
-                            removeTabAt(selectedTab,false); 
+                            
+                            //removeTabAt(selectedTab,false); 
+                            
                             if (draggingFrame == null) {
                                 return;
                             }
@@ -918,7 +921,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             return null;
         }
         final JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
-        final JFrame newParent = new JFrame(td.title);
+        final JFrame newParent = new JFrame(td.title + " newParent");
         newParent.setIconImage( parent.getIconImage() );
         final WindowStateListener listener = new WindowStateListener() {
 
