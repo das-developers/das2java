@@ -82,7 +82,7 @@ public class TearoffTabbedPane extends JTabbedPane {
      */
     private static int TOP_DROP_MARGIN=200;
 
-    LinkedHashMap<Component, TabDesc> tabs = new LinkedHashMap<Component, TabDesc>();
+    LinkedHashMap<Component, TabDesc> tabs = new LinkedHashMap<>();
     int lastSelected; /* keep track of selected index before context menu */
 
     private static void copyInputMap(JFrame parent, JFrame babySitter) {
@@ -183,6 +183,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             addMouseMotionListener(getChildMouseMotionListener());
         }
         super.addChangeListener( new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 try {
                     LoggerManager.logGuiEvent(e);
@@ -213,7 +214,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
     private MouseMotionListener getMouseMotionListener() {
         return new MouseMotionListener() {
-
+            @Override
             public void mouseDragged(MouseEvent e) {
                 if (selectedTab == -1) {
                     return;
@@ -264,6 +265,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }
             }
 
+            @Override
             public void mouseMoved(MouseEvent e) {
             }
 
@@ -291,7 +293,7 @@ public class TearoffTabbedPane extends JTabbedPane {
 
             {
                 dockMenu.add(new JMenuItem(new AbstractAction("return undocked tab") {
-
+                    @Override
                     public void actionPerformed(ActionEvent event) {
 
                         if (parentPane != null) {
@@ -358,8 +360,8 @@ public class TearoffTabbedPane extends JTabbedPane {
     }
 
     private MouseMotionListener getChildMouseMotionListener() {
-        return new MouseMotionListener() {
-            
+        return new MouseMotionListener() {            
+            @Override
             public void mouseDragged(MouseEvent e) {
                 if (selectedTab == -1) {
                     return;
@@ -427,6 +429,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 resetTearOffBabysitterName();
             }
 
+            @Override
             public void mouseMoved(MouseEvent e) {
             }
 
@@ -546,18 +549,21 @@ public class TearoffTabbedPane extends JTabbedPane {
 
         private ParentMouseAdapter() {
                 tearOffMenu.add(new JMenuItem(new AbstractAction("undock") {
+                    @Override
                     public void actionPerformed(ActionEvent event) {
                         TearoffTabbedPane.this.tearOffIntoFrame(selectedTab);
                     }
                 }));
 
                 tearOffMenu.add(new JMenuItem(new AbstractAction("slide right") {
+                    @Override
                     public void actionPerformed(ActionEvent event) {
                         TearoffTabbedPane.this.slideRight(selectedTab);
                     }
                 }));
 
                 dockMenu.add(new JMenuItem(new AbstractAction("show") {
+                    @Override
                     public void actionPerformed(ActionEvent event) {
                         showIt();
 
@@ -565,7 +571,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                     }
                 }));
                 dockMenu.add(new JMenuItem(new AbstractAction("dock") {
-
+                    @Override
                     public void actionPerformed(ActionEvent event) {
                         TabDesc desc = null;
                         Component babyComponent = null;
@@ -744,6 +750,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             Component activeComponent;
             long activeComponentTime=0;
 
+            @Override
             public void componentResized(ComponentEvent e) {
                 long t= System.currentTimeMillis();
                 if ( ( t-activeComponentTime ) > 100 ) {
@@ -755,6 +762,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }
             }
 
+            @Override
             public void componentMoved(ComponentEvent e) {
                 long t= System.currentTimeMillis();
                 if ( ( t-activeComponentTime ) > 100 ) {
@@ -766,9 +774,11 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }
             }
 
+            @Override
             public void componentShown(ComponentEvent e) {
             }
 
+            @Override
             public void componentHidden(ComponentEvent e) {
             }
         };
@@ -831,7 +841,7 @@ public class TearoffTabbedPane extends JTabbedPane {
             rightFrame.setTitle( parent.getTitle().toLowerCase() );
 
             final WindowStateListener listener = new WindowStateListener() {
-
+                @Override
                 public void windowStateChanged(WindowEvent e) {
                     rightFrame.setExtendedState(parent.getExtendedState());
                 }
@@ -846,7 +856,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                     parent.removeComponentListener(rightFrameListener);
 
                     if ( rightPane!=null ) {
-                        for (Component c : new ArrayList<Component>(rightPane.tabs.keySet())) {
+                        for (Component c : new ArrayList<>(rightPane.tabs.keySet())) {
                             TearoffTabbedPane.this.dock(c);
                         }
                     }
@@ -924,6 +934,7 @@ public class TearoffTabbedPane extends JTabbedPane {
         final JFrame newParent = new JFrame(td.title);
         newParent.setIconImage( parent.getIconImage() );
         final WindowStateListener listener = new WindowStateListener() {
+            @Override
             public void windowStateChanged(WindowEvent e) {
                 newParent.setExtendedState(parent.getExtendedState());
             }
