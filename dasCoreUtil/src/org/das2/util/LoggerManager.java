@@ -100,7 +100,7 @@ public final class LoggerManager {
             }
         }
         loggers.add(id);
-        return Logger.getLogger(id);
+        return result;
     }
 
     /**
