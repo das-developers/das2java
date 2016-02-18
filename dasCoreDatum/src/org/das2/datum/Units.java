@@ -157,7 +157,6 @@ public abstract class Units {
     public static final Units pcm3= new NumberUnits("cm!a-3!n");    
     
     public static final Units kelvin= new NumberUnits("K");
-    public static final Units cmps= new NumberUnits("cm/s");
 
     public static final Units cm_2s_1keV_1= new NumberUnits( "cm!U-2!N s!U-1!N keV!U-1!N" );
     public static final Units cm_2s_1MeV_1= new NumberUnits( "cm!U-2!N s!U-1!N MeV!U-1!N" );
@@ -189,6 +188,13 @@ public abstract class Units {
         inches.registerConverter( typographicPoints, new UnitsConverter.ScaleOffset(72,0.0) );
     }
 
+    public static final Units nT= new NumberUnits("nT","nanoTesla");
+    public static final Units cmps= new NumberUnits("cm/s");
+    public static final Units mps= new NumberUnits("m s!a-1!n","meters per second");
+    static {
+        mps.registerConverter( cmps, UnitsConverter.CENTI );
+    }
+    
     /**** begin of LocationUnits.  These must be defined after the physical units to support Basis. ****/
     
     public static final Units centigrade= new LocationUnits( "centigrade", "centigrade", Units.celciusDegrees, Basis.centigrade );
