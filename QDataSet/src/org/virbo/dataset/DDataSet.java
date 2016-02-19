@@ -32,6 +32,14 @@ public final class DDataSet extends ArrayDataSet {
 
     /**
      * create a rank 1 dataset backed by array of doubles.
+     * @return rank 0 dataset backed by double.
+     */
+    public static DDataSet createRank0() {
+        return new DDataSet(0, 1, 1, 1, 1);
+    }
+    
+    /**
+     * create a rank 1 dataset backed by array of doubles.
      * @param len0 length of the dimension
      * @return rank 1 qube dataset of backed by array of doubles.
      */
