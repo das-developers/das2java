@@ -292,6 +292,7 @@ public abstract class DataSetDescriptor implements Displayable {
         return this.dataSetID;
     }
     private static final Pattern CLASS_ID = Pattern.compile("class:([a-zA-Z0-9_\\.]+)(?:\\?(.*))?");
+	private static final Pattern EXEC_ID = Pattern.compile("exec:(.+)\\?(.+)");
     private static final Pattern NAME_VALUE = Pattern.compile("([_0-9a-zA-Z%+.-]+)=([_0-9a-zA-Z%+.-]+)");
 
     /**
@@ -310,9 +311,12 @@ public abstract class DataSetDescriptor implements Displayable {
      */
     public static DataSetDescriptor create(final String dataSetID) throws DasException {
         java.util.regex.Matcher classMatcher = CLASS_ID.matcher(dataSetID);
+		java.util.regex.Matcher execMatcher = EXEC_ID.matcher(dataSetID);
         DataSetDescriptor result;
         if (classMatcher.matches()) {
             result = createFromClassName(dataSetID, classMatcher);
+		} else if (execMatcher.matches()) {
+			result = createFromExecutable(dataSetID, execMatcher);
         } else {
             try {
                 result = createFromServerAddress(new URL(dataSetID));
@@ -330,6 +334,11 @@ public abstract class DataSetDescriptor implements Displayable {
         StreamDescriptor sd = server.getStreamDescriptor(url);
         return new StreamDataSetDescriptor(sd, server.getStandardDataStreamSource(url));
     }
+	private static DataSetDescriptor createFromExecutable(String dataSetID, Matcher matcher) {
+		String executable = matcher.group(1);
+		String[] paramPatterns = matcher.group(2).split("&");
+		return new ExecutableDataSetDescriptor(executable, paramPatterns);
+	}
 
     private static DataSetDescriptor createFromClassName(final String dataSetID, final Matcher matcher) throws DasException {
         try {
