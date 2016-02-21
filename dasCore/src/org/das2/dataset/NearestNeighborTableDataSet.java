@@ -139,7 +139,7 @@ public class NearestNeighborTableDataSet implements TableDataSet {
         if ( imap[i]!=-1 && jmap[itableMap[i]][j]!=-1 ) {
             return source.getInt(imap[i], jmap[itableMap[i]][j],units);
         } else {
-            return source.getZUnits().getFillInt();
+            return source.getZUnits().getFillDatum().intValue(source.getZUnits());
         }
     }
     

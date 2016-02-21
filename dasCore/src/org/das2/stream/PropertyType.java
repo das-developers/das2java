@@ -107,7 +107,7 @@ public enum PropertyType {
                 return Units.dimensionless.parse(split[0]);
             }
             else if (split.length == 2) {
-					Units units = Units.getByName(split[1]);
+					Units units = Units.lookupUnits(split[1]);
 					return units.parse(split[0]);
 				}
 				else {
@@ -137,7 +137,7 @@ public enum PropertyType {
 				 bldr.append(split[i]);
 			 }
 			 
-			 Units units = Units.getByName(bldr.toString());
+			 Units units = Units.lookupUnits(bldr.toString());
 			 Datum begin = units.parse(split[0]);
 			 Datum end = units.parse(split[2]);
 			 return new DatumRange(begin, end);

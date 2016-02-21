@@ -277,7 +277,7 @@ public final class DatumUtil {
             units= Units.dimensionless;
         } else {
             try {
-                units= Units.getByName(ss[1]);
+                units= Units.lookupUnits(ss[1]);
             } catch ( IllegalArgumentException e ) {
                 throw new ParseException( e.getMessage(), 0 );
             }

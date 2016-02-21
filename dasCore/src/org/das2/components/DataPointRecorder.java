@@ -404,7 +404,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             planesArray[i] = m.group(1).trim();
                             String sunits= m.group(2).trim();
                             try {
-                                unitsArray[i] = Units.getByName(sunits);
+                                unitsArray[i] = Units.lookupUnits(sunits);
                             } catch ( IllegalArgumentException ex ) {
                                 unitsArray[i] = new EnumerationUnits(sunits);
                             }
@@ -415,7 +415,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             //System.err.printf("%d %s\n", i, m.group(1) );
                             planesArray[i] = m.group(1).trim();
                             String sunits= m.group(2).trim();
-                            unitsArray[i] = Units.getByName(sunits);
+                            unitsArray[i] = Units.lookupUnits(sunits);
                         } else {
                             planesArray[i] = s[i];
                             unitsArray[i] = null;

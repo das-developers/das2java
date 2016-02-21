@@ -109,8 +109,8 @@ public class SineWaveDataSetDescriptor extends DataSetDescriptor {
         if (periodStr == null || amplitudeStr == null) {
             throw new DasException("period and amplitude must be specified for SineWaveDataSetDescriptors");
         }
-        Units xUnits = xUnitsStr == null ? Units.dimensionless : Units.getByName(xUnitsStr);
-        Units yUnits = xUnitsStr == null ? Units.dimensionless : Units.getByName(yUnitsStr);
+        Units xUnits = xUnitsStr == null ? Units.dimensionless : Units.lookupUnits(xUnitsStr);
+        Units yUnits = xUnitsStr == null ? Units.dimensionless : Units.lookupUnits(yUnitsStr);
         try {
             Datum period = xUnits.getOffsetUnits().parse(periodStr);
             Datum amplitude = yUnits.parse(amplitudeStr);

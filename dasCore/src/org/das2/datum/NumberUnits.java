@@ -167,7 +167,7 @@ public class NumberUnits extends Units {
                     for ( int i=2; i<ss.length; i++ ) unitsString+= " "+ss[i];
                     Units u;
                     try {
-                        u= Units.getByName(unitsString);
+                        u= Units.lookupUnits(unitsString);
                     } catch ( IllegalArgumentException e ) {
                         ParseException t= new ParseException(s, ss[0].length()+1 );
                         t.initCause(e);

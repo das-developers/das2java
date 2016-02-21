@@ -70,11 +70,11 @@ public class StreamYScanDescriptor implements SkeletonDescriptor, Cloneable {
         }
 	String yUnitsString = element.getAttribute("yUnits");
 	if (yUnitsString != null) {
-            yUnits = Units.getByName(yUnitsString);
+            yUnits = Units.lookupUnits(yUnitsString);
         }
         String zUnitsString = element.getAttribute("zUnits");
         if (zUnitsString != null) {
-            zUnits = Units.getByName(zUnitsString);
+            zUnits = Units.lookupUnits(zUnitsString);
         }
         String name = element.getAttribute("name");
         if ( name != null ) {

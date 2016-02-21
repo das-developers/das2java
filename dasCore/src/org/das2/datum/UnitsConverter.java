@@ -46,6 +46,7 @@ public abstract class UnitsConverter {
     public static final UnitsConverter MEGA = new ScaleOffset(1e-6, 0.0);
     public static final UnitsConverter KILO = new ScaleOffset(1e-3, 0.0);
     public static final UnitsConverter MILLI = new ScaleOffset(1e3, 0.0);
+	public static final UnitsConverter CENTI = new ScaleOffset(1e2, 0.0);
     public static final UnitsConverter MICRO = new ScaleOffset(1e6, 0.0);
     public static final UnitsConverter NANO = new ScaleOffset(1e9, 0.0);
     public static final UnitsConverter PICO = new ScaleOffset(1e12, 0.0);

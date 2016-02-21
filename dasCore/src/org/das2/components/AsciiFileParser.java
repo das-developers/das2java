@@ -355,7 +355,7 @@ public class AsciiFileParser extends javax.swing.JPanel {
                     if ( command.equals("ignore") ) {
                         model.units[contextColumn]= null;
                     } else if ( command.startsWith("units=") ) {
-                        Units u= Units.getByName(command.substring(6));
+                        Units u= Units.lookupUnits(command.substring(6));
                         model.units[contextColumn]= u;
                     } else if ( command.equals("name") ) {
                         JOptionPane j= new JOptionPane();

@@ -36,7 +36,7 @@ public class DatumRangePersistenceDelegate extends DefaultPersistenceDelegate {
     }
     
     public static DatumRange newDatumRange( double min, double max, String units ) {
-        Units u= Units.getByName(units);
+        Units u= Units.lookupUnits(units);
         return DatumRange.newDatumRange( min, max, u );
     }
 

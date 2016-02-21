@@ -69,7 +69,7 @@ public class StreamXDescriptor implements SkeletonDescriptor, Cloneable {
             units= ((DataTransferType.Time)type).getUnits();
         } else {
             String unitsString = element.getAttribute("units");
-            units = Units.getByName(unitsString);
+            units = Units.lookupUnits(unitsString);
         }
            
         String baseString = element.getAttribute("base");

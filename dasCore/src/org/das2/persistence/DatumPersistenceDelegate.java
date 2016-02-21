@@ -36,7 +36,7 @@ public class DatumPersistenceDelegate extends DefaultPersistenceDelegate {
     }
     
     public static Datum newDatum( double val, String units ) {
-        Units u= Units.getByName(units);
+        Units u= Units.lookupUnits(units);
         return u.createDatum( val );
     }
 

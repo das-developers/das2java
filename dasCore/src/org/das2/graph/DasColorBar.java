@@ -193,7 +193,7 @@ public class DasColorBar extends DasAxis {
             dataMinimum = (min == null || min.equals("") ? TimeUtil.create("1979-02-26") : TimeUtil.create(min));
             dataMaximum = (max == null || max.equals("") ? TimeUtil.create("1979-02-27") : TimeUtil.create(max));
         } else {
-            Units units = Units.getByName(unitStr);
+            Units units = Units.lookupUnits(unitStr);
             String min = element.getAttribute("dataMinimum");
             String max = element.getAttribute("dataMaximum");
             dataMinimum = (min == null || min.equals("") ? Datum.create(1.0, units) : Datum.create(Double.parseDouble(min), units));

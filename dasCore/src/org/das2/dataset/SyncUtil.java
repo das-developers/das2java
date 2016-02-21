@@ -107,7 +107,7 @@ public class SyncUtil {
             if ( imap[i]!=-1 ) {
                 return source.getInt( imap[i], units );
             } else {
-                return units.getFillInt();
+                return units.getFillDatum().intValue(units);
             }
         }
         
