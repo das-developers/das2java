@@ -157,7 +157,7 @@ public class EnumerationUnits extends Units {
         } else {
             Units u= null;
             try {
-                u= Units.lookupUnits(c.toString() + "Unit");
+                u= Units.getByName(c.toString() + "Unit");
             } catch ( IllegalArgumentException ex )  {
                 EnumerationUnits result = new EnumerationUnits(c.toString() + "Unit");
                 unitsInstances.put(c, result);
