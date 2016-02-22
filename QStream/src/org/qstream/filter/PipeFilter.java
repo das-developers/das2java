@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.qstream.filter;
 
@@ -25,12 +21,10 @@ import org.virbo.qstream.StreamTool;
  * @author jbf
  */
 public class PipeFilter {
-    public static void doit( InputStream in, OutputStream out, Datum cadence ) throws StreamException {
+    public static void doit( InputStream in, OutputStream out, Datum cadence ) {
 
         ReduceFilter pipe= new ReduceFilter();
         pipe.setCadence( cadence );
-
-        StreamTool stin= new StreamTool();
 
         ReadableByteChannel rin= java.nio.channels.Channels.newChannel( in );
 
@@ -39,7 +33,11 @@ public class PipeFilter {
         
         pipe.sink= fsh;
 
-        stin.readStream( rin, pipe );
+        try {
+            StreamTool.readStream( rin, pipe );
+        } catch ( StreamException ex ) {
+            // the exception has already been forwarded onto the output stream.
+        }
 
     }
     
