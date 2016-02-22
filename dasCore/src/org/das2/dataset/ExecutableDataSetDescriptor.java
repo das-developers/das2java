@@ -38,14 +38,6 @@ public class ExecutableDataSetDescriptor extends DataSetDescriptor {
 	public ExecutableDataSetDescriptor(String exePath, String[] commandFmts) {
 		this.exePath = exePath;
 		this.commandFmts = Arrays.copyOf(commandFmts, commandFmts.length);
-
-		File exeFile = new File(exePath);
-		if (!exeFile.exists()) {
-			throw new IllegalArgumentException(exePath + " does not exist");
-		}
-		if (!exeFile.canExecute()) {
-			throw new IllegalArgumentException(exePath + " is not executable");
-		}
 	}
 
 	@Override
