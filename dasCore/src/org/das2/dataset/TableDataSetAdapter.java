@@ -74,7 +74,7 @@ public class TableDataSetAdapter implements TableDataSet {
                     yds = new IndexGenDataSet(z.length(0));
                 }
             }
-            if (!DataSetUtil.isMonotonic(xds)) {
+            if ( xds.length()>1 && !DataSetUtil.isMonotonic(xds)) {
                 QDataSet sort = DataSetOps.sort(xds);
                 QDataSet cadence= (QDataSet) xds.property(QDataSet.CADENCE);
                 z = DataSetOps.applyIndex(z, 0, sort, false);
