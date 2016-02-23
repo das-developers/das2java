@@ -340,7 +340,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
                         }
                     }
                 }
-                System.err.println("indeces="+indeces.size());
+                //System.err.println("indeces="+indeces.size());
                 double[] xTags= new double[ indeces.size() ];
                 int j=0;
                 double[] back= new double[ indeces.size()*m.length ];
