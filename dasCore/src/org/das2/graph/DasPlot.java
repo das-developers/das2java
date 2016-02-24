@@ -810,7 +810,7 @@ public class DasPlot extends DasCanvasComponent {
                 @Override
                 public String getDescription() {
                     return "das2streams";
-                }
+                } 
             });
             int result = chooser.showSaveDialog(DasPlot.this);
             if (result == JFileChooser.APPROVE_OPTION) {
