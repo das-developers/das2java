@@ -137,9 +137,13 @@ public class VectorDataSetAdapter implements VectorDataSet {
         if ( y.property(QDataSet.FILL_VALUE) !=null
                 || y.property(QDataSet.VALID_MIN) !=null
                 || y.property(QDataSet.VALID_MAX) !=null ) {
-            QDataSet wds= DataSetUtil.weightsDataSet(y);
-            planes.put( org.das2.dataset.DataSet.PROPERTY_PLANE_WEIGHTS, wds );
-            //this.y= DataSetUtil.canonizeFill(y);
+            Number n= (Number) y.property( QDataSet.FILL_VALUE );
+            if ( n!=null && n.doubleValue()==-1e31 ) {
+                
+            } else {
+                QDataSet wds= DataSetUtil.weightsDataSet(y);
+                planes.put( org.das2.dataset.DataSet.PROPERTY_PLANE_WEIGHTS, wds );
+            }
         }
         
         QDataSet dp= (QDataSet) this.y.property( QDataSet.DELTA_PLUS ) ;
