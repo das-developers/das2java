@@ -76,6 +76,7 @@ import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.graph.DasAxis.Memento;
+import org.virbo.dataset.DataSetUtil;
 
 /**
  * DasPlot is the 2D plot containing a horizontal X axis and vertical Y
@@ -801,12 +802,25 @@ public class DasPlot extends DasCanvasComponent {
             }
             Renderer renderer = (Renderer) renderers1.get(0);
             JFileChooser chooser = new JFileChooser();
+            chooser.setFileFilter( new javax.swing.filechooser.FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.getName().endsWith(".d2s");
+                }
+                @Override
+                public String getDescription() {
+                    return "das2streams";
+                }
+            });
             int result = chooser.showSaveDialog(DasPlot.this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selected = chooser.getSelectedFile();
+                if ( !selected.getName().endsWith(".d2s") ) {
+                    selected= new File( selected.getPath() + ".d2s" );
+                }
                 try {
                     FileChannel out = new FileOutputStream(selected).getChannel();
-                    DataSet ds = DataSetAdapter.createLegacyDataSet( renderer.getDataSet() );
+                    DataSet ds = DataSetAdapter.createLegacyDataSet( DataSetUtil.canonizeFill( renderer.getDataSet() ) );
                     if (ds instanceof TableDataSet) {
                         TableUtil.dumpToAsciiStream((TableDataSet) ds, out);
                     } else if (ds instanceof VectorDataSet) {
