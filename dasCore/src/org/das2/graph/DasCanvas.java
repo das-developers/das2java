@@ -1483,7 +1483,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         String msg = "dasCanvas.getImage(" + width + "," + height + ")";
         logger.fine(msg);
 
-        prepareForOutput(width, height);
+        prepareForOutput(width, height); //TODO: this requires not event thread, and is inconsistent with if statement five lines down.
 
         final BufferedImage image = getBackground().getAlpha() > 0 ? new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB) :
                 new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB );
