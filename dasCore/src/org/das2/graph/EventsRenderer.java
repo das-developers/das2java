@@ -125,8 +125,13 @@ public class EventsRenderer extends Renderer {
             if ( xrange.value(0)<xrange.value(1) ) {
                 xrange= Ops.rescaleRangeLogLin(xrange, -0.1, 1.1 );
             } else {
-                QDataSet dx= DDataSet.wrap( new double[] {-1,1}, u0.getOffsetUnits() );
-                xrange= Ops.add( xrange, dx );
+                if ( UnitsUtil.isTimeLocation(u0) ) {
+                    QDataSet dx= DDataSet.wrap( new double[] {-0.5,0.5}, Units.hours ); // otherwise you get a one microsecond wide plot
+                    xrange= Ops.add( xrange, dx );
+                } else {
+                    QDataSet dx= DDataSet.wrap( new double[] {-1,1}, u0.getOffsetUnits() );
+                    xrange= Ops.add( xrange, dx );
+                }
             }
         }
 
