@@ -914,23 +914,32 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      */
     public void prepareForOutput(int width, int height) {
         if (SwingUtilities.isEventDispatchThread()) throw new IllegalStateException("dasCanvas.prepareForOutput must not be called from event queue!");
-        setPreferredWidth(width);
-        setPreferredHeight(height);
 
-        if ("true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
-            this.addNotify();
-            logger.finer("setSize(" + getPreferredSize() + ")");
-            this.setSize(getPreferredSize());
-            logger.finer("validate()");
-            this.validate();
-
-            resizeAllComponents();
-        }
         try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				@Override
+				public void run() {
+					setPreferredWidth(width);
+					setPreferredHeight(height);
+
+					if ("true".equals(DasApplication.getProperty("java.awt.headless", "false"))) {
+						DasCanvas.this.addNotify();
+						logger.finer("setSize(" + getPreferredSize() + ")");
+						DasCanvas.this.setSize(getPreferredSize());
+						logger.finer("validate()");
+						DasCanvas.this.validate();
+
+						resizeAllComponents();
+					}
+				}
+			});
             waitUntilIdle();
         } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
         }
+		catch (InvocationTargetException ex) {
+			throw new RuntimeException(ex);
+		}
 
     }
 
