@@ -135,13 +135,26 @@ public class DasAnnotation extends DasCanvasComponent {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if ( plot!=null ) {
+                    Datum oldx= getPointAtX();
+                    Datum oldy= getPointAtY();
                     Datum x= plot.getXAxis().invTransform(e.getX()+getX());
                     Datum y= plot.getYAxis().invTransform(e.getY()+getY());
                     setPointAtX(x);
                     setPointAtY(y);
+                    
                     if ( getAnchorType()==AnchorType.CANVAS ) {
                         setXrange( new DatumRange(x,x) );
                         setYrange( new DatumRange(y,y) );
+                    } else if ( getAnchorType()==AnchorType.DATA ) {
+                        int dx = (int)( plot.getXAxis().transform(x) - plot.getXAxis().transform(oldx) );
+                        int dy = (int)( plot.getYAxis().transform(y) - plot.getYAxis().transform(oldy) );
+                        adjustAnchorOffset( -dx, -dy );
+                        resize();
+                    } else if ( getAnchorType()==AnchorType.PLOT ) {
+                        int dx = (int)( plot.getXAxis().transform(x) - plot.getXAxis().transform(oldx) );
+                        int dy = (int)( plot.getYAxis().transform(y) - plot.getYAxis().transform(oldy) );
+                        adjustAnchorOffset( -dx, -dy );
+                        resize();
                     }
                     setShowArrow(true);
                 }
