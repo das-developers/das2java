@@ -511,12 +511,13 @@ public class DataSetOps {
         if (idim > 2) {
             throw new IllegalArgumentException("idim must be <=2 ");
         }
-        if (ds.rank() > 3) {
-            throw new IllegalArgumentException("rank limit");
-        }
                 
         if ( idim==0 ) {
             return ArrayDataSet.copy( getComponentType(ds), new SortDataSet( ds, sort ) );
+        }
+
+        if (ds.rank() > 3) {
+            throw new IllegalArgumentException("rank limit");
         }
 
         int[] qube = DataSetUtil.qubeDims( ds );
