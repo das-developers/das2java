@@ -2779,6 +2779,19 @@ public class Ops {
         return randu(new int[]{len0, len1, len2}, random );
     }
     
+
+    /**
+     * return a rank 4 dataset of random uniform numbers from 0 to 1 but not including 1.
+     * @param len0 the number of elements in the first index.
+     * @param len1 the number of elements in the second index.
+     * @param len2 the number of elements in the third index.
+     * @param len3 the number of elements in the fourth index.
+     * @return a rank 4 dataset of random uniform numbers from 0 to 1 but not including 1.
+     */
+    public static QDataSet randu(int len0, int len1, int len2, int len3) {
+        return randu(new int[]{len0, len1, len2, len3}, random );
+    }
+    
     /**
      * return a rank 0 dataset of random numbers of a Gaussian (normal) distribution.
      * @return a rank 0 dataset of random numbers of a Gaussian (normal) distribution.
@@ -2817,6 +2830,18 @@ public class Ops {
         return randn(new int[]{len0, len1, len2}, random );
     }
 
+    /**
+     * return a rank 4 dataset of random numbers of a Gaussian (normal) distribution.
+     * @param len0 the number of elements in the first index.
+     * @param len1 the number of elements in the second index.
+     * @param len2 the number of elements in the third index.
+     * @param len3 the number of elements in the fourth index.
+     * @return a rank 4 dataset of random numbers of a Gaussian (normal) distribution.
+     */
+    public static QDataSet randn(int len0, int len1, int len2, int len3) {
+        return randn(new int[]{len0, len1, len2, len3}, random );
+    }
+    
     private static Random random= new Random();
     
     /**
@@ -2897,6 +2922,20 @@ public class Ops {
         return DDataSet.wrap(back, 3, len0, len1, len2);
     }
 
+    /**
+     * returns a rank 3 dataset of random numbers of a gaussian (normal) distribution.
+     * @param seed basis for the random number (which will not be modified).
+     * @param len0 number of elements in the first index
+     * @param len1 number of elements in the second index
+     * @param len2 number of elements in the third index
+     * @param len3 number of elements in the fourth index
+     * @return rank 4 dataset of normal distribution
+     */
+    public static QDataSet randomn(long seed, int len0, int len1, int len2, int len3 ) {
+        double[] back = randomnBack(seed, len0 * len1 * len2 );
+        return DDataSet.wrap(back, 4, len0, len1, len2, len3 );
+    }
+    
     private static double[] randomnBack( long seed, int size ) {
         double[] back = new double[size];
         Random r = new Random(seed);
@@ -2964,7 +3003,20 @@ public class Ops {
         double[] back = randomuBack(seed, len0 * len1 * len2 );
         return DDataSet.wrap(back, 3, len0, len1, len2);
     }
-
+    
+    /**
+     * returns a rank 3 dataset of random numbers of a uniform distribution.
+     * @param seed basis for the random number (which will not be modified).
+     * @param len0 number of elements in the first index
+     * @param len1 number of elements in the second index
+     * @param len2 number of elements in the third index
+     * @param len3 number of elements in the fourth index
+     * @return rank 4 dataset of random uniform numbers from 0 to 1 but not including 1.
+     */
+    public static QDataSet randomu(long seed, int len0, int len1, int len2, int len3 ) {
+        double[] back = randomuBack(seed, len0 * len1 * len2 );
+        return DDataSet.wrap(back, 4, len0, len1, len2, len3 );
+    }
 
     /**
      * return a table of distances d[len0,len1] to the indeces c0,c1; in units of r0, r1.
