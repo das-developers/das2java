@@ -159,7 +159,11 @@ public class SlicesFilterEditorPanel extends AbstractFilterEditorPanel implement
             spinners[i].setModel( new SpinnerNumberModel( val, 0, max, 1 ) );
         }
         for ( int i=ds.rank(); i<ds.rank()+rmCount; i++ ) {
-            remove( i ); // DANGER: this assumes there are no other components preceding the guis.
+            try {
+                remove( i ); // DANGER: this assumes there are no other components preceding the guis.
+            } catch ( ArrayIndexOutOfBoundsException ex ) {
+                ex.printStackTrace();
+            }
         }
         for ( int i=0; i<rank-4; i++ ) {
             checkboxs[i].setEnabled(false);
