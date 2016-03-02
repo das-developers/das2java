@@ -8,8 +8,8 @@
  */
 package org.virbo.dsutil;
 
-import org.das2.datum.Units;
 import java.util.Arrays;
+import org.das2.datum.UnitsConverter;
 import org.virbo.dataset.ArrayDataSet;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetOps;
@@ -77,11 +77,11 @@ public class BinAverage {
 
 
     /**
-     * takes rank 2 bundle (x,y,z) and averages it into table z(x,y).  This is similar to what happens in the
-     * spectrogram routine.
+     * takes rank 2 bundle (x,y,z) and averages it into table z(x,y).  This is 
+     * similar to what happens in the spectrogram routine.
      * @param ds rank 2 bundle(x,y,z)
-     * @param dep0 the depend0 for the result
-     * @param dep1 the depend1 for the result
+     * @param dep0 the rank 1 depend0 for the result, which must be uniformly spaced.
+     * @param dep1 the rank 1 depend1 for the result, which must be uniformly spaced.
      * @return rank 2 dataset of z averages with depend_0 and depend_1.  WEIGHTS contains the total weight for each bin.
      */
     public static DDataSet rebinBundle( QDataSet ds, QDataSet dep0, QDataSet dep1 ) {
@@ -92,23 +92,39 @@ public class BinAverage {
         double xscal= dep0.value(1) - dep0.value(0);
         double xbase= dep0.value(0) - ( xscal / 2);
         int nx= dep0.length();
+        for ( int i=0; i<nx; i++ ) {
+            if ( (int)( ( dep0.value(i)-xbase ) / xscal )!=i ) {
+                throw new IllegalArgumentException("dep0 must be uniformly spaced.");
+            }
+        }
 
         double yscal= dep1.value(1) - dep1.value(0);
         double ybase= dep1.value(0) - ( yscal / 2);
         int ny= dep1.length();
+        for ( int i=0; i<ny; i++ ) {
+            if ( (int)( ( dep1.value(i)-ybase ) / yscal )!=i ) {
+                throw new IllegalArgumentException("dep1 must be uniformly spaced.");
+            }
+        }
 
-        for ( int ids=0; ids<ds.length(); ids++ ) {
-            double w= wds.value(ids);
-            if ( w>0 ) {
-                double x= ds.value(ids,0);
-                double y= ds.value(ids,1);
-                double z= ds.value(ids,2);
-                int i= (int)( ( x-xbase ) / xscal );
-                int j= (int)( ( y-ybase ) / yscal );
-                if ( i<0 || j<0 ) continue;
-                if ( i>=nx || j>=ny ) continue;
-                sresult.putValue( i, j, z + sresult.value( i, j ) );
-                nresult.putValue( i, j, w + nresult.value( i, j ) );
+        if ( ds.length()>0 ) {
+            UnitsConverter xuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(0), dep0 );
+            UnitsConverter yuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(1), dep1 );
+            for ( int ids=0; ids<ds.length(); ids++ ) {
+                double w= wds.value(ids);
+                if ( w>0 ) {
+                    double x= xuc.convert(ds.value(ids,0));
+                    double y= yuc.convert(ds.value(ids,1));
+                    double z= ds.value(ids,2);
+                    int i= (int)( ( x-xbase ) / xscal );
+                    int j= (int)( ( y-ybase ) / yscal );
+                    if ( i<0 || j<0 ) continue;
+                    if ( i>=nx || j>=ny ) continue;
+                    sresult.putValue( i, j, z + sresult.value( i, j ) );
+                    nresult.putValue( i, j, w + nresult.value( i, j ) );
+                } else {
+                    System.err.println("here");
+                }
             }
         }
 
