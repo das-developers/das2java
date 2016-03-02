@@ -121,7 +121,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     
     /**
      * return the number of bytes of each type (double=8, etc).
-     * @param type DOUBLE, FLOAT, UBYTE, etc.
+     * @param type DOUBLE, FLOAT, UBYTE, TIME28, etc.
      * @return 8, 4, 1, etc.
      */
     public static int byteCount(Object type) {
@@ -147,6 +147,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             return 1;
         } else if (type.equals(UBYTE)) {
             return 1;
+        } else if (type.toString().startsWith("time") ) {
+            return Integer.parseInt( type.toString().substring(4) );
         } else {
             throw new IllegalArgumentException("bad type: " + type);
         }
@@ -200,6 +202,10 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             result=new  ByteDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if (type.equals(UBYTE) ) {
             result=new UByteDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+        } else if (type.toString().startsWith("time") ) {
+            int lengthBytes= Integer.parseInt( type.toString().substring(4) );
+            result= new TimeDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+            ((TimeDataSet)result).setLengthBytes(lengthBytes);
         } else {
             throw new IllegalArgumentException("bad data type: "+type);
         }
