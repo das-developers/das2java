@@ -25,6 +25,7 @@ public class TimeDataSet extends BufferDataSet {
         super(rank, reclen, recoffs, len0, len1, len2, len3, BYTE, back );
         this.lenBytes= 24;
         putProperty( QDataSet.UNITS, Units.us2000 );
+        putProperty( QDataSet.FILL_VALUE, fill );
     }
     
     public void setLengthBytes( int length ) {
@@ -33,8 +34,7 @@ public class TimeDataSet extends BufferDataSet {
     
     private double parseTime( ByteBuffer back, int offset ) {
         byte[] buff= new byte[lenBytes];
-        back.position(offset);
-        back.get(buff);
+        for ( int i=0; i<lenBytes; i++ ) buff[i]= back.get(i+offset);
         try {
             return TimeUtil.create( new String(buff) ).doubleValue( Units.us2000 );
         } catch (ParseException ex) {
