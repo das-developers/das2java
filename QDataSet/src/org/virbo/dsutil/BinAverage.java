@@ -91,7 +91,7 @@ public class BinAverage {
 
         double xscal= dep0.value(1) - dep0.value(0);
         double xbase= dep0.value(0) - ( xscal / 2);
-        int nx= dep0.length();
+        int nx= dep0.length(); 
         for ( int i=0; i<nx; i++ ) {
             if ( (int)( ( dep0.value(i)-xbase ) / xscal )!=i ) {
                 throw new IllegalArgumentException("dep0 must be uniformly spaced.");
