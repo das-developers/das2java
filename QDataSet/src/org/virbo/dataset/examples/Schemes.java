@@ -435,7 +435,9 @@ public class Schemes {
     }
     
     /**
-     * return a rank 1 dataset that depends on a trajectory through a space.
+     * return a rank 1 dataset that depends on a trajectory through a space,
+     * which is not supported currently.
+     * 
      * @return rank 1 dataset with DEPEND_0 a trajectory.
      */
     public static QDataSet rank1AlongTrajectory( ) {
