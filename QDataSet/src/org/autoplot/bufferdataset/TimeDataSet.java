@@ -21,9 +21,9 @@ public class TimeDataSet extends BufferDataSet {
     int lenBytes;
     double fill= -1e38;
     
-    public TimeDataSet(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back ) {
-        super(rank, reclen, recoffs, len0, len1, len2, len3, BYTE, back );
-        this.lenBytes= 24;
+    public TimeDataSet(int rank, int reclen, int recoffs, int len0, int len1, int len2, int len3, ByteBuffer back, Object type ) {
+        super(rank, reclen, recoffs, len0, len1, len2, len3, type, back );
+        this.lenBytes= Integer.parseInt( type.toString().substring(4) );
         putProperty( QDataSet.UNITS, Units.us2000 );
         putProperty( QDataSet.FILL_VALUE, fill );
     }

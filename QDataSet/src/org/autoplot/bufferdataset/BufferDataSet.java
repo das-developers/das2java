@@ -203,9 +203,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         } else if (type.equals(UBYTE) ) {
             result=new UByteDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if (type.toString().startsWith("time") ) {
-            int lengthBytes= Integer.parseInt( type.toString().substring(4) );
-            result= new TimeDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
-            ((TimeDataSet)result).setLengthBytes(lengthBytes);
+            result= new TimeDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf, type );
         } else {
             throw new IllegalArgumentException("bad data type: "+type);
         }
