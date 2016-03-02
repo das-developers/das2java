@@ -2316,10 +2316,10 @@ public class Ops {
     /**
      * return a rank 1 dataset with <tt>len0</tt> linearly-spaced values, the first
      * is min and the last is max. 
-     * @param min
-     * @param max
-     * @param len0
-     * @return
+     * @param min double
+     * @param max double
+     * @param len0 number of elements in the result
+     * @return rank 1 dataset of linearly spaced data.
      */
     public static QDataSet linspace(double min, double max, int len0) {
         double[] back = new double[len0];
@@ -2332,6 +2332,24 @@ public class Ops {
             }
             return DDataSet.wrap(back, 1, len0, 1, 1);
         }
+    }
+    
+    /**
+     * return a rank 1 dataset with <tt>len0</tt> linearly-spaced values, the first
+     * is min and the last is max. 
+     * @param omin rank 0 dataset
+     * @param omax rank 0 dataset
+     * @param len0 number of elements in the result
+     * @return rank 1 dataset of linearly spaced data.
+     */
+    public static QDataSet linspace( Object omin, Object omax, int len0) {
+        QDataSet dsmin= dataset(omin);
+        QDataSet dsmax= dataset(omax);
+        Units u= SemanticOps.getUnits(dsmin);
+        double min= dsmin.value();
+        double max= convertUnitsTo( dsmax, u ).value();
+        QDataSet result= linspace( min, max, len0 );
+        return putProperty( result, QDataSet.UNITS, u );
     }
 
     /**
