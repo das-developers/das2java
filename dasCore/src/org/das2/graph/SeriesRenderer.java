@@ -531,37 +531,16 @@ public class SeriesRenderer extends Renderer {
                 p= null;
                 return;
             }
+            
+            QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
 
             QDataSet deltaPlusY = (QDataSet) vds.property( QDataSet.DELTA_PLUS );
             QDataSet deltaMinusY = (QDataSet) vds.property( QDataSet.DELTA_MINUS );
 
+            QDataSet deltaPlusX = (QDataSet) xds.property( QDataSet.DELTA_PLUS );
+            QDataSet deltaMinusX = (QDataSet) xds.property( QDataSet.DELTA_MINUS );
+
             GeneralPath lp;
-
-            if (deltaPlusY == null) {
-                p= null;
-                return;
-            }
-            if (deltaMinusY == null) {
-                p= null;
-                return;
-            }
-
-            QDataSet up; 
-            QDataSet dn;
-
-            try {
-                up= Ops.add( vds, deltaPlusY );
-                dn= Ops.subtract( vds, deltaMinusY );
-            } catch ( IllegalArgumentException ex ) {
-                getParent().postException(SeriesRenderer.this,ex);
-                up= vds;
-                dn= vds;
-            }
-            
-            QDataSet wup= Ops.valid(up);
-            QDataSet wdn= Ops.valid(dn);
-            
-            QDataSet xds= SemanticOps.xtagsDataSet(dataSet);
 
             Units xunits = SemanticOps.getUnits(xds);
             Units yunits = SemanticOps.getUnits(vds);
@@ -570,13 +549,44 @@ public class SeriesRenderer extends Renderer {
             if ( xunitsWarning ) xunits= xAxis.getUnits();
 
             lp = new GeneralPath();
-            for (int i = firstIndex; i < lastIndex; i++) {
-                double ix = xAxis.transform( xds.value(i), xunits );
-                if ( wup.value(i)>0 && wdn.value(i)>0 ) {
-                    double iym = yAxis.transform( dn.value(i), yunits );
-                    double iyp = yAxis.transform( up.value(i), yunits );
-                    lp.moveTo(ix, iym);
-                    lp.lineTo(ix, iyp);
+            
+            if ( deltaPlusY!=null && deltaMinusY!=null ) {
+                try {
+                    QDataSet p1= Ops.add( vds, deltaPlusY );
+                    QDataSet p2= Ops.subtract( vds, deltaMinusY );
+                    QDataSet w1= Ops.valid(p2);
+                    QDataSet w2= Ops.valid(p1);
+                    for (int i = firstIndex; i < lastIndex; i++) {
+                        double ix = xAxis.transform( xds.value(i), xunits );
+                        if ( w1.value(i)>0 && w2.value(i)>0 ) {
+                            double iym = yAxis.transform( p1.value(i), yunits );
+                            double iyp = yAxis.transform( p2.value(i), yunits );
+                            lp.moveTo(ix, iym);
+                            lp.lineTo(ix, iyp);
+                        }
+                    }
+                } catch ( IllegalArgumentException ex ) {
+                    getParent().postException(SeriesRenderer.this,ex);
+                }
+            }
+            
+            if ( deltaPlusX!=null && deltaMinusX!=null ) {
+                try {
+                    QDataSet p1= Ops.subtract( xds, deltaMinusX );
+                    QDataSet p2= Ops.add( xds, deltaPlusX );
+                    QDataSet w1= Ops.valid(p1);
+                    QDataSet w2= Ops.valid(p2);
+                    for (int i = firstIndex; i < lastIndex; i++) {
+                        double iy = yAxis.transform( vds.value(i), yunits );
+                        if ( w1.value(i)>0 && w2.value(i)>0 ) {
+                            double ixm = xAxis.transform( p1.value(i), xunits );
+                            double ixp = xAxis.transform( p2.value(i), xunits );
+                            lp.moveTo(ixm, iy);
+                            lp.lineTo(ixp, iy);
+                        }
+                    }
+                } catch ( IllegalArgumentException ex ) {
+                    getParent().postException(SeriesRenderer.this,ex);
                 }
             }
             
