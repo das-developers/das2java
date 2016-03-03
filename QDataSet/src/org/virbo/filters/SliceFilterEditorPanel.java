@@ -314,14 +314,12 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         int idx= sliceDimensionCB.getSelectedIndex();
         sliceDimensionCB.setModel(new DefaultComboBoxModel(depNames1));
         qube= DataSetUtil.qubeDims(ds);
-        boolean dirty= false;
         if ( qube!=null ) {
             if ( idx<qube.length ) { // transitions
                 ((SpinnerNumberModel)sliceIndexSpinner.getModel()).setMaximum(qube[idx]-1);
                 int index= ((Integer)sliceIndexSpinner.getValue());
                 if ( index> qube[idx]-1 ) {
                     sliceIndexSpinner.setValue(qube[idx]-1);
-                    dirty= true;
                 }
             }
         }
@@ -335,6 +333,20 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
             firePropertyChange( PROP_FILTER, oldFilter, newFilter );
         }
     }
-    
+
+    @Override
+    public boolean validateFilter(String filter, QDataSet in) {
+        if ( in==null ) return true;
+        qube= DataSetUtil.qubeDims(in);
+        logger.log(Level.FINE, "setFilter {0}", filter);
+        Pattern p= Pattern.compile("\\|slice(\\d)\\((\\d+)\\)");
+        Matcher m= p.matcher(filter);
+        if ( m.matches() ) {
+            int dim= Integer.parseInt(m.group(1));
+            int index= Integer.parseInt(m.group(2));
+            return qube[dim]>index;
+        }
+        return true;
+    }
 
 }

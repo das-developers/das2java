@@ -49,4 +49,10 @@ public abstract class AbstractFilterEditorPanel extends JPanel implements Filter
     public JPanel getPanel() {
         return this;
     }
+
+    @Override
+    public boolean validateFilter(String filter, QDataSet in) {
+        return true;
+    }
+    
 }

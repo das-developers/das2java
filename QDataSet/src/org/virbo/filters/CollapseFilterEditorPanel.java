@@ -94,4 +94,9 @@ public class CollapseFilterEditorPanel extends javax.swing.JPanel implements Fil
     public JPanel getPanel() {
         return this;
     }
+
+    @Override
+    public boolean validateFilter(String filter, QDataSet in) {
+        return true;
+    }
 }

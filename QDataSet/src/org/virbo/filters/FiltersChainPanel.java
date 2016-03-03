@@ -698,6 +698,39 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         //this.revalidate();        
     }
 
+    /**
+     * return true of the filter appears that it will be valid, and 
+     * false when it clearly won't.
+     * @param filter
+     * @return 
+     */
+    public boolean validateFilter(String filter) {
+        String[] ss= filter.split("\\|");
+        int i=0;
+        final List<FilterEditorPanel> leditors= new ArrayList(editors);
+        
+        QDataSet ds= inputDs;
+        for (String s : ss) {
+            s= s.trim();
+            if ( s.length()>0 ) {
+                final FilterEditorPanel p = leditors.get(i);
+                if ( p.validateFilter("|"+s,ds) ) {
+                    ds=null;
+                } else {
+                    return false;
+                }
+                i=i+1;
+            }
+        }
+        return true;
+    }    
+     
+    @Override
+    public boolean validateFilter(String filter, QDataSet in) {
+        this.inputDs= in;
+        return validateFilter(filter);
+    }
+    
     @Override
     public JPanel getPanel() {
         logger.entering( CLASS_NAME, "getPanel" );        

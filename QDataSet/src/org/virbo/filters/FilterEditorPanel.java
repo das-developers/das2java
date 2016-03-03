@@ -40,6 +40,14 @@ public interface FilterEditorPanel {
      */
     JPanel getPanel();
     
+    /**
+     * return true if the filter is valid
+     * @param filter "slice1(-1)"
+     * @param in the input, or null.
+     * @return false if the input is clearly not valid.
+     */
+    boolean validateFilter( String filter, QDataSet in );
+    
     public static String PROP_FILTER= "filter";
     
 }
