@@ -713,7 +713,6 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         for ( int i=0; i<recalculating.size(); i++ ) {
             recalculating.set(i,Boolean.TRUE);
         }
-        indicateRecalculating();
         recalculatingTimer.restart();
         
         final List<FilterEditorPanel> leditors= new ArrayList(editors);
