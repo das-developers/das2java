@@ -259,7 +259,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * </ul>
      * @param rank   dataset rank
      * @param reclen  length in bytes of each record
-     * @param recoffs  byte offet of each record
+     * @param recoffs  byte offset of each record
      * @param len0   number of elements in the first index
      * @param len1   number of elements in the second index
      * @param len2   number of elements in the third index
@@ -582,7 +582,16 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         
         int myLength= elementSizeBytes * this.len0 * this.len1 * this.len2 * this.len3;
         int dsLength= elementSizeBytes * ds.len0 * ds.len1 * ds.len2 * ds.len3;
-
+        
+        if ( this.len1 * this.len2 * this.len3 * byteCount(this.type) < this.reclen ) {
+            throw new IllegalArgumentException("dataset must be compact");
+        }
+        
+        if ( ds.len1 * ds.len2 * ds.len3 * byteCount(ds.type) < ds.reclen ) {
+            BufferDataSet ds2= ds.compact();
+            ds= ds2;
+        }
+        
         if ( this.back.capacity()< ( recoffset + myLength + dsLength ) ) {
             throw new IllegalArgumentException("unable to append dataset, not enough room");
         } else {
@@ -591,10 +600,23 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
 
         ByteBuffer dsBuffer= ds.back.duplicate(); // TODO: verify thread safety
         
-        this.back.position( recoffset + myLength );
-        this.back.limit( recoffset + myLength + dsLength );
-        this.back.put( dsBuffer );
-        this.back.flip();
+        int recLenBytes= ds.len1 * ds.len2 * ds.len3 * byteCount(type);
+        if ( this.reclen < ds.reclen || this.recoffset!=0 || ds.recoffset!=0 ) { // there's a lot of data we aren't reading, we need to compact the data.
+            ByteBuffer lback= ds.back.duplicate();
+            this.back.position( recoffset + myLength );
+            this.back.limit( recoffset + myLength + dsLength );
+            for ( int i=0; i<len0; i++ ) {
+                int recStartBytes= ds.offset(i);
+                lback.limit(recStartBytes+recLenBytes);
+                lback.position(recStartBytes);
+                this.back.put( lback );
+            }
+        } else {
+            this.back.position( recoffset + myLength );
+            this.back.limit( recoffset + myLength + dsLength );
+            this.back.put( dsBuffer );
+            this.back.flip();
+        }
         
         Units u1= SemanticOps.getUnits(this);
         Units u2= SemanticOps.getUnits(ds);
@@ -647,12 +669,19 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if ( ds.len1!=ths.len1 ) throw new IllegalArgumentException("len1 mismatch");
         if ( ds.len2!=ths.len2 ) throw new IllegalArgumentException("len2 mismatch");
         if ( ds.len3!=ths.len3 ) throw new IllegalArgumentException("len3 mismatch");
-        if ( ths.getType()!=ds.getType() ) throw new IllegalArgumentException("backing type mismatch");
+        if ( !ths.getType().equals(ds.getType()) ) throw new IllegalArgumentException("backing type mismatch"); // time21
         if ( ths.back.order()!=ds.back.order() ) throw new IllegalArgumentException("byte order (endianness) must be the same");
 
-        int myLength= byteCount(ths.type) * ths.len0 * ths.len1 * ths.len2 * ths.len3;
-        int dsLength= byteCount(ds.type) * ds.len0 * ds.len1 * ds.len2 * ds.len3;
+        int myLength= ths.len0 * ths.len1 * ths.len2 * ths.len3 * byteCount(ths.type);
+        int dsLength= ds.len0 * ds.len1 * ds.len2 * ds.len3 * byteCount(ds.type);
 
+        if ( ths.len1 * ths.len2 * ths.len3 * byteCount(ths.type) < ths.reclen ) {
+            ths= ths.compact();
+        }
+        
+        if ( ds.len1 * ds.len2 * ds.len3 * byteCount(ds.type) < ds.reclen ) {
+            ds= ds.compact();
+        }
         ByteBuffer newback= checkedAllocateDirect( myLength + dsLength );
         newback.order( ths.back.order() );
         
@@ -925,22 +954,34 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         
         int newSize= newRecCount * len1 * len2 * len3 * byteCount(type);
         
-        ByteBuffer lback= this.back.duplicate();
+        ByteBuffer lback= this.back.duplicate(); // note this does not copy the data!
         lback.order( this.back.order() );
         int oldSize= len0 *  len1 * len2 * len3 * byteCount(type);
 
         if ( newSize<oldSize ) { // it's possible that the dataset already has a backing that can support this.  Check for this.
             return;
         }
-
+        
         ByteBuffer newBack= checkedAllocateDirect( newSize );
         newBack.order( lback.order() );
-        newBack.put(lback);
+
+        int recLenBytes= len1 * len2 * len3 * byteCount(type);
+        if ( recLenBytes < reclen || recoffset!=0 ) { // there's a lot of data we aren't reading, we need to compact the data.
+            for ( int i=0; i<len0; i++ ) {
+                int recStartBytes= offset(i);
+                lback.limit(recStartBytes+recLenBytes);
+                lback.position(recStartBytes);
+                newBack.put(lback);
+            }
+        } else {
+            newBack.put(lback);
+        }
         
-        lback.flip();
         newBack.flip();
                 
         this.back= newBack;
+        this.recoffset= 0;
+        
     }
 
     /**
@@ -1110,12 +1151,12 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * left with its position at the end of the copied data.
      * @param buf
      */
-    public void copyTo( ByteBuffer buf ) {
+    private void copyTo( ByteBuffer buf ) {
         ByteBuffer lback= this.back.duplicate(); // duplicate just the indeces, not the data
         lback.order(back.order());
-        lback.position( recoffset );
+        lback.position( 0 ); // bugfix should be 0, see only usage
         lback.mark();
-        lback.limit( recoffset + reclen * len0 );
+        lback.limit( reclen * len0 );
         buf.put( lback );
     }
 
@@ -1197,5 +1238,28 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             return double.class;
         }
         
+    }
+
+    /**
+     * get ride of extra spaces between records.
+     * @return new BufferDataSet without gaps.
+     */
+    public BufferDataSet compact() {
+        ByteBuffer lback= this.back.duplicate();
+        lback.order(this.back.order());
+        
+        int recLenBytes= len1 * len2 * len3 * byteCount(type) ;
+        ByteBuffer newBuf= ByteBuffer.allocate( len0 * recLenBytes );
+        newBuf.order(this.back.order());
+        for ( int i=0; i<len0; i++ ) {
+            int recStartBytes= offset(i);
+            lback.limit(recStartBytes+recLenBytes);
+            lback.position(recStartBytes);
+            newBuf.put( lback );
+        }
+        newBuf.flip();
+        BufferDataSet result= makeDataSet( this.rank, recLenBytes, 0, len0, len1, len2, len3, newBuf, type );
+        result.properties.putAll( Ops.copyProperties(this) );
+        return result;
     }
 }
