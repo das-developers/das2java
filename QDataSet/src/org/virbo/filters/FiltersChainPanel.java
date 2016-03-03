@@ -699,8 +699,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     }
 
     /**
-     * return true of the filter appears that it will be valid, and 
-     * false when it clearly won't.
+     * return true if the filter appears that it will be valid, and 
+     * false when it clearly won't be.
      * @param filter
      * @return 
      */
