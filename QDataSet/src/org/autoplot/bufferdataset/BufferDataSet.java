@@ -379,6 +379,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
 
     private static BufferDataSet ddcopy(BufferDataSet ds) {
         
+        ds= ds.compact(); //TODO: copy then copy again
+        
         ByteBuffer newback= checkedAllocateDirect(ds.back.limit());
         newback.order(ds.back.order());
         ds.copyTo(newback);
@@ -1152,12 +1154,18 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * @param buf
      */
     private void copyTo( ByteBuffer buf ) {
-        ByteBuffer lback= this.back.duplicate(); // duplicate just the indeces, not the data
-        lback.order(back.order());
-        lback.position( 0 ); // bugfix should be 0, see only usage
-        lback.mark();
-        lback.limit( reclen * len0 );
-        buf.put( lback );
+        if ( isCompact() ) {
+            ByteBuffer lback= this.back.duplicate(); // duplicate just the indeces, not the data
+            lback.order(back.order());
+            lback.position( 0 ); // bugfix should be 0, see only usage
+            lback.mark();
+            lback.limit( reclen * len0 );
+            buf.put( lback );
+        } else {
+            BufferDataSet c= this.compact();
+            c.copyTo(buf);
+        }
+        
     }
 
     /**
@@ -1241,6 +1249,16 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     }
 
     /**
+     * returns true if the dataset is compact, meaning that there
+     * are no gaps between records, and no byte offset.
+     * @return true if the dataset is compact
+     */
+    public boolean isCompact() {
+        int recLenBytes= len1 * len2 * len3 * byteCount(type) ;
+        return recLenBytes==this.reclen && this.recoffset==0;
+    }
+    
+    /**
      * get ride of extra spaces between records.
      * @return new BufferDataSet without gaps.
      */
@@ -1253,6 +1271,9 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         newBuf.order(this.back.order());
         for ( int i=0; i<len0; i++ ) {
             int recStartBytes= offset(i);
+            if ( recStartBytes+recLenBytes > back.capacity() ) {
+                System.err.println("Here mac cap");
+            }
             lback.limit(recStartBytes+recLenBytes);
             lback.position(recStartBytes);
             newBuf.put( lback );
