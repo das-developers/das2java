@@ -36,6 +36,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.das2.util.LoggerManager;
@@ -58,8 +59,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     private QDataSet inputDs;
     private String currentFilter= null; // the currently implemented filter.
     private boolean implicitUnbundle= false;
-    TickleTimer timer;
-
+    private TickleTimer timer;
+    private Timer recalculatingTimer; //AWT thread
+    
     private static final Logger logger= LoggerManager.getLogger("qdataset.filters");
     private static final String CLASS_NAME = FiltersChainPanel.class.getName();
     
@@ -80,6 +82,14 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                 updateImmediately();
             }
         });
+        recalculatingTimer= new Timer( 100, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                indicateRecalculating();
+            }
+        }); 
+        recalculatingTimer.setRepeats(false);
+        
         setFilter("");
     }
 
@@ -94,6 +104,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
      * these are the filters used to get to each result.
      */
     List<String> resultFilters= new LinkedList();
+    
+    /**
+     * true means the filter is recalculating, and the GUI will be updated later.
+     */
+    List<Boolean> recalculating= new LinkedList();
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -466,7 +481,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         logger.entering( CLASS_NAME, "setFilter", filter );
         
         if ( !SwingUtilities.isEventDispatchThread() ) {
-            logger.warning("must be called from event thread");
+            logger.warning("must be called from event thread"); 
         }
         
         if ( filter==null ) filter= ""; // autoplot-test100 Automatic GUI testing hits this, presumably intermediate state.
@@ -488,6 +503,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             removeFocusListeners( p.getPanel() );
         }
         editors.clear();
+        recalculating.clear();
         
         JPanel content= new JPanel();
         this.setPreferredSize( new Dimension( 500, 300 ) );
@@ -509,6 +525,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         if ( ss[0].length()>0 ) {
             FilterEditorPanel p = getEditorFor("|unbundle("+ss[0]+")", recycle.get(0) );
             editors.add(p);
+            recalculating.add(Boolean.FALSE);
             JPanel ll= onePanel(i);
             content.add( ll );
             i++;
@@ -539,6 +556,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
 //                
                 FilterEditorPanel p = getEditorFor(s, recycle.get(editors.size()) );
                 editors.add(p);
+                recalculating.add(Boolean.FALSE);
                 JPanel ll= onePanel(i);
                 content.add( ll );
                 i++;
@@ -579,6 +597,18 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             Logger.getLogger(FiltersChainPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    private void indicateRecalculating() {
+        for ( int i=0; i<recalculating.size(); i++ ) {
+            boolean recalc= recalculating.get(i);
+            if ( recalc ) {
+                editors.get(i).getPanel().setBackground(Color.GRAY);
+            } else {
+                editors.get(i).getPanel().setBackground(backgroundColor);
+            }
+        }
+    }
+    
     /**
      * set the input dataset for each filter.
      */
@@ -610,13 +640,14 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             if ( s.length()>0 ) {
                 final FilterEditorPanel p = leditors.get(i);
                 if ( ds!=null ) {
-                    
+                    final int fi= i;
                     final QDataSet fds= ds;
                     Runnable run= new Runnable() {
                         @Override
                         public void run() {
                             p.setInput(fds);
-                            p.getPanel().setBackground(backgroundColor);
+                            recalculating.set(fi,Boolean.FALSE);
+                            indicateRecalculating();
                         }
                     };
                     SwingUtilities.invokeLater(run);
@@ -679,9 +710,11 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         final String filter= getFilter();
         logger.log(Level.FINE, "filter: {0}", filter);
         
-        for (FilterEditorPanel p : editors) {
-            p.getPanel().setBackground(Color.GRAY);
+        for ( int i=0; i<recalculating.size(); i++ ) {
+            recalculating.set(i,Boolean.TRUE);
         }
+        indicateRecalculating();
+        recalculatingTimer.restart();
         
         final List<FilterEditorPanel> leditors= new ArrayList(editors);
         
@@ -807,6 +840,16 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         JPanel p= new JPanel( new BorderLayout() );
         p.add( ff );
         p.add( tf, BorderLayout.NORTH );
+        
+        JButton b= new JButton("reset data");
+        p.add( b, BorderLayout.SOUTH );
+        b.addActionListener( new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ff.setInput(null);
+                ff.setInput(ds);
+            }
+        });
         
         JDialog d= new JDialog();
         d.setContentPane( p );
