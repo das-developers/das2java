@@ -155,6 +155,7 @@ public class SeriesRenderer extends Renderer {
         setLineWidth( getDoubleControl( CONTROL_KEY_LINE_THICK, lineWidth ) );
         setSymSize( getDoubleControl( CONTROL_KEY_SYMBOL_SIZE, symSize ) );
         setPsym( decodePlotSymbolControl( getControl( CONTROL_KEY_SYMBOL, psym.toString() ), psym ) );
+        setDrawError( getBooleanControl( CONTROL_KEY_DRAW_ERROR, drawError ) );
     }
 
     @Override
@@ -165,6 +166,7 @@ public class SeriesRenderer extends Renderer {
         controls.put( CONTROL_KEY_LINE_THICK, String.valueOf(lineWidth) );
         controls.put( CONTROL_KEY_SYMBOL_SIZE, String.valueOf( symSize ) );
         controls.put( CONTROL_KEY_SYMBOL, encodePlotSymbolControl(psym) );
+        controls.put( CONTROL_KEY_DRAW_ERROR, encodeBooleanControl( drawError ) );
         return formatControl(controls);
     }
     
@@ -1519,7 +1521,10 @@ public class SeriesRenderer extends Renderer {
             int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, tds, mon.getSubtaskMonitor("psymConnectorElement.render")); // tds is only to check units
 
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
-            errorElement.render(graphics, xAxis, yAxis, tds, mon.getSubtaskMonitor("errorElement.render"));
+            
+            if ( drawError ) {
+                errorElement.render(graphics, xAxis, yAxis, tds, mon.getSubtaskMonitor("errorElement.render"));
+            }
 
         } else {
 
@@ -1532,7 +1537,10 @@ public class SeriesRenderer extends Renderer {
 
             int connectCount= psymConnectorElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("psymConnectorElement.render")); // vds is only to check units
             logger.log(Level.FINEST, "connectCount: {0}", connectCount);
-            errorElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("errorElement.render"));
+            
+            if ( drawError ) {
+                errorElement.render(graphics, xAxis, yAxis, vds, mon.getSubtaskMonitor("errorElement.render"));
+            }
 
             int symCount;
             if (psym != DefaultPlotSymbol.NONE) {
@@ -2070,6 +2078,26 @@ public class SeriesRenderer extends Renderer {
 
     }
 
+    /**
+     * true if error bars should be drawn when available.
+     */
+    private boolean drawError = true;
+
+    public static final String PROP_DRAWERROR = "drawError";
+
+    public boolean isDrawError() {
+        return drawError;
+    }
+
+    public void setDrawError(boolean drawError) {
+        boolean oldDrawError = this.drawError;
+        this.drawError = drawError;
+        if ( oldDrawError!=drawError ) {
+            update();
+        }
+        propertyChangeSupport.firePropertyChange(PROP_DRAWERROR, oldDrawError, drawError);
+    }
+
     /** Getter for property symsize.
      * @return Value of property symsize.
      */
@@ -2407,7 +2435,7 @@ public class SeriesRenderer extends Renderer {
             accept = true;
         }
 
-        if ((!accept) && errorElement.acceptContext(dp)) {
+        if ((!accept) && drawError && errorElement.acceptContext(dp)) {
             accept = true;
         }
 

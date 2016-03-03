@@ -367,6 +367,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public static final String CONTROL_KEY_SYMBOL= "symbol";
     public static final String CONTROL_KEY_SYMBOL_SIZE= "symbolSize";
     public static final String CONTROL_KEY_REFERENCE= "reference";
+    public static final String CONTROL_KEY_DRAW_ERROR= "drawError";
     
     public static final String PROP_CONTROL= "control";
 
