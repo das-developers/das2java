@@ -307,21 +307,32 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         if ( !SwingUtilities.isEventDispatchThread() ) {
             logger.log(Level.WARNING, "called off event thread");
         }
+        String oldFilter= getFilter();
         logger.log(Level.FINE, "setInput {0}", ds.toString() );
         this.inputDs= new WeakReference(ds);
         String[] depNames1= FilterEditorPanelUtil.getDimensionNames(ds);
         int idx= sliceDimensionCB.getSelectedIndex();
         sliceDimensionCB.setModel(new DefaultComboBoxModel(depNames1));
         qube= DataSetUtil.qubeDims(ds);
+        boolean dirty= false;
         if ( qube!=null ) {
             if ( idx<qube.length ) { // transitions
                 ((SpinnerNumberModel)sliceIndexSpinner.getModel()).setMaximum(qube[idx]-1);
+                int index= ((Integer)sliceIndexSpinner.getValue());
+                if ( index> qube[idx]-1 ) {
+                    sliceIndexSpinner.setValue(qube[idx]-1);
+                    dirty= true;
+                }
             }
         }
         try {
             sliceDimensionCB.setSelectedIndex(idx);
         } catch ( IllegalArgumentException ex ) {
             sliceDimensionCB.setSelectedIndex(0);
+        }
+        String newFilter= getFilter();
+        if ( !oldFilter.equals(newFilter) ) {
+            firePropertyChange( PROP_FILTER, oldFilter, newFilter );
         }
     }
     
