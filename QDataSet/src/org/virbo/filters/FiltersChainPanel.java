@@ -382,6 +382,28 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     }
     
     /**
+     * turn off and on the add and subtract buttons.
+     */
+    private boolean addSubtractButtons = true;
+
+    public static final String PROP_ADDSUBTRACTBUTTONS = "addSubtractButtons";
+
+    public boolean isAddSubtractButtons() {
+        return addSubtractButtons;
+    }
+
+    public void setAddSubtractButtons(boolean addSubtractButtons) {
+        boolean oldAddSubtractButtons = this.addSubtractButtons;
+        this.addSubtractButtons = addSubtractButtons;
+        
+        String filter= getFilter();
+        setFilter( null );
+        setFilter( filter );
+        
+        firePropertyChange(PROP_ADDSUBTRACTBUTTONS, oldAddSubtractButtons, addSubtractButtons);
+    }
+
+    /**
      * return the panel with the add and remove icons.
      * @param fi the position 
      * @return one panel  ( +  panel GUI  - )
@@ -399,67 +421,71 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
         Dimension limit= new Dimension(24,24);
         
-        JButton subAdd= new JButton("");
-        subAdd.setIcon( new ImageIcon( FiltersChainPanel.class.getResource("/resources/add.png") ) );
-        subAdd.setMaximumSize( limit );
-        subAdd.setPreferredSize( limit );
+        if ( addSubtractButtons ) {
+            JButton subAdd= new JButton("");
+            subAdd.setIcon( new ImageIcon( FiltersChainPanel.class.getResource("/resources/add.png") ) );
+            subAdd.setMaximumSize( limit );
+            subAdd.setPreferredSize( limit );
 
-        if ( fi>=0 ) {
-            subAdd.setToolTipText( "insert new filter before "+ sfilter );
-            subAdd.addActionListener( new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    org.das2.util.LoggerManager.logGuiEvent(e);                    
-                    //if ( true ) {
-                        addFilterNew(fi);
-                    //} else {
-                    //    addFilter(fi);
-                    //}
-                }
-            } );
-        } else {
-           subAdd.setToolTipText( "insert new filter" );        
-           subAdd.addActionListener( new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    org.das2.util.LoggerManager.logGuiEvent(e);
-                    //if ( true ) {
-                        addFilterNew(editors.size());
-                    //} else {
-                    //    addFilter(editors.size());
-                    //}
-                }
-            } );
-        }
+            if ( fi>=0 ) {
+                subAdd.setToolTipText( "insert new filter before "+ sfilter );
+                subAdd.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        org.das2.util.LoggerManager.logGuiEvent(e);                    
+                        //if ( true ) {
+                            addFilterNew(fi);
+                        //} else {
+                        //    addFilter(fi);
+                        //}
+                    }
+                } );
+            } else {
+               subAdd.setToolTipText( "insert new filter" );        
+               subAdd.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        org.das2.util.LoggerManager.logGuiEvent(e);
+                        //if ( true ) {
+                            addFilterNew(editors.size());
+                        //} else {
+                        //    addFilter(editors.size());
+                        //}
+                    }
+                } );
+            }
 
-        sub.add( subAdd, BorderLayout.WEST );
+            sub.add( subAdd, BorderLayout.WEST );
 
-        if ( fi>=0 ) {
-            JButton subDelete= new JButton("");
-            subDelete.setIcon( new ImageIcon( FiltersChainPanel.class.getResource("/resources/subtract.png") ) );
-            subDelete.setMaximumSize( limit );
-            subDelete.setPreferredSize( limit );
-            subDelete.setToolTipText( "remove filter " + sfilter );
-            subDelete.addActionListener( new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    org.das2.util.LoggerManager.logGuiEvent(e);                                        
-                    deleteFilter(fi);
-                    Container parent= sub.getParent();
-                    parent.remove(sub);
-                    parent.validate();
-                }
-            } );
-            sub.add( subDelete, BorderLayout.EAST );
+            if ( fi>=0 ) {
+                JButton subDelete= new JButton("");
+                subDelete.setIcon( new ImageIcon( FiltersChainPanel.class.getResource("/resources/subtract.png") ) );
+                subDelete.setMaximumSize( limit );
+                subDelete.setPreferredSize( limit );
+                subDelete.setToolTipText( "remove filter " + sfilter );
+                subDelete.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        org.das2.util.LoggerManager.logGuiEvent(e);                                        
+                        deleteFilter(fi);
+                        Container parent= sub.getParent();
+                        parent.remove(sub);
+                        parent.validate();
+                    }
+                } );
+                sub.add( subDelete, BorderLayout.EAST );
+            }
         }
 
         if ( fi>=0 ) {
             sub.add( pp, BorderLayout.CENTER );
 
         } else {
-            final JLabel tf= new JLabel();
-            tf.setText("<html><i>&nbsp;(click to add)</i></html>");
-            sub.add( tf, BorderLayout.CENTER );
+            if ( addSubtractButtons ) {
+                final JLabel tf= new JLabel();
+                tf.setText("<html><i>&nbsp;(click to add)</i></html>");
+                sub.add( tf, BorderLayout.CENTER );
+            }
 
         }
 
@@ -821,7 +847,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         final JTextField tf= new JTextField();
         tf.setText(ff.getFilter());
         
-        tf.addActionListener( new ActionListener() {
+        tf.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ff.setFilter(tf.getText());
@@ -829,7 +855,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             }
         });
         
-        ff.addPropertyChangeListener( "filter", new PropertyChangeListener() {
+        ff.addPropertyChangeListener("filter", new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 tf.setText(ff.getFilter());
@@ -842,7 +868,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
         JButton b= new JButton("reset data");
         p.add( b, BorderLayout.SOUTH );
-        b.addActionListener( new ActionListener() {
+        b.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ff.setInput(null);
