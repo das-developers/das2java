@@ -771,11 +771,13 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         for (String s : ss) {
             s= s.trim();
             if ( s.length()>0 ) {
-                final FilterEditorPanel p = leditors.get(i);
-                if ( p.validateFilter("|"+s,ds) ) {
-                    ds=null;
-                } else {
-                    return false;
+                if ( i<leditors.size() )  {
+                    final FilterEditorPanel p = leditors.get(i);
+                    if ( p.validateFilter("|"+s,ds) ) {
+                        ds=null;
+                    } else {
+                        return false;
+                    }
                 }
                 i=i+1;
             }
