@@ -26,6 +26,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -52,6 +53,7 @@ public class DisplayDataMouseModule extends MouseModule {
     private JPanel myPanel;
     private JTable myEdit;
     private JComboBox comboBox;
+    private JLabel messageLabel;
     private Renderer[] rends;
     private DatumRange xrange;
     private DatumRange yrange;
@@ -82,10 +84,14 @@ public class DisplayDataMouseModule extends MouseModule {
             JScrollPane scrollPane = new JScrollPane( myEdit, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
             myPanel.add(scrollPane, BorderLayout.CENTER);
             
+            messageLabel= new JLabel("");
+            myPanel.add( messageLabel, BorderLayout.SOUTH );
+            
             comboBox= new JComboBox();
             comboBox.addItemListener( itemListener );
 
             myPanel.add( comboBox, BorderLayout.NORTH );
+            
             
             myFrame.getContentPane().add(myPanel);
             myFrame.pack();
@@ -223,14 +229,18 @@ public class DisplayDataMouseModule extends MouseModule {
             if ( dep1!=null && dep1.rank()==2 ) {
                 myEdit.getTableHeader().setToolTipText("Column labels reported are from the first record");
             }
+            messageLabel.setText( tds.toString() + " shown above" );
+            
         } catch ( RuntimeException ex ) {
             logger.log( Level.SEVERE, ex.getMessage(), ex );
             tm= new QDataSetTableModel(ds);
             tcm= ((QDataSetTableModel)tm).getTableColumnModel();
+            messageLabel.setText( ex.getMessage() );
         }
         myEdit.setModel(tm);
         myEdit.setColumnModel(tcm);
 
+        
         //myEdit.setColumnModel(new DefaultTableColumnModel() );
         //myEdit.setColumnModel(tcm); // error with rank 1.
 
