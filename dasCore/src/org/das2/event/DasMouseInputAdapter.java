@@ -668,14 +668,10 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
         if (parent.getRow() != DasRow.NULL && parent.getColumn() != DasColumn.NULL) {
             int xLeft = parent.getColumn().getDMinimum();
             int xRight = parent.getColumn().getDMaximum();
-            int xMid;
+            int xMid= ( xLeft + xRight ) / 2;
             int yTop = parent.getRow().getDMinimum();
             int yBottom = parent.getRow().getDMaximum();
-            int yMid;
-
-            Rectangle r= parent.getBounds();
-            xMid= r.x + r.width/2;
-            yMid= r.y + r.height/2;
+            int yMid= (  yTop + yBottom ) / 2;
             
             Graphics2D gg = (Graphics2D) g.create();
 
