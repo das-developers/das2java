@@ -235,7 +235,7 @@ public class AverageTableRebinner implements DataSetRebinner {
      * See  http://sourceforge.net/p/autoplot/bugs/1398/
      * @param xunits the units of the xtags, or the offset units.
      * @param tds the data.
-     * @return the cadence for the entire set.
+     * @return the cadence for the entire set, and zero if it cannot be established.
      */
     private static Datum getXTagWidth( Units xunits, QDataSet tds ) {
         xunits= xunits.getOffsetUnits();
@@ -248,6 +248,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                     return xunits.createDatum(1);
                 } else if ( xds.length()>2 ) {
                     QDataSet r= DataSetUtil.guessCadenceNew( xds, null );
+                    if ( r==null ) return xunits.getOffsetUnits().createDatum(0);
                     Datum rd= DataSetUtil.asDatum(r);
                     cadence= cadence.gt( rd ) ? cadence : rd;
                 }
@@ -263,6 +264,7 @@ public class AverageTableRebinner implements DataSetRebinner {
                 return xunits.createDatum(1);
             } else if ( xds.length()>2 ) {
                 QDataSet r= DataSetUtil.guessCadenceNew( xds, null );
+                if ( r==null ) return xunits.getOffsetUnits().createDatum(0);
                 Datum rd= DataSetUtil.asDatum(r);
                 return rd;
             } else {
