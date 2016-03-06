@@ -619,6 +619,7 @@ public class DatumRangeUtil {
     }
     
     public static void main(String[]ss ) throws ParseException {
+        System.err.println( parseTimeRange( "now-P1D/now+P1D" ) );
         System.err.println( parseTimeRange( "1972/now-P1D" ) );
         System.err.println( parseTimeRange( "now-P10D/now-P1D" ) );
         System.err.println( parseISO8601Range( "20000101T1300Z/PT1H" ) );
@@ -1289,6 +1290,12 @@ public class DatumRangeUtil {
                         for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] - dt[i];
                         time= TimeUtil.toDatum(tt);
                         snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );
+                    } else if ( s.startsWith("now+") || s.startsWith("now ") ) { // The plus now+P1D is often mistaken for a space.
+                        int[] dt= parseISO8601Duration(s.substring(4));
+                        int[] tt= TimeUtil.fromDatum( now );
+                        for ( int i=0; i<tt.length; i++ ) tt[i]= tt[i] + dt[i];
+                        time= TimeUtil.toDatum(tt);
+                        snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(time,null) );               
                     } else if ( s.equals("now")) {
                         snew.append( TimeParser.create(TimeParser.TIMEFORMAT_Z).format(now,null) );
                     } else if ( s.contains("now") ){
