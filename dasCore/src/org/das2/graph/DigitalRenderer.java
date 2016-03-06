@@ -21,6 +21,7 @@ import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
+import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.DefaultDatumFormatter;
@@ -486,6 +487,8 @@ public class DigitalRenderer extends Renderer {
 
         QDataSet wds= SemanticOps.weightsDataSet(zds);
 
+        UnitsConverter uc= UnitsConverter.getConverter(yunits,yAxis.getUnits());
+        
         for (int i = firstIndex; i < lastIndex; i++) {
             int ix = (int) xAxis.transform( xds.value(i), xunits );
 
@@ -497,7 +500,7 @@ public class DigitalRenderer extends Renderer {
                 DatumFormatter df= d.getFormatter();
                 if ( df instanceof DefaultDatumFormatter ) {
                     try {
-                        s = String.format( form, zds.value(i) );
+                        s = String.format( form, uc.convert(zds.value(i)) );
                     } catch ( IllegalFormatConversionException ex ) { // '%2X'
                         char c= ex.getConversion();
                         if ( c=='X' || c=='x' || c=='d' || c=='o' || c=='c' || c=='C'  ) {
