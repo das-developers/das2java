@@ -229,7 +229,20 @@ public class DisplayDataMouseModule extends MouseModule {
             if ( dep1!=null && dep1.rank()==2 ) {
                 myEdit.getTableHeader().setToolTipText("Column labels reported are from the first record");
             }
-            messageLabel.setText( tds.toString() + " shown above" );
+            if ( tds.rank()==1 ) {
+                messageLabel.setText( tds.length() + " records" );
+            } else {
+                if ( tds.length()>0 ) {
+                    int[] qube= DataSetUtil.qubeDims(tds.slice(0) );
+                    if ( qube!=null ) {
+                        messageLabel.setText( tds.length() + " records, each is "+ DataSetUtil.toString(qube) );
+                    } else {
+                        messageLabel.setText( tds.length() + " records, first is "+ DataSetUtil.toString(qube) );
+                    }
+                } else {
+                    messageLabel.setText( "no records" );
+                }
+            }
             
         } catch ( RuntimeException ex ) {
             logger.log( Level.SEVERE, ex.getMessage(), ex );
