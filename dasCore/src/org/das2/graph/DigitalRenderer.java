@@ -116,6 +116,12 @@ public class DigitalRenderer extends Renderer {
         return align;
     }
 
+    /**
+     * For the box containing the digital number, which corner is anchored 
+     * to the data.  Note this is consistent with the anchorPosition property of
+     * annotations.
+     * @param align 
+     */
     public void setAlign(Align align) {
         Align oldAlign = this.align;
         this.align = align;
