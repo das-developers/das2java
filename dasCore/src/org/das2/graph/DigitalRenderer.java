@@ -469,11 +469,19 @@ public class DigitalRenderer extends Renderer {
 
         if ( ! xunits.isConvertibleTo(xAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible xaxis units", DasPlot.INFO, null, null );
-            return;
+            if ( UnitsUtil.isRatioMeasurement(xunits) ) {
+                xunits= xAxis.getUnits();    
+            } else {
+                return;
+            }
         }
         if ( ! yunits.isConvertibleTo(yAxis.getUnits() ) ) {
             parent.postMessage( this, "inconvertible yaxis units", DasPlot.INFO, null, null );
-            return;
+            if ( UnitsUtil.isRatioMeasurement(yunits) ) {
+                yunits= yAxis.getUnits();
+            } else {
+                return;
+            }
         }
 
         QDataSet wds= SemanticOps.weightsDataSet(zds);
