@@ -552,6 +552,12 @@ public class DataSetBuilder {
                     if ( okey==null ) throw new IllegalArgumentException("unable to resolve key: "+okey);
                 }
                 result.putProperty( key, okey );
+            } else if ( key.startsWith("WEIGHTS" ) || key.startsWith("DEPEND_")  // The QStream parser stores strings temporarily.
+                || key.startsWith("DELTA_") || key.startsWith("BIN_")) {
+                Object ods= properties.get(key);
+                if ( ods!=null && ods instanceof QDataSet ) {
+                    result.putProperty( key, ods );
+                }
             } else {
                 result.putProperty( key, properties.get(key) );
             }
