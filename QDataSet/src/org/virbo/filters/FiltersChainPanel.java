@@ -672,8 +672,10 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                         @Override
                         public void run() {
                             p.setInput(fds);
-                            recalculating.set(fi,Boolean.FALSE);
-                            indicateRecalculating();
+                            if ( recalculating.size()>fi ) { // transitional state
+                                recalculating.set(fi,Boolean.FALSE);
+                                indicateRecalculating();
+                            }
                         }
                     };
                     SwingUtilities.invokeLater(run);
