@@ -769,12 +769,17 @@ public class DataSetOps {
 
         for ( int i=0; i<QDataSet.MAX_PLANE_COUNT; i++ ) {
             String prop= "PLANE_"+i;
-            QDataSet plane= (QDataSet) props.get( prop );
-            if ( plane!=null ) {
-                if ( plane.rank()<1 ) {
-                    result.put( prop, plane );
+            Object o= props.get(prop);
+            if ( o!=null ) {
+                if ( o instanceof QDataSet ) {
+                    QDataSet plane= (QDataSet) o;
+                    if ( plane.rank()<1 ) {
+                        result.put( prop, plane );
+                    } else {
+                        result.put( prop, plane.slice(index) );
+                    }
                 } else {
-                    result.put( prop, plane.slice(index) );
+                    break;
                 }
             } else {
                 break;
@@ -783,15 +788,23 @@ public class DataSetOps {
 
         String[] p= DataSetUtil.correlativeProperties(); // DELTA_PLUS, BIN_MINUS, etc.
         for (String p1 : p) {
-            QDataSet delta = (QDataSet) props.get(p1);
-            if (delta!=null && delta.rank()>0) {
-                result.put(p1, delta.slice(index));
+            Object o= props.get(p1);
+            if ( o!=null ) {
+                if ( o instanceof QDataSet ) {
+                    QDataSet d = (QDataSet) o;
+                    if ( d.rank()>0) {
+                        result.put(p1, d.slice(index));
+                    }
+                } else {
+                    logger.log(Level.INFO, "property is not a QDataSet: {0}", p1);
+                }
             }
         }
 
         String[] dimprops= DataSetUtil.dimensionProperties(); // TITLE, UNITS, etc.
         for (String s : dimprops ) {
             Object o = props.get(s);
+            
             if (o!=null) {
                 result.put(s, o);
             }
