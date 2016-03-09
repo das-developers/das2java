@@ -505,6 +505,12 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     @Override
     public void setFilter(String filter) {
         logger.entering( CLASS_NAME, "setFilter", filter );
+
+        //if ( this.getName()!=null && this.getName().startsWith("post") ) {
+        //    
+        //} else {
+        //    System.err.println("here "+this.getName());
+        //}
         
         if ( !SwingUtilities.isEventDispatchThread() ) {
             logger.warning("must be called from event thread"); 
