@@ -128,7 +128,7 @@ public class FormatStreamHandler implements StreamHandler {
     public void streamException(StreamException se) throws StreamException {
         String type= "StreamException";
         if ( se.getCause() instanceof NoDataInIntervalException ) {
-            type= "NoDataInIntervalException";
+            type= "NoDataInInterval";
         }
         String msg= String.format("<exception type='%s' message='%s'/>\n", type, xmlSafe(se.getMessage()) );
         try {
