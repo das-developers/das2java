@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.virbo.qstream;
 
@@ -50,8 +46,8 @@ public class FormatStreamHandler implements StreamHandler {
      */
     public StreamDescriptor createStreamDescriptor( String name, boolean asciiTypes, boolean isBigEndian ) {
         try {
-            StreamDescriptor sd = new StreamDescriptor(DocumentBuilderFactory.newInstance());
-            Document document = sd.newDocument(sd);
+            StreamDescriptor lsd = new StreamDescriptor(DocumentBuilderFactory.newInstance());
+            Document document = lsd.newDocument(lsd);
 
             Element streamElement = document.createElement("stream");
 
@@ -59,7 +55,7 @@ public class FormatStreamHandler implements StreamHandler {
             if (asciiTypes == false) {
                 streamElement.setAttribute("byte_order", isBigEndian ? "big_endian" : "little_endian");
             }
-            return sd;
+            return lsd;
 
         } catch ( ParserConfigurationException ex ) {
             throw new RuntimeException(ex);
@@ -67,6 +63,7 @@ public class FormatStreamHandler implements StreamHandler {
         
     }
 
+    @Override
     public void streamDescriptor(StreamDescriptor sd) throws StreamException {
         this.sd= sd;
         this.sd.setFactory( DocumentBuilderFactory.newInstance() );
@@ -81,6 +78,7 @@ public class FormatStreamHandler implements StreamHandler {
         }
     }
 
+    @Override
     public void packetDescriptor(PacketDescriptor pd) throws StreamException {
         this.sd.addDescriptor(pd);
         try {
@@ -104,6 +102,7 @@ public class FormatStreamHandler implements StreamHandler {
         }
     }
 
+    @Override
     public void packet(PacketDescriptor pd, ByteBuffer data) throws StreamException {
         try {
             out.write( ByteBuffer.wrap( String.format( ":%02d:", sd.descriptorId(pd) ).getBytes("US-ASCII")) );
@@ -115,6 +114,7 @@ public class FormatStreamHandler implements StreamHandler {
 
     }
 
+    @Override
     public void streamClosed(StreamDescriptor sd) throws StreamException {
         
     }
@@ -124,6 +124,7 @@ public class FormatStreamHandler implements StreamHandler {
         return s;
     }
     
+    @Override
     public void streamException(StreamException se) throws StreamException {
         String type= "StreamException";
         if ( se.getCause() instanceof NoDataInIntervalException ) {
@@ -138,6 +139,7 @@ public class FormatStreamHandler implements StreamHandler {
         }
     }
 
+    @Override
     public void streamComment(StreamComment se) throws StreamException {
         String msg= String.format("<comment type='%s' message='%s'/>\n", se.getType(), xmlSafe(se.getMessage()) );
         try {
