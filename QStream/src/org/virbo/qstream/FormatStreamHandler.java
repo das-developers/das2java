@@ -12,6 +12,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.das2.dataset.NoDataInIntervalException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -124,7 +125,11 @@ public class FormatStreamHandler implements StreamHandler {
     }
     
     public void streamException(StreamException se) throws StreamException {
-        String msg= String.format("<exception type='%s' message='%s'/>\n", se.getClass().toString(), xmlSafe(se.getMessage()) );
+        String type= "StreamException";
+        if ( se.getCause() instanceof NoDataInIntervalException ) {
+            type= "NoDataInIntervalException";
+        }
+        String msg= String.format("<exception type='%s' message='%s'/>\n", type, xmlSafe(se.getMessage()) );
         try {
             out.write( ByteBuffer.wrap( String.format( "[xx]%06d", msg.length() ).getBytes("US-ASCII") ) );
             out.write( ByteBuffer.wrap( msg.getBytes("US-ASCII") ) );
