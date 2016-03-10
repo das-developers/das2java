@@ -45,6 +45,8 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
     /**
      * Create a das2 FileObject from the given VFS FileObject
      * 
+     * @param fs
+     * @param f
      */
     protected VFSFileObject(VFSFileSystem fs, org.apache.commons.vfs.FileObject f) {
         vfsfs = fs;
@@ -110,7 +112,7 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
 
     @Override
     public File getFile(ProgressMonitor monitor) throws FileNotFoundException, IOException {
-        boolean download= true;
+        boolean download;
         if (localFile.exists()) {
             Date localFileLastModified = new Date(localFile.lastModified());
             Date remoteDate = new Date( vfsob.getContent().getLastModifiedTime() );
@@ -134,6 +136,17 @@ public class VFSFileObject extends org.das2.util.filesystem.FileObject {
                 // Download and cache remote file (including zip etc)
                 if (!localFile.getParentFile().exists()) {
                     FileSystemUtil.maybeMkdirs( localFile.getParentFile() );
+                    int i=10;
+                    File p= localFile.getParentFile();
+                    File stopAt= new File( new File( FileSystem.settings().getLocalCacheDir(), "vfsCache" ), "sftp" );
+                    while ( i>0 && !p.equals(stopAt) ) {
+                        p.setReadable(false,false);
+                        p.setReadable(true,true);
+                        p.setExecutable(false,false);
+                        p.setExecutable(true,true);
+                        p= p.getParentFile();
+                        i=i-1;
+                    }
                 }
                 File partfile = new File(localFile.toString() + ".part");
                 vfsfs.downloadFile( localName, localFile, partfile, monitor);
