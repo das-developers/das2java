@@ -435,6 +435,8 @@ public class VFSFileSystem extends org.das2.util.filesystem.FileSystem {
                     copyStream(is, os, monitor);
                     is.close();
                     os.close();
+                    partfile.setReadable(false,false);
+                    partfile.setReadable(true,true);
                     if ( ! partfile.renameTo(f) ) {
                         throw new IllegalArgumentException("unable to rename file "+partfile + " to "+f );
                     }
