@@ -319,6 +319,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 if ( unitsWarning ) {
                     QDataSet zds= getDataSet();
                     QDataSet xds=null, yds=null;
+                    if ( zds==null ) {
+                        parent.postMessage(this, "no data set", DasPlot.INFO, null, null);
+                        logger.exiting( "org.das2.graph.SpectrogramRenderer", "render" );
+                        return;
+                    }
                     if ( zds.rank()==2 ) {
                         xds= SemanticOps.xtagsDataSet(zds);
                         yds= SemanticOps.ytagsDataSet(zds);
