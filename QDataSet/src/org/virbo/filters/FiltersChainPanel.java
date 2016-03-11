@@ -615,10 +615,15 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             @Override
             public void run() {
                 String f= getFilter();
+                String oldCurrentFilter= currentFilter;
                 setFilter( f );
                 if ( inputDs!=null ) setInput( inputDs );
-                firePropertyChange( PROP_FILTER, null, f );
-                //currentFilter= f;        
+                if ( oldCurrentFilter.equals(f) ) {
+                    System.err.println("does not change.");
+                } else {
+                    firePropertyChange( PROP_FILTER, oldCurrentFilter, f );
+                    oldCurrentFilter= f;        
+                }
             }
         };
         try {
