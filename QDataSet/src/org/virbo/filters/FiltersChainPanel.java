@@ -57,10 +57,10 @@ import org.virbo.dsops.Ops;
 public final class FiltersChainPanel extends javax.swing.JPanel implements FilterEditorPanel {
     
     private QDataSet inputDs;
-    private String currentFilter= null; // the currently implemented filter.
+    private String currentFilter= ""; // the currently implemented filter.
     private boolean implicitUnbundle= false;
-    private TickleTimer timer;
-    private Timer recalculatingTimer; //AWT thread
+    private final TickleTimer timer;
+    private final Timer recalculatingTimer; //AWT thread
     
     private static final Logger logger= LoggerManager.getLogger("qdataset.filters");
     private static final String CLASS_NAME = FiltersChainPanel.class.getName();
@@ -619,7 +619,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                 setFilter( f );
                 if ( inputDs!=null ) setInput( inputDs );
                 if ( oldCurrentFilter.equals(f) ) {
-                    System.err.println("does not change.");
+                    logger.fine("does not change.");
                 } else {
                     firePropertyChange( PROP_FILTER, oldCurrentFilter, f );
                     oldCurrentFilter= f;        
