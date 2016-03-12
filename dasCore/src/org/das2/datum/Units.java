@@ -171,11 +171,16 @@ public abstract class Units {
 	static {
 		unitsMap.put("V**2 m**-2 Hz**-1", v2pm2Hz);
 	}
+	public static final Units V_per_m = new NumberUnits("V m**-1");
+	static {
+		unitsMap.put("V/m", V_per_m);
+	}
     
     /**
      * Watts / m<sup>2</sup>
      */
     public static final Units wpm2= new NumberUnits("W/m!a-2!n");
+	 public static final Units W_per_m2_Hz = new NumberUnits("W m**-2 Hz**-1");
 
     
     public static final Units meters = new NumberUnits("m");
@@ -563,11 +568,20 @@ public abstract class Units {
     public abstract Datum createDatum( double value, double resolution );
     
     private final static double FILL_DOUBLE= -1e31;
+    private final static float FILL_FLOAT= -1e31f;
+    private final static int FILL_INT= Integer.MAX_VALUE;
+    private final static long FILL_LONG= Long.MAX_VALUE;
     
     public double getFillDouble() { return FILL_DOUBLE; }
+    public float getFillFloat() { return FILL_FLOAT; }
+    public int getFillInt() { return FILL_INT; }
+    public long getFillLong() { return FILL_LONG; }
     public Datum getFillDatum() { return this.createDatum(FILL_DOUBLE); }
     
     public boolean isFill( double value ) {  return value<FILL_DOUBLE/10 || Double.isNaN(value); }
+    public boolean isFill( float value ) { return value<FILL_FLOAT/10 || Float.isNaN(value); }
+    public boolean isFill( long value ) { return value==FILL_LONG; }
+    public boolean isFill( int value ) { return value==FILL_INT; }
     public boolean isFill( Number value ) {
         return isFill(value.doubleValue());
     }
