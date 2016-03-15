@@ -431,7 +431,26 @@ public class DataSetBuilder {
             newCurrent();
         }
     }
-
+    
+    /**
+     * In one step, specify all the values of the record and advance the counter.
+     * This is intended to reduce the number of lines needed in scripts, and
+     * to support Jython where a double array would not be cast to an Object array.
+     * Also, columns 1..N-1 are declared dependent on column 0, when column 0 is UT times.
+     * @param values the record values.
+     * @see #nextRecord(java.lang.Object...) 
+     */
+    public void nextRecord( double[] values ) {
+        if ( values.length>this.dim1 ) {
+            throw new IllegalArgumentException("Too many values provided: got "+values.length+", expected "+this.dim1 );
+        }
+        for ( int i=0; i<values.length; i++ ) { 
+            double v1= values[i];
+            putValue( -1, i, v1 );
+        } 
+        nextRecord();        
+    }
+    
     /**
      * In one step, specify all the values of the record and advance the counter.
      * This is intended to reduce the number of lines needed in scripts.  In Jython:
@@ -443,7 +462,7 @@ public class DataSetBuilder {
      *dsb.nextRecord( [ '2014-004T00:00', 19.7 ] ) 
      *ds= dsb.getDataSet()
      *</pre></blockquote>
-     * Also, columns 1..N-1 are declared dependent on column 0.
+     * Also, columns 1..N-1 are declared dependent on column 0, when column 0 is UT times.
      * @param values the record values, in an String, Datum, Rank 0 QDataSet, or Number.
      */
     public void nextRecord( Object ... values ) {
