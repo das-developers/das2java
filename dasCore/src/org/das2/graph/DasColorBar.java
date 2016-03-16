@@ -674,8 +674,8 @@ public class DasColorBar extends DasAxis {
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }   
 		  
-		  //Rob-Wilson JADE colorbar
-		  private void initializeVioletYellow( int size, int bottom, int top ) {
+        //Rob W. JADE colorbar
+	private void initializeVioletYellow( int size, int bottom, int top ) {
             int [] index= {  0,  27,  64,  95, 127, 159, 183, 202, 225, 246, 255 };
             int [] red=   { 68,  71,  59,  45,  34,  36,  71, 110, 174, 233, 253 };
             int [] green= {  2,  36,  83, 111, 139, 171, 192, 206, 221, 229, 231 };
@@ -689,36 +689,39 @@ public class DasColorBar extends DasAxis {
          * @return type like Type.APL_RAINBOW_BLACK0.
          */
         public static Type parse(String s) {
-            if (s.equals("color_wedge")) {
-                return COLOR_WEDGE;
-            } else if (s.equals("grayscale")) {
-                return GRAYSCALE;
-            } else if (s.equals("inverse_grayscale")) {
-                return INVERSE_GRAYSCALE;
-            } else if (s.equals("blue_black_red")) {
-                return BLUE_BLACK_RED_WEDGE;
-            } else if (s.equals("blue_white_red")) {
-                return BLUE_WHITE_RED_WEDGE;
-            } else if (s.equals("apl_rainbow_black0")) {
-                return APL_RAINBOW_BLACK0;
-            } else if (s.equals("apl_rainbow_white0")) {
-                return APL_RAINBOW_WHITE0;
-            } else if (s.equals("gsfc_rp_special")) {
-                return GSFC_RP_SPECIAL;
-            } else if (s.equals("matlab_jet")) {
-                return MATLAB_JET;
-            } else if (s.equals("black_red")) {
-                return BLACK_RED;
-            } else if (s.equals("black_green")) {
-                return BLACK_GREEN;
-            } else if (s.equals("violet_yellow")) {
-                return VIOLET_YELLOW;
-            } else if (s.equals("black_blue")) {
-                return BLACK_BLUE;
-            } else if (s.equals("blue_to_orange")) {
-                return BLUE_TO_ORANGE;                
-            } else {
-                throw new IllegalArgumentException("invalid DasColorBar.Type string: " + s);
+            switch (s) {
+                case "color_wedge":
+                    return COLOR_WEDGE;
+                case "grayscale":
+                    return GRAYSCALE;
+                case "inverse_grayscale":
+                    return INVERSE_GRAYSCALE;
+                case "blue_black_red":
+                    return BLUE_BLACK_RED_WEDGE;
+                case "blue_white_red":
+                    return BLUE_WHITE_RED_WEDGE;
+                case "apl_rainbow_black0":
+                    return APL_RAINBOW_BLACK0;
+                case "apl_rainbow_white0":
+                    return APL_RAINBOW_WHITE0;
+                case "gsfc_rp_special":
+                    return GSFC_RP_SPECIAL;
+                case "matlab_jet":
+                    return MATLAB_JET;
+                case "black_white":
+                    return INVERSE_GRAYSCALE;
+                case "black_red":
+                    return BLACK_RED;
+                case "black_green":
+                    return BLACK_GREEN;
+                case "black_blue":
+                    return BLACK_BLUE;
+                case "violet_yellow":
+                    return VIOLET_YELLOW;
+                case "blue_to_orange":
+                    return BLUE_TO_ORANGE;
+                default:
+                    throw new IllegalArgumentException("invalid DasColorBar.Type string: " + s);
             }
         }
         
