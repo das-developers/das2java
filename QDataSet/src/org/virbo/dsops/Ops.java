@@ -7475,7 +7475,7 @@ public class Ops {
      * like interpolate, but the findex is recalculated when the two bracketed points are closer in the 
      * modulo space than they would be in the linear space.
      * @param vv rank 1 dataset that is the data to be interpolated. (e.g. longitude from 0 to 360deg)
-     * @param mod rank 0 dataset that is the mod of the space (e.g. 360deg)
+     * @param mod rank 0 dataset that is the mod of the space (e.g. 360deg), or rank 1 where the range is specified (e.g. -180 to 180).
      * @param findex rank N dataset of fractional indeces.  This must be dimensionless and is typically calculated by the findex command.
      * @return the result, a rank 1 dataset with one element for each findex.
      * @see #interpolate(QDataSet,QDataSet)
@@ -7507,8 +7507,24 @@ public class Ops {
         QDataSet wfindex= DataSetUtil.weightsDataSet(findex);
         wfindex= copy(wfindex);
         
-        double dmod= DataSetUtil.asDatum(mod).doubleValue( SemanticOps.getUnits(vv).getOffsetUnits() );
-        double dmodLimit= dmod/2;
+        double dmod;
+        double dmodLimit;
+        double base;
+        double top;
+        if ( mod.rank()==0 ) {
+            dmod= DataSetUtil.asDatum(mod).doubleValue( SemanticOps.getUnits(vv).getOffsetUnits() );
+            dmodLimit= dmod/2;
+            base= 0;
+            top= dmod;
+        } else if ( mod.rank()==1 && mod.length()==2 ) {
+            dmod= DataSetUtil.asDatum(mod.slice(1)).subtract( DataSetUtil.asDatum(mod.slice(0)) ).doubleValue( SemanticOps.getUnits(vv).getOffsetUnits() );
+            dmodLimit= dmod/2;
+            vv= Ops.subtract( vv,mod.slice(0) ); 
+            base= mod.slice(0).value();
+            top= mod.slice(1).value();
+        } else {
+            throw new IllegalArgumentException("mod must be rank 0 or rank 1 with two elements.");
+        }
         
         boolean noExtrapolate= true;
         
@@ -7553,7 +7569,14 @@ public class Ops {
                 while ( (vv0-vv1)> dmodLimit ) {
                     vv1= vv1 + dmod;
                 }
-                it.putValue(result, vv0 + alpha * (vv1 - vv0));
+                double v= vv0 + alpha * (vv1 - vv0) + base;
+                while ( v > top ) {
+                    v= v- dmod;
+                }
+                while ( v < base ) {
+                    v= v+ dmod;
+                }
+                it.putValue(result, v );
                 
             } else {
                 it.putValue(result, fill );
