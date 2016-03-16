@@ -546,10 +546,10 @@ public class DasColorBar extends DasAxis {
                 initializeWhiteRed(size, bottom, top);
             } else if (this == BLACK_GREEN ) {
                 initializeWhiteGreen(size, bottom, top);
-            } else if (this == VIOLET_YELLOW ) {
-                initializeVioletYellow(size, bottom, top);
             } else if (this == BLACK_BLUE) {
                 initializeWhiteBlue(size, bottom, top);
+            } else if (this == VIOLET_YELLOW ) {
+                initializeVioletYellow(size, bottom, top);
             } else if (this == BLUE_TO_ORANGE ) {
                 initializeBlueToOrange(size, bottom, top);
             }
