@@ -57,12 +57,25 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.dataset.LanlNNRebinner;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
+import static org.das2.graph.Renderer.CONTROL_KEY_COLOR;
+import static org.das2.graph.Renderer.CONTROL_KEY_DRAW_ERROR;
+import static org.das2.graph.Renderer.CONTROL_KEY_FILL_COLOR;
+import static org.das2.graph.Renderer.CONTROL_KEY_LINE_THICK;
+import static org.das2.graph.Renderer.CONTROL_KEY_SYMBOL;
+import static org.das2.graph.Renderer.CONTROL_KEY_SYMBOL_SIZE;
+import static org.das2.graph.Renderer.decodePlotSymbolControl;
+import static org.das2.graph.Renderer.encodeBooleanControl;
+import static org.das2.graph.Renderer.encodeColorControl;
+import static org.das2.graph.Renderer.encodePlotSymbolControl;
+import static org.das2.graph.Renderer.formatControl;
 import org.das2.util.LoggerManager;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.QDataSet;
@@ -100,6 +113,20 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     private VerticalSpectrogramSlicer vSlicer;
     private HorizontalSpectrogramSlicer hSlicer;
     private VerticalSpectrogramAverager vAverager;
+    
+    @Override
+    public void setControl(String s) {
+        super.setControl(s);
+        this.getColorBar().setType( DasColorBar.Type.parse( getControl(CONTROL_KEY_COLOR_TABLE, getColorBar().getType().toString() ) ) );
+        update();
+    }
+
+    @Override
+    public String getControl() {
+        Map<String,String> controls= new LinkedHashMap();
+        controls.put( CONTROL_KEY_COLOR_TABLE, getColorBar().getType().toString() );
+        return formatControl(controls);
+    }
     
     protected class RebinListener implements PropertyChangeListener {
         @Override
