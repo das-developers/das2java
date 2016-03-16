@@ -9185,7 +9185,7 @@ public class Ops {
             } else {
                 throw new IllegalArgumentException( problems.get(0) );
             }
-        } if ( z.rank()==2 && isBundle(z) ) {
+        } if ( z.rank()==2 && y.rank()==1 && isBundle(z) ) {
             QDataSet z1= DataSetOps.slice1(z,z.length(0)-1);
             return link( x, y, z1 );
 
