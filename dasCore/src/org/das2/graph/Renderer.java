@@ -24,6 +24,7 @@ package org.das2.graph;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
@@ -361,11 +362,16 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
     public static final String CONTROL_KEY_COLOR= "color";
     public static final String CONTROL_KEY_FILL_COLOR= "fillColor";
     public static final String CONTROL_KEY_COLOR_TABLE= "colorTable";
-    public static final String CONTROL_KEY_THICK= "thick";
     public static final String CONTROL_KEY_LINE_THICK= "lineThick";
     public static final String CONTROL_KEY_LINE_STYLE= "lineStyle";
     public static final String CONTROL_KEY_SYMBOL= "symbol";
     public static final String CONTROL_KEY_SYMBOL_SIZE= "symbolSize";
+    
+    /**
+     * font size relative to the parent, so "" or "1em" is the same size.
+     */
+    public static final String CONTROL_KEY_FONT_SIZE= "fontSize";
+    
     public static final String CONTROL_KEY_REFERENCE= "reference";
     public static final String CONTROL_KEY_DRAW_ERROR= "drawError";
     
@@ -1101,6 +1107,25 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
         return colorBar;
     }
 
+    /**
+     * handle the fontSize property, which has values like "1em" and "7px"
+     * @param g1
+     * @param fontSize fontSize property, for example "1em" and "7px"
+     */
+    protected void setUpFont( Graphics2D g1, String fontSize ) {
+        Font f= getParent().getFont();
+        if ( fontSize!=null && fontSize.length()>0 && !fontSize.equals("1em") ) {
+            try {
+                double[] size= DasDevicePosition.parseLayoutStr(fontSize);
+                double s= f.getSize2D() * size[0]/100 + f.getSize2D() * size[1] + size[2];
+                f= f.deriveFont((float)s);
+            } catch ( ParseException ex ) {
+                logger.log( Level.WARNING, ex.getMessage(), ex );
+            }
+        }
+        g1.setFont(f);        
+    }
+    
     private int renderCount=0;
     private int updateCount=0;
     
