@@ -29,8 +29,11 @@ import org.das2.components.propertyeditor.Enumeration;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
+import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.das2.datum.DatumRange;
@@ -72,7 +75,9 @@ public class TickCurveRenderer extends Renderer {
     private double lineWidth=  1.0f;
     private Color color= Color.BLACK;
     
-    private float tickLength= 8.0f;
+    private String tickLength= "0.66em";
+    private double tickLen= 0; // updated with each repaint
+    
     private GeneralPath path;
     
     public static class TickStyle implements Enumeration {
@@ -117,6 +122,8 @@ public class TickCurveRenderer extends Renderer {
         super.setControl(s);
         this.lineWidth= getDoubleControl( PROP_LINETHICK, lineWidth );
         this.color= getColorControl( CONTROL_KEY_COLOR, color );
+        this.fontSize= getControl( CONTROL_KEY_FONT_SIZE, fontSize );
+        this.tickLength= getControl( "tickLength", tickLength );
         update();
     }
     
@@ -125,7 +132,28 @@ public class TickCurveRenderer extends Renderer {
         Map<String,String> controls= new LinkedHashMap();
         controls.put( PROP_LINETHICK, String.valueOf(lineWidth) );
         controls.put( CONTROL_KEY_COLOR, encodeColorControl(color) );
+        controls.put( CONTROL_KEY_FONT_SIZE, fontSize );
+        controls.put( "tickLength", tickLength );
         return Renderer.formatControl(controls);
+    }
+    
+    private String fontSize = "";
+
+    public static final String PROP_FONTSIZE = "fontSize";
+
+    public String getFontSize() {
+        return fontSize;
+    }
+
+    /**
+     * relative font size. 
+     * @see Renderer#CONTROL_KEY_FONT_SIZE
+     * @param fontSize 
+     */
+    public void setFontSize(String fontSize) {
+        String oldFontSize = this.fontSize;
+        this.fontSize = fontSize;
+        propertyChangeSupport.firePropertyChange(PROP_FONTSIZE, oldFontSize, fontSize);
     }
 
     /**
@@ -290,8 +318,23 @@ public class TickCurveRenderer extends Renderer {
 
     }
     
+    private void updateTickLength( Graphics2D g ) {
+        try {
+            double[] pos = DasDevicePosition.parseLayoutStr(this.tickLength );
+            Font f= g.getFont();
+            if ( pos[0]==0 ) {
+                this.tickLen = (int) ( Math.round( pos[1]* f.getSize2D() + pos[2] ) ); // make independent from row layout for initialization.
+            } else {
+                this.tickLen = (int) ( Math.round( pos[1]* f.getSize2D() + pos[2] ) );
+            }
+        } catch ( ParseException ex ) {
+            ex.printStackTrace();
+        }
+    }
+    
     private void drawTick( Graphics2D g, double findex ) {  
-        float tl= getTickLength()*2/3;
+        
+        float tl= (float)tickLen;
         Line2D tick= normalize( outsideNormalAt( findex ), tl );        
 
         if ( tick.getP1().getX() < -1000 || tick.getP1().getY()<-1000 || tick.getP1().getX()> 9999 || tick.getP1().getY()> 9999 ) {
@@ -312,7 +355,9 @@ public class TickCurveRenderer extends Renderer {
     //}
     
     private void drawLabelTick( Graphics2D g, double findex, int tickNumber ) {        
-        float tl= getTickLength();
+        float tl= (float)tickLen;
+        if ( tl<0.001 ) tl= 0.001f;
+        
         Line2D tick= normalize( outsideNormalAt( findex ), tl );
 
         if ( tick.getP1().getX() <-1000 || tick.getP1().getY()<-1000 || tick.getP1().getX()> 9999 || tick.getP1().getY()> 9999 ) {
@@ -417,7 +462,7 @@ public class TickCurveRenderer extends Renderer {
         if ( ds2.length()<2 ) {
             return;
         }
-        
+
         Graphics2D g= (Graphics2D)g1;
         
         BasicStroke stroke= new BasicStroke((float)lineWidth);
@@ -524,6 +569,10 @@ public class TickCurveRenderer extends Renderer {
         DDataSet txds= DDataSet.wrap( tickv.minorTickV.toDoubleArray( tunits ), tunits );
         findex= Ops.findex( tds, txds );
 
+        setUpFont( g, fontSize );
+        
+        updateTickLength( g );
+        
         tickLabeller= new GrannyTickLabeller( ); 
         tickLabeller.init( tickv );
         
@@ -611,7 +660,7 @@ public class TickCurveRenderer extends Renderer {
      * @return Value of property tickLength.
      *
      */
-    public float getTickLength() {
+    public String getTickLength() {
         return this.tickLength;
     }
     
@@ -619,7 +668,7 @@ public class TickCurveRenderer extends Renderer {
      * @param tickLength New value of property tickLength.
      *
      */
-    public void setTickLength(float tickLength) {
+    public void setTickLength( String tickLength) {
         this.tickLength = tickLength;
         invalidateParentCacheImage();
     }
