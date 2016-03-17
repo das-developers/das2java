@@ -756,10 +756,10 @@ public class EventsRenderer extends Renderer {
         super.setControl(s);
         this.setShowLabels( getBooleanControl( "showLabels", false ) );
         this.setOrbitMode( getBooleanControl( "orbitMode", false ));
-        this.setFontSize( getControl( "fontSize", "1em" ));
+        this.setFontSize( getControl( Renderer.CONTROL_KEY_FONT_SIZE, "1em" ));
         this.setGanttMode( getBooleanControl( "ganttMode", false ));
         if ( hasControl("color") ) {
-            this.setColor( getColorControl("color",color) );
+            this.setColor( getColorControl( Renderer.CONTROL_KEY_COLOR,color) );
             this.useColor= true;
         } else {
             this.setColor( new Color(100,100,100) );
@@ -771,10 +771,10 @@ public class EventsRenderer extends Renderer {
         Map<String,String> controls= new LinkedHashMap();
         controls.put( "showLabels", encodeBooleanControl( isShowLabels() ) );
         controls.put( "orbitMode", encodeBooleanControl( isOrbitMode() ) );
-        controls.put( "fontSize", getFontSize() );
+        controls.put( Renderer.CONTROL_KEY_FONT_SIZE, getFontSize() );
         controls.put( "ganttMode", encodeBooleanControl( isGanttMode() ) );
         if ( this.useColor ) {
-            controls.put( "color", encodeColorControl(color) );
+            controls.put( Renderer.CONTROL_KEY_COLOR, encodeColorControl(color) );
         }
         return Renderer.formatControl(controls);
     }
