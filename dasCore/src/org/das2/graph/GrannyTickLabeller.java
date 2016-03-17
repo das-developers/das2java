@@ -76,7 +76,7 @@ public class GrannyTickLabeller implements TickLabeller {
         
         tickLine= normalize( tickLine, length(tickLine)+TICK_PAD ); 
         
-        if ( !Double.isFinite( tickLine.getP2().getX() ) ) {
+        if ( Double.isInfinite( tickLine.getP2().getX() ) || Double.isNaN( tickLine.getP2().getX() ) ) {
             throw new IllegalArgumentException("tickLine must have some length");
         }
         if ( labelSlope > Math.abs( tickSlope ) ) { // tick intersects the height of the label bounds.
