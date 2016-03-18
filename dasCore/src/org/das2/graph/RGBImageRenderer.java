@@ -7,6 +7,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -16,6 +18,8 @@ import org.das2.datum.Units;
 import org.das2.event.CrossHairMouseModule;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.MouseModule;
+import static org.das2.graph.Renderer.CONTROL_KEY_COLOR;
+import static org.das2.graph.Renderer.encodeColorControl;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
@@ -35,6 +39,19 @@ public class RGBImageRenderer extends Renderer {
      * the bounds of the last rendering
      */
     Rectangle rect= null;
+    
+    @Override
+    public void setControl(String s) {
+        super.setControl(s);
+        this.nearestNeighborInterpolation= getBooleanControl( RGBImageRenderer.PROP_NEARESTNEIGHBORINTERPOLATION, nearestNeighborInterpolation );
+    }
+    
+    @Override
+    public String getControl() {
+        Map<String,String> controls= new LinkedHashMap();
+        controls.put( RGBImageRenderer.PROP_NEARESTNEIGHBORINTERPOLATION, encodeBooleanControl( nearestNeighborInterpolation ) );
+        return Renderer.formatControl(controls);
+    }
     
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
