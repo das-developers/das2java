@@ -18,8 +18,6 @@ import org.das2.datum.Units;
 import org.das2.event.CrossHairMouseModule;
 import org.das2.event.DasMouseInputAdapter;
 import org.das2.event.MouseModule;
-import static org.das2.graph.Renderer.CONTROL_KEY_COLOR;
-import static org.das2.graph.Renderer.encodeColorControl;
 import org.das2.util.monitor.ProgressMonitor;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
