@@ -4,6 +4,7 @@ package org.das2.graph;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.util.logging.Level;
@@ -92,8 +93,26 @@ public class RGBImageRenderer extends Renderer {
         int y0= (int)yAxis.transform( dep1.value(0) - dy0/2, yunits);
         int x1= (int)xAxis.transform( dep0.value(w-1) + dx0/2, xunits );
         int y1= (int)yAxis.transform( dep1.value(h-1) + dy0/2, yunits );
+        if ( nearestNeighborInterpolation ) {
+            ((Graphics2D)g).setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
+        }
         g.drawImage( im, x0, y0, x1-x0, y1-y0, null );
         rect= new Rectangle( x0, y1, x1-x0, y0-y1 );
+    }
+
+    private boolean nearestNeighborInterpolation = false;
+
+    public static final String PROP_NEARESTNEIGHBORINTERPOLATION = "nearestNeighborInterpolation";
+
+    public boolean isNearestNeighborInterpolation() {
+        return nearestNeighborInterpolation;
+    }
+
+    public void setNearestNeighborInterpolation(boolean nearestNeighborInterpolation) {
+        boolean oldNearestNeighborInterpolation = this.nearestNeighborInterpolation;
+        this.nearestNeighborInterpolation = nearestNeighborInterpolation;
+        update();
+        propertyChangeSupport.firePropertyChange(PROP_NEARESTNEIGHBORINTERPOLATION, oldNearestNeighborInterpolation, nearestNeighborInterpolation);
     }
 
     @Override
