@@ -258,9 +258,13 @@ public class TickCurveRenderer extends Renderer {
         return result;
     }
     
+    /**
+     * returns a positive double if turning clockwise, negative if ccw, based
+     * on the cross product of the two difference vectors.
+     * @param findex the floating point index
+     * @return returns a positive double if turning clockwise, negative if ccw.
+     */    
     private double turnDir( double x1, double y1, double x2, double y2, double x3, double y3 ) {
-        // returns positive double if turning clockwise, negative is ccw.  Number is 
-        //  based on the cross product of the two difference vectors.
         double dx1= x2-x1;
         double dx2= x3-x2;
         double dy1= y2-y1;
@@ -268,6 +272,11 @@ public class TickCurveRenderer extends Renderer {
         return dx1*dy2 - dx2*dy1;        
     }
     
+    /**
+     * returns a positive double if turning clockwise, negative if ccw.
+     * @param findex the floating point index
+     * @return returns a positive double if turning clockwise, negative if ccw.
+     */
     private double turnDirAt( double findex ) {
         int nvert= xds.length();
         int index0, index1, index2;
@@ -286,6 +295,13 @@ public class TickCurveRenderer extends Renderer {
                         xds.value(index2), yds.value(index2) );
     }
     
+    /**
+     * return the outsize normal (length 1) line segment.  Then the findex
+     * is at two points that repeat, then an exception is thrown.
+     * @param findex
+     * @return return the outsize normal
+     * @throws IllegalArgumentException when points repeat.
+     */
     private Line2D outsideNormalAt( double findex ) {
         int nvert= xds.length();
         int index0= (int)Math.floor(findex);
@@ -300,6 +316,8 @@ public class TickCurveRenderer extends Renderer {
         
         double dx= x2-x1;
         double dy= y2-y1;
+        
+        if ( dx==0. && dy==0. ) throw new IllegalArgumentException("findex as at a point that repeats");
         
         double turnDir= turnDirAt(findex);
         // we want the turnDir of the tick to be opposite turnDir of the curve
@@ -335,7 +353,12 @@ public class TickCurveRenderer extends Renderer {
     private void drawTick( Graphics2D g, double findex ) {  
         
         float tl= (float)tickLen;
-        Line2D tick= normalize( outsideNormalAt( findex ), tl );        
+        Line2D tick;
+        try {
+            tick= normalize( outsideNormalAt( findex ), tl );        
+        } catch ( IllegalArgumentException ex ) {
+            return;
+        }
 
         if ( tick.getP1().getX() < -1000 || tick.getP1().getY()<-1000 || tick.getP1().getX()> 9999 || tick.getP1().getY()> 9999 ) {
             return;
@@ -357,8 +380,14 @@ public class TickCurveRenderer extends Renderer {
     private void drawLabelTick( Graphics2D g, double findex, int tickNumber ) {        
         float tl= (float)tickLen;
         if ( tl<0.001 ) tl= 0.001f;
+
+        Line2D tick;
         
-        Line2D tick= normalize( outsideNormalAt( findex ), tl );
+        try {
+            tick= normalize( outsideNormalAt( findex ), tl );
+        } catch ( IllegalArgumentException ex ) {
+            return;
+        }
 
         if ( tick.getP1().getX() <-1000 || tick.getP1().getY()<-1000 || tick.getP1().getX()> 9999 || tick.getP1().getY()> 9999 ) {
             return;
@@ -500,8 +529,8 @@ public class TickCurveRenderer extends Renderer {
         // there are two goals here.  First is to break the line when we cross over modulo spaces.  If
         // we move from 23:59 to 00:01 in local time, we don't want a long line across the plot.  Second,
         // if there's an actual gap, then we want to mark that as well.
-        double limit= -1;
-        ddata= new double[2][xds.length()];
+        double limit= -1;                   // length limit it pixels
+        ddata= new double[2][xds.length()]; // data location in pixel space
         for ( int i=0; i<xds.length(); i++ ) {
             ddata[0][i]= xAxis.transform(xds.value(i),xunits);
             ddata[1][i]= yAxis.transform(yds.value(i),yunits);
@@ -515,6 +544,8 @@ public class TickCurveRenderer extends Renderer {
             }
         }
 
+        if ( limit==0 ) limit= 10000;  // we failed to find two valid adjacent points.
+        
         QDataSet wds= Ops.multiply( Ops.valid(xds), Ops.valid(yds) );
         
         GeneralPath p= new GeneralPath();
