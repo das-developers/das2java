@@ -727,22 +727,17 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     
     /**
      * the filter must be set before this is called.  This will set 
-     * droplist labels, etc.  This should be called from the event thread.
+     * droplist labels, etc. 
      * @param ds the dataset, or null.
      */
     @Override
-    public void setInput( final QDataSet ds) {
+    public void setInput( final QDataSet ds ) {
         logger.entering( CLASS_NAME, "setInput", ds );
         
         if ( this.inputDs==ds ) {
             logger.fine("already set input...");
             return;
         } 
-
-        if ( !SwingUtilities.isEventDispatchThread() ) {
-            logger.warning("not event thread");
-        }
-        
         
         this.inputDs= ds;
         
@@ -764,9 +759,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         };
         
         new Thread( run, "setInput" ).start();
-        //run.run();
-        
-        //this.revalidate();        
+      
     }
 
     /**
