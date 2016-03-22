@@ -1109,11 +1109,11 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
 
     /**
      * handle the fontSize property, which has values like "1em" and "7px"
-     * @param g1
+     * @param f the parent font.
      * @param fontSize fontSize property, for example "1em" and "7px"
+     * @return the relative font.
      */
-    protected void setUpFont( Graphics2D g1, String fontSize ) {
-        Font f= getParent().getFont();
+    public static Font setUpFont( Font f, String fontSize ) {
         if ( fontSize!=null && fontSize.length()>0 && !fontSize.equals("1em") ) {
             try {
                 double[] size= DasDevicePosition.parseLayoutStr(fontSize);
@@ -1122,8 +1122,24 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
             } catch ( ParseException ex ) {
                 logger.log( Level.WARNING, ex.getMessage(), ex );
             }
+            return f;
+        } else {
+            return f;
         }
-        g1.setFont(f);        
+    }
+    
+    /**
+     * handle the fontSize property, which has values like "1em" and "7px"
+     * @param g1
+     * @param fontSize fontSize property, for example "1em" and "7px"
+     */
+    protected void setUpFont( Graphics g1, String fontSize ) {
+        Font f0= getParent().getFont();
+        if ( f0==null ) return;
+        Font f= setUpFont( f0, fontSize );
+        if ( !f.equals(f0) ) {
+            g1.setFont(f);
+        }
     }
     
     private int renderCount=0;
