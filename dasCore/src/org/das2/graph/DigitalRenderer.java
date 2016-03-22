@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
@@ -175,6 +176,24 @@ public class DigitalRenderer extends Renderer {
         propertyChangeSupport.firePropertyChange(PROP_CONTROL, null, getControl() );
     }
 
+    private String fontSize = "";
+
+    /**
+     * font size, expressed as relative string like "1em" or "6pt"
+     */
+    public static final String PROP_FONTSIZE = "fontSize";
+
+    public String getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(String fontSize) {
+        String oldFontSize = this.fontSize;
+        this.fontSize = fontSize;
+        updateCacheImage();
+        propertyChangeSupport.firePropertyChange(PROP_FONTSIZE, oldFontSize, fontSize);
+    }
+
     private String fillLabel = "fill";
 
     public static final String PROP_FILLLABEL = "fillLabel";
@@ -198,6 +217,7 @@ public class DigitalRenderer extends Renderer {
         super.setControl(s);
         this.size= getDoubleControl( "size", this.size );
         this.color= getColorControl( "color",  color );
+        this.fontSize= getControl( "fontSize", fontSize );
         this.format= getControl( "format", format );
         try {
             this.align= Align.valueOf( getControl("align","CENTER") );
@@ -211,6 +231,7 @@ public class DigitalRenderer extends Renderer {
     public String getControl() {
         Map<String,String> controls= new LinkedHashMap();
         controls.put( "size", String.valueOf(this.size) );
+        controls.put( "fontSize", this.fontSize );
         controls.put( CONTROL_KEY_COLOR, encodeColorControl( color ) );
         controls.put( "format", format );
         controls.put( "align", align.toString() );
@@ -432,11 +453,13 @@ public class DigitalRenderer extends Renderer {
 
     private void renderRank1( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         Font f0= g.getFont();
-        Font f= f0;
-        if ( size>0 ) {
-            f= f0.deriveFont((float)size);
+        if ( size>0 ) { // legacy support
+            Font f= f0.deriveFont((float)size);
+            g.setFont(f);
+        } else {
+            setUpFont( g, fontSize );
         }
-        g.setFont(f);
+        
         FontMetrics fm = g.getFontMetrics();
 
         int ha = 0;
@@ -544,11 +567,14 @@ public class DigitalRenderer extends Renderer {
 
     private void renderRank2( QDataSet ds, Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         Font f0= g.getFont();
-        Font f= f0;
+        
         if ( size>0 ) {
-            f= f0.deriveFont((float)size);
+            Font f= f0.deriveFont((float)size);
+            g.setFont(f);
+        } else {
+            setUpFont( g, fontSize );
         }
-        g.setFont(f);
+        
         FontMetrics fm = g.getFontMetrics();
 
         int ha = 0;
