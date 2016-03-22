@@ -7472,6 +7472,192 @@ public class Ops {
     }    
 
     /**
+     * interpolate values from rank 2 dataset vv using fractional indeces
+     * in rank N findex, using bilinear interpolation.  See also interpolateGrid.
+     *
+     * @param vv rank 2 dataset.
+     * @param findex0 rank N dataset of fractional indeces for the zeroth index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
+     * @param findex1 rank N dataset of fractional indeces for the first index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
+     * @param findex2 rank N dataset of fractional indeces for the second index.  This must be dimensionless, between -0.5 and L-0.5 and is typically calculated by the findex command.
+     * @return rank N dataset 
+     * @see #findex the 1-D findex command.
+     * @see #interpolateGrid 
+     */
+    public static QDataSet interpolate( QDataSet vv, QDataSet findex0, QDataSet findex1, QDataSet findex2 ) {
+
+        if ( vv.rank()!=3 ) throw new IllegalArgumentException("vv must be rank 3");
+        
+        if ( findex0.rank()>0 && findex0.length()!=findex1.length() && findex0.length()!=findex2.length() ) {
+            throw new IllegalArgumentException("findex0, findex1, and findex2 must have the same geometry.");
+        }
+        if ( !isDimensionless(findex0) ) throw new IllegalArgumentException("findex0 argument should be dimensionless, expected output from findex command.");
+        if ( !isDimensionless(findex1) ) throw new IllegalArgumentException("findex1 argument should be dimensionless, expected output from findex command.");
+        if ( !isDimensionless(findex2) ) throw new IllegalArgumentException("findex2 argument should be dimensionless, expected output from findex command.");
+        
+        if ( !DataSetUtil.checkQube(vv) ) {
+            logger.warning("vv is not a qube");
+        }
+        QDataSet fex0= extent(findex0);
+        if ( ( fex0.value(1)-vv.length() ) / vv.length() > 100 ) {
+            logger.warning("findex0 looks suspicious, where its max would result in unrealistic extrapolations");
+        }
+        if ( fex0.value(0) / vv.length() < -100 ) {
+            logger.warning("findex0 looks suspicious, where its min would result in unrealistic extrapolations");
+        }
+        QDataSet fex1= extent(findex1);
+        if ( ( fex1.value(1)-vv.length(0) ) / vv.length(0) > 100 ) {
+            logger.warning("findex1 looks suspicious, where its max would result in unrealistic extrapolations");
+        }
+        if ( fex1.value(0) / vv.length(0) < -100 ) {
+            logger.warning("findex1 looks suspicious, where its min would result in unrealistic extrapolations");
+        }
+        QDataSet fex2= extent(findex2);
+        if ( ( fex2.value(1)-vv.length(0,0) ) / vv.length(0,0) > 100 ) {
+            logger.warning("findex2 looks suspicious, where its max would result in unrealistic extrapolations");
+        }
+        if ( fex2.value(0) / vv.length(0,0) < -100 ) {
+            logger.warning("findex2 looks suspicious, where its min would result in unrealistic extrapolations");
+        }
+        DDataSet result = DDataSet.create(DataSetUtil.qubeDims(findex0));
+
+        QDataSet wds= DataSetUtil.weightsDataSet(vv);
+
+        QubeDataSetIterator it = new QubeDataSetIterator(findex0);
+        int ic00=0, ic01=0, ic10=0, ic11=0, ic20=0, ic21=0;
+        int n0 = vv.length();
+        int n1 = vv.length(0);
+        int n2 = vv.length(0,0);
+        
+        double fill= -1e38;
+        boolean hasFill= false;
+        
+        // Starting with v2014a_12, immodest extrapolations beyond 0.5 are no longer allowed.
+        boolean noExtrapolate= true;
+        
+        while (it.hasNext()) {
+            it.next();
+
+            double ff0 = it.getValue(findex0);
+            double ff1 = it.getValue(findex1);
+            double ff2 = it.getValue(findex2);
+
+            if ( ff0>=0 && ff0<n0-1 ) {
+                ic00 = (int) Math.floor(ff0);
+                ic01 = ic00 + 1;                
+            } else if ( noExtrapolate && ff0 < -0.5 ) {  // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if ( noExtrapolate && ff0 >= n0 - 0.5 ) { // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if (ff0 < 0) {
+                ic00 = 0; // extrapolate
+                ic01 = 1;
+            } else if (ff0 >= n0 - 1) {
+                ic00 = n0 - 2; // extrapolate
+                ic01 = n0 - 1;
+            } 
+
+            if ( ff1>=0 && ff1<n1-1 ) {
+                ic10 = (int) Math.floor(ff1);
+                ic11 = ic10 + 1;                
+            } else if ( noExtrapolate && ff1 < -0.5 ) {  // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if ( noExtrapolate && ff1 >= n1 - 0.5 ) { // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;            
+            } else if (ff1 < 0) {
+                ic10 = 0; // extrapolate
+                ic11 = 1;
+            } else if (ff1 >= n1 - 1) {
+                ic10 = n1 - 2; // extrapolate
+                ic11 = n1 - 1;
+            }
+
+            if ( ff2>=0 && ff2<n2-1 ) {
+                ic20 = (int) Math.floor(ff2);
+                ic21 = ic20 + 1;                
+            } else if ( noExtrapolate && ff2 < -0.5 ) {  // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;
+            } else if ( noExtrapolate && ff2 >= n2 - 0.5 ) { // would extrapolate immodestly
+                it.putValue( result, fill );
+                hasFill= true;
+                continue;            
+            } else if (ff2 < 0) {
+                ic20 = 0; // extrapolate
+                ic21 = 1;
+            } else if (ff2 >= n2 - 1) {
+                ic20 = n2 - 2; // extrapolate
+                ic21 = n2 - 1;
+            }
+            
+            double alpha0 = ff0 - ic00;
+            double alpha1 = ff1 - ic10;
+            double alpha2 = ff2 - ic20;
+
+            double vv000 = vv.value( ic20, ic00, ic10);
+            double vv001 = vv.value( ic20, ic00, ic11);
+            double vv010 = vv.value( ic20, ic01, ic10);
+            double vv011 = vv.value( ic20, ic01, ic11);
+            double vv100 = vv.value( ic21, ic00, ic10);
+            double vv101 = vv.value( ic21, ic00, ic11);
+            double vv110 = vv.value( ic21, ic01, ic10);
+            double vv111 = vv.value( ic21, ic01, ic11);
+
+            double ww000 = wds.value( ic20, ic00, ic10);
+            double ww001 = wds.value( ic20, ic00, ic11);
+            double ww010 = wds.value( ic20, ic01, ic10);
+            double ww011 = wds.value( ic20, ic01, ic11);
+            double ww100 = wds.value( ic21, ic00, ic10);
+            double ww101 = wds.value( ic21, ic00, ic11);
+            double ww110 = wds.value( ic21, ic01, ic10);
+            double ww111 = wds.value( ic21, ic01, ic11);
+            
+            if ( ww000*ww001*ww010*ww011 *  ww100*ww101*ww110*ww111 > 0 ) {
+                double beta0= 1-alpha0;
+                double beta1= 1-alpha1;
+                double beta2= 1-alpha2;
+                double value= vv000 * beta0 * beta1 * beta2 
+                        + vv001 * beta0 * alpha1 * beta2 
+                        + vv010 * alpha0 * beta1 * beta2
+                        + vv011 * alpha0 * alpha1 * beta2
+                        + vv100 * beta0 * beta1 * alpha2 
+                        + vv101 * beta0 * alpha1 * alpha2 
+                        + vv110 * alpha0 * beta1 * alpha2
+                        + vv111 * alpha0 * alpha1 * alpha2;
+                it.putValue(result, value);
+            } else {
+                it.putValue(result, fill );
+                hasFill= true;
+            }
+
+        }
+
+        DataSetUtil.copyDimensionProperties( vv, result );
+        
+        //allow findex0 to provide DEPEND_0 and DEPEND_1.
+        for ( int i=0; i<=findex0.rank(); i++ ) {
+            QDataSet depend= (QDataSet) findex0.property( "DEPEND_"+i );
+            if ( depend!=null ) {
+                result.putProperty( "DEPEND_"+i, depend );
+            }
+        }
+
+        if ( hasFill ) {
+            result.putProperty( QDataSet.FILL_VALUE, fill );
+        }
+        
+        return result;        
+    }
+    
+    /**
      * like interpolate, but the findex is recalculated when the two bracketed points are closer in the 
      * modulo space than they would be in the linear space.
      * @param vv rank 1 dataset that is the data to be interpolated. (e.g. longitude from 0 to 360deg)
@@ -7624,6 +7810,14 @@ public class Ops {
         if ( findex1.rank()==0 ) {
             slice1= true;
             findex1= new JoinDataSet(findex1);
+        }
+
+        if ( findex0.rank()!=1 ) {
+            throw new IllegalArgumentException("findex0 must be rank 1");
+        }
+        
+        if ( findex1.rank()!=1 ) {
+            throw new IllegalArgumentException("findex1 must be rank 1");
         }
 
         DDataSet result = DDataSet.createRank2(findex0.length(),findex1.length());
