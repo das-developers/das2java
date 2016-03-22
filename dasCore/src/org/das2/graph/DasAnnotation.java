@@ -291,7 +291,8 @@ public class DasAnnotation extends DasCanvasComponent {
         Font f= getFont();
         if ( f!=null ) {
             super.resize();
-            Font thefont= Renderer.setUpFont( f, fontSize );
+            Font thefont= f;
+            if ( fontSize>0 && f!=null ) thefont= f.deriveFont(fontSize);
             if ( this.gtr!=null ) {
                 this.gtr.setString( thefont, getString() );
             }
@@ -363,8 +364,7 @@ public class DasAnnotation extends DasCanvasComponent {
                 r.add( headx, heady );
             }
         }
-        Font f= Renderer.setUpFont( getFont(), fontSize);
-        int s= Math.max( f.getSize()/5, 3 );
+        int s= Math.max( getFont().getSize()/5, 3 );
         return new Rectangle( r.x-s, r.y-s, r.width+s*2+1, r.height+s*2+1 );
     }
 
@@ -396,10 +396,9 @@ public class DasAnnotation extends DasCanvasComponent {
             back= getBackground();
         }
                 
-        Font f= Renderer.setUpFont( getFont(), fontSize );
-        g.setFont( f );
+        if ( fontSize>0 ) g.setFont( getFont().deriveFont(fontSize) );
 
-        int em = f.getSize() / 2;
+        int em = (int) getEmSize() / 2;
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -568,9 +567,7 @@ public class DasAnnotation extends DasCanvasComponent {
      */
     private Rectangle getAnnotationBubbleBounds() {
 
-        Font f= getFont();
-        f= Renderer.setUpFont( f, fontSize );
-        int em = (int) f.getSize();
+        int em = (int) getEmSize();
         
         Rectangle anchor= getAnchorBounds();
                         
@@ -709,15 +706,15 @@ public class DasAnnotation extends DasCanvasComponent {
     }
 
     /**
-     * the font size in em or points, or empty if we should use the canvas size.
+     * the font size in points, or zero if we should use the canvas size.
      */
-    String fontSize= "";
+    float fontSize= 0.f;
     
     /**
      * the font size in points.  If zero, then use the canvas size.
      * @return the font size in points.
      */
-    public String getFontSize() {
+    public float getFontSize() {
         return fontSize;
     }
 
@@ -731,10 +728,23 @@ public class DasAnnotation extends DasCanvasComponent {
      * otherwise, use this size.
      * @param fontSize New value of property fontSize.
      */
-    public void setFontSize(String fontSize) {
-        String oldsize= this.fontSize;
+    public void setFontSize(float fontSize) {
+        float oldsize= this.fontSize;
         this.fontSize= fontSize;
+        Font f = getFont();
+        if (f == null) {
+            if ( getCanvas()==null ) return;
+            f = getCanvas().getBaseFont();
+        }
+        if ( fontSize>0 ) f= f.deriveFont(fontSize);
+        Font newFont= f;
+        Graphics g= this.getGraphics();
+        if ( g==null ) return;
+        g.setFont(newFont);
+        if ( gtr!=null ) gtr.setString( g, getString() );
+        resize();
         repaint();
+
         firePropertyChange( PROP_FONT_SIZE, oldsize, fontSize );
     }
 
