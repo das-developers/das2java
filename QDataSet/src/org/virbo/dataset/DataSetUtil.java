@@ -736,7 +736,7 @@ public class DataSetUtil {
         }
         Units u= (Units)ds.property(QDataSet.UNITS);
         if ( u==null ) {
-            if ( ds.property(QDataSet.JOIN_0)!=null ) {
+            if ( ds.property(QDataSet.JOIN_0)!=null && ds.length()>0 ) {
                 u= (Units)ds.property(QDataSet.UNITS,0);
             }
             if ( u==null) u= Units.dimensionless;
