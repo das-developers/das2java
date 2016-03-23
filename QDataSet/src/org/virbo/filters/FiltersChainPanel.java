@@ -506,6 +506,8 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     public void setFilter(String filter) {
         logger.entering( CLASS_NAME, "setFilter", filter );
 
+        String oldFilter= getFilter();
+        
         //if ( this.getName()!=null && this.getName().startsWith("post") ) {
         //    
         //} else {
@@ -608,6 +610,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         
         //content.revalidate();
         this.revalidate();
+        
+        firePropertyChange( PROP_FILTER, oldFilter, filter );
+        
     }
 
     private void updateImmediately() {
