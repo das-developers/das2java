@@ -3400,7 +3400,7 @@ public class Ops {
             }
         } else {
             evu= EnumerationUnits.create("createEvent");
-            tu= Units.us2000;
+            tu= dr.getUnits();
         }
         
         DataSetBuilder dsb= new DataSetBuilder(2,100,4);
