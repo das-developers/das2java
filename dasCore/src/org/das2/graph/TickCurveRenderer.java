@@ -352,7 +352,7 @@ public class TickCurveRenderer extends Renderer {
     
     private void drawTick( Graphics2D g, double findex ) {  
         
-        float tl= (float)tickLen;
+        float tl= (float)(tickLen*0.66);
         Line2D tick;
         try {
             tick= normalize( outsideNormalAt( findex ), tl );        
