@@ -3354,7 +3354,7 @@ public class Ops {
      * @param timeRange a timerange like "2010-01-01" or "2010-01-01/2010-01-10" or "2010-01-01 through 2010-01-09"
      * @param rgbcolor and RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue),
      * @param annotation label for event, possibly including granny codes.
-     * @return a rank 2 QDataSet with [[ startTime, duration, rgbColor, annotation  ]]
+     * @return a rank 2 QDataSet with [[ startTime, stopTime, rgbColor, annotation  ]]
      */
     public static QDataSet createEvent( String timeRange, int rgbcolor, String annotation ) {
         return createEvent( null, timeRange, rgbcolor, annotation );
@@ -3366,7 +3366,7 @@ public class Ops {
      * @param timeRange a timerange like "2010-01-01" or "2010-01-01/2010-01-10" or "2010-01-01 through 2010-01-09"
      * @param rgbcolor an RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue),
      * @param annotation label for event, possibly including granny codes.
-     * @return a rank 2 QDataSet with [[ startTime, duration, rgbColor, annotation  ]]
+     * @return a rank 2 QDataSet with [[ startTime, stopTime, rgbColor, annotation  ]]
      */
     public static QDataSet createEvent( QDataSet append, String timeRange, int rgbcolor, String annotation ) {
         
@@ -3381,7 +3381,7 @@ public class Ops {
      * @param dr a datum range
      * @param rgbcolor an RGB color like 0xFF0000 (red), 0x00FF00 (green), or 0x0000FF (blue)
      * @param annotation label for event, possibly including granny codes.
-     * @return a rank 2 QDataSet with [[ startTime, duration, rgbColor, annotation  ]]
+     * @return a rank 2 QDataSet with [[ startTime, stopTime, rgbColor, annotation  ]]
      */
     public static QDataSet createEvent( QDataSet append, DatumRange dr, int rgbcolor, String annotation ) {
         
