@@ -36,6 +36,7 @@ import org.das2.datum.Units;
 public enum PropertyType {
 
     DOUBLE("double"),
+    BOOLEAN("boolean"),
     DOUBLE_ARRAY("doubleArray"),
     DATUM("Datum"),
     DATUM_RANGE("DatumRange"),
@@ -80,6 +81,8 @@ public enum PropertyType {
                 } catch (NumberFormatException nfe) {
                     throw new java.text.ParseException(nfe.getMessage(), 0);
                 }
+            case BOOLEAN:
+                return Boolean.valueOf(s);
             case INTEGER:
                 try {
                     return new Integer(s);
