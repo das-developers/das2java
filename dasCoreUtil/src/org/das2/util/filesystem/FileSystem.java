@@ -365,6 +365,7 @@ public abstract class FileSystem  {
             synchronized( waitObject ) {
                 waitObject.notifyAll(); //TODO: the other threads are going to think it's offline.
             }
+            blocks.remove(root);
             logger.log(Level.SEVERE, "unsupported protocol: {0}", root);
             throw new IllegalArgumentException( "unsupported protocol: "+root );
             
