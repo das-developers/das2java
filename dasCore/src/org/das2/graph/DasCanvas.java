@@ -56,6 +56,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -102,6 +103,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 import javax.swing.filechooser.FileFilter;
@@ -463,6 +465,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 }
             }
         });
+        incrementPaintCountTimer= new Timer( 100, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setPaintCount( paintCount + 1 );
+            }
+        } );
+        incrementPaintCountTimer.setRepeats(false);
     }
 
     /**
@@ -730,7 +739,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                 g.setFont(oldFont);
             }
         }
-
+        
+        incrementPaintCountTimer.restart();
+        
     }
 
     /** 
@@ -2481,6 +2492,26 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         this.firePropertyChange("name", oldName, name);
     }
 
+    Timer incrementPaintCountTimer;
+            
+    private int paintCount = 0;
+
+    public static final String PROP_PAINTCOUNT = "paintCount";
+
+    /**
+     * provide a property which can be used to monitor updates.
+     * @return arbitrary int which will change as the canvas is painted.
+     */
+    public int getPaintCount() {
+        return paintCount;
+    }
+
+    private void setPaintCount(int paintCount) {
+        int oldPaintCount = this.paintCount;
+        this.paintCount = paintCount;
+        firePropertyChange(PROP_PAINTCOUNT, oldPaintCount, paintCount);
+    }
+        
     /**
      * return the application object for this canvas.
      * @return the application object for this canvas.
