@@ -65,16 +65,6 @@ import javax.swing.ImageIcon;
 import org.das2.dataset.LanlNNRebinner;
 import org.das2.datum.Datum;
 import org.das2.datum.UnitsUtil;
-import static org.das2.graph.Renderer.CONTROL_KEY_COLOR;
-import static org.das2.graph.Renderer.CONTROL_KEY_DRAW_ERROR;
-import static org.das2.graph.Renderer.CONTROL_KEY_FILL_COLOR;
-import static org.das2.graph.Renderer.CONTROL_KEY_LINE_THICK;
-import static org.das2.graph.Renderer.CONTROL_KEY_SYMBOL;
-import static org.das2.graph.Renderer.CONTROL_KEY_SYMBOL_SIZE;
-import static org.das2.graph.Renderer.decodePlotSymbolControl;
-import static org.das2.graph.Renderer.encodeBooleanControl;
-import static org.das2.graph.Renderer.encodeColorControl;
-import static org.das2.graph.Renderer.encodePlotSymbolControl;
 import static org.das2.graph.Renderer.formatControl;
 import org.das2.util.LoggerManager;
 import org.virbo.dataset.DataSetOps;
@@ -337,6 +327,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             if ( !SemanticOps.isTableDataSet( zds ) ) {
                                 if ( SemanticOps.isBundle( zds ) ) { // this should be true because of code above
                                     zds= SemanticOps.getDependentDataSet(zds);
+                                    logger.log(Level.FINE, "spectrogram renderer will handle bundle: {0}", zds.toString());
                                 }
                             }
                         }
@@ -351,14 +342,17 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         logger.exiting( "org.das2.graph.SpectrogramRenderer", "render" );
                         return;
                     }
-                    if ( zds.rank()==2 ) {
-                        xds= SemanticOps.xtagsDataSet(zds);
-                        yds= SemanticOps.ytagsDataSet(zds);
-                    } else if ( zds.rank()==3 ) {
-                        xds= SemanticOps.xtagsDataSet(zds.slice(0));
-                        yds= SemanticOps.ytagsDataSet(zds.slice(0));
-                    } else {
-                        throw new IllegalArgumentException("only rank 2 and rank 3 supported");
+                    switch (zds.rank()) {
+                        case 2:
+                            xds= SemanticOps.xtagsDataSet(zds);
+                            yds= SemanticOps.ytagsDataSet(zds);
+                            break;
+                        case 3:
+                            xds= SemanticOps.xtagsDataSet(zds.slice(0));
+                            yds= SemanticOps.ytagsDataSet(zds.slice(0));
+                            break;
+                        default:
+                            throw new IllegalArgumentException("only rank 2 and rank 3 supported");
                     }
                     if ( ! SemanticOps.getUnits(yds).isConvertibleTo(yAxis.getUnits()) ) {
                         parent.postMessage( this, "dataset y units are \""+SemanticOps.getUnits(yds)+"\" while yaxis is \"" + yAxis.getUnits() + "\"", DasPlot.INFO, null, null );
@@ -671,7 +665,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         plottable = SemanticOps.getUnits(zds).isConvertibleTo(lcolorBar.getUnits());
                         if ( !plottable ) {
                             if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(zds) ) && UnitsUtil.isRatioMeasurement( lcolorBar.getUnits() ) ) {
-                                plottable= true; // we'll provide a warning
+                                //plottable= true; // we'll provide a warning
                                 unitsWarning= true;
                             }
                         }
@@ -827,7 +821,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         } catch (NoDataInIntervalException e) {
             lastException = e;
             plotImage = null;
-        } catch (Exception ex) {
+        } catch (DasException | ArrayIndexOutOfBoundsException ex) {
             logger.log( Level.WARNING, ex.getMessage(), ex );
             lastException= ex;
             plotImage= null;
