@@ -283,11 +283,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         if ( parent==null ) return;
         
         State lstate= state;
-        
-        if ( lstate.validCount==0 ) {
-            System.err.println("here zero read");
-        }
-                    
+     
         //synchronized (lockObject) {
         {
             if ( lstate.plotImage == null ) {
@@ -843,9 +839,6 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             newState.plotImage= null;
             lparent.postException( this,ex );
         } finally {
-            if ( newState.validCount==0 ) {
-                System.err.println("here zero write");
-            }
             state= newState;
             logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
             lparent.repaint();
