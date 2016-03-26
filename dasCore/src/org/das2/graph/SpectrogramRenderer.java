@@ -79,34 +79,27 @@ import org.virbo.dataset.SemanticOps;
 public class SpectrogramRenderer extends Renderer implements TableDataSetConsumer, org.das2.components.propertyeditor.Displayable {
 
     private static final Logger logger = LoggerManager.getLogger("das2.graphics.renderer.spectrogram");
-
+    
     //final private Object lockObject = new Object();
-        
-    //immutable container for a state.  Use one container that is not mutated.
-    private static class State {
-        private Image plotImage;
-        /**
-         * bounds of the image, in the canvas frame.  Note that this can be bigger than the canvas itsself, for example if overrendering is on.
-         */
-        private Rectangle plotImageBounds;
-
-        private byte[] raster;
-        private int rasterWidth,  rasterHeight;
-        private int validCount;
-
-        DatumRange imageXRange;
-        DatumRange imageYRange;
-        DasAxis.Memento xmemento, ymemento, cmemento;
-        int updateImageCount = 0, renderCount = 0;
-        private QDataSet rebinDataSet;  // simpleTableDataSet at pixel resolution
-
-        private String xrangeWarning= null; // if non-null, print out of bounds warning.
-        private String yrangeWarning= null; // if non-null, print out of bounds warning.
-        boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
-    }
+    private Image plotImage;
+    /**
+     * bounds of the image, in the canvas frame.  Note that this can be bigger than the canvas itsself, for example if overrendering is on.
+     */
+    private Rectangle plotImageBounds;
     
-    private State state= new State();
+    private byte[] raster;
+    private int rasterWidth,  rasterHeight;
+    private int validCount;
     
+    DatumRange imageXRange;
+    DatumRange imageYRange;
+    DasAxis.Memento xmemento, ymemento, cmemento;
+    int updateImageCount = 0, renderCount = 0;
+    private QDataSet rebinDataSet;  // simpleTableDataSet at pixel resolution
+
+    private String xrangeWarning= null; // if non-null, print out of bounds warning.
+    private String yrangeWarning= null; // if non-null, print out of bounds warning.
+    boolean unitsWarning= false; // true indicates we've warned the user that we're ignoring units.
     private VerticalSpectrogramSlicer vSlicer;
     private HorizontalSpectrogramSlicer hSlicer;
     private VerticalSpectrogramAverager vAverager;
@@ -272,7 +265,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
 
     @Override
-    public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
+    public synchronized void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         //long t0= System.currentTimeMillis();
 
         logger.entering( "org.das2.graph.SpectrogramRenderer", "render" );
@@ -282,11 +275,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         DasPlot parent= getParent();
         if ( parent==null ) return;
         
-        State lstate= state;
-     
         //synchronized (lockObject) {
         {
-            if ( lstate.plotImage == null ) {
+            if (plotImage == null) {
                 if (lastException != null) {
                     if (lastException instanceof NoDataInIntervalException) {
                         parent.postMessage(this, "no data in interval:!c" + lastException.getMessage(), DasPlot.WARNING, null, null);
@@ -342,8 +333,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
                     }
                 }
-            } else if ( lstate.plotImage != null) {
-                if ( lstate.unitsWarning ) {
+            } else if (plotImage != null) {
+                if ( unitsWarning ) {
                     QDataSet zds= getDataSet();
                     QDataSet xds=null, yds=null;
                     if ( zds==null ) {
@@ -375,12 +366,12 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                 }
                 
                 Point2D p;
-                p = new Point2D.Float( lstate.plotImageBounds.x, lstate.plotImageBounds.y );
+                p = new Point2D.Float( plotImageBounds.x, plotImageBounds.y );
                 int x = (int) (p.getX() + 0.5);
                 int y = (int) (p.getY() + 0.5);
                 if (parent.getCanvas().isPrintingThread() && print300dpi) {
                     AffineTransformOp atop = new AffineTransformOp(AffineTransform.getScaleInstance(4, 4), AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-                    BufferedImage image300 = atop.filter((BufferedImage) lstate.plotImage, null);
+                    BufferedImage image300 = atop.filter((BufferedImage) plotImage, null);
                     AffineTransform atinv;
                     try {
                         atinv = atop.getTransform().createInverse();
@@ -390,27 +381,27 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     atinv.translate(x * 4, y * 4);
                     g2.drawImage(image300, atinv, getParent());
                 } else {
-                    g2.drawImage(lstate.plotImage, x, y, getParent());
+                    g2.drawImage(plotImage, x, y, getParent());
                 }
-                if ( lstate.validCount==0 ) {
+                if ( validCount==0 ) {
                     QDataSet bounds= bounds(ds);
                     DatumRange xdr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(0), true ); 
                     DatumRange ydr= org.virbo.dataset.DataSetUtil.asDatumRange( bounds.slice(1), true );
                     if ( xAxis.getDatumRange().intersects(xdr) && yAxis.getDatumRange().intersects(ydr) ) {
                         parent.postMessage(this, "dataset contains no valid data", DasPlot.INFO, null, null ); // bug 1188: gap in data is misreported.
                     } else {
-                        if ( lstate.xrangeWarning==null && lstate.yrangeWarning==null ) {
+                        if ( xrangeWarning==null && yrangeWarning==null ) {
                              parent.postMessage(this, "dataset is outside of axis range", DasPlot.INFO, null, null );
                         }
                     }
                 }
 
-                if ( lstate.xrangeWarning!=null ) {
-                    parent.postMessage(this, "no data in interval:!c" + lstate.xrangeWarning, DasPlot.WARNING, null, null);
+                if ( xrangeWarning!=null ) {
+                    parent.postMessage(this, "no data in interval:!c" + xrangeWarning, DasPlot.WARNING, null, null);
                 }
                 
-                if ( lstate.yrangeWarning!=null ) {
-                    parent.postMessage(this, "no data in interval:!c" + lstate.yrangeWarning, DasPlot.WARNING, null, null);
+                if ( yrangeWarning!=null ) {
+                    parent.postMessage(this, "no data in interval:!c" + yrangeWarning, DasPlot.WARNING, null, null);
                 }
 
             }
@@ -486,9 +477,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
 
     private void reportCount() {
-        if ( state.updateImageCount % 10 == 0) {
+        if (updateImageCount % 10 == 0) {
             //System.err.println("  updates: "+updateImageCount+"   renders: "+renderCount );    
         }
+
     }
 
     private static RebinDescriptor convertUnitsTo( RebinDescriptor in, Units newUnits ) {
@@ -518,7 +510,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     }
 
     @Override
-    public void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
+    public synchronized void updatePlotImage( DasAxis xAxis, DasAxis yAxis, ProgressMonitor monitor ) throws DasException {
 
         logger.entering( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
         super.incrementUpdateCount();
@@ -533,14 +525,10 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         
         logger.log(Level.FINE, "SpectrogramRenderer is rendering dataset {0} on {1}", new Object[] {  fds, Thread.currentThread().getName() } );
         
-        byte[] lraster= this.state.raster;  // make a local copy for thread safety.
-        int lrasterHeight= this.state.rasterHeight;
-        int lrasterWidth= this.state.rasterWidth;
-        
+        byte[] lraster= this.raster;  // make a local copy for thread safety.
+
         DasColorBar lcolorBar= colorBar; // make a local copy
         if ( lcolorBar==null ) return;
-        
-        State newState= new State();
         
         try {
             try {
@@ -574,20 +562,18 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     // TODO: I don't believe this should be necessary, but testing shows it is.  
                     // Why: a local copy is made of the xAxis and yAxis, and the DataRange objects, so this does not make sense.
                     // (bug AP 1127)
-                    newState.xmemento= xAxis.getMemento();
-                    newState.ymemento= yAxis.getMemento();
-                    newState.cmemento= colorBar.getMemento();
+                    DasAxis.Memento lxmemento= xAxis.getMemento();
+                    DasAxis.Memento lymemento= yAxis.getMemento();
+                    DasAxis.Memento lcmemento= colorBar.getMemento();
                     
                     if ( lraster != null
-                            && state.xmemento != null && state.ymemento != null 
-                            && newState.xmemento.equals(state.xmemento)                             
-                            && newState.ymemento.equals(state.ymemento) 
-                            && newState.cmemento.equals(state.cmemento)
-                            && plotImageBounds2.width==lrasterWidth  // TODO: figure out how plotImageBounds2 and xmemento get out of sync.
-                            && plotImageBounds2.height==lrasterHeight ) {
+                            && xmemento != null && ymemento != null 
+                            && lxmemento.equals(xmemento)                             
+                            && lymemento.equals(ymemento) 
+                            && lcmemento.equals(cmemento)
+                            && plotImageBounds2.width==rasterWidth  // TODO: figure out how plotImageBounds2 and xmemento get out of sync.
+                            && plotImageBounds2.height==rasterHeight ) {
                         logger.finer("same xaxis, yaxis, reusing raster");
-                        newState.validCount= state.validCount;
-                        
                     } else {
 
                         if ( plotImageBounds2==null || plotImageBounds2.width <= 1 || plotImageBounds2.height <= 1) {
@@ -598,11 +584,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         if (fds == null) {
                             logger.finer("got null dataset, setting image to null");
-                            newState.plotImage = null;
-                            newState.plotImageBounds= null;
-                            newState.rebinDataSet = null;
-                            newState.imageXRange = null;
-                            newState.imageYRange = null;
+                            plotImage = null;
+                            plotImageBounds= null;
+                            rebinDataSet = null;
+                            imageXRange = null;
+                            imageYRange = null;
                             lparent.repaint();        
                             logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                             return;
@@ -611,11 +597,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         if (fds.length() == 0) {
                             logger.finer("got empty dataset, setting image to null");
-                            newState.plotImage = null;
-                            newState.plotImageBounds= null;
-                            newState.rebinDataSet = null;
-                            newState.imageXRange = null;
-                            newState.imageYRange = null;
+                            plotImage = null;
+                            plotImageBounds= null;
+                            rebinDataSet = null;
+                            imageXRange = null;
+                            imageYRange = null;
                             lparent.repaint();
                             logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                             return;
@@ -636,14 +622,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             yunits= SemanticOps.getUnits( SemanticOps.ytagsDataSet(fds.slice(0)) );
                         }
 
-                        newState.unitsWarning= false;
+                        unitsWarning= false;
                         if ( !xunits.isConvertibleTo(xAxis.getUnits()) ) {
                             if ( UnitsUtil.isRatioMeasurement( xunits ) && UnitsUtil.isRatioMeasurement( xAxis.getUnits() ) ) {
-                                newState.unitsWarning= true;
+                                unitsWarning= true;
                             } else {
                                 logger.finer("dataset units are incompatable with x axis.");
-                                newState.plotImage = null;
-                                newState.plotImageBounds= null;
+                                plotImage = null;
+                                plotImageBounds= null;
                                 logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                                 return;
                             }
@@ -652,11 +638,11 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                         if ( !yunits.isConvertibleTo(yAxis.getUnits()) ) {
                              if ( UnitsUtil.isRatioMeasurement( yunits ) && UnitsUtil.isRatioMeasurement( yAxis.getUnits() ) ) {
-                                newState.unitsWarning= true;
+                                unitsWarning= true;
                             } else {
                                 logger.finer("dataset units are incompatable with y axis.");
-                                newState.plotImage = null;
-                                newState.plotImageBounds= null;
+                                plotImage = null;
+                                plotImageBounds= null;
                                 logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                                 return;
                             }
@@ -668,8 +654,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                                 zds= SemanticOps.getDependentDataSet(fds);
                             } else {
                                 logger.finer("dataset is not TableDataSet.");
-                                newState.plotImage = null;
-                                newState.plotImageBounds= null;
+                                plotImage = null;
+                                plotImageBounds= null;
                                 logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                                 return;
                             }
@@ -680,7 +666,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         if ( !plottable ) {
                             if ( UnitsUtil.isRatioMeasurement( SemanticOps.getUnits(zds) ) && UnitsUtil.isRatioMeasurement( lcolorBar.getUnits() ) ) {
                                 //plottable= true; // we'll provide a warning
-                                newState.unitsWarning= true;
+                                unitsWarning= true;
                             }
                         }
                         
@@ -705,8 +691,8 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                             yRebinDescriptor= convertUnitsTo(yRebinDescriptor, yunits);
                         }
 
-                        newState.imageXRange = xAxis.getDatumRange();
-                        newState.imageYRange = yAxis.getDatumRange();
+                        imageXRange = xAxis.getDatumRange();
+                        imageYRange = yAxis.getDatumRange();
 
                         DataSetRebinner rebinner = this.rebinnerEnum.getRebinner();
 
@@ -723,49 +709,51 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         Datum start = Datum.create(  bounds.value(0,0), xunits );
                         Datum end = Datum.create( bounds.value(0,1), xunits );
                         if ( xunits.isFill(  bounds.value(0,0) ) ) {
-                            newState.xrangeWarning= "no valid timetags in dataset";
-                            throw new NoDataInIntervalException(newState.xrangeWarning);
-                        } else if ( compare( start, newState.imageXRange.max() )> 0 ) {
-                            newState.xrangeWarning= "data starts after range";
-                        } else if ( compare( end, newState.imageXRange.min() ) < 0 ) {
-                            newState.xrangeWarning= "data ends before range";
+                            xrangeWarning= "no valid timetags in dataset";
+                            throw new NoDataInIntervalException(xrangeWarning);
+                        } else if ( compare( start, imageXRange.max() )> 0 ) {
+                            xrangeWarning= "data starts after range";
+                        } else if ( compare( end, imageXRange.min() ) < 0 ) {
+                            xrangeWarning= "data ends before range";
                         } else {
-                            newState.xrangeWarning= null;
+                            xrangeWarning= null;
                         }
                         
                         if ( yunits.isFill( bounds.value(1,0) ) ) {
-                            newState.yrangeWarning= "no valid y tags in dataset";
-                            throw new NoDataInIntervalException(newState.yrangeWarning);
-                        } else if ( compare( Datum.create(  bounds.value(1,0), yunits ), newState.imageYRange.max() )> 0 ) {
-                            newState.yrangeWarning= "data starts above yrange";
-                        } else if ( compare( Datum.create(  bounds.value(1,1), yunits ), newState.imageYRange.min() ) < 0 ) {
-                            newState.yrangeWarning= "data ends below yrange";
+                            yrangeWarning= "no valid y tags in dataset";
+                            throw new NoDataInIntervalException(yrangeWarning);
+                        } else if ( compare( Datum.create(  bounds.value(1,0), yunits ), imageYRange.max() )> 0 ) {
+                            yrangeWarning= "data starts above yrange";
+                        } else if ( compare( Datum.create(  bounds.value(1,1), yunits ), imageYRange.min() ) < 0 ) {
+                            yrangeWarning= "data ends below yrange";
                         } else {
-                            newState.yrangeWarning= null;
+                            yrangeWarning= null;
                         }
                         
                         //t0= System.currentTimeMillis();
                         try {
-                            newState.rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
+                            rebinDataSet = (QDataSet) rebinner.rebin( fds, xRebinDescriptor, yRebinDescriptor );
                         } catch ( RuntimeException ex ) {
                             logger.log( Level.WARNING, ex.getMessage(), ex );  //TODO: catch this...  See sftp://jbf@papco.org/home/jbf/ct/autoplot/script/bugs/3237397/gapsTest.jy
-                            newState.plotImage= null;
-                            newState.plotImageBounds= null;
+                            plotImage= null;
+                            plotImageBounds= null;
                             lastException= ex;
                             lparent.postException( this,ex );
                             logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
                             return;
                         }
                         //System.err.println( "rebin (ms): " + ( System.currentTimeMillis()-t0) );
+                        xmemento = lxmemento;
+                        ymemento = lymemento;
+                        cmemento = lcmemento;
 
-                        logger.log(Level.FINE, "done rebinning to pixel resolution: {0}  {1}", new Object[]{newState.xmemento, newState.ymemento});
+                        logger.log(Level.FINE, "done rebinning to pixel resolution: {0}  {1}", new Object[]{xmemento, ymemento});
 
-                        lraster = makePixMap( newState.rebinDataSet, lraster );
-                        lrasterWidth = newState.rebinDataSet.length();
-                        lrasterHeight= newState.rebinDataSet.length(0);
+                        lraster = makePixMap( rebinDataSet, lraster );
+
                         //t0= System.currentTimeMillis();
                         try {
-                            newState.validCount= transformSimpleTableDataSet( newState.rebinDataSet, lcolorBar, false, lraster );
+                            validCount= transformSimpleTableDataSet(rebinDataSet, lcolorBar, false, lraster );
                         } catch ( InconvertibleUnitsException ex ) {
                             System.err.println("zunits="+ SemanticOps.getUnits(fds)+"  colorbar="+lcolorBar.getUnits() );
                             logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
@@ -773,9 +761,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                         }
                         //System.err.println( "transformSimpleTable (ms): " + ( System.currentTimeMillis()-t0) );
 
-                        newState.rasterWidth = lrasterWidth;
-                        newState.rasterHeight = lrasterHeight;
-                        newState.raster= lraster;
+                        rasterWidth = plotImageBounds2.width;
+                        rasterHeight = plotImageBounds2.height;
+                        raster= lraster;
                     }
 
                     IndexColorModel model = lcolorBar.getIndexColorModel();
@@ -784,9 +772,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     WritableRaster r = plotImage2.getRaster();
 
                     try {
-                        if ( plotImageBounds2.width==lrasterWidth && plotImageBounds2.height==lrasterHeight ) {
+                        if ( plotImageBounds2.width==rasterWidth && plotImageBounds2.height==rasterHeight ) {
                             try {
-                                r.setDataElements(0, 0, lrasterWidth, lrasterHeight, lraster);
+                                r.setDataElements(0, 0, rasterWidth, rasterHeight, lraster);
                             } catch (Exception e) {
                                 logger.log( Level.WARNING, e.getMessage(), e );
                             }
@@ -796,9 +784,9 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     } catch (ArrayIndexOutOfBoundsException ex) {
                         throw ex;
                     }
-                    newState.plotImage = plotImage2;
-                    newState.plotImageBounds= plotImageBounds2;
-                    newState.raster= lraster;
+                    plotImage = plotImage2;
+                    plotImageBounds= plotImageBounds2;
+                    raster= lraster;
 
                     Rectangle rr= DasDevicePosition.toRectangle( lparent.getRow(), lparent.getColumn() );
 
@@ -821,25 +809,24 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
             } catch (InconvertibleUnitsException ex) {
                 logger.fine("inconvertible units, setting image to null");
                 logger.log( Level.WARNING, ex.getMessage(), ex );
-                newState.plotImage = null;
-                newState.plotImageBounds= null;
-                newState.rebinDataSet = null;
-                newState.imageXRange = null;
-                newState.imageYRange = null;
+                plotImage = null;
+                plotImageBounds= null;
+                rebinDataSet = null;
+                imageXRange = null;
+                imageYRange = null;
                 if (this.getLastException() == null) setException(ex);
                 lparent.repaint();
             }
 
         } catch (NoDataInIntervalException e) {
             lastException = e;
-            newState.plotImage = null;
+            plotImage = null;
         } catch (DasException | ArrayIndexOutOfBoundsException ex) {
             logger.log( Level.WARNING, ex.getMessage(), ex );
             lastException= ex;
-            newState.plotImage= null;
+            plotImage= null;
             lparent.postException( this,ex );
         } finally {
-            state= newState;
             logger.exiting( "org.das2.graph.SpectrogramRenderer", "updatePlotImage" );
             lparent.repaint();
         }
@@ -937,7 +924,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         RebinnerEnum old = this.rebinnerEnum;
         if (old != rebinnerEnum) {
             this.rebinnerEnum = rebinnerEnum;
-            this.state.raster = null;
+            this.raster = null;
             clearPlotImage();
             updateCacheImage();
             propertyChangeSupport.firePropertyChange(PROP_REBINNER, old, rebinnerEnum);
@@ -975,14 +962,14 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
     @Override
     public QDataSet getConsumedDataSet() {
         if (sliceRebinnedData) {
-            return state.rebinDataSet;
+            return rebinDataSet;
         } else {
             return this.ds;
         }
     }
 
     private synchronized void clearPlotImage() {
-        this.state.plotImage = null;
+        this.plotImage = null;
     }
     
     @Override
@@ -990,7 +977,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
         QDataSet oldDs = this.ds;
         DasPlot parent= getParent();
         if (parent != null && oldDs != ds) {
-            this.state.raster = null;
+            this.raster = null;
             // TODO: preserve plotImage until updatePlotImage is done
             clearPlotImage();
         }
