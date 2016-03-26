@@ -1190,11 +1190,13 @@ public class DasPlot extends DasCanvasComponent {
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.translate(-getX(), -getY());
 
-        boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache;
+        Rectangle lcacheImageBounds= this.cacheImageBounds;
+        BufferedImage lcacheImage= this.cacheImage;
+            
+        boolean useCacheImage= cacheImageValid && !getCanvas().isPrintingThread() && !disableImageCache 
+                && ( lcacheImageBounds.width==lcacheImage.getWidth() );
+        
         if ( useCacheImage ) {
-
-            Rectangle lcacheImageBounds= this.cacheImageBounds;
-            BufferedImage lcacheImage= this.cacheImage;
             
             Graphics2D atGraphics = (Graphics2D) graphics.create();
 
@@ -1241,9 +1243,6 @@ public class DasPlot extends DasCanvasComponent {
             atGraphics.dispose();
 
         } else {  // don't useCacheImage
-
-            BufferedImage lcacheImage;
-            Rectangle lcacheImageBounds;
                 
             synchronized (this) {
                 Graphics2D plotGraphics;
