@@ -166,6 +166,9 @@ public class FileStorageModel {
      * @throws java.io.IOException if the file cannot be downloaded.
      */
     public String getRepresentativeFile( ProgressMonitor monitor, String childRegex, DatumRange range ) throws IOException {
+        
+        logger.log(Level.FINE, "get representative from {0} {1} range: {2}", new Object[]{this.getFileSystem(), childRegex, range});
+        
         String listRegex;
 
         FileSystem[] fileSystems;
