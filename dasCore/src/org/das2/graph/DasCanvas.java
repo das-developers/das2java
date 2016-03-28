@@ -440,9 +440,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         setBackground(Color.white);
         setPreferredSize(new Dimension(400, 300));
         this.setDoubleBuffered(true);
-        glassPane = new GlassPane();
-        add(glassPane, GLASS_PANE_LAYER);
         if (!application.isHeadless()) {
+            glassPane = new GlassPane();
+            add(glassPane, GLASS_PANE_LAYER);
             popup = createPopupMenu();
             this.addMouseListener(createMouseInputAdapter());
 
@@ -451,6 +451,8 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             } catch (SecurityException ex) {
                 dndSupport = new CanvasDnDSupport();
             }
+        } else {
+            glassPane= null;
         }
         makeCurrent();
         stateSupport = new ChangesSupport(null, this);
