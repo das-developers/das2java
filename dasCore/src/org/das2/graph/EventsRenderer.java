@@ -589,6 +589,12 @@ public class EventsRenderer extends Renderer {
             
             QDataSet xds= xmins;
             Units xunits= SemanticOps.getUnits(xds);
+            if ( !xunits.isConvertibleTo( xAxis.getUnits() ) ) {
+                if ( UnitsUtil.isRatioMeasurement(xunits) ) {
+                    parent.postMessage( this, "x axis units changed from \""+xunits + "\" to \"" + xAxis.getUnits() + "\"", DasPlot.INFO, null, null );
+                    xunits= xAxis.getUnits();
+                }
+            }
 
             if ( cds.length()>0 ) {
                 
