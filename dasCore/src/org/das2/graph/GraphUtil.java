@@ -421,6 +421,9 @@ public class GraphUtil {
         int points = 0;
         int inCount = 0;
 
+        boolean atMiny=false;
+        boolean atMaxy=false;
+        
         while (!it.isDone()) {
             inCount++;
 
@@ -445,8 +448,6 @@ public class GraphUtil {
             }
             
             if ( xx!=x0 ) {
-                boolean atMiny=false;
-                boolean atMaxy=false;
                 exity= y0;
                 if ( miny==maxy ) { // implies entryx==exitx
                     atMaxy=true;
@@ -520,11 +521,21 @@ public class GraphUtil {
         if ( miny==maxy ) { // implies entryx==exitx
         } else if ( entryy==miny ) {
             result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
+            atMiny= true;
         } else if ( entryy==maxy ) {
             result.lineTo( ((float)x0)*resn/resd, ((float)maxy)*resn/resd );  points++;
+            atMiny= false;
         } else {
+            result.lineTo( ((float)x0)*resn/resd, ((float)entryy)*resn/resd );  points++;
             result.lineTo( ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
-            result.lineTo( ((float)x0)*resn/resd, ((float)maxy)*resn/resd );  points++;
+            atMiny= true;
+        }
+        if ( miny<maxy ) {
+            if ( atMiny ) {
+                result.lineTo(  ((float)x0)*resn/resd, ((float)maxy)*resn/resd );  points++;
+            } else if ( !atMiny ) {
+                result.lineTo(  ((float)x0)*resn/resd, ((float)miny)*resn/resd );  points++;
+            }
         }
         
         logger.log(Level.FINE, "reduce {0} to {1} in {2}ms", new Object[]{inCount, points, System.currentTimeMillis()-t0 });
