@@ -143,6 +143,9 @@ public class PropertiesTreeModel extends DefaultTreeModel {
                     }
                     DefaultMutableTreeNode nextChild= new DefaultMutableTreeNode(""+val.getKey()+"="+list);
                     mrt.insert( nextChild, mrt.getChildCount() );
+                } else if ( value!=null && Map.class.isAssignableFrom( value.getClass() ) ) {
+                    MutableTreeNode nextChild= (MutableTreeNode) new MapTreeModel( val.getKey(), (Map)value ).getRoot();
+                    mrt.insert( nextChild, mrt.getChildCount() );
                 } else {
                     mrt.insert( new DefaultMutableTreeNode(""+val.getKey()+"="+val.getValue() ),mrt.getChildCount() );
                 }
