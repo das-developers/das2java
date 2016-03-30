@@ -448,6 +448,8 @@ public class GraphUtil {
             }
             
             if ( xx!=x0 ) {
+                atMiny=false;
+                atMaxy=false;                
                 exity= y0;
                 if ( miny==maxy ) { // implies entryx==exitx
                     atMaxy=true;
