@@ -62,7 +62,7 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
 
         jLabel2.setText("Type:");
 
-        type1CB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "--------------", "High-Pass", "Low-Pass", "Band-Pass", "Band-Reject" }));
+        type1CB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "High-Pass", "Low-Pass", "Band-Pass", "Band-Reject" }));
         type1CB.addActionListener(formListener);
 
         org.jdesktop.layout.GroupLayout subPanel1Layout = new org.jdesktop.layout.GroupLayout(subPanel1);
@@ -230,22 +230,25 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
         }
     }// </editor-fold>//GEN-END:initComponents
 
-    private void type1CBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_type1CBActionPerformed
-     
-        if ( type1CB.getSelectedIndex()==1 ) {
+    private void setType( int type ) {
+        if ( type==0 ) {
             subPanel3.setVisible(true);
             subPanel4.setVisible(false);
-        } else if ( type1CB.getSelectedIndex() == 2) {
+        } else if ( type == 1) {
             subPanel3.setVisible(true);
             subPanel4.setVisible(false);
-        } else if (type1CB.getSelectedIndex() == 3) {
+        } else if (type == 2) {
             subPanel3.setVisible(false);
             subPanel4.setVisible(true);
-        } else if (type1CB.getSelectedIndex() == 4) {
+        } else if ( type == 3) {
             subPanel3.setVisible(false);
             subPanel4.setVisible(true);
         }
         
+    }
+    
+    private void type1CBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_type1CBActionPerformed
+        setType( type1CB.getSelectedIndex() );    
     }//GEN-LAST:event_type1CBActionPerformed
 
     /**
@@ -317,13 +320,13 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
             orderCB.setSelectedItem( m.group(1) );
             cutoffFreq.setText( m.group(2) );
             if ( m.group(3).equals("True")) {
-                type1CB.setSelectedIndex(2);
+                type1CB.setSelectedIndex(1);
             }
             else if (m.group(3).equals("False")) {
-                type1CB.setSelectedIndex(1);
+                type1CB.setSelectedIndex(0);
             }
             else {
-                type1CB.setSelectedIndex(1);
+                type1CB.setSelectedIndex(0);
             }
         }
         else if (n.matches()) {
@@ -332,10 +335,10 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
             lowFreq.setText( n.group(2) );
             highFreq.setText( n.group(3) );
             if ( n.group(4).equals("True")) {
-                type1CB.setSelectedIndex(3);
+                type1CB.setSelectedIndex(2);
             }
             else if (n.group(4).equals("False")) {
-                type1CB.setSelectedIndex(4);
+                type1CB.setSelectedIndex(3);
             }
             else {
                 type1CB.setSelectedIndex(0);
@@ -348,6 +351,7 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
             cutoffFreq.setText("10");
             type1CB.setSelectedIndex(0);
         }
+        setType(type1CB.getSelectedIndex());
         }
 
     
@@ -373,7 +377,9 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
             return "|butterworth(" + orderCB.getSelectedItem() + "," + lowFreq.getText() + "," + highFreq.getText() + "," + tf + ")";
         }
         else {
-            return "error";
+            // return something, so the user doesn't loose so much info.
+            tf = "False";
+            return "|butterworth(" + orderCB.getSelectedItem() + "," + cutoffFreq.getText() + "," + tf + ")";
         }
     }
     
