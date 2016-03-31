@@ -590,6 +590,8 @@ public class EventsRenderer extends Renderer {
             eventMap= new int[column.getWidth()];
             for ( int k=0; k<eventMap.length; k++ ) eventMap[k]= -1;
             
+            QDataSet wxmins= SemanticOps.weightsDataSet(xmins);
+            
             QDataSet xds= xmins;
             Units xunits= SemanticOps.getUnits(xds);
             if ( !xunits.isConvertibleTo( xAxis.getUnits() ) ) {
@@ -639,6 +641,10 @@ public class EventsRenderer extends Renderer {
                     if ( i%10==0 && dt > renderTimeLimitMs ) {
                         parent.postMessage( this, "renderer ran out of time, dataset truncated", DasPlot.WARNING, null, null);
                         break;
+                    }
+                    
+                    if ( wxmins.value(i)==0.0 ) { // allow for fill in events dataset.
+                        continue;
                     }
                     
                     int ixmin= (int)xAxis.transform( xmins.value(i),xunits);
