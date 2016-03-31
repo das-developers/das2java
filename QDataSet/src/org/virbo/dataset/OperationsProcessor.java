@@ -445,7 +445,9 @@ public class OperationsProcessor {
                             throw new IllegalArgumentException("expected argument to butterworth filter");
                         }
                     }
-
+                } else if ( cmd.equals("|flattenWaveform") ) {
+                    fillDs= DataSetOps.flattenWaveform( fillDs );
+                    
                 } else if ( cmd.equals("|unbundle" ) ) {
                     String comp= getStringArg( s.next() );
                     try {
