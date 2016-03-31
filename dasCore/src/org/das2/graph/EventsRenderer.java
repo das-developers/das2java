@@ -163,7 +163,7 @@ public class EventsRenderer extends Renderer {
         if ( selectionArea!=null ) {
             return selectionArea.contains( x, y );
         } else {
-            return true;
+            return false;
         }
     }
 
@@ -692,7 +692,7 @@ public class EventsRenderer extends Renderer {
                         r1.width= r1.width+4;
                         r1.height= r1.height+4;
                         if ( current==null ) {
-                            current= r1;
+                            current= r1; 
                         } else if ( current.intersects(r1) ) {
                             current= current.union(r1);
                         } else {
