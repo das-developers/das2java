@@ -139,7 +139,10 @@ public class Orbits {
             int col= -1; // the first time column, 0 is the first column.
             while ( s!=null ) {
                 String[] ss= s.trim().split("\\s+");
-                if ( ss.length>0 && ss[0].startsWith("#") ) continue;
+                if ( ss.length>0 && ss[0].startsWith("#") ) {
+                    s= rin.readLine();
+                    continue;
+                }
                 if ( ss.length==3 && ( ss[1].startsWith("1") || ss[1].startsWith("2") ) ) { // quick checks
                     Datum d1;
                     Datum d2;
