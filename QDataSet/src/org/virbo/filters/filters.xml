@@ -143,6 +143,16 @@
                         <filter>|putProperty(VALID_MIN,-1e38)</filter>
                         <description>Insert a property value into a dataset's properties.</description>
                     </bookmark>          
+                    <bookmark>
+                        <title>Set Valid Range</title>
+                        <filter>|setValidRange('-1e38 to 1e38')</filter>
+                        <description>Set the limits of the data.</description>
+                    </bookmark>
+                    <bookmark>
+                        <title>Set Fill Value</title>
+                        <filter>|setFillValue(-1e38)</filter>
+                        <description>Set the numerical value marking invalid data.</description>
+                    </bookmark>                
                 </bookmark-list>
             </bookmark-folder>
             <bookmark-folder>
