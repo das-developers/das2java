@@ -58,6 +58,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
     
     private QDataSet inputDs;
     private String currentFilter= ""; // the currently implemented filter.
+    private FilterEditorPanel currentFilterPanel=null;
     private boolean implicitUnbundle= false;
     private final TickleTimer timer;
     private final Timer recalculatingTimer; //AWT thread
@@ -303,18 +304,36 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         setInput(inputDs1);        
     }
     
+    private FilterEditorPanel getFilterEditorPanelParent( Component c ) {
+        // go through parents to get FilterEditorPanel and do focus based on this.
+        while ( c!=null && !( c instanceof FilterEditorPanel ) ) {
+            c= c.getParent();
+        }
+        if ( c==null ) {
+            System.err.println("suprised this happens...");
+            return null;
+        }
+        return (FilterEditorPanel)c;
+    }
+    
     private final FocusListener lostFocusListener= new FocusListener() {
 
         @Override
         public void focusGained(FocusEvent e) {
             logger.log(Level.FINE, "focusGained {0}", e.getComponent().getName() );
+            currentFilterPanel= getFilterEditorPanelParent(e.getComponent());
         }
 
         @Override
         public void focusLost(FocusEvent e) {
             logger.log(Level.FINE, "focusLost {0}", e.getComponent().getName() );
-            if ( !getFilter().equals(currentFilter) ) {
+            FilterEditorPanel c= getFilterEditorPanelParent( e.getComponent() );
+            FilterEditorPanel n= getFilterEditorPanelParent( e.getOppositeComponent() );
+            if ( c==null ) return;
+            if ( c!=currentFilterPanel || c!=n ) {
+            //if ( !getFilter().equals(currentFilter) ) {
                 updateSoon( null );
+                currentFilterPanel= (FilterEditorPanel)c;
             } else {
                 logger.log( Level.FINER, "... already up to date");
             }
