@@ -304,13 +304,17 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         setInput(inputDs1);        
     }
     
+    /**
+     * find the filterEditorPanel, or null.
+     * @param c null or the current component.
+     * @return null or the FilterEditorPanel
+     */
     private FilterEditorPanel getFilterEditorPanelParent( Component c ) {
         // go through parents to get FilterEditorPanel and do focus based on this.
         while ( c!=null && !( c instanceof FilterEditorPanel ) ) {
             c= c.getParent();
         }
         if ( c==null ) {
-            System.err.println("suprised this happens...");
             return null;
         }
         return (FilterEditorPanel)c;
