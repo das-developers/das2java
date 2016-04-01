@@ -235,6 +235,12 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
             result= new GetPropertyEditorPanel();
         } else if ( f.matches("\\|putProperty\\((.*)\\)") ) {
             result= new PutPropertyFilterEditorPanel();
+        } else if ( f.matches("\\|setValidRange\\((.*)\\)") ) {
+            result= new SingleArgumentEditorPanel( "setValidRange", "Valid Range", "The limits of valid data (inclusive)", new String[] { "", "-1e31 to 1e31", "0 to 100" } );
+        } else if ( f.matches("\\|setFillValue\\((.*)\\)") ) {
+            result= new SingleArgumentEditorPanel( "setFillValue", "Fill Value", "Numerical value marking invalid data", new String[] { "", "-1e31", "0", "-1" } );
+        } else if ( f.matches("\\|putProperty\\((.*)\\)") ) {
+            result= new PutPropertyFilterEditorPanel();
         } else if ( f.matches( TrimFilterEditorPanel.PROP_REGEX)){
             result= new TrimFilterEditorPanel();
         } else {
