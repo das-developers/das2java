@@ -11,6 +11,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.das2.datum.Datum;
+import org.das2.datum.DatumRange;
+import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.Units;
@@ -576,6 +578,19 @@ public class OperationsProcessor {
                     }
                     String val= getStringArg( s.next() );
                     fillDs= Ops.putProperty( fillDs, arg, val );
+                    
+                } else if ( cmd.equals("|setFillValue") ) {
+                    String arg= getStringArg( s.next() );
+                    double d= Double.parseDouble(arg);
+                    fillDs= Ops.putProperty( fillDs, QDataSet.FILL_VALUE, d );
+                    
+                } else if ( cmd.equals("|setValidRange") ) {
+                    String arg= getStringArg( s.next() );
+                    Units u= SemanticOps.getUnits(fillDs);
+                    DatumRange d= DatumRangeUtil.parseDatumRange( arg, u );
+                    fillDs= Ops.putProperty( fillDs, QDataSet.VALID_MIN, d.min().doubleValue(u) );
+                    fillDs= Ops.putProperty( fillDs, QDataSet.VALID_MAX, d.max().doubleValue(u) );
+                    
                 } else if ( cmd.equals("|monotonicSubset") ) {
                     WritableDataSet ds= Ops.copy(fillDs);
                     fillDs= Ops.monotonicSubset(ds);
