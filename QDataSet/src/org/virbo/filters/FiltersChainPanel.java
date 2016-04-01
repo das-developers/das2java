@@ -602,7 +602,9 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                 JPanel ll= onePanel(i);
                 content.add( ll );
                 i++;
-                content.add( new JLabel( "--------" ) );
+                if ( i<ss.length ) {
+                    content.add( new JLabel( "--------" ) );
+                }
             }
         }
 
