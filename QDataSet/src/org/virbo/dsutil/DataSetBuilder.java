@@ -568,7 +568,8 @@ public class DataSetBuilder {
                 Object okey= properties.get(key);
                 if ( okey instanceof String ) {
                     okey= dataSetResolver.resolve((String)properties.get(key));
-                    if ( okey==null ) throw new IllegalArgumentException("unable to resolve key: "+okey);
+                } else if ( okey==null ) {
+                    logger.log(Level.WARNING, "unable to resolve key: {0}", key);
                 }
                 result.putProperty( key, okey );
             } else if ( key.startsWith("WEIGHTS" ) || key.startsWith("DEPEND_")  // The QStream parser stores strings temporarily.
