@@ -94,7 +94,7 @@ public class CredentialsManager{
 	////////////////////////////////////////////////////////////////////////////////////
 	// Instance Section
 	
-	protected class Location{
+	protected static class Location{
 		String sLocId;
 		String sDesc;
 		ImageIcon iconLogo;
