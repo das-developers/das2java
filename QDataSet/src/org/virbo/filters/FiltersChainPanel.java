@@ -278,9 +278,7 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
         } else {
             try {
                 SwingUtilities.invokeAndWait(run);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(FiltersChainPanel.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InvocationTargetException ex) {
+            } catch (InterruptedException | InvocationTargetException ex) {
                 Logger.getLogger(FiltersChainPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -659,16 +657,13 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
                 if ( oldCurrentFilter.equals(f) ) {
                     logger.fine("does not change.");
                 } else {
-                    firePropertyChange( PROP_FILTER, oldCurrentFilter, f );
-                    oldCurrentFilter= f;        
+                    firePropertyChange( PROP_FILTER, oldCurrentFilter, f );  
                 }
             }
         };
         try {
             SwingUtilities.invokeAndWait(run);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(FiltersChainPanel.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (InterruptedException | InvocationTargetException ex) {
             Logger.getLogger(FiltersChainPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -849,23 +844,24 @@ public final class FiltersChainPanel extends javax.swing.JPanel implements Filte
      */
     protected static QDataSet getExampleDataSet( String s ) {
         try {
-            if ( s.equals("rank1TimeSeries" ) ) {
-                return Ops.ripplesTimeSeries(20);
-            } else if ( s.equals("qube" ) ) {
-                MutablePropertyDataSet ds= (MutablePropertyDataSet) Ops.ripples(300,30,20);
-                MutablePropertyDataSet dds;
-                dds= (MutablePropertyDataSet) Ops.timegen("2000-01-01T00:00", "60s", 300 );
-                dds.putProperty( QDataSet.NAME, "Epoch" );
-                ds.putProperty( QDataSet.DEPEND_0, dds );
-                dds= (MutablePropertyDataSet) Ops.findgen(30);
-                dds.putProperty( QDataSet.NAME, "index30" );
-                ds.putProperty( QDataSet.DEPEND_1, dds );
-                dds= (MutablePropertyDataSet) Ops.findgen(20);
-                dds.putProperty( QDataSet.NAME, "index20" );
-                ds.putProperty( QDataSet.DEPEND_2, dds );
-                return ds;
-            } else {
-                return Ops.ripplesVectorTimeSeries(30);
+            switch (s) {
+                case "rank1TimeSeries":
+                    return Ops.ripplesTimeSeries(20);
+                case "qube":
+                    MutablePropertyDataSet ds= (MutablePropertyDataSet) Ops.ripples(300,30,20);
+                    MutablePropertyDataSet dds;
+                    dds= (MutablePropertyDataSet) Ops.timegen("2000-01-01T00:00", "60s", 300 );
+                    dds.putProperty( QDataSet.NAME, "Epoch" );
+                    ds.putProperty( QDataSet.DEPEND_0, dds );
+                    dds= (MutablePropertyDataSet) Ops.findgen(30);
+                    dds.putProperty( QDataSet.NAME, "index30" );
+                    ds.putProperty( QDataSet.DEPEND_1, dds );
+                    dds= (MutablePropertyDataSet) Ops.findgen(20);
+                    dds.putProperty( QDataSet.NAME, "index20" );
+                    ds.putProperty( QDataSet.DEPEND_2, dds );
+                    return ds;
+                default:
+                    return Ops.ripplesVectorTimeSeries(30);
             }
         } catch (ParseException ex) {
             throw new RuntimeException(ex);
