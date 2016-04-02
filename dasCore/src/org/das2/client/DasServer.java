@@ -108,7 +108,7 @@ public class DasServer {
 	/** Class to represent know information about an item in a list of data sources.
 	 * @author cwp
 	 */
-	public class DataSrcListItem {
+	public static class DataSrcListItem {
 		private boolean bDirectory;
 		private String sName;
 		private String sDesc;
