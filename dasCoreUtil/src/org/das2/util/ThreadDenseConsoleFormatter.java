@@ -15,9 +15,10 @@ import java.util.logging.LogRecord;
  */
 public class ThreadDenseConsoleFormatter extends Formatter {
     
+    @Override
     public String format( LogRecord rec ) {
         Thread t= Thread.currentThread();
-        StackTraceElement[] st= new Throwable().getStackTrace();        
+        //StackTraceElement[] st= new Throwable().getStackTrace();        
 //        return rec.getLoggerName()+": "+t+": "+rec.getLevel().getLocalizedName()+": "+rec.getMessage()+"\n"+"\tat "+st[7]+"\n\tat "+st[8]+"\n";
         return rec.getLoggerName()+": "+t+": "+rec.getLevel().getLocalizedName()+": "+rec.getMessage()+"\n";
     }
