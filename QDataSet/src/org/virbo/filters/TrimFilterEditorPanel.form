@@ -56,12 +56,13 @@
     <Component class="javax.swing.JLabel" name="endLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="Up to but not including:"/>
-        <Property name="toolTipText" type="java.lang.String" value="Negative indeces are allowed, so -1 refers to the last index."/>
+        <Property name="toolTipText" type="java.lang.String" value="Negative indeces are allowed, so -1 refers to the last index.  Blank may be used to include the last index."/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
         <Property name="text" type="java.lang.String" value="Trim from (index or Datum):"/>
+        <Property name="toolTipText" type="java.lang.String" value="index of the first element, and negative indices are relative to the end.  A datum may be used as well."/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="upperBound">

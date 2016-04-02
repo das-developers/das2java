@@ -17,7 +17,7 @@ import org.virbo.dsops.Ops;
  */
 public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
 
-    public static String PROP_REGEX= "\\|trim\\(\\s*(\\S+)\\s*\\,\\s*(\\S+)\\s*\\)";
+    public final static String PROP_REGEX= "\\|trim\\(\\s*(\\S+)\\s*\\,\\s*(\\S+)\\s*\\)";
 
     private boolean automaticSetting= true;
             
@@ -92,9 +92,10 @@ public class TrimFilterEditorPanel extends AbstractFilterEditorPanel {
         lowerBound = new javax.swing.JTextField();
 
         endLabel.setText("Up to but not including:");
-        endLabel.setToolTipText("Negative indeces are allowed, so -1 refers to the last index.");
+        endLabel.setToolTipText("Negative indeces are allowed, so -1 refers to the last index.  Blank may be used to include the last index.");
 
         jLabel3.setText("Trim from (index or Datum):");
+        jLabel3.setToolTipText("index of the first element, and negative indices are relative to the end.  A datum may be used as well.");
 
         upperBound.setText("-1");
 
