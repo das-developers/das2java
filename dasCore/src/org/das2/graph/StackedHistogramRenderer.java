@@ -431,10 +431,6 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
             QDataSet xds= SemanticOps.xtagsDataSet(ds);
             Datum xwidth= SemanticOps.guessXTagWidth(xds,null);
             if ( xwidth==null ) xwidth= DataSetUtil.asDatum(DataSetUtil.guessCadenceNew(xds,null));
-            Units rdUnits= x.getUnits();
-            if ( rdUnits instanceof LocationUnits ) {
-                rdUnits= ((LocationUnits)rdUnits).getOffsetUnits();
-            }
 
             try {
                 QDataSet result;
