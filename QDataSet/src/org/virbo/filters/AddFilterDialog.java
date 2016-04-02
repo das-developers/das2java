@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.virbo.filters;
 
 import java.io.IOException;
@@ -19,7 +15,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
-import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -56,7 +51,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
     private static final String PREF_TAB = "tabPreference";
     private static final String PREF_INDEX = "indexPreference";
 
-    private static String expansionState= prefs.get(PREF_EXPANSION_STATE, null );
+    private String expansionState= prefs.get(PREF_EXPANSION_STATE, null );
     
     DefaultMutableTreeNode root= null;
     
@@ -137,24 +132,11 @@ public class AddFilterDialog extends javax.swing.JPanel {
         this.jTree1.scrollPathToVisible(tp);
     }
     
-    private void setSelectedValue( String value ) {
-        ListModel lm= jList1.getModel();
-        Object selected= null;
-        for ( int i=0; i<lm.getSize(); i++ ) {
-            if ( ((Bookmark)lm.getElementAt(i)).title.equals( value ) ) {
-                selected= lm.getElementAt(i);
-            }
-        }
-        if ( selected!=null ) {
-            jList1.setSelectedValue( selected, true );
-        }
-    }
-    
     /**
      * simply alphabetize the tree elements to make a list more like the old list.
      */
     private void populateList( ) {
-        List<Bookmark> elements= new ArrayList<Bookmark>(100);
+        List<Bookmark> elements= new ArrayList<>(100);
         getElementsFromTree( elements, (DefaultMutableTreeNode)this.jTree1.getModel().getRoot() );
         Collections.sort(elements, new Comparator<Bookmark>() {
             @Override
@@ -250,37 +232,50 @@ public class AddFilterDialog extends javax.swing.JPanel {
              */
             @Override
             public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-                if (localName.equals("bookmark")) {
-                    DefaultMutableTreeNode m = new DefaultMutableTreeNode();
-                    m.setUserObject(new Bookmark());
-                    stack.peek().insert(m, stack.peek().getChildCount());
-                    stack.push(m);
-                } else if (localName.equals("bookmark-folder")) {
-                    DefaultMutableTreeNode m = new DefaultMutableTreeNode();
-                    m.setUserObject(new Bookmark());
-                    stack.peek().insert(m, stack.peek().getChildCount());
-                    stack.push(m);        
-                } else if (localName.equals("title")) {
-
-                } else if (localName.equals("filter")) {
-
-                } else if (localName.equals("description")) {
-
+                switch (localName) {
+                    case "bookmark":
+                        {
+                            DefaultMutableTreeNode m = new DefaultMutableTreeNode();
+                            m.setUserObject(new Bookmark());
+                            stack.peek().insert(m, stack.peek().getChildCount());
+                            stack.push(m);
+                            break;
+                        }
+                    case "bookmark-folder":
+                        {
+                            DefaultMutableTreeNode m = new DefaultMutableTreeNode();
+                            m.setUserObject(new Bookmark());
+                            stack.peek().insert(m, stack.peek().getChildCount());
+                            stack.push(m);
+                            break;
+                        }
+                    case "title":
+                        break;
+                    case "filter":
+                        break;
+                    case "description":
+                        break;
                 }
             }
 
             @Override
             public void endElement(String uri, String localName, String qName) throws SAXException {
-                if (localName.equals("bookmark")) {
-                    stack.pop();
-                } else if (localName.equals("bookmark-folder")) {
-                    stack.pop();
-                } else if (localName.equals("title")) {
-                    ((Bookmark) (stack.peek().getUserObject())).title = charsBuilder.toString().trim();
-                } else if (localName.equals("filter")) {
-                    ((Bookmark) (stack.peek().getUserObject())).filter = charsBuilder.toString().trim();
-                } else if (localName.equals("description")) {
-                    ((Bookmark) (stack.peek().getUserObject())).description = charsBuilder.toString().trim();
+                switch (localName) {
+                    case "bookmark":
+                        stack.pop();
+                        break;
+                    case "bookmark-folder":
+                        stack.pop();
+                        break;
+                    case "title":
+                        ((Bookmark) (stack.peek().getUserObject())).title = charsBuilder.toString().trim();
+                        break;
+                    case "filter":
+                        ((Bookmark) (stack.peek().getUserObject())).filter = charsBuilder.toString().trim();
+                        break;
+                    case "description":
+                        ((Bookmark) (stack.peek().getUserObject())).description = charsBuilder.toString().trim();
+                        break;
                 }
                 charsBuilder.delete(0, charsBuilder.length());
             }
@@ -292,11 +287,11 @@ public class AddFilterDialog extends javax.swing.JPanel {
         };
     }
 
-    private class RestrictedTreeSelectionModel extends DefaultTreeSelectionModel {
+    private static class RestrictedTreeSelectionModel extends DefaultTreeSelectionModel {
 
         @Override
         public void setSelectionPaths(final TreePath[] pPaths) {
-            final ArrayList<TreePath> temp = new ArrayList<TreePath>();
+            final ArrayList<TreePath> temp = new ArrayList<>();
             for ( int i = 0, n = pPaths != null ? pPaths.length : 0; i < n; i++ ) {
                 final Object lastPathComponent= pPaths[i].getLastPathComponent();
                 if (lastPathComponent instanceof TreeNode) {
@@ -335,16 +330,14 @@ public class AddFilterDialog extends javax.swing.JPanel {
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
-        } catch (ParserConfigurationException ex) {
+        } catch (ParserConfigurationException | SAXException ex) {
             logger.log(Level.SEVERE, null, ex);
             // this is expected.
-        } catch (SAXException ex) {
-            logger.log(Level.SEVERE, null, ex);
         } finally {
             try {
                 in.close();
             } catch ( IOException ex ) {
-                ex.printStackTrace();
+                logger.log( Level.WARNING, ex.getMessage(), ex );
             }
         }
         return result;
@@ -354,6 +347,7 @@ public class AddFilterDialog extends javax.swing.JPanel {
         String title="";
         String filter="";
         String description="";
+        @Override
         public String toString() {
             return title;
         }
