@@ -557,6 +557,7 @@ public class StreamTool {
                         } catch (ParseException ex) {
                             logger.log(Level.SEVERE, ex.getMessage(), ex);
                         }
+                        logger.log( Level.FINER, "units found: {0}", units);
                     }
                 }
                 
