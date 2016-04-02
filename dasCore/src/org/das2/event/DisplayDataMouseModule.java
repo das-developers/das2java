@@ -233,11 +233,12 @@ public class DisplayDataMouseModule extends MouseModule {
                 messageLabel.setText( tds.length() + " records" );
             } else {
                 if ( tds.length()>0 ) {
-                    int[] qube= DataSetUtil.qubeDims(tds.slice(0) );
+                    int[] qube= DataSetUtil.qubeDims(tds );
+                    int[] qube1= DataSetUtil.qubeDims(tds.slice(0) );
                     if ( qube!=null ) {
-                        messageLabel.setText( tds.length() + " records, each is "+ DataSetUtil.toString(qube) );
+                        messageLabel.setText( tds.length() + " records, each is "+ DataSetUtil.toString(qube1) );
                     } else {
-                        messageLabel.setText( tds.length() + " records, first is "+ DataSetUtil.toString(qube) );
+                        messageLabel.setText( tds.length() + " records, first is "+ DataSetUtil.toString(qube1) );
                     }
                 } else {
                     messageLabel.setText( "no records" );
