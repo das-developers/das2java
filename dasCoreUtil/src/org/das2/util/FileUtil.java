@@ -166,6 +166,44 @@ public class FileUtil {
         }
         return null;
     }    
+        
+    /**
+     * find a files with the given pattern within the given root, 
+     * just as "find . -name *.dat -print \;" would.
+     * TODO: check links.  For example, find( "/usr/share/fonts/truetype", "FreeMono.ttf" )
+     * @param root the root to start
+     * @param pattern name to look for.
+     * @param result results are added to this list, or null if the count that is all that is needed.
+     * @throws IllegalArgumentException if the root does not exist.
+     * @return the number of files found
+     * @see org.das2.util.filesystem.Glob
+     */
+    public static int find( File root, Pattern pattern, List<String> result ) throws IllegalArgumentException {
+        if ( result==null ) result= new ArrayList<>();
+        
+        if (!root.exists()) {
+            throw new IllegalArgumentException("File does not exist:"+root);
+        }
+        if ( !root.isDirectory() ) {
+            throw new IllegalArgumentException("root should be a directory: "+root);
+        }
+        if ( !root.canRead() ) {
+            throw new IllegalArgumentException("unable to read root: "+root);
+        }
+        int count= 0;
+        File[] children = root.listFiles(); // root is known to exist
+        for (File children1 : children) {
+            if (children1.isDirectory()) {
+                count += find(children1, pattern,result);
+            } else {
+                if ( pattern.matcher( children1.getName() ).matches() ) {
+                    result.add( children1.getAbsolutePath() );
+                    count= count+1;
+                }
+            }
+        }
+        return count;
+    }    
     
     /**
      * find a files with the given name within one of the given roots.
