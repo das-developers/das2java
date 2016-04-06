@@ -912,7 +912,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Form
      *
      * @throws IllegalStateException if called from the event queue.
      */
-    public void prepareForOutput(int width, int height) {
+    public void prepareForOutput(final int width, final int height) {
         if (SwingUtilities.isEventDispatchThread()) throw new IllegalStateException("dasCanvas.prepareForOutput must not be called from event queue!");
 
         try {
