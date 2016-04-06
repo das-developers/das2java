@@ -3589,7 +3589,10 @@ public class Ops {
     }
     
     /**
-     * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
+     * return a dataset with X and Y forming a circle, introduced as a 
+     * convenient way to indicate planet location.  Note this is presently
+     * returned as Y[X], but should probably return a rank 2 dataset that is a 
+     * bundle.
      * @param x the x coordinate of the circle
      * @param y the y coordinate of the circle
      * @param radius rank 0 dataset
