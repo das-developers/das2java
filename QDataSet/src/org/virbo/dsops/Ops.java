@@ -3574,6 +3574,33 @@ public class Ops {
     
     /**
      * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
+     * @param x the x coordinate of the circle
+     * @param y the y coordinate of the circle
+     * @param radius rank 0 dataset
+     * @return QDataSet that when plotted is a circle.
+     */
+    public static QDataSet circle( QDataSet radius, QDataSet x, QDataSet y ) {
+        if ( radius==null ) radius= DataSetUtil.asDataSet(1.);
+        MutablePropertyDataSet result= (MutablePropertyDataSet) Ops.link( 
+                Ops.add( x, Ops.multiply( radius, sin(linspace(0,601*PI/300,601) ) ) ), 
+                Ops.add( y, Ops.multiply( radius, cos(linspace(0,601*PI/300,601 ) ) ) ) );
+        result.putProperty( QDataSet.RENDER_TYPE, "series" );
+        return result;
+    }
+    
+    /**
+     * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
+     * @param x the x coordinate of the circle
+     * @param y the y coordinate of the circle
+     * @param radius rank 0 dataset
+     * @return QDataSet that when plotted is a circle.
+     */
+    public static QDataSet circle( double radius, double x, double y ) {
+        return circle( dataset(radius), dataset(x), dataset(y) );
+    }
+    
+    /**
+     * return a dataset with X and Y forming a circle, introduced as a convenient way to indicate planet location.
      * @param radius rank 0 dataset
      * @return QDataSet that when plotted is a circle.
      */
