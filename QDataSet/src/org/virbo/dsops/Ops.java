@@ -5344,9 +5344,10 @@ public class Ops {
     /**
      * Apply windows to the data to prepare for FFT.  The data is reformed into a rank 2 dataset [N,len].
      * The filter is applied to the data to remove noise caused by the discontinuity.
-     * This is deprecated, and windowFunction should be used.
+     * This is deprecated, and windowFunction should be used so that the filter
+     * is applied to records just before each fft is performed to save space.
      * @param ds rank 1, 2, or 3 data
-     * @param len
+     * @param len size of the window.
      * @param filt FFTFilterType.Hanning or FFTFilterType.TenPercentEdgeCosine
      * @return data[N,len] with the window applied.
      */
@@ -5392,6 +5393,7 @@ public class Ops {
                     jds.putProperty( QDataSet.DEPEND_1, dep0ds );
                 }
             }
+            jds.putProperty( QDataSet.UNITS, ds.property(QDataSet.UNITS) );
 
             ds= jds;
         }
@@ -5427,16 +5429,21 @@ public class Ops {
             uc= dep1u.getConverter( dep0u.getOffsetUnits() );
 
             QDataSet filter;
-            if ( filt==FFTFilterType.Hanning ) {
-                filter= FFTUtil.getWindowHanning(len);
-            } else if ( filt==FFTFilterType.Hann ) {
-                filter= FFTUtil.getWindowHanning(len);
-            } else if ( filt==FFTFilterType.TenPercentEdgeCosine ) {
-                filter= FFTUtil.getWindow10PercentEdgeCosine(len);
-            } else if ( filt==FFTFilterType.Unity ) {
-                filter= FFTUtil.getWindowUnity(len);
-            } else {
-                throw new UnsupportedOperationException("unsupported op: "+filt );
+            switch (filt) {
+                case Hanning:
+                    filter= FFTUtil.getWindowHanning(len);
+                    break;
+                case Hann:
+                    filter= FFTUtil.getWindowHanning(len);
+                    break;
+                case TenPercentEdgeCosine:
+                    filter= FFTUtil.getWindow10PercentEdgeCosine(len);
+                    break;
+                case Unity:
+                    filter= FFTUtil.getWindowUnity(len);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("unsupported op: "+filt );
             }
 
             boolean convertToFloat= ds instanceof FDataSet;
@@ -5470,7 +5477,7 @@ public class Ops {
             if (dep1!=null ) {
                 result.putProperty(QDataSet.DEPEND_1, dep1.trim(0,len) );
             }
-
+            result.putProperty( QDataSet.UNITS, ds.slice(0).property(QDataSet.UNITS ) );
             return result;
 
         } else {
