@@ -5478,7 +5478,6 @@ public class Ops {
                 result.putProperty(QDataSet.DEPEND_1, dep1.trim(0,len) );
             }
             result.putProperty( QDataSet.UNITS, ds.slice(0).property(QDataSet.UNITS ) );
-            System.err.println("*** Set window Units to  "+ ds.slice(0).property(QDataSet.UNITS ));
             return result;
 
         } else {
