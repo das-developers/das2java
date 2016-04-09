@@ -543,13 +543,17 @@ public class Ops {
     }
 
     /**
-     * return the magnitudes of vectors in a rank 2 or greater dataset.  The last
-     * index must be a cartesian dimension, so it must have a depend dataset
-     * either named "cartesian" or having the property CARTESIAN_FRAME
+     * return the magnitudes of vectors in a rank 1 or greater dataset (typically
+     * rank 2).  The last index should be the cartesian dimension.  For example,
+     **<blockquote><pre><small>{@code
+     * ds= getDataSet('http://autoplot.org/data/autoplot.cdf?BGSM') # BGSM[Epoch=24,cart=3]
+     * m= magnitude(ds)
+     *}</small></pre></blockquote>
      * For rank 0, this just returns the absolute value.
      * 
-     * @param ds of Rank N.
-     * @return ds of Rank N-1.
+     * @param ds dataset of Rank N.
+     * @return dataset of Rank N-1.
+     * @see #abs(org.virbo.dataset.QDataSet) 
      */
     public static QDataSet magnitude(QDataSet ds) {
         int r = ds.rank();
