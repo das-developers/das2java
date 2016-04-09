@@ -129,7 +129,7 @@ public class Ops {
             double w1 = it1.getValue(wds);
             it1.putValue(result, w1==0 ? fill : op.op(d1));
         }
-        Map<String,Object> m= new HashMap<String,Object>();
+        Map<String,Object> m= new HashMap<>();
         m.put( QDataSet.DEPEND_0, ds1.property(QDataSet.DEPEND_0) );
         m.put( QDataSet.DEPEND_1, ds1.property(QDataSet.DEPEND_1) );
         m.put( QDataSet.DEPEND_2, ds1.property(QDataSet.DEPEND_2) );
@@ -3470,93 +3470,97 @@ public class Ops {
         
         int defaultColor= deftColor.getRGB();
         
-        if ( vds.rank()==2 ) {
-            QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
-            if ( dep0==null ) {
-                xmins= DataSetOps.unbundle( vds,0 );
-                xmaxs= DataSetOps.unbundle( vds,1 );
-
-                if ( vds.length(0)>3 ) {
-                    colors= DataSetOps.unbundle( vds,2 );
-                } else {
-                    colors= Ops.replicate( defaultColor, xmins.length() );
+        switch (vds.rank()) {
+            case 2:
+                {
+                    QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
+                    if ( dep0==null ) {
+                        xmins= DataSetOps.unbundle( vds,0 );
+                        xmaxs= DataSetOps.unbundle( vds,1 );
+                        
+                        if ( vds.length(0)>3 ) {
+                            colors= DataSetOps.unbundle( vds,2 );
+                        } else {
+                            colors= Ops.replicate( defaultColor, xmins.length() );
+                        }
+                        
+                    } else if ( dep0.rank()==2 ) {
+                        if ( SemanticOps.isBins(dep0) ) {
+                            xmins= DataSetOps.slice1( dep0, 0 );
+                            xmaxs= DataSetOps.slice1( dep0, 1 );
+                            colors= Ops.replicate( 0x808080, xmins.length() );
+                            Units u0= SemanticOps.getUnits(xmins );
+                            Units u1= SemanticOps.getUnits(xmaxs );
+                            if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
+                                xmaxs= Ops.add( xmins, xmaxs );
+                            }
+                        } else {
+                            throw new IllegalArgumentException( "DEPEND_0 is rank 2 but not bins" );
+                        }
+                        
+                    } else  if ( dep0.rank() == 1 ) {
+                        Datum width= SemanticOps.guessXTagWidth( dep0, null ).divide(2);
+                        xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                        xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                        colors= Ops.replicate( defaultColor, xmins.length() );
+                        
+                    } else {
+                        throw new IllegalArgumentException( "rank 2 dataset must have dep0 of rank 1 or rank 2 bins" );
+                    }       msgs= DataSetOps.unbundle( vds, vds.length(0)-1 );
+                    break;
                 }
-                
-            } else if ( dep0.rank()==2 ) {
-                if ( SemanticOps.isBins(dep0) ) {
-                    xmins= DataSetOps.slice1( dep0, 0 );
-                    xmaxs= DataSetOps.slice1( dep0, 1 );
-                    colors= Ops.replicate( 0x808080, xmins.length() );
-                    Units u0= SemanticOps.getUnits(xmins );
-                    Units u1= SemanticOps.getUnits(xmaxs );
-                    if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
-                        xmaxs= Ops.add( xmins, xmaxs );
-                    }
-                } else {
-                    throw new IllegalArgumentException( "DEPEND_0 is rank 2 but not bins" );
+            case 1:
+                {
+                    QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
+                    if ( dep0==null ) {
+                        throw new IllegalArgumentException("cannot make events data set from this rank 1 dataset with no timetags.");
+                    } else if ( dep0.rank() == 2  ) {
+                        if ( SemanticOps.isBins(dep0) ) {
+                            xmins= DataSetOps.slice1( dep0, 0 );
+                            xmaxs= DataSetOps.slice1( dep0, 1 );
+                            Units u0= SemanticOps.getUnits(xmins );
+                            Units u1= SemanticOps.getUnits(xmaxs );
+                            if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
+                                xmaxs= Ops.add( xmins, xmaxs );
+                            }
+                            msgs= vds;
+                        } else {
+                            throw new IllegalArgumentException("DEPEND_0 is rank 2 but not bins");
+                        }
+                    } else if ( dep0.rank() == 1 ) {
+                        Datum width= SemanticOps.guessXTagWidth( dep0, null );
+                        if ( width!=null ) {
+                            width= width.divide(2);
+                        } else {
+                            QDataSet sort= Ops.sort(dep0);
+                            QDataSet diffs= Ops.diff( DataSetOps.applyIndex(dep0,0,sort,false) );
+                            QDataSet w= Ops.reduceMin( diffs,0 );
+                            width= DataSetUtil.asDatum(w);
+                        }
+                        xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                        xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
+                        msgs= vds;
+                    } else {
+                        throw new IllegalArgumentException("dataset is not correct form");
+                    }       Color c0= new Color( defaultColor );
+                    Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
+                    int irgb= c1.getRGB();
+                    colors= Ops.replicate( irgb, xmins.length() );
+                    break;
                 }
-                
-            } else  if ( dep0.rank() == 1 ) {
-                Datum width= SemanticOps.guessXTagWidth( dep0, null ).divide(2);
-                xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
-                xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
-                colors= Ops.replicate( defaultColor, xmins.length() );
-
-            } else {
-                throw new IllegalArgumentException( "rank 2 dataset must have dep0 of rank 1 or rank 2 bins" );
-            }
-
-            msgs= DataSetOps.unbundle( vds, vds.length(0)-1 );
-
-        } else if ( vds.rank()==1 ) {
-            QDataSet dep0= (QDataSet) vds.property(QDataSet.DEPEND_0);
-            if ( dep0==null ) {
-                throw new IllegalArgumentException("cannot make events data set from this rank 1 dataset with no timetags.");
-            } else if ( dep0.rank() == 2  ) {
-                if ( SemanticOps.isBins(dep0) ) {
-                    xmins= DataSetOps.slice1( dep0, 0 );
-                    xmaxs= DataSetOps.slice1( dep0, 1 );
-                    Units u0= SemanticOps.getUnits(xmins );
-                    Units u1= SemanticOps.getUnits(xmaxs );
-                    if ( !u1.isConvertibleTo(u0) && u1.isConvertibleTo(u0.getOffsetUnits()) ) {
-                        xmaxs= Ops.add( xmins, xmaxs );
-                    }
-                    msgs= vds;
-                } else {
-                    throw new IllegalArgumentException("DEPEND_0 is rank 2 but not bins");
+            case 0:
+                {
+                    xmins= Ops.replicate(vds,1); // increase rank from 0 to 1.
+                    xmaxs= xmins;
+                    Color c0= new Color( defaultColor );
+                    Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
+                    int irgb= c1.getRGB();
+                    colors= Ops.replicate( irgb, xmins.length() );
+                    msgs= Ops.replicate(vds,1);
+                    break;
                 }
-            } else if ( dep0.rank() == 1 ) {
-                Datum width= SemanticOps.guessXTagWidth( dep0, null );
-                if ( width!=null ) {
-                    width= width.divide(2);
-                } else {
-                    QDataSet sort= Ops.sort(dep0);
-                    QDataSet diffs= Ops.diff( DataSetOps.applyIndex(dep0,0,sort,false) );
-                    QDataSet w= Ops.reduceMin( diffs,0 );
-                    width= DataSetUtil.asDatum(w);                    
-                }
-                xmins= Ops.subtract( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );
-                xmaxs= Ops.add( dep0, org.virbo.dataset.DataSetUtil.asDataSet(width) );                
-                msgs= vds;
-            } else {
-                throw new IllegalArgumentException("dataset is not correct form");
-            }
-            Color c0= new Color( defaultColor );
-            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
-            int irgb= c1.getRGB();
-            
-            colors= Ops.replicate( irgb, xmins.length() );
-
-        } else if ( vds.rank()==0 ) {
-            xmins= Ops.replicate(vds,1); // increase rank from 0 to 1.
-            xmaxs= xmins;
-            Color c0= new Color( defaultColor );
-            Color c1= new Color( c0.getRed(), c0.getGreen(), c0.getBlue(), c0.getAlpha()==255 ? 128 : c0.getAlpha() );
-            int irgb= c1.getRGB();
-            colors= Ops.replicate( irgb, xmins.length() );
-            msgs= Ops.replicate(vds,1);
-        } else {            
-            throw new IllegalArgumentException("dataset must be rank 0, 1 or 2");
+            default:
+                throw new IllegalArgumentException("dataset must be rank 0, 1 or 2");
         }
 
         Units u0= SemanticOps.getUnits( xmins );
@@ -4576,12 +4580,18 @@ public class Ops {
                     builder.nextRecord();
                 }
             }
-            if (ds.rank() == 2) {
-                builder.putProperty(QDataSet.DEPEND_1, labelsDataset(new String[]{"dim0", "dim1"}));
-            } else if (ds.rank() == 3) {
-                builder.putProperty(QDataSet.DEPEND_1, labelsDataset(new String[]{"dim0", "dim1", "dim2"}));
-            } else if (ds.rank() == 4) {
-                builder.putProperty(QDataSet.DEPEND_1, labelsDataset(new String[]{"dim0", "dim1", "dim2", "dim4"}));
+            switch (ds.rank()) {
+                case 2:
+                    builder.putProperty(QDataSet.DEPEND_1, labelsDataset(new String[]{"dim0", "dim1"}));
+                    break;
+                case 3:
+                    builder.putProperty(QDataSet.DEPEND_1, labelsDataset(new String[]{"dim0", "dim1", "dim2"}));
+                    break;
+                case 4:
+                    builder.putProperty(QDataSet.DEPEND_1, labelsDataset(new String[]{"dim0", "dim1", "dim2", "dim4"}));
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -4850,85 +4860,88 @@ public class Ops {
             mds.putProperty( name, value ); 
             
         } else {
-            if ( type.equals(DataSetUtil.PROPERTY_TYPE_QDATASET) ) {
-                mds.putProperty(name, Ops.dataset(value));
-            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_UNITS) ) {
-                if ( value instanceof String ) {
-                    String svalue= (String)value;
-                    value= Units.lookupUnits(svalue);
-                }
-                mds.putProperty( name, value);
-            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_BOOLEAN) ) {
-                if ( value instanceof String ) {
-                    String svalue= (String)value;
-                    value= Boolean.valueOf(svalue);
-                } else if ( value instanceof Number ) {
-                    value= !((Number)value).equals(0);
-                }
-                mds.putProperty( name, value);
-            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_NUMBER) ) {
-                if ( value instanceof String ) {
-                    String svalue= (String)value;
-                    Units u= (Units)mds.property(QDataSet.UNITS);
-                    if ( u!=null ) {
-                        try {
-                            value= u.parse(svalue).doubleValue(u);
-                        } catch (ParseException ex) {
+            switch (type) {
+                case DataSetUtil.PROPERTY_TYPE_QDATASET:
+                    mds.putProperty(name, Ops.dataset(value));
+                    break;
+                case DataSetUtil.PROPERTY_TYPE_UNITS:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        value= Units.lookupUnits(svalue);
+                    }   mds.putProperty( name, value);
+                    break;
+                case DataSetUtil.PROPERTY_TYPE_BOOLEAN:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        value= Boolean.valueOf(svalue);
+                    } else if ( value instanceof Number ) {
+                        value= !((Number)value).equals(0);
+                    }   mds.putProperty( name, value);
+                    break;
+                case DataSetUtil.PROPERTY_TYPE_NUMBER:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        Units u= (Units)mds.property(QDataSet.UNITS);
+                        if ( u!=null ) {
                             try {
+                                value= u.parse(svalue).doubleValue(u);
+                            } catch (ParseException ex) {
+                                try {
+                                    value= Integer.valueOf(svalue);
+                                } catch ( NumberFormatException ex2 ) {
+                                    throw new IllegalArgumentException(ex);
+                                }
+                            }
+                        } else {
+                            if ( svalue.contains(".") || svalue.contains("e") || svalue.contains("E") ) {
+                                value= Double.valueOf(svalue);
+                            } else {
                                 value= Integer.valueOf(svalue);
-                            } catch ( NumberFormatException ex2 ) {
-                                throw new IllegalArgumentException(ex);
                             }
                         }
+                    }   mds.putProperty( name, value);
+                    break;
+                case DataSetUtil.PROPERTY_TYPE_CACHETAG:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        int i= svalue.indexOf("@");
+                        try {
+                            DatumRange tr= DatumRangeUtil.parseTimeRange( svalue.substring(0,i) );
+                            CacheTag r;
+                            if ( i==-1 ) {
+                                value= new CacheTag( tr, null );
+                            } else if ( svalue.substring(i+1).trim().equals("intrinsic") ) {
+                                value= new CacheTag( tr, null );
+                            } else {
+                                Datum res= Units.seconds.parse(svalue.substring(i+1));
+                                value= new CacheTag( tr, res );
+                            }
+                        } catch ( ParseException ex ) {
+                            throw new IllegalArgumentException(ex);
+                        }
+                    }   mds.putProperty( name, value);
+                    break;
+                case DataSetUtil.PROPERTY_TYPE_MAP:
+                    if ( !( value instanceof Map ) ) {
+                        try {
+                            String json= value.toString();
+                            JSONObject obj= new JSONObject(json);
+                            Map<String,Object> result= new HashMap<>();
+                            Iterator i= obj.keys();
+                            while ( i.hasNext() ) {
+                                String k= String.valueOf( i.next() );
+                                result.put( k, obj.get(k) );
+                            }
+                            mds.putProperty( name, result );
+                        } catch (JSONException ex) {
+                            Logger.getLogger(Ops.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     } else {
-                        if ( svalue.contains(".") || svalue.contains("e") || svalue.contains("E") ) {
-                            value= Double.valueOf(svalue);
-                        } else {
-                            value= Integer.valueOf(svalue);
-                        }
-                    }
-                }
-                mds.putProperty( name, value);
-            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_CACHETAG) ) {
-                if ( value instanceof String ) {
-                    String svalue= (String)value;
-                    int i= svalue.indexOf("@");
-                    try {
-                        DatumRange tr= DatumRangeUtil.parseTimeRange( svalue.substring(0,i) );
-                        CacheTag r;
-                        if ( i==-1 ) {
-                            value= new CacheTag( tr, null );
-                        } else if ( svalue.substring(i+1).trim().equals("intrinsic") ) {
-                            value= new CacheTag( tr, null );
-                        } else {
-                            Datum res= Units.seconds.parse(svalue.substring(i+1));
-                            value= new CacheTag( tr, res );
-                        }
-                    } catch ( ParseException ex ) {
-                        throw new IllegalArgumentException(ex);
-                    }
-                }
-                mds.putProperty( name, value);
-            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_MAP) ) {
-                if ( !( value instanceof Map ) ) {
-                    try {
-                        String json= value.toString();
-                        JSONObject obj= new JSONObject(json); 
-                        Map<String,Object> result= new HashMap<String, Object>();
-                        Iterator i= obj.keys();
-                        while ( i.hasNext() ) {
-                            String k= String.valueOf( i.next() );
-                            result.put( k, obj.get(k) );
-                        }
-                        mds.putProperty( name, result );
-                    } catch (JSONException ex) {
-                        Logger.getLogger(Ops.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                } else {
+                        mds.putProperty( name, value);
+                    }   break;
+                default:
                     mds.putProperty( name, value);
-                }
-            } else {
-                mds.putProperty( name, value);
+                    break;
             }
             
         }
@@ -5562,18 +5575,20 @@ public class Ops {
      * @return rank 1 QDataSet with length len.
      */
     public static QDataSet windowFunction( FFTFilterType filt, int len ) {
-        if ( filt==FFTFilterType.Hanning ) {
-            return FFTUtil.getWindowHanning(len);
-        } else if ( filt==FFTFilterType.Hann ) {
-            return FFTUtil.getWindowHanning(len);
-        } else if ( filt==FFTFilterType.TenPercentEdgeCosine ) {
-            return FFTUtil.getWindow10PercentEdgeCosine(len);
-        } else if ( filt==FFTFilterType.Unity ) {
-            return FFTUtil.getWindowUnity(len);
-        } else if ( filt==FFTFilterType.Boxcar ) {
-            return FFTUtil.getWindowUnity(len);
-        } else {
-            throw new UnsupportedOperationException("unsupported op: "+filt );
+        assert filt!=null;
+        switch (filt) {
+            case Hanning:
+                return FFTUtil.getWindowHanning(len);
+            case Hann:
+                return FFTUtil.getWindowHanning(len);
+            case TenPercentEdgeCosine:
+                return FFTUtil.getWindow10PercentEdgeCosine(len);
+            case Unity:
+                return FFTUtil.getWindowUnity(len);
+            case Boxcar:
+                return FFTUtil.getWindowUnity(len);
+            default:
+                throw new UnsupportedOperationException("unsupported op: "+filt );
         }
     }
 
@@ -5653,243 +5668,251 @@ public class Ops {
             ds= jds;
         } 
 
-        if ( ds.rank()==3 ) { // slice it and do the process to each branch.
-            JoinDataSet result= new JoinDataSet(3);
-            mon.setTaskSize( ds.length()*10  );
-            mon.started();
-            for ( int i=0; i<ds.length(); i++ ) {
-                mon.setTaskProgress(i*10);
-                QDataSet pow1= fftPower( ds.slice(i), window, stepFraction, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
-                result.join(pow1);
-            }
-            mon.finished();
-
-            result.putProperty( QDataSet.QUBE, Boolean.TRUE );
-            result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); 
-            if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
-            
-            return result;
-
-        } else if ( ds.rank()==2 ) {
-            JoinDataSet result= new JoinDataSet(2);
-            result.putProperty(QDataSet.JOIN_0, null);
-
-            int len= window.length();
-            int step;
-            if ( stepFraction < 0 ) {
-                throw new IllegalArgumentException( String.format( "fractional step size (%d) is negative.", stepFraction ) );
-            } else if ( stepFraction <= 32 ) { 
-                step= len/stepFraction;
-            } else {
-                throw new IllegalArgumentException( String.format( "fractional step size (%d) is bigger than 32, the max allowed.", stepFraction ) );
-            }
-            boolean windowNonUnity= false; // true if a non-unity window is to be applied.
-            for ( int i=0; windowNonUnity==false && i<len; i++ ) {
-                if ( window.value(i)!=1.0 ) windowNonUnity=true;
-            }
-
-            double normalization; // the normalization needed because of the window. "Coherent Gain" in Harris paper.
-
-            if ( windowNonUnity ) {
-                normalization= total( Ops.pow( window, 2 ) ) / window.length();
-            } else {
-                normalization= 1.0;
-            }            
-            
-            // double equivalentNoiseBW= 1.0;  // 1.5 for Hanning   Harris 1978 paper in IEEE.
-                    
-            int nsam= ds.length()*(ds.length(0)/step); // approx
-            DataSetBuilder dep0b= new DataSetBuilder( 1,nsam );
-
-            QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
-            if ( dep0!=null ) { // make sure these are really units we can use
-                Units u0= SemanticOps.getUnits(dep0);
-                if ( UnitsUtil.isNominalMeasurement(u0) ) dep0= null; // nope, we can't use it.
-            }
-
-            QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
-            if ( dep1==null ) {
-                dep1= (QDataSet)ds.slice(0).property(QDataSet.DEPEND_0);
-            }
-            
-            assert dep1!=null;
-            if ( dep1==null ) {
-                throw new IllegalArgumentException("fftPower cannot be performed without independent parameter tags");
-            }
-
-            UnitsConverter uc= UnitsConverter.IDENTITY;
-
-            QDataSet translation= null;
-            Map<String,Object> user= (Map<String, Object>) dep1.property(QDataSet.USER_PROPERTIES );
-            if ( user!=null ) {
-                translation= (QDataSet) user.get( "FFT_Translation" ); // kludge for Plasma Wave Group
-                if ( translation!=null && translation.rank()==1 ) {
-                    if ( dep0!=null && translation.length()!=dep0.length() ) {
-                        throw new IllegalArgumentException("rank 1 FFT_Translation should be the same length as depend_0");
-                    }
+        switch (ds.rank()) {
+            case 3:
+            { // slice it and do the process to each branch.
+                JoinDataSet result= new JoinDataSet(3);
+                mon.setTaskSize( ds.length()*10  );
+                mon.started();
+                for ( int i=0; i<ds.length(); i++ ) {
+                    mon.setTaskProgress(i*10);
+                    QDataSet pow1= fftPower( ds.slice(i), window, stepFraction, SubTaskMonitor.create( mon, i*10, (i+1)*10 ) );
+                    result.join(pow1);
                 }
-            }
-            if ( translation!=null ) logger.fine("translation will be applied");
-
-            double currentDeltaTime; // ten times the spacing.
-            if ( dep1.rank()==1 ) {
-                currentDeltaTime= dep1.value(10) - dep1.value(0);
-            } else {
-                currentDeltaTime= dep1.value(0,10) - dep1.value(0,0);
-            }
-            double lastDeltaTime= currentDeltaTime;
-            
-            QDataSet powxtags= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(0,len));
-                        
-            double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
-            if ( dep1.rank()==1 ) {
-                QDataSet ytags= powxtags;
-                if ( translation==null ) result.putProperty( QDataSet.DEPEND_1, ytags );
-                Units dep1Units= (Units) dep1.property(QDataSet.UNITS);
-                Units dep0Units= dep0==null ? null : (Units) dep0.property(QDataSet.UNITS);
-                if ( dep0Units!=null && dep1Units!=null ) uc= dep1Units.getConverter(dep0Units.getOffsetUnits());
-                if ( dep0!=null && dep0.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0.property(QDataSet.VALID_MIN)).doubleValue();
-                if ( dep0!=null && dep0.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0.property(QDataSet.VALID_MAX)).doubleValue();
-            }
-
-            int len1= ( ( ds.length(0)-len ) / step ) + 1;
-
-            mon.setTaskSize(ds.length()*len1); // assumes all are the same length.
-            mon.started();
-            mon.setProgressMessage("performing fftPower");
-
-            boolean isMono= dep0==null ? true : DataSetUtil.isMonotonic(dep0);
-            
-            for ( int i=0; i<ds.length(); i++ ) {
-                QDataSet slicei= ds.slice(i); //TODO: for DDataSet, this copies the backing array.  This shouldn't happen in DDataSet.slice, but it does...
-                QDataSet dep0i= (QDataSet) slicei.property(QDataSet.DEPEND_0);
-                if ( dep0i!=null && dep0==null ) {
-                    dep0b.putProperty(QDataSet.UNITS, dep0i.property(QDataSet.UNITS) );
-                    if ( !Boolean.TRUE.equals( dep0i.property(QDataSet.MONOTONIC) ) ) {
-                        isMono= false;
-                    }
-                    if ( dep0i.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0i.property(QDataSet.VALID_MIN)).doubleValue(); else minD= Double.NEGATIVE_INFINITY;
-                    if ( dep0i.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0i.property(QDataSet.VALID_MAX)).doubleValue(); else maxD= Double.POSITIVE_INFINITY;
-                }
+                mon.finished();
                 
-                for ( int j=0; j<len1; j++ ) {
-                    
-                    mon.setTaskProgress(i*len1+j);
-                    
-                    int istart= j*step;
-                    GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
-                    QDataSet wave= slicei.trim( istart,istart+len );
-                    QDataSet weig= DataSetUtil.weightsDataSet(wave);
-                    
-                    boolean hasFill= false;
-                    for ( int k=0; k<weig.length(); k++ ) {
-                        if ( weig.value(k)==0 ) {
-                            hasFill= true;
-                        }
-                    }
-                    if ( hasFill ) continue;
-
-                    double switchCadenceCheck; // the cadence at the end of the interval.
-                    if ( dep1.rank()==1 ) {
-                        currentDeltaTime= dep1.value(istart+10) - dep1.value(istart);
-                        switchCadenceCheck=  dep1.value(istart+len-1) - dep1.value(istart+len-11);
-                    } else {
-                        currentDeltaTime= dep1.value(i,istart+10) - dep1.value(i,istart);
-                        switchCadenceCheck=  dep1.value(i,istart+len-1) - dep1.value(i,istart+len-11);
-                    }
-                    if ( Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
-                        continue;
-                    }
-                    
-                    if ( Math.abs( lastDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
-                        QDataSet powxtags1= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(istart,istart+len));
-                        QDataSet ytags= (QDataSet) result.property(QDataSet.DEPEND_1);
-                        if ( ytags instanceof CdfSparseDataSet ) {
-                            ((CdfSparseDataSet)ytags).putValues( result.length(), powxtags1 );
-                        } else {
-                            CdfSparseDataSet newYtags= new CdfSparseDataSet(2,ds.length()*len1);
-                            newYtags.putValues(0,ytags);
-                            newYtags.putValues(result.length(),powxtags1);
-                            newYtags.putProperty(QDataSet.UNITS,powxtags1.property(QDataSet.UNITS));
-                            ytags= newYtags;
-                            result.putProperty( QDataSet.DEPEND_1, ytags );
-                        }
-                        powxtags= powxtags1;
-                        lastDeltaTime= currentDeltaTime;
-                        
-                    }
-
-                    //if ( windowNonUnity ) {
-                    //    wave= Ops.multiply(wave,window); 
-                    //}
-
-                    
-                    QDataSet vds= FFTUtil.fftPower( fft, wave, window, powxtags );
-                    //QDataSet vds= FFTUtil.fftPower( fft, wave );
-
-                    if ( windowNonUnity ) {
-                        vds= Ops.multiply( vds, DataSetUtil.asDataSet( 1/normalization ) );
-                    }
-
-                    if ( translation!=null ) {
-                        QDataSet fftDep1= (QDataSet) vds.property( QDataSet.DEPEND_0 );
-                        if (translation.rank()==0 ) {
-                            fftDep1= Ops.add( fftDep1, translation );
-                        } else if ( translation.rank()==1 ) {
-                            fftDep1= Ops.add( fftDep1, translation.slice(i) );
-                        } else {
-                            throw new IllegalArgumentException("bad rank on FFT_Translation, expected rank 0 or rank 1");
-                        }
-                        ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, fftDep1 );
-                    }
-
-                    double d0=0;
-                    if ( dep0!=null ) {
-                        d0= dep0.value(i) + uc.convert( dep1.value( j*step + len/2 )  );
-                    } else if ( dep0i!=null ) {
-                        d0= dep0i.value(j*step+len/2);
-                    } else {
-                        dep0b= null;
-                    }
-
-
-                    if ( d0>=minD && d0<=maxD) {
-                        ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, null ); // save space wasted by redundant freq tags.
-                        result.join(vds);
-                        if ( dep0b!=null ) {
-                            dep0b.putValue(-1, d0 );
-                            dep0b.nextRecord();
-                        }
-                    } else {
-                        System.err.println("dropping record with invalid timetag: "+d0 ); //TODO: consider setting VALID_MIN, VALID_MAX instead...
-                    }
-
-                    if ( mon.isCancelled() ) throw new UncheckedCancelledOperationException("fftPower was cancelled"); 
-                }
+                result.putProperty( QDataSet.QUBE, Boolean.TRUE );
+                result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
+                if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
+                
+                return result;
                 
             }
-            mon.finished();
-            
-            QDataSet dep1_= (QDataSet) result.property(QDataSet.DEPEND_1);
-            if ( dep1_.rank()==2 && dep1_.length()!=result.length() ) {
-                ((CdfSparseDataSet)dep1_).setLength(result.length()); // seems cheesy but it's true!
+            case 2:
+            {
+                JoinDataSet result= new JoinDataSet(2);
+                result.putProperty(QDataSet.JOIN_0, null);
+                
+                int len= window.length();
+                int step;
+                if ( stepFraction < 0 ) {
+                    throw new IllegalArgumentException( String.format( "fractional step size (%d) is negative.", stepFraction ) );
+                } else if ( stepFraction <= 32 ) {
+                    step= len/stepFraction;
+                } else {
+                    throw new IllegalArgumentException( String.format( "fractional step size (%d) is bigger than 32, the max allowed.", stepFraction ) );
+                }
+                boolean windowNonUnity= false; // true if a non-unity window is to be applied.
+                for ( int i=0; windowNonUnity==false && i<len; i++ ) {
+                    if ( window.value(i)!=1.0 ) windowNonUnity=true;
+                }
+                
+                double normalization; // the normalization needed because of the window. "Coherent Gain" in Harris paper.
+                
+                if ( windowNonUnity ) {
+                    normalization= total( Ops.pow( window, 2 ) ) / window.length();
+                } else {
+                    normalization= 1.0;
+                }
+                
+                // double equivalentNoiseBW= 1.0;  // 1.5 for Hanning   Harris 1978 paper in IEEE.
+                
+                int nsam= ds.length()*(ds.length(0)/step); // approx
+                DataSetBuilder dep0b= new DataSetBuilder( 1,nsam );
+                
+                QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+                if ( dep0!=null ) { // make sure these are really units we can use
+                    Units u0= SemanticOps.getUnits(dep0);
+                    if ( UnitsUtil.isNominalMeasurement(u0) ) dep0= null; // nope, we can't use it.
+                }
+                
+                QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+                if ( dep1==null ) {
+                    dep1= (QDataSet)ds.slice(0).property(QDataSet.DEPEND_0);
+                }
+                
+                assert dep1!=null;
+                if ( dep1==null ) {
+                    throw new IllegalArgumentException("fftPower cannot be performed without independent parameter tags");
+                }
+                
+                UnitsConverter uc= UnitsConverter.IDENTITY;
+                
+                QDataSet translation= null;
+                Map<String,Object> user= (Map<String, Object>) dep1.property(QDataSet.USER_PROPERTIES );
+                if ( user!=null ) {
+                    translation= (QDataSet) user.get( "FFT_Translation" ); // kludge for Plasma Wave Group
+                    if ( translation!=null && translation.rank()==1 ) {
+                        if ( dep0!=null && translation.length()!=dep0.length() ) {
+                            throw new IllegalArgumentException("rank 1 FFT_Translation should be the same length as depend_0");
+                        }
+                    }
+                }
+                if ( translation!=null ) logger.fine("translation will be applied");
+                
+                double currentDeltaTime; // ten times the spacing.
+                if ( dep1.rank()==1 ) {
+                    currentDeltaTime= dep1.value(10) - dep1.value(0);
+                } else {
+                    currentDeltaTime= dep1.value(0,10) - dep1.value(0,0);
+                }
+                double lastDeltaTime= currentDeltaTime;
+                
+                QDataSet powxtags= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(0,len));
+                
+                double minD= Double.NEGATIVE_INFINITY, maxD=Double.POSITIVE_INFINITY;
+                if ( dep1.rank()==1 ) {
+                    QDataSet ytags= powxtags;
+                    if ( translation==null ) result.putProperty( QDataSet.DEPEND_1, ytags );
+                    Units dep1Units= (Units) dep1.property(QDataSet.UNITS);
+                    Units dep0Units= dep0==null ? null : (Units) dep0.property(QDataSet.UNITS);
+                    if ( dep0Units!=null && dep1Units!=null ) uc= dep1Units.getConverter(dep0Units.getOffsetUnits());
+                    if ( dep0!=null && dep0.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0.property(QDataSet.VALID_MIN)).doubleValue();
+                    if ( dep0!=null && dep0.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0.property(QDataSet.VALID_MAX)).doubleValue();
+                }
+                
+                int len1= ( ( ds.length(0)-len ) / step ) + 1;
+                
+                mon.setTaskSize(ds.length()*len1); // assumes all are the same length.
+                mon.started();
+                mon.setProgressMessage("performing fftPower");
+                
+                boolean isMono= dep0==null ? true : DataSetUtil.isMonotonic(dep0);
+                
+                for ( int i=0; i<ds.length(); i++ ) {
+                    QDataSet slicei= ds.slice(i); //TODO: for DDataSet, this copies the backing array.  This shouldn't happen in DDataSet.slice, but it does...
+                    QDataSet dep0i= (QDataSet) slicei.property(QDataSet.DEPEND_0);
+                    if ( dep0i!=null && dep0==null ) {
+                        dep0b.putProperty(QDataSet.UNITS, dep0i.property(QDataSet.UNITS) );
+                        if ( !Boolean.TRUE.equals( dep0i.property(QDataSet.MONOTONIC) ) ) {
+                            isMono= false;
+                        }
+                        if ( dep0i.property(QDataSet.VALID_MIN)!=null ) minD= ((Number)dep0i.property(QDataSet.VALID_MIN)).doubleValue(); else minD= Double.NEGATIVE_INFINITY;
+                        if ( dep0i.property(QDataSet.VALID_MAX)!=null ) maxD= ((Number)dep0i.property(QDataSet.VALID_MAX)).doubleValue(); else maxD= Double.POSITIVE_INFINITY;
+                    }
+                    
+                    for ( int j=0; j<len1; j++ ) {
+                        
+                        mon.setTaskProgress(i*len1+j);
+                        
+                        int istart= j*step;
+                        GeneralFFT fft = GeneralFFT.newDoubleFFT(len);
+                        QDataSet wave= slicei.trim( istart,istart+len );
+                        QDataSet weig= DataSetUtil.weightsDataSet(wave);
+                        
+                        boolean hasFill= false;
+                        for ( int k=0; k<weig.length(); k++ ) {
+                            if ( weig.value(k)==0 ) {
+                                hasFill= true;
+                            }
+                        }
+                        if ( hasFill ) continue;
+                        
+                        double switchCadenceCheck; // the cadence at the end of the interval.
+                        if ( dep1.rank()==1 ) {
+                            currentDeltaTime= dep1.value(istart+10) - dep1.value(istart);
+                            switchCadenceCheck=  dep1.value(istart+len-1) - dep1.value(istart+len-11);
+                        } else {
+                            currentDeltaTime= dep1.value(i,istart+10) - dep1.value(i,istart);
+                            switchCadenceCheck=  dep1.value(i,istart+len-1) - dep1.value(i,istart+len-11);
+                        }
+                        if ( Math.abs( switchCadenceCheck-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
+                            continue;
+                        }
+                        
+                        if ( Math.abs( lastDeltaTime-currentDeltaTime ) / currentDeltaTime > 0.01 ) {
+                            QDataSet powxtags1= FFTUtil.getFrequencyDomainTagsForPower(dep1.trim(istart,istart+len));
+                            QDataSet ytags= (QDataSet) result.property(QDataSet.DEPEND_1);
+                            if ( ytags instanceof CdfSparseDataSet ) {
+                                ((CdfSparseDataSet)ytags).putValues( result.length(), powxtags1 );
+                            } else {
+                                CdfSparseDataSet newYtags= new CdfSparseDataSet(2,ds.length()*len1);
+                                newYtags.putValues(0,ytags);
+                                newYtags.putValues(result.length(),powxtags1);
+                                newYtags.putProperty(QDataSet.UNITS,powxtags1.property(QDataSet.UNITS));
+                                ytags= newYtags;
+                                result.putProperty( QDataSet.DEPEND_1, ytags );
+                            }
+                            powxtags= powxtags1;
+                            lastDeltaTime= currentDeltaTime;
+                            
+                        }
+                        
+                        //if ( windowNonUnity ) {
+                        //    wave= Ops.multiply(wave,window);
+                        //}
+                        
+                        
+                        QDataSet vds= FFTUtil.fftPower( fft, wave, window, powxtags );
+                        //QDataSet vds= FFTUtil.fftPower( fft, wave );
+                        
+                        if ( windowNonUnity ) {
+                            vds= Ops.multiply( vds, DataSetUtil.asDataSet( 1/normalization ) );
+                        }
+                        
+                        if ( translation!=null ) {
+                            QDataSet fftDep1= (QDataSet) vds.property( QDataSet.DEPEND_0 );
+                            switch (translation.rank()) {
+                                case 0:
+                                    fftDep1= Ops.add( fftDep1, translation );
+                                    break;
+                                case 1:
+                                    fftDep1= Ops.add( fftDep1, translation.slice(i) );
+                                    break;
+                                default:
+                                    throw new IllegalArgumentException("bad rank on FFT_Translation, expected rank 0 or rank 1");
+                            }
+                            ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, fftDep1 );
+                        }
+                        
+                        double d0=0;
+                        if ( dep0!=null ) {
+                            d0= dep0.value(i) + uc.convert( dep1.value( j*step + len/2 )  );
+                        } else if ( dep0i!=null ) {
+                            d0= dep0i.value(j*step+len/2);
+                        } else {
+                            dep0b= null;
+                        }
+                        
+                        
+                        if ( d0>=minD && d0<=maxD) {
+                            ((MutablePropertyDataSet)vds).putProperty( QDataSet.DEPEND_0, null ); // save space wasted by redundant freq tags.
+                            result.join(vds);
+                            if ( dep0b!=null ) {
+                                dep0b.putValue(-1, d0 );
+                                dep0b.nextRecord();
+                            }
+                        } else {
+                            System.err.println("dropping record with invalid timetag: "+d0 ); //TODO: consider setting VALID_MIN, VALID_MAX instead...
+                        }
+                        
+                        if ( mon.isCancelled() ) throw new UncheckedCancelledOperationException("fftPower was cancelled");
+                    }
+ 
+                }
+                mon.finished();
+                
+                QDataSet dep1_= (QDataSet) result.property(QDataSet.DEPEND_1);
+                if ( dep1_.rank()==2 && dep1_.length()!=result.length() ) {
+                    ((CdfSparseDataSet)dep1_).setLength(result.length()); // seems cheesy but it's true!
+                }
+                if ( dep0!=null && dep0b!=null ) {
+                    dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
+                    if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
+                    result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
+                } else if ( dep0b!=null ) {
+                    if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
+                    result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
+                }
+                
+                if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
+                result.putProperty( QDataSet.QUBE, Boolean.TRUE );
+                result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG );
+                return result;
+                
             }
-            if ( dep0!=null && dep0b!=null ) {
-                dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
-                if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
-                result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
-            } else if ( dep0b!=null ) {
-                if ( isMono ) dep0b.putProperty(QDataSet.MONOTONIC,true);
-                result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
-            }
-
-            if ( title!=null ) result.putProperty( QDataSet.TITLE, title );
-            result.putProperty( QDataSet.QUBE, Boolean.TRUE );
-            result.putProperty( QDataSet.SCALE_TYPE, QDataSet.VALUE_SCALE_TYPE_LOG ); 
-            return result;
-
-        } else {
-            throw new IllegalArgumentException("rank not supported: "+ ds.rank() );
+            default:
+                throw new IllegalArgumentException("rank not supported: "+ ds.rank() );
         }
     }
 
@@ -6532,70 +6555,80 @@ public class Ops {
             result= new double[]{ range.value(0), range.value(1) };
         }
         
-        if ( ds.rank()==1 ) {
-            int n= ds.length();
-            for ( int i=0; i<n; i++ ) {
-                double d= ds.value(i);
-                if ( validMax>d && validMin<=d && ( d<filldn || d>=fillup ) ) { 
-                    double min1= min.value(i); // Math.min requires we do extra redundent checks, and we leave this routine, but appearently this is no faster...
-                    result[0]= result[0] < min1 ? result[0] : min1;
-                    double max1= max.value(i);
-                    result[1]= result[1] > max1 ? result[1] : max1;
-                    count++;
-                }
-            }
-        } else if ( ds.rank()==2 ) {
-            int n0= ds.length();
-            for ( int i0=0; i0<n0; i0++ ) {
-                int n1= ds.length(i0);
-                for ( int i1=0; i1<n1; i1++ ) {
-                    double d= ds.value(i0,i1);
-                    if ( validMax>d && validMin<=d  && ( d<filldn || d>=fillup ) ) {
-                        result[0]= Math.min( result[0], min.value(i0,i1) );
-                        result[1]= Math.max( result[1], max.value(i0,i1) );
+        switch (ds.rank()) {
+            case 1:
+                int n= ds.length();
+                for ( int i=0; i<n; i++ ) {
+                    double d= ds.value(i);
+                    if ( validMax>d && validMin<=d && ( d<filldn || d>=fillup ) ) {
+                        double min1= min.value(i); // Math.min requires we do extra redundent checks, and we leave this routine, but appearently this is no faster...
+                        result[0]= result[0] < min1 ? result[0] : min1;
+                        double max1= max.value(i);
+                        result[1]= result[1] > max1 ? result[1] : max1;
                         count++;
                     }
-                }
-            }
-        } else if ( ds.rank()==3 ) {
-            int n0= ds.length();
-            for ( int i0=0; i0<n0; i0++ ) {
-                int n1= ds.length(i0);
-                for ( int i1=0; i1<n1; i1++ ) {
-                    int n2= ds.length(i0,i1);
-                    for ( int i2=0; i2<n2; i2++ ) {
-                        double d= ds.value(i0,i1,i2);
-                        if ( validMax>d && validMin<=d  && ( d<filldn || d>=fillup ) ) {
-                            result[0]= Math.min( result[0], min.value(i0,i1,i2) );
-                            result[1]= Math.max( result[1], max.value(i0,i1,i2) );
-                            count++;
-                        }
-                    }
-                }
-            }
-        } else if ( ds.rank()==4 ) {
-            int n0= ds.length();
-            for ( int i0=0; i0<n0; i0++ ) {
-                int n1= ds.length(i0);
-                for ( int i1=0; i1<n1; i1++ ) {
-                    int n2= ds.length(i0,i1);
-                    for ( int i2=0; i2<n2; i2++ ) {
-                        int n3= ds.length(i0,i1,i2);
-                        for ( int i3=0; i3<n3; i3++ ) {
-                            double d= ds.value(i0,i1,i2,i3);
+                }   break;
+            case 2:
+                {
+                    int n0= ds.length();
+                    for ( int i0=0; i0<n0; i0++ ) {
+                        int n1= ds.length(i0);
+                        for ( int i1=0; i1<n1; i1++ ) {
+                            double d= ds.value(i0,i1);
                             if ( validMax>d && validMin<=d  && ( d<filldn || d>=fillup ) ) {
-                                result[0]= Math.min( result[0], min.value(i0,i1,i2,i3) );
-                                result[1]= Math.max( result[1], max.value(i0,i1,i2,i3) );
+                                result[0]= Math.min( result[0], min.value(i0,i1) );
+                                result[1]= Math.max( result[1], max.value(i0,i1) );
                                 count++;
                             }
                         }
-                    }
+                    }       break;
                 }
-            }
-        } else if ( ds.rank()==0 ) {
-            result[0]= ds.value();
-            result[1]= ds.value();
-            count++;
+            case 3:
+                {
+                    int n0= ds.length();
+                    for ( int i0=0; i0<n0; i0++ ) {
+                        int n1= ds.length(i0);
+                        for ( int i1=0; i1<n1; i1++ ) {
+                            int n2= ds.length(i0,i1);
+                            for ( int i2=0; i2<n2; i2++ ) {
+                                double d= ds.value(i0,i1,i2);
+                                if ( validMax>d && validMin<=d  && ( d<filldn || d>=fillup ) ) {
+                                    result[0]= Math.min( result[0], min.value(i0,i1,i2) );
+                                    result[1]= Math.max( result[1], max.value(i0,i1,i2) );
+                                    count++;
+                                }
+                            }
+                        }
+                    }       break;
+                }
+            case 4:
+                {
+                    int n0= ds.length();
+                    for ( int i0=0; i0<n0; i0++ ) {
+                        int n1= ds.length(i0);
+                        for ( int i1=0; i1<n1; i1++ ) {
+                            int n2= ds.length(i0,i1);
+                            for ( int i2=0; i2<n2; i2++ ) {
+                                int n3= ds.length(i0,i1,i2);
+                                for ( int i3=0; i3<n3; i3++ ) {
+                                    double d= ds.value(i0,i1,i2,i3);
+                                    if ( validMax>d && validMin<=d  && ( d<filldn || d>=fillup ) ) {
+                                        result[0]= Math.min( result[0], min.value(i0,i1,i2,i3) );
+                                        result[1]= Math.max( result[1], max.value(i0,i1,i2,i3) );
+                                        count++;
+                                    }
+                                }
+                            }
+                        }
+                    }       break;
+                }
+            case 0:
+                result[0]= ds.value();
+                result[1]= ds.value();
+                count++;
+                break;
+            default:
+                break;
         }
 
         DDataSet qresult= DDataSet.wrap(result);
@@ -8024,21 +8057,26 @@ public class Ops {
      * @return rank 1 or rank 2 dataset of length N
      */
     public static QDataSet smooth(QDataSet ds, int size) {
-        if ( ds.rank()==1 ) {
-            DDataSet result = BinAverage.boxcar(ds, size);
-            DataSetUtil.copyDimensionProperties( ds, result );
-            return result;
-        } else if ( ds.rank()==2 ) {
-            ArrayDataSet result= ArrayDataSet.copy(ds);
-            for ( int j=0; j<ds.length(0); j++ ) {
-                QDataSet result1= BinAverage.boxcar( slice1(ds,j), size );
-                for ( int i=0; i<ds.length(); i++ ) {
-                    result.putValue( i,j, result1.value(i) );
-                }
+        switch (ds.rank()) {
+            case 1:
+            {
+                DDataSet result = BinAverage.boxcar(ds, size);
+                DataSetUtil.copyDimensionProperties( ds, result );
+                return result;
             }
-            return result;
-        } else {
-            throw new IllegalArgumentException("only rank 1 and rank 2");
+            case 2:
+            {
+                ArrayDataSet result= ArrayDataSet.copy(ds);
+                for ( int j=0; j<ds.length(0); j++ ) {
+                    QDataSet result1= BinAverage.boxcar( slice1(ds,j), size );
+                    for ( int i=0; i<ds.length(); i++ ) {
+                        result.putValue( i,j, result1.value(i) );
+                    }
+                }
+                return result;
+            }
+            default:
+                throw new IllegalArgumentException("only rank 1 and rank 2");
         } 
     }
     
@@ -8235,7 +8273,7 @@ public class Ops {
             ans = more.getFirst();
         }
         else  {
-            if ( more.size()==0 ) {
+            if ( more.isEmpty() ) {
                 ans= Double.NaN;
             } else {
                 ans = more.getFirst();
@@ -8348,7 +8386,7 @@ public class Ops {
         for ( int i=0; i<size-1; i++ ) {
             double d=ds.value(i);
             vv.add(d);
-            if ( less.size()==0 ) {
+            if ( less.isEmpty() ) {
                 less.add(d);
             } else if ( less.getLast()<d ) {
                 int index= Collections.binarySearch( more,d );
@@ -8632,17 +8670,18 @@ public class Ops {
      * @return rank 2 dataset bundle
      */
     public static QDataSet flatten( QDataSet ds ) {
-        if ( ds.rank()==0 ) {
-            DDataSet result= DDataSet.createRank1(1);
-            result.putValue(0,ds.value());
-            DataSetUtil.copyDimensionProperties( ds, result );
-            return result;
-        }  else if(ds.rank() == 1) {
-            return ds;
-        } else if ( ds.rank()==2 ) {
-            return DataSetOps.flattenRank2(ds);
-        } else {
-            throw new UnsupportedOperationException("only rank 0,1,and 2 supported");
+        switch (ds.rank()) {
+            case 0:
+                DDataSet result= DDataSet.createRank1(1);
+                result.putValue(0,ds.value());
+                DataSetUtil.copyDimensionProperties( ds, result );
+                return result;
+            case 1:
+                return ds;
+            case 2:
+                return DataSetOps.flattenRank2(ds);
+            default:
+                throw new UnsupportedOperationException("only rank 0,1,and 2 supported");
         }
     }
     
@@ -8926,7 +8965,7 @@ public class Ops {
      */
     public static QDataSet reform(QDataSet ds) {
         int[] dsqube = DataSetUtil.qubeDims(ds);
-        List<Integer> newQube = new ArrayList<Integer>();
+        List<Integer> newQube = new ArrayList<>();
         //int[] dimMap = new int[dsqube.length]; // maps from new dataset to old index
         boolean foundDim = false;
         int removeDim = -1;
@@ -9021,38 +9060,51 @@ public class Ops {
             ((BundleDataSet)ds1).bundle(ds2);
             return ds1;
         } else if ( ds1.rank()-1==ds2.rank() ) {
-            if ( ds1.rank()==3 ) {
-                TailBundleDataSet bds= new TailBundleDataSet(ds1.rank());
-                for ( int i=0; i<ds1.length(0,0); i++ ) {
-                    bds.bundle( DataSetOps.unbundle(ds1,i) );
-                }
-                bds.bundle( ds2 );
-                return bds;
-            } else if ( ds1.rank()==4 ) {
-                TailBundleDataSet bds= new TailBundleDataSet(ds1.rank());
-                for ( int i=0; i<ds1.length(0,0,0); i++ ) {
-                    bds.bundle( DataSetOps.unbundle(ds1,i) );
-                }
-                bds.bundle( ds2 );
-                return bds;
-            } else {
-                BundleDataSet bds= new BundleDataSet(ds1.rank());
-                if ( ds1.rank()==2 ) {
-                    for ( int i=0; i<ds1.length(0); i++ ) {
-                        bds.bundle( DataSetOps.unbundle(ds1,i) );
-                    }
-                } else if ( ds1.rank()==3 ) {
+            switch (ds1.rank()) {
+                case 3:
+                {
+                    TailBundleDataSet bds= new TailBundleDataSet(ds1.rank());
                     for ( int i=0; i<ds1.length(0,0); i++ ) {
                         bds.bundle( DataSetOps.unbundle(ds1,i) );
                     }
-                } else {
-                    throw new IllegalArgumentException("ds1 rank must be 1 or 2");
+                    bds.bundle( ds2 );
+                    return bds;
                 }
-                bds.bundle( ds2 );
-                return bds;
+                case 4:
+                {
+                    TailBundleDataSet bds= new TailBundleDataSet(ds1.rank());
+                    for ( int i=0; i<ds1.length(0,0,0); i++ ) {
+                        bds.bundle( DataSetOps.unbundle(ds1,i) );
+                    }
+                    bds.bundle( ds2 );
+                    return bds;
+                }
+                case 2:
+                {
+                    BundleDataSet bds= new BundleDataSet(ds1.rank());
+                    for ( int i=0; i<ds1.length(0); i++ ) {
+                        bds.bundle( DataSetOps.unbundle(ds1,i) );
+                    }
+                    bds.bundle( ds2 );
+                    return bds;
+                }
+                case 1: // new
+                {
+                    BundleDataSet bds= new BundleDataSet(ds1.rank());
+                    for ( int i=0; i<ds1.length(); i++ ) {
+                        bds.bundle( DataSetOps.unbundle(ds1,i) );
+                    }
+                    bds.bundle( ds2 );
+                    return bds;
+                }
+                // note there was a ds1.rank()==3 which was redundant and impossible to reach
+                default:
+                {
+                    throw new IllegalArgumentException("ds1 rank must be 1,2,3, or 4");
+                }
             }
         } else {
-            throw new IllegalArgumentException("not supported yet");
+            throw new IllegalArgumentException("not supported yet: ds1 rank must be equal to or one more than ds2 rank");
         }
 
     }
@@ -9122,56 +9174,61 @@ public class Ops {
      * @return rank 2 bins dataset.
      */
     public static QDataSet unbundleBins( QDataSet ds, int i ) {
-        if ( ds.rank()==2 ) {
-            MutablePropertyDataSet result= DataSetOps.leafTrim( ds, i, i+2 );
-            QDataSet bds= (QDataSet) result.property(QDataSet.BUNDLE_1);
-            if ( bds!=null ) {
-                Units u1= (Units) bds.property(QDataSet.UNITS,0);
-                Units u2= (Units) bds.property(QDataSet.UNITS,1);
-                if ( u1==u2 ) {
-                    result= copy(result);
-                    result.putProperty( QDataSet.BUNDLE_1, null );
-                    result.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
-                    result.putProperty( QDataSet.UNITS, u1 );
-                } else if ( u2.isConvertibleTo(u1.getOffsetUnits() ) ) {
-                    result= copy( result );
-                    UnitsConverter uc= u2.getConverter( u1.getOffsetUnits() );
-                    for ( int i1=0; i1<result.length(); i1++ ) {
-                        ((WritableDataSet)result).putValue( i1, 1, 
-                                result.value(i1,0) + uc.convert(result.value(i1,1))); 
+        switch (ds.rank()) {
+            case 2:
+            {
+                MutablePropertyDataSet result= DataSetOps.leafTrim( ds, i, i+2 );
+                QDataSet bds= (QDataSet) result.property(QDataSet.BUNDLE_1);
+                if ( bds!=null ) {
+                    Units u1= (Units) bds.property(QDataSet.UNITS,0);
+                    Units u2= (Units) bds.property(QDataSet.UNITS,1);
+                    if ( u1==u2 ) {
+                        result= copy(result);
+                        result.putProperty( QDataSet.BUNDLE_1, null );
+                        result.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+                        result.putProperty( QDataSet.UNITS, u1 );
+                    } else if ( u2.isConvertibleTo(u1.getOffsetUnits() ) ) {
+                        result= copy( result );
+                        UnitsConverter uc= u2.getConverter( u1.getOffsetUnits() );
+                        for ( int i1=0; i1<result.length(); i1++ ) { 
+                            ((WritableDataSet)result).putValue( i1, 1,
+                                    result.value(i1,0) + uc.convert(result.value(i1,1)));
+                        }
+                        result.putProperty( QDataSet.BUNDLE_1, null );
+                        result.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
+                        result.putProperty( QDataSet.UNITS, u1 );
                     }
-                    result.putProperty( QDataSet.BUNDLE_1, null );
-                    result.putProperty( QDataSet.BINS_1, QDataSet.VALUE_BINS_MIN_MAX );
-                    result.putProperty( QDataSet.UNITS, u1 );
                 }
+                return result;
             }
-            return result;
-        } else if ( ds.rank()==1 ) {
-            MutablePropertyDataSet result= DataSetOps.leafTrim( ds, i, i+2 );
-            QDataSet bds= (QDataSet) result.property(QDataSet.BUNDLE_0);
-            if ( bds!=null ) {
-                Units u1= (Units) bds.property(QDataSet.UNITS,0);
-                Units u2= (Units) bds.property(QDataSet.UNITS,1);
-                if ( u1==u2 ) {
-                    result= copy(result);
-                    result.putProperty( QDataSet.BUNDLE_0, null );
-                    result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
-                    result.putProperty( QDataSet.UNITS, u1 );
-                } else if ( u2.isConvertibleTo(u1.getOffsetUnits() ) ) {
-                    result= copy( result );
-                    UnitsConverter uc= u2.getConverter( u1.getOffsetUnits() );
-                    for ( int i1=0; i1<result.length(); i1++ ) {
-                        ((WritableDataSet)result).putValue( i1, 1, 
-                                result.value(i1,0) + uc.convert(result.value(i1,1))); 
+            case 1:
+            {
+                MutablePropertyDataSet result= DataSetOps.leafTrim( ds, i, i+2 );
+                QDataSet bds= (QDataSet) result.property(QDataSet.BUNDLE_0);
+                if ( bds!=null ) {
+                    Units u1= (Units) bds.property(QDataSet.UNITS,0);
+                    Units u2= (Units) bds.property(QDataSet.UNITS,1);
+                    if ( u1==u2 ) {
+                        result= copy(result);
+                        result.putProperty( QDataSet.BUNDLE_0, null );
+                        result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
+                        result.putProperty( QDataSet.UNITS, u1 );
+                    } else if ( u2.isConvertibleTo(u1.getOffsetUnits() ) ) {
+                        result= copy( result );
+                        UnitsConverter uc= u2.getConverter( u1.getOffsetUnits() );
+                        for ( int i1=0; i1<result.length(); i1++ ) {
+                            ((WritableDataSet)result).putValue( i1, 1,
+                                    result.value(i1,0) + uc.convert(result.value(i1,1))); 
+                        }
+                        result.putProperty( QDataSet.BUNDLE_0, null );
+                        result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
+                        result.putProperty( QDataSet.UNITS, u1 );
                     }
-                    result.putProperty( QDataSet.BUNDLE_0, null );
-                    result.putProperty( QDataSet.BINS_0, QDataSet.VALUE_BINS_MIN_MAX );
-                    result.putProperty( QDataSet.UNITS, u1 );
                 }
+                return result;
             }
-            return result;
-        } else {
-            throw new IllegalArgumentException("rank exception, must be rank 1 or rank 2");
+            default:
+                throw new IllegalArgumentException("rank exception, must be rank 1 or rank 2");
         }
     }
     
@@ -9524,23 +9581,29 @@ public class Ops {
      */
     public static MutablePropertyDataSet dependsOn( QDataSet ds, int dim, QDataSet dep ) {
         MutablePropertyDataSet mds= DataSetOps.makePropertiesMutable(ds);
-        if ( dim==0 ) {
-            if ( dep!=null && ds.length()!=dep.length() ) {
-                throw new IllegalArgumentException(String.format("ds.length()!=dep.length() (%d!=%d)",ds.length(),dep.length()));
-            }
-            mds.putProperty( QDataSet.DEPEND_0, dep );
-        } else if ( dim==1 ) {
-            if ( dep!=null && ds.length(0)!=dep.length() ) 
-                throw new IllegalArgumentException(String.format("ds.length(0)!=dep.length() (%d!=%d)",ds.length(0),dep.length()));
-            mds.putProperty( QDataSet.DEPEND_1, dep );
-        } else if ( dim==2 ) {
-            if ( dep!=null && ds.length(0,0)!=dep.length() ) 
-                throw new IllegalArgumentException(String.format("ds.length(0,0)!=dep.length() (%d!=%d)",ds.length(0,0),dep.length()));
-            mds.putProperty( QDataSet.DEPEND_2, dep );
-        } else if ( dim==3 ) {
-            if ( dep!=null && ds.length(0,0,0)!=dep.length() ) 
-                throw new IllegalArgumentException(String.format("ds.length(0,0,0)!=dep.length() (%d!=%d)",ds.length(0,0,0),dep.length()));
-            mds.putProperty( QDataSet.DEPEND_3, dep );
+        switch (dim) {
+            case 0:
+                if ( dep!=null && ds.length()!=dep.length() ) {
+                    throw new IllegalArgumentException(String.format("ds.length()!=dep.length() (%d!=%d)",ds.length(),dep.length()));
+                }   mds.putProperty( QDataSet.DEPEND_0, dep );
+                break;
+            case 1:
+                if ( dep!=null && ds.length(0)!=dep.length() )
+                    throw new IllegalArgumentException(String.format("ds.length(0)!=dep.length() (%d!=%d)",ds.length(0),dep.length()));
+                mds.putProperty( QDataSet.DEPEND_1, dep );
+                break;
+            case 2:
+                if ( dep!=null && ds.length(0,0)!=dep.length() )
+                    throw new IllegalArgumentException(String.format("ds.length(0,0)!=dep.length() (%d!=%d)",ds.length(0,0),dep.length()));
+                mds.putProperty( QDataSet.DEPEND_2, dep );
+                break;
+            case 3:
+                if ( dep!=null && ds.length(0,0,0)!=dep.length() )
+                    throw new IllegalArgumentException(String.format("ds.length(0,0,0)!=dep.length() (%d!=%d)",ds.length(0,0,0),dep.length()));
+                mds.putProperty( QDataSet.DEPEND_3, dep );
+                break;
+            default:
+                break;
         }
         return mds;
     }
@@ -9907,7 +9970,7 @@ public class Ops {
      */
     public static QDataSet fftPowerMultiThread(final QDataSet ds, final int len, final ProgressMonitor mon ) {
         
-        final ArrayList<ProgressMonitor> mons = new ArrayList<ProgressMonitor>();
+        final ArrayList<ProgressMonitor> mons = new ArrayList<>();
         final QDataSet[] out = new QDataSet[4];
         
         final int length = ds.length();
