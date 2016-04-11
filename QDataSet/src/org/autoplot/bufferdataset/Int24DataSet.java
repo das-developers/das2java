@@ -20,7 +20,8 @@ public class Int24DataSet extends BufferDataSet {
     
     private int intValue( ByteBuffer buf, int offset ) {
         ByteBuffer int4= ByteBuffer.allocate(4);
-        if ( back.order()==ByteOrder.LITTLE_ENDIAN ) {
+        int4.order(ByteOrder.BIG_ENDIAN);
+        if ( back.order()==ByteOrder.LITTLE_ENDIAN ) { // TODO: this seems backwards, but this works.  Why?
             int4.put(buf.get(offset));
             int4.put(buf.get(offset+1));
             int4.put(buf.get(offset+2));
