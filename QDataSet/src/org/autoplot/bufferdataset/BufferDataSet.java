@@ -89,6 +89,12 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      * VAX floats.
      */
     public final static Object VAX_FLOAT= "vaxfloat";
+    
+    /**
+     * three-byte ints.
+     */
+    public final static Object INT24= "int24";
+    
     /**
      * 8 byte signed longs
      */
@@ -131,6 +137,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             return 4;
         } else if ( type.equals(VAX_FLOAT) ) {
             return 4;
+        } else if ( type.equals(INT24) ) {
+            return 3;
         } else if (type.equals(LONG)) {
             return 8;
         } else if (type.equals(INT)) {
@@ -186,6 +194,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             result=new  FloatDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(VAX_FLOAT) ) {
             result= new VaxFloatDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+        } else if ( type.equals(INT24) ) {
+            result= new Int24DataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(LONG) ) {
             result=new  LongDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(INT) ) {
