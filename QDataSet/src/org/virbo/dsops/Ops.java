@@ -1,6 +1,13 @@
 
 package org.virbo.dsops;
 
+import ProGAL.geom2d.Triangle;
+import ProGAL.geom2d.delaunay.DTWithBigPoints;
+import ProGAL.geom2d.delaunay.Vertex;
+import ProGAL.geom3d.Point;
+import ProGAL.geom3d.PointWeighted;
+import ProGAL.geom3d.tessellation.BowyerWatson.RegularTessellation;
+import ProGAL.geom3d.tessellation.BowyerWatson.Tetr;
 import java.awt.Color;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
@@ -17,6 +24,7 @@ import org.virbo.math.fft.GeneralFFT;
 import org.virbo.math.fft.WaveformToSpectrum;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1001,12 +1009,38 @@ public class Ops {
     public static QDataSet trim( QDataSet ds, int st, int en ) {
         return ds.trim( st, en );
     }
+    
+    /**
+     * return the trim of the dataset ds where its DEPEND_0 (xtags) are
+     * within the range dr.
+     * @param ds a rank 1 or greater dataset
+     * @param dr a range in the same units as ds
+     * @return the subset of the data.
+     * @see #trim(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
+    public static QDataSet trim( QDataSet ds, DatumRange dr ) {
+        return trim( ds, dataset( dr.min() ), dataset( dr.max() ) );
+    }
+    
+    /**
+     * return the trim of the dataset ds where its DEPEND_0 (xtags) are
+     * within the range dr.
+     * @param ds a rank 1 or greater dataset
+     * @param odr an object which can be interpretted as a range.
+     * @return the subset of the data.
+     * @see #trim(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
+    public static QDataSet trim( QDataSet ds, Object odr ) {
+        DatumRange dr= datumRange(odr);
+        return trim( ds, dataset( dr.min() ), dataset( dr.max() ) );
+    }
 
     /**
-     * trim the dataset to the range of the zeroth dimension.  For example,
+     * return the trim of the dataset ds where its DEPEND_0 (xtags) are
+     * within the range dr.  For example,
      * if ds was 7-days from 2014-01-01 through 2014-01-07, and st=2014-01-02
      * and en=2014-01-03 then just the records collected on this one day would
-     * be returned.
+     * be returned.  
      * @param ds the dataset to be trimmed, with a rank 1 monotonic DEPEND_0.
      * @param st rank 0 min value
      * @param en rank 0 max value
@@ -4674,6 +4708,7 @@ public class Ops {
      * the data was sorted already.
      * @param ds rank 1 dataset
      * @return rank 1 dataset of indeces that sort the input dataset.
+     * @see #shuffle(org.virbo.dataset.QDataSet)  
      */
     public static QDataSet sort(QDataSet ds) {
         return DataSetOps.sort(ds);
@@ -5190,6 +5225,7 @@ public class Ops {
      *</pre></blockquote>
      * @param ds rank 1 dataset
      * @return rank 1 dataset of integer indeces.
+     * @see #sort(org.virbo.dataset.QDataSet) 
      */
     public static QDataSet shuffle(QDataSet ds) {
         int size = ds.length();
@@ -10052,6 +10088,170 @@ public class Ops {
         
     }
        
+    /**
+     * Point with placeholder for index.
+     */
+    private static class PointWeightedInt extends PointWeighted {
+        int idx;
+        PointWeightedInt( double x, double y, double z, double w, int idx ) {
+            super( x,y,z,w );
+            this.idx= idx;
+        }
+    }
+    
+    /**
+     * return the volume of a 4-point tetrahededron. 
+     * @param p the first point.  The tetr is shifted so that this corner is at the origin.
+     * @param a tetr corner
+     * @param b tetr corner
+     * @param c tetr corner
+     * @return the volume
+     */
+    private static double volume( Point p, Point a, Point b, Point c ) {
+        a= a.subtract(p);
+        b= b.subtract(p);
+        c= c.subtract(p);
+        return volume(a,b,c);
+    }
+    
+    /**
+     * return the volume of the 4-point tetrahedron with one point
+     * at the origin, and points a,b,c are the points not at the origin.
+     * See http://www.hpl.hp.com/techreports/2002/HPL-2002-320.pdf, page 4
+     * @param a tetr corner
+     * @param b tetr corner
+     * @param c tetr corner
+     * @return the volume
+     */
+    private static double volume( Point a, Point b, Point c ) {        
+        return Math.abs( a.x() * ( b.y() * c.z() - b.z() * c.y() ) -
+                a.y() * ( b.x() * c.z() - b.z() * c.x() ) +
+                a.z() * ( b.x() * c.y() - b.y() * c.x() ) );
+    }
+    
+//    /**
+//     * Point with placeholder for index.
+//     */
+//    private static class VertexInt extends ProGAL.geom2d.delaunay.Vertex {
+//        int idx;
+//        VertexInt( double x, double y, int idx ) {
+//            super( x,y, idx );
+//        }
+//    }    
+//    
+    /**
+     * 3-D interpolation performed by tesselating the space (with 4-point 
+     * tetrahedra) and doing interpolation.
+     * @param x rank 1 independent data 
+     * @param y rank 1 independent data 
+     * @param z rank 1 independent data 
+     * @param data rank 1 dependent data, a function of x,y,z.
+     * @param xinterp the x locations to interpolate
+     * @param yinterp the y locations to interpolate
+     * @param zinterp the z locations to interpolate
+     * @return the interpolated data.
+     */
+    public static QDataSet buckshotInterpolate( QDataSet x, QDataSet y, QDataSet z, QDataSet data, QDataSet xinterp, QDataSet yinterp, QDataSet zinterp ) {
+        List<PointWeighted> points= new ArrayList(x.length());
+        for ( int i=0; i<x.length(); i++ ) {
+            points.add( new PointWeightedInt( 
+                    x.value(i), y.value(i), z.value(i), 1.0, i
+            ) );
+        }
+        RegularTessellation rt= new RegularTessellation(points);
+        
+        DDataSet result= DDataSet.create( DataSetUtil.qubeDims(xinterp) );
+        
+        QDataSet wds= DataSetUtil.weightsDataSet( data );
+        Double fill= (Double)wds.property(QDataSet.FILL_VALUE);
+        if ( fill==null ) fill= -1e38;
+        result.putProperty( QDataSet.FILL_VALUE, fill );
+        boolean hasFill= false;
+        
+        DataSetIterator dsi= new QubeDataSetIterator(xinterp);
+        
+        iloop: while ( dsi.hasNext() ) {
+            dsi.next();
+            Point thePoint= new Point( dsi.getValue(xinterp), dsi.getValue(yinterp), dsi.getValue(zinterp) );
+            Tetr t= rt.walk( new PointWeighted( thePoint.x(), thePoint.y(), thePoint.z(), 1.0 ) );
+            Point[] abcd= Arrays.copyOf( t.getCorners(), t.getCorners().length ); 
+            PointWeightedInt[] abcdi= new PointWeightedInt[4];
+            for ( int k=0; k<4; k++ ) {
+                if ( !( abcd[k] instanceof PointWeightedInt ) ) { // this is outside of the triangulation, an extrapolation.
+                    dsi.putValue( result, fill );
+                    hasFill= true;
+                    continue iloop;
+                }
+                abcdi[k]= (PointWeightedInt)abcd[k];
+                abcd[k]= abcd[k].subtract(thePoint); // do not modify the mutable Points of the tessellation
+            }
+            double[] w= new double[4];
+            w[0]= volume( abcd[1], abcd[2], abcd[3] );
+            w[1]= volume( abcd[0], abcd[2], abcd[3] );
+            w[2]= volume( abcd[0], abcd[1], abcd[3] );
+            w[3]= volume( abcd[0], abcd[1], abcd[2] );
+            double n= w[0] + w[1] + w[2] + w[3];
+            for ( int k=0; k<4; k++ ) {
+                w[k]/= n;
+            }
+            double d= data.value( abcdi[0].idx ) * w[0] 
+                +   data.value( abcdi[1].idx ) * w[1] 
+                +   data.value( abcdi[2].idx ) * w[2] 
+                +   data.value( abcdi[3].idx ) * w[3];
+            if ( Double.isNaN(d) ) {
+                System.err.println("here");
+            }
+            dsi.putValue( result,d );
+                    
+        }
+        
+        DataSetUtil.copyDimensionProperties( data, result );
+        if ( !hasFill ) {
+            result.putProperty( QDataSet.FILL_VALUE, null );
+        }
+        
+        return result;
+    };
+      
+//    /** 2-D interpolation performed by tesselating the space (with 3-point 
+//     * triangles) and doing interpolation.
+//     * NOTE: this is not implemented, and just returns the nearest neighbor.
+//     * @param x rank 1 independent data 
+//     * @param y rank 1 independent data 
+//     * @param data rank 1 dependent data, a function of x,y.
+//     * @param xinterp the x locations to interpolate
+//     * @param yinterp the y locations to interpolate
+//     * @return the interpolated data.
+//     */    
+//    public static QDataSet buckshotInterpolate( QDataSet x, QDataSet y, QDataSet data, QDataSet xinterp, QDataSet yinterp ) {
+//        List<ProGAL.geom2d.delaunay.Vertex> points= new ArrayList(x.length());
+//        for ( int i=0; i<x.length(); i++ ) {
+//            points.add( new ProGAL.geom2d.delaunay.Vertex( x.value(i), y.value(i), i ) );
+//        }
+//        DTWithBigPoints rt= new DTWithBigPoints( points );
+//        
+//        DDataSet result= DDataSet.createRank1(xinterp.length());
+//        
+//        for ( int i=0; i<xinterp.length(); i++ ) {
+//            ProGAL.geom2d.Point thePoint= new ProGAL.geom2d.Point( xinterp.value(i), yinterp.value(i) );
+//            Triangle t= rt.walk( thePoint );
+//            ProGAL.geom2d.delaunay.Vertex closestPoint= null;
+//            double closestDistance= Double.MAX_VALUE;
+//            for ( int j=0; j<3; j++ ) {
+//                double dist= t.getCorner(j).distanceSquared(thePoint);
+//                if ( dist < closestDistance ) {
+//                    closestPoint= ((ProGAL.geom2d.delaunay.Vertex) t.getCorner(j) );
+//                    closestDistance= dist;
+//                }
+//            }
+//            int idx= closestPoint;
+//            result.putValue( i, 0 );
+//        }
+//        
+//        DataSetUtil.copyDimensionProperties( data, result );
+//        return result;
+//    };
+
     /**
      * closest double to &pi; or TAU/2
      * @see Math#PI
