@@ -98,6 +98,15 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
         return hash;
     }
 
+    /**
+     * return the string identifying this orbit, assuming the context is 
+     * provided elsewhere.  For example, supposing this toString() is "orbit:rbspa-pp:43"
+     * then this would return just "43"
+     * @return the string providing the orbit.
+     */
+    public String getOrbit() {
+        return this.orbit;
+    }
 
     @Override
     public String toString() {
