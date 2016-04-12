@@ -10,7 +10,6 @@ import java.text.*;
 import java.util.*;
 import java.util.logging.*;
 import java.util.regex.*;
-import org.das2.datum.TimeUtil.TimeStruct;
 import org.das2.datum.format.DatumFormatter;
 import org.das2.datum.format.TimeDatumFormatter;
 
@@ -1589,12 +1588,13 @@ public class DatumRangeUtil {
     }
 	 
     /**
-     * This provides unambiguous rules for parsing all types datum ranges strictly from strings, with no out of
-     * band information.  This was introduced to support das2stream parsing.
+     * This provides unambiguous rules for parsing all types datum ranges strictly 
+     * from strings, with no out of band information.  This was introduced to 
+     * support das2stream parsing.
      *
      * Examples include: "2013 to 2015 UTC" "3 to 4 kg" "2015-05-05T00:00/2015-06-02T00:00"
      * @param str the string representing a time.
-     * @return
+     * @return the DatumRange interpreted.
      * @throws java.text.ParseException
      */
     public static DatumRange parseDatumRange(String str) throws ParseException {
