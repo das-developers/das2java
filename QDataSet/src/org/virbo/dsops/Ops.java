@@ -1051,6 +1051,9 @@ public class Ops {
         if ( st.rank()!=0 || en.rank()!=0 ) {
             throw new IllegalArgumentException("bounds must be rank 0");
         }
+        if ( ds==null ) {
+            throw new NullPointerException("ds is null");
+        }
         QDataSet dep0= SemanticOps.xtagsDataSet(ds);
         if ( dep0.rank()!=1 ) {
             throw new IllegalArgumentException("dataset must have rank 1 tags");
@@ -1065,6 +1068,8 @@ public class Ops {
         f1= n<f1 ? n : f1;
         f2= 0>f2 ? 0 : f2;
         f2= n<f2 ? 0 : f2;
+        
+        if ( f1>f2 ) throw new IllegalArgumentException("st must be less than (or earlier than) en");
         
         return ds.trim((int)f1,(int)f2);
     }
