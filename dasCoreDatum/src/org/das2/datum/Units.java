@@ -614,6 +614,7 @@ public abstract class Units {
     public abstract DatumFormatterFactory getDatumFormatterFactory();
     
     public abstract Datum parse(String s) throws ParseException;
+    
     public String format( Datum datum ) {
         return getDatumFormatterFactory().defaultFormatter().format(datum);
     }
