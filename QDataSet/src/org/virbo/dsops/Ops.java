@@ -1,13 +1,6 @@
 
 package org.virbo.dsops;
 
-import ProGAL.geom2d.Triangle;
-import ProGAL.geom2d.delaunay.DTWithBigPoints;
-import ProGAL.geom2d.delaunay.Vertex;
-import ProGAL.geom3d.Point;
-import ProGAL.geom3d.PointWeighted;
-import ProGAL.geom3d.tessellation.BowyerWatson.RegularTessellation;
-import ProGAL.geom3d.tessellation.BowyerWatson.Tetr;
 import java.awt.Color;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
@@ -10096,7 +10089,7 @@ public class Ops {
     /**
      * Point with placeholder for index.
      */
-    private static class PointWeightedInt extends PointWeighted {
+    private static class PointWeightedInt extends ProGAL.geom3d.PointWeighted {
         int idx;
         PointWeightedInt( double x, double y, double z, double w, int idx ) {
             super( x,y,z,w );
@@ -10104,66 +10097,87 @@ public class Ops {
         }
     }
     
-    /**
-     * return the volume of a 4-point tetrahededron. 
-     * @param p the first point.  The tetr is shifted so that this corner is at the origin.
-     * @param a tetr corner
-     * @param b tetr corner
-     * @param c tetr corner
-     * @return the volume
-     */
-    private static double volume( Point p, Point a, Point b, Point c ) {
-        a= a.subtract(p);
-        b= b.subtract(p);
-        c= c.subtract(p);
-        return volume(a,b,c);
-    }
+//    /**
+//     * return the volume of a 4-point tetrahededron. 
+//     * @param p the first point.  The tetr is shifted so that this corner is at the origin.
+//     * @param a tetr corner
+//     * @param b tetr corner
+//     * @param c tetr corner
+//     * @return the volume
+//     */
+//    private static double volume( ProGAL.geom3d.Point p, ProGAL.geom3d.Point a, ProGAL.geom3d.Point b, ProGAL.geom3d.Point c ) {
+//        a= a.subtract(p);
+//        b= b.subtract(p);
+//        c= c.subtract(p);
+//        return volume(a,b,c);
+//    }
     
     /**
      * return the volume of the 4-point tetrahedron with one point
      * at the origin, and points a,b,c are the points not at the origin.
      * See http://www.hpl.hp.com/techreports/2002/HPL-2002-320.pdf, page 4
-     * @param a tetr corner
-     * @param b tetr corner
-     * @param c tetr corner
+     * @param a tetrahedron corner
+     * @param b tetrahedron corner
+     * @param c tetrahedron corner
      * @return the volume
      */
-    private static double volume( Point a, Point b, Point c ) {        
+    private static double volume(  ProGAL.geom3d.Point a,  ProGAL.geom3d.Point b,  ProGAL.geom3d.Point c ) {        
         return Math.abs( a.x() * ( b.y() * c.z() - b.z() * c.y() ) -
                 a.y() * ( b.x() * c.z() - b.z() * c.x() ) +
                 a.z() * ( b.x() * c.y() - b.y() * c.x() ) );
     }
+
+    /**
+     * return the volume of the 3-point triangle in 2 dimensions.
+     * See http://www.mathopenref.com/coordtrianglearea.html
+     * @param a 2-d point corner
+     * @param b 2-d point corner
+     * @param c 2-d point corner
+     * @return the volume
+     */
+    private static double area( ProGAL.geom2d.Point a, ProGAL.geom2d.Point b, ProGAL.geom2d.Point c ) {        
+        return Math.abs( a.x() * ( b.y()- c.y() ) -
+                b.x() * ( c.y() - a.y() ) +
+                c.x() * ( a.y() - b.y() ) ) / 2;
+    }
     
-//    /**
-//     * Point with placeholder for index.
-//     */
-//    private static class VertexInt extends ProGAL.geom2d.delaunay.Vertex {
-//        int idx;
-//        VertexInt( double x, double y, int idx ) {
-//            super( x,y, idx );
-//        }
-//    }    
-//    
+    /**
+     * Point with placeholder for index.
+     */
+    private static class VertexInt extends ProGAL.geom2d.delaunay.Vertex {
+        int idx;
+        VertexInt( double x, double y, int idx ) {
+            super( x,y );
+            this.idx= idx;
+        }
+        public String toString() {
+            return super.toString(2);
+        }
+    }    
+    
     /**
      * 3-D interpolation performed by tesselating the space (with 4-point 
      * tetrahedra) and doing interpolation.
-     * @param x rank 1 independent data 
-     * @param y rank 1 independent data 
-     * @param z rank 1 independent data 
+     * NOTE: this does not check units.
+     * @param xyz rank 2 bundle of x,y,z data.
      * @param data rank 1 dependent data, a function of x,y,z.
      * @param xinterp the x locations to interpolate
      * @param yinterp the y locations to interpolate
      * @param zinterp the z locations to interpolate
      * @return the interpolated data.
      */
-    public static QDataSet buckshotInterpolate( QDataSet x, QDataSet y, QDataSet z, QDataSet data, QDataSet xinterp, QDataSet yinterp, QDataSet zinterp ) {
-        List<PointWeighted> points= new ArrayList(x.length());
-        for ( int i=0; i<x.length(); i++ ) {
+    public static QDataSet buckshotInterpolate( QDataSet xyz, QDataSet data, QDataSet xinterp, QDataSet yinterp, QDataSet zinterp ) {
+        List<ProGAL.geom3d.PointWeighted> points= new ArrayList(xyz.length());
+        for ( int i=0; i<xyz.length(); i++ ) {
             points.add( new PointWeightedInt( 
-                    x.value(i), y.value(i), z.value(i), 1.0, i
+                xyz.value(i,0), xyz.value(i,1), xyz.value(i,2), 1.0, i
             ) );
         }
-        RegularTessellation rt= new RegularTessellation(points);
+        ProGAL.geom3d.tessellation.BowyerWatson.RegularTessellation rt= new ProGAL.geom3d.tessellation.BowyerWatson.RegularTessellation(points);
+        
+        if ( xyz instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)xyz).isImmutable() ) {
+            ((MutablePropertyDataSet)xyz).putProperty( "TRIANGULATION", rt );
+        }
         
         DDataSet result= DDataSet.create( DataSetUtil.qubeDims(xinterp) );
         
@@ -10177,9 +10191,12 @@ public class Ops {
         
         iloop: while ( dsi.hasNext() ) {
             dsi.next();
-            Point thePoint= new Point( dsi.getValue(xinterp), dsi.getValue(yinterp), dsi.getValue(zinterp) );
-            Tetr t= rt.walk( new PointWeighted( thePoint.x(), thePoint.y(), thePoint.z(), 1.0 ) );
-            Point[] abcd= Arrays.copyOf( t.getCorners(), t.getCorners().length ); 
+            ProGAL.geom3d.Point thePoint= new ProGAL.geom3d.Point( dsi.getValue(xinterp), dsi.getValue(yinterp), dsi.getValue(zinterp) );
+            
+            //ArrayList a= new ArrayList();
+            ProGAL.geom3d.tessellation.BowyerWatson.Tetr t= rt.walk( new ProGAL.geom3d.PointWeighted( thePoint.x(), thePoint.y(), thePoint.z(), 1.0 ) ); // , a );
+            
+            ProGAL.geom3d.Point[] abcd= Arrays.copyOf( t.getCorners(), t.getCorners().length ); 
             PointWeightedInt[] abcdi= new PointWeightedInt[4];
             for ( int k=0; k<4; k++ ) {
                 if ( !( abcd[k] instanceof PointWeightedInt ) ) { // this is outside of the triangulation, an extrapolation.
@@ -10203,9 +10220,7 @@ public class Ops {
                 +   data.value( abcdi[1].idx ) * w[1] 
                 +   data.value( abcdi[2].idx ) * w[2] 
                 +   data.value( abcdi[3].idx ) * w[3];
-            if ( Double.isNaN(d) ) {
-                System.err.println("here");
-            }
+
             dsi.putValue( result,d );
                     
         }
@@ -10218,45 +10233,75 @@ public class Ops {
         return result;
     };
       
-//    /** 2-D interpolation performed by tesselating the space (with 3-point 
-//     * triangles) and doing interpolation.
-//     * NOTE: this is not implemented, and just returns the nearest neighbor.
-//     * @param x rank 1 independent data 
-//     * @param y rank 1 independent data 
-//     * @param data rank 1 dependent data, a function of x,y.
-//     * @param xinterp the x locations to interpolate
-//     * @param yinterp the y locations to interpolate
-//     * @return the interpolated data.
-//     */    
-//    public static QDataSet buckshotInterpolate( QDataSet x, QDataSet y, QDataSet data, QDataSet xinterp, QDataSet yinterp ) {
-//        List<ProGAL.geom2d.delaunay.Vertex> points= new ArrayList(x.length());
-//        for ( int i=0; i<x.length(); i++ ) {
-//            points.add( new ProGAL.geom2d.delaunay.Vertex( x.value(i), y.value(i), i ) );
-//        }
-//        DTWithBigPoints rt= new DTWithBigPoints( points );
-//        
-//        DDataSet result= DDataSet.createRank1(xinterp.length());
-//        
-//        for ( int i=0; i<xinterp.length(); i++ ) {
-//            ProGAL.geom2d.Point thePoint= new ProGAL.geom2d.Point( xinterp.value(i), yinterp.value(i) );
-//            Triangle t= rt.walk( thePoint );
-//            ProGAL.geom2d.delaunay.Vertex closestPoint= null;
-//            double closestDistance= Double.MAX_VALUE;
-//            for ( int j=0; j<3; j++ ) {
-//                double dist= t.getCorner(j).distanceSquared(thePoint);
-//                if ( dist < closestDistance ) {
-//                    closestPoint= ((ProGAL.geom2d.delaunay.Vertex) t.getCorner(j) );
-//                    closestDistance= dist;
-//                }
-//            }
-//            int idx= closestPoint;
-//            result.putValue( i, 0 );
-//        }
-//        
-//        DataSetUtil.copyDimensionProperties( data, result );
-//        return result;
-//    };
+    /** 2-D interpolation performed by tessellating the space (with 3-point 
+     * triangles) and doing interpolation.
+     * NOTE: this does not check units.
+     * @param xy rank 2 bundle of independent data x,y points.
+     * @param data rank 1 dependent data, a function of x,y.
+     * @param xinterp the x locations to interpolate
+     * @param yinterp the y locations to interpolate
+     * @return the interpolated data.
+     */    
+    public static QDataSet buckshotInterpolate( QDataSet xy, QDataSet data, QDataSet xinterp, QDataSet yinterp ) {
+        List<ProGAL.geom2d.Point> points= new ArrayList(xy.length());
+        for ( int i=0; i<xy.length(); i++ ) {
+            points.add( new VertexInt( xy.value(i,0), xy.value(i,1), i ) );
+        }
+        ProGAL.geom2d.delaunay.DTWithBigPoints rt= new ProGAL.geom2d.delaunay.DTWithBigPoints( points );
+        
+        DDataSet result= DDataSet.createRank1(xinterp.length());
+        
+        QDataSet wds= DataSetUtil.weightsDataSet( data );
+        Double fill= (Double)wds.property(QDataSet.FILL_VALUE);
+        if ( fill==null ) fill= -1e38;
+        result.putProperty( QDataSet.FILL_VALUE, fill );
+        boolean hasFill= false;
+        
+        DataSetIterator dsi= new QubeDataSetIterator(xinterp);
+        
+        iloop: while ( dsi.hasNext() ) {
+            dsi.next();
+            ProGAL.geom2d.Point thePoint= new ProGAL.geom2d.Point( dsi.getValue(xinterp), dsi.getValue(yinterp) );
+            ProGAL.geom2d.Triangle t= rt.walk( thePoint, null );
+            ProGAL.geom2d.Point[] abc= new ProGAL.geom2d.Point[] { t.getCorner(0), t.getCorner(1), t.getCorner(2) }; 
+            VertexInt[] abci= new VertexInt[3];
+            for ( int k=0; k<3; k++ ) {
+                if ( !( abc[k] instanceof VertexInt ) ) { // this is outside of the triangulation, an extrapolation.
+                    dsi.putValue( result, fill );
+                    hasFill= true;
+                    continue iloop;
+                }
+                abci[k]= (VertexInt)abc[k];
+            }
+            double[] w= new double[3];
+            w[0]= area( thePoint, abc[1], abc[2] );
+            w[1]= area( thePoint, abc[0], abc[2] );
+            w[2]= area( thePoint, abc[0], abc[1] );
+            double n= w[0] + w[1] + w[2];
+            for ( int k=0; k<3; k++ ) {
+                w[k]/= n;
+            }
+            double d= data.value( abci[0].idx ) * w[0] 
+                +   data.value( abci[1].idx ) * w[1] 
+                +   data.value( abci[2].idx ) * w[2];
+            dsi.putValue( result,d );
+            
+        }
+        
+        if ( xy instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)xy).isImmutable() ) {
+            ((MutablePropertyDataSet)xy).putProperty( "TRIANGULATION", rt );
+        }
+        
+        DataSetUtil.copyDimensionProperties( data, result );
+        if ( !hasFill ) {
+            result.putProperty( QDataSet.FILL_VALUE, null );
+        }
+        
+        return result;
+        
+    };
 
+    
     /**
      * closest double to &pi; or TAU/2
      * @see Math#PI
