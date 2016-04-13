@@ -148,6 +148,7 @@ public class NumberUnits extends Units {
      * specified, then assume units are this.  Otherwise, parse the
      * unit and attempt to convert to this before creating the unit.
      * At some point, we introduced support for simple expressions like "3*22"
+     * Note strings starting with "x" or "0x" are parsed as hexidecimal.
      */
     public Datum parse(String s) throws ParseException {
         if ( false && expressionPattern.matcher(s).matches() ) {
@@ -176,7 +177,10 @@ public class NumberUnits extends Units {
                 }
                 String[] ss= s.split("\\s+");
                 // "1hr", watch for nan
-                if ( ss.length==1 && !s.startsWith("N") && !s.startsWith("n") && Character.isLetter(s.charAt(s.length()-1)) ) {   
+                if ( ss.length==1 && Character.isLetter(s.charAt(s.length()-1))
+                    && !s.startsWith("N") && !s.startsWith("n")    // NaN 
+                    && !s.startsWith("x") && !s.startsWith("0x") ) // hexidecimal trigger.
+                    {   
                     for ( int i=s.length()-1; i>=0; i-- ) {  // find the last number.  TODO: see DatumUtil.splitDatumString( String s )
                         if ( Character.isDigit(s.charAt(i)) ) {
                             String[] ss2= new String[2];
