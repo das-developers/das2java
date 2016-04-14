@@ -3,7 +3,6 @@ package ProGAL.geom2d;
 
 import java.awt.Color;
 
-import ProGAL.geom2d.viewer.J2DScene;
 import ProGAL.math.Constants;
 
 public class Line implements Shape {
@@ -117,26 +116,6 @@ public class Line implements Shape {
 	
 	public void toConsole(String name) { System.out.println(toString(name)); }
 	public void toConsole() { System.out.println(toString("")); }
-	
-	public void toScene(J2DScene scene, double length) {
-		toScene(scene, length, Color.black);
-	}
-	
-	/** draws the line on a scene */
-	public void toScene(J2DScene scene, double length, Color clr) {
-		Vector dir = getDirection();
-		LineSegment seg = new LineSegment(p.add(dir.scaleToLength(length/2)), p.subtract(dir.scaleToLength(length/2)));
-		seg.toScene(scene, clr);
-
-	}
-
-	/** draws the line on a scene */
-	public void toScene(J2DScene scene, double length, Color clr, double width) {
-		Vector dir = getDirection();
-		LineSegment seg = new LineSegment(p.add(dir.scaleToLength(length/2)), p.subtract(dir.scaleToLength(length/2)));
-		seg.toScene(scene, clr, width);
-
-	}
 
 	
 	/** returns the point on the line at distance d from the line-defining point p */
@@ -163,18 +142,6 @@ public class Line implements Shape {
 	@Override
 	public Point getCenter() {
 		return getPoint(0);
-	}
-
-	public static void main(String[] args) {
-		J2DScene scene = J2DScene.createJ2DSceneInFrame();
-		Line l1 = new Line(1, 2);
-		Line l2 = new Line(1, 3);
-		Line l3 = new Line(2, 2);
-		Line l4 = new Line(2, 3);
-		l1.toScene(scene, 100);
-		l2.toScene(scene, 100, Color.red);
-		l3.toScene(scene, 100);
-		l4.toScene(scene, 100, Color.red);
 	}
 
 	@Override

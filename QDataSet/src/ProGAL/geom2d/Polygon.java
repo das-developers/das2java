@@ -96,28 +96,6 @@ public class Polygon extends ArrayList<Point> implements Shape {
 	/** returns convex hull of a simple polygon in O(n) time */
 	public ConvexPolygon getConvexPolygon() { return new ConvexPolygon(this); }
 	
-	public static void main(String[] args) {
-		Polygon pol = new Polygon();
-//		pol.add(new Point(0,0));
-//		pol.add(new Point(1,-1));
-//		pol.add(new Point(2,-1));		
-//		pol.add(new Point(3,2));
-//		pol.add(new Point(2,2));
-//		pol.add(new Point(1, 1.5));
-//		J2DScene scene = J2DScene.createJ2DSceneInFrame();
-//		pol.draw(scene);
-//		ConvexPolygon cPol = pol.getConvexPolygon();
-//		cPol.draw(scene);
-//		System.out.println(cPol.farthestVertex(0, 3));
-//		cPol.getDiameter();
-		
-		pol.add(new Point(0,0));
-		pol.add(new Point(0,1));
-		pol.add(new Point(2,0));
-		pol.add(new Point(2,1));
-		J2DScene scene = J2DScene.createJ2DSceneInFrame();
-		scene.addShape(pol, Color.BLUE, 0, true);
-	}
 
 	@Override
 	public boolean contains(Point p) {

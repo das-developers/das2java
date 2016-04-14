@@ -103,5 +103,15 @@ public class Triangle implements Shape{
 		return l1==l2 && l1==l3;
 	}
 
+        public String toString() {
+		StringBuilder vertices = new StringBuilder("");
+		for (int i=0;i<3;i++) {
+			vertices = vertices.append( this.getCorner(i).toString());
+			if ( i<3 ) {
+				vertices.append( ", " );
+			}
+		}
+		return String.format("Tessel[%s]",vertices.toString());
+	}
 
 }

@@ -6,7 +6,7 @@ import static java.lang.Math.sin;
 import java.awt.Color;
 
 import ProGAL.geom3d.Point;
-import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 import ProGAL.geom3d.volumes.LSS;
 import ProGAL.math.Constants;
 import ProGAL.math.Matrix;
@@ -220,18 +220,18 @@ public class Vector extends ProGAL.geomNd.Vector{
 	/** Writes this vector to <code>System.out</code> with <code>dec</code> decimals precision. */
 	public void toConsole(int dec) { System.out.println(toString(dec)); }
 
-	/** Draws a vector starting at the origin */
-	public LSS toScene(J3DScene scene, Color clr, double width) {
-		LSS lss = new LSS(new Point(0,0,0), toPoint(), width);
-		scene.addShape(lss, clr, 3);
-		return lss;
-	}
-	/** Draws a vector starting at point p */
-	public LSS toScene(J3DScene scene, Point p, Color clr, double width) {
-		LSS lss = new LSS(p, p.add(this), width);
-		scene.addShape(lss, clr, 3);
-		return lss;
-	}
+//	/** Draws a vector starting at the origin */
+//	public LSS toScene(J3DScene scene, Color clr, double width) {
+//		LSS lss = new LSS(new Point(0,0,0), toPoint(), width);
+//		scene.addShape(lss, clr, 3);
+//		return lss;
+//	}
+//	/** Draws a vector starting at point p */
+//	public LSS toScene(J3DScene scene, Point p, Color clr, double width) {
+//		LSS lss = new LSS(p, p.add(this), width);
+//		scene.addShape(lss, clr, 3);
+//		return lss;
+//	}
 
 	
 	/** Create a clone of this vector. */

@@ -2,7 +2,7 @@ package ProGAL.geom3d;
 
 import java.awt.Color;
 
-import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 import ProGAL.geom3d.volumes.Cylinder;
 
 /**
@@ -116,16 +116,16 @@ public class LineSegment implements Simplex{
 	/** Writes this segment to <code>System.out</code> with <code>dec</code> decimals precision. */
 	public void toConsole(int dec){ System.out.println(toString(dec)); }
 
-	public Cylinder toScene(J3DScene scene, double r, Color clr) { 
-		Cylinder cyl = new Cylinder(this, r);
-		scene.addShape(cyl, clr);
-		return cyl;
-	}
-	public Cylinder toScene(J3DScene scene, double r, Color clr, int detail) { 
-		Cylinder cyl = new Cylinder(this, r);
-		scene.addShape(cyl, clr, detail);
-		return cyl;
-	}
+//	public Cylinder toScene(J3DScene scene, double r, Color clr) { 
+//		Cylinder cyl = new Cylinder(this, r);
+//		scene.addShape(cyl, clr);
+//		return cyl;
+//	}
+//	public Cylinder toScene(J3DScene scene, double r, Color clr, int detail) { 
+//		Cylinder cyl = new Cylinder(this, r);
+//		scene.addShape(cyl, clr, detail);
+//		return cyl;
+//	}
 
 
 }

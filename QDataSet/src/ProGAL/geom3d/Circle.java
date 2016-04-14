@@ -5,7 +5,6 @@ package ProGAL.geom3d;
 import java.awt.Color;
 
 import ProGAL.Function;
-import ProGAL.geom3d.viewer.J3DScene;
 import ProGAL.geom3d.volumes.Cylinder;
 import ProGAL.math.Constants;
 import ProGAL.math.Functions;
@@ -251,7 +250,7 @@ public class Circle implements Shape{
 	 * there is no intersection or just one intersection.
 	 * @return
 	 */
-	public Double getFirstIntersection(Line line, Point p, Vector dir, J3DScene scene) {
+	public Double getFirstIntersection(Line line, Point p, Vector dir ) {
 		double dist = line.getDistance(center);
 		if (dist > radius - Constants.EPSILON) return null;
 		Vector op = new Vector(center, p);
@@ -331,75 +330,7 @@ public class Circle implements Shape{
 		}
 	}
 	
-	/** Draws the circle as 360 dots */
-	public void toScene(J3DScene scene, double width, Color clr) {
-		double step = Math.PI/180;
-		double cosI;
-		double sinI;
-		double angle = -step;
-		Vector u = normal.getOrthonormal().scaleToLength(radius);
-		Vector nxu = normal.cross(u);
-		for (int i = 0; i < 360; i++) {
-			angle += step;
-			cosI = Math.cos(angle);
-			sinI = Math.sin(angle);
-			new Point(u.x()*cosI + nxu.x()*sinI + center.x(),
-					  u.y()*cosI + nxu.y()*sinI + center.y(),
-					  u.z()*cosI + nxu.z()*sinI + center.z()).toScene(scene, width, clr);
-		}
-	}
-	
-	/** Draws an arc as series of dots 1 degree apart*/
-	public void toSceneArc(J3DScene scene, double width, Color clr, int degree, Point start) {
-		double step = Math.PI/180;
-		double cosI;
-		double sinI;
-		double angle = -step;
-		Vector u = new Vector(center, start).scaleToLength(radius);
-		Vector nxu = normal.cross(u);
-		for (int i = 0; i < degree; i++) {
-			angle += step;
-			cosI = Math.cos(angle);
-			sinI = Math.sin(angle);
-			new Point(u.x()*cosI + nxu.x()*sinI + center.x(),
-					  u.y()*cosI + nxu.y()*sinI + center.y(),
-					  u.z()*cosI + nxu.z()*sinI + center.z()).toScene(scene, width, clr);
-		}
-	}
-	
-	
-	public Cylinder[] toScene(J3DScene scene, double width, int res, Color clr) {
-		double step = 2*Math.PI/res;
-		
-		Vector a = normal.getOrthonormal();
-		Vector b = a.cross(normal);
-		double alpha = 0.0;
-		Point p = new Point(center.x() + radius*a.x(), center.y() + radius*a.y(), center.z() + radius*a.z());
-		Point q;
-		LineSegment seg;
-		Cylinder cyl[] = new Cylinder[res];
-		for (int i = 0; i < res; i++) {
-			alpha += step; 
-			double cosAlpha = Math.cos(alpha);
-			double sinAlpha = Math.sin(alpha);
-			q = new Point(center.x() + radius*(a.x()*cosAlpha + b.x()*sinAlpha),
-					      center.y() + radius*(a.y()*cosAlpha + b.y()*sinAlpha),
-					      center.z() + radius*(a.z()*cosAlpha + b.z()*sinAlpha));
-			seg = new LineSegment(p,q);
-			cyl[i] = seg.toScene(scene, width, clr);
-			p = q;
-		}
-		return cyl;
-	}
-	
-	public Cylinder[] toScene(J3DScene scene, double width, int res) {
-		return toScene(scene, width, res, Color.blue);
-	}
-	
-	public void fromScene(J3DScene scene, Cylinder[] cyl) {
-		for (int i = 0; i < cyl.length; i++) scene.removeShape(cyl[i]);
-	}
-	
+
 //	private static void intersectionInPlane() {
 //		Circle c1 = new Circle(new Point(0,0,0), 0.5, new Vector(0,0,1));
 //		Circle c2 = new Circle(new Point(-0.1,0.3,0), 0.6, new Vector(0, 0, 1));
@@ -425,23 +356,6 @@ public class Circle implements Shape{
 //	}
 	
 	
-	@SuppressWarnings("unused")
-	private static void intersectionsInSpace() {
-		Circle c1 = new Circle(new Point(1,1,0), 0.5, new Vector(0,0,1));
-		Circle c2 = new Circle(new Point(-0.1,-0.3,-0.4), 0.6, new Vector(1,0-5,0.5));
-		J3DScene scene = J3DScene.createJ3DSceneInFrame();
-		scene.autoZoom();
-		c1.toScene(scene, 0.005, Color.blue);
-		c2.toScene(scene, 0.005, Color.red);
-		Plane pl1 = c1.getPlane();
-		Plane pl2 = c2.getPlane();
-		pl1.toScene(scene, new Color(0,0,0,10), 2);
-		pl2.toScene(scene, new Color(0,0,0,10), 2);
-		Line ln = pl1.getIntersection(pl2);
-		ln.toScene(scene, 0.005, Color.black);
-		new LineSegment(c1.center, c2.center).toScene(scene, 0.002, Color.black);
-
-	}
 	
 	public static LineSegment getFurthestDistance_centers(Circle c1, Circle c2) {
 		Vector v = c1.center.vectorTo(c2.center);
@@ -527,22 +441,6 @@ public class Circle implements Shape{
 	}
 	
 	
-	public static void main(String[] args) {
-	
-		Point p = new Point (4, 1, 4);
-		J3DScene scene = J3DScene.createJ3DSceneInFrame();
-		p.toScene(scene,0.03,Color.black);
-		Circle c = new Circle(new Point(0, 2, 0), 1, new Vector(1,3,1).normalize());
-		c.toScene(scene, 0.02, Color.red);
-		Circle cb = new Circle(new Point(3, 2, 1), 1, new Vector(2, 1, 3).normalize());
-		cb.toScene(scene, 0.02, Color.blue);
-		c.getClosestDistance(cb);
-
-/*		Point q = c.getFarthestPoint(p);
-		q.toScene(scene,0.03,Color.blue);
-		LineSegment s = new LineSegment(p,q);
-		s.toScene(scene, 0.01, Color.blue);
-*/	}
 
 }
 

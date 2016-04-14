@@ -348,7 +348,7 @@ public class Polynomial {
 	
 
 	/* 
-	 * TODO: Pawel siger .. m�ske ikke f�rdig 
+	 * TODO: Pawel siger .. m___ske ikke f___rdig 
 	 */
 	private static double[] solveQuadric(double p2, double p1, double p0) {
 		double b = p1/p2;

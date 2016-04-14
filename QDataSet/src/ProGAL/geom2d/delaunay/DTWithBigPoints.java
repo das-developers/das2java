@@ -6,7 +6,6 @@ import java.util.List;
 
 import ProGAL.geom2d.LineSegment;
 import ProGAL.geom2d.Point;
-import ProGAL.geom2d.viewer.J2DScene;
 import ProGAL.geom3d.predicates.ExactJavaPredicates;
 import ProGAL.math.Randomization;
 
@@ -32,7 +31,7 @@ public class DTWithBigPoints {
 		for(Point p: points) 
 			addPoint(p);
 	}
-
+        
 	public List<Triangle> getTriangles(){ return new ArrayList<Triangle>(triangles); }
 	public List<int[]> getEdges(){
 		ArrayList<int[]> ret = new ArrayList<int[]>();
@@ -52,8 +51,11 @@ public class DTWithBigPoints {
 		}
 		return ret;
 	}
-	
 	public Triangle walk(Point p){
+            return walk(p,null);
+        }	
+        
+	public Triangle walk(Point p, List<Point> trace ){
 		Triangle t = triangles.get(triangles.size()-1);
 		while(true){
 			double a1 = Point.area(t.corners[0], t.corners[1], p); orientPredCounter++;
@@ -69,6 +71,10 @@ public class DTWithBigPoints {
 				}else break;
 			}
 			
+                        if ( t==null ) throw new IllegalArgumentException("Point is outside of the big triangulation");
+                        Point c= t.getCenter();
+                        if ( trace!=null ) trace.add( c );
+                        
 			//This is the straightforward way. The above is faster. 
 			//if(Point.rightTurn(t.corners[0], t.corners[1], p)) t = t.neighbors[2];
 			//else if(Point.rightTurn(t.corners[1], t.corners[2], p)) t = t.neighbors[0];
@@ -77,8 +83,19 @@ public class DTWithBigPoints {
 		}
 		return t;
 	}
+        
+        /**
+         * add the point to the tesselation.  If the point is already a vertex, 
+         * then use the point, otherwise a copy is made.
+         * @param point 
+         */
 	public void addPoint(Point point){
-		Vertex p = new Vertex(point);
+            Vertex p;
+            if ( point instanceof Vertex ) {
+                p = (Vertex) point;
+            } else {
+		p = new Vertex(point);
+            }
 		vertices.add((Vertex)p);
 		Triangle t = walk(p);
 
@@ -169,30 +186,6 @@ public class DTWithBigPoints {
 	}
 
 	public static int flipCounter = 0, predCounter = 0, orientPredCounter = 0;
-
-	public static void main(String[] args){
-		Randomization.seed(2);
-		List<Point> points = new ArrayList<Point>();
-		for(int i=0;i<1000;i++)
-			points.add(new Point(Randomization.randBetween(-1.0, 1.0), Randomization.randBetween(-1.0, 1.0)));
-		long start = System.nanoTime();
-		DTWithBigPoints dt = new DTWithBigPoints(points);
-		long end = System.nanoTime();
-		System.out.printf("Took %.2fms. Used %d flips, %d predicates, %d orients\n", (end-start)/1000000.0, flipCounter, predCounter,  orientPredCounter);
-
-		J2DScene scene = J2DScene.createJ2DSceneInFrame();
-		scene.addShape(new LineSegment(new Point(0,0), new Point(0,1)), Color.black);
-		scene.addShape(new LineSegment(new Point(0,0), new Point(1,0)), Color.black);
-		//		for(Point p: points) {
-		//			scene.addShape(new Circle(p,0.03), Color.BLACK);
-		//			scene.addShape(new TextShape(points.indexOf(p)+"", p, 0.3), Color.BLACK);
-		//		}
-		for(Triangle t: dt.triangles){
-			boolean fill = dt.onCH(t);
-			scene.addShape(t, Color.GRAY, 0.0001, fill);
-		}
-		scene.autoZoom();
-	}
 
 
 }

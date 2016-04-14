@@ -240,249 +240,249 @@ public class Torus  {
 		return intersections;
 	}
 	
-	public void toScene(J3DScene scene, Color clr, int vStep, int uStep) {
-		Point p = new Point(0,0,0);
-		Vector n = new Vector(0,0,1);
-		double vAngle = 2*Math.PI/vStep;
-		double uAngle = 2*Math.PI/uStep;
-		double rcos;
-		for (int v = 0; v < vStep; v++) {
-			rcos = r*Math.cos(v*vAngle);
-			p.setZ(r*Math.sin(v*vAngle));
-			Circle c = new Circle(p, R+rcos, n);
-			c.toScene(scene, 0.002, 32, clr);
-		}
-		p.setX(R);
-		p.setY(0);
-		p.setZ(0);
-		Vector m = new Vector(0,1,0);
-		for (int u = 0; u < uStep; u++) {
-			p.rotation(n, uAngle, new Point(0,0,0));//TODO: Origo tilf�jet. Check om korrekt
-			m.rotation(n, uAngle);
-			Circle c = new Circle(p,r,m);
-			c.toScene(scene,  0.002, 32, clr);
-		}
-	}
-	
-	public void toScene(J3DScene scene, Color clr) {
-		int iMax = 50;
-		double delta = 2*Math.PI/iMax;
-		
-		Vector v = normal.getOrthonormal();
-		Point p = center.add(v.scaleToLength(R));
-		for (int i = 0; i < iMax; i++) {
-
-			new Circle(p, r, v.cross(normal)).toScene(scene, 0.01, 16, clr);
-//			new Sphere(p, r).toScene(scene, clr);
-//			new Circle(p, r, v.cross(normal)).toScene(scene, 0.01, 32);
-			p.rotation(normal, delta, center);
-		}
-				
-	}
-	
-	public void toSceneSkeleton(J3DScene scene, Color clr, int vStep, int uStep) {
-		Point p = new Point(0,0,0);
-		double vAngle = 2*Math.PI/vStep;
-		double uAngle = 2*Math.PI/uStep;
-		double rcos;
-		for (int v = 0; v < vStep; v++) {
-			for (int u = 0; u < uStep; u++) {
-				rcos = r*Math.cos(v*vAngle);
-				p.setX((R + rcos)*Math.cos(u*uAngle));
-				p.setY((R + rcos)*Math.sin(u*uAngle));
-				p.setZ(r*Math.sin(v*vAngle));
-				p.toScene(scene, 0.02, clr);
-			}
-		}
-	}
-
-	
-	public static void main(String[] args) {
-		
-		System.out.print(new Vector(1,1,0).dot(new Vector(1,1,0)));
-		J3DScene scene = J3DScene.createJ3DSceneInFrame();
-		Point Tcenter = new Point(0, 0, 0);
-		Vector Tnormal = new Vector(0,0,1).normalize();
-//		Vector CNormal = new Vector(0, 1, 1).normalize();
-		double TR = 0.5;
-		double Tr = 0.3;
-		Torus T = new Torus(Tcenter, Tnormal, TR, Tr);
-//		Point CCenter = new Point(1, 0.2, 0);
-//		double CRadius = 0.5;
-//		Circle Circle = new Circle(CCenter, CRadius, CNormal);
-		double alphaVal = 0.7;
-		Point A = new Point(-0.07125192717748097, -0.35838495022033634, -0.21524016943473911);
-		Point B = new Point(-0.5587823647379834, -0.4774072677661424, -0.8968986134203439);
-//		Point A = new Point(1,0,0);
-//		Point B = new Point(0.5, 0.5,0);
-		Plane biP = Point.getBisector(A, B);
-		Point torusCenter = biP.projectPoint(A);
-		//Find major radius using pythagoras:
-		double R = Math.pow(Math.abs(alphaVal*alphaVal-A.distanceSquared(torusCenter)), 0.5);
-		
-		//Torus
-		Vector torusNormal = A.vectorTo(torusCenter).normalize();
-		Circle Tcircle = new Circle(torusCenter, R, torusNormal);
-		Torus torus = new Torus(torusCenter, torusNormal, R, alphaVal);
-		//Circle1
-		Circle circle = new Circle(new Point(0.00,0.00,-0.7455782353977968), 0.668358614580686, new Vector(0, 0, 1).normalize());
-//		Circle circle = new Circle(new Point(0.50,-0.75,-0.01), 1.0, new Vector(0, 0, 1).normalize());
-		
-		
-		Point C = new Point(-0.07125192717748097, -0.35838495022033634, -0.21524016943473911);
-		Point D = new Point(-0.5587823647379834, -0.4774072677661424, -0.8968986134203439);
-//		Point A = new Point(1,0,0);
-//		Point B = new Point(0.5, 0.5,0);
-		Plane biP2 = Point.getBisector(C, D);
-		Point torusCenter2 = biP2.projectPoint(C);
-		//Find major radius using pythagoras:
-		double R2 = Math.pow(Math.abs(alphaVal*alphaVal-C.distanceSquared(torusCenter2)), 0.5);
-		
-		//Torus
-		Vector torusNormal2 = C.vectorTo(torusCenter2).normalize();
-		Circle Tcircle2 = new Circle(torusCenter2, R2, torusNormal2);
-		Torus torus2 = new Torus(torusCenter2, torusNormal2, R2, alphaVal);
-		//Circle1
-		Circle circle2 = new Circle(new Point(0.00,0.00,-0.7455782353977968), 0.668358614580686, new Vector(0, 0, 1).normalize());
-		
-
-		Color transBlue = new Color(0, 0, 255, 2);
-		circle.toScene(scene, 0.01, Color.blue);
-		circle2.toScene(scene, 0.01, Color.BLACK);
-		torus.toScene(scene, transBlue);
-/*		Point center = new Point(0, 3, 1);
-		Vector normal = new Vector(0, 1, 0);
-		Vector circleNormal = new Vector(0, 0, 1).normalize();
-		double R = 0.5;
-		double r = 0.2;
-		Torus torus = new Torus(center, normal, R, r);
-
-	//	Point p = new Point(0.45, -0.30, 0.01);
-	//	if (torus.contains(p)) System.out.println("inside"); else System.out.println("outside");
-		torus.toScene(scene, Color.blue, 36, 72);
-//TODO Put in test class
-//		Point circleCenter = new Point(0, 3, 1.2);
-//		double circleRadius = 0.5;
-//		Circle C = new Circle(circleCenter, circleRadius, circleNormal);
-//		Vector e3 = new Vector(0,0,1);
-//		Vector rotAxis = normal.cross(e3);
-//		double angle = normal.angle(e3);
-//		Matrix rotMatrix = Matrix.createRotationMatrix(angle, rotAxis);
-//		System.out.println("Rotation matrix = "+rotMatrix.toString());
-//		Vector translate = new Vector(-center.x(),-center.y(),-center.z());
-//		Vector newTorusNormal = rotMatrix.multiply(normal);
-//		System.out.println("Torus normal = "+newTorusNormal.normalize().toString(6));
-//		Vector newCircleNormal = rotMatrix.multiply(circleNormal);
-//		Point newCircleCenter = rotMatrix.multiply(circleCenter.add(translate));
-//		Torus transTorus = new Torus(center.add(translate), newTorusNormal.normalize(), R, r);
-//		Circle transCircle = new Circle(newCircleCenter, circleRadius, newCircleNormal.normalize());
-//		System.out.println("new torus : "+transTorus.center.toString()+" "+transTorus.normal.toString());
-//		System.out.println("new circle :"+transCircle.toString());
+//	public void toScene(J3DScene scene, Color clr, int vStep, int uStep) {
+//		Point p = new Point(0,0,0);
+//		Vector n = new Vector(0,0,1);
+//		double vAngle = 2*Math.PI/vStep;
+//		double uAngle = 2*Math.PI/uStep;
+//		double rcos;
+//		for (int v = 0; v < vStep; v++) {
+//			rcos = r*Math.cos(v*vAngle);
+//			p.setZ(r*Math.sin(v*vAngle));
+//			Circle c = new Circle(p, R+rcos, n);
+//			c.toScene(scene, 0.002, 32, clr);
+//		}
+//		p.setX(R);
+//		p.setY(0);
+//		p.setZ(0);
+//		Vector m = new Vector(0,1,0);
+//		for (int u = 0; u < uStep; u++) {
+//			p.rotation(n, uAngle, new Point(0,0,0));//TODO: Origo tilf___jet. Check om korrekt
+//			m.rotation(n, uAngle);
+//			Circle c = new Circle(p,r,m);
+//			c.toScene(scene,  0.002, 32, clr);
+//		}
+//	}
+//	
+//	public void toScene(J3DScene scene, Color clr) {
+//		int iMax = 50;
+//		double delta = 2*Math.PI/iMax;
 //		
-//		System.out.println("TransTorus center = "+transTorus.center);
-//		System.out.println("T center          = "+T.center);
-//		System.out.println("TransTorus normal = "+transTorus.normal);
-//		System.out.println("T normal          = "+T.normal);
-//		System.out.println("TransCircle center = "+transCircle.getCenter());
-//		System.out.println("Circle center          = "+Circle.getCenter());
-//		System.out.println("TransCircle normal = "+transCircle.getNormal());
-//		System.out.println("Circle normal          = "+Circle.getNormal());*/
-//		
-//		Point[] intersections = torus.getIntersectionCircle(circle);
-//		double error = 0;
-//		if (intersections==null) {
-//			System.out.println("No intersections!");
-//		} else {
-//			for (Point intersect : intersections) {
-//				if (intersect == null) continue;
-////				System.out.println("Intersectionns at : "+intersect);
-//				intersect.toScene(scene, 0.02, java.awt.Color.ORANGE);
-//				double radius = (new Tri(new Vertex(A), new Vertex(B), new Vertex(intersect))).getCircumRadius();
-//				System.out.println("Distance from intersection point to TCircle = "+radius);
-//				error += alphaVal-radius;
+//		Vector v = normal.getOrthonormal();
+//		Point p = center.add(v.scaleToLength(R));
+//		for (int i = 0; i < iMax; i++) {
+//
+//			new Circle(p, r, v.cross(normal)).toScene(scene, 0.01, 16, clr);
+////			new Sphere(p, r).toScene(scene, clr);
+////			new Circle(p, r, v.cross(normal)).toScene(scene, 0.01, 32);
+//			p.rotation(normal, delta, center);
+//		}
+//				
+//	}
+//	
+//	public void toSceneSkeleton(J3DScene scene, Color clr, int vStep, int uStep) {
+//		Point p = new Point(0,0,0);
+//		double vAngle = 2*Math.PI/vStep;
+//		double uAngle = 2*Math.PI/uStep;
+//		double rcos;
+//		for (int v = 0; v < vStep; v++) {
+//			for (int u = 0; u < uStep; u++) {
+//				rcos = r*Math.cos(v*vAngle);
+//				p.setX((R + rcos)*Math.cos(u*uAngle));
+//				p.setY((R + rcos)*Math.sin(u*uAngle));
+//				p.setZ(r*Math.sin(v*vAngle));
+//				p.toScene(scene, 0.02, clr);
 //			}
 //		}
-//		System.out.println("Average error = "+(Math.abs(error)/4));
-//		intersections = torus2.getIntersectionCircle(circle2);
-//		error = 0;
-//		if (intersections==null) {
-//			System.out.println("No intersections2!");
-//		} else {
-//			for (Point intersect : intersections) {
-//				if (intersect == null) continue;
-////				System.out.println("Intersectionns at : "+intersect);
-//				intersect.toScene(scene, 0.02, java.awt.Color.GREEN);
-//				double radius = (new Tri(new Vertex(C), new Vertex(D), new Vertex(intersect))).getCircumRadius();
-//				System.out.println("Distance from intersection point to TCircle2 = "+radius);
-//				error += alphaVal-radius;
-//			}
-//		}
-//		System.out.println("Average error2 = "+(Math.abs(error)/4));
-///*		double[] pars0 = new double[]{-200.99, 1};
-//		Polynomial tmp = new Polynomial(pars0);
-//		Polynomial poly0 = tmp.times(tmp);
-//		System.out.println("1. poly = "+poly0.toString());
-//		double[] roots0 = poly0.solveSecondDegree();
-//		double[] pars1 = new double[]{0.980295, 1.9802, 1};
-//		Polynomial poly1 = new Polynomial(pars1);
-//		System.out.println("2. poly = "+poly1.toString());
-//		double[] roots1 = poly1.solveSecondDegree();*/
-///*		double[] roots = {-0.65465, 0.65465, -1.5275, 1.5275};
-//		int j = 0;
-//		Point[] ps = new Point[4];
-//		Point[] psTrans = new Point[4];
-//		Color[] colors = {java.awt.Color.GREEN, java.awt.Color.RED, java.awt.Color.YELLOW, java.awt.Color.GRAY};
-//		for (int k = 0 ; k<roots.length ; k++) {
-//			double root = roots[k];
-//			double[] parameters = new double[4];
-//			parameters[0] = (newCircleCenter.x()-circleRadius*0)*root*root+2*circleRadius*(1)*root+newCircleCenter.x()+circleRadius*0;
-//			System.out.println("parameters0 = "+parameters[0]);
-//			parameters[1] = (newCircleCenter.y()-circleRadius*-0)*root*root+2*circleRadius*0*root+newCircleCenter.y()+circleRadius*-0;
-//			System.out.println("parameters1 = "+parameters[1]);
-//			parameters[2] = (newCircleCenter.z()-circleRadius*-1)*root*root+2*circleRadius*(0)*root+newCircleCenter.z()+circleRadius*-1;
-//			System.out.println("parameters2 = "+parameters[2]);
-//			parameters[3] = root*root+1;
-//			System.out.println("parameters3 = "+parameters[3]);
-//			ps[j] = new Point((parameters[0]/parameters[3]), (parameters[1]/parameters[3]), (parameters[2]/parameters[3]));
-//			psTrans[j] = new Point(rotMatrix.invert().multiply(ps[j]).subtract(translate));
-//			scene.addShape(new Sphere(psTrans[j], 0.01), colors[j]);
-//			
-//			System.out.println("Intersection point = "+psTrans[j]);
-//			j += 1;
-//		}*/
-///*		Point test1 = new Point(circleCenter.x()+(-0.41), circleCenter.y()+0.28618176042508375, 0.0);
-//		Point test2 = new Point(circleCenter.x()+(-0.41), circleCenter.y()+(-0.28618176042508375), 0.0);
+//	}
+
+	
+//	public static void main(String[] args) {
 //		
-//		Point test3 = new Point(circleCenter.x()+(-0.01), circleCenter.y()+(0.4998999899979995), 0.0);
-//		Point test4 = new Point(circleCenter.x()+(-0.01), circleCenter.y()+(-0.4998999899979995), 0.0);
-//*/	
-///*		Point test1 = new Point(circleCenter.x()+(-0.48987), circleCenter.y()+0.10013, circleCenter.z());
-//		Point test2 = new Point(circleCenter.x()+(-0.10013), circleCenter.y()+(0.48987), circleCenter.z());
-//		Point test3 = new Point(circleCenter.x()+(-0.20311), circleCenter.y()+(-0.45688765347730725), 0.0);
-//		Point test4 = new Point(circleCenter.x()+(-0.45689), circleCenter.y()+(-0.2031047215108501), 0.0);
-//		Point[] orgTest = {test1, test2, test3, test4};
-//		for (int i = 0 ; i<4 ; i++) {
-//			System.out.println("Org. intersecction at : "+orgTest[i]);
-//		}
-//		test1.toScene(scene, 0.01, java.awt.Color.YELLOW);
-//		test2.toScene(scene, 0.01, java.awt.Color.YELLOW);
-//		test3.toScene(scene, 0.01, java.awt.Color.YELLOW);
-//		test4.toScene(scene, 0.01, java.awt.Color.YELLOW);*/
-///*		j = 0;
-//		for (int k = 0 ; k<roots1.length ; k++) {
-////			if (roots0[k]==null) continue;
-//			double root = roots1[k];
-//			double[] parameters = new double[4];
-//			parameters[0] = (0.5-0.5*1)*root*root+2*0.5*0*root+0.5+0.5*1;
-//			parameters[1] = (0.5-0.5*0)*root*root+2*0.5*0*root+0.5+0.5*0;
-//			parameters[2] = (0-0.5*0)*root*root+2*0.5*0*root+0+0.5*0;
-//			parameters[3] = root*root+1;
-//			ps[j] = new Point(parameters[0]/parameters[3], parameters[1]/parameters[3], parameters[2]/parameters[3]);
-////			scene.addShape(new Sphere(ps[j], 0.06), java.awt.Color.GREEN);
-//			
-//			System.out.println("Intersection point = "+ps[j]);
-//			j += 1;
-//		}*/
-	}
+//		System.out.print(new Vector(1,1,0).dot(new Vector(1,1,0)));
+//		J3DScene scene = J3DScene.createJ3DSceneInFrame();
+//		Point Tcenter = new Point(0, 0, 0);
+//		Vector Tnormal = new Vector(0,0,1).normalize();
+////		Vector CNormal = new Vector(0, 1, 1).normalize();
+//		double TR = 0.5;
+//		double Tr = 0.3;
+//		Torus T = new Torus(Tcenter, Tnormal, TR, Tr);
+////		Point CCenter = new Point(1, 0.2, 0);
+////		double CRadius = 0.5;
+////		Circle Circle = new Circle(CCenter, CRadius, CNormal);
+//		double alphaVal = 0.7;
+//		Point A = new Point(-0.07125192717748097, -0.35838495022033634, -0.21524016943473911);
+//		Point B = new Point(-0.5587823647379834, -0.4774072677661424, -0.8968986134203439);
+////		Point A = new Point(1,0,0);
+////		Point B = new Point(0.5, 0.5,0);
+//		Plane biP = Point.getBisector(A, B);
+//		Point torusCenter = biP.projectPoint(A);
+//		//Find major radius using pythagoras:
+//		double R = Math.pow(Math.abs(alphaVal*alphaVal-A.distanceSquared(torusCenter)), 0.5);
+//		
+//		//Torus
+//		Vector torusNormal = A.vectorTo(torusCenter).normalize();
+//		Circle Tcircle = new Circle(torusCenter, R, torusNormal);
+//		Torus torus = new Torus(torusCenter, torusNormal, R, alphaVal);
+//		//Circle1
+//		Circle circle = new Circle(new Point(0.00,0.00,-0.7455782353977968), 0.668358614580686, new Vector(0, 0, 1).normalize());
+////		Circle circle = new Circle(new Point(0.50,-0.75,-0.01), 1.0, new Vector(0, 0, 1).normalize());
+//		
+//		
+//		Point C = new Point(-0.07125192717748097, -0.35838495022033634, -0.21524016943473911);
+//		Point D = new Point(-0.5587823647379834, -0.4774072677661424, -0.8968986134203439);
+////		Point A = new Point(1,0,0);
+////		Point B = new Point(0.5, 0.5,0);
+//		Plane biP2 = Point.getBisector(C, D);
+//		Point torusCenter2 = biP2.projectPoint(C);
+//		//Find major radius using pythagoras:
+//		double R2 = Math.pow(Math.abs(alphaVal*alphaVal-C.distanceSquared(torusCenter2)), 0.5);
+//		
+//		//Torus
+//		Vector torusNormal2 = C.vectorTo(torusCenter2).normalize();
+//		Circle Tcircle2 = new Circle(torusCenter2, R2, torusNormal2);
+//		Torus torus2 = new Torus(torusCenter2, torusNormal2, R2, alphaVal);
+//		//Circle1
+//		Circle circle2 = new Circle(new Point(0.00,0.00,-0.7455782353977968), 0.668358614580686, new Vector(0, 0, 1).normalize());
+//		
+//
+//		Color transBlue = new Color(0, 0, 255, 2);
+//		circle.toScene(scene, 0.01, Color.blue);
+//		circle2.toScene(scene, 0.01, Color.BLACK);
+//		torus.toScene(scene, transBlue);
+///*		Point center = new Point(0, 3, 1);
+//		Vector normal = new Vector(0, 1, 0);
+//		Vector circleNormal = new Vector(0, 0, 1).normalize();
+//		double R = 0.5;
+//		double r = 0.2;
+//		Torus torus = new Torus(center, normal, R, r);
+//
+//	//	Point p = new Point(0.45, -0.30, 0.01);
+//	//	if (torus.contains(p)) System.out.println("inside"); else System.out.println("outside");
+//		torus.toScene(scene, Color.blue, 36, 72);
+////TODO Put in test class
+////		Point circleCenter = new Point(0, 3, 1.2);
+////		double circleRadius = 0.5;
+////		Circle C = new Circle(circleCenter, circleRadius, circleNormal);
+////		Vector e3 = new Vector(0,0,1);
+////		Vector rotAxis = normal.cross(e3);
+////		double angle = normal.angle(e3);
+////		Matrix rotMatrix = Matrix.createRotationMatrix(angle, rotAxis);
+////		System.out.println("Rotation matrix = "+rotMatrix.toString());
+////		Vector translate = new Vector(-center.x(),-center.y(),-center.z());
+////		Vector newTorusNormal = rotMatrix.multiply(normal);
+////		System.out.println("Torus normal = "+newTorusNormal.normalize().toString(6));
+////		Vector newCircleNormal = rotMatrix.multiply(circleNormal);
+////		Point newCircleCenter = rotMatrix.multiply(circleCenter.add(translate));
+////		Torus transTorus = new Torus(center.add(translate), newTorusNormal.normalize(), R, r);
+////		Circle transCircle = new Circle(newCircleCenter, circleRadius, newCircleNormal.normalize());
+////		System.out.println("new torus : "+transTorus.center.toString()+" "+transTorus.normal.toString());
+////		System.out.println("new circle :"+transCircle.toString());
+////		
+////		System.out.println("TransTorus center = "+transTorus.center);
+////		System.out.println("T center          = "+T.center);
+////		System.out.println("TransTorus normal = "+transTorus.normal);
+////		System.out.println("T normal          = "+T.normal);
+////		System.out.println("TransCircle center = "+transCircle.getCenter());
+////		System.out.println("Circle center          = "+Circle.getCenter());
+////		System.out.println("TransCircle normal = "+transCircle.getNormal());
+////		System.out.println("Circle normal          = "+Circle.getNormal());*/
+////		
+////		Point[] intersections = torus.getIntersectionCircle(circle);
+////		double error = 0;
+////		if (intersections==null) {
+////			System.out.println("No intersections!");
+////		} else {
+////			for (Point intersect : intersections) {
+////				if (intersect == null) continue;
+//////				System.out.println("Intersectionns at : "+intersect);
+////				intersect.toScene(scene, 0.02, java.awt.Color.ORANGE);
+////				double radius = (new Tri(new Vertex(A), new Vertex(B), new Vertex(intersect))).getCircumRadius();
+////				System.out.println("Distance from intersection point to TCircle = "+radius);
+////				error += alphaVal-radius;
+////			}
+////		}
+////		System.out.println("Average error = "+(Math.abs(error)/4));
+////		intersections = torus2.getIntersectionCircle(circle2);
+////		error = 0;
+////		if (intersections==null) {
+////			System.out.println("No intersections2!");
+////		} else {
+////			for (Point intersect : intersections) {
+////				if (intersect == null) continue;
+//////				System.out.println("Intersectionns at : "+intersect);
+////				intersect.toScene(scene, 0.02, java.awt.Color.GREEN);
+////				double radius = (new Tri(new Vertex(C), new Vertex(D), new Vertex(intersect))).getCircumRadius();
+////				System.out.println("Distance from intersection point to TCircle2 = "+radius);
+////				error += alphaVal-radius;
+////			}
+////		}
+////		System.out.println("Average error2 = "+(Math.abs(error)/4));
+/////*		double[] pars0 = new double[]{-200.99, 1};
+////		Polynomial tmp = new Polynomial(pars0);
+////		Polynomial poly0 = tmp.times(tmp);
+////		System.out.println("1. poly = "+poly0.toString());
+////		double[] roots0 = poly0.solveSecondDegree();
+////		double[] pars1 = new double[]{0.980295, 1.9802, 1};
+////		Polynomial poly1 = new Polynomial(pars1);
+////		System.out.println("2. poly = "+poly1.toString());
+////		double[] roots1 = poly1.solveSecondDegree();*/
+/////*		double[] roots = {-0.65465, 0.65465, -1.5275, 1.5275};
+////		int j = 0;
+////		Point[] ps = new Point[4];
+////		Point[] psTrans = new Point[4];
+////		Color[] colors = {java.awt.Color.GREEN, java.awt.Color.RED, java.awt.Color.YELLOW, java.awt.Color.GRAY};
+////		for (int k = 0 ; k<roots.length ; k++) {
+////			double root = roots[k];
+////			double[] parameters = new double[4];
+////			parameters[0] = (newCircleCenter.x()-circleRadius*0)*root*root+2*circleRadius*(1)*root+newCircleCenter.x()+circleRadius*0;
+////			System.out.println("parameters0 = "+parameters[0]);
+////			parameters[1] = (newCircleCenter.y()-circleRadius*-0)*root*root+2*circleRadius*0*root+newCircleCenter.y()+circleRadius*-0;
+////			System.out.println("parameters1 = "+parameters[1]);
+////			parameters[2] = (newCircleCenter.z()-circleRadius*-1)*root*root+2*circleRadius*(0)*root+newCircleCenter.z()+circleRadius*-1;
+////			System.out.println("parameters2 = "+parameters[2]);
+////			parameters[3] = root*root+1;
+////			System.out.println("parameters3 = "+parameters[3]);
+////			ps[j] = new Point((parameters[0]/parameters[3]), (parameters[1]/parameters[3]), (parameters[2]/parameters[3]));
+////			psTrans[j] = new Point(rotMatrix.invert().multiply(ps[j]).subtract(translate));
+////			scene.addShape(new Sphere(psTrans[j], 0.01), colors[j]);
+////			
+////			System.out.println("Intersection point = "+psTrans[j]);
+////			j += 1;
+////		}*/
+/////*		Point test1 = new Point(circleCenter.x()+(-0.41), circleCenter.y()+0.28618176042508375, 0.0);
+////		Point test2 = new Point(circleCenter.x()+(-0.41), circleCenter.y()+(-0.28618176042508375), 0.0);
+////		
+////		Point test3 = new Point(circleCenter.x()+(-0.01), circleCenter.y()+(0.4998999899979995), 0.0);
+////		Point test4 = new Point(circleCenter.x()+(-0.01), circleCenter.y()+(-0.4998999899979995), 0.0);
+////*/	
+/////*		Point test1 = new Point(circleCenter.x()+(-0.48987), circleCenter.y()+0.10013, circleCenter.z());
+////		Point test2 = new Point(circleCenter.x()+(-0.10013), circleCenter.y()+(0.48987), circleCenter.z());
+////		Point test3 = new Point(circleCenter.x()+(-0.20311), circleCenter.y()+(-0.45688765347730725), 0.0);
+////		Point test4 = new Point(circleCenter.x()+(-0.45689), circleCenter.y()+(-0.2031047215108501), 0.0);
+////		Point[] orgTest = {test1, test2, test3, test4};
+////		for (int i = 0 ; i<4 ; i++) {
+////			System.out.println("Org. intersecction at : "+orgTest[i]);
+////		}
+////		test1.toScene(scene, 0.01, java.awt.Color.YELLOW);
+////		test2.toScene(scene, 0.01, java.awt.Color.YELLOW);
+////		test3.toScene(scene, 0.01, java.awt.Color.YELLOW);
+////		test4.toScene(scene, 0.01, java.awt.Color.YELLOW);*/
+/////*		j = 0;
+////		for (int k = 0 ; k<roots1.length ; k++) {
+//////			if (roots0[k]==null) continue;
+////			double root = roots1[k];
+////			double[] parameters = new double[4];
+////			parameters[0] = (0.5-0.5*1)*root*root+2*0.5*0*root+0.5+0.5*1;
+////			parameters[1] = (0.5-0.5*0)*root*root+2*0.5*0*root+0.5+0.5*0;
+////			parameters[2] = (0-0.5*0)*root*root+2*0.5*0*root+0+0.5*0;
+////			parameters[3] = root*root+1;
+////			ps[j] = new Point(parameters[0]/parameters[3], parameters[1]/parameters[3], parameters[2]/parameters[3]);
+//////			scene.addShape(new Sphere(ps[j], 0.06), java.awt.Color.GREEN);
+////			
+////			System.out.println("Intersection point = "+ps[j]);
+////			j += 1;
+////		}*/
+//	}
 
 }

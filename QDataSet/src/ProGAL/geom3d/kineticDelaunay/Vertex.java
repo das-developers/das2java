@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Stack;
 
 import ProGAL.geom3d.Point;
-import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 import ProGAL.geom3d.volumes.Sphere;
 
 public class Vertex extends Point implements Comparable<Vertex>{
@@ -118,50 +118,50 @@ public class Vertex extends Point implements Comparable<Vertex>{
     	}
     }
 
-    public ArrayList<Vertex> computeAdjVertices(J3DScene scene) {
-    	ArrayList<Vertex> adjList = new ArrayList<Vertex>();
-    	flag = true;
-    	tet.flag = true;
-    	for (int i = 0; i < 4; i++) {
-    		Vertex v = tet.corners[i];
-    		if (v != this) {
-    			if (!v.isBig() && !v.flag) {
-    				adjList.add(v);
-    				v.flag = true;
-    			}
-    			Tet toTet = tet.neighbors[i];
-    			if (!toTet.flag) computeAdjVertices(toTet, tet.getOppVertex(toTet), adjList, scene);
-    		}
-    		else {
-    			if (scene != null) tet.toSceneEdges(scene, Color.black, 0.01);
-    			if (scene != null) tet.toSceneFace(scene, i, Color.yellow);
-    		}
-    	}
-    	return adjList;
-    }
+//    public ArrayList<Vertex> computeAdjVertices(J3DScene scene) {
+//    	ArrayList<Vertex> adjList = new ArrayList<Vertex>();
+//    	flag = true;
+//    	tet.flag = true;
+//    	for (int i = 0; i < 4; i++) {
+//    		Vertex v = tet.corners[i];
+//    		if (v != this) {
+//    			if (!v.isBig() && !v.flag) {
+//    				adjList.add(v);
+//    				v.flag = true;
+//    			}
+//    			Tet toTet = tet.neighbors[i];
+//    			if (!toTet.flag) computeAdjVertices(toTet, tet.getOppVertex(toTet), adjList, scene);
+//    		}
+//    		else {
+//    			if (scene != null) tet.toSceneEdges(scene, Color.black, 0.01);
+//    			if (scene != null) tet.toSceneFace(scene, i, Color.yellow);
+//    		}
+//    	}
+//    	return adjList;
+//    }
   
-    public void computeAdjVertices(Tet tet, Vertex v, ArrayList<Vertex> adjList, J3DScene scene) {
-    	tet.flag = true;
-    	if (!v.isBig() && !v.flag) {
-    		adjList.add(v);
-    		v.flag = true;
-    	}
-    	for (int i = 0; i < 4; i++) {
-    		Vertex u = tet.corners[i]; 
-    		if (u == this) {
-    			if (!tet.isBig() && (scene != null)) {
-    				tet.toSceneEdges(scene, Color.black, 0.01);
-    				tet.toSceneFace(scene, i, Color.yellow);
-    			}
-    		}
-    		else {
-    			if (u != v) {
-    				Tet nTet = tet.neighbors[i];
-    				if ((nTet != null) && !nTet.flag) computeAdjVertices(nTet, tet.getOppVertex(nTet), adjList, scene);
-    			}
-    		}
-    	}
-    }
+//    public void computeAdjVertices(Tet tet, Vertex v, ArrayList<Vertex> adjList, J3DScene scene) {
+//    	tet.flag = true;
+//    	if (!v.isBig() && !v.flag) {
+//    		adjList.add(v);
+//    		v.flag = true;
+//    	}
+//    	for (int i = 0; i < 4; i++) {
+//    		Vertex u = tet.corners[i]; 
+//    		if (u == this) {
+//    			if (!tet.isBig() && (scene != null)) {
+//    				tet.toSceneEdges(scene, Color.black, 0.01);
+//    				tet.toSceneFace(scene, i, Color.yellow);
+//    			}
+//    		}
+//    		else {
+//    			if (u != v) {
+//    				Tet nTet = tet.neighbors[i];
+//    				if ((nTet != null) && !nTet.flag) computeAdjVertices(nTet, tet.getOppVertex(nTet), adjList, scene);
+//    			}
+//    		}
+//    	}
+//    }
 
  /*   public ArrayList<Vertex> computeAdjVertices() {
     	ArrayList<Vertex> adjList = new ArrayList<Vertex>();
@@ -209,13 +209,13 @@ public class Vertex extends Point implements Comparable<Vertex>{
 		return index-arg0.index;
 	}
 	
-	public void toScene(J3DScene scene, Color clr, double size) {
-		scene.removeShape(sphere);
-		sphere = new Sphere(this, size);
-		scene.addShape(sphere, clr);
-		scene.repaint();
-	}
-	
+//	public void toScene(J3DScene scene, Color clr, double size) {
+//		scene.removeShape(sphere);
+//		sphere = new Sphere(this, size);
+//		scene.addShape(sphere, clr);
+//		scene.repaint();
+//	}
+//	
 	public String toString(){
 		return Integer.toString(index);
 	}

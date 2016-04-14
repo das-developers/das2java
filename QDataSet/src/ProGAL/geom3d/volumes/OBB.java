@@ -149,7 +149,7 @@ public class OBB implements Volume{
 		double[][] R = new double[3][3], AbsR = new double[3][3];
 		double[] ae = extents, be = b.extents;
 
-		// Compute rotation matrix expressing b in a�s coordinate frame
+		// Compute rotation matrix expressing b in a___s coordinate frame
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
 				R[i][j] = bases[i].dot(b.bases[j]);	
@@ -158,7 +158,7 @@ public class OBB implements Volume{
 		// Compute translation vector t
 		Vector tmp = this.anchor.vectorTo(b.anchor);
 
-		// Bring translation into a�s coordinate frame
+		// Bring translation into a___s coordinate frame
 		tmp = new Vector(tmp.dot(bases[0]), tmp.dot(bases[1]), tmp.dot(bases[2]));//9HOps
 		double[] t = new double[]{tmp.x(), tmp.y(), tmp.z()};
 

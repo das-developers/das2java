@@ -43,8 +43,8 @@ public class Cylinder implements Volume{
 		double nd = n.dot(d);
 		double dd = d.dot(d);
 		// Test if segment fully outside either endcap of cylinder
-		if (md < 0.0f && md + nd < 0.0f) return null; // Segment outside ÕpÕ side of cylinder 
-		if (md > dd && md + nd > dd) return null; // Segment outside ÕqÕ side of cylinder 
+		if (md < 0.0f && md + nd < 0.0f) return null; // Segment outside _p_ side of cylinder 
+		if (md > dd && md + nd > dd) return null; // Segment outside _q_ side of cylinder 
 		double nn = n.dot(n);
 		double mn = m.dot(n);
 		double a = dd*nn - nd*nd;
@@ -52,11 +52,11 @@ public class Cylinder implements Volume{
 		double c = dd * k - md * md;
 		if (Math.abs(a) < Constants.EPSILON) {
 			// Segment runs parallel to cylinder axis
-			if (c > 0.0f) return null; // ÕaÕ and thus the segment lie outside cylinder 
+			if (c > 0.0f) return null; // _a_ and thus the segment lie outside cylinder 
 			// Now known that segment intersects cylinder; figure out how it intersects 
-			if (md < 0.0f) t = -mn / nn; // Intersect segment against ÕpÕ endcap
-			else if (md > dd) t = (nd - mn) / nn; // Intersect segment against ÕqÕ endcap 
-			else t = 0.0f; // ÕaÕ lies inside cylinder
+			if (md < 0.0f) t = -mn / nn; // Intersect segment against _p_ endcap
+			else if (md > dd) t = (nd - mn) / nn; // Intersect segment against _q_ endcap 
+			else t = 0.0f; // _a_ lies inside cylinder
 
 			if(t>0) return t;
 			else return null;
@@ -68,13 +68,13 @@ public class Cylinder implements Volume{
 		t = (-b - Math.sqrt(discr)) / a;
 		double t0 = t = (-b - Math.sqrt(discr)) / a;
 	    if (md + t * nd < 0.0f) {
-	        // Intersection outside cylinder on ÔpÕ side
+	        // Intersection outside cylinder on _p_ side
 	        if (nd <= 0.0f) return null; // Segment pointing away from endcap
 	        t = -md / nd;
 	        // Keep intersection if Dot(S(t) - p, S(t) - p) <= r^2
 	        if (k + t * (2.0 * mn + t * nn) <= 0.0f) return t;
 	    } else if (md + t * nd > dd) {
-	        // Intersection outside cylinder on ÔqÕ side
+	        // Intersection outside cylinder on _q_ side
 	        if (nd >= 0.0f) return 0.0; // Segment pointing away from endcap
 	        t = (dd - md) / nd;
 	        // Keep intersection if Dot(S(t) - q, S(t) - q) <= r^2

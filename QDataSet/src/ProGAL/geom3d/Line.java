@@ -2,7 +2,7 @@ package ProGAL.geom3d;
 
 import java.awt.Color;
 
-import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 import ProGAL.geom3d.volumes.Cylinder;
 import ProGAL.math.Constants;
 
@@ -260,8 +260,8 @@ public class Line {
 		return String.format("Line3d[p:%s,dir:%s]", p.toString(dec), dir.toString(dec));
 	}
 	
-	public Cylinder toScene(J3DScene scene, double rad, Color clr) {
-		LineSegment seg = new LineSegment(this.p.add(dir.multiply(1000)), p.add(dir.multiply(-1000)));
-		return seg.toScene(scene, rad, clr);
-	}
+//	public Cylinder toScene(J3DScene scene, double rad, Color clr) {
+//		LineSegment seg = new LineSegment(this.p.add(dir.multiply(1000)), p.add(dir.multiply(-1000)));
+//		return seg.toScene(scene, rad, clr);
+//	}
 }

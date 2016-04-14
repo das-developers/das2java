@@ -7,7 +7,7 @@ import ProGAL.geom3d.Point;
 import ProGAL.geom3d.Simplex;
 import ProGAL.geom3d.Triangle;
 import ProGAL.geom3d.Vector;
-import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 
 /** 
  * A tetrahedron is a polyhedron with four triangular faces. It is defined using 
@@ -205,7 +205,7 @@ public class Tetrahedron implements Simplex, Volume {
 	}
 
 	/*
-	 * returns TRUE if the tetrahedron is acute. Tetrahedron is acute if all its dihedral angles are acute (< 90�)
+	 * returns TRUE if the tetrahedron is acute. Tetrahedron is acute if all its dihedral angles are acute (< 90___)
 	 * added by pawel 12-11-2011
 	 */
 
@@ -240,10 +240,10 @@ public class Tetrahedron implements Simplex, Volume {
 	/** Writes this tetrahedron to <code>System.out</code> with <code>dec</code> decimals precision. */
 	public void toConsole(int dec) { System.out.println(toString(dec)); }
 	
-	public void toScene(J3DScene scene) {
-		for (int i = 0; i < 4; i++)
-			for (int j = i+1; j < 4; j++) scene.addShape(new LSS(corners[i], corners[j], 0.01), Color.BLUE, 3);	
-	}
+//	public void toScene(J3DScene scene) {
+//		for (int i = 0; i < 4; i++)
+//			for (int j = i+1; j < 4; j++) scene.addShape(new LSS(corners[i], corners[j], 0.01), Color.BLUE, 3);	
+//	}
 	
 	public static void main(String[] args) {
 		Point p1 = new Point(1,0,0);

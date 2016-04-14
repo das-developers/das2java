@@ -5,7 +5,7 @@ import java.awt.Color;
 import ProGAL.geom3d.LineSegment;
 import ProGAL.geom3d.Plane;
 import ProGAL.geom3d.Point;
-import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 import ProGAL.geom3d.complex.delaunayComplex.RegularComplex;
 import ProGAL.geom3d.kineticDelaunay.Tet;
 import ProGAL.geom3d.volumes.Tetrahedron;
@@ -219,21 +219,21 @@ public class CTetrahedron extends Tetrahedron{
 
 	}
 	
-	public void toScene(J3DScene scene, double rad, Color clr) {
-		double newRad = rad;
-		Color newClr = clr;
-//		if (containsBigPoint()) { newRad = 0.005; newClr = Color.red; }
- 		for (int i = 0; i < 3; i++) { 
-			Point u = getPoint(i).clone();
-			for (int k = 0; k < 3; k++) if (Math.abs(u.get(k)) > 100.0) u.set(k, u.get(k)/1);
-			for (int j = i+1; j < 4; j++) {
-				Point v = getPoint(j).clone();
-				for (int k = 0; k < 3; k++) if (Math.abs(v.get(k)) > 100.0) v.set(k, v.get(k)/1);
-				LineSegment seg = new LineSegment(u, v);
-				seg.toScene(scene, newRad, newClr);
-			}
-		}
-	}
+//	public void toScene(J3DScene scene, double rad, Color clr) {
+//		double newRad = rad;
+//		Color newClr = clr;
+////		if (containsBigPoint()) { newRad = 0.005; newClr = Color.red; }
+// 		for (int i = 0; i < 3; i++) { 
+//			Point u = getPoint(i).clone();
+//			for (int k = 0; k < 3; k++) if (Math.abs(u.get(k)) > 100.0) u.set(k, u.get(k)/1);
+//			for (int j = i+1; j < 4; j++) {
+//				Point v = getPoint(j).clone();
+//				for (int k = 0; k < 3; k++) if (Math.abs(v.get(k)) > 100.0) v.set(k, v.get(k)/1);
+//				LineSegment seg = new LineSegment(u, v);
+//				seg.toScene(scene, newRad, newClr);
+//			}
+//		}
+//	}
 
 
 }

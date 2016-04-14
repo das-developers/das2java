@@ -1,20 +1,11 @@
 package ProGAL.geom3d.tessellation.BowyerWatson;
 
-import java.awt.Color;
-import java.awt.event.MouseEvent;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import ProGAL.geom3d.Point;
 import ProGAL.geom3d.PointWeighted;
-import ProGAL.geom3d.Shape;
-import ProGAL.geom3d.viewer.ClickListener;
-import ProGAL.geom3d.viewer.J3DScene;
-import ProGAL.geom3d.volumes.Sphere;
-import ProGAL.math.Matrix;
 import ProGAL.math.Randomization;
 
 public class RegularTessellation {
@@ -160,7 +151,7 @@ public class RegularTessellation {
 		}
 	}
 
-	public Tetr walk(PointWeighted p){
+        public Tetr walk(PointWeighted p){
 		Tetr t = bigTetr;
 		double minDistSq = Double.POSITIVE_INFINITY;
 		for(Tetr last: lastQueue){
@@ -170,13 +161,26 @@ public class RegularTessellation {
 				t = last;
 			}
 		}
-
+                
+                //int stepCounter= 0;
+                
 		bigloop: while(true){
+//                        stepCounter++;
+//                        if ( trace!=null && stepCounter>1000 ) {
+//                            for ( int i=0; i<trace.size(); i++ ) {
+//                                Tetr t1= trace.get(i);
+//                                Point p2= t1.circumCenter();
+//                                System.err.printf( "%d %f %f %f\n", t1.hashCode(), p2.get(0), p2.get(1), p2.get(2) );
+//                            }
+//                            trace=null;
+//                        }
 			//			System.out.println(t);
 			for(int i=0;i<4;i++){
 				int orient = (int)Math.signum(orient(t.corners[(i+1)&3],t.corners[(i+2)&3],t.corners[(i+3)&3],p));
 				if(orient!=t.cornerSides[i] && orient!=0){
 					t = t.neighbors[i];
+//                                        if ( trace!=null ) trace.add(t);
+                                        if ( t==null ) throw new IllegalArgumentException("neighbor is null--is this because the point outside of the tesselation?");
 					continue bigloop;
 				}
 			}

@@ -3,7 +3,7 @@ package ProGAL.geom3d.complex;
 import java.awt.Color;
 
 import ProGAL.geom3d.Triangle;
-import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 import ProGAL.geom3d.volumes.Tetrahedron;
 
 public class CTriangle extends Triangle {
@@ -86,11 +86,11 @@ public class CTriangle extends Triangle {
 		return ((CVertex)p1).isBigpoint() || ((CVertex)p2).isBigpoint() || ((CVertex)p3).isBigpoint(); 
 	}
 	
-	public void toScene(J3DScene scene, double rad, Color clr) { }
-
-	public Tetrahedron toScene(J3DScene scene, Color clr) {
-		Tetrahedron ret = new Tetrahedron(getCorner(0), getCorner(1), getCorner(2), getCenter());
-		scene.addShape(ret, clr);
-		return ret;
-	}
+//	public void toScene(J3DScene scene, double rad, Color clr) { }
+//
+//	public Tetrahedron toScene(J3DScene scene, Color clr) {
+//		Tetrahedron ret = new Tetrahedron(getCorner(0), getCorner(1), getCorner(2), getCenter());
+//		scene.addShape(ret, clr);
+//		return ret;
+//	}
 }

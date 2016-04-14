@@ -2,7 +2,7 @@ package ProGAL.geom3d;
 
 import java.awt.Color;
 
-import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 import ProGAL.geom3d.volumes.Sphere;
 
 import ProGAL.math.Constants;
@@ -436,18 +436,6 @@ public class Point extends ProGAL.geomNd.Point implements Simplex{
 	public String toString(int dec) {
 		return String.format("Point[%."+dec+"f,%."+dec+"f,%."+dec+"f]", coords[0], coords[1], coords[2]); 
 	}	
-	
-	public Sphere toScene(J3DScene scene, double r, Color clr) { 
-		Sphere sph = new Sphere(this, r);
-		scene.addShape(sph, clr);
-		return sph;
-	}
-
-	public Sphere toScene(J3DScene scene, double r, Color clr, int divisions) { 
-		Sphere sph = new Sphere(this, r);
-		scene.addShape(sph, clr, divisions);
-		return sph;
-	}
 
 //	public void draw(J3DScene scene, double r) { draw(scene, r, Color.BLUE); }
 //	public void draw(J3DScene scene) { draw(scene,0.1f, Color.BLUE); }
@@ -458,38 +446,6 @@ public class Point extends ProGAL.geomNd.Point implements Simplex{
 	
 	/** Writes this point to <code>System.out</code> with <code>dec</code> decimals precision. */
 	public void toConsole(int dec) { System.out.println(toString(dec)); }
-
-	public static void main(String[] args) {
-		
-		J3DScene scene  = J3DScene.createJ3DSceneInFrame();
-		Point a = new Point(-1, 0, 0);
-		Point b = new Point(1, 0, 0);
-		a.toScene(scene, 0.03, Color.blue);
-		b.toScene(scene, 0.03, Color.blue);
-		Circle cab = Point.getEquilateralPoints(a, b);
-		cab.toScene(scene, 0.01, Color.blue);
-		Point e = cab.getPoint();
-		for (int i = 0; i < 36; i++) {
-			e.rotation(cab.getNormal(), Math.PI/18, cab.getCenter());
-			Circle eqCircle = new Circle(a, b, e);
-			eqCircle.toSceneArc(scene, 0.01, Color.blue, 120, a);
-		}
-		Point c = new Point(0, 1, 5);
-		Point d = new Point(0, 2, 4);
-		c.toScene(scene, 0.03, Color.red);
-		d.toScene(scene, 0.03, Color.red);
-		Circle ccd = Point.getEquilateralPoints(c, d);
-		ccd.toScene(scene, 0.01, Color.red);
-		Point f = ccd.getPoint();
-		for (int i = 0; i < 36; i++) {
-			f.rotation(ccd.getNormal(), Math.PI/18, ccd.getCenter());
-			Circle fqCircle = new Circle(c, d, f);
-			fqCircle.toSceneArc(scene, 0.01, Color.red, 120, c);
-			e = cab.getFarthestPoint(f);
-			LineSegment ef = new LineSegment(e, f);
-			ef.toScene(scene, 0.01, Color.cyan);
-		}
-	}
 	
 }
 

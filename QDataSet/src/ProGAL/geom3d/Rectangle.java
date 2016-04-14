@@ -370,7 +370,7 @@ public class Rectangle {
 	public double distance_Gottschalk(Rectangle b){
 		double[][] Rab = new double[3][3];
 
-		// Compute rotation matrix expressing b in a’s coordinate frame
+		// Compute rotation matrix expressing b in a_s coordinate frame
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
 				Rab[i][j] = normBases[i].dot(b.normBases[j]);	
@@ -381,7 +381,7 @@ public class Rectangle {
 				b.center.subtract(b.bases[0]).subtractThis(b.bases[1])
 		);
 
-		// Bring translation into a’s coordinate frame
+		// Bring translation into a_s coordinate frame
 		tmp = new Vector(tmp.dot(normBases[0]), tmp.dot(normBases[1]), tmp.dot(normBases[2]));//9HOps
 		double[] Tab = new double[]{tmp.x(), tmp.y(), tmp.z()};
 		return rectDist(Rab, Tab, extents, b.extents); 

@@ -10,9 +10,13 @@ public class Vertex extends ProGAL.geom2d.Point{
 	Triangle first;
 	Triangle last;
 	
-	Vertex(Point p){
-		super(p.x(), p.y());
-		id = idCounter++;
+        Vertex(Point p ){
+            this( p.x(), p.y() );
+        }
+        
+	public Vertex( double x, double y ){
+		super( x,y );
+		this.id = idCounter++;
 	}
 	
 	public boolean onBoundary(){

@@ -16,7 +16,7 @@ import ProGAL.geom3d.PointWeighted;
 import ProGAL.geom3d.Vector;
 import ProGAL.geom3d.complex.CTetrahedron;
 import ProGAL.geom3d.kineticDelaunay.Vertex;
-import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 import ProGAL.math.Constants;
 
 /** 
@@ -338,34 +338,34 @@ public class Sphere implements Volume{
 	/** Writes this sphere to <code>System.out</code> with <code>dec</code> decimals precision. */
 	public void toConsole(int dec) { System.out.println(toString(dec)); }
 
-	public void toScene(J3DScene scene, Color clr) {
-		scene.addShape(this, clr);
-	}
+//	public void toScene(J3DScene scene, Color clr) {
+//		scene.addShape(this, clr);
+//	}
+//
+//	public void toScene(J3DScene scene, Color clr, int res) {
+//		scene.addShape(this, clr, res);
+//	}
 
-	public void toScene(J3DScene scene, Color clr, int res) {
-		scene.addShape(this, clr, res);
-	}
-
-	public void toSceneSpiral(J3DScene scene, Color clr, int s, int step, double width) {
-		double alpha;
-		double delta;
-		double t;
-		double iPI;
-		double tStep = 2.0/step;
-		double r2 = radius * radius;
-		for (int i = 1; i <= s; i++) {
-			iPI = i*Math.PI;
-			t = -1;
-			for (int j = 0; j < step; j++) {
-				delta = Math.sqrt(r2 - r2 * t * t);
-				alpha = t * iPI;
-				new Point(delta*Math.cos(alpha) + center.x(), delta*Math.sin(alpha) + center.y(), radius*t + center.z()).toScene(scene, width, clr);
-
-				t += tStep;
-			}
-		}
-		
-	}
+//	public void toSceneSpiral(J3DScene scene, Color clr, int s, int step, double width) {
+//		double alpha;
+//		double delta;
+//		double t;
+//		double iPI;
+//		double tStep = 2.0/step;
+//		double r2 = radius * radius;
+//		for (int i = 1; i <= s; i++) {
+//			iPI = i*Math.PI;
+//			t = -1;
+//			for (int j = 0; j < step; j++) {
+//				delta = Math.sqrt(r2 - r2 * t * t);
+//				alpha = t * iPI;
+//				new Point(delta*Math.cos(alpha) + center.x(), delta*Math.sin(alpha) + center.y(), radius*t + center.z()).toScene(scene, width, clr);
+//
+//				t += tStep;
+//			}
+//		}
+//		
+//	}
 	
 	/** Returns true if the sphere overlaps with <code>vol</code>. TODO: Implement for all volumes. */
 	public boolean overlaps(Volume vol) {
@@ -616,65 +616,65 @@ public class Sphere implements Volume{
 		}
 		return null;
 	}
-	
-	public void plotRadius(Vertex A, Vertex B, Vertex C, Vertex D, J3DScene scene) {
-		Sphere s = new Sphere(A, B, C, D);
-		System.out.println("Initial radius2 = "+s.getRadius());
-		double R;
-		Sphere p;
-		Point Cnew;
-		Point Dnew;
-		for (int j = 1 ; j<360 ; j++) {
-/*			double R2 = getCircumRadiusSquared(A, B, C, D, Math.toRadians(j), radiusNoAngle);
-			System.out.println("radius^2 = "+R2);
-			R = Math.sqrt(R2);
-			System.out.println("radius = "+R);
-			p = new Sphere(new Point(j*1.0, R, 0.0), 0.01);
-			p.toScene(scene, Color.BLACK);*/
-			Cnew = C.clone();
-			Dnew = D.clone();
-			Cnew.rotationCW(new Vector(0,0,1), Math.toRadians(j));
-			Dnew.rotationCW(new Vector(0,0,1), Math.toRadians(j));
-			Sphere sphere = new Sphere(A, B, Cnew, Dnew);
-			double sphereRadius = sphere.getRadius();
-			System.out.println("plot : radius = "+sphereRadius+" at j = "+j);
-			if (sphereRadius>Math.pow(10, 40)) continue;
-			Color c = Color.BLACK;
-			if (sphereRadius<1.0) {
-				c = Color.ORANGE;
-			}
-			p = new Sphere(new Point(j*1.0, sphereRadius, 0.0), 1.0);
-//			System.out.println("p = "+p.toString());
-			p.toScene(scene, c);
-		}
-	}
-		
-	public static void main(String[] args){
-		Circle c = new Circle(new Point(61.608,-6.951,5.080), 1.480, new Vector(0.548,0.501,-0.670));
-		Sphere s = new Sphere(new Point(61.648,-9.430,4.846), 1.425);
-		System.out.println(s.getIntersections(c)[0]);
-		System.out.println(s.getIntersections(c)[1]);
-		if(true) return;
-		
-		J3DScene scene = J3DScene.createJ3DSceneInFrame();
-//		Sphere s1 = new Sphere( new Point(46.29, 7.24,79.23),31.929843);
-//		Sphere s2 = new Sphere( new Point(44.33,31.27,72.11),44.430195);
-//		Sphere s3 = new Sphere( new Point(17.73,16.28,56.71),35.639535);
-		Sphere s1 = new Sphere( new Point(4.5,0.7,8.0),3.0);
-		Sphere s2 = new Sphere( new Point(4.0,3.0,7.0),4.0);
-		Sphere s3 = new Sphere( new Point(1.5,1.6,5.5),3.5);
-//		Sphere s1 = new Sphere( new Point(2,0,0), 1);
-//		Sphere s2 = new Sphere( new Point(0,0,0), 1.2);
-//		Sphere s3 = new Sphere( new Point(1,1,0), 1);
-		scene.addShape(s1, new Color(200,0,0), 50);
-		scene.addShape(s2, new Color(0,200,0), 50);
-		scene.addShape(s3, new Color(0,0,200), 50);
-		Point[] intersections = Sphere.getIntersections(s1, s2, s3);
-		for(Point p: intersections){
-			System.out.println(p);
-			scene.addShape(new Sphere(p,0.1), Color.GRAY.darker());
-		}
-	}
+//	
+//	public void plotRadius(Vertex A, Vertex B, Vertex C, Vertex D, J3DScene scene) {
+//		Sphere s = new Sphere(A, B, C, D);
+//		System.out.println("Initial radius2 = "+s.getRadius());
+//		double R;
+//		Sphere p;
+//		Point Cnew;
+//		Point Dnew;
+//		for (int j = 1 ; j<360 ; j++) {
+///*			double R2 = getCircumRadiusSquared(A, B, C, D, Math.toRadians(j), radiusNoAngle);
+//			System.out.println("radius^2 = "+R2);
+//			R = Math.sqrt(R2);
+//			System.out.println("radius = "+R);
+//			p = new Sphere(new Point(j*1.0, R, 0.0), 0.01);
+//			p.toScene(scene, Color.BLACK);*/
+//			Cnew = C.clone();
+//			Dnew = D.clone();
+//			Cnew.rotationCW(new Vector(0,0,1), Math.toRadians(j));
+//			Dnew.rotationCW(new Vector(0,0,1), Math.toRadians(j));
+//			Sphere sphere = new Sphere(A, B, Cnew, Dnew);
+//			double sphereRadius = sphere.getRadius();
+//			System.out.println("plot : radius = "+sphereRadius+" at j = "+j);
+//			if (sphereRadius>Math.pow(10, 40)) continue;
+//			Color c = Color.BLACK;
+//			if (sphereRadius<1.0) {
+//				c = Color.ORANGE;
+//			}
+//			p = new Sphere(new Point(j*1.0, sphereRadius, 0.0), 1.0);
+////			System.out.println("p = "+p.toString());
+//			p.toScene(scene, c);
+//		}
+//	}
+//		
+//	public static void main(String[] args){
+//		Circle c = new Circle(new Point(61.608,-6.951,5.080), 1.480, new Vector(0.548,0.501,-0.670));
+//		Sphere s = new Sphere(new Point(61.648,-9.430,4.846), 1.425);
+//		System.out.println(s.getIntersections(c)[0]);
+//		System.out.println(s.getIntersections(c)[1]);
+//		if(true) return;
+//		
+//		J3DScene scene = J3DScene.createJ3DSceneInFrame();
+////		Sphere s1 = new Sphere( new Point(46.29, 7.24,79.23),31.929843);
+////		Sphere s2 = new Sphere( new Point(44.33,31.27,72.11),44.430195);
+////		Sphere s3 = new Sphere( new Point(17.73,16.28,56.71),35.639535);
+//		Sphere s1 = new Sphere( new Point(4.5,0.7,8.0),3.0);
+//		Sphere s2 = new Sphere( new Point(4.0,3.0,7.0),4.0);
+//		Sphere s3 = new Sphere( new Point(1.5,1.6,5.5),3.5);
+////		Sphere s1 = new Sphere( new Point(2,0,0), 1);
+////		Sphere s2 = new Sphere( new Point(0,0,0), 1.2);
+////		Sphere s3 = new Sphere( new Point(1,1,0), 1);
+//		scene.addShape(s1, new Color(200,0,0), 50);
+//		scene.addShape(s2, new Color(0,200,0), 50);
+//		scene.addShape(s3, new Color(0,0,200), 50);
+//		Point[] intersections = Sphere.getIntersections(s1, s2, s3);
+//		for(Point p: intersections){
+//			System.out.println(p);
+//			scene.addShape(new Sphere(p,0.1), Color.GRAY.darker());
+//		}
+//	}
 
 	/**
 	 * Estimate the volume of the union of a set of spheres. A grid is placed

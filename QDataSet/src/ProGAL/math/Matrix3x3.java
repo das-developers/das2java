@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import ProGAL.geom3d.Point;
 import ProGAL.geom3d.Vector;
-import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 import ProGAL.geom3d.volumes.LSS;
 import ProGAL.geom3d.volumes.Sphere;
 
@@ -256,63 +256,63 @@ public class Matrix3x3 extends Matrix{
 		return (Matrix3x3)Matrix3x3.createRotationMatrix(angle, rax); 
 	}
 
-	public static void main(String[] args){
-		
-		Point[] ps = new Point[]{
-				new Point(1,0,0), 
-				new Point(0,1,0), 
-				new Point(0,0,1), 
-//				new Point(1/Math.sqrt(3),1/Math.sqrt(3),1/Math.sqrt(3)) 
-				};
-		Vector x = new Vector(0.04,0,0);
-		Vector y = new Vector(0,0.04,0);
-		Vector z = new Vector(0,0,0.04);
-		J3DScene scene = J3DScene.createJ3DSceneInFrame();
-//		scene.addShape(new Sphere(new Point(0,0,0), 1), new java.awt.Color(100,100,50,100), 64);
-		scene.setAxisEnabled(true);
-		
-		for(int i=0;i<10000;i++){
-//			double d1 = 0.05;
-//			double d2 = 0.05;
-//			Matrix3x3 m = randRotation(new double[]{
-//					Randomization.randBetween(-d1/2,d1/2),
-//					Randomization.randBetween(0.0,1.0),
-//					Randomization.randBetween(0.0,d2)
-//			});
-//			double[] rand = new double[]{1,1,1};
-//			while( Math.sqrt(rand[0]*rand[0]+ rand[1]*rand[1]+ rand[2]*rand[2])>d1 )
-//			{
-//				rand[0] = Randomization.randBetween(-d1,d1);
-//				rand[1] = Randomization.randBetween(-d1,d1);
-//				rand[2] = Randomization.randBetween(-d1,d1);
-//			}
-//			Matrix3x3 m = randRotation2(rand);
-			Matrix3x3 m = randRotation3(0.1*Math.PI);
-			//			System.out.println(m);
-//			for(Point p: ps){
-//				Point p_r = m.multiply(p);
-//				Vector x_r = m.multiply(x);
-//				Vector y_r = m.multiply(y);
-//				Vector z_r = m.multiply(z);
-//				scene.addShape(new Sphere(p, 0.05), java.awt.Color.BLACK);
-//				scene.addShape(new Sphere(p_r, 0.01), java.awt.Color.RED, 3);
-//				scene.addShape(new LSS(p_r,p_r.add(x_r), 0.004), java.awt.Color.RED, 3);
-//				scene.addShape(new LSS(p_r,p_r.add(y_r), 0.004), java.awt.Color.RED, 3);
-//				scene.addShape(new LSS(p_r,p_r.add(z_r), 0.004), java.awt.Color.RED, 3);
-//			}
-			
-			
-			double theta =  Math.acos(Randomization.randBetween(-1.0, 1.0));
-			double phi = Randomization.randBetween(0, 2*Constants.PI);
-			Point rax= new Point( 
-					Math.sin(theta)*Math.cos(phi),
-					Math.sin(theta)*Math.sin(phi),
-					Math.cos(theta)
-					);
-			scene.addShape(new Sphere(rax, 0.01), java.awt.Color.BLACK, 4);
-		}
-		
-	}
+//	public static void main(String[] args){
+//		
+//		Point[] ps = new Point[]{
+//				new Point(1,0,0), 
+//				new Point(0,1,0), 
+//				new Point(0,0,1), 
+////				new Point(1/Math.sqrt(3),1/Math.sqrt(3),1/Math.sqrt(3)) 
+//				};
+//		Vector x = new Vector(0.04,0,0);
+//		Vector y = new Vector(0,0.04,0);
+//		Vector z = new Vector(0,0,0.04);
+//		J3DScene scene = J3DScene.createJ3DSceneInFrame();
+////		scene.addShape(new Sphere(new Point(0,0,0), 1), new java.awt.Color(100,100,50,100), 64);
+//		scene.setAxisEnabled(true);
+//		
+//		for(int i=0;i<10000;i++){
+////			double d1 = 0.05;
+////			double d2 = 0.05;
+////			Matrix3x3 m = randRotation(new double[]{
+////					Randomization.randBetween(-d1/2,d1/2),
+////					Randomization.randBetween(0.0,1.0),
+////					Randomization.randBetween(0.0,d2)
+////			});
+////			double[] rand = new double[]{1,1,1};
+////			while( Math.sqrt(rand[0]*rand[0]+ rand[1]*rand[1]+ rand[2]*rand[2])>d1 )
+////			{
+////				rand[0] = Randomization.randBetween(-d1,d1);
+////				rand[1] = Randomization.randBetween(-d1,d1);
+////				rand[2] = Randomization.randBetween(-d1,d1);
+////			}
+////			Matrix3x3 m = randRotation2(rand);
+//			Matrix3x3 m = randRotation3(0.1*Math.PI);
+//			//			System.out.println(m);
+////			for(Point p: ps){
+////				Point p_r = m.multiply(p);
+////				Vector x_r = m.multiply(x);
+////				Vector y_r = m.multiply(y);
+////				Vector z_r = m.multiply(z);
+////				scene.addShape(new Sphere(p, 0.05), java.awt.Color.BLACK);
+////				scene.addShape(new Sphere(p_r, 0.01), java.awt.Color.RED, 3);
+////				scene.addShape(new LSS(p_r,p_r.add(x_r), 0.004), java.awt.Color.RED, 3);
+////				scene.addShape(new LSS(p_r,p_r.add(y_r), 0.004), java.awt.Color.RED, 3);
+////				scene.addShape(new LSS(p_r,p_r.add(z_r), 0.004), java.awt.Color.RED, 3);
+////			}
+//			
+//			
+//			double theta =  Math.acos(Randomization.randBetween(-1.0, 1.0));
+//			double phi = Randomization.randBetween(0, 2*Constants.PI);
+//			Point rax= new Point( 
+//					Math.sin(theta)*Math.cos(phi),
+//					Math.sin(theta)*Math.sin(phi),
+//					Math.cos(theta)
+//					);
+//			scene.addShape(new Sphere(rax, 0.01), java.awt.Color.BLACK, 4);
+//		}
+//		
+//	}
 
 	public Matrix3x3 clone(){
 		Matrix3x3 ret = new Matrix3x3();

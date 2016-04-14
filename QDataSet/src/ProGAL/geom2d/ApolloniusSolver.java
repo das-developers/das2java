@@ -2,7 +2,6 @@ package ProGAL.geom2d;
 
 import java.awt.Color;
 
-import ProGAL.geom2d.viewer.J2DScene;
 import ProGAL.math.Matrix;
 
 public class ApolloniusSolver {
@@ -65,16 +64,5 @@ public class ApolloniusSolver {
 		return new Circle(new Point(x_s, y_s), r_s);
 	}
 
-	public static void main(String[] args){
-		Circle c1 = new Circle(new Point(1,0), 0.3);
-		Circle c3 = new Circle(new Point(0,1), 0.5);
-		Circle c2 = new Circle(new Point(1,1), 0.4);
-		Circle tangent = solveApollonius(c1, c2, c3, -1, -1, -1);
-		J2DScene scene = J2DScene.createJ2DSceneInFrame();
-		scene.addShape(c1);
-		scene.addShape(c2);
-		scene.addShape(c3);
-		scene.addShape(tangent, Color.green.darker(), 0,true);
-	}
 
 }

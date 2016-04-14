@@ -2126,7 +2126,7 @@ public class KineticAlphaComplex {
 //								System.out.println("Flip event with "+t.toString()+" and "+nt.toString()+" and "+tt.toString());
 								if (testingPrint) {
 									System.out.print(tt.toString()); 
-									if (!tt.isAlive())  System.out.print("�");
+									if (!tt.isAlive())  System.out.print("___");
 									System.out.print(" rotated to angle = " + Functions.toDeg(heapItem.getAngles()[0]));						
 									System.out.println();
 								}

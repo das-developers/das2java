@@ -158,11 +158,6 @@ public class ConvexPolygon extends Polygon{
 		return q;
 	}
 	
-	public static void main(String[] args) {
-		PointSet points = new PointSet(200);
-		ConvexPolygon cPol = new ConvexPolygon(points, ConvexPolygon.ConvexHullAlgorithm.GrahamsScan);
-		J2DScene scene = J2DScene.createJ2DSceneInFrame();
-		cPol.draw(scene);
-	}
+
 
 }

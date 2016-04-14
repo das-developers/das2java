@@ -8,6 +8,7 @@ import java.util.Stack;
 import ProGAL.geom3d.Point;
 import ProGAL.geom3d.Shape;
 import ProGAL.geom3d.viewer.J3DScene;
+//import ProGAL.geom3d.viewer.J3DScene;
 
 
 
