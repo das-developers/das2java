@@ -292,7 +292,9 @@ public class DataSetAdapter {
             properties.put(QDataSet.UNITS, source.getYUnits());
             properties.put(QDataSet.LABEL, hack(dasProps, DataSet.PROPERTY_Y_LABEL, sPlaneID));
 				properties.put(QDataSet.FORMAT, hack(dasProps, DataSet.PROPERTY_Y_FORMAT, sPlaneID));
-            properties.put(QDataSet.DEPEND_0, new XTagsDataSet(source));
+            AbstractDataSet xds= new XTagsDataSet(source);
+            xds.putProperty( QDataSet.CACHE_TAG, hack( dasProps, DataSet.PROPERTY_CACHE_TAG, sPlaneID ) );
+            properties.put(QDataSet.DEPEND_0, xds);
             properties.put(PROPERTY_SOURCE, source);
 
             // http://www.sarahandjeremy.net/~jbf/1wire/data/2007/0B000800408DD710.20071201.d2s uses property "valid_range"
