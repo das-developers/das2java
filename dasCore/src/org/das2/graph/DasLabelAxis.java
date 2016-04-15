@@ -260,7 +260,7 @@ public class DasLabelAxis extends DasAxis implements DasUpdateListener {
         this.indexMaximum = findClosestIndex(labelValues, maximum);
 
         if (this.indexMinimum > this.indexMaximum) {
-            int t = this.indexMinimum;
+            int t = this.indexMaximum;
             this.indexMaximum = this.indexMinimum;
             this.indexMinimum = t;
         }
