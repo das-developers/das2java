@@ -126,7 +126,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     @Override
     public void render(Graphics g, DasAxis xAxis, DasAxis yAxis, ProgressMonitor mon) {
         
-        Graphics2D g2= (Graphics2D)g.create();
+        Graphics2D g2= (Graphics2D)g;
         
         Point2D p;
         if (getDataSet()==null && lastException!=null ) {
