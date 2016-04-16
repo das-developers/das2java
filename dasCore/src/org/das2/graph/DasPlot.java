@@ -666,7 +666,7 @@ public class DasPlot extends DasCanvasComponent {
                 logger.log(Level.FINEST, "rendering #{0}: {1}", new Object[]{i, rend});
                 try {
                     rend.incrementRenderCount();
-                    rend.render(plotGraphics, lxaxis, lyaxis, new NullProgressMonitor());
+                    rend.render(plotGraphics.create(), lxaxis, lyaxis, new NullProgressMonitor());
                 } catch ( RuntimeException ex ) {
                     logger.log( Level.WARNING, ex.getMessage(), ex );
                     //put breakpoint here:
