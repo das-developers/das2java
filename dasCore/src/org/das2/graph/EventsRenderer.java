@@ -558,7 +558,7 @@ public class EventsRenderer extends Renderer {
             return;
         }
         
-        Graphics2D g= ( Graphics2D ) g1.create();
+        Graphics2D g= ( Graphics2D ) g1;
         
         g.setColor(color);
 
