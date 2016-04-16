@@ -30,10 +30,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
@@ -200,7 +202,7 @@ public abstract class WebFileSystem extends FileSystem {
             if ( f.exists() ) {
                 BufferedReader read = null;
                 try {
-                    read = new BufferedReader(new FileReader(f));
+                    read = new BufferedReader( new InputStreamReader( new FileInputStream(f), "UTF-8" ) );
                     String s = read.readLine();
                     while (s != null) {
                         int i= s.indexOf("#");
