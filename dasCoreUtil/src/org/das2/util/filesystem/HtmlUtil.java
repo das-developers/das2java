@@ -79,8 +79,8 @@ public class HtmlUtil {
      *
      * This was refactored to support caching of listings by simply writing the content to disk.
      *
-     * @param url
-     * @param urlStream
+     * @param url the address.
+     * @param urlStream stream containing the URL content, which must be UTF-8 (or US-ASCII)
      * @return list of URIs referred to in the page.
      * @throws IOException
      * @throws CancelledOperationException
@@ -97,7 +97,7 @@ public class HtmlUtil {
      * This was refactored to support caching of listings by simply writing the content to disk.
      *
      * @param url the address.
-     * @param urlStream stream containing the URL content.
+     * @param urlStream stream containing the URL content, which must be UTF-8 (or US-ASCII)
      * @param childCheck only return links to URLs "under" the url.
      * @return list of URIs referred to in the page.
      * @throws IOException
@@ -109,15 +109,15 @@ public class HtmlUtil {
 
         long t0= System.currentTimeMillis();
         byte b[] = new byte[10000];
-        int numRead = urlStream.read(b);
+        int numRead = urlStream.read(b);  // i18n  also decorator in script to make plot
         StringBuilder contentBuffer = new StringBuilder( 10000 );
 
-        if ( numRead!=-1 ) contentBuffer.append( new String( b, 0, numRead ) );
+        if ( numRead!=-1 ) contentBuffer.append( new String( b, 0, numRead, "UTF-8" ) );
         while (numRead != -1) {
             FileSystem.logger.finest("download listing");
             numRead = urlStream.read(b);
             if (numRead != -1) {
-                String newContent = new String(b, 0, numRead);
+                String newContent = new String(b, 0, numRead, "UTF-8");
                 contentBuffer.append( newContent );
             }
         }
@@ -141,7 +141,7 @@ public class HtmlUtil {
             URL urlLink;
 
             try {
-                urlLink = new URL(url, strLink);
+                urlLink = new URL(url, URLDecoder.decode(strLink,"UTF-8") );
                 strLink = urlLink.toString();
             } catch (MalformedURLException e) {
                 logger.log(Level.SEVERE, "bad URL: {0} {1}", new Object[]{url, strLink});
