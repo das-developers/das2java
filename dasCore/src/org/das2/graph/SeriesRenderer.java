@@ -1505,7 +1505,7 @@ public class SeriesRenderer extends Renderer {
             }
         }
 
-        Graphics2D graphics = (Graphics2D) g.create();
+        Graphics2D graphics = (Graphics2D) g;
 
         if (antiAliased) {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
