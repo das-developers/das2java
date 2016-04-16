@@ -287,11 +287,7 @@ public class HttpFileSystem extends WebFileSystem {
 
             return result;
 
-        } catch (FileSystemOfflineException e) {
-            throw e;
-        } catch (FileNotFoundException e) {
-            throw e;
-        } catch (UnknownHostException e) {
+        } catch (FileSystemOfflineException | FileNotFoundException | UnknownHostException e) {
             throw e;
         } catch (IOException e) {
             throw new FileSystemOfflineException(e,rooturi);
@@ -571,7 +567,7 @@ public class HttpFileSystem extends WebFileSystem {
             }
             exists = connect.getResponseCode() != 404;
 
-            Map<String, Object> result = new HashMap<String, Object>();
+            Map<String, Object> result = new HashMap<>();
             result.putAll(connect.getHeaderFields());
             result.put( "EXIST", exists );
             connect.disconnect();
@@ -651,16 +647,12 @@ public class HttpFileSystem extends WebFileSystem {
         }
 
         if ( protocol!=null && protocol instanceof AppletHttpProtocol ) { // support applets.  This could check for local write access, but DefaultHttpProtocol shows a problem here too.
-            InputStream in=null;
             URL[] list;
-            try {
-                in= protocol.getInputStream( new WebFileObject(this,directory,new Date() ), new NullProgressMonitor() );
+            try ( InputStream in = protocol.getInputStream( new WebFileObject(this,directory,new Date() ), new NullProgressMonitor() ) ) {
                 list= HtmlUtil.getDirectoryListing( getURL(directory), in );
             } catch ( CancelledOperationException ex ) {
                 throw new IllegalArgumentException(ex); //TODO: this should probably be IOException(ex).  See use 20 lines below as well.
-            } finally {
-                if ( in!=null ) in.close();
-            }
+            } 
             
             String[] result;
             result = new String[list.length];
@@ -681,14 +673,10 @@ public class HttpFileSystem extends WebFileSystem {
             File listing= listingFile(directory);
             
             URL[] list;
-            FileInputStream fin=null;
-            try {
-                fin= new FileInputStream(listing);
+            try (FileInputStream fin = new FileInputStream(listing)) {
                 list = HtmlUtil.getDirectoryListing(getURL(directory), fin );
             } catch (CancelledOperationException ex) {
                 throw new IllegalArgumentException(ex); // shouldn't happen since it's local
-            } finally {
-                if ( fin!=null ) fin.close();
             }
             
             result = new LinkedHashMap(list.length);
@@ -747,12 +735,8 @@ public class HttpFileSystem extends WebFileSystem {
 
                 downloadFile( directory, listing, getPartFile(listing), new NullProgressMonitor() );
 
-                FileInputStream fin=null;
-                try {
-                    fin= new FileInputStream(listing);
+                try (FileInputStream fin = new FileInputStream(listing)) {
                     list = HtmlUtil.getDirectoryListing( getURL(directory), fin );
-                } finally {
-                    if ( fin!=null ) fin.close();
                 }
                 
                 //remove .css stuff
