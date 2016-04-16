@@ -129,7 +129,7 @@ public class ContoursRenderer extends Renderer {
         
         DasPlot lparent= getParent();
         
-        Graphics2D g = (Graphics2D) g1.create();
+        Graphics2D g = (Graphics2D) g1;
         if ( ds==null ) {
             lparent.postMessage(this, "no data set", DasPlot.INFO, null, null);
             return;
