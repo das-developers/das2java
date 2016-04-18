@@ -6572,14 +6572,8 @@ public class Ops {
             ds= min;
         }        
         
-        Double dvalidMax= (Double) ds.property(QDataSet.VALID_MAX);
-        Double dvalidMin= (Double) ds.property(QDataSet.VALID_MIN);
         Double dfill= (Double) ds.property(QDataSet.FILL_VALUE);
-        double validMin=  ( dvalidMin!=null ) ? dvalidMin : -1 * Double.MAX_VALUE;
-        double validMax=  ( dvalidMax!=null ) ? dvalidMax : Double.MAX_VALUE;
         double fill= ( dfill!=null ) ? dfill : 1e38;
-        double fillup= fill < 0 ? fill / 1.0001 : fill * 1.0001;
-        double filldn= fill < 0 ? fill * 1.0001 : fill / 1.0001;
         int count=0;
         
         double[] result;
@@ -6589,12 +6583,14 @@ public class Ops {
             result= new double[]{ range.value(0), range.value(1) };
         }
         
+        QDataSet valid= Ops.valid(ds);
+            
         switch (ds.rank()) {
             case 1:
                 int n= ds.length();
                 for ( int i=0; i<n; i++ ) {
                     double d= ds.value(i);
-                    if ( validMax>d && validMin<=d && ( d<filldn || d>=fillup ) ) {
+                    if ( valid.value(i)>0 ) {
                         double min1= min.value(i); // Math.min requires we do extra redundent checks, and we leave this routine, but appearently this is no faster...
                         result[0]= result[0] < min1 ? result[0] : min1;
                         double max1= max.value(i);
@@ -6608,14 +6604,14 @@ public class Ops {
                     for ( int i0=0; i0<n0; i0++ ) {
                         int n1= ds.length(i0);
                         for ( int i1=0; i1<n1; i1++ ) {
-                            double d= ds.value(i0,i1);
-                            if ( validMax>d && validMin<=d  && ( d<filldn || d>=fillup ) ) {
+                            if ( valid.value(i0,i1)>0 ) {
                                 result[0]= Math.min( result[0], min.value(i0,i1) );
                                 result[1]= Math.max( result[1], max.value(i0,i1) );
                                 count++;
                             }
                         }
-                    }       break;
+                    }       
+                    break;
                 }
             case 3:
                 {
@@ -6625,15 +6621,15 @@ public class Ops {
                         for ( int i1=0; i1<n1; i1++ ) {
                             int n2= ds.length(i0,i1);
                             for ( int i2=0; i2<n2; i2++ ) {
-                                double d= ds.value(i0,i1,i2);
-                                if ( validMax>d && validMin<=d  && ( d<filldn || d>=fillup ) ) {
+                                if ( valid.value(i0,i1,i2)>0 ) {
                                     result[0]= Math.min( result[0], min.value(i0,i1,i2) );
                                     result[1]= Math.max( result[1], max.value(i0,i1,i2) );
                                     count++;
                                 }
                             }
                         }
-                    }       break;
+                    }
+                    break;
                 }
             case 4:
                 {
@@ -6645,8 +6641,7 @@ public class Ops {
                             for ( int i2=0; i2<n2; i2++ ) {
                                 int n3= ds.length(i0,i1,i2);
                                 for ( int i3=0; i3<n3; i3++ ) {
-                                    double d= ds.value(i0,i1,i2,i3);
-                                    if ( validMax>d && validMin<=d  && ( d<filldn || d>=fillup ) ) {
+                                    if ( valid.value(i0,i1,i2,i3)>0 ) {
                                         result[0]= Math.min( result[0], min.value(i0,i1,i2,i3) );
                                         result[1]= Math.max( result[1], max.value(i0,i1,i2,i3) );
                                         count++;
@@ -6654,7 +6649,8 @@ public class Ops {
                                 }
                             }
                         }
-                    }       break;
+                    }       
+                    break;
                 }
             case 0:
                 result[0]= ds.value();
