@@ -187,6 +187,9 @@ public class TickCurveRenderer extends Renderer {
     }
 
     public Shape selectionArea() {
+        if ( path==null ) {
+            return SelectionUtil.NULL;
+        }
         Shape s = new BasicStroke( Math.min(14,1.f+8.f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND ).createStrokedShape(path);
         return s;
     }
