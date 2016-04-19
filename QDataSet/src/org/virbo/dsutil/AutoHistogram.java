@@ -142,8 +142,12 @@ public final class AutoHistogram {
                 double delta = d - ss[ibin];
                 ss[ibin] = ss[ibin] + delta / nn[ibin];
                 double j = nn[ibin] - 1;
-                if (j > 0)
+                if (j > 0) {
                     vv[ibin] = (1 - 1. / j) * vv[ibin] + (j + 1) * Math.pow(ss[ibin] - muj, 2);
+                    if ( !Double.isFinite(vv[ibin]) ) {
+                        throw new IllegalArgumentException("here man");
+                    }                    
+                }
                 total++;
             }
         } catch (ArrayIndexOutOfBoundsException ex) {
@@ -311,9 +315,16 @@ public final class AutoHistogram {
         while (iter.hasNext()) {
 
             iter.next();
-
+            
+            double d;
             try {
-                if (iter.getValue(wds) == 0) {
+                if ( iter.getValue(wds) == 0 ) {
+                    invalidCount++;
+                    continue;
+                }
+                d = iter.getValue(ds);
+                if ( !Double.isFinite(d) ) {
+                    logger.warning("weights imply that infinite value is valid: "+iter);
                     invalidCount++;
                     continue;
                 }
@@ -323,8 +334,7 @@ public final class AutoHistogram {
                 throw ex;
             }
 
-            double d = iter.getValue(ds);
-
+            
             if ( d<minGtZero && d>0 ) {
                 minGtZero= d;
             }
@@ -779,12 +789,21 @@ public final class AutoHistogram {
 
             // combine the variances with a weighted average
             vv[i] = oldVariances[0];
+            if ( !Double.isFinite(vv[i]) ) {
+                throw new IllegalArgumentException("here man");
+            }
 
             for (int j = 1; j < factor; j++) {
                 vv[i] += oldVariances[j];
+                if ( !Double.isFinite(vv[i]) ) {
+                    throw new IllegalArgumentException("here man");
+                }                
             }
             if (nn[i] > 1) {
                 vv[i] /= (nn[i] - 1);
+                if ( !Double.isFinite(vv[i]) ) {
+                    throw new IllegalArgumentException("here man");
+                }
             }
 
         }
