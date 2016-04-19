@@ -1,6 +1,7 @@
 package org.das2.datum;
 
 import java.io.Serializable;
+import java.util.logging.Logger;
 
 /**
  * A DatumRange is provided as a means to carry an ordered pair of Datums
@@ -12,6 +13,8 @@ import java.io.Serializable;
  */
 
 public class DatumRange implements Comparable, Serializable {
+    
+    private static final Logger logger = LoggerManager.getLogger("org.das2.datum");
     
     Datum s1;
     Datum s2;
@@ -31,6 +34,12 @@ public class DatumRange implements Comparable, Serializable {
         if ( s2.isFinite() && s2.isFill() ) {
             //throw new IllegalArgumentException( "s2 is fill" ) ;
         }
+//        if ( !Double.isFinite( s1.doubleValue(s1.getUnits() ) ) ) {
+//            logger.warning("s1 is not finite");
+//        }
+//        if ( !Double.isFinite( s2.doubleValue(s2.getUnits() ) ) ) {
+//            logger.warning("s2 is not finite");
+//        }
         this.s1=s1;
         this.s2=s2.convertTo(s1.getUnits());
     }
