@@ -334,9 +334,10 @@ public class BinAverage {
         if ( fill==null ) fill= -1e31;
 
         for (int i = 0; i < nn; i++) {
-            if (weights.value(i) > 0) {
+            double w= weights.value(i);
+            if ( w > 0) {
                 double s = result.value(i);
-                result.putValue(i, s / weights.value(i));
+                result.putValue(i, s / w);
                 //resultVar.putValue( i, ( Math.sqrt( resultVar.value(i) -  s * s ) / weights.value(i)) ); 
 
             } else {
@@ -376,8 +377,10 @@ public class BinAverage {
             double s = 0, w = 0;
             for (int k0 = 0; k0 < binSize0; k0++) {
                 double w1 = wds.value(j0 + k0);
-                w += w1;
-                s += w1 * ds.value(j0 + k0);
+                if ( w1>0 ) {
+                    w += w1;
+                    s += w1 * ds.value(j0 + k0);
+                }
             }
             weights.putValue(i0, w);
             result.putValue(i0, w == 0 ? fill : s / w);
@@ -426,8 +429,10 @@ public class BinAverage {
                 for (int k0 = 0; k0 < binSize0; k0++) {
                     for (int k1 = 0; k1 < binSize1; k1++) {
                         double w1 = wds.value(j0 + k0, j1 + k1);
-                        w += w1;
-                        s += w1 * ds.value(j0 + k0, j1 + k1);
+                        if ( w1>0 ) {
+                            w += w1;
+                            s += w1 * ds.value(j0 + k0, j1 + k1);
+                        }
                     }
                 }
                 weights.putValue(i0, i1, w);
