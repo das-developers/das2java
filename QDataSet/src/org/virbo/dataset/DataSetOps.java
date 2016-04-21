@@ -188,12 +188,12 @@ public class DataSetOps {
     
     /**
      * flatten a rank 2 dataset.  The result is a n,3 dataset
-     * of [x,y,z], or if there are no tags, just [z].
+     * of [x,y,f], or if there are no tags just rank 1 f.
      * History:<ul>
      *   <li> modified for use in PW group.
      * </ul>
      * @param ds rank 2 table dataset
-     * @return rank 2 dataset that is 
+     * @return rank 2 dataset that is that is array of (x,y,f) or rank 1 f.
      */
     public static QDataSet flattenRank2( final QDataSet ds ) {
         QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
@@ -232,6 +232,56 @@ public class DataSetOps {
         
     }
 
+    /**
+     * flatten a rank 3 dataset.  The result is a n,4 dataset
+     * of [x,y,z,f], or if there are no tags just rank 1 f.
+     * @param ds rank 3 table dataset
+     * @return rank 2 dataset that is array of (x,y,z,f) or rank 1 f.
+     */
+    public static QDataSet flattenRank3( final QDataSet ds ) {
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
+        QDataSet dep2= (QDataSet) ds.property(QDataSet.DEPEND_2);
+        DataSetBuilder builder= new DataSetBuilder( 1, 100 );
+        DataSetBuilder xbuilder= new DataSetBuilder( 1, 100 );
+        DataSetBuilder ybuilder= new DataSetBuilder( 1, 100 );
+        DataSetBuilder zbuilder= new DataSetBuilder( 1, 100 );
+        boolean dep1rank2= dep1!=null && dep1.rank()==2;
+        boolean dep2rank2= dep2!=null && dep2.rank()==2;
+        for ( int i=0; i<ds.length(); i++ ) {
+            for ( int j=0; j<ds.length(i); j++ ) {
+                for ( int k=0; k<ds.length(i,j); k++ ) {
+                    if (dep0!=null) {
+                        xbuilder.nextRecord( dep0.value(i) );
+                    }
+                    if (dep1!=null) {
+                        ybuilder.nextRecord( dep1rank2 ? dep1.value(i,j) : dep1.value(j) );
+                    }
+                    if (dep2!=null) {
+                        zbuilder.nextRecord( dep2rank2 ? dep2.value(i,k) : dep2.value(k) );
+                    }
+                    builder.nextRecord( ds.value(i,j,k) );
+                }
+            }
+        }
+
+        DDataSet fds= builder.getDataSet();
+        DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(ds,null), fds );
+
+        if ( dep1!=null && dep0!=null ) {
+            DDataSet xds= xbuilder.getDataSet();
+            DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep0,null), xds );
+            DDataSet yds= ybuilder.getDataSet();
+            DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep1,null), yds );
+            DDataSet zds= zbuilder.getDataSet();
+            DataSetUtil.putProperties( DataSetUtil.getDimensionProperties(dep2,null), zds );
+            return Ops.link( xds, yds, zds, fds );
+        } else  {
+            return fds;
+        }
+        
+    }
+    
     /**
      * flatten a rank 2 dataset where the y depend variable is just an offset from the xtag.  This is
      * a nice example of the advantage of using a class to represent the data: this requires no additional
