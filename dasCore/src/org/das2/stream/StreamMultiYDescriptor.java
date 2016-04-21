@@ -27,6 +27,9 @@ import org.das2.datum.Units;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.das2.datum.LoggerManager;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,6 +39,8 @@ import org.w3c.dom.NodeList;
 
 public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
 
+    private static Logger logger = LoggerManager.getLogger("das2.d2s.multiy");
+    
 	//private static final String g_sCkAry[] = {"name","type","units"};
 	private static final String g_sCkAry[] = {"type","units"}; //TODO: "name" needs to be required.  JBF turned this check off before a release to fix his hudson tests.
     
@@ -53,6 +58,8 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
 
     private void processElement(Element element) throws StreamException 
 	 {	 
+        logger.log(Level.FINE, "processElement {0} name={1}", new Object[]{element, element.getAttribute("name")});
+        
 		 //name, units, and type are required, though they can be null
 		 for(String s: g_sCkAry){
 			 if(! element.hasAttribute(s) )
@@ -69,6 +76,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         String unitsString = element.getAttribute("units");
         units = Units.lookupUnits(unitsString);
         
+        logger.log(Level.FINER, "element y has {0} attributes", element.getAttributes().getLength());
         NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             Node n = attrs.item(i);
@@ -76,6 +84,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
         }
 
         NodeList nl = element.getElementsByTagName("properties");
+        logger.log(Level.FINER, "element y has {0} properties", nl.getLength());
         for (int i = 0; i < nl.getLength(); i++) {
             Element el = (Element) nl.item(i);
 				Map<String,Object> m = StreamTool.processPropertiesElement(el);
@@ -100,6 +109,7 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
     }
 
     private void processLegacyElement(Element element) {
+        logger.log(Level.FINE, "processLegacyElement {0} name={1}", new Object[]{element, element.getAttribute("name")});
         if (element.getAttribute("name") != null) {
             name = element.getAttribute("name");
         } else {

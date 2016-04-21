@@ -31,7 +31,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.das2.datum.LoggerManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,6 +45,8 @@ import org.w3c.dom.NodeList;
  * @author jbf
  */
 public class PacketDescriptor implements Cloneable {
+    
+    private static Logger logger = LoggerManager.getLogger("das2.d2s");
     
     private StreamXDescriptor xDescriptor;
     private SkeletonDescriptor[] yDescriptors = new SkeletonDescriptor[6];
@@ -66,6 +70,7 @@ public class PacketDescriptor implements Cloneable {
             if ( node instanceof Element ) {
                 Element child = (Element)node;
                 String name = child.getTagName();
+                logger.fine( "process element type "+name);
                 if ( name.equals("x") ) {
                     xDescriptor = new StreamXDescriptor(child);
                 } else if ( name.equals("y") ) {
