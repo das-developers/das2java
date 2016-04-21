@@ -8709,7 +8709,9 @@ public class Ops {
             case 1:
                 return ds;
             case 2:
-                return DataSetOps.flattenRank2(ds);
+                return DataSetOps.flattenRank2(ds);                
+            case 3:
+                return DataSetOps.flattenRank3(ds);
             default:
                 throw new UnsupportedOperationException("only rank 0,1,and 2 supported");
         }
