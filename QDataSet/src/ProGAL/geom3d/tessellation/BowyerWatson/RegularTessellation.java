@@ -180,7 +180,9 @@ public class RegularTessellation {
 				if(orient!=t.cornerSides[i] && orient!=0){
 					t = t.neighbors[i];
 //                                        if ( trace!=null ) trace.add(t);
-                                        if ( t==null ) throw new IllegalArgumentException("neighbor is null--is this because the point outside of the tesselation?");
+                                        if ( t==null ) {
+                                            throw new IllegalArgumentException("neighbor is null--is this because the point outside of the tesselation?");
+                                        }
 					continue bigloop;
 				}
 			}
