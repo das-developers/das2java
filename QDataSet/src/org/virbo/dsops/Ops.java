@@ -6674,6 +6674,24 @@ public class Ops {
     }
     
     /**
+     * calculate the range of data, then rescale it so that the smallest
+     * values becomes min and the largest values becomes max.
+     * @param data rank 1 dataset (TODO: easily modify this to support rank N)
+     * @param min rank 0 min
+     * @param max rank 0 max
+     * @return rescaled data.
+     */
+    public static QDataSet rescale( QDataSet data, QDataSet min, QDataSet max ) {
+        QDataSet extent= extent(data);
+        QDataSet w= Ops.subtract( extent.slice(1), extent.slice(0) );
+        if ( w.value()==0 ) {
+            return replicate( min, data.length() );
+        }
+        data= Ops.add( min, Ops.divide( Ops.subtract( data, extent.slice(0) ), w ) );
+        return data;
+    }
+    
+    /**
      * returns rank 1 QDataSet range relative to range "dr", where 0. is the minimum, and 1. is the maximum.
      * For example rescaleRange(ds,1,2) is scanNext, rescaleRange(ds,0.5,1.5) is zoomOut.  This is similar
      * to the DatumRange rescale functions.
@@ -6687,6 +6705,9 @@ public class Ops {
     public static QDataSet rescaleRange( QDataSet dr, double min, double max ) {
         if ( dr.rank()!=1 ) {
             throw new IllegalArgumentException("Rank must be 1");
+        }
+        if ( dr.length()!=2 ) {
+            throw new IllegalArgumentException("length must be 2");
         }
         double w= dr.value(1) - dr.value(0);
         if ( Double.isInfinite(w) || Double.isNaN(w) ) {
@@ -6716,6 +6737,9 @@ public class Ops {
         if ( dr.rank()!=1 ) {
             throw new IllegalArgumentException("Rank must be 1");
         }
+        if ( dr.length()!=2 ) {
+            throw new IllegalArgumentException("length must be 2");
+        }        
         DDataSet result= DDataSet.createRank1(2);
         if ( "log".equals( dr.property(QDataSet.SCALE_TYPE) ) ) {
             
@@ -10165,10 +10189,22 @@ public class Ops {
      * @return the interpolated data.
      */
     public static QDataSet buckshotInterpolate( QDataSet xyz, QDataSet data, QDataSet xinterp, QDataSet yinterp, QDataSet zinterp ) {
+        
+        QDataSet xx= Ops.unbundle( xyz, 0 );
+        QDataSet yy= Ops.unbundle( xyz, 1 );
+        QDataSet zz= Ops.unbundle( xyz, 1 );
+              
+        Units u= SemanticOps.getUnits(xyz);
+        
+        // rescale xx,yy,zz so that all are from 0.1 to 0.9.
+        xx= Ops.rescale( xx, dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9)) );
+        yy= Ops.rescale( yy, dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9))  );
+        zz= Ops.rescale( zz, dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9))  );
+                
         List<ProGAL.geom3d.PointWeighted> points= new ArrayList(xyz.length());
         for ( int i=0; i<xyz.length(); i++ ) {
             points.add( new PointWeightedInt( 
-                xyz.value(i,0), xyz.value(i,1), xyz.value(i,2), 1.0, i
+                xx.value(i), yy.value(i), zz.value(i), 1.0, i
             ) );
         }
         ProGAL.geom3d.tessellation.BowyerWatson.RegularTessellation rt= new ProGAL.geom3d.tessellation.BowyerWatson.RegularTessellation(points);
