@@ -25,7 +25,9 @@ package org.das2.stream;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,7 +85,20 @@ public class StreamMultiYDescriptor implements SkeletonDescriptor, Cloneable {
             properties.put(n.getNodeName(), n.getNodeValue());
         }
 
-        NodeList nl = element.getElementsByTagName("properties");
+        NodeList nl= element.getChildNodes(); // quick and dirty schema checking.  Assert only node under can be "properties"
+        List<String> kids= new ArrayList<>();
+            
+        for ( int i=0; i<nl.getLength(); i++ ) {
+            if ( nl.item(i) instanceof Element ) {
+                kids.add( ((Element)nl.item(i)).getNodeName() );
+            }
+        }
+        kids.remove("properties");
+        for ( String kid: kids ) {
+            logger.log(Level.WARNING, "found invalid node under y: {0}", kid);            
+        }
+
+        nl = element.getElementsByTagName("properties");
         logger.log(Level.FINER, "element y has {0} properties", nl.getLength());
         for (int i = 0; i < nl.getLength(); i++) {
             Element el = (Element) nl.item(i);
