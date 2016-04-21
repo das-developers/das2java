@@ -75,7 +75,112 @@ public class BinAverage {
         return result;
     }
 
+    /**
+     * return true if the data is linearly spaced with the given base and offset.
+     * @param dep0
+     * @param xscal
+     * @param xbase
+     * @return true if the data is linearly spaced with the given base and offset.
+     */
+    private static boolean isLinearlySpaced( QDataSet dep0, double xscal, double xbase ) {
+        int nx= dep0.length(); 
+        for ( int i=0; i<nx; i++ ) {
+            if ( (int)( ( dep0.value(i)-xbase ) / xscal ) != i ) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * 
+     * takes rank 2 bundle (x,y,z,f) and averages it into rank 3 qube f(x,y,z).  This is 
+     * similar to what happens in the spectrogram routine.
+     * @param ds rank 2 bundle(x,y,z,f)
+     * @param dep0 the rank 1 depend0 for the result, which must be uniformly spaced.
+     * @param dep1 the rank 1 depend1 for the result, which must be uniformly spaced.
+     * @param dep2 the rank 1 depend2 for the result, which must be uniformly spaced.
+     * @return rank 3 dataset of z averages with depend_0, depend_1, and depend_2.  WEIGHTS contains the total weight for each bin.
+     * @see #rebinBundle(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
+    public static DDataSet rebinBundle( QDataSet ds, QDataSet dep0, QDataSet dep1, QDataSet dep2 ) {
+        DDataSet sresult= DDataSet.createRank3( dep0.length(), dep1.length(), dep2.length() );
+        IDataSet nresult= IDataSet.createRank3( dep0.length(), dep1.length(), dep2.length() );
+        QDataSet wds= DataSetUtil.weightsDataSet( DataSetOps.slice1(ds,3) );
 
+        double xscal= dep0.value(1) - dep0.value(0);
+        double xbase= dep0.value(0) - ( xscal / 2 );
+        if ( ! isLinearlySpaced( dep0, xscal, xbase ) ) {
+            throw new IllegalArgumentException("dep0 must be uniformly spaced.");            
+        }
+        
+        double yscal= dep1.value(1) - dep1.value(0);
+        double ybase= dep1.value(0) - ( yscal / 2 );
+        if ( ! isLinearlySpaced( dep1, yscal, ybase ) ) {
+            throw new IllegalArgumentException("dep1 must be uniformly spaced.");            
+        }
+
+        double zscal= dep2.value(1) - dep2.value(0);
+        double zbase= dep2.value(0) - ( zscal / 2 );
+        if ( ! isLinearlySpaced( dep2, zscal, zbase ) ) {
+            throw new IllegalArgumentException("dep2 must be uniformly spaced.");            
+        } 
+        
+        int nx= dep0.length();
+        int ny= dep1.length();
+        int nz= dep2.length();
+        
+        if ( ds.length()>0 ) { // accumulate.
+            UnitsConverter xuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(0), dep0 );
+            UnitsConverter yuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(1), dep1 );
+            UnitsConverter zuc= SemanticOps.getLooseUnitsConverter( ds.slice(0).slice(2), dep2 );
+            for ( int ids=0; ids<ds.length(); ids++ ) {
+                double w= wds.value(ids);
+                if ( w>0 ) {
+                    double x= xuc.convert(ds.value(ids,0));
+                    double y= yuc.convert(ds.value(ids,1));
+                    double z= zuc.convert(ds.value(ids,2));
+                    double f= ds.value(ids,3);
+                    int i= (int)( ( x-xbase ) / xscal );
+                    int j= (int)( ( y-ybase ) / yscal );
+                    int k= (int)( ( z-zbase ) / zscal );
+                    if ( i<0 || j<0 || k<0 ) continue;
+                    if ( i>=nx || j>=ny || k>=nz ) continue;
+                    sresult.putValue( i, j, k, f + sresult.value( i, j, k ) );
+                    nresult.putValue( i, j, k, w + nresult.value( i, j, k ) );
+                }
+            }
+        }
+
+        double fill= -1e31;  // normalize.  The weights will be in the WEIGHTS property
+        for ( int i=0; i<nx; i++ ) {
+            for ( int j=0; j<ny; j++ ) {
+                for ( int k=0; k<nz; k++ ) {
+                    int n= (int)nresult.value( i,j,k );
+                    if ( n>0 ) {
+                        sresult.putValue( i,j,k, sresult.value(i,j,k)/n );
+                    } else {
+                        sresult.putValue( i,j,k, fill );
+                    }
+                }
+            }
+        }
+
+        DataSetUtil.copyDimensionProperties( ds, sresult );
+        nresult.putProperty( QDataSet.DEPEND_0, dep0 );
+        nresult.putProperty( QDataSet.DEPEND_1, dep1 );
+        nresult.putProperty( QDataSet.DEPEND_2, dep2 );
+        sresult.putProperty( QDataSet.DEPEND_0, dep0 );
+        sresult.putProperty( QDataSet.DEPEND_1, dep1 );
+        sresult.putProperty( QDataSet.DEPEND_2, dep2 );
+        sresult.putProperty( QDataSet.FILL_VALUE, fill );
+        sresult.putProperty( QDataSet.WEIGHTS, nresult );
+        sresult.putProperty( QDataSet.RENDER_TYPE, "nnSpectrogram" );
+
+        return sresult;
+        
+    }
+    
     /**
      * takes rank 2 bundle (x,y,z) and averages it into table z(x,y).  This is 
      * similar to what happens in the spectrogram routine.
@@ -83,6 +188,8 @@ public class BinAverage {
      * @param dep0 the rank 1 depend0 for the result, which must be uniformly spaced.
      * @param dep1 the rank 1 depend1 for the result, which must be uniformly spaced.
      * @return rank 2 dataset of z averages with depend_0 and depend_1.  WEIGHTS contains the total weight for each bin.
+     * @see #rebin(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     * @see #rebinBundle(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static DDataSet rebinBundle( QDataSet ds, QDataSet dep0, QDataSet dep1 ) {
         DDataSet sresult= DDataSet.createRank2( dep0.length(), dep1.length() );
@@ -159,6 +266,7 @@ public class BinAverage {
      * @param newTags1 rank 1 monotonic dataset
      * @return rank 2 dataset with newTags0 for the DEPEND_0 tags, newTags1 for the DEPEND_1 tags.  WEIGHTS property contains the weights.
      * @see #rebin(org.virbo.dataset.QDataSet, int, int) 
+     * @see #rebinBundle(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static DDataSet rebin(QDataSet ds, QDataSet newTags0, QDataSet newTags1) {
 
