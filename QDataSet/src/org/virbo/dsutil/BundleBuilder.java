@@ -12,7 +12,9 @@ import org.virbo.dataset.SemanticOps;
 /**
  * reduce and standardize code needed to build bundle descriptors used in BUNDLE_1.  This can
  * only build a bundle of rank 1 datasets.
+ * 
  * @see org.virbo.dataset.SparseDataSetBuilder which is a more general way of doing this.
+ * @see org.virbo.dsutil.DataSetBuilder
  * @author jbf
  */
 public class BundleBuilder {
@@ -20,6 +22,10 @@ public class BundleBuilder {
     DDataSet ds;
     boolean readOnly= false;
 
+    /**
+     * create the builder for the BundleDescriptor to go into BUNDLE_1 property.
+     * @param size number of datasets to be bundled.
+     */
     public BundleBuilder( int size ) {
         ds= DDataSet.createRank2(size,1);
     }
