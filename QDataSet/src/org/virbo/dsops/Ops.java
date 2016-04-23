@@ -10180,7 +10180,7 @@ public class Ops {
      * @param c 2-d point corner
      * @return the volume
      */
-    public static double area( ProGAL.geom2d.Point a, ProGAL.geom2d.Point b, ProGAL.geom2d.Point c ) {        
+    private static double area( ProGAL.geom2d.Point a, ProGAL.geom2d.Point b, ProGAL.geom2d.Point c ) {        
         return Math.abs( a.x() * ( b.y()- c.y() ) -
                 b.x() * ( c.y() - a.y() ) +
                 c.x() * ( a.y() - b.y() ) ) / 2;
