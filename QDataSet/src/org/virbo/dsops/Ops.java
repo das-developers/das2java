@@ -1,6 +1,7 @@
 
 package org.virbo.dsops;
 
+import ProGAL.geom3d.Point;
 import java.awt.Color;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
@@ -76,6 +77,7 @@ import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
 import org.virbo.dsutil.AutoHistogram;
 import org.virbo.dsutil.BinAverage;
+import org.virbo.dsutil.BundleBuilder;
 import org.virbo.dsutil.DataSetBuilder;
 import org.virbo.dsutil.FFTUtil;
 import org.virbo.dsutil.LinFit;
@@ -4850,6 +4852,19 @@ public class Ops {
     
     /**
      * converts types often seen in Jython and Java codes to the correct type.  For
+     * example, ds= putProperty( [1400,2800], 'UNITS', 'seconds since 2012-01-01').  
+     * 
+     * @param ds the object which can be interpreted as a dataset, such as a number or array of numbers.
+     * @param name the property name
+     * @param value the property value, which can converted to the proper type. 
+     * @return the dataset, possibly converted to a mutable dataset.
+     */    
+    public static MutablePropertyDataSet putProperty( Object ds, String name, Object value ) {
+        return putProperty( dataset(ds), name, value );
+    }
+    
+    /**
+     * converts types often seen in Jython and Java codes to the correct type.  For
      * example, ds= putProperty( ds, 'UNITS', 'seconds since 2012-01-01').  The dataset
      * may be copied to make it mutable.
      * 
@@ -8725,15 +8740,23 @@ public class Ops {
      */
     public static QDataSet flatten( QDataSet ds ) {
         switch (ds.rank()) {
-            case 0:
-                DDataSet result= DDataSet.createRank1(1);
-                result.putValue(0,ds.value());
+            case 0: {
+                DDataSet result= DDataSet.createRank2(1,1);
+                result.putValue(0,0,ds.value());
+                BundleBuilder bb= new BundleBuilder(2);
+                
                 DataSetUtil.copyDimensionProperties( ds, result );
                 return result;
+            }
             case 1:
                 return ds;
             case 2:
-                return DataSetOps.flattenRank2(ds);                
+                QDataSet result= DataSetOps.flattenRank2(ds);                
+                if ( result.rank()==1 ) {
+                    return reform( ds, new int [] { result.length(), 1 } );
+                } else {
+                    return result;
+                }
             case 3:
                 return DataSetOps.flattenRank3(ds);
             default:
@@ -10157,7 +10180,7 @@ public class Ops {
      * @param c 2-d point corner
      * @return the volume
      */
-    private static double area( ProGAL.geom2d.Point a, ProGAL.geom2d.Point b, ProGAL.geom2d.Point c ) {        
+    public static double area( ProGAL.geom2d.Point a, ProGAL.geom2d.Point b, ProGAL.geom2d.Point c ) {        
         return Math.abs( a.x() * ( b.y()- c.y() ) -
                 b.x() * ( c.y() - a.y() ) +
                 c.x() * ( a.y() - b.y() ) ) / 2;
@@ -10183,23 +10206,49 @@ public class Ops {
      * NOTE: this does not check units.
      * @param xyz rank 2 bundle of x,y,z data.
      * @param data rank 1 dependent data, a function of x,y,z.
-     * @param xinterp the x locations to interpolate
+     * @param xinterp the x locations to interpolate, rank 0, 1, or 2.
      * @param yinterp the y locations to interpolate
      * @param zinterp the z locations to interpolate
      * @return the interpolated data.
      */
     public static QDataSet buckshotInterpolate( QDataSet xyz, QDataSet data, QDataSet xinterp, QDataSet yinterp, QDataSet zinterp ) {
         
+        if ( xyz.rank()!=2 || xyz.length(0)!=3 ) {
+            throw new IllegalArgumentException("xyz must be rank 2 bundle of x,y,z positions");
+        } 
+        
+        if ( xinterp.rank()>2 ) {
+            throw new IllegalArgumentException("xinterp rank can be 0,1, or 2");
+        } else if ( xinterp.rank()==2 ) {
+            int n= DataSetUtil.totalLength(xinterp);
+            xinterp= reform(xinterp, new int[] { n } );
+            yinterp= reform(yinterp, new int[] { n } );
+            zinterp= reform(zinterp, new int[] { n } );
+        } else if ( xinterp.rank()==0 ) {
+            xinterp= reform( xinterp, new int[] {1} );
+            yinterp= reform( yinterp, new int[] {1} );
+            zinterp= reform( zinterp, new int[] {1} );
+        }
+        
         QDataSet xx= Ops.unbundle( xyz, 0 );
         QDataSet yy= Ops.unbundle( xyz, 1 );
-        QDataSet zz= Ops.unbundle( xyz, 1 );
+        QDataSet zz= Ops.unbundle( xyz, 2 );
               
         Units u= SemanticOps.getUnits(xyz);
         
         // rescale xx,yy,zz so that all are from 0.1 to 0.9.
-        xx= Ops.rescale( xx, dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9)) );
-        yy= Ops.rescale( yy, dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9))  );
-        zz= Ops.rescale( zz, dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9))  );
+        QDataSet xx1= Ops.rescale( append(xx,xinterp), dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9)) );
+        QDataSet yy1= Ops.rescale( append(yy,yinterp), dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9))  );
+        QDataSet zz1= Ops.rescale( append(zz,zinterp), dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9))  );
+        
+        int inn= xx.length();
+        xx= xx1.trim(0,inn);
+        yy= yy1.trim(0,inn);
+        zz= zz1.trim(0,inn);
+        int l= xx1.length();
+        xinterp= xx1.trim(inn,l);
+        yinterp= yy1.trim(inn,l);
+        zinterp= zz1.trim(inn,l);
                 
         List<ProGAL.geom3d.PointWeighted> points= new ArrayList(xyz.length());
         for ( int i=0; i<xyz.length(); i++ ) {
@@ -10208,6 +10257,9 @@ public class Ops {
             ) );
         }
         ProGAL.geom3d.tessellation.BowyerWatson.RegularTessellation rt= new ProGAL.geom3d.tessellation.BowyerWatson.RegularTessellation(points);
+        //for ( ProGAL.geom3d.PointWeighted p: points ) {
+        //    rt.walk( p );
+        //}
         
         if ( xyz instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)xyz).isImmutable() ) {
             ((MutablePropertyDataSet)xyz).putProperty( "TRIANGULATION", rt );
@@ -10277,13 +10329,48 @@ public class Ops {
      * @return the interpolated data.
      */    
     public static QDataSet buckshotInterpolate( QDataSet xy, QDataSet data, QDataSet xinterp, QDataSet yinterp ) {
+        
+        if ( xy.rank()!=2 || xy.length(0)!=2 ) {
+            throw new IllegalArgumentException("xy must be rank 2 bundle of x,y positions");
+        } 
+        
+        if ( xinterp.rank()>2 ) {
+            throw new IllegalArgumentException("xinterp rank can be 0,1, or 2");
+        } else if ( xinterp.rank()==2 ) {
+            int n= DataSetUtil.totalLength(xinterp);
+            xinterp= reform(xinterp, new int[] { n } );
+            yinterp= reform(yinterp, new int[] { n } );
+        } else if ( xinterp.rank()==0 ) {
+            xinterp= reform( xinterp, new int[] {1} );
+            yinterp= reform( yinterp, new int[] {1} );
+        }
+        
+        QDataSet xx= Ops.unbundle( xy, 0 );
+        QDataSet yy= Ops.unbundle( xy, 1 );
+              
+        Units u= SemanticOps.getUnits(xy);
+        
+        boolean rescale= false;
+        if ( rescale ) {
+            // rescale xx,yy,zz so that all are from 0.1 to 0.9.
+            QDataSet xx1= Ops.rescale( append(xx,xinterp), dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9)) );
+            QDataSet yy1= Ops.rescale( append(yy,yinterp), dataset(u.createDatum(0.1)), dataset(u.createDatum(0.9))  );
+        
+            int inn= xx.length();
+            xx= xx1.trim(0,inn);
+            yy= yy1.trim(0,inn);
+            int l= xx1.length();
+            xinterp= xx1.trim(inn,l);
+            yinterp= yy1.trim(inn,l);
+        }
+        
         List<ProGAL.geom2d.Point> points= new ArrayList(xy.length());
         for ( int i=0; i<xy.length(); i++ ) {
-            points.add( new VertexInt( xy.value(i,0), xy.value(i,1), i ) );
+            points.add( new VertexInt( xx.value(i), yy.value(i), i ) );
         }
         ProGAL.geom2d.delaunay.DTWithBigPoints rt= new ProGAL.geom2d.delaunay.DTWithBigPoints( points );
         
-        DDataSet result= DDataSet.createRank1(xinterp.length());
+        DDataSet result= DDataSet.create( DataSetUtil.qubeDims(xinterp));
         
         QDataSet wds= DataSetUtil.weightsDataSet( data );
         Double fill= (Double)wds.property(QDataSet.FILL_VALUE);
@@ -10321,16 +10408,14 @@ public class Ops {
             dsi.putValue( result,d );
             
         }
-        
-        if ( xy instanceof MutablePropertyDataSet && !((MutablePropertyDataSet)xy).isImmutable() ) {
-            ((MutablePropertyDataSet)xy).putProperty( "TRIANGULATION", rt );
-        }
-        
+                
         DataSetUtil.copyDimensionProperties( data, result );
         if ( !hasFill ) {
             result.putProperty( QDataSet.FILL_VALUE, null );
         }
         
+        result.putProperty( "TRIANGULATION", rt );
+
         return result;
         
     };
