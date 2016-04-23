@@ -7,6 +7,7 @@ import java.util.Queue;
 
 import ProGAL.geom3d.PointWeighted;
 import ProGAL.math.Randomization;
+import java.util.ArrayList;
 
 public class RegularTessellation {
 	private final Tetr bigTetr;
@@ -57,11 +58,14 @@ public class RegularTessellation {
 		}
 	}
 
-	private void insertPoint(PointWeighted p){
+	public void insertPoint(PointWeighted p){
 		Tetr tet = walk(p);
-
+		
 		LinkedList<Tetr> star = new LinkedList<Tetr>();//TODO: Replace with HashSet for faster contains method
 		collectStar(p, tet, star);
+                if ( star.size()==0 ) {
+                    throw new IllegalArgumentException("point fails because it is not within the circumsphere of tet");
+                }
 		LinkedList<Tetr> newStar = new LinkedList<Tetr>();
 
 		//Create new tets
@@ -152,7 +156,7 @@ public class RegularTessellation {
 	}
 
         public Tetr walk(PointWeighted p){
-		Tetr t = bigTetr;
+                Tetr t = bigTetr;
 		double minDistSq = Double.POSITIVE_INFINITY;
 		for(Tetr last: lastQueue){
 			double dSq = last.corners[1].distanceSquared(p);
@@ -178,12 +182,12 @@ public class RegularTessellation {
 			for(int i=0;i<4;i++){
 				int orient = (int)Math.signum(orient(t.corners[(i+1)&3],t.corners[(i+2)&3],t.corners[(i+3)&3],p));
 				if(orient!=t.cornerSides[i] && orient!=0){
-					t = t.neighbors[i];
+                    t = t.neighbors[i];
 //                                        if ( trace!=null ) trace.add(t);
-                                        if ( t==null ) {
-                                            throw new IllegalArgumentException("neighbor is null--is this because the point outside of the tesselation?");
-                                        }
-					continue bigloop;
+                    if ( t==null ) {
+                        throw new IllegalArgumentException("neighbor is null--is this because the point outside of the tesselation?");
+                    }
+                    continue bigloop;
 				}
 			}
 			return t;
