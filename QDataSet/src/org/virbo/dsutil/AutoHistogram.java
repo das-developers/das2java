@@ -144,7 +144,7 @@ public final class AutoHistogram {
                 double j = nn[ibin] - 1;
                 if (j > 0) {
                     vv[ibin] = (1 - 1. / j) * vv[ibin] + (j + 1) * Math.pow(ss[ibin] - muj, 2);
-                    if ( !Double.isFinite(vv[ibin]) ) {
+                    if ( !isFinite(vv[ibin]) ) {
                         throw new IllegalArgumentException("here man");
                     }                    
                 }
@@ -155,6 +155,19 @@ public final class AutoHistogram {
         }
     }
 
+    /**
+     * implement isFinite until Java 8 is available.
+     * @param v
+     * @return 
+     */
+    private static boolean isFinite( double v ) {
+        if ( Double.isInfinite(v) || Double.isNaN(v) ) {
+            return false; //breakpoint
+        } else {
+            return true;
+        }
+    }
+    
     /**
      * get the histogram of the data accumulated thus far.
      * @return
@@ -323,7 +336,7 @@ public final class AutoHistogram {
                     continue;
                 }
                 d = iter.getValue(ds);
-                if ( !Double.isFinite(d) ) {
+                if ( !isFinite(d) ) {
                     logger.warning("weights imply that infinite value is valid: "+iter);
                     invalidCount++;
                     continue;
@@ -789,19 +802,19 @@ public final class AutoHistogram {
 
             // combine the variances with a weighted average
             vv[i] = oldVariances[0];
-            if ( !Double.isFinite(vv[i]) ) {
+            if ( !isFinite(vv[i]) ) {
                 throw new IllegalArgumentException("here man");
             }
 
             for (int j = 1; j < factor; j++) {
                 vv[i] += oldVariances[j];
-                if ( !Double.isFinite(vv[i]) ) {
+                if ( !isFinite(vv[i]) ) {
                     throw new IllegalArgumentException("here man");
                 }                
             }
             if (nn[i] > 1) {
                 vv[i] /= (nn[i] - 1);
-                if ( !Double.isFinite(vv[i]) ) {
+                if ( !isFinite(vv[i]) ) {
                     throw new IllegalArgumentException("here man");
                 }
             }
