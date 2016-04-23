@@ -536,6 +536,9 @@ public final class DDataSet extends ArrayDataSet {
         int noff1= start * len1 * len2 * len3;
         int noff2= end * len1 * len2 * len3;
         double[] newback = new double[noff2-noff1];
+        if ( end>this.len0 ) {
+            throw new IndexOutOfBoundsException();
+        }
         if ( noff2-noff1>0 ) {
             System.arraycopy( this.back, noff1, newback, 0, noff2-noff1 );
         }
