@@ -31,7 +31,12 @@ public class Triangle implements Shape{
 		return 2*A/c;
 	}
 
-	public Point getCenter() { return points[0].clone(); }
+	public Point getCenter() { 
+        Point p= points[0].clone();
+        p.addThis(points[1]);
+        p.addThis(points[2]);
+        return new Point( p.x()/3, p.y()/3 );
+    }
 
 	/** returns the cosinus of the angle opposite to the vertex with vertex i */
 	public double getCos(int i) {
