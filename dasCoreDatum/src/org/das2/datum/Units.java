@@ -251,9 +251,9 @@ public abstract class Units {
             Units.milliseconds, Basis.since1970 );
 
     /**
-     * roughly days since noon on some day in 1958, Julian - 2436204.5 to be more precise.
+     * roughly days since on midnight on 1958-01-01, Julian - 2436204.5 to be more precise.
      */
-    public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","Julian - 2436204.5", 
+    public static final TimeLocationUnits mj1958= new TimeLocationUnits("mj1958","days since 1958-01-01T00:00Z, or Julian - 2436204.5", 
             Units.days, Basis.since1958 );
     
     /**
