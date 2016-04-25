@@ -10140,6 +10140,9 @@ public class Ops {
             super( x,y,z,w );
             this.idx= idx;
         }
+        public String toString() {
+            return String.valueOf(idx);
+        }
     }
     
 //    /**
@@ -10196,7 +10199,7 @@ public class Ops {
             this.idx= idx;
         }
         public String toString() {
-            return super.toString(2);
+            return String.valueOf(idx);
         }
     }    
     
