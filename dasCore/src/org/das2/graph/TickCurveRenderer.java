@@ -282,6 +282,9 @@ public class TickCurveRenderer extends Renderer {
      */
     private double turnDirAt( double findex ) {
         int nvert= xds.length();
+        if ( nvert<3 ) {
+            return 0;
+        }
         int index0, index1, index2;
         if ( findex<1 ) {
             index0= 0;
@@ -290,9 +293,17 @@ public class TickCurveRenderer extends Renderer {
         } else {
             index0= (int)Math.floor(findex)-1;
         }
-        index1= index0+2;
-        index2= index1+2;            
-                    
+        if ( index0<0 ) index0= 0;
+        if ( index0+4>nvert ) {
+            index0= nvert-3;
+            index1= nvert-2;
+            index2= nvert-1;
+        } else {
+            index1= index0+2;
+            index2= index1+2;            
+        }
+        
+        
         return turnDir( xds.value(index0), yds.value(index0),
                         xds.value(index1), yds.value(index1),
                         xds.value(index2), yds.value(index2) );
