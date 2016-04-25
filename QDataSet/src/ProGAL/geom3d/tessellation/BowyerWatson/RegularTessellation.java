@@ -155,7 +155,7 @@ public class RegularTessellation {
 		}
 	}
 
-        public Tetr walk(PointWeighted p){
+    public Tetr walk(PointWeighted p){
                 Tetr t = bigTetr;
 		double minDistSq = Double.POSITIVE_INFINITY;
 		for(Tetr last: lastQueue){
@@ -167,7 +167,9 @@ public class RegularTessellation {
 		}
                 
                 //int stepCounter= 0;
-                
+             
+        Tetr t1= null;
+        
 		bigloop: while(true){
 //                        stepCounter++;
 //                        if ( trace!=null && stepCounter>1000 ) {
@@ -182,8 +184,15 @@ public class RegularTessellation {
 			for(int i=0;i<4;i++){
 				int orient = (int)Math.signum(orient(t.corners[(i+1)&3],t.corners[(i+2)&3],t.corners[(i+3)&3],p));
 				if(orient!=t.cornerSides[i] && orient!=0){
+                    
+                    Tetr t2= t1;
+                    t1= t;
                     t = t.neighbors[i];
+                    if ( t==t2 ) {
+                        throw new IllegalArgumentException("loop in walk.");
+                    }
 //                                        if ( trace!=null ) trace.add(t);
+                    System.err.println(t);
                     if ( t==null ) {
                         throw new IllegalArgumentException("neighbor is null--is this because the point outside of the tesselation?");
                     }
