@@ -10169,7 +10169,7 @@ public class Ops {
     private static double volume(  ProGAL.geom3d.Point a,  ProGAL.geom3d.Point b,  ProGAL.geom3d.Point c ) {        
         return Math.abs( a.x() * ( b.y() * c.z() - b.z() * c.y() ) -
                 a.y() * ( b.x() * c.z() - b.z() * c.x() ) +
-                a.z() * ( b.x() * c.y() - b.y() * c.x() ) );
+                a.z() * ( b.x() * c.y() - b.y() * c.x() ) ) / 6;
     }
 
     /**
@@ -10181,7 +10181,7 @@ public class Ops {
      * @return the volume
      */
     private static double area( ProGAL.geom2d.Point a, ProGAL.geom2d.Point b, ProGAL.geom2d.Point c ) {        
-        return Math.abs( a.x() * ( b.y()- c.y() ) -
+        return Math.abs( a.x() * ( b.y()- c.y() ) +
                 b.x() * ( c.y() - a.y() ) +
                 c.x() * ( a.y() - b.y() ) ) / 2;
     }
@@ -10402,7 +10402,22 @@ public class Ops {
             for ( int k=0; k<3; k++ ) {
                 w[k]/= n;
             }
-            double d= data.value( abci[0].idx ) * w[0] 
+            double d;
+            // nearest neighbor code
+//            if ( w[0]>w[1] ) {
+//                if ( w[0]>w[2] ) {
+//                    d= data.value( abci[0].idx );
+//                } else {
+//                    d= data.value( abci[2].idx );
+//                }
+//            } else {
+//                if ( w[1]>w[2] ) {
+//                    d= data.value( abci[1].idx );
+//                } else {
+//                    d= data.value( abci[2].idx );
+//                }
+//            }            
+            d= data.value( abci[0].idx ) * w[0] 
                 +   data.value( abci[1].idx ) * w[1] 
                 +   data.value( abci[2].idx ) * w[2];
             dsi.putValue( result,d );
