@@ -4640,6 +4640,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
      * set a hint at the format string.  Examples include:<ul>
      *  <li> 0.000
      *  <li> %H:%M!c%Y-%j
+     *  <li> 0
      * </ul>
      * @param formatString
      */
