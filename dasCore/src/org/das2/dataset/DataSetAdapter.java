@@ -83,11 +83,14 @@ public class DataSetAdapter {
 
             if (ds.getPlaneIds().length <= 1) {
                 //Handle x single y as a simple vector
-                return new Vector((VectorDataSet) ds);
+                Vector v = new Vector((VectorDataSet) ds);
+                v.putProperty(QDataSet.NAME, "y" );
             } else {
                 //Handle x multi y as a bundle
                 VectorDataSet vds = (VectorDataSet) ds;
-                AbstractDataSet bds = (AbstractDataSet) Ops.bundle(null, new Vector(vds));
+                Vector v = new Vector(vds);
+                v.putProperty(QDataSet.NAME, "y" );
+                AbstractDataSet bds = (AbstractDataSet) Ops.bundle(null,v);
                 String[] planes = ds.getPlaneIds();
                 Units unitsY = null;
                 boolean bCommonYUnits = false;
@@ -103,7 +106,7 @@ public class DataSetAdapter {
                         bCommonYUnits = (unitsY == view.getYUnits());
                     }
 
-                    Vector v = new Vector((VectorDataSet) vds.getPlanarView(planes[i]), planes[i]);
+                    v = new Vector((VectorDataSet) vds.getPlanarView(planes[i]), planes[i]);
                     v.putProperty(QDataSet.NAME, planes[i]);
                     Ops.bundle(bds, v);
                 }
