@@ -1089,6 +1089,7 @@ public class DataSetOps {
      * @param bundleDs
      * @return and array of the bundle names.
      * @throws IllegalArgumentException when bundleDs is not a bundle.
+     * @see DataSetOps#unbundle(org.virbo.dataset.QDataSet, java.lang.String) 
      */
     public static String[] bundleNames( QDataSet bundleDs ) {
         
@@ -1128,6 +1129,8 @@ public class DataSetOps {
                         if ( n1!=null ) {
                             n1= Ops.saferName(n1);
                             result.add(n1);
+                        } else {
+                            result.add("ch_"+j );
                         }
                     }
                     
