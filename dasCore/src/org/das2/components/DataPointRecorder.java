@@ -380,10 +380,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     private MyDataSetDescriptor dataSetDescriptor;
 
     /**
-     * returns a data set of the table data.
-     * @return  a data set of the table data.
+     * returns a data set of the table data.  This will be 
+     * ds[n,m] with n rows and m columns, where m is the number of columns
+     * minus one, and with DEPEND_0 containing the X values.
+     * @return  a data set of the table data. 
      */
-    public QDataSet getDataSet() {
+    public QDataSet getDataSet( ) {
         if ( unitsArray[0]==null ) return null;
         VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
         synchronized ( dataPoints ) {
@@ -402,14 +404,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                         if (unitsArray[i] != null) {
                             builder.insertY(dp.get(0), (Datum) dp.getPlane(planesArray[i]), planesArray[i]);
                         }
-                    }
+                    } DataSetAdapter.create( builder.toVectorDataSet() );
                 }
                 if ( xTagWidth != null && xTagWidth.value()>0 && !xTagWidth.isFill() ) {
                     builder.setProperty("xTagWidth", xTagWidth);
                 }
             }
         }
-        return DataSetAdapter.create( builder.toVectorDataSet() );
+        QDataSet result= DataSetAdapter.create( builder.toVectorDataSet() );
+        
+        return result;
     }
     
     /**
