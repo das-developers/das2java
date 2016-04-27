@@ -84,6 +84,7 @@ import org.das2.dataset.DataSetAdapter;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.TimeLocationUnits;
 import org.das2.datum.UnitsUtil;
+import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
@@ -1379,6 +1380,42 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
  
     }
 
+    /**
+     * append the rank 2 data.
+     * TODO: untested!!!!
+     * @param ds rank 2 bundle dataset.
+     */
+    public void appendDataSet( QDataSet ds ) {
+        Map planesMap = new LinkedHashMap();
+
+        QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        
+        if ( dep0.property(QDataSet.CADENCE) != null) {
+            DataPointRecorder.this.xTagWidth = DataSetUtil.asDatum( (QDataSet)dep0.property(QDataSet.CADENCE) );
+        } else {
+            DataPointRecorder.this.xTagWidth = Datum.create(0);
+        }
+
+        String[] planes = DataSetUtil.bundleNames(ds);
+
+        for (int i = 0; i < ds.length(); i++) {
+            for (int j = 0; j < planes.length; j++) {
+                if (!planes[j].equals("")) {
+                    planesMap.put( planes[j], DataSetUtil.asDatum( DataSetOps.unbundle( ds, planes[j] ).slice(i) ) );
+                }
+            }
+            addDataPoint( DataSetUtil.asDatum( dep0.slice(i) ), DataSetUtil.asDatum( ds.slice(i).slice(0) ), planesMap );
+        }
+
+        updateClients();
+                
+    }
+    
+    /**
+     * @deprecated uses old data model, use appendDataSet(QDataSet)
+     * @param ds 
+     * @see
+     */
     public void appendDataSet(VectorDataSet ds) {
 
         Map planesMap = new LinkedHashMap();
