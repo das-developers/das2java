@@ -9221,6 +9221,7 @@ public class Ops {
      * @param ds the bundle of datasets, often rank 2 with BUNDLE_1 property
      * @param name the name of the bundled dataset, or "ch_&lt;i&gt;" where i is the dataset number
      * @see #unbundle(org.virbo.dataset.QDataSet, int) 
+     * @see DataSetOps#bundleNames(org.virbo.dataset.QDataSet) 
      * @throws IllegalArgumentException if no named dataset is found.
      * @return
      */
