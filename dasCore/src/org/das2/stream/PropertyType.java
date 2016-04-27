@@ -102,10 +102,56 @@ public enum PropertyType {
                     throw new java.text.ParseException(nfe.getMessage(), 0);
                 }
             case DATUM: {
-                return DatumUtil.parse(s);
+                String[] split = s.split("\\s+");
+                if (split.length == 1) {
+                    return Units.dimensionless.parse(split[0]);
+                }
+                if (split.length == 2) {
+                    Units units = Units.lookupUnits(split[1]);
+                    return units.parse(split[0]);
+                }
+
+                //Allow for units that contain single spaces
+                StringBuilder bldr = new StringBuilder();
+                for (int i = 1; i < split.length; i++) {
+                    if (i > 1) {
+                        bldr.append(" ");
+                    }
+                    bldr.append(split[i]);
+                }
+
+                Units units = Units.lookupUnits(bldr.toString());
+                return units.parse(split[0]);
             }
             case DATUM_RANGE: {
-                return DatumRangeUtil.parseDatumRange(s);
+                String[] split = s.split("\\s+");
+                if (split.length < 3) {
+                    throw new IllegalArgumentException("Too few tokens in range: '" + s + "'");
+                }
+                if (!split[1].toLowerCase().equals("to")) {
+                    throw new java.text.ParseException("Range '" + s + "' is missing the word 'to'", 0);
+                }
+
+                if (split.length == 3) {
+                    Datum begin = Units.dimensionless.parse(split[0]);
+                    Datum end = Units.dimensionless.parse(split[2]);
+                    return new DatumRange(begin, end);
+                }
+
+				// New for 2014-06-12, allow units strings to have spaces, thus
+                // "V**2 m**-2 Hz**-1" is legal
+                StringBuilder bldr = new StringBuilder();
+                for (int i = 3; i < split.length; i++) {
+                    if (i > 3) {
+                        bldr.append(" ");
+                    }
+                    bldr.append(split[i]);
+                }
+
+                Units units = Units.lookupUnits(bldr.toString());
+                Datum begin = units.parse(split[0]);
+                Datum end = units.parse(split[2]);
+                return new DatumRange(begin, end);
             }
             case TIME: {
                 return Units.us2000.parse(s);
