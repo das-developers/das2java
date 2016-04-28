@@ -216,9 +216,32 @@ public class CredentialsManager{
 	 * encoding.  If no credentials are available for the given location ID and none can be 
 	 * gathered from the user (possibly due to the java.awt.headless being set or the
          * user pressing cancel), null is returned.
+         * @see #getHttpBasicHashRaw(java.lang.String) 
 	 */
 	public String getHttpBasicHash(String sLocationId){
-		String sHash;
+                String sTmp= getHttpBasicHashRaw( sLocationId );
+		String sHash = Base64.encodeBytes( sTmp.getBytes());
+		return sHash;
+	}
+        
+        /**
+         * Get credentials in the form of a hashed HTTP Basic authentication string
+	 * 
+	 * If there are no credentials stored for the given location id, this function may
+	 * trigger interaction with the user, such as presenting modal dialogs, or changing the
+	 * TTY to non-echo.
+	 * 
+	 * @param sLocationId A unique string identifying a location.  There are no formation
+	 * rules on the string, but convenience functions are provided if a uniform naming 
+	 * convention is desired.
+	 * 
+	 * @return The string USERNAME + ":" + PASSWORD.  If no credentials are 
+         * available for the given location ID and none can be 
+	 * gathered from the user (possibly due to the java.awt.headless being set or the
+         * user pressing cancel), null is returned.
+         * @see #getHttpBasicHash(java.lang.String) 
+         */
+        public String getHttpBasicHashRaw( String  sLocationId){
 		
 		if(!m_dLocs.containsKey(sLocationId)){
 			synchronized(this){
@@ -240,9 +263,8 @@ public class CredentialsManager{
 		}
 		
 		String sTmp = loc.sUser + ":" + loc.sPasswd;
-		sHash = Base64.encodeBytes( sTmp.getBytes());
-		return sHash;
-	}
+                return sTmp;
+        }
 	
 	/** Let the credentials manager know that stored credentials for a location are invalid
 	 * 
