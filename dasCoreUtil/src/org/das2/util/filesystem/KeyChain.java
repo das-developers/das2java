@@ -279,6 +279,17 @@ public class KeyChain {
     }
     
     /**
+     * insert the userInfo into the table of stored passwords.
+     * TODO: note the path is not used in the hash, and it should be.
+     * @param url
+     * @param userInfo 
+     */
+    public void setUserInfo( URL url, String userInfo ) {
+        String hash= url.getProtocol() + "://" + url.getHost(); //TODO: whah?  This still doesn't use the path!
+        keys.put( hash, userInfo );
+    }
+    
+    /**
      * return the user info but base-64 encoded.  This is put in so that
      * a future version of the software can cache these as well.  This is
      * intended to be inserted like so:
