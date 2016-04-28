@@ -371,7 +371,7 @@ public class KeyChain {
             }
         }
         
-        String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost();
+        String hash= url.getProtocol() + "://" + ( userName!=null ? userName+"@" : "" ) + url.getHost(); //TODO: whah?  This still doesn't use the path!
 
         String storedUserInfo= keys.get(hash);
         //TODO: shouldn't "http://ectsoc@www.rbsp-ect.lanl.gov" match "http://www.rbsp-ect.lanl.gov    ectsoc:"
