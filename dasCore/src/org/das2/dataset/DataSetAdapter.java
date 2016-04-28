@@ -85,6 +85,8 @@ public class DataSetAdapter {
                 //Handle x single y as a simple vector
                 Vector v = new Vector((VectorDataSet) ds);
                 v.putProperty(QDataSet.NAME, "y" );
+                return v;
+                
             } else {
                 //Handle x multi y as a bundle
                 VectorDataSet vds = (VectorDataSet) ds;
