@@ -17,6 +17,7 @@ import org.das2.datum.Units;
 import org.das2.system.DasLogger;
 import javax.sound.sampled.*;
 import org.das2.datum.UnitsConverter;
+import org.virbo.dataset.FlattenWaveformDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
@@ -43,12 +44,23 @@ public class Auralizor {
     
     /**
      * set the dataset to stream.  The dataset should be 
-     * rank1 and have DEPEND_0 which is convertible
-     * to seconds.
-     * @param ds the rank 1 dataset with DEPEND_0 convertible to seconds.
+     * rank 1 or a rank 2 waveform, and have DEPEND_0 which is convertible
+     * to seconds or be a time location unit.
+     * @param ds the rank 1 dataset with DEPEND_0 convertible to seconds or be a time location unit, or rank 2 waveform.
      */
-    void setDataSet( QDataSet ds ) {
-        this.ds= ds;
+    public final void setDataSet( QDataSet ds ) {        
+        if ( ds.rank()==2 ) {
+            this.ds= new FlattenWaveformDataSet(ds);
+        } else if ( ds.rank()==1 ) {
+            this.ds= ds;
+        } else {
+            throw new IllegalArgumentException("dataset must be rank 1 or rank 2 waveform");
+        }
+        min= -1;
+        max= 1;
+        QDataSet yrange= Ops.extent(this.ds);
+        min= yrange.value(0);
+        max= yrange.value(1);        
     }
     
     /**
@@ -135,12 +147,7 @@ public class Auralizor {
      * @param ds rank 1 dataset with DEPEND_0 convertible to seconds.
      */
     public Auralizor( QDataSet ds ) {
-        min= -1;
-        max= 1;
-        QDataSet yrange= Ops.extent(ds);
-        min= yrange.value(0);
-        max= yrange.value(1);
-        this.ds= ds;
+        setDataSet(ds);
     }
     
 
