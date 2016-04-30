@@ -29,11 +29,12 @@ import java.util.Arrays;
 import org.das2.datum.Units;
 import org.das2.datum.UnitsUtil;
 import org.virbo.dataset.ArrayDataSet;
+import org.virbo.dataset.FlattenWaveformDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
 
 /**
- *
+ * Java Speech Toolkit code modified to use QDataSets.
  * @author jbf
  */
 public class AbstractFilter {
@@ -108,6 +109,10 @@ public class AbstractFilter {
         }
        
         public QDataSet filter() {
+            if ( source.rank()==2 ) {
+                source= new FlattenWaveformDataSet(source);
+            }
+
             ArrayDataSet buf= ArrayDataSet.copy(source);
             
                 // apply the filter
