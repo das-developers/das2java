@@ -37,4 +37,23 @@ public class FilterEditorPanelUtil {
         }
         return depNames;
     }  
+    
+    /**
+     * sloppy regex to be used when the number doesn't need to be parsed.
+     * @return regular expression that would match a decimal, without whitespace.
+     */
+    public static String decimalRegexSloppy() {
+        return "[0-9eE\\+\\-\\.]+";
+    }
+    
+    /**
+     * return regular expression for decimal regex, without leading 
+     * or trailing whitespace.
+     * From http://www.regular-expressions.info/floatingpoint.html
+     * modified to allow "1.e4"
+     * @return regular expression for a decimal, without whitespace.  Note it contains (groups)!
+     */
+    public static String decimalRegex() {
+        return "[-+]?[0-9]*\\.?[0-9]*([eE][-+]?[0-9]+)?";
+    }
 }
