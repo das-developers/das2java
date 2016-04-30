@@ -311,8 +311,10 @@ public class ButterworthFilterEditorPanel extends AbstractFilterEditorPanel {
 
     @Override
     public void setFilter(String filter) {
-        Pattern p= Pattern.compile("\\|butterworth\\((\\d),(\\d+),(\\w+)\\)");
-        Pattern p1= Pattern.compile("\\|butterworth\\((\\d),(\\d+),(\\d+),(\\w+)\\)");
+        String dec= FilterEditorPanelUtil.decimalRegexSloppy();
+        String decw= "\\s*("+dec+")\\s*";
+        Pattern p= Pattern.compile("\\|butterworth\\((\\d),"+decw+",(\\w+)\\)");
+        Pattern p1= Pattern.compile("\\|butterworth\\((\\d),"+decw+","+decw+",(\\w+)\\)");
         Matcher m= p.matcher(filter);
         Matcher n= p1.matcher(filter);
         if ( m.matches() ) {
