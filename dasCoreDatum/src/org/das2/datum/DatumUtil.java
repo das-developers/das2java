@@ -532,7 +532,7 @@ public final class DatumUtil {
             Datum dd = d.convertTo(conversions[i]);
             Number n = dd.getValue();
 
-            if ( n.equals( d.getValue() ) ) continue;
+            if ( n.equals( d.getValue() ) && conversions[i]!=dunits ) continue;
 
             double nn = Math.abs(n.doubleValue());
             
