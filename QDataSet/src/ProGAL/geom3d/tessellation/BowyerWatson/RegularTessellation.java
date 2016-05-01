@@ -192,7 +192,7 @@ public class RegularTessellation {
                         throw new IllegalArgumentException("loop in walk.");
                     }
 //                                        if ( trace!=null ) trace.add(t);
-                    System.err.println(t);
+                    //System.err.println(t);
                     if ( t==null ) {
                         throw new IllegalArgumentException("neighbor is null--is this because the point outside of the tesselation?");
                     }
