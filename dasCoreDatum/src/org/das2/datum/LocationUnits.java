@@ -24,7 +24,7 @@
 package org.das2.datum;
 
 /**
- *
+ * Units for describing locations, Stevens' Interval Scale.
  * @author  jbf
  */
 public class LocationUnits extends NumberUnits {
@@ -32,7 +32,13 @@ public class LocationUnits extends NumberUnits {
     Units offsetUnits; 
     Basis basis;
     
-    /** Creates a new instance of LocationUnit */
+    /** 
+     * Creates a new instance of LocationUnit
+     * @param id the identifier.
+     * @param description human-consumable label.
+     * @param offsetUnits units of offset from the basis.
+     * @param basis the reference, such as "2000-01-01T00:00" or the freezing point of water.
+     */
     public LocationUnits( String id, String description, Units offsetUnits, Basis basis ) {
         super( id, description );
         this.offsetUnits= offsetUnits;
@@ -57,6 +63,7 @@ public class LocationUnits extends NumberUnits {
         return this.basis;
     }
     
+    @Override
     public Datum add(Number a, Number b, Units bUnits) {
         if ( bUnits instanceof LocationUnits ) {
             throw new IllegalArgumentException("You can't add "+this+" to "+bUnits+", they both identify a location in a space");
@@ -70,14 +77,17 @@ public class LocationUnits extends NumberUnits {
         }
     }
     
+    @Override
     public Datum divide(Number a, Number b, Units bUnits) {
-        throw new IllegalArgumentException("multiplication of locationUnits");
+        throw new IllegalArgumentException("division of locationUnits: "+ this.createDatum(a)+" / "+bUnits.createDatum(b) );
     }
     
+    @Override
     public Datum multiply(Number a, Number b, Units bUnits) {
-        throw new IllegalArgumentException("division of locationUnits");
+        throw new IllegalArgumentException("multiplication of locationUnits"+ this.createDatum(a)+" * "+bUnits.createDatum(b));
     }
     
+    @Override
     public Datum subtract( Number a, Number b, Units bUnits) {
         if ( bUnits instanceof LocationUnits ) {
             if ( this != bUnits ) {
