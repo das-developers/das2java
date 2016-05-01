@@ -24,7 +24,6 @@
 package org.das2.datum;
 
 import java.text.ParseException;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -528,20 +527,19 @@ public final class DatumUtil {
         
         double bestScore = 0.2;
         Datum bestDatum = d;
-        for (int i = 0; i < conversions.length; i++) {
-            Datum dd = d.convertTo(conversions[i]);
+        for (Units conversion : conversions) {
+            Datum dd = d.convertTo(conversion);
             Number n = dd.getValue();
-
-            if ( n.equals( d.getValue() ) && conversions[i]!=dunits ) continue;
-
+            if (n.equals( d.getValue() ) && conversion != dunits) {
+                continue;
+            }
             double nn = Math.abs(n.doubleValue());
-            
             double score;
-            if (nn > 100)  // favor 72 seconds over 1.2 minutes
+            if (nn > 100) {  // favor 72 seconds over 1.2 minutes
                 score = 100/nn;
-            else
+            } else {
                 score = nn;
-
+            }
             if (score > bestScore) {
                 bestScore = score;
                 bestDatum = dd;
