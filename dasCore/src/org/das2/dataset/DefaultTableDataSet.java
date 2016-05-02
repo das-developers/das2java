@@ -34,6 +34,7 @@ import java.util.*;
 import java.text.MessageFormat;
 import java.util.logging.Logger;
 import static org.das2.dataset.DataSetAdapter.adaptSubstitutions;
+import org.das2.datum.DatumRange;
 import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
@@ -325,7 +326,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         
         Map<String,Object> dasProps = adaptSubstitutions(getProperties());
 				
-	// Save properterties with value substitution strings in Autoplot Stlye
+	// Save properterties with value substitution strings in Autoplot Style
 	result.putProperty( QDataSet.USER_PROPERTIES, dasProps );
 
         Set<double[]> doneModes= new HashSet<double[]>();
@@ -381,6 +382,16 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
                 DDataSet yTagsDs=  DDataSet.wrap(yTags[itable]);
                 yTagsDs.putProperty( QDataSet.UNITS, getYUnits() );
                 yTagsDs.putProperty( QDataSet.LABEL, dasProps.get( PROPERTY_Y_LABEL ) );
+					 yTagsDs.putProperty( QDataSet.SCALE_TYPE, dasProps.get(PROPERTY_Y_SCALETYPE));
+					 yTagsDs.putProperty( QDataSet.CADENCE, dasProps.get(PROPERTY_Y_TAG_WIDTH));
+					 
+					 //Let Das2 Streams set a Y-Axis range
+                DatumRange yRng = (DatumRange) dasProps.get( PROPERTY_Y_RANGE);
+                if (yRng != null) {
+                  yTagsDs.putProperty(QDataSet.TYPICAL_MIN, yRng.min().value());
+                  yTagsDs.putProperty(QDataSet.TYPICAL_MAX, yRng.max().value());
+               }
+					 
                 table1.putProperty( QDataSet.DEPEND_1,yTagsDs);
                 result.join(table1);
                 doneModes.add(m);
@@ -389,6 +400,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         result.putProperty( QDataSet.UNITS, getZUnits() );
         result.putProperty( QDataSet.LABEL, dasProps.get( PROPERTY_Z_LABEL ) );
         result.putProperty( QDataSet.TITLE, dasProps.get( PROPERTY_TITLE ) );
+		  result.putProperty( QDataSet.SCALE_TYPE, dasProps.get( PROPERTY_Z_SCALETYPE));
         return result;
     }
 
