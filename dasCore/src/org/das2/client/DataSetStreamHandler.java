@@ -366,11 +366,26 @@ public class DataSetStreamHandler implements StreamHandler {
             builder.insertYScan(x, y, vectors, planeIDs);
         }
         
+        String[] streamPlaneIDs= null;
+                
         public void packetDescriptor(PacketDescriptor pd) throws StreamException {
             StreamYScanDescriptor y = (StreamYScanDescriptor)pd.getYDescriptor(0);
             for (int i = 1; i < pd.getYCount(); i++) {
                 y = (StreamYScanDescriptor)pd.getYDescriptor(i);
                 builder.addPlane(y.getName(), y.getZUnits());
+            }
+            String[] planeIDs = new String[pd.getYCount()];
+            for (int i = 0; i < pd.getYCount(); i++) {
+                planeIDs[i] = ((StreamYScanDescriptor)pd.getYDescriptor(i)).getName();
+            }
+            if ( streamPlaneIDs==null ) {
+                streamPlaneIDs= planeIDs;
+            } else {
+                for ( int i=0; i<streamPlaneIDs.length; i++ ) {
+                    if ( !streamPlaneIDs[i].equals(planeIDs[i]) ) {
+                        throw new StreamException( "only one name allowed in stream: "+planeIDs[i] + " != "+ streamPlaneIDs[i] );
+                    }
+                }
             }
             Map<String,String> p= pd.getProperties();
             for ( Entry e: p.entrySet() ) {
