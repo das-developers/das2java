@@ -378,14 +378,14 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
                 xTagsDs.putProperty( QDataSet.UNITS, getXUnits() );
                 xTagsDs.putProperty( QDataSet.LABEL, dasProps.get( PROPERTY_X_LABEL ) );
                 xTagsDs.putProperty( QDataSet.MONOTONIC, dasProps.get( PROPERTY_X_MONOTONIC ) );
+					 
                 table1.putProperty( QDataSet.DEPEND_0, xTagsDs );
+					 
                 DDataSet yTagsDs=  DDataSet.wrap(yTags[itable]);
                 yTagsDs.putProperty( QDataSet.UNITS, getYUnits() );
                 yTagsDs.putProperty( QDataSet.LABEL, dasProps.get( PROPERTY_Y_LABEL ) );
 					 yTagsDs.putProperty( QDataSet.SCALE_TYPE, dasProps.get(PROPERTY_Y_SCALETYPE));
 					 yTagsDs.putProperty( QDataSet.CADENCE, dasProps.get(PROPERTY_Y_TAG_WIDTH));
-					 
-					 //Let Das2 Streams set a Y-Axis range
                 DatumRange yRng = (DatumRange) dasProps.get( PROPERTY_Y_RANGE);
                 if (yRng != null) {
                   yTagsDs.putProperty(QDataSet.TYPICAL_MIN, yRng.min().value());
@@ -393,6 +393,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
                }
 					 
                 table1.putProperty( QDataSet.DEPEND_1,yTagsDs);
+					 
                 result.join(table1);
                 doneModes.add(m);
             }
@@ -401,6 +402,8 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
         result.putProperty( QDataSet.LABEL, dasProps.get( PROPERTY_Z_LABEL ) );
         result.putProperty( QDataSet.TITLE, dasProps.get( PROPERTY_TITLE ) );
 		  result.putProperty( QDataSet.SCALE_TYPE, dasProps.get( PROPERTY_Z_SCALETYPE));
+		  result.putProperty( QDataSet.FILL_VALUE, dasProps.get( PROPERTY_Z_FILL));
+		  
         return result;
     }
 

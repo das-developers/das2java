@@ -67,8 +67,8 @@ public class DataSetAdapter {
     /**
      * Created a new QDataSet given a Das2 DataSet
      *
-     * This function and createLegacyDataSet() are inverses, though a round trip conversion is not guaranteed
-     * to preserve all properties
+     * This function and createLegacyDataSet() are inverses, though a round trip conversion 
+	  * is not guaranteed to preserve all properties
      *
      * @param ds A Das2 Dataset
      * @return A new QDataSet
@@ -282,7 +282,7 @@ public class DataSetAdapter {
         }
 
 		  // This constructor takes a plane ID so that property values can be gathered.
-        // It's a dump hack to get around:
+        // It's a dumb hack to get around:
         //   1. Das2 DataSet objects are immutable
         //   2. We are not converting straght to QDataSet
         Vector(VectorDataSet source, String sPlaneID) {
