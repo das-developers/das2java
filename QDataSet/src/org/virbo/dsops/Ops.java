@@ -559,6 +559,9 @@ public class Ops {
      * @see #abs(org.virbo.dataset.QDataSet) 
      */
     public static QDataSet magnitude(QDataSet ds) {
+        
+        if ( ds==null ) throw new IllegalArgumentException("input ds is null");
+        
         int r = ds.rank();
         if ( r==0 ) {
             return DataSetUtil.asDataSet( Math.abs(ds.value()), (Units) ds.property(QDataSet.UNITS) ); //TODO: invalid.
