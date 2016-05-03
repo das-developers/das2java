@@ -1062,7 +1062,7 @@ public class Ops {
         f1= 0>f1 ? 0 : f1;
         f1= n<f1 ? n : f1;
         f2= 0>f2 ? 0 : f2;
-        f2= n<f2 ? 0 : f2;
+        f2= n<f2 ? n : f2;
         
         if ( f1>f2 ) throw new IllegalArgumentException("st must be less than (or earlier than) en");
         
