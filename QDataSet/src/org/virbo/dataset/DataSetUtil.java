@@ -2147,14 +2147,14 @@ public class DataSetUtil {
 
     /**
      * add method for validating before link is called.
-     * @param xds
-     * @param yds
-     * @param zds
+     * @param xds rank 1 tags
+     * @param yds rank 1 or rank 2 tags
+     * @param zds the dependent data.
      * @param problems insert problem descriptions here, if null then ignore
      * @return true if the datasets can be linked into a valid dataset, false otherwise
      */
     public static boolean validate(QDataSet xds, QDataSet yds, QDataSet zds, List<String> problems ) {
-        if ( xds.length()!=yds.length() ) {
+        if ( xds.length()!=zds.length() ) {
             if (problems == null) problems = new ArrayList<String>();
             problems.add(String.format("DEPEND_%d length is %d, should be %d.", 0, xds.length(), yds.length()));
             return false;
