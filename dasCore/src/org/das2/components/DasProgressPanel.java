@@ -486,7 +486,7 @@ public class DasProgressPanel implements ProgressMonitor {
         cancelChecked = false;  // reset for next time, isCancelled will set true.
 
         if (maximumTaskPosition == 0) {
-            throw new IllegalArgumentException("when taskSize is 0, setTaskProgress must not be called.");
+            logger.fine("setTaskProgress called when taskSize is 0, just letting you know.");
         }
 
         currentTaskPosition = position;
