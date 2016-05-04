@@ -681,7 +681,7 @@ public class EventsRenderer extends Renderer {
                         } else if ( this.ganttMode ) {
                             int iymin= row.getDMinimum() + row.getHeight() * ((int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) + 1;
                             int iymax= row.getDMinimum() + row.getHeight() * (1+(int)msgs.value(i)-gymin) / ( gymax - gymin + 1 ) - 1;
-                            r1= new Rectangle( ixmin, iymin, iwidth, iymax-iymin );
+                            r1= new Rectangle( ixmin, iymin, iwidth, Math.max( iymax-iymin, 2 ) );
                             g.fill( r1 );
                         } else {                
                             r1= new Rectangle( ixmin, row.getDMinimum(), iwidth, row.getHeight() );
