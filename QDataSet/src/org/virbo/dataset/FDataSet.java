@@ -152,6 +152,11 @@ public final class FDataSet extends ArrayDataSet {
     }
     
     @Override
+    protected int getBackJvmMemory() {
+        return this.back.length * 4;
+    }
+        
+    @Override
     protected Object getBackCopy() {
         Object newback = Array.newInstance( this.back.getClass().getComponentType(), this.back.length  );
         System.arraycopy( this.back, 0, newback, 0, this.back.length );

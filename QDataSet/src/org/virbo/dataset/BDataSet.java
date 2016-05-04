@@ -151,6 +151,11 @@ public final class BDataSet extends ArrayDataSet {
     }
     
     @Override
+    protected int getBackJvmMemory() {
+        return this.back.length;
+    }
+    
+    @Override
     protected Object getBackCopy() {
         Object newback = Array.newInstance( this.back.getClass().getComponentType(), this.back.length  );
         System.arraycopy( this.back, 0, newback, 0, this.back.length );
@@ -437,5 +442,5 @@ public final class BDataSet extends ArrayDataSet {
             return super.capability(clazz);
         }
     }
-    
+
 }

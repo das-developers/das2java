@@ -528,7 +528,13 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @return the backing array for the data. 
      */
     protected abstract Object getBack();
-       
+    
+    /**
+     * return the size of the backing in JvmMemory.
+     * @return the backing array for the data. 
+     */
+    protected abstract int getBackJvmMemory();
+    
     /**
      * return a copy of the backing array, to support ArrayDataSet.copy.
      * @return a copy of the array for the data.
@@ -902,24 +908,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @see org.autoplot.bufferdataset.BufferDataSet which stores data outside of the JVM.
      */
     public int jvmMemory() {
-        int sizePer;
-        Class component= this.getComponentType();
-        if ( component==double.class ) {
-            sizePer= 8;
-        } else if ( component==float.class ) {
-            sizePer= 4;
-        } else if ( component==long.class ) {
-            sizePer= 8;
-        } else if ( component==int.class ) {
-            sizePer= 4;
-        } else if ( component==short.class ) {
-            sizePer= 2;
-        } else if ( component==byte.class ) {
-            sizePer= 1;
-        } else {
-            throw new IllegalArgumentException("not supported "+component );
-        }
-        return Array.getLength( this.getBack() ) * sizePer;
+        return getBackJvmMemory();
     }
     
     
@@ -928,7 +917,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      */
     public void about() {
         System.err.println("== "+this.toString() + "==");
-        System.err.println("back is array of "+ this.getBack().getClass().getComponentType() );
+        System.err.println("back is array of "+ this.getComponentType() );
         //QDataSet extent= Ops.extent(this);  // this is occasionally very slow. TODO: investigate
         //System.err.println("extent="+extent);
     }

@@ -149,7 +149,13 @@ public final class SDataSet extends ArrayDataSet {
         checkImmutable();
         return this.back;
     }
+
+    @Override
+    protected int getBackJvmMemory() {
+        return this.back.length * 2;
+    }
     
+
     @Override
     protected Object getBackCopy() {
         Object newback = Array.newInstance( this.back.getClass().getComponentType(), this.back.length  );
