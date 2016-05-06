@@ -179,7 +179,7 @@ public class TrimDataSet extends AbstractDataSet {
         if ( start<0 ) {
             throw new IllegalArgumentException("start<0" );
         }
-        return new TrimDataSet( ds, start+offset, start+offset+end );
+        return new TrimDataSet( ds, start+offset, end+offset );
     }
 
 
