@@ -38,6 +38,7 @@ import org.das2.graph.DasCanvasComponent;
 import org.das2.system.DasLogger;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.logging.Level;
@@ -413,12 +414,22 @@ public class DasProgressPanel implements ProgressMonitor {
 
     StackTraceElement[] stackTrace= null;
     
+    private void printStackTrace( StackTraceElement[] trace ) {
+        PrintStream s= System.err;
+        for (StackTraceElement traceElement : trace) {
+            s.println("\tat " + traceElement);
+        }
+    }
+    
     @Override
     public synchronized void finished() {
         if ( finished==true ) {
             logger.warning("monitor finished was called twice!");
             logger.warning("here was the first call:");
+            printStackTrace( stackTrace );
+            logger.warning("... and the second call:");
             new Exception().printStackTrace();
+            
         } else {
             logger.fine("enter monitor finished");
             stackTrace= Thread.currentThread().getStackTrace();
