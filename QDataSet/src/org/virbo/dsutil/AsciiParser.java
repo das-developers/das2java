@@ -1251,7 +1251,11 @@ public class AsciiParser {
             if ( field.startsWith("\"") && field.endsWith("\"") ) {
                 return u.parse(field.substring(1,field.length()-1)).doubleValue(u); // TODO: untested..
             } else {
-                return u.createDatum(field).doubleValue(u);            
+                try {
+                    return u.createDatum(field).doubleValue(u);            
+                } catch ( NullPointerException ex ) {
+                    throw ex; // w/Ivar
+                }
             }
         }
         @Override
