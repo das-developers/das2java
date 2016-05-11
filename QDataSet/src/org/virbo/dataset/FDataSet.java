@@ -133,6 +133,7 @@ public final class FDataSet extends ArrayDataSet {
     }
 
     protected FDataSet( int rank, int len0, int len1, int len2, int len3, float[] back ) {
+        super( float.class );
         this.back = back;
         this.rank = rank;
         this.len0 = len0;

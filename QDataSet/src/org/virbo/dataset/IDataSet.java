@@ -132,6 +132,7 @@ public final class IDataSet extends ArrayDataSet {
     }
 
     protected IDataSet( int rank, int len0, int len1, int len2, int len3, int[] back ) {
+        super( int.class );
         this.back= back;
         this.rank= rank;
         this.len0= len0;

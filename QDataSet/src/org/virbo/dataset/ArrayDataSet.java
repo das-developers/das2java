@@ -45,6 +45,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
 
     private static final boolean RANGE_CHECK = "true".equals( System.getProperty("rangeChecking","false") );
 
+    Class componentType;
+    
+    protected ArrayDataSet( Class componentType ) {
+        this.componentType= componentType;
+    }
+    
     protected static ArrayDataSet create( int rank, int len0, int len1, int len2, int len3, Object back ) {
         Class c= back.getClass().getComponentType();
         if ( c==double.class ) return new DDataSet( rank, len0, len1, len2, len3, (double[])back );
@@ -357,7 +363,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @see #create(java.lang.Class, int[]) 
      */
     public Class getComponentType() {
-        return getBack().getClass().getComponentType();
+        return componentType;
     }
 
     /**

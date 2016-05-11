@@ -132,6 +132,7 @@ public final class BDataSet extends ArrayDataSet {
     }
 
     protected BDataSet( int rank, int len0, int len1, int len2, int len3, byte[] back ) {
+        super( byte.class );
         this.back= back;
         this.rank= rank;
         this.len0= len0;

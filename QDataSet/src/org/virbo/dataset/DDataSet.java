@@ -161,6 +161,7 @@ public final class DDataSet extends ArrayDataSet {
     }
 
     protected DDataSet(int rank, int len0, int len1, int len2, int len3, double[] back) {
+        super( double.class );
         if ( back==null ) throw new NullPointerException("back was null");
         this.back = back;
         this.rank = rank;

@@ -132,6 +132,7 @@ public final class SDataSet extends ArrayDataSet {
     }
 
     protected SDataSet( int rank, int len0, int len1, int len2, int len3, short[] back ) {
+        super( short.class );
         this.back= back;
         this.rank= rank;
         this.len0= len0;
