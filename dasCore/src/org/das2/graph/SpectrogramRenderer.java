@@ -535,7 +535,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
 
                 BufferedImage plotImage2;  // index color model
 
-                logger.log( Level.FINER, "axis units x:{0} y:{1} z:{2}", new Object[]{xAxis.getUnits(), yAxis.getUnits(), colorBar.getUnits()});                
+                logger.log( Level.FINER, "axis units x:{0} y:{1} z:{2}", new Object[]{xAxis.getUnits(), yAxis.getUnits(), lcolorBar.getUnits()});                
                 Units xunits=null, yunits=null;
 
                 if ( fds!=null && fds.length()>0 ) {
@@ -564,7 +564,7 @@ public class SpectrogramRenderer extends Renderer implements TableDataSetConsume
                     // (bug AP 1127)
                     DasAxis.Memento lxmemento= xAxis.getMemento();
                     DasAxis.Memento lymemento= yAxis.getMemento();
-                    DasAxis.Memento lcmemento= colorBar.getMemento();
+                    DasAxis.Memento lcmemento= lcolorBar.getMemento();
                     
                     if ( lraster != null
                             && xmemento != null && ymemento != null 
