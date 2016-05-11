@@ -1578,60 +1578,65 @@ public class DataSetUtil {
         double ss=0;
         double nn=0;
 
-        QDataSet sss= (QDataSet) hist.property( QDataSet.PLANE_0 ); // DANGER--don't change PLANE_0!
+        if ( peakv>3 ) {
+            QDataSet sss= (QDataSet) hist.property( QDataSet.PLANE_0 ); // DANGER--don't change PLANE_0!
 
-        for ( int i=ipeak; i>=0; i-- ) {
-            if ( hist.value(i)>(peakv/4) ) {
-                ss+= sss.value(i) * hist.value(i);
-                nn+= hist.value(i);
-            } else {
-                break;
-            }
-        }
-
-        for ( int i=ipeak+1; i<hist.length(); i++ ) {
-            if ( hist.value(i)>(peakv/4) ) {
-                ss+= sss.value(i) * hist.value(i);
-                nn+= hist.value(i);
-            } else {
-                break;
-            }
-        }
-
-        // one last sanity check, for the PlasmaWaveGroup file:///home/jbf/project/autoplot/data/qds/gapBug/gapBug.qds?Frequency
-        if ( t<65 && log ) {
-            double s= Math.abs( ss/nn );
-            int skip=0;
-            int bigSkip=0;
-            for ( int i=0; i<t-1; i++ ) {
-                double d= Math.abs( Math.log( xds.value(i+1) / xds.value(i) ) );
-                if ( d > s*1.5 ) {
-                    skip++;
-                    if ( d > s*7 ) {
-                        bigSkip++;
-                    }
+            for ( int i=ipeak; i>=0; i-- ) {
+                if ( hist.value(i)>(peakv/4) ) {
+                    ss+= sss.value(i) * hist.value(i);
+                    nn+= hist.value(i);
+                } else {
+                    break;
                 }
             }
-            logger.log(Level.FINE, "guessCadence({0})->null because of log,skip,not bigSkip", new Object[]{xds});
-            if ( bigSkip==0 && skip>0 ) {
-                logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew"); 
-                return null;
-            }
-        }
 
-        if ( log ) {
-            MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
-            result.putProperty( QDataSet.UNITS, Units.logERatio );
-            result.putProperty( QDataSet.SCALE_TYPE, "log" );
-            logger.log(Level.FINE, "guessCadence({0})->{1} (log)", new Object[]{xds, result});
-            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");
-            return (RankZeroDataSet)result;
-        } else {
-            MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
-            result.putProperty( QDataSet.UNITS, xunits.getOffsetUnits() );
-            logger.log(Level.FINE, "guessCadence({0})->{1} (linear)", new Object[]{xds, result});
-            logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
-            return (RankZeroDataSet)result;
+            for ( int i=ipeak+1; i<hist.length(); i++ ) {
+                if ( hist.value(i)>(peakv/4) ) {
+                    ss+= sss.value(i) * hist.value(i);
+                    nn+= hist.value(i);
+                } else {
+                    break;
+                }
+            }
+
+            // one last sanity check, for the PlasmaWaveGroup file:///home/jbf/project/autoplot/data/qds/gapBug/gapBug.qds?Frequency
+            if ( t<65 && log ) {
+                double s= Math.abs( ss/nn );
+                int skip=0;
+                int bigSkip=0;
+                for ( int i=0; i<t-1; i++ ) {
+                    double d= Math.abs( Math.log( xds.value(i+1) / xds.value(i) ) );
+                    if ( d > s*1.5 ) {
+                        skip++;
+                        if ( d > s*7 ) {
+                            bigSkip++;
+                        }
+                    }
+                }
+                logger.log(Level.FINE, "guessCadence({0})->null because of log,skip,not bigSkip", new Object[]{xds});
+                if ( bigSkip==0 && skip>0 ) {
+                    logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew"); 
+                    return null;
+                }
+            }
+
+            if ( log ) {
+                MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
+                result.putProperty( QDataSet.UNITS, Units.logERatio );
+                result.putProperty( QDataSet.SCALE_TYPE, "log" );
+                logger.log(Level.FINE, "guessCadence({0})->{1} (log)", new Object[]{xds, result});
+                logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");
+                return (RankZeroDataSet)result;
+            } else {
+                MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
+                result.putProperty( QDataSet.UNITS, xunits.getOffsetUnits() );
+                logger.log(Level.FINE, "guessCadence({0})->{1} (linear)", new Object[]{xds, result});
+                logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
+                return (RankZeroDataSet)result;
+            }
+        } else { 
+            QDataSet sss= (QDataSet) hist.property( QDataSet.PLANE_0 ); 
+            return DataSetUtil.asDataSet( DataSetUtil.asDatum(sss.slice(ipeak) ) );
         }
     }
 
