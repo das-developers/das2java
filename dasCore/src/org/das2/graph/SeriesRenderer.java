@@ -82,6 +82,9 @@ import org.w3c.dom.Element;
  * 
  * It should be said that five years after its introduction that it's still quite limited.
  * 
+ * The SeriesRenderer has a few additional features, such as error bars and 
+ * fill-to-reference.
+ * 
  * @author  jbf
  */
 public class SeriesRenderer extends Renderer {
