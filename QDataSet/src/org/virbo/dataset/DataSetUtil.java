@@ -1578,7 +1578,7 @@ public class DataSetUtil {
         double ss=0;
         double nn=0;
 
-        if ( true || peakv>3 ) {
+        if ( peakv>3 ) {
             QDataSet sss= (QDataSet) hist.property( QDataSet.PLANE_0 ); // DANGER--don't change PLANE_0!
 
             for ( int i=ipeak; i>=0; i-- ) {
@@ -1636,6 +1636,7 @@ public class DataSetUtil {
             }
         } else { 
             QDataSet sss= (QDataSet) hist.property( QDataSet.PLANE_0 ); 
+            sss= Ops.putProperty( sss, QDataSet.UNITS, xunits );
             //TODO: sss has the wrong units.
             return DataSetUtil.asDataSet( DataSetUtil.asDatum(sss.slice(ipeak) ) );
         }
