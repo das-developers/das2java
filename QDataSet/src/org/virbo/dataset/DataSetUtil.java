@@ -1578,7 +1578,7 @@ public class DataSetUtil {
         double ss=0;
         double nn=0;
 
-        if ( true && peakv>3 ) {
+        if ( true || peakv>3 ) {
             QDataSet sss= (QDataSet) hist.property( QDataSet.PLANE_0 ); // DANGER--don't change PLANE_0!
 
             for ( int i=ipeak; i>=0; i-- ) {
