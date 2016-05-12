@@ -343,6 +343,16 @@ public class FFTUtil {
         return result;
     }
         
+    /**
+     * return the frequency tags for the given time offset tags, so 
+     * <code>f[i]=  i / n*T</code>
+     * where <code>T= time[1] - time[0]</code> and <code>n= len(time)</code>.
+     * for the first n/2 points and
+     * <code>f[i]= (n21-n+i) / ( n*T )</code> for the second half.
+     * When units have a known inverse, this is returned.
+     * @param timeDomainTags
+     * @return the frequency domain tags.
+     */
     public static QDataSet getFrequencyDomainTags( QDataSet timeDomainTags ) {
         Units timeUnit= (Units) timeDomainTags.property( QDataSet.UNITS );
         if ( timeUnit==null ) timeUnit= Units.dimensionless;
