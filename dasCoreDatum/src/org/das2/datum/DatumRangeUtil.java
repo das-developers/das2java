@@ -1618,11 +1618,18 @@ public class DatumRangeUtil {
             }
             
             Datum d2;
-            d2= DatumUtil.parse(ss[1]);
-
-            Datum d1= d2.getUnits().parse( ss[0] );
-            
-            return new DatumRange( d1, d2 );
+            Datum d1;
+            try {
+                d2= DatumUtil.parse(ss[1]);
+                d1= d2.getUnits().parse( ss[0] );
+                return new DatumRange( d1, d2 );
+            } catch ( ParseException ex ) {
+                try { 
+                    return parseTimeRange(str);
+                } catch ( ParseException ex2 ) {
+                    throw ex;
+                }
+            }
         }
     }            
 
