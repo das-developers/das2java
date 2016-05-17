@@ -26,6 +26,7 @@ public class Basis implements Serializable {
     public static final Basis since1970= new Basis( "since1970", "since 1970-01-01T00:00Z", since2000, -938044800., Units.seconds );
     public static final Basis since1958= new Basis( "since1958", "since 1958-01-01T00:00Z", since2000, -1325376000., Units.seconds );
     public static final Basis modifiedJulian= new Basis( "modifiedJulian", "since 1858-11-17T00:00Z", since2000, 4453401600., Units.seconds );
+    public static final Basis julian= new Basis( "julian", "since noon, January 1, 4713 BCE", since2000, 4453401600. + 86400*2400000.5, Units.seconds );
     public static final Basis since0000= new Basis( "since0000", "since 01-Jan-0000T00:00Z", since2000, 63113904000., Units.seconds );
 
     /**
