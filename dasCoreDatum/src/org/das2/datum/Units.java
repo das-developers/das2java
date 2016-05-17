@@ -264,6 +264,12 @@ public abstract class Units {
             Units.days , Basis.modifiedJulian );
     
     /**
+     * The Julian Day (MJD) is the number of days (with decimal fraction of the day) that have elapsed since noon on January 1, 4713 BCE.  
+     * Julian - 2400000.5
+     */
+    public static final TimeLocationUnits julianDay= new TimeLocationUnits("julianDay", "days since noon January 1, 4713 BCE", 
+            Units.days , Basis.julian );
+    /**
      * cdf epoch milliseconds since midnight, 01-Jan-0000, excluding those with a leap second.  There must be skipped days, because this doesn't yield 01-Jan-0000 for 0.,
      * but works fine at 1-1-2000., excluding those within a leap second
      */
@@ -286,6 +292,7 @@ public abstract class Units {
         ((Units)t2000).registerConverter(t2010, new UnitsConverter.ScaleOffset(1.0, -3.1561920e+8 ));
         ((Units)t2000).registerConverter(mj1958, new UnitsConverter.ScaleOffset(1.0/8.64e4, 15340 ));
         ((Units)t2000).registerConverter(mjd, new UnitsConverter.ScaleOffset(1.0/8.64e4, 51544 ));
+        ((Units)t2000).registerConverter(julianDay, new UnitsConverter.ScaleOffset(1.0/8.64e4, 51544 + 2400000.5 ) );
     }
 
     /****  ratiometric units ***********/
