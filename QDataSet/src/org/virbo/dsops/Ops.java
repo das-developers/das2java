@@ -8179,30 +8179,31 @@ public class Ops {
         yysmooth.putProperty( QDataSet.DEPEND_0, xx );
         LinFit fit;
         
-        if ( yy.rank()==1 ) {
-            fit= new LinFit( xx.trim(0,size), yy.trim(0,size) );
-            for ( int i=0; i<size/2; i++ ) {
-                yysmooth.putValue( i, xx.value(i)*fit.getB() + fit.getA() );
-            }
-
-            fit= new LinFit( xx.trim(n-size,n), yy.trim(n-size,n) );
-            for ( int i=n-(size+1)/2; i<n; i++ ){
-                yysmooth.putValue( i, xx.value(i)*fit.getB() + fit.getA() );
-            }
-        } else if ( yy.rank()==2 ) {
-            for ( int j=0; j<yy.length(0); j++ ) {
-                QDataSet yy1= Ops.slice1(yy, j);
-                fit= new LinFit( xx.trim(0,size), yy1.trim(0,size) );
+        switch (yy.rank()) {
+            case 1:
+                fit= new LinFit( xx.trim(0,size), yy.trim(0,size) );
                 for ( int i=0; i<size/2; i++ ) {
-                    yysmooth.putValue( i, j, xx.value(i)*fit.getB() + fit.getA() );
-                }
-                fit= new LinFit( xx.trim(n-size,n), yy1.trim(n-size,n) );
+                    yysmooth.putValue( i, xx.value(i)*fit.getB() + fit.getA() );
+                }   fit= new LinFit( xx.trim(n-size,n), yy.trim(n-size,n) );
                 for ( int i=n-(size+1)/2; i<n; i++ ){
-                    yysmooth.putValue( i, j, xx.value(i)*fit.getB() + fit.getA() );
-                }
-            }
-        } else {
-            throw new IllegalArgumentException("yy must be rank 1 or rank 2: "+yy );
+                    yysmooth.putValue( i, xx.value(i)*fit.getB() + fit.getA() );
+                }   
+                break;
+            case 2:
+                for ( int j=0; j<yy.length(0); j++ ) {
+                    QDataSet yy1= Ops.slice1(yy, j);
+                    fit= new LinFit( xx.trim(0,size), yy1.trim(0,size) );
+                    for ( int i=0; i<size/2; i++ ) {
+                        yysmooth.putValue( i, j, xx.value(i)*fit.getB() + fit.getA() );
+                    }
+                    fit= new LinFit( xx.trim(n-size,n), yy1.trim(n-size,n) );
+                    for ( int i=n-(size+1)/2; i<n; i++ ){
+                        yysmooth.putValue( i, j, xx.value(i)*fit.getB() + fit.getA() );
+                    }
+                }   
+                break;
+            default:
+                throw new IllegalArgumentException("yy must be rank 1 or rank 2: "+yy );
         }
 
         return yysmooth;
