@@ -496,7 +496,46 @@ public class DataSetBuilder {
         nextRecord();
     }
     
-   /**
+    /**
+     * rank 0 datasets can be used to build the rank 1 datasets
+     * @param v rank 0 dataset
+     */
+    public void nextRecord( QDataSet v ) {
+        if ( this.rank()!=1 ) {
+            throw new IllegalArgumentException("must be rank 1");
+        }
+        if ( v.rank()!=0 ) {
+            throw new IllegalArgumentException("argument must be rank 0");
+        }
+        putValue( -1, (QDataSet)v );
+        nextRecord();
+    }
+
+    /**
+     * add the double to the rank 1 builder.
+     * @param v the value
+     */
+    public void nextRecord( double v ) {
+        if ( this.rank()!=1 ) {
+            throw new IllegalArgumentException("must be rank 1");
+        }
+        putValue( -1, v );
+        nextRecord();
+    }
+    
+    /**
+     * add the double to the rank 1 builder.
+     * @param v the value
+     */
+    public void nextRecord( Datum v ) {
+        if ( this.rank()!=1 ) {
+            throw new IllegalArgumentException("rank 1");
+        }
+        putValue( -1, v );
+        nextRecord();
+    }
+    
+    /**
     * return the number of records added to the builder.
      * @return the number of records added to the builder.
     */
