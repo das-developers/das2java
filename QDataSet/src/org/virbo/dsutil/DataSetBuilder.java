@@ -444,6 +444,9 @@ public class DataSetBuilder {
         if ( values.length>this.dim1 ) {
             throw new IllegalArgumentException("Too many values provided: got "+values.length+", expected "+this.dim1 );
         }
+        if ( this.rank!=2 ) {
+            throw new IllegalArgumentException("nextRecord called with array but builder is not rank 2");
+        }
         for ( int i=0; i<values.length; i++ ) { 
             double v1= values[i];
             putValue( -1, i, v1 );
@@ -469,6 +472,9 @@ public class DataSetBuilder {
         if ( values.length>this.dim1 ) {
             throw new IllegalArgumentException("Too many values provided: got "+values.length+", expected "+this.dim1 );
         }
+        //if ( this.rank!=2 ) {
+        //    throw new IllegalArgumentException("nextRecord called with array but builder is not rank 2");
+        //}
         for ( int i=0; i<values.length; i++ ) { 
             Object v1= values[i];
             if ( v1 instanceof Number ) {
@@ -557,7 +563,9 @@ public class DataSetBuilder {
                         bb.putProperty( QDataSet.DEPENDNAME_0, i, names[0] );
                     }
                 }
-                result.putProperty( QDataSet.BUNDLE_1, bb.getDataSet() );
+                if ( rank==2 ) {
+                    result.putProperty( QDataSet.BUNDLE_1, bb.getDataSet() );
+                }
             } else {
                 result.putProperty( QDataSet.UNITS, us[0] );
             }
