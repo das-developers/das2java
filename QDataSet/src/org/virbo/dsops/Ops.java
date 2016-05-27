@@ -6969,6 +6969,9 @@ public class Ops {
      * @return
      */
     public static QDataSet autoHistogram( QDataSet ds ) {
+        if ( ds==null ) {
+            throw new NullPointerException("ds is null");
+        }
         AutoHistogram ah= new AutoHistogram();
         return ah.doit(ds);
     }
