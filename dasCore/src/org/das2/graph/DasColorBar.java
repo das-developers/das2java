@@ -361,11 +361,16 @@ public class DasColorBar extends DasAxis {
          * black to blue, introduced to show the blue component of RGB images
          */
         public static final Type BLACK_BLUE = new Type("black_blue");
+
+        /**
+         * black to blue, introduced to show the blue component of RGB images
+         */
+        public static final Type WHITE_BLUE_BLACK = new Type("white_blue_black");
 		  
-		  /**
-			* Violet -Yellow
-			*/
-		  public static final Type VIOLET_YELLOW = new Type("violet_yellow");
+        /**
+         * Violet -Yellow
+         */
+        public static final Type VIOLET_YELLOW = new Type("violet_yellow");
         
         private BufferedImage image;
         private int[] colorTable;
@@ -548,6 +553,8 @@ public class DasColorBar extends DasAxis {
                 initializeWhiteGreen(size, bottom, top);
             } else if (this == BLACK_BLUE) {
                 initializeWhiteBlue(size, bottom, top);
+            } else if (this == WHITE_BLUE_BLACK) {
+                initializeWhiteBlueBlack(size, bottom, top);
             } else if (this == VIOLET_YELLOW ) {
                 initializeVioletYellow(size, bottom, top);
             } else if (this == BLUE_TO_ORANGE ) {
@@ -673,6 +680,25 @@ public class DasColorBar extends DasAxis {
             int [] blue= { 0, 255 };
             colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
         }   
+
+        /**
+         * Masafumi requested reversed IDL colorbar 2
+         * @param size
+         * @param bottom
+         * @param top 
+         */
+        private void initializeWhiteBlueBlack( int size, int bottom, int top ) {
+            //int [] index= { 0,   94,   188,  255  };
+            //int [] red=   { 0,    0,     0,  255 };
+            //int [] green= { 0,    0,   150,  255 };
+            //int [] blue=  { 0,    133, 255,  255 };
+            int [] index= { 0,     67,   161,  255  };
+            int [] red=   { 255,    0,     0,  0 };
+            int [] green= { 255,    150,   0,  0 };
+            int [] blue=  { 255,    255, 133,  0 };
+            colorTable = makeColorTable( index, red, green, blue, size, bottom, top );
+        }   
+		        
 		  
         //Rob W. JADE colorbar
 	private void initializeVioletYellow( int size, int bottom, int top ) {
@@ -716,6 +742,8 @@ public class DasColorBar extends DasAxis {
                     return BLACK_GREEN;
                 case "black_blue":
                     return BLACK_BLUE;
+                case "white_blue_black":
+                    return WHITE_BLUE_BLACK;
                 case "violet_yellow":
                     return VIOLET_YELLOW;
                 case "blue_to_orange":
