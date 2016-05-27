@@ -26,18 +26,7 @@ public class MonthDatumRange extends DatumRange implements Serializable {
     final int[] start;
     final int[] end;
     
-    /**
-     * create the MonthDatumRange with the decomposed times.
-     * @param start a seven element array of [ yr, mn, day, hr, mn, sec, nano ]
-     * @param end  a seven element array of [ yr, mn, day, hr, mn, sec, nano ]
-     */
-    public MonthDatumRange( int[] start, int[] end ) {
-
-        super( TimeUtil.toDatum( start ), TimeUtil.toDatum( end ) );
-        this.start= new int[7]; // make defensive copy to make findbugs happy.
-        System.arraycopy( start, 0, this.start, 0, 7 );
-        this.end= new int[7];
-        System.arraycopy( end, 0, this.end, 0, 7 );
+    private void init( ) {
 
         widthDigit= -1;
         int[] widthArr= new int[7];
@@ -65,6 +54,37 @@ public class MonthDatumRange extends DatumRange implements Serializable {
         if ( widthArr[0]==0 && widthArr[1]==0 ) {
             System.err.println("*** either month or year must increment, this will be runtime error soon");
         }
+    }
+    
+    /**
+     * create the MonthDatumRange with the decomposed times.
+     * @param start a seven element array of [ yr, mn, day, hr, mn, sec, nano ]
+     * @param end  a seven element array of [ yr, mn, day, hr, mn, sec, nano ]
+     * @param u the units for storing the Datums.
+     */
+    public MonthDatumRange( int[] start, int[] end, Units u ) {    
+        super( TimeUtil.toDatum( start ).convertTo(u), TimeUtil.toDatum( end ).convertTo(u) );
+        this.start= new int[7]; // make defensive copy to make findbugs happy.
+        System.arraycopy( start, 0, this.start, 0, 7 );
+        this.end= new int[7];
+        System.arraycopy( end, 0, this.end, 0, 7 );
+        init();
+    }
+    
+    /**
+     * create the MonthDatumRange with the decomposed times.
+     * @param start a seven element array of [ yr, mn, day, hr, mn, sec, nano ]
+     * @param end  a seven element array of [ yr, mn, day, hr, mn, sec, nano ]
+     */
+    public MonthDatumRange( int[] start, int[] end ) {
+
+        super( TimeUtil.toDatum( start ), TimeUtil.toDatum( end ) );
+        this.start= new int[7]; // make defensive copy to make findbugs happy.
+        System.arraycopy( start, 0, this.start, 0, 7 );
+        this.end= new int[7];
+        System.arraycopy( end, 0, this.end, 0, 7 );
+
+        init();
     }
     
     @Override
@@ -101,6 +121,16 @@ public class MonthDatumRange extends DatumRange implements Serializable {
         return new MonthDatumRange( start1, this.start );
     }
 
+    @Override
+    public DatumRange convertTo(Units u) {
+        if ( u==this.min().getUnits() ) {
+            return this;
+        } else {
+            return new MonthDatumRange( start, end, u );
+        }
+    }
+
+    
     @Override
     public boolean equals(Object o) {
         if ( o instanceof MonthDatumRange ) {

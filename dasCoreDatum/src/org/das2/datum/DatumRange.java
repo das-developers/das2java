@@ -288,6 +288,17 @@ public class DatumRange implements Comparable, Serializable {
     }
     
     /**
+     * return this DatumRange in new units.  Note this may cause some functions
+     * of a DatumRange to change, such as the next() for a MonthDatumRange, but
+     * implementations should attempt to preserve type.
+     * @param u the new units.
+     * @return the DatumRange in the new units.
+     */
+    public DatumRange convertTo( Units u ) {
+        return new DatumRange( min().convertTo(u), max().convertTo(u) );
+    }
+    
+    /**
      * return a new DatumRange that includes the given Datum, extending the
      * range if necessary.  For example, 
      * <pre> [0,1).include(2)->[0,2)  (note this is exclusive of 2 since it's the end).

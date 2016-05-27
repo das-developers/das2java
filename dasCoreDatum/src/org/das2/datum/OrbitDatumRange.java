@@ -3,6 +3,8 @@ package org.das2.datum;
 
 import java.io.Serializable;
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * DatumRange implementation that identifies times by orbit number.  Note orbit numbers are strings, see Cassini for why.
@@ -19,13 +21,22 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
     
     String sc;
     String orbit;
+    Units unitPref;
 
     public OrbitDatumRange( String sc, String orbit ) throws ParseException {
         super( Orbits.getOrbitsFor(sc).getDatumRange(orbit).min(), Orbits.getOrbitsFor(sc).getDatumRange(orbit).max() );
         this.sc= sc;
         this.orbit= Orbits.trimOrbit(orbit);
+        this.unitPref= this.min().getUnits();
     }
     
+    public OrbitDatumRange( String sc, String orbit, Units unitPref ) throws ParseException {
+        super( Orbits.getOrbitsFor(sc).getDatumRange(orbit).min().convertTo(unitPref), Orbits.getOrbitsFor(sc).getDatumRange(orbit).max().convertTo(unitPref) );
+        this.sc= sc;
+        this.orbit= Orbits.trimOrbit(orbit);
+        this.unitPref= unitPref;
+    }
+        
     @Override
     public DatumRange next() {
         String next= Orbits.getOrbitsFor(sc).next(this.orbit);
@@ -33,7 +44,7 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
             return this;
         } else {
             try {
-                return new OrbitDatumRange( sc, next );
+                return new OrbitDatumRange( sc, next, unitPref );
             } catch ( ParseException ex ) {
                 throw new RuntimeException(ex);
             }
@@ -49,6 +60,19 @@ public class OrbitDatumRange extends DatumRange implements Serializable {
             try {
                 return new OrbitDatumRange( sc, prev );
             } catch ( ParseException ex ) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+    
+    @Override    
+    public DatumRange convertTo( Units u ) {
+        if ( u==min().getUnits() ) {
+            return this;
+        } else {
+            try {
+                return new OrbitDatumRange( sc, orbit, u );
+            } catch (ParseException ex) {
                 throw new RuntimeException(ex);
             }
         }
