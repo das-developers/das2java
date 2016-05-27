@@ -33,6 +33,7 @@ import org.das2.datum.CacheTag;
 import org.das2.datum.DatumRange;
 import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.DatumUtil;
+import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsConverter;
 import org.das2.datum.UnitsUtil;
 import org.das2.math.filter.Butterworth;
@@ -8751,6 +8752,28 @@ public class Ops {
         return ds2;
     }
 
+    /**
+     * convert the datumRange to the given units, which must be convertible.
+     * @param dr
+     * @param u
+     * @return Datum in the new units
+     * @throws InconvertibleUnitsException
+     */
+    public static DatumRange convertUnitsTo( DatumRange dr, Units u ) {
+        return dr.convertTo(u);
+    }
+    
+    /**
+     * convert the datum to the given units, which must be convertible.
+     * @param d
+     * @param u
+     * @return Datum in the new units
+     * @throws InconvertibleUnitsException
+     */
+    public static Datum convertUnitsTo( Datum d, Units u ) {
+        return d.convertTo(u);
+    }
+    
     /**
      * flatten a rank N dataset, though currently only rank 2 is supported.
      * The result for rank 2 is an n,3 dataset of [x,y,z], or if there are no tags, just [z].
