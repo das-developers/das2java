@@ -1196,7 +1196,7 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
                 }
                 //tcaFunction = DataSetDescriptor.create(dataset);
             } catch (org.das2.DasException de) {
-                DasExceptionHandler.handle(de);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(de);
             }
         }
         markDirty("tcaDataPath");

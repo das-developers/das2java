@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
+import org.das2.DasApplication;
 
 class PropertyCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener, javax.swing.event.CellEditorListener {
     
@@ -248,7 +249,7 @@ class PropertyCellEditor extends AbstractCellEditor implements TableCellEditor, 
                 return datumEditor.getValue();
             }
             catch (IllegalArgumentException iae) {
-                DasExceptionHandler.handle(iae);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(iae);
                 return currentValue;
             }
         }

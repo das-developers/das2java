@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.*;
 import javax.swing.*;
+import org.das2.DasApplication;
 import org.das2.datum.UnitsUtil;
 
 /**
@@ -238,7 +239,7 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
                 updateRangeString= true;
                 pcs.firePropertyChange( "range", oldRange, range );
             } catch ( ParseException e ) {
-                DasExceptionHandler.handle(e);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
             }
         } else {
             updateRangeString= false;
@@ -249,7 +250,7 @@ public class TimeRangeEditor implements TimeRangeSelectionListener {
                 range= new DatumRange(s1,s2);
                 pcs.firePropertyChange( "range", oldRange, range );
             } catch ( ParseException e ) {
-                DasExceptionHandler.handle(e);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
             }
         }
         if ( updateRangeString!=updateRangeString0 )

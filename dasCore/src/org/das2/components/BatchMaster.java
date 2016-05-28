@@ -20,6 +20,7 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.util.logging.Level;
+import org.das2.DasApplication;
 
 
 /**
@@ -84,7 +85,7 @@ public class BatchMaster {
                         out.close();
                     }
                 } catch ( IOException e ) {
-                    DasExceptionHandler.handle(e);
+                    DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
                 }
             }
         };

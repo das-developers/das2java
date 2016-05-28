@@ -272,7 +272,7 @@ public final class DasProperties extends Properties {
                     load(in);
                 } catch (IOException ex) {
                     logger.log( Level.WARNING, ex.getMessage(), ex );
-                    org.das2.util.DasExceptionHandler.handle(ex);
+                    DasApplication.getDefaultApplication().getExceptionHandler().handle(ex);
                 } finally {
                     try {
                         if ( in!=null ) in.close();
@@ -288,7 +288,7 @@ public final class DasProperties extends Properties {
                         store(out,"");
                     } catch (IOException e) {
                         logger.log( Level.WARNING, e.getMessage(), e );
-                        org.das2.util.DasExceptionHandler.handle(e);
+                        DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
                     } finally {
                         try {
                             if ( out!=null ) out.close();
@@ -316,7 +316,7 @@ public final class DasProperties extends Properties {
                 out= new FileOutputStream(f);
                 store(out,"");
             } catch (IOException e) {
-                org.das2.util.DasExceptionHandler.handle(e);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
             } finally {
                 try {
                     if ( out!=null ) out.close();
@@ -325,7 +325,7 @@ public final class DasProperties extends Properties {
             }
         } else {
             DasException e= new org.das2.DasIOException("Can't write to file "+f);
-            org.das2.util.DasExceptionHandler.handle(e);
+            DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
         }
     }
 

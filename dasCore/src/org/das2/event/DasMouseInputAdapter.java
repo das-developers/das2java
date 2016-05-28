@@ -546,7 +546,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                         try {
                             canvas.writeToPng(pngFileTextField.getText());
                         } catch (java.io.IOException ioe) {
-                            org.das2.util.DasExceptionHandler.handle(ioe);
+                            DasApplication.getDefaultApplication().getExceptionHandler().handle(ioe);
                         }
                     }
                 } else if (command.equals("pngBrowse")) {
@@ -597,7 +597,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                 getGlassPane().setDragRenderer(dr, dSelectionStart, dSelectionEnd);
             }
         } catch (RuntimeException e) {
-            DasExceptionHandler.handle(e);
+            DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
         }
     }
 
@@ -1015,7 +1015,7 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                         }
                         j.mouseDragged(e);
                     } catch (RuntimeException except) {
-                        DasExceptionHandler.handle(except);
+                        DasApplication.getDefaultApplication().getExceptionHandler().handle(except);
                     }
                 }
                 refresh();
@@ -1080,13 +1080,13 @@ public class DasMouseInputAdapter extends MouseInputAdapter implements Editable,
                             }
                             feedback.setMessage("" ); 
                         } catch (RuntimeException ex) {
-                            DasExceptionHandler.handle(ex);
+                            DasApplication.getDefaultApplication().getExceptionHandler().handle(ex);
                         } finally {
                             button = 0;
                             try {
                                 j.mouseReleased(e);
                             } catch (RuntimeException ex2) {
-                                DasExceptionHandler.handle(ex2);
+                                DasApplication.getDefaultApplication().getExceptionHandler().handle(ex2);
                             }
                         }
                     }

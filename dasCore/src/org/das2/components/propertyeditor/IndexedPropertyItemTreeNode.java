@@ -5,6 +5,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
+import org.das2.DasApplication;
 
 class IndexedPropertyItemTreeNode extends PropertyTreeNode {
     
@@ -49,7 +50,7 @@ class IndexedPropertyItemTreeNode extends PropertyTreeNode {
         } catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);
         } catch ( InvocationTargetException e ) {
-            DasExceptionHandler.handle(e);
+            DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
         }
     }
     

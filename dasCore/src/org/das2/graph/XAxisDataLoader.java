@@ -31,6 +31,7 @@ import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import org.das2.DasApplication;
 import org.das2.dataset.DataSetAdapter;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dsops.Ops;
@@ -183,7 +184,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                 logger.log(Level.FINE, "got dataset update exception: "+e.getException().getMessage(), e.getException());
                 Exception exception = e.getException();
                 if ( !rendererHandlesException(exception) ) {
-                    DasExceptionHandler.handle(exception);
+                    DasApplication.getDefaultApplication().getExceptionHandler().handle(exception);
                 }
                 
                 ProgressMonitor mon= e.getMonitor();
@@ -202,7 +203,7 @@ public class XAxisDataLoader extends DataLoader implements DataSetUpdateListener
                 
                 
                 if ( !rendererHandlesException(exception)  ) {
-                    DasExceptionHandler.handle(exception);
+                    DasApplication.getDefaultApplication().getExceptionHandler().handle(exception);
                 }
                 
             } else if ( e.getDataSet()==null ) {

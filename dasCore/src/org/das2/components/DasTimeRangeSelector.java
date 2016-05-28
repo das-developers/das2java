@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.*;
 import javax.swing.*;
+import org.das2.DasApplication;
 import org.das2.datum.DatumUtil;
 
 public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionListener {
@@ -221,7 +222,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
                 updateRangeString= true;
                 firePropertyChange( "range", oldRange, range );
             } catch ( ParseException e ) {
-                DasExceptionHandler.handle(e);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
             }
         } else {
             updateRangeString= false;
@@ -232,7 +233,7 @@ public class DasTimeRangeSelector extends JPanel implements TimeRangeSelectionLi
                 range= new DatumRange(s1,s2);
                 firePropertyChange( "range", oldRange, range );
             } catch ( ParseException e ) {
-                DasExceptionHandler.handle(e);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
             }
         }
         if ( updateRangeString!=updateRangeString0 )

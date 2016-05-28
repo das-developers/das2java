@@ -827,7 +827,7 @@ public class DasPlot extends DasCanvasComponent {
                         VectorUtil.dumpToAsciiStream((VectorDataSet) ds, out);
                     }
                 } catch (IOException ioe) {
-                    DasExceptionHandler.handle(ioe);
+                    DasApplication.getDefaultApplication().getExceptionHandler().handle(ioe);
                 }
             }
         }

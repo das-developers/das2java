@@ -253,7 +253,7 @@ public abstract class Renderer implements DataSetConsumer, Editable, Displayable
                     setDumpDataSet(false);
                 }
             } catch (Exception e) {
-                DasExceptionHandler.handle(e);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
             }
             this.dumpDataSet = dumpDataSet;
         }

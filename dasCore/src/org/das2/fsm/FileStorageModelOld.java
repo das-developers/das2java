@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.text.*;
 import java.util.*;
 import java.util.regex.*;
+import org.das2.DasApplication;
 
 /**
  * Represents a method for storing data sets in a set of files by time.  The
@@ -109,7 +110,7 @@ public class FileStorageModelOld {
             try {
                 ts1.month= TimeUtil.monthNumber( s );
             } catch ( ParseException e ) {
-                DasExceptionHandler.handle(e);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
             }
         }
         public String format(TimeStruct ts1, TimeStruct ts2) {
@@ -122,7 +123,7 @@ public class FileStorageModelOld {
             try {
                 ts2.month= TimeUtil.monthNumber( s );
             } catch ( ParseException e ) {
-                DasExceptionHandler.handle(e);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
             }
         }
         public String format(TimeStruct ts1, TimeStruct ts2) {

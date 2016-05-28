@@ -221,7 +221,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                         try {
                             canvas.writeToPng(ffname);
                         } catch (java.io.IOException ioe) {
-                            org.das2.util.DasExceptionHandler.handle(ioe);
+                            DasApplication.getDefaultApplication().getExceptionHandler().handle(ioe);
                         }
                     }
                 };
@@ -255,7 +255,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                         try {
                             canvas.writeToSVG(ffname);
                         } catch (java.io.IOException ioe) {
-                            org.das2.util.DasExceptionHandler.handle(ioe);
+                            DasApplication.getDefaultApplication().getExceptionHandler().handle(ioe);
                         }
                     }
                 };
@@ -289,7 +289,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
                         try {
                             canvas.writeToPDF(ffname);
                         } catch (java.io.IOException ioe) {
-                            org.das2.util.DasExceptionHandler.handle(ioe);
+                            DasApplication.getDefaultApplication().getExceptionHandler().handle(ioe);
                         }
                     }
                 };
@@ -1154,13 +1154,13 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             writeToGraphicsOutput(filename, "org.das2.util.awt.PdfGraphicsOutput");
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).log(Level.FINE, "write pdf file {0}", filename);
         } catch (NoClassDefFoundError cnfe) {
-            DasExceptionHandler.handle(new RuntimeException("PDF output is not available", cnfe));
+            DasApplication.getDefaultApplication().getExceptionHandler().handle(new RuntimeException("PDF output is not available", cnfe));
         } catch (ClassNotFoundException cnfe) {
-            DasExceptionHandler.handle(new RuntimeException("PDF output is not available", cnfe));
+            DasApplication.getDefaultApplication().getExceptionHandler().handle(new RuntimeException("PDF output is not available", cnfe));
         } catch (InstantiationException ie) {
-            DasExceptionHandler.handleUncaught(ie);
+            DasApplication.getDefaultApplication().getExceptionHandler().handleUncaught(ie);
         } catch (IllegalAccessException iae) {
-            DasExceptionHandler.handleUncaught(iae);
+            DasApplication.getDefaultApplication().getExceptionHandler().handleUncaught(iae);
         }
     }
 
@@ -1212,7 +1212,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             writeToGraphicsOutput(filename, "org.das2.util.awt.SvgGraphicsOutput");
             DasLogger.getLogger(DasLogger.GRAPHICS_LOG).log(Level.FINE, "write svg file {0}", filename);
         } catch (ClassNotFoundException cnfe) {
-            DasExceptionHandler.handle(new RuntimeException("SVG output is not available", cnfe));
+            DasApplication.getDefaultApplication().getExceptionHandler().handle(new RuntimeException("SVG output is not available", cnfe));
         } catch (InstantiationException ie) {
             DasExceptionHandler.handleUncaught(ie);
         } catch (IllegalAccessException iae) {
@@ -2415,7 +2415,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
         try {
             canvas.setDasName(name);
         } catch (org.das2.DasNameException dne) {
-            org.das2.util.DasExceptionHandler.handle(dne);
+            DasApplication.getDefaultApplication().getExceptionHandler().handle(dne);
         }
         return canvas;
     }

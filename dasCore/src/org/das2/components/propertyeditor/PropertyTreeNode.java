@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.Enumeration;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
+import org.das2.DasApplication;
 
 public class PropertyTreeNode implements PropertyTreeNodeInterface {
     
@@ -155,7 +156,7 @@ public class PropertyTreeNode implements PropertyTreeNodeInterface {
                         }
                     }
                 } catch (InvocationTargetException ite) {
-                    DasExceptionHandler.handle(ite.getCause());
+                    DasApplication.getDefaultApplication().getExceptionHandler().handle(ite.getCause());
                 }
             }
             this.children= children;
@@ -241,7 +242,7 @@ public class PropertyTreeNode implements PropertyTreeNodeInterface {
         } catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);
         } catch ( InvocationTargetException e ) {
-            DasExceptionHandler.handle(e);
+            DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
         }
     }
     

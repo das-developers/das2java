@@ -74,6 +74,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
+import org.das2.DasApplication;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.UnitsUtil;
@@ -812,7 +813,7 @@ public class DataPointRecorderNew extends JPanel {
                 saveToFile(saveFile);
             //messageLabel.setText("saved data to "+saveFile);
             } catch (IOException e1) {
-                DasExceptionHandler.handle(e1);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(e1);
                 return false;
             }
         } else if ( status == JFileChooser.CANCEL_OPTION ) {
@@ -829,7 +830,7 @@ public class DataPointRecorderNew extends JPanel {
                 saveToFile(saveFile);
                 return true;
             } catch (IOException ex) {
-                DasExceptionHandler.handle(ex);
+                DasApplication.getDefaultApplication().getExceptionHandler().handle(ex);
                 return false;
             }
         }
@@ -887,7 +888,7 @@ public class DataPointRecorderNew extends JPanel {
                                     loadFromFile(loadFile);
                                     updateStatus();
                                 } catch (IOException e) {
-                                    DasExceptionHandler.handle(e);
+                                    DasApplication.getDefaultApplication().getExceptionHandler().handle(e);
                                 }
 
                             }
