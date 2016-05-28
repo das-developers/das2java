@@ -220,7 +220,7 @@ public class DasApplication {
                 DasLogger.reload();
                 DasLogger.printStatus();
             } catch ( IOException e ) {
-                DasExceptionHandler.handle(e);
+                getExceptionHandler().handle(e);
             }
         }
     }
