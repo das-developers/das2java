@@ -103,7 +103,8 @@ public interface ProgressMonitor {
     public void setLabel( String label );
     
     /**
-     * Return the label string displayed.  This is primarily to aid in debugging,
+     * Return the label string displayed, which is a concise string that 
+     * describes the task being performed.  This is primarily to aid in debugging,
      * and this method need not return the string set by setLabel.
      * @return the label.
      */
