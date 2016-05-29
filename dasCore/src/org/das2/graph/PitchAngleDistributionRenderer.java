@@ -251,10 +251,17 @@ public class PitchAngleDistributionRenderer extends Renderer {
         double x0= xAxis.transform(0,yunits);
         double y0= yAxis.transform(0,yunits);
 
+        QDataSet rwds= Ops.valid(rds);
+        QDataSet daminWds= Ops.valid(damin);
+        QDataSet damaxWds= Ops.valid(damax);
+        
         //boolean useBelzier= true;
         for ( int iflip=0; iflip<2; iflip++ ) {
             if ( !mirror && iflip==1 ) continue;
             for ( int j=0; j<rds.length()-1; j++ ) {
+                if ( rwds.value(j)<=0. || rwds.value(j+1)<=0. ) {
+                    continue;
+                }
                 double v1= rds.value( j ); // sure wish we'd been testing this so I'd know where the old code worked.
                 double v2= rds.value( j+1 );
                 double r0x= ( xAxis.transform(v1,yunits) ) - x0; // inner ring radius at y=0
@@ -264,6 +271,9 @@ public class PitchAngleDistributionRenderer extends Renderer {
                 //double r= Math.sqrt( r1y*r1y + r1x*r1x );
                 
                 for ( int i=0; i<ads.length(); i++ ) {
+                    if ( daminWds.value(i)<=0 || damaxWds.value(i)<=0 ) {
+                        continue;
+                    }
                     double a0= damin.value(i);
                     double a1= damax.value(i);
 
@@ -328,7 +338,7 @@ public class PitchAngleDistributionRenderer extends Renderer {
                         gp.lineTo( xx[i+1][j+1], yy[i+1][j+1] );
                         gp.lineTo( xx[i+1][j], yy[i+1][j] );
                         gp.lineTo( xx[i][j], yy[i][j] );
-
+                        
                         g.fill(gp);
                         g.draw(gp);
 
