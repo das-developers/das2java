@@ -38,6 +38,9 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
         } else if ( name.equals("DEPEND_0" ) ) {
             vv= new String[] { "None" };
             documentationLabel.setText("use None to remove the DEPEND_0 tags");
+        } else if ( name.equals("FORMAT" ) ) {
+            vv= new String[] { "%5.2f", "%d", "%05d", "%x" };
+            documentationLabel.setText("format specifier for digital display");
         } else {
             vv= new String[] { "" };
             documentationLabel.setText(" ");
@@ -61,7 +64,7 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
         jLabel1.setText("Put Property");
 
         jComboBox1.setEditable(true);
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "VALID_MIN", "VALID_MAX", "FILL_VALUE", "TITLE", "LABEL", "DEPEND_0", " " }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "VALID_MIN", "VALID_MAX", "FILL_VALUE", "TITLE", "LABEL", "DEPEND_0", "FORMAT" }));
         jComboBox1.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBox1ItemStateChanged(evt);

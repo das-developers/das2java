@@ -68,7 +68,7 @@
             <StringItem index="3" value="TITLE"/>
             <StringItem index="4" value="LABEL"/>
             <StringItem index="5" value="DEPEND_0"/>
-            <StringItem index="6" value=" "/>
+            <StringItem index="6" value="FORMAT"/>
           </StringArray>
         </Property>
       </Properties>
