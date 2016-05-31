@@ -74,6 +74,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -1108,8 +1109,17 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorder.this, dp.get(0), dp.get(1));
                     fireDataPointSelectionListenerDataPointSelected(e2);
                 }
-                deleteSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
-                clearSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
+                Runnable run= new Runnable() {
+                    public void run() {
+                        deleteSelectionButton.setEnabled( table.getSelectedRowCount()>0 );
+                        clearSelectionButton.setEnabled( table.getSelectedRowCount()>0 );                
+                    }
+                };
+                if (SwingUtilities.isEventDispatchThread()) {
+                    run.run();
+                } else {
+                    SwingUtilities.invokeLater(run);
+                }
             }
         });
 
