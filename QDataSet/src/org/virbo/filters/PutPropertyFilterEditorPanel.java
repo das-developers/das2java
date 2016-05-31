@@ -26,24 +26,31 @@ public class PutPropertyFilterEditorPanel extends AbstractFilterEditorPanel {
     private void update() {
         String name= (String)jComboBox1.getSelectedItem();
         String[] vv=null;
-        if ( name.equals("VALID_MIN") ) {
-            vv= new String[] { "-1e30", "-999", "0", "1" };
-            documentationLabel.setText("the smallest valid value");
-        } else if ( name.equals("VALID_MAX" ) ) {
-            vv= new String[] { "1e30", "999", "0" };
-            documentationLabel.setText("the largest valid value");
-        } else if ( name.equals("FILL_VALUE" ) ) {
-            vv= new String[] { "0", "-999", "-1e31" };
-            documentationLabel.setText("values that indicate missing measurements");
-        } else if ( name.equals("DEPEND_0" ) ) {
-            vv= new String[] { "None" };
-            documentationLabel.setText("use None to remove the DEPEND_0 tags");
-        } else if ( name.equals("FORMAT" ) ) {
-            vv= new String[] { "%5.2f", "%d", "%05d", "%x" };
-            documentationLabel.setText("format specifier for digital display");
-        } else {
-            vv= new String[] { "" };
-            documentationLabel.setText(" ");
+        switch (name) {
+            case "VALID_MIN":
+                vv= new String[] { "-1e30", "-999", "0", "1" };
+                documentationLabel.setText("the smallest valid value");
+                break;
+            case "VALID_MAX":
+                vv= new String[] { "1e30", "999", "0" };
+                documentationLabel.setText("the largest valid value");
+                break;
+            case "FILL_VALUE":
+                vv= new String[] { "0", "-999", "-1e31" };
+                documentationLabel.setText("values that indicate missing measurements");
+                break;
+            case "DEPEND_0":
+                vv= new String[] { "None" };
+                documentationLabel.setText("use None to remove the DEPEND_0 tags");
+                break;
+            case "FORMAT":
+                vv= new String[] { "%5.2f", "%d", "%05d", "%x" };
+                documentationLabel.setText("format specifier for digital display");
+                break;
+            default:
+                vv= new String[] { "" };
+                documentationLabel.setText(" ");
+                break;
         }
         jComboBox2.setModel( new DefaultComboBoxModel(vv) );
     }
