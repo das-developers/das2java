@@ -488,12 +488,19 @@ public class DigitalRenderer extends Renderer {
 
         String form=this.format;
         String dsformat= (String) zds.property(QDataSet.FORMAT);
+        boolean isInts= false;
+        
         if ( form.length()==0 && dsformat!=null ) {
             form= dsformat;
         }
         if ( form.length()==0 ) {
             form= "%.2f";
         }
+        if ( form.endsWith("x") || form.endsWith("X")
+            || form.endsWith("d") || form.endsWith("o") 
+            || form.endsWith("c") || form.endsWith("C") ) {
+            isInts= true; 
+        }        
 
         DasPlot parent= getParent();
 
@@ -528,19 +535,14 @@ public class DigitalRenderer extends Renderer {
                 Datum y = yunits.createDatum( yds.value(i) );
                 DatumFormatter df= d.getFormatter();
                 if ( df instanceof DefaultDatumFormatter ) {
-                    try {
-                        s = String.format( form, uc.convert(zds.value(i)) );
-                    } catch ( IllegalFormatConversionException ex ) { // '%2X'
-                        char c= ex.getConversion();
-                        if ( c=='X' || c=='x' || c=='d' || c=='o' || c=='c' || c=='C'  ) {
-                            s = String.format( form, (long)yds.value(i) );
-                        } else {
-                            throw ex;
-                        }
+                    if ( isInts ) {
+                        s = String.format( form, (long)zds.value(i) );
+                    } else {
+                        s = String.format( form, zds.value(i) );
                     }
                 } else {
                     s = d.getFormatter().format(d, u);
-                }
+                }                
                 iy = (int) yAxis.transform(y) + ha;
             } else {
                 s = fillLabel;
@@ -621,8 +623,9 @@ public class DigitalRenderer extends Renderer {
         if ( form.length()==0 ) {
             form= "%.2f";
         }
-        if ( form.endsWith("d") ) {
-            isInts= true;
+        
+        if ( form.endsWith("d") || form.endsWith("x") || form.endsWith("X") ) {
+            isInts= true; //TODO: rank 1 has a different way of handling int data.
         }
 
         Units xunits= SemanticOps.getUnits(xds);
@@ -654,7 +657,7 @@ public class DigitalRenderer extends Renderer {
                 DatumFormatter df= d.getFormatter();
                 if ( df instanceof DefaultDatumFormatter ) {
                     if ( isInts ) {
-                        s = String.format( form, (int)zds.value(i) );
+                        s = String.format( form, (long)zds.value(i) );
                     } else {
                         s = String.format( form, zds.value(i) );
                     }
