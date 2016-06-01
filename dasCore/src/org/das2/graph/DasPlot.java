@@ -1380,6 +1380,15 @@ public class DasPlot extends DasCanvasComponent {
             int titleWidth = (int) gtr.getWidth();
             int titleX = x + (xSize - titleWidth) / 2;
             int titleY = y - (int) gtr.getDescent() - (int) gtr.getAscent() / 2;
+            
+//            if ( true ) { // bug https://sourceforge.net/p/autoplot/bugs/433/: if we were to prevent ticks from clobbering the background...  This is not trivial though, because the title is below the axis in the Z-order.
+//                Color c= graphics.getColor();
+//                graphics.setColor(Color.GRAY); //graphics.getBackground() );
+//                Rectangle r= gtr.getBounds();
+//                r.translate( titleX, titleY );
+//                graphics.fillRoundRect( r.x, r.y, r.width, r.height, 3, 3 );
+//                graphics.setColor( c );
+//            }
             gtr.draw(graphics, (float) titleX, (float) titleY);
         }
 
