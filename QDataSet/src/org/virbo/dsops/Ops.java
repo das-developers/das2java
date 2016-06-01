@@ -8234,7 +8234,7 @@ public class Ops {
     }
     
  /**
-     * Mean function that returns the average of a rank 1 dataset
+     * Mean function that returns the average of the valid elements of a rank N dataset
      * @param ds rank N dataset
      * @return rank 0 dataset
      * @see #mode
@@ -8263,7 +8263,7 @@ public class Ops {
     }
     
     /**
-     * return the most frequently occurring element.
+     * return the most frequently occurring element of the valid elements of a rank N dataset
      * @param ds rank N dataset.
      * @return the rank 0 dataset
      * @see #mean
@@ -8308,8 +8308,9 @@ public class Ops {
     }
     
     /**
-     * Median function that sorts a rank 1 dataset and returns its median.  
-     * If lists are equal in size (even number of elements), always choose first element of 'more' list
+     * Median function that sorts a rank N dataset and returns its median.  
+     * If lists are equal in size (even number of elements), always choose 
+     * first element of 'more' list
      * @param ds rank N dataset.
      * @return rank 0 dataset
      * @author mmclouth
@@ -8419,7 +8420,7 @@ public class Ops {
     }
     
     /**
-     * 1-D variance function.
+     * variance function is the square of the stddev.
      * @param ds rank 1 dataset.
      * @return Rank 0 QDataSet containing the variance.  The result is currently dimensionless, but this will change.
      * @author mmclouth
