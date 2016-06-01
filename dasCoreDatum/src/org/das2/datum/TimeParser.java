@@ -1146,6 +1146,10 @@ public class TimeParser {
      * @return the time parser.
      */
     public static TimeParser create(String formatString) {
+        if ( formatString.length()==0 ) {
+            throw new IllegalArgumentException("formatString length must be at least one character");
+        }
+            
         HashMap map= new HashMap();
         map.put("o",new OrbitFieldHandler());
         map.put("v",new IgnoreFieldHandler()); // note this is often replaced.
@@ -1164,6 +1168,10 @@ public class TimeParser {
      * @return the configured TimeParser, ready to use.
      */
     public static TimeParser create(String formatString, String fieldName, FieldHandler handler, Object ... moreHandler  ) {
+        if ( formatString.length()==0 ) {
+            throw new IllegalArgumentException("formatString length must be at least one character");
+        }
+            
         HashMap map = new HashMap();
         map.put(fieldName, handler);
         if ( moreHandler!=null ) {
