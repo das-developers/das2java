@@ -644,6 +644,7 @@ public class SemanticOps {
      */
     public static boolean isSimpleTableDataSet(QDataSet ds) {
         QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+        if ( dep1!=null && dep1.rank()!=1 ) return false;
         return ds.rank()==2 && ( ( dep1!=null && dep1.rank()==1 ) || !Ops.isBundle(ds) ) && !Ops.isLegacyBundle(ds);
     }
 
