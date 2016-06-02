@@ -5219,7 +5219,43 @@ public class Ops {
     public static WritableDataSet removeValues( Object ds, Object indeces ) {
         return putValues( dataset(ds), dataset(indeces), null );
     }
+    
+    /**
+     * remove values in the dataset which are greater than the value.  
+     * This is a convenient method for the common case where we want to
+     * filter data by values within the data, introduced to support
+     * the data mash up dialog.
+     * @param ds rank N dataset
+     * @param v the value, a rank 0 scalar or dataset with compatible geometry
+     * @return the dataset with these
+     */
+    public static WritableDataSet removeValuesGreaterThan( QDataSet ds, QDataSet v ) {
+        QDataSet r= where( gt(ds,v) );
+        return putValues( ds, r, null );
+    }
+    
+    public static WritableDataSet removeValuesGreaterThan( Object ds, Object v ) {
+        return removeValuesGreaterThan( dataset(ds), dataset(v) );
+    }
         
+    /**
+     * remove values in the dataset which are less than the value.
+     * This is a convenient method for the common case where we want to
+     * filter data by values within the data, introduced to support
+     * the data mash up dialog.
+     * @param ds rank N dataset
+     * @param v the value, a rank 0 scalar or dataset with compatible geometry
+     * @return the dataset with these
+     */
+    public static WritableDataSet removeValuesLessThan( QDataSet ds, QDataSet v ) {
+        QDataSet r= where( lt(ds,v) );
+        return putValues( ds, r, null );
+    }    
+    
+    public static WritableDataSet removeValuesLessThan( Object ds, Object v ) {
+        return removeValuesLessThan( dataset(ds), dataset(v) );
+    }
+           
     /**
      * returns the reverse of the rank 1 dataset.
      * @param ds
