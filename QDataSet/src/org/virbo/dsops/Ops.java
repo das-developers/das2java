@@ -4928,7 +4928,10 @@ public class Ops {
                         value= Boolean.valueOf(svalue);
                     } else if ( value instanceof Number ) {
                         value= !((Number)value).equals(0);
-                    }   mds.putProperty( name, value);
+                    } else if ( value instanceof QDataSet ) {
+                        value= !(((QDataSet)value).value()==0);
+                    }
+                    mds.putProperty( name, value);
                     break;
                 case DataSetUtil.PROPERTY_TYPE_NUMBER:
                     if ( value instanceof String ) {
@@ -4951,7 +4954,12 @@ public class Ops {
                                 value= Integer.valueOf(svalue);
                             }
                         }
-                    }   mds.putProperty( name, value);
+                    } else if ( value instanceof QDataSet ) {
+                        QDataSet qvalue= (QDataSet)value;
+                        if ( qvalue.rank()>1 ) throw new IllegalArgumentException("rank 0 dataset needed for putProperty");
+                        value= qvalue.value();
+                    }
+                    mds.putProperty( name, value);
                     break;
                 case DataSetUtil.PROPERTY_TYPE_CACHETAG:
                     if ( value instanceof String ) {
