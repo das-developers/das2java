@@ -84,14 +84,18 @@ public class DataSetAdapter {
             if (ds.getPlaneIds().length <= 1) {
                 //Handle x single y as a simple vector
                 Vector v = new Vector((VectorDataSet) ds);
-                v.putProperty(QDataSet.NAME, "y" );
+                String sname= (String)ds.getProperty("name");
+                if ( sname==null ) sname= "y";
+                v.putProperty(QDataSet.NAME, sname );
                 return v;
                 
             } else {
                 //Handle x multi y as a bundle
                 VectorDataSet vds = (VectorDataSet) ds;
                 Vector v = new Vector(vds);
-                v.putProperty(QDataSet.NAME, "y" );
+                String sname= (String)ds.getProperty("name");
+                if ( sname==null ) sname= "y";
+                v.putProperty(QDataSet.NAME, sname );
                 AbstractDataSet bds = (AbstractDataSet) Ops.bundle(null,v);
                 String[] planes = ds.getPlaneIds();
                 Units unitsY = null;
