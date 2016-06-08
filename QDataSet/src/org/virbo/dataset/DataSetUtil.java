@@ -3019,6 +3019,14 @@ public class DataSetUtil {
         QDataSet wds= Ops.valid(ds);
         QDataSet r;
         
+        if ( UnitsUtil.isNominalMeasurement( datum.getUnits() ) ) {
+            throw new IllegalArgumentException("datum cannot have ordinal units: "+datum );
+        }
+            
+        if ( UnitsUtil.isNominalMeasurement( SemanticOps.getUnits(ds) ) ) {
+            throw new IllegalArgumentException("ds cannot have ordinal units: "+datum );
+        }
+
         boolean mono= isMonotonic(ds);
                 
         if ( mono ) { // take a millisecond to check for this oft-occurring case.
