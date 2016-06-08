@@ -134,6 +134,18 @@ public final class RequestProcessor {
         queue.add(run);
     }
     
+    /**
+     * reset the maximum number of threads used.  If there are more threads 
+     * existing already, than the extra threads will be shut down as they finish
+     * their current jobs.
+     * @param t 
+     */
+    public static void setThreadCount( int t ) {
+        if ( t<4 ) throw new IllegalArgumentException("must be at least 1");
+        if ( t>32) throw new IllegalArgumentException("must be no more than 32");
+        maxThreadCount= t;
+    }
+    
     /** Executes run.run() asynchronously on a thread from the thread pool.
      * The task will not be executed until after all requests made with
      * {@link #invokeAfter(java.lang.Runnable, java.lang.Object)} with the same
