@@ -1611,8 +1611,8 @@ public class DataSetOps {
     /**
      * returns the value from within a distribution that is the nth percentile division.  This
      * returns a fill dataset (Units.dimensionless.getFillDouble()) when the data is all fill.
-     * @param ds
-     * @param n
+     * @param ds the dataset
+     * @param n percent between 0 and 100.
      * @return
      */
     public static QDataSet getNthPercentileSort( QDataSet ds, double n ) {
@@ -1638,8 +1638,8 @@ public class DataSetOps {
 
     /**
      * Get the background level by sorting the data.  The result is rank one less than the input rank.
-     * @param ds
-     * @param level
+     * @param ds rank 1, 2, or rank 3 join.
+     * @param level the level between 0 and 100.
      * @return
      */
     public static QDataSet getBackgroundLevel( QDataSet ds, double level ) {
