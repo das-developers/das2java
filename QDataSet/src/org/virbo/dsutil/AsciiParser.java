@@ -1247,6 +1247,7 @@ public class AsciiParser {
         @Override
         public final double parseField(String field, int columnIndex) throws ParseException {
             EnumerationUnits u = (EnumerationUnits)AsciiParser.this.units[columnIndex];
+            if ( u==null ) throw new NullPointerException("ENUMERATION_PARSER used where we don't have a unit, at columnIndex="+columnIndex );
             field= field.trim();
             if ( field.startsWith("\"") && field.endsWith("\"") ) {
                 return u.parse(field.substring(1,field.length()-1)).doubleValue(u); // TODO: untested..
