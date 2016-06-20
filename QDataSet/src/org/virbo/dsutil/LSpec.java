@@ -250,10 +250,8 @@ public class LSpec {
         
         Units tu= SemanticOps.getUnits(tt);
         
-        Double dfill= (Double) zds.property( QDataSet.FILL_VALUE );
-        if ( dfill==null ) {
-            dfill= -1e31;
-        }
+        Number fill= (Number) zds.property( QDataSet.FILL_VALUE );
+        double dfill= fill==null ? -1e31 : fill.doubleValue();
 
         QDataSet wds= DataSetUtil.weightsDataSet(zds);
 

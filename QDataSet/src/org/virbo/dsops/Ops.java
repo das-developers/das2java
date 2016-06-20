@@ -6635,8 +6635,9 @@ public class Ops {
             ds= min;
         }        
         
-        Double dfill= (Double) ds.property(QDataSet.FILL_VALUE);
-        double fill= ( dfill!=null ) ? dfill : 1e38;
+        Number nfill= (Number)ds.property(QDataSet.FILL_VALUE);
+        double fill= ( nfill==null ) ? 1e38 : nfill.doubleValue();
+        
         int count=0;
         
         double[] result;
@@ -7432,9 +7433,10 @@ public class Ops {
         int n = vv.length();
 
         QDataSet wds= DataSetUtil.weightsDataSet( vv );
-        Double fill= (Double)wds.property(QDataSet.FILL_VALUE);
-        if ( fill==null ) fill= -1e38;
-        result.putProperty( QDataSet.FILL_VALUE, fill );
+        Number fill= (Number)wds.property(QDataSet.FILL_VALUE);
+        double dfill;
+        if ( fill==null ) dfill= -1e38; else dfill= fill.doubleValue();
+        result.putProperty( QDataSet.FILL_VALUE, dfill );
         boolean hasFill= false;
 
         QDataSet wfindex= DataSetUtil.weightsDataSet(findex);
@@ -7447,7 +7449,7 @@ public class Ops {
             it.next();
 
             if ( it.getValue(wfindex)==0 ) {
-                it.putValue( result, fill );
+                it.putValue( result, dfill );
                 hasFill= true;
                 continue;
             }
@@ -7458,11 +7460,11 @@ public class Ops {
                 ic0 = (int) Math.floor(ff);
                 ic1 = ic0 + 1;                
             } else if ( noExtrapolate && ff < -0.5 ) {  // would extrapolate immodestly
-                it.putValue( result, fill );
+                it.putValue( result, dfill );
                 hasFill= true;
                 continue;
             } else if ( noExtrapolate && ff >= n - 0.5 ) { // would extrapolate immodestly
-                it.putValue( result, fill );
+                it.putValue( result, dfill );
                 hasFill= true;
                 continue;
             } else if (ff < 0.0 ) {
@@ -7482,7 +7484,7 @@ public class Ops {
                 it.putValue(result, vv0 + alpha * (vv1 - vv0));
                 
             } else {
-                it.putValue(result, fill );
+                it.putValue(result, dfill );
                 hasFill= true;
             }
 
@@ -7498,7 +7500,7 @@ public class Ops {
         }
 
         if ( hasFill ) {
-            result.putProperty( QDataSet.FILL_VALUE, fill );
+            result.putProperty( QDataSet.FILL_VALUE, dfill );
         }
 
         return result;
@@ -7880,9 +7882,10 @@ public class Ops {
         int n = vv.length();
 
         QDataSet wds= DataSetUtil.weightsDataSet( vv );
-        Double fill= (Double)wds.property(QDataSet.FILL_VALUE);
-        if ( fill==null ) fill= -1e38;
-        result.putProperty( QDataSet.FILL_VALUE, fill );
+        Number fill= (Number)wds.property(QDataSet.FILL_VALUE);
+        double dfill;
+        if ( fill==null ) dfill= -1e38; else dfill= fill.doubleValue();
+        result.putProperty( QDataSet.FILL_VALUE, dfill );
         boolean hasFill= false;
 
         QDataSet wfindex= DataSetUtil.weightsDataSet(findex);
@@ -7913,7 +7916,7 @@ public class Ops {
             it.next();
 
             if ( it.getValue(wfindex)==0 ) {
-                it.putValue( result, fill );
+                it.putValue( result, dfill );
                 hasFill= true;
                 continue;
             }
@@ -7924,11 +7927,11 @@ public class Ops {
                 ic0 = (int) Math.floor(ff);
                 ic1 = ic0 + 1;                
             } else if ( noExtrapolate && ff < -0.5 ) {  // would extrapolate immodestly
-                it.putValue( result, fill );
+                it.putValue( result, dfill );
                 hasFill= true;
                 continue;
             } else if ( noExtrapolate && ff >= n - 0.5 ) { // would extrapolate immodestly
-                it.putValue( result, fill );
+                it.putValue( result, dfill );
                 hasFill= true;
                 continue;
             } else if (ff < 0) {
@@ -7960,7 +7963,7 @@ public class Ops {
                 it.putValue(result, v );
                 
             } else {
-                it.putValue(result, fill );
+                it.putValue(result, dfill );
                 hasFill= true;
             }
 
@@ -7976,7 +7979,7 @@ public class Ops {
         }
 
         if ( hasFill ) {
-            result.putProperty( QDataSet.FILL_VALUE, fill );
+            result.putProperty( QDataSet.FILL_VALUE, dfill );
         }
 
         return result;        
@@ -10363,9 +10366,10 @@ public class Ops {
         DDataSet result= DDataSet.create( DataSetUtil.qubeDims(xinterp) );
         
         QDataSet wds= DataSetUtil.weightsDataSet( data );
-        Double fill= (Double)wds.property(QDataSet.FILL_VALUE);
-        if ( fill==null ) fill= -1e38;
-        result.putProperty( QDataSet.FILL_VALUE, fill );
+        Number fill= (Number)wds.property(QDataSet.FILL_VALUE);
+        double dfill;
+        if ( fill==null ) dfill= -1e38; else dfill= fill.doubleValue();
+        result.putProperty( QDataSet.FILL_VALUE, dfill );
         boolean hasFill= false;
         
         DataSetIterator dsi= new QubeDataSetIterator(xinterp);
@@ -10381,7 +10385,7 @@ public class Ops {
             PointWeightedInt[] abcdi= new PointWeightedInt[4];
             for ( int k=0; k<4; k++ ) {
                 if ( !( abcd[k] instanceof PointWeightedInt ) ) { // this is outside of the triangulation, an extrapolation.
-                    dsi.putValue( result, fill );
+                    dsi.putValue( result, dfill );
                     hasFill= true;
                     continue iloop;
                 }
@@ -10468,9 +10472,10 @@ public class Ops {
         DDataSet result= DDataSet.create( DataSetUtil.qubeDims(xinterp));
         
         QDataSet wds= DataSetUtil.weightsDataSet( data );
-        Double fill= (Double)wds.property(QDataSet.FILL_VALUE);
-        if ( fill==null ) fill= -1e38;
-        result.putProperty( QDataSet.FILL_VALUE, fill );
+        Number fill= (Number)wds.property(QDataSet.FILL_VALUE);
+        double dfill;
+        if ( fill==null ) dfill= -1e38; else dfill= fill.doubleValue();
+        result.putProperty( QDataSet.FILL_VALUE, dfill );
         boolean hasFill= false;
         
         DataSetIterator dsi= new QubeDataSetIterator(xinterp);
@@ -10483,7 +10488,7 @@ public class Ops {
             VertexInt[] abci= new VertexInt[3];
             for ( int k=0; k<3; k++ ) {
                 if ( !( abc[k] instanceof VertexInt ) ) { // this is outside of the triangulation, an extrapolation.
-                    dsi.putValue( result, fill );
+                    dsi.putValue( result, dfill );
                     hasFill= true;
                     continue iloop;
                 }
