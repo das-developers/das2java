@@ -46,6 +46,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -1106,7 +1107,11 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 int selected = table.getSelectedRow(); // we could do a better job here
                 if (selected > -1) {
                     DataPoint dp = (DataPoint) dataPoints.get(selected);
-                    DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorder.this, dp.get(0), dp.get(1));
+                    Map planes= new HashMap();
+                    for ( int i=2; i<planesArray.length; i++ ) {
+                        planes.put( planesArray[i], dp.getPlane(planesArray[i]) );
+                    }
+                    DataPointSelectionEvent e2 = new DataPointSelectionEvent(DataPointRecorder.this, dp.get(0), dp.get(1), planes );
                     fireDataPointSelectionListenerDataPointSelected(e2);
                 }
                 Runnable run= new Runnable() {
