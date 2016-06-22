@@ -559,6 +559,7 @@ public class WebFileObject extends FileObject {
                     return false;
                 }
             } else {
+                logger.log(Level.FINE, "wfs is offline, and local file exists: {0}", this.getNameExt());
                 return true;
             }
 
