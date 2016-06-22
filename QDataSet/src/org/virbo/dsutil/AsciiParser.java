@@ -926,9 +926,26 @@ public class AsciiParser {
         
     }
 
+    /**
+     * return true if the header appears to contain JSON code which could be
+     * interpreted as a "Rich Header" (a.k.a. JSONHeadedASCII).  This is 
+     * a very simple test, simply looking for <code>#{</code> and <code>#}</code>.
+     * @see https://github.com/JSONheadedASCII/examples
+     * @param header string containing the commented header.
+     * @return true if parsing as a Rich Header should be attempted.
+     */
     public static boolean isRichHeader( String header ) {
-        boolean doJSON= header.contains("{") && header.contains("}");
-        return doJSON;
+        Pattern p= Pattern.compile("\\#\\s*\\{");
+        Matcher m= p.matcher(header);
+        if ( m.find() ) {
+            int istart= m.end();
+            p= Pattern.compile("\\#.*\\}");
+            m= p.matcher(header);
+            if ( m.find(istart) ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
