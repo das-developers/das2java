@@ -130,7 +130,7 @@ public class GraphicalLogHandler extends Handler {
         renderer.setDataSetLoader(null);
         plot.addRenderer( renderer );
         
-        canvas.add( plot, DasRow.create( canvas ), DasColumn.create(canvas) );
+        canvas.add( plot, new DasRow( canvas, 0.1, 0.9 ), DasColumn.create(canvas) );
         
         MouseModule mm=  getMouseModule();
         plot.getDasMouseInputAdapter().addMouseModule( mm );
