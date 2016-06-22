@@ -1601,7 +1601,7 @@ public class AsciiParser {
      * @param format
      * @return 
      */
-    private String[] f77FormatToCFormat( String[] format ) {
+    private static String[] f77FormatToCFormat( String[] format ) {
         String[] ss= new String[format.length+1];
         for ( int i=1;i<ss.length;i++ ) {
             String field= format[i-1];
@@ -1633,18 +1633,12 @@ public class AsciiParser {
         ss[0]="";
         return ss;
     }
-
     /**
-     * see {@code private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers)</tt>},
-     * which is very similar.<ul>
-     * <li>"%5d%5d%9f%s"
-     * <li>"d5,d5,f9,a"
-     * </ul>
-     * @param format
-     * @return
-     * @see org.das2.datum.TimeParser
+     * Convert FORTRAN (F77) style format to C-style format specifiers.
+     * @param format for example "%5d%5d%9f%s"
+     * @return for example "d5,d5,f9,a"
      */
-    public RegexParser getRegexParserForFormat(String format) {
+    public static String getRegexForFormat( String format ) {
         String[] ss= format.split("%");
         if ( ss.length==1 ) { // support $ as well as %, since % is not nice in URIs.
             String[] ss1= format.split("\\$");
@@ -1657,24 +1651,24 @@ public class AsciiParser {
             }        
         }
         
-        int count= 0;
-        for (String s : ss) {
-            if (!s.toLowerCase().endsWith("x")) {
-                count++;
-            }
-        }
-        String[] fc = new String[count];
+//        int count= 0;
+//        for (String s : ss) {
+//            if (!s.toLowerCase().endsWith("x")) {
+//                count++;
+//            }
+//        }
+        //String[] fc = new String[count];
         int[] lengths = new int[ss.length];
         for (int i = 0; i < lengths.length; i++) {
             lengths[i] = -1; // -1 indicates not known, but we'll figure out as many as we can.
 
         }
-        String[] delim = new String[count + 1];
+        //String[] delim = new String[count + 1];
 
         StringBuilder build = new StringBuilder(100);
-        delim[0] = ss[0];
+        //delim[0] = ss[0];
 
-        int ifield= 0;
+        //int ifield= 0;
         for (int i = 1; i < ss.length; i++) {
             int pp = 0;
             while (Character.isDigit(ss[i].charAt(pp)) || ss[i].charAt(pp) == '-') {
@@ -1703,7 +1697,7 @@ public class AsciiParser {
                     //fc[i]= "(" + "...................................................................".substring(0,lengths[i]) + ")";
                     fci= "(" + ".{"+lengths[i]+"})";
                 }
-                fc[ifield++]= fci;
+                //fc[ifield++]= fci;
             }
 
             build.append(fci);
@@ -1712,8 +1706,23 @@ public class AsciiParser {
         }
 
         String regex= build.toString();
-        System.err.println( "regex= "+ regex );
+        //System.err.println( "regex= "+ regex );
 
+        return regex;
+    }
+
+    /**
+     * see {@code private TimeParser(String formatString, Map<String,FieldHandler> fieldHandlers)</tt>},
+     * which is very similar.<ul>
+     * <li>"%5d%5d%9f%s"
+     * <li>"d5,d5,f9,a"
+     * </ul>
+     * @param format
+     * @return
+     * @see org.das2.datum.TimeParser
+     */
+    public RegexParser getRegexParserForFormat(String format) {
+        String regex= getRegexForFormat(format);
         RegexParser rp= new RegexParser(regex);
         setRecordParser(rp);
         return rp;
