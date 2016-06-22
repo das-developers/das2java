@@ -79,7 +79,7 @@ public class HttpFileSystem extends WebFileSystem {
     private final Map<String,Long> listingEntryFreshness= new HashMap();
     
     /** Creates a new instance of WebFileSystem */
-    private HttpFileSystem(URI root, File localRoot) {
+    protected HttpFileSystem(URI root, File localRoot) {
         super(root, localRoot);
     }
     
@@ -334,6 +334,153 @@ public class HttpFileSystem extends WebFileSystem {
     
     /**
      * 
+     * @param filename identifier for the resource, and should this end in gz, then the stream will probably be unzipped.
+     * @param remoteURL the remote URL from which a connection is opened.
+     * @param f the local file where the content will be stored.
+     * @param partFile a temporary local file.
+     * @param monitor a monitor for the download.
+     * @throws IOException
+     * @throws FileNotFoundException 
+     */
+    protected void doDownload( String filename, URL remoteURL, File f, File partFile, ProgressMonitor monitor ) throws IOException, FileNotFoundException {
+        loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { remoteURL } );
+        URLConnection urlc = remoteURL.openConnection();
+        urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
+        urlc.setReadTimeout( FileSystem.settings().getReadTimeoutMs() );
+
+        //bug http://sourceforge.net/p/autoplot/bugs/1393/ shows where this is necessary.
+        urlc.setUseCaches(false);
+
+        String userInfo;
+        try {
+            userInfo = KeyChain.getDefault().getUserInfo(root);
+        } catch (CancelledOperationException ex) {
+            throw new IOException("user cancelled at credentials entry");
+        }
+        if ( userInfo != null) {
+            String encode = Base64.encodeBytes(userInfo.getBytes());
+            urlc.setRequestProperty("Authorization", "Basic " + encode);
+        }
+
+        if ( cookie!=null ) {
+            urlc.addRequestProperty("Cookie", cookie );
+        }
+
+        InputStream in;
+
+        loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { urlc.getURL() } );
+        in= urlc.getInputStream();
+
+        HttpURLConnection hurlc = (HttpURLConnection) urlc;
+        if (hurlc.getResponseCode() == 404) {
+            logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
+            throw new FileNotFoundException("not found: " + remoteURL);
+        } else if (hurlc.getResponseCode() != 200) {
+            logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
+            throw new IOException( hurlc.getResponseCode()+": "+ hurlc.getResponseMessage() + "\n"+remoteURL );
+        }
+
+        Date d;
+        List<String> sd= urlc.getHeaderFields().get("Last-Modified");
+        if ( sd!=null && sd.size()>0 ) {
+            d= new Date( sd.get(sd.size()-1) );
+        } else {
+            d= new Date();
+        }
+
+        monitor.setTaskSize(urlc.getContentLength());
+
+        if (!f.getParentFile().exists()) {
+            logger.log(Level.FINER, "make dirs {0}", f.getParentFile());
+            FileSystemUtil.maybeMkdirs( f.getParentFile() );
+        }
+        if (partFile.exists()) {
+            logger.log(Level.FINER, "partFile exists {0}", partFile);
+            long ageMillis= System.currentTimeMillis() - partFile.lastModified(); // TODO: this is where OS-level locking would be nice...
+            if ( ageMillis<FileSystemSettings.allowableExternalIdleMs ) { // if it's been modified less than sixty seconds ago, then wait to see if it goes away, then check again.
+                if ( waitDownloadExternal( f, partFile, monitor ) ) {
+                    return; // success
+                } else {
+                    if ( monitor.isCancelled() ) {
+                        throw new InterruptedIOException("interrupt while waiting for external process to download "+partFile);
+                    } else {
+                        throw new IOException( "timeout waiting for external process to download "+partFile );
+                    }
+                }
+            } else {
+                if (!partFile.delete()) {
+                    logger.log(Level.INFO, "Unable to delete part file {0}, using new name for part file.", partFile ); //TODO: review this
+                    partFile= new File( f.toString()+".part."+System.currentTimeMillis() );
+                }
+            }
+        }
+
+        if (partFile.createNewFile()) {
+            //InputStream in;
+            //in = urlc.getInputStream();
+
+            logger.log(Level.FINER, "transferring bytes of {0}", filename);
+            FileOutputStream out = new FileOutputStream(partFile);
+            monitor.setLabel("downloading file");
+            monitor.started();
+            try {
+                // https://sourceforge.net/p/autoplot/bugs/1229/
+                String contentLocation= urlc.getHeaderField("Content-Location");
+                String contentType= urlc.getHeaderField("Content-Type");
+
+                boolean doUnzip= !filename.endsWith(".gz" ) && "application/x-gzip".equals( contentType ) && ( contentLocation==null || contentLocation.endsWith(".gz") );
+                if ( doUnzip ) {
+                    in= new GZIPInputStream( in );
+                }
+
+                copyStream(in, out, monitor);
+                monitor.finished();
+                out.close();
+                in.close();                    
+
+                try {
+                    partFile.setLastModified(d.getTime()+HTTP_CHECK_TIMESTAMP_LIMIT_MS);
+                } catch ( Exception ex ) {
+                    logger.log( Level.SEVERE, "unable to setLastModified", ex );
+                }
+
+                if ( f.exists() ) {
+                    if ( f.length()==partFile.length() ) {
+                        if ( OsUtil.contentEquals(f, partFile ) ) {
+                            logger.finer("another thread must have downloaded file.");
+                            if ( !partFile.delete() ) {
+                                throw new IllegalArgumentException("unable to delete "+partFile );
+                            }
+                            return;
+                        } else {
+                            logger.finer("another thread must have downloaded different file.");
+                        }
+                    }
+                    logger.log(Level.FINER, "deleting old file {0}", f);
+                    if ( ! f.delete() ) {
+                        throw new IllegalArgumentException("unable to delete "+f );
+                    }
+                }
+                if ( !partFile.renameTo(f) ) {
+                    logger.log(Level.WARNING, "rename failed {0} to {1}", new Object[]{partFile, f});
+                    throw new IllegalArgumentException( "rename failed " + partFile + " to "+f );
+                }
+            } catch (IOException e) {
+                out.close();
+                in.close();
+                logger.log( Level.FINER, "deleting partial download file {0}", partFile);
+                if ( partFile.exists() && !partFile.delete() ) {
+                    throw new IllegalArgumentException("unable to delete "+partFile );
+                }
+                throw e;
+            }
+        } else {
+            throw new IOException("could not create local file: " + f);
+        }
+        
+    }
+    /**
+     * 
      * @param filename filename within the filesystem.
      * @param f the target filename where the file is to be download.
      * @param partFile  use this file to stage the download
@@ -355,162 +502,14 @@ public class HttpFileSystem extends WebFileSystem {
 
         try {
             URL remoteURL = new URL(root.toString() + filename.substring(1) );
-
-            loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { remoteURL } );
-            URLConnection urlc = remoteURL.openConnection();
-            urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
-            urlc.setReadTimeout( FileSystem.settings().getReadTimeoutMs() );
             
-            //bug http://sourceforge.net/p/autoplot/bugs/1393/ shows where this is necessary.
-            urlc.setUseCaches(false);
-            
-            String userInfo;
             try {
-                userInfo = KeyChain.getDefault().getUserInfo(root);
-            } catch (CancelledOperationException ex) {
-                throw new IOException("user cancelled at credentials entry");
-            }
-            if ( userInfo != null) {
-                String encode = Base64.encodeBytes(userInfo.getBytes());
-                urlc.setRequestProperty("Authorization", "Basic " + encode);
-            }
-            
-            if ( cookie!=null ) {
-                urlc.addRequestProperty("Cookie", cookie );
-            }
-            
-            InputStream in;
-            try {
-                loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { urlc.getURL() } );
-                in= urlc.getInputStream();
-                
+                doDownload( filename, remoteURL, f, partFile, monitor );
             } catch ( FileNotFoundException ex ) {
                 remoteURL= new URL(root.toString() + filename.substring(1) + ".gz" );
-
-                loggerUrl.log(Level.FINE, "openConnection {0}", new Object[] { remoteURL } );
-                urlc = remoteURL.openConnection();
-                urlc.setConnectTimeout( FileSystem.settings().getConnectTimeoutMs() );
-                urlc.setReadTimeout( FileSystem.settings().getReadTimeoutMs() );
-                 
-                if ( userInfo != null) {
-                    String encode = Base64.encodeBytes(userInfo.getBytes());
-                    urlc.setRequestProperty("Authorization", "Basic " + encode);
-                }
-                try {
-                    loggerUrl.log(Level.FINE, "getInputStream {0}", new Object[] { urlc.getURL() } );
-                    in= new GZIPInputStream( urlc.getInputStream() );
-                } catch ( FileNotFoundException ex2 ) {
-                    throw ex;
-                }
-                
-            }
-            
-            HttpURLConnection hurlc = (HttpURLConnection) urlc;
-            if (hurlc.getResponseCode() == 404) {
-                logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
-                throw new FileNotFoundException("not found: " + remoteURL);
-            } else if (hurlc.getResponseCode() != 200) {
-                logger.log(Level.INFO, "{0} URL: {1}", new Object[]{hurlc.getResponseCode(), remoteURL});
-                throw new IOException( hurlc.getResponseCode()+": "+ hurlc.getResponseMessage() + "\n"+remoteURL );
+                doDownload( filename, remoteURL, f, partFile, monitor );
             }
 
-            Date d;
-            List<String> sd= urlc.getHeaderFields().get("Last-Modified");
-            if ( sd!=null && sd.size()>0 ) {
-                d= new Date( sd.get(sd.size()-1) );
-            } else {
-                d= new Date();
-            }
-            
-            monitor.setTaskSize(urlc.getContentLength());
-
-            if (!f.getParentFile().exists()) {
-                logger.log(Level.FINER, "make dirs {0}", f.getParentFile());
-                FileSystemUtil.maybeMkdirs( f.getParentFile() );
-            }
-            if (partFile.exists()) {
-                logger.log(Level.FINER, "partFile exists {0}", partFile);
-                long ageMillis= System.currentTimeMillis() - partFile.lastModified(); // TODO: this is where OS-level locking would be nice...
-                if ( ageMillis<FileSystemSettings.allowableExternalIdleMs ) { // if it's been modified less than sixty seconds ago, then wait to see if it goes away, then check again.
-                    if ( waitDownloadExternal( f, partFile, monitor ) ) {
-                        return; // success
-                    } else {
-                        if ( monitor.isCancelled() ) {
-                            throw new InterruptedIOException("interrupt while waiting for external process to download "+partFile);
-                        } else {
-                            throw new IOException( "timeout waiting for external process to download "+partFile );
-                        }
-                    }
-                } else {
-                    if (!partFile.delete()) {
-                        logger.log(Level.INFO, "Unable to delete part file {0}, using new name for part file.", partFile ); //TODO: review this
-                        partFile= new File( f.toString()+".part."+System.currentTimeMillis() );
-                    }
-                }
-            }
-
-            if (partFile.createNewFile()) {
-                //InputStream in;
-                //in = urlc.getInputStream();
-
-                logger.log(Level.FINER, "transferring bytes of {0}", filename);
-                FileOutputStream out = new FileOutputStream(partFile);
-                monitor.setLabel("downloading file");
-                monitor.started();
-                try {
-                    // https://sourceforge.net/p/autoplot/bugs/1229/
-                    String contentLocation= urlc.getHeaderField("Content-Location");
-                    String contentType= urlc.getHeaderField("Content-Type");
-                    
-                    boolean doUnzip= !filename.endsWith(".gz" ) && "application/x-gzip".equals( contentType ) && ( contentLocation!=null && contentLocation.endsWith(".gz") );
-                    if ( doUnzip ) {
-                        in= new GZIPInputStream( in );
-                    }
-                    
-                    copyStream(in, out, monitor);
-                    monitor.finished();
-                    out.close();
-                    in.close();                    
-                    
-                    try {
-                        partFile.setLastModified(d.getTime()+HTTP_CHECK_TIMESTAMP_LIMIT_MS);
-                    } catch ( Exception ex ) {
-                        logger.log( Level.SEVERE, "unable to setLastModified", ex );
-                    }
-
-                    if ( f.exists() ) {
-                        if ( f.length()==partFile.length() ) {
-                            if ( OsUtil.contentEquals(f, partFile ) ) {
-                                logger.finer("another thread must have downloaded file.");
-                                if ( !partFile.delete() ) {
-                                    throw new IllegalArgumentException("unable to delete "+partFile );
-                                }
-                                return;
-                            } else {
-                                logger.finer("another thread must have downloaded different file.");
-                            }
-                        }
-                        logger.log(Level.FINER, "deleting old file {0}", f);
-                        if ( ! f.delete() ) {
-                            throw new IllegalArgumentException("unable to delete "+f );
-                        }
-                    }
-                    if ( !partFile.renameTo(f) ) {
-                        logger.log(Level.WARNING, "rename failed {0} to {1}", new Object[]{partFile, f});
-                        throw new IllegalArgumentException( "rename failed " + partFile + " to "+f );
-                    }
-                } catch (IOException e) {
-                    out.close();
-                    in.close();
-                    logger.log( Level.FINER, "deleting partial download file {0}", partFile);
-                    if ( partFile.exists() && !partFile.delete() ) {
-                        throw new IllegalArgumentException("unable to delete "+partFile );
-                    }
-                    throw e;
-                }
-            } else {
-                throw new IOException("could not create local file: " + f);
-            }
         } finally {
 
             lock.unlock();
