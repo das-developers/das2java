@@ -30,10 +30,8 @@ import org.das2.datum.DatumRangeUtil;
 import org.das2.datum.EnumerationUnits;
 import org.das2.datum.InconvertibleUnitsException;
 import org.das2.datum.TimeParser;
-import org.virbo.dataset.DDataSet;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dsops.Ops;
 
@@ -234,29 +232,27 @@ public class AsciiParser {
      * @throws java.io.IOException
      */
     public String readFirstParseableRecord(String filename) throws IOException {
-        BufferedReader reader = new LineNumberReader(new FileReader(filename));
-
         String line;
-        String lastLine = null;
-
-        line = reader.readLine();
-        int iline = 0;
-        while (line != null && isHeader(iline, lastLine, line, 0)) {
-            lastLine = line;
+        try (BufferedReader reader = new LineNumberReader(new FileReader(filename))) {
+            String lastLine = null;
+            
             line = reader.readLine();
-            iline++;
+            int iline = 0;
+            while (line != null && isHeader(iline, lastLine, line, 0)) {
+                lastLine = line;
+                line = reader.readLine();
+                iline++;
+            }
+            
+            DataSetBuilder builder = new DataSetBuilder(2, 100, recordParser.fieldCount() );
+            
+            while (line != null && iline<HEADER_LENGTH_LIMIT && this.recordParser.tryParseRecord(line, 0, builder) == false) {
+                line = reader.readLine();
+                iline++;
+            }
+            
+            if ( iline==HEADER_LENGTH_LIMIT ) line= null;
         }
-
-        DataSetBuilder builder = new DataSetBuilder(2, 100, recordParser.fieldCount() );
-
-        while (line != null && iline<HEADER_LENGTH_LIMIT && this.recordParser.tryParseRecord(line, 0, builder) == false) {
-            line = reader.readLine();
-            iline++;
-        }
-
-        if ( iline==HEADER_LENGTH_LIMIT ) line= null;
-        
-        reader.close();
 
         return line;
     }
@@ -346,7 +342,7 @@ public class AsciiParser {
 
             DelimParser p= guessDelimParser(line);
 
-            List<String> lines= new LinkedList<String>();
+            List<String> lines= new LinkedList<>();
 
             int parseCount=0;
 
@@ -501,12 +497,10 @@ public class AsciiParser {
      */
     public DelimParser setDelimParser(Reader in, String delimRegex) throws IOException {
 
-        BufferedReader reader = new LineNumberReader(in);
-
         String line;
-
-        line = readFirstRecord(reader);
-        reader.close();
+        try (BufferedReader reader = new LineNumberReader(in)) {
+            line = readFirstRecord(reader);
+        }
 
         DelimParser result = createDelimParser(line, delimRegex);
         this.recordParser = result;
@@ -567,12 +561,10 @@ public class AsciiParser {
      * @throws java.io.IOException
      */
     public FixedColumnsParser setFixedColumnsParser(Reader in, String delim) throws IOException {
-        BufferedReader reader = new LineNumberReader(in);
-
         String line;
-
-        line = readFirstRecord(reader);
-        reader.close();
+        try (BufferedReader reader = new LineNumberReader(in)) {
+            line = readFirstRecord(reader);
+        }
 
         int[] columnOffsets;
         int[] columnWidths;
@@ -644,9 +636,7 @@ public class AsciiParser {
 
         Pattern pat = Pattern.compile(regexBuf.toString());
 
-        BufferedReader reader=null;
-        try {
-            reader= new LineNumberReader(new FileReader(filename));
+        try (BufferedReader reader = new LineNumberReader(new FileReader(filename))) {
 
             String line;
             while ((line = reader.readLine()) != null) {
@@ -661,8 +651,6 @@ public class AsciiParser {
                     }
                 }
             }
-        } finally {
-            if ( reader!=null ) reader.close();
         }
         int max = 0;
         int imax = 0;
@@ -935,11 +923,14 @@ public class AsciiParser {
      * @return true if parsing as a Rich Header should be attempted.
      */
     public static boolean isRichHeader( String header ) {
-        Pattern p= Pattern.compile("\\#\\s*\\{");
+        if ( header.length()==0 ) return false;
+        String hash= header.charAt(0)=='#' ? "\\#" : "";  // we might have popped off all the comment prefixes (#).
+        
+        Pattern p= Pattern.compile(hash+"\\s*\\{");
         Matcher m= p.matcher(header);
         if ( m.find() ) {
             int istart= m.end();
-            p= Pattern.compile("\\#.*\\}");
+            p= Pattern.compile(hash+".*\\}");
             m= p.matcher(header);
             if ( m.find(istart) ) {
                 return true;
@@ -1023,7 +1014,7 @@ public class AsciiParser {
      * @return the high rank rich fields in a map from NAME to LABEL.
      */
     public Map<String,String> getRichFields() {
-        LinkedHashMap<String,String> result= new LinkedHashMap<String, String>();
+        LinkedHashMap<String,String> result= new LinkedHashMap<>();
         if ( bundleDescriptor!=null ) {
             for ( int i=0; i<bundleDescriptor.length(); i++ ) {
                 String name= (String) bundleDescriptor.property( QDataSet.ELEMENT_NAME, i);
@@ -1114,36 +1105,44 @@ public class AsciiParser {
         if ( iwhereParm==-1 ) {
             throw new IllegalArgumentException("no such column: "+sparm);
         }
-        if ( op.equals("eq") ) {
-            this.whereSign= 0;
-            this.whereEq= true;
-            this.whereNe= false;
-        } else if ( op.equals("ne") ) {
-            this.whereSign= 0;
-            this.whereEq= false;
-            this.whereNe= true;            
-        } else if ( op.equals("gt") ) {
-            this.whereSign= 1;
-            this.whereEq= false;
-            this.whereNe= false;            
-        } else if ( op.equals("ge") ) {
-            this.whereSign= 1;
-            this.whereEq= true;
-            this.whereNe= false;            
-        } else if ( op.equals("lt") ) {
-            this.whereSign= -1;
-            this.whereEq= false;
-            this.whereNe= false;            
-        } else if ( op.equals("le") ) {
-            this.whereSign= -1;
-            this.whereEq= true;
-            this.whereNe= false;  
-        } else if ( op.equals("within") ) {
-            this.whereSign= 1;
-            this.whereEq= true;
-            this.whereNe= false;     
-        } else {
-            throw new IllegalArgumentException("where constraint not supported: "+op);
+        switch (op) {
+            case "eq":
+                this.whereSign= 0;
+                this.whereEq= true;
+                this.whereNe= false;
+                break;
+            case "ne":
+                this.whereSign= 0;
+                this.whereEq= false;
+                this.whereNe= true;
+                break;
+            case "gt":
+                this.whereSign= 1;
+                this.whereEq= false;
+                this.whereNe= false;
+                break;
+            case "ge":
+                this.whereSign= 1;
+                this.whereEq= true;
+                this.whereNe= false;
+                break;
+            case "lt":
+                this.whereSign= -1;
+                this.whereEq= false;
+                this.whereNe= false;
+                break;
+            case "le":
+                this.whereSign= -1;
+                this.whereEq= true;
+                this.whereNe= false;
+                break;
+            case "within":
+                this.whereSign= 1;
+                this.whereEq= true;
+                this.whereNe= false;
+                break;
+            default:
+                throw new IllegalArgumentException("where constraint not supported: "+op);
         }
         this.whereValue= sval.trim();
         this.dwhereValue= null;
@@ -1454,15 +1453,13 @@ public class AsciiParser {
                         double d= fieldParsers[j].parseField(parseable, j);
                         if ( builder!=null ) builder.putValue(irec, j, d );
                         okayCount++;
-                    } catch (ParseException e) {
-                        if ( firstException==null ) firstException= e;
-                        failCount++;
-                        if ( builder!=null ) builder.putValue(irec, j, -1e31 ); //TODO
-                    } catch (NumberFormatException e) {
+                    } catch (ParseException | NumberFormatException e) {
                         if ( firstException==null ) firstException= e;
                         failCount++;
                         if ( builder!=null ) builder.putValue(irec, j, -1e31 ); //TODO
                     }
+                    //TODO
+                    
                 }
             }
             if ( firstException!=null && failCount>0 && failCount<fieldCount ) {
@@ -1899,10 +1896,7 @@ public class AsciiParser {
                     double d = fieldParsers[i].parseField(line.substring(columnOffsets[i], columnOffsets[i] + columnWidths[i]), i);
                     okayCount++;
                     if ( builder!=null ) builder.putValue(irec, i, d);
-                } catch (NumberFormatException ex) {
-                    failCount++;
-                    fails[i] = true;
-                } catch (ParseException ex) {
+                } catch (NumberFormatException | ParseException ex) {
                     failCount++;
                     fails[i] = true;
                 }
@@ -2010,13 +2004,9 @@ public class AsciiParser {
     public WritableDataSet readFile(String filename, ProgressMonitor mon) throws IOException {
         long size = new File(filename).length();
         mon.setTaskSize(size);
-        Reader in= null;
-        try {
-            in= new FileReader(filename);
+        try (Reader in = new FileReader(filename)) {
             WritableDataSet result= readStream( in, null, mon );
             return result;
-        } finally {
-            if ( in!=null ) in.close();
         }
     }
 
@@ -2102,7 +2092,7 @@ public class AsciiParser {
     /**
      * Utility field used by bound properties.
      */
-    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    private final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     /**
      * Adds a PropertyChangeListener to the listener list.
