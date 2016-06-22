@@ -264,6 +264,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         public Object getValueAt(int i, int j) {
             DataPoint x;
             synchronized (dataPoints) {
+                if ( i>=dataPoints.size() ) {
+                    i= dataPoints.size()-1;
+                }
                 x = (DataPoint) dataPoints.get(i);
             }
             if (j < x.data.length) {
@@ -336,7 +339,12 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     public void deleteRows(int[] selectedRows) {
         synchronized ( dataPoints ) {
             for ( int i = selectedRows.length-1; i>=0; i-- ) {
-               dataPoints.remove(selectedRows[i]);
+                int j= selectedRows[i];
+                if ( j>=dataPoints.size() ) {
+                    j= dataPoints.size()-1;
+                    logger.fine("heres a bug to fix, having to do with synchronization.");
+                }
+                dataPoints.remove(j);
             }
             modified = true;
         }
@@ -1106,6 +1114,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 fireSelectedDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(DataPointRecorder.this));
                 int selected = table.getSelectedRow(); // we could do a better job here
                 if (selected > -1) {
+                    selected= table.convertRowIndexToModel(selected);
                     DataPoint dp = (DataPoint) dataPoints.get(selected);
                     Map planes= new HashMap();
                     for ( int i=2; i<planesArray.length; i++ ) {
