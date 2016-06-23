@@ -1622,7 +1622,7 @@ public class DataSetUtil {
 
             MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
             
-            // one last check, because the gaps in the spectrogram come up way too often!
+            // 1582: one last check, because the gaps in the spectrogram come up way too often! 
             if ( t<65 ) {
                 QDataSet r= Ops.where( Ops.gt( diffs,result ) );
                 if ( r.length()>t/4 ) {
