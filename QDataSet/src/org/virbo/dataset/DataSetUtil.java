@@ -1620,15 +1620,23 @@ public class DataSetUtil {
                 }
             }
 
+            MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
+            
+            // one last check, because the gaps in the spectrogram come up way too often!
+            if ( t<65 ) {
+                QDataSet r= Ops.where( Ops.gt( diffs,result ) );
+                if ( r.length()>t/4 ) {
+                    return null;
+                }
+            }
+            
             if ( log ) {
-                MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
                 result.putProperty( QDataSet.UNITS, Units.logERatio );
                 result.putProperty( QDataSet.SCALE_TYPE, "log" );
                 logger.log(Level.FINE, "guessCadence({0})->{1} (log)", new Object[]{xds, result});
                 logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");
                 return (RankZeroDataSet)result;
             } else {
-                MutablePropertyDataSet result= DRank0DataSet.create(ss/nn);
                 result.putProperty( QDataSet.UNITS, xunits.getOffsetUnits() );
                 logger.log(Level.FINE, "guessCadence({0})->{1} (linear)", new Object[]{xds, result});
                 logger.exiting(LOGGING_SOURCE_CLASS,"guessCadenceNew");                    
