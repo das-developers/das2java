@@ -1498,6 +1498,8 @@ public class DataSetUtil {
   
         boolean bunch0= firstPositiveBin<Integer.MAX_VALUE && ipeak==firstPositiveBin && extent.value(0)-Math.abs(mean) < 0 && ( total<10 || firstBin<=0. );
         boolean isratiomeas= UnitsUtil.isRatioMeasurement(xunits);
+        
+        QDataSet logDiff= null;
         logger.log( Level.FINER, "consider log: isratio={0} allPositive={1} bunch0={2}", new Object[]{ isratiomeas, extent.value(0)>0, bunch0 });            
         if ( isratiomeas && extent.value(0)>0 &&
                 ( logScaleType 
@@ -1505,6 +1507,7 @@ public class DataSetUtil {
                 || bunch0 ) ) {
             ah= new AutoHistogram();
             QDataSet diffs2= Ops.diff(Ops.log(xds));
+            logDiff= diffs2;
             QDataSet yy= DataSetUtil.weightsDataSet(yds);
             if ( repeatValues>0 ) {
                 QDataSet r= Ops.where( Ops.ne( diffs2,DataSetUtil.asDataSet(0) ) );
@@ -1624,7 +1627,12 @@ public class DataSetUtil {
             
             // 1582: one last check, because the gaps in the spectrogram come up way too often! 
             if ( t<65 ) {
-                QDataSet r= Ops.where( Ops.gt( diffs,result ) );
+                QDataSet r;
+                if ( log && logDiff!=null ) {
+                    r= Ops.where( Ops.gt( logDiff,result ) );
+                } else {
+                    r= Ops.where( Ops.gt( diffs,result ) );
+                }
                 if ( r.length()>t/4 ) {
                     return null;
                 }
