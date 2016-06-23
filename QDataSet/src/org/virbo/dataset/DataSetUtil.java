@@ -1628,10 +1628,11 @@ public class DataSetUtil {
             // 1582: one last check, because the gaps in the spectrogram come up way too often! 
             if ( t<65 ) {
                 QDataSet r;
+                QDataSet tresult= Ops.multiply(result,1.10);
                 if ( log && logDiff!=null ) {
-                    r= Ops.where( Ops.gt( logDiff,result ) );
+                    r= Ops.where( Ops.gt( logDiff,tresult ) );
                 } else {
-                    r= Ops.where( Ops.gt( diffs,result ) );
+                    r= Ops.where( Ops.gt( diffs,tresult ) );
                 }
                 if ( r.length()>t/4 ) {
                     return null;
