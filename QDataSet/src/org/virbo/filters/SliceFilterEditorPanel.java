@@ -344,7 +344,11 @@ public class SliceFilterEditorPanel extends AbstractFilterEditorPanel implements
         if ( m.matches() ) {
             int dim= Integer.parseInt(m.group(1));
             int index= Integer.parseInt(m.group(2));
-            return qube[dim]>index;
+            if ( dim==0 ) {
+                return in.length()>index;
+            } else {
+                return qube[dim]>index;
+            }
         }
         return true;
     }
