@@ -18,6 +18,7 @@ public class NybbleDataSet extends BufferDataSet {
 
     public NybbleDataSet(int rank, int reclenbits, int recoffsbits, int len0, int len1, int len2, int len3, ByteBuffer back ) {
         super( rank, reclenbits, recoffsbits, BufferDataSet.BITS, len0, len1, len2, len3, BufferDataSet.NYBBLE, back );        
+        reclen= reclenbits/8;
     }
 
     protected int offset() {
@@ -46,10 +47,15 @@ public class NybbleDataSet extends BufferDataSet {
     }
 
     public double value(int i0, int i1) {
-        if ( i0 % 2 == 0 ) {
-            return back.get(offset(i0,i1)) & 0x0F;
-        } else {
-            return back.get(offset(i0,i1)) >> 4;
+        try {
+            if ( i0 % 2 == 0 ) {
+                return back.get(offset(i0,i1)) & 0x0F;
+            } else {
+                return back.get(offset(i0,i1)) >> 4;
+            }
+        } catch ( IndexOutOfBoundsException ex ) {
+            System.err.println("here");
+            throw ex;
         }
     }
 
