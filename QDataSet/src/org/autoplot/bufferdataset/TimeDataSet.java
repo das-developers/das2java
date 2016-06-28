@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.autoplot.bufferdataset;
 
 import java.nio.ByteBuffer;
@@ -13,7 +9,7 @@ import org.virbo.dataset.QDataSet;
 
 /**
  * Often we see where time is left decoded in binary streams, occupying ~21 
- * bytes instead of 8 bytes to represent them as a double.  This extension
+ * bytes (ASCII characters) instead of 8 bytes to represent them as a double.  This extension
  * allows this sort of data to be read in as well, making the data available 
  * as Units.us2000.
  * 
