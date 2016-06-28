@@ -96,6 +96,11 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     public final static Object INT24= "int24";
     
     /**
+     * four-bit unsigned ints
+     */
+    public final static Object NYBBLE= "nybble";
+    
+    /**
      * 8 byte signed longs
      */
     public final static Object LONG= "long";
@@ -125,6 +130,14 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
      */
     public final static Object UBYTE= "ubyte";
     
+    public static int bitCount( Object type ) {
+        if ( type.equals(NYBBLE) ) {
+            return 4; 
+        } else {
+            return byteCount( type ) * 8;
+        }
+    }
+    
     /**
      * return the number of bytes of each type (double=8, etc).
      * @param type DOUBLE, FLOAT, UBYTE, TIME28, etc.
@@ -137,6 +150,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             return 4;
         } else if ( type.equals(VAX_FLOAT) ) {
             return 4;
+        } else if ( type.equals(NYBBLE) ) {
+            throw new IllegalArgumentException("NYBBLE must be used with bitCount and makeDataSetBits");
         } else if ( type.equals(INT24) ) {
             return 3;
         } else if (type.equals(LONG)) {
@@ -160,6 +175,42 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         } else {
             throw new IllegalArgumentException("bad type: " + type);
         }
+    }
+    
+    /**
+     * support binary types that are not a multiple of 8 bits.  This was
+     * added to support Nybbles, and 12-bit ints.
+     * @param rank
+     * @param reclenbits number of bits per record
+     * @param recoffsbits number of bits offset.  Note this must be a multiple of 8, for now.
+     * @param len0   number of elements in the first index
+     * @param len1   number of elements in the second index
+     * @param len2   number of elements in the third index
+     * @param len3 number of elements in the fourth index
+     * @param buf ByteBuffer containing the data, which should be at least recoffsbits/8 + reclenbits/8 * len0 bytes long.
+     * @param type BufferDataSet.NYBBLE, etc
+     * @return BufferDataSet of the given type.
+     */
+    public static BufferDataSet makeDataSetBits( int rank, int reclenbits, int recoffsbits, int len0, int len1, int len2, int len3, ByteBuffer buf, Object type ) {
+        BufferDataSet result;
+        if ( rank==1 && len1>1 ) throw new IllegalArgumentException("rank is 1, but len1 is not 1");
+        int nperRec=  len1 * len2 * len3; // assumes unused params are "1"
+        if ( reclenbits < bitCount(type) ) {
+            throw new IllegalArgumentException("reclenbits " + reclenbits + " is smaller than length of type "+type);
+        } 
+        if ( reclenbits < nperRec * bitCount(type) ) {
+            throw new IllegalArgumentException("reclenbits " + reclenbits + " is smaller than length of " + nperRec +" type "+type);
+        } 
+        if ( ( (long)(reclenbits) * len0 / 8 ) > buf.limit() ) {
+            throw new IllegalArgumentException( String.format( "buffer length (%d bytes) is too small to contain data (%d %d-bit records)", buf.limit(), len0, reclenbits ) );
+        }
+        if ( type.equals( NYBBLE ) ) {
+            result= new NybbleDataSet( rank, reclenbits, recoffsbits, len0, len1, len2, len3, buf );
+        } else {
+            return makeDataSet( rank, reclenbits/8, recoffsbits/8, len0, len1, len2, len3, buf, type);
+        }
+        return result;
+        
     }
     
     /**
@@ -196,6 +247,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             result= new VaxFloatDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(INT24) ) {
             result= new Int24DataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+        } else if ( type.equals(NYBBLE) ) {
+            result= new NybbleDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(LONG) ) {
             result=new  LongDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(INT) ) {
@@ -305,6 +358,66 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         }
     }
 
+    /**
+     * constructor units are in bytes.
+     */
+    public static final Object BYTES="bytes";
+    
+    /**
+     * constructor units are in bits.
+     */
+    public static final Object BITS="bits";
+        
+    /**
+     * Create a new BufferDataSet of the given type.  Simple sanity checks are made, including:<ul>
+     *   <li>rank 1 dataset may not have len1&gt;1.
+     *   <li>reclen cannot be shorter than the byte length of the field type. 
+     *   <li>buffer must have room for the dataset
+     * </ul>
+     * @param rank   dataset rank
+     * @param reclen  length in bytes/bits of each record.
+     * @param recoffs  byte/bit offset of each record.  For bits this must be multiple of 8.
+     * @param bitByte  either BufferDataSet.BYTES or BufferDataSet.BITS
+     * @param len0   number of elements in the first index
+     * @param len1   number of elements in the second index
+     * @param len2   number of elements in the third index
+     * @param len3   number of elements in the fourth index
+     * @param back   ByteBuffer containing the data, which should be at least reclen * len0 bytes long (when reclen is in bytes).
+     * @param type   BufferDataSet.INT, BufferDataSet.DOUBLE, etc...
+     */
+    public BufferDataSet( int rank, int reclen, int recoffs, Object bitByte, int len0, int len1, int len2, int len3, Object type, ByteBuffer back ) {
+        if ( rank<0 ) {
+            throw new IllegalArgumentException("rank cannot be negative");
+        }
+        if ( rank==1 && len1>1 ) throw new IllegalArgumentException("rank is 1, but len1 is not 1");
+        if ( bitByte.equals(BufferDataSet.BITS) ) {
+            if ( reclen < bitCount(type) ) throw new IllegalArgumentException("reclen " + reclen + " bytes is smaller that length of type "+type);
+            if ( reclen*len0/8 > back.limit() ) throw new IllegalArgumentException("buffer is too short (len="+back.limit()+") to contain data ("+len0+" "+reclen+" bit records)");    
+        } else {
+            if ( reclen < byteCount(type) ) throw new IllegalArgumentException("reclen " + reclen + " is smaller that length of type "+type);
+            if ( reclen*len0 > back.limit() ) throw new IllegalArgumentException("buffer is too short (len="+back.limit()+") to contain data ("+len0+" "+reclen+" byte records)");                
+        }
+        this.back= back;
+        this.rank = rank;
+        this.reclen= reclen;
+        this.recoffset= recoffs;
+        this.len0 = len0;
+        this.len1 = len1;
+        this.len2 = len2;
+        this.len3 = len3;
+        this.type= type;
+        this.fieldLen= bitCount(type)/8;
+        if ( reclen>0 && fieldLen>reclen ) { // negative reclen supported 9-bit floats.
+            logger.warning( String.format( "field length (%d) is greater than record length (%d) for len0=%d.", (int)fieldLen, (int)reclen, (int)len0 ) );
+        }
+        if ( reclen>0 && ( back.remaining()< ( reclen*len0 ) ) ) {
+            logger.warning( String.format( "back buffer is too short (len=%d) for %d records each reclen=%d.", (int)back.remaining(), (int)len0, (int)reclen ) );
+        }    
+        if ( rank>1 ) {
+            putProperty( QDataSet.QUBE, Boolean.TRUE );
+        }
+    }
+    
     /**
      * create a rank 0 dataset backed by the given type.
      * @param type DOUBLE, FLOAT, UINT, etc
