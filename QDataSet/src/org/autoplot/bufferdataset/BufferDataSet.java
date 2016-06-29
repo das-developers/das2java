@@ -96,6 +96,11 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
     public final static Object INT24= "int24";
     
     /**
+     * three-byte unsigned ints.
+     */
+    public final static Object UINT24= "uint24";
+    
+    /**
      * four-bit unsigned ints
      */
     public final static Object NYBBLE= "nybble";
@@ -153,6 +158,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         } else if ( type.equals(NYBBLE) ) {
             throw new IllegalArgumentException("NYBBLE must be used with bitCount and makeDataSetBits");
         } else if ( type.equals(INT24) ) {
+            return 3;
+        } else if ( type.equals(UINT24) ) {
             return 3;
         } else if (type.equals(LONG)) {
             return 8;
@@ -247,6 +254,8 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
             result= new VaxFloatDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(INT24) ) {
             result= new Int24DataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
+        } else if ( type.equals(UINT24) ) {
+            result= new UInt24DataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(NYBBLE) ) {
             result= new NybbleDataSet( rank, reclen, recoffs, len0, len1, len2, len3, buf );
         } else if ( type.equals(LONG) ) {
