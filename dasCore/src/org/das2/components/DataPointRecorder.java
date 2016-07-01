@@ -91,6 +91,8 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
+import org.virbo.dsutil.DataSetBuilder;
 
 /**
  * DataPointRecorder is a GUI for storing data points selected by the user.  
@@ -394,37 +396,46 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * returns a data set of the table data.  This will be 
      * ds[n,m] with n rows and m columns, where m is the number of columns
      * minus one, and with DEPEND_0 containing the X values.
+     * @see #getBundleDataSet() 
      * @return  a data set of the table data. 
      */
     public QDataSet getDataSet( ) {
         if ( unitsArray[0]==null ) return null;
-        VectorDataSetBuilder builder = new VectorDataSetBuilder(unitsArray[0], unitsArray[1]);
-        synchronized ( dataPoints ) {
-            if (dataPoints.isEmpty()) {
-                return null;
-            } else {
-                for (int i = 2; i < planesArray.length; i++) {
-                    if (unitsArray[i] != null) {
-                        builder.addPlane(planesArray[i], unitsArray[i]);
-                    }
-                }
-                for (int irow = 0; irow < dataPoints.size(); irow++) {
-                    DataPoint dp = (DataPoint) dataPoints.get(irow);
-                    builder.insertY(dp.get(0), dp.get(1));
-                    for (int i = 2; i < planesArray.length; i++) {
-                        if (unitsArray[i] != null) {
-                            builder.insertY(dp.get(0), (Datum) dp.getPlane(planesArray[i]), planesArray[i]);
-                        }
-                    } DataSetAdapter.create( builder.toVectorDataSet() );
-                }
-                if ( xTagWidth != null && xTagWidth.value()>0 && !xTagWidth.isFill() ) {
-                    builder.setProperty("xTagWidth", xTagWidth);
-                }
-            }
+        QDataSet bds= getBundleDataSet();
+        QDataSet xds= Ops.unbundle(bds,0);
+        if ( xTagWidth != null && xTagWidth.value()>0 && !xTagWidth.isFill() ) {
+            xds= Ops.putProperty( xds, QDataSet.CADENCE, DataSetUtil.asDataSet(xTagWidth) );
         }
-        QDataSet result= DataSetAdapter.create( builder.toVectorDataSet() );
-        
-        return result;
+        if ( bds.length(0)==2 ) {
+            return Ops.link( xds, Ops.unbundle(bds,1) );
+        } else {
+            return Ops.link( xds, Ops.trim1( bds, 1, bds.length(0) ) );
+        }
+    }
+    
+    /**
+     * return ds[n,m] with n rows and m columns, where ds[:,0] is the x, ds[:,1] 
+     * is the y, and ds[:,2:] are the additional data.
+     * @return a rank 2 dataset of the table data.
+     */
+    public QDataSet getBundleDataSet() {
+        if ( unitsArray[0]==null ) return null;
+        DataSetBuilder builder= new DataSetBuilder( 2, dataPoints.size(), planesArray.length );
+        builder.setName( 0, "x" );
+        builder.setName( 1, "y" );
+        for ( int i=2; i<planesArray.length; i++ ) {
+            builder.setName( i, planesArray[i] );
+        }
+        for ( int irow = 0; irow < dataPoints.size(); irow++) {
+            DataPoint dp = (DataPoint) dataPoints.get(irow);
+            builder.putValue( -1, 0, dp.get(0) );
+            builder.putValue( -1, 1, dp.get(1) );
+            for ( int i=2; i<planesArray.length; i++ ) {
+                builder.putValue( -1, (Datum)dp.getPlane(planesArray[i] ) );
+            }
+            builder.nextRecord();
+        }
+        return builder.getDataSet();
     }
     
     /**
@@ -1329,6 +1340,15 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     /**
+     * add just the x and y values.
+     * @param x the x position
+     * @param y the y position
+     */
+    public void addDataPoint( double x, double y ) {
+        addDataPoint( Units.dimensionless.createDatum(x), Units.dimensionless.createDatum(y), null );
+    }
+    
+    /**
      * add the x and y values with unnamed metadata.
      * @param x the x position
      * @param y the y position
@@ -1432,7 +1452,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 if (!planes[j].equals("")) {
                     planesMap.put( planes[j], DataSetUtil.asDatum( DataSetOps.unbundle( ds, planes[j] ).slice(i) ) );
                 }
-            }
+                }
             addDataPoint( DataSetUtil.asDatum( dep0.slice(i) ), DataSetUtil.asDatum( ds.slice(i).slice(0) ), planesMap );
         }
 
