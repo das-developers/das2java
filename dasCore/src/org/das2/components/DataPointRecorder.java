@@ -431,7 +431,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             builder.putValue( -1, 0, dp.get(0) );
             builder.putValue( -1, 1, dp.get(1) );
             for ( int i=2; i<planesArray.length; i++ ) {
-                builder.putValue( -1, (Datum)dp.getPlane(planesArray[i] ) );
+                builder.putValue( -1, i, (Datum)dp.getPlane(planesArray[i] ) );
             }
             builder.nextRecord();
         }
@@ -1349,6 +1349,16 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     /**
+     * add just the x and y values.
+     * @param x the x position
+     * @param y the y position
+     * @param planes additional planes, map from String name &rarr; String, Datum, or Number.
+     */
+    public void addDataPoint( double x, double y, Map planes ) {
+        addDataPoint( Units.dimensionless.createDatum(x), Units.dimensionless.createDatum(y), planes );
+    }
+    
+    /**
      * add the x and y values with unnamed metadata.
      * @param x the x position
      * @param y the y position
@@ -1362,7 +1372,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
      * add the data point, along with metadata such as the key press.
      * @param x the x position
      * @param y the y position
-     * @param planes additional planes, map from String name &rarr; String, Datum, Number, or  value.
+     * @param planes additional planes, map from String name &rarr; String, Datum, or Number.
      * @throws RuntimeException when the units are not convertible. 
      */
     public void addDataPoint( Datum x, Datum y, Map planes ) {
@@ -1395,8 +1405,6 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             }
                         } else if ( value instanceof Number ) {
                             unitsArray[index]= Units.dimensionless;
-                        } else if ( value instanceof String ) {
-                            unitsArray[index]= EnumerationUnits.create("default"); //TODO:  we already checked for this.
                         } else {
                             throw new IllegalArgumentException("values must be rank 0 Datum or QDataSet, not " + value);
                         }
