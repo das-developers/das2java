@@ -233,6 +233,7 @@ public class DataSetBuilder {
      */
     public void putValue( int index0, Datum d ) {
         checkStreamIndex(index0);
+        if ( rank!=1 ) throw new IllegalArgumentException("rank 1 putValue used with rank "+rank+" dataset");
         if ( u==null ) u= d.getUnits();
         current.putValue( this.index, d.doubleValue(u) );
     }
@@ -245,6 +246,7 @@ public class DataSetBuilder {
      */
     public void putValue( int index0, int index1, Datum d ) {
         checkStreamIndex(index0);
+        if ( rank!=2 ) throw new IllegalArgumentException("rank 2 putValue used with rank "+rank+" dataset");
         if ( us==null || us[index1]==null ) {
             setUnits(index1, d.getUnits());
         }
@@ -260,6 +262,7 @@ public class DataSetBuilder {
      */
     public void putValue( int index0, int index1, int index2, Datum d ) {
         checkStreamIndex(index0);
+        if ( rank!=3 ) throw new IllegalArgumentException("rank 3 putValue used with rank "+rank+" dataset");
         if ( u==null ) u= d.getUnits();
         current.putValue( this.index, index1, index2, d.doubleValue(u) );
     }    
@@ -274,6 +277,7 @@ public class DataSetBuilder {
      */
     public void putValue( int index0, int index1, int index2, int index3, Datum d ) {
         checkStreamIndex(index0);
+        if ( rank!=4 ) throw new IllegalArgumentException("rank 4 putValue used with rank "+rank+" dataset");
         if ( u==null ) u= d.getUnits();
         current.putValue( this.index, index1, index2, index3, d.doubleValue(u) );
     }    
@@ -287,6 +291,7 @@ public class DataSetBuilder {
         checkStreamIndex(index0);
         if ( u==null ) u= SemanticOps.getUnits(d);
         if ( d.rank()!=0 ) throw new IllegalArgumentException("data must be rank 0");
+        if ( rank!=1 ) throw new IllegalArgumentException("rank 1 putValue used with rank "+rank+" dataset");        
         double v= d.value();        
         Units lu= SemanticOps.getUnits(d);
         if ( lu!=u ) {
@@ -308,6 +313,7 @@ public class DataSetBuilder {
             setUnits( index1, lu );
         }
         if ( d.rank()!=0 ) throw new IllegalArgumentException("data must be rank 0");
+        if ( rank!=2 ) throw new IllegalArgumentException("rank 2 putValue used with rank "+rank+" dataset");        
         double v= d.value();        
         if ( lu!=us[index1] ) {
             v= lu.convertDoubleTo( us[index1], v );
@@ -337,6 +343,7 @@ public class DataSetBuilder {
             u= SemanticOps.getUnits(d);
         } 
         if ( d.rank()!=0 ) throw new IllegalArgumentException("data must be rank 0");
+        if ( rank!=3 ) throw new IllegalArgumentException("rank 3 putValue used with rank "+rank+" dataset");        
         double v= d.value();
         Units lu= SemanticOps.getUnits(d);
         if ( lu!=u ) {
@@ -359,6 +366,7 @@ public class DataSetBuilder {
             u= SemanticOps.getUnits(d);
         } 
         if ( d.rank()!=0 ) throw new IllegalArgumentException("data must be rank 0");
+        if ( rank!=4 ) throw new IllegalArgumentException("rank 4 putValue used with rank "+rank+" dataset");        
         double v= d.value();
         Units lu= SemanticOps.getUnits(d);
         if ( lu!=u ) {
