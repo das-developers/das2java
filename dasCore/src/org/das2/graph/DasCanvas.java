@@ -1013,7 +1013,9 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
 
         for ( Component c: this.getCanvasComponents() ) {
             if ( c instanceof DasPlot ) {
-                plots.add( (DasPlot)c );
+                if ( ((DasPlot)c).isPlotVisible() ) {
+                    plots.add( (DasPlot)c );
+                }
             }
         }
 
