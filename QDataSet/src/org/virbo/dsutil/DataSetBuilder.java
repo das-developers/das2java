@@ -597,7 +597,7 @@ public class DataSetBuilder {
         if ( us!=null ) {
             if ( isBundle ) {
                 BundleBuilder bb= new BundleBuilder(dim1);
-                if ( us[0]!=null && Units.us2000.isConvertibleTo(us[0]) && names[0]==null ) {
+                if ( us[0]!=null && Units.us2000.isConvertibleTo(us[0]) && names[0]==null ) { 
                     names[0]= "UTC";
                 }
                 for ( int i=0; i<dim1; i++ ) {
