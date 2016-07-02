@@ -114,15 +114,23 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     protected JScrollPane scrollPane;
     protected JButton updateButton;
     final protected List dataPoints;
-    private int selectRow; // this row needs to be selected after the update.
+    
+    /**
+     * the row, of the data model, that needs to be selected after the update.  
+     * Note with row sorting this may not be the same as the view row.
+     */
+    private int selectRow; 
+    
     /**
      * units[index]==null if HashMap contains non-datum object.
      */
     protected Units[] unitsArray;
+    
     /**
      * array of plane names that are also the column headers. planesArray[0]="x", planesArray[1]="y"
      */
     protected String[] planesArray;
+    
     protected AbstractTableModel myTableModel;
     private File saveFile;
     private boolean modified;
@@ -1212,8 +1220,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         if (active) {
             myTableModel.fireTableDataChanged();
             if (selectRow != -1 && table.getRowCount()>selectRow ) {
-                table.setRowSelectionInterval(selectRow, selectRow);
-                table.scrollRectToVisible(table.getCellRect(selectRow, 0, true));
+                int i= table.convertRowIndexToView(selectRow);
+                table.setRowSelectionInterval(i, i);
+                table.scrollRectToVisible(table.getCellRect(i, 0, true));
                 selectRow = -1;
             }
             table.repaint();
@@ -1638,7 +1647,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
     
     /**
-     * Holds value of property sorted.
+     * Holds value of property sorted.  When the data is sorted, it means
+     * that data points added will be inserted so that the order of the
+     * x values is maintained.
      */
     private boolean sorted = true;
 
