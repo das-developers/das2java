@@ -381,6 +381,12 @@ public class DasColorBar extends DasAxis {
             this.desc = desc;
         }
         
+        /**
+         * create a new color table Type.
+         * @param desc string label for the colortable.
+         * @param colorTable array of integers from makeColorTable
+         * @see #makeColorTable(int[], int[], int[], int[], int, int, int) 
+         */
         public Type(String desc,int[] colorTable ) {
             this.desc= desc;
             this.colorTable= colorTable;
