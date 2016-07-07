@@ -599,8 +599,8 @@ public class Ops {
     }
 
     /**
-     * return the total of all the elements in the dataset, returning a rank
-     * 0 dataset.  If there are invalid measurements, then fill is returned.
+     * return the total of all the elements in the dataset.  If there are 
+     * invalid measurements, then fill is returned.
      * Does not support BINS or BUNDLE dimensions.
      *
      * @param ds
@@ -611,8 +611,8 @@ public class Ops {
     }
     
     /**
-     * return the total of all the elements in the dataset, returning a rank
-     * 0 dataset.  If there are invalid measurements, then fill is returned.
+     * return the total of all the elements in the dataset.  If there are 
+     * invalid measurements, then fill is returned.
      * Does not support BINS or BUNDLE dimensions.
      *
      * @param ds
