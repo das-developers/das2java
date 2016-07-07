@@ -29,6 +29,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -166,6 +167,9 @@ public class TearoffTabbedPane extends JTabbedPane {
         }
     }
 
+    /**
+     * create a new TearoffTabbedPane
+     */
     public TearoffTabbedPane() {
         this(null);
     }
@@ -181,6 +185,17 @@ public class TearoffTabbedPane extends JTabbedPane {
             parentPane = parent;
             addMouseListener(getChildMouseAdapter());
             addMouseMotionListener(getChildMouseMotionListener());
+//            Window w= SwingUtilities.getWindowAncestor(parent); // bug https://sourceforge.net/p/autoplot/bugs/1620/
+//            if ( w!=null ) {
+//                w.addWindowListener( new WindowAdapter() {
+//                    @Override
+//                    public void windowClosing(WindowEvent e) {
+//                        for ( TabDesc td: tabs.values() ) {
+//                            if ( td.babysitter!=null ) td.babysitter.setVisible(false);
+//                        }
+//                    }
+//                });
+//            }
         }
         super.addChangeListener( new ChangeListener() {
             @Override
@@ -958,6 +973,7 @@ public class TearoffTabbedPane extends JTabbedPane {
                 }
             }
         });
+        // possibly add listener for closing here for https://sourceforge.net/p/autoplot/bugs/1620/
 
         copyInputMap(parent, newParent);
 
@@ -1009,6 +1025,10 @@ public class TearoffTabbedPane extends JTabbedPane {
         }
     }
     
+    /**
+     * return the component into this TearoffTabbedPane.
+     * @param c the component.
+     */
     public void dock(Component c) {
         logger.log(Level.FINEST, "dock {0}", c);
         int selectedIndex = getSelectedIndex();
