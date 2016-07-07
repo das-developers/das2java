@@ -380,7 +380,12 @@ public class DasColorBar extends DasAxis {
         private Type(String desc) {
             this.desc = desc;
         }
-
+        
+        public Type(String desc,int[] colorTable ) {
+            this.desc= desc;
+            this.colorTable= colorTable;
+        }
+        
         @Override
         public void drawListIcon( Graphics2D g, int x, int y ) {
             ImageIcon licon= (ImageIcon) getListIcon();
@@ -489,7 +494,7 @@ public class DasColorBar extends DasAxis {
          * @return an array of RGB colors.
          * @see Color#Color(int) 
          */
-        private static int[] makeColorTable( int [] index, int[] red, int[] green, int[] blue, int ncolor, int bottom, int top ) {
+        public static int[] makeColorTable( int [] index, int[] red, int[] green, int[] blue, int ncolor, int bottom, int top ) {
             // index should go from 0-255.
             // truncate when ncolor>COLORTABLE_SIZE
             int[] colorTable = new int[ncolor];
