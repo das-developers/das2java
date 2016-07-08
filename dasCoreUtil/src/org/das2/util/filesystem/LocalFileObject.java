@@ -149,6 +149,7 @@ public class LocalFileObject extends FileObject {
                         }
                         FileSystemUtil.unzip( localGzFile, tempFile );
                         tempFile.deleteOnExit(); //TODO: verify this on all platforms.
+                        return tempFile;
                     }
                 } catch (FileNotFoundException ex ) {
                     throw ex; //cheesy
