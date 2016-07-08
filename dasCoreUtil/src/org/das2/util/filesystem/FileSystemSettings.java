@@ -83,6 +83,17 @@ public class FileSystemSettings {
         return 60000;
     }
     
+    /**
+     * return the number of seconds that an unused temporary file will
+     * be left on the system before it may be deleted.  This presumes
+     * that the code can determine if a temporary file is in use, which is
+     * not really the case.
+     * @return the number of seconds.
+     */
+    public int getTemporaryFileTimeoutSeconds() {
+        return 3600;
+    }
+    
     // NOTE WebFileSystem contains some settings as well!!
 
     public enum Persistence {
