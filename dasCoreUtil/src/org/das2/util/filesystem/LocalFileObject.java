@@ -144,8 +144,10 @@ public class LocalFileObject extends FileObject {
                     if ( tempFile.exists() && tempFile.lastModified()>localGzFile.lastModified() ) {
                         return tempFile;
                     } else {
-                        if ( !tempFile.getParentFile().exists() && !tempFile.getParentFile().mkdirs() ) {
-                            throw new FileNotFoundException("unable to create parent directories: "+tempFile );
+                        synchronized ( this ) {
+                            if ( !tempFile.getParentFile().exists() && !tempFile.getParentFile().mkdirs() ) {
+                                throw new FileNotFoundException("unable to create parent directories: "+tempFile );
+                            }
                         }
                         FileSystemUtil.unzip( localGzFile, tempFile );
                         tempFile.deleteOnExit(); //TODO: verify this on all platforms.
