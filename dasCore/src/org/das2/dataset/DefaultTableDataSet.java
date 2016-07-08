@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import static org.das2.dataset.DataSetAdapter.adaptSubstitutions;
 import org.das2.datum.DatumRange;
 import org.virbo.dataset.DDataSet;
+import org.virbo.dataset.DRank0DataSet;
 import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 
@@ -316,6 +317,19 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
     }
     
     /**
+     * return null if o is null, a rank 0 QDataSet otherwise.
+     * @param d Datum
+     * @return null or a rank 0 dataset.
+     */
+    private static QDataSet maybeAdapt( Datum d ) {
+        if ( d==null ) {
+            return null;
+        } else {
+            return DRank0DataSet.create(d);
+        }
+    }
+    
+    /**
      * this is a highly-interleaved table, and if we sort it out and create a 
      * optimal QDataSet, it's better.
      * @return a QDataSet version of the data
@@ -378,6 +392,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
                 xTagsDs.putProperty( QDataSet.UNITS, getXUnits() );
                 xTagsDs.putProperty( QDataSet.LABEL, dasProps.get( PROPERTY_X_LABEL ) );
                 xTagsDs.putProperty( QDataSet.MONOTONIC, dasProps.get( PROPERTY_X_MONOTONIC ) );
+                xTagsDs.putProperty( QDataSet.CADENCE, maybeAdapt( (Datum) dasProps.get( PROPERTY_X_TAG_WIDTH ) ) );
 					 
                 table1.putProperty( QDataSet.DEPEND_0, xTagsDs );
 					 
@@ -385,7 +400,7 @@ public final class DefaultTableDataSet extends AbstractTableDataSet {
                 yTagsDs.putProperty( QDataSet.UNITS, getYUnits() );
                 yTagsDs.putProperty( QDataSet.LABEL, dasProps.get( PROPERTY_Y_LABEL ) );
 					 yTagsDs.putProperty( QDataSet.SCALE_TYPE, dasProps.get(PROPERTY_Y_SCALETYPE));
-					 yTagsDs.putProperty( QDataSet.CADENCE, dasProps.get(PROPERTY_Y_TAG_WIDTH));
+					 yTagsDs.putProperty( QDataSet.CADENCE, maybeAdapt( (Datum) dasProps.get(PROPERTY_Y_TAG_WIDTH) ) );
                 DatumRange yRng = (DatumRange) dasProps.get( PROPERTY_Y_RANGE);
                 if (yRng != null) {
                   yTagsDs.putProperty(QDataSet.TYPICAL_MIN, yRng.min().value());
