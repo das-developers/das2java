@@ -498,7 +498,7 @@ public class HttpFileSystem extends WebFileSystem {
         
         filename = toCanonicalFilename(filename);
                 
-        logger.log(Level.FINER, "downloadFile {0}, using temp file {1}", new Object[] { filename, partFile } );
+        logger.log(Level.FINER, "downloadFile {0}, using temporary file {1}", new Object[] { filename, partFile } );
 
         try {
             URL remoteURL = new URL(root.toString() + filename.substring(1) );
