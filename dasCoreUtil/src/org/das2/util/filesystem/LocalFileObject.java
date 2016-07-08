@@ -131,7 +131,7 @@ public class LocalFileObject extends FileObject {
      * This will generally return the local file object directly, but may 
      * return the name of a temporary file where the data was gunzipped.
      * 
-     * @param monitor
+     * @param monitor progress monitor
      * @return the local file, or a temporary file where the data was gunzipped.
      * @throws FileNotFoundException 
      */
