@@ -127,9 +127,37 @@ public class LocalFileObject extends FileObject {
         return getFile( new NullProgressMonitor() );
     }
 
+    /**
+     * This will generally return the local file object directly, but may 
+     * return the name of a temporary file where the data was gunzipped.
+     * 
+     * @param monitor
+     * @return the local file, or a temporary file where the data was gunzipped.
+     * @throws FileNotFoundException 
+     */
+    @Override
     public File getFile(org.das2.util.monitor.ProgressMonitor monitor) throws FileNotFoundException {
         if ( !localFile.exists() ) {
-            throw new FileNotFoundException("file not found: "+localFile);
+            if ( localGzFile.exists() ) {
+                File tempFile= FileSystemUtil.createTempFile( localFile, FileSystem.settings().getTemporaryFileTimeoutSeconds() );
+                try {
+                    if ( tempFile.exists() && tempFile.lastModified()>localGzFile.lastModified() ) {
+                        return tempFile;
+                    } else {
+                        if ( !tempFile.getParentFile().exists() && !tempFile.getParentFile().mkdirs() ) {
+                            throw new FileNotFoundException("unable to create parent directories: "+tempFile );
+                        }
+                        FileSystemUtil.unzip( localGzFile, tempFile );
+                        tempFile.deleteOnExit(); //TODO: verify this on all platforms.
+                    }
+                } catch (FileNotFoundException ex ) {
+                    throw ex; //cheesy
+                } catch (IOException ex) {
+                    throw new FileNotFoundException("unable to gunzip: "+localGzFile+", "+ex.toString() );
+                }
+            } else {
+                throw new FileNotFoundException("file not found: "+localFile);
+            }
         }
         return localFile;
     }
