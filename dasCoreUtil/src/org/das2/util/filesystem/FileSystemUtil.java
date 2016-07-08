@@ -26,7 +26,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.das2.util.LoggerManager;
-import static org.das2.util.filesystem.FileSystem.logger;
 import org.das2.util.monitor.NullProgressMonitor;
 import org.das2.util.monitor.ProgressMonitor;
 
@@ -306,6 +305,24 @@ public class FileSystemUtil {
         } catch (URISyntaxException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * create a temporary file, based on the name of the localFile.  This will
+     * be a different name, and may exist already.  The problem with using 
+     * deleteOnExit, is that Autoplot may be running within a webserver that
+     * doesn't exit.  Java7 nio2 introduces more methods for cleaning up temporary
+     * files, but even delete-on-close doesn't work because often a file is opened
+     * and closed several times.
+     * @param localFile which need not exist.
+     * @param timeoutSeconds the minimum number of seconds this file will exist.
+     * @return a new file that is a different but predictable name.
+     */
+    public static File createTempFile( File localFile, int timeoutSeconds ) {
+        File f= FileSystem.settings().getLocalCacheDir();
+        f= new File( f, "temp" );
+        f= new File( f, localFile.toString() ); // TODO: check Windows.
+        return f;
     }
     
 }
