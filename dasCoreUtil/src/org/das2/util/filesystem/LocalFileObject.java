@@ -144,7 +144,7 @@ public class LocalFileObject extends FileObject {
                     if ( tempFile.exists() && tempFile.lastModified()>localGzFile.lastModified() ) {
                         return tempFile;
                     } else {
-                        synchronized ( this ) {
+                        synchronized ( LocalFileObject.class ) {
                             if ( !tempFile.getParentFile().exists() && !tempFile.getParentFile().mkdirs() ) {
                                 throw new FileNotFoundException("unable to create parent directories: "+tempFile );
                             }
