@@ -97,6 +97,7 @@ public class InflaterChannel implements ReadableByteChannel {
                     (outBuf, offset + totalOut, length - totalOut);
                 totalOut += bytesRead;
                 if (inflater.finished()) { break; }
+                if ( eof ) break;
             }
             if (dst.hasArray()) { dst.position(dst.position() + totalOut); }
             else { dst.put(outBuf, 0, totalOut); }

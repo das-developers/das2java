@@ -275,13 +275,15 @@ public class StreamTool {
             handler.streamDescriptor(sd);
             struct.descriptorCount++;
             int bytesRead;
-            int totalBytesRead = 0;
-            //TODO: bug https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=441 (empty deflated stream hangs)
+            //int totalBytesRead = 0;
+
             while ((bytesRead = stream.read(struct.bigBuffer)) != -1) {
                 struct.byteOffset += struct.bigBuffer.position();
                 struct.bigBuffer.flip();
                 
-                totalBytesRead += bytesRead;
+                if ( bytesRead==0 && stream instanceof InflaterChannel ) break; // https://bugs-pw.physics.uiowa.edu/mantis/view.php?id=441 
+                
+                //totalBytesRead += bytesRead;
                 //System.err.println("d2s bytesRead="+bytesRead+" total="+totalBytesRead );
                 //if ( totalBytesRead>318260 ) {
                 //  System.err.println("here");
