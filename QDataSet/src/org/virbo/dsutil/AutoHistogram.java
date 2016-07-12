@@ -468,6 +468,7 @@ public final class AutoHistogram {
 
         binw = Math.abs(closestB - closestA) / (nbin / 100);  //  findbugs ICAST_IDIV_CAST_TO_DOUBLE okay 
         if (binw < 1.0) {
+            if ( binw < 1e-100 ) binw= 1e-100;
             binwDenom = Math.pow(10,Math.ceil(Math.log10(1 / binw)));
             binw = 1.0;
         } else {
@@ -634,6 +635,9 @@ public final class AutoHistogram {
     }
 
     private int binOf(double d) {
+        if ( !Double.isFinite(firstBin) ) {
+            throw new IllegalStateException("firstBin is now infinite");
+        }
         //int ibin= (int) Math.floor((d - firstb) * binwDenom / binw); // firstBin done
         return (int) Math.floor((d * binwDenom - firstBin) / binw);
     }
