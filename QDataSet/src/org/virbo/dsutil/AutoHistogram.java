@@ -113,7 +113,7 @@ public final class AutoHistogram {
         zeroesLeft = nbin / 2;
         total = 0;
         initialOutliers = true;
-        outliers = new TreeMap<Double, Integer>();
+        outliers = new TreeMap<>();
         invalidCount = 0;
         units = null;
         rescaleCount = 0;
@@ -156,16 +156,12 @@ public final class AutoHistogram {
     }
 
     /**
-     * implement isFinite until Java 8 is available.
+     * implement isFinite until Java 8 is available.  
      * @param v
-     * @return 
+     * @return true if v is finite.
      */
     private static boolean isFinite( double v ) {
-        if ( Double.isInfinite(v) || Double.isNaN(v) ) {
-            return false; //breakpoint
-        } else {
-            return true;
-        }
+        return !(Double.isInfinite(v) || Double.isNaN(v));
     }
     
     /**
@@ -216,7 +212,7 @@ public final class AutoHistogram {
         //TagGenDataSet dep0 = new TagGenDataSet(nonZeroCount, binWidth, ( firstBin + binw * ( ifirstBin  ) ) / binwDenom, units); // bin starts
 
         result.putProperty(DDataSet.DEPEND_0, dep0);
-        Map<String, Object> user = new HashMap<String, Object>();
+        Map<String, Object> user = new HashMap<>();
         //user.put(USER_PROP_BIN_START, firstb ); // firstBin done
         user.put(USER_PROP_BIN_START, firstBin / binwDenom);
         user.put(USER_PROP_BIN_WIDTH, binw / binwDenom);
@@ -337,7 +333,7 @@ public final class AutoHistogram {
                 }
                 d = iter.getValue(ds);
                 if ( !isFinite(d) ) {
-                    logger.warning("weights imply that infinite value is valid: "+iter);
+                    logger.log(Level.WARNING, "weights imply that infinite value is valid: {0}", iter);
                     invalidCount++;
                     continue;
                 }
@@ -424,7 +420,7 @@ public final class AutoHistogram {
      * see if any outliers can now be added to the distribution
      */
     private void checkOutliers() {
-        List<Double> remove = new ArrayList<Double>();
+        List<Double> remove = new ArrayList<>();
         for (Entry<Double, Integer> out : outliers.entrySet()) {
             int ibin = binOf(out.getKey());
             if (ibin >= 0 && ibin < nbin) {
@@ -551,9 +547,9 @@ public final class AutoHistogram {
             //double d1 = firstb + binw / binwDenom * (nbin - zeroesRight); // firstBin done
             double d1 = firstBin / binwDenom + binw / binwDenom * (nbin - zeroesRight);
             SortedMap<Double, Integer> tailmap = outliers.tailMap(d1);
-            if (headmap.size() == 0) {
+            if (headmap.isEmpty()) {
                 rescaleLeft(0, true);
-            } else if (tailmap.size() == 0) {
+            } else if (tailmap.isEmpty()) {
                 rescaleRight(0);
             } else if (d0 - headmap.lastKey() > tailmap.firstKey() - d1) {
                 rescaleLeft(0, true);
@@ -623,7 +619,7 @@ public final class AutoHistogram {
         System.err.println();
 
     }
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
@@ -724,12 +720,15 @@ public final class AutoHistogram {
         if (mantDenom > 1) {
             mant = 10 / mantDenom;
         }
-        if (mant == 1) {
-            factor = 5;
-        } else if (mant == 5) {
-            factor = 2;
-        } else {
-            throw new IllegalArgumentException();
+        switch (mant) {
+            case 1:
+                factor = 5;
+                break;
+            case 5:
+                factor = 2;
+                break;
+            default:
+                throw new IllegalArgumentException();
         }
         return factor;
     }
@@ -1051,6 +1050,7 @@ public final class AutoHistogram {
      * how peaks are identified.  Once the bins of a peak
      * have been identified, then the mean and stddev of each peak is returned.
      * Note the stddev typically reads low, probably because the tails have been removed.
+     * @param hist the result of AutoHistogram
      * @return QDataSet rank 1 dataset with length equal to the number of identified peaks
      */
     public static QDataSet peaks( QDataSet hist ) {
@@ -1095,13 +1095,11 @@ public final class AutoHistogram {
         }
 
         double[] VV = new double[npeak];
-        int[] nbin= new int[npeak];
 
         for (int i = 0; i < hist.length(); i++) {
             int ipeak= (int) (peakIds.value(i) - 1);
             if ( ipeak>=0 ) {
                 VV[ipeak] += vvs[i];
-                nbin[ipeak] += 1;
             }
         }
 
