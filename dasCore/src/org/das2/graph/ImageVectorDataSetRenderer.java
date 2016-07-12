@@ -651,19 +651,26 @@ public class ImageVectorDataSetRenderer extends Renderer {
                 Units targetXUnits= ddx.getUnits();
                 UnitsConverter xuc= xunits.getConverter(targetXUnits);
                 Units targetYUnits= ddy.getUnits();
-                UnitsConverter yuc= yunits.getConverter(targetYUnits);                
+                UnitsConverter yuc= yunits.getConverter(targetYUnits);  
+                Number ovmin= (Number)vds.property(QDataSet.VALID_MIN);
+                Number ovmax= (Number)vds.property(QDataSet.VALID_MAX);
+                Number ofill= (Number)vds.property(QDataSet.FILL_VALUE);
+                double vmax= ovmax==null ? Double.MAX_VALUE : ovmax.doubleValue();
+                double vmin= ovmin==null ? -Double.MAX_VALUE : ovmin.doubleValue();
+                double vfill= ofill==null ? Double.MAX_VALUE : ofill.doubleValue();
                 for (; i <= n; i++) {
-                    boolean isValid = wds.value(i)>0;
-                    if ( isValid ) {
+                    double v= vds.value(i);
+                    boolean isNotValid =  v == vfill || Double.isNaN(v) || v > vmax || v < vmin;
+                    if ( isNotValid ) {
+                    } else {
                         int ix = ddx.whichBin( xuc.convert( xds.value(i) ), targetXUnits);
-                        int iy = ddy.whichBin( yuc.convert( vds.value(i) ), targetYUnits);
+                        int iy = ddy.whichBin( yuc.convert( v ), targetYUnits);
                         if (ix != -1 && iy != -1) {
                             double d = tds.value(ix, iy);
                             tds.putValue( ix, iy, d+1 );
-                            //tds.addValue( ix, iy, 1 );
                         }
                     }
-                }
+                } 
             }
         }
 
