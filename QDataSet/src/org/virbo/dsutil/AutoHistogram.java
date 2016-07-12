@@ -635,7 +635,7 @@ public final class AutoHistogram {
     }
 
     private int binOf(double d) {
-        if ( !Double.isFinite(firstBin) ) {
+        if ( Double.isInfinite(firstBin) ) {
             logger.fine("firstBin is now infinite, check on this some time.");  //TODO: why is this sometimes infinite?  Check test001.
         }
         //int ibin= (int) Math.floor((d - firstb) * binwDenom / binw); // firstBin done
