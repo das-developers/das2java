@@ -1251,7 +1251,7 @@ public class DataSetUtil {
         if ( o!=null && o instanceof QDataSet ) {
             QDataSet q= (QDataSet)o;
             Units qu= SemanticOps.getUnits(q);
-            if ( UnitsUtil.isRatiometric(qu) || qu.isConvertibleTo( SemanticOps.getUnits(xds).getOffsetUnits() ) ) {
+            if ( UnitsUtil.isRatiometric(qu) || qu.isConvertibleTo( u.getOffsetUnits() ) ) {
                 if ( q.rank()==0 ) {    
                     if ( q instanceof RankZeroDataSet ) {
                         return (RankZeroDataSet) q;
@@ -1269,7 +1269,7 @@ public class DataSetUtil {
                     return DRank0DataSet.create( DataSetUtil.asDatum(q) );
                 }
             } else {
-                logger.log(Level.INFO, "CADENCE units ({0}) are inconvertable to {1}", new Object[]{qu, u});
+                logger.log(Level.INFO, "CADENCE units ({0}) are inconvertible to {1}", new Object[]{qu, u.getOffsetUnits() }); // bugfix: offset units should be reported.
             }
         }
 
