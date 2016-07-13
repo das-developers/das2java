@@ -298,7 +298,8 @@ public class OperationsProcessor {
                     
                 } else if ( cmd.equals("|autoHistogram") ) {
                     fillDs= Ops.autoHistogram(fillDs);
-                } else if ( cmd.equals("|histogram") ) { // 0=auto, 1=binsize
+                } else if ( cmd.equals("|histogram") ) { // 0=auto, 1=binsize                    
+                    Pattern p= Pattern.compile("\\d.*"); 
                     if ( s.hasNextDouble() ) {
                         double binSize= s.nextDouble();
                         if ( s.hasNextDouble() ) {
@@ -309,6 +310,14 @@ public class OperationsProcessor {
                         } else {
                             fillDs= Ops.histogram(fillDs,-1,-1,binSize);
                         }
+                    } else if ( s.hasNext(p) ) { // TODO: cheesy limited operation
+                        String t1= s.next();
+                        String t2= s.next();
+                        String w= s.next();
+                        Datum d1= DatumUtil.parse(t1);
+                        Datum d2= DatumUtil.parse(t2);
+                        Datum dw= d1.getUnits().getOffsetUnits().parse(w);
+                        fillDs= Ops.histogram(fillDs,d1,d2,dw);
                     } else {
                         fillDs= Ops.autoHistogram(fillDs);
                     }
