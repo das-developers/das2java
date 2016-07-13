@@ -284,6 +284,13 @@ public class SymbolLineRenderer extends Renderer implements Displayable {
             double j0 = Double.NaN;
             boolean skippedLast = true;
             
+            if ( ixmin<0 ) {
+                ixmin=0;
+            }
+            if ( ixmax>=dataSet.getXLength() ) {
+                ixmax= dataSet.getXLength()-1;
+            }
+            
             for (int index = ixmin; index <= ixmax; index++) {
                 double x = dataSet.getXTagDouble(index, xUnits);
                 double y = dataSet.getDouble(index, yUnits);
