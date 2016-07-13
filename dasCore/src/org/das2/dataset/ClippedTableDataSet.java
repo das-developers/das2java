@@ -62,7 +62,7 @@ public class ClippedTableDataSet implements TableDataSet {
         for ( int itable=tableOffset; itable<tableOffset+tableCount; itable++ ) {
             yoffsets[itable-tableOffset]= TableUtil.getPreviousRow(source, itable, ymin);
             int ix1= TableUtil.getNextRow(source, itable, ymax );
-            ylengths[itable-tableOffset]= ix1- yoffsets[itable] + 1;
+            ylengths[itable-tableOffset]= ix1- yoffsets[itable-tableOffset] + 1;
         }
     }
         
