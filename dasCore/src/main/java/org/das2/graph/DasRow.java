@@ -1,0 +1,222 @@
+/* File: DasRow.java
+ * Copyright (C) 2002-2003 The University of Iowa
+ * Created by: Jeremy Faden <jbf@space.physics.uiowa.edu>
+ *             Jessica Swanner <jessica@space.physics.uiowa.edu>
+ *             Edward E. West <eew@space.physics.uiowa.edu>
+ *
+ * This file is part of the das2 library.
+ *
+ * das2 is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+package org.das2.graph;
+
+import org.das2.NameContext;
+import org.das2.DasApplication;
+import org.das2.DasException;
+import org.das2.dasml.FormBase;
+import java.text.ParseException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+/** A DasRow defines a horizontal region of a DasCanvas.
+ *
+ * When placing {@link DasCanvasComponent}s, a DasRow and DasColumn are typically supplied
+ * to define the position of the component on the canvas.
+ * 
+ * @see DasCanvas
+ * @see DasColumn
+ * @author  jbf
+ */
+public class DasRow extends DasDevicePosition {
+
+	/** Create a new row region on a {@link DasCanvas}, simplified constructor.
+	 *
+	 * @param parent The {@link DasCanvas} on which to define a horizontal region.
+	 *<br><br>
+	 * @param top Sets the position the top of the Row, 0.0 = Top of the canvas,
+	 *            1.0 = Bottom of the canvas.
+	 * <br><br>
+	 * @param bottom Sets the position the bottom of the Row, 0.0 = Top of Parent object,
+	 *            1.0 = Bottom of Parent object.
+	 * <br><br>
+	 */
+    public DasRow( DasCanvas parent, double top, double bottom) {
+        super(parent,top,bottom,false );
+    }
+
+	 /** Create a new row region on a {@link DasCanvas}.
+	  * 
+	  * @param canvas Set positions relative to a DasCanvas parent.  Should be NULL
+	  *        if parent is non-null.
+	  *<br><br>
+	  * @param parent Set positions relative to DasRow parent.  Should be null if
+	  *        canvas is non-null.
+	  * <br><br>
+	  * @param nMin Sets the position the top of the Row, 0.0 = Top of Parent object,
+	  *             1.0 = Bottom of Parent object.
+	  * <br><br>
+	  * @param nMax Sets the position the bottom of the Row, 0.0 = Top of Parent object,
+	  *             1.0 = Bottom of Parent object.
+	  * <br><br>
+	  * @param emMin Adjust the top boarder position in EM's (An EM is the size of a
+	  *              capital M in the current Canvas font.)  Positive numbers move the
+	  *              top border down, Negative numbers move it up.
+	  * <br><br>
+	  * @param emMax Adjust the bottom boarder position in EM's (An EM is the size of a
+	  *              capital M in the current Canvas font.)  Positive numbers move the
+	  *              bottom border down, Negative numbers move it up.
+	  * <br><br>
+	  * @param ptMin Similar to emMin, but move the top border in pixels.
+	  *
+	  * <br><br>
+	  * @param ptMax Similar to emMax, but move the bottom border in pixels.
+	  */
+    public DasRow( DasCanvas canvas, DasRow parent, double nMin, double nMax, 
+            double emMin, double emMax, int ptMin, int ptMax ) {
+        super( canvas, false, parent, nMin, nMax, emMin, emMax, ptMin, ptMax );
+    }
+        
+    /**
+     * makes a new DasRow by parsing a string like "100%-5em+3pt" to get the offsets.
+     * The three qualifiers are "%", "em", and "pt", but "px" is allowed as well 
+     * as surely people will use that by mistake.  If an offset or the normal position
+     * is not specified, then 0 is used.
+     *
+     * @param canvas the canvas for the layout, ignored when a parent DasRow is used.
+     * @param parent if non-null, this DasRow is specified with respect to parent.
+     * @param minStr a string like "0%+5em"
+     * @param maxStr a string like "100%-7em"
+     * @throws IllegalArgumentException if the strings cannot be parsed
+     */
+    public static DasRow create( DasCanvas canvas, DasRow parent, String minStr, String maxStr ) {
+        double[] min, max;
+        try {
+            min= parseFormatStr( minStr );
+        } catch ( ParseException e ) {
+            throw new IllegalArgumentException("unable to parse min: \""+minStr+"\"");
+        }
+        try {
+            max= parseFormatStr( maxStr );
+        } catch ( ParseException e ) {
+            throw new IllegalArgumentException("unable to parse max: \""+maxStr+"\"");
+        }
+        return new DasRow( canvas, parent, min[0], max[0], min[1], max[1], (int)min[2], (int)max[2] );
+    }
+    
+    public static final DasRow NULL= new DasRow(null,null,0,0,0,0,0,0);
+    
+    /**
+     * @deprecated This created a row that was not attached to anything, so
+     * it was simply a convenience method that didn't save much effort.
+     */
+    public DasRow createSubRow(double ptop, double pbottom) {
+        double top= getMinimum();
+        double bottom= getMaximum();
+        double delta= top-bottom;
+        return new DasRow(getCanvas(),bottom+ptop*delta,bottom+pbottom*delta);
+    }
+    
+    public int getHeight() {
+        return getDMaximum()-getDMinimum();
+    }
+    
+    public static DasRow create(DasCanvas parent) {
+        return new DasRow(parent,null,0.,1.0, 5, -5, 0,0 );
+    }
+    
+    public static DasRow create( DasCanvas parent, int iplot, int nplot ) {
+        double min= 0.1 + iplot * ( 0.8 ) / nplot;
+        double max= 0.099 + ( iplot + 1 ) * ( 0.8 ) / nplot;
+        return new DasRow( parent, min, max );
+    }
+
+	 /** Create a sub-row of a parent row.
+	  *
+	  * The canvas coordinates for objects in this row will be calculated as fractional
+	  * offsets from the top and bottom of the parent row.
+	  *
+	  * @param ptop Fractional distance from the top of the parent row, to the top
+	  *        of the new sub-row.  Here 0.0 would mean make the top of the sub-row
+	  *        coterminus with the top of the parent.
+	  *
+	  * @param pbottom Fractional distance from the top of the parent row, to the bottom
+	  *        of the new sub-row.  Here 1.0 would mean make the bottom of the sub-row
+	  *        coterminus with bottom of the parent.
+	  * 
+	  * @return a new DasRow object with top and bottom positions defined in relation to
+	  *         this row, instead of the Canvas.
+	  */
+    public DasRow createAttachedRow(double ptop, double pbottom) {
+        return new DasRow(null,this,ptop,pbottom,0,0,0,0);
+    }
+
+    /**
+     * create a child by parsing spec strings like "50%+3em"
+     * @throws IllegalArgumentException when the string is malformed.
+     * @param smin
+     * @param smax
+     * @return
+     */
+    public DasRow createChildRow( String smin, String smax ) {
+        try {
+            double[] min= DasDevicePosition.parseFormatStr(smin);
+            double[] max= DasDevicePosition.parseFormatStr(smax);
+            return new DasRow( null, this, min[0], max[0], min[1], max[1], (int)min[2], (int)max[2] );
+        } catch (ParseException ex ) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+        
+    /** Process a <code>&lt;row&gt;</code> element.
+     *
+     * @param element The DOM tree node that represents the element
+     */
+    static DasRow processRowElement(Element element, DasCanvas canvas, FormBase form) throws DasException {
+        String name = element.getAttribute("name");
+        double minimum = Double.parseDouble(element.getAttribute("minimum"));
+        double maximum = Double.parseDouble(element.getAttribute("maximum"));
+        DasRow row =  new DasRow(canvas, minimum, maximum);
+        row.setDasName(name);
+        DasApplication app = form.getDasApplication();
+        NameContext nc = app.getNameContext();
+        nc.put(name, row);
+        return row;
+    }
+    
+    public Element getDOMElement(Document document) {
+        Element element = document.createElement("row");
+        element.setAttribute("name", getDasName());
+        element.setAttribute("minimum", Double.toString(getMinimum()));
+        element.setAttribute("maximum", Double.toString(getMaximum()));
+        return element;
+    }
+    
+    /**
+     * return the device location of the top of the row.  
+     * @return
+     */
+    public int top() {
+        return getDMinimum();
+    }
+    
+    /**
+     * return the device location of the bottom (non-inclusive) of the row.
+     * @return
+     */
+    public int bottom() {
+        return getDMaximum();
+    }
+}

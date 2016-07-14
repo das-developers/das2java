@@ -1,0 +1,18 @@
+<body>
+        <p>Classes for adding interactivity to the application components. 
+Each DasCanvasComponent has a DasMouseInputAdapter that dispatches mouse
+events.  MouseModules are plug into a DasMouseInputAdapter and receive the
+mouse events and perform a function based on the input.  For example, the
+CrossHairMouseModule looks up the X and Y coodinates of the pointer during a 
+mouse drag and displays them in a box.  A VerticalSlicerMouseModule looks up
+the TableDataSet column under the click and plots it in a popup window.
+The MouseModules use DragRenderers to provide visual feedback about the pending
+operation.
+</p>
+<p>A set of science abstraction level events is defined as well for communication
+between application components.  These include, for example, TimeRangeSelectionEvent
+and BoxSelectionEvent.  For example, a MouseModule might create a BoxSelectionEvent, 
+then send the event off to another module that begins an analysis for the data within
+the selected box.
+    </p>
+</body>

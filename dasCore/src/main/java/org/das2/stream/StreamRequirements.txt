@@ -1,0 +1,55 @@
+Requirements for das2 Streams
+
+1. self describing
+  1. the stream must contain all information needed to be "useful."
+  2. dataset interface in das2 defines useful.
+2. extensible 
+  1. metadata, annotating data ( e.g. via xml headers )
+  2. introduction of new data types ( yscan, multiy, ... )
+3. mode changes, table geometry
+4. multiple data "planes"
+  1. define planes as datasets that share tags
+  2. e.g. Peaks and Averages
+5. supports data compression
+  1. compression type documented
+  2. internal typeness preserved
+6. allow for progress indication during transport
+  1. total size attribute
+  2. indication of parametric tag location 
+    ( the tableBuilder knows the start,end parameters, plus the last paremeter
+      read from the stream, therefore progress can be indicated. )
+7. streamable so that there needn't be any server side storage
+8. chainable operators can be built without difficulty
+  1. reduction, fft, peaksAndAverages
+9. non-streaming operators
+  1. append
+10. parallelizable
+  1. divide request into set of subtasks that can be easily combined (e.g. via append)
+  2. redirect to workers
+11. easily appendable
+  1. caching becomes trivial when a cache of streams can be collected and easily
+    appended to satisfy the request
+  2. support for parallelizable
+12. das1 streams can be wrapped to make das2 streams
+13. easily identified (e.g. "das2" is first four bytes)
+14. non-monotonic tags
+15. indication of failure modes, heartbeats
+
+
+Existing das2Stream lacks support for:
+  2.2, 3, 6.2, 10
+
+I'm providing a glossary in case I'm misusing words, and so we share a common
+core vocabulary when talking about these things.  
+
+   reduction: reduction of a dataset statistically, such as bin averaging
+   compaction: lossless compression of a data set for transmission or storage, such as gzip
+   planes: datasets that share tags
+   tags: data that indicates the context of science data, such as a timetag.  
+     For efficiency, tags are generally required to be monotonically increasing.  
+   worker: server that satisfies requests of a master server
+   scalability: ability to handle exponentially increasing demands.
+   metadata: data about data
+   annotating data: data useful for documentation but not required for normal operations
+   extensibility: ability to expand functionality 
+   streamable: not requiring temporary local storage of data.  

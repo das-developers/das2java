@@ -1,0 +1,18 @@
+<body>
+<p>The fileSystem package introduces a filesystem abstraction that allows various
+types of file systems to be accessed in a convenient and uniform way.  (A file 
+system is a heirarchical set of files.)  This allows clients to "mount" an 
+ftp site and access the files easily and in the same way a local file system 
+would be.
+</p>
+<p>FileStorageModel is a class that models how filenames are constructed within
+a filesystem from times when files are used to implement a database.
+</p>
+<p>FileSystem defines the interface clients see.  Implementations of this include
+    HTTPFileSystem, FTPFileSystem, and LocalFileSystem.  FileObjects provide access
+to Files within the FileSystem, and metadata about the file.  </p>
+<p>HtmlUtil provides generally 
+useful methods, such as scraping all the URL references from a stream.  GlobUtil
+converts os globs like *.dat to regular expressions.  
+    </p>
+</body>

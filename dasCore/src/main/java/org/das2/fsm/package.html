@@ -1,0 +1,17 @@
+<body>
+fsm contains objects that model files that are stored in a FileSystem with the
+filename parametric in time.  For example, suppose there is a store of data
+in http://cdaweb.gsfc.nasa.gov/istp_public/data/ace/swe/, where the data files are
+stored by year and then in each yearly folder, the files contain the date encoded
+within the filename.  We can then model the storage with the template specification
+%Y/ac_k0_swe_%Y%m%d_v01.cdf.  A FileStorageModel object can be queried as to what
+is available for a time range, and will use the FileSystem object to provide
+local copies of the file.  
+
+FileStorageModel is the production object providing this functionality.  FileStorageModelNew
+is an attempt to unify codes by treating filenames as formatted time range strings, which
+should reduce code and run more efficiently.  This code is not yet proven and should be used
+with caution.   FileStorageModelAvailabilityDataSetDescriptor provides a DataSetDescriptor
+that can be used to get DataSet views describing when data is available.
+
+</body>
