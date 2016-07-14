@@ -794,11 +794,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
     }
 
     private void updateStatus() {
-        String statusString = (saveFile == null ? "" : (String.valueOf(saveFile) + " ")) +
+        Runnable run= () -> {
+            String statusString = (saveFile == null ? "" : (String.valueOf(saveFile) + " ")) +
                 (modified ? "(modified)" : "");
-        messageLabel.setText(statusString);
+            messageLabel.setText(statusString);
+        };
+        SwingUtilities.invokeLater(run);
     }
-
+    
     private void insertInternal(DataPoint newPoint) {
         int newSelect;
         if (sorted) {
@@ -851,7 +854,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 index++;
             }
 
-            myTableModel.fireTableStructureChanged();
+            //myTableModel.fireTableStructureChanged();
         }
 
         if (!x.getUnits().isConvertableTo(unitsArray[0])) {
@@ -864,7 +867,14 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
 
         insertInternal(new DataPoint(x, y, new LinkedHashMap(planes)));
         if (active) {
-            fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+            Runnable run= new Runnable() {
+                public void run() {
+                    myTableModel.fireTableStructureChanged();
+                    fireDataSetUpdateListenerDataSetUpdated(new DataSetUpdateEvent(this));
+                }
+            };
+            SwingUtilities.invokeLater(run);
+            
         }
 
     }
