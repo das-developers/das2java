@@ -178,10 +178,6 @@ public class LanlNNRebinner implements DataSetRebinner {
                 }
             }
 
-            if ( rank!=2 ) {
-                throw new IllegalArgumentException("ddY was null but there was rank 3 dataset");
-            }
-
             logger.log(Level.FINEST, "Allocating rebinData and rebinWeights: {0} x {1}", new Object[]{nx, ny});
 
             double y0,y1;
