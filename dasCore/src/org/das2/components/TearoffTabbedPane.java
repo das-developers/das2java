@@ -33,6 +33,7 @@ import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -1168,6 +1169,22 @@ public class TearoffTabbedPane extends JTabbedPane {
             lastSelected = getSelectedIndex();
         }
         super.setSelectedIndex(index);
+    }
+    
+    /**
+     * this will set the selected tab, or raise the babysitter
+     * @param title 
+     */
+    public void setSelectedTab( String title ) {
+        int sel= -1;
+        for ( int i=0; i<getTabCount(); i++ ) {
+            if ( this.getTitleAt(i).equals(title) ) {
+                sel= i;
+            }
+        }
+        if ( sel>-1 ) {
+            this.setSelectedIndex(sel);
+        }
     }
     
     public static void main( String[] args ) {
