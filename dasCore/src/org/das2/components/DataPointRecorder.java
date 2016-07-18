@@ -417,7 +417,8 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
         if ( bds.length(0)==2 ) {
             return Ops.link( xds, Ops.unbundle(bds,1) );
         } else {
-            return Ops.link( xds, Ops.trim1( bds, 1, bds.length(0) ) );
+            QDataSet ds= Ops.copy( Ops.trim1( bds, 1, bds.length(0) ) );
+            return Ops.link( xds, ds  );
         }
     }
     
