@@ -904,7 +904,7 @@ public class TearoffTabbedPane extends JTabbedPane {
      * This may create the JFrame that accepts tabs.
      * @param tabIndex the tab to slide (0 is the left or first tab)
      */
-    protected void slideRight(int tabIndex) {
+    public void slideRight(int tabIndex) {
 
         final Component c = getComponentAt(tabIndex);
         logger.log(Level.FINEST, "slideRight {0}", c);
