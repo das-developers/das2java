@@ -785,6 +785,15 @@ public class SeriesRenderer extends Renderer {
             } catch ( InconvertibleUnitsException ex ) {
                 unitsWarning= true;
                 return;
+            } catch ( IllegalArgumentException ex ) {
+                if ( UnitsUtil.isOrdinalMeasurement( yUnits ) ) {
+                    unitsWarning= true;
+                    return;
+                } else {
+                    logger.severe("Illegal Argument when trying transform.");
+                    unitsWarning= true;
+                    return;                    
+                }
             }
 
             // first point //
