@@ -22,6 +22,7 @@ import org.virbo.dataset.DatumVectorAdapter;
 import org.virbo.dataset.IndexGenDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.RankZeroDataSet;
+import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.Slice0DataSet;
 
 /**
@@ -66,9 +67,15 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         planes= new LinkedHashMap<String,QDataSet>();
         planes.put( "", z );
         
-        xunits = (Units) x.property(QDataSet.UNITS);
-        yunits = (Units) y.property(QDataSet.UNITS);
-        zunits = (Units) z.property(QDataSet.UNITS);
+        if ( SemanticOps.isJoin(z) ) { // it really must be...
+            xunits = (Units) x.slice(0).property(QDataSet.UNITS);
+            yunits = (Units) y.slice(0).property(QDataSet.UNITS);
+            zunits = (Units) z.slice(0).property(QDataSet.UNITS);                
+        } else {
+            xunits = (Units) x.property(QDataSet.UNITS);
+            yunits = (Units) y.property(QDataSet.UNITS);
+            zunits = (Units) z.property(QDataSet.UNITS);    
+        }
         if (xunits == null) {
             xunits = Units.dimensionless;
         }
@@ -111,6 +118,17 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         for ( int i=1; i<=z.length(); i++ ) {
             tables[i]= tables[i-1] + z.length(i-1);
         }
+        
+        String s;
+        s= (String) z.slice(0).property( QDataSet.LABEL );
+        if ( s!=null ) properties.put( DataSet.PROPERTY_Z_LABEL, s );
+        
+        s= (String) y.slice(0).property( QDataSet.LABEL );
+        if ( s!=null ) properties.put( DataSet.PROPERTY_Y_LABEL, s );
+
+        s= (String) x.slice(0).property( QDataSet.LABEL );
+        if ( s!=null ) properties.put( DataSet.PROPERTY_X_LABEL, s );
+        
     }
 
     public Units getZUnits() {
@@ -220,6 +238,9 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         Map result = new HashMap();
         result.put(QDataSet.UNITS, null );
         Map m = new HashMap(DataSetUtil.getProperties(z,result));
+        if ( SemanticOps.isJoin(z) ) {
+            m= DataSetUtil.getDimensionProperties( z.slice(0), m );
+        }
         m.putAll(properties);
         return m;
     }
