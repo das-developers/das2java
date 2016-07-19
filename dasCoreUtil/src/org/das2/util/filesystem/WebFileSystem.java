@@ -38,12 +38,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -716,11 +718,11 @@ public abstract class WebFileSystem extends FileSystem {
     }
 
     public URL getURL(String filename) {
+        filename = FileSystem.toCanonicalFilename(filename);
         try {
-            filename = FileSystem.toCanonicalFilename(filename);
-            return new URL(root + filename.substring(1));
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            return new URL( root.toURL(), URLEncoder.encode(filename.substring(1),"UTF-8").replaceAll("\\+","%20"));
+        } catch (MalformedURLException | UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
