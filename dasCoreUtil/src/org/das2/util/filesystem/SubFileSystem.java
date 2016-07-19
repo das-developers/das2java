@@ -47,7 +47,7 @@ public class SubFileSystem extends FileSystem {
     }
     
     protected SubFileSystem( FileSystem parent, String dir ) throws MalformedURLException, URISyntaxException {
-        super( FileSystemUtil.toUri( parent.getRootURI().toASCIIString() + trimFront( dir ) ) ); 
+        super( FileSystemUtil.toUri( parent.getRootURI().toString() + trimFront( dir ) ) ); 
         this.parent= parent;
         this.dir= dir;
         

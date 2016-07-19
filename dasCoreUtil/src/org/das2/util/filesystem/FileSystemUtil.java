@@ -282,7 +282,7 @@ public class FileSystemUtil {
      * @return string representation of a path like file:/home/jbf/ct/autoplot/bugs/1830227625/[ajbTest]/
      */
     public static String fromUri( URI uri ) {
-        String surl= uri.toASCIIString();
+        String surl= uri.toString();
         int i= surl.indexOf("?");
         String query= i==-1 ? "" : surl.substring(i);
         if ( i!=-1 ) {

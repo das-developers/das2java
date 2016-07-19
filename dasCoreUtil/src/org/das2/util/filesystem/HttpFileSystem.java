@@ -501,7 +501,7 @@ public class HttpFileSystem extends WebFileSystem {
         logger.log(Level.FINER, "downloadFile {0}, using temporary file {1}", new Object[] { filename, partFile } );
 
         try {
-            URL remoteURL = new URL(root.toString() + filename.substring(1) );
+            URL remoteURL = getURL( filename );
             
             try {
                 doDownload( filename, remoteURL, f, partFile, monitor );

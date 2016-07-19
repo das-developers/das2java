@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class DefaultHttpProtocol implements WebProtocol {
             String realName = fo.pathname;
             boolean exists;
 
-            URL ur = new URL(fo.wfs.getRootURL(), realName);
+            URL ur = new URL(fo.wfs.getRootURL(), URLEncoder.encode(realName,"UTF-8").replaceAll("\\+", "%20") );
             HttpURLConnection connect = (HttpURLConnection) ur.openConnection();
             connect.setRequestMethod("HEAD");
             HttpURLConnection.setFollowRedirects(false);
