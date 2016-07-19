@@ -25,6 +25,9 @@ import java.nio.channels.*;
 import java.text.*;
 import java.util.*;
 import java.util.Map.Entry;
+import org.virbo.dataset.QDataSet;
+import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /**
  *
@@ -262,6 +265,90 @@ public class TableUtil {
         dumpToDas2Stream(tds, Channels.newChannel(out), false, true );
     }
 
+    /**
+     * Write das2stream directly from QDataSet.
+     * @param tds rank 2 table or rank 3 join of tables.
+     * @param out
+     * @param asciiTransferTypes
+     * @param sendStreamDescriptor 
+     */
+    public static void dumpToDas2Stream( QDataSet tds, WritableByteChannel out, boolean asciiTransferTypes, boolean sendStreamDescriptor ) {
+        try {
+            
+            if ( tds.rank()==2 ) { // this way the code can always work with rank 3 datasets.
+                tds= Ops.join(null,tds);
+            }
+            
+            QDataSet xds= SemanticOps.xtagsDataSet(tds);
+            QDataSet yds= SemanticOps.ytagsDataSet(tds);
+            
+            StreamProducer producer = new StreamProducer(out);
+            StreamDescriptor sd = new StreamDescriptor();
+            
+            Map<String,Object> properties= new LinkedHashMap<>();
+            
+            Object o;
+            
+            Units xunits= SemanticOps.getUnits(xds);
+            Units yunits= SemanticOps.getUnits(yds);
+            Units zunits= SemanticOps.getUnits(tds);
+            properties.put( "xUnits", xunits );
+            properties.put( "yUnits", yunits );
+            properties.put( "zUnits", zunits );
+            o= xds.property(QDataSet.LABEL);
+            properties.put( DataSet.PROPERTY_X_LABEL, o );
+            o= yds.property(QDataSet.LABEL);
+            properties.put( DataSet.PROPERTY_Y_LABEL, o );
+            o= tds.property(QDataSet.LABEL);
+            properties.put( DataSet.PROPERTY_Z_LABEL, o );
+            
+            DataTransferType zTransferType;
+            DataTransferType xTransferType;
+            
+            if ( asciiTransferTypes ) {
+                if ( UnitsUtil.isTimeLocation( SemanticOps.getUnits(xds) ) ) {
+                    xTransferType= DataTransferType.getByName("time24");                  
+                } else {
+                    xTransferType= DataTransferType.getByName("ascii24");
+                }
+                zTransferType= DataTransferType.getByName("ascii10");
+            } else {
+                zTransferType= DataTransferType.getByName("sun_real4");
+                xTransferType= DataTransferType.getByName("sun_real8");
+            }
+            
+            if ( sendStreamDescriptor ) producer.streamDescriptor(sd);
+            DatumVector[] zValues = new DatumVector[1];
+            
+            for (int table = 0; table < tds.length(); table++) {
+                QDataSet tds1= tds.slice(table);
+                QDataSet xds1= SemanticOps.xtagsDataSet(tds1);
+                QDataSet yds1= SemanticOps.ytagsDataSet(tds1);
+
+                StreamXDescriptor xDescriptor = new StreamXDescriptor();
+                xDescriptor.setUnits(xunits);
+                xDescriptor.setDataTransferType(xTransferType);                
+                StreamYScanDescriptor yDescriptor = new StreamYScanDescriptor();
+                yDescriptor.setDataTransferType(zTransferType);
+                yDescriptor.setZUnits(zunits);
+                yDescriptor.setYCoordinates( org.virbo.dataset.DataSetUtil.asDatumVector(yds1) );
+                PacketDescriptor pd = new PacketDescriptor();
+                pd.setXDescriptor(xDescriptor);
+                pd.addYDescriptor(yDescriptor);
+                producer.packetDescriptor(pd);
+                for (int i = 0; i<tds1.length(); i++ ) {
+                    Datum xTag = xunits.createDatum( xds1.value(i) );
+                    zValues[0] = org.virbo.dataset.DataSetUtil.asDatumVector( tds1.slice(i) );
+                    producer.packet(pd, xTag, zValues);
+                }
+            }
+            if ( sendStreamDescriptor ) producer.streamClosed(sd);
+        } catch (StreamException se) {
+            throw new RuntimeException(se);
+        }
+        
+    }
+    
     /**
      * write the data to a das2Stream
      * @param tds
