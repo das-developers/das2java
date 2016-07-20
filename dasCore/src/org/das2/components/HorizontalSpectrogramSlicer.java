@@ -25,7 +25,6 @@ package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Graphics;
@@ -223,6 +222,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         }
     }
         
+    
     /** This method should ONLY be called by the AWT event thread */
     private void createPopup() {
         if ( myPlot==null ) {
@@ -330,9 +330,12 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         return ( popupWindow != null && popupWindow.isVisible()) && myPlot.getCanvas() != null;
     }
 
+    /**
+     * show the slice at the data point selected.
+     * @param e the selection event containing the data point.
+     */
+    @Override
     public void dataPointSelected(DataPointSelectionEvent e) {
-        long xxx[]= { 0,0,0,0 };
-        xxx[0] = System.currentTimeMillis()-e.birthMilli;
                 
         yValue = e.getY();
         xValue = e.getX();
