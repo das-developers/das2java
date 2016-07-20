@@ -49,6 +49,7 @@ import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -90,7 +91,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     protected Datum ySlice;
     
     JPanel buttonPanel;
-    List<Action> additionalActions= null;
+    List<Action> additionalActions= new ArrayList<>();
     
     //private long eventBirthMilli;
     private SymbolLineRenderer renderer;
@@ -283,7 +284,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         });
         buttonPanel.add( settingsButton );
 
-        JButton close = new JButton("Hide Window");
+        JButton close = new JButton("Close");
         close.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
