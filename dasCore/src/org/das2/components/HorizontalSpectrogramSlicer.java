@@ -25,6 +25,7 @@ package org.das2.components;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Graphics;
@@ -48,6 +49,7 @@ import org.das2.event.DataPointSelectionEvent;
 import org.das2.event.DataPointSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
@@ -88,7 +90,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
     protected Datum ySlice;
     
     JPanel buttonPanel;
-    Action additionalAction= null;
+    List<Action> additionalActions= null;
     
     //private long eventBirthMilli;
     private SymbolLineRenderer renderer;
@@ -132,7 +134,7 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
      * @param a the action for the button.
      */
     public void addAction( Action a ) {
-        additionalAction= a;
+        additionalActions.add(a);
         if ( buttonPanel!=null ) {
             JButton b= new JButton(a);
             buttonPanel.add(b,0);
@@ -238,8 +240,10 @@ public class HorizontalSpectrogramSlicer implements DataPointSelectionListener {
         BoxLayout buttonLayout = new BoxLayout(buttonPanel, BoxLayout.X_AXIS);
         buttonPanel.setLayout(buttonLayout);
 
-        if ( additionalAction!=null ) {
-            buttonPanel.add( new JButton(additionalAction) );
+        if ( additionalActions!=null && additionalActions.size()>0 ) {
+            for ( Action a: additionalActions ) {
+                buttonPanel.add( new JButton(a) );
+            }
         }
         
         buttonPanel.add(Box.createHorizontalGlue());
