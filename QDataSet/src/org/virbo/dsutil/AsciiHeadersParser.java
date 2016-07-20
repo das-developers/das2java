@@ -388,7 +388,7 @@ public class AsciiHeadersParser {
                                 if ( labels==null ) {
                                     labels= new String[elementNames.length];
                                     for ( int i=0; i<elementNames.length; i++ ) {
-                                        labels[i]= columnLabels[i];
+                                        labels[i]= columnLabels[i+icol];
                                         if ( labels[i]==null ) labels[i]= elementNames[i];
                                     }
                                 }
@@ -422,7 +422,7 @@ public class AsciiHeadersParser {
     //                            if ( !columns[icol+j].equals(elementNames[j] ) ) { //TODO: verify this code.
     //                                throw new IllegalArgumentException("Expected JSON array to contain "+columns[icol+j]+" in ELEMENTS at index= "+(icol+j) );
     //                            }
-                                snames[j]= name;
+                                snames[icol+j]= name;
                             }
                         }
                         if ( total!=elementNames.length ) {
