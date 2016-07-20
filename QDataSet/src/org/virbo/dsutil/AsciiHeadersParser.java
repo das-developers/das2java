@@ -31,7 +31,6 @@ import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.MutablePropertyDataSet;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.SemanticOps;
 import org.virbo.dsops.Ops;
 
 /**
@@ -129,78 +128,76 @@ public class AsciiHeadersParser {
         int braceLevel= 0;
         try {
             StringBuilder sb = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new StringReader(s));
-
-            String line = readNextLine( reader );
-
-            //int iline = 1;
-            while (line != null) {
-
-                String trimLine = line.trim();
-
-                if (dontHaveOpeningBrace) {
-                    if (!trimLine.startsWith("{")) {
-                        line = "{" + line;
-                        addClosingBrace = true;
+            try (BufferedReader reader = new BufferedReader(new StringReader(s))) {
+                String line = readNextLine( reader );
+                
+                //int iline = 1;
+                while (line != null) {
+                    
+                    String trimLine = line.trim();
+                    
+                    if (dontHaveOpeningBrace) {
+                        if (!trimLine.startsWith("{")) {
+                            line = "{" + line;
+                            addClosingBrace = true;
+                        } else {
+                            expectClosingBrace= true;
+                        }
+                        dontHaveOpeningBrace = false;
+                    }
+                    
+                    // read ahead to get the next line containing text, so we can avoid adding comma to dangling text.  See test3_1.
+                    String nextLine = readNextLine( reader );
+                    
+                    // we can add a comma at the end of a line to make it valid.
+                    char lastChar;
+                    if ( trimLine.length()==0 ) {
+                        lastChar= ' ';
                     } else {
-                        expectClosingBrace= true;
+                        lastChar= trimLine.charAt(trimLine.length() - 1);
                     }
-                    dontHaveOpeningBrace = false;
-                }
-
-                // read ahead to get the next line containing text, so we can avoid adding comma to dangling text.  See test3_1.
-                String nextLine = readNextLine( reader );
-
-                // we can add a comma at the end of a line to make it valid.
-                char lastChar;
-                if ( trimLine.length()==0 ) {
-                    lastChar= ' ';
-                } else {
-                     lastChar= trimLine.charAt(trimLine.length() - 1);
-                }
-                if (lastChar == '"' || Character.isDigit(lastChar) || lastChar == ']' || lastChar == '}') {
-                    char nextChar;
-                    if (nextLine != null && nextLine.trim().length() > 0) {
-                        nextChar = nextLine.trim().charAt(0);
-                        if (nextChar != ',' && nextChar != ']') {
-                            line = line + ",";
+                    if (lastChar == '"' || Character.isDigit(lastChar) || lastChar == ']' || lastChar == '}') {
+                        char nextChar;
+                        if (nextLine != null && nextLine.trim().length() > 0) {
+                            nextChar = nextLine.trim().charAt(0);
+                            if (nextChar != ',' && nextChar != ']') {
+                                line = line + ",";
+                            }
                         }
                     }
-                }
-
-                // update the brace level
-                boolean inQuote= false;
-                boolean backSlash= false;
-                for ( int i=0; i<trimLine.length(); i++ ) {
-                    int ch= trimLine.charAt(i);
-                    if ( backSlash ) {
-                        backSlash= false;
-                        if ( ch=='"' ) {
-                            continue;
+                    
+                    // update the brace level
+                    boolean inQuote= false;
+                    boolean backSlash= false;
+                    for ( int i=0; i<trimLine.length(); i++ ) {
+                        int ch= trimLine.charAt(i);
+                        if ( backSlash ) {
+                            backSlash= false;
+                            if ( ch=='"' ) {
+                                continue;
+                            }
+                        }
+                        switch ( ch ) {
+                            case '{': if ( !inQuote ) braceLevel++; break;
+                            case '}': if ( !inQuote ) braceLevel--; break;
+                            case '"': inQuote= !inQuote; break;
+                            case '\\': backSlash= true; break;
+                            default:
                         }
                     }
-                    switch ( ch ) {
-                        case '{': if ( !inQuote ) braceLevel++; break;
-                        case '}': if ( !inQuote ) braceLevel--; break;
-                        case '"': inQuote= !inQuote; break;
-                        case '\\': backSlash= true; break;
-                        default:
+                    
+                    sb.append(line).append("\n");
+                    
+                    line = nextLine;
+                    //iline++;
+
+                    // If we had an opening brace, then the closing brace can finish off the JSON so additional comments are ignored.
+                    if ( expectClosingBrace && braceLevel==0 ) {
+                        line=null;
                     }
+                    
                 }
-
-                sb.append(line).append("\n");
-
-                line = nextLine;
-                //iline++;
-
-                // If we had an opening brace, then the closing brace can finish off the JSON so additional comments are ignored.
-                if ( expectClosingBrace && braceLevel==0 ) {
-                    line=null;
-                }
-
             }
-
-            reader.close();
 
             if (addClosingBrace) {
                 sb.append("}");
