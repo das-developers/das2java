@@ -37,6 +37,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -84,6 +85,11 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
     protected Datum xValue;
     protected Datum yValue;
 
+    protected Datum ySlice;
+    
+    JPanel buttonPanel;
+    List<Action> additionalActions= new ArrayList<>();
+    
     //private long eventBirthMilli;
     private SymbolLineRenderer renderer;
     private Color markColor = new Color(230,230,230);
@@ -118,11 +124,32 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
             }
         } );
         myPlot.getDasMouseInputAdapter().addMouseModule(new MouseModule(myPlot, new PointSlopeDragRenderer(myPlot, myPlot.getXAxis(), myPlot.getYAxis()), "Slope"));
+
     }
         
+    /**
+     * add a button
+     * @param a the action for the button.
+     */
+    public void addAction( Action a ) {
+        additionalActions.add(a);
+        if ( buttonPanel!=null ) {
+            JButton b= new JButton(a);
+            buttonPanel.add(b,0);
+        }
+    }
+
     protected void setDataSet( QDataSet ds ) {
        renderer.setDataSet(ds);
     }
+    
+    /**
+     * provide access to the dataset
+     * @return the dataset.
+     */
+    public QDataSet getDataSet() {
+        return renderer.getDataSet();
+    }    
             
     public static VerticalSpectrogramSlicer createSlicer( DasPlot plot, TableDataSetConsumer dataSetConsumer) {
         DasAxis sourceYAxis = plot.getYAxis();
@@ -141,6 +168,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         }
         else {
             Runnable r = new Runnable() {
+                @Override
                 public void run() {
                     showPopupImpl();
                 }
@@ -178,7 +206,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
                 this.renderer.setDataSet(null);
             } else {
                 try {
-                    if ( isPopupVisible() ) {
+                    if ( this.isPopupVisible() ) {
                         showSlice( tds, xValue, yValue );
                     }
                 } catch ( InconvertibleUnitsException ex ) {
@@ -203,10 +231,16 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         
         JPanel content = new JPanel(new BorderLayout());
         
-        JPanel buttonPanel = new JPanel();
+        buttonPanel = new JPanel();
         BoxLayout buttonLayout = new BoxLayout(buttonPanel, BoxLayout.X_AXIS);
         buttonPanel.setLayout(buttonLayout);
 
+        if ( additionalActions!=null && additionalActions.size()>0 ) {
+            for ( Action a: additionalActions ) {
+                buttonPanel.add( new JButton(a) );
+            }
+        }
+        
         buttonPanel.add(Box.createHorizontalGlue());
 
         JButton printButton= new JButton( new AbstractAction("Print...") {
@@ -244,7 +278,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
         });
         buttonPanel.add( settingsButton );
         
-        JButton close = new JButton("Hide Window");
+        JButton close = new JButton("Close");
         close.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -283,6 +317,7 @@ public class VerticalSpectrogramSlicer implements DataPointSelectionListener {
             yy= totalheight-100;
         }
         popupWindow.setLocation(xx,yy);
+
     }
     
     protected boolean isPopupVisible() {

@@ -22,6 +22,8 @@
  */
 
 package org.das2.event;
+import org.das2.components.HorizontalSpectrogramSlicer;
+import org.das2.components.VerticalSpectrogramSlicer;
 import org.das2.dataset.DataSetConsumer;
 import org.das2.graph.DasAxis;
 import org.das2.graph.DasCanvasComponent;
@@ -106,5 +108,24 @@ public class VerticalSlicerMouseModule extends MouseModule {
             }
         }
     }
+    
+    /**
+     * return the slicer listening to the slices.  This returns the 
+     * first one found.  
+     * @return the slicer
+     * @throws IllegalArgumentException if no slicer is found.
+     */
+    public VerticalSpectrogramSlicer getSlicer() {
+        Object[] listeners;
+        synchronized (this) {
+            listeners = listenerList.getListenerList();
+        }
+        for ( int i=0; i<listeners.length; i++ ) {
+            if ( listeners[i] instanceof VerticalSpectrogramSlicer ) {
+                return (VerticalSpectrogramSlicer)listeners[i];
+            }
+        }
+        throw new IllegalArgumentException("slicer not found.");
+    }    
     
 }
