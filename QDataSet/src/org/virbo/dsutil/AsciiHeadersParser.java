@@ -391,7 +391,7 @@ public class AsciiHeadersParser {
                                 if ( labels==null ) {
                                     labels= new String[elementNames.length];
                                     for ( int i=0; i<elementNames.length; i++ ) {
-                                        labels[i]= columnLabels[i+icol];
+                                        labels[i]= columnLabels[i];
                                         if ( labels[i]==null ) labels[i]= elementNames[i];
                                     }
                                 }
@@ -425,7 +425,7 @@ public class AsciiHeadersParser {
     //                            if ( !columns[icol+j].equals(elementNames[j] ) ) { //TODO: verify this code.
     //                                throw new IllegalArgumentException("Expected JSON array to contain "+columns[icol+j]+" in ELEMENTS at index= "+(icol+j) );
     //                            }
-                                snames[icol+j]= name;
+                                snames[j]= name;
                             }
                         }
                         if ( total!=elementNames.length ) {
@@ -587,9 +587,7 @@ public class AsciiHeadersParser {
             fillMetadata( bd,jo );
             return bd;
 
-        } catch (JSONException ex) {
-            throw new ParseException( ex.toString(), 0 );
-        } catch (IllegalArgumentException ex ) {
+        } catch (JSONException | IllegalArgumentException ex) {
             throw new ParseException( ex.toString(), 0 );
         }
     }
@@ -741,7 +739,7 @@ public class AsciiHeadersParser {
             int i= datasets.get(dsname);
             Map<String,Object> props1= props.get( i );
             if ( props1==null ) {
-                props1= new LinkedHashMap<String,Object>();
+                props1= new LinkedHashMap<>();
                 props.put( i, props1 );
             }
             if ( name.startsWith( "DEPEND_" ) && !(name.equals("DEPEND_0") ) && v instanceof String ) {
@@ -841,36 +839,34 @@ public class AsciiHeadersParser {
      */
     private static Object coerceToType( String propName, Object propValue ) {
         try {
-            if ( propName.equals( QDataSet.UNITS ) ) {
-                return SemanticOps.lookupUnits( String.valueOf(propValue) );
-            } else if ( propName.equals( QDataSet.FILL_VALUE ) ) {
-                return Double.parseDouble(String.valueOf(propValue) );
-            } else if ( propName.equals( QDataSet.VALID_MIN ) ) {
-                return Double.parseDouble(String.valueOf(propValue) );
-            } else if ( propName.equals( QDataSet.VALID_MAX ) ) {
-                return Double.parseDouble(String.valueOf(propValue) );
-            } else if ( propName.equals( QDataSet.TYPICAL_MIN ) ) {
-                return Double.parseDouble(String.valueOf(propValue) );
-            } else if ( propName.equals( QDataSet.TYPICAL_MAX ) ) {
-                return Double.parseDouble(String.valueOf(propValue) );
-            } else if ( propName.equals( QDataSet.SCALE_TYPE ) ) {
-                return String.valueOf( propValue );
-            } else if ( propName.equals( QDataSet.MONOTONIC ) ) {
-                return Boolean.valueOf(String.valueOf(propValue) );
-            } else if ( propName.equals( QDataSet.CADENCE ) ) {
-                return DataSetUtil.asDataSet( DatumUtil.parse( String.valueOf( propValue) ) );
-            } else if ( propName.equals( QDataSet.FORMAT ) ) {
-                return String.valueOf( propValue );
-            } else {
-                return String.valueOf( propValue );
+            switch (propName) {
+                case QDataSet.UNITS:
+                    return Units.lookupUnits( String.valueOf(propValue) );
+                case QDataSet.FILL_VALUE:
+                    return Double.parseDouble(String.valueOf(propValue) );
+                case QDataSet.VALID_MIN:
+                    return Double.parseDouble(String.valueOf(propValue) );
+                case QDataSet.VALID_MAX:
+                    return Double.parseDouble(String.valueOf(propValue) );
+                case QDataSet.TYPICAL_MIN:
+                    return Double.parseDouble(String.valueOf(propValue) );
+                case QDataSet.TYPICAL_MAX:
+                    return Double.parseDouble(String.valueOf(propValue) );
+                case QDataSet.SCALE_TYPE:
+                    return String.valueOf( propValue );
+                case QDataSet.MONOTONIC:
+                    return Boolean.valueOf(String.valueOf(propValue) );
+                case QDataSet.CADENCE:
+                    return DataSetUtil.asDataSet( DatumUtil.parse( String.valueOf( propValue) ) );
+                case QDataSet.FORMAT:
+                    return String.valueOf( propValue );
+                default:
+                    return String.valueOf( propValue );
             }
-        } catch ( ParseException ex ) {
+        } catch ( ParseException | NumberFormatException ex ) {
             logger.log(Level.WARNING, "unable to parse value for {0}: {1}", new Object[]{propName, propValue});
             return null;
             
-        } catch ( NumberFormatException ex ) {
-            logger.log(Level.WARNING, "unable to parse value for {0}: {1}", new Object[]{propName, propValue});
-            return null;
         }
     }
 
