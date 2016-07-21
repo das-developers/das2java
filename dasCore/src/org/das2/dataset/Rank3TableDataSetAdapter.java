@@ -122,10 +122,22 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         String s;
         s= (String) z.slice(0).property( QDataSet.LABEL );
         if ( s!=null ) properties.put( DataSet.PROPERTY_Z_LABEL, s );
+
+        s= (String) z.slice(0).property( QDataSet.SCALE_TYPE );
+        if ( s!=null ) properties.put( DataSet.PROPERTY_Z_SCALETYPE, s );
         
+        s= (String) z.slice(0).property( QDataSet.TITLE );
+        if ( s!=null ) properties.put( DataSet.PROPERTY_TITLE, s );
+        
+        s= (String) z.slice(0).property( QDataSet.DESCRIPTION );
+        if ( s!=null ) properties.put( DataSet.PROPERTY_SUMMARY, s );
+
         s= (String) y.slice(0).property( QDataSet.LABEL );
         if ( s!=null ) properties.put( DataSet.PROPERTY_Y_LABEL, s );
 
+        s= (String) y.slice(0).property( QDataSet.SCALE_TYPE );
+        if ( s!=null ) properties.put( DataSet.PROPERTY_Y_SCALETYPE, s );
+        
         s= (String) x.slice(0).property( QDataSet.LABEL );
         if ( s!=null ) properties.put( DataSet.PROPERTY_X_LABEL, s );
         
