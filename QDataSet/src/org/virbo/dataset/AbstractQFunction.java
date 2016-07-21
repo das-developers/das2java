@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package org.virbo.dataset;
 
@@ -18,16 +14,22 @@ public abstract class AbstractQFunction implements QFunction {
 
     /**
      * calculate the values by calling the {@code value} function for
-     * each element of vs
+     * each element of {@code vs}.  A check is made for each call to the {@code value}
+     * function that a dataset with the same rank and length is returned.
      * @param vs rank N+1 set of values, where {@code exampleInput} returns rank N.
      * @return rank M+1 set of values, where {@code value} returns rank M.
      */
     @Override
     public QDataSet values(QDataSet vs ) {
         QDataSet v1= value( vs.slice(0) );
+        int rank= v1.rank();
+        int len= v1.length();
         JoinDataSet result= new JoinDataSet( v1 );
         for ( int i=1; i<vs.length(); i++ ) {
-            result.join( value( vs.slice(i) ) );
+            v1= value( vs.slice(i) );
+            if ( v1.rank()!=rank ) throw new IllegalArgumentException("incompatible datasets: two value calls result in datasets of differing rank");
+            if ( v1.length()!=len ) throw new IllegalArgumentException("incompatible datasets: two value calls result in datasets of differing lengths");
+            result.join( v1 );
         }
         return result;
     }
