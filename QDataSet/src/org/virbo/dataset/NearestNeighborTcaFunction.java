@@ -16,7 +16,7 @@ import org.virbo.dsops.Ops;
  * function, always as a rank 1 dataset.
  * @author jbf
  */
-public class NearestNeighborQFunction extends AbstractQFunction {
+public class NearestNeighborTcaFunction extends AbstractQFunction {
 
     private final QDataSet dep0;
     private final QDataSet data;
@@ -26,7 +26,7 @@ public class NearestNeighborQFunction extends AbstractQFunction {
      * Create the function
      * @param ds 
      */
-    public NearestNeighborQFunction( QDataSet ds ) {
+    public NearestNeighborTcaFunction( QDataSet ds ) {
         this.dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         this.data= ds;
         this.fill= Ops.join( null, DataSetUtil.asDataSet( Double.NaN, SemanticOps.getUnits(ds) ) );
