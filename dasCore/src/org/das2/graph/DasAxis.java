@@ -79,6 +79,7 @@ import org.virbo.dataset.JoinDataSet;
 import org.virbo.dataset.QDataSet;
 import org.virbo.dataset.QFunction;
 import org.virbo.dataset.SemanticOps;
+import org.virbo.dsops.Ops;
 
 /** 
  * One dimensional axis component that transforms data to device space and back, 
@@ -1335,9 +1336,10 @@ public class DasAxis extends DasCanvasComponent implements DataRangeSelectionLis
             }
             timeDs.putProperty( QDataSet.BUNDLE_1, timeDs.slice(0).property(QDataSet.BUNDLE_0) );
             
-            // Here the TCA function is called via the "values" method.
             QDataSet tickss= ltcaFunction.values(timeDs);
-
+            if ( tickss.rank()!=2 ) {
+                throw new IllegalArgumentException("result of tcaFunction value() should be rank 1");
+            }
             for ( int i=0; i<ltickV.length; i++ ) {
                 QDataSet ticks= tickss.slice(i);
                 if ( outDescriptor==null ) {
