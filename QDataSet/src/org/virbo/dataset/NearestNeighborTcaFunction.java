@@ -40,7 +40,7 @@ public class NearestNeighborTcaFunction extends AbstractQFunction {
      * @return 
      */
     private int closest( QDataSet d ) {
-        return (int)Ops.findex( dep0, d ).value();
+        return (int)( Ops.findex( dep0, d ).value() + 0.5 );
     }
     
     private DDataSet outputDescriptor=null;
