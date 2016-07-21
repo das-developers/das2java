@@ -104,10 +104,12 @@ public final class BundleDataSet extends AbstractDataSet {
         if ( this.rank>1 ) {
             if ( len0==-1 ) {
                 len0= ds.length();
+                QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0 );
+                if ( dep0!=null ) putProperty( QDataSet.DEPEND_0, dep0 );
             } else {
                 if ( ds.length()!=len0 ) throw new IllegalArgumentException( String.format( "dataset length (%d) is not consistent with the bundle's length (%d)", ds.length(), len0) );
             }
-        }
+        }        
         datasets.add( ds );
     }
 
