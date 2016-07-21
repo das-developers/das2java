@@ -5,19 +5,27 @@
  */
 package org.virbo.dataset;
 
-import org.das2.datum.Units;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.virbo.dsops.Ops;
 
 /**
- * return a function based on a QDataSet.
+ * return a function based on a QDataSet.  For the rank 1 or 2 dataset with 
+ * DEPEND_0, this function returns the nearest neighbor found within the 
+ * function, always as a rank 1 dataset.
  * @author jbf
  */
 public class NearestNeighborQFunction extends AbstractQFunction {
 
-    QDataSet dep0;
-    QDataSet data;
-    QDataSet fill;
+    private final QDataSet dep0;
+    private final QDataSet data;
+    private final QDataSet fill;
     
+    /**
+     * Create the function
+     * @param ds 
+     */
     public NearestNeighborQFunction( QDataSet ds ) {
         this.dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         this.data= ds;
@@ -33,29 +41,46 @@ public class NearestNeighborQFunction extends AbstractQFunction {
         return (int)Ops.findex( dep0, d ).value();
     }
     
+    private DDataSet outputDescriptor=null;
+    
     @Override
     public QDataSet value(QDataSet parm) {
         int i= closest( parm.slice(0) );
         if ( i<0 ) return fill;
         if ( i>=data.length() ) return fill;
+        QDataSet result;
         if ( data.rank()==1 ) {
-            return Ops.join( null, data.slice( i ) );
+            result= Ops.bundle( data.slice( i ) );
         } else {
-            return data.slice( i );
+            result= data.slice( i );
         }
+        ((MutablePropertyDataSet)result).putProperty( QDataSet.BUNDLE_0, outputDescriptor );
+        return result;
     }
 
-    DDataSet inputDescriptor = DDataSet.createRank2(1,0);
-    {
-        inputDescriptor.putProperty(QDataSet.LABEL, 0, "Time");
-        inputDescriptor.putProperty(QDataSet.UNITS, 0, Units.t2000);
-    }
+    private final DDataSet inputDescriptor = DDataSet.createRank2(1,0);
         
     @Override
     public QDataSet exampleInput() {
-        QDataSet q = DataSetUtil.asDataSet(0,Units.t2000);
-        MutablePropertyDataSet ret = (MutablePropertyDataSet) Ops.bundle(null,q);
+        QDataSet q = dep0.slice(0);
+        MutablePropertyDataSet ret = (MutablePropertyDataSet) Ops.bundle(q);
+        Map<String,Object> p = DataSetUtil.getDimensionProperties( q, new HashMap() );
+        for ( Entry<String,Object> e : p.entrySet() ) {
+            inputDescriptor.putProperty( e.getKey(), 0, e.getValue() );
+        }
         ret.putProperty(QDataSet.BUNDLE_0,inputDescriptor);
+        
+        QDataSet exampleOutput= data.slice(0);
+        if ( exampleOutput.rank()==0 ) {
+            Ops.bundle( exampleOutput );
+        }
+        outputDescriptor= DDataSet.createRank2( exampleOutput.length(), 0 );
+        for ( int i=0; i<exampleOutput.length(); i++ ) {
+            p = DataSetUtil.getDimensionProperties( exampleOutput.slice(i), new HashMap() );
+            for ( Entry<String,Object> e : p.entrySet() ) {
+                outputDescriptor.putProperty( e.getKey(), i, e.getValue() );
+            }
+        }
         return ret;
     }
     
