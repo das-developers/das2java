@@ -120,7 +120,7 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         }
         
         String s;
-        s= (String) z.slice(0).property( QDataSet.LABEL );
+        s= (String) z.slice(0).property( QDataSet.LABEL ); 
         if ( s!=null ) properties.put( DataSet.PROPERTY_Z_LABEL, s );
 
         s= (String) z.slice(0).property( QDataSet.SCALE_TYPE );
