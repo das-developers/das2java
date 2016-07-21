@@ -8,8 +8,6 @@
  */
 package org.das2.dataset;
 
-import org.das2.dataset.TableDataSet;
-import org.das2.dataset.VectorDataSet;
 import org.das2.datum.Datum;
 import org.das2.datum.DatumVector;
 import org.das2.datum.Units;
@@ -21,7 +19,6 @@ import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DatumVectorAdapter;
 import org.virbo.dataset.IndexGenDataSet;
 import org.virbo.dataset.QDataSet;
-import org.virbo.dataset.RankZeroDataSet;
 import org.virbo.dataset.SemanticOps;
 import org.virbo.dataset.Slice0DataSet;
 
@@ -61,10 +58,15 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         
     }
 
-    /** Creates a new instance of TableDataSetAdapter */
+    /** 
+     * Creates a new instance of TableDataSetAdapter
+     * @param z
+     * @param x
+     * @param y 
+     */
     public Rank3TableDataSetAdapter(QDataSet z, QDataSet x, QDataSet y) {
 
-        planes= new LinkedHashMap<String,QDataSet>();
+        planes= new LinkedHashMap<>();
         planes.put( "", z );
         
         if ( SemanticOps.isJoin(z) ) { // it really must be...
@@ -90,7 +92,7 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         this.z = z;
 
         Boolean xMono = (Boolean) x.property(QDataSet.MONOTONIC,0);
-        if (xMono != null && xMono.booleanValue()) {
+        if (xMono != null && xMono ) {
             properties.put(org.das2.dataset.DataSet.PROPERTY_X_MONOTONIC, Boolean.TRUE);
         }
         
@@ -143,16 +145,19 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         
     }
 
+    @Override
     public Units getZUnits() {
         return zunits;
     }
 
+    @Override
     public Datum getDatum(int i, int j) {
         int i0= tableOfIndex(i);
         int i1= i - tableStart(i0);
         return zunits.createDatum(z.value(i0, i1, j));
     }
 
+    @Override
     public double getDouble(int i, int j, Units units) {
         int i0= tableOfIndex(i);
         int i1= i - tableStart(i0);
@@ -160,6 +165,7 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
     }
 
 
+    @Override
     public double[] getDoubleScan(int i, Units units) {
         int i0= tableOfIndex(i);
         double[] zz = new double[getYLength(i0)];
@@ -169,47 +175,58 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         return zz;
     }
 
+    @Override
     public DatumVector getScan(int i) {
         double[] zz = getDoubleScan(i, getZUnits());
         return DatumVector.newDatumVector(zz, getZUnits());
     }
 
+    @Override
     public int getInt(int i, int j, Units units) {
         return (int) getDouble(i, j, units);
     }
 
+    @Override
     public DatumVector getYTags(int table) {
         return DatumVectorAdapter.toDatumVector( new Slice0DataSet(y, table) );
     }
 
+    @Override
     public Datum getYTagDatum(int table, int j) {
         return yunits.createDatum(y.value(table,j));
     }
 
+    @Override
     public double getYTagDouble(int table, int j, Units units) {
         return yunits.convertDoubleTo(units, y.value(table,j));
     }
 
+    @Override
     public int getYTagInt(int table, int j, Units units) {
         return (int) getYTagDouble(table, j, units);
     }
 
+    @Override
     public int getYLength(int table) {
         return y.length(table);
     }
 
+    @Override
     public int tableStart(int table) {
         return tables[table];
     }
 
+    @Override
     public int tableEnd(int table) {
         return tables[table+1];
     }
     
+    @Override
     public int tableCount() {
         return z.length();
     }
 
+    @Override
     public int tableOfIndex(int i) {
         /*if ( tables.length>10 ) { // this is going to be slow anyway, and the code is untested
             int result= Arrays.binarySearch( tables, i);
@@ -226,26 +243,31 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         //}
     }
 
+    @Override
     public VectorDataSet getXSlice(int i) {
         int i0= tableOfIndex(i);
         int i1= i - tableStart(i0);
         return new VectorDataSetAdapter( DataSetOps.slice0( DataSetOps.slice0( z, i0), i1 ), DataSetOps.slice0(y,i0) );
     }
 
+    @Override
     public VectorDataSet getYSlice(int j, int table) {
         return new VectorDataSetAdapter( DataSetOps.slice1( DataSetOps.slice0(z, table), j), DataSetOps.slice0(x,table) );
     }
 
+    @Override
     public Object getProperty(String name) {
         Object result = properties.get(name);
         return (result != null) ? result : z.property(name);
     }
 
+    @Override
     public Object getProperty( int table, String name ) {
         return getProperty(name);
     }
 
     
+    @Override
     public Map getProperties() {
         Map result = new HashMap();
         result.put(QDataSet.UNITS, null );
@@ -257,36 +279,43 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         return m;
     }
 
+    @Override
     public Units getXUnits() {
         return xunits;
     }
 
+    @Override
     public Units getYUnits() {
         return yunits;
     }
 
+    @Override
     public Datum getXTagDatum(int i) {
         int i0= tableOfIndex(i);
         int i1= i - tableStart(i0);        
         return xunits.createDatum( x.value(i0,i1) );
     }
 
+    @Override
     public double getXTagDouble(int i, Units units) {
         int i0= tableOfIndex(i);
         int i1= i - tableStart(i0);        
         return xunits.convertDoubleTo(units, x.value(i0,i1));
     }
 
+    @Override
     public int getXTagInt(int i, Units units) {
         int i0= tableOfIndex(i);
         int i1= i - tableStart(i0);
         return (int) xunits.convertDoubleTo(units, x.value(i0,i1));
     }
 
+    @Override
     public int getXLength() {
         return tables[tables.length-1];
     }
 
+    @Override
     public org.das2.dataset.DataSet getPlanarView(String planeID) {
         if ( planeID.equals("") ) return this;
         if ( planes.containsKey(planeID) ) {
@@ -295,11 +324,13 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         return null;
     }
 
+    @Override
     public String[] getPlaneIds() {
         return planes.keySet().toArray(new String[planes.keySet().size()] );
     }
 
 
+    @Override
     public String toString() {
         return DataSetUtil.toString(this.z);
     }
