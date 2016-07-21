@@ -8,6 +8,7 @@ package org.virbo.dataset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.das2.datum.Units;
 import org.virbo.dsops.Ops;
 
 /**
@@ -20,7 +21,7 @@ public class NearestNeighborTcaFunction extends AbstractQFunction {
 
     private final QDataSet dep0;
     private final QDataSet data;
-    private final QDataSet fill;
+    private QDataSet fill;
     
     /**
      * Create the function
@@ -30,7 +31,7 @@ public class NearestNeighborTcaFunction extends AbstractQFunction {
         this.dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( this.dep0==null ) throw new IllegalArgumentException("dataset does not have DEPEND_0 and cannot be used.");
         this.data= ds;
-        this.fill= Ops.join( null, DataSetUtil.asDataSet( Double.NaN, SemanticOps.getUnits(ds) ) );
+        exampleInput(); // initialize 
     }
     
     /**
@@ -62,8 +63,9 @@ public class NearestNeighborTcaFunction extends AbstractQFunction {
     private final DDataSet inputDescriptor = DDataSet.createRank2(1,0);
         
     @Override
-    public QDataSet exampleInput() {
+    public final QDataSet exampleInput() {
         QDataSet q = dep0.slice(0);
+        //TODO: there might be a problem if the first dep0 value is fill.
         MutablePropertyDataSet ret = (MutablePropertyDataSet) Ops.bundle(q);
         Map<String,Object> p = DataSetUtil.getDimensionProperties( q, new HashMap() );
         for ( Entry<String,Object> e : p.entrySet() ) {
@@ -82,6 +84,12 @@ public class NearestNeighborTcaFunction extends AbstractQFunction {
                 outputDescriptor.putProperty( e.getKey(), i, e.getValue() );
             }
         }
+        
+        this.fill= Ops.bundle( DataSetUtil.asDataSet( Double.NaN, (Units)outputDescriptor.property(QDataSet.UNITS, 0) ) );
+        for ( int i=1; i<exampleOutput.length(); i++ ) {
+            this.fill= Ops.bundle( this.fill, DataSetUtil.asDataSet( Double.NaN, (Units)outputDescriptor.property(QDataSet.UNITS, i) ) );
+        }
+
         return ret;
     }
     
