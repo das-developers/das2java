@@ -9192,6 +9192,15 @@ public class Ops {
     }
 
     /**
+     * bundle the dataset, adding a bundle dimension.  
+     * @param ds a rank N-1 dataset
+     * @return rank N bundle dataset
+     */
+    public static QDataSet bundle( QDataSet ds ) {
+        return bundle( null, ds );
+    }
+    
+    /**
      * bundle the two datasets, adding if necessary a bundle dimension.  This
      * will try to bundle on the second dimension, unlike join.  This will also
      * isolate the semantics of bundle dimensions as it's introduced.  Note the
