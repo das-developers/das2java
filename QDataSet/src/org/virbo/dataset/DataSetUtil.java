@@ -2655,14 +2655,30 @@ public class DataSetUtil {
         return result;
     }
 
+    /**
+     * create a rank 0 dataset from the double and units.
+     * @param d a double, or Double.NaN
+     * @param u null or the units of d.
+     * @return rank 0 dataset
+     */
     public static DRank0DataSet asDataSet( double d, Units u ) {
         return DRank0DataSet.create(d,u);
     }
 
+    /**
+     * create a dimensionless rank 0 dataset from the double.
+     * @param d a double, or Double.NaN
+     * @return rank 0 dataset
+     */
     public static DRank0DataSet asDataSet( double d ) {
         return DRank0DataSet.create(d);
     }
 
+    /**
+     * create a rank 0 dataset from the Datum.
+     * @param d a datum
+     * @return rank 0 dataset
+     */
     public static DRank0DataSet asDataSet( Datum d ) {
         return DRank0DataSet.create(d);
     }
