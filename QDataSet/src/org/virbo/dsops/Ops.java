@@ -4253,6 +4253,7 @@ public class Ops {
      * @param u units providing context
      * @throws IllegalArgumentException if the argument cannot be parsed or converted.
      * @return QDataSet
+     * @see JythonOps#dataset(PyObject, org.das2.datum.Units) 
      */
     public static QDataSet dataset( Object arg0, Units u ) {
         if ( arg0==null ) {  // there was a similar test in the Python code.
