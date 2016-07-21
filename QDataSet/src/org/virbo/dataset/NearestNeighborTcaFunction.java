@@ -28,6 +28,7 @@ public class NearestNeighborTcaFunction extends AbstractQFunction {
      */
     public NearestNeighborTcaFunction( QDataSet ds ) {
         this.dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( this.dep0==null ) throw new IllegalArgumentException("dataset does not have DEPEND_0 and cannot be used.");
         this.data= ds;
         this.fill= Ops.join( null, DataSetUtil.asDataSet( Double.NaN, SemanticOps.getUnits(ds) ) );
     }
