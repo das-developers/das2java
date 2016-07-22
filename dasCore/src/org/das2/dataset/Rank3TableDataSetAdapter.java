@@ -14,6 +14,7 @@ import org.das2.datum.Units;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.das2.datum.DatumRange;
 import org.virbo.dataset.DataSetOps;
 import org.virbo.dataset.DataSetUtil;
 import org.virbo.dataset.DatumVectorAdapter;
@@ -134,6 +135,12 @@ public class Rank3TableDataSetAdapter implements TableDataSet {
         s= (String) z.slice(0).property( QDataSet.DESCRIPTION );
         if ( s!=null ) properties.put( DataSet.PROPERTY_SUMMARY, s );
 
+        Number m1= (Number) z.slice(0).property( QDataSet.TYPICAL_MIN );
+        Number m2= (Number) z.slice(0).property( QDataSet.TYPICAL_MAX );
+        if ( m1!=null && m2!=null ) {
+            properties.put( DataSet.PROPERTY_Z_RANGE, new DatumRange( m1.doubleValue(), m2.doubleValue(), zunits ) );
+        }
+        
         s= (String) y.slice(0).property( QDataSet.LABEL );
         if ( s!=null ) properties.put( DataSet.PROPERTY_Y_LABEL, s );
 
