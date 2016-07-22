@@ -346,6 +346,7 @@ public abstract class BufferDataSet extends AbstractDataSet implements WritableD
         if ( rank==1 && len1>1 ) throw new IllegalArgumentException("rank is 1, but len1 is not 1");
         if ( reclen < byteCount(type) ) throw new IllegalArgumentException("reclen " + reclen + " is smaller that length of type "+type);
         if ( reclen*len0 > back.limit() ) throw new IllegalArgumentException("buffer is too short (len="+back.limit()+") to contain data ("+len0+" "+reclen+" byte records)");
+        if ( len0<0 ) throw new IllegalArgumentException("len0 is negative: "+len0);
         this.back= back;
         this.rank = rank;
         this.reclen= reclen;
