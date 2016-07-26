@@ -60,7 +60,7 @@ public class QDataSetTableModel extends AbstractTableModel {
         if ( ds.rank()==1 ) {
             colCount+= 1;
         } else {
-            colCount += ds.length() == 0 ? 0 : ds.length(0);
+            colCount += ds.length(0);
         }
         
         units = new Units[colCount];
