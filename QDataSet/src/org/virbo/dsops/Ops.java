@@ -8506,6 +8506,18 @@ public class Ops {
         return wds==null ? ds : wds;
     }
        
+//    private static boolean isSorted( List l ) {
+//        if ( l.size()==0 ) return true;
+//        Number v= (Number)l.get(0);
+//        for ( int i=1; i<l.size(); i++ ) {
+//            Number d= (Number)l.get(i);
+//            if ( v.doubleValue()>d.doubleValue() ) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+//    
     /**
      * 1-D median filter with a boxcar of the given size.  This is 
      * not particularly efficient and would make a nice project for a student.
@@ -8546,9 +8558,15 @@ public class Ops {
                 more.remove( 0 );
             } else if ( less.size()-1>more.size() ) {
                 double mv= less.getLast();
-                less.remove( mv );
-                more.add( mv );
+                more.add( 0, mv );
+                less.remove( less.size()-1 );
             }
+//            if ( !isSorted(less) ) {
+//                throw new IllegalArgumentException("less bad");
+//            }
+//            if ( !isSorted(more) ) {
+//                throw new IllegalArgumentException("more bad");
+//            }
             res.putValue(i,d);
         }
         for ( int i=hsize; i<ds.length()-hsize; i++ ) {
@@ -8579,12 +8597,18 @@ public class Ops {
             if ( less.size()<more.size()-1 ) {
                 double mv= more.getFirst();
                 less.add( mv );
-                more.remove( mv );
+                more.remove( 0 );
             } else if ( less.size()-1>more.size() ) {
                 double mv= less.getLast();
-                less.remove( mv );
-                more.add( mv );
+                more.add( 0, mv );
+                less.remove( less.size()-1 );
             }
+//            if ( !isSorted(less) ) {
+//                throw new IllegalArgumentException("less bad");
+//            }
+//            if ( !isSorted(more) ) {
+//                throw new IllegalArgumentException("more bad");
+//            }            
         }
         for ( int i=ds.length()-hsize; i<ds.length(); i++ ) {
             double d=ds.value(i);
