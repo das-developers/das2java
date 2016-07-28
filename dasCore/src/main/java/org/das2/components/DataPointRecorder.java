@@ -298,6 +298,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                 closedx= dist;
             }
         }
+        table.getSelectionModel().clearSelection();
         table.getSelectionModel().addSelectionInterval(close,close);
     }
 
