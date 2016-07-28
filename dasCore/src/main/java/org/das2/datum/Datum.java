@@ -100,6 +100,40 @@ public class Datum implements Comparable<Datum> {
     }
     
     /**
+     * returns the double value without the unit, as long as the Units indicate this is a ratio measurement, and there is a meaningful 0.
+     * For example "5 Kg" -> 5, but "2012-02-16T00:00" would throw an IllegalArgumentException.  Note this was introduced because often we just need
+     * to check to see if a value is zero.
+     * @return
+     */
+    public double value() {
+        if ( UnitsUtil.isRatioMeasurement(units) ) {
+            return this.doubleValue( this.getUnits() );
+        } else {
+            throw new IllegalArgumentException("datum is not ratio measurement: "+this );
+        }
+    }
+
+    /**
+     * return the absolute value (magnitude) of this Datum.  If this
+     * datum is fill then the result is fill.
+     * @return 
+     * @throws IllegalArgumentException if the datum is not a ratio measurement (like a timetag).
+     */
+    public Datum abs() {
+        if ( UnitsUtil.isRatioMeasurement(units) ) {
+            if ( this.getUnits().isFill(value) ) {
+                return this;
+            } else if ( this.value.doubleValue()>=0 ) {
+                return this;
+            } else {
+                return this.getUnits().createDatum( Math.abs(value.doubleValue()) );
+            }
+        } else {
+            throw new IllegalArgumentException("datum is not ratio measurement: "+this );
+        }
+    }    
+    
+    /**
      * returns the resolution (or precision) of the datum.  This is metadata for the datum, used
      * primarily to limit the number of decimal places displayed in a string representation,
      * but operators like add and multiply will propogate errors through the calculation.
