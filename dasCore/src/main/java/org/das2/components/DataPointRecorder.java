@@ -278,6 +278,28 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             return builder.toVectorDataSet();
         }
     }
+    
+    /**
+     * Selects all the points within the DatumRange
+     * @param x the x value
+     * @param y the y value (may not be used, currently isn't).
+     */
+    public void selectClosest( Datum x, Datum y ) {
+        int close= -1;
+        Datum closex= null;
+        Datum closedx= null;
+        for (int i = 0; i < dataPoints.size(); i++) {
+            DataPoint p = (DataPoint) dataPoints.get(i);
+            Datum thisx= p.get(0);
+            Datum dist= thisx.subtract(x).abs();
+            if ( closex==null || dist.lt(closedx) ) {
+                close= i;
+                closex= thisx;
+                closedx= dist;
+            }
+        }
+        table.getSelectionModel().addSelectionInterval(close,close);
+    }
 
     /**
      * Selects all the points within the DatumRange
