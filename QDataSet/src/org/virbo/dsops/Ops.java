@@ -8526,8 +8526,8 @@ public class Ops {
 //    }
 //    
     /**
-     * 1-D median filter with a boxcar of the given size.  This is 
-     * not particularly efficient and would make a nice project for a student.
+     * 1-D median filter with a boxcar of the given size.  The first size/2
+     * elements, and the last size/2 elements are copied from the input.
      * @param ds rank 1 dataset.  Future implementations may support higher rank data.
      * @param size the boxcar size
      * @return rank 1 dataset.
@@ -8539,7 +8539,7 @@ public class Ops {
         if ( size<3 ) throw new IllegalArgumentException("size cannot be less than 3");
         
         ArrayDataSet res= ArrayDataSet.copy(ds);
-        for ( int i=0; i<res.length(); i++ ) res.putValue(i,0);
+
         LinkedList<Double> less= new LinkedList();
         LinkedList<Double> more= new LinkedList();
         LinkedList<Double> vv= new LinkedList();
