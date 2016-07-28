@@ -1,7 +1,6 @@
 
 package org.virbo.dsops;
 
-import ProGAL.geom3d.Point;
 import java.awt.Color;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
@@ -5055,67 +5054,70 @@ public class Ops {
             mds.putProperty( name, value ); 
             
         } else {
-            if ( type.equals(DataSetUtil.PROPERTY_TYPE_QDATASET) ) {
-                mds.putProperty(name, Ops.dataset(value));
-            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_UNITS) ) {
-                if ( value instanceof String ) {
-                    String svalue= (String)value;
-                    value= SemanticOps.lookupUnits(svalue);
-                }
-                mds.putProperty( name, value);
-            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_BOOLEAN) ) {
-                if ( value instanceof String ) {
-                    String svalue= (String)value;
-                    value= Boolean.valueOf(svalue);
-                } else if ( value instanceof Number ) {
-                    value= !((Number)value).equals(0);
-                }
-                mds.putProperty( name, value);
-            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_NUMBER) ) {
-                if ( value instanceof String ) {
-                    String svalue= (String)value;
-                    Units u= (Units)mds.property(QDataSet.UNITS);
-                    if ( u!=null ) {
-                        try {
-                            value= u.parse(svalue).doubleValue(u);
-                        } catch (ParseException ex) {
+            switch (type) {
+                case DataSetUtil.PROPERTY_TYPE_QDATASET:
+                    mds.putProperty(name, Ops.dataset(value));
+                    break;
+                case DataSetUtil.PROPERTY_TYPE_UNITS:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        value= Units.lookupUnits(svalue);
+                    }   mds.putProperty( name, value);
+                    break;
+                case DataSetUtil.PROPERTY_TYPE_BOOLEAN:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        value= Boolean.valueOf(svalue);
+                    } else if ( value instanceof Number ) {
+                        value= !((Number)value).equals(0);
+                    }   mds.putProperty( name, value);
+                    break;
+                case DataSetUtil.PROPERTY_TYPE_NUMBER:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        Units u= (Units)mds.property(QDataSet.UNITS);
+                        if ( u!=null ) {
                             try {
+                                value= u.parse(svalue).doubleValue(u);
+                            } catch (ParseException ex) {
+                                try {
+                                    value= Integer.valueOf(svalue);
+                                } catch ( NumberFormatException ex2 ) {
+                                    throw new IllegalArgumentException(ex);
+                                }
+                            }
+                        } else {
+                            if ( svalue.contains(".") || svalue.contains("e") || svalue.contains("E") ) {
+                                value= Double.valueOf(svalue);
+                            } else {
                                 value= Integer.valueOf(svalue);
-                            } catch ( NumberFormatException ex2 ) {
-                                throw new IllegalArgumentException(ex);
                             }
                         }
-                    } else {
-                        if ( svalue.contains(".") || svalue.contains("e") || svalue.contains("E") ) {
-                            value= Double.valueOf(svalue);
-                        } else {
-                            value= Integer.valueOf(svalue);
+                    }   mds.putProperty( name, value);
+                    break;
+                case DataSetUtil.PROPERTY_TYPE_CACHETAG:
+                    if ( value instanceof String ) {
+                        String svalue= (String)value;
+                        int i= svalue.indexOf("@");
+                        try {
+                            DatumRange tr= DatumRangeUtil.parseTimeRange( svalue.substring(0,i) );
+                            CacheTag r;
+                            if ( i==-1 ) {
+                                value= new CacheTag( tr, null );
+                            } else if ( svalue.substring(i+1).trim().equals("intrinsic") ) {
+                                value= new CacheTag( tr, null );
+                            } else {
+                                Datum res= Units.seconds.parse(svalue.substring(i+1));
+                                value= new CacheTag( tr, res );
+                            }
+                        } catch ( ParseException ex ) {
+                            throw new IllegalArgumentException(ex);
                         }
-                    }
-                }
-                mds.putProperty( name, value);
-            } else if ( type.equals(DataSetUtil.PROPERTY_TYPE_CACHETAG) ) {
-                if ( value instanceof String ) {
-                    String svalue= (String)value;
-                    int i= svalue.indexOf("@");
-                    try {
-                        DatumRange tr= DatumRangeUtil.parseTimeRange( svalue.substring(0,i) );
-                        CacheTag r;
-                        if ( i==-1 ) {
-                            value= new CacheTag( tr, null );
-                        } else if ( svalue.substring(i+1).trim().equals("intrinsic") ) {
-                            value= new CacheTag( tr, null );
-                        } else {
-                            Datum res= Units.seconds.parse(svalue.substring(i+1));
-                            value= new CacheTag( tr, res );
-                        }
-                    } catch ( ParseException ex ) {
-                        throw new IllegalArgumentException(ex);
-                    }
-                }
-                mds.putProperty( name, index, value);
-            } else {
-                mds.putProperty( name, index, value);
+                    }   mds.putProperty( name, index, value);
+                    break;
+                default:
+                    mds.putProperty( name, index, value);
+                    break;
             }
             
         }
@@ -5543,91 +5545,96 @@ public class Ops {
             ds= jds;
         }
 
-        if ( ds.rank()==3 ) { // slice it and do the process to each branch.
-            JoinDataSet result= new JoinDataSet(3);
-            mon.setTaskSize( ds.length()*10  );
-            mon.started();
-            for ( int i=0; i<ds.length(); i++ ) {
-                mon.setTaskProgress(i*10);
-                QDataSet pow1= fftFilter( ds.slice(i), len, filt );
-                result.join(pow1);
-            }
-            mon.finished();
-            return result;
-
-        } else if ( ds.rank()==2 ) {
-            JoinDataSet result= new JoinDataSet(2);
-            result.putProperty(QDataSet.JOIN_0, null);
-
-            int nsam= ds.length()*(ds.length(0)/len); // approx
-            DataSetBuilder dep0b= new DataSetBuilder(1,nsam );
-
-            QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
-            QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
-
-            if ( dep0==null ) dep0= findgen( ds.length() );
-            if ( dep1==null ) dep1= findgen( ds.length(0) );
-
-            UnitsConverter uc;
-            Units dep0u= SemanticOps.getUnits(dep0);
-            Units dep1u= SemanticOps.getUnits(dep1);
-            uc= dep1u.getConverter( dep0u.getOffsetUnits() );
-
-            QDataSet filter;
-            switch (filt) {
-                case Hanning:
-                    filter= FFTUtil.getWindowHanning(len);
-                    break;
-                case Hann:
-                    filter= FFTUtil.getWindowHanning(len);
-                    break;
-                case TenPercentEdgeCosine:
-                    filter= FFTUtil.getWindow10PercentEdgeCosine(len);
-                    break;
-                case Unity:
-                    filter= FFTUtil.getWindowUnity(len);
-                    break;
-                default:
-                    throw new UnsupportedOperationException("unsupported op: "+filt );
-            }
-
-            boolean convertToFloat= ds instanceof FDataSet;
-
-            mon.setTaskSize(ds.length());
-            mon.started();
-            mon.setProgressMessage("performing fftFilter");
-            for ( int i=0; i<ds.length(); i++ ) {
-                for ( int j=0; j<ds.length(i)/len; j++ ) {
-
-                    QDataSet wave= ds.slice(i).trim(j*len,(j+1)*len );
-
-                    QDataSet vds= Ops.multiply( wave, filter );
-                    if ( convertToFloat ) {
-                        vds= ArrayDataSet.copy( float.class, vds );
-                    }
-
-                    result.join(vds);
-
-                    // Because dep0!=null and dep1!=null.
-                    dep0b.putValue(-1, dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  ) );
-                    dep0b.nextRecord();
+        switch (ds.rank()) {
+            case 3:
+            { // slice it and do the process to each branch.
+                JoinDataSet result= new JoinDataSet(3);
+                mon.setTaskSize( ds.length()*10  );
+                mon.started();
+                for ( int i=0; i<ds.length(); i++ ) {
+                    mon.setTaskProgress(i*10);
+                    QDataSet pow1= fftFilter( ds.slice(i), len, filt );
+                    result.join(pow1);
                 }
-                mon.setTaskProgress(i);
+                mon.finished();
+                return result;
+                
             }
-            mon.finished();
-            if (dep0!=null ) {
-                dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
-                result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
-            } 
-            if (dep1!=null ) {
-                result.putProperty(QDataSet.DEPEND_1, dep1.trim(0,len) );
+            case 2:
+            {
+                JoinDataSet result= new JoinDataSet(2);
+                result.putProperty(QDataSet.JOIN_0, null);
+                
+                int nsam= ds.length()*(ds.length(0)/len); // approx
+                DataSetBuilder dep0b= new DataSetBuilder(1,nsam );
+                
+                QDataSet dep0= (QDataSet) ds.property(QDataSet.DEPEND_0);
+                QDataSet dep1= (QDataSet) ds.property( QDataSet.DEPEND_1 );
+                
+                if ( dep0==null ) dep0= findgen( ds.length() );
+                if ( dep1==null ) dep1= findgen( ds.length(0) );
+                
+                UnitsConverter uc;
+                Units dep0u= SemanticOps.getUnits(dep0);
+                Units dep1u= SemanticOps.getUnits(dep1);
+                uc= dep1u.getConverter( dep0u.getOffsetUnits() );
+                
+                QDataSet filter;
+                switch (filt) {
+                    case Hanning:
+                        filter= FFTUtil.getWindowHanning(len);
+                        break;
+                    case Hann:
+                        filter= FFTUtil.getWindowHanning(len);
+                        break;
+                    case TenPercentEdgeCosine:
+                        filter= FFTUtil.getWindow10PercentEdgeCosine(len);
+                        break;
+                    case Unity:
+                        filter= FFTUtil.getWindowUnity(len);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("unsupported op: "+filt );
+                }
+                
+                boolean convertToFloat= ds instanceof FDataSet;
+                
+                mon.setTaskSize(ds.length());
+                mon.started();
+                mon.setProgressMessage("performing fftFilter");
+                for ( int i=0; i<ds.length(); i++ ) {
+                    for ( int j=0; j<ds.length(i)/len; j++ ) {
+                        
+                        QDataSet wave= ds.slice(i).trim(j*len,(j+1)*len );
+                        
+                        QDataSet vds= Ops.multiply( wave, filter );
+                        if ( convertToFloat ) {
+                            vds= ArrayDataSet.copy( float.class, vds );
+                        }
+                        
+                        result.join(vds);
+                        
+                        // Because dep0!=null and dep1!=null.
+                        dep0b.putValue(-1, dep0.value(i) + uc.convert( dep1.value( j*len + len/2 )  ) );
+                        dep0b.nextRecord();
+                    }
+                    mon.setTaskProgress(i);
+                }
+                mon.finished();
+                if (dep0!=null ) {
+                    dep0b.putProperty(QDataSet.UNITS, dep0.property(QDataSet.UNITS) );
+                    result.putProperty(QDataSet.DEPEND_0, dep0b.getDataSet() );
+                }
+                if (dep1!=null ) {
+                    result.putProperty(QDataSet.DEPEND_1, dep1.trim(0,len) );
+                }
+                result.putProperty( QDataSet.UNITS, ds.slice(0).property(QDataSet.UNITS ) );
+                System.err.println( "*** Set units to "+ ds.slice(0).property(QDataSet.UNITS ) );
+                return result;
+                
             }
-            result.putProperty( QDataSet.UNITS, ds.slice(0).property(QDataSet.UNITS ) );
-            System.err.println( "*** Set units to "+ ds.slice(0).property(QDataSet.UNITS ) );
-            return result;
-
-        } else {
-            throw new IllegalArgumentException("rank not supported: "+ ds.rank() );
+            default:
+                throw new IllegalArgumentException("rank not supported: "+ ds.rank() );
         }
 
     }
