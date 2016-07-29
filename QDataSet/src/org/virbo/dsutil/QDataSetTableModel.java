@@ -1,6 +1,7 @@
 
 package org.virbo.dsutil;
 
+import java.util.UnknownFormatConversionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -141,9 +142,15 @@ public class QDataSetTableModel extends AbstractTableModel {
      */
     private DatumFormatter getDataFormatter( String df, Units u ) {
         try {
+            if ( df.trim().isEmpty() ) {
+                return u.getDatumFormatterFactory().defaultFormatter();
+            }
             if ( !df.contains("%") ) df= "%"+df;
             //TODO: would be nice if we could verify formatter.  I had %f5.2 instead of %5.2f and it wasn't telling me.
             return new FormatStringFormatter( df, false );
+        } catch ( UnknownFormatConversionException ex ) {
+            logger.log(Level.FINER,null,ex);
+            return u.getDatumFormatterFactory().defaultFormatter();            
         } catch ( RuntimeException ex ) {
             logger.log(Level.FINER,null,ex);
             return u.getDatumFormatterFactory().defaultFormatter();
