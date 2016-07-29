@@ -506,8 +506,10 @@ public class HttpFileSystem extends WebFileSystem {
             try {
                 doDownload( filename, remoteURL, f, partFile, monitor );
             } catch ( FileNotFoundException ex ) {
-                remoteURL= new URL(root.toString() + filename.substring(1) + ".gz" );
-                doDownload( filename, remoteURL, f, partFile, monitor );
+                if ( !filename.endsWith("/") ) {
+                    remoteURL= new URL(root.toString() + filename.substring(1) + ".gz" );
+                    doDownload( filename, remoteURL, f, partFile, monitor );
+                }
             }
 
         } finally {
@@ -743,8 +745,10 @@ public class HttpFileSystem extends WebFileSystem {
                 List<String> hideExtensions= hideExtensions();
                 for ( URL s: list ) {
                     boolean hide= false;
-                    for ( String e : hideExtensions ) {
-                        if ( s.getFile().endsWith(e) ) hide= true;
+                    if ( !s.getFile().endsWith("/") ) {
+                        for ( String e : hideExtensions ) {
+                            if ( s.getFile().endsWith(e) ) hide= true;
+                        }
                     }
                     if ( !hide ) newlist.add(s);
                 }
