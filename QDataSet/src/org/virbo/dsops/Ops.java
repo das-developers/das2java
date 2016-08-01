@@ -1558,7 +1558,7 @@ public class Ops {
                 try {
                     resultUnits= UnitsUtil.getInverseUnit(units2);
                 } catch ( IllegalArgumentException ex ) {
-                    logger.info( String.format( "unable to invert unit2=%s, arguments have unequal units", units2 ) );
+                    logger.info( String.format( "unable to invert ds2 units (%s), arguments have unequal units in divide (/)", units2 ) );
                     resultUnits= null;
                 }
             } else {
