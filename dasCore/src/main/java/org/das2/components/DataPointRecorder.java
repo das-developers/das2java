@@ -427,7 +427,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                             planesArray[i] = m.group(1).trim();
                             String sunits= m.group(2).trim();
                             try {
-                                unitsArray[i] = Units.lookupUnits(sunits);
+                                unitsArray[i] = Units.getByName(sunits); // does it exist already
                             } catch ( IllegalArgumentException ex ) {
                                 unitsArray[i] = new EnumerationUnits(sunits);
                             }
@@ -489,7 +489,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                                     u.createDatum(field);
                                     planes.put(planesArray[i], unitsArray[i].parse(field));
                                 } else {
-                                    throw new RuntimeException(e);
+                                    throw new RuntimeException("Parse exception at line "+linenum+" of "+file, e );
                                 }
                             }
                         }
@@ -499,7 +499,9 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
                     e = new DataPointSelectionEvent(this, x, y, planes);
                     dataPointSelected(e);
                 } catch (ParseException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("Parse exception at line "+linenum+" of "+file, e);
+                } catch ( NumberFormatException e ) {
+                    throw new RuntimeException("Number format exception at line "+linenum+" of "+file, e );
                 }
 
 
@@ -521,6 +523,7 @@ public class DataPointRecorder extends JPanel implements DataPointSelectionListe
             //table.getColumnModel().getColumn(0).setPreferredWidth(200);
 
             table.getColumnModel();
+            myTableModel.fireTableStructureChanged();
             table.repaint();
         }
 
