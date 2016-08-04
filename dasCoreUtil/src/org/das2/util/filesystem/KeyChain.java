@@ -363,6 +363,7 @@ public class KeyChain {
      * @param userInfo that is available separately.  (Java doesn't like user@usersHost:password@server)
      * @return the userinfo, like "us3r:passw0rd"
      * @throws CancelledOperationException
+     * @see https://sourceforge.net/p/autoplot/bugs/1652/
      */
     public String getUserInfo( URL url, String userInfo  ) throws CancelledOperationException {
 
