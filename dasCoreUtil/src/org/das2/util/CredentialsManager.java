@@ -3,6 +3,7 @@ package org.das2.util;
 
 import java.awt.Frame;
 import java.awt.Window;
+import java.io.Console;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -330,8 +331,22 @@ public class CredentialsManager{
 		return true;
 	}
 	
+        /**
+         * get the credentials from the command line.
+         * @param loc
+         * @return 
+         */
 	protected synchronized boolean getCredentialsCmdLine(Location loc){
-		throw new UnsupportedOperationException("Command Line Credential collection is "
-			                                     + "not yet implemented"); 
-	}
+            
+            Console c= System.console();
+            
+            if ( c==null ) {
+                return false;
+            } else {
+                c.printf( "%s\n", loc.sDesc );
+                loc.sUser= c.readLine( "Username: " );
+                loc.sPasswd= new String( c.readPassword( "Password: " ) );
+                return true;
+            }
+        }
 }
