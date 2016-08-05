@@ -423,9 +423,7 @@ public class KeyChain {
                 JCheckBox storeKeychain= new JCheckBox("store password in keychain.txt file");
                 storeKeychain.setToolTipText("<html>passwords can be stored in keychain.txt files in your cache, but beware of security implications and confusion this can cause.");
 
-                if ( System.getProperty("user.name").equals("jbf") ) {
-                    panel.add( storeKeychain );
-                }
+                panel.add( storeKeychain );
                 
                 //int r= JOptionPane.showConfirmDialog( null, panel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION );
                 int r= JOptionPane.showConfirmDialog( parent, panel, proto + " Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null);
