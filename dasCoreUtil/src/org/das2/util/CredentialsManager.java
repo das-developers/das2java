@@ -341,7 +341,7 @@ public class CredentialsManager{
             Console c= System.console();
             
             if ( c==null ) {
-                return false;
+                throw new IllegalArgumentException("Console is not available to query username and password for "+loc.sDesc);
             } else {
                 c.printf( "%s\n", loc.sDesc );
                 loc.sUser= c.readLine( "Username: " );
