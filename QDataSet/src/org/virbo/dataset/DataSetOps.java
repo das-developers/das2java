@@ -1965,28 +1965,29 @@ public class DataSetOps {
         if ( j>-1 ) {
             p= p.substring(0,j);
         }
-        if ( p.equals("|smooth") ) {
-            return false;
-        } else if ( p.equals("|nop") ) {
-            return false;
-        } else if ( p.equals("|trim") ) {
-            return false;
-        } else if ( p.equals("|magnitude") ) {
-            return false;
-        } else if ( p.equals("|abs") ) {
-            return false;
-        } else if ( p.equals("|hanning") ) {
-            return false;
-        } else if ( p.equals("|butterworth") ) {
-            return false;
-        } else if ( p.equals("|detrend") ) {
-            return false;
-        } else if ( p.equals("|medianFilter") ) {
-            return false;
-        } else if ( p.equals("|copy") ) {
-            return false;
-        } else {
-            return true;
+        switch (p) {
+            case "|smooth":
+                return false;
+            case "|nop":
+                return false;
+            case "|trim":
+                return false;
+            case "|magnitude":
+                return false;
+            case "|abs":
+                return false;
+            case "|hanning":
+                return false;
+            case "|butterworth":
+                return false;
+            case "|detrend":
+                return false;
+            case "|medianFilter":
+                return false;
+            case "|copy":
+                return false;
+            default:
+                return true;
         }
     }
     
