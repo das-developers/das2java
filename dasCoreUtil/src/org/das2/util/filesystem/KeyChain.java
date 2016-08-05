@@ -453,7 +453,15 @@ public class KeyChain {
                         return userInfo;
                     } else {
                         c.printf( "Enter Login details to access \n%s on\n%s\n", n, s );
-                        String user= c.readLine( "Username: " );
+                        String user;
+                        if ( !ss[0].equals("user") ) {
+                            user= c.readLine( "Username (leave empty for %s): ", ss[0] );
+                            if ( user.trim().length()==0 ) {
+                                user= ss[0];
+                            }
+                        } else {
+                            user= c.readLine( "Username: " );
+                        }
                         char[] pass= c.readPassword( "Password: " );
                         storedUserInfo= user + ":" + new String(pass);
                         return storedUserInfo;
