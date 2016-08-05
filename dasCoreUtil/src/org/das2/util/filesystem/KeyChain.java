@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.Console;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -396,13 +397,13 @@ public class KeyChain {
         }
 
         String proto= url.getProtocol();
+        String s= ( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getFile();
         
         if ( ss.length<2 || ss[1].length()==0 || userInfo.endsWith(":pass") || userInfo.endsWith(":password" ) ) {
             if ( !FileSystemSettings.hasAllPermission() || !"true".equals( System.getProperty("java.awt.headless") ) ) {
                 JPanel panel= new JPanel();
                 panel.setLayout( new BoxLayout(panel, BoxLayout.Y_AXIS ) );
                 if ( n.length()>0 ) { 
-                    String s= ( userName!=null ? userName+"@" : "" ) + url.getHost() + url.getFile();
                     panel.add( new JLabel( "<html>Enter Login details to access<br>"+n+" on<br>"+s ));
                 } else {
                     panel.add( new JLabel( url.getHost() ) );
@@ -445,10 +446,21 @@ public class KeyChain {
                 }
             } else {
                 if ( "true".equals( System.getProperty("java.awt.headless") ) ) { 
-                    System.err.println("** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried");
-                    logger.log( Level.WARNING, "** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried" );
+                    Console c= System.console();
+                    if ( c==null ) {
+                        System.err.println("** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried");
+                        logger.log( Level.WARNING, "** java.awt.headless=true: HEADLESS MODE means needed credentials cannot be queried" );
+                        return userInfo;
+                    } else {
+                        c.printf( "Enter Login details to access \n%s on\n%s\n", n, s );
+                        String user= c.readLine( "Username: " );
+                        char[] pass= c.readPassword( "Password: " );
+                        storedUserInfo= user + ":" + new String(pass);
+                        return storedUserInfo;
+                    }
+                } else {
+                    return userInfo;
                 }
-                return userInfo;
             }
         }
 
