@@ -104,13 +104,59 @@ public class RGBImageRenderer extends Renderer {
         
         double dx0= dep0.value(1)-dep0.value(0);
         double dy0= dep1.value(1)-dep1.value(0);
-        int x0= (int)xAxis.transform( dep0.value(0) - dx0/2, xunits);
-        int y0= (int)yAxis.transform( dep1.value(0) - dy0/2, yunits);
-        int x1= (int)xAxis.transform( dep0.value(w-1) + dx0/2, xunits );
-        int y1= (int)yAxis.transform( dep1.value(h-1) + dy0/2, yunits );
+        int ix0= 0;
+        int ix1= w-1; // inclusive
+        int iy0= 0;
+        int iy1= h-1; // inclusive
+        
+        int x0;
+        if ( true ) { //if ( x0==-10000 ) {
+            ix0= (int)( Math.floor( xAxis.invTransform( 0. ).value() ) );
+            ix0= Math.max( 0, ix0 );
+            ix0= Math.min( w-1, ix0 );
+            x0= (int)xAxis.transform( dep0.value(ix0) - dx0/2, xunits);
+        }
+        
+        int y0;
+        if ( true ) { //y0==10000 ) {
+            iy0= (int)( Math.floor( yAxis.invTransform( yAxis.getHeight()+yAxis.getY() ).value() ) );
+            iy0= Math.max( 0, iy0 );
+            iy0= Math.min( h-1, iy0 );
+            y0= (int)yAxis.transform( dep1.value(iy0) - dy0/2, xunits);
+        }
+        
+        int x1;
+        if ( true ) { //if ( x1==10000 ) {
+            ix1= Math.min( w-1, (int)( Math.ceil( xAxis.invTransform( xAxis.getWidth()+xAxis.getX() ).value() ) ) );
+            ix1= Math.max( 0, ix1 );
+            ix1= Math.min( w-1, ix1 );
+            x1= (int)xAxis.transform( dep0.value(ix1) + dx0/2, xunits);
+        }
+        
+        int y1;
+        if ( true ) { //if ( y1==-10000 ) {
+            iy1= Math.min( w-1, (int)( Math.ceil( yAxis.invTransform( 0 ).value() ) ) );
+            iy1= Math.max( 0, iy1 );
+            iy1= Math.min( h-1, iy1 );
+            y1= (int)yAxis.transform( dep1.value(iy1) + dy0/2, xunits);
+        }
         if ( nearestNeighborInterpolation ) {
             ((Graphics2D)g).setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
         }
+        ix1= ix1+1;  // now exclusive
+        iy1= iy1+1;
+        
+        if ( ix0==ix1 ) {
+            getParent().postMessage( this, "image is off screen",  Level.INFO, null, null );
+        }
+        if ( iy0==iy1 ) {
+            getParent().postMessage( this, "image is off screen",  Level.INFO, null, null );
+        }
+        
+        if ( ix0>0 || ix1<w || iy0>0 || iy1<h ) {
+            im= im.getSubimage( ix0, iy0, ix1-ix0, iy1-iy0 );
+        }
+        
         g.drawImage( im, x0, y0, x1-x0, y1-y0, null );
         rect= new Rectangle( x0, y1, x1-x0, y0-y1 );
     }
