@@ -1210,7 +1210,11 @@ public class DatumRangeUtil {
             } else {
                 Datum time1= TimeUtil.createTimeDatum( ts1[0], ts1[1], ts1[2], ts1[3], ts1[4], ts1[5], ts1[6] );
                 Datum time2= TimeUtil.createTimeDatum( ts2[0], ts2[1], ts2[2], ts2[3], ts2[4], ts2[5], ts2[6] );
-                return new DatumRange( time1, time2 );
+                if ( time1.le(time2) ) {
+                    return new DatumRange( time1, time2 );
+                } else {
+                    throw new ParseException( String.format( "First time is after second time: %s after %s", time1, time2 ), 0 );
+                }
             }
         }
 
