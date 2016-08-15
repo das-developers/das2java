@@ -102,7 +102,7 @@ public class AbstractProgressMonitor implements ProgressMonitor {
     @Override
     public void finished() {
         if ( finished ) {
-            logger.warning("monitor finished was called twice!");
+            logger.warning("AbstractProgressMonitor.finished called twice, which could cause problems in the future");
         } else {
             logger.fine("enter monitor finished");
         }

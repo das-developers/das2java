@@ -125,7 +125,7 @@ public class SubTaskMonitor implements ProgressMonitor {
     @Override
     public void finished() {
         if ( finished ) {
-            logger.warning("monitor finished was called twice!");
+            logger.warning("SubTaskMonitor.finished called twice, which could cause problems in the future");
         } else {
             logger.fine("enter monitor finished");
         }
