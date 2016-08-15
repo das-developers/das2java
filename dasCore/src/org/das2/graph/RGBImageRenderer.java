@@ -104,14 +104,14 @@ public class RGBImageRenderer extends Renderer {
         
         double dx0= dep0.value(1)-dep0.value(0);
         double dy0= dep1.value(1)-dep1.value(0);
-        int ix0= 0;
-        int ix1= w-1; // inclusive
-        int iy0= 0;
-        int iy1= h-1; // inclusive
+        int ix0;
+        int ix1; // inclusive
+        int iy0;
+        int iy1; // inclusive
         
         int x0;
         if ( true ) { //if ( x0==-10000 ) {
-            ix0= (int)( Math.floor( xAxis.invTransform( 0. ).value() ) );
+            ix0= (int)( Math.floor( Ops.findex( dep0, xAxis.invTransform( 0. ) ).value() ) );
             ix0= Math.max( 0, ix0 );
             ix0= Math.min( w-1, ix0 );
             x0= (int)xAxis.transform( dep0.value(ix0) - dx0/2, xunits);
@@ -119,15 +119,15 @@ public class RGBImageRenderer extends Renderer {
         
         int y0;
         if ( true ) { //y0==10000 ) {
-            iy0= (int)( Math.floor( yAxis.invTransform( yAxis.getHeight()+yAxis.getY() ).value() ) );
+            iy0= (int)( Math.floor( Ops.findex( dep1, yAxis.invTransform( yAxis.getHeight()+yAxis.getY() ) ).value() ) );
             iy0= Math.max( 0, iy0 );
             iy0= Math.min( h-1, iy0 );
-            y0= (int)yAxis.transform( dep1.value(iy0) - dy0/2, xunits);
+            y0= (int)yAxis.transform( dep1.value(iy0) - dy0/2, yunits);
         }
         
         int x1;
         if ( true ) { //if ( x1==10000 ) {
-            ix1= Math.min( w-1, (int)( Math.ceil( xAxis.invTransform( xAxis.getWidth()+xAxis.getX() ).value() ) ) );
+            ix1= (int)( Math.ceil( Ops.findex( dep0, xAxis.invTransform( xAxis.getWidth()+xAxis.getX() ) ).value() ) );
             ix1= Math.max( 0, ix1 );
             ix1= Math.min( w-1, ix1 );
             x1= (int)xAxis.transform( dep0.value(ix1) + dx0/2, xunits);
@@ -135,10 +135,10 @@ public class RGBImageRenderer extends Renderer {
         
         int y1;
         if ( true ) { //if ( y1==-10000 ) {
-            iy1= Math.min( w-1, (int)( Math.ceil( yAxis.invTransform( 0 ).value() ) ) );
+            iy1= (int)( Math.ceil( Ops.findex( dep1, yAxis.invTransform( 0 ) ).value() ) );
             iy1= Math.max( 0, iy1 );
             iy1= Math.min( h-1, iy1 );
-            y1= (int)yAxis.transform( dep1.value(iy1) + dy0/2, xunits);
+            y1= (int)yAxis.transform( dep1.value(iy1) + dy0/2, yunits);
         }
         if ( nearestNeighborInterpolation ) {
             ((Graphics2D)g).setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR );
