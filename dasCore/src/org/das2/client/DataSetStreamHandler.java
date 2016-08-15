@@ -73,7 +73,7 @@ public class DataSetStreamHandler implements StreamHandler {
     /**
      * create a DataSetStreamHandler.
      * @param extraProperties
-     * @param monitor atypical use of the monitor, where its stated and setTaskProgress methods are called, but not its finished.
+     * @param monitor atypical use of the monitor, where its started and setTaskProgress methods are called, but not its finished.
      */
     public DataSetStreamHandler( Map extraProperties, ProgressMonitor monitor ) {
         this.extraProperties = new HashMap(extraProperties);
