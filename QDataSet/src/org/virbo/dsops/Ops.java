@@ -6629,7 +6629,8 @@ public class Ops {
      * 
      * @param ds the dataset
      * @param range null, or rank 1 bins dataset
-     * @return 
+     * @return rank 1, two-element range, or when all data is fill result[0] will be Double.POSITIVE_INFINITY.
+     * @see #extentSimple(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
      */
     public static QDataSet extentSimple( QDataSet ds, QDataSet range ) {
         
