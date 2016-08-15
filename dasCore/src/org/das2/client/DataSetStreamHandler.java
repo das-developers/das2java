@@ -71,6 +71,11 @@ public class DataSetStreamHandler implements StreamHandler {
     private static final Logger logger= DasLogger.getLogger(DasLogger.DATA_TRANSFER_LOG);
     private boolean monotonic= true; // generally streams are monotonic, so check for monotonicity.
     
+    /**
+     * create a DataSetStreamHandler.
+     * @param extraProperties
+     * @param monitor atypical use of the monitor, where its stated and setTaskProgress methods are called, but not its finished.
+     */
     public DataSetStreamHandler( Map extraProperties, ProgressMonitor monitor ) {
         this.extraProperties = new HashMap(extraProperties);
         this.monitor= monitor==null ? new NullProgressMonitor() : monitor;
