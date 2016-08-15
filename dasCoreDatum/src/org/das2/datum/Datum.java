@@ -131,7 +131,7 @@ public class Datum implements Comparable, Serializable {
                 return this.getUnits().createDatum( Math.abs(value.doubleValue()) );
             }
         } else {
-            throw new IllegalArgumentException("datum is not ratio measurement: "+this );
+            throw new IllegalArgumentException("datum is not a ratio measurement: "+this );
         }
     }
     
