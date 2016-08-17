@@ -404,7 +404,7 @@ public class BinAverage {
             sums.putValue(i, d); //note for i>=s2, these values will be clobbered.
             //sums2.putValue(i, d*d);
             weights.putValue(i, w);
-            runningSum += d;
+            runningSum += d * w;
             //runningSum2 += d*d;
             runningWeight += w;
         }
