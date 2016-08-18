@@ -481,6 +481,10 @@ public class OperationsProcessor {
                     String comp= s.next();
                     int icomp= Integer.parseInt(comp);
                     fillDs= Ops.smooth(fillDs, icomp);
+                } else if ( cmd.equals("|smooth1") ) {
+                    String comp= s.next();
+                    int icomp= Integer.parseInt(comp);
+                    fillDs= Ops.smooth1(fillDs, icomp);
                 } else if ( cmd.equals("|detrend") ) {
                     String comp= s.next();
                     int icomp= Integer.parseInt(comp);
