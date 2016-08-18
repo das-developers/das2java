@@ -8180,6 +8180,33 @@ public class Ops {
     };
     
     /**
+     * smooth over the first dimension (not the zeroth).  For example,
+     * for ds[Time,Energy], this will smooth over energy.
+     * @param ds rank 2 dataset.
+     * @param size the boxcar size
+     * @return smoothed dataset with the same geometry.
+     */
+    public static QDataSet smooth1(QDataSet ds, int size) {
+        switch (ds.rank()) {
+            case 1: {
+                throw new IllegalArgumentException("data must be rank 2 or more");
+            }
+            case 2: {
+                ArrayDataSet result= ArrayDataSet.copy(ds);
+                for ( int i=0; i<ds.length(); i++ ) {
+                    QDataSet result1= BinAverage.boxcar( ds.slice(i), size );
+                    for ( int j=0; j<ds.length(0); j++ ) {
+                        result.putValue( i,j, result1.value(j) );
+                    }
+                }
+                return result;
+            }
+            default:
+                throw new IllegalArgumentException("only rank 1 and rank 2");
+        } 
+    }
+    
+    /**
      * run boxcar average over the dataset, returning a dataset of same geometry.  Points near the edge are simply copied from the
      * source dataset.  The result dataset contains a property "weights" that is the weights for each point.  For rank 2 
      * datasets, the smooth is done on the zeroth dimension, typically time.
@@ -8190,14 +8217,12 @@ public class Ops {
      */
     public static QDataSet smooth(QDataSet ds, int size) {
         switch (ds.rank()) {
-            case 1:
-            {
+            case 1: {
                 DDataSet result = BinAverage.boxcar(ds, size);
                 DataSetUtil.copyDimensionProperties( ds, result );
                 return result;
             }
-            case 2:
-            {
+            case 2: {
                 ArrayDataSet result= ArrayDataSet.copy(ds);
                 for ( int j=0; j<ds.length(0); j++ ) {
                     QDataSet result1= BinAverage.boxcar( slice1(ds,j), size );
