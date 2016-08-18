@@ -72,6 +72,7 @@ import org.virbo.dataset.IndexListDataSetIterator;
 import org.virbo.dataset.SortDataSet;
 import org.virbo.dataset.SparseDataSet;
 import org.virbo.dataset.TailBundleDataSet;
+import org.virbo.dataset.TrimDataSet;
 import org.virbo.dataset.WeightsDataSet;
 import org.virbo.dataset.WritableDataSet;
 import org.virbo.dataset.WritableJoinDataSet;
@@ -1073,6 +1074,44 @@ public class Ops {
     }
     
     /**
+     * return the trim of the dataset ds where its DEPEND_1 (ytags) are
+     * within the range dr.  For example,
+     * if ds was frequencies from 10 Hz to 1e8 Hz, trim1( ds, 100Hz, 1000Hz ) would
+	 * return just the data in this range.
+     * @param ds the dataset to be trimmed, with a rank 1 monotonic DEPEND_1.
+     * @param st rank 0 min value
+     * @param en rank 0 max value
+     * @return the subset of the data.
+     * @see #slice1(org.virbo.dataset.QDataSet, org.virbo.dataset.QDataSet) 
+     */
+    public static QDataSet trim1( QDataSet ds, QDataSet st, QDataSet en ) {
+        if ( st.rank()!=0 || en.rank()!=0 ) {
+            throw new IllegalArgumentException("bounds must be rank 0");
+        }
+        if ( ds==null ) {
+            throw new NullPointerException("ds is null");
+        }
+        QDataSet dep1= SemanticOps.ytagsDataSet(ds);
+        if ( dep1.rank()!=1 ) {
+            throw new IllegalArgumentException("dataset must have rank 1 tags");
+        }
+        QDataSet findex= Ops.findex( dep1, st );
+        double f1= findex.value();
+        findex= Ops.findex( dep1, en );
+        double f2= findex.value();
+        
+        int n= dep1.length();
+        f1= 0>f1 ? 0 : f1;
+        f1= n<f1 ? n : f1;
+        f2= 0>f2 ? 0 : f2;
+        f2= n<f2 ? n : f2;
+        
+        if ( f1>f2 ) throw new IllegalArgumentException("st must be less than (or earlier than) en");
+        
+        return Ops.trim1( ds, (int)f1,(int)f2 );
+    }
+	
+    /**
      * trim on the first (not zeroth) dimension.  This is to help with 
      * unbundling the timeranges from an events dataset. 
      * @param ds the dataset, rank 2 or greater
@@ -1083,12 +1122,12 @@ public class Ops {
     public static QDataSet trim1( QDataSet ds, int st, int en ) {
         if ( ds.rank()==2 ) {
             QDataSet bundle1= (QDataSet) ds.property(QDataSet.BUNDLE_1);
-            bundle1= bundle1.trim(st,en);
+            if ( bundle1!=null ) bundle1= bundle1.trim(st,en);
             ds= DataSetOps.leafTrim( ds, st, en );
-            ds= putProperty( ds, QDataSet.BUNDLE_1, bundle1 );
+            if ( bundle1!=null ) ds= putProperty( ds, QDataSet.BUNDLE_1, bundle1 );
             return ds;
         } else {
-            throw new IllegalArgumentException("unsupported");
+            throw new IllegalArgumentException("only rank 2 is supported");
         }
     }
     
