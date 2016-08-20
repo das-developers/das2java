@@ -589,10 +589,10 @@ public class DataSetUtil {
             def= new LinkedHashMap( def );
         }
 
-        for (int i = 0; i < names.length; i++) {
-            Object val= ds.property(names[i]);
-            if ( val != null) {
-                def.put( names[i], val );
+        for (String name : names) {
+            Object val = ds.property(name);
+            if (val != null) {
+                def.put(name, val);
             }
         }
 
@@ -602,8 +602,11 @@ public class DataSetUtil {
     /**
      * gets all the properties of the dataset.  This is a shallow
      * copy of properties.
+     * @param ds the dataset
+     * @param def an empty map.
+     * @return the properties.
      */
-    public static Map<String, Object> getProperties(QDataSet ds, Map def) {
+    public static Map<String, Object> getProperties(QDataSet ds, Map<String, Object> def) {
         Map result = def;
 
         for (int i = 0; i <= ds.rank(); i++) {
@@ -654,9 +657,9 @@ public class DataSetUtil {
 
         String[] names = propertyNames();
 
-        for (int i = 0; i < names.length; i++) {
-            if (ds.property(names[i]) != null) {
-                result.put(names[i], ds.property(names[i]));
+        for (String name : names) {
+            if (ds.property(name) != null) {
+                result.put(name, ds.property(name));
             }
         }
 
@@ -667,6 +670,8 @@ public class DataSetUtil {
     /**
      * gets all the properties of the dataset.  This is a shallow
      * copy of properties.
+     * @param ds the dataset
+     * @return the properties
      */
     public static Map<String, Object> getProperties(QDataSet ds) {
         return getProperties(ds, new LinkedHashMap());
@@ -676,6 +681,8 @@ public class DataSetUtil {
      * copy all properties into the dataset by iterating through the map.  Properties
      * that are equal to null are not copied, since null is equivalent to the
      * property not found.
+     * @param properties the properties
+     * @param ds the dataset
      */
     public static void putProperties(Map<String, Object> properties, MutablePropertyDataSet ds) {
         for ( Map.Entry<String,Object> e : properties.entrySet() ) {
@@ -1056,6 +1063,7 @@ public class DataSetUtil {
      * @param ds the rank N (typically 1) dataset
      * @param extent None or the range, see Ops.extent(ds)
      * @param bar true indicates bars should be used instead of scatter
+     * @return string that is a sparkline.
      */
     public static String toSparkline( QDataSet ds, QDataSet extent, boolean bar ) {
         if ( ds.length()>1000 ) {
@@ -1127,11 +1135,7 @@ public class DataSetUtil {
         
         if ( samePopulation( lindiff.trim(0,h), lindiff.trim(h,l) ) ) {
             return false;
-        } else if ( samePopulation( logdiff.trim(0,h),logdiff.trim(h,l) ) ) {
-            return true;
-        } else {
-            return false;
-        }
+        } else return samePopulation( logdiff.trim(0,h),logdiff.trim(h,l) );
     }
     
     /**
@@ -1847,10 +1851,7 @@ public class DataSetUtil {
         Boolean q = (Boolean) ds.property(QDataSet.QUBE);
         if (q == null || q.equals(Boolean.FALSE)) {
             QDataSet dep1= (QDataSet) ds.property(QDataSet.DEPEND_1);
-            if ( ds.rank()==2 && dep1!=null && dep1.rank()==1 ) {
-                return true;
-            }
-            return false;
+            return ds.rank()==2 && dep1!=null && dep1.rank()==1;
         }
         return true;
     }
@@ -2148,7 +2149,7 @@ public class DataSetUtil {
      * @return true if the dataset is valid, false otherwise
      */
     public static boolean validate(QDataSet ds, List<String> problems) {
-        if (problems == null) problems = new ArrayList<String>();
+        if (problems == null) problems = new ArrayList<>();
         return validate(ds, problems, 0);
     }
 
@@ -2161,7 +2162,7 @@ public class DataSetUtil {
      */
     public static boolean validate(QDataSet xds, QDataSet yds, List<String> problems ) {
         if ( xds.length()!=yds.length() ) {
-            if (problems == null) problems = new ArrayList<String>();
+            if (problems == null) problems = new ArrayList<>();
             problems.add(String.format("DEPEND_%d length is %d, should be %d.", 0, xds.length(), yds.length()));
             return false;
         } else {
@@ -2179,7 +2180,7 @@ public class DataSetUtil {
      */
     public static boolean validate(QDataSet xds, QDataSet yds, QDataSet zds, List<String> problems ) {
         if ( xds.length()!=zds.length() ) {
-            if (problems == null) problems = new ArrayList<String>();
+            if (problems == null) problems = new ArrayList<>();
             problems.add(String.format("DEPEND_%d length is %d, should be %d.", 0, xds.length(), yds.length()));
             return false;
         } else {
@@ -2223,7 +2224,7 @@ public class DataSetUtil {
      * @return true if the dataset is valid.
      */
     private static boolean validate(QDataSet ds, List<String> problems, int dimOffset) {
-        if (problems == null) problems = new ArrayList<String>();
+        if (problems == null) problems = new ArrayList<>();
         QDataSet dep = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if (dep != null) {
             if (dep.length() != ds.length()) {
@@ -3148,6 +3149,9 @@ public class DataSetUtil {
      * returns the first column that is before the given datum.  Note the
      * if the datum identifies (==) an xtag, then the previous column is
      * returned.
+     * @param ds the dataset
+     * @param datum a datum in the same units of the dataset.
+     * @return the index 
      */
     public static int getPreviousIndex( QDataSet ds, Datum datum ) {
         int i= closestIndex( ds, datum );
@@ -3164,6 +3168,9 @@ public class DataSetUtil {
      * returns the first column that is after the given datum.  Note the
      * if the datum identifies (==) an xtag, then the previous column is
      * returned.
+     * @param ds the dataset
+     * @param datum a datum in the same units of the dataset.
+     * @return 
      */
     public static int getNextIndex( QDataSet ds, Datum datum ) {
         int i= closestIndex( ds, datum );
