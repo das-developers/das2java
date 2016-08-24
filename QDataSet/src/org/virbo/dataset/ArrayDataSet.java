@@ -73,12 +73,12 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
      * @see BufferDataSet which also supports unsigned types.
      */
     public static ArrayDataSet create( Class c, int[] qube ) {
-        if ( c==double.class ) DDataSet.create( qube );
-        if ( c==float.class ) FDataSet.create( qube );
-        if ( c==long.class ) LDataSet.create( qube );
-        if ( c==int.class ) IDataSet.create( qube );
-        if ( c==short.class ) SDataSet.create( qube );
-        if ( c==byte.class ) BDataSet.create( qube );
+        if ( c==double.class ) return DDataSet.create( qube );
+        if ( c==float.class ) return FDataSet.create( qube );
+        if ( c==long.class ) return LDataSet.create( qube );
+        if ( c==int.class ) return IDataSet.create( qube );
+        if ( c==short.class ) return SDataSet.create( qube );
+        if ( c==byte.class ) return BDataSet.create( qube );
         throw new IllegalArgumentException("class not supported: "+c);      
     }
 
