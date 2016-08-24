@@ -326,6 +326,22 @@ public class FFTUtil {
     }
 
     /**
+     * inverse fft.
+     * @param fft
+     * @param vds
+     * @return 
+     */
+    public static ComplexArray.Double ifft( GeneralFFT fft, QDataSet vds ) {
+        double [] yreal= new double[ vds.length() ];
+        for ( int i=0; i<vds.length(); i++ ) yreal[i]= vds.value( i, 0 );
+        double [] yimag= new double[ vds.length() ];
+        for ( int i=0; i<vds.length(); i++ ) yimag[i]= vds.value( i, 1 );
+        ComplexArray.Double ca= ComplexArray.newArray(yreal,yimag);
+        fft.invTransform( ca );
+        return ca;
+    }
+    
+    /**
      * @return the frequencies of the bins 
      * @param fs the sampling frequency
      */
