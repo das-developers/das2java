@@ -117,9 +117,11 @@ public class Datum implements Comparable, Serializable {
 
     /**
      * return the absolute value (magnitude) of this Datum.  If this
-     * datum is fill then the result is fill.
+     * datum is fill then the result is fill.  This will have the same
+     * units as the datum.  
      * @return 
      * @throws IllegalArgumentException if the datum is not a ratio measurement (like a timetag).
+     * @see #value() which returns the double value.
      */
     public Datum abs() {
         if ( UnitsUtil.isRatioMeasurement(units) ) {
