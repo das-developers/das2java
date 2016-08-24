@@ -328,8 +328,8 @@ public class FFTUtil {
     /**
      * inverse fft.
      * @param fft
-     * @param vds
-     * @return 
+     * @param vds rank 2 dataset[n;real,complex]
+     * @return rank 2 dataset[n;real,complex]
      */
     public static ComplexArray.Double ifft( GeneralFFT fft, QDataSet vds ) {
         double [] yreal= new double[ vds.length() ];
