@@ -44,7 +44,7 @@ public abstract class ComplexDoubleFFT {
             throw new IllegalArgumentException("The offset must be >=0 : "+i0);
         if (stride < 1)
             throw new IllegalArgumentException("The stride must be >=1 : "+stride);
-        if (i0+stride*(n-1) >= data.length())
+        if (i0+(n-1) >= data.length())
             throw new IllegalArgumentException("The data array is too small for "+n+":"+
                     "i0="+i0+" stride="+stride+
                     " data.length="+data.length()); }
@@ -79,16 +79,15 @@ public abstract class ComplexDoubleFFT {
         return 1.0/n; }
     
     
-    /** Compute the (nomalized) inverse FFT of data, leaving it in place.
+    /** Compute the (normalized) inverse FFT of data, leaving it in place.
      */
     public void inverse( ComplexArray.Double data ) {
-        backtransform(data,0,2);
-        
+        backtransform(data,0,1);  // stride is not needed.
         /* normalize inverse fft with 1/n */
-        double norm = normalization();
-        for (int i = 0; i < n; i++) {
-            data.setReal( i, data.getReal(i) * norm );
-            data.setImag( i, data.getImag(i) * norm );
-        }
+        //double norm = normalization();   normalization is not needed.
+        //for (int i = 0; i < n; i++) {
+        //    data.setReal( i, data.getReal(i) * norm );
+        //    data.setImag( i, data.getImag(i) * norm );
+        //}
     }
 }
