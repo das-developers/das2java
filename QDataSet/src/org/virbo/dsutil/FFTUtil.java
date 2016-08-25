@@ -317,10 +317,27 @@ public class FFTUtil {
         return powTags;
     }
 
+    /**
+     * forward fft returns normalized data.
+     * @param fft
+     * @param vds
+     * @return 
+     */
     public static ComplexArray.Double fft( GeneralFFT fft, QDataSet vds ) {
-        double [] yreal= new double[ vds.length() ];
-        for ( int i=0; i<vds.length(); i++ ) yreal[i]= vds.value( i );
-        ComplexArray.Double ca= ComplexArray.newArray(yreal);
+        ComplexArray.Double ca;
+        if ( vds.rank()==2 ) {
+            double [] yreal= new double[ vds.length() ];
+            double [] yimag= new double[ vds.length() ];
+            for ( int i=0; i<vds.length(); i++ ) {
+                yreal[i]= vds.value( i, 0 );
+                yimag[i]= vds.value( i, 1 );
+            }
+            ca= ComplexArray.newArray(yreal,yimag);
+        } else {
+            double [] yreal= new double[ vds.length() ];
+            for ( int i=0; i<vds.length(); i++ ) yreal[i]= vds.value( i );
+            ca= ComplexArray.newArray(yreal);
+        }
         fft.transform( ca );
         return ca;
     }
@@ -332,6 +349,7 @@ public class FFTUtil {
      * @return rank 2 dataset[n;real,complex]
      */
     public static ComplexArray.Double ifft( GeneralFFT fft, QDataSet vds ) {
+        if ( vds.rank()!=2 ) throw new IllegalArgumentException("input must be rank 2: dataset[n;real,complex]");
         double [] yreal= new double[ vds.length() ];
         for ( int i=0; i<vds.length(); i++ ) yreal[i]= vds.value( i, 0 );
         double [] yimag= new double[ vds.length() ];
@@ -344,6 +362,7 @@ public class FFTUtil {
     /**
      * @return the frequencies of the bins 
      * @param fs the sampling frequency
+     * @param size the size of the time domain data.
      */
     public static double[] getFrequencyDomainTags( double fs, int size ) {
         double[] result= new double[size];
