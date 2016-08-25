@@ -6180,8 +6180,6 @@ public class Ops {
     public static QDataSet ifft(QDataSet ds) {
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
         
-        System.err.println( "Enter ifft: "+ ds.slice(0) );
-        
         ComplexArray.Double cc = FFTUtil.ifft(fft, ds);
         
         DDataSet result = DDataSet.createRank2(ds.length(), 2);
@@ -6192,8 +6190,6 @@ public class Ops {
 
         QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
         if ( dep0!=null ) {
-            RankZeroDataSet cadence = dep0 == null ? DRank0DataSet.create(1.0) : DataSetUtil.guessCadenceNew(dep0,null);
-            if ( cadence==null ) throw new IllegalArgumentException("can't establish data cadence");
 
             QDataSet dt= Ops.div( 1,dep0.slice(1) );
             QDataSet tags= Ops.multiply( Ops.findgen(result.length() ), dt );
