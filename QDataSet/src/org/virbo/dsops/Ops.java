@@ -6172,6 +6172,71 @@ public class Ops {
     }
 
     /**
+     * Performs an inverse FFT on the provided rank 2 dataset of complex numbers.  
+     * A rank 2 dataset of complex numbers is returned.
+     * @param ds a rank 2 dataset.
+     * @return a rank 2 dataset of complex numbers.
+     */
+    public static QDataSet ifft(QDataSet ds) {
+        GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
+        ComplexArray.Double cc = FFTUtil.ifft(fft, ds);
+        DDataSet result = DDataSet.createRank2(ds.length(), 2);
+        for (int i = 0; i < ds.length(); i++) {
+            result.putValue(i, 0, cc.getReal(i));
+            result.putValue(i, 1, cc.getImag(i));
+        }
+
+        QDataSet dep0 = (QDataSet) ds.property(QDataSet.DEPEND_0);
+        if ( dep0!=null ) {
+            RankZeroDataSet cadence = dep0 == null ? DRank0DataSet.create(1.0) : DataSetUtil.guessCadenceNew(dep0,null);
+            if ( cadence==null ) throw new IllegalArgumentException("can't establish data cadence");
+
+            QDataSet dt= Ops.div( 1,dep0.slice(1) );
+            QDataSet tags= Ops.multiply( Ops.findgen(result.length() ), dt );
+            //double[] tags = FFTUtil.getFrequencyDomainTags(1./cadence.value(), ds.length());
+            result.putProperty(QDataSet.DEPEND_0, tags );
+        }
+
+        EnumerationUnits u1 = EnumerationUnits.create("complexCoordinates");
+        DDataSet dep1 = DDataSet.createRank1(2);
+        dep1.putValue(0, u1.createDatum("real").doubleValue(u1));
+        dep1.putValue(1, u1.createDatum("imag").doubleValue(u1));
+        dep1.putProperty(QDataSet.COORDINATE_FRAME, "ComplexNumber");
+        dep1.putProperty(QDataSet.UNITS, u1);
+        result.putProperty(QDataSet.DEPEND_1, dep1);
+        
+        return result;
+    }
+
+    /**
+     * scipy chirp function, used for testing.
+     * @param t Times at which to evaluate the waveform.
+     * @param df0 Frequency (e.g. Hz) at time t=0.
+     * @param dt1 Time at which `f1` is specified.
+     * @param df1 Frequency (e.g. Hz) of the waveform at time `t1`.
+     * @return 
+     */
+    public static QDataSet chirp( QDataSet t, Datum df0, Datum dt1, Datum df1 ) {
+        Units tu= SemanticOps.getUnits(t);
+        t= putProperty( copy(t), QDataSet.UNITS, null );
+        double f0= df0.value();
+        double f1= df1.value();
+        double t1= dt1.value();
+        double phi= 0;
+        QDataSet beta = Ops.divide( Ops.subtract(f1,f0), t1 );
+        QDataSet phase = multiply( dataset( 2 * PI ), ( add( multiply( t, f0 ) , multiply( multiply( 0.5, beta ), multiply( t , t ) ) ) ) );
+        phi *= PI / 180;
+        t= putProperty( t, QDataSet.UNITS, tu ); 
+        return link( t, cos( add( phase, phi) ) );
+    }
+    
+    public static QDataSet hilbert( QDataSet ds ) {
+        QDataSet ff= fft(ds);
+        ff= DataSetOps.applyIndex( ff, 1, dataset( new int[] {1,0} ), false );
+        return ifft(ff);
+    }
+    
+    /**
      * perform ffts on the waveform as we do with fftPower, but keep real and
      * imaginary components.
      * @param ds the waveform rank 1,2,or 3 dataset.
