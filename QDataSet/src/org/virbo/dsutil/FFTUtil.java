@@ -318,10 +318,12 @@ public class FFTUtil {
     }
 
     /**
-     * forward fft returns normalized data.
-     * @param fft
-     * @param vds
+     * helper method for doing FFT of a QDataSet.  This forward FFT 
+     * returns normalized data.  GeneralFFT.newDoubleFFT(ds.length());
+     * @param fft the FFT engine
+     * @param vds rank 1 ds[n] or rank 2 ds[n,2]
      * @return 
+     * @see Ops#fft(org.virbo.dataset.QDataSet) 
      */
     public static ComplexArray.Double fft( GeneralFFT fft, QDataSet vds ) {
         ComplexArray.Double ca;
@@ -343,10 +345,11 @@ public class FFTUtil {
     }
 
     /**
-     * inverse fft.
-     * @param fft
+     * helper method for doing inverse FFT of a QDataSet. 
+     * @param fft the FFT engine
      * @param vds rank 2 dataset[n;real,complex]
      * @return rank 2 dataset[n;real,complex]
+     * @see Ops#ifft(org.virbo.dataset.QDataSet) 
      */
     public static ComplexArray.Double ifft( GeneralFFT fft, QDataSet vds ) {
         if ( vds.rank()!=2 ) throw new IllegalArgumentException("input must be rank 2: dataset[n;real,complex]");
