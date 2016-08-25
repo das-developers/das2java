@@ -6179,7 +6179,11 @@ public class Ops {
      */
     public static QDataSet ifft(QDataSet ds) {
         GeneralFFT fft = GeneralFFT.newDoubleFFT(ds.length());
+        
+        System.err.println( "Enter ifft: "+ ds.slice(0) );
+        
         ComplexArray.Double cc = FFTUtil.ifft(fft, ds);
+        
         DDataSet result = DDataSet.createRank2(ds.length(), 2);
         for (int i = 0; i < ds.length(); i++) {
             result.putValue(i, 0, cc.getReal(i));
@@ -6230,10 +6234,34 @@ public class Ops {
         return link( t, cos( add( phase, phi) ) );
     }
     
+    /**
+     * Perform the Hilbert function on the rank 1 dataset.
+     * @param ds rank 1 dataset.
+     * @return 
+     */
     public static QDataSet hilbert( QDataSet ds ) {
-        QDataSet ff= fft(ds);
-        ff= DataSetOps.applyIndex( ff, 1, dataset( new int[] {1,0} ), false );
-        return ifft(ff);
+        int N= ds.length();
+        WritableDataSet ff= maybeCopy(fft(ds));
+        double[] h= new double[N];
+        if ( N%2==0 ) {
+            h[0]= 1.;
+            for ( int i=1; i<N/2; i++ ) h[i]= 2.;
+            h[N/2]= 1.;
+            for ( int i=N/2+1; i<N; i++ ) h[i]= 0.;  // It looks like the web indicates that local arrays are not initialized.
+        } else {
+            h[0]= 1.;
+            for ( int i=1; i<N/2; i++ ) h[i]= 2.;
+            for ( int i=N/2; i<N; i++ ) h[i]= 0.;  // It looks like the web indicates that local arrays are not initialized.
+        }
+        // swap the real and imaginary components, multiply by h.
+        for ( int i=0; i<N; i++ ) {
+            double t= ff.value( i,1 );
+            ff.putValue( i, 0, h[i] * ff.value( i,0 ) );
+            ff.putValue( i, 1, h[i] * t );
+        }
+        QDataSet result= ifft(ff);
+        result= putProperty( result, QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0 ) );
+        return result;
     }
     
     /**
