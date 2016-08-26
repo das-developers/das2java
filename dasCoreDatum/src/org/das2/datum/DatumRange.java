@@ -226,7 +226,8 @@ public class DatumRange implements Comparable, Serializable {
      * @param max the new max with normalized with respect to this range.  0.0 is this range's min, 1.0 is this range's max
      * min-width.
      * @return new DatumRange.
-     * @deprecated.  Use DatumRangeUtil.rescale
+     * @deprecated Use DatumRangeUtil.rescale
+     * @see DatumRangeUtil#rescale(org.das2.datum.DatumRange, double, double) 
      */
     public DatumRange rescale( double min, double max ) {
         Datum w= width();
@@ -245,6 +246,7 @@ public class DatumRange implements Comparable, Serializable {
      * @param d a datum to normalize with respect to the range.
      * @return a double indicating the normalized datum.
      * @deprecated Use DatumRangeUtil.normalize
+     * @see DatumRangeUtil#normalize(org.das2.datum.DatumRange, org.das2.datum.Datum) 
      */
     public double normalize( Datum d ) {
         return d.subtract(s1).divide(width()).doubleValue(Units.dimensionless);
@@ -264,6 +266,15 @@ public class DatumRange implements Comparable, Serializable {
      */
     public Datum max() {
         return s2;
+    }
+
+    /**
+     * returns the middle value of the range, often useful when 
+     * the most descriptive value is needed.
+     * @return the middle value of the range.
+     */
+    public Datum middle() {
+        return s1.add( s2.subtract(s1).divide(2) );
     }
     
     /**
