@@ -740,8 +740,11 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             }
         }
         
-        incrementPaintCountTimer.restart();
-        
+        if ( doIncrementPaintCountTimer ) {
+            incrementPaintCountTimer.restart();
+        } else {
+            doIncrementPaintCountTimer= true;
+        }
     }
 
     /** 
@@ -1625,6 +1628,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
             g.setColor( this.getForeground() );
             g.setBackground( this.getBackground() );
 
+            doIncrementPaintCountTimer= false;
             // avoid calling the overrided print method, which turns on flags for printing.
             super.print(g);
 
@@ -2495,6 +2499,7 @@ public class DasCanvas extends JLayeredPane implements Printable, Editable, Scro
     }
 
     Timer incrementPaintCountTimer;
+    boolean doIncrementPaintCountTimer= true;  // use to disable increment paint  count
             
     private int paintCount = 0;
 
