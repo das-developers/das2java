@@ -145,8 +145,9 @@ public class OperationsProcessor {
                 if ( cmd.startsWith("|slices") && cmd.length()==7 ) { // multi dimensional slice
                     int[] dims= DataSetUtil.qubeDims(fillDs);
                     Pattern skipPattern= Pattern.compile("\\'\\:?\\'");
+                    Pattern skipPattern2= Pattern.compile("\\:");
                     List<Object> args= new ArrayList();
-                    while ( s.hasNextInt() || s.hasNext( skipPattern ) ) {
+                    while ( s.hasNextInt() || s.hasNext( skipPattern ) || s.hasNext(skipPattern2) ) {
                         if ( s.hasNextInt() ) {
                             args.add( s.nextInt() );
                         } else {
@@ -653,7 +654,6 @@ public class OperationsProcessor {
             } // while ( s.hasNext() )
             
         } catch ( InputMismatchException ex ) {
-            ex.printStackTrace();
             String msg= ex.getLocalizedMessage();
             if ( msg==null ) msg= ex.toString();
             ParseException ex2;
@@ -663,6 +663,8 @@ public class OperationsProcessor {
                 ex2= new ParseException( c + " ("+msg+")", i );
             }
             throw ex2;
+        } catch ( Exception ex ) {
+            throw new IllegalArgumentException("sprocess throws exception: "+c,ex);
         } finally {
             if ( mon.isFinished() ) {
                 System.err.println("monitor was already finished, fix this...");
