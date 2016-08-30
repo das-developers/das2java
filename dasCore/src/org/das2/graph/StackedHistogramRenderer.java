@@ -54,6 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.das2.dataset.AveragePeakTableRebinner;
 import org.das2.dataset.AverageTableRebinner;
 import org.das2.datum.Datum;
@@ -489,7 +490,7 @@ public class StackedHistogramRenderer extends org.das2.graph.Renderer implements
     
     @Override
     public Icon getListIcon() {
-        return null;
+        return new ImageIcon(SpectrogramRenderer.class.getResource("/images/icons/stackedHistogram.png"));
     }
 
 }
