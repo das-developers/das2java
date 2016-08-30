@@ -1934,6 +1934,23 @@ public class DatumRangeUtil {
     }
 
     /**
+     * return true if the time ranges are overlapping with bounds within 
+     * @param timeRange1
+     * @param timeRange2
+     * @param percent double from 0 to 100.
+     * @return true if the two ranges are sufficiently close.
+     */
+    public static boolean fuzzyEqual( DatumRange timeRange1, DatumRange timeRange2, double percent ) {
+        if ( timeRange1.width().value()==0 ) {
+            return timeRange1.equals(timeRange2);
+        }
+        double n0= DatumRangeUtil.normalize( timeRange1, timeRange2.min() );
+        double n1= DatumRangeUtil.normalize( timeRange1, timeRange2.max() );
+        double p= percent/100.;
+        return Math.abs(n0)<p && Math.abs(n1-1)<p ;
+    }
+    
+    /**
      * round to a nice interval with very roughly n divisions.  For example,
      * <pre>
      *   -0.048094730687625806 to 0.047568, 100  -> -0.048 to 0.048
