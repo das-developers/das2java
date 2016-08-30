@@ -79,7 +79,7 @@ public class RGBImageRenderer extends Renderer {
             int n= dep0.length();
             double dx1= ( dep0.value(1)- dep0.value(0) );
             double dx2= ( dep0.value(n-1)- dep0.value(n-2) );
-            boolean xlog= dx1<dx2/10;
+            boolean xlog= (dx2/dx1)>10.;
             if ( xAxis.isLog()!=xlog ) {
                 getParent().postMessage( this, "xaxis must be " + ( xlog ? "log" : "linear" ) + ", for this image",  Level.INFO, null, null );
                 return;
@@ -89,7 +89,7 @@ public class RGBImageRenderer extends Renderer {
             int n= dep1.length();
             double dy1= ( dep1.value(1)- dep1.value(0) );
             double dy2= ( dep1.value(n-1)- dep1.value(n-2) );
-            boolean ylog= dy1<dy2/10;
+            boolean ylog= (dy2/dy1)>10.;
             if ( yAxis.isLog()!=ylog ) {
                 getParent().postMessage( this, "yaxis must be " + ( ylog ? "log" : "linear" )+ ", for this image",  Level.INFO, null, null );
                 return;
@@ -238,39 +238,41 @@ public class RGBImageRenderer extends Renderer {
         h = ds.length(0);
 
         BufferedImage im;
-        if (ds.rank() == 2) {
-            imageType = BufferedImage.TYPE_BYTE_GRAY;
-        } else if (ds.rank() == 3) {
-            if (ds.length(0,0) == 3) {
-                QDataSet dep2 = (QDataSet) ds.property(QDataSet.DEPEND_2);
-                imageType = BufferedImage.TYPE_INT_RGB; // default
-                if (dep2 != null) {
-                    String s0 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(0)).toString().toLowerCase();
-                    String s1 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(1)).toString().toLowerCase();
-                    String s2 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(2)).toString().toLowerCase();
-                    if (s0.startsWith("r") && s1.startsWith("g") && s2.startsWith("b")) {
-                        imageType = BufferedImage.TYPE_INT_RGB;
-                    } else if (s0.startsWith("b") && s1.startsWith("g") && s2.startsWith("r")) {
-                        imageType = BufferedImage.TYPE_INT_BGR;
+        switch (ds.rank()) {
+            case 2:
+                imageType = BufferedImage.TYPE_BYTE_GRAY;
+                break;
+            case 3:
+                if (ds.length(0,0) == 3) {
+                    QDataSet dep2 = (QDataSet) ds.property(QDataSet.DEPEND_2);
+                    imageType = BufferedImage.TYPE_INT_RGB; // default
+                    if (dep2 != null) {
+                        String s0 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(0)).toString().toLowerCase();
+                        String s1 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(1)).toString().toLowerCase();
+                        String s2 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(2)).toString().toLowerCase();
+                        if (s0.startsWith("r") && s1.startsWith("g") && s2.startsWith("b")) {
+                            imageType = BufferedImage.TYPE_INT_RGB;
+                        } else if (s0.startsWith("b") && s1.startsWith("g") && s2.startsWith("r")) {
+                            imageType = BufferedImage.TYPE_INT_BGR;
+                        }
                     }
-                }
-            } else if (ds.length(0,0) == 4) {
-                QDataSet dep2 = (QDataSet) ds.property(QDataSet.DEPEND_2);
-                imageType = BufferedImage.TYPE_INT_ARGB;
-                if (dep2 != null) {
-                    String s0 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(0)).toString().toLowerCase();
-                    String s1 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(1)).toString().toLowerCase();
-                    String s2 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(2)).toString().toLowerCase();
-                    String s3 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(3)).toString().toLowerCase();
-                    if (s0.startsWith("a") && s1.startsWith("r") && s2.startsWith("g") && s3.startsWith("b")) {
-                        imageType = BufferedImage.TYPE_INT_ARGB;
-                    } else if ( s0.startsWith("a") && s1.startsWith("b") && s2.startsWith("g") && s3.startsWith("r") ) {
-                        imageType = BufferedImage.TYPE_4BYTE_ABGR;
+                } else if (ds.length(0,0) == 4) {
+                    QDataSet dep2 = (QDataSet) ds.property(QDataSet.DEPEND_2);
+                    imageType = BufferedImage.TYPE_INT_ARGB;
+                    if (dep2 != null) {
+                        String s0 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(0)).toString().toLowerCase();
+                        String s1 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(1)).toString().toLowerCase();
+                        String s2 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(2)).toString().toLowerCase();
+                        String s3 = org.virbo.dataset.DataSetUtil.asDatum(dep2.slice(3)).toString().toLowerCase();
+                        if (s0.startsWith("a") && s1.startsWith("r") && s2.startsWith("g") && s3.startsWith("b")) {
+                            imageType = BufferedImage.TYPE_INT_ARGB;
+                        } else if ( s0.startsWith("a") && s1.startsWith("b") && s2.startsWith("g") && s3.startsWith("r") ) {
+                            imageType = BufferedImage.TYPE_4BYTE_ABGR;
+                        }
                     }
-                }
-            }
-        } else {
-            throw new IllegalArgumentException("DataSet must be rank 2 or rank 3: "+ds );
+                }   break;
+            default:
+                throw new IllegalArgumentException("DataSet must be rank 2 or rank 3: "+ds );
         }
         if (imageType == -19999) {
             throw new IllegalArgumentException("DataSet must be ds[w,h] ds[w,h,3] or ds[w,h,4] and be RGB, BGR, or ARGB.  Default is RBG");
@@ -287,12 +289,15 @@ public class RGBImageRenderer extends Renderer {
             for (int i = 0; i < w; i++) {
                 for (int j = 0; j < h; j++) {
                     int v;
-                    if (ds.length(0,0) == 4) {
-                        v = 16777216 * (int) ds.value(i,j,0) + 65536 * (int) ds.value(i,j,1) + 256 * (int) ds.value(i,j,2) + (int) ds.value(i,j,3);
-                    } else if (ds.length(0,0) == 3) {
-                        v = 65536 * (int) ds.value(i,j,0) + 256 * (int) ds.value(i,j,1) + (int) ds.value(i,j,2);
-                    } else {
-                        throw new IllegalArgumentException("ds.length=" + ds.length());
+                    switch (ds.length(0,0)) {
+                        case 4:
+                            v = 16777216 * (int) ds.value(i,j,0) + 65536 * (int) ds.value(i,j,1) + 256 * (int) ds.value(i,j,2) + (int) ds.value(i,j,3);
+                            break;
+                        case 3:
+                            v = 65536 * (int) ds.value(i,j,0) + 256 * (int) ds.value(i,j,1) + (int) ds.value(i,j,2);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("ds.length=" + ds.length());
                     }
                     im.setRGB(i, j, v);
                 }
@@ -308,12 +313,13 @@ public class RGBImageRenderer extends Renderer {
      * @return true if the dataset is useful.
      */
     public static boolean acceptsData( QDataSet ds ) {
-        if ( ds.rank()==2 ) {
-            return !SemanticOps.isBundle(ds);
-        } else if ( ds.rank()==3 ) {
-            return ds.length(0,0)>2 && ds.length(0,0)<5;
-        } else {
-            return false;
+        switch (ds.rank()) {
+            case 2:
+                return !SemanticOps.isBundle(ds);
+            case 3:
+                return ds.length(0,0)>2 && ds.length(0,0)<5;
+            default:
+                return false;
         }
     }
 
