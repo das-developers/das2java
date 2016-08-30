@@ -138,6 +138,10 @@ public class Reduction {
      * 
      * Because of high-resolution magnetometer data, this is extended to support this data type.
      * 
+     * This will set the DELTA_PLUS and DELTA_MINUS variables to the extremes of 
+     * each bin.  To remove these, use putProperty( QDataSet.DELTA_MINUS, None ) 
+     * (None in Jython, null for Java) and putProperty( QDataSet.DELTA_PLUS, None ).
+     * 
      * @param ds rank 1 or rank 2 dataset.  Must have DEPEND_0 (presently) and be a qube.  If this is null, then the result is null.
      * @param xLimit the size of the bins or null to indicate no limit.
      * @return the reduced dataset, or null if the input dataset was null.
