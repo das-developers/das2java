@@ -6231,11 +6231,15 @@ public class Ops {
     }
     
     /**
-     * Perform the Hilbert function on the rank 1 dataset.
-     * @param ds rank 1 dataset.
-     * @return 
+     * Perform the Hilbert function on the rank 1 dataset, similar to
+     * the scipy.signal.hilbert function in SciPy.  The result is
+     * form differently than hilbert.
+     *
+     * @param ds rank 1 dataset of length n.
+     * @return ds[n,2], complex array
+     * @see #hilbert(org.virbo.dataset.QDataSet) 
      */
-    public static QDataSet hilbert( QDataSet ds ) {
+    public static QDataSet hilbertSciPy( QDataSet ds ) {
         int N= ds.length();
         WritableDataSet ff= maybeCopy(fft(ds));
         double[] h= new double[N];
@@ -6257,6 +6261,51 @@ public class Ops {
         }
         QDataSet result= ifft(ff);
         result= putProperty( result, QDataSet.DEPEND_0, ds.property(QDataSet.DEPEND_0 ) );
+        return result;
+    }
+    
+    /**
+     * Perform the Hilbert function on the rank 1 dataset, similar to
+     * the hilbert function in IDL and Matlab.  
+     *
+     * @param ds rank 1 dataset of length n.
+     * @return ds[n,2], complex array
+     * @see #hilbert(org.virbo.dataset.QDataSet) 
+     */
+    public static QDataSet hilbert( QDataSet ds ) {
+        QDataSet ff= fft( ds );
+        WritableDataSet h2= copy(ff);
+        int n2= h2.length()/2;
+
+        for ( int i=1; i<n2; i++ ) {
+            h2.putValue(i,0,-1*ff.value(i,1));
+            h2.putValue(i,1,ff.value(i,0));
+        }
+        int l= h2.length();
+        for ( int i=n2; i<l; i++ ) {
+            h2.putValue(i,0,ff.value(i,1));
+            h2.putValue(i,1,-1*ff.value(i,0));
+        }
+        WritableDataSet h= maybeCopy(ifft(h2));
+        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), h );
+        return h;
+    }
+    
+    /**
+     * SciPy's unwrap function, used in demo of hilbertSciPy, which unwraps
+     * a function that exists in a modulo space so that the differences are 
+     * minimal.
+     * @param ds rank 1 dataset, containing values from 0 to discont
+     * @param discont the discont, such as PI, TAU, 24, 60, 360, etc.
+     * @return 
+     */
+    public static QDataSet unwrap( QDataSet ds, double discont ) {
+        QDataSet d= diff( ds );
+        Units u= SemanticOps.getUnits(d).getOffsetUnits();
+        QDataSet h= dataset(discont/2,u);
+        d= subtract( modp( add( d,h ), dataset(discont,u) ), h);
+        WritableDataSet result= maybeCopy( accum( ds.slice(0), d ) );
+        DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result );
         return result;
     }
     
