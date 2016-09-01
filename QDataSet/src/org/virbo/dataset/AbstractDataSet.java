@@ -192,7 +192,11 @@ public abstract class AbstractDataSet implements QDataSet, MutablePropertyDataSe
 
     @Override
     public QDataSet trim(int start, int end) {
-        return new TrimDataSet( this, start, end );
+        if ( start==0 && end==length() ) {
+            return this;
+        } else {
+            return new TrimDataSet( this, start, end );
+        }
     }
 
     /**
