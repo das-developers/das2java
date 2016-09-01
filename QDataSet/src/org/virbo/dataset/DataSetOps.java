@@ -1501,7 +1501,7 @@ public class DataSetOps {
 
                 return result;
             }
-        } else if ( bundle.length(j)==1 ) {
+        } else if ( bundle.length(j)==1 || bundle.length(j)==2 ) {
             if ( bundleDs.rank()==1 ) {
                 return bundleDs.trim(is, is+len);
             }
@@ -1581,7 +1581,12 @@ public class DataSetOps {
                     }
                 }
             }
-            return result;
+            if ( bundle.length(j)==2 ) {
+                int[] qube= new int[] { result.length(), (int)(bundle.value(j,0)), (int)(bundle.value(j,1)) };
+                return Ops.reform( result, qube );
+            } else {
+                return result;
+            }
         } else {
             throw new IllegalArgumentException("rank limit: >2 not supported");
         }
