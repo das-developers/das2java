@@ -442,6 +442,22 @@ public class OperationsProcessor {
                     } else {
                         fillDs= Ops.fft(fillDs); //TODO: this doesn't seem right.
                     }
+                } else if ( cmd.equals("|hilbertEnvelope") ) {
+                    QDataSet h= Ops.hilbertSciPy(fillDs);
+                    fillDs= Ops.magnitude(h);
+                } else if ( cmd.equals("|hilbertPhase") ) {
+                    QDataSet h= Ops.hilbertSciPy(fillDs);
+                    QDataSet dep0= (QDataSet)fillDs.property(QDataSet.DEPEND_0);
+                    if (dep0==null ) throw new IllegalArgumentException("hilbertFrequency needs timetags");
+                    fillDs= Ops.unwrap( Ops.atan2( Ops.slice1(h,1), Ops.slice1(h,0) ), 2*Ops.PI  );
+                } else if ( cmd.equals("|hilbertFrequency") ) {
+                    QDataSet h= Ops.hilbertSciPy(fillDs);
+                    QDataSet dep0= (QDataSet)fillDs.property(QDataSet.DEPEND_0);
+                    if (dep0==null ) throw new IllegalArgumentException("hilbertFrequency needs timetags");
+                    QDataSet phase=  Ops.unwrap( Ops.atan2( Ops.slice1(h,1), Ops.slice1(h,0) ), 2*Ops.PI  );
+                    QDataSet period= Ops.subtract( dep0.slice(1), dep0.slice(0) );
+                    QDataSet fs= Ops.divide( 1 , period );
+                    fillDs= Ops.multiply( Ops.divide( Ops.diff( phase ), 2*Ops.PI ), fs );
                 } else if ( cmd.equals("|hanning") ) {
                     if ( fillDs.length()>0 ) {
                         if ( s.hasNextInt() ) {
