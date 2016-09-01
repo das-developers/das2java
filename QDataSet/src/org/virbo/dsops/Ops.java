@@ -6304,7 +6304,7 @@ public class Ops {
         Units u= SemanticOps.getUnits(d).getOffsetUnits();
         QDataSet h= dataset(discont/2,u);
         d= subtract( modp( add( d,h ), dataset(discont,u) ), h);
-        WritableDataSet result= maybeCopy( accum( ds.slice(0), d ) );
+        WritableDataSet result= maybeCopy( Ops.append( Ops.join( null, ds.slice(0) ), accum( ds.slice(0), d )  ) );
         DataSetUtil.putProperties( DataSetUtil.getProperties(ds), result );
         return result;
     }
