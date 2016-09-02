@@ -340,7 +340,7 @@ public class AsciiParser {
 
             if ( line==null ) return null;
 
-            DelimParser p= guessDelimParser(line);
+            DelimParser p= guessDelimParser(line,iline);
 
             List<String> lines= new LinkedList<>();
 
@@ -354,7 +354,7 @@ public class AsciiParser {
                     lines.remove(0);
                 }
                 if ( line!=null ) {
-                    p= guessDelimParser(line);
+                    p= guessDelimParser(line,iline);
                     p.showException= false;
                     parseCount= p.tryParseRecord(line, iline, null) ? 1 : 0;
                     for (String line1 : lines) {
@@ -380,7 +380,10 @@ public class AsciiParser {
             for (String line1 : lines) {
                 if (p.fieldCount(line1) == p.fieldCount()) {
                     line = line1;
-                    result = createDelimParser(line1, p.getDelim()); // set column names
+                    Units[] u= new Units[this.units.length];
+                    System.arraycopy( this.units, 0, u, 0, this.units.length );
+                    result = createDelimParser(line1, p.getDelim(), -1); // set column names
+                    System.arraycopy( u, 0, this.units, 0, this.units.length );
                     break;
                 }
             }
@@ -435,15 +438,19 @@ public class AsciiParser {
         
         return result;
     }
-
+    
+    public DelimParser guessDelimParser(String line) throws IOException {
+        return guessDelimParser( line, -1 );
+    }
 
     /**
      * read in the first record, then guess the delimiter and possibly the column headers.
      * @param line a single record to attempt parsing.
+     * @param lineNumber, useful for debugging.
      * @return RecordParser object that can be queried. 
      * @throws java.io.IOException
      */
-    public DelimParser guessDelimParser(String line) throws IOException {
+    public DelimParser guessDelimParser(String line, int lineNumber ) throws IOException {
 
         String fieldSep;
 
@@ -459,7 +466,7 @@ public class AsciiParser {
             fieldSep = "\\s+";
         }
 
-        DelimParser result = createDelimParser(line, fieldSep);
+        DelimParser result = createDelimParser(line, fieldSep, lineNumber);
         this.recordParser = result;
 
         return result;
@@ -502,7 +509,7 @@ public class AsciiParser {
             line = readFirstRecord(reader);
         }
 
-        DelimParser result = createDelimParser(line, delimRegex);
+        DelimParser result = createDelimParser(line, delimRegex, -1);
         this.recordParser = result;
 
         return result;
@@ -562,8 +569,10 @@ public class AsciiParser {
      */
     public FixedColumnsParser setFixedColumnsParser(Reader in, String delim) throws IOException {
         String line;
-        try (BufferedReader reader = new LineNumberReader(in)) {
+        int lineNumber;
+        try (LineNumberReader reader = new LineNumberReader(in)) {
             line = readFirstRecord(reader);
+            lineNumber= reader.getLineNumber();
         }
 
         int[] columnOffsets;
@@ -576,7 +585,7 @@ public class AsciiParser {
         columnWidths = new int[ss.length - 1];
         
         initializeByFieldCount(ss.length);
-        initializeUnitsByGuessing(ss);
+        initializeUnitsByGuessing(ss,lineNumber);
 
         boolean rightJustified = false;
         if (ss[0].trim().length() == 0) {
@@ -974,6 +983,7 @@ public class AsciiParser {
                     if ( u!=null ) {
                         this.fieldParsers[j]= UNITS_PARSER;
                         this.units[j]= u;
+                        System.err.println("Units="+u);
                     }
                 }
                 if ( bundleDescriptor.length()!=this.fieldParsers.length ) {
@@ -1309,14 +1319,15 @@ public class AsciiParser {
      * Trailing and leading whitespace is ignored.
      * @param line
      * @param fieldSep
+     * @param lineNum the line number, 1 is first line.
      * @return
      */
-    private DelimParser createDelimParser(String line, String fieldSep) {
+    private DelimParser createDelimParser(String line, String fieldSep, int lineNum) {
 
         String[] ss = split(line.trim(), fieldSep);
 
         initializeByFieldCount(ss.length);
-        initializeUnitsByGuessing(ss);
+        initializeUnitsByGuessing(ss,lineNum);
         
         fieldLabels= new String[fieldCount];
         fieldUnits= new String[fieldCount];
@@ -1757,7 +1768,8 @@ public class AsciiParser {
      * only switch between dimensionless and UTC times.
      * @param ss the fields.
      */
-    private void initializeUnitsByGuessing( String[] ss ) {
+    private void initializeUnitsByGuessing( String[] ss, int lineNumber ) {
+        logger.log(Level.FINE, "guess units at line {0}", lineNumber);
         for (int i = 0; i < ss.length; i++) {
             if ( isIso8601Time(ss[i].trim()) ) {
                 units[i]= Units.t2000;
@@ -2091,6 +2103,7 @@ public class AsciiParser {
      * configured before any files can be parsed.
      */
     public AsciiParser() {
+        logger.fine("new ascii parser");
     }
     
     /**
