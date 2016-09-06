@@ -26,7 +26,7 @@ public final class DDataSet extends ArrayDataSet {
     
     double[] back;
 
-    private static final boolean RANGE_CHECK = "true".equals( System.getProperty("rangeChecking","false") );
+    private static final boolean RANGE_CHECK = "true".equals( System.getProperty("rangeChecking","true") );
     
     public static final String version="20150219";
 
@@ -302,7 +302,7 @@ public final class DDataSet extends ArrayDataSet {
 
     @Override
     public void putValue( int i0, int i1, double value ) {
-        checkImmutable();
+        //checkImmutable();
         if (RANGE_CHECK) {
             if (i0 < 0 || i0 >= len0) {
                 throw new IndexOutOfBoundsException("i0=" + i0 + " " + this);

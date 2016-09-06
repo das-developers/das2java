@@ -43,7 +43,7 @@ public abstract class ArrayDataSet extends AbstractDataSet implements WritableDa
     float fill= Float.NaN;
     double dfill= Double.NaN;
 
-    private static final boolean RANGE_CHECK = "true".equals( System.getProperty("rangeChecking","false") );
+    private static final boolean RANGE_CHECK = "true".equals( System.getProperty("rangeChecking","true") );
 
     Class componentType;
     

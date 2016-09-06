@@ -22,7 +22,7 @@ public final class IDataSet extends ArrayDataSet {
 
     int[] back;
     
-    private static final boolean RANGE_CHECK = "true".equals( System.getProperty("rangeChecking","false") );
+    private static final boolean RANGE_CHECK = "true".equals( System.getProperty("rangeChecking","true") );
     
     public static final String version="20150219";
     
