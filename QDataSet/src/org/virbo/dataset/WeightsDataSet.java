@@ -19,10 +19,12 @@ package org.virbo.dataset;
  */
 public abstract class WeightsDataSet implements QDataSet {
 
-    final double fill;
-    double reportFill; // since numbers between zero and one cannot be used as fill this is reported.
     final double vmin;
     final double vmax;
+    double reportFill; // since numbers between zero and one cannot be used as fill this is reported.
+    final double fill;    // the fill value
+    final double fillMin; // support a little noise in fill, after seeing RPWS data which didn't load properly. (sftp://jfaden.net/home/jbf/ct/autoplot/data/d2s/20160906/testWBR2.d2s)
+    final double fillMax;
     
     /**
      * the fill value from the original dataset.  
@@ -49,6 +51,17 @@ public abstract class WeightsDataSet implements QDataSet {
         if (validMax == null) validMax = Double.POSITIVE_INFINITY;
         Number ofill = (Number) ds.property(QDataSet.FILL_VALUE);
         fill = (ofill == null ? Double.NaN : ofill.doubleValue());
+        if ( fill<0 ) {
+            fillMin= fill * 1.000001;
+            fillMax= fill * 0.999991;
+        } else if ( fill>=0 ) {
+            fillMin= fill * 0.999991;
+            fillMax= fill * 1.000001;
+        } else {
+            fillMin= Double.NaN;
+            fillMax= Double.NaN;
+        }
+        
         reportFill= fill;
         if ( reportFill==0.0 || reportFill==1.0 ) { 
             reportFill= 127;
@@ -144,7 +157,7 @@ public abstract class WeightsDataSet implements QDataSet {
         }
         
         private double weight(double v) {
-            return v == fill || Double.isNaN(v) || v > vmax || v < vmin ? 0.0 : 1.0;
+            return ( v == fill || ( v>fillMin && v<fillMax ) || Double.isNaN(v) || v > vmax || v < vmin ) ? 0.0 : 1.0;
         }
 
         public double value() {
@@ -178,7 +191,7 @@ public abstract class WeightsDataSet implements QDataSet {
         }
         
         private double weight(double v) {
-            return v == fill || Double.isNaN(v) ? 0.0 : 1.0;
+            return ( v == fill || ( v>fillMin && v<fillMax ) || Double.isNaN(v) ) ? 0.0 : 1.0;
         }
 
         public double value() {
