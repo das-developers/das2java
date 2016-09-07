@@ -714,7 +714,7 @@ public class ImageVectorDataSetRenderer extends Renderer {
         if ( SemanticOps.isRank3JoinOfRank2Waveform(ds) ) {
             for ( int k=0; k<ds.length(); k++ ) {
                 QDataSet ds1= ds.slice(k);
-                QDataSet xds= (QDataSet) ds1.property( QDataSet.DEPEND_0 );
+                QDataSet xds= SemanticOps.xtagsDataSet(ds1);
                 boolean xmono= SemanticOps.isMonotonic(xds);
                 int firstIndex = xmono ? DataSetUtil.getPreviousIndex( xds, ddx.binStart(0) ) : 0;
                 int lastIndex = xmono ? DataSetUtil.getNextIndex( xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds1.length()-1;
@@ -724,13 +724,13 @@ public class ImageVectorDataSetRenderer extends Renderer {
             }
             
         } else if ( SemanticOps.isRank2Waveform(ds)) {
-            QDataSet xds= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+            QDataSet xds= SemanticOps.xtagsDataSet(ds);
             boolean xmono= SemanticOps.isMonotonic(xds);
             int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds,  ddx.binStart(0) ) : 0;
             int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds.length()-1;
             tds = histogram(tds, ddx, ddy, ds, firstIndex, lastIndex );
         } else {
-            QDataSet xds= (QDataSet) ds.property( QDataSet.DEPEND_0 );
+            QDataSet xds= SemanticOps.xtagsDataSet(ds);
             boolean xmono= SemanticOps.isMonotonic(xds);
             int firstIndex = xmono ? DataSetUtil.getPreviousIndex(xds,  ddx.binStart(0) ) : 0;
             int lastIndex = xmono ? DataSetUtil.getNextIndex(xds, ddx.binStop(ddx.numberOfBins() - 1) ) : ds.length()-1;
