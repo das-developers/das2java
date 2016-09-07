@@ -278,6 +278,15 @@ public class SemanticOps {
         }
         return false;
     }
+    
+    /**
+     * Test for rank 3 dataset that is a join of rank 2 waveform datasets.
+     * @param ds
+     * @return 
+     */
+    public static boolean isRank3JoinOfRank2Waveform( QDataSet ds ) {
+        return ( ds.rank()==3 && isJoin(ds) && isRank2Waveform( ds.slice(0) ) );
+    }
 
     /**
      * See Ops.isLegacyBundle
